@@ -1,0 +1,45 @@
+# Support Shift Summary Policy
+#
+# Real-world example: A customer support agent that logs its daily
+# activity, summarizes tickets handled, and tracks follow-ups.
+#
+# This is exactly what tools like Mem0 solve with cloud APIs.
+# Flywheel-Crank does it locally in <100ms.
+#
+# Usage:
+#   policy_load: { path: ".claude/policies/daily-standup.yaml" }
+#   policy_execute: { variables: { date: "2026-02-12", summary: "..." } }
+
+name: shift-summary
+description: Log end-of-shift support summary
+version: "1.0"
+
+variables:
+  date: "{{today}}"
+  summary: "Handled 3 tickets: 1 billing escalation, 1 API question, 1 onboarding"
+
+steps:
+  # Step 1: Log shift summary
+  # Auto-wikilinks will connect ticket references
+  - id: log-summary
+    tool: vault_add_to_section
+    params:
+      path: "daily-notes/{{date}}.md"
+      section: "## Log"
+      content: "Shift complete: {{summary}}"
+      format: timestamp-bullet
+      suggestOutgoingLinks: true
+
+  # Step 2: Update tickets handled count
+  - id: log-tickets
+    tool: vault_add_to_section
+    params:
+      path: "daily-notes/{{date}}.md"
+      section: "## Tickets Handled"
+      content: "Total: 3 (1 resolved, 1 escalated, 1 open)"
+      format: bullet
+
+options:
+  failFast: true
+  commit: true
+  commitMessage: "support: shift summary {{date}}"

@@ -1,0 +1,72 @@
+{
+  "name": "@velvetmonkey/flywheel-memory",
+  "version": "1.0.0",
+  "description": "Local-first memory for AI agents. 73 tools. No cloud. Everything connects.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "flywheel-memory": "dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/velvetmonkey/flywheel-memory.git"
+  },
+  "bugs": {
+    "url": "https://github.com/velvetmonkey/flywheel-memory/issues"
+  },
+  "homepage": "https://github.com/velvetmonkey/flywheel-memory#readme",
+  "author": "velvetmonkey",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "ai-memory",
+    "agent-memory",
+    "obsidian",
+    "markdown",
+    "knowledge-graph",
+    "local-first",
+    "deterministic",
+    "wikilinks",
+    "claude",
+    "langchain",
+    "semantic-search"
+  ],
+  "scripts": {
+    "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external && chmod +x dist/index.js",
+    "dev": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.1",
+    "@velvetmonkey/vault-core": "^1.27.58",
+    "better-sqlite3": "^11.0.0",
+    "chokidar": "^4.0.0",
+    "gray-matter": "^4.0.3",
+    "simple-git": "^3.22.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^20.10.0",
+    "esbuild": "^0.24.0",
+    "fast-check": "^3.15.0",
+    "typescript": "^5.3.2",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

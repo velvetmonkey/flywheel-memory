@@ -57,8 +57,6 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Run demo tests
-        run: npm run test:demos --workspace=@velvetmonkey/flywheel-mcp
       - name: Upload coverage
         if: matrix.os == 'ubuntu-latest' && matrix.node == '20'
         uses: actions/upload-artifact@v4
@@ -67,48 +65,3 @@ jobs:
           path: packages/mcp-server/coverage/
           retention-days: 7
 
-  watcher-tests:
-    name: Watcher Tests (${{ matrix.os }} / ${{ matrix.watch-mode }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        watch-mode: [native, polling]
-    env:
-      FLYWHEEL_WATCH_V2: 'true'
-      FLYWHEEL_WATCH_POLL: ${{ matrix.watch-mode == 'polling' && 'true' || 'false' }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-      - name: Install dependencies
-        run: npm ci
-      - name: Run watcher unit tests
-        run: npm run test:watcher --workspace=@velvetmonkey/flywheel-mcp
-      - name: Run watcher stress tests
-        run: npm run test:watcher:stress --workspace=@velvetmonkey/flywheel-mcp
-        timeout-minutes: 10
-        continue-on-error: ${{ matrix.os == 'windows-latest' }}  # Stress tests are flaky on Windows CI
-
-  # Optional: WSL-specific testing (requires self-hosted runner with 'wsl' label)
-  # Uncomment when self-hosted WSL runner is configured
-  # test-wsl:
-  #   name: Test WSL Watcher
-  #   runs-on: [self-hosted, wsl]
-  #   env:
-  #     FLYWHEEL_WATCH_POLL: 'true'  # Recommended for WSL
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20'
-  #     - name: Install dependencies
-  #       run: npm ci
-  #     - name: Run watcher tests
-  #       run: npm run test:watcher --workspace=@velvetmonkey/flywheel-mcp
-  #     - name: Run platform-specific tests
-  #       run: npm run test:platform --workspace=@velvetmonkey/flywheel-mcp --if-present

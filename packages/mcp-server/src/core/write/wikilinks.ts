@@ -1,0 +1,1178 @@
+/**
+ * Wikilink integration for Flywheel Crank
+ *
+ * Manages entity index lifecycle and provides wikilink processing
+ * for mutation tools. Mirrors Flywheel's startup pattern.
+ *
+ * ARCHITECTURE NOTE: Crank maintains its own entity index independent of Flywheel.
+ * This is by design for resilience - Crank works even if Flywheel isn't running.
+ * Both Flywheel and Crank use @velvetmonkey/vault-core for consistent scanning
+ * logic, but each maintains its own cached copy of the entity index.
+ *
+ * Storage: SQLite StateDb at .claude/state.db (managed by vault-core)
+ *
+ * Lifecycle:
+ * 1. On startup: Load from StateDb if valid, else full vault scan
+ * 2. StateDb includes version number for migration detection
+ * 3. Index is held in memory for the duration of the MCP session
+ * 4. Flywheel exposes entity data via MCP for LLM queries
+ * 5. Crank uses its local copy for wikilink application during mutations
+ */
+
+import {
+  scanVaultEntities,
+  getAllEntities,
+  getAllEntitiesWithTypes,
+  getEntityName,
+  getEntityAliases,
+  applyWikilinks,
+  resolveAliasWikilinks,
+  getEntityIndexFromDb,
+  getStateDbMetadata,
+  type EntityIndex,
+  type EntityCategory,
+  type EntityWithType,
+  type WikilinkResult,
+  type Entity,
+  type StateDb,
+} from '@velvetmonkey/vault-core';
+import { setGitStateDb } from './git.js';
+import { setHintsStateDb } from './hints.js';
+import { setRecencyStateDb } from '../shared/recency.js';
+import path from 'path';
+import type { SuggestOptions, SuggestResult, SuggestionConfig, StrictnessMode, NoteContext } from './types.js';
+import { stem, tokenize } from '../shared/stemmer.js';
+import {
+  mineCooccurrences,
+  getCooccurrenceBoost,
+  serializeCooccurrenceIndex,
+  deserializeCooccurrenceIndex,
+  type CooccurrenceIndex,
+} from '../shared/cooccurrence.js';
+import {
+  buildRecencyIndex,
+  getRecencyBoost,
+  loadRecencyFromStateDb,
+  saveRecencyToStateDb,
+  type RecencyIndex,
+} from '../shared/recency.js';
+
+/**
+ * Module-level StateDb reference
+ */
+let moduleStateDb: StateDb | null = null;
+
+/**
+ * Set the StateDb instance for all Crank core modules
+ * Called during MCP server initialization
+ */
+export function setCrankStateDb(stateDb: StateDb | null): void {
+  moduleStateDb = stateDb;
+  // Propagate to other modules
+  setGitStateDb(stateDb);
+  setHintsStateDb(stateDb);
+  setRecencyStateDb(stateDb);
+}
+
+/**
+ * Global entity index state
+ */
+let entityIndex: EntityIndex | null = null;
+let indexReady = false;
+let indexError: Error | null = null;
+
+/**
+ * Timestamp when entity index was last loaded from StateDb
+ * Used to detect when Flywheel has updated entities and we need to refresh
+ */
+let lastLoadedAt: number = 0;
+
+/**
+ * Global co-occurrence index state
+ */
+let cooccurrenceIndex: CooccurrenceIndex | null = null;
+
+/**
+ * Global recency index state
+ */
+let recencyIndex: RecencyIndex | null = null;
+
+/**
+ * Folders to exclude from entity scanning
+ * Includes periodic notes, working folders, and clippings/external content
+ */
+const DEFAULT_EXCLUDE_FOLDERS = [
+  // Periodic notes
+  'daily-notes',
+  'daily',
+  'weekly',
+  'weekly-notes',
+  'monthly',
+  'monthly-notes',
+  'quarterly',
+  'yearly-notes',
+  'periodic',
+  'journal',
+  // Working folders
+  'inbox',
+  'templates',
+  'attachments',
+  'tmp',
+  // Clippings & external content (article titles are not concepts)
+  'clippings',
+  'readwise',
+  'articles',
+  'bookmarks',
+  'web-clips',
+];
+
+/**
+ * Initialize entity index in background
+ * Called at MCP server startup - returns immediately, builds in background
+ *
+ * Tries loading from StateDb first, then full rebuild.
+ */
+export async function initializeEntityIndex(vaultPath: string): Promise<void> {
+  try {
+    // Try loading from StateDb (fastest path)
+    if (moduleStateDb) {
+      try {
+        const dbIndex = getEntityIndexFromDb(moduleStateDb);
+        if (dbIndex._metadata.total_entities > 0) {
+          entityIndex = dbIndex;
+          indexReady = true;
+          lastLoadedAt = Date.now();
+          console.error(`[Crank] Loaded ${dbIndex._metadata.total_entities} entities from StateDb`);
+          return;
+        }
+      } catch (e) {
+        console.error('[Crank] Failed to load from StateDb:', e);
+      }
+    }
+
+    // No StateDb or empty - build index
+    await rebuildIndex(vaultPath);
+  } catch (error) {
+    indexError = error instanceof Error ? error : new Error(String(error));
+    console.error(`[Crank] Failed to initialize entity index: ${indexError.message}`);
+    // Don't throw - wikilinks will just be disabled
+  }
+}
+
+/**
+ * Rebuild index synchronously
+ */
+async function rebuildIndex(vaultPath: string): Promise<void> {
+  console.error(`[Crank] Scanning vault for entities...`);
+  const startTime = Date.now();
+
+  entityIndex = await scanVaultEntities(vaultPath, {
+    excludeFolders: DEFAULT_EXCLUDE_FOLDERS,
+  });
+
+  indexReady = true;
+  lastLoadedAt = Date.now();
+  const entityDuration = Date.now() - startTime;
+  console.error(`[Crank] Entity index built: ${entityIndex._metadata.total_entities} entities in ${entityDuration}ms`);
+
+  // Save to StateDb for fast subsequent loads
+  if (moduleStateDb) {
+    try {
+      moduleStateDb.replaceAllEntities(entityIndex);
+      console.error(`[Crank] Saved entities to StateDb`);
+    } catch (e) {
+      console.error(`[Crank] Failed to save entities to StateDb: ${e}`);
+    }
+  }
+
+  // Get entities for secondary indexes
+  const entities = getAllEntities(entityIndex);
+  const entityNames = entities.map(e => typeof e === 'string' ? e : getEntityName(e));
+
+  // Mine co-occurrences for conceptual suggestions
+  try {
+    const cooccurrenceStart = Date.now();
+    cooccurrenceIndex = await mineCooccurrences(vaultPath, entityNames);
+    const cooccurrenceDuration = Date.now() - cooccurrenceStart;
+    console.error(`[Crank] Co-occurrence index built: ${cooccurrenceIndex._metadata.total_associations} associations in ${cooccurrenceDuration}ms`);
+  } catch (e) {
+    console.error(`[Crank] Failed to build co-occurrence index: ${e}`);
+  }
+
+  // Build recency index for temporal suggestions
+  try {
+    // Try loading from StateDb first
+    const cachedRecency = loadRecencyFromStateDb();
+    const cacheAgeMs = cachedRecency ? Date.now() - cachedRecency.lastUpdated : Infinity;
+
+    if (cachedRecency && cacheAgeMs < 60 * 60 * 1000) {
+      // Cache is valid and less than 1 hour old
+      recencyIndex = cachedRecency;
+      console.error(`[Crank] Recency index loaded from StateDb (${recencyIndex.lastMentioned.size} entities)`);
+    } else {
+      // Build fresh recency index
+      const recencyStart = Date.now();
+      recencyIndex = await buildRecencyIndex(vaultPath, entities);
+      const recencyDuration = Date.now() - recencyStart;
+      console.error(`[Crank] Recency index built: ${recencyIndex.lastMentioned.size} entities in ${recencyDuration}ms`);
+
+      // Save to StateDb
+      saveRecencyToStateDb(recencyIndex);
+    }
+  } catch (e) {
+    console.error(`[Crank] Failed to build recency index: ${e}`);
+  }
+}
+
+/**
+ * Check if entity index is ready
+ */
+export function isEntityIndexReady(): boolean {
+  return indexReady && entityIndex !== null;
+}
+
+/**
+ * Get the entity index (may be null if not ready)
+ */
+export function getEntityIndex(): EntityIndex | null {
+  return entityIndex;
+}
+
+/**
+ * Check if Flywheel has updated StateDb since we loaded, and refresh if so.
+ *
+ * This enables Crank to detect when Flywheel's file watcher has reindexed
+ * the vault (adding new entities) without requiring Crank restart.
+ *
+ * Called before applying wikilinks to ensure fresh entity data.
+ */
+export function checkAndRefreshIfStale(): void {
+  if (!moduleStateDb || !indexReady) return;
+
+  try {
+    const metadata = getStateDbMetadata(moduleStateDb);
+    if (!metadata.entitiesBuiltAt) return;
+
+    const dbBuiltAt = new Date(metadata.entitiesBuiltAt).getTime();
+
+    // If StateDb was updated after we loaded, refresh
+    if (dbBuiltAt > lastLoadedAt) {
+      console.error('[Crank] Entity index stale, reloading from StateDb...');
+      const dbIndex = getEntityIndexFromDb(moduleStateDb);
+      if (dbIndex._metadata.total_entities > 0) {
+        entityIndex = dbIndex;
+        lastLoadedAt = Date.now();
+        console.error(`[Crank] Reloaded ${dbIndex._metadata.total_entities} entities`);
+      }
+    }
+  } catch (e) {
+    // StateDb might be locked or corrupted - skip refresh silently
+    // Crank will continue using its cached version
+    console.error('[Crank] Failed to check for stale entities:', e);
+  }
+}
+
+/**
+ * Sort entities by priority for inline wikilink detection
+ *
+ * vault-core's applyWikilinks re-sorts by name length (longest first),
+ * but preserves order for same-length entities. By sorting by priority
+ * first, we ensure higher-priority entities (cross-folder, hub notes)
+ * get linked first when multiple entities have the same length.
+ *
+ * @param entities - Entities to sort
+ * @param notePath - Path to the note being edited (for cross-folder boost)
+ * @returns Sorted entities with highest priority first
+ */
+function sortEntitiesByPriority(entities: Entity[], notePath?: string): Entity[] {
+  return [...entities].sort((a, b) => {
+    const entityA = typeof a === 'string' ? { name: a, path: '', aliases: [] } : a;
+    const entityB = typeof b === 'string' ? { name: b, path: '', aliases: [] } : b;
+
+    // Calculate priority scores
+    let priorityA = 0;
+    let priorityB = 0;
+
+    // Cross-folder boost
+    if (notePath) {
+      priorityA += getCrossFolderBoost(entityA.path, notePath);
+      priorityB += getCrossFolderBoost(entityB.path, notePath);
+    }
+
+    // Hub score boost
+    priorityA += getHubBoost(entityA);
+    priorityB += getHubBoost(entityB);
+
+    // Higher priority first
+    return priorityB - priorityA;
+  });
+}
+
+/**
+ * Process content through wikilink application
+ *
+ * Two-step processing:
+ * 1. Resolve existing wikilinks that use aliases (e.g., [[model context protocol]] → [[MCP|model context protocol]])
+ * 2. Apply wikilinks to plain text (normal auto-wikilink processing)
+ *
+ * @param content - Content to process
+ * @param notePath - Optional path to the note for priority sorting
+ * @returns Content with wikilinks applied, or original if index not ready
+ */
+export function processWikilinks(content: string, notePath?: string): WikilinkResult {
+  if (!isEntityIndexReady() || !entityIndex) {
+    // eslint-disable-next-line no-console
+    console.error('[Crank:DEBUG] Entity index not ready, entities:', entityIndex?._metadata?.total_entities ?? 0);
+    return {
+      content,
+      linksAdded: 0,
+      linkedEntities: [],
+    };
+  }
+
+  const entities = getAllEntities(entityIndex);
+  // eslint-disable-next-line no-console
+  console.error(`[Crank:DEBUG] Processing wikilinks with ${entities.length} entities`);
+
+  // Sort by priority (cross-folder + hub) for same-length entity preference
+  const sortedEntities = sortEntitiesByPriority(entities, notePath);
+
+  // Step 1: Resolve existing wikilinks that use aliases (case-insensitive)
+  // [[model context protocol]] → [[MCP|model context protocol]]
+  const resolved = resolveAliasWikilinks(content, sortedEntities, {
+    caseInsensitive: true,
+  });
+
+  // Step 2: Apply wikilinks to plain text (normal processing)
+  const result = applyWikilinks(resolved.content, sortedEntities, {
+    firstOccurrenceOnly: true,
+    caseInsensitive: true,
+  });
+
+  // Combine results from both steps
+  return {
+    content: result.content,
+    linksAdded: resolved.linksAdded + result.linksAdded,
+    linkedEntities: [...resolved.linkedEntities, ...result.linkedEntities],
+  };
+}
+
+/**
+ * Apply wikilinks to content if enabled
+ *
+ * @param content - Content to potentially wikilink
+ * @param skipWikilinks - If true, skip wikilink processing
+ * @param notePath - Optional path to the note for priority sorting
+ * @returns Processed content (with or without wikilinks)
+ */
+export function maybeApplyWikilinks(
+  content: string,
+  skipWikilinks: boolean,
+  notePath?: string
+): { content: string; wikilinkInfo?: string } {
+  if (skipWikilinks) {
+    return { content };
+  }
+
+  // Check if Flywheel updated entities since we loaded
+  checkAndRefreshIfStale();
+
+  const result = processWikilinks(content, notePath);
+
+  if (result.linksAdded > 0) {
+    return {
+      content: result.content,
+      wikilinkInfo: `Applied ${result.linksAdded} wikilink(s): ${result.linkedEntities.join(', ')}`,
+    };
+  }
+
+  return { content: result.content };
+}
+
+/**
+ * Get entity index statistics (for debugging/status)
+ */
+export function getEntityIndexStats(): {
+  ready: boolean;
+  totalEntities: number;
+  categories: Record<string, number>;
+  error?: string;
+} {
+  if (!indexReady || !entityIndex) {
+    return {
+      ready: false,
+      totalEntities: 0,
+      categories: {},
+      error: indexError?.message,
+    };
+  }
+
+  return {
+    ready: true,
+    totalEntities: entityIndex._metadata.total_entities,
+    categories: {
+      technologies: entityIndex.technologies.length,
+      acronyms: entityIndex.acronyms.length,
+      people: entityIndex.people.length,
+      projects: entityIndex.projects.length,
+      organizations: entityIndex.organizations?.length ?? 0,
+      locations: entityIndex.locations?.length ?? 0,
+      concepts: entityIndex.concepts?.length ?? 0,
+      other: entityIndex.other.length,
+    },
+  };
+}
+
+// ========================================
+// Suggestion Link Logic
+// ========================================
+
+/**
+ * Pattern to detect existing suggestion suffix (for idempotency)
+ */
+const SUGGESTION_PATTERN = /→\s*\[\[.+$/;
+
+/**
+ * Common stopwords to exclude from tokenization
+ */
+const STOPWORDS = new Set([
+  'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+  'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
+  'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+  'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'this', 'that',
+  'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'what',
+  'which', 'who', 'whom', 'when', 'where', 'why', 'how', 'all', 'each',
+  'every', 'both', 'few', 'more', 'most', 'other', 'some', 'such', 'no',
+  'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'also',
+]);
+
+/**
+ * Generic words that are too common to trigger entity suggestions
+ *
+ * These words pass tokenization filters (4+ chars, not stopwords) but are
+ * semantically too generic to meaningfully connect to specific entities.
+ * They cause false positives through co-occurrence boosting.
+ *
+ * Example: "a test message" would match entities containing "message",
+ * which then co-occur with unrelated entities like Azure services.
+ *
+ * NOTE: Intentionally conservative list. Words like "service", "system", "process"
+ * are excluded because they're meaningful in tech contexts (e.g., "Azure App Service").
+ */
+const GENERIC_WORDS = new Set([
+  // Common nouns that appear everywhere and rarely mean anything specific
+  'message', 'messages',
+  'file', 'files',
+  'info', 'information',
+  'item', 'items',
+  'list', 'lists',
+  'name', 'names',
+  'type', 'types',
+  'value', 'values',
+  'result', 'results',
+  'issue', 'issues',
+  'problem', 'problems',
+  'point', 'points',
+  'example', 'examples',
+  'case', 'cases',
+  'object', 'objects',
+  'option', 'options',
+  'line', 'lines',
+  'text', 'string', 'strings',
+  'number', 'numbers',
+  'size', 'length',
+  'level', 'levels',
+  'mode', 'modes',
+]);
+
+/**
+ * Extract entities that are already linked in content
+ * @param content - Content to scan for existing wikilinks
+ * @returns Set of linked entity names (lowercase for comparison)
+ */
+export function extractLinkedEntities(content: string): Set<string> {
+  const linked = new Set<string>();
+  const wikilinkRegex = /\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;
+
+  let match;
+  while ((match = wikilinkRegex.exec(content)) !== null) {
+    linked.add(match[1].toLowerCase());
+  }
+
+  return linked;
+}
+
+/**
+ * Tokenize content into significant words for matching
+ * Uses the shared stemmer module for consistent tokenization
+ * @param content - Content to tokenize
+ * @returns Array of significant words (lowercase, 4+ chars, no stopwords)
+ */
+function tokenizeContent(content: string): string[] {
+  return tokenize(content);
+}
+
+/**
+ * Tokenize content and compute stems for matching
+ * @param content - Content to tokenize
+ * @returns Object with tokens set and stems set
+ */
+function tokenizeForMatching(content: string): {
+  tokens: Set<string>;
+  stems: Set<string>;
+} {
+  const tokens = tokenize(content);
+  const tokenSet = new Set(tokens);
+  const stems = new Set(tokens.map(t => stem(t)));
+  return { tokens: tokenSet, stems };
+}
+
+/**
+ * Maximum entity name length for suggestions
+ * Filters out article titles, clippings, and other long names
+ */
+const MAX_ENTITY_LENGTH = 25;
+
+/**
+ * Maximum word count for entity names
+ * Concepts are typically 1-3 words; longer names are article titles
+ */
+const MAX_ENTITY_WORDS = 3;
+
+/**
+ * Patterns that indicate an entity is an article title, not a concept
+ * Case-insensitive matching
+ */
+const ARTICLE_PATTERNS = [
+  /\bguide\s+to\b/i,
+  /\bhow\s+to\b/i,
+  /\bcomplete\s+/i,
+  /\bultimate\s+/i,
+  /\bchecklist\b/i,
+  /\bcheatsheet\b/i,
+  /\bcheat\s+sheet\b/i,
+  /\bbest\s+practices\b/i,
+  /\bintroduction\s+to\b/i,
+  /\btutorial\b/i,
+  /\bworksheet\b/i,
+];
+
+/**
+ * Check if an entity name looks like an article title rather than a concept
+ *
+ * Heuristics:
+ * - Matches known article patterns ("Guide to", "How to", etc.)
+ * - Has more than 3 words (concepts are usually 1-3 words)
+ *
+ * @param name - Entity name to check
+ * @returns true if this looks like an article title
+ */
+export function isLikelyArticleTitle(name: string): boolean {
+  // Check against article patterns
+  if (ARTICLE_PATTERNS.some(pattern => pattern.test(name))) {
+    return true;
+  }
+
+  // Count words (split on whitespace, filter empty)
+  const words = name.split(/\s+/).filter(w => w.length > 0);
+  if (words.length > MAX_ENTITY_WORDS) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Strictness mode configurations for suggestion scoring
+ *
+ * Each mode provides different trade-offs between precision and recall:
+ * - conservative: High precision, fewer false positives (default)
+ * - balanced: Moderate precision, matches v0.7 behavior
+ * - aggressive: Maximum recall, may include loose matches
+ */
+const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
+  conservative: {
+    minWordLength: 5,
+    minSuggestionScore: 15,    // Requires exact match (10) + at least one stem (5)
+    minMatchRatio: 0.6,        // 60% of multi-word entity must match
+    requireMultipleMatches: true, // Single-word entities need multiple content matches
+    stemMatchBonus: 3,         // Lower bonus for stem-only matches
+    exactMatchBonus: 10,       // Standard bonus for exact matches
+  },
+  balanced: {
+    minWordLength: 4,
+    minSuggestionScore: 8,     // At least one exact match or two stem matches
+    minMatchRatio: 0.4,        // 40% of multi-word entity must match
+    requireMultipleMatches: false,
+    stemMatchBonus: 5,         // Standard bonus for stem matches
+    exactMatchBonus: 10,       // Standard bonus for exact matches
+  },
+  aggressive: {
+    minWordLength: 4,
+    minSuggestionScore: 5,     // Single stem match is enough
+    minMatchRatio: 0.3,        // 30% of multi-word entity must match
+    requireMultipleMatches: false,
+    stemMatchBonus: 6,         // Higher bonus for stem matches
+    exactMatchBonus: 10,       // Standard bonus for exact matches
+  },
+};
+
+/**
+ * Default strictness mode
+ */
+const DEFAULT_STRICTNESS: StrictnessMode = 'conservative';
+
+/**
+ * Type-based score boost per entity category
+ *
+ * People and projects are typically more useful to link than
+ * common technologies (which may over-saturate links).
+ */
+const TYPE_BOOST: Record<EntityCategory, number> = {
+  people: 5,         // Names are high value for connections
+  projects: 3,       // Projects provide context
+  organizations: 2,  // Companies/teams relevant
+  locations: 1,      // Geographic context
+  concepts: 1,       // Abstract concepts
+  technologies: 0,   // Common, avoid over-suggesting
+  acronyms: 0,       // Acronyms may be ambiguous
+  other: 0,          // Unknown category
+};
+
+/**
+ * Cross-folder boost - prioritize cross-cutting connections
+ *
+ * Entities from different top-level folders are more valuable for
+ * building cross-cutting connections in the knowledge graph.
+ * A person note linking to a project note is more valuable than
+ * project notes linking to other project notes.
+ */
+const CROSS_FOLDER_BOOST = 3;
+
+/**
+ * Hub note boost tiers - prioritize well-connected notes
+ *
+ * Notes with many backlinks (hub notes) are typically more central
+ * to the knowledge graph and more useful to link to.
+ *
+ * Tiered scoring ensures major hubs (Stretch, Walk, ESGHub with 100+ backlinks)
+ * get significantly higher priority than entities with minimal connections.
+ */
+const HUB_TIERS = [
+  { threshold: 100, boost: 8 },  // Major hubs (Stretch, Walk, ESGHub)
+  { threshold: 50,  boost: 5 },  // Significant hubs
+  { threshold: 20,  boost: 3 },  // Medium hubs
+  { threshold: 5,   boost: 1 },  // Small hubs
+] as const;
+
+/**
+ * Get cross-folder boost for an entity
+ *
+ * @param entityPath - Path to the entity note
+ * @param notePath - Path to the note being edited
+ * @returns Boost value if cross-folder, 0 otherwise
+ */
+function getCrossFolderBoost(entityPath: string, notePath: string): number {
+  if (!entityPath || !notePath) return 0;
+
+  // Get top-level folder for each path
+  const entityFolder = entityPath.split('/')[0];
+  const noteFolder = notePath.split('/')[0];
+
+  // Boost if folders are different and both are non-empty
+  if (entityFolder && noteFolder && entityFolder !== noteFolder) {
+    return CROSS_FOLDER_BOOST;
+  }
+
+  return 0;
+}
+
+/**
+ * Get hub score boost for an entity using tiered scoring
+ *
+ * @param entity - Entity object with optional hubScore
+ * @returns Boost value based on backlink count tier (0-8)
+ */
+function getHubBoost(entity: { hubScore?: number }): number {
+  const hubScore = entity.hubScore ?? 0;
+  if (hubScore === 0) return 0;
+
+  // Find the highest tier that applies
+  for (const tier of HUB_TIERS) {
+    if (hubScore >= tier.threshold) {
+      return tier.boost;
+    }
+  }
+
+  return 0;
+}
+
+/**
+ * Context-aware boost per note type and entity category
+ *
+ * Boosts entity types that are more relevant to specific note contexts:
+ * - Daily notes: people are most relevant (who did I interact with?)
+ * - Project notes: projects and technologies are most relevant
+ * - Tech docs: technologies and acronyms are most relevant
+ */
+const CONTEXT_BOOST: Record<NoteContext, Partial<Record<EntityCategory, number>>> = {
+  daily: {
+    people: 5,       // Daily notes often mention people
+    projects: 2,     // Work updates reference projects
+  },
+  project: {
+    projects: 5,     // Project docs reference other projects
+    technologies: 2, // Technical dependencies
+  },
+  tech: {
+    technologies: 5, // Tech docs reference technologies
+    acronyms: 3,     // Technical acronyms
+  },
+  general: {},       // No context-specific boost
+};
+
+/**
+ * Detect note context from path
+ *
+ * Analyzes path segments to determine note type for context-aware boosting.
+ *
+ * @param notePath - Path to the note (vault-relative)
+ * @returns Detected note context
+ */
+function getNoteContext(notePath: string): NoteContext {
+  const lower = notePath.toLowerCase();
+
+  // Daily notes, journals, logs
+  if (
+    lower.includes('daily-notes') ||
+    lower.includes('daily/') ||
+    lower.includes('journal') ||
+    lower.includes('logs/') ||
+    lower.includes('/log/')
+  ) {
+    return 'daily';
+  }
+
+  // Project and systems documentation
+  if (
+    lower.includes('projects/') ||
+    lower.includes('project/') ||
+    lower.includes('systems/') ||
+    lower.includes('initiatives/')
+  ) {
+    return 'project';
+  }
+
+  // Technical documentation
+  if (
+    lower.includes('tech/') ||
+    lower.includes('code/') ||
+    lower.includes('engineering/') ||
+    lower.includes('docs/') ||
+    lower.includes('documentation/')
+  ) {
+    return 'tech';
+  }
+
+  return 'general';
+}
+
+/**
+ * Get adaptive minimum score based on content length
+ *
+ * Short content (<50 chars) needs lower thresholds to get any suggestions.
+ * Long content (>200 chars) should require stronger matches to avoid noise.
+ *
+ * @param contentLength - Length of content in characters
+ * @param baseScore - Base minimum score from strictness config
+ * @returns Adjusted minimum score
+ */
+function getAdaptiveMinScore(contentLength: number, baseScore: number): number {
+  if (contentLength < 50) {
+    // Short content: lower threshold to allow suggestions
+    return Math.max(5, Math.floor(baseScore * 0.6));
+  }
+  if (contentLength > 200) {
+    // Long content: higher threshold for stronger matches
+    return Math.floor(baseScore * 1.2);
+  }
+  // Standard threshold for medium-length content
+  return baseScore;
+}
+
+// Legacy constants (kept for backward compatibility, use STRICTNESS_CONFIGS instead)
+const MIN_SUGGESTION_SCORE = STRICTNESS_CONFIGS.balanced.minSuggestionScore;
+const MIN_MATCH_RATIO = STRICTNESS_CONFIGS.balanced.minMatchRatio;
+
+/**
+ * Bonus for single-word aliases that exactly match a content token
+ * This ensures "production" alias matches "production" in content in conservative mode
+ */
+const FULL_ALIAS_MATCH_BONUS = 8;
+
+/**
+ * Score a name (entity name or alias) against content
+ *
+ * @param name - Entity name or alias to score
+ * @param contentTokens - Set of tokenized content words
+ * @param contentStems - Set of stemmed content words
+ * @param config - Scoring configuration from strictness mode
+ * @returns Object with score, matchedWords, and exactMatches
+ */
+function scoreNameAgainstContent(
+  name: string,
+  contentTokens: Set<string>,
+  contentStems: Set<string>,
+  config: SuggestionConfig
+): { score: number; matchedWords: number; exactMatches: number; totalTokens: number } {
+  const nameTokens = tokenize(name);
+  if (nameTokens.length === 0) {
+    return { score: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0 };
+  }
+
+  const nameStems = nameTokens.map(t => stem(t));
+
+  let score = 0;
+  let matchedWords = 0;
+  let exactMatches = 0;
+
+  for (let i = 0; i < nameTokens.length; i++) {
+    const token = nameTokens[i];
+    const nameStem = nameStems[i];
+
+    if (contentTokens.has(token)) {
+      // Exact word match - highest confidence
+      score += config.exactMatchBonus;
+      matchedWords++;
+      exactMatches++;
+    } else if (contentStems.has(nameStem)) {
+      // Stem match only - medium confidence
+      score += config.stemMatchBonus;
+      matchedWords++;
+    }
+  }
+
+  return { score, matchedWords, exactMatches, totalTokens: nameTokens.length };
+}
+
+/**
+ * Score an entity based on word overlap with content
+ *
+ * Scoring layers:
+ * - Exact match: +exactMatchBonus per word (highest confidence)
+ * - Stem match: +stemMatchBonus per word (medium confidence)
+ * - Alias matching: Also scores against entity aliases
+ *
+ * The config determines thresholds and bonuses based on strictness mode.
+ *
+ * @param entity - Entity object (with name and aliases) or string name
+ * @param contentTokens - Set of tokenized content words
+ * @param contentStems - Set of stemmed content words
+ * @param config - Scoring configuration from strictness mode
+ * @returns Score (higher = more relevant), 0 if doesn't meet threshold
+ */
+function scoreEntity(
+  entity: Entity,
+  contentTokens: Set<string>,
+  contentStems: Set<string>,
+  config: SuggestionConfig
+): number {
+  const entityName = getEntityName(entity);
+  const aliases = getEntityAliases(entity);
+
+  // Score the primary name
+  const nameResult = scoreNameAgainstContent(entityName, contentTokens, contentStems, config);
+
+  // Score each alias and take the best match
+  let bestAliasResult = { score: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0 };
+  for (const alias of aliases) {
+    const aliasResult = scoreNameAgainstContent(alias, contentTokens, contentStems, config);
+    if (aliasResult.score > bestAliasResult.score) {
+      bestAliasResult = aliasResult;
+    }
+  }
+
+  // Use the best score between name and aliases
+  const bestResult = nameResult.score >= bestAliasResult.score ? nameResult : bestAliasResult;
+  let { score, matchedWords, exactMatches, totalTokens } = bestResult;
+
+  if (totalTokens === 0) return 0;
+
+  // Bonus for single-word aliases that exactly match a content token
+  // This ensures "production" alias matches "production" in content in conservative mode
+  for (const alias of aliases) {
+    const aliasLower = alias.toLowerCase();
+    // Single-word alias (4+ chars) that matches a content token exactly
+    if (aliasLower.length >= 4 &&
+        !/\s/.test(aliasLower) &&
+        contentTokens.has(aliasLower)) {
+      score += FULL_ALIAS_MATCH_BONUS;
+      break;  // Only apply bonus once
+    }
+  }
+
+  // Multi-word entities need minimum match ratio
+  if (totalTokens > 1) {
+    const matchRatio = matchedWords / totalTokens;
+    if (matchRatio < config.minMatchRatio) {
+      return 0;
+    }
+  }
+
+  // For conservative mode: single-word entities need multiple content word matches
+  // This prevents "Complete" matching just because content has "completed"
+  if (config.requireMultipleMatches && totalTokens === 1) {
+    // Check if the entity word appears multiple times or has strong context
+    // For single-word entities, require at least one exact match
+    if (exactMatches === 0) {
+      return 0;
+    }
+  }
+
+  return score;
+}
+
+/**
+ * Suggest related wikilinks based on content analysis
+ *
+ * Analyzes content tokens and scores entities from the cache,
+ * returning the top matches as suggested outgoing links.
+ *
+ * Filtering layers:
+ * 1a. Length filter: Skip entities >25 chars (article titles, clippings)
+ * 1b. Article pattern filter: Skip "Guide to", "How to", etc. and >3 words
+ *
+ * Scoring layers:
+ * 2. Exact match: +10 per word (highest confidence)
+ * 3. Stem match: +5 per word (medium confidence)
+ * 4. Co-occurrence boost: +3 per related entity (conceptual links)
+ *
+ * Multi-word entities require 40% of words to match.
+ * Minimum score of 5 required (at least one stem match).
+ *
+ * @param content - Content to analyze for suggestions
+ * @param options - Configuration options
+ * @returns Suggestion result with entity names and formatted suffix
+ */
+export function suggestRelatedLinks(
+  content: string,
+  options: SuggestOptions = {}
+): SuggestResult {
+  const {
+    maxSuggestions = 3,
+    excludeLinked = true,
+    strictness = DEFAULT_STRICTNESS,
+    notePath
+  } = options;
+
+  // Get config for the specified strictness mode
+  const config = STRICTNESS_CONFIGS[strictness];
+
+  // Compute adaptive minimum score based on content length
+  const adaptiveMinScore = getAdaptiveMinScore(content.length, config.minSuggestionScore);
+
+  // Detect note context for context-aware boosting
+  const noteContext = notePath ? getNoteContext(notePath) : 'general';
+  const contextBoosts = CONTEXT_BOOST[noteContext];
+
+  // Empty result for quick returns
+  const emptyResult: SuggestResult = { suggestions: [], suffix: '' };
+
+  // Check for existing suggestion suffix (idempotency)
+  if (SUGGESTION_PATTERN.test(content)) {
+    return emptyResult;
+  }
+
+  // Check if entity index is ready
+  if (!isEntityIndexReady() || !entityIndex) {
+    return emptyResult;
+  }
+
+  // Get all entities with type information for category-based boosting
+  const entitiesWithTypes = getAllEntitiesWithTypes(entityIndex);
+  if (entitiesWithTypes.length === 0) {
+    return emptyResult;
+  }
+
+  // Tokenize content and compute stems for matching
+  const { tokens: rawTokens, stems: rawStems } = tokenizeForMatching(content);
+  if (rawTokens.size === 0) {
+    return emptyResult;
+  }
+
+  // Filter content tokens:
+  // 1. Enforce minWordLength from strictness config (conservative=5, balanced/aggressive=4)
+  // 2. Filter out generic words that cause false positives via co-occurrence
+  const contentTokens = new Set<string>();
+  const contentStems = new Set<string>();
+  for (const token of rawTokens) {
+    if (token.length >= config.minWordLength && !GENERIC_WORDS.has(token)) {
+      contentTokens.add(token);
+      contentStems.add(stem(token));
+    }
+  }
+
+  // After filtering, check if any meaningful tokens remain
+  if (contentTokens.size === 0) {
+    return emptyResult;
+  }
+
+  // Get already-linked entities
+  const linkedEntities = excludeLinked ? extractLinkedEntities(content) : new Set<string>();
+
+  // First pass: Score entities and track which ones matched directly
+  const scoredEntities: Array<{ name: string; score: number; category: EntityCategory }> = [];
+  const directlyMatchedEntities = new Set<string>();
+  // Track entities that have actual content matches (not just boosts)
+  const entitiesWithContentMatch = new Set<string>();
+
+  for (const { entity, category } of entitiesWithTypes) {
+    // Get entity name
+    const entityName = entity.name;
+    if (!entityName) continue;
+
+    // Layer 1a: Length filter - skip article titles, clippings (>25 chars)
+    if (entityName.length > MAX_ENTITY_LENGTH) {
+      continue;
+    }
+
+    // Layer 1b: Article pattern filter - skip "Guide to", "How to", >3 words, etc.
+    if (isLikelyArticleTitle(entityName)) {
+      continue;
+    }
+
+    // Skip if already linked
+    if (linkedEntities.has(entityName.toLowerCase())) {
+      continue;
+    }
+
+    // Layers 2+3: Exact match, stem match, and alias matching (bonuses depend on strictness)
+    const contentScore = scoreEntity(entity, contentTokens, contentStems, config);
+    let score = contentScore;
+
+    // Track entities with actual content matches
+    if (contentScore > 0) {
+      entitiesWithContentMatch.add(entityName);
+    }
+
+    // Layer 5: Type boost - prioritize people, projects over common technologies
+    score += TYPE_BOOST[category] || 0;
+
+    // Layer 6: Context boost - boost types relevant to note context
+    score += contextBoosts[category] || 0;
+
+    // Layer 7: Recency boost - boost recently-mentioned entities
+    if (recencyIndex) {
+      score += getRecencyBoost(entityName, recencyIndex);
+    }
+
+    // Layer 8: Cross-folder boost - prioritize cross-cutting connections
+    if (notePath && entity.path) {
+      score += getCrossFolderBoost(entity.path, notePath);
+    }
+
+    // Layer 9: Hub score boost - prioritize well-connected notes
+    score += getHubBoost(entity);
+
+    if (score > 0) {
+      directlyMatchedEntities.add(entityName);
+    }
+
+    // Minimum threshold (adaptive based on content length)
+    if (score >= adaptiveMinScore) {
+      scoredEntities.push({ name: entityName, score, category });
+    }
+  }
+
+  // Layer 4: Add co-occurrence boost for entities related to matched ones
+  // This allows entities that didn't match directly but are conceptually related
+  // to be suggested
+  if (cooccurrenceIndex && directlyMatchedEntities.size > 0) {
+    for (const { entity, category } of entitiesWithTypes) {
+      const entityName = entity.name;
+      if (!entityName) continue;
+
+      // Skip if already scored, already linked, too long, or article-like
+      if (entityName.length > MAX_ENTITY_LENGTH) continue;
+      if (isLikelyArticleTitle(entityName)) continue;
+      if (linkedEntities.has(entityName.toLowerCase())) continue;
+
+      // Get co-occurrence boost (with recency weighting)
+      const boost = getCooccurrenceBoost(entityName, directlyMatchedEntities, cooccurrenceIndex, recencyIndex);
+
+      if (boost > 0) {
+        // Check if entity is already in scored list (already has content match)
+        const existing = scoredEntities.find(e => e.name === entityName);
+        if (existing) {
+          existing.score += boost;
+        } else {
+          // NEW: Require minimal content overlap for co-occurrence suggestions
+          // Prevents suggesting completely unrelated entities just because they're
+          // popular (high hub score) or recent. At least one word must overlap.
+          const entityTokens = tokenize(entityName);
+          const hasContentOverlap = entityTokens.some(token =>
+            contentTokens.has(token) || contentStems.has(stem(token))
+          );
+
+          if (!hasContentOverlap) {
+            continue;  // Skip entities with zero content relevance
+          }
+
+          // Entity passed content overlap check - mark as having content match
+          entitiesWithContentMatch.add(entityName);
+
+          // For purely co-occurrence-based suggestions, also add type, context, recency, cross-folder, and hub boosts
+          const typeBoost = TYPE_BOOST[category] || 0;
+          const contextBoost = contextBoosts[category] || 0;
+          const recencyBoostVal = recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0;
+          const crossFolderBoost = (notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0;
+          const hubBoost = getHubBoost(entity);
+          const totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost;
+          if (totalBoost >= adaptiveMinScore) {
+            // Add entity if boost meets threshold
+            scoredEntities.push({ name: entityName, score: totalBoost, category });
+          }
+        }
+      }
+    }
+  }
+
+  // Filter to only entities with actual content matches
+  // This prevents popularity-based suggestions (high hub score, recency) for unrelated content
+  const relevantEntities = scoredEntities.filter(e =>
+    entitiesWithContentMatch.has(e.name)
+  );
+
+  // If no content matches at all, return empty rather than popularity-based suggestions
+  if (relevantEntities.length === 0) {
+    return emptyResult;
+  }
+
+  // Sort by score (descending) with recency as tiebreaker
+  relevantEntities.sort((a, b) => {
+    // Primary: score (descending)
+    if (b.score !== a.score) return b.score - a.score;
+
+    // Secondary: recency (more recent first)
+    if (recencyIndex) {
+      const aRecency = recencyIndex.lastMentioned.get(a.name.toLowerCase()) || 0;
+      const bRecency = recencyIndex.lastMentioned.get(b.name.toLowerCase()) || 0;
+      return bRecency - aRecency;
+    }
+
+    return 0;
+  });
+  const topSuggestions = relevantEntities.slice(0, maxSuggestions).map(e => e.name);
+
+  if (topSuggestions.length === 0) {
+    return emptyResult;
+  }
+
+  // Format suffix: → [[Entity1]], [[Entity2]]
+  const suffix = '→ ' + topSuggestions.map(name => `[[${name}]]`).join(', ');
+
+  return {
+    suggestions: topSuggestions,
+    suffix,
+  };
+}

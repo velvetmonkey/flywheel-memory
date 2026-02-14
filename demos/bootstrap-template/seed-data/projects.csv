@@ -1,0 +1,28 @@
+name,client,status,start_date,hourly_rate,type
+Acme Data Migration,Acme Corp,active,2026-01-15,150,consulting
+Acme Security Audit,Acme Corp,active,2026-01-20,175,audit
+TechStart API Redesign,TechStart Inc,active,2026-01-20,175,development
+TechStart Performance Optimization,TechStart Inc,completed,2025-11-01,150,consulting
+GlobalBank Digital Transformation,GlobalBank,active,2026-01-10,200,strategy
+GlobalBank Mobile App,GlobalBank,active,2026-01-25,175,development
+GlobalBank Compliance Review,GlobalBank,proposal,2026-02-15,185,audit
+Meridian Portal Audit,Meridian Health,active,2025-12-01,125,audit
+Meridian HIPAA Assessment,Meridian Health,active,2026-01-05,150,compliance
+Quantum Legacy Assessment,Quantum Dynamics,completed,2025-08-15,140,consulting
+Quantum Process Automation,Quantum Dynamics,active,2026-01-12,160,development
+Nexus Cloud Migration,Nexus Systems,active,2026-01-18,180,infrastructure
+Nexus DevOps Pipeline,Nexus Systems,proposal,2026-02-01,170,development
+Pinnacle Portfolio Dashboard,Pinnacle Ventures,active,2026-01-08,195,development
+Pinnacle Due Diligence Platform,Pinnacle Ventures,active,2026-01-22,185,strategy
+Sterling Claims Analytics,Sterling Insurance,active,2026-01-14,165,analytics
+Sterling Fraud Detection,Sterling Insurance,proposal,2026-02-10,190,development
+Velocity Research Platform,Velocity Labs,active,2026-01-03,155,development
+Velocity Data Pipeline,Velocity Labs,active,2026-01-28,145,infrastructure
+Atlas Route Optimization,Atlas Logistics,active,2026-01-16,160,analytics
+Atlas Warehouse Management,Atlas Logistics,proposal,2026-02-05,170,development
+Horizon Content Management,Horizon Media,active,2026-01-11,140,development
+Summit Predictive Models,Summit Analytics,active,2026-01-19,175,analytics
+Summit Data Warehouse,Summit Analytics,completed,2025-12-15,160,infrastructure
+Ironclad Penetration Testing,Ironclad Security,active,2026-01-07,210,security
+Ironclad SOC Implementation,Ironclad Security,active,2026-01-24,195,infrastructure
+Evergreen Strategy Review,Evergreen Partners,completed,2025-06-01,180,strategy

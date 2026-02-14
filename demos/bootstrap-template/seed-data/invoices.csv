@@ -1,0 +1,24 @@
+invoice_id,client,project,amount,status,due_date
+INV-2026-001,Acme Corp,Acme Data Migration,7500,sent,2026-02-15
+INV-2026-002,Acme Corp,Acme Security Audit,4200,draft,2026-02-28
+INV-2026-003,TechStart Inc,TechStart API Redesign,8750,sent,2026-02-20
+INV-2025-048,TechStart Inc,TechStart Performance Optimization,12000,paid,2025-12-15
+INV-2026-004,GlobalBank,GlobalBank Digital Transformation,15000,sent,2026-02-10
+INV-2026-005,GlobalBank,GlobalBank Mobile App,9500,draft,2026-02-25
+INV-2026-006,Meridian Health,Meridian Portal Audit,5000,paid,2026-01-31
+INV-2026-007,Meridian Health,Meridian HIPAA Assessment,6750,sent,2026-02-18
+INV-2025-045,Quantum Dynamics,Quantum Legacy Assessment,11000,paid,2025-09-30
+INV-2026-008,Quantum Dynamics,Quantum Process Automation,8000,sent,2026-02-12
+INV-2026-009,Nexus Systems,Nexus Cloud Migration,12500,sent,2026-02-22
+INV-2026-010,Pinnacle Ventures,Pinnacle Portfolio Dashboard,14000,sent,2026-02-08
+INV-2026-011,Pinnacle Ventures,Pinnacle Due Diligence Platform,9750,draft,2026-03-01
+INV-2026-012,Sterling Insurance,Sterling Claims Analytics,7250,sent,2026-02-14
+INV-2026-013,Velocity Labs,Velocity Research Platform,6500,paid,2026-01-28
+INV-2026-014,Velocity Labs,Velocity Data Pipeline,5800,draft,2026-02-28
+INV-2026-015,Atlas Logistics,Atlas Route Optimization,8200,sent,2026-02-16
+INV-2026-016,Horizon Media,Horizon Content Management,5600,sent,2026-02-11
+INV-2026-017,Summit Analytics,Summit Predictive Models,9100,sent,2026-02-19
+INV-2025-042,Summit Analytics,Summit Data Warehouse,10500,paid,2025-12-31
+INV-2026-018,Ironclad Security,Ironclad Penetration Testing,12600,sent,2026-02-07
+INV-2026-019,Ironclad Security,Ironclad SOC Implementation,15500,draft,2026-02-24
+INV-2025-030,Evergreen Partners,Evergreen Strategy Review,18000,paid,2025-07-15

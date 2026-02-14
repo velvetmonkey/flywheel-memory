@@ -1,0 +1,24 @@
+{
+  "_metadata": {
+    "generated_at": "2026-01-28T10:00:00.000Z",
+    "vault_path": "/test/vault",
+    "total_entities": 8
+  },
+  "people": [
+    { "name": "Jordan Smith", "path": "people/Jordan Smith.md", "aliases": ["Jordan"] },
+    { "name": "Alex Rivera", "path": "people/Alex Rivera.md", "aliases": ["Alex"] }
+  ],
+  "projects": [
+    { "name": "MCP Server", "path": "projects/MCP Server.md", "aliases": ["MCP"] },
+    { "name": "Flywheel Crank", "path": "projects/Flywheel Crank.md", "aliases": ["Crank"] }
+  ],
+  "technologies": [
+    { "name": "TypeScript", "path": "technologies/TypeScript.md", "aliases": ["TS"] },
+    { "name": "JavaScript", "path": "technologies/JavaScript.md", "aliases": ["JS"] }
+  ],
+  "acronyms": [
+    { "name": "API", "path": "glossary/API.md", "aliases": ["Application Programming Interface"] },
+    { "name": "MCP", "path": "glossary/MCP.md", "aliases": ["Model Context Protocol"] }
+  ],
+  "other": []
+}

@@ -1,0 +1,58 @@
+{
+  "name": "@velvetmonkey/vault-core",
+  "version": "2.0.0",
+  "description": "Shared vault utilities for Flywheel ecosystem (entity scanning, wikilinks, protected zones)",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/velvetmonkey/flywheel-memory.git",
+    "directory": "packages/core"
+  },
+  "author": "Velvet Monkey <9402464+velvetmonkey@users.noreply.github.com>",
+  "keywords": [
+    "obsidian",
+    "wikilinks",
+    "vault",
+    "markdown",
+    "entities"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "vitest run test/e2e/",
+    "test:ci": "vitest run --reporter=github-actions",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.2",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

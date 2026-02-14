@@ -1,7 +1,8 @@
 {
   "name": "flywheel-memory-monorepo",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
+  "description": "Local-first memory for AI agents. 73 tools. No cloud. Everything connects.",
   "workspaces": [
     "packages/*"
   ],
@@ -9,9 +10,21 @@
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "clean": "npm run clean --workspaces --if-present"
+    "clean": "npm run clean --workspaces --if-present",
+    "dev": "npm run dev -w @velvetmonkey/flywheel-memory",
+    "bench": "npm run bench -w @velvetmonkey/flywheel-bench"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/velvetmonkey/flywheel-memory.git"
+  },
+  "author": "velvetmonkey",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.3.2"
+    "typescript": "^5.3.3"
   }
 }

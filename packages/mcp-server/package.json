@@ -1,7 +1,7 @@
 {
   "name": "@velvetmonkey/flywheel-memory",
-  "version": "1.0.0",
-  "description": "Local-first memory for AI agents. 73 tools. No cloud. Everything connects.",
+  "version": "2.0.0",
+  "description": "Local-first memory for AI agents. 73 tools for vault intelligence and mutations.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -9,7 +9,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/velvetmonkey/flywheel-memory.git"
+    "url": "git+https://github.com/velvetmonkey/flywheel-memory.git",
+    "directory": "packages/mcp-server"
   },
   "bugs": {
     "url": "https://github.com/velvetmonkey/flywheel-memory/issues"
@@ -28,21 +29,26 @@
     "deterministic",
     "wikilinks",
     "claude",
-    "langchain",
-    "semantic-search"
+    "backlinks",
+    "vault-management",
+    "git-integration"
   ],
   "scripts": {
     "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external && chmod +x dist/index.js",
     "dev": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external --watch",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:read": "vitest run test/read/",
+    "test:write": "vitest run test/write/",
+    "test:coverage": "vitest run --coverage",
+    "test:ci": "vitest run --reporter=github-actions",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",
-    "@velvetmonkey/vault-core": "^1.27.58",
+    "@velvetmonkey/vault-core": "*",
     "better-sqlite3": "^11.0.0",
     "chokidar": "^4.0.0",
     "gray-matter": "^4.0.3",
@@ -52,8 +58,11 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^20.10.0",
+    "@vitest/coverage-v8": "^2.0.0",
     "esbuild": "^0.24.0",
     "fast-check": "^3.15.0",
+    "mcp-testing-kit": "^0.2.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.3.2",
     "vitest": "^2.0.0"
   },

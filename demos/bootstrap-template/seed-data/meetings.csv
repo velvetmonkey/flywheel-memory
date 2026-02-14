@@ -1,0 +1,25 @@
+title,date,time,attendees,client,project,type,notes
+Acme Kickoff Meeting,2026-01-15,10:00,Sarah Thompson;James Chen,Acme Corp,Acme Data Migration,kickoff,Initial project scope discussion
+Acme Weekly Sync,2026-01-22,14:00,Sarah Thompson,Acme Corp,Acme Data Migration,status,Progress review - 30% complete
+Acme Security Review,2026-01-20,11:00,James Chen;Maria Garcia,Acme Corp,Acme Security Audit,kickoff,Security assessment scope
+TechStart Architecture Review,2026-01-21,09:00,Mike Chen;Lisa Park,TechStart Inc,TechStart API Redesign,technical,API design decisions
+TechStart Sprint Planning,2026-01-28,10:00,Lisa Park,TechStart Inc,TechStart API Redesign,planning,Sprint 2 planning
+GlobalBank Strategy Session,2026-01-10,15:00,David Kim;Amanda Foster,GlobalBank,GlobalBank Digital Transformation,strategy,Transformation roadmap
+GlobalBank Tech Review,2026-01-18,13:00,Amanda Foster;Robert Zhang,GlobalBank,GlobalBank Mobile App,technical,Security requirements
+GlobalBank Stakeholder Update,2026-01-25,16:00,David Kim,GlobalBank,GlobalBank Digital Transformation,executive,Board presentation prep
+Meridian HIPAA Workshop,2026-01-06,09:00,Emily Carter;Dr. Michael Reed,Meridian Health,Meridian HIPAA Assessment,workshop,Compliance requirements
+Meridian Portal Demo,2026-01-12,14:00,Jennifer Walsh,Meridian Health,Meridian Portal Audit,demo,Current state assessment
+Quantum Automation Planning,2026-01-13,10:00,Thomas Brown;Rachel Lee,Quantum Dynamics,Quantum Process Automation,planning,Process mapping session
+Nexus Cloud Strategy,2026-01-19,11:00,Alex Rivera;Karen Martinez,Nexus Systems,Nexus Cloud Migration,strategy,Migration approach
+Nexus Technical Deep Dive,2026-01-26,14:00,Chris Taylor,Nexus Systems,Nexus Cloud Migration,technical,Infrastructure review
+Pinnacle Dashboard Review,2026-01-09,15:00,Daniel Wong;Sophia Patel,Pinnacle Ventures,Pinnacle Portfolio Dashboard,review,Feature prioritization
+Pinnacle Due Diligence Kickoff,2026-01-23,10:00,Sophia Patel,Pinnacle Ventures,Pinnacle Due Diligence Platform,kickoff,Platform requirements
+Sterling Analytics Workshop,2026-01-15,13:00,Nathan Brooks;Ashley Morgan,Sterling Insurance,Sterling Claims Analytics,workshop,Data modeling session
+Velocity Platform Demo,2026-01-04,11:00,Marcus Johnson;Dr. Laura Chen,Velocity Labs,Velocity Research Platform,demo,MVP showcase
+Velocity Pipeline Review,2026-01-29,09:00,Marcus Johnson,Velocity Labs,Velocity Data Pipeline,technical,Architecture review
+Atlas Optimization Kickoff,2026-01-17,10:00,Ryan O'Brien;Michelle Santos,Atlas Logistics,Atlas Route Optimization,kickoff,Requirements gathering
+Horizon CMS Planning,2026-01-12,14:00,Kevin Huang;Jessica Adams,Horizon Media,Horizon Content Management,planning,Feature roadmap
+Summit Models Review,2026-01-20,15:00,Victoria Cole;Andrew Park,Summit Analytics,Summit Predictive Models,review,Model performance analysis
+Ironclad Pentest Kickoff,2026-01-08,09:00,Elizabeth Shaw;Derek Foster,Ironclad Security,Ironclad Penetration Testing,kickoff,Scope and methodology
+Ironclad SOC Planning,2026-01-25,11:00,Elizabeth Shaw,Ironclad Security,Ironclad SOC Implementation,planning,Implementation phases
+Quarterly Business Review,2026-01-30,14:00,Sarah Thompson;Mike Chen;David Kim,Acme Corp,Acme Data Migration,executive,Q1 progress review

@@ -1,0 +1,33 @@
+name,company,role,email,relationship
+Sarah Thompson,Acme Corp,VP Engineering,sarah@acme.com,champion
+James Chen,Acme Corp,CTO,james@acme.com,decision-maker
+Maria Garcia,Acme Corp,Product Manager,maria@acme.com,user
+Mike Chen,TechStart Inc,CTO,mike@techstart.com,decision-maker
+Lisa Park,TechStart Inc,Engineering Lead,lisa@techstart.com,champion
+David Kim,GlobalBank,Chief Digital Officer,david@globalbank.com,sponsor
+Amanda Foster,GlobalBank,VP Technology,amanda@globalbank.com,decision-maker
+Robert Zhang,GlobalBank,Security Director,robert@globalbank.com,stakeholder
+Emily Carter,Meridian Health,CIO,emily@meridian.com,champion
+Dr. Michael Reed,Meridian Health,Chief Medical Officer,michael@meridian.com,stakeholder
+Jennifer Walsh,Meridian Health,IT Director,jennifer@meridian.com,user
+Thomas Brown,Quantum Dynamics,VP Operations,thomas@quantum.com,decision-maker
+Rachel Lee,Quantum Dynamics,Systems Architect,rachel@quantum.com,technical
+Alex Rivera,Nexus Systems,CEO,alex@nexus.com,sponsor
+Karen Martinez,Nexus Systems,VP Product,karen@nexus.com,champion
+Chris Taylor,Nexus Systems,Lead Developer,chris@nexus.com,technical
+Daniel Wong,Pinnacle Ventures,Managing Partner,daniel@pinnacle.com,decision-maker
+Sophia Patel,Pinnacle Ventures,Principal,sophia@pinnacle.com,champion
+Nathan Brooks,Sterling Insurance,CTO,nathan@sterling.com,decision-maker
+Ashley Morgan,Sterling Insurance,Data Science Lead,ashley@sterling.com,technical
+Marcus Johnson,Velocity Labs,Research Director,marcus@velocity.com,champion
+Dr. Laura Chen,Velocity Labs,Senior Scientist,laura@velocity.com,technical
+Ryan O'Brien,Atlas Logistics,VP Technology,ryan@atlas.com,decision-maker
+Michelle Santos,Atlas Logistics,Operations Manager,michelle@atlas.com,user
+Kevin Huang,Horizon Media,Digital Director,kevin@horizon.com,champion
+Jessica Adams,Horizon Media,Content Lead,jessica@horizon.com,user
+Brian Mitchell,Cascade Energy,Innovation Lead,brian@cascade.com,prospect
+Victoria Cole,Summit Analytics,CEO,victoria@summit.com,decision-maker
+Andrew Park,Summit Analytics,Data Lead,andrew@summit.com,technical
+Elizabeth Shaw,Ironclad Security,CISO,elizabeth@ironclad.com,champion
+Derek Foster,Ironclad Security,Security Architect,derek@ironclad.com,technical
+Samantha Wells,Evergreen Partners,Partner,samantha@evergreen.com,past-champion

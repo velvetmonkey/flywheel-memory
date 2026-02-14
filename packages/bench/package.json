@@ -1,0 +1,66 @@
+{
+  "name": "@velvetmonkey/flywheel-bench",
+  "version": "2.0.0",
+  "description": "Shared benchmark infrastructure for Flywheel ecosystem - vault generation, performance testing, operation logging",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/velvetmonkey/flywheel-memory.git",
+    "directory": "packages/bench"
+  },
+  "author": "velvetmonkey",
+  "keywords": [
+    "flywheel",
+    "benchmark",
+    "vault-generator",
+    "performance-testing",
+    "obsidian"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:perf": "vitest run test/performance-baseline.test.ts --pool=forks",
+    "test:memory": "node --expose-gc node_modules/vitest/vitest.mjs run test/memory-profile.test.ts",
+    "test:ci": "vitest run --reporter=github-actions",
+    "test:reliability": "tsx src/cli/reliability.ts",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "generate": "tsx src/cli/generate.ts",
+    "bench": "tsx src/cli/bench.ts",
+    "bench:all": "tsx src/cli/bench.ts --all",
+    "check-regression": "tsx src/cli/check-regression.ts",
+    "aggregate-results": "tsx src/cli/aggregate-results.ts",
+    "iteration-stress": "tsx src/cli/iteration-stress.ts"
+  },
+  "dependencies": {
+    "simple-git": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.2",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

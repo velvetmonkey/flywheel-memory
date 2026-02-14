@@ -1,0 +1,78 @@
+name: Proof of Work Demo
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'demos/bootstrap-template/**'
+      - 'packages/mcp-server/src/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'demos/bootstrap-template/**'
+      - 'packages/mcp-server/src/**'
+  workflow_dispatch:
+
+jobs:
+  proof-of-work:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build packages
+        run: npm run build
+
+      - name: Bootstrap vault from CSV
+        run: node demos/bootstrap-template/scripts/bootstrap.js /tmp/demo-vault
+
+      - name: Run proof-of-work tests
+        run: npx vitest run demos/bootstrap-template/scripts/proof-of-work.test.ts
+        env:
+          VAULT_PATH: /tmp/demo-vault
+
+      - name: Generate metrics report
+        run: node demos/bootstrap-template/scripts/metrics.js /tmp/demo-vault > metrics.json
+
+      - name: Display metrics
+        run: cat metrics.json
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-of-work-results
+          path: |
+            /tmp/demo-vault
+            metrics.json
+          retention-days: 7
+
+      - name: Validate metrics thresholds
+        run: |
+          NOTES=$(cat metrics.json | jq '.vault.notes')
+          WIKILINKS=$(cat metrics.json | jq '.vault.totalWikilinks')
+          MS_PER_FILE=$(cat metrics.json | jq '.performance.msPerFile')
+
+          echo "Notes: $NOTES"
+          echo "Wikilinks: $WIKILINKS"
+          echo "ms/file: $MS_PER_FILE"
+
+          # Validate thresholds (expecting 100+ notes, 150+ wikilinks)
+          if [ "$NOTES" -lt 100 ]; then
+            echo "FAIL: Expected at least 100 notes, got $NOTES"
+            exit 1
+          fi
+
+          if [ "$WIKILINKS" -lt 150 ]; then
+            echo "FAIL: Expected at least 150 wikilinks, got $WIKILINKS"
+            exit 1
+          fi
+
+          echo "All metrics within thresholds"

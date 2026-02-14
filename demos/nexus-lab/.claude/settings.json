@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**/*)",
+      "Glob",
+      "Grep",
+      "Edit(.claude/rules/**)",
+      "Edit(CLAUDE.md)",
+      "Write(.claude/rules/**)",
+      "Write(CLAUDE.md)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(tree:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "mcp__flywheel__*"
+    ],
+    "deny": [
+      "Edit",
+      "Write",
+      "Bash(echo:*)",
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)"
+    ]
+  }
+}

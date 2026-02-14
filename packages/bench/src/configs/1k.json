@@ -1,0 +1,15 @@
+{
+  "noteCount": 1000,
+  "avgLinksPerNote": 3,
+  "entityTypes": ["person", "project", "topic"],
+  "entityCount": {
+    "person": 50,
+    "project": 20,
+    "topic": 30,
+    "location": 0,
+    "company": 0
+  },
+  "folderDepth": 3,
+  "avgNoteLength": 400,
+  "frontmatterProbability": 0.7
+}

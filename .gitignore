@@ -6,31 +6,55 @@ dist/
 *.tsbuildinfo
 
 # IDE
-.idea/
 .vscode/
-*.swp
-*.swo
+.idea/
 
 # OS
 .DS_Store
 Thumbs.db
+nul
 
-# Test coverage
-coverage/
-
-# Environment
+# Secrets (CRITICAL)
 .env
-.env.local
+.env.*
+.mcp.json
+!demos/**/.mcp.json
+api-keys.json
+credentials.json
+.flywheel.local.json
+
+# Obsidian app settings (user-specific)
+.obsidian/
+
+# Flywheel state database (auto-generated, machine-specific)
+**/.flywheel/state.db
+**/.flywheel/state.db-shm
+**/.flywheel/state.db-wal
+**/.claude/flywheel.db
+**/.claude/flywheel.db-shm
+**/.claude/flywheel.db-wal
+
+# Claude Code settings (but keep demo examples)
+.claude/
+!demos/**/.claude/
+
+# Windows path artifacts
+C:*
+c:*
+
+# Claude-mem literal ** folder artifacts (Windows bug)
+[*][*]/
 
 # Logs
 *.log
 npm-debug.log*
 
-# Package manager
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# Lock files (use root only)
+packages/*/package-lock.json
 
-# Flywheel state (demo vault only)
-demo-vault/.claude/flywheel.db
-demo-vault/.claude/flywheel.db-*
+# Coverage
+coverage/
+
+# Strategic planning documents - keep private
+ROADMAP.md
+ROADMAP*.md

@@ -1,0 +1,16 @@
+name,industry,status,contract_type,monthly_retainer
+Acme Corp,Finance,active,retainer,5000
+TechStart Inc,SaaS,active,project,0
+GlobalBank,Banking,active,retainer,12000
+Meridian Health,Healthcare,active,retainer,7500
+Quantum Dynamics,Manufacturing,active,project,0
+Nexus Systems,Technology,active,retainer,8000
+Pinnacle Ventures,Venture Capital,active,retainer,10000
+Sterling Insurance,Insurance,active,project,0
+Velocity Labs,Research,active,retainer,6000
+Atlas Logistics,Logistics,active,project,0
+Horizon Media,Media,active,retainer,4500
+Cascade Energy,Energy,potential,0,0
+Summit Analytics,Analytics,active,project,0
+Ironclad Security,Cybersecurity,active,retainer,15000
+Evergreen Partners,Consulting,past,0,0

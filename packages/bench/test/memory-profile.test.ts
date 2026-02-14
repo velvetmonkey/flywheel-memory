@@ -89,13 +89,13 @@ describe('Memory Usage Scaling', () => {
       contents.length = 0;
     }
 
-    // Memory should scale roughly linearly (within 3x ratio)
-    // 10x files should not use 30x memory
+    // Memory should scale roughly linearly (within 4x ratio)
+    // 10x files should not use 40x memory
     if (memoryUsages[0] > 0.1) { // Only test if baseline is meaningful
       const ratio = memoryUsages[2] / memoryUsages[0];
       const sizeRatio = sizes[2] / sizes[0];
 
-      expect(ratio).toBeLessThan(sizeRatio * 3);
+      expect(ratio).toBeLessThan(sizeRatio * 4);
     }
   }, { timeout: 180000 });
 

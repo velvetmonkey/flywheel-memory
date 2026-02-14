@@ -14,7 +14,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
-import { mkdtempSync, rmSync, existsSync } from 'fs';
+import { mkdtempSync, mkdirSync, rmSync, existsSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { pathToFileURL } from 'url';
@@ -54,7 +54,7 @@ describe('Package Startup', () => {
   it('package can be installed and imported without missing dependencies', async () => {
     // Create a minimal test project
     const testProjectDir = join(tempDir, 'test-project');
-    execSync(`mkdir -p ${testProjectDir}`);
+    mkdirSync(testProjectDir, { recursive: true });
 
     // Initialize with package.json
     execSync('npm init -y', { cwd: testProjectDir, stdio: 'pipe' });

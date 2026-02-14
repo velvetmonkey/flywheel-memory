@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",
-    "@velvetmonkey/vault-core": "*",
+    "@velvetmonkey/vault-core": "^2.0.0",
     "better-sqlite3": "^11.0.0",
     "chokidar": "^4.0.0",
     "gray-matter": "^4.0.3",

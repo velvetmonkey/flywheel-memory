@@ -60,7 +60,7 @@ import { registerNoteTools } from './tools/write/notes.js';
 import { registerMoveNoteTools } from './tools/write/move-notes.js';
 import { registerSystemTools as registerWriteSystemTools } from './tools/write/system.js';
 import { registerPolicyTools } from './tools/write/policy.js';
-import { registerMemoryTools } from './tools/write/memory.js';
+// import { registerMemoryTools } from './tools/write/memory.js';
 
 // ============================================================================
 // Configuration
@@ -75,102 +75,45 @@ let flywheelConfig: FlywheelConfig = {};
 let stateDb: StateDb | null = null;
 
 // ============================================================================
-// Extended Tool Category System
+// Tool Presets
 // ============================================================================
-// FLYWHEEL_TOOLS env var controls which tool categories are loaded.
-// This reduces context window usage by only exposing tools you need.
+// FLYWHEEL_TOOLS env var controls which tools are loaded.
 //
-// Fine-Grained Categories (~20):
-//   === READ TOOLS ===
-//   backlinks      - get_backlinks, find_bidirectional_links
-//   orphans        - find_orphan_notes, find_dead_ends
-//   hubs           - find_hub_notes, get_connection_strength
-//   paths          - get_link_path, get_common_neighbors
-//   search         - search_notes, search_entities
-//   temporal       - get_recent_notes, get_stale_notes, get_notes_in_range
-//   periodic       - detect_periodic_notes
-//   schema         - get_frontmatter_schema, validate_frontmatter
-//   structure      - get_note_structure, get_headings, get_section_content
-//   tasks          - get_all_tasks, get_tasks_with_due_dates
-//   health         - get_vault_stats, health_check, get_folder_structure
-//   wikilinks      - suggest_wikilinks, validate_links, find_broken_links
+// Presets:
+//   minimal  - Voice graph building (~30 tools, ~5,200 tokens)
+//   full     - All tools (~76 tools, ~11,100 tokens) [DEFAULT]
 //
-//   === WRITE TOOLS ===
-//   append         - vault_append, vault_add_to_section
-//   frontmatter    - vault_set_frontmatter, vault_update_frontmatter
-//   sections       - vault_replace_section, vault_delete_section
-//   notes          - vault_create_note, vault_rename_note, vault_move_note
-//   auto-wikilink  - vault_apply_wikilinks, vault_resolve_aliases
-//   git            - vault_commit, vault_undo
-//   policy         - policy_execute, policy_validate
-//   memory         - log_interaction, query_interactions
+// Fine-grained: use comma-separated category names for custom sets.
+//   FLYWHEEL_TOOLS=search,backlinks,append
 //
-// Preset Bundles:
-//   minimal        - search, backlinks (safe exploration)
-//   research       - search, backlinks, hubs, paths, temporal
-//   explore        - search, backlinks, orphans, health, structure
-//   audit          - schema, wikilinks, health, orphans
-//   daily-notes    - append, tasks, periodic, auto-wikilink
-//   journaling     - append, frontmatter, temporal, search
-//   refactoring    - schema, wikilinks, notes, auto-wikilink, git
-//   standard       - search, backlinks, tasks, append, frontmatter, auto-wikilink
-//   full           - all categories
-//   agent          - search, backlinks, append, memory, auto-wikilink
-//
-// Examples:
-//   FLYWHEEL_TOOLS=minimal           # Just search and backlinks
-//   FLYWHEEL_TOOLS=standard          # Default set (most common use cases)
-//   FLYWHEEL_TOOLS=full              # Everything
-//   FLYWHEEL_TOOLS=research,git      # Preset + additions
+// Categories:
+//   READ:  search, backlinks, orphans, hubs, paths, temporal, periodic,
+//          schema, structure, tasks, health, wikilinks
+//   WRITE: append, frontmatter, sections, notes, git, policy
 // ============================================================================
 
 type ToolCategory =
-  // Read categories
+  // Read
   | 'backlinks' | 'orphans' | 'hubs' | 'paths'
   | 'search' | 'temporal' | 'periodic'
   | 'schema' | 'structure' | 'tasks'
   | 'health' | 'wikilinks'
-  // Write categories
+  // Write
   | 'append' | 'frontmatter' | 'sections' | 'notes'
-  | 'auto-wikilink' | 'git' | 'policy' | 'memory'
-  // Legacy categories (for backward compatibility)
-  | 'core' | 'graph' | 'advanced';
+  | 'git' | 'policy';
 
-// Preset definitions
 const PRESETS: Record<string, ToolCategory[]> = {
-  // Minimal (safe exploration)
-  minimal: ['search', 'backlinks'],
+  // Core voice tools: search, navigate, create, edit
+  minimal: ['search', 'backlinks', 'health', 'tasks', 'append', 'frontmatter', 'notes'],
 
-  // Read-only workflows
-  research: ['search', 'backlinks', 'hubs', 'paths', 'temporal'],
-  explore: ['search', 'backlinks', 'orphans', 'health', 'structure'],
-  audit: ['schema', 'wikilinks', 'health', 'orphans'],
-
-  // Write workflows
-  'daily-notes': ['append', 'tasks', 'periodic', 'auto-wikilink'],
-  journaling: ['append', 'frontmatter', 'temporal', 'search'],
-  refactoring: ['schema', 'wikilinks', 'notes', 'auto-wikilink', 'git'],
-
-  // Combined
-  standard: ['search', 'backlinks', 'tasks', 'append', 'frontmatter', 'auto-wikilink', 'health'],
-
-  // Full access
+  // All tools (default)
   full: [
-    'backlinks', 'orphans', 'hubs', 'paths',
-    'search', 'temporal', 'periodic',
-    'schema', 'structure', 'tasks',
+    'search', 'backlinks', 'orphans', 'hubs', 'paths',
+    'temporal', 'periodic', 'schema', 'structure', 'tasks',
     'health', 'wikilinks',
     'append', 'frontmatter', 'sections', 'notes',
-    'auto-wikilink', 'git', 'policy', 'memory',
+    'git', 'policy',
   ],
-
-  // Agent-optimized
-  agent: ['search', 'backlinks', 'append', 'memory', 'auto-wikilink'],
-
-  // Legacy presets (backward compatibility)
-  'core': ['health', 'structure'],
-  'graph': ['backlinks', 'orphans', 'hubs', 'paths', 'wikilinks'],
-  'advanced': ['schema', 'periodic', 'sections', 'notes', 'policy'],
 };
 
 const ALL_CATEGORIES: ToolCategory[] = [
@@ -179,11 +122,10 @@ const ALL_CATEGORIES: ToolCategory[] = [
   'schema', 'structure', 'tasks',
   'health', 'wikilinks',
   'append', 'frontmatter', 'sections', 'notes',
-  'auto-wikilink', 'git', 'policy', 'memory',
-  'core', 'graph', 'advanced',
+  'git', 'policy',
 ];
 
-const DEFAULT_PRESET = 'standard';
+const DEFAULT_PRESET = 'full';
 
 /**
  * Parse FLYWHEEL_TOOLS env var into enabled categories
@@ -229,15 +171,122 @@ function parseEnabledCategories(): Set<ToolCategory> {
 
 const enabledCategories = parseEnabledCategories();
 
-// Track which registration functions have been called
-const registeredModules = new Set<string>();
+// Per-tool category mapping (tool name → category)
+const TOOL_CATEGORY: Record<string, ToolCategory> = {
+  // health
+  health_check: 'health',
+  get_vault_stats: 'health',
+  get_folder_structure: 'health',
+  refresh_index: 'health',
+  rebuild_search_index: 'health',
+  get_note_metadata: 'health',
+  get_all_entities: 'health',
+  get_unlinked_mentions: 'health',
+  get_recent_notes: 'health',
+  find_broken_links: 'health',
 
-function shouldRegister(module: string, categories: ToolCategory[]): boolean {
-  if (registeredModules.has(module)) return false;
-  const shouldReg = categories.some(cat => enabledCategories.has(cat));
-  if (shouldReg) registeredModules.add(module);
-  return shouldReg;
-}
+  // search
+  search_notes: 'search',
+  full_text_search: 'search',
+  search_entities: 'search',
+
+  // backlinks
+  get_backlinks: 'backlinks',
+  get_forward_links: 'backlinks',
+  find_bidirectional_links: 'backlinks',
+
+  // orphans
+  find_orphan_notes: 'orphans',
+  find_dead_ends: 'orphans',
+  find_sources: 'orphans',
+
+  // hubs
+  find_hub_notes: 'hubs',
+  get_connection_strength: 'hubs',
+
+  // paths
+  get_link_path: 'paths',
+  get_common_neighbors: 'paths',
+
+  // temporal
+  get_stale_notes: 'temporal',
+  get_notes_in_range: 'temporal',
+  get_notes_modified_on: 'temporal',
+  get_contemporaneous_notes: 'temporal',
+  get_activity_summary: 'temporal',
+
+  // periodic
+  detect_periodic_notes: 'periodic',
+
+  // schema
+  get_frontmatter_schema: 'schema',
+  get_field_values: 'schema',
+  find_frontmatter_inconsistencies: 'schema',
+  validate_frontmatter: 'schema',
+  find_missing_frontmatter: 'schema',
+  infer_folder_conventions: 'schema',
+  find_incomplete_notes: 'schema',
+  suggest_field_values: 'schema',
+  detect_prose_patterns: 'schema',
+  suggest_frontmatter_from_prose: 'schema',
+  suggest_wikilinks_in_frontmatter: 'schema',
+  validate_cross_layer: 'schema',
+  compute_frontmatter: 'schema',
+
+  // structure
+  get_note_structure: 'structure',
+  get_headings: 'structure',
+  get_section_content: 'structure',
+  find_sections: 'structure',
+
+  // tasks (read + write)
+  get_all_tasks: 'tasks',
+  get_tasks_from_note: 'tasks',
+  get_tasks_with_due_dates: 'tasks',
+  get_incomplete_tasks: 'tasks',
+  vault_toggle_task: 'tasks',
+  vault_add_task: 'tasks',
+
+  // wikilinks
+  suggest_wikilinks: 'wikilinks',
+  validate_links: 'wikilinks',
+
+  // append (content mutations)
+  vault_add_to_section: 'append',
+  vault_remove_from_section: 'append',
+  vault_replace_in_section: 'append',
+
+  // frontmatter (metadata mutations)
+  vault_update_frontmatter: 'frontmatter',
+  vault_add_frontmatter_field: 'frontmatter',
+
+  // sections
+  vault_list_sections: 'sections',
+
+  // notes (CRUD)
+  vault_create_note: 'notes',
+  vault_delete_note: 'notes',
+  vault_move_note: 'notes',
+  vault_rename_note: 'notes',
+
+  // git
+  vault_undo_last_mutation: 'git',
+
+  // policy
+  policy_validate: 'policy',
+  policy_preview: 'policy',
+  policy_execute: 'policy',
+  policy_author: 'policy',
+  policy_revise: 'policy',
+  policy_list: 'policy',
+  policy_diff: 'policy',
+  policy_export: 'policy',
+  policy_import: 'policy',
+
+  // schema (migrations)
+  rename_field: 'schema',
+  migrate_field_values: 'schema',
+};
 
 // ============================================================================
 // Server Setup
@@ -248,114 +297,73 @@ const server = new McpServer({
   version: '2.0.0',
 });
 
+// Monkey-patch server.tool() and server.registerTool() to gate by per-tool category
+let _registeredCount = 0;
+let _skippedCount = 0;
+
+function gateByCategory(name: string): boolean {
+  const category = TOOL_CATEGORY[name];
+  if (category && !enabledCategories.has(category)) {
+    _skippedCount++;
+    return false;
+  }
+  _registeredCount++;
+  return true;
+}
+
+const _originalTool = server.tool.bind(server);
+(server as any).tool = (name: string, ...args: any[]) => {
+  if (!gateByCategory(name)) return;
+  return _originalTool(name, ...args);
+};
+
+const _originalRegisterTool = (server as any).registerTool?.bind(server);
+if (_originalRegisterTool) {
+  (server as any).registerTool = (name: string, ...args: any[]) => {
+    if (!gateByCategory(name)) return;
+    return _originalRegisterTool(name, ...args);
+  };
+}
+
 // Log enabled categories
 const categoryList = Array.from(enabledCategories).sort().join(', ');
 console.error(`[Memory] Tool categories: ${categoryList}`);
 
 // ============================================================================
-// Register Read Tools
+// Register All Tools (per-tool filtering via patched server.tool())
 // ============================================================================
 
-// Health & system (core)
-if (shouldRegister('health', ['health', 'core'])) {
-  registerHealthTools(server, () => vaultIndex, () => vaultPath);
-}
+// Read tools
+registerHealthTools(server, () => vaultIndex, () => vaultPath);
+registerReadSystemTools(
+  server,
+  () => vaultIndex,
+  (newIndex) => { vaultIndex = newIndex; },
+  () => vaultPath,
+  (newConfig) => { flywheelConfig = newConfig; },
+  () => stateDb
+);
+registerGraphTools(server, () => vaultIndex, () => vaultPath);
+registerWikilinkTools(server, () => vaultIndex, () => vaultPath);
+registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
+registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
+registerPeriodicTools(server, () => vaultIndex);
+registerSchemaTools(server, () => vaultIndex, () => vaultPath);
+registerBidirectionalTools(server, () => vaultIndex, () => vaultPath);
+registerComputedTools(server, () => vaultIndex, () => vaultPath);
+registerMigrationTools(server, () => vaultIndex, () => vaultPath);
 
-if (shouldRegister('read-system', ['health', 'core', 'structure'])) {
-  registerReadSystemTools(
-    server,
-    () => vaultIndex,
-    (newIndex) => { vaultIndex = newIndex; },
-    () => vaultPath,
-    (newConfig) => { flywheelConfig = newConfig; },
-    () => stateDb
-  );
-}
+// Write tools
+registerMutationTools(server, vaultPath);
+registerTaskTools(server, vaultPath);
+registerFrontmatterTools(server, vaultPath);
+registerNoteTools(server, vaultPath);
+registerMoveNoteTools(server, vaultPath);
+registerWriteSystemTools(server, vaultPath);
+registerPolicyTools(server, vaultPath);
+// registerMemoryTools(server, vaultPath);
 
-// Graph tools
-if (shouldRegister('graph-tools', ['backlinks', 'orphans', 'hubs', 'paths', 'graph'])) {
-  registerGraphTools(server, () => vaultIndex, () => vaultPath);
-}
-
-if (shouldRegister('wikilink-read', ['wikilinks', 'graph'])) {
-  registerWikilinkTools(server, () => vaultIndex, () => vaultPath);
-}
-
-// Search tools
-if (shouldRegister('query', ['search'])) {
-  registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
-}
-
-// Primitives (shared across tasks, structure, temporal, schema, advanced)
-if (shouldRegister('primitives', ['tasks', 'structure', 'temporal', 'schema', 'advanced', 'periodic'])) {
-  registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
-}
-
-// Temporal: Periodic note detection
-if (shouldRegister('periodic', ['temporal', 'periodic'])) {
-  registerPeriodicTools(server, () => vaultIndex);
-}
-
-// Schema tools
-if (shouldRegister('schema-tools', ['schema', 'advanced'])) {
-  registerSchemaTools(server, () => vaultIndex, () => vaultPath);
-}
-
-// Advanced tools
-if (shouldRegister('bidirectional', ['advanced', 'wikilinks'])) {
-  registerBidirectionalTools(server, () => vaultIndex, () => vaultPath);
-}
-
-if (shouldRegister('computed', ['advanced', 'schema'])) {
-  registerComputedTools(server, () => vaultIndex, () => vaultPath);
-}
-
-if (shouldRegister('migrations', ['advanced'])) {
-  registerMigrationTools(server, () => vaultIndex, () => vaultPath);
-}
-
-// ============================================================================
-// Register Write Tools
-// ============================================================================
-
-// Mutation tools
-if (shouldRegister('mutations', ['append', 'sections'])) {
-  registerMutationTools(server, vaultPath);
-}
-
-// Task tools
-if (shouldRegister('tasks-write', ['tasks', 'append'])) {
-  registerTaskTools(server, vaultPath);
-}
-
-// Frontmatter tools
-if (shouldRegister('frontmatter-write', ['frontmatter'])) {
-  registerFrontmatterTools(server, vaultPath);
-}
-
-// Note management tools
-if (shouldRegister('notes', ['notes'])) {
-  registerNoteTools(server, vaultPath);
-}
-
-if (shouldRegister('move-notes', ['notes'])) {
-  registerMoveNoteTools(server, vaultPath);
-}
-
-// System tools (write)
-if (shouldRegister('write-system', ['git', 'sections'])) {
-  registerWriteSystemTools(server, vaultPath);
-}
-
-// Policy tools
-if (shouldRegister('policy-tools', ['policy'])) {
-  registerPolicyTools(server, vaultPath);
-}
-
-// Memory tools
-if (shouldRegister('memory-tools', ['memory'])) {
-  registerMemoryTools(server, vaultPath);
-}
+console.error(`[Memory] Registered ${_registeredCount} tools, skipped ${_skippedCount}`);
 
 // ============================================================================
 // Main Entry Point

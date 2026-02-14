@@ -202,18 +202,18 @@ describe('Wikilink Suggestion Tool', () => {
 
       const data = JSON.parse(result.content[0].text);
 
-      // Should have "Alex Johnson", not just "Ben"
-      const benCarterMatch = data.suggestions.find(
+      // Should have "Alex Johnson", not just "Alex"
+      const fullMatch = data.suggestions.find(
         (s: { entity: string }) => s.entity === 'Alex Johnson'
       );
-      expect(benCarterMatch).toBeDefined();
+      expect(fullMatch).toBeDefined();
 
       // Should not have a separate "Alex" match that overlaps
-      const justBenMatch = data.suggestions.find(
+      const partialMatch = data.suggestions.find(
         (s: { entity: string; start: number }) =>
-          s.entity.toLowerCase() === 'ben' && s.start === benCarterMatch?.start
+          s.entity.toLowerCase() === 'alex' && s.start === fullMatch?.start
       );
-      expect(justBenMatch).toBeUndefined();
+      expect(partialMatch).toBeUndefined();
     });
 
     test('adjacent non-overlapping matches are both found', async () => {

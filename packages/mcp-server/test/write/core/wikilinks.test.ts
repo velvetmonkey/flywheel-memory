@@ -1993,14 +1993,14 @@ describe('adaptive thresholds', () => {
 
   it('should use lower threshold for short content (<50 chars)', async () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
-      people: ['Ben Carter'],  // 2-word person, gets type boost
+      people: ['Alex Johnson'],  // 2-word person, gets type boost
     });
 
     await initializeEntityIndex(tempVault);
 
     // Short content - threshold should be lowered
     // Conservative base is 15, with 0.6 multiplier = 9
-    const result = suggestRelatedLinks('Ben Carter', {
+    const result = suggestRelatedLinks('Alex Johnson', {
       strictness: 'conservative',
     });
 
@@ -2070,7 +2070,7 @@ describe('entity type boosting', () => {
   it('should boost people entities higher than technologies', async () => {
     // Create cache with both person and technology with same word overlap
     createEntityCacheInStateDb(stateDb, tempVault, {
-      people: ['Ben Carter'],       // +5 type boost for people
+      people: ['Alex Johnson'],       // +5 type boost for people
       technologies: ['Carter API'], // +0 type boost for technologies
     });
 
@@ -2081,7 +2081,7 @@ describe('entity type boosting', () => {
       strictness: 'balanced',
     });
 
-    // Ben Carter should rank higher due to people boost
+    // Alex Johnson should rank higher due to people boost
     if (result.suggestions.length > 0) {
       // Either should be valid, but person has higher boost
       expect(result.suggestions).toBeDefined();
@@ -2147,25 +2147,25 @@ describe('context-aware matching', () => {
 
   it('should boost people in daily notes context', async () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
-      people: ['Ben Carter'],
+      people: ['Alex Johnson'],
       technologies: ['TypeScript'],
     });
 
     await initializeEntityIndex(tempVault);
 
     // Daily notes path should boost people
-    const result = suggestRelatedLinks('Met with Ben Carter about TypeScript', {
+    const result = suggestRelatedLinks('Met with Alex Johnson about TypeScript', {
       strictness: 'balanced',
       notePath: 'daily-notes/2026-01-31.md',
     });
 
     // People get +5 context boost in daily notes
     if (result.suggestions.length >= 2) {
-      // Ben Carter should rank higher due to context boost
-      const benIndex = result.suggestions.indexOf('Ben Carter');
+      // Alex Johnson should rank higher due to context boost
+      const alexIndex = result.suggestions.indexOf('Alex Johnson');
       const tsIndex = result.suggestions.indexOf('TypeScript');
-      if (benIndex !== -1 && tsIndex !== -1) {
-        expect(benIndex).toBeLessThan(tsIndex);
+      if (alexIndex !== -1 && tsIndex !== -1) {
+        expect(alexIndex).toBeLessThan(tsIndex);
       }
     }
   });
@@ -2173,13 +2173,13 @@ describe('context-aware matching', () => {
   it('should boost projects in project notes context', async () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
       projects: ['Flywheel Crank'],
-      people: ['Ben Carter'],
+      people: ['Alex Johnson'],
     });
 
     await initializeEntityIndex(tempVault);
 
     // Project path should boost projects
-    const result = suggestRelatedLinks('Ben Carter working on Flywheel Crank', {
+    const result = suggestRelatedLinks('Alex Johnson working on Flywheel Crank', {
       strictness: 'balanced',
       notePath: 'projects/flywheel/overview.md',
     });
@@ -2231,20 +2231,20 @@ describe('context-aware matching', () => {
 
   it('should detect journal path as daily context', async () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
-      people: ['Ben Carter'],
+      people: ['Alex Johnson'],
     });
 
     await initializeEntityIndex(tempVault);
 
     // Journal path should be treated as daily context
-    const result = suggestRelatedLinks('Met with Ben Carter today', {
+    const result = suggestRelatedLinks('Met with Alex Johnson today', {
       strictness: 'balanced',
       notePath: 'journal/2026-01.md',
     });
 
     // People should get boost in journal context
     if (result.suggestions.length > 0) {
-      expect(result.suggestions.includes('Ben Carter')).toBe(true);
+      expect(result.suggestions.includes('Alex Johnson')).toBe(true);
     }
   });
 });
@@ -2272,39 +2272,39 @@ describe('combined scoring formula', () => {
 
   it('should combine type boost and context boost', async () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
-      people: ['Ben Carter'],      // people type boost +5
+      people: ['Alex Johnson'],      // people type boost +5
     });
 
     await initializeEntityIndex(tempVault);
 
     // Daily notes context + people entity = maximum boost
     // Type boost (+5) + Context boost (+5) = +10 bonus
-    const result = suggestRelatedLinks('Met with Ben Carter', {
+    const result = suggestRelatedLinks('Met with Alex Johnson', {
       strictness: 'conservative',
       notePath: 'daily-notes/2026-01-31.md',
     });
 
     // Should be suggested even in conservative mode
     // 2-word exact match (20) + type (5) + context (5) = 30 >= 9 (adaptive threshold for short content)
-    expect(result.suggestions).toContain('Ben Carter');
+    expect(result.suggestions).toContain('Alex Johnson');
   });
 
   it('should prioritize entities with multiple boost sources', async () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
-      people: ['Ben Carter'],       // +5 type + +5 daily context = +10
+      people: ['Alex Johnson'],       // +5 type + +5 daily context = +10
       technologies: ['TypeScript'], // +0 type + +0 context = +0
     });
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Ben Carter working on TypeScript', {
+    const result = suggestRelatedLinks('Alex Johnson working on TypeScript', {
       strictness: 'balanced',
       notePath: 'daily-notes/2026-01-31.md',
     });
 
-    // Ben Carter should rank first due to combined boosts
+    // Alex Johnson should rank first due to combined boosts
     if (result.suggestions.length >= 2) {
-      expect(result.suggestions[0]).toBe('Ben Carter');
+      expect(result.suggestions[0]).toBe('Alex Johnson');
     }
   });
 });

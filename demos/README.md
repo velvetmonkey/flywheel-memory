@@ -25,7 +25,9 @@ vhs demos/flywheel-demo.tape
 
 | Demo | You Are | Ask Claude |
 |------|---------|------------|
+| [**Solo Operator**](./solo-operator/) | One-person newsletter business | "What's my revenue this month?" |
 | [**Carter Strategy**](./carter-strategy/) | Solo strategy consultant | "What's overdue this week?" |
+| [**Support Desk**](./support-desk/) | SaaS support team | "What tickets are escalated?" |
 | [**Artemis Rocket**](./artemis-rocket/) | Chief Engineer at a rocket startup | "What's the propulsion system status?" |
 | [**Startup Ops**](./startup-ops/) | Co-founder of a SaaS startup | "Walk me through onboarding a customer" |
 | [**Nexus Lab**](./nexus-lab/) | PhD researcher in computational biology | "How does AlphaFold connect to my experiment?" |

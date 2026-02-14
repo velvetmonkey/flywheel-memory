@@ -1,6 +1,7 @@
 <div align="center">
   <h1>Flywheel Memory</h1>
-  <p><strong>Local-first memory for AI agents. No cloud. No black box. Everything connects.</strong></p>
+  <p><strong>MCP server that gives Claude full read/write access to your Obsidian vault.</strong></p>
+  <p>Search, backlinks, graph queries, daily notes, tasks, frontmatter — 76 tools, all local.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
@@ -9,202 +10,123 @@
 
 ---
 
-## Quickstart (4 Steps)
+## Quickstart
+
+Add to your Claude Code MCP config (`.mcp.json` in your vault root):
+
+```json
+{
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"]
+    }
+  }
+}
+```
+
+Open your vault in Claude Code. That's it — Claude can now search, query, and edit your vault.
+
+---
+
+## What Can Claude Do With Your Vault?
+
+**Ask questions:**
+- "What links to [[Project Alpha]]?"
+- "Show me all notes tagged #meeting from last week"
+- "What are my incomplete tasks?"
+- "How does [[React Hooks]] connect to [[State Management]]?"
+
+**Make changes:**
+- "Add a note to today's daily note under ## Log"
+- "Create a new note for the meeting I just had"
+- "Mark the deployment task as done"
+- "Update the status field on [[Project Alpha]] to completed"
+
+**Understand your graph:**
+- "What are the most connected notes in my vault?"
+- "Find orphan notes with no links"
+- "Show me the shortest path between [[Note A]] and [[Note B]]"
+
+---
+
+## 76 Tools
+
+| Category | Tools | Examples |
+|----------|-------|---------|
+| **Search** | Full-text search, tag search, frontmatter queries | `search_notes`, `search_by_tag`, `search_by_frontmatter` |
+| **Graph** | Backlinks, outlinks, hubs, orphans, paths | `get_backlinks`, `find_hub_notes`, `get_shortest_path` |
+| **Read** | Sections, frontmatter, tasks, periodic notes | `get_section_content`, `get_frontmatter`, `get_incomplete_tasks` |
+| **Write** | Add/remove content, create/move/rename notes | `vault_add_to_section`, `vault_create_note`, `vault_rename_note` |
+| **Tasks** | Toggle, add, query tasks | `vault_toggle_task`, `vault_add_task` |
+| **Frontmatter** | Update metadata fields | `vault_update_frontmatter` |
+| **Git** | Commit, diff, log | `vault_git_commit`, `vault_git_diff` |
+
+### Auto-Wikilinks
+
+When Claude writes to your vault, mentions of existing notes are automatically linked:
+
+```
+Input:  "Met with Sarah about the React migration"
+Output: "Met with [[Sarah Chen]] about the [[React Migration]]"
+```
+
+Flywheel scans your vault for note titles and aliases, then links them on write. No configuration needed.
+
+---
+
+## Why Not Just Let Claude Read Files?
+
+Claude Code can already read and write files. Flywheel adds **vault intelligence**:
+
+| | Raw file access | Flywheel |
+|---|---|---|
+| **Find what links here** | Grep every file | `get_backlinks` (indexed, <10ms) |
+| **Search across vault** | Read every file into context | FTS5 index with BM25 ranking |
+| **Graph queries** | Not possible | Hub detection, path finding, orphan detection |
+| **Periodic notes** | Manual date math | `get_daily_note`, `get_weekly_note` with template support |
+| **Auto-wikilinks** | Manual | Automatic entity linking on every write |
+| **Token cost** | Reads full files | Returns just metadata, links, and structure |
+
+A 500-note vault is ~250k tokens to read. Flywheel answers most questions from the index in <10ms and ~100 tokens.
+
+---
+
+## Demo Vaults
+
+Try Flywheel with realistic vaults:
+
+| Demo | Scenario |
+|------|----------|
+| [Solo Operator](./demos/solo-operator/) | One-person newsletter business |
+| [Carter Strategy](./demos/carter-strategy/) | Solo strategy consultant |
+| [Support Desk](./demos/support-desk/) | SaaS support team |
+| [Artemis Rocket](./demos/artemis-rocket/) | Rocket engineering team |
+| [Startup Ops](./demos/startup-ops/) | SaaS startup co-founder |
+| [Nexus Lab](./demos/nexus-lab/) | Computational biology researcher |
 
 ```bash
-# 1. Configure your MCP client
-{
-  "mcpServers": {
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
-      "env": { "VAULT_PATH": "~/my-vault" }
-    }
-  }
-}
-
-# 2. Create a vault folder (or use existing markdown folder)
-mkdir ~/my-vault
-
-# 3. Add your first memory
-memory_add({
-  content: "Sarah prefers async communication and is frustrated about billing",
-  path: "users/sarah.md"
-})
-
-# 4. It's connected! ✨
-# → Creates [[Sarah]] with sentiment tracking
-# → Future mentions of "Sarah" auto-link
-# → Backlinks show everywhere Sarah is mentioned
-```
-
-**That's it.** Every memory builds the graph. The graph improves context. Better context = better agents.
-
----
-
-## Why Flywheel Memory?
-
-| Feature | Flywheel Memory | Mem0 | LangMem |
-|---------|-----------------|------|---------|
-| **Install** | 1 package | 1 package | 1 package |
-| **Latency** | <100ms | Network-dependent | 17-60s |
-| **Privacy** | 100% local | Cloud API | Cloud API |
-| **Vendor lock-in** | None (markdown) | Proprietary | LangGraph |
-| **Debuggable** | `git blame` | Black box | Black box |
-| **Deterministic** | Yes | No | No |
-| **Cost** | Free | Per-API-call | Per-API-call |
-
----
-
-## See It Work
-
-A support agent logs a customer call:
-
-```json
-{
-  "tool": "memory_add",
-  "content": "Call with Sarah - refund processed, she's happy now",
-  "path": "logs/2026-02-12.md",
-  "section": "## Calls"
-}
-```
-
-**Result:**
-```markdown
-## Calls
-- 14:30 Call with [[Sarah Chen]] - refund processed, she's happy now
-  → [[Billing]] [[TKT-2024-003]]
-```
-
-- **Auto-wikilinks**: "Sarah" → `[[Sarah Chen]]`
-- **Contextual suggestions**: Related ticket and topic added
-- **Deterministic**: Same input = same output, always
-
----
-
-## 73 Tools for Agent Memory
-
-| Category | Tools | What They Do |
-|----------|-------|--------------|
-| **Memory** | `memory_add`, `memory_search`, `memory_update` | Core memory operations |
-| **Read** | 48 tools | Search, backlinks, graph queries |
-| **Write** | 22 tools | Mutations, tasks, frontmatter |
-
-### Memory Operations (New!)
-
-```javascript
-// Add a memory
-memory_add({ content: "User prefers dark mode", user_id: "user123" })
-
-// Search memories (FTS5 keyword search)
-memory_search({ query: "user preferences", user_id: "user123" })
-
-// Update memory
-memory_update({ id: "mem_abc", content: "User prefers light mode now" })
-```
-
-### Read Operations (from Flywheel)
-
-```javascript
-// Search notes
-search_notes({ query: "billing issues" })
-
-// Get backlinks
-get_backlinks({ path: "users/sarah.md" })
-
-// Graph query
-get_related_notes({ path: "tickets/TKT-001.md", depth: 2 })
-```
-
-### Write Operations (from Flywheel-Crank)
-
-```javascript
-// Add to section
-vault_add_to_section({ path: "log.md", section: "## Today", content: "..." })
-
-// Toggle task
-vault_toggle_task({ path: "tasks.md", task: "Review PR" })
-
-// Update metadata
-vault_update_frontmatter({ path: "user.md", updates: { sentiment: "happy" } })
+cd demos/carter-strategy
+# Claude Code will auto-detect .mcp.json
 ```
 
 ---
 
-## The Flywheel Effect
+## Configuration
 
-```
-Day 1:   Add memories → basic storage
-         ↓
-Week 1:  Wikilinks connect notes → patterns emerge
-         ↓
-Month 1: Graph intelligence → agent knows context before you ask
-```
+### Environment Variables
 
-Every memory strengthens the graph. The graph improves suggestions. Better suggestions = smarter agents.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VAULT_PATH` | cwd | Path to your Obsidian vault |
+| `FLYWHEEL_TOOLS` | `full` | Tool preset: `full` (76 tools) or `minimal` (~30 tools) |
 
----
+### Tool Presets
 
-## LangChain / LangGraph
+- **`full`** (default) — All 76 tools. Best for general use.
+- **`minimal`** — ~30 tools focused on search, backlinks, tasks, and note editing. Lower context overhead.
 
-```python
-from langchain_mcp_adapters import MultiServerMCPClient
-
-async with MultiServerMCPClient({
-    "memory": {
-        "command": "npx",
-        "args": ["-y", "@velvetmonkey/flywheel-memory"],
-        "env": {"VAULT_PATH": "/path/to/vault"}
-    }
-}) as client:
-    tools = client.get_tools()
-    # 73 tools ready for your agent
-```
-
----
-
-## Claude Code
-
-```json
-{
-  "mcpServers": {
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
-      "env": { "VAULT_PATH": "/path/to/vault" }
-    }
-  }
-}
-```
-
----
-
-## Search: FTS5 + Optional Semantic
-
-### Built-in: FTS5 Keyword Search (Default)
-
-Fast, local, no external dependencies:
-
-```javascript
-memory_search({ query: "billing refund" })
-// → Finds notes containing "billing" or "refund"
-// → BM25 ranking, stemming, phrase matching
-// → <10ms latency
-```
-
-### Optional: Semantic Search (Coming Soon)
-
-For meaning-based search, enable with an embedding provider:
-
-```javascript
-// Configure in env
-EMBEDDING_PROVIDER=openai  // or "local"
-OPENAI_API_KEY=sk-...
-
-// Then search by meaning
-memory_search({ query: "customer unhappy about money", semantic: true })
-// → Finds notes about billing frustration, even without those exact words
-```
+You can also pass comma-separated categories: `FLYWHEEL_TOOLS=search,backlinks,tasks,notes`
 
 ---
 
@@ -215,32 +137,10 @@ If you're using the separate packages:
 ```diff
 - "flywheel": { "command": "npx", "args": ["-y", "@velvetmonkey/flywheel-mcp"] }
 - "flywheel-crank": { "command": "npx", "args": ["-y", "@velvetmonkey/flywheel-crank"] }
-+ "memory": { "command": "npx", "args": ["-y", "@velvetmonkey/flywheel-memory"] }
++ "flywheel": { "command": "npx", "args": ["-y", "@velvetmonkey/flywheel-memory"] }
 ```
 
-All 73 tools work exactly the same. Just one server instead of two.
-
----
-
-## Benchmarks
-
-| Metric | Result |
-|--------|--------|
-| Memory add | <50ms |
-| FTS5 search (10k notes) | <10ms |
-| Entity indexing (10k) | <500ms |
-| Concurrent mutations | Safe (last-write-wins) |
-
----
-
-## Documentation
-
-- [Getting Started](docs/getting-started.md) - 5 minutes to first memory
-- [Memory Operations](docs/memory.md) - Add, search, update memories
-- [Auto-Wikilinks](docs/wikilinks.md) - How linking works
-- [Search Guide](docs/search.md) - FTS5 and semantic search
-- [Tool Reference](docs/tools/) - All 73 tools
-- [Migration Guide](docs/migration.md) - From flywheel + flywheel-crank
+All tools work the same. One server instead of two.
 
 ---
 
@@ -251,5 +151,5 @@ Apache-2.0
 ---
 
 <div align="center">
-  <p><strong>The only AI memory you can debug with <code>git blame</code>.</strong></p>
+  <p><strong>Your vault, indexed. Your notes, linked. Your graph, queryable.</strong></p>
 </div>

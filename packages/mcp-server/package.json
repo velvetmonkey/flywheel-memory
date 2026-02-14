@@ -1,7 +1,7 @@
 {
   "name": "@velvetmonkey/flywheel-memory",
   "version": "2.0.0",
-  "description": "Local-first memory for AI agents. 73 tools for vault intelligence and mutations.",
+  "description": "MCP server that gives Claude full read/write access to your Obsidian vault. 76 tools for search, backlinks, graph queries, and mutations.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -20,18 +20,18 @@
   "keywords": [
     "mcp",
     "mcp-server",
-    "ai-memory",
-    "agent-memory",
     "obsidian",
+    "pkm",
     "markdown",
     "knowledge-graph",
-    "local-first",
-    "deterministic",
     "wikilinks",
-    "claude",
     "backlinks",
-    "vault-management",
-    "git-integration"
+    "vault",
+    "claude",
+    "claude-code",
+    "local-first",
+    "daily-notes",
+    "zettelkasten"
   ],
   "scripts": {
     "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external && chmod +x dist/index.js",

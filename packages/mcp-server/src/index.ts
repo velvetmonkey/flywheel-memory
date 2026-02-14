@@ -311,7 +311,7 @@ function gateByCategory(name: string): boolean {
   return true;
 }
 
-const _originalTool = server.tool.bind(server);
+const _originalTool = server.tool.bind(server) as (...args: unknown[]) => unknown;
 (server as any).tool = (name: string, ...args: any[]) => {
   if (!gateByCategory(name)) return;
   return _originalTool(name, ...args);

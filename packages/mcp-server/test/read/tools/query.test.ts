@@ -8,23 +8,24 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { connect } from 'mcp-testing-kit';
-import { createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
+import { connectTestClient, type TestClient, createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 
 describe('Query Tools', () => {
   let context: TestServerContext;
+  let client: TestClient;
 
   beforeAll(async () => {
     context = await createTestServer(FIXTURES_PATH);
+    client = connectTestClient(context.server);
   });
 
   describe('search_notes', () => {
     describe('Basic Functionality', () => {
       test('returns all notes when no filters', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', { limit: 100 });
 
         const data = JSON.parse(result.content[0].text);
@@ -33,7 +34,7 @@ describe('Query Tools', () => {
       });
 
       test('respects limit parameter', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', { limit: 2 });
 
         const data = JSON.parse(result.content[0].text);
@@ -42,7 +43,7 @@ describe('Query Tools', () => {
       });
 
       test('returns notes in expected format', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', { limit: 1 });
 
         const data = JSON.parse(result.content[0].text);
@@ -58,7 +59,7 @@ describe('Query Tools', () => {
 
     describe('Frontmatter Matching (where)', () => {
       test('matches exact string values', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           where: { type: 'project' },
         });
@@ -73,7 +74,7 @@ describe('Query Tools', () => {
       });
 
       test('case-insensitive string matching', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           where: { status: 'ACTIVE' },
         });
@@ -88,7 +89,7 @@ describe('Query Tools', () => {
       });
 
       test('matches values in arrays', async () => {
-        const client = await connect(context.server);
+
         // Tags in frontmatter are often arrays
         const result = await client.callTool('search_notes', { limit: 50 });
 
@@ -97,7 +98,7 @@ describe('Query Tools', () => {
       });
 
       test('handles null/undefined filter values', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           where: { nonexistent: null },
         });
@@ -108,7 +109,7 @@ describe('Query Tools', () => {
       });
 
       test('exact match for non-string types', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           where: { priority: 1 },
         });
@@ -122,7 +123,7 @@ describe('Query Tools', () => {
       });
 
       test('multiple where conditions are AND-ed', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           where: { type: 'project', status: 'active' },
         });
@@ -140,7 +141,7 @@ describe('Query Tools', () => {
 
     describe('Tag Matching', () => {
       test('has_tag filters by single tag', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           has_tag: 'test',
         });
@@ -152,7 +153,7 @@ describe('Query Tools', () => {
       });
 
       test('has_tag with # prefix works', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           has_tag: '#test',
         });
@@ -165,7 +166,7 @@ describe('Query Tools', () => {
       });
 
       test('has_any_tag matches any of multiple tags (OR)', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           has_any_tag: ['test', 'example'],
         });
@@ -178,7 +179,7 @@ describe('Query Tools', () => {
       });
 
       test('has_all_tags matches all specified tags (AND)', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           has_all_tags: ['test'],
         });
@@ -191,7 +192,7 @@ describe('Query Tools', () => {
       });
 
       test('empty has_any_tag returns all notes', async () => {
-        const client = await connect(context.server);
+
         const allNotes = await client.callTool('search_notes', { limit: 100 });
         const emptyFilter = await client.callTool('search_notes', {
           has_any_tag: [],
@@ -206,7 +207,7 @@ describe('Query Tools', () => {
 
     describe('Folder Matching', () => {
       test('filters by folder name', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           folder: 'edge-cases',
         });
@@ -218,7 +219,7 @@ describe('Query Tools', () => {
       });
 
       test('folder with trailing slash works', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           folder: 'edge-cases/',
         });
@@ -230,7 +231,7 @@ describe('Query Tools', () => {
       });
 
       test('avoids false positive on folder prefix', async () => {
-        const client = await connect(context.server);
+
         // If we have folders "foo" and "foobar", searching for "foo"
         // should NOT match notes in "foobar"
         const result = await client.callTool('search_notes', {
@@ -247,7 +248,7 @@ describe('Query Tools', () => {
 
     describe('Title Matching', () => {
       test('title_contains filters by substring', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           title_contains: 'note',
         });
@@ -259,7 +260,7 @@ describe('Query Tools', () => {
       });
 
       test('title_contains is case-insensitive', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           title_contains: 'NOTE',
         });
@@ -273,7 +274,7 @@ describe('Query Tools', () => {
 
     describe('Sorting', () => {
       test('sorts by modified date descending by default', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', { limit: 10 });
 
         const data = JSON.parse(result.content[0].text);
@@ -287,7 +288,7 @@ describe('Query Tools', () => {
       });
 
       test('sorts by modified date ascending', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           sort_by: 'modified',
           order: 'asc',
@@ -305,7 +306,7 @@ describe('Query Tools', () => {
       });
 
       test('sorts by title alphabetically', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           sort_by: 'title',
           order: 'asc',
@@ -321,7 +322,7 @@ describe('Query Tools', () => {
       });
 
       test('sorts by created date', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           sort_by: 'created',
           order: 'desc',
@@ -336,7 +337,7 @@ describe('Query Tools', () => {
 
     describe('Combined Filters', () => {
       test('combines where + has_tag', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           where: { type: 'project' },
           has_tag: 'test',
@@ -352,7 +353,7 @@ describe('Query Tools', () => {
       });
 
       test('combines folder + title_contains', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           folder: 'edge-cases',
           title_contains: 'note',
@@ -368,7 +369,7 @@ describe('Query Tools', () => {
 
     describe('Edge Cases', () => {
       test('handles empty vault gracefully', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           folder: 'nonexistent-folder-xyz',
         });
@@ -379,7 +380,7 @@ describe('Query Tools', () => {
       });
 
       test('handles special characters in search', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           title_contains: '日本',
         });
@@ -390,7 +391,7 @@ describe('Query Tools', () => {
       });
 
       test('returns query in response', async () => {
-        const client = await connect(context.server);
+
         const result = await client.callTool('search_notes', {
           has_tag: 'test',
           folder: 'edge-cases',

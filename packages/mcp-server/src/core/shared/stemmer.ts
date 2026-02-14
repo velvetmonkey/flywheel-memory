@@ -502,8 +502,8 @@ export function tokenize(text: string): string[] {
     .replace(/[*_`#\[\]()]/g, ' ') // Remove markdown chars
     .toLowerCase();
 
-  // Extract words (4+ chars, not stopwords)
-  const words = cleanText.match(/\b[a-z]{4,}\b/g) || [];
+  // Extract words (3+ chars, not stopwords)
+  const words = cleanText.match(/\b[a-z]{3,}\b/g) || [];
   return words.filter(word => !STOPWORDS.has(word));
 }
 

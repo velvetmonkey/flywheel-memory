@@ -112,12 +112,14 @@ describe('tokenize', () => {
       expect(tokens).toContain('consciousness');
     });
 
-    it('should filter out short words (< 4 chars)', () => {
+    it('should filter out short words (< 3 chars)', () => {
       const tokens = tokenize('The cat sat on a mat');
-      expect(tokens).not.toContain('the');
-      expect(tokens).not.toContain('cat');
-      expect(tokens).not.toContain('sat');
-      expect(tokens).not.toContain('mat');
+      expect(tokens).not.toContain('the'); // stopword
+      expect(tokens).toContain('cat');
+      expect(tokens).toContain('sat');
+      expect(tokens).not.toContain('on'); // < 3 chars
+      expect(tokens).not.toContain('a');  // < 3 chars
+      expect(tokens).toContain('mat');
     });
 
     it('should filter out stopwords', () => {

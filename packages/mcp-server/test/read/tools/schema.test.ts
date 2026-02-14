@@ -8,8 +8,7 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import * as path from 'path';
 import { fileURLToPath } from 'url'
-import { connect, close } from 'mcp-testing-kit';
-import { createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
+import { connectTestClient, type TestClient, createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
 import {
   inferFolderConventions,
   findIncompleteNotes,
@@ -424,13 +423,14 @@ describe('Suggest Field Values', () => {
 
 describe('MCP Tool Integration', () => {
   let context: TestServerContext;
+  let client: TestClient;
 
   beforeAll(async () => {
     context = await createTestServer(SCHEMA_FIXTURES);
+    client = connectTestClient(context.server);
   });
 
   test('infer_folder_conventions tool returns JSON', async () => {
-    const client = await connect(context.server);
     const result = await client.callTool('infer_folder_conventions', {
       folder: 'projects',
     });
@@ -444,7 +444,6 @@ describe('MCP Tool Integration', () => {
   });
 
   test('find_incomplete_notes tool returns JSON', async () => {
-    const client = await connect(context.server);
     const result = await client.callTool('find_incomplete_notes', {
       folder: 'projects',
       min_frequency: 0.5,
@@ -457,7 +456,6 @@ describe('MCP Tool Integration', () => {
   });
 
   test('suggest_field_values tool returns JSON', async () => {
-    const client = await connect(context.server);
     const result = await client.callTool('suggest_field_values', {
       field: 'status',
     });

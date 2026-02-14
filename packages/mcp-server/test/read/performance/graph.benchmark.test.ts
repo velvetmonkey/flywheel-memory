@@ -11,8 +11,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { connect } from 'mcp-testing-kit';
-import { createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
+import { connectTestClient, type TestClient, createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,14 +20,15 @@ const ARTEMIS_DEMO_PATH = path.resolve(__dirname, '../../../../demos/artemis-roc
 
 describe('Graph Query Performance Benchmarks', () => {
   let context: TestServerContext;
+  let client: TestClient;
 
   beforeAll(async () => {
     context = await createTestServer(ARTEMIS_DEMO_PATH);
+    client = connectTestClient(context.server);
   }, 30000); // Allow 30s for index build
 
   describe('query latency', () => {
     it('search_notes completes in <2 seconds', async () => {
-      const client = await connect(context.server);
 
       const start = performance.now();
       const result = await client.callTool('search_notes', {
@@ -44,7 +44,6 @@ describe('Graph Query Performance Benchmarks', () => {
     });
 
     it('get_backlinks completes in <2 seconds', async () => {
-      const client = await connect(context.server);
 
       const start = performance.now();
       const result = await client.callTool('get_backlinks', {
@@ -60,7 +59,6 @@ describe('Graph Query Performance Benchmarks', () => {
     });
 
     it('get_note_metadata completes in <500ms', async () => {
-      const client = await connect(context.server);
 
       const start = performance.now();
       const result = await client.callTool('get_note_metadata', {
@@ -75,7 +73,6 @@ describe('Graph Query Performance Benchmarks', () => {
     });
 
     it('combined meeting prep query completes in <2 seconds', async () => {
-      const client = await connect(context.server);
 
       // Simulate the README "meeting prep" scenario:
       // search + backlinks + metadata
@@ -108,7 +105,6 @@ describe('Graph Query Performance Benchmarks', () => {
 
   describe('response token efficiency', () => {
     it('get_backlinks response is efficient (<300 tokens)', async () => {
-      const client = await connect(context.server);
 
       const result = await client.callTool('get_backlinks', {
         path: 'people/Marcus Johnson.md',
@@ -124,7 +120,6 @@ describe('Graph Query Performance Benchmarks', () => {
     });
 
     it('get_note_metadata response is efficient (<200 tokens)', async () => {
-      const client = await connect(context.server);
 
       const result = await client.callTool('get_note_metadata', {
         path: 'projects/Propulsion System.md',
@@ -149,7 +144,6 @@ describe('Graph Query Performance Benchmarks', () => {
        * not file content. The ~200 token claim refers to the useful data returned,
        * not including any verbosity in JSON formatting.
        */
-      const client = await connect(context.server);
 
       // Measure what graph queries return
       const backlinks = await client.callTool('get_backlinks', {

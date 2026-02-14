@@ -5,29 +5,25 @@
  * using mcp-testing-kit for direct server testing.
  */
 
-import { describe, test, expect, beforeAll, afterAll } from 'vitest';
-import { connect, close } from 'mcp-testing-kit';
+import { describe, test, expect, beforeAll } from 'vitest';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
+import { createTestServer, connectTestClient, type TestServerContext, type TestClient } from '../helpers/createTestServer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 
 describe('MCP Server Integration', () => {
   let context: TestServerContext;
+  let client: TestClient;
 
   beforeAll(async () => {
     context = await createTestServer(FIXTURES_PATH);
-  });
-
-  afterAll(async () => {
-    await close(context.server);
+    client = connectTestClient(context.server);
   });
 
   describe('Tool Registration', () => {
     test('registers all expected tools', async () => {
-      const client = await connect(context.server);
       const result = await client.listTools();
 
       // Should have 30+ tools registered
@@ -64,7 +60,6 @@ describe('MCP Server Integration', () => {
     });
 
     test('all tools have valid input schemas', async () => {
-      const client = await connect(context.server);
       const result = await client.listTools();
 
       for (const tool of result.tools) {
@@ -75,7 +70,6 @@ describe('MCP Server Integration', () => {
     });
 
     test('all tools have descriptions', async () => {
-      const client = await connect(context.server);
       const result = await client.listTools();
 
       for (const tool of result.tools) {
@@ -87,7 +81,6 @@ describe('MCP Server Integration', () => {
 
   describe('Tool Invocation', () => {
     test('health_check returns valid response', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('health_check', {});
 
       expect(result.content).toBeDefined();
@@ -96,7 +89,6 @@ describe('MCP Server Integration', () => {
     });
 
     test('get_vault_stats returns statistics', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_vault_stats', {});
 
       expect(result.content).toBeDefined();
@@ -105,7 +97,6 @@ describe('MCP Server Integration', () => {
     });
 
     test('search_notes with no filters returns notes', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_notes', { limit: 10 });
 
       expect(result.content).toBeDefined();
@@ -115,7 +106,6 @@ describe('MCP Server Integration', () => {
     });
 
     test('get_backlinks handles missing note gracefully', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_backlinks', {
         path: 'does-not-exist.md',
       });
@@ -125,7 +115,6 @@ describe('MCP Server Integration', () => {
     });
 
     test('suggest_wikilinks processes text', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('suggest_wikilinks', {
         text: 'This mentions Alex Johnson and Acme Corp.',
       });
@@ -138,8 +127,6 @@ describe('MCP Server Integration', () => {
 
   describe('Error Handling', () => {
     test('handles missing required parameters', async () => {
-      const client = await connect(context.server);
-
       // get_backlinks requires 'path' parameter
       try {
         await client.callTool('get_backlinks', {});
@@ -150,7 +137,6 @@ describe('MCP Server Integration', () => {
     });
 
     test('handles invalid path gracefully', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_note_metadata', {
         path: '../../../etc/passwd',
       });

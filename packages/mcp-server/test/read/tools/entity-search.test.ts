@@ -8,8 +8,7 @@ import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
-import { connect } from 'mcp-testing-kit';
-import { createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
+import { createTestServer, connectTestClient, type TestServerContext, type TestClient } from '../helpers/createTestServer.js';
 import { deleteStateDb } from '@velvetmonkey/vault-core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -17,6 +16,7 @@ const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 
 describe('Entity Search Tool (search_entities)', () => {
   let context: TestServerContext;
+  let client: TestClient;
 
   beforeAll(async () => {
     // Create test server which also creates StateDb
@@ -51,6 +51,8 @@ describe('Entity Search Tool (search_entities)', () => {
       context.stateDb.setMetadataValue.run('entities_built_at', new Date().toISOString());
       context.stateDb.setMetadataValue.run('entity_count', String(entities.length));
     }
+
+    client = connectTestClient(context.server);
   });
 
   afterAll(() => {
@@ -67,7 +69,6 @@ describe('Entity Search Tool (search_entities)', () => {
 
   describe('Basic Search Functionality', () => {
     test('finds entities by exact name', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: 'TypeScript',
       });
@@ -78,7 +79,6 @@ describe('Entity Search Tool (search_entities)', () => {
     });
 
     test('finds entities by full word match', async () => {
-      const client = await connect(context.server);
       // FTS5 matches full words, not substrings. "TypeScript" is a single token.
       const result = await client.callTool('search_entities', {
         query: 'TypeScript',
@@ -90,7 +90,6 @@ describe('Entity Search Tool (search_entities)', () => {
     });
 
     test('uses Porter stemming (running matches run)', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: 'run',
       });
@@ -101,7 +100,6 @@ describe('Entity Search Tool (search_entities)', () => {
     });
 
     test('returns correct result structure', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: 'React',
         limit: 1,
@@ -127,7 +125,6 @@ describe('Entity Search Tool (search_entities)', () => {
 
   describe('Prefix Search (Autocomplete)', () => {
     test('finds entities with prefix matching enabled', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: 'Type',
         prefix: true,
@@ -139,7 +136,6 @@ describe('Entity Search Tool (search_entities)', () => {
     });
 
     test('prefix search works for short prefixes', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: 'Re',
         prefix: true,
@@ -153,7 +149,6 @@ describe('Entity Search Tool (search_entities)', () => {
 
   describe('Category Filtering', () => {
     test('returns entities from all categories', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: 'John OR React OR Project',
         limit: 10,
@@ -167,7 +162,6 @@ describe('Entity Search Tool (search_entities)', () => {
 
   describe('Limit Parameter', () => {
     test('respects limit parameter', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: 'Script OR React OR Project',
         limit: 2,
@@ -178,7 +172,6 @@ describe('Entity Search Tool (search_entities)', () => {
     });
 
     test('uses default limit when not specified', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: 'a',
         prefix: true,
@@ -192,7 +185,6 @@ describe('Entity Search Tool (search_entities)', () => {
 
   describe('Edge Cases', () => {
     test('handles empty query gracefully', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: '',
       });
@@ -203,7 +195,6 @@ describe('Entity Search Tool (search_entities)', () => {
     });
 
     test('handles special characters in query', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: 'Type-Script',
       });
@@ -214,7 +205,6 @@ describe('Entity Search Tool (search_entities)', () => {
     });
 
     test('handles no matching results', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('search_entities', {
         query: 'xyznonexistentquery',
       });

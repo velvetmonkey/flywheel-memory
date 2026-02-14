@@ -9,17 +9,18 @@ import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
-import { connect } from 'mcp-testing-kit';
-import { createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
+import { connectTestClient, type TestClient, createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 
 describe('FTS5 Full-Text Search Tools', () => {
   let context: TestServerContext;
+  let client: TestClient;
 
   beforeAll(async () => {
     context = await createTestServer(FIXTURES_PATH);
+    client = connectTestClient(context.server);
   });
 
   afterAll(() => {
@@ -36,7 +37,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
   describe('rebuild_search_index', () => {
     test('builds index successfully', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('rebuild_search_index', {});
 
       const data = JSON.parse(result.content[0].text);
@@ -46,7 +46,6 @@ describe('FTS5 Full-Text Search Tools', () => {
     });
 
     test('reports note count in response', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('rebuild_search_index', {});
 
       const data = JSON.parse(result.content[0].text);
@@ -58,7 +57,6 @@ describe('FTS5 Full-Text Search Tools', () => {
   describe('full_text_search', () => {
     describe('Basic Functionality', () => {
       test('finds notes containing a simple term', async () => {
-        const client = await connect(context.server);
 
         // full_text_search will auto-build index if needed
         const result = await client.callTool('full_text_search', {
@@ -72,7 +70,6 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('returns expected result format', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: 'note',
           limit: 1,
@@ -88,7 +85,6 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('respects limit parameter', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: 'note',
           limit: 2,
@@ -99,7 +95,6 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('returns query in response', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: 'test search',
         });
@@ -111,7 +106,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
     describe('Stemming', () => {
       test('matches stemmed variations', async () => {
-        const client = await connect(context.server);
 
         // Create test content with word variations
         // Stemming should match "link" from "linking", "links", "linked"
@@ -127,7 +121,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
     describe('Phrase Search', () => {
       test('handles phrase queries with quotes', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: '"test note"',
         });
@@ -140,7 +133,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
     describe('Boolean Operators', () => {
       test('handles AND operator', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: 'note AND test',
         });
@@ -150,7 +142,6 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('handles OR operator', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: 'note OR test',
         });
@@ -160,7 +151,6 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('handles NOT operator', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: 'note NOT test',
         });
@@ -172,7 +162,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
     describe('Prefix Matching', () => {
       test('handles prefix wildcard', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: 'not*',
         });
@@ -185,7 +174,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
     describe('Snippets', () => {
       test('returns highlighted snippets', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: 'note',
           limit: 5,
@@ -204,7 +192,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
     describe('Edge Cases', () => {
       test('handles empty results gracefully', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: 'xyznonexistenttermxyz123456',
         });
@@ -215,7 +202,6 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('handles special characters', async () => {
-        const client = await connect(context.server);
 
         // FTS5 should handle special characters
         try {
@@ -231,7 +217,6 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('handles unicode text', async () => {
-        const client = await connect(context.server);
         const result = await client.callTool('full_text_search', {
           query: '日本',
         });

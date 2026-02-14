@@ -3,6 +3,8 @@
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
+import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
 import type { VaultIndex } from '../../../src/core/read/types.js';
 import { buildVaultIndex, setIndexState } from '../../../src/core/read/graph.js';
 import { registerGraphTools } from '../../../src/tools/read/graph.js';
@@ -125,5 +127,74 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     vaultIndex,
     vaultPath,
     stateDb,
+  };
+}
+
+/**
+ * In-process transport for testing that routes messages between client and server.
+ */
+class TestTransport implements Transport {
+  onmessage?: (message: JSONRPCMessage) => void;
+  onerror?: (error: Error) => void;
+  onclose?: () => void;
+  private _sendHandler: (message: JSONRPCMessage) => void;
+
+  constructor(sendHandler: (message: JSONRPCMessage) => void) {
+    this._sendHandler = sendHandler;
+  }
+  async start() {}
+  async close() {}
+  async send(message: JSONRPCMessage) {
+    this._sendHandler(message);
+  }
+}
+
+export interface TestClient {
+  callTool: (name: string, args?: Record<string, unknown>) => Promise<any>;
+  listTools: () => Promise<any>;
+}
+
+/**
+ * Connect a test client to an McpServer. Call once in beforeAll and reuse across tests.
+ * Unlike mcp-testing-kit's connect(), this supports multiple requests on a single connection.
+ */
+export function connectTestClient(mcpServer: McpServer): TestClient {
+  const pending = new Map<number | string, { resolve: (v: any) => void; reject: (e: any) => void }>();
+  let requestId = 1;
+
+  const transport = new TestTransport((message: JSONRPCMessage) => {
+    const msg = message as any;
+    if (msg.id !== undefined && pending.has(msg.id)) {
+      pending.get(msg.id)!.resolve(msg);
+      pending.delete(msg.id);
+    }
+  });
+
+  // Connect using the underlying Server, not McpServer (avoids double-connect issues)
+  mcpServer.server.connect(transport);
+
+  function sendRequest(method: string, params: any = {}): Promise<any> {
+    const id = requestId++;
+    const request = {
+      jsonrpc: '2.0' as const,
+      id,
+      method,
+      params: { ...params, _meta: { progressToken: id } },
+    };
+    return new Promise((resolve, reject) => {
+      pending.set(id, { resolve, reject });
+      transport.onmessage?.(request);
+    });
+  }
+
+  return {
+    callTool: async (name: string, args: Record<string, unknown> = {}) => {
+      const resp = await sendRequest('tools/call', { name, arguments: args });
+      return (resp as any).result;
+    },
+    listTools: async () => {
+      const resp = await sendRequest('tools/list', {});
+      return (resp as any).result;
+    },
   };
 }

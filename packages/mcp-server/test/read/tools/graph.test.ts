@@ -8,8 +8,7 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { connect } from 'mcp-testing-kit';
-import { createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
+import { connectTestClient, type TestClient, createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
 import { buildVaultIndex } from '../../../src/core/read/graph.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -17,14 +16,15 @@ const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 
 describe('Graph Tools via MCP', () => {
   let context: TestServerContext;
+  let client: TestClient;
 
   beforeAll(async () => {
     context = await createTestServer(FIXTURES_PATH);
+    client = connectTestClient(context.server);
   });
 
   describe('get_backlinks', () => {
     test('returns backlinks for a note', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_backlinks', {
         path: 'another-note.md',
       });
@@ -36,7 +36,6 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('returns empty for note with no backlinks', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_backlinks', {
         path: 'orphan-note.md',
       });
@@ -46,7 +45,6 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('handles non-existent note', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_backlinks', {
         path: 'does-not-exist.md',
       });
@@ -56,7 +54,6 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('includes context when requested', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_backlinks', {
         path: 'another-note.md',
         include_context: true,
@@ -68,7 +65,6 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('respects limit and offset', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_backlinks', {
         path: 'another-note.md',
         limit: 1,
@@ -82,7 +78,6 @@ describe('Graph Tools via MCP', () => {
 
   describe('get_forward_links', () => {
     test('returns forward links for a note', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_forward_links', {
         path: 'normal-note.md',
       });
@@ -93,7 +88,6 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('identifies broken forward links', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_forward_links', {
         path: 'normal-note.md',
       });
@@ -109,7 +103,6 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('handles non-existent note', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_forward_links', {
         path: 'does-not-exist.md',
       });
@@ -121,7 +114,6 @@ describe('Graph Tools via MCP', () => {
 
   describe('find_orphan_notes', () => {
     test('finds notes with no backlinks', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_orphan_notes', {});
 
       const data = JSON.parse(result.content[0].text);
@@ -130,7 +122,6 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('filters by folder', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_orphan_notes', {
         folder: 'edge-cases',
       });
@@ -142,7 +133,6 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('respects limit and offset', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_orphan_notes', {
         limit: 2,
         offset: 0,
@@ -155,7 +145,6 @@ describe('Graph Tools via MCP', () => {
 
   describe('find_hub_notes', () => {
     test('finds highly connected notes', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_hub_notes', {
         min_links: 1,
       });
@@ -168,7 +157,6 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('respects min_links threshold', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_hub_notes', {
         min_links: 5,
       });
@@ -180,7 +168,6 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('respects limit and offset', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_hub_notes', {
         limit: 1,
       });
@@ -193,14 +180,15 @@ describe('Graph Tools via MCP', () => {
 
 describe('Advanced Graph Tools via MCP', () => {
   let context: TestServerContext;
+  let client: TestClient;
 
   beforeAll(async () => {
     context = await createTestServer(FIXTURES_PATH);
+    client = connectTestClient(context.server);
   });
 
   describe('get_link_path', () => {
     test('finds path between connected notes', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_link_path', {
         from: 'normal-note.md',
         to: 'another-note.md',
@@ -214,7 +202,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('returns empty path for unconnected notes', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_link_path', {
         from: 'orphan-note.md',
         to: 'another-note.md',
@@ -226,7 +213,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('handles same note as start and end', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_link_path', {
         from: 'normal-note.md',
         to: 'normal-note.md',
@@ -238,7 +224,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('respects max_depth parameter', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_link_path', {
         from: 'normal-note.md',
         to: 'orphan-note.md',
@@ -254,7 +239,6 @@ describe('Advanced Graph Tools via MCP', () => {
 
   describe('get_common_neighbors', () => {
     test('finds common targets between notes', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_common_neighbors', {
         note_a: 'normal-note.md',
         note_b: 'acme-corp.md',
@@ -266,7 +250,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('returns empty for notes with no common links', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_common_neighbors', {
         note_a: 'orphan-note.md',
         note_b: 'another-note.md',
@@ -277,7 +260,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('handles non-existent notes', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_common_neighbors', {
         note_a: 'does-not-exist.md',
         note_b: 'normal-note.md',
@@ -290,7 +272,6 @@ describe('Advanced Graph Tools via MCP', () => {
 
   describe('find_bidirectional_links', () => {
     test('finds mutual links', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_bidirectional_links', {});
 
       const data = JSON.parse(result.content[0].text);
@@ -298,7 +279,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('filters to specific note', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_bidirectional_links', {
         path: 'normal-note.md',
       });
@@ -312,7 +292,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('respects limit and offset', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_bidirectional_links', {
         limit: 1,
       });
@@ -324,7 +303,6 @@ describe('Advanced Graph Tools via MCP', () => {
 
   describe('find_dead_ends', () => {
     test('finds notes with backlinks but no outlinks', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_dead_ends', {
         min_backlinks: 1,
       });
@@ -334,7 +312,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('respects min_backlinks threshold', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_dead_ends', {
         min_backlinks: 2,
       });
@@ -346,7 +323,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('filters by folder', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_dead_ends', {
         folder: 'edge-cases',
       });
@@ -360,7 +336,6 @@ describe('Advanced Graph Tools via MCP', () => {
 
   describe('find_sources', () => {
     test('finds notes with outlinks but no backlinks', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_sources', {
         min_outlinks: 1,
       });
@@ -370,7 +345,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('respects min_outlinks threshold', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('find_sources', {
         min_outlinks: 2,
       });
@@ -384,7 +358,6 @@ describe('Advanced Graph Tools via MCP', () => {
 
   describe('get_connection_strength', () => {
     test('calculates connection strength between notes', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_connection_strength', {
         note_a: 'normal-note.md',
         note_b: 'another-note.md',
@@ -397,7 +370,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('returns zero for unconnected notes', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_connection_strength', {
         note_a: 'orphan-note.md',
         note_b: 'another-note.md',
@@ -408,7 +380,6 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('handles non-existent notes', async () => {
-      const client = await connect(context.server);
       const result = await client.callTool('get_connection_strength', {
         note_a: 'does-not-exist.md',
         note_b: 'normal-note.md',

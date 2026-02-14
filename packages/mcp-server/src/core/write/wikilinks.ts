@@ -592,7 +592,7 @@ export function isLikelyArticleTitle(name: string): boolean {
  */
 const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
   conservative: {
-    minWordLength: 5,
+    minWordLength: 3,
     minSuggestionScore: 15,    // Requires exact match (10) + at least one stem (5)
     minMatchRatio: 0.6,        // 60% of multi-word entity must match
     requireMultipleMatches: true, // Single-word entities need multiple content matches
@@ -600,7 +600,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     exactMatchBonus: 10,       // Standard bonus for exact matches
   },
   balanced: {
-    minWordLength: 4,
+    minWordLength: 3,
     minSuggestionScore: 8,     // At least one exact match or two stem matches
     minMatchRatio: 0.4,        // 40% of multi-word entity must match
     requireMultipleMatches: false,
@@ -608,7 +608,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     exactMatchBonus: 10,       // Standard bonus for exact matches
   },
   aggressive: {
-    minWordLength: 4,
+    minWordLength: 3,
     minSuggestionScore: 5,     // Single stem match is enough
     minMatchRatio: 0.3,        // 30% of multi-word entity must match
     requireMultipleMatches: false,

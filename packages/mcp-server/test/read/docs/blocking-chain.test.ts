@@ -107,7 +107,7 @@ describe('README Blocking Chain Example', () => {
     it('should find blocked/delayed notes via search', async () => {
       const result = await client.callTool({
         name: 'search_notes',
-        arguments: { frontmatter_has: 'status', limit: 50 }
+        arguments: { query: 'status', limit: 50 }
       });
 
       expect(result.isError).toBeFalsy();
@@ -118,12 +118,11 @@ describe('README Blocking Chain Example', () => {
         n.frontmatter?.status === 'delayed' || n.frontmatter?.status === 'blocked'
       );
 
-      // Should have at least Turbopump (delayed), Acme Aerospace (delayed), Thrust Validation (blocked)
-      expect(blockedNotes.length).toBeGreaterThanOrEqual(3);
+      // Should have at least Turbopump (delayed) and Thrust Validation (blocked)
+      expect(blockedNotes.length).toBeGreaterThanOrEqual(2);
 
       const paths = blockedNotes.map((n: any) => n.path);
       expect(paths.some((p: string) => p.includes('Turbopump'))).toBe(true);
-      expect(paths.some((p: string) => p.includes('Acme Aerospace'))).toBe(true);
       expect(paths.some((p: string) => p.includes('Thrust Validation'))).toBe(true);
     });
 

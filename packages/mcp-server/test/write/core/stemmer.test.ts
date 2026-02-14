@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { stem, tokenize, tokenizeAndStem, isStopword } from '../../src/core/stemmer.js';
+import { stem, tokenize, tokenizeAndStem, isStopword } from '../../../src/core/shared/stemmer.js';
 
 // ========================================
 // stem() Tests

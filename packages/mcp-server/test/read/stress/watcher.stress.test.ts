@@ -9,8 +9,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { EventQueue } from '../../src/core/watch/eventQueue.js';
-import type { EventBatch, WatcherConfig } from '../../src/core/watch/types.js';
+import { EventQueue } from '../../../src/core/watch/eventQueue.js';
+import type { EventBatch, WatcherConfig } from '../../../src/core/watch/types.js';
 
 const createConfig = (overrides: Partial<WatcherConfig> = {}): WatcherConfig => ({
   debounceMs: 200,

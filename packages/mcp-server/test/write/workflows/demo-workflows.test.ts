@@ -16,7 +16,7 @@ import {
   findSection,
   formatContent,
   insertInSection,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   createTempVault,
   cleanupTempVault,
@@ -27,8 +27,8 @@ import {
 import {
   initializeEntityIndex,
   suggestRelatedLinks,
-} from '../../src/core/wikilinks.js';
-import type { FormatType, Position } from '../../src/core/types.js';
+} from '../../../src/core/write/wikilinks.js';
+import type { FormatType, Position } from '../../../src/core/write/types.js';
 
 // ========================================
 // Artemis Rocket Demo Entities

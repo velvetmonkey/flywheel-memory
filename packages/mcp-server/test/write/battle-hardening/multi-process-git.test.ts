@@ -17,12 +17,12 @@ import { spawn, ChildProcess } from 'child_process';
 import {
   writeVaultFile,
   readVaultFile,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   commitChange,
   isGitRepo,
   getLastCommit,
-} from '../../src/core/git.js';
+} from '../../../src/core/write/git.js';
 
 /**
  * Create a temporary vault with git initialized

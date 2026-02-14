@@ -8,12 +8,12 @@ import {
   writeVaultFile,
   findSection,
   insertInSection,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   findTasks,
   toggleTask,
   type TaskInfo,
-} from '../../src/tools/tasks.js';
+} from '../../../src/tools/write/tasks.js';
 import {
   createTempVault,
   cleanupTempVault,
@@ -25,12 +25,12 @@ import {
   deleteStateDb,
   type StateDb,
 } from '../helpers/testUtils.js';
-import type { Position } from '../../src/core/types.js';
+import type { Position } from '../../../src/core/write/types.js';
 import {
   initializeEntityIndex,
   suggestRelatedLinks,
   setCrankStateDb,
-} from '../../src/core/wikilinks.js';
+} from '../../../src/core/write/wikilinks.js';
 
 /**
  * Helper to simulate vault_toggle_task workflow

@@ -12,7 +12,7 @@ import {
   getHintsSince,
   clearHints,
   setHintsStateDb,
-} from '../../src/core/hints.js';
+} from '../../../src/core/write/hints.js';
 import { createTempVault, cleanupTempVault } from '../helpers/testUtils.js';
 import { openStateDb, deleteStateDb, type StateDb } from '@velvetmonkey/vault-core';
 

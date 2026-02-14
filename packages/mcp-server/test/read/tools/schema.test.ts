@@ -14,8 +14,8 @@ import {
   inferFolderConventions,
   findIncompleteNotes,
   suggestFieldValues,
-} from '../../src/tools/schema.js';
-import { buildVaultIndex } from '../../src/core/graph.js';
+} from '../../../src/tools/read/schema.js';
+import { buildVaultIndex } from '../../../src/core/read/graph.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');

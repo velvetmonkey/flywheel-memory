@@ -8,7 +8,7 @@ import {
   normalizeInput,
   validateOutput,
   runValidationPipeline,
-} from '../../src/core/validator.js';
+} from '../../../src/core/write/validator.js';
 
 describe('validateInput', () => {
   describe('double timestamp detection', () => {

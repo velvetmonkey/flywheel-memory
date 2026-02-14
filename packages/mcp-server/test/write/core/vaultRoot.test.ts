@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { findVaultRoot } from '../../src/core/vaultRoot.js';
+import { findVaultRoot } from '../../../src/core/write/vaultRoot.js';
 import {
   createTempVault,
   cleanupTempVault,

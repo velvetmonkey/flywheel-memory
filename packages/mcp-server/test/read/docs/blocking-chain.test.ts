@@ -16,7 +16,7 @@ import { createTestServer, type TestServerContext } from '../helpers/createTestS
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
-const DEMOS_PATH = path.resolve(__dirname, '../../../../demos');
+const DEMOS_PATH = path.resolve(__dirname, '../../../../../demos');
 const ARTEMIS_VAULT = path.join(DEMOS_PATH, 'artemis-rocket');
 
 describe('README Blocking Chain Example', () => {

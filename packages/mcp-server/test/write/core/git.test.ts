@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { isGitRepo, commitChange } from '../../src/core/git.js';
+import { isGitRepo, commitChange } from '../../../src/core/write/git.js';
 import {
   createTempVault,
   cleanupTempVault,

@@ -23,7 +23,7 @@ import {
   createSafeRegex,
   safeRegexTest,
   safeRegexReplace,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import fs from 'fs/promises';
 import path from 'path';
 import {

@@ -10,7 +10,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { connect } from 'mcp-testing-kit';
 import { createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
-import { buildVaultIndex } from '../../src/core/graph.js';
+import { buildVaultIndex } from '../../../src/core/read/graph.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');

@@ -15,7 +15,7 @@ import {
   setRecencyStateDb,
   RECENCY_CACHE_VERSION,
   type RecencyIndex,
-} from '../../src/core/recency.js';
+} from '../../../src/core/shared/recency.js';
 import {
   createTempVault,
   cleanupTempVault,

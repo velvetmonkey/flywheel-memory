@@ -13,7 +13,7 @@ import {
   formatContent,
   insertInSection,
   injectMutationMetadata,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   createTempVault,
   cleanupTempVault,
@@ -21,7 +21,7 @@ import {
   readTestNote,
   createSampleNote,
 } from '../helpers/testUtils.js';
-import type { FormatType, Position, ScopingMetadata } from '../../src/core/types.js';
+import type { FormatType, Position, ScopingMetadata } from '../../../src/core/write/types.js';
 import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';

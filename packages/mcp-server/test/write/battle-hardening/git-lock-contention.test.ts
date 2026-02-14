@@ -20,7 +20,7 @@ import {
   readVaultFile,
   findSection,
   insertInSection,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   commitChange,
   isGitRepo,
@@ -29,7 +29,7 @@ import {
   getLastCrankCommit,
   clearLastCrankCommit,
   setGitStateDb,
-} from '../../src/core/git.js';
+} from '../../../src/core/write/git.js';
 import { openStateDb, deleteStateDb, type StateDb } from '@velvetmonkey/vault-core';
 
 /**

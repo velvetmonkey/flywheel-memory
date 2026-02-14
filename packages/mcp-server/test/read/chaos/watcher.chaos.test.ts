@@ -15,9 +15,9 @@ import {
   updateStateAfterError,
   SelfHealingWatcher,
   type SelfHealState,
-} from '../../src/core/watch/selfHeal.js';
-import { EventQueue } from '../../src/core/watch/eventQueue.js';
-import type { EventBatch, WatcherConfig } from '../../src/core/watch/types.js';
+} from '../../../src/core/watch/selfHeal.js';
+import { EventQueue } from '../../../src/core/watch/eventQueue.js';
+import type { EventBatch, WatcherConfig } from '../../../src/core/watch/types.js';
 
 // Helper to create Node-style errors with codes
 function createError(message: string, code?: string): NodeJS.ErrnoException {

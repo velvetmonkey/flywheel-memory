@@ -10,14 +10,14 @@ import * as fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-import { buildVaultIndex } from '../../src/core/graph.js';
-import type { VaultIndex } from '../../src/core/types.js';
+import { buildVaultIndex } from '../../../src/core/read/graph.js';
+import type { VaultIndex } from '../../../src/core/read/types.js';
 import {
   detectProsePatterns,
   suggestFrontmatterFromProse,
   suggestWikilinksInFrontmatter,
   validateCrossLayer,
-} from '../../src/tools/bidirectional.js';
+} from '../../../src/tools/read/bidirectional.js';
 
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 

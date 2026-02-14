@@ -19,7 +19,7 @@ import {
   findSection,
   insertInSection,
   normalizeLineEndings,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   createTempVault,
   cleanupTempVault,

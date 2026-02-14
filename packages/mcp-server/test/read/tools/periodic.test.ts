@@ -8,9 +8,9 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { buildVaultIndex } from '../../src/core/graph.js';
-import type { VaultIndex } from '../../src/core/types.js';
-import { detectPeriodicNotes } from '../../src/tools/periodic.js';
+import { buildVaultIndex } from '../../../src/core/read/graph.js';
+import type { VaultIndex } from '../../../src/core/read/types.js';
+import { detectPeriodicNotes } from '../../../src/tools/read/periodic.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');

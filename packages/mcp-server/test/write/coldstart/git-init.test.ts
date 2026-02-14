@@ -21,13 +21,13 @@ import {
   commitChange,
   getLastCommit,
   hasUncommittedChanges,
-} from '../../src/core/git.js';
+} from '../../../src/core/write/git.js';
 import {
   readVaultFile,
   writeVaultFile,
   findSection,
   insertInSection,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 
 let tempVault: string;
 

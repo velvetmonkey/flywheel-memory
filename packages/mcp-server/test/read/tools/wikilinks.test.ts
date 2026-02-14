@@ -8,8 +8,8 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { buildVaultIndex } from '../../src/core/graph.js';
-import type { VaultIndex } from '../../src/core/types.js';
+import { buildVaultIndex } from '../../../src/core/read/graph.js';
+import type { VaultIndex } from '../../../src/core/read/types.js';
 import { connect, close } from 'mcp-testing-kit';
 import { createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
 

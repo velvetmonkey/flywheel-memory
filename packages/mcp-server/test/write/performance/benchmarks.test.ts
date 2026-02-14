@@ -15,13 +15,13 @@ import {
   findSection,
   insertInSection,
   extractHeadings,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   initializeEntityIndex,
   suggestRelatedLinks,
   getEntityIndexStats,
   setCrankStateDb,
-} from '../../src/core/wikilinks.js';
+} from '../../../src/core/write/wikilinks.js';
 import {
   createTempVault,
   cleanupTempVault,

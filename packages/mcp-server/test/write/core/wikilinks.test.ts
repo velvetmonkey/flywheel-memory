@@ -16,7 +16,7 @@ import {
   extractLinkedEntities,
   isLikelyArticleTitle,
   setCrankStateDb,
-} from '../../src/core/wikilinks.js';
+} from '../../../src/core/write/wikilinks.js';
 import {
   createTempVault,
   cleanupTempVault,

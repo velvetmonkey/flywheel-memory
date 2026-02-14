@@ -19,7 +19,7 @@ import {
   writeVaultFile,
   findSection,
   insertInSection,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   createTempVault,
   cleanupTempVault,
@@ -39,7 +39,7 @@ import {
   isEntityIndexReady,
   getEntityIndexStats,
   setCrankStateDb,
-} from '../../src/core/wikilinks.js';
+} from '../../../src/core/write/wikilinks.js';
 
 describe('Entity Index Sync Validation', () => {
   let tempVault: string;

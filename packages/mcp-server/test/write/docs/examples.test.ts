@@ -14,7 +14,7 @@ import {
   findSection,
   insertInSection,
   formatContent,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   createTempVault,
   cleanupTempVault,
@@ -31,7 +31,7 @@ import {
   processWikilinks,
   suggestRelatedLinks,
   setCrankStateDb,
-} from '../../src/core/wikilinks.js';
+} from '../../../src/core/write/wikilinks.js';
 
 const DOCS_DIR = path.join(__dirname, '../../../docs');
 

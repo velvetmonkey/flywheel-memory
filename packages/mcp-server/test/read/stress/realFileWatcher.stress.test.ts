@@ -14,8 +14,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mkdir, writeFile, rm, readdir, stat } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { EventQueue } from '../../src/core/watch/eventQueue.js';
-import type { EventBatch, WatcherConfig } from '../../src/core/watch/types.js';
+import { EventQueue } from '../../../src/core/watch/eventQueue.js';
+import type { EventBatch, WatcherConfig } from '../../../src/core/watch/types.js';
 
 const createConfig = (overrides: Partial<WatcherConfig> = {}): WatcherConfig => ({
   debounceMs: 100,

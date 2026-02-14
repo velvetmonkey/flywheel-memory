@@ -21,7 +21,7 @@ import {
   hasUncommittedChanges,
   isGitRepo,
   setGitStateDb,
-} from '../../src/core/git.js';
+} from '../../../src/core/write/git.js';
 import { openStateDb, deleteStateDb, type StateDb } from '@velvetmonkey/vault-core';
 
 let tempVault: string;

@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { commitChange, isGitRepo, getLastCommit } from '../../src/core/git.js';
+import { commitChange, isGitRepo, getLastCommit } from '../../../src/core/write/git.js';
 import {
   createTempVault,
   cleanupTempVault,

@@ -9,10 +9,10 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-import { scanVault } from '../src/core/vault.js';
-import { parseNote, parseNoteWithWarnings } from '../src/core/parser.js';
-import { buildVaultIndex } from '../src/core/graph.js';
-import type { VaultIndex } from '../src/core/types.js';
+import { scanVault } from '../../src/core/read/vault.js';
+import { parseNote, parseNoteWithWarnings } from '../../src/core/read/parser.js';
+import { buildVaultIndex } from '../../src/core/read/graph.js';
+import type { VaultIndex } from '../../src/core/read/types.js';
 
 const FIXTURES_PATH = path.join(__dirname, 'fixtures');
 

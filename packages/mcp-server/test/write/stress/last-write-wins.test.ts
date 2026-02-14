@@ -21,7 +21,7 @@ import {
   writeVaultFile,
   findSection,
   insertInSection,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 
 let tempVault: string;
 

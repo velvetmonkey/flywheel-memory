@@ -23,8 +23,8 @@ import {
   readVaultFile,
   writeVaultFile,
   validatePath,
-} from '../../src/core/writer.js';
-import { setCrankStateDb } from '../../src/core/wikilinks.js';
+} from '../../../src/core/write/writer.js';
+import { setCrankStateDb } from '../../../src/core/write/wikilinks.js';
 
 let tempVault: string;
 

@@ -3,19 +3,19 @@
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { VaultIndex } from '../../src/core/types.js';
-import { buildVaultIndex, setIndexState } from '../../src/core/graph.js';
-import { registerGraphTools } from '../../src/tools/graph.js';
-import { registerWikilinkTools } from '../../src/tools/wikilinks.js';
-import { registerHealthTools } from '../../src/tools/health.js';
-import { registerQueryTools } from '../../src/tools/query.js';
-import { registerSystemTools } from '../../src/tools/system.js';
-import { registerPrimitiveTools } from '../../src/tools/primitives.js';
-import { registerPeriodicTools } from '../../src/tools/periodic.js';
-import { registerBidirectionalTools } from '../../src/tools/bidirectional.js';
-import { registerSchemaTools } from '../../src/tools/schema.js';
-import { registerComputedTools } from '../../src/tools/computed.js';
-import { registerMigrationTools } from '../../src/tools/migrations.js';
+import type { VaultIndex } from '../../../src/core/read/types.js';
+import { buildVaultIndex, setIndexState } from '../../../src/core/read/graph.js';
+import { registerGraphTools } from '../../../src/tools/read/graph.js';
+import { registerWikilinkTools } from '../../../src/tools/read/wikilinks.js';
+import { registerHealthTools } from '../../../src/tools/read/health.js';
+import { registerQueryTools } from '../../../src/tools/read/query.js';
+import { registerSystemTools } from '../../../src/tools/read/system.js';
+import { registerPrimitiveTools } from '../../../src/tools/read/primitives.js';
+import { registerPeriodicTools } from '../../../src/tools/read/periodic.js';
+import { registerBidirectionalTools } from '../../../src/tools/read/bidirectional.js';
+import { registerSchemaTools } from '../../../src/tools/read/schema.js';
+import { registerComputedTools } from '../../../src/tools/read/computed.js';
+import { registerMigrationTools } from '../../../src/tools/read/migrations.js';
 import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
 
 export interface TestServerContext {

@@ -13,7 +13,7 @@ import {
   type EntityIndex,
   type Entity,
 } from '@velvetmonkey/vault-core';
-import { setCrankStateDb } from '../../src/core/wikilinks.js';
+import { setCrankStateDb } from '../../../src/core/write/wikilinks.js';
 
 // Re-export StateDb types for test files
 export { openStateDb, deleteStateDb, type StateDb };

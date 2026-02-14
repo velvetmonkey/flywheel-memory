@@ -14,7 +14,7 @@ import {
   replaceInSection,
   validatePath,
   type MatchMode,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   createTempVault,
   cleanupTempVault,
@@ -28,13 +28,13 @@ import {
   deleteStateDb,
   type StateDb,
 } from '../helpers/testUtils.js';
-import type { FormatType, Position } from '../../src/core/types.js';
+import type { FormatType, Position } from '../../../src/core/write/types.js';
 import {
   initializeEntityIndex,
   suggestRelatedLinks,
   maybeApplyWikilinks,
   setCrankStateDb,
-} from '../../src/core/wikilinks.js';
+} from '../../../src/core/write/wikilinks.js';
 
 /**
  * Helper to simulate the full vault_add_to_section workflow
@@ -1558,7 +1558,7 @@ type: test
 // Battle-hardening: Section not found errors
 // ========================================
 
-import { extractHeadings } from '../../src/core/writer.js';
+import { extractHeadings } from '../../../src/core/write/writer.js';
 
 describe('Section not found error messages', () => {
   let tempVault: string;

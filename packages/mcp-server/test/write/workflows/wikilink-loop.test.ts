@@ -17,7 +17,7 @@ import {
   writeVaultFile,
   findSection,
   insertInSection,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   createTempVault,
   cleanupTempVault,
@@ -38,7 +38,7 @@ import {
   isEntityIndexReady,
   extractLinkedEntities,
   setCrankStateDb,
-} from '../../src/core/wikilinks.js';
+} from '../../../src/core/write/wikilinks.js';
 
 describe('Wikilink Flywheel Loop', () => {
   let tempVault: string;

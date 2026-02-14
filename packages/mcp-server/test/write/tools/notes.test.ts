@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { writeVaultFile, validatePath, readVaultFile } from '../../src/core/writer.js';
+import { writeVaultFile, validatePath, readVaultFile } from '../../../src/core/write/writer.js';
 import {
   createTempVault,
   cleanupTempVault,
@@ -20,7 +20,7 @@ import {
   maybeApplyWikilinks,
   suggestRelatedLinks,
   setCrankStateDb,
-} from '../../src/core/wikilinks.js';
+} from '../../../src/core/write/wikilinks.js';
 import fs from 'fs/promises';
 import path from 'path';
 

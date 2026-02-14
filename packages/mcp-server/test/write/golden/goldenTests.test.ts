@@ -22,7 +22,7 @@ import {
   convertLineEndings,
   normalizeLineEndings,
   normalizeTrailingNewline,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import { createTempVault, cleanupTempVault } from '../helpers/testUtils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

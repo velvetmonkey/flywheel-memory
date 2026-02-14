@@ -7,7 +7,7 @@ import {
   readVaultFile,
   extractHeadings,
   validatePath,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   isGitRepo,
   getLastCommit,
@@ -17,7 +17,7 @@ import {
   getLastCrankCommit,
   clearLastCrankCommit,
   setGitStateDb,
-} from '../../src/core/git.js';
+} from '../../../src/core/write/git.js';
 import {
   createTempVault,
   cleanupTempVault,

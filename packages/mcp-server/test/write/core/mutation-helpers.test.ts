@@ -11,13 +11,13 @@ import {
   successResult,
   ensureFileExists,
   ensureSectionExists,
-} from '../../src/core/mutation-helpers.js';
+} from '../../../src/core/write/mutation-helpers.js';
 import {
   createTempVault,
   cleanupTempVault,
   createTestNote,
 } from '../helpers/testUtils.js';
-import type { MutationResult } from '../../src/core/types.js';
+import type { MutationResult } from '../../../src/core/write/types.js';
 
 describe('mutation-helpers', () => {
   let vaultPath: string;

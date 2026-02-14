@@ -16,11 +16,11 @@ import {
   insertInSection,
   removeFromSection,
   replaceInSection,
-} from '../../src/core/writer.js';
+} from '../../../src/core/write/writer.js';
 import {
   findTasks,
   toggleTask,
-} from '../../src/tools/tasks.js';
+} from '../../../src/tools/write/tasks.js';
 import {
   createTempVault,
   cleanupTempVault,
@@ -36,8 +36,8 @@ import {
   initializeEntityIndex,
   suggestRelatedLinks,
   setCrankStateDb,
-} from '../../src/core/wikilinks.js';
-import type { FormatType, Position } from '../../src/core/types.js';
+} from '../../../src/core/write/wikilinks.js';
+import type { FormatType, Position } from '../../../src/core/write/types.js';
 
 // ========================================
 // Fixture Loaders

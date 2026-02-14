@@ -8,8 +8,8 @@ import { simpleGit, SimpleGit } from 'simple-git';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { writeVaultFile } from '../../src/core/writer.js';
-import { commitChange } from '../../src/core/git.js';
+import { writeVaultFile } from '../../../src/core/write/writer.js';
+import { commitChange } from '../../../src/core/write/git.js';
 
 // Helper to create a test vault with git
 async function createGitVault(): Promise<string> {

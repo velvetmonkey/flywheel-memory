@@ -20,13 +20,13 @@ import { join } from 'path';
 import { pathToFileURL } from 'url';
 
 describe('Package Startup', () => {
-  const packageDir = join(__dirname, '../..');
+  const packageDir = join(__dirname, '../../..');
   let tempDir: string;
   let tarballPath: string;
 
   beforeAll(() => {
     // Create temp directory
-    tempDir = mkdtempSync(join(tmpdir(), 'flywheel-mcp-test-'));
+    tempDir = mkdtempSync(join(tmpdir(), 'flywheel-memory-test-'));
 
     // Build the package first
     execSync('npm run build', { cwd: packageDir, stdio: 'pipe' });
@@ -67,7 +67,7 @@ describe('Package Startup', () => {
     });
 
     // Verify node_modules contains the package
-    const nodeModulesPath = join(testProjectDir, 'node_modules', '@velvetmonkey', 'flywheel-mcp');
+    const nodeModulesPath = join(testProjectDir, 'node_modules', '@velvetmonkey', 'flywheel-memory');
     expect(existsSync(nodeModulesPath)).toBe(true);
 
     // Verify all critical dependencies are installed
@@ -148,7 +148,7 @@ describe('Package Startup', () => {
   it('package.json has all required fields for publishing', () => {
     const pkg = require(join(packageDir, 'package.json'));
 
-    expect(pkg.name).toBe('@velvetmonkey/flywheel-mcp');
+    expect(pkg.name).toBe('@velvetmonkey/flywheel-memory');
     expect(pkg.version).toBeDefined();
     expect(pkg.main).toBe('dist/index.js');
     expect(pkg.bin).toBeDefined();

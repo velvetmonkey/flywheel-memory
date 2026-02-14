@@ -9,38 +9,42 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 
-const TOOLS_DIR = path.join(__dirname, '../../src/tools');
-const DOCS_DIR = path.join(__dirname, '../../../docs');
+const TOOLS_DIR = path.join(__dirname, '../../../src/tools');
+const DOCS_DIR = path.join(__dirname, '../../../../docs');
 
 /**
- * Count tool registrations in source files
+ * Count tool registrations in source files (scans read/ and write/ subdirectories)
  */
 async function countToolsInSource(): Promise<{
   total: number;
   byFile: Record<string, number>;
   toolNames: string[];
 }> {
-  const files = await fs.readdir(TOOLS_DIR);
-  const tsFiles = files.filter(f => f.endsWith('.ts'));
-
   let total = 0;
   const byFile: Record<string, number> = {};
   const toolNames: string[] = [];
 
-  for (const file of tsFiles) {
-    const content = await fs.readFile(path.join(TOOLS_DIR, file), 'utf-8');
+  for (const subdir of ['read', 'write']) {
+    const subdirPath = path.join(TOOLS_DIR, subdir);
+    const files = await fs.readdir(subdirPath);
+    const tsFiles = files.filter(f => f.endsWith('.ts'));
 
-    // Match server.tool('tool_name', patterns
-    const matches = content.matchAll(/server\.tool\(\s*['"]([^'"]+)['"]/g);
+    for (const file of tsFiles) {
+      const content = await fs.readFile(path.join(subdirPath, file), 'utf-8');
 
-    const names: string[] = [];
-    for (const match of matches) {
-      names.push(match[1]);
-      toolNames.push(match[1]);
+      // Match server.tool('tool_name', patterns
+      const matches = content.matchAll(/server\.tool\(\s*['"]([^'"]+)['"]/g);
+
+      const names: string[] = [];
+      for (const match of matches) {
+        names.push(match[1]);
+        toolNames.push(match[1]);
+      }
+
+      const key = `${subdir}/${file}`;
+      byFile[key] = names.length;
+      total += names.length;
     }
-
-    byFile[file] = names.length;
-    total += names.length;
   }
 
   return { total, byFile, toolNames };
@@ -68,7 +72,7 @@ async function extractDocToolCount(docPath: string): Promise<number | null> {
 }
 
 describe('Tool Count Verification', () => {
-  describe('flywheel-crank tools', () => {
+  describe('flywheel-memory tools', () => {
     it('should have the expected number of mutation tools', async () => {
       const { total, byFile, toolNames } = await countToolsInSource();
 

@@ -4,23 +4,6 @@
 
 ---
 
-## 🎬 Quick Demo (VHS Recording)
-
-Want to see Flywheel in action first? Check out the [**flywheel-demo.gif**](./flywheel-demo.gif) showcasing:
-- **Hub finder:** Identify your most connected notes
-- **Backlink analysis:** See what links to a specific note
-- **Quick navigation:** Open notes directly from queries
-
-**Regenerate the demo:**
-```bash
-cd /path/to/flywheel-memory
-vhs demos/flywheel-demo.tape
-```
-
-*Requires [VHS](https://github.com/charmbracelet/vhs) and ffmpeg. The demo script simulates Claude Code interactions with realistic terminal output.*
-
----
-
 ## Pick a Demo (ordered by complexity)
 
 | Demo | You Are | Ask Claude |

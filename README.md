@@ -159,11 +159,11 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 ## Tools
 
-Flywheel ships 18 tool categories. Load all of them, or just the ones you need.
+Flywheel ships 15 tool categories. Load all of them, or just the ones you need.
 
 **Presets:**
 - `full` (default) -- everything
-- `minimal` -- search, backlinks, tasks, notes (~30 tools, great for voice/mobile)
+- `minimal` -- search, backlinks, tasks, notes (~24 tools, great for voice/mobile)
 
 **Or compose your own:**
 
@@ -200,7 +200,7 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options, presets, and
 
 ## Prove It
 
-1,771 tests. Verified at 100,000 notes. Every demo vault is a real test case.
+1,757 tests. Verified at 100,000 notes. Every demo vault is a real test case.
 
 ```bash
 git clone https://github.com/velvetmonkey/flywheel-memory.git

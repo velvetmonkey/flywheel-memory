@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 76 tools for search, backlinks, graph queries, tasks, frontmatter, and note mutations — all local, all markdown.
+**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 36 tools across 15 categories for search, graph analysis, schema intelligence, tasks, frontmatter, and note mutations — all local, all markdown.
 
 ---
 
@@ -9,37 +9,43 @@
 ### Source Structure
 
 ```
-src/
+packages/mcp-server/src/
 ├── index.ts                 # MCP server entry point + tool preset gating
 ├── tools/
-│   ├── read/                # 54 read tools
-│   │   ├── search.ts        # search_notes, search_by_tag, etc.
-│   │   ├── sections.ts      # get_section_content, list_sections
-│   │   ├── backlinks.ts     # get_backlinks, get_outlinks
-│   │   ├── frontmatter.ts   # get_frontmatter, get_all_tags
-│   │   └── graph.ts         # get_related_notes, find_hub_notes, get_shortest_path
-│   └── write/               # 22 write tools
-│       ├── mutations.ts     # add/remove/replace in sections
-│       ├── tasks.ts         # toggle/add tasks
-│       ├── notes.ts         # create/delete/move/rename
-│       ├── frontmatter.ts   # update frontmatter
-│       └── policies.ts      # workflow orchestration
-├── core/
-│   ├── vault.ts             # Vault operations (from vault-core)
-│   ├── wikilinks.ts         # Auto-linking (from vault-core)
-│   └── git.ts               # Git integration
-└── search/
-    └── fts5.ts              # SQLite FTS5 keyword search
+│   ├── read/                # Read tool registrations
+│   │   ├── query.ts         # search (unified: metadata + content + entities)
+│   │   ├── graph.ts         # get_backlinks (+ bidirectional), get_forward_links
+│   │   ├── graphAdvanced.ts # get_connection_strength, get_link_path, get_common_neighbors
+│   │   ├── graphAnalysis.ts # graph_analysis (orphans, dead_ends, sources, hubs, stale)
+│   │   ├── vaultSchema.ts   # vault_schema (overview, field_values, inconsistencies, validate, conventions, incomplete)
+│   │   ├── noteIntelligence.ts # note_intelligence (prose_patterns, suggest_frontmatter, wikilinks, cross_layer, compute)
+│   │   ├── primitives.ts    # get_note_structure, get_section_content, find_sections, tasks
+│   │   ├── health.ts        # health_check, get_vault_stats, get_folder_structure
+│   │   ├── system.ts        # refresh_index, get_all_entities, get_note_metadata, get_unlinked_mentions
+│   │   ├── wikilinks.ts     # suggest_wikilinks, validate_links
+│   │   └── migrations.ts    # rename_field, migrate_field_values
+│   └── write/               # Write tool registrations
+│       ├── mutations.ts     # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
+│       ├── tasks.ts         # vault_toggle_task, vault_add_task
+│       ├── notes.ts         # vault_create_note, vault_delete_note
+│       ├── move-notes.ts    # vault_move_note, vault_rename_note
+│       ├── frontmatter.ts   # vault_update_frontmatter (+ only_if_missing)
+│       ├── system.ts        # vault_undo_last_mutation
+│       └── policy.ts        # policy (list, validate, preview, execute, author, revise)
+└── core/
+    ├── read/                # Read-side core logic (graph, vault, parser, fts5, config, watcher)
+    ├── write/               # Write-side core logic (writer, wikilinks, git, validator, policy engine)
+    └── shared/              # Shared utilities (recency, cooccurrence, hub export, stemmer)
 ```
 
 ### Dependencies
 
-- `@velvetmonkey/vault-core` - Shared utilities (entity scanning, wikilinks, SQLite)
-- `@modelcontextprotocol/sdk` - MCP protocol
-- `better-sqlite3` - SQLite with FTS5
-- `gray-matter` - Frontmatter parsing
-- `simple-git` - Git operations
-- `chokidar` - File watching
+- `@velvetmonkey/vault-core` — Shared utilities (entity scanning, wikilinks, SQLite)
+- `@modelcontextprotocol/sdk` — MCP protocol
+- `better-sqlite3` — SQLite with FTS5
+- `gray-matter` — Frontmatter parsing
+- `simple-git` — Git operations
+- `chokidar` — File watching
 
 ---
 
@@ -47,12 +53,12 @@ src/
 
 Controlled by `FLYWHEEL_TOOLS` env var:
 
-- **`full`** (default) — All 76 tools
-- **`minimal`** — ~30 tools for search, backlinks, tasks, and note editing
+- **`full`** (default) — All 15 categories, 36 tools
+- **`minimal`** — 8 categories, 24 tools (search, backlinks, health, tasks, append, frontmatter, notes, structure)
 
-Per-tool category gating in `index.ts` via monkey-patched `server.tool()` and `server.registerTool()`.
+Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
-Categories: `search`, `backlinks`, `orphans`, `hubs`, `paths`, `temporal`, `periodic`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `sections`, `notes`, `git`, `policy`
+Categories: `search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `git`, `policy`
 
 ---
 
@@ -60,7 +66,7 @@ Categories: `search`, `backlinks`, `orphans`, `hubs`, `paths`, `temporal`, `peri
 
 ### FTS5 (Built-in)
 
-SQLite Full-Text Search 5:
+SQLite Full-Text Search 5 in `.flywheel/state.db`:
 - BM25 ranking
 - Stemming (Porter)
 - Phrase matching, prefix search
@@ -76,16 +82,6 @@ npm test         # Run tests (packages/mcp-server)
 npm run dev      # Watch mode
 npm run lint     # Type check
 ```
-
----
-
-## Migration Notes
-
-This project consolidates:
-- `@velvetmonkey/flywheel-mcp` (read tools)
-- `@velvetmonkey/flywheel-crank` (write tools)
-
-Old packages will be deprecated with notice pointing to flywheel-memory.
 
 ---
 

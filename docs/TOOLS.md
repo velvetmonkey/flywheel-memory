@@ -1,251 +1,225 @@
 # Tool Reference
 
-76 tools across 18 categories. All enabled by default (`full` preset).
+36 tools across 15 categories. All enabled by default (`full` preset).
 
 ---
 
-## Search (3 tools)
+## Search & Discovery (1 tool)
 
-| Tool | Description |
-|------|-------------|
-| `search_notes` | Search notes by frontmatter fields, tags, folders, or title. Covers ~80% of Dataview use cases. |
-| `full_text_search` | Search note content using SQLite FTS5. Supports stemming, phrases, boolean operators, prefix matching. |
-| `search_entities` | Search vault entities (people, projects, technologies) using FTS5 with Porter stemming. |
+### `search`
 
-**Key parameters:**
+Unified search across metadata, content, and entities. The `scope` parameter controls what to search.
 
-- `search_notes` -- `where` (frontmatter filters), `has_tag`, `has_any_tag`, `has_all_tags`, `folder`, `title_contains`, `sort_by`, `order`, `limit`
-- `full_text_search` -- `query` (FTS5 syntax: `"exact phrase"`, `term1 AND term2`, `prefix*`), `limit`
-- `search_entities` -- `query`, `limit`, `prefix` (enable autocomplete mode)
+| Scope | Description |
+|-------|-------------|
+| `metadata` | Search frontmatter fields, tags, folders, titles. Use `where`, `has_tag`, `has_any_tag`, `has_all_tags`, `folder`, `title_contains` filters. |
+| `content` | Full-text search using SQLite FTS5. Supports stemming, phrases (`"exact phrase"`), boolean operators (`term1 AND term2`), prefix matching (`prefix*`). |
+| `entities` | Search vault entities (people, projects, technologies) with FTS5 Porter stemming. Supports `prefix` mode for autocomplete. |
+| `all` | (default) Tries metadata first, falls back to content search. |
 
----
-
-## Backlinks (3 tools)
-
-| Tool | Description |
-|------|-------------|
-| `get_backlinks` | Get all notes that link TO the specified note. Returns source paths and line numbers. |
-| `get_forward_links` | Get all notes that this note links TO. Returns targets and whether they exist. |
-| `find_bidirectional_links` | Find pairs of notes that link to each other (mutual links). |
+**Key parameters:** `query`, `scope`, `where` (frontmatter key-value filters), `has_tag`, `has_any_tag`, `has_all_tags`, `folder`, `title_contains`, `modified_after`, `modified_before`, `sort_by` (modified/created/title), `order` (asc/desc), `prefix` (entity autocomplete), `limit`
 
 ---
 
-## Orphans (3 tools)
+## Graph Navigation (2 tools)
 
-| Tool | Description |
-|------|-------------|
-| `find_orphan_notes` | Find notes with no backlinks (disconnected content). |
-| `find_dead_ends` | Find notes with backlinks but no outgoing links. |
-| `find_sources` | Find notes with outgoing links but no backlinks. |
-
----
-
-## Hubs (2 tools)
-
-| Tool | Description |
-|------|-------------|
-| `find_hub_notes` | Find highly connected notes sorted by total connections. |
-| `get_connection_strength` | Calculate connection strength between two notes. |
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `get_backlinks` | Get all notes that link TO the specified note. Returns source paths and line numbers. | `path`, `include_context`, `include_bidirectional`, `limit`, `offset` |
+| `get_forward_links` | Get all notes that this note links TO. Returns targets and whether they exist. | `path` |
 
 ---
 
-## Paths (2 tools)
+## Graph Analysis (4 tools)
 
-| Tool | Description |
-|------|-------------|
-| `get_link_path` | Find the shortest path of links between two notes. |
-| `get_common_neighbors` | Find notes that both specified notes link to. |
+### `graph_analysis`
 
----
+Analyze vault link graph structure. The `analysis` parameter selects the mode.
 
-## Temporal (5 tools)
+| Analysis | Description | Key Parameters |
+|----------|-------------|----------------|
+| `orphans` | Notes with no backlinks (disconnected content) | `folder`, `limit`, `offset` |
+| `dead_ends` | Notes with backlinks but no outgoing links | `folder`, `min_backlinks`, `limit`, `offset` |
+| `sources` | Notes with outgoing links but no backlinks | `folder`, `min_outlinks`, `limit`, `offset` |
+| `hubs` | Highly connected notes sorted by total connections | `min_links`, `limit`, `offset` |
+| `stale` | Important notes (by backlink count) not recently modified | `days` (required), `min_backlinks`, `limit` |
 
-| Tool | Description |
-|------|-------------|
-| `get_stale_notes` | Find important notes (by backlink count) not modified recently. |
-| `get_notes_in_range` | Get all notes modified within a date range. |
-| `get_notes_modified_on` | Get all notes modified on a specific date. |
-| `get_contemporaneous_notes` | Find notes edited around the same time as a given note. |
-| `get_activity_summary` | Get a summary of vault activity over a period. |
+### Other graph tools
 
----
-
-## Periodic (1 tool)
-
-| Tool | Description |
-|------|-------------|
-| `detect_periodic_notes` | Detect where the vault keeps daily/weekly/monthly notes. Zero-config convention discovery. |
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `get_connection_strength` | Calculate connection strength between two notes based on various factors | `note_a`, `note_b` |
+| `get_link_path` | Find the shortest path of links between two notes | `from`, `to`, `max_depth` |
+| `get_common_neighbors` | Find notes that both specified notes link to | `note_a`, `note_b` |
 
 ---
 
-## Schema (13 tools)
+## Note Reading (6 tools)
 
-| Tool | Description |
-|------|-------------|
-| `get_frontmatter_schema` | Analyze all frontmatter fields used across the vault. |
-| `get_field_values` | Get all unique values for a specific frontmatter field. |
-| `find_frontmatter_inconsistencies` | Find fields with multiple types across notes. |
-| `validate_frontmatter` | Validate notes against a schema (missing fields, wrong types, invalid values). |
-| `find_missing_frontmatter` | Find notes missing expected frontmatter fields by folder. |
-| `infer_folder_conventions` | Auto-detect field conventions from vault patterns. |
-| `find_incomplete_notes` | Find notes missing fields expected for their folder. |
-| `suggest_field_values` | Suggest values for frontmatter fields based on context. |
-| `detect_prose_patterns` | Detect extractable patterns in note prose content. |
-| `suggest_frontmatter_from_prose` | Suggest frontmatter fields from prose patterns. |
-| `suggest_wikilinks_in_frontmatter` | Suggest wikilink values for frontmatter fields. |
-| `validate_cross_layer` | Cross-validate frontmatter against prose content. |
-| `compute_frontmatter` | Auto-compute derived fields from note content. |
-
-**Field migration tools (also in schema category):**
-
-| Tool | Description |
-|------|-------------|
-| `rename_field` | Bulk rename a frontmatter field across the vault. Dry-run by default. |
-| `migrate_field_values` | Bulk transform field values with mapping rules. Dry-run by default. |
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `get_note_metadata` | Get metadata (frontmatter, tags, link counts) without reading full content | `path`, `include_word_count` |
+| `get_note_structure` | Get heading structure, sections hierarchy, word count, line count | `path`, `include_content` |
+| `get_section_content` | Get the content under a specific heading in a note | `path`, `heading`, `include_subheadings` |
+| `find_sections` | Find all sections across vault matching a heading pattern (regex) | `pattern`, `folder`, `limit`, `offset` |
+| `get_all_entities` | Get all linkable entities (note titles and aliases) | `include_aliases`, `limit` |
+| `get_unlinked_mentions` | Find places where an entity is mentioned but not linked | `entity`, `limit` |
 
 ---
 
-## Structure (4 tools)
+## Schema & Intelligence (4 tools)
 
-| Tool | Description |
-|------|-------------|
-| `get_note_structure` | Get the heading structure and sections of a note. |
-| `get_headings` | Get all headings from a note (lightweight). |
-| `get_section_content` | Get the content under a specific heading in a note. |
-| `find_sections` | Find all sections across vault matching a heading pattern. |
+### `vault_schema`
 
----
+Analyze and validate vault frontmatter schema. The `analysis` parameter selects the mode.
 
-## Tasks (Read) (4 tools)
+| Analysis | Description | Key Parameters |
+|----------|-------------|----------------|
+| `overview` | Schema of all frontmatter fields across the vault | `limit` |
+| `field_values` | All unique values for a specific field | `field` (required) |
+| `inconsistencies` | Fields with multiple types across notes | |
+| `validate` | Validate notes against a provided schema | `schema` (required), `folder` |
+| `missing` | Find notes missing expected fields by folder | `folder_schemas` (required) |
+| `conventions` | Auto-detect metadata conventions for a folder | `folder`, `min_confidence` |
+| `incomplete` | Find notes missing expected fields (inferred from peers) | `folder`, `min_frequency`, `limit`, `offset` |
+| `suggest_values` | Suggest values for a field based on usage | `field` (required), `folder`, `existing_frontmatter` |
 
-| Tool | Description |
-|------|-------------|
-| `get_all_tasks` | Get all tasks with filtering by status, folder, and tag. |
-| `get_tasks_from_note` | Get all tasks from a specific note. |
-| `get_tasks_with_due_dates` | Get tasks that have due dates, sorted by date. |
-| `get_incomplete_tasks` | Get all incomplete (open) tasks. Simpler interface. |
+### `note_intelligence`
 
----
+Analyze a note for patterns, suggestions, and consistency. The `analysis` parameter selects the mode.
 
-## Health (10 tools)
+| Analysis | Description | Key Parameters |
+|----------|-------------|----------------|
+| `prose_patterns` | Find "Key: Value" or "Key: [[wikilink]]" patterns in prose | `path` (required) |
+| `suggest_frontmatter` | Suggest YAML frontmatter from detected prose patterns | `path` (required) |
+| `suggest_wikilinks` | Find frontmatter values that could be wikilinks | `path` (required) |
+| `cross_layer` | Check consistency between frontmatter and prose references | `path` (required) |
+| `compute` | Auto-compute derived fields (word_count, link_count, etc.) | `path` (required), `fields` |
+| `all` | Run all analyses and return combined result | `path` (required), `fields` |
 
-| Tool | Description |
-|------|-------------|
-| `health_check` | Check MCP server health status. Returns vault accessibility, index freshness, recommendations. |
-| `get_vault_stats` | Comprehensive vault statistics: notes, links, tags, orphans, folders. |
-| `get_folder_structure` | Get vault folder structure with note counts. |
-| `refresh_index` | Rebuild the vault index without restarting the server. |
-| `rebuild_search_index` | Manually rebuild the FTS5 full-text search index. |
-| `get_note_metadata` | Get metadata about a note without reading full content. |
-| `get_all_entities` | Get all linkable entities (note titles and aliases). |
-| `get_unlinked_mentions` | Find places where an entity is mentioned but not linked. |
-| `get_recent_notes` | Get notes modified within the last N days. |
-| `find_broken_links` | Find wikilinks that appear to be typos (similar note exists). |
+### Field migration tools
+
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `rename_field` | Bulk rename a frontmatter field across notes. Dry-run by default. | `old_name`, `new_name`, `folder`, `dry_run` |
+| `migrate_field_values` | Bulk transform field values with mapping rules. Dry-run by default. | `field`, `mapping`, `folder`, `dry_run` |
 
 ---
 
 ## Wikilinks (2 tools)
 
-| Tool | Description |
-|------|-------------|
-| `suggest_wikilinks` | Analyze text and suggest where wikilinks could be added. |
-| `validate_links` | Check wikilinks in a note (or all notes) and report broken links. |
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `suggest_wikilinks` | Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases. | `text`, `limit`, `offset` |
+| `validate_links` | Check wikilinks in a note (or all notes) and report broken links. Suggests fixes for typos. | `path` (optional, omit for all), `typos_only`, `limit`, `offset` |
 
 ---
 
-## Append (3 tools)
+## Tasks (3 tools)
 
-| Tool | Description |
-|------|-------------|
-| `vault_add_to_section` | Add content to a specific section. Supports formats: plain, bullet, task, numbered, timestamp-bullet. |
-| `vault_remove_from_section` | Remove content matching a pattern from a section. |
-| `vault_replace_in_section` | Replace content matching a pattern in a section. |
+### `tasks`
 
-**Key features:** Auto-wikilinks on every write, content validation and normalization, guardrail modes (warn/strict/off), list nesting preservation, outgoing link suggestions.
+Unified task query tool. Use `path` to scope to a single note, `has_due_date` to find tasks with due dates (sorted by date), or query vault-wide.
 
----
+**Key parameters:** `path`, `status` (open/completed/cancelled/all), `has_due_date`, `folder`, `tag`, `limit`, `offset`
 
-## Frontmatter (2 tools)
+### Mutation tools
 
-| Tool | Description |
-|------|-------------|
-| `vault_update_frontmatter` | Update frontmatter fields (merge with existing). |
-| `vault_add_frontmatter_field` | Add a new frontmatter field (only if it doesn't exist). |
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `vault_toggle_task` | Toggle a task checkbox between checked and unchecked | `path`, `task` (text to match), `section`, `commit` |
+| `vault_add_task` | Add a new task to a section. Supports auto-wikilinks, validation, and guardrails. | `path`, `section`, `task`, `position`, `completed`, `commit` |
 
 ---
 
-## Sections (1 tool)
+## Content Mutations (3 tools)
 
-| Tool | Description |
-|------|-------------|
-| `vault_list_sections` | List all sections (headings) in a note. Filterable by heading level. |
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `vault_add_to_section` | Add content to a specific section. Set `create_if_missing=true` to auto-create the note from template. | `path`, `section`, `content`, `create_if_missing`, `position`, `format` (plain/bullet/task/numbered/timestamp-bullet), `commit` |
+| `vault_remove_from_section` | Remove content matching a pattern from a section | `path`, `section`, `pattern`, `mode` (first/last/all), `useRegex`, `commit` |
+| `vault_replace_in_section` | Replace content matching a pattern in a section | `path`, `section`, `search`, `replacement`, `mode` (first/last/all), `useRegex`, `commit` |
 
----
-
-## Notes (4 tools)
-
-| Tool | Description |
-|------|-------------|
-| `vault_create_note` | Create a new note with optional frontmatter and content. |
-| `vault_delete_note` | Delete a note (requires explicit confirmation). |
-| `vault_move_note` | Move a note to a new location. Updates all backlinks across the vault. |
-| `vault_rename_note` | Rename a note. Updates all backlinks across the vault. |
+**Shared features:** Auto-wikilinks on every write, content validation and normalization, guardrail modes (warn/strict/off), list nesting preservation, outgoing link suggestions.
 
 ---
 
-## Git (1 tool)
+## Frontmatter (1 tool)
 
-| Tool | Description |
-|------|-------------|
-| `vault_undo_last_mutation` | Undo the last git commit (soft reset). Safety checks prevent undoing wrong commit. |
+### `vault_update_frontmatter`
 
----
+Update frontmatter fields in a note (merge with existing). Set `only_if_missing=true` to only add fields that don't already exist.
 
-## Policy (9 tools)
-
-| Tool | Description |
-|------|-------------|
-| `policy_validate` | Validate a policy YAML against the schema. |
-| `policy_preview` | Dry-run showing what a policy execution would do. |
-| `policy_execute` | Run a policy with variables. |
-| `policy_author` | Generate policy YAML from a natural language description. |
-| `policy_revise` | Modify an existing policy. |
-| `policy_list` | List available policies. |
-| `policy_diff` | Compare two policy versions. |
-| `policy_export` | Export a policy for sharing. |
-| `policy_import` | Import a shared policy. |
+**Key parameters:** `path`, `frontmatter` (JSON object), `only_if_missing`, `commit`
 
 ---
 
-## Tasks (Write) (2 tools)
+## Note Management (4 tools)
 
-| Tool | Description |
-|------|-------------|
-| `vault_toggle_task` | Toggle a task checkbox between checked and unchecked. |
-| `vault_add_task` | Add a new task to a section. Supports auto-wikilinks, validation, and guardrails. |
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `vault_create_note` | Create a new note with optional frontmatter and content. Includes preflight checks for similar notes and alias collisions. | `path`, `content`, `frontmatter`, `overwrite`, `commit` |
+| `vault_delete_note` | Delete a note. Shows backlink warnings before deletion. | `path`, `confirm` (required), `commit` |
+| `vault_move_note` | Move a note to a new location. Updates all backlinks across the vault. | `oldPath`, `newPath`, `updateBacklinks`, `commit` |
+| `vault_rename_note` | Rename a note in place. Updates all backlinks across the vault. | `path`, `newTitle`, `updateBacklinks`, `commit` |
 
 ---
 
-## Tool Count by Category
+## Vault Health (4 tools)
 
-| Category | Count | Type |
-|----------|-------|------|
-| search | 3 | Read |
-| backlinks | 3 | Read |
-| orphans | 3 | Read |
-| hubs | 2 | Read |
-| paths | 2 | Read |
-| temporal | 5 | Read |
-| periodic | 1 | Read |
-| schema | 15 | Read |
-| structure | 4 | Read |
-| tasks | 6 | Read + Write |
-| health | 10 | Read |
-| wikilinks | 2 | Read |
-| append | 3 | Write |
-| frontmatter | 2 | Write |
-| sections | 1 | Write |
-| notes | 4 | Write |
-| git | 1 | Write |
-| policy | 9 | Write |
-| **Total** | **76** | |
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `health_check` | Check MCP server health. Returns vault accessibility, index freshness, periodic note detection, config, and recommendations. | (none) |
+| `get_vault_stats` | Comprehensive vault statistics: notes, links, tags, orphans, folders. Includes 7-day recent activity summary. | (none) |
+| `get_folder_structure` | Get vault folder structure with note counts and subfolder counts. | (none) |
+| `refresh_index` | Rebuild the vault index and FTS5 search index without restarting the server. | (none) |
+
+---
+
+## Policy Automation (1 tool)
+
+### `policy`
+
+Manage vault policies. The `action` parameter selects the operation.
+
+| Action | Description | Key Parameters |
+|--------|-------------|----------------|
+| `list` | List all available policies | (none) |
+| `validate` | Validate policy YAML against the schema | `yaml` (required) |
+| `preview` | Dry-run showing what a policy execution would do | `policy` (name or YAML), `variables` |
+| `execute` | Run a policy with variables | `policy` (name or YAML), `variables`, `commit` |
+| `author` | Generate policy YAML from a description | `name`, `description`, `steps`, `authorVariables`, `conditions`, `save` |
+| `revise` | Modify an existing policy | `policy` (name), `changes`, `save` |
+
+---
+
+## Undo (1 tool)
+
+### `vault_undo_last_mutation`
+
+Undo the last git commit (typically the last Crank mutation). Performs a soft reset with safety checks to prevent undoing the wrong commit.
+
+**Key parameters:** `confirm` (required), `hash` (optional, prevents undoing wrong commit)
+
+---
+
+## Category-to-Preset Mapping
+
+| Category | Tools | Included in `full` | Included in `minimal` |
+|----------|------:|:-------------------:|:---------------------:|
+| search | 1 | Yes | Yes |
+| backlinks | 2 | Yes | Yes |
+| orphans | 1 | Yes | |
+| hubs | 1 | Yes | |
+| paths | 2 | Yes | |
+| schema | 4 | Yes | |
+| structure | 3 | Yes | Yes |
+| tasks | 3 | Yes | Yes |
+| health | 7 | Yes | Yes |
+| wikilinks | 2 | Yes | |
+| append | 3 | Yes | Yes |
+| frontmatter | 1 | Yes | Yes |
+| notes | 4 | Yes | Yes |
+| git | 1 | Yes | |
+| policy | 1 | Yes | |
+| **Total** | **36** | **36** | **24** |

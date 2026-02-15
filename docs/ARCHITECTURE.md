@@ -1,6 +1,6 @@
 # Architecture
 
-Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 76 tools for search, graph queries, and mutations.
+Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 36 tools for search, graph queries, and mutations.
 
 ---
 
@@ -13,30 +13,25 @@ packages/
 │       ├── index.ts             # Entry point, tool preset gating, startup
 │       ├── tools/
 │       │   ├── read/            # Read tool registrations
-│       │   │   ├── query.ts     # search_notes, full_text_search, search_entities
-│       │   │   ├── graph.ts     # get_backlinks, get_forward_links, find_orphan_notes, find_hub_notes
-│       │   │   ├── graphAdvanced.ts  # get_link_path, get_common_neighbors, find_dead_ends, etc.
-│       │   │   ├── primitives.ts     # Temporal, structure, task, frontmatter primitives
-│       │   │   ├── health.ts    # health_check, get_vault_stats, find_broken_links
-│       │   │   ├── system.ts    # refresh_index, get_all_entities, get_note_metadata, etc.
-│       │   │   ├── wikilinks.ts # suggest_wikilinks, validate_links
-│       │   │   ├── periodic.ts  # detect_periodic_notes
-│       │   │   ├── schema.ts    # Schema intelligence (13 tools)
-│       │   │   ├── computed.ts  # compute_frontmatter
-│       │   │   ├── migrations.ts # rename_field, migrate_field_values
-│       │   │   ├── frontmatter.ts # get_frontmatter_schema, get_field_values, etc.
-│       │   │   ├── structure.ts # get_note_structure, get_headings, etc.
-│       │   │   ├── temporal.ts  # Temporal query implementations
-│       │   │   ├── tasks.ts     # Task query implementations
-│       │   │   └── bidirectional.ts # find_bidirectional_links
+│       │   │   ├── query.ts     # search (unified: metadata + content + entities)
+│       │   │   ├── graph.ts     # get_backlinks (+ bidirectional), get_forward_links
+│       │   │   ├── graphAdvanced.ts  # get_link_path, get_common_neighbors, get_connection_strength
+│       │   │   ├── graphAnalysis.ts  # graph_analysis (unified: orphans, dead_ends, sources, hubs, stale)
+│       │   │   ├── vaultSchema.ts    # vault_schema (unified: overview, field_values, inconsistencies, validate, conventions, incomplete)
+│       │   │   ├── noteIntelligence.ts # note_intelligence (unified: prose_patterns, suggest_frontmatter, suggest_wikilinks, cross_layer, compute)
+│       │   │   ├── primitives.ts     # get_note_structure, get_section_content, find_sections, tasks
+│       │   │   ├── health.ts    # health_check, get_vault_stats (+ recent_activity), get_folder_structure
+│       │   │   ├── system.ts    # refresh_index, get_all_entities, get_note_metadata, get_unlinked_mentions
+│       │   │   ├── wikilinks.ts # suggest_wikilinks, validate_links (+ typo detection)
+│       │   │   └── migrations.ts # rename_field, migrate_field_values
 │       │   └── write/           # Write tool registrations
 │       │       ├── mutations.ts # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
 │       │       ├── tasks.ts     # vault_toggle_task, vault_add_task
 │       │       ├── notes.ts     # vault_create_note, vault_delete_note
 │       │       ├── move-notes.ts # vault_move_note, vault_rename_note (with backlink updates)
-│       │       ├── frontmatter.ts # vault_update_frontmatter, vault_add_frontmatter_field
-│       │       ├── system.ts    # vault_list_sections, vault_undo_last_mutation
-│       │       └── policy.ts    # 9 policy workflow tools
+│       │       ├── frontmatter.ts # vault_update_frontmatter (+ only_if_missing)
+│       │       ├── system.ts    # vault_undo_last_mutation
+│       │       └── policy.ts    # policy (unified: list, validate, preview, execute, author, revise)
 │       └── core/
 │           ├── read/            # Read-side core logic
 │           │   ├── graph.ts     # Index building, backlinks, hubs, orphans, path finding
@@ -139,12 +134,12 @@ Both update the VaultIndex, entity index, hub scores, and index cache after each
 
 ## SQLite FTS5 Full-Text Search
 
-Two separate FTS5 indexes:
+Two FTS5 indexes, both in `.flywheel/state.db`:
 
-### Content Search (`notes_fts` in `vault-search.db`)
+### Content Search (`notes_fts` in `state.db`)
 
 - Indexes all `.md` file content with Porter stemming
-- Stored in `.claude/vault-search.db`
+- Stored in `.flywheel/state.db`
 - Supports: simple terms, phrases (`"exact match"`), boolean operators (`AND`, `OR`, `NOT`), prefix matching (`auth*`), column filters (`title:api`)
 - BM25 ranking with highlighted snippets
 - Auto-rebuilds when stale (>1 hour)
@@ -155,7 +150,7 @@ Two separate FTS5 indexes:
 - FTS5 virtual table backed by the `entities` table
 - Porter stemmer with unicode61 tokenizer
 - Auto-synced via SQLite triggers on insert/update/delete
-- Used by `search_entities` tool
+- Used by `search` tool (entity mode)
 
 ---
 
@@ -226,10 +221,9 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 |-------|---------|
 | `entities` | Entity index (name, path, category, aliases, hub score) |
 | `entities_fts` | FTS5 virtual table for entity search |
-| `notes` | Note metadata (path, title, hash, modified, aliases, tags) |
-| `links` | Link records (source, target, line number) |
+| `notes_fts` | FTS5 content search index |
+| `fts_metadata` | FTS rebuild tracking (last rebuild time, counts) |
 | `recency` | Entity recency tracking (last mentioned, mention count) |
-| `notes_fts` | Content search FTS5 index |
 | `vault_index_cache` | Serialized VaultIndex for fast startup |
 | `flywheel_config` | Configuration key-value store |
 | `crank_state` | Write-side state (last commit, mutation hints) |

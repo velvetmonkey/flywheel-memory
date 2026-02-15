@@ -52,9 +52,9 @@ A vault is 250K tokens. A Flywheel query returns 100-500 tokens of precisely tar
 
 ### One Server, Many Tools
 
-76 tools might sound like a lot. But each tool does one thing well, and the tool preset system lets you load only what you need. The `minimal` preset gives you ~30 tools in ~5,200 tokens. The `full` preset gives you everything at ~11,100 tokens. Custom category sets let you tune the exact tradeoff.
+36 tools across 15 categories might sound like a lot. But each tool does one thing well, and the tool preset system lets you load only what you need. The `minimal` preset gives you 24 tools in ~5,200 tokens. The `full` preset gives you all 36 tools at ~11,100 tokens. Custom category sets let you tune the exact tradeoff.
 
-This design means Claude can pick the right tool for each subtask: `search_notes` for finding content, `get_backlinks` for navigating the graph, `vault_add_to_section` for writing. No giant multipurpose tools with complex parameter matrices.
+This design means Claude can pick the right tool for each subtask: `search` for finding content, `get_backlinks` for navigating the graph, `vault_add_to_section` for writing. No giant multipurpose tools with complex parameter matrices.
 
 ### Index Everything, Query Anything
 

@@ -67,18 +67,18 @@ Vault root detection order:
 
 | Preset | Categories | Tool Count | Token Cost |
 |--------|------------|------------|------------|
-| `full` | All 18 categories | ~76 tools | ~11,100 tokens |
-| `minimal` | 7 categories | ~30 tools | ~5,200 tokens |
+| `full` | All 15 categories | 36 tools | ~11,100 tokens |
+| `minimal` | 8 categories | 24 tools | ~5,200 tokens |
 
 **`full` categories:**
-`search`, `backlinks`, `orphans`, `hubs`, `paths`, `temporal`, `periodic`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `sections`, `notes`, `git`, `policy`
+`search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `git`, `policy`
 
 **`minimal` categories:**
-`search`, `backlinks`, `health`, `tasks`, `append`, `frontmatter`, `notes`
+`search`, `backlinks`, `health`, `tasks`, `append`, `frontmatter`, `notes`, `structure`
 
 #### Custom Tool Sets
 
-Compose your own set from the 18 categories:
+Compose your own set from the 15 categories:
 
 ```json
 {
@@ -102,33 +102,30 @@ Unknown categories are ignored with a warning. If no valid categories are found,
 
 #### Category Reference
 
-**Read categories (12):**
+**Read categories (10):**
 
 | Category | Tools | Description |
 |----------|-------|-------------|
-| `search` | 3 | Full-text search, frontmatter queries, entity search |
-| `backlinks` | 3 | Backlinks, forward links, bidirectional links |
-| `orphans` | 3 | Orphan notes, dead ends, source notes |
-| `hubs` | 2 | Hub detection, connection strength |
+| `search` | 1 | Unified search (metadata, content, entities) |
+| `backlinks` | 2 | Backlinks (+ bidirectional), forward links |
+| `orphans` | 1 | Graph analysis (orphans, dead ends, sources, hubs, stale) |
+| `hubs` | 1 | Connection strength |
 | `paths` | 2 | Shortest path, common neighbors |
-| `temporal` | 5 | Stale notes, date ranges, activity summaries |
-| `periodic` | 1 | Periodic note detection |
-| `schema` | 15 | Frontmatter analysis, validation, migration |
-| `structure` | 4 | Headings, sections, note structure |
-| `tasks` | 6 | Task queries and mutations (read + write) |
-| `health` | 10 | Vault stats, diagnostics, index management |
+| `schema` | 4 | Vault schema, note intelligence, field migrations |
+| `structure` | 3 | Note structure, section content, find sections |
+| `tasks` | 3 | Task queries and mutations (read + write) |
+| `health` | 7 | Vault stats, diagnostics, index management, metadata |
 | `wikilinks` | 2 | Link suggestions, link validation |
 
-**Write categories (6):**
+**Write categories (5):**
 
 | Category | Tools | Description |
 |----------|-------|-------------|
 | `append` | 3 | Add, remove, replace content in sections |
-| `frontmatter` | 2 | Update and add frontmatter fields |
-| `sections` | 1 | List sections in a note |
+| `frontmatter` | 1 | Update frontmatter fields |
 | `notes` | 4 | Create, delete, move, rename notes |
 | `git` | 1 | Undo last mutation |
-| `policy` | 9 | Policy workflow automation |
+| `policy` | 1 | Policy workflow automation |
 
 ### File Watcher
 
@@ -219,9 +216,8 @@ Flywheel stores its state in your vault directory:
 | Path | Purpose |
 |------|---------|
 | `.flywheel/state.db` | Consolidated state database (SQLite, WAL mode) |
-| `.claude/vault-search.db` | Full-text search index |
 
-Both are local-only and safe to delete (they rebuild automatically). Add them to `.gitignore` if your vault is version-controlled.
+This is local-only and safe to delete (it rebuilds automatically). Add it to `.gitignore` if your vault is version-controlled.
 
 ---
 
@@ -234,7 +230,7 @@ Only search and graph tools, no mutations:
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "search,backlinks,orphans,hubs,paths,temporal,periodic,schema,structure,tasks,health,wikilinks"
+    "FLYWHEEL_TOOLS": "search,backlinks,orphans,hubs,paths,schema,structure,tasks,health,wikilinks"
   }
 }
 ```

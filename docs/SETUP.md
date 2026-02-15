@@ -133,28 +133,125 @@ See [CONFIGURATION.md](CONFIGURATION.md) for all presets, bundles, and individua
 
 ---
 
-## Step 5: Add a Persona (Optional)
+## Step 5: Configure Claude for Your Vault
 
-Create a `CLAUDE.md` file in your vault root to tell Claude how your vault is organized. This helps Claude pick the right tools and navigate your structure.
+Flywheel gives Claude the tools. Configuration tells Claude *how to think about your vault* -- which folders matter, what frontmatter means, and how notes should be formatted.
 
-Example:
+There are three layers, each optional:
+
+```
+.mcp.json          → Which tools Claude can use (Step 1 already did this)
+CLAUDE.md          → How Claude should think about your vault
+.claude/rules/     → Format rules for specific note types
+```
+
+Start with just `CLAUDE.md`. Add rules files later as you notice Claude getting formats wrong.
+
+### CLAUDE.md: Your Vault Persona
+
+Create a `CLAUDE.md` file in your vault root. This is the single most impactful thing you can do -- it transforms Claude from a generic assistant into one that understands your specific system.
+
+Here's what to include and why:
+
+**Vault structure** -- folder layout with what each folder holds. Claude uses this to pick the right tool arguments (folder filters, path construction). Without it, Claude guesses folder names.
+
+**Frontmatter conventions** -- field names, allowed values, which folders use which fields. Claude uses this to construct correct `where` filters and to create notes with proper metadata.
+
+**Section conventions** -- what headings your notes use (`## Log`, `## Tasks`, etc.). Claude uses this to target `vault_add_to_section` correctly instead of appending to the wrong place.
+
+**Key hubs** -- notes that serve as connection points (e.g., a "Team Roster" or "Project Index"). Claude checks backlinks on these first when answering broad questions.
+
+**Quick commands** (optional) -- natural language shortcuts mapped to what you want. These prime Claude to respond to shorthand like "what's overdue" with the right multi-tool workflow.
+
+**Workflows** (optional) -- multi-step tool chains for common tasks. These show Claude the optimal tool sequence so it doesn't have to figure it out each time.
+
+#### Starter Template
 
 ```markdown
 # My Vault
 
 ## Structure
-- `projects/` -- one note per project with status, client, and deadline in frontmatter
-- `people/` -- one note per person with role and company
-- `daily-notes/` -- daily journal with ## Log and ## Tasks sections
+
+- `daily-notes/` -- daily journal entries with ## Log and ## Tasks sections
+- `projects/` -- one note per project, status tracked in frontmatter
+- `people/` -- one note per person, role and company in frontmatter
 - `meetings/` -- meeting notes linked to projects and people
 
-## Conventions
-- Tasks use `- [ ]` format under ## Tasks sections
-- Frontmatter always includes `tags`, `created`, and `status`
-- Project notes link to their client via `[[Client Name]]`
+## Frontmatter
+
+| Field | Used in | Values |
+|-------|---------|--------|
+| `status` | projects | active, completed, on-hold |
+| `tags` | all | free-form |
+| `created` | all | YYYY-MM-DD |
+
+## Sections
+
+- Daily notes: `## Log` for entries, `## Tasks` for action items
+- Meeting notes: `## Attendees`, `## Notes`, `## Action Items`
+
+## Key Hubs
+
+- `projects/Project Index.md` -- links to all active projects
+- `people/Team.md` -- links to all team members
 ```
 
-See the [demo vaults](../demos/) for full examples (e.g., [carter-strategy/CLAUDE.md](../demos/carter-strategy/CLAUDE.md)).
+The demo vaults show fully fleshed-out examples with quick commands and workflows:
+- [carter-strategy/CLAUDE.md](../demos/carter-strategy/CLAUDE.md) -- consulting practice with invoicing
+- [artemis-rocket/CLAUDE.md](../demos/artemis-rocket/CLAUDE.md) -- engineering project with dependency tracking
+- [nexus-lab/CLAUDE.md](../demos/nexus-lab/CLAUDE.md) -- research lab with experiment protocols
+
+### `.claude/rules/`: Format Rules for Note Types
+
+Claude Code supports [rules files](https://docs.anthropic.com/en/docs/claude-code/memory#project-level-memory) in `.claude/rules/` with `paths:` frontmatter for folder-scoped activation. These are ideal for format constraints that only apply to certain note types.
+
+Use them for:
+- Required frontmatter fields for a folder
+- Naming conventions (e.g., `INV-###` for invoices)
+- Section structure (required headings, ordering)
+- Time/date formats
+
+**Example: daily notes rule** (`.claude/rules/daily-notes.md`)
+
+```markdown
+---
+paths: "daily-notes/**/*.md"
+alwaysApply: false
+---
+
+# Daily Notes Format
+
+## Log Section
+
+Format log entries as continuous bullets:
+
+## Log
+
+- 09:00 - [[Client Name]] - Activity description
+- 10:30 - [[Client Name]] - Activity description
+- 14:00 - Admin - Non-billable activity
+
+## Time Format
+
+- Use 24-hour time: `09:00`, `14:30`
+- Include client wikilink when billable
+```
+
+Every demo vault ships an `obsidian-syntax.md` rule that prevents common Obsidian rendering issues (broken wikilinks, angle brackets). Copy it from any demo or create your own.
+
+See the [demo vaults](../demos/) for more rule examples:
+- `carter-strategy/.claude/rules/` -- invoice format, client notes, daily notes
+- `artemis-rocket/.claude/rules/` -- decision records, system notes, daily notes
+- `nexus-lab/.claude/rules/` -- experiment format, literature notes, daily notes
+
+### Iteration
+
+Start simple and build up:
+
+1. **Week 1:** Add `CLAUDE.md` with just your folder structure
+2. **Week 2:** Add frontmatter conventions after you see Claude creating notes with wrong metadata
+3. **Week 3:** Add `.claude/rules/` files for note types where Claude keeps getting the format wrong
+4. **Ongoing:** Add quick commands and workflows as you discover patterns you repeat
 
 ---
 

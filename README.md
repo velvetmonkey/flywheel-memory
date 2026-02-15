@@ -10,10 +10,9 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Scale](https://img.shields.io/badge/scale-100k%20notes-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory)
+[![Tests](https://img.shields.io/badge/tests-1,757%20passed-brightgreen.svg)](docs/TESTING.md)
 
-One MCP server. Your Obsidian vault becomes a queryable knowledge graph --
-backlinks, full-text search, auto-wikilinks, and structured writes.
-Load every tool or just the ones you need.
+One MCP server. 36 tools. Your Obsidian vault becomes a queryable knowledge graph.
 
 ---
 
@@ -21,12 +20,22 @@ Load every tool or just the ones you need.
 
 You have 500 notes. Claude has to read them to answer a question.
 
+A 500-note Obsidian vault is ~250,000 tokens of raw markdown. Dumping that into context
+is expensive, slow, and imprecise. Worse, it misses the structure that makes a vault
+useful: which notes link to which, what's changed recently, what's orphaned, what's a hub.
+
+File access gives Claude your content. Flywheel gives it your knowledge graph.
+
 | | Without Flywheel | With Flywheel |
 |---|---|---|
 | "What's overdue?" | Read every file, hope you catch it | Indexed query, <10ms, ~90 tokens |
 | "What links here?" | `grep` every file | `get_backlinks` -- pre-indexed graph |
 | "Add a meeting note" | Raw file write, no linking | Write + auto-wikilink to existing notes |
 | Token cost per query | 2,000-250,000 | 50-200 |
+| Query speed | Seconds of file I/O | <10ms in-memory index |
+| Scale tested to | Unknown | 100,000 notes |
+
+36 tools. 6-line config. Zero cloud dependencies.
 
 ---
 
@@ -45,13 +54,21 @@ You have 500 notes. Claude has to read them to answer a question.
 }
 ```
 
-**2.** Open your vault in Claude Code.
+**2.** Open your vault in Claude Code:
 
-**3.** Ask a question. Claude can now search, query, and edit your vault.
+```bash
+cd /path/to/your/vault && claude
+```
+
+**3.** Ask a question. Claude can now search, query, and edit your vault through Flywheel's indexed tools instead of reading raw files.
+
+That's it. No API keys. No config files. No cloud accounts.
 
 ---
 
-## Real Example: "How much have I billed Acme Corp?"
+## Live Example: The Flywheel in Action
+
+### Read: "How much have I billed Acme Corp?"
 
 From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant with 3 clients, 5 projects, and $27K in invoices.
 
@@ -88,7 +105,13 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
 └───────────────────────────────────────────────────────┘
 ```
 
-Now write something:
+Claude didn't read any files. It navigated the graph: backlinks to find related notes,
+metadata to extract the numbers. 4 tool calls. ~160 tokens. 0 files read.
+
+The same question without Flywheel would require reading every file in the vault --
+thousands of tokens just to find two invoice amounts.
+
+### Write: Auto-wikilinks on every mutation
 
 ```
 ❯ Log that I finished the Acme strategy deck
@@ -104,40 +127,71 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ---
 
-## Your graph builds itself
+## The Flywheel Effect
 
-When Claude writes to your vault, Flywheel scans every note title
-and alias, then links automatically:
+The name is literal. Every interaction makes the next one better.
+
+1. **Claude reads** your vault through indexed queries instead of raw file scans
+2. **Claude writes** to your vault with auto-wikilinks, connecting new content to existing notes
+3. **The graph grows** -- more links mean better search results, hub detection, and path finding
+4. **Queries get richer** -- backlinks surface related context that raw search would miss
+5. **Repeat** -- each write strengthens the graph, each read leverages it
+
+When Claude writes to your vault, Flywheel scans every note title and alias, then links automatically:
 
 ```
 Input:  "Met with Sarah about the data migration"
 Output: "Met with [[Sarah Mitchell]] about the [[Acme Data Migration]]"
 ```
 
-Every write operation strengthens your knowledge graph. No manual linking.
-No broken references. The more you use it, the more connected it gets.
+No manual linking. No broken references. Use compounds into structure, structure compounds into intelligence.
+
+The more you use it, the smarter it gets. No training. No ML. Just your vault, getting more connected with every interaction.
 
 That's the flywheel.
 
 ---
 
-## Where This Goes
+## Prove It: The Numbers
 
-Flywheel is one layer of something bigger:
+### Test Coverage
 
+| Metric | Count |
+|---|---|
+| Tests | 1,757 |
+| Test files | 78 |
+| Lines of test code | 33,000+ |
+
+### Performance
+
+| Operation | Threshold | Typical |
+|---|---|---|
+| 1k-line mutation | <100ms | ~15ms |
+| 10k-line mutation | <500ms | -- |
+| 100k-line mutation | <2s | -- |
+
+### Battle-Hardened
+
+This isn't a prototype. Flywheel is tested like production infrastructure:
+
+- **100 parallel writes, zero corruption** -- concurrent mutations verified under stress
+- **Property-based fuzzing** -- fast-check with 50+ randomized scenarios testing edge cases
+- **SQL injection prevention** -- parameterized queries throughout, no string interpolation
+- **Path traversal blocking** -- all file paths validated against vault root
+- **Deterministic output** -- every tool produces the same result given the same input
+
+Every demo vault is a real test fixture. If it works in the README, it passes in CI.
+
+```bash
+git clone https://github.com/velvetmonkey/flywheel-memory.git
+cd flywheel-memory && npm install && npm test
 ```
-voice → transcription → AI agent → structured knowledge → queryable vault
-```
 
-Speak into your phone. Your AI processes it. Flywheel writes it to your vault
-with proper wikilinks, frontmatter, and structure. Tomorrow, you ask a question
-and the answer is already there -- linked, indexed, searchable.
-
-Your vault isn't a filing cabinet. It's a second brain that actually works.
+See [docs/TESTING.md](docs/TESTING.md) for the full testing methodology.
 
 ---
 
-## Try It
+## Demo Vaults
 
 6 production-ready vaults representing real knowledge work:
 
@@ -150,6 +204,8 @@ Your vault isn't a filing cabinet. It's a second brain that actually works.
 | [solo-operator](demos/solo-operator/) | Content creator | "How's revenue this month?" | 16 |
 | [support-desk](demos/support-desk/) | Support agent | "What's Sarah Chen's situation?" | 12 |
 
+Every demo is a real test fixture. If it works in the README, it passes in CI.
+
 ```bash
 git clone https://github.com/velvetmonkey/flywheel-memory.git
 cd flywheel-memory/demos/carter-strategy && claude
@@ -157,13 +213,13 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 ---
 
-## Tools
+## Tools Overview
 
-Flywheel ships 15 tool categories. Load all of them, or just the ones you need.
+15 categories. 36 tools. Load all of them, or just the ones you need.
 
 **Presets:**
-- `full` (default) -- everything
-- `minimal` -- search, backlinks, tasks, notes (~24 tools, great for voice/mobile)
+- `full` (default) -- all 15 categories, 36 tools
+- `minimal` -- 8 categories, ~24 tools (search, backlinks, health, tasks, append, frontmatter, notes, structure)
 
 **Or compose your own:**
 
@@ -187,6 +243,21 @@ See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
 
 ---
 
+## Who This Is For
+
+Flywheel is for anyone who uses an Obsidian vault as their working memory
+and wants Claude to understand it -- not just read it.
+
+- **Consultants** tracking clients, projects, invoices, and meetings -- see [carter-strategy](demos/carter-strategy/)
+- **Engineers** maintaining project docs, decision logs, and architecture notes -- see [artemis-rocket](demos/artemis-rocket/)
+- **Founders** running ops, tracking MRR, and managing investors -- see [startup-ops](demos/startup-ops/)
+- **Researchers** navigating literature, experiment logs, and citation networks -- see [nexus-lab](demos/nexus-lab/)
+- **Creators** managing editorial calendars, drafts, and revenue -- see [solo-operator](demos/solo-operator/)
+
+If your vault has more than a handful of notes, Flywheel makes Claude meaningfully better at working with it.
+
+---
+
 ## Configuration
 
 | Variable | Default | Description |
@@ -198,28 +269,38 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options, presets, and
 
 ---
 
-## Prove It
+## The Vision
 
-1,757 tests. Verified at 100,000 notes. Every demo vault is a real test case.
+Flywheel is one layer of something bigger:
 
-```bash
-git clone https://github.com/velvetmonkey/flywheel-memory.git
-cd flywheel-memory && npm install && npm test
 ```
+voice → transcription → AI agent → structured knowledge → queryable vault
+```
+
+Speak into your phone. Your AI processes it. Flywheel writes it to your vault
+with proper wikilinks, frontmatter, and structure. Tomorrow, you ask a question
+and the answer is already there -- linked, indexed, searchable.
+
+Your vault isn't a filing cabinet. It's a second brain that actually works.
+
+Files are data. Links are relationships. AI agents are operators.
+
+See [docs/VISION.md](docs/VISION.md) for the full picture.
 
 ---
 
-## Docs
+## Documentation
 
-| | |
+| Doc | Description |
 |---|---|
-| [TOOLS.md](docs/TOOLS.md) | Full tool reference |
+| [TOOLS.md](docs/TOOLS.md) | Full tool reference -- all 36 tools, parameters, examples |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Index strategy, FTS5, graph, auto-wikilinks |
 | [CONFIGURATION.md](docs/CONFIGURATION.md) | Env vars, presets, custom tool sets |
+| [TESTING.md](docs/TESTING.md) | Test methodology, coverage, performance benchmarks |
 | [VISION.md](docs/VISION.md) | The flywheel effect and where this goes |
 
 ---
 
 ## License
 
-Apache-2.0 -- [GitHub](https://github.com/velvetmonkey/flywheel-memory) · [Issues](https://github.com/velvetmonkey/flywheel-memory/issues)
+Apache-2.0 -- [GitHub](https://github.com/velvetmonkey/flywheel-memory) | [Issues](https://github.com/velvetmonkey/flywheel-memory/issues)

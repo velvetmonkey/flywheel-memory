@@ -79,18 +79,28 @@ let flywheelConfig: FlywheelConfig = {};
 let stateDb: StateDb | null = null;
 
 // ============================================================================
-// Tool Presets
+// Tool Presets & Composable Bundles
 // ============================================================================
 // FLYWHEEL_TOOLS env var controls which tools are loaded.
 //
 // Presets:
-//   minimal  - Core tools for search, navigate, create, edit (~19 tools)
-//   full     - All tools (~36 tools) [DEFAULT]
+//   minimal  - Note-taking essentials: search, read, create, edit (13 tools)
+//   full     - All tools (36 tools) [DEFAULT]
 //
-// Fine-grained: use comma-separated category names for custom sets.
-//   FLYWHEEL_TOOLS=search,backlinks,append
+// Composable bundles (combine with minimal or each other):
+//   graph    - Backlinks, orphans, hubs, paths (6 tools)
+//   analysis - Schema intelligence, wikilink validation (6 tools)
+//   tasks    - Task queries and mutations (3 tools)
+//   health   - Vault diagnostics and index management (6 tools)
+//   ops      - Git undo, policy automation (2 tools)
 //
-// Categories:
+// Examples:
+//   FLYWHEEL_TOOLS=minimal                    # 13 tools
+//   FLYWHEEL_TOOLS=minimal,graph,tasks        # 22 tools
+//   FLYWHEEL_TOOLS=minimal,graph,analysis     # 25 tools
+//   FLYWHEEL_TOOLS=search,backlinks,append    # fine-grained categories
+//
+// Categories (15):
 //   READ:  search, backlinks, orphans, hubs, paths,
 //          schema, structure, tasks, health, wikilinks
 //   WRITE: append, frontmatter, notes, git, policy
@@ -107,10 +117,8 @@ type ToolCategory =
   | 'git' | 'policy';
 
 const PRESETS: Record<string, ToolCategory[]> = {
-  // Core tools: search, navigate, create, edit
-  minimal: ['search', 'backlinks', 'health', 'tasks', 'append', 'frontmatter', 'notes', 'structure'],
-
-  // All tools (default)
+  // Presets
+  minimal: ['search', 'structure', 'append', 'frontmatter', 'notes'],
   full: [
     'search', 'backlinks', 'orphans', 'hubs', 'paths',
     'schema', 'structure', 'tasks',
@@ -118,6 +126,13 @@ const PRESETS: Record<string, ToolCategory[]> = {
     'append', 'frontmatter', 'notes',
     'git', 'policy',
   ],
+
+  // Composable bundles
+  graph: ['backlinks', 'orphans', 'hubs', 'paths'],
+  analysis: ['schema', 'wikilinks'],
+  tasks: ['tasks'],
+  health: ['health'],
+  ops: ['git', 'policy'],
 };
 
 const ALL_CATEGORIES: ToolCategory[] = [
@@ -182,7 +197,6 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   get_vault_stats: 'health',
   get_folder_structure: 'health',
   refresh_index: 'health',   // absorbed rebuild_search_index
-  get_note_metadata: 'health',
   get_all_entities: 'health',
   get_unlinked_mentions: 'health',
 
@@ -209,6 +223,7 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   get_note_structure: 'structure',
   get_section_content: 'structure',
   find_sections: 'structure',
+  get_note_metadata: 'structure',
 
   // tasks (unified: all task queries + write)
   tasks: 'tasks',

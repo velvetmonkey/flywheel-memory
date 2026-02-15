@@ -217,11 +217,20 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 15 categories. 36 tools. Load all of them, or just the ones you need.
 
-**Presets:**
-- `full` (default) -- all 15 categories, 36 tools
-- `minimal` -- 8 categories, ~24 tools (search, backlinks, health, tasks, append, frontmatter, notes, structure)
+| Preset | Tools | ~Tokens | What you get |
+|--------|-------|---------|--------------|
+| `full` | 36 | ~11,100 | Everything |
+| `minimal` | 13 | ~3,800 | Search, read, create, edit |
 
-**Or compose your own:**
+Start with `minimal`, then add composable bundles:
+
+| Bundle | Tools | What it adds |
+|--------|-------|--------------|
+| `graph` | 6 | Backlinks, orphans, hubs, shortest paths |
+| `analysis` | 6 | Schema intelligence, wikilink validation |
+| `tasks` | 3 | Task queries and mutations |
+| `health` | 6 | Vault diagnostics, index management |
+| `ops` | 2 | Git undo, policy automation |
 
 ```json
 {
@@ -230,7 +239,7 @@ cd flywheel-memory/demos/carter-strategy && claude
       "command": "npx",
       "args": ["-y", "@velvetmonkey/flywheel-memory"],
       "env": {
-        "FLYWHEEL_TOOLS": "search,backlinks,tasks,notes"
+        "FLYWHEEL_TOOLS": "minimal,graph,tasks"
       }
     }
   }

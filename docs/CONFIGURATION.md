@@ -61,44 +61,52 @@ Vault root detection order:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `FLYWHEEL_TOOLS` | `full` | Preset name or comma-separated category list |
+| `FLYWHEEL_TOOLS` | `full` | Preset, bundle, or comma-separated category list |
 
-#### Presets
+#### Quick Start
 
-| Preset | Categories | Tool Count | Token Cost |
-|--------|------------|------------|------------|
-| `full` | All 15 categories | 36 tools | ~11,100 tokens |
-| `minimal` | 8 categories | 24 tools | ~5,200 tokens |
+| Preset | Tools | ~Tokens | Use case |
+|--------|-------|---------|----------|
+| `full` | 36 | ~11,100 | Everything — graph, schema, tasks, policy |
+| `minimal` | 13 | ~3,800 | Note-taking essentials — search, read, create, edit |
 
-**`full` categories:**
-`search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `git`, `policy`
+The fewer tools you load, the less context Claude needs to pick the right one.
 
-**`minimal` categories:**
-`search`, `backlinks`, `health`, `tasks`, `append`, `frontmatter`, `notes`, `structure`
+#### Composable Bundles
 
-#### Custom Tool Sets
+Start with `minimal`, then add what you need:
 
-Compose your own set from the 15 categories:
+| Bundle | Tools | ~Tokens | What it adds |
+|--------|-------|---------|--------------|
+| `graph` | 6 | ~1,850 | Backlinks, orphans, hubs, shortest paths |
+| `analysis` | 6 | ~1,850 | Schema intelligence, wikilink validation |
+| `tasks` | 3 | ~925 | Task queries and mutations |
+| `health` | 6 | ~1,850 | Vault diagnostics, index management |
+| `ops` | 2 | ~625 | Git undo, policy automation |
+
+#### Recipes
+
+| Config | Tools | ~Tokens | Categories |
+|--------|-------|---------|------------|
+| `minimal` | 13 | ~3,800 | search, structure, append, frontmatter, notes |
+| `minimal,graph,tasks` | 22 | ~6,575 | + backlinks, orphans, hubs, paths, tasks |
+| `minimal,graph,analysis` | 25 | ~7,500 | + backlinks, orphans, hubs, paths, schema, wikilinks |
+| `minimal,graph,tasks,health` | 28 | ~8,425 | + backlinks, orphans, hubs, paths, tasks, health |
+| `full` | 36 | ~11,100 | All 15 categories |
+
+#### How It Works
+
+Set `FLYWHEEL_TOOLS` to a preset, one or more bundles, individual categories, or any combination — comma-separated. Bundles expand to their constituent categories, and duplicates are deduplicated automatically.
 
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "search,backlinks,tasks,notes"
+    "FLYWHEEL_TOOLS": "minimal,graph,tasks"
   }
 }
 ```
 
-You can also mix presets with categories:
-
-```json
-{
-  "env": {
-    "FLYWHEEL_TOOLS": "minimal,schema,git"
-  }
-}
-```
-
-Unknown categories are ignored with a warning. If no valid categories are found, falls back to `full`.
+Unknown names are ignored with a warning. If nothing valid is found, falls back to `full`.
 
 #### Category Reference
 
@@ -112,9 +120,9 @@ Unknown categories are ignored with a warning. If no valid categories are found,
 | `hubs` | 1 | Connection strength |
 | `paths` | 2 | Shortest path, common neighbors |
 | `schema` | 4 | Vault schema, note intelligence, field migrations |
-| `structure` | 3 | Note structure, section content, find sections |
+| `structure` | 4 | Note structure, section content, find sections, metadata |
 | `tasks` | 3 | Task queries and mutations (read + write) |
-| `health` | 7 | Vault stats, diagnostics, index management, metadata |
+| `health` | 6 | Vault stats, diagnostics, index management |
 | `wikilinks` | 2 | Link suggestions, link validation |
 
 **Write categories (5):**
@@ -223,18 +231,6 @@ This is local-only and safe to delete (it rebuilds automatically). Add it to `.g
 
 ## Common Configurations
 
-### Read-Only Vault
-
-Only search and graph tools, no mutations:
-
-```json
-{
-  "env": {
-    "FLYWHEEL_TOOLS": "search,backlinks,orphans,hubs,paths,schema,structure,tasks,health,wikilinks"
-  }
-}
-```
-
 ### Voice/Mobile (Minimal)
 
 Smallest tool set for voice pipelines or mobile contexts:
@@ -247,26 +243,50 @@ Smallest tool set for voice pipelines or mobile contexts:
 }
 ```
 
-### Research Vault
+### Note-Taking + Tasks
 
-Search, graph analysis, and schema intelligence:
+Daily notes, task management, basic editing:
 
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "search,backlinks,orphans,hubs,paths,schema,structure,health"
+    "FLYWHEEL_TOOLS": "minimal,tasks"
   }
 }
 ```
 
-### Task Management
+### Knowledge Work
 
-Focus on tasks with minimal graph tools:
+Note-taking + graph navigation for research and consulting:
 
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "search,tasks,append,frontmatter,notes"
+    "FLYWHEEL_TOOLS": "minimal,graph,tasks"
+  }
+}
+```
+
+### Research Vault
+
+Full graph + schema intelligence for deep analysis:
+
+```json
+{
+  "env": {
+    "FLYWHEEL_TOOLS": "minimal,graph,analysis"
+  }
+}
+```
+
+### Read-Only Vault
+
+All read tools, no mutations:
+
+```json
+{
+  "env": {
+    "FLYWHEEL_TOOLS": "search,backlinks,orphans,hubs,paths,schema,structure,tasks,health,wikilinks"
   }
 }
 ```

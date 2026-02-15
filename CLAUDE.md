@@ -51,14 +51,20 @@ packages/mcp-server/src/
 
 ## Tool Presets
 
-Controlled by `FLYWHEEL_TOOLS` env var:
+Controlled by `FLYWHEEL_TOOLS` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
-- **`full`** (default) — All 15 categories, 36 tools
-- **`minimal`** — 8 categories, 24 tools (search, backlinks, health, tasks, append, frontmatter, notes, structure)
+**Presets:**
+- **`full`** (default) — All 15 categories, 36 tools (~11,100 tokens)
+- **`minimal`** — 5 categories, 13 tools (~3,800 tokens): search, structure, append, frontmatter, notes
 
-Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
+**Composable bundles** (add to minimal or each other):
+- **`graph`** — 6 tools: backlinks, orphans, hubs, paths
+- **`analysis`** — 6 tools: schema, wikilinks
+- **`tasks`** — 3 tools: tasks
+- **`health`** — 6 tools: health
+- **`ops`** — 2 tools: git, policy
 
-Categories: `search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `git`, `policy`
+**Categories (15):** `search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `git`, `policy`
 
 ---
 

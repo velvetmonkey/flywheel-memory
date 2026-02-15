@@ -140,32 +140,16 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `FLYWHEEL_WATCH` | `true` | Set to `false` to disable file watching entirely |
-| `FLYWHEEL_WATCH_V2` | `false` | Set to `true` for battle-hardened v2 watcher |
-| `FLYWHEEL_WATCH_POLL` | `false` | Set to `true` for polling mode (enables v2 watcher). Use on network drives or Docker volumes. |
-| `FLYWHEEL_DEBOUNCE_MS` | `60000` (v1) / `200` (v2) | Milliseconds to wait after last file change before rebuilding index |
-| `FLYWHEEL_FLUSH_MS` | `1000` | v2 only: maximum wait time before flushing event batch |
-| `FLYWHEEL_POLL_INTERVAL` | `30000` | v2 only: polling interval in ms (when `FLYWHEEL_WATCH_POLL=true`) |
+| `FLYWHEEL_WATCH_POLL` | `false` | Set to `true` for polling mode. Use on network drives, Docker volumes, or WSL. |
+| `FLYWHEEL_DEBOUNCE_MS` | `200` | Milliseconds to wait after last file change before rebuilding index |
+| `FLYWHEEL_FLUSH_MS` | `1000` | Maximum wait time before flushing event batch |
+| `FLYWHEEL_POLL_INTERVAL` | `30000` | Polling interval in ms (when `FLYWHEEL_WATCH_POLL=true`) |
 
-#### Watcher v1 (default)
-
-Uses chokidar with a simple debounce timer. Any `.md` file change starts a countdown; when the countdown expires, the full index is rebuilt. Good for most setups.
+The file watcher uses per-path debouncing, event coalescing, backpressure handling, and error recovery. Any `.md` file change triggers an index rebuild after the debounce period.
 
 ```json
 {
   "env": {
-    "FLYWHEEL_DEBOUNCE_MS": "30000"
-  }
-}
-```
-
-#### Watcher v2 (opt-in)
-
-Per-path debouncing, event coalescing, backpressure handling, and error recovery. Better for large vaults or rapid editing sessions.
-
-```json
-{
-  "env": {
-    "FLYWHEEL_WATCH_V2": "true",
     "FLYWHEEL_DEBOUNCE_MS": "500"
   }
 }

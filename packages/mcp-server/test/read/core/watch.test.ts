@@ -53,13 +53,13 @@ describe('File Watcher', () => {
     });
 
     it('FLYWHEEL_DEBOUNCE_MS defaults to 500 when not set', () => {
-      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '500');
-      expect(debounceMs).toBe(500);
+      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '200');
+      expect(debounceMs).toBe(200);
     });
 
     it('FLYWHEEL_DEBOUNCE_MS can be customized', () => {
       process.env.FLYWHEEL_DEBOUNCE_MS = '1000';
-      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '500');
+      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '200');
       expect(debounceMs).toBe(1000);
     });
   });
@@ -122,19 +122,19 @@ describe('File Watcher', () => {
   describe('debounce behavior', () => {
     it('should use default debounce of 500ms when not configured', () => {
       delete process.env.FLYWHEEL_DEBOUNCE_MS;
-      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '500');
-      expect(debounceMs).toBe(500);
+      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '200');
+      expect(debounceMs).toBe(200);
     });
 
     it('should respect custom debounce from env var', () => {
       process.env.FLYWHEEL_DEBOUNCE_MS = '2000';
-      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '500');
+      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '200');
       expect(debounceMs).toBe(2000);
     });
 
     it('should handle invalid debounce gracefully (NaN becomes 500)', () => {
       process.env.FLYWHEEL_DEBOUNCE_MS = 'invalid';
-      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '500');
+      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '200');
       // parseInt('invalid') returns NaN, so we'd need fallback logic
       // The current implementation doesn't handle this, so it would be NaN
       expect(Number.isNaN(debounceMs)).toBe(true);

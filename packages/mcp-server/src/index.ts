@@ -15,8 +15,6 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import chokidar from 'chokidar';
-
 // Core imports - Read
 import type { VaultIndex } from './core/read/types.js';
 import {
@@ -525,96 +523,45 @@ async function runPostIndexWork(index: VaultIndex) {
 
   // Setup file watcher
   if (process.env.FLYWHEEL_WATCH !== 'false') {
-    const useV2Watcher = process.env.FLYWHEEL_WATCH_V2 === 'true' ||
-                         process.env.FLYWHEEL_WATCH_POLL === 'true';
+    const config = parseWatcherConfig();
+    console.error(`[Memory] File watcher enabled (debounce: ${config.debounceMs}ms)`);
 
-    if (useV2Watcher) {
-      const config = parseWatcherConfig();
-      console.error(`[Memory] File watcher v2 enabled (debounce: ${config.debounceMs}ms)`);
-
-      const watcher = createVaultWatcher({
-        vaultPath,
-        config,
-        onBatch: async (batch) => {
-          console.error(`[Memory] Processing ${batch.events.length} file changes`);
-          const startTime = Date.now();
-          try {
-            vaultIndex = await buildVaultIndex(vaultPath);
-            setIndexState('ready');
-            console.error(`[Memory] Index rebuilt in ${Date.now() - startTime}ms`);
-            await updateEntitiesInStateDb();
-            await exportHubScores(vaultIndex, stateDb);
-            if (stateDb) {
-              try {
-                saveVaultIndexToCache(stateDb, vaultIndex);
-              } catch (err) {
-                console.error('[Memory] Failed to update index cache:', err);
-              }
+    const watcher = createVaultWatcher({
+      vaultPath,
+      config,
+      onBatch: async (batch) => {
+        console.error(`[Memory] Processing ${batch.events.length} file changes`);
+        const startTime = Date.now();
+        try {
+          vaultIndex = await buildVaultIndex(vaultPath);
+          setIndexState('ready');
+          console.error(`[Memory] Index rebuilt in ${Date.now() - startTime}ms`);
+          await updateEntitiesInStateDb();
+          await exportHubScores(vaultIndex, stateDb);
+          if (stateDb) {
+            try {
+              saveVaultIndexToCache(stateDb, vaultIndex);
+            } catch (err) {
+              console.error('[Memory] Failed to update index cache:', err);
             }
-          } catch (err) {
-            setIndexState('error');
-            setIndexError(err instanceof Error ? err : new Error(String(err)));
-            console.error('[Memory] Failed to rebuild index:', err);
           }
-        },
-        onStateChange: (status) => {
-          if (status.state === 'dirty') {
-            console.error('[Memory] Warning: Index may be stale');
-          }
-        },
-        onError: (err) => {
-          console.error('[Memory] Watcher error:', err.message);
-        },
-      });
-
-      watcher.start();
-    } else {
-      // Legacy watcher
-      const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '60000');
-      console.error(`[Memory] File watcher v1 enabled (debounce: ${debounceMs}ms)`);
-      if (debounceMs >= 60000) {
-        console.error('[Memory] Warning: Legacy watcher using high debounce (60s). Set FLYWHEEL_WATCH_V2=true for 200ms responsiveness.');
-      }
-
-      const legacyWatcher = chokidar.watch(vaultPath, {
-        ignored: /(^|[\/\\])\../,
-        persistent: true,
-        ignoreInitial: true,
-        awaitWriteFinish: {
-          stabilityThreshold: 300,
-          pollInterval: 100
+        } catch (err) {
+          setIndexState('error');
+          setIndexError(err instanceof Error ? err : new Error(String(err)));
+          console.error('[Memory] Failed to rebuild index:', err);
         }
-      });
+      },
+      onStateChange: (status) => {
+        if (status.state === 'dirty') {
+          console.error('[Memory] Warning: Index may be stale');
+        }
+      },
+      onError: (err) => {
+        console.error('[Memory] Watcher error:', err.message);
+      },
+    });
 
-      let rebuildTimer: NodeJS.Timeout;
-      legacyWatcher.on('all', (event, path) => {
-        if (!path.endsWith('.md')) return;
-        clearTimeout(rebuildTimer);
-        rebuildTimer = setTimeout(() => {
-          console.error('[Memory] Rebuilding index (file changed)');
-          buildVaultIndex(vaultPath)
-            .then(async (newIndex) => {
-              vaultIndex = newIndex;
-              setIndexState('ready');
-              console.error('[Memory] Index rebuilt successfully');
-              await updateEntitiesInStateDb();
-              await exportHubScores(newIndex, stateDb);
-              if (stateDb) {
-                try {
-                  saveVaultIndexToCache(stateDb, newIndex);
-                } catch (err) {
-                  console.error('[Memory] Failed to update index cache:', err);
-                }
-              }
-            })
-            .catch((err) => {
-              setIndexState('error');
-              setIndexError(err instanceof Error ? err : new Error(String(err)));
-              console.error('[Memory] Failed to rebuild index:', err);
-            });
-        }, debounceMs);
-      });
-    }
+    watcher.start();
   }
 }
 

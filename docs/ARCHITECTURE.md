@@ -123,12 +123,7 @@ The VaultIndex is serialized to JSON and stored in the `vault_index_cache` table
 
 ### File Watcher
 
-Two watcher implementations:
-
-- **v1 (default):** chokidar with configurable debounce (default 60s). Any `.md` change triggers full index rebuild after debounce.
-- **v2 (opt-in via `FLYWHEEL_WATCH_V2=true`):** Battle-hardened watcher with per-path debouncing, event coalescing, backpressure handling, and error recovery.
-
-Both update the VaultIndex, entity index, hub scores, and index cache after each rebuild.
+Chokidar-based watcher with per-path debouncing (default 200ms), event coalescing, backpressure handling, and error recovery. Any `.md` change triggers an index rebuild after the debounce period, updating the VaultIndex, entity index, hub scores, and index cache. Polling mode available for network drives and WSL (`FLYWHEEL_WATCH_POLL=true`).
 
 ---
 

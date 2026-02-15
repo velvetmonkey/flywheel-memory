@@ -40,6 +40,7 @@ import {
   type StateDb,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
+import { isSuppressed } from './wikilinkFeedback.js';
 import { setGitStateDb } from './git.js';
 import { setHintsStateDb } from './hints.js';
 import { setRecencyStateDb } from '../shared/recency.js';
@@ -334,9 +335,17 @@ export function processWikilinks(content: string, notePath?: string): WikilinkRe
     };
   }
 
-  const entities = getAllEntities(entityIndex);
+  let entities = getAllEntities(entityIndex);
   // eslint-disable-next-line no-console
   console.error(`[Flywheel:DEBUG] Processing wikilinks with ${entities.length} entities`);
+
+  // Filter out suppressed entities (from wikilink feedback)
+  if (moduleStateDb) {
+    entities = entities.filter(e => {
+      const name = getEntityName(e);
+      return !isSuppressed(moduleStateDb!, name);
+    });
+  }
 
   // Sort by priority (cross-folder + hub) for same-length entity preference
   const sortedEntities = sortEntitiesByPriority(entities, notePath);

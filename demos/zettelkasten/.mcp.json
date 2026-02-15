@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "flywheel-memory": {
+      "command": "node",
+      "args": ["../../packages/mcp-server/dist/index.js"],
+      "env": {
+        "PROJECT_PATH": "."
+      }
+    }
+  }
+}

@@ -102,7 +102,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -230,6 +230,34 @@ CREATE TABLE IF NOT EXISTS flywheel_config (
   value TEXT NOT NULL,
   updated_at TEXT DEFAULT (datetime('now'))
 );
+
+-- Vault metrics (v4: growth tracking)
+CREATE TABLE IF NOT EXISTS vault_metrics (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp INTEGER NOT NULL,
+  metric TEXT NOT NULL,
+  value REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_vault_metrics_ts ON vault_metrics(timestamp);
+CREATE INDEX IF NOT EXISTS idx_vault_metrics_m ON vault_metrics(metric, timestamp);
+
+-- Wikilink feedback (v4: quality tracking)
+CREATE TABLE IF NOT EXISTS wikilink_feedback (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  entity TEXT NOT NULL,
+  context TEXT NOT NULL,
+  note_path TEXT NOT NULL,
+  correct INTEGER NOT NULL,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_wl_feedback_entity ON wikilink_feedback(entity);
+
+-- Wikilink suppressions (v4: auto-suppress false positives)
+CREATE TABLE IF NOT EXISTS wikilink_suppressions (
+  entity TEXT PRIMARY KEY,
+  false_positive_rate REAL NOT NULL,
+  updated_at TEXT DEFAULT (datetime('now'))
+);
 `;
 
 // =============================================================================
@@ -298,6 +326,9 @@ function initSchema(db: Database.Database): void {
         db.exec('ALTER TABLE crank_state RENAME TO write_state');
       }
     }
+
+    // v4: vault_metrics, wikilink_feedback, wikilink_suppressions tables
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'

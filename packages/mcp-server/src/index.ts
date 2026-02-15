@@ -64,6 +64,17 @@ import { registerNoteTools } from './tools/write/notes.js';
 import { registerMoveNoteTools } from './tools/write/move-notes.js';
 import { registerSystemTools as registerWriteSystemTools } from './tools/write/system.js';
 import { registerPolicyTools } from './tools/write/policy.js';
+import { registerTagTools } from './tools/write/tags.js';
+import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
+
+// Read tool registrations (additional)
+import { registerMetricsTools } from './tools/read/metrics.js';
+
+// Core imports - Metrics
+import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
+
+// Core imports - Wikilink Feedback
+import { updateSuppressionList } from './core/write/wikilinkFeedback.js';
 
 // Resources
 import { registerVaultResources } from './resources/vault.js';
@@ -257,9 +268,16 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   // policy
   policy: 'policy',
 
-  // schema (migrations)
+  // schema (migrations + tag rename)
   rename_field: 'schema',
   migrate_field_values: 'schema',
+  rename_tag: 'schema',
+
+  // health (growth metrics)
+  vault_growth: 'health',
+
+  // wikilinks (feedback)
+  wikilink_feedback: 'wikilinks',
 };
 
 // ============================================================================
@@ -334,6 +352,11 @@ registerNoteTools(server, vaultPath, () => vaultIndex);
 registerMoveNoteTools(server, vaultPath);
 registerWriteSystemTools(server, vaultPath);
 registerPolicyTools(server, vaultPath);
+registerTagTools(server, () => vaultIndex, () => vaultPath);
+registerWikilinkFeedbackTools(server, () => stateDb);
+
+// Additional read tools
+registerMetricsTools(server, () => vaultIndex, () => stateDb);
 
 // Resources (always registered, not gated by tool presets)
 registerVaultResources(server, () => vaultIndex ?? null);
@@ -466,6 +489,27 @@ async function runPostIndexWork(index: VaultIndex) {
 
   // Export hub scores
   await exportHubScores(index, stateDb);
+
+  // Record growth metrics
+  if (stateDb) {
+    try {
+      const metrics = computeMetrics(index);
+      recordMetrics(stateDb, metrics);
+      purgeOldMetrics(stateDb, 90);
+      console.error('[Memory] Growth metrics recorded');
+    } catch (err) {
+      console.error('[Memory] Failed to record metrics:', err);
+    }
+  }
+
+  // Update wikilink suppression list
+  if (stateDb) {
+    try {
+      updateSuppressionList(stateDb);
+    } catch (err) {
+      console.error('[Memory] Failed to update suppression list:', err);
+    }
+  }
 
   // Load/infer config
   const existing = loadConfig(stateDb);

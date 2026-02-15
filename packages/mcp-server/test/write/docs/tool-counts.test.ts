@@ -206,6 +206,7 @@ describe('Tool Count Verification', () => {
         'search', 'tasks', 'graph_analysis', 'vault_schema', 'note_intelligence', 'policy',
         'health_check', 'refresh_index', 'suggest_wikilinks', 'validate_links',
         'rename_field', 'migrate_field_values',
+        'rename_tag', 'wikilink_feedback',
       ]);
 
       for (const tool of toolNames) {

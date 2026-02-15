@@ -22,6 +22,7 @@ import {
   inferFolderConventions,
   findIncompleteNotes,
   suggestFieldValues,
+  findContradictions,
 } from './schema.js';
 
 /**
@@ -45,15 +46,18 @@ export function registerVaultSchemaTools(
         '- "missing": Find notes missing expected fields by folder\n' +
         '- "conventions": Auto-detect metadata conventions for a folder\n' +
         '- "incomplete": Find notes missing expected fields (inferred)\n' +
-        '- "suggest_values": Suggest values for a field based on usage\n\n' +
+        '- "suggest_values": Suggest values for a field based on usage\n' +
+        '- "contradictions": Find conflicting frontmatter values across notes referencing the same entity\n\n' +
         'Example: vault_schema({ analysis: "field_values", field: "status" })\n' +
-        'Example: vault_schema({ analysis: "conventions", folder: "projects" })',
+        'Example: vault_schema({ analysis: "conventions", folder: "projects" })\n' +
+        'Example: vault_schema({ analysis: "contradictions", entity: "project alpha" })',
       inputSchema: {
         analysis: z.enum([
           'overview', 'field_values', 'inconsistencies', 'validate',
-          'missing', 'conventions', 'incomplete', 'suggest_values',
+          'missing', 'conventions', 'incomplete', 'suggest_values', 'contradictions',
         ]).describe('Type of schema analysis to perform'),
         field: z.string().optional().describe('Field name (field_values, suggest_values)'),
+        entity: z.string().optional().describe('Entity name to scope contradiction detection to (contradictions mode)'),
         folder: z.string().optional().describe('Folder to scope analysis to'),
         schema: z.record(z.object({
           required: z.boolean().optional().describe('Whether field is required'),
@@ -184,6 +188,21 @@ export function registerVaultSchemaTools(
           });
           return {
             content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+          };
+        }
+
+        case 'contradictions': {
+          const allContradictions = findContradictions(index, params.entity);
+          const paginated = allContradictions.slice(params.offset ?? 0, (params.offset ?? 0) + limit);
+
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify({
+              analysis: 'contradictions',
+              entity: params.entity || null,
+              total_count: allContradictions.length,
+              returned_count: paginated.length,
+              contradictions: paginated,
+            }, null, 2) }],
           };
         }
       }

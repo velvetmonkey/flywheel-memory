@@ -62,11 +62,19 @@ Find connections and navigate the knowledge graph.
 
 > "Find notes that mention 'TypeScript' but don't have a wikilink to the TypeScript note"
 
+> "Find notes similar to projects/alpha.md that I haven't linked yet"
+
 ### Find hubs
 
 > "What are the most connected notes in my vault?"
 
 > "Show me hub notes with more than 10 connections"
+
+### Track graph evolution
+
+> "How has my vault's graph structure changed over the last 30 days?"
+
+> "Which notes are emerging as new hubs? Show me entities growing fastest in connections"
 
 ---
 
@@ -143,6 +151,18 @@ Understand your vault's structure and consistency.
 ### Wikilink suggestions
 
 > "Analyze this text and suggest where I should add wikilinks: 'Met with Sarah about the data migration project and discussed the React codebase'"
+
+### Find immature notes
+
+> "Find immature notes in my vault that need attention"
+
+> "Show me the least mature notes in the projects/ folder -- which ones need more content, links, or metadata?"
+
+### Check for contradictions
+
+> "Check for contradictions in frontmatter across my vault"
+
+> "Are there conflicting frontmatter values across notes that reference [[Project Alpha]]?"
 
 ### Note intelligence
 

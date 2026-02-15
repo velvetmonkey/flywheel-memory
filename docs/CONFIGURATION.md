@@ -67,7 +67,7 @@ Vault root detection order:
 
 | Preset | Tools | ~Tokens | Use case |
 |--------|-------|---------|----------|
-| `full` (default) | 36 | ~11,100 | Everything — graph, schema, tasks, policy |
+| `full` (default) | 41 | ~12,400 | Everything — graph, schema, tasks, policy |
 | `minimal` | 13 | ~3,800 | Note-taking essentials — search, read, create, edit |
 
 The fewer tools you load, the less context Claude needs to pick the right one.
@@ -79,9 +79,9 @@ Start with `minimal`, then add what you need:
 | Bundle | Tools | ~Tokens | What it adds |
 |--------|-------|---------|--------------|
 | `graph` | 6 | ~1,850 | Backlinks, orphans, hubs, shortest paths |
-| `analysis` | 6 | ~1,850 | Schema intelligence, wikilink validation |
+| `analysis` | 9 | ~2,775 | Schema intelligence, wikilink validation, content similarity |
 | `tasks` | 3 | ~925 | Task queries and mutations |
-| `health` | 6 | ~1,850 | Vault diagnostics, index management |
+| `health` | 8 | ~2,475 | Vault diagnostics, index management, growth, activity |
 | `ops` | 2 | ~625 | Git undo, policy automation |
 
 #### Recipes
@@ -90,9 +90,9 @@ Start with `minimal`, then add what you need:
 |--------|-------|---------|------------|
 | `minimal` | 13 | ~3,800 | search, structure, append, frontmatter, notes |
 | `minimal,graph,tasks` | 22 | ~6,575 | + backlinks, orphans, hubs, paths, tasks |
-| `minimal,graph,analysis` | 25 | ~7,500 | + backlinks, orphans, hubs, paths, schema, wikilinks |
-| `minimal,graph,tasks,health` | 28 | ~8,425 | + backlinks, orphans, hubs, paths, tasks, health |
-| `full` | 36 | ~11,100 | All 15 categories |
+| `minimal,graph,analysis` | 28 | ~8,575 | + backlinks, orphans, hubs, paths, schema, wikilinks |
+| `minimal,graph,tasks,health` | 30 | ~9,275 | + backlinks, orphans, hubs, paths, tasks, health |
+| `full` | 41 | ~12,400 | All 15 categories |
 
 #### How It Works
 
@@ -119,11 +119,11 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `orphans` | 1 | Graph analysis (orphans, dead ends, sources, hubs, stale) |
 | `hubs` | 1 | Connection strength |
 | `paths` | 2 | Shortest path, common neighbors |
-| `schema` | 4 | Vault schema, note intelligence, field migrations |
+| `schema` | 6 | Vault schema, note intelligence, field migrations, content similarity |
 | `structure` | 4 | Note structure, section content, find sections, metadata |
 | `tasks` | 3 | Task queries and mutations (read + write) |
-| `health` | 6 | Vault stats, diagnostics, index management |
-| `wikilinks` | 2 | Link suggestions, link validation |
+| `health` | 8 | Vault stats, diagnostics, index management, growth metrics, activity tracking |
+| `wikilinks` | 3 | Link suggestions, link validation, feedback |
 
 **Write categories (5):**
 

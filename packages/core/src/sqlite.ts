@@ -102,7 +102,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 8;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -282,6 +282,31 @@ CREATE TABLE IF NOT EXISTS index_events (
   error TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_index_events_ts ON index_events(timestamp);
+
+-- Tool invocation tracking (v7: usage analytics)
+CREATE TABLE IF NOT EXISTS tool_invocations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp INTEGER NOT NULL,
+  tool_name TEXT NOT NULL,
+  session_id TEXT,
+  note_paths TEXT,
+  duration_ms INTEGER,
+  success INTEGER NOT NULL DEFAULT 1
+);
+CREATE INDEX IF NOT EXISTS idx_tool_inv_ts ON tool_invocations(timestamp);
+CREATE INDEX IF NOT EXISTS idx_tool_inv_tool ON tool_invocations(tool_name, timestamp);
+CREATE INDEX IF NOT EXISTS idx_tool_inv_session ON tool_invocations(session_id, timestamp);
+
+-- Graph topology snapshots (v8: structural evolution)
+CREATE TABLE IF NOT EXISTS graph_snapshots (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp INTEGER NOT NULL,
+  metric TEXT NOT NULL,
+  value REAL NOT NULL,
+  details TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_graph_snap_ts ON graph_snapshots(timestamp);
+CREATE INDEX IF NOT EXISTS idx_graph_snap_m ON graph_snapshots(metric, timestamp);
 `;
 
 // =============================================================================
@@ -358,6 +383,12 @@ function initSchema(db: Database.Database): void {
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     // v6: index_events table (index activity history)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v7: tool_invocations table (usage analytics)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v8: graph_snapshots table (structural evolution)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(

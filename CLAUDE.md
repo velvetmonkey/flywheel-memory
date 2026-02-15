@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 39 tools across 15 categories for search, graph analysis, schema intelligence, tasks, frontmatter, and note mutations — all local, all markdown.
+**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 41 tools across 15 categories for search, graph analysis, schema intelligence, tasks, frontmatter, and note mutations — all local, all markdown.
 
 ---
 
@@ -16,14 +16,16 @@ packages/mcp-server/src/
 │   │   ├── query.ts         # search (unified: metadata + content + entities)
 │   │   ├── graph.ts         # get_backlinks (+ bidirectional), get_forward_links
 │   │   ├── graphAdvanced.ts # (helper) get_connection_strength, get_link_path, get_common_neighbors — imported by graph.ts, primitives.ts, graphAnalysis.ts
-│   │   ├── graphAnalysis.ts # graph_analysis (orphans, dead_ends, sources, hubs, stale)
-│   │   ├── vaultSchema.ts   # vault_schema (overview, field_values, inconsistencies, validate, conventions, incomplete)
+│   │   ├── graphAnalysis.ts # graph_analysis (orphans, dead_ends, sources, hubs, stale, immature, evolution, emerging_hubs)
+│   │   ├── vaultSchema.ts   # vault_schema (overview, field_values, inconsistencies, validate, conventions, incomplete, contradictions)
 │   │   ├── noteIntelligence.ts # note_intelligence (prose_patterns, suggest_frontmatter, wikilinks, cross_layer, compute)
 │   │   ├── primitives.ts    # get_note_structure, get_section_content, find_sections, tasks
 │   │   ├── health.ts        # health_check, get_vault_stats, get_folder_structure
 │   │   ├── system.ts        # refresh_index, get_all_entities, get_note_metadata, get_unlinked_mentions
 │   │   ├── wikilinks.ts     # suggest_wikilinks, validate_links
-│   │   └── migrations.ts    # rename_field, migrate_field_values
+│   │   ├── migrations.ts    # rename_field, migrate_field_values
+│   │   ├── activity.ts      # vault_activity (session, sessions, note_access, tool_usage)
+│   │   └── similarity.ts    # find_similar (FTS5 BM25 content similarity)
 │   └── write/               # Write tool registrations
 │       ├── mutations.ts     # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
 │       ├── tasks.ts         # vault_toggle_task, vault_add_task
@@ -35,7 +37,7 @@ packages/mcp-server/src/
 └── core/
     ├── read/                # Read-side core logic (graph, vault, parser, fts5, config, watcher)
     ├── write/               # Write-side core logic (writer, wikilinks, git, validator, policy engine)
-    └── shared/              # Shared utilities (recency, cooccurrence, hub export, stemmer, metrics, indexActivity)
+    └── shared/              # Shared utilities (recency, cooccurrence, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots)
 ```
 
 ### Dependencies
@@ -54,14 +56,14 @@ packages/mcp-server/src/
 Controlled by `FLYWHEEL_TOOLS` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`full`** (default) — All 15 categories, 39 tools (~11,800 tokens)
+- **`full`** (default) — All 15 categories, 41 tools (~12,400 tokens)
 - **`minimal`** — 5 categories, 13 tools (~3,800 tokens): search, structure, append, frontmatter, notes
 
 **Composable bundles** (add to minimal or each other):
 - **`graph`** — 6 tools: backlinks, orphans, hubs, paths
-- **`analysis`** — 8 tools: schema, wikilinks
+- **`analysis`** — 9 tools: schema, wikilinks
 - **`tasks`** — 3 tools: tasks
-- **`health`** — 7 tools: health
+- **`health`** — 8 tools: health
 - **`ops`** — 2 tools: git, policy
 
 **Categories (15):** `search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `git`, `policy`

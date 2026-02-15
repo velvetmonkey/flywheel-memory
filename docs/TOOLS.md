@@ -1,6 +1,6 @@
 # Tool Reference
 
-39 tools across 15 categories. All enabled by default (`full` preset).
+41 tools across 15 categories. All enabled by default (`full` preset).
 
 ---
 
@@ -43,6 +43,9 @@ Analyze vault link graph structure. The `analysis` parameter selects the mode.
 | `sources` | Notes with outgoing links but no backlinks | `folder`, `min_outlinks`, `limit`, `offset` |
 | `hubs` | Highly connected notes sorted by total connections | `min_links`, `limit`, `offset` |
 | `stale` | Important notes (by backlink count) not recently modified | `days` (required), `min_backlinks`, `limit` |
+| `immature` | Notes scored by maturity (word count, outlinks, frontmatter completeness, backlinks) sorted least mature first | `folder`, `limit`, `offset` |
+| `evolution` | Graph topology metrics over time (avg_degree, cluster_count, etc.) | `days` (defaults to 30) |
+| `emerging_hubs` | Entities growing fastest in connection count | `days` (defaults to 30) |
 
 ### Other graph tools
 
@@ -81,6 +84,7 @@ Analyze and validate vault frontmatter schema. The `analysis` parameter selects 
 | `conventions` | Auto-detect metadata conventions for a folder | `folder`, `min_confidence` |
 | `incomplete` | Find notes missing expected fields (inferred from peers) | `folder`, `min_frequency`, `limit`, `offset` |
 | `suggest_values` | Suggest values for a field based on usage | `field` (required), `folder`, `existing_frontmatter` |
+| `contradictions` | Find conflicting frontmatter values across notes referencing the same entity | `entity`, `limit`, `offset` |
 
 ### `note_intelligence`
 
@@ -165,7 +169,7 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 
 ---
 
-## Vault Health (7 tools)
+## Vault Health (8 tools)
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
@@ -176,6 +180,7 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 | `get_all_entities` | Get all linkable entities (note titles and aliases). | `include_aliases`, `limit` |
 | `get_unlinked_mentions` | Find places where an entity is mentioned but not linked. | `entity`, `limit` |
 | `vault_growth` | Track vault growth over time. Modes: current (live snapshot), history (time series), trends (deltas), index_activity (rebuild history). | `mode` (current/history/trends/index_activity), `metric`, `days_back`, `limit` |
+| `vault_activity` | Track tool usage patterns and session activity. Modes: session (current session), sessions (recent list), note_access (most-queried notes), tool_usage (tool patterns). | `mode` (session/sessions/note_access/tool_usage), `session_id`, `days_back`, `limit` |
 
 ---
 
@@ -206,6 +211,16 @@ Undo the last git commit (typically the last Flywheel mutation). Performs a soft
 
 ---
 
+## Content Discovery (1 tool)
+
+### `find_similar`
+
+Find notes similar to a given note using FTS5 BM25 content similarity. Extracts key terms from the source note, queries the full-text index, and ranks by relevance. Use `exclude_linked` to filter out notes already connected via wikilinks.
+
+**Key parameters:** `path` (required), `limit` (default 10), `exclude_linked` (default true)
+
+---
+
 ## Category-to-Preset Mapping
 
 | Category | Tools | Included in `full` | Included in `minimal` |
@@ -215,14 +230,14 @@ Undo the last git commit (typically the last Flywheel mutation). Performs a soft
 | orphans | 1 | Yes | |
 | hubs | 1 | Yes | |
 | paths | 2 | Yes | |
-| schema | 5 | Yes | |
+| schema | 6 | Yes | |
 | structure | 4 | Yes | Yes |
 | tasks | 3 | Yes | |
-| health | 7 | Yes | |
+| health | 8 | Yes | |
 | wikilinks | 3 | Yes | |
 | append | 3 | Yes | Yes |
 | frontmatter | 1 | Yes | Yes |
 | notes | 4 | Yes | Yes |
 | git | 1 | Yes | |
 | policy | 1 | Yes | |
-| **Total** | **39** | **39** | **13** |
+| **Total** | **41** | **41** | **13** |

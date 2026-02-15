@@ -5,7 +5,7 @@
  * Zero configuration, smart defaults, actionable output.
  */
 
-import type { VaultIndex, VaultNote } from '../../core/read/types.js';
+import type { VaultIndex, VaultNote, Backlink } from '../../core/read/types.js';
 
 // =============================================================================
 // TYPES
@@ -511,5 +511,107 @@ export function suggestFieldValues(
     value_type: primaryType,
     is_enumerable: isEnumerable,
   };
+}
+
+// =============================================================================
+// CONTRADICTION DETECTION
+// =============================================================================
+
+/** Fields that are expected to differ across notes and should be skipped */
+const SKIP_CONTRADICTION_FIELDS = new Set([
+  'title', 'created', 'modified', 'path', 'aliases', 'tags',
+  'date', 'updated', 'word_count', 'link_count',
+]);
+
+/** A contradiction found across notes referencing the same entity */
+export interface Contradiction {
+  entity: string;
+  field: string;
+  values: { value: unknown; notes: string[] }[];
+}
+
+/**
+ * Find contradictions in frontmatter across notes that reference the same entity.
+ * For each entity, find all notes that link to it, then compare their frontmatter
+ * field values and report conflicts.
+ */
+export function findContradictions(
+  index: VaultIndex,
+  entity?: string,
+): Contradiction[] {
+  const contradictions: Contradiction[] = [];
+
+  // Determine which entities to check
+  const entitiesToCheck: [string, string][] = [];
+  if (entity) {
+    const normalized = entity.toLowerCase();
+    const entityPath = index.entities.get(normalized);
+    if (entityPath) {
+      entitiesToCheck.push([normalized, entityPath]);
+    }
+  } else {
+    for (const [name, entityPath] of index.entities) {
+      entitiesToCheck.push([name, entityPath]);
+    }
+  }
+
+  for (const [entityName, _entityPath] of entitiesToCheck) {
+    // Find all notes that link to this entity
+    const backlinks = index.backlinks.get(entityName);
+    if (!backlinks || backlinks.length < 2) continue;
+
+    // Get unique source note paths
+    const sourcePaths = [...new Set(backlinks.map(bl => bl.source))];
+    if (sourcePaths.length < 2) continue;
+
+    // Collect frontmatter from all source notes
+    const notesFrontmatter: { path: string; fm: Record<string, unknown> }[] = [];
+    for (const srcPath of sourcePaths) {
+      const note = index.notes.get(srcPath);
+      if (note && Object.keys(note.frontmatter).length > 0) {
+        notesFrontmatter.push({ path: srcPath, fm: note.frontmatter });
+      }
+    }
+
+    if (notesFrontmatter.length < 2) continue;
+
+    // Collect all fields across these notes
+    const allFields = new Set<string>();
+    for (const { fm } of notesFrontmatter) {
+      for (const key of Object.keys(fm)) {
+        if (!SKIP_CONTRADICTION_FIELDS.has(key)) {
+          allFields.add(key);
+        }
+      }
+    }
+
+    // For each field, check for conflicting values
+    for (const field of allFields) {
+      const valueMap = new Map<string, string[]>(); // serialized value -> note paths
+
+      for (const { path: notePath, fm } of notesFrontmatter) {
+        if (fm[field] === undefined) continue;
+        const key = JSON.stringify(fm[field]);
+        if (!valueMap.has(key)) {
+          valueMap.set(key, []);
+        }
+        valueMap.get(key)!.push(notePath);
+      }
+
+      // Only report if there are 2+ distinct values
+      if (valueMap.size >= 2) {
+        contradictions.push({
+          entity: entityName,
+          field,
+          values: Array.from(valueMap.entries()).map(([serialized, notes]) => ({
+            value: JSON.parse(serialized),
+            notes,
+          })),
+        });
+      }
+    }
+  }
+
+  return contradictions;
 }
 

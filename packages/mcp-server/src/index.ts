@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 39 tools across 15 categories
+ * 41 tools across 15 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -40,7 +40,7 @@ import { initializeLogger as initializeWriteLogger, flushLogs } from './core/wri
 import { setFTS5Database } from './core/read/fts5.js';
 
 // Vault-core shared imports
-import { openStateDb, scanVaultEntities, type StateDb } from '@velvetmonkey/vault-core';
+import { openStateDb, scanVaultEntities, getSessionId, type StateDb } from '@velvetmonkey/vault-core';
 
 // Read tool registrations
 import { registerGraphTools } from './tools/read/graph.js';
@@ -67,12 +67,20 @@ import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js
 
 // Read tool registrations (additional)
 import { registerMetricsTools } from './tools/read/metrics.js';
+import { registerActivityTools } from './tools/read/activity.js';
+import { registerSimilarityTools } from './tools/read/similarity.js';
 
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
 
 // Core imports - Index Activity
 import { recordIndexEvent, purgeOldIndexEvents } from './core/shared/indexActivity.js';
+
+// Core imports - Tool Tracking
+import { recordToolInvocation, purgeOldInvocations } from './core/shared/toolTracking.js';
+
+// Core imports - Graph Snapshots
+import { computeGraphMetrics, recordGraphSnapshot, purgeOldSnapshots } from './core/shared/graphSnapshots.js';
 
 // Core imports - Wikilink Feedback
 import { updateSuppressionList } from './core/write/wikilinkFeedback.js';
@@ -100,7 +108,7 @@ let stateDb: StateDb | null = null;
 //
 // Presets:
 //   minimal  - Note-taking essentials: search, read, create, edit (13 tools)
-//   full     - All tools (39 tools) [DEFAULT]
+//   full     - All tools (41 tools) [DEFAULT]
 //
 // Composable bundles (combine with minimal or each other):
 //   graph    - Backlinks, orphans, hubs, paths (6 tools)
@@ -279,6 +287,12 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
   // wikilinks (feedback)
   wikilink_feedback: 'wikilinks',
+
+  // health (activity tracking)
+  vault_activity: 'health',
+
+  // schema (content similarity)
+  find_similar: 'schema',
 };
 
 // ============================================================================
@@ -304,9 +318,60 @@ function gateByCategory(name: string): boolean {
   return true;
 }
 
+/**
+ * Wrap a tool handler to record invocations in StateDb.
+ * Extracts note paths from common parameters (path, paths, note_path).
+ */
+function wrapHandlerWithTracking(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
+  return async (...args: any[]) => {
+    const start = Date.now();
+    let success = true;
+    let notePaths: string[] | undefined;
+
+    // Extract note paths from first arg (params object)
+    const params = args[0];
+    if (params && typeof params === 'object') {
+      const paths: string[] = [];
+      if (typeof params.path === 'string') paths.push(params.path);
+      if (Array.isArray(params.paths)) paths.push(...params.paths.filter((p: unknown) => typeof p === 'string'));
+      if (typeof params.note_path === 'string') paths.push(params.note_path);
+      if (typeof params.source === 'string') paths.push(params.source);
+      if (typeof params.target === 'string') paths.push(params.target);
+      if (paths.length > 0) notePaths = paths;
+    }
+
+    try {
+      return await handler(...args);
+    } catch (err) {
+      success = false;
+      throw err;
+    } finally {
+      if (stateDb) {
+        try {
+          let sessionId: string | undefined;
+          try { sessionId = getSessionId(); } catch { /* no session */ }
+          recordToolInvocation(stateDb, {
+            tool_name: toolName,
+            session_id: sessionId,
+            note_paths: notePaths,
+            duration_ms: Date.now() - start,
+            success,
+          });
+        } catch {
+          // Never let tracking errors affect tool execution
+        }
+      }
+    }
+  };
+}
+
 const _originalTool = server.tool.bind(server) as (...args: unknown[]) => unknown;
 (server as any).tool = (name: string, ...args: any[]) => {
   if (!gateByCategory(name)) return;
+  // Wrap the handler (last arg) with tracking
+  if (args.length > 0 && typeof args[args.length - 1] === 'function') {
+    args[args.length - 1] = wrapHandlerWithTracking(name, args[args.length - 1]);
+  }
   return _originalTool(name, ...args);
 };
 
@@ -314,6 +379,10 @@ const _originalRegisterTool = (server as any).registerTool?.bind(server);
 if (_originalRegisterTool) {
   (server as any).registerTool = (name: string, ...args: any[]) => {
     if (!gateByCategory(name)) return;
+    // Wrap the handler (last arg) with tracking
+    if (args.length > 0 && typeof args[args.length - 1] === 'function') {
+      args[args.length - 1] = wrapHandlerWithTracking(name, args[args.length - 1]);
+    }
     return _originalRegisterTool(name, ...args);
   };
 }
@@ -340,7 +409,7 @@ registerGraphTools(server, () => vaultIndex, () => vaultPath);
 registerWikilinkTools(server, () => vaultIndex, () => vaultPath);
 registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
-registerGraphAnalysisTools(server, () => vaultIndex, () => vaultPath);
+registerGraphAnalysisTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerVaultSchemaTools(server, () => vaultIndex, () => vaultPath);
 registerNoteIntelligenceTools(server, () => vaultIndex, () => vaultPath);
 registerMigrationTools(server, () => vaultIndex, () => vaultPath);
@@ -358,6 +427,8 @@ registerWikilinkFeedbackTools(server, () => stateDb);
 
 // Additional read tools
 registerMetricsTools(server, () => vaultIndex, () => stateDb);
+registerActivityTools(server, () => stateDb, () => { try { return getSessionId(); } catch { return null; } });
+registerSimilarityTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 
 // Resources (always registered, not gated by tool presets)
 registerVaultResources(server, () => vaultIndex ?? null);
@@ -521,9 +592,21 @@ async function runPostIndexWork(index: VaultIndex) {
       recordMetrics(stateDb, metrics);
       purgeOldMetrics(stateDb, 90);
       purgeOldIndexEvents(stateDb, 90);
+      purgeOldInvocations(stateDb, 90);
       console.error('[Memory] Growth metrics recorded');
     } catch (err) {
       console.error('[Memory] Failed to record metrics:', err);
+    }
+  }
+
+  // Record graph topology snapshot
+  if (stateDb) {
+    try {
+      const graphMetrics = computeGraphMetrics(index);
+      recordGraphSnapshot(stateDb, graphMetrics);
+      purgeOldSnapshots(stateDb, 90);
+    } catch (err) {
+      console.error('[Memory] Failed to record graph snapshot:', err);
     }
   }
 

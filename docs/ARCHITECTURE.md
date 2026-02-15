@@ -224,8 +224,40 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 | `write_state` | Write-side state (last commit, mutation hints) |
 | `metadata` | Schema version, build timestamps, counts |
 | `schema_version` | Schema migration tracking |
+| `vault_metrics` | Growth tracking metrics |
+| `wikilink_feedback` | Link quality feedback |
+| `wikilink_suppressions` | Auto-suppressed false positives |
+| `wikilink_applications` | Implicit feedback tracking |
+| `index_events` | Index rebuild activity |
+| `tool_invocations` | Tool usage analytics |
+| `graph_snapshots` | Graph topology evolution |
 
 **Database settings:** WAL journal mode for concurrent read performance. Foreign keys enabled. Schema version tracking with migration support.
+
+---
+
+## Schema Versioning
+
+The StateDb schema is versioned via the `SCHEMA_VERSION` constant in `packages/core/src/sqlite.ts`.
+
+### Migration Pattern
+
+`initSchema()` runs `SCHEMA_SQL` (a set of `CREATE TABLE IF NOT EXISTS` statements) to ensure all tables exist, then checks the current schema version stored in the `schema_version` table. If the stored version is behind `SCHEMA_VERSION`, version-specific migration blocks run in order to bring the database up to date.
+
+New tables are added directly to `SCHEMA_SQL` with `CREATE TABLE IF NOT EXISTS`, so they are created automatically on first open. Version-specific migrations only handle renames, drops, and data transformations that can't be expressed as idempotent `CREATE TABLE` statements.
+
+### Version History
+
+| Version | Changes |
+|---------|---------|
+| v1 | Initial schema: `entities`, `entities_fts`, `recency`, `notes_fts`, `fts_metadata`, `vault_index_cache`, `flywheel_config`, `metadata`, `schema_version` |
+| v2 | Dropped dead `notes`/`links` tables from v1 |
+| v3 | Renamed `crank_state` to `write_state` |
+| v4 | Added `vault_metrics`, `wikilink_feedback`, `wikilink_suppressions` tables |
+| v5 | Added `wikilink_applications` table (implicit feedback tracking) |
+| v6 | Added `index_events` table (index activity history) |
+| v7 | Added `tool_invocations` table (usage analytics) |
+| v8 | Added `graph_snapshots` table (structural evolution) |
 
 ---
 

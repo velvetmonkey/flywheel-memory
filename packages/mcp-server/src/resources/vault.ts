@@ -11,6 +11,11 @@ import { getFrontmatterSchema } from '../tools/read/frontmatter.js';
 
 /**
  * Register vault resources with the MCP server
+ *
+ * These resources are aspirational for future MCP client support. Claude Code
+ * doesn't currently auto-load resources, but the health_check and vault_schema
+ * tools already supersede their functionality. Keeping them registered so
+ * they're available when clients add resource support.
  */
 export function registerVaultResources(
   server: McpServer,

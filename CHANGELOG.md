@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Tool invocation tracking: every tool call is recorded with tool name, session
+  ID, accessed note paths, duration, and success/failure (schema v7,
+  `tool_invocations` table)
+- `vault_activity` tool (health category) with 4 modes: session (current
+  session summary), sessions (recent list), note_access (most-queried notes),
+  tool_usage (tool usage patterns)
+- `find_similar` tool (schema category): FTS5 BM25 content similarity to
+  discover related notes, with optional linked-note exclusion
+- `graph_analysis({ analysis: "immature" })`: note maturity scoring based on
+  word count, outlinks, frontmatter completeness, and backlinks
+- `graph_analysis({ analysis: "evolution" })`: graph topology metrics over time
+  (avg_degree, cluster_count, largest_cluster_size, max_degree)
+- `graph_analysis({ analysis: "emerging_hubs" })`: entities growing fastest in
+  connection count
+- `vault_schema({ analysis: "contradictions" })`: detect conflicting
+  frontmatter values across notes referencing the same entity
+- Graph topology snapshots: records avg_degree, max_degree, cluster_count,
+  largest_cluster_size, and top 10 hubs on every index rebuild (schema v8,
+  `graph_snapshots` table)
+
+### Changed
+
+- Schema version 6 → 8 (v7: tool_invocations, v8: graph_snapshots)
+- Tool count 39 → 41 (added vault_activity, find_similar)
+- Documentation: updated TOOLS.md, ARCHITECTURE.md (schema versioning section),
+  CONFIGURATION.md (corrected tool counts), COOKBOOK.md (new examples),
+  CLAUDE.md, vault-core README
+
 ## [2.0.13] - 2026-02-15
 
 ### Changed

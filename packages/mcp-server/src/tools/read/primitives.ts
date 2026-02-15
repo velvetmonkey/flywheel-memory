@@ -232,7 +232,7 @@ export function registerPrimitiveTools(
 
       return {
         content: [{ type: 'text' as const, text: JSON.stringify({
-          total_count: result.total_count,
+          total_count: result.total,
           open_count: result.open_count,
           returned_count: paged.length,
           tasks: paged,

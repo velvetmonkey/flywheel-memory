@@ -195,7 +195,7 @@ ${meeting.notes}
   console.log(`\n✓ Bootstrap complete!`);
   console.log(`\nNext steps:`);
   console.log(`  1. Point Flywheel at ${outputDir}`);
-  console.log(`  2. Add content via Flywheel-Crank mutations`);
+  console.log(`  2. Add content via Flywheel Memory mutations`);
   console.log(`  3. Watch auto-wikilinks build the graph`);
 }
 

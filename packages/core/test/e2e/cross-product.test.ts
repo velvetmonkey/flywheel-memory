@@ -2,7 +2,7 @@
  * Cross-Product Integration Tests
  *
  * Validates the full flywheel loop:
- * vault-core scans → flywheel reads → flywheel-crank writes → verify graph updated
+ * vault-core scans → flywheel reads → flywheel memory writes → verify graph updated
  *
  * These tests ensure that shared utilities work correctly across the ecosystem.
  */
@@ -107,7 +107,7 @@ date: 2026-02-02
 
       expect(insertCount).toBeGreaterThanOrEqual(2);
 
-      // Step 4: Apply wikilinks (simulates flywheel-crank write)
+      // Step 4: Apply wikilinks (simulates flywheel memory write)
       const dailyNoteContent = fs.readFileSync(
         path.join(testVaultPath, 'daily-notes/2026-02-02.md'),
         'utf-8'
@@ -132,7 +132,7 @@ date: 2026-02-02
     it('should maintain entity recency across products', async () => {
       stateDb = openStateDb(testVaultPath);
 
-      // Record mentions (simulates flywheel-crank tracking context relevance)
+      // Record mentions (simulates flywheel memory tracking context relevance)
       const now = new Date();
       recordEntityMention(stateDb, 'TypeScript', now);
       recordEntityMention(stateDb, 'React', new Date(now.getTime() - 1000));
@@ -169,7 +169,7 @@ Software engineer.
 
       expect(entities1.people.some(p => p.name === 'Alice Chen')).toBe(true);
 
-      // Add new entity file (simulates flywheel-crank creating a note)
+      // Add new entity file (simulates flywheel memory creating a note)
       const newNote = `---
 type: person
 ---

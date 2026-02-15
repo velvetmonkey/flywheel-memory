@@ -7,8 +7,8 @@
 
 | ID | Time | T | Title | Read |
 |----|------|---|-------|------|
-| #7090 | 1:06 PM | ✅ | Flywheel-Crank Fix Committed to Main Branch | ~300 |
-| #7088 | 1:05 PM | ✅ | Flywheel-Crank Changes Ready for Commit | ~295 |
+| #7090 | 1:06 PM | ✅ | Flywheel Memory Fix Committed to Main Branch | ~300 |
+| #7088 | 1:05 PM | ✅ | Flywheel Memory Changes Ready for Commit | ~295 |
 | #7084 | 1:04 PM | 🔴 | Skip Windows Git Uncommitted Changes Test | ~367 |
 | #7080 | " | 🔵 | Windows Git Uncommitted Changes Test Failure Identified | ~403 |
 </claude-mem-context>

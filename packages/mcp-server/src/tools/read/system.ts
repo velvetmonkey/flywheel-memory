@@ -67,7 +67,7 @@ export function registerSystemTools(
         setIndex(newIndex);
         setIndexState('ready');
 
-        // Update entities in StateDb (for Flywheel-Crank wikilinks)
+        // Update entities in StateDb (for Flywheel Memory wikilinks)
         const stateDb = getStateDb?.();
         if (stateDb) {
           try {

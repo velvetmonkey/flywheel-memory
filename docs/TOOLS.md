@@ -197,7 +197,7 @@ Manage vault policies. The `action` parameter selects the operation.
 
 ### `vault_undo_last_mutation`
 
-Undo the last git commit (typically the last Crank mutation). Performs a soft reset with safety checks to prevent undoing the wrong commit.
+Undo the last git commit (typically the last Flywheel mutation). Performs a soft reset with safety checks to prevent undoing the wrong commit.
 
 **Key parameters:** `confirm` (required), `hash` (optional, prevents undoing wrong commit)
 

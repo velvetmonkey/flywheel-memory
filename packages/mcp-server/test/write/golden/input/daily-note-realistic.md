@@ -17,7 +17,7 @@ mood: productive
 - [ ] Read for 30 minutes
 
 ## Log
-- **09:00** Started work on flywheel-crank
+- **09:00** Started work on flywheel-memory
 - **10:30** Code review with [[Jordan Smith]]
 - **12:00** Lunch break
 

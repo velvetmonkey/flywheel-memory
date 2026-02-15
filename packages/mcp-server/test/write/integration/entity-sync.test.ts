@@ -7,7 +7,7 @@
  * - After entity renames
  *
  * These tests validate the synchronization between:
- * - Flywheel-Crank mutations
+ * - Flywheel Memory mutations
  * - Entity cache updates
  */
 
@@ -38,7 +38,7 @@ import {
   suggestRelatedLinks,
   isEntityIndexReady,
   getEntityIndexStats,
-  setCrankStateDb,
+  setWriteStateDb,
 } from '../../../src/core/write/wikilinks.js';
 
 describe('Entity Index Sync Validation', () => {
@@ -48,11 +48,11 @@ describe('Entity Index Sync Validation', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);

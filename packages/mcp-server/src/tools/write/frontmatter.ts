@@ -1,5 +1,5 @@
 /**
- * Frontmatter tools for Flywheel Crank
+ * Frontmatter tools for Flywheel Memory
  * Tools: vault_update_frontmatter (also handles add-if-missing via only_if_missing param)
  *
  * Note: vault_add_frontmatter_field was absorbed into vault_update_frontmatter
@@ -36,7 +36,7 @@ export function registerFrontmatterTools(
           vaultPath,
           notePath,
           commit,
-          commitPrefix: '[Crank:FM]',
+          commitPrefix: '[Flywheel:FM]',
           actionDescription: 'update frontmatter',
         },
         async (ctx) => {

@@ -19,7 +19,7 @@ import {
   initializeEntityIndex,
   maybeApplyWikilinks,
   suggestRelatedLinks,
-  setCrankStateDb,
+  setWriteStateDb,
 } from '../../../src/core/write/wikilinks.js';
 import fs from 'fs/promises';
 import path from 'path';
@@ -407,7 +407,7 @@ describe('vault_create_note wikilink integration', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
     // Create entity cache with test entities in StateDb
     createEntityCacheInStateDb(stateDb, tempVault, {
       people: ['Jordan Smith'],
@@ -419,7 +419,7 @@ describe('vault_create_note wikilink integration', () => {
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);

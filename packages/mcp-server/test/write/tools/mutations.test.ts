@@ -33,7 +33,7 @@ import {
   initializeEntityIndex,
   suggestRelatedLinks,
   maybeApplyWikilinks,
-  setCrankStateDb,
+  setWriteStateDb,
 } from '../../../src/core/write/wikilinks.js';
 
 /**
@@ -1090,11 +1090,11 @@ describe('vault_add_to_section suggestOutgoingLinks parameter', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
     // Create entity cache with known entities
     createEntityCacheInStateDb(stateDb, tempVault, {
       technologies: ['TypeScript', 'JavaScript', 'Python'],
-      projects: ['MCP Server', 'Flywheel Crank'],
+      projects: ['MCP Server', 'Flywheel Memory'],
       people: ['Jordan Smith', 'Alex Rivera'],
     });
     // Initialize entity index
@@ -1102,7 +1102,7 @@ describe('vault_add_to_section suggestOutgoingLinks parameter', () => {
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -1154,7 +1154,7 @@ describe('vault_replace_in_section suggestOutgoingLinks parameter', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
     createEntityCacheInStateDb(stateDb, tempVault, {
       technologies: ['TypeScript', 'JavaScript'],
       projects: ['MCP Server'],
@@ -1164,7 +1164,7 @@ describe('vault_replace_in_section suggestOutgoingLinks parameter', () => {
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);

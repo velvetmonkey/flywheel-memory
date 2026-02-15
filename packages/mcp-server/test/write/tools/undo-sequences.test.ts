@@ -15,9 +15,9 @@ import {
   commitChange,
   undoLastCommit,
   getLastCommit,
-  saveLastCrankCommit,
-  getLastCrankCommit,
-  clearLastCrankCommit,
+  saveLastMutationCommit,
+  getLastMutationCommit,
+  clearLastMutationCommit,
   hasUncommittedChanges,
   isGitRepo,
   setGitStateDb,
@@ -87,9 +87,9 @@ describe('Sequential Undo Operations', () => {
     await cleanupTempVault(tempVault);
   });
 
-  it('should undo a single crank commit', async () => {
+  it('should undo a single flywheel commit', async () => {
     await createTestNote(tempVault, 'test.md', '# Log\n');
-    const commitResult = await commitChange(tempVault, 'test.md', '[Crank]');
+    const commitResult = await commitChange(tempVault, 'test.md', '[Flywheel]');
 
     expect(commitResult.success).toBe(true);
 
@@ -105,20 +105,20 @@ describe('Sequential Undo Operations', () => {
     expect(finalCommits).toBe(initialCommits - 1);
   });
 
-  it('should track last crank commit for safe undo', async () => {
+  it('should track last flywheel commit for safe undo', async () => {
     await createTestNote(tempVault, 'test.md', '# Log\n');
-    const commitResult = await commitChange(tempVault, 'test.md', '[Crank]');
+    const commitResult = await commitChange(tempVault, 'test.md', '[Flywheel]');
 
     // Save tracking info
-    saveLastCrankCommit(commitResult.hash!, 'Test commit');
+    saveLastMutationCommit(commitResult.hash!, 'Test commit');
 
-    const tracked = getLastCrankCommit();
+    const tracked = getLastMutationCommit();
     expect(tracked).not.toBeNull();
     expect(tracked?.hash).toBe(commitResult.hash);
 
     // Clear tracking
-    clearLastCrankCommit();
-    const clearedTracking = getLastCrankCommit();
+    clearLastMutationCommit();
+    const clearedTracking = getLastMutationCommit();
     expect(clearedTracking).toBeNull();
   });
 
@@ -128,7 +128,7 @@ describe('Sequential Undo Operations', () => {
 
     for (let i = 1; i <= 3; i++) {
       await createTestNote(tempVault, `note${i}.md`, `# Note ${i}`);
-      const result = await commitChange(tempVault, `note${i}.md`, `[Crank ${i}]`);
+      const result = await commitChange(tempVault, `note${i}.md`, `[Flywheel ${i}]`);
       commits.push(result.hash!);
     }
 
@@ -178,31 +178,31 @@ describe('External Commit Interference', () => {
     await cleanupTempVault(tempVault);
   });
 
-  it('should detect external commits made between crank operations', async () => {
-    // Make a crank commit
-    await createTestNote(tempVault, 'crank-note.md', '# Crank Note');
-    const crankCommit = await commitChange(tempVault, 'crank-note.md', '[Crank]');
-    saveLastCrankCommit(crankCommit.hash!, 'Crank commit');
+  it('should detect external commits made between flywheel operations', async () => {
+    // Make a flywheel commit
+    await createTestNote(tempVault, 'flywheel-note.md', '# Flywheel Note');
+    const flywheelCommit = await commitChange(tempVault, 'flywheel-note.md', '[Flywheel]');
+    saveLastMutationCommit(flywheelCommit.hash!, 'Flywheel commit');
 
-    const crankHash = crankCommit.hash;
+    const flywheelHash = flywheelCommit.hash;
 
     // Simulate external commit (user or another tool)
     await createTestNote(tempVault, 'external.md', '# External Note');
     await git.add('external.md');
     await git.commit('[External] Manual commit');
 
-    // Now HEAD != tracked crank commit
+    // Now HEAD != tracked flywheel commit
     const currentHead = await getHeadCommit();
-    const tracked = getLastCrankCommit();
+    const tracked = getLastMutationCommit();
 
     expect(currentHead).not.toBe(tracked?.hash);
   });
 
   it('should warn when attempting to undo after external commit', async () => {
-    // Make a crank commit
-    await createTestNote(tempVault, 'crank.md', '# Crank');
-    const crankCommit = await commitChange(tempVault, 'crank.md', '[Crank]');
-    saveLastCrankCommit(crankCommit.hash!, 'Crank commit');
+    // Make a flywheel commit
+    await createTestNote(tempVault, 'flywheel-write.md', '# Flywheel');
+    const flywheelCommit = await commitChange(tempVault, 'flywheel-write.md', '[Flywheel]');
+    saveLastMutationCommit(flywheelCommit.hash!, 'Flywheel commit');
 
     // External commit
     await createTestNote(tempVault, 'external.md', '# External');
@@ -215,7 +215,7 @@ describe('External Commit Interference', () => {
 
     // If the undo system detects interference, it should either:
     // 1. Fail with clear message, OR
-    // 2. Succeed but undo the external commit (not the crank commit)
+    // 2. Succeed but undo the external commit (not the flywheel commit)
     // The test validates the system handles this case
     expect(undoResult).toBeDefined();
   });
@@ -256,7 +256,7 @@ describe('Dirty Working Tree Handling', () => {
   it('should handle undo with dirty working tree', async () => {
     // Create and commit a file
     await createTestNote(tempVault, 'original.md', '# Original');
-    const commitResult = await commitChange(tempVault, 'original.md', '[Crank]');
+    const commitResult = await commitChange(tempVault, 'original.md', '[Flywheel]');
 
     // Make uncommitted changes
     await createTestNote(tempVault, 'dirty.md', '# Dirty file');
@@ -285,7 +285,7 @@ describe('Dirty Working Tree Handling', () => {
 
     // Create and commit a change
     await createTestNote(tempVault, 'change.md', '# Change');
-    await commitChange(tempVault, 'change.md', '[Crank]');
+    await commitChange(tempVault, 'change.md', '[Flywheel]');
 
     // Stage but don't commit another file
     await createTestNote(tempVault, 'staged.md', '# Staged');
@@ -324,7 +324,7 @@ describe('Undo Result Information', () => {
 
   it('should return undone commit hash', async () => {
     await createTestNote(tempVault, 'test.md', '# Test');
-    const commitResult = await commitChange(tempVault, 'test.md', '[Crank]');
+    const commitResult = await commitChange(tempVault, 'test.md', '[Flywheel]');
     const committedHash = commitResult.hash;
 
     const undoResult = await undoLastCommit(tempVault);
@@ -367,9 +367,9 @@ describe('Last Commit Tracking', () => {
     const hash = 'abc123def456';
     const message = 'Test commit message';
 
-    saveLastCrankCommit(hash, message);
+    saveLastMutationCommit(hash, message);
 
-    const retrieved = getLastCrankCommit();
+    const retrieved = getLastMutationCommit();
 
     expect(retrieved).not.toBeNull();
     expect(retrieved?.hash).toBe(hash);
@@ -378,19 +378,19 @@ describe('Last Commit Tracking', () => {
   });
 
   it('should clear last commit tracking', async () => {
-    saveLastCrankCommit('hash123', 'message');
+    saveLastMutationCommit('hash123', 'message');
 
-    clearLastCrankCommit();
+    clearLastMutationCommit();
 
-    const retrieved = getLastCrankCommit();
+    const retrieved = getLastMutationCommit();
     expect(retrieved).toBeNull();
   });
 
   it('should overwrite previous tracking on new commit', async () => {
-    saveLastCrankCommit('first-hash', 'First commit');
-    saveLastCrankCommit('second-hash', 'Second commit');
+    saveLastMutationCommit('first-hash', 'First commit');
+    saveLastMutationCommit('second-hash', 'Second commit');
 
-    const retrieved = getLastCrankCommit();
+    const retrieved = getLastMutationCommit();
 
     expect(retrieved?.hash).toBe('second-hash');
     expect(retrieved?.message).toBe('Second commit');
@@ -414,13 +414,13 @@ describe('Get Last Commit Info', () => {
 
   it('should return info about the last commit', async () => {
     await createTestNote(tempVault, 'test.md', '# Test content');
-    await commitChange(tempVault, 'test.md', '[Crank]');
+    await commitChange(tempVault, 'test.md', '[Flywheel]');
 
     const lastCommit = await getLastCommit(tempVault);
 
     expect(lastCommit).not.toBeNull();
     expect(lastCommit?.hash).toBeTruthy();
-    expect(lastCommit?.message).toContain('[Crank]');
+    expect(lastCommit?.message).toContain('[Flywheel]');
     expect(lastCommit?.date).toBeDefined();
   });
 

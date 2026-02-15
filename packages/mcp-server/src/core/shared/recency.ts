@@ -151,7 +151,7 @@ export async function buildRecencyIndex(
       }
     }
   } catch (error) {
-    console.error(`[Crank] Error building recency index: ${error}`);
+    console.error(`[Flywheel] Error building recency index: ${error}`);
   }
 
   return {
@@ -232,7 +232,7 @@ export function loadRecencyFromStateDb(): RecencyIndex | null {
  */
 export function saveRecencyToStateDb(index: RecencyIndex): void {
   if (!moduleStateDb) {
-    console.error('[Crank] No StateDb available for saving recency');
+    console.error('[Flywheel] No StateDb available for saving recency');
     return;
   }
 
@@ -240,8 +240,8 @@ export function saveRecencyToStateDb(index: RecencyIndex): void {
     for (const [entityNameLower, timestamp] of index.lastMentioned) {
       recordEntityMention(moduleStateDb, entityNameLower, new Date(timestamp));
     }
-    console.error(`[Crank] Saved ${index.lastMentioned.size} recency entries to StateDb`);
+    console.error(`[Flywheel] Saved ${index.lastMentioned.size} recency entries to StateDb`);
   } catch (e) {
-    console.error('[Crank] Failed to save recency to StateDb:', e);
+    console.error('[Flywheel] Failed to save recency to StateDb:', e);
   }
 }

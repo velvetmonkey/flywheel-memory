@@ -20,7 +20,7 @@ import {
   initializeEntityIndex,
   suggestRelatedLinks,
   getEntityIndexStats,
-  setCrankStateDb,
+  setWriteStateDb,
 } from '../../../src/core/write/wikilinks.js';
 import {
   createTempVault,
@@ -40,11 +40,11 @@ describe('performance benchmarks', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);

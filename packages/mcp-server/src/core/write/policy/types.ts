@@ -1,5 +1,5 @@
 /**
- * Policy system types for Flywheel Crank
+ * Policy system types for Flywheel Memory
  * Defines the schema for policy YAML files and execution results
  */
 

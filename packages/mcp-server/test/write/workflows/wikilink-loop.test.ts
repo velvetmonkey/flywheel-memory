@@ -37,7 +37,7 @@ import {
   suggestRelatedLinks,
   isEntityIndexReady,
   extractLinkedEntities,
-  setCrankStateDb,
+  setWriteStateDb,
 } from '../../../src/core/write/wikilinks.js';
 
 describe('Wikilink Flywheel Loop', () => {
@@ -47,11 +47,11 @@ describe('Wikilink Flywheel Loop', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);

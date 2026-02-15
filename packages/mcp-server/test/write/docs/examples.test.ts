@@ -30,7 +30,7 @@ import {
   initializeEntityIndex,
   processWikilinks,
   suggestRelatedLinks,
-  setCrankStateDb,
+  setWriteStateDb,
 } from '../../../src/core/write/wikilinks.js';
 
 const DOCS_DIR = path.join(__dirname, '../../../docs');
@@ -242,11 +242,11 @@ ${Array.from({ length: 50 }, (_, i) => `Line ${i} of section 3`).join('\n')}
 
     beforeEach(() => {
       stateDb = openStateDb(tempVault);
-      setCrankStateDb(stateDb);
+      setWriteStateDb(stateDb);
     });
 
     afterEach(() => {
-      setCrankStateDb(null);
+      setWriteStateDb(null);
       stateDb.db.close();
       deleteStateDb(tempVault);
     });

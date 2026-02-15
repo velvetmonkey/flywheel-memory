@@ -7,7 +7,7 @@
 
 | ID | Time | T | Title | Read |
 |----|------|---|-------|------|
-| #2237 | 7:54 PM | 🔵 | PII audit of flywheel-crank repository found only test fixture data | ~451 |
+| #2237 | 7:54 PM | 🔵 | PII audit of flywheel-memory repository found only test fixture data | ~451 |
 
 ### Jan 31, 2026
 

@@ -334,7 +334,7 @@ describe('recency integration', () => {
     await createTestNote(
       tempVault,
       'projects/flywheel.md',
-      '# Flywheel\n\nWorking on the Flywheel Crank project.'
+      '# Flywheel\n\nWorking on the Flywheel Memory project.'
     );
 
     await createTestNote(
@@ -349,11 +349,11 @@ describe('recency integration', () => {
       '# TypeScript\n\nNotes about TypeScript and React.'
     );
 
-    const entities = ['Flywheel Crank', 'Alex Johnson', 'TypeScript', 'React'];
+    const entities = ['Flywheel Memory', 'Alex Johnson', 'TypeScript', 'React'];
     const index = await buildRecencyIndex(tempVault, entities);
 
     // Should have tracked all entities
-    expect(index.lastMentioned.has('flywheel crank')).toBe(true);
+    expect(index.lastMentioned.has('flywheel memory')).toBe(true);
     expect(index.lastMentioned.has('alex johnson')).toBe(true);
     expect(index.lastMentioned.has('typescript')).toBe(true);
     expect(index.lastMentioned.has('react')).toBe(true);

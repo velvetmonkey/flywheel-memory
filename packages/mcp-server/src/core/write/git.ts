@@ -6,14 +6,14 @@ import { simpleGit, SimpleGit, CheckRepoActions } from 'simple-git';
 import path from 'path';
 import fs from 'fs/promises';
 import {
-  setCrankState,
-  getCrankState,
-  deleteCrankState,
+  setWriteState,
+  getWriteState,
+  deleteWriteState,
   type StateDb,
 } from '@velvetmonkey/vault-core';
 
 /**
- * Module-level StateDb reference for crank state storage
+ * Module-level StateDb reference for write state storage
  * Set via setStateDb() during initialization
  */
 let moduleStateDb: StateDb | null = null;
@@ -47,66 +47,66 @@ const STALE_LOCK_THRESHOLD_MS = 30_000; // 30 seconds
 const STAGING_DIR = '.flywheel-staging';
 
 /**
- * Tracking data for the last successful Crank commit.
+ * Tracking data for the last successful mutation commit.
  * Used to prevent accidental undo of unrelated commits.
  */
-export interface LastCrankCommit {
+export interface LastMutationCommit {
   hash: string;
   message: string;
   timestamp: string;
 }
 
 /**
- * Save tracking info for the last successful Crank commit.
+ * Save tracking info for the last successful mutation commit.
  * This enables safe undo verification.
  */
-export function saveLastCrankCommit(
+export function saveLastMutationCommit(
   hash: string,
   message: string
 ): void {
   if (!moduleStateDb) {
-    console.error('[Crank] No StateDb available for saving last commit');
+    console.error('[Flywheel] No StateDb available for saving last commit');
     return;
   }
 
-  const data: LastCrankCommit = {
+  const data: LastMutationCommit = {
     hash,
     message,
     timestamp: new Date().toISOString(),
   };
 
   try {
-    setCrankState(moduleStateDb, 'last_commit', data);
+    setWriteState(moduleStateDb, 'last_commit', data);
   } catch (e) {
-    console.error('[Crank] Failed to save last commit to StateDb:', e);
+    console.error('[Flywheel] Failed to save last commit to StateDb:', e);
   }
 }
 
 /**
- * Get the last tracked Crank commit, if any.
+ * Get the last tracked mutation commit, if any.
  */
-export function getLastCrankCommit(): LastCrankCommit | null {
+export function getLastMutationCommit(): LastMutationCommit | null {
   if (!moduleStateDb) {
     return null;
   }
 
   try {
-    return getCrankState<LastCrankCommit>(moduleStateDb, 'last_commit');
+    return getWriteState<LastMutationCommit>(moduleStateDb, 'last_commit');
   } catch {
     return null;
   }
 }
 
 /**
- * Clear the last Crank commit tracking (after successful undo).
+ * Clear the last mutation commit tracking (after successful undo).
  */
-export function clearLastCrankCommit(): void {
+export function clearLastMutationCommit(): void {
   if (!moduleStateDb) {
     return;
   }
 
   try {
-    deleteCrankState(moduleStateDb, 'last_commit');
+    deleteWriteState(moduleStateDb, 'last_commit');
   } catch {
     // Ignore errors
   }
@@ -395,7 +395,7 @@ export async function commitChange(
 
       // Track this commit for safe undo verification
       if (result.commit) {
-        saveLastCrankCommit(result.commit, commitMessage);
+        saveLastMutationCommit(result.commit, commitMessage);
       }
 
       return {
@@ -616,7 +616,7 @@ export async function commitPolicyChanges(
 
       // Track this commit for safe undo verification
       if (result.commit) {
-        saveLastCrankCommit(result.commit, commitMessage);
+        saveLastMutationCommit(result.commit, commitMessage);
       }
 
       return {

@@ -288,6 +288,23 @@ See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
 
 ---
 
+## How It Compares
+
+| Feature | Flywheel Memory | Obsidian CLI (MCP) | Smart Connections | Khoj |
+|---------|----------------|-------------------|-------------------|------|
+| Protocol | MCP (native) | MCP | Obsidian plugin | Web API |
+| Backlink graph | Yes (bidirectional) | No | No | No |
+| FTS5 search | Yes (<10ms) | Basic | Semantic only | Yes |
+| Entity extraction | Auto (8 categories) | No | No | No |
+| Auto-wikilinks | Yes (with alias resolution) | No | No | No |
+| Schema intelligence | Yes (6 analysis modes) | No | No | No |
+| Git integration | Yes (auto-commit, undo) | No | No | No |
+| Test coverage | 1,757 tests | Unknown | Unknown | Unknown |
+| Runs locally | Yes (zero cloud) | Yes | Yes | Optional |
+| Tool count | 36 tools | ~10 | 0 (plugin) | ~5 |
+
+---
+
 ## Who This Is For
 
 Flywheel is for anyone who uses an Obsidian vault as their working memory
@@ -350,10 +367,13 @@ See [docs/VISION.md](docs/VISION.md) for the full picture.
 
 | Doc | Description |
 |---|---|
+| [SETUP.md](docs/SETUP.md) | Set up your own vault -- prerequisites, config, first commands |
 | [TOOLS.md](docs/TOOLS.md) | Full tool reference -- all 36 tools, parameters, examples |
+| [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts organized by use case |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Index strategy, FTS5, graph, auto-wikilinks |
 | [CONFIGURATION.md](docs/CONFIGURATION.md) | Env vars, presets, custom tool sets |
 | [TESTING.md](docs/TESTING.md) | Test methodology, coverage, performance benchmarks |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Error recovery, diagnostics, common issues |
 | [VISION.md](docs/VISION.md) | The flywheel effect and where this goes |
 
 ---

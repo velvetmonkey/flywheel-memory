@@ -181,7 +181,7 @@ describe('Graph Query Performance Benchmarks', () => {
        * not the small demo vault used in this test. Demo notes are intentionally
        * concise for teaching purposes.
        *
-       * See: flywheel-crank/docs/TOKEN_BENCHMARKS.md for full methodology
+       * See: flywheel-memory/docs/TOKEN_BENCHMARKS.md for full methodology
        */
 
       console.log('Traditional approach token cost (documented):');

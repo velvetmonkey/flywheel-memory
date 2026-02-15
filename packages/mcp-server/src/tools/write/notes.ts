@@ -1,5 +1,5 @@
 /**
- * Note creation tools for Flywheel Crank
+ * Note creation tools for Flywheel Memory
  * Tools: vault_create_note, vault_delete_note
  */
 
@@ -129,7 +129,7 @@ export function registerNoteTools(
         await writeVaultFile(vaultPath, notePath, processedContent, finalFrontmatter);
 
         // 8. Handle git commit
-        const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Crank:Create]');
+        const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Flywheel:Create]');
 
         // Build preview with wikilink info
         const infoLines = [wikilinkInfo, suggestInfo].filter(Boolean);
@@ -231,7 +231,7 @@ export function registerNoteTools(
         await fs.unlink(fullPath);
 
         // 6. Handle git commit
-        const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Crank:Delete]');
+        const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Flywheel:Delete]');
 
         const message = backlinkWarning
           ? `Deleted note: ${notePath}\n\nWarning: ${backlinkWarning}`

@@ -1,9 +1,9 @@
 /**
- * Shared constants for Flywheel Crank
+ * Shared constants for Flywheel Memory
  */
 
 export const DEFAULT_AUTO_COMMIT = false;
-export const DEFAULT_COMMIT_MESSAGE_PREFIX = '[Flywheel Crank]';
+export const DEFAULT_COMMIT_MESSAGE_PREFIX = '[Flywheel]';
 
 /**
  * Valid markdown heading markers

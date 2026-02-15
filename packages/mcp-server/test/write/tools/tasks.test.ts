@@ -29,7 +29,7 @@ import type { Position } from '../../../src/core/write/types.js';
 import {
   initializeEntityIndex,
   suggestRelatedLinks,
-  setCrankStateDb,
+  setWriteStateDb,
 } from '../../../src/core/write/wikilinks.js';
 
 /**
@@ -729,11 +729,11 @@ describe('vault_add_task suggestOutgoingLinks parameter', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
     // Create entity cache with known entities
     createEntityCacheInStateDb(stateDb, tempVault, {
       technologies: ['TypeScript', 'JavaScript', 'Python'],
-      projects: ['MCP Server', 'Flywheel Crank'],
+      projects: ['MCP Server', 'Flywheel Memory'],
       people: ['Jordan Smith', 'Alex Rivera'],
       acronyms: ['API', 'CLI', 'MCP'],
     });
@@ -742,7 +742,7 @@ describe('vault_add_task suggestOutgoingLinks parameter', () => {
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);

@@ -10,7 +10,7 @@
   ],
   "projects": [
     { "name": "MCP Server", "path": "projects/MCP Server.md", "aliases": ["MCP"] },
-    { "name": "Flywheel Crank", "path": "projects/Flywheel Crank.md", "aliases": ["Crank"] }
+    { "name": "Flywheel Memory", "path": "projects/Flywheel Memory.md", "aliases": ["Memory"] }
   ],
   "technologies": [
     { "name": "TypeScript", "path": "technologies/TypeScript.md", "aliases": ["TS"] },

@@ -2,7 +2,7 @@
  * Session ID management for workflow correlation
  *
  * Allows tracking operations across a single agent workflow,
- * correlating reads (Flywheel) and writes (Crank).
+ * correlating reads (Flywheel) and writes (Flywheel Memory).
  */
 
 import { randomBytes } from 'crypto';

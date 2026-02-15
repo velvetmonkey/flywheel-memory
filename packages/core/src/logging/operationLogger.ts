@@ -1,7 +1,7 @@
 /**
  * Shared OperationLogger for Flywheel ecosystem
  *
- * Provides unified logging for both Flywheel (read) and Flywheel-Crank (write)
+ * Provides unified logging for both Flywheel (read) and Flywheel Memory (write)
  * with session correlation, metrics aggregation, and privacy controls.
  */
 
@@ -121,7 +121,7 @@ export class OperationLogger {
 
     const operations = {
       flywheel: {} as Record<string, number>,
-      crank: {} as Record<string, number>,
+      write: {} as Record<string, number>,
     };
 
     let successCount = 0;
@@ -167,16 +167,16 @@ export class OperationLogger {
     const byTool: AggregatedMetrics['byTool'] = {};
     const byProduct: AggregatedMetrics['byProduct'] = {
       flywheel: { count: 0, success_rate: 0, mean_ms: 0 },
-      crank: { count: 0, success_rate: 0, mean_ms: 0 },
+      write: { count: 0, success_rate: 0, mean_ms: 0 },
     };
 
     const productDurations: Record<ProductId, number[]> = {
       flywheel: [],
-      crank: [],
+      write: [],
     };
     const productSuccess: Record<ProductId, number> = {
       flywheel: 0,
-      crank: 0,
+      write: 0,
     };
 
     for (const entry of filtered) {
@@ -200,7 +200,7 @@ export class OperationLogger {
     }
 
     // Calculate product metrics
-    for (const prod of ['flywheel', 'crank'] as ProductId[]) {
+    for (const prod of ['flywheel', 'write'] as ProductId[]) {
       const ds = productDurations[prod];
       if (ds.length > 0) {
         byProduct[prod].mean_ms = ds.reduce((a, b) => a + b, 0) / ds.length;

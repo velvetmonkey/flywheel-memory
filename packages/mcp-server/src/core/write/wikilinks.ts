@@ -1,12 +1,12 @@
 /**
- * Wikilink integration for Flywheel Crank
+ * Wikilink integration for Flywheel Memory
  *
  * Manages entity index lifecycle and provides wikilink processing
  * for mutation tools. Mirrors Flywheel's startup pattern.
  *
- * ARCHITECTURE NOTE: Crank maintains its own entity index independent of Flywheel.
- * This is by design for resilience - Crank works even if Flywheel isn't running.
- * Both Flywheel and Crank use @velvetmonkey/vault-core for consistent scanning
+ * ARCHITECTURE NOTE: Flywheel Memorymaintains its own entity index independent of Flywheel.
+ * This is by design for resilience - Flywheel Memoryworks even if Flywheel isn't running.
+ * Both Flywheel and Flywheel Memoryuse @velvetmonkey/vault-core for consistent scanning
  * logic, but each maintains its own cached copy of the entity index.
  *
  * Storage: SQLite StateDb at .claude/state.db (managed by vault-core)
@@ -16,7 +16,7 @@
  * 2. StateDb includes version number for migration detection
  * 3. Index is held in memory for the duration of the MCP session
  * 4. Flywheel exposes entity data via MCP for LLM queries
- * 5. Crank uses its local copy for wikilink application during mutations
+ * 5. Flywheel Memoryuses its local copy for wikilink application during mutations
  */
 
 import {
@@ -67,10 +67,10 @@ import {
 let moduleStateDb: StateDb | null = null;
 
 /**
- * Set the StateDb instance for all Crank core modules
+ * Set the StateDb instance for all Flywheel Memorycore modules
  * Called during MCP server initialization
  */
-export function setCrankStateDb(stateDb: StateDb | null): void {
+export function setWriteStateDb(stateDb: StateDb | null): void {
   moduleStateDb = stateDb;
   // Propagate to other modules
   setGitStateDb(stateDb);
@@ -146,11 +146,11 @@ export async function initializeEntityIndex(vaultPath: string): Promise<void> {
           entityIndex = dbIndex;
           indexReady = true;
           lastLoadedAt = Date.now();
-          console.error(`[Crank] Loaded ${dbIndex._metadata.total_entities} entities from StateDb`);
+          console.error(`[Flywheel] Loaded ${dbIndex._metadata.total_entities} entities from StateDb`);
           return;
         }
       } catch (e) {
-        console.error('[Crank] Failed to load from StateDb:', e);
+        console.error('[Flywheel] Failed to load from StateDb:', e);
       }
     }
 
@@ -158,7 +158,7 @@ export async function initializeEntityIndex(vaultPath: string): Promise<void> {
     await rebuildIndex(vaultPath);
   } catch (error) {
     indexError = error instanceof Error ? error : new Error(String(error));
-    console.error(`[Crank] Failed to initialize entity index: ${indexError.message}`);
+    console.error(`[Flywheel] Failed to initialize entity index: ${indexError.message}`);
     // Don't throw - wikilinks will just be disabled
   }
 }
@@ -167,7 +167,7 @@ export async function initializeEntityIndex(vaultPath: string): Promise<void> {
  * Rebuild index synchronously
  */
 async function rebuildIndex(vaultPath: string): Promise<void> {
-  console.error(`[Crank] Scanning vault for entities...`);
+  console.error(`[Flywheel] Scanning vault for entities...`);
   const startTime = Date.now();
 
   entityIndex = await scanVaultEntities(vaultPath, {
@@ -177,15 +177,15 @@ async function rebuildIndex(vaultPath: string): Promise<void> {
   indexReady = true;
   lastLoadedAt = Date.now();
   const entityDuration = Date.now() - startTime;
-  console.error(`[Crank] Entity index built: ${entityIndex._metadata.total_entities} entities in ${entityDuration}ms`);
+  console.error(`[Flywheel] Entity index built: ${entityIndex._metadata.total_entities} entities in ${entityDuration}ms`);
 
   // Save to StateDb for fast subsequent loads
   if (moduleStateDb) {
     try {
       moduleStateDb.replaceAllEntities(entityIndex);
-      console.error(`[Crank] Saved entities to StateDb`);
+      console.error(`[Flywheel] Saved entities to StateDb`);
     } catch (e) {
-      console.error(`[Crank] Failed to save entities to StateDb: ${e}`);
+      console.error(`[Flywheel] Failed to save entities to StateDb: ${e}`);
     }
   }
 
@@ -198,9 +198,9 @@ async function rebuildIndex(vaultPath: string): Promise<void> {
     const cooccurrenceStart = Date.now();
     cooccurrenceIndex = await mineCooccurrences(vaultPath, entityNames);
     const cooccurrenceDuration = Date.now() - cooccurrenceStart;
-    console.error(`[Crank] Co-occurrence index built: ${cooccurrenceIndex._metadata.total_associations} associations in ${cooccurrenceDuration}ms`);
+    console.error(`[Flywheel] Co-occurrence index built: ${cooccurrenceIndex._metadata.total_associations} associations in ${cooccurrenceDuration}ms`);
   } catch (e) {
-    console.error(`[Crank] Failed to build co-occurrence index: ${e}`);
+    console.error(`[Flywheel] Failed to build co-occurrence index: ${e}`);
   }
 
   // Build recency index for temporal suggestions
@@ -212,19 +212,19 @@ async function rebuildIndex(vaultPath: string): Promise<void> {
     if (cachedRecency && cacheAgeMs < 60 * 60 * 1000) {
       // Cache is valid and less than 1 hour old
       recencyIndex = cachedRecency;
-      console.error(`[Crank] Recency index loaded from StateDb (${recencyIndex.lastMentioned.size} entities)`);
+      console.error(`[Flywheel] Recency index loaded from StateDb (${recencyIndex.lastMentioned.size} entities)`);
     } else {
       // Build fresh recency index
       const recencyStart = Date.now();
       recencyIndex = await buildRecencyIndex(vaultPath, entities);
       const recencyDuration = Date.now() - recencyStart;
-      console.error(`[Crank] Recency index built: ${recencyIndex.lastMentioned.size} entities in ${recencyDuration}ms`);
+      console.error(`[Flywheel] Recency index built: ${recencyIndex.lastMentioned.size} entities in ${recencyDuration}ms`);
 
       // Save to StateDb
       saveRecencyToStateDb(recencyIndex);
     }
   } catch (e) {
-    console.error(`[Crank] Failed to build recency index: ${e}`);
+    console.error(`[Flywheel] Failed to build recency index: ${e}`);
   }
 }
 
@@ -245,8 +245,8 @@ export function getEntityIndex(): EntityIndex | null {
 /**
  * Check if Flywheel has updated StateDb since we loaded, and refresh if so.
  *
- * This enables Crank to detect when Flywheel's file watcher has reindexed
- * the vault (adding new entities) without requiring Crank restart.
+ * This enables Flywheel Memoryto detect when Flywheel's file watcher has reindexed
+ * the vault (adding new entities) without requiring Flywheel Memoryrestart.
  *
  * Called before applying wikilinks to ensure fresh entity data.
  */
@@ -261,18 +261,18 @@ export function checkAndRefreshIfStale(): void {
 
     // If StateDb was updated after we loaded, refresh
     if (dbBuiltAt > lastLoadedAt) {
-      console.error('[Crank] Entity index stale, reloading from StateDb...');
+      console.error('[Flywheel] Entity index stale, reloading from StateDb...');
       const dbIndex = getEntityIndexFromDb(moduleStateDb);
       if (dbIndex._metadata.total_entities > 0) {
         entityIndex = dbIndex;
         lastLoadedAt = Date.now();
-        console.error(`[Crank] Reloaded ${dbIndex._metadata.total_entities} entities`);
+        console.error(`[Flywheel] Reloaded ${dbIndex._metadata.total_entities} entities`);
       }
     }
   } catch (e) {
     // StateDb might be locked or corrupted - skip refresh silently
-    // Crank will continue using its cached version
-    console.error('[Crank] Failed to check for stale entities:', e);
+    // Flywheel Memorywill continue using its cached version
+    console.error('[Flywheel] Failed to check for stale entities:', e);
   }
 }
 
@@ -326,7 +326,7 @@ function sortEntitiesByPriority(entities: Entity[], notePath?: string): Entity[]
 export function processWikilinks(content: string, notePath?: string): WikilinkResult {
   if (!isEntityIndexReady() || !entityIndex) {
     // eslint-disable-next-line no-console
-    console.error('[Crank:DEBUG] Entity index not ready, entities:', entityIndex?._metadata?.total_entities ?? 0);
+    console.error('[Flywheel:DEBUG] Entity index not ready, entities:', entityIndex?._metadata?.total_entities ?? 0);
     return {
       content,
       linksAdded: 0,
@@ -336,7 +336,7 @@ export function processWikilinks(content: string, notePath?: string): WikilinkRe
 
   const entities = getAllEntities(entityIndex);
   // eslint-disable-next-line no-console
-  console.error(`[Crank:DEBUG] Processing wikilinks with ${entities.length} entities`);
+  console.error(`[Flywheel:DEBUG] Processing wikilinks with ${entities.length} entities`);
 
   // Sort by priority (cross-folder + hub) for same-length entity preference
   const sortedEntities = sortEntitiesByPriority(entities, notePath);

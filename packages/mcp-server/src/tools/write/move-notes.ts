@@ -1,5 +1,5 @@
 /**
- * Note move/rename tools for Flywheel Crank
+ * Note move/rename tools for Flywheel Memory
  * Tools: vault_move_note, vault_rename_note
  *
  * These tools handle file relocation with automatic backlink updates across the vault.
@@ -290,7 +290,7 @@ export function registerMoveNoteTools(
         if (commit) {
           // Commit all changed files
           const filesToCommit = [newPath, ...backlinkUpdates.map(b => b.path)];
-          const gitResult = await commitChange(vaultPath, filesToCommit.join(', '), `[Crank:Move] ${oldPath} → ${newPath}`);
+          const gitResult = await commitChange(vaultPath, filesToCommit.join(', '), `[Flywheel:Move] ${oldPath} → ${newPath}`);
 
           if (gitResult.success && gitResult.hash) {
             gitCommit = gitResult.hash;
@@ -304,7 +304,7 @@ export function registerMoveNoteTools(
 
         // 9. Rebuild entity cache in background
         initializeEntityIndex(vaultPath).catch(err => {
-          console.error(`[Crank] Entity cache rebuild failed: ${err}`);
+          console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
         });
 
         // Build result
@@ -382,7 +382,7 @@ export function registerMoveNoteTools(
         // Sanitize title (remove invalid filename characters)
         const sanitizedTitle = newTitle.replace(/[<>:"/\\|?*]/g, '');
         if (sanitizedTitle !== newTitle) {
-          console.error(`[Crank] Title sanitized: "${newTitle}" → "${sanitizedTitle}"`);
+          console.error(`[Flywheel] Title sanitized: "${newTitle}" → "${sanitizedTitle}"`);
         }
 
         const fullPath = path.join(vaultPath, notePath);
@@ -468,7 +468,7 @@ export function registerMoveNoteTools(
 
         if (commit) {
           const filesToCommit = [newPath, ...backlinkUpdates.map(b => b.path)];
-          const gitResult = await commitChange(vaultPath, filesToCommit.join(', '), `[Crank:Rename] ${oldTitle} → ${sanitizedTitle}`);
+          const gitResult = await commitChange(vaultPath, filesToCommit.join(', '), `[Flywheel:Rename] ${oldTitle} → ${sanitizedTitle}`);
 
           if (gitResult.success && gitResult.hash) {
             gitCommit = gitResult.hash;
@@ -482,7 +482,7 @@ export function registerMoveNoteTools(
 
         // 9. Rebuild entity cache in background
         initializeEntityIndex(vaultPath).catch(err => {
-          console.error(`[Crank] Entity cache rebuild failed: ${err}`);
+          console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
         });
 
         // Build result

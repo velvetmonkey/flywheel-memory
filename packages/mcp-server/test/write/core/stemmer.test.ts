@@ -367,7 +367,7 @@ describe('stemmer integration', () => {
   });
 
   it('should NOT match unrelated words', () => {
-    const contentStems = tokenizeAndStem('completed the flywheel crank').stems;
+    const contentStems = tokenizeAndStem('completed the flywheel memory').stems;
     const entityStem = stem('fat');
 
     // "completed" should NOT match "fat"

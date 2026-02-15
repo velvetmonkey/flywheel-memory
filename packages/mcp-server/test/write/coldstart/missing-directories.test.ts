@@ -24,7 +24,7 @@ import {
   writeVaultFile,
   validatePath,
 } from '../../../src/core/write/writer.js';
-import { setCrankStateDb } from '../../../src/core/write/wikilinks.js';
+import { setWriteStateDb } from '../../../src/core/write/wikilinks.js';
 
 let tempVault: string;
 
@@ -46,7 +46,7 @@ describe('Missing .claude Directory', () => {
 
     // Open StateDb (should auto-create .flywheel)
     const stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
 
     // Create entity cache in StateDb
     createEntityCacheInStateDb(stateDb, tempVault, { people: ['Test Person'] });
@@ -55,7 +55,7 @@ describe('Missing .claude Directory', () => {
     expect(afterExists).toBe(true);
 
     // Cleanup
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
   });

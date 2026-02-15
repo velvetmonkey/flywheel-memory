@@ -13,7 +13,7 @@ import {
   type EntityIndex,
   type Entity,
 } from '@velvetmonkey/vault-core';
-import { setCrankStateDb } from '../../src/core/write/wikilinks.js';
+import { setWriteStateDb } from '../../src/core/write/wikilinks.js';
 
 // Re-export StateDb types for test files
 export { openStateDb, deleteStateDb, type StateDb };
@@ -513,12 +513,12 @@ function buildEntityIndexWithDetails(
  */
 export function setupTestStateDb(vaultPath: string): { stateDb: StateDb; cleanup: () => void } {
   const stateDb = openStateDb(vaultPath);
-  setCrankStateDb(stateDb);
+  setWriteStateDb(stateDb);
 
   return {
     stateDb,
     cleanup: () => {
-      setCrankStateDb(null);
+      setWriteStateDb(null);
       stateDb.db.close();
       deleteStateDb(vaultPath);
     },

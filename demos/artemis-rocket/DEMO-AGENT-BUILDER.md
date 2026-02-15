@@ -54,7 +54,7 @@ const blocked = await flywheel.search_notes({ where: { status: 'blocked' } });
 
 ```javascript
 // Step 1: Create note structure if needed
-await crank.vault_create_note({
+await flywheel.vault_create_note({
   path: 'daily-notes/2026-01-03.md',
   frontmatter: {
     type: 'daily',
@@ -71,7 +71,7 @@ await crank.vault_create_note({
 });
 
 // Step 2: Add content with wikilink suggestions
-await crank.vault_add_to_section({
+await flywheel.vault_add_to_section({
   path: 'daily-notes/2026-01-03.md',
   section: 'Morning Briefing',
   content: 'Overnight analysis identified propulsion Test 4 at risk due to Turbopump delivery delay. Marcus Johnson tracking with Acme Aerospace - status call today.',
@@ -100,7 +100,7 @@ await crank.vault_add_to_section({
 
 ```javascript
 // Agent autonomously decides to update a DIFFERENT note
-await crank.vault_add_to_section({
+await flywheel.vault_add_to_section({
   path: 'systems/avionics/Avionics System.md',
   section: 'Dependencies',
   content: 'Propulsion turbopump delay may impact avionics integration timeline. Monitor Test 4 status.',
@@ -129,7 +129,7 @@ await crank.vault_add_to_section({
 
 ```javascript
 // Step 1: Create decision record structure
-await crank.vault_create_note({
+await flywheel.vault_create_note({
   path: 'decisions/ADR-006 Turbopump Schedule Mitigation.md',
   frontmatter: {
     type: 'decision',
@@ -151,7 +151,7 @@ Pending Chief Engineer review.
 });
 
 // Step 2: Add context with wikilink suggestions
-await crank.vault_add_to_section({
+await flywheel.vault_add_to_section({
   path: 'decisions/ADR-006 Turbopump Schedule Mitigation.md',
   section: 'Context',
   content: `Turbopump delivery delayed from Jan 5 to Jan 20. This impacts:
@@ -163,7 +163,7 @@ await crank.vault_add_to_section({
 });
 
 // Step 3: Add options
-await crank.vault_add_to_section({
+await flywheel.vault_add_to_section({
   path: 'decisions/ADR-006 Turbopump Schedule Mitigation.md',
   section: 'Options',
   content: `1. **Delay Test 4 to Jan 25** - Accept 2-week slip, maintain CDR date

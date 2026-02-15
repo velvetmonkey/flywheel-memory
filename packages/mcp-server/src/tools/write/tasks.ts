@@ -1,5 +1,5 @@
 /**
- * Task tools for Flywheel Crank
+ * Task tools for Flywheel Memory
  * Tools: vault_toggle_task, vault_add_task
  */
 
@@ -172,7 +172,7 @@ export function registerTaskTools(
         await writeVaultFile(vaultPath, notePath, toggleResult.content, finalFrontmatter);
 
         // 9. Handle git commit
-        const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Crank:Task]');
+        const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Flywheel:Task]');
 
         const newStatus = toggleResult.newState ? 'completed' : 'incomplete';
         const checkbox = toggleResult.newState ? '[x]' : '[ ]';
@@ -219,7 +219,7 @@ export function registerTaskTools(
           vaultPath,
           notePath,
           commit,
-          commitPrefix: '[Crank:Task]',
+          commitPrefix: '[Flywheel:Task]',
           section,
           actionDescription: 'add task',
           scoping: agent_id || session_id ? { agent_id, session_id } : undefined,

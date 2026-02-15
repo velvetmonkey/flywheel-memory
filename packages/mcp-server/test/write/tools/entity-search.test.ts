@@ -1,5 +1,5 @@
 /**
- * Tests for Entity Search Tool in Flywheel-Crank
+ * Tests for Entity Search Tool in Flywheel Memory
  *
  * Tests the search_entities tool which uses FTS5 full-text search
  * with Porter stemming for finding vault entities.

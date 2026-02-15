@@ -1,5 +1,5 @@
 /**
- * Unified policy tool for Flywheel Crank
+ * Unified policy tool for Flywheel Memory
  *
  * Single `policy` tool with action parameter:
  * - list: List available policies

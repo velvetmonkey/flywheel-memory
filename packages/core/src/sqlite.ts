@@ -74,10 +74,10 @@ export interface StateDb {
   getAllRecency: Statement;
   clearRecency: Statement;
 
-  // Crank state operations
-  setCrankState: Statement;
-  getCrankState: Statement;
-  deleteCrankState: Statement;
+  // Write state operations
+  setWriteState: Statement;
+  getWriteState: Statement;
+  deleteWriteState: Statement;
 
   // Flywheel config operations
   setFlywheelConfigStmt: Statement;
@@ -102,7 +102,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -195,8 +195,8 @@ CREATE TABLE IF NOT EXISTS recency (
   mention_count INTEGER DEFAULT 1
 );
 
--- Crank state (replaces last-crank-commit.json and other crank state)
-CREATE TABLE IF NOT EXISTS crank_state (
+-- Write state (replaces last-commit.json and other write state)
+CREATE TABLE IF NOT EXISTS write_state (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL,
   updated_at TEXT DEFAULT (datetime('now'))
@@ -287,6 +287,16 @@ function initSchema(db: Database.Database): void {
     if (currentVersion < 2) {
       db.exec('DROP TABLE IF EXISTS notes');
       db.exec('DROP TABLE IF EXISTS links');
+    }
+
+    // v3: Rename crank_state → write_state
+    if (currentVersion < 3) {
+      const hasCrankState = db.prepare(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name='crank_state'`
+      ).get();
+      if (hasCrankState) {
+        db.exec('ALTER TABLE crank_state RENAME TO write_state');
+      }
     }
 
     db.prepare(
@@ -405,18 +415,18 @@ export function openStateDb(vaultPath: string): StateDb {
 
     clearRecency: db.prepare('DELETE FROM recency'),
 
-    // Crank state operations
-    setCrankState: db.prepare(`
-      INSERT INTO crank_state (key, value, updated_at)
+    // Write state operations
+    setWriteState: db.prepare(`
+      INSERT INTO write_state (key, value, updated_at)
       VALUES (?, ?, datetime('now'))
       ON CONFLICT(key) DO UPDATE SET
         value = excluded.value,
         updated_at = datetime('now')
     `),
 
-    getCrankState: db.prepare('SELECT value FROM crank_state WHERE key = ?'),
+    getWriteState: db.prepare('SELECT value FROM write_state WHERE key = ?'),
 
-    deleteCrankState: db.prepare('DELETE FROM crank_state WHERE key = ?'),
+    deleteWriteState: db.prepare('DELETE FROM write_state WHERE key = ?'),
 
     // Flywheel config operations
     setFlywheelConfigStmt: db.prepare(`
@@ -755,34 +765,34 @@ export function getAllRecency(stateDb: StateDb): RecencyRow[] {
 }
 
 // =============================================================================
-// Crank State Operations
+// Write State Operations
 // =============================================================================
 
 /**
- * Set a crank state value
+ * Set a write state value
  */
-export function setCrankState(
+export function setWriteState(
   stateDb: StateDb,
   key: string,
   value: unknown
 ): void {
-  stateDb.setCrankState.run(key, JSON.stringify(value));
+  stateDb.setWriteState.run(key, JSON.stringify(value));
 }
 
 /**
- * Get a crank state value
+ * Get a write state value
  */
-export function getCrankState<T>(stateDb: StateDb, key: string): T | null {
-  const row = stateDb.getCrankState.get(key) as { value: string } | undefined;
+export function getWriteState<T>(stateDb: StateDb, key: string): T | null {
+  const row = stateDb.getWriteState.get(key) as { value: string } | undefined;
   if (!row) return null;
   return JSON.parse(row.value) as T;
 }
 
 /**
- * Delete a crank state key
+ * Delete a write state key
  */
-export function deleteCrankState(stateDb: StateDb, key: string): void {
-  stateDb.deleteCrankState.run(key);
+export function deleteWriteState(stateDb: StateDb, key: string): void {
+  stateDb.deleteWriteState.run(key);
 }
 
 // =============================================================================

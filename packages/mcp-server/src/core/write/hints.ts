@@ -7,8 +7,8 @@
 
 import crypto from 'crypto';
 import {
-  setCrankState,
-  getCrankState,
+  setWriteState,
+  getWriteState,
   type StateDb,
 } from '@velvetmonkey/vault-core';
 
@@ -72,7 +72,7 @@ export function readHints(): HintsFile {
   }
 
   try {
-    const data = getCrankState<HintsFile>(moduleStateDb, 'mutation_hints');
+    const data = getWriteState<HintsFile>(moduleStateDb, 'mutation_hints');
     if (data && data.version === HINT_VERSION) {
       return data;
     }
@@ -88,14 +88,14 @@ export function readHints(): HintsFile {
  */
 export function writeHints(hints: HintsFile): void {
   if (!moduleStateDb) {
-    console.error('[Crank] No StateDb available for writing hints');
+    console.error('[Flywheel] No StateDb available for writing hints');
     return;
   }
 
   try {
-    setCrankState(moduleStateDb, 'mutation_hints', hints);
+    setWriteState(moduleStateDb, 'mutation_hints', hints);
   } catch (e) {
-    console.error('[Crank] Failed to write hints to StateDb:', e);
+    console.error('[Flywheel] Failed to write hints to StateDb:', e);
   }
 }
 
@@ -138,7 +138,7 @@ export function addMutationHint(
     return true;
   } catch (error) {
     // Log but don't fail the mutation
-    console.error('[Crank] Failed to write mutation hint:', error);
+    console.error('[Flywheel] Failed to write mutation hint:', error);
     return false;
   }
 }

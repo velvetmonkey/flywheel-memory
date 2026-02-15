@@ -19,9 +19,9 @@ import {
   recordEntityMention,
   getEntityRecency,
   getAllRecency,
-  setCrankState,
-  getCrankState,
-  deleteCrankState,
+  setWriteState,
+  getWriteState,
+  deleteWriteState,
   getStateDbMetadata,
   isEntityDataStale,
   escapeFts5Query,
@@ -75,7 +75,7 @@ describe('SQLite State Management', () => {
     it('should have correct schema version', () => {
       stateDb = openStateDb(testVaultPath);
       const metadata = getStateDbMetadata(stateDb);
-      expect(metadata.schemaVersion).toBe(2);
+      expect(metadata.schemaVersion).toBe(3);
     });
   });
 
@@ -277,38 +277,38 @@ describe('SQLite State Management', () => {
     });
   });
 
-  describe('Crank State Operations', () => {
+  describe('Write State Operations', () => {
     beforeEach(() => {
       stateDb = openStateDb(testVaultPath);
     });
 
-    it('should store and retrieve crank state', () => {
+    it('should store and retrieve write state', () => {
       const state = {
         hash: 'abc123',
         message: 'Test commit',
         timestamp: Date.now(),
       };
 
-      setCrankState(stateDb, 'last_commit', state);
+      setWriteState(stateDb, 'last_commit', state);
 
-      const result = getCrankState<typeof state>(stateDb, 'last_commit');
+      const result = getWriteState<typeof state>(stateDb, 'last_commit');
       expect(result).toEqual(state);
     });
 
-    it('should update existing crank state', () => {
-      setCrankState(stateDb, 'key1', { value: 1 });
-      setCrankState(stateDb, 'key1', { value: 2 });
+    it('should update existing write state', () => {
+      setWriteState(stateDb, 'key1', { value: 1 });
+      setWriteState(stateDb, 'key1', { value: 2 });
 
-      const result = getCrankState<{ value: number }>(stateDb, 'key1');
+      const result = getWriteState<{ value: number }>(stateDb, 'key1');
       expect(result!.value).toBe(2);
     });
 
-    it('should delete crank state', () => {
-      setCrankState(stateDb, 'temp_key', { data: 'temp' });
-      expect(getCrankState(stateDb, 'temp_key')).not.toBeNull();
+    it('should delete write state', () => {
+      setWriteState(stateDb, 'temp_key', { data: 'temp' });
+      expect(getWriteState(stateDb, 'temp_key')).not.toBeNull();
 
-      deleteCrankState(stateDb, 'temp_key');
-      expect(getCrankState(stateDb, 'temp_key')).toBeNull();
+      deleteWriteState(stateDb, 'temp_key');
+      expect(getWriteState(stateDb, 'temp_key')).toBeNull();
     });
   });
 

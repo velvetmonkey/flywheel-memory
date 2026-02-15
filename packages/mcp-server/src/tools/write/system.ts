@@ -1,5 +1,5 @@
 /**
- * System tools for Flywheel Crank
+ * System tools for Flywheel Memory
  * Tools: vault_undo_last_mutation
  *
  * Note: vault_list_sections was absorbed into get_note_structure (read/primitives.ts)
@@ -11,8 +11,8 @@ import {
   undoLastCommit,
   getLastCommit,
   isGitRepo,
-  getLastCrankCommit,
-  clearLastCrankCommit,
+  getLastMutationCommit,
+  clearLastMutationCommit,
 } from '../../core/write/git.js';
 import type { MutationResult } from '../../core/write/types.js';
 
@@ -25,7 +25,7 @@ export function registerSystemTools(
   // ========================================
   server.tool(
     'vault_undo_last_mutation',
-    'Undo the last git commit (typically the last Crank mutation). Performs a soft reset.',
+    'Undo the last git commit (typically the last Flywheel mutation). Performs a soft reset.',
     {
       confirm: z.boolean().default(false).describe('Must be true to confirm undo operation'),
       hash: z.string().optional().describe('Expected commit hash. If provided, undo only proceeds if HEAD matches this hash. Prevents accidentally undoing the wrong commit.'),
@@ -91,17 +91,17 @@ export function registerSystemTools(
           }
         }
 
-        // 3. Verify HEAD matches expected Crank commit (safety check)
-        const lastCrankCommit = getLastCrankCommit();
+        // 3. Verify HEAD matches expected Flywheel commit (safety check)
+        const lastMutationCommit = getLastMutationCommit();
         const lastCommit = await getLastCommit(vaultPath);
 
-        if (lastCrankCommit && lastCommit) {
-          if (lastCommit.hash !== lastCrankCommit.hash) {
+        if (lastMutationCommit && lastCommit) {
+          if (lastCommit.hash !== lastMutationCommit.hash) {
             const result: MutationResult = {
               success: false,
-              message: `Cannot undo: HEAD (${lastCommit.hash.substring(0, 7)}) doesn't match last Crank commit (${lastCrankCommit.hash.substring(0, 7)}). Another process may have committed since your mutation.`,
+              message: `Cannot undo: HEAD (${lastCommit.hash.substring(0, 7)}) doesn't match last Flywheel commit (${lastMutationCommit.hash.substring(0, 7)}). Another process may have committed since your mutation.`,
               path: '',
-              preview: `Expected: ${lastCrankCommit.hash.substring(0, 7)} "${lastCrankCommit.message}"\nActual HEAD: ${lastCommit.hash.substring(0, 7)} "${lastCommit.message}"`,
+              preview: `Expected: ${lastMutationCommit.hash.substring(0, 7)} "${lastMutationCommit.message}"\nActual HEAD: ${lastCommit.hash.substring(0, 7)} "${lastCommit.message}"`,
             };
             return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
           }
@@ -120,7 +120,7 @@ export function registerSystemTools(
         }
 
         // 5. Clear tracking after successful undo
-        clearLastCrankCommit();
+        clearLastMutationCommit();
 
         const result: MutationResult = {
           success: true,

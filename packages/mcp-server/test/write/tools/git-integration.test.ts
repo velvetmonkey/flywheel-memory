@@ -74,7 +74,7 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
     await cleanupVault(vaultPath);
   });
 
-  it('should create commit with [Crank:Add] prefix for vault_add_to_section', async () => {
+  it('should create commit with [Flywheel:Add] prefix for vault_add_to_section', async () => {
     // Create test note
     const notePath = 'test.md';
     await writeVaultFile(vaultPath, notePath, '## Log\n\n', {});
@@ -88,7 +88,7 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
 
     // Simulate mutation with auto-commit
     await writeVaultFile(vaultPath, notePath, '## Log\n\nNew entry\n', {});
-    const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
     expect(result.success).toBe(true);
     expect(result.hash).toBeDefined();
@@ -98,11 +98,11 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
     expect(finalCount).toBe(initialCount + 1);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toContain('[Crank:Add]');
+    expect(message).toContain('[Flywheel:Add]');
     expect(message).toContain('test.md');
   });
 
-  it('should create commit with [Crank:Remove] prefix for vault_remove_from_section', async () => {
+  it('should create commit with [Flywheel:Remove] prefix for vault_remove_from_section', async () => {
     // Create test note
     const notePath = 'test.md';
     await writeVaultFile(vaultPath, notePath, '## Log\n\nEntry to remove\n', {});
@@ -114,15 +114,15 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
 
     // Simulate mutation with auto-commit
     await writeVaultFile(vaultPath, notePath, '## Log\n\n', {});
-    const result = await commitChange(vaultPath, notePath, '[Crank:Remove]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Remove]');
 
     expect(result.success).toBe(true);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toContain('[Crank:Remove]');
+    expect(message).toContain('[Flywheel:Remove]');
   });
 
-  it('should create commit with [Crank:Replace] prefix for vault_replace_in_section', async () => {
+  it('should create commit with [Flywheel:Replace] prefix for vault_replace_in_section', async () => {
     const notePath = 'test.md';
     await writeVaultFile(vaultPath, notePath, '## Log\n\nOld text\n', {});
 
@@ -131,15 +131,15 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
     await git.commit('Initial commit');
 
     await writeVaultFile(vaultPath, notePath, '## Log\n\nNew text\n', {});
-    const result = await commitChange(vaultPath, notePath, '[Crank:Replace]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Replace]');
 
     expect(result.success).toBe(true);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toContain('[Crank:Replace]');
+    expect(message).toContain('[Flywheel:Replace]');
   });
 
-  it('should create commit with [Crank:Task] prefix for vault_toggle_task', async () => {
+  it('should create commit with [Flywheel:Task] prefix for vault_toggle_task', async () => {
     const notePath = 'test.md';
     await writeVaultFile(vaultPath, notePath, '## Tasks\n\n- [ ] Todo\n', {});
 
@@ -148,15 +148,15 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
     await git.commit('Initial commit');
 
     await writeVaultFile(vaultPath, notePath, '## Tasks\n\n- [x] Todo\n', {});
-    const result = await commitChange(vaultPath, notePath, '[Crank:Task]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Task]');
 
     expect(result.success).toBe(true);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toContain('[Crank:Task]');
+    expect(message).toContain('[Flywheel:Task]');
   });
 
-  it('should create commit with [Crank:Task] prefix for vault_add_task', async () => {
+  it('should create commit with [Flywheel:Task] prefix for vault_add_task', async () => {
     const notePath = 'test.md';
     await writeVaultFile(vaultPath, notePath, '## Tasks\n\n', {});
 
@@ -165,15 +165,15 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
     await git.commit('Initial commit');
 
     await writeVaultFile(vaultPath, notePath, '## Tasks\n\n- [ ] New task\n', {});
-    const result = await commitChange(vaultPath, notePath, '[Crank:Task]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Task]');
 
     expect(result.success).toBe(true);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toContain('[Crank:Task]');
+    expect(message).toContain('[Flywheel:Task]');
   });
 
-  it('should create commit with [Crank:FM] prefix for vault_update_frontmatter', async () => {
+  it('should create commit with [Flywheel:FM] prefix for vault_update_frontmatter', async () => {
     const notePath = 'test.md';
     await writeVaultFile(vaultPath, notePath, 'Content', { status: 'draft' });
 
@@ -182,15 +182,15 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
     await git.commit('Initial commit');
 
     await writeVaultFile(vaultPath, notePath, 'Content', { status: 'published' });
-    const result = await commitChange(vaultPath, notePath, '[Crank:FM]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:FM]');
 
     expect(result.success).toBe(true);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toContain('[Crank:FM]');
+    expect(message).toContain('[Flywheel:FM]');
   });
 
-  it('should create commit with [Crank:FM] prefix for vault_add_frontmatter_field', async () => {
+  it('should create commit with [Flywheel:FM] prefix for vault_add_frontmatter_field', async () => {
     const notePath = 'test.md';
     await writeVaultFile(vaultPath, notePath, 'Content', {});
 
@@ -199,27 +199,27 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
     await git.commit('Initial commit');
 
     await writeVaultFile(vaultPath, notePath, 'Content', { newField: 'value' });
-    const result = await commitChange(vaultPath, notePath, '[Crank:FM]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:FM]');
 
     expect(result.success).toBe(true);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toContain('[Crank:FM]');
+    expect(message).toContain('[Flywheel:FM]');
   });
 
-  it('should create commit with [Crank:Create] prefix for vault_create_note', async () => {
+  it('should create commit with [Flywheel:Create] prefix for vault_create_note', async () => {
     const notePath = 'new-note.md';
     await writeVaultFile(vaultPath, notePath, 'New content', {});
-    const result = await commitChange(vaultPath, notePath, '[Crank:Create]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Create]');
 
     expect(result.success).toBe(true);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toContain('[Crank:Create]');
+    expect(message).toContain('[Flywheel:Create]');
     expect(message).toContain('new-note.md');
   });
 
-  it('should create commit with [Crank:Delete] prefix for vault_delete_note', async () => {
+  it('should create commit with [Flywheel:Delete] prefix for vault_delete_note', async () => {
     const notePath = 'to-delete.md';
     await writeVaultFile(vaultPath, notePath, 'Content', {});
 
@@ -229,12 +229,12 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
 
     // Delete the file
     await fs.unlink(path.join(vaultPath, notePath));
-    const result = await commitChange(vaultPath, notePath, '[Crank:Delete]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Delete]');
 
     expect(result.success).toBe(true);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toContain('[Crank:Delete]');
+    expect(message).toContain('[Flywheel:Delete]');
   });
 
   it('should include filename in commit message', async () => {
@@ -242,7 +242,7 @@ describe('Git Integration - AUTO_COMMIT enabled', () => {
     await fs.mkdir(path.join(vaultPath, 'daily-notes'), { recursive: true });
     await writeVaultFile(vaultPath, notePath, 'Content', {});
 
-    const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
     expect(result.success).toBe(true);
 
@@ -310,7 +310,7 @@ describe('Git Integration - Non-git vault', () => {
     const notePath = 'test.md';
     await writeVaultFile(vaultPath, notePath, 'Content', {});
 
-    const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Not a git repository');
@@ -326,7 +326,7 @@ describe('Git Integration - Non-git vault', () => {
     expect(content).toContain('Content');
 
     // But commit should fail
-    const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
     expect(result.success).toBe(false);
     expect(result.error).toBe('Not a git repository');
   });
@@ -347,12 +347,12 @@ describe('Git Integration - Commit message format', () => {
     const notePath = 'my-note.md';
     await writeVaultFile(vaultPath, notePath, 'Content', {});
 
-    const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
     expect(result.success).toBe(true);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toBe('[Crank:Add] Update my-note.md');
+    expect(message).toBe('[Flywheel:Add] Update my-note.md');
   });
 
   it('should use only filename, not full path, in commit message', async () => {
@@ -360,12 +360,12 @@ describe('Git Integration - Commit message format', () => {
     await fs.mkdir(path.join(vaultPath, 'folder/subfolder'), { recursive: true });
     await writeVaultFile(vaultPath, notePath, 'Content', {});
 
-    const result = await commitChange(vaultPath, notePath, '[Crank:Task]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Task]');
 
     expect(result.success).toBe(true);
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toBe('[Crank:Task] Update note.md');
+    expect(message).toBe('[Flywheel:Task] Update note.md');
     expect(message).not.toContain('folder/subfolder');
   });
 
@@ -373,10 +373,10 @@ describe('Git Integration - Commit message format', () => {
     const notePath = 'test.md';
     await writeVaultFile(vaultPath, notePath, 'Content', {});
 
-    await commitChange(vaultPath, notePath, '[Crank:FM]');
+    await commitChange(vaultPath, notePath, '[Flywheel:FM]');
 
     const message = await getLastCommitMessage(vaultPath);
-    expect(message).toMatch(/^\[Crank:FM\]/);
+    expect(message).toMatch(/^\[Flywheel:FM\]/);
   });
 });
 
@@ -395,7 +395,7 @@ describe('Git Integration - Edge cases', () => {
     const notePath = 'new-file.md';
     await writeVaultFile(vaultPath, notePath, 'New content', {});
 
-    const result = await commitChange(vaultPath, notePath, '[Crank:Create]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Create]');
 
     expect(result.success).toBe(true);
     expect(result.hash).toBeDefined();
@@ -405,7 +405,7 @@ describe('Git Integration - Edge cases', () => {
     const notePath = 'my note with spaces.md';
     await writeVaultFile(vaultPath, notePath, 'Content', {});
 
-    const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
     expect(result.success).toBe(true);
 
@@ -417,10 +417,10 @@ describe('Git Integration - Edge cases', () => {
     const notePath = 'test.md';
     await writeVaultFile(vaultPath, notePath, 'Content 1', {});
 
-    const result1 = await commitChange(vaultPath, notePath, '[Crank:Add]');
+    const result1 = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
     await writeVaultFile(vaultPath, notePath, 'Content 2', {});
-    const result2 = await commitChange(vaultPath, notePath, '[Crank:Add]');
+    const result2 = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
     expect(result1.success).toBe(true);
     expect(result2.success).toBe(true);
@@ -432,7 +432,7 @@ describe('Git Integration - Edge cases', () => {
     await fs.mkdir(path.join(vaultPath, 'a/b/c'), { recursive: true });
     await writeVaultFile(vaultPath, notePath, 'Content', {});
 
-    const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+    const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
     expect(result.success).toBe(true);
 

@@ -15,7 +15,7 @@ import {
   suggestRelatedLinks,
   extractLinkedEntities,
   isLikelyArticleTitle,
-  setCrankStateDb,
+  setWriteStateDb,
 } from '../../../src/core/write/wikilinks.js';
 import {
   createTempVault,
@@ -405,11 +405,11 @@ describe('cache lifecycle', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -453,7 +453,7 @@ describe('cache lifecycle', () => {
 
   it('should handle missing .claude directory', async () => {
     // No .claude directory at all
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
 
     // Should handle gracefully
@@ -745,11 +745,11 @@ describe('suggestRelatedLinks integration', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -759,7 +759,7 @@ describe('suggestRelatedLinks integration', () => {
     // Create entities in StateDb
     createEntityCacheInStateDb(stateDb, tempVault, {
       technologies: ['TypeScript', 'JavaScript', 'Python'],
-      projects: ['MCP Server', 'Flywheel Crank'],
+      projects: ['MCP Server', 'Flywheel Memory'],
       people: ['Jordan Smith'],
     });
 
@@ -822,11 +822,11 @@ describe('suggestRelatedLinks scoring layers', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -853,7 +853,7 @@ describe('suggestRelatedLinks scoring layers', () => {
     it('should include entities with 30 or fewer characters', async () => {
       createEntityCacheInStateDb(stateDb, tempVault, {
         technologies: ['TypeScript'],
-        projects: ['Flywheel Crank'], // 14 chars, under limit
+        projects: ['Flywheel Memory'], // 14 chars, under limit
       });
 
       await initializeEntityIndex(tempVault);
@@ -997,11 +997,11 @@ describe('garbage suggestion prevention', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -1011,13 +1011,13 @@ describe('garbage suggestion prevention', () => {
     // This is the original bug scenario
     createEntityCacheInStateDb(stateDb, tempVault, {
       technologies: ['TypeScript'],
-      projects: ['Flywheel Crank', 'Flywheel'],
+      projects: ['Flywheel Memory', 'Flywheel'],
       other: ['Complete Guide To Fat Loss And Fitness'], // Article title (>30 chars)
     });
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Completed 0.5.1 of Flywheel Crank');
+    const result = suggestRelatedLinks('Completed 0.5.1 of Flywheel Memory');
 
     // Should NOT contain the garbage article title
     for (const suggestion of result.suggestions) {
@@ -1025,7 +1025,7 @@ describe('garbage suggestion prevention', () => {
       expect(suggestion).not.toContain('Complete Guide');
     }
 
-    // Should suggest Flywheel and/or Flywheel Crank instead
+    // Should suggest Flywheel and/or Flywheel Memory instead
     if (result.suggestions.length > 0) {
       expect(
         result.suggestions.some(s =>
@@ -1151,7 +1151,7 @@ describe('isLikelyArticleTitle', () => {
     });
 
     it('should accept project names', () => {
-      expect(isLikelyArticleTitle('Flywheel Crank')).toBe(false);
+      expect(isLikelyArticleTitle('Flywheel Memory')).toBe(false);
       expect(isLikelyArticleTitle('Claude Code')).toBe(false);
     });
 
@@ -1190,11 +1190,11 @@ describe('suggestion quality - length filter', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -1232,11 +1232,11 @@ describe('suggestion quality - article pattern filter', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -1287,11 +1287,11 @@ describe('suggestion quality - word count filter', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -1329,11 +1329,11 @@ describe('suggestion quality - real-world scenarios', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -1344,7 +1344,7 @@ describe('suggestion quality - real-world scenarios', () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
       projects: [
         'Flywheel',                                         // Valid project
-        'Flywheel Crank',                                   // Valid project
+        'Flywheel Memory',                                   // Valid project
       ],
       other: [
         'Complete Guide To Fat Loss Checklist included',  // Article title (filtered by length)
@@ -1357,12 +1357,12 @@ describe('suggestion quality - real-world scenarios', () => {
     await initializeEntityIndex(tempVault);
 
     // Use exact entity name in content to ensure match
-    const result = suggestRelatedLinks('Versioning Flywheel Crank release');
+    const result = suggestRelatedLinks('Versioning Flywheel Memory release');
 
     // Should suggest Flywheel-related entities, not the clipping titles
     if (result.suggestions.length > 0) {
       const hasFlywheel = result.suggestions.some(s =>
-        s === 'Flywheel' || s === 'Flywheel Crank'
+        s === 'Flywheel' || s === 'Flywheel Memory'
       );
       expect(hasFlywheel).toBe(true);
     }
@@ -1403,11 +1403,11 @@ describe('strictness modes', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -1526,11 +1526,11 @@ describe('false positive prevention', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -1539,13 +1539,13 @@ describe('false positive prevention', () => {
   it('should NOT suggest "Complete Guide" for "Completed 0.5.1"', async () => {
     // This is the original bug from roadmap: "Completed" matching "Complete Guide"
     createEntityCacheInStateDb(stateDb, tempVault, {
-      projects: ['Flywheel Crank', 'Flywheel'],
+      projects: ['Flywheel Memory', 'Flywheel'],
       other: ['Complete Guide'],
     });
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Completed 0.5.1 of Flywheel Crank');
+    const result = suggestRelatedLinks('Completed 0.5.1 of Flywheel Memory');
 
     // "Complete Guide" should NOT be suggested
     for (const suggestion of result.suggestions) {
@@ -1623,20 +1623,20 @@ describe('false positive prevention', () => {
   it('should suggest valid entities despite surrounding stopwords', async () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
       technologies: ['TypeScript', 'JavaScript'],
-      projects: ['Flywheel Crank'],
+      projects: ['Flywheel Memory'],
     });
 
     await initializeEntityIndex(tempVault);
 
     // Content has many stopwords but also valid entity matches
     const result = suggestRelatedLinks(
-      'Working on TypeScript and JavaScript development for Flywheel Crank today'
+      'Working on TypeScript and JavaScript development for Flywheel Memory today'
     );
 
     // Should still suggest the valid entities
     if (result.suggestions.length > 0) {
       const hasValidEntity = result.suggestions.some(s =>
-        ['TypeScript', 'JavaScript', 'Flywheel Crank'].includes(s)
+        ['TypeScript', 'JavaScript', 'Flywheel Memory'].includes(s)
       );
       expect(hasValidEntity).toBe(true);
     }
@@ -1654,11 +1654,11 @@ describe('expanded stopwords', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -1759,11 +1759,11 @@ describe('alias matching', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -1981,11 +1981,11 @@ describe('adaptive thresholds', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -2057,11 +2057,11 @@ describe('entity type boosting', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -2090,19 +2090,19 @@ describe('entity type boosting', () => {
 
   it('should boost projects over technologies', async () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
-      projects: ['Flywheel Crank'],  // +3 type boost
+      projects: ['Flywheel Memory'],  // +3 type boost
       technologies: ['React'],        // +0 type boost
     });
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Flywheel Crank and React integration', {
+    const result = suggestRelatedLinks('Flywheel Memory and React integration', {
       strictness: 'balanced',
     });
 
     // Both should be suggested, but project should rank higher
     if (result.suggestions.length >= 2) {
-      // Flywheel Crank has 2-word match + 3 project boost
+      // Flywheel Memory has 2-word match + 3 project boost
       expect(result.suggestions).toBeDefined();
     }
   });
@@ -2135,11 +2135,11 @@ describe('context-aware matching', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -2172,21 +2172,21 @@ describe('context-aware matching', () => {
 
   it('should boost projects in project notes context', async () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
-      projects: ['Flywheel Crank'],
+      projects: ['Flywheel Memory'],
       people: ['Alex Johnson'],
     });
 
     await initializeEntityIndex(tempVault);
 
     // Project path should boost projects
-    const result = suggestRelatedLinks('Alex Johnson working on Flywheel Crank', {
+    const result = suggestRelatedLinks('Alex Johnson working on Flywheel Memory', {
       strictness: 'balanced',
       notePath: 'projects/flywheel/overview.md',
     });
 
     // Projects get +5 context boost in project notes
     if (result.suggestions.length >= 2) {
-      // Flywheel Crank should rank higher due to context boost
+      // Flywheel Memory should rank higher due to context boost
       expect(result.suggestions).toBeDefined();
     }
   });
@@ -2260,11 +2260,11 @@ describe('combined scoring formula', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -2320,11 +2320,11 @@ describe('Cross-Folder Boost', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -2414,11 +2414,11 @@ describe('Hub Score Boost', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -2504,11 +2504,11 @@ describe('Combined Cross-Folder and Hub Boosts', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -2575,11 +2575,11 @@ describe('zero-relevance content filtering', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -2726,7 +2726,7 @@ describe('processWikilinks alias resolution', () => {
     tempVault = await createTempVault();
     await mkdir(path.join(tempVault, '.claude'), { recursive: true });
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
   });
 
   afterEach(async () => {

@@ -21,7 +21,7 @@
 ## The Voice-Native Stack
 
 ```
-WhisperType (transcription) → OpenClaw Agent → Claude Code → Flywheel-Crank → Obsidian Vault
+WhisperType (transcription) → OpenClaw Agent → Claude Code → Flywheel Memory → Obsidian Vault
      ↓                            ↓                ↓              ↓
 Voice memo                    Interprets       Executes        Auto-wikilinks
                               intent           mutation        + markup
@@ -50,8 +50,8 @@ Also mentioned they might have another project for Q2."
 **Agent Action**: Log to today's daily note with auto-wikilinks
 
 ```javascript
-// Flywheel-Crank mutation
-await crank.vault_add_to_section({
+// Flywheel Memory mutation
+await flywheel.vault_add_to_section({
   path: 'daily-notes/2026-01-03.md',
   section: 'Log',
   content: 'Call with Sarah at Acme about the data migration. Validation 85% complete. Follow up with IT team re: staging access. Potential Q2 project.',
@@ -111,7 +111,7 @@ Over time, "wrong" suggestions create a **navigable timeline of professional act
 
 ```javascript
 // Agent autonomously updates client note
-await crank.vault_add_to_section({
+await flywheel.vault_add_to_section({
   path: 'clients/Acme Corp.md',
   section: 'Pending Opportunities',
   content: 'Q2 project mentioned during 2026-01-03 call. Details TBD. Follow up with Sarah.',
@@ -144,7 +144,7 @@ await crank.vault_add_to_section({
 **Agent Action**: Create actionable task from voice memo
 
 ```javascript
-await crank.vault_add_to_section({
+await flywheel.vault_add_to_section({
   path: 'daily-notes/2026-01-03.md',
   section: 'Tasks',
   content: 'Follow up with Acme IT team about staging environment access',
@@ -233,7 +233,7 @@ When you log "Acme call", the algorithm looks at what entities frequently co-occ
 └────────┬────────┘
          ↓
 ┌─────────────────────────────────────────────────┐
-│                 Flywheel-Crank                  │
+│                 Flywheel Memory                  │
 │  ─────────────────────────────────────────────  │
 │  vault_add_to_section({                         │
 │    section: 'Log',                              │
@@ -243,7 +243,7 @@ When you log "Acme call", the algorithm looks at what entities frequently co-occ
 │                                                 │
 │  Auto-wikilinks: [[Sarah Mitchell]] [[Acme]]    │
 │  Suggestions: → [[TechStart]] [[INV-2025-048]]  │
-│  Git commit: [Crank:Add] daily-notes/01-03.md   │
+│  Git commit: [Flywheel:Add] daily-notes/01-03.md   │
 └────────┬────────────────────────────────────────┘
          ↓
 ┌─────────────────┐

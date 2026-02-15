@@ -2,7 +2,7 @@
  * @velvetmonkey/vault-core
  *
  * Shared vault utilities for the Flywheel ecosystem.
- * Used by both Flywheel (read) and Flywheel-Crank (write).
+ * Used by both Flywheel (read) and Flywheel Memory (write).
  */
 
 // Types
@@ -81,9 +81,9 @@ export {
   recordEntityMention,
   getEntityRecency,
   getAllRecency,
-  setCrankState,
-  getCrankState,
-  deleteCrankState,
+  setWriteState,
+  getWriteState,
+  deleteWriteState,
   // Flywheel Config
   setFlywheelConfig,
   getFlywheelConfig,

@@ -119,7 +119,7 @@ vault/
 
 ### Week 1: Content + Connections
 
-As you add daily logs via Flywheel-Crank:
+As you add daily logs via Flywheel Memory:
 
 ```javascript
 vault_add_to_section({

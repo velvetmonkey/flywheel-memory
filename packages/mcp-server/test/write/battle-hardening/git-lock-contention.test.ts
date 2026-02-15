@@ -26,8 +26,8 @@ import {
   isGitRepo,
   getLastCommit,
   undoLastCommit,
-  getLastCrankCommit,
-  clearLastCrankCommit,
+  getLastMutationCommit,
+  clearLastMutationCommit,
   setGitStateDb,
 } from '../../../src/core/write/git.js';
 import { openStateDb, deleteStateDb, type StateDb } from '@velvetmonkey/vault-core';
@@ -114,7 +114,7 @@ describe('Battle-Hardening: Git Lock Contention', () => {
 
       try {
         // Attempt to commit - should fail due to lock
-        const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+        const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
         // Commit should fail
         expect(result.success).toBe(false);
@@ -149,7 +149,7 @@ describe('Battle-Hardening: Git Lock Contention', () => {
         expect(content).toContain('- New entry');
 
         // But commit fails
-        const commitResult = await commitChange(vaultPath, notePath, '[Crank:Add]');
+        const commitResult = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
         expect(commitResult.success).toBe(false);
       } finally {
         await removeLockFile(lockPath);
@@ -170,7 +170,7 @@ describe('Battle-Hardening: Git Lock Contention', () => {
 
       // Modify and commit
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-      const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
       expect(result.success).toBe(true);
       expect(result.hash).toBeDefined();
@@ -204,7 +204,7 @@ describe('Battle-Hardening: Git Lock Contention', () => {
         expect(verifyContent).toContain('- New entry');
 
         // The commit fails due to lock
-        const commitResult = await commitChange(vaultPath, notePath, '[Crank:Add]');
+        const commitResult = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
         expect(commitResult.success).toBe(false);
 
         // But file is still modified
@@ -246,7 +246,7 @@ important: preserved
         await writeVaultFile(vaultPath, notePath, newContent, frontmatter);
 
         // Commit fails
-        await commitChange(vaultPath, notePath, '[Crank:Add]');
+        await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
         // Verify file integrity
         const { content: finalContent, frontmatter: finalFm } = await readVaultFile(vaultPath, notePath);
@@ -273,7 +273,7 @@ important: preserved
       const lockPath = await createLockFile(vaultPath);
 
       try {
-        const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+        const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
         expect(result.success).toBe(false);
         expect(result.error).toBeDefined();
@@ -292,7 +292,7 @@ important: preserved
       try {
         await writeVaultFile(nonGitPath, 'test.md', '# Test\n', {});
 
-        const result = await commitChange(nonGitPath, 'test.md', '[Crank:Add]');
+        const result = await commitChange(nonGitPath, 'test.md', '[Flywheel:Add]');
 
         expect(result.success).toBe(false);
         expect(result.error).toBe('Not a git repository');
@@ -305,7 +305,7 @@ important: preserved
       const notePath = 'test.md';
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
-      const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
       expect(result.success).toBe(true);
       expect(result.error).toBeUndefined();
@@ -314,35 +314,35 @@ important: preserved
   });
 
   describe('commit tracking for safe undo', () => {
-    it('should track last Crank commit', async () => {
+    it('should track last Flywheel commit', async () => {
       const notePath = 'test.md';
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
-      const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(result.success).toBe(true);
 
-      const tracked = getLastCrankCommit();
+      const tracked = getLastMutationCommit();
       expect(tracked).not.toBeNull();
       expect(tracked!.hash).toBe(result.hash);
-      expect(tracked!.message).toContain('[Crank:Add]');
+      expect(tracked!.message).toContain('[Flywheel:Add]');
     });
 
     it('should update tracking on each successful commit', async () => {
       const notePath = 'test.md';
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
-      const result1 = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result1 = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(result1.success).toBe(true);
 
-      const tracked1 = getLastCrankCommit();
+      const tracked1 = getLastMutationCommit();
       expect(tracked1!.hash).toBe(result1.hash);
 
       // Second commit
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-      const result2 = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result2 = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(result2.success).toBe(true);
 
-      const tracked2 = getLastCrankCommit();
+      const tracked2 = getLastMutationCommit();
       expect(tracked2!.hash).toBe(result2.hash);
       expect(tracked2!.hash).not.toBe(tracked1!.hash);
     });
@@ -352,21 +352,21 @@ important: preserved
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
       // First successful commit
-      const result1 = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result1 = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(result1.success).toBe(true);
 
-      const tracked1 = getLastCrankCommit();
+      const tracked1 = getLastMutationCommit();
 
       // Lock and try another commit
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
       const lockPath = await createLockFile(vaultPath);
 
       try {
-        const result2 = await commitChange(vaultPath, notePath, '[Crank:Add]');
+        const result2 = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
         expect(result2.success).toBe(false);
 
         // Tracking should still point to first commit
-        const tracked2 = getLastCrankCommit();
+        const tracked2 = getLastMutationCommit();
         expect(tracked2!.hash).toBe(tracked1!.hash);
       } finally {
         await removeLockFile(lockPath);
@@ -384,9 +384,9 @@ important: preserved
       await git.add('.');
       await git.commit('Initial commit');
 
-      // Now make a Crank commit
+      // Now make a Flywheel commit
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-      const commitResult = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const commitResult = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(commitResult.success).toBe(true);
 
       const undoResult = await undoLastCommit(vaultPath);
@@ -398,12 +398,12 @@ important: preserved
       const notePath = 'test.md';
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
-      // Crank makes a commit
-      const crankResult = await commitChange(vaultPath, notePath, '[Crank:Add]');
-      expect(crankResult.success).toBe(true);
+      // Flywheel makes a commit
+      const flywheelResult = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
+      expect(flywheelResult.success).toBe(true);
 
-      const tracked = getLastCrankCommit();
-      expect(tracked!.hash).toBe(crankResult.hash);
+      const tracked = getLastMutationCommit();
+      expect(tracked!.hash).toBe(flywheelResult.hash);
 
       // Simulate external process making a commit
       await writeVaultFile(vaultPath, 'external.md', '# External\n', {});
@@ -420,15 +420,15 @@ important: preserved
       const notePath = 'test.md';
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
-      await commitChange(vaultPath, notePath, '[Crank:Add]');
+      await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
-      const trackedBefore = getLastCrankCommit();
+      const trackedBefore = getLastMutationCommit();
       expect(trackedBefore).not.toBeNull();
 
       await undoLastCommit(vaultPath);
-      clearLastCrankCommit();
+      clearLastMutationCommit();
 
-      const trackedAfter = getLastCrankCommit();
+      const trackedAfter = getLastMutationCommit();
       expect(trackedAfter).toBeNull();
     });
   });
@@ -443,7 +443,7 @@ important: preserved
       // Rapid sequential commits
       for (let i = 0; i < 5; i++) {
         await writeVaultFile(vaultPath, notePath, `# Test\n- Entry ${i}\n`, {});
-        const result = await commitChange(vaultPath, notePath, `[Crank:Add] ${i}`);
+        const result = await commitChange(vaultPath, notePath, `[Flywheel:Add] ${i}`);
         results.push(result);
       }
 
@@ -481,22 +481,22 @@ important: preserved
       }
 
       // Commit should still work
-      const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(result.success).toBe(true);
     });
   });
 
   describe('external commit detection', () => {
-    it('should detect when HEAD changed after Crank commit', async () => {
+    it('should detect when HEAD changed after Flywheel commit', async () => {
       const notePath = 'test.md';
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
-      // Crank makes a commit
-      const crankResult = await commitChange(vaultPath, notePath, '[Crank:Add]');
-      expect(crankResult.success).toBe(true);
+      // Flywheel makes a commit
+      const flywheelResult = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
+      expect(flywheelResult.success).toBe(true);
 
-      const trackedAfterCrank = getLastCrankCommit();
-      expect(trackedAfterCrank).not.toBeNull();
+      const trackedAfterFlywheel = getLastMutationCommit();
+      expect(trackedAfterFlywheel).not.toBeNull();
 
       // External process makes a commit
       await writeVaultFile(vaultPath, 'external.md', '# External\n', {});
@@ -504,14 +504,14 @@ important: preserved
       await git.add('external.md');
       await git.commit('External commit');
 
-      // HEAD should now differ from tracked Crank commit
+      // HEAD should now differ from tracked Flywheel commit
       const currentHead = await getLastCommit(vaultPath);
       expect(currentHead).not.toBeNull();
-      expect(currentHead!.hash).not.toBe(trackedAfterCrank!.hash);
+      expect(currentHead!.hash).not.toBe(trackedAfterFlywheel!.hash);
 
-      // But tracking still points to Crank's commit
-      const trackedNow = getLastCrankCommit();
-      expect(trackedNow!.hash).toBe(trackedAfterCrank!.hash);
+      // But tracking still points to Flywheel's commit
+      const trackedNow = getLastMutationCommit();
+      expect(trackedNow!.hash).toBe(trackedAfterFlywheel!.hash);
     });
 
     it('should warn when undo would revert external changes', async () => {
@@ -523,10 +523,10 @@ important: preserved
       await git.add('.');
       await git.commit('Initial commit');
 
-      // Crank commit
+      // Flywheel commit
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-      const crankResult = await commitChange(vaultPath, notePath, '[Crank:Add]');
-      expect(crankResult.success).toBe(true);
+      const flywheelResult = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
+      expect(flywheelResult.success).toBe(true);
 
       // External commit on top
       await writeVaultFile(vaultPath, 'external.md', '# Important external work\n', {});
@@ -536,17 +536,17 @@ important: preserved
       // Undo should warn/fail because HEAD != tracked commit
       const undoResult = await undoLastCommit(vaultPath);
 
-      // The undo will work but it undoes the external commit, not the Crank commit
+      // The undo will work but it undoes the external commit, not the Flywheel commit
       // This is the expected behavior - undo always undoes HEAD
       // The warning comes from checking tracked vs HEAD mismatch
-      const tracked = getLastCrankCommit();
+      const tracked = getLastMutationCommit();
       const currentHead = await getLastCommit(vaultPath);
 
-      // After undo, HEAD should match Crank's commit
+      // After undo, HEAD should match Flywheel's commit
       expect(currentHead!.hash).toBe(tracked!.hash);
     });
 
-    it('should handle rapid external commits interleaved with Crank', async () => {
+    it('should handle rapid external commits interleaved with Flywheel', async () => {
       const notePath = 'test.md';
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
@@ -554,12 +554,12 @@ important: preserved
       await git.add('.');
       await git.commit('Initial commit');
 
-      // Interleave Crank and external commits
+      // Interleave Flywheel and external commits
       for (let i = 0; i < 3; i++) {
-        // Crank commit
-        await writeVaultFile(vaultPath, notePath, `# Test\n- Crank entry ${i}\n`, {});
-        const crankResult = await commitChange(vaultPath, notePath, `[Crank:Add] ${i}`);
-        expect(crankResult.success).toBe(true);
+        // Flywheel commit
+        await writeVaultFile(vaultPath, notePath, `# Test\n- Flywheel entry ${i}\n`, {});
+        const flywheelResult = await commitChange(vaultPath, notePath, `[Flywheel:Add] ${i}`);
+        expect(flywheelResult.success).toBe(true);
 
         // External commit
         await writeVaultFile(vaultPath, `external-${i}.md`, `# External ${i}\n`, {});
@@ -567,17 +567,17 @@ important: preserved
         await git.commit(`External commit ${i}`);
       }
 
-      // After interleaving, tracked commit should be the last Crank commit
-      const tracked = getLastCrankCommit();
+      // After interleaving, tracked commit should be the last Flywheel commit
+      const tracked = getLastMutationCommit();
       expect(tracked).not.toBeNull();
-      expect(tracked!.message).toContain('[Crank:Add] 2');
+      expect(tracked!.message).toContain('[Flywheel:Add] 2');
 
       // But HEAD should be the last external commit
       const head = await getLastCommit(vaultPath);
       expect(head!.message).toContain('External commit 2');
     });
 
-    it('should correctly identify Crank commits among mixed commits', async () => {
+    it('should correctly identify Flywheel commits among mixed commits', async () => {
       const notePath = 'test.md';
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
@@ -587,24 +587,24 @@ important: preserved
       await git.add('.');
       await git.commit('Initial (external)');
 
-      // Crank commit
+      // Flywheel commit
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-      const crankResult = await commitChange(vaultPath, notePath, '[Crank:Add]');
-      expect(crankResult.success).toBe(true);
+      const flywheelResult = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
+      expect(flywheelResult.success).toBe(true);
 
       // Get log to verify commit messages
       const log = await git.log();
       expect(log.all.length).toBe(2);
 
-      // Most recent should be Crank
-      expect(log.latest!.message).toContain('[Crank:Add]');
+      // Most recent should be Flywheel
+      expect(log.latest!.message).toContain('[Flywheel:Add]');
 
       // Tracked should match
-      const tracked = getLastCrankCommit();
+      const tracked = getLastMutationCommit();
       expect(tracked!.hash).toBe(log.latest!.hash);
     });
 
-    it('should preserve tracking across multiple Crank commits with external in between', async () => {
+    it('should preserve tracking across multiple Flywheel commits with external in between', async () => {
       const notePath = 'test.md';
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
@@ -612,30 +612,30 @@ important: preserved
       await git.add('.');
       await git.commit('Initial');
 
-      // First Crank commit
+      // First Flywheel commit
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry 1\n', {});
-      const crank1 = await commitChange(vaultPath, notePath, '[Crank:Add] First');
-      expect(crank1.success).toBe(true);
+      const flywheel1 = await commitChange(vaultPath, notePath, '[Flywheel:Add] First');
+      expect(flywheel1.success).toBe(true);
 
-      const tracked1 = getLastCrankCommit();
+      const tracked1 = getLastMutationCommit();
 
       // External commit
       await writeVaultFile(vaultPath, 'ext.md', '# Ext\n', {});
       await git.add('ext.md');
       await git.commit('External');
 
-      // Tracking should still point to Crank's commit
-      const trackedAfterExternal = getLastCrankCommit();
+      // Tracking should still point to Flywheel's commit
+      const trackedAfterExternal = getLastMutationCommit();
       expect(trackedAfterExternal!.hash).toBe(tracked1!.hash);
 
-      // Second Crank commit
+      // Second Flywheel commit
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry 1\n- Entry 2\n', {});
-      const crank2 = await commitChange(vaultPath, notePath, '[Crank:Add] Second');
-      expect(crank2.success).toBe(true);
+      const flywheel2 = await commitChange(vaultPath, notePath, '[Flywheel:Add] Second');
+      expect(flywheel2.success).toBe(true);
 
-      // Tracking should now point to second Crank commit
-      const tracked2 = getLastCrankCommit();
-      expect(tracked2!.hash).toBe(crank2.hash);
+      // Tracking should now point to second Flywheel commit
+      const tracked2 = getLastMutationCommit();
+      expect(tracked2!.hash).toBe(flywheel2.hash);
       expect(tracked2!.hash).not.toBe(tracked1!.hash);
     });
   });
@@ -647,7 +647,7 @@ important: preserved
       await writeVaultFile(vaultPath, notePath, '# First\n', {});
 
       // First commit in empty repo
-      const result = await commitChange(vaultPath, notePath, '[Crank:Create]');
+      const result = await commitChange(vaultPath, notePath, '[Flywheel:Create]');
       expect(result.success).toBe(true);
       expect(result.hash).toBeDefined();
     });

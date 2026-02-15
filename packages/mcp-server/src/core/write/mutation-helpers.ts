@@ -65,7 +65,7 @@ export interface WithVaultFileOptions {
   notePath: string;
   /** Whether to commit changes to git */
   commit: boolean;
-  /** Prefix for git commit message (e.g., '[Crank:Add]') */
+  /** Prefix for git commit message (e.g., '[Flywheel:Add]') */
   commitPrefix: string;
   /** Optional: section to find (returns error if not found) */
   section?: string;
@@ -222,7 +222,7 @@ export function ensureSectionExists(
  *     vaultPath,
  *     notePath,
  *     commit,
- *     commitPrefix: '[Crank:Add]',
+ *     commitPrefix: '[Flywheel:Add]',
  *     section: 'Log',
  *     actionDescription: 'add content',
  *   },

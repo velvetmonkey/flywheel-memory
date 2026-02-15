@@ -1,6 +1,6 @@
 /**
  * Shared constants for Flywheel Memory
- * Combines read (flywheel) and write (crank) constants
+ * Combines read (flywheel) and write (flywheel memory) constants
  */
 
 // ========================================

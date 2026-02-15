@@ -13,9 +13,9 @@ import {
   getLastCommit,
   undoLastCommit,
   commitChange,
-  saveLastCrankCommit,
-  getLastCrankCommit,
-  clearLastCrankCommit,
+  saveLastMutationCommit,
+  getLastMutationCommit,
+  clearLastMutationCommit,
   setGitStateDb,
 } from '../../../src/core/write/git.js';
 import {
@@ -210,11 +210,11 @@ describe('vault_undo_last_mutation integration workflow', () => {
   it('should undo the last commit', async () => {
     // Create a note and commit it
     await createTestNote(tempVault, 'test.md', '# Test\n\nOriginal content');
-    await commitChange(tempVault, 'test.md', '[Crank]');
+    await commitChange(tempVault, 'test.md', '[Flywheel]');
 
     // Make a change and commit it
     await createTestNote(tempVault, 'test.md', '# Test\n\nModified content');
-    await commitChange(tempVault, 'test.md', '[Crank]');
+    await commitChange(tempVault, 'test.md', '[Flywheel]');
 
     // Get the commit we're about to undo
     const beforeUndo = await getLastCommit(tempVault);
@@ -263,7 +263,7 @@ describe('vault_undo_last_mutation integration workflow', () => {
 
   it('getLastCommit should return commit info', async () => {
     await createTestNote(tempVault, 'test.md', '# Test');
-    await commitChange(tempVault, 'test.md', '[Crank]');
+    await commitChange(tempVault, 'test.md', '[Flywheel]');
 
     const result = await getLastCommit(tempVault);
 
@@ -288,7 +288,7 @@ describe('vault_undo_last_mutation integration workflow', () => {
   });
 });
 
-describe('Crank commit tracking for safe undo', () => {
+describe('Flywheel commit tracking for safe undo', () => {
   let tempVault: string;
   let stateDb: StateDb;
 
@@ -312,45 +312,45 @@ describe('Crank commit tracking for safe undo', () => {
 
   it('commitChange should save tracking info after successful commit', async () => {
     await createTestNote(tempVault, 'test.md', '# Test');
-    await commitChange(tempVault, 'test.md', '[Crank]');
+    await commitChange(tempVault, 'test.md', '[Flywheel]');
 
-    const tracked = getLastCrankCommit();
+    const tracked = getLastMutationCommit();
     expect(tracked).not.toBeNull();
     expect(tracked?.hash).toBeDefined();
-    expect(tracked?.message).toContain('[Crank]');
+    expect(tracked?.message).toContain('[Flywheel]');
     expect(tracked?.timestamp).toBeDefined();
   });
 
-  it('getLastCrankCommit should return null when no tracking exists', async () => {
-    const result = getLastCrankCommit();
+  it('getLastMutationCommit should return null when no tracking exists', async () => {
+    const result = getLastMutationCommit();
     expect(result).toBeNull();
   });
 
-  it('clearLastCrankCommit should remove tracking file', async () => {
+  it('clearLastMutationCommit should remove tracking file', async () => {
     // Save some tracking
-    saveLastCrankCommit('abc123', 'Test message');
+    saveLastMutationCommit('abc123', 'Test message');
 
     // Verify it exists
-    const before = getLastCrankCommit();
+    const before = getLastMutationCommit();
     expect(before).not.toBeNull();
 
     // Clear it
-    clearLastCrankCommit();
+    clearLastMutationCommit();
 
     // Verify it's gone
-    const after = getLastCrankCommit();
+    const after = getLastMutationCommit();
     expect(after).toBeNull();
   });
 
-  it('clearLastCrankCommit should not throw when no tracking exists', () => {
+  it('clearLastMutationCommit should not throw when no tracking exists', () => {
     // Should not throw
-    expect(() => clearLastCrankCommit()).not.toThrow();
+    expect(() => clearLastMutationCommit()).not.toThrow();
   });
 
-  it('saveLastCrankCommit should create .claude directory if needed', async () => {
-    saveLastCrankCommit('abc123', 'Test message');
+  it('saveLastMutationCommit should create .claude directory if needed', async () => {
+    saveLastMutationCommit('abc123', 'Test message');
 
-    const tracked = getLastCrankCommit();
+    const tracked = getLastMutationCommit();
     expect(tracked?.hash).toBe('abc123');
     expect(tracked?.message).toBe('Test message');
   });
@@ -358,11 +358,11 @@ describe('Crank commit tracking for safe undo', () => {
   it('undo should succeed when HEAD matches tracked commit', async () => {
     // Create initial commit
     await createTestNote(tempVault, 'test.md', '# Original');
-    await commitChange(tempVault, 'test.md', '[Crank:Setup]');
+    await commitChange(tempVault, 'test.md', '[Flywheel:Setup]');
 
     // Make a tracked change
     await createTestNote(tempVault, 'test.md', '# Modified');
-    await commitChange(tempVault, 'test.md', '[Crank:Modify]');
+    await commitChange(tempVault, 'test.md', '[Flywheel:Modify]');
 
     // Undo should succeed because HEAD matches tracked commit
     const result = await undoLastCommit(tempVault);
@@ -387,11 +387,11 @@ describe('Crank commit tracking for safe undo', () => {
 
   it('should detect when HEAD does not match tracked commit', async () => {
     // This tests the safety check logic used by vault_undo_last_mutation
-    // Step 1: Create a Crank commit (tracked)
+    // Step 1: Create a Flywheel commit (tracked)
     await createTestNote(tempVault, 'test.md', '# Original');
-    await commitChange(tempVault, 'test.md', '[Crank]');
+    await commitChange(tempVault, 'test.md', '[Flywheel]');
 
-    const trackedCommit = getLastCrankCommit();
+    const trackedCommit = getLastMutationCommit();
     expect(trackedCommit).not.toBeNull();
 
     // Step 2: Make a manual commit (HEAD moves, tracking stays)
@@ -410,23 +410,23 @@ describe('Crank commit tracking for safe undo', () => {
   });
 
   it('should clear tracking after undo so subsequent undos work normally', async () => {
-    // Create two Crank commits
+    // Create two Flywheel commits
     await createTestNote(tempVault, 'test.md', '# Original');
-    await commitChange(tempVault, 'test.md', '[Crank:1]');
+    await commitChange(tempVault, 'test.md', '[Flywheel:1]');
 
     await createTestNote(tempVault, 'test.md', '# Modified');
-    await commitChange(tempVault, 'test.md', '[Crank:2]');
+    await commitChange(tempVault, 'test.md', '[Flywheel:2]');
 
     // Tracking should point to second commit
-    const tracked = getLastCrankCommit();
-    expect(tracked?.message).toContain('[Crank:2]');
+    const tracked = getLastMutationCommit();
+    expect(tracked?.message).toContain('[Flywheel:2]');
 
     // Undo and clear tracking (simulating what tool handler does)
     await undoLastCommit(tempVault);
-    clearLastCrankCommit();
+    clearLastMutationCommit();
 
     // After clearing, tracking should be null
-    const afterClear = getLastCrankCommit();
+    const afterClear = getLastMutationCommit();
     expect(afterClear).toBeNull();
   });
 });

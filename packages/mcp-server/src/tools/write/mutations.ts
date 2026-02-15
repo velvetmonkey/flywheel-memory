@@ -1,5 +1,5 @@
 /**
- * Mutation tools for Flywheel Crank
+ * Mutation tools for Flywheel Memory
  * Tools: vault_add_to_section, vault_remove_from_section, vault_replace_in_section
  */
 
@@ -154,7 +154,7 @@ export function registerMutationTools(
           vaultPath,
           notePath,
           commit,
-          commitPrefix: '[Crank:Add]',
+          commitPrefix: '[Flywheel:Add]',
           section,
           actionDescription: 'add content',
           scoping: agent_id || session_id ? { agent_id, session_id } : undefined,
@@ -252,7 +252,7 @@ export function registerMutationTools(
           vaultPath,
           notePath,
           commit,
-          commitPrefix: '[Crank:Remove]',
+          commitPrefix: '[Flywheel:Remove]',
           section,
           actionDescription: 'remove content',
           scoping: agent_id || session_id ? { agent_id, session_id } : undefined,
@@ -311,7 +311,7 @@ export function registerMutationTools(
           vaultPath,
           notePath,
           commit,
-          commitPrefix: '[Crank:Replace]',
+          commitPrefix: '[Flywheel:Replace]',
           section,
           actionDescription: 'replace content',
           scoping: agent_id || session_id ? { agent_id, session_id } : undefined,

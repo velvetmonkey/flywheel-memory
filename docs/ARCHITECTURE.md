@@ -226,7 +226,7 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 | `recency` | Entity recency tracking (last mentioned, mention count) |
 | `vault_index_cache` | Serialized VaultIndex for fast startup |
 | `flywheel_config` | Configuration key-value store |
-| `crank_state` | Write-side state (last commit, mutation hints) |
+| `write_state` | Write-side state (last commit, mutation hints) |
 | `metadata` | Schema version, build timestamps, counts |
 | `schema_version` | Schema migration tracking |
 
@@ -249,7 +249,7 @@ Every write tool follows the same pipeline:
 9. **Section insertion** -- Inserts at position (append/prepend) with list nesting preservation
 10. **Guardrails** -- Output validation (warn/strict/off modes)
 11. **File write** -- Writes back with frontmatter via `gray-matter`
-12. **Git commit** -- Optional auto-commit with `[Crank:*]` prefix
+12. **Git commit** -- Optional auto-commit with `[Flywheel:*]` prefix
 
 ### Move and Rename
 

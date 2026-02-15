@@ -1,14 +1,14 @@
 /**
  * Shared logging types for Flywheel ecosystem
  *
- * Used by both Flywheel (read) and Flywheel-Crank (write) for
+ * Used by both Flywheel (read) and Flywheel Memory (write) for
  * unified operation logging and metrics.
  */
 
 /**
  * Product identifier for log entries
  */
-export type ProductId = 'flywheel' | 'crank';
+export type ProductId = 'flywheel' | 'write';
 
 /**
  * Single operation log entry
@@ -47,7 +47,7 @@ export interface SessionMetrics {
   /** Operations by product */
   operations: {
     flywheel: Record<string, number>;
-    crank: Record<string, number>;
+    write: Record<string, number>;
   };
   /** Total operation count */
   total_operations: number;

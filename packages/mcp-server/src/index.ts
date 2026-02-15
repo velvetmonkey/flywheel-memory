@@ -37,7 +37,7 @@ import { exportHubScores } from './core/shared/hubExport.js';
 import { initializeLogger as initializeReadLogger, getLogger } from './core/read/logging.js';
 
 // Core imports - Write
-import { initializeEntityIndex, setCrankStateDb } from './core/write/wikilinks.js';
+import { initializeEntityIndex, setWriteStateDb } from './core/write/wikilinks.js';
 import { initializeLogger as initializeWriteLogger, flushLogs } from './core/write/logging.js';
 import { setFTS5Database } from './core/read/fts5.js';
 
@@ -353,7 +353,7 @@ async function main() {
     setFTS5Database(stateDb.db);
 
     // Initialize entity index for wikilinks (used by write tools)
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
     await initializeEntityIndex(vaultPath);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -522,6 +522,9 @@ async function runPostIndexWork(index: VaultIndex) {
       // Legacy watcher
       const debounceMs = parseInt(process.env.FLYWHEEL_DEBOUNCE_MS || '60000');
       console.error(`[Memory] File watcher v1 enabled (debounce: ${debounceMs}ms)`);
+      if (debounceMs >= 60000) {
+        console.error('[Memory] Warning: Legacy watcher using high debounce (60s). Set FLYWHEEL_WATCH_V2=true for 200ms responsiveness.');
+      }
 
       const legacyWatcher = chokidar.watch(vaultPath, {
         ignored: /(^|[\/\\])\../,

@@ -69,9 +69,9 @@ const mockFlywheelTools: MockTool[] = [
 ];
 
 /**
- * Mock Flywheel-Crank write tools (subset for testing).
+ * Mock Flywheel Memory write tools (subset for testing).
  */
-const mockCrankTools: MockTool[] = [
+const mockWriteTools: MockTool[] = [
   {
     name: 'vault_add_to_section',
     description: 'Add content to a section in a note',
@@ -144,8 +144,8 @@ function prefixTools(serverName: string, tools: MockTool[]): MockTool[] {
 
 describe('LangChain Tool Schema Patterns', () => {
   const flywheelPrefixed = prefixTools('flywheel', mockFlywheelTools);
-  const crankPrefixed = prefixTools('flywheel-crank', mockCrankTools);
-  const allPrefixed = [...flywheelPrefixed, ...crankPrefixed];
+  const writePrefixed = prefixTools('flywheel-memory', mockWriteTools);
+  const allPrefixed = [...flywheelPrefixed, ...writePrefixed];
 
   describe('tool schema structure', () => {
     it('should have name, description, and inputSchema for each tool', () => {
@@ -186,14 +186,14 @@ describe('LangChain Tool Schema Patterns', () => {
 
   describe('write tools have common parameters', () => {
     it('should have path in required for write tools', () => {
-      for (const tool of crankPrefixed) {
+      for (const tool of writePrefixed) {
         const required = tool.inputSchema.required as string[];
         expect(required.includes('path')).toBe(true);
       }
     });
 
     it('should have commit as optional boolean', () => {
-      for (const tool of crankPrefixed) {
+      for (const tool of writePrefixed) {
         const properties = tool.inputSchema.properties as Record<string, { type?: string }>;
         if (properties.commit) {
           expect(properties.commit.type).toBe('boolean');
@@ -215,8 +215,8 @@ describe('LangChain Workflow Patterns', () => {
     const meetingToTasksWorkflow: WorkflowStep[] = [
       { tool: 'flywheel__get_section_content', isRead: true, purpose: 'Read meeting action items' },
       { tool: 'flywheel__get_backlinks', isRead: true, purpose: 'Find related projects' },
-      { tool: 'flywheel-crank__vault_add_task', isRead: false, purpose: 'Add tasks to daily note' },
-      { tool: 'flywheel-crank__vault_add_to_section', isRead: false, purpose: 'Update project log' },
+      { tool: 'flywheel-memory__vault_add_task', isRead: false, purpose: 'Add tasks to daily note' },
+      { tool: 'flywheel-memory__vault_add_to_section', isRead: false, purpose: 'Update project log' },
       { tool: 'flywheel__get_section_content', isRead: true, purpose: 'Verify changes' },
     ];
 
@@ -258,13 +258,13 @@ describe('LangChain Workflow Patterns', () => {
       const allTools = [
         'flywheel__get_section_content',
         'flywheel__get_backlinks',
-        'flywheel-crank__vault_add_task',
-        'flywheel-crank__vault_add_to_section',
+        'flywheel-memory__vault_add_task',
+        'flywheel-memory__vault_add_to_section',
       ];
 
       const tools = allTools.filter(toolFilter);
       const canRead = tools.some(t => t.startsWith('flywheel__'));
-      const canWrite = tools.some(t => t.startsWith('flywheel-crank__'));
+      const canWrite = tools.some(t => t.startsWith('flywheel-memory__'));
 
       return { name, tools, canRead, canWrite };
     }
@@ -278,11 +278,11 @@ describe('LangChain Workflow Patterns', () => {
     });
 
     it('should create writer agent with only write capabilities', () => {
-      const writer = createAgentConfig('writer', t => t.startsWith('flywheel-crank__'));
+      const writer = createAgentConfig('writer', t => t.startsWith('flywheel-memory__'));
 
       expect(writer.canRead).toBe(false);
       expect(writer.canWrite).toBe(true);
-      expect(writer.tools.every(t => t.startsWith('flywheel-crank__'))).toBe(true);
+      expect(writer.tools.every(t => t.startsWith('flywheel-memory__'))).toBe(true);
     });
 
     it('should allow combined agent with both capabilities', () => {
@@ -303,46 +303,46 @@ describe('LangChain Permission Patterns', () => {
         stage: 1,
         name: 'Read Only',
         allowed: ['mcp__flywheel__*'],
-        denied: ['mcp__flywheel-crank__*'],
+        denied: ['mcp__flywheel-memory__*'],
       },
       {
         stage: 2,
         name: 'Safe Writes',
         allowed: [
           'mcp__flywheel__*',
-          'mcp__flywheel-crank__vault_add_task',
-          'mcp__flywheel-crank__vault_toggle_task',
+          'mcp__flywheel-memory__vault_add_task',
+          'mcp__flywheel-memory__vault_toggle_task',
         ],
-        denied: ['mcp__flywheel-crank__vault_delete_note'],
+        denied: ['mcp__flywheel-memory__vault_delete_note'],
       },
       {
         stage: 3,
         name: 'Full Writes',
         allowed: [
           'mcp__flywheel__*',
-          'mcp__flywheel-crank__*',
+          'mcp__flywheel-memory__*',
         ],
-        denied: ['mcp__flywheel-crank__vault_delete_note'],
+        denied: ['mcp__flywheel-memory__vault_delete_note'],
       },
     ];
 
     it('should start with read-only permissions', () => {
       const stage1 = permissionStages[0];
       expect(stage1.allowed).toContain('mcp__flywheel__*');
-      expect(stage1.denied).toContain('mcp__flywheel-crank__*');
+      expect(stage1.denied).toContain('mcp__flywheel-memory__*');
     });
 
     it('should gradually expand write permissions', () => {
       const stage2 = permissionStages[1];
-      expect(stage2.allowed).toContain('mcp__flywheel-crank__vault_add_task');
-      expect(stage2.allowed).toContain('mcp__flywheel-crank__vault_toggle_task');
+      expect(stage2.allowed).toContain('mcp__flywheel-memory__vault_add_task');
+      expect(stage2.allowed).toContain('mcp__flywheel-memory__vault_toggle_task');
     });
 
     it('should always deny destructive operations explicitly or by wildcard', () => {
       for (const stage of permissionStages) {
         // Either explicitly denied or covered by wildcard
-        const explicitlyDenied = stage.denied.includes('mcp__flywheel-crank__vault_delete_note');
-        const deniedByWildcard = stage.denied.includes('mcp__flywheel-crank__*');
+        const explicitlyDenied = stage.denied.includes('mcp__flywheel-memory__vault_delete_note');
+        const deniedByWildcard = stage.denied.includes('mcp__flywheel-memory__*');
         expect(explicitlyDenied || deniedByWildcard).toBe(true);
       }
     });
@@ -370,7 +370,7 @@ describe('LangChain Tool Invocation Patterns', () => {
     }
 
     it('should validate required parameters', () => {
-      const tool = mockCrankTools.find(t => t.name === 'vault_add_to_section')!;
+      const tool = mockWriteTools.find(t => t.name === 'vault_add_to_section')!;
 
       const validCall: ToolCall = {
         tool: 'vault_add_to_section',
@@ -399,7 +399,7 @@ describe('LangChain Tool Invocation Patterns', () => {
       undoAvailable?: boolean;
     }
 
-    it('should expect standard MutationResult from Crank tools', () => {
+    it('should expect standard MutationResult from Write tools', () => {
       const successResult: MutationResult = {
         success: true,
         message: 'Added content to section "Log"',

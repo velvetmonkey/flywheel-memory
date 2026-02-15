@@ -1,5 +1,5 @@
 /**
- * Unified logging for Flywheel Crank
+ * Unified logging for Flywheel Memory
  *
  * Provides operation logging with session correlation, metrics aggregation,
  * and privacy controls. Integrates with vault-core's OperationLogger.
@@ -18,9 +18,9 @@ export async function initializeLogger(vaultPath: string): Promise<void> {
   try {
     const sessionId = generateSessionId();
     setSessionId(sessionId);
-    logger = await createLoggerFromConfig(vaultPath, 'crank');
+    logger = await createLoggerFromConfig(vaultPath, 'write');
   } catch (error) {
-    console.error(`[Crank] Failed to initialize logger: ${error}`);
+    console.error(`[Flywheel] Failed to initialize logger: ${error}`);
     logger = null;
   }
 }
@@ -39,7 +39,7 @@ export async function logOperation(
   try {
     await logger.log({ tool, vault: '', duration_ms: durationMs, success, ...details });
   } catch (error) {
-    console.error(`[Crank] Logging error: ${error}`);
+    console.error(`[Flywheel] Logging error: ${error}`);
   }
 }
 

@@ -203,7 +203,7 @@ Content B
 
     it('should not merge conflicting changes', async () => {
       /**
-       * Important: Flywheel-Crank does NOT merge changes.
+       * Important: Flywheel Memory does NOT merge changes.
        * If two agents modify the same content differently,
        * only one version survives.
        */

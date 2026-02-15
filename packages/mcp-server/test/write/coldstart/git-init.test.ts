@@ -114,7 +114,7 @@ type: test
     it('should fail gracefully when committing in non-git vault', async () => {
       await createTestNote(tempVault, 'test.md', '# Test');
 
-      const result = await commitChange(tempVault, 'test.md', '[Crank]');
+      const result = await commitChange(tempVault, 'test.md', '[Flywheel]');
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
@@ -124,7 +124,7 @@ type: test
     it('should return clear error message for non-git vault', async () => {
       await createTestNote(tempVault, 'test.md', '# Test');
 
-      const result = await commitChange(tempVault, 'test.md', '[Crank]');
+      const result = await commitChange(tempVault, 'test.md', '[Flywheel]');
 
       expect(result.error).toMatch(/not a git repository|git/i);
     });
@@ -133,7 +133,7 @@ type: test
       await createTestNote(tempVault, 'test.md', '# Test');
 
       // Should not throw
-      await expect(commitChange(tempVault, 'test.md', '[Crank]')).resolves.toBeDefined();
+      await expect(commitChange(tempVault, 'test.md', '[Flywheel]')).resolves.toBeDefined();
     });
   });
 
@@ -190,7 +190,7 @@ describe('Mixed Vault State', () => {
     await createTestNote(tempVault, 'after-git.md', '# After Git');
 
     // Commit should now work
-    const result = await commitChange(tempVault, 'after-git.md', '[Crank]');
+    const result = await commitChange(tempVault, 'after-git.md', '[Flywheel]');
     expect(result.success).toBe(true);
   });
 
@@ -219,7 +219,7 @@ describe('Error Message Quality', () => {
   it('should provide actionable error for non-git vault', async () => {
     await createTestNote(tempVault, 'test.md', '# Test');
 
-    const result = await commitChange(tempVault, 'test.md', '[Crank]');
+    const result = await commitChange(tempVault, 'test.md', '[Flywheel]');
 
     expect(result.success).toBe(false);
     // Error should help user understand what to do
@@ -230,7 +230,7 @@ describe('Error Message Quality', () => {
   it('should distinguish between "not a git repo" and other git errors', async () => {
     // Non-git vault
     await createTestNote(tempVault, 'test.md', '# Test');
-    const nonGitResult = await commitChange(tempVault, 'test.md', '[Crank]');
+    const nonGitResult = await commitChange(tempVault, 'test.md', '[Flywheel]');
 
     expect(nonGitResult.error).toMatch(/not a git|repository/i);
 
@@ -240,7 +240,7 @@ describe('Error Message Quality', () => {
     execSync('git config user.name "Test"', { cwd: tempVault, stdio: 'ignore' });
 
     // This should work (first commit)
-    const gitResult = await commitChange(tempVault, 'test.md', '[Crank]');
+    const gitResult = await commitChange(tempVault, 'test.md', '[Flywheel]');
     expect(gitResult.success).toBe(true);
   });
 });

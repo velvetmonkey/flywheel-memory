@@ -1,7 +1,7 @@
 /**
  * Workflow integration tests
  *
- * Tests realistic multi-step workflows using Flywheel-Crank tools
+ * Tests realistic multi-step workflows using Flywheel Memory tools
  * to verify end-to-end functionality.
  */
 
@@ -35,7 +35,7 @@ import {
 import {
   initializeEntityIndex,
   suggestRelatedLinks,
-  setCrankStateDb,
+  setWriteStateDb,
 } from '../../../src/core/write/wikilinks.js';
 import type { FormatType, Position } from '../../../src/core/write/types.js';
 
@@ -100,17 +100,17 @@ describe('Daily Note Workflow', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
     createEntityCacheInStateDb(stateDb, tempVault, {
       people: ['Jordan Smith', 'Alex Rivera'],
-      projects: ['MCP Server', 'Flywheel Crank'],
+      projects: ['MCP Server', 'Flywheel Memory'],
       technologies: ['TypeScript', 'JavaScript'],
     });
     await initializeEntityIndex(tempVault);
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -211,7 +211,7 @@ describe('Project Progress Workflow', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
     createEntityCacheInStateDb(stateDb, tempVault, {
       people: ['Jordan Smith'],
       projects: ['MCP Server'],
@@ -221,7 +221,7 @@ describe('Project Progress Workflow', () => {
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);
@@ -325,7 +325,7 @@ describe('Meeting Notes Workflow', () => {
   beforeEach(async () => {
     tempVault = await createTempVault();
     stateDb = openStateDb(tempVault);
-    setCrankStateDb(stateDb);
+    setWriteStateDb(stateDb);
     createEntityCacheInStateDb(stateDb, tempVault, {
       people: ['Jordan Smith', 'Alex Rivera'],
       projects: ['MCP Server', 'API Design'],
@@ -334,7 +334,7 @@ describe('Meeting Notes Workflow', () => {
   });
 
   afterEach(async () => {
-    setCrankStateDb(null);
+    setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);
     await cleanupTempVault(tempVault);

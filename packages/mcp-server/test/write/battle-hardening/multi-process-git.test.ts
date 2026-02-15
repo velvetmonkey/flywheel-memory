@@ -122,7 +122,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
 
       // First commit attempt should fail
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry 1\n', {});
-      const result1 = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result1 = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(result1.success).toBe(false);
       expect(result1.error).toMatch(/lock|index/i);
 
@@ -130,7 +130,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
       await removeLockFile(lockPath);
 
       // Now commit should succeed
-      const result2 = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result2 = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(result2.success).toBe(true);
       expect(result2.hash).toBeDefined();
     });
@@ -172,7 +172,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
 
       try {
         await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-        const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+        const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
         // Should fail because lock is held
         expect(result.success).toBe(false);
@@ -195,7 +195,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
       // No lock - should succeed immediately
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
       const startTime = Date.now();
-      const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       const elapsed = Date.now() - startTime;
 
       expect(result.success).toBe(true);
@@ -224,7 +224,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
 
       // Commit should succeed
       await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-      const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(result.success).toBe(true);
     });
 
@@ -254,7 +254,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
       await removePromise;
 
       // Now commit should work
-      const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(result.success).toBe(true);
     });
   });
@@ -273,7 +273,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
       // Rapid sequential commits
       for (let i = 0; i < 10; i++) {
         await writeVaultFile(vaultPath, notePath, `# Test\n- Entry ${i}\n`, {});
-        const result = await commitChange(vaultPath, notePath, `[Crank:Add] ${i}`);
+        const result = await commitChange(vaultPath, notePath, `[Flywheel:Add] ${i}`);
         expect(result.success).toBe(true);
         hashes.push(result.hash!);
       }
@@ -300,7 +300,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
       for (let i = 1; i <= 5; i++) {
         currentContent += `- Entry ${i}\n`;
         await writeVaultFile(vaultPath, notePath, currentContent, {});
-        await commitChange(vaultPath, notePath, `[Crank:Add] Entry ${i}`);
+        await commitChange(vaultPath, notePath, `[Flywheel:Add] Entry ${i}`);
       }
 
       // Verify final content
@@ -327,7 +327,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
       // Commit changes to each file
       for (const file of files) {
         await writeVaultFile(vaultPath, file, `# ${file}\n- Updated\n`, {});
-        const result = await commitChange(vaultPath, file, `[Crank:Update] ${file}`);
+        const result = await commitChange(vaultPath, file, `[Flywheel:Update] ${file}`);
         expect(result.success).toBe(true);
       }
 
@@ -354,7 +354,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
 
       try {
         await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-        const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+        const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
         // Should still fail because lock file exists
         expect(result.success).toBe(false);
@@ -377,7 +377,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
 
       try {
         await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-        const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+        const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
         // Should still fail because lock file exists (even if empty)
         expect(result.success).toBe(false);
@@ -400,7 +400,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
 
       try {
         await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-        const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+        const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
 
         // Should fail because lock file exists
         expect(result.success).toBe(false);
@@ -420,7 +420,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
       try {
         await writeVaultFile(nonGitPath, 'test.md', '# Test\n', {});
 
-        const result = await commitChange(nonGitPath, 'test.md', '[Crank:Add]');
+        const result = await commitChange(nonGitPath, 'test.md', '[Flywheel:Add]');
         expect(result.success).toBe(false);
         expect(result.error).toBe('Not a git repository');
       } finally {
@@ -435,7 +435,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
       await writeVaultFile(vaultPath, notePath, '# Test\n', {});
 
       // Successful commit
-      const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+      const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
       expect(result.success).toBe(true);
 
       // Lock file should not exist after successful commit
@@ -455,7 +455,7 @@ describe('Battle-Hardening: Multi-Process Git Operations', () => {
 
       try {
         await writeVaultFile(vaultPath, notePath, '# Test\n- Entry\n', {});
-        const result = await commitChange(vaultPath, notePath, '[Crank:Add]');
+        const result = await commitChange(vaultPath, notePath, '[Flywheel:Add]');
         expect(result.success).toBe(false);
 
         // Our code shouldn't have removed the external lock

@@ -1,6 +1,6 @@
 /**
  * Unified types for Flywheel Memory
- * Combines read (flywheel) and write (crank) type definitions
+ * Combines read (flywheel) and write (flywheel memory) type definitions
  */
 
 // ========================================

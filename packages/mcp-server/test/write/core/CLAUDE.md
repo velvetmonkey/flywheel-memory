@@ -8,7 +8,7 @@
 | ID | Time | T | Title | Read |
 |----|------|---|-------|------|
 | #7767 | 2:05 PM | 🔵 | Alias Matching Tests Validate Full Workflow Including Filtering and Scoring | ~501 |
-| #7765 | " | 🔵 | Flywheel-Crank Wikilinks Test Suite Covers Entity Index Lifecycle | ~385 |
+| #7765 | " | 🔵 | Flywheel Memory Wikilinks Test Suite Covers Entity Index Lifecycle | ~385 |
 
 ### Feb 13, 2026
 
@@ -16,8 +16,8 @@
 |----|------|---|-------|------|
 | #9974 | 12:55 PM | 🔴 | Fixed Test Expectation to Match Default firstOccurrenceOnly Behavior | ~344 |
 | #9973 | " | 🔵 | Test Expectation Mismatch with Default Behavior | ~319 |
-| #9971 | 12:54 PM | 🟣 | Added Multi-Word Alias Auto-Linking Tests to Flywheel-Crank | ~399 |
-| #9968 | 12:53 PM | 🔵 | Flywheel-Crank Wikilinks Test Structure | ~348 |
+| #9971 | 12:54 PM | 🟣 | Added Multi-Word Alias Auto-Linking Tests to Flywheel Memory | ~399 |
+| #9968 | 12:53 PM | 🔵 | Flywheel Memory Wikilinks Test Structure | ~348 |
 | #9935 | 12:39 PM | 🔵 | Auto-wikilink failure root cause: token-based vs phrase-based matching mismatch | ~438 |
 | #9765 | 11:16 AM | 🟣 | Complete Alias-Aware Wikilink Resolution Feature Implementation | ~490 |
 | #9731 | 11:02 AM | 🔵 | Multi-Word Alias Test Shows Case-Insensitive Matching Expected | ~338 |

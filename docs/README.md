@@ -16,10 +16,13 @@
 
 | Document | Description | Key Question |
 |----------|-------------|--------------|
+| [SETUP.md](SETUP.md) | Set up your own vault — prerequisites, config, first commands | "How do I get started with my own vault?" |
 | [TOOLS.md](TOOLS.md) | Full tool reference — 36 tools across 15 categories | "What tools are available and what do they do?" |
+| [COOKBOOK.md](COOKBOOK.md) | Example prompts organized by use case | "What can I ask Claude to do with my vault?" |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Index strategy, FTS5 search, graph model, auto-wikilinks | "How does Flywheel work under the hood?" |
 | [CONFIGURATION.md](CONFIGURATION.md) | Environment variables, tool presets, platform setup | "How do I customize my setup?" |
 | [TESTING.md](TESTING.md) | Test philosophy, performance benchmarks, security testing | "How is this tested and can I trust it?" |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Error recovery, diagnostics, common issues | "Something went wrong — how do I fix it?" |
 | [VISION.md](VISION.md) | The flywheel effect, design principles, ecosystem | "Where is this project going?" |
 
 ---

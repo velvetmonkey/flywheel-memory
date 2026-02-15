@@ -2,13 +2,13 @@
  * Hub score export - enriches entity data with backlink counts
  *
  * After graph build, this module computes hub scores from backlinks
- * and writes them to SQLite so Flywheel-Crank can use them
+ * and writes them to SQLite so Flywheel Memory can use them
  * for wikilink prioritization.
  *
  * Architecture:
  * - Flywheel builds VaultIndex with backlinks (in-memory)
  * - This module exports hub scores to SQLite StateDb
- * - Flywheel-Crank reads hub scores from SQLite for wikilink suggestions
+ * - Flywheel Memory reads hub scores from SQLite for wikilink suggestions
  */
 
 import type { VaultIndex } from './types.js';
@@ -74,7 +74,7 @@ function updateHubScoresInDb(stateDb: StateDb, hubScores: Map<string, number>): 
  * Export hub scores to SQLite StateDb
  *
  * Computes hub scores from the vault index and writes them to SQLite.
- * Flywheel-Crank reads these scores for wikilink prioritization.
+ * Flywheel Memory reads these scores for wikilink prioritization.
  *
  * @param vaultIndex - Built vault index with backlinks
  * @param stateDb - StateDb for SQLite storage (required)

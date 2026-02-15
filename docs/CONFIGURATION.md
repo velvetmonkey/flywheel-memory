@@ -67,7 +67,7 @@ Vault root detection order:
 
 | Preset | Tools | ~Tokens | Use case |
 |--------|-------|---------|----------|
-| `full` | 36 | ~11,100 | Everything — graph, schema, tasks, policy |
+| `full` (default) | 36 | ~11,100 | Everything — graph, schema, tasks, policy |
 | `minimal` | 13 | ~3,800 | Note-taking essentials — search, read, create, edit |
 
 The fewer tools you load, the less context Claude needs to pick the right one.

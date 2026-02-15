@@ -219,7 +219,7 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 | Preset | Tools | ~Tokens | What you get |
 |--------|-------|---------|--------------|
-| `full` | 36 | ~11,100 | Everything |
+| `full` (default) | 36 | ~11,100 | Everything |
 | `minimal` | 13 | ~3,800 | Search, read, create, edit |
 
 Start with `minimal`, then add composable bundles:

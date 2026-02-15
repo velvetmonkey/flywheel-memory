@@ -65,6 +65,9 @@ import { registerMoveNoteTools } from './tools/write/move-notes.js';
 import { registerSystemTools as registerWriteSystemTools } from './tools/write/system.js';
 import { registerPolicyTools } from './tools/write/policy.js';
 
+// Resources
+import { registerVaultResources } from './resources/vault.js';
+
 
 // ============================================================================
 // Configuration
@@ -331,6 +334,9 @@ registerNoteTools(server, vaultPath, () => vaultIndex);
 registerMoveNoteTools(server, vaultPath);
 registerWriteSystemTools(server, vaultPath);
 registerPolicyTools(server, vaultPath);
+
+// Resources (always registered, not gated by tool presets)
+registerVaultResources(server, () => vaultIndex ?? null);
 
 console.error(`[Memory] Registered ${_registeredCount} tools, skipped ${_skippedCount}`);
 

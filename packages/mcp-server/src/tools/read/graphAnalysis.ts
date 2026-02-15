@@ -31,7 +31,9 @@ export function registerGraphAnalysisTools(
         '- "dead_ends": Notes with backlinks but no outgoing links\n' +
         '- "sources": Notes with outgoing links but no backlinks\n' +
         '- "hubs": Highly connected notes (many links to/from)\n' +
-        '- "stale": Important notes (by backlink count) not recently modified',
+        '- "stale": Important notes (by backlink count) not recently modified\n\n' +
+        'Example: graph_analysis({ analysis: "hubs", limit: 10 })\n' +
+        'Example: graph_analysis({ analysis: "stale", days: 30, min_backlinks: 3 })',
       inputSchema: {
         analysis: z.enum(['orphans', 'dead_ends', 'sources', 'hubs', 'stale']).describe('Type of graph analysis to perform'),
         folder: z.string().optional().describe('Limit to notes in this folder (orphans, dead_ends, sources)'),

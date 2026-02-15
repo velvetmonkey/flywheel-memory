@@ -148,6 +148,8 @@ export interface ScopingFrontmatter {
   _last_modified_at?: string;
   /** Count of modifications to this note */
   _modification_count?: number;
+  /** Content source attribution ("ai" when modified by an AI agent) */
+  _source?: string;
 }
 
 /**

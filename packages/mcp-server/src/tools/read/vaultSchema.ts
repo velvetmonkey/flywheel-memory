@@ -45,7 +45,9 @@ export function registerVaultSchemaTools(
         '- "missing": Find notes missing expected fields by folder\n' +
         '- "conventions": Auto-detect metadata conventions for a folder\n' +
         '- "incomplete": Find notes missing expected fields (inferred)\n' +
-        '- "suggest_values": Suggest values for a field based on usage',
+        '- "suggest_values": Suggest values for a field based on usage\n\n' +
+        'Example: vault_schema({ analysis: "field_values", field: "status" })\n' +
+        'Example: vault_schema({ analysis: "conventions", folder: "projects" })',
       inputSchema: {
         analysis: z.enum([
           'overview', 'field_values', 'inconsistencies', 'validate',

@@ -39,7 +39,7 @@ export function registerNoteTools(
   // ========================================
   server.tool(
     'vault_create_note',
-    'Create a new note in the vault with optional frontmatter and content',
+    'Create a new note in the vault with optional frontmatter and content.\n\nExample: vault_create_note({ path: "people/Jane Smith.md", content: "# Jane Smith\\n\\nProduct manager at Acme.", frontmatter: { type: "person", company: "Acme" } })',
     {
       path: z.string().describe('Vault-relative path for the new note (e.g., "daily-notes/2026-01-28.md")'),
       content: z.string().default('').describe('Initial content for the note'),

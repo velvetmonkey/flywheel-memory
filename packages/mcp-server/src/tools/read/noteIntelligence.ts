@@ -36,7 +36,9 @@ export function registerNoteIntelligenceTools(
         '- "suggest_wikilinks": Find frontmatter values that could be wikilinks\n' +
         '- "cross_layer": Check consistency between frontmatter and prose references\n' +
         '- "compute": Auto-compute derived fields (word_count, link_count, etc.)\n' +
-        '- "all": Run all analyses and return combined result',
+        '- "all": Run all analyses and return combined result\n\n' +
+        'Example: note_intelligence({ path: "projects/alpha.md", analysis: "wikilinks" })\n' +
+        'Example: note_intelligence({ path: "projects/alpha.md", analysis: "compute", fields: ["word_count", "link_count"] })',
       inputSchema: {
         analysis: z.enum([
           'prose_patterns', 'suggest_frontmatter', 'suggest_wikilinks',

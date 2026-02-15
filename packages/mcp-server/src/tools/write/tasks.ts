@@ -111,7 +111,7 @@ export function registerTaskTools(
   // ========================================
   server.tool(
     'vault_toggle_task',
-    'Toggle a task checkbox between checked and unchecked',
+    'Toggle a task checkbox between checked and unchecked.\n\nExample: vault_toggle_task({ path: "daily/2026-02-15.md", task: "review PR", section: "Tasks" })',
     {
       path: z.string().describe('Vault-relative path to the note'),
       task: z.string().describe('Task text to find (partial match supported)'),
@@ -195,7 +195,7 @@ export function registerTaskTools(
   // ========================================
   server.tool(
     'vault_add_task',
-    'Add a new task to a section in a markdown note',
+    'Add a new task to a section in a markdown note.\n\nExample: vault_add_task({ path: "daily/2026-02-15.md", section: "Tasks", task: "Write unit tests for auth module" })',
     {
       path: z.string().describe('Vault-relative path to the note'),
       section: z.string().describe('Section to add the task to'),

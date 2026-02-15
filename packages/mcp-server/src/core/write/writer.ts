@@ -1151,6 +1151,9 @@ export function injectMutationMetadata(
       frontmatter._session_id = scoping.session_id;
     }
 
+    // Mark content as AI-generated
+    frontmatter._source = 'ai';
+
     // Set last_modified_by based on available identifiers
     if (scoping.agent_id && scoping.session_id) {
       frontmatter._last_modified_by = `${scoping.agent_id}:${scoping.session_id}`;

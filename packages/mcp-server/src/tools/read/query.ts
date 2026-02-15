@@ -141,7 +141,7 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Search the vault across metadata, content, and entities. Scope controls what to search: "metadata" for frontmatter/tags/folders, "content" for full-text search (FTS5), "entities" for people/projects/technologies, "all" (default) tries metadata then falls back to content search.',
+    'Search the vault across metadata, content, and entities. Scope controls what to search: "metadata" for frontmatter/tags/folders, "content" for full-text search (FTS5), "entities" for people/projects/technologies, "all" (default) tries metadata then falls back to content search.\n\nExample: search({ query: "quarterly review", scope: "content", limit: 5 })\nExample: search({ where: { type: "project", status: "active" }, scope: "metadata" })',
     {
       query: z.string().optional().describe('Search query text. Required for scope "content", "entities", "all". For "metadata" scope, use filters instead.'),
       scope: z.enum(['metadata', 'content', 'entities', 'all']).default('all').describe('What to search: metadata (frontmatter/tags/folders), content (FTS5 full-text), entities (people/projects), all (metadata then content)'),

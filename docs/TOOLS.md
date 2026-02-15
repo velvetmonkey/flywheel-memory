@@ -169,13 +169,13 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `health_check` | Check MCP server health. Returns vault accessibility, index freshness, periodic note detection, config, and recommendations. | (none) |
+| `health_check` | Check MCP server health. Returns vault accessibility, index freshness, periodic note detection, config, last index rebuild info, and recommendations. | (none) |
 | `get_vault_stats` | Comprehensive vault statistics: notes, links, tags, orphans, folders. Includes 7-day recent activity summary. | (none) |
 | `get_folder_structure` | Get vault folder structure with note counts and subfolder counts. | (none) |
 | `refresh_index` | Rebuild the vault index and FTS5 search index without restarting the server. | (none) |
 | `get_all_entities` | Get all linkable entities (note titles and aliases). | `include_aliases`, `limit` |
 | `get_unlinked_mentions` | Find places where an entity is mentioned but not linked. | `entity`, `limit` |
-| `vault_growth` | Track vault growth over time. Modes: current (live snapshot), history (time series), trends (deltas). | `mode` (current/history/trends), `metric`, `days_back` |
+| `vault_growth` | Track vault growth over time. Modes: current (live snapshot), history (time series), trends (deltas), index_activity (rebuild history). | `mode` (current/history/trends/index_activity), `metric`, `days_back`, `limit` |
 
 ---
 

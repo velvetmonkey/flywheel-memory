@@ -71,6 +71,9 @@ import { registerMetricsTools } from './tools/read/metrics.js';
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
 
+// Core imports - Index Activity
+import { recordIndexEvent, purgeOldIndexEvents } from './core/shared/indexActivity.js';
+
 // Core imports - Wikilink Feedback
 import { updateSuppressionList } from './core/write/wikilinkFeedback.js';
 
@@ -324,7 +327,7 @@ console.error(`[Memory] Tool categories: ${categoryList}`);
 // ============================================================================
 
 // Read tools
-registerHealthTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
+registerHealthTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb);
 registerReadSystemTools(
   server,
   () => vaultIndex,
@@ -426,6 +429,13 @@ async function main() {
     setIndexState('ready');
     const duration = Date.now() - startTime;
     console.error(`[Memory] Index loaded from cache in ${duration}ms`);
+    if (stateDb) {
+      recordIndexEvent(stateDb, {
+        trigger: 'startup_cache',
+        duration_ms: duration,
+        note_count: cachedIndex.notes.size,
+      });
+    }
     runPostIndexWork(vaultIndex);
   } else {
     // Cache miss - build index
@@ -436,6 +446,13 @@ async function main() {
       setIndexState('ready');
       const duration = Date.now() - startTime;
       console.error(`[Memory] Vault index ready in ${duration}ms`);
+      if (stateDb) {
+        recordIndexEvent(stateDb, {
+          trigger: 'startup_build',
+          duration_ms: duration,
+          note_count: vaultIndex.notes.size,
+        });
+      }
 
       // Save to cache
       if (stateDb) {
@@ -451,6 +468,15 @@ async function main() {
     } catch (err) {
       setIndexState('error');
       setIndexError(err instanceof Error ? err : new Error(String(err)));
+      const duration = Date.now() - startTime;
+      if (stateDb) {
+        recordIndexEvent(stateDb, {
+          trigger: 'startup_build',
+          duration_ms: duration,
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
       console.error('[Memory] Failed to build vault index:', err);
     }
   }
@@ -494,6 +520,7 @@ async function runPostIndexWork(index: VaultIndex) {
       const metrics = computeMetrics(index, stateDb);
       recordMetrics(stateDb, metrics);
       purgeOldMetrics(stateDb, 90);
+      purgeOldIndexEvents(stateDb, 90);
       console.error('[Memory] Growth metrics recorded');
     } catch (err) {
       console.error('[Memory] Failed to record metrics:', err);
@@ -531,11 +558,22 @@ async function runPostIndexWork(index: VaultIndex) {
       config,
       onBatch: async (batch) => {
         console.error(`[Memory] Processing ${batch.events.length} file changes`);
-        const startTime = Date.now();
+        const batchStart = Date.now();
+        const changedPaths = batch.events.map(e => e.path);
         try {
           vaultIndex = await buildVaultIndex(vaultPath);
           setIndexState('ready');
-          console.error(`[Memory] Index rebuilt in ${Date.now() - startTime}ms`);
+          const duration = Date.now() - batchStart;
+          console.error(`[Memory] Index rebuilt in ${duration}ms`);
+          if (stateDb) {
+            recordIndexEvent(stateDb, {
+              trigger: 'watcher',
+              duration_ms: duration,
+              note_count: vaultIndex.notes.size,
+              files_changed: batch.events.length,
+              changed_paths: changedPaths,
+            });
+          }
           await updateEntitiesInStateDb();
           await exportHubScores(vaultIndex, stateDb);
           if (stateDb) {
@@ -548,6 +586,17 @@ async function runPostIndexWork(index: VaultIndex) {
         } catch (err) {
           setIndexState('error');
           setIndexError(err instanceof Error ? err : new Error(String(err)));
+          const duration = Date.now() - batchStart;
+          if (stateDb) {
+            recordIndexEvent(stateDb, {
+              trigger: 'watcher',
+              duration_ms: duration,
+              success: false,
+              files_changed: batch.events.length,
+              changed_paths: changedPaths,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          }
           console.error('[Memory] Failed to rebuild index:', err);
         }
       },

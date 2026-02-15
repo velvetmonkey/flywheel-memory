@@ -59,11 +59,15 @@ export interface MetricTrend {
 }
 
 export interface GrowthResult {
-  mode: 'current' | 'history' | 'trends';
+  mode: 'current' | 'history' | 'trends' | 'index_activity';
   metrics?: Record<string, number>;
   history?: MetricSnapshot[];
   trends?: MetricTrend[];
   recorded_at?: number;
+  index_activity?: {
+    summary: import('./indexActivity.js').IndexActivitySummary;
+    recent_events: import('./indexActivity.js').IndexEvent[];
+  };
 }
 
 // =============================================================================

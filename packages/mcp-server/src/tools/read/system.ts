@@ -11,6 +11,7 @@ import { buildVaultIndex, setIndexState, setIndexError } from '../../core/read/g
 import { loadConfig, inferConfig, saveConfig, type FlywheelConfig } from '../../core/read/config.js';
 import { buildFTS5Index } from '../../core/read/fts5.js';
 import { scanVaultEntities, type StateDb } from '@velvetmonkey/vault-core';
+import { recordIndexEvent } from '../../core/shared/indexActivity.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 
@@ -106,12 +107,23 @@ export function registerSystemTools(
           console.error('[Flywheel] FTS5 rebuild failed:', err);
         }
 
+        const duration = Date.now() - startTime;
+
+        // Record index event
+        if (stateDb) {
+          recordIndexEvent(stateDb, {
+            trigger: 'manual_refresh',
+            duration_ms: duration,
+            note_count: newIndex.notes.size,
+          });
+        }
+
         const output: RefreshIndexOutput = {
           success: true,
           notes_count: newIndex.notes.size,
           entities_count: newIndex.entities.size,
           fts5_notes: fts5Notes,
-          duration_ms: Date.now() - startTime,
+          duration_ms: duration,
         };
 
         return {
@@ -126,13 +138,25 @@ export function registerSystemTools(
       } catch (err) {
         setIndexState('error');
         setIndexError(err instanceof Error ? err : new Error(String(err)));
+        const duration = Date.now() - startTime;
+
+        // Record failed index event
+        const stateDb = getStateDb?.();
+        if (stateDb) {
+          recordIndexEvent(stateDb, {
+            trigger: 'manual_refresh',
+            duration_ms: duration,
+            success: false,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
 
         const output: RefreshIndexOutput = {
           success: false,
           notes_count: 0,
           entities_count: 0,
           fts5_notes: 0,
-          duration_ms: Date.now() - startTime,
+          duration_ms: duration,
         };
 
         return {

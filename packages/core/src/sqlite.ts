@@ -102,7 +102,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -268,6 +268,20 @@ CREATE TABLE IF NOT EXISTS wikilink_applications (
   status TEXT DEFAULT 'applied'
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_wl_apps_unique ON wikilink_applications(entity, note_path);
+
+-- Index events tracking (v6: index activity history)
+CREATE TABLE IF NOT EXISTS index_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp INTEGER NOT NULL,
+  trigger TEXT NOT NULL,
+  duration_ms INTEGER NOT NULL,
+  success INTEGER NOT NULL DEFAULT 1,
+  note_count INTEGER,
+  files_changed INTEGER,
+  changed_paths TEXT,
+  error TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_index_events_ts ON index_events(timestamp);
 `;
 
 // =============================================================================
@@ -341,6 +355,9 @@ function initSchema(db: Database.Database): void {
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     // v5: wikilink_applications table (implicit feedback tracking)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v6: index_events table (index activity history)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(

@@ -10,6 +10,8 @@ import { resolveTarget, getBacklinksForNote, findSimilarEntity, getIndexState, g
 import { detectPeriodicNotes } from './periodic.js';
 import { getActivitySummary } from './temporal.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
+import type { StateDb } from '@velvetmonkey/vault-core';
+import { getRecentIndexEvents } from '../../core/shared/indexActivity.js';
 
 /** Staleness threshold in seconds (5 minutes) */
 const STALE_THRESHOLD_SECONDS = 300;
@@ -21,7 +23,8 @@ export function registerHealthTools(
   server: McpServer,
   getIndex: () => VaultIndex,
   getVaultPath: () => string,
-  getConfig: () => FlywheelConfig = () => ({})
+  getConfig: () => FlywheelConfig = () => ({}),
+  getStateDb: () => StateDb | null = () => null
 ): void {
   // health_check - MCP server health status + periodic note detection + config
   const IndexProgressSchema = z.object({
@@ -53,6 +56,12 @@ export function registerHealthTools(
     tag_count: z.coerce.number().describe('Number of unique tags'),
     periodic_notes: z.array(PeriodicNoteInfoSchema).optional().describe('Detected periodic note conventions'),
     config: z.record(z.unknown()).optional().describe('Current flywheel config (paths, templates, etc.)'),
+    last_rebuild: z.object({
+      trigger: z.string(),
+      timestamp: z.number(),
+      duration_ms: z.number(),
+      ago_seconds: z.number(),
+    }).optional().describe('Most recent index rebuild event'),
     recommendations: z.array(z.string()).describe('Suggested actions if any issues detected'),
   };
 
@@ -80,6 +89,12 @@ export function registerHealthTools(
     tag_count: number;
     periodic_notes?: PeriodicNoteInfo[];
     config?: Record<string, unknown>;
+    last_rebuild?: {
+      trigger: string;
+      timestamp: number;
+      duration_ms: number;
+      ago_seconds: number;
+    };
     recommendations: string[];
   };
 
@@ -175,6 +190,26 @@ export function registerHealthTools(
         ? config as unknown as Record<string, unknown>
         : undefined;
 
+      // Get last rebuild event from StateDb
+      let lastRebuild: HealthCheckOutput['last_rebuild'];
+      const stateDb = getStateDb();
+      if (stateDb) {
+        try {
+          const events = getRecentIndexEvents(stateDb, 1);
+          if (events.length > 0) {
+            const event = events[0];
+            lastRebuild = {
+              trigger: event.trigger,
+              timestamp: event.timestamp,
+              duration_ms: event.duration_ms,
+              ago_seconds: Math.floor((Date.now() - event.timestamp) / 1000),
+            };
+          }
+        } catch {
+          // Ignore errors reading index events
+        }
+      }
+
       const output: HealthCheckOutput = {
         status,
         vault_accessible: vaultAccessible,
@@ -190,6 +225,7 @@ export function registerHealthTools(
         tag_count: tagCount,
         periodic_notes: periodicNotes && periodicNotes.length > 0 ? periodicNotes : undefined,
         config: configInfo,
+        last_rebuild: lastRebuild,
         recommendations,
       };
 

@@ -29,15 +29,6 @@ ffmpeg -y -framerate "$FPS" -i "$FRAMES_DIR/frame-%05d.png" -i "$PALETTE" \
   -lavfi "scale=800:600:flags=lanczos,tpad=stop_duration=2 [x]; [x][1:v] paletteuse=dither=bayer:bayer_scale=4" \
   "$OUTPUT" 2>/dev/null
 
-# Fix loop count (ffmpeg paletteuse corrupts NETSCAPE extension)
-python3 -c "
-data = bytearray(open('$OUTPUT', 'rb').read())
-idx = data.find(b'NETSCAPE')
-if idx >= 0:
-    data[idx+11] = 0; data[idx+12] = 0
-    open('$OUTPUT', 'wb').write(data)
-"
-
 SIZE=$(du -h "$OUTPUT" | cut -f1)
 echo "==> Done: $OUTPUT ($SIZE)"
 

@@ -1,6 +1,6 @@
 # Tool Reference
 
-36 tools across 15 categories. All enabled by default (`full` preset).
+39 tools across 15 categories. All enabled by default (`full` preset).
 
 ---
 
@@ -54,7 +54,7 @@ Analyze vault link graph structure. The `analysis` parameter selects the mode.
 
 ---
 
-## Note Reading (6 tools)
+## Note Structure (4 tools)
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
@@ -62,12 +62,10 @@ Analyze vault link graph structure. The `analysis` parameter selects the mode.
 | `get_note_structure` | Get heading structure, sections hierarchy, word count, line count | `path`, `include_content` |
 | `get_section_content` | Get the content under a specific heading in a note | `path`, `heading`, `include_subheadings` |
 | `find_sections` | Find all sections across vault matching a heading pattern (regex) | `pattern`, `folder`, `limit`, `offset` |
-| `get_all_entities` | Get all linkable entities (note titles and aliases) | `include_aliases`, `limit` |
-| `get_unlinked_mentions` | Find places where an entity is mentioned but not linked | `entity`, `limit` |
 
 ---
 
-## Schema & Intelligence (4 tools)
+## Schema & Intelligence (5 tools)
 
 ### `vault_schema`
 
@@ -103,15 +101,17 @@ Analyze a note for patterns, suggestions, and consistency. The `analysis` parame
 |------|-------------|----------------|
 | `rename_field` | Bulk rename a frontmatter field across notes. Dry-run by default. | `old_name`, `new_name`, `folder`, `dry_run` |
 | `migrate_field_values` | Bulk transform field values with mapping rules. Dry-run by default. | `field`, `mapping`, `folder`, `dry_run` |
+| `rename_tag` | Bulk rename a tag across all notes (frontmatter and inline). Supports hierarchical rename. Dry-run by default. | `old_tag`, `new_tag`, `rename_children`, `folder`, `dry_run`, `commit` |
 
 ---
 
-## Wikilinks (2 tools)
+## Wikilinks (3 tools)
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
 | `suggest_wikilinks` | Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases. | `text`, `limit`, `offset` |
 | `validate_links` | Check wikilinks in a note (or all notes) and report broken links. Suggests fixes for typos. | `path` (optional, omit for all), `typos_only`, `limit`, `offset` |
+| `wikilink_feedback` | Report and query wikilink accuracy feedback. Modes: report, list, stats. Auto-suppresses entities with >=30% false positive rate. | `mode` (report/list/stats), `entity`, `note_path`, `context`, `correct`, `limit` |
 
 ---
 
@@ -165,7 +165,7 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 
 ---
 
-## Vault Health (4 tools)
+## Vault Health (7 tools)
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
@@ -173,6 +173,9 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 | `get_vault_stats` | Comprehensive vault statistics: notes, links, tags, orphans, folders. Includes 7-day recent activity summary. | (none) |
 | `get_folder_structure` | Get vault folder structure with note counts and subfolder counts. | (none) |
 | `refresh_index` | Rebuild the vault index and FTS5 search index without restarting the server. | (none) |
+| `get_all_entities` | Get all linkable entities (note titles and aliases). | `include_aliases`, `limit` |
+| `get_unlinked_mentions` | Find places where an entity is mentioned but not linked. | `entity`, `limit` |
+| `vault_growth` | Track vault growth over time. Modes: current (live snapshot), history (time series), trends (deltas). | `mode` (current/history/trends), `metric`, `days_back` |
 
 ---
 
@@ -208,18 +211,18 @@ Undo the last git commit (typically the last Flywheel mutation). Performs a soft
 | Category | Tools | Included in `full` | Included in `minimal` |
 |----------|------:|:-------------------:|:---------------------:|
 | search | 1 | Yes | Yes |
-| backlinks | 2 | Yes | Yes |
+| backlinks | 2 | Yes | |
 | orphans | 1 | Yes | |
 | hubs | 1 | Yes | |
 | paths | 2 | Yes | |
-| schema | 4 | Yes | |
-| structure | 3 | Yes | Yes |
-| tasks | 3 | Yes | Yes |
-| health | 7 | Yes | Yes |
-| wikilinks | 2 | Yes | |
+| schema | 5 | Yes | |
+| structure | 4 | Yes | Yes |
+| tasks | 3 | Yes | |
+| health | 7 | Yes | |
+| wikilinks | 3 | Yes | |
 | append | 3 | Yes | Yes |
 | frontmatter | 1 | Yes | Yes |
 | notes | 4 | Yes | Yes |
 | git | 1 | Yes | |
 | policy | 1 | Yes | |
-| **Total** | **36** | **36** | **24** |
+| **Total** | **39** | **39** | **13** |

@@ -109,7 +109,7 @@ Flywheel auto-links any mentions of existing notes. If "Sarah Mitchell" has a no
 
 ## Step 4: Choose a Tool Preset
 
-Flywheel ships 36 tools. Loading all of them works, but fewer tools means Claude picks the right one faster.
+Flywheel ships 39 tools. Loading all of them works, but fewer tools means Claude picks the right one faster.
 
 | Preset | Tools | ~Tokens | Best for |
 |--------|-------|---------|----------|
@@ -117,7 +117,7 @@ Flywheel ships 36 tools. Loading all of them works, but fewer tools means Claude
 | `minimal,graph` | 19 | ~5,650 | + backlinks, orphans, hubs, paths |
 | `minimal,graph,tasks` | 22 | ~6,575 | + task queries and mutations |
 | `minimal,graph,analysis` | 25 | ~7,500 | + schema intelligence, wikilink validation |
-| `full` (default) | 36 | ~11,100 | Everything |
+| `full` (default) | 39 | ~11,800 | Everything |
 
 **Recommendation:** Start with `minimal`. If you find yourself needing graph navigation or task management, add those bundles. You can always switch by editing the `FLYWHEEL_TOOLS` value in your `.mcp.json`.
 
@@ -191,9 +191,35 @@ Flywheel's write tools optionally auto-commit changes. If your vault isn't a git
 
 ---
 
+## Git Integration (Optional)
+
+Flywheel's write tools can auto-commit changes to git, giving you undo support and change history.
+
+### Setup
+
+```bash
+cd /path/to/vault
+git init
+echo ".flywheel/" >> .gitignore
+git add -A && git commit -m "initial commit"
+```
+
+### How it works
+
+- Every write tool has a `commit` parameter (default: `false`)
+- Set `commit: true` to auto-commit each mutation
+- Use `vault_undo_last_mutation` to reverse the last commit
+- If the vault isn't a git repo, commits are silently skipped -- mutations still work
+
+### No git? No problem.
+
+All vault operations work without git. You just won't have undo or commit history. Git is never required.
+
+---
+
 ## Next Steps
 
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full reference for all 36 tools
+- **[TOOLS.md](TOOLS.md)** -- Full reference for all 39 tools
 - **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics

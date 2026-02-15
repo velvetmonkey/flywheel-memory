@@ -12,7 +12,7 @@
 [![Scale](https://img.shields.io/badge/scale-100k%20notes-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Tests](https://img.shields.io/badge/tests-1,812%20passed-brightgreen.svg)](docs/TESTING.md)
 
-One MCP server. 36 tools. Your Obsidian vault becomes a queryable knowledge graph.
+One MCP server. 39 tools. Your Obsidian vault becomes a queryable knowledge graph.
 
 ---
 
@@ -35,7 +35,7 @@ File access gives Claude your content. Flywheel gives it your knowledge graph.
 | Query speed | Seconds of file I/O | <10ms in-memory index |
 | Scale tested to | Unknown | 100,000 notes |
 
-36 tools. 6-line config. Zero cloud dependencies.
+39 tools. 6-line config. Zero cloud dependencies.
 
 ---
 
@@ -309,11 +309,11 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all environment variables
 
 ## Tools Overview
 
-15 categories. 36 tools. Load all of them, or just the ones you need.
+15 categories. 39 tools. Load all of them, or just the ones you need.
 
 | Preset | Tools | ~Tokens | What you get |
 |--------|-------|---------|--------------|
-| `full` (default) | 36 | ~11,100 | Everything |
+| `full` (default) | 39 | ~11,800 | Everything |
 | `minimal` | 13 | ~3,800 | Search, read, create, edit |
 
 Start with `minimal`, then add composable bundles:
@@ -321,9 +321,9 @@ Start with `minimal`, then add composable bundles:
 | Bundle | Tools | ~Tokens | What it adds |
 |--------|-------|---------|--------------|
 | `graph` | 6 | ~1,850 | Backlinks, orphans, hubs, shortest paths |
-| `analysis` | 6 | ~1,850 | Schema intelligence, wikilink validation |
+| `analysis` | 8 | ~2,500 | Schema intelligence, wikilink validation |
 | `tasks` | 3 | ~925 | Task queries and mutations |
-| `health` | 6 | ~1,850 | Vault diagnostics, index management |
+| `health` | 7 | ~2,150 | Vault diagnostics, index management |
 | `ops` | 2 | ~625 | Git undo, policy automation |
 
 ```json
@@ -359,7 +359,7 @@ See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
 | Git integration | Yes (auto-commit, undo) | No | No | No |
 | Test coverage | 1,812 tests | Unknown | Unknown | Unknown |
 | Runs locally | Yes (zero cloud) | Yes | Yes | Optional |
-| Tool count | 36 tools | ~10 | 0 (plugin) | ~5 |
+| Tool count | 39 tools | ~10 | 0 (plugin) | ~5 |
 
 ---
 
@@ -427,7 +427,7 @@ See [docs/VISION.md](docs/VISION.md) for the full picture.
 | Doc | Description |
 |---|---|
 | [SETUP.md](docs/SETUP.md) | Set up your own vault -- prerequisites, config, first commands |
-| [TOOLS.md](docs/TOOLS.md) | Full tool reference -- all 36 tools, parameters, examples |
+| [TOOLS.md](docs/TOOLS.md) | Full tool reference -- all 39 tools, parameters, examples |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts organized by use case |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Index strategy, FTS5, graph, auto-wikilinks |
 | [CONFIGURATION.md](docs/CONFIGURATION.md) | Env vars, presets, custom tool sets |

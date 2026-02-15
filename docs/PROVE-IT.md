@@ -205,7 +205,7 @@ Start with `minimal` (13 tools, ~3,800 tokens). Add bundles as you need them:
 | `minimal` | 13 | Search, structure, append, frontmatter, notes |
 | `minimal,graph` | 19 | Backlinks, orphans, hubs, paths |
 | `minimal,graph,analysis` | 25 | Schema intelligence, wikilink suggestions |
-| `full` | 36 | Everything |
+| `full` | 39 | Everything |
 
 See [SETUP.md](SETUP.md) for full configuration details, Claude Desktop setup, and troubleshooting.
 
@@ -225,6 +225,6 @@ See [SETUP.md](SETUP.md) for full configuration details, Claude Desktop setup, a
 ## Next Steps
 
 - **[SETUP.md](SETUP.md)** -- Full setup guide for your own vault
-- **[TOOLS.md](TOOLS.md)** -- Reference for all 36 tools
+- **[TOOLS.md](TOOLS.md)** -- Reference for all 39 tools
 - **[ALGORITHM.md](ALGORITHM.md)** -- How scoring, ranking, and wikilink suggestion work
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts by use case

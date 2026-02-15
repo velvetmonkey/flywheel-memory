@@ -1,6 +1,6 @@
 # Architecture
 
-Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 36 tools for search, graph queries, and mutations.
+Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 39 tools for search, graph queries, and mutations.
 
 ---
 

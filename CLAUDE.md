@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 36 tools across 15 categories for search, graph analysis, schema intelligence, tasks, frontmatter, and note mutations — all local, all markdown.
+**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 39 tools across 15 categories for search, graph analysis, schema intelligence, tasks, frontmatter, and note mutations — all local, all markdown.
 
 ---
 
@@ -54,14 +54,14 @@ packages/mcp-server/src/
 Controlled by `FLYWHEEL_TOOLS` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`full`** (default) — All 15 categories, 36 tools (~11,100 tokens)
+- **`full`** (default) — All 15 categories, 39 tools (~11,800 tokens)
 - **`minimal`** — 5 categories, 13 tools (~3,800 tokens): search, structure, append, frontmatter, notes
 
 **Composable bundles** (add to minimal or each other):
 - **`graph`** — 6 tools: backlinks, orphans, hubs, paths
-- **`analysis`** — 6 tools: schema, wikilinks
+- **`analysis`** — 8 tools: schema, wikilinks
 - **`tasks`** — 3 tools: tasks
-- **`health`** — 6 tools: health
+- **`health`** — 7 tools: health
 - **`ops`** — 2 tools: git, policy
 
 **Categories (15):** `search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `git`, `policy`

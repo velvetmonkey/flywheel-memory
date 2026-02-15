@@ -24,7 +24,7 @@ async function main() {
   await page.setViewport({
     width: 800,
     height: 600,
-    deviceScaleFactor: 2,
+    deviceScaleFactor: 1,
   });
 
   await page.goto(`file://${HTML_PATH}`, { waitUntil: 'domcontentloaded' });

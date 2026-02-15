@@ -7,7 +7,7 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
-import { findSimilarNotes } from '../../core/read/similarity.js';
+import { findSimilarNotes, findHybridSimilarNotes } from '../../core/read/similarity.js';
 
 /**
  * Register content similarity tools
@@ -16,15 +16,16 @@ export function registerSimilarityTools(
   server: McpServer,
   getIndex: () => VaultIndex,
   getVaultPath: () => string,
-  getStateDb: () => StateDb | null
+  getStateDb: () => StateDb | null,
+  getSemanticEnabled: () => boolean = () => false
 ): void {
   server.registerTool(
     'find_similar',
     {
       title: 'Find Similar Notes',
       description:
-        'Find notes similar to a given note using FTS5 BM25 content similarity. ' +
-        'Extracts key terms from the source note, queries the full-text index, and ranks by relevance. ' +
+        'Find notes similar to a given note using FTS5 keyword matching. ' +
+        'When semantic search is enabled (FLYWHEEL_SEMANTIC=true), automatically uses hybrid ranking (BM25 + embedding similarity via Reciprocal Rank Fusion). ' +
         'Use exclude_linked to filter out notes already connected via wikilinks.',
       inputSchema: {
         path: z.string().describe('Path to the source note (relative to vault root, e.g. "projects/alpha.md")'),
@@ -53,16 +54,24 @@ export function registerSimilarityTools(
         };
       }
 
-      const results = findSimilarNotes(stateDb.db, vaultPath, index, path, {
+      const opts = {
         limit: limit ?? 10,
         excludeLinked: exclude_linked ?? true,
-      });
+      };
+
+      const useHybrid = getSemanticEnabled();
+      const method = useHybrid ? 'hybrid' : 'bm25';
+
+      const results = useHybrid
+        ? await findHybridSimilarNotes(stateDb.db, vaultPath, index, path, opts)
+        : findSimilarNotes(stateDb.db, vaultPath, index, path, opts);
 
       return {
         content: [{
           type: 'text' as const,
           text: JSON.stringify({
             source: path,
+            method,
             exclude_linked: exclude_linked ?? true,
             count: results.length,
             similar: results,

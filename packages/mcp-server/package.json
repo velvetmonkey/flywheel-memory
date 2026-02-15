@@ -57,6 +57,9 @@
     "simple-git": "^3.22.0",
     "zod": "^3.22.4"
   },
+  "optionalDependencies": {
+    "@huggingface/transformers": "^3.8.1"
+  },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^20.10.0",

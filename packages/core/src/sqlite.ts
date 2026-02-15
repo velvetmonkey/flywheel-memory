@@ -102,7 +102,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 8;
+export const SCHEMA_VERSION = 9;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -307,6 +307,15 @@ CREATE TABLE IF NOT EXISTS graph_snapshots (
 );
 CREATE INDEX IF NOT EXISTS idx_graph_snap_ts ON graph_snapshots(timestamp);
 CREATE INDEX IF NOT EXISTS idx_graph_snap_m ON graph_snapshots(metric, timestamp);
+
+-- Note embeddings for semantic search (v9)
+CREATE TABLE IF NOT EXISTS note_embeddings (
+  path TEXT PRIMARY KEY,
+  embedding BLOB NOT NULL,
+  content_hash TEXT NOT NULL,
+  model TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
 `;
 
 // =============================================================================
@@ -389,6 +398,9 @@ function initSchema(db: Database.Database): void {
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     // v8: graph_snapshots table (structural evolution)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v9: note_embeddings table (semantic search)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(

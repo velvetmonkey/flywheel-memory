@@ -13,6 +13,7 @@
  * - validate_links (absorbed find_broken_links via typos_only param)
  */
 
+import * as path from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 // Core imports - Read
@@ -38,6 +39,7 @@ import { initializeLogger as initializeReadLogger, getLogger } from './core/read
 import { initializeEntityIndex, setWriteStateDb } from './core/write/wikilinks.js';
 import { initializeLogger as initializeWriteLogger, flushLogs } from './core/write/logging.js';
 import { setFTS5Database } from './core/read/fts5.js';
+import { setEmbeddingsDatabase, updateEmbedding, removeEmbedding, buildEmbeddingsIndex } from './core/read/embeddings.js';
 
 // Vault-core shared imports
 import { openStateDb, scanVaultEntities, getSessionId, type StateDb } from '@velvetmonkey/vault-core';
@@ -95,6 +97,9 @@ import { registerVaultResources } from './resources/vault.js';
 
 // Auto-detect vault root, with PROJECT_PATH as override
 const vaultPath: string = process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot();
+
+// Semantic search opt-in
+const semanticEnabled = process.env.FLYWHEEL_SEMANTIC === 'true';
 
 // State variables
 let vaultIndex: VaultIndex;
@@ -407,7 +412,7 @@ registerReadSystemTools(
 );
 registerGraphTools(server, () => vaultIndex, () => vaultPath);
 registerWikilinkTools(server, () => vaultIndex, () => vaultPath);
-registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
+registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb, () => semanticEnabled);
 registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
 registerGraphAnalysisTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerVaultSchemaTools(server, () => vaultIndex, () => vaultPath);
@@ -428,7 +433,7 @@ registerWikilinkFeedbackTools(server, () => stateDb);
 // Additional read tools
 registerMetricsTools(server, () => vaultIndex, () => stateDb);
 registerActivityTools(server, () => stateDb, () => { try { return getSessionId(); } catch { return null; } });
-registerSimilarityTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
+registerSimilarityTools(server, () => vaultIndex, () => vaultPath, () => stateDb, () => semanticEnabled);
 
 // Resources (always registered, not gated by tool presets)
 registerVaultResources(server, () => vaultIndex ?? null);
@@ -452,6 +457,12 @@ async function main() {
 
     // Inject StateDb handle for FTS5 content search (notes_fts table)
     setFTS5Database(stateDb.db);
+
+    // Inject StateDb handle for embeddings (note_embeddings table) when semantic enabled
+    if (semanticEnabled) {
+      setEmbeddingsDatabase(stateDb.db);
+      console.error('[Memory] Semantic search enabled');
+    }
 
     // Initialize entity index for wikilinks (used by write tools)
     setWriteStateDb(stateDb);
@@ -659,6 +670,22 @@ async function runPostIndexWork(index: VaultIndex) {
           }
           await updateEntitiesInStateDb();
           await exportHubScores(vaultIndex, stateDb);
+
+          // Update embeddings for changed files (if semantic enabled)
+          if (semanticEnabled) {
+            for (const event of batch.events) {
+              try {
+                if (event.type === 'delete') {
+                  removeEmbedding(event.path);
+                } else if (event.path.endsWith('.md')) {
+                  const absPath = path.join(vaultPath, event.path);
+                  await updateEmbedding(event.path, absPath);
+                }
+              } catch {
+                // Don't let embedding errors affect watcher
+              }
+            }
+          }
           if (stateDb) {
             try {
               saveVaultIndexToCache(stateDb, vaultIndex);
@@ -697,10 +724,39 @@ async function runPostIndexWork(index: VaultIndex) {
   }
 }
 
-main().catch((error) => {
-  console.error('[Memory] Fatal error:', error);
-  process.exit(1);
-});
+// ============================================================================
+// CLI: --init-semantic pre-warm command
+// ============================================================================
+
+if (process.argv.includes('--init-semantic')) {
+  (async () => {
+    console.error('[Semantic] Pre-warming semantic search...');
+    console.error(`[Semantic] Vault: ${vaultPath}`);
+
+    try {
+      const db = openStateDb(vaultPath);
+      setEmbeddingsDatabase(db.db);
+
+      const progress = await buildEmbeddingsIndex(vaultPath, (p) => {
+        if (p.current % 50 === 0 || p.current === p.total) {
+          console.error(`[Semantic] Embedding ${p.current}/${p.total} notes (${p.skipped} skipped)...`);
+        }
+      });
+
+      console.error(`[Semantic] Done. Embedded ${progress.total - progress.skipped} notes, skipped ${progress.skipped}.`);
+      db.close();
+      process.exit(0);
+    } catch (err) {
+      console.error('[Semantic] Failed:', err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  })();
+} else {
+  main().catch((error) => {
+    console.error('[Memory] Fatal error:', error);
+    process.exit(1);
+  });
+}
 
 // Flush logs on exit
 process.on('beforeExit', async () => {

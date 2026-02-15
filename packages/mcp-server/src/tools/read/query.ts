@@ -20,6 +20,13 @@ import {
   type StateDb,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
+import {
+  semanticSearch,
+  buildEmbeddingsIndex,
+  hasEmbeddingsIndex,
+  reciprocalRankFusion,
+  type ScoredNote,
+} from '../../core/read/embeddings.js';
 
 /**
  * Check if a note matches frontmatter filters
@@ -140,17 +147,18 @@ export function registerQueryTools(
   server: McpServer,
   getIndex: () => VaultIndex,
   getVaultPath: () => string,
-  getStateDb: () => StateDb | null
+  getStateDb: () => StateDb | null,
+  getSemanticEnabled: () => boolean = () => false
 ): void {
   // ========================================
   // Unified search tool
   // ========================================
   server.tool(
     'search',
-    'Search the vault across metadata, content, and entities. Scope controls what to search: "metadata" for frontmatter/tags/folders, "content" for full-text search (FTS5), "entities" for people/projects/technologies, "all" (default) tries metadata then falls back to content search.\n\nExample: search({ query: "quarterly review", scope: "content", limit: 5 })\nExample: search({ where: { type: "project", status: "active" }, scope: "metadata" })',
+    'Search the vault across metadata, content, and entities. Scope controls what to search: "metadata" for frontmatter/tags/folders, "content" for full-text search (FTS5), "entities" for people/projects/technologies, "all" (default) tries metadata then falls back to content search. When semantic search is enabled (FLYWHEEL_SEMANTIC=true), content and all scopes automatically include embedding-based results via hybrid ranking.\n\nExample: search({ query: "quarterly review", scope: "content", limit: 5 })\nExample: search({ where: { type: "project", status: "active" }, scope: "metadata" })',
     {
       query: z.string().optional().describe('Search query text. Required for scope "content", "entities", "all". For "metadata" scope, use filters instead.'),
-      scope: z.enum(['metadata', 'content', 'entities', 'all']).default('all').describe('What to search: metadata (frontmatter/tags/folders), content (FTS5 full-text), entities (people/projects), all (metadata then content)'),
+      scope: z.enum(['metadata', 'content', 'entities', 'all']).default('all').describe('What to search: metadata (frontmatter/tags/folders), content (FTS5 full-text), entities (people/projects), all (metadata then content). Semantic results are automatically included when FLYWHEEL_SEMANTIC=true.'),
 
       // Metadata filters (used with scope "metadata" or "all")
       where: z.record(z.unknown()).optional().describe('Frontmatter filters as key-value pairs. Example: { "type": "project", "status": "active" }'),
@@ -275,7 +283,7 @@ export function registerQueryTools(
         }
       }
 
-      // ---- CONTENT SEARCH (FTS5) ----
+      // ---- CONTENT SEARCH (FTS5, with automatic hybrid when semantic enabled) ----
       if (scope === 'content' || scope === 'all') {
         if (!query) {
           return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'query is required for content search' }, null, 2) }] };
@@ -288,13 +296,56 @@ export function registerQueryTools(
           await buildFTS5Index(vaultPath);
         }
 
-        const results = searchFTS5(vaultPath, query, limit);
+        const fts5Results = searchFTS5(vaultPath, query, limit);
+
+        // Hybrid merge with semantic if enabled (applies to both 'content' and 'all' scopes)
+        if (getSemanticEnabled()) {
+          try {
+            if (!hasEmbeddingsIndex()) {
+              console.error('[Semantic] Building embeddings index on first use...');
+              await buildEmbeddingsIndex(vaultPath);
+            }
+
+            const semanticResults = await semanticSearch(query, limit);
+
+            // RRF merge of FTS5 and semantic results
+            const fts5Ranked = fts5Results.map(r => ({ path: r.path, title: r.title, snippet: r.snippet }));
+            const semanticRanked = semanticResults.map(r => ({ path: r.path, title: r.title }));
+            const rrfScores = reciprocalRankFusion(fts5Ranked, semanticRanked);
+
+            // Build merged result set
+            const allPaths = new Set([...fts5Results.map(r => r.path), ...semanticResults.map(r => r.path)]);
+            const fts5Map = new Map(fts5Results.map(r => [r.path, r]));
+            const semanticMap = new Map(semanticResults.map(r => [r.path, r]));
+
+            const merged = Array.from(allPaths).map(p => ({
+              path: p,
+              title: fts5Map.get(p)?.title || semanticMap.get(p)?.title || p.replace(/\.md$/, '').split('/').pop() || p,
+              snippet: fts5Map.get(p)?.snippet,
+              rrf_score: Math.round((rrfScores.get(p) || 0) * 10000) / 10000,
+              in_fts5: fts5Map.has(p),
+              in_semantic: semanticMap.has(p),
+            }));
+
+            merged.sort((a, b) => b.rrf_score - a.rrf_score);
+
+            return { content: [{ type: 'text' as const, text: JSON.stringify({
+              scope,
+              method: 'hybrid',
+              query,
+              total_results: Math.min(merged.length, limit),
+              results: merged.slice(0, limit),
+            }, null, 2) }] };
+          } catch {
+            // Semantic failed, fall back to FTS5 only
+          }
+        }
 
         return { content: [{ type: 'text' as const, text: JSON.stringify({
           scope: 'content',
           query,
-          total_results: results.length,
-          results,
+          total_results: fts5Results.length,
+          results: fts5Results,
         }, null, 2) }] };
       }
 

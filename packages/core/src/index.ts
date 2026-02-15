@@ -12,8 +12,6 @@ export type {
   EntityWithAliases,
   Entity,
   EntityWithType,
-  ProtectedZone,
-  ProtectedZoneType,
   ScanOptions,
   WikilinkOptions,
   WikilinkResult,
@@ -30,25 +28,12 @@ export {
   getAllEntitiesWithTypes,
   getEntityName,
   getEntityAliases,
-  filterPeriodicNotes,
-  loadEntityCache,
-  saveEntityCache,
   ENTITY_CACHE_VERSION,
 } from './entities.js';
-
-// Protected zones
-export {
-  getProtectedZones,
-  isInProtectedZone,
-  rangeOverlapsProtectedZone,
-  findFrontmatterEnd,
-} from './protectedZones.js';
 
 // Wikilinks
 export {
   applyWikilinks,
-  suggestWikilinks,
-  detectImplicitEntities,
   processWikilinks,
   resolveAliasWikilinks,
 } from './wikilinks.js';
@@ -60,11 +45,6 @@ export {
   generateSessionId,
   getSessionId,
   setSessionId,
-  clearSession,
-  createChildSession,
-  getParentSession,
-  isChildSession,
-  DEFAULT_LOGGING_CONFIG,
 } from './logging/index.js';
 
 export type {
@@ -79,8 +59,6 @@ export type {
 export {
   openStateDb,
   deleteStateDb,
-  stateDbExists,
-  getStateDbPath,
   searchEntities,
   searchEntitiesPrefix,
   getEntityByName,
@@ -88,7 +66,6 @@ export {
   getAllEntitiesFromDb,
   getEntityIndexFromDb,
   recordEntityMention,
-  getEntityRecency,
   getAllRecency,
   setCrankState,
   getCrankState,
@@ -97,18 +74,13 @@ export {
   setFlywheelConfig,
   getFlywheelConfig,
   getAllFlywheelConfig,
-  deleteFlywheelConfig,
   saveFlywheelConfigToDb,
   loadFlywheelConfigFromDb,
   getStateDbMetadata,
-  isEntityDataStale,
-  escapeFts5Query,
   // Vault Index Cache
   saveVaultIndexCache,
   loadVaultIndexCache,
   getVaultIndexCacheInfo,
-  clearVaultIndexCache,
-  isVaultIndexCacheValid,
   SCHEMA_VERSION,
   STATE_DB_FILENAME,
   FLYWHEEL_DIR,

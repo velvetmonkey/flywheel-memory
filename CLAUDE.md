@@ -15,7 +15,7 @@ packages/mcp-server/src/
 │   ├── read/                # Read tool registrations
 │   │   ├── query.ts         # search (unified: metadata + content + entities)
 │   │   ├── graph.ts         # get_backlinks (+ bidirectional), get_forward_links
-│   │   ├── graphAdvanced.ts # get_connection_strength, get_link_path, get_common_neighbors
+│   │   ├── graphAdvanced.ts # (helper) get_connection_strength, get_link_path, get_common_neighbors — imported by graph.ts, primitives.ts, graphAnalysis.ts
 │   │   ├── graphAnalysis.ts # graph_analysis (orphans, dead_ends, sources, hubs, stale)
 │   │   ├── vaultSchema.ts   # vault_schema (overview, field_values, inconsistencies, validate, conventions, incomplete)
 │   │   ├── noteIntelligence.ts # note_intelligence (prose_patterns, suggest_frontmatter, wikilinks, cross_layer, compute)

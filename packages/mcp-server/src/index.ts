@@ -2,9 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * Phase 1 consolidation: 76 → ~63 tools
- * Phase 2 consolidation: ~63 → ~49 tools
- * Phase 3 consolidation: ~49 → ~36 tools
+ * 36 tools across 15 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -66,7 +64,7 @@ import { registerNoteTools } from './tools/write/notes.js';
 import { registerMoveNoteTools } from './tools/write/move-notes.js';
 import { registerSystemTools as registerWriteSystemTools } from './tools/write/system.js';
 import { registerPolicyTools } from './tools/write/policy.js';
-// import { registerMemoryTools } from './tools/write/memory.js';
+
 
 // ============================================================================
 // Configuration
@@ -87,7 +85,7 @@ let stateDb: StateDb | null = null;
 //
 // Presets:
 //   minimal  - Core tools for search, navigate, create, edit (~19 tools)
-//   full     - All tools (~63 tools) [DEFAULT]
+//   full     - All tools (~36 tools) [DEFAULT]
 //
 // Fine-grained: use comma-separated category names for custom sets.
 //   FLYWHEEL_TOOLS=search,backlinks,append

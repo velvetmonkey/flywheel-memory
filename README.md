@@ -224,13 +224,13 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 Start with `minimal`, then add composable bundles:
 
-| Bundle | Tools | What it adds |
-|--------|-------|--------------|
-| `graph` | 6 | Backlinks, orphans, hubs, shortest paths |
-| `analysis` | 6 | Schema intelligence, wikilink validation |
-| `tasks` | 3 | Task queries and mutations |
-| `health` | 6 | Vault diagnostics, index management |
-| `ops` | 2 | Git undo, policy automation |
+| Bundle | Tools | ~Tokens | What it adds |
+|--------|-------|---------|--------------|
+| `graph` | 6 | ~1,850 | Backlinks, orphans, hubs, shortest paths |
+| `analysis` | 6 | ~1,850 | Schema intelligence, wikilink validation |
+| `tasks` | 3 | ~925 | Task queries and mutations |
+| `health` | 6 | ~1,850 | Vault diagnostics, index management |
+| `ops` | 2 | ~625 | Git undo, policy automation |
 
 ```json
 {

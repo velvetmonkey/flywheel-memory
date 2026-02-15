@@ -19,6 +19,8 @@ export type {
   ExtendedWikilinkOptions,
   ImplicitEntityMatch,
   ResolveAliasOptions,
+  ProtectedZone,
+  ProtectedZoneType,
 } from './types.js';
 
 // Entity scanning
@@ -28,6 +30,8 @@ export {
   getAllEntitiesWithTypes,
   getEntityName,
   getEntityAliases,
+  loadEntityCache,
+  saveEntityCache,
   ENTITY_CACHE_VERSION,
 } from './entities.js';
 
@@ -36,7 +40,15 @@ export {
   applyWikilinks,
   processWikilinks,
   resolveAliasWikilinks,
+  suggestWikilinks,
 } from './wikilinks.js';
+
+// Protected zones
+export {
+  getProtectedZones,
+  isInProtectedZone,
+  rangeOverlapsProtectedZone,
+} from './protectedZones.js';
 
 // Logging (unified cross-product logging)
 export {
@@ -59,6 +71,7 @@ export type {
 export {
   openStateDb,
   deleteStateDb,
+  stateDbExists,
   searchEntities,
   searchEntitiesPrefix,
   getEntityByName,
@@ -66,6 +79,7 @@ export {
   getAllEntitiesFromDb,
   getEntityIndexFromDb,
   recordEntityMention,
+  getEntityRecency,
   getAllRecency,
   setCrankState,
   getCrankState,

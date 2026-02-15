@@ -213,6 +213,42 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 ---
 
+## Set Up Your Own Vault
+
+After trying the demos, point Flywheel at your own vault:
+
+**1.** Add `.mcp.json` to your vault root:
+
+```json
+{
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "env": {
+        "FLYWHEEL_TOOLS": "minimal"
+      }
+    }
+  }
+}
+```
+
+Start with the `minimal` preset (13 tools, ~3,800 tokens). Add bundles like `graph` or `tasks` as needed -- see [Tools Overview](#tools-overview) below.
+
+**2.** Optionally, add a `CLAUDE.md` persona file to your vault root. This tells Claude how to navigate your vault -- what folders matter, what frontmatter fields exist, what questions to expect. See the [demo vaults](demos/) for examples (e.g., [carter-strategy/CLAUDE.md](demos/carter-strategy/CLAUDE.md)).
+
+**3.** Open your vault in Claude Code:
+
+```bash
+cd /path/to/your/vault && claude
+```
+
+On first run, Flywheel creates a `.flywheel/` directory containing its SQLite index. Add `.flywheel/` to your `.gitignore`. Indexing is automatic and typically takes under a second for vaults up to a few thousand notes. The index is derived and deletable -- see [Troubleshooting](#troubleshooting) if anything goes wrong.
+
+See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all environment variables and advanced options.
+
+---
+
 ## Tools Overview
 
 15 categories. 36 tools. Load all of them, or just the ones you need.
@@ -295,6 +331,18 @@ Your vault isn't a filing cabinet. It's a second brain that actually works.
 Files are data. Links are relationships. AI agents are operators.
 
 See [docs/VISION.md](docs/VISION.md) for the full picture.
+
+---
+
+## Troubleshooting
+
+**Safety model:** Your markdown files are the source of truth. The `.flywheel/` directory (SQLite index, FTS5 data) is entirely derived and can be deleted at any time -- Flywheel rebuilds it on next startup.
+
+**Undo a mutation:** Every write tool records a git-backed snapshot. Use `vault_undo_last_mutation` to revert the last change (soft git reset). If you need to go further back, use standard `git log` / `git checkout` on your vault.
+
+**Rebuild the index:** If searches return stale results or the server behaves unexpectedly, delete the `.flywheel/` directory and restart. The index rebuilds automatically.
+
+**Failed mutations:** If a write operation fails validation (path traversal, missing file, protected zone), Flywheel rejects it before touching disk. You will see an error message explaining why the operation was blocked. No partial writes occur.
 
 ---
 

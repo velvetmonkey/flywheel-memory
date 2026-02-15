@@ -8,7 +8,7 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 
 ## Prerequisites
 
-- **Node.js 18+** -- check with `node --version`
+- **Node.js 18–22** -- check with `node --version`. Node 24 does not ship prebuilt `better-sqlite3` binaries and will fail to install.
 - **Claude Code** -- authenticated and working (`claude --version`)
 - **git** -- to clone the repo
 

@@ -6,7 +6,7 @@ After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian v
 
 ## Prerequisites
 
-- **Node.js 18+** -- check with `node --version`
+- **Node.js 18–22** -- check with `node --version`. Node 24 does not ship prebuilt `better-sqlite3` binaries and will fail to install.
 - **An Obsidian vault** -- any folder with `.md` files works, but Flywheel detects Obsidian conventions (`.obsidian/` folder, periodic notes, templates)
 - **Claude Code** or **Claude Desktop** -- any MCP-compatible client works
 

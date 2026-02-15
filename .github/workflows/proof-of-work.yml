@@ -1,3 +1,5 @@
+# Proves: CSV bootstrap → vault structure → wikilink topology → backlink indexing → performance
+# Does NOT test MCP tools (those have dedicated test suites in packages/mcp-server/test/)
 name: Proof of Work Demo
 on:
   push:

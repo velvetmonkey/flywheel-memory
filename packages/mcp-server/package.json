@@ -40,6 +40,8 @@
     "test:watch": "vitest",
     "test:read": "vitest run test/read/",
     "test:write": "vitest run test/write/",
+    "test:security": "vitest run test/write/security/",
+    "test:stress": "vitest run test/write/stress/ test/write/battle-hardening/",
     "test:coverage": "vitest run --coverage",
     "test:ci": "vitest run --reporter=github-actions",
     "lint": "tsc --noEmit",

@@ -46,7 +46,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node: ['20', '22']  # Node 18 dropped: Promise.withResolvers requires Node 22+
+        node: ['20', '22']
+        exclude:
+          - os: macos-latest
+            node: '20'  # better-sqlite3 segfaults on macOS ARM + Node 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

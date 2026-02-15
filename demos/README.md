@@ -20,26 +20,11 @@
 
 ## Getting Started
 
-1. Navigate to a demo vault:
+Each demo already includes a pre-configured `.mcp.json` — no setup needed.
+
 ```bash
 cd demos/carter-strategy
-```
-
-2. Create `.mcp.json` with Flywheel configuration:
-```json
-{
-  "mcpServers": {
-    "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"]
-    }
-  }
-}
-```
-
-3. Start Claude Code and verify connection:
-```
-mcp__flywheel__health_check()
+claude
 ```
 
 Then start asking questions about the business.

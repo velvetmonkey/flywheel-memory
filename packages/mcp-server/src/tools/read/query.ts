@@ -65,25 +65,31 @@ function matchesFrontmatter(
 }
 
 /**
- * Check if a note has a specific tag
+ * Check if a note has a specific tag.
+ * When includeChildren is true, also matches child tags (e.g., "project" matches "project/active").
  */
-function hasTag(note: VaultNote, tag: string): boolean {
+function hasTag(note: VaultNote, tag: string, includeChildren: boolean = false): boolean {
   const normalizedTag = tag.replace(/^#/, '').toLowerCase();
-  return note.tags.some((t) => t.toLowerCase() === normalizedTag);
+  return note.tags.some((t) => {
+    const normalizedNoteTag = t.toLowerCase();
+    if (normalizedNoteTag === normalizedTag) return true;
+    if (includeChildren && normalizedNoteTag.startsWith(normalizedTag + '/')) return true;
+    return false;
+  });
 }
 
 /**
  * Check if a note has any of the specified tags
  */
-function hasAnyTag(note: VaultNote, tags: string[]): boolean {
-  return tags.some((tag) => hasTag(note, tag));
+function hasAnyTag(note: VaultNote, tags: string[], includeChildren: boolean = false): boolean {
+  return tags.some((tag) => hasTag(note, tag, includeChildren));
 }
 
 /**
  * Check if a note has all of the specified tags
  */
-function hasAllTags(note: VaultNote, tags: string[]): boolean {
-  return tags.every((tag) => hasTag(note, tag));
+function hasAllTags(note: VaultNote, tags: string[], includeChildren: boolean = false): boolean {
+  return tags.every((tag) => hasTag(note, tag, includeChildren));
 }
 
 /**
@@ -151,6 +157,7 @@ export function registerQueryTools(
       has_tag: z.string().optional().describe('Filter to notes with this tag'),
       has_any_tag: z.array(z.string()).optional().describe('Filter to notes with any of these tags'),
       has_all_tags: z.array(z.string()).optional().describe('Filter to notes with all of these tags'),
+      include_children: z.boolean().default(false).describe('When true, tag filters also match child tags (e.g., has_tag: "project" also matches "project/active")'),
       folder: z.string().optional().describe('Limit to notes in this folder'),
       title_contains: z.string().optional().describe('Filter to notes whose title contains this text (case-insensitive)'),
 
@@ -168,7 +175,7 @@ export function registerQueryTools(
       // Pagination
       limit: z.number().default(20).describe('Maximum number of results to return'),
     },
-    async ({ query, scope, where, has_tag, has_any_tag, has_all_tags, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit }) => {
+    async ({ query, scope, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit }) => {
       const limit = Math.min(requestedLimit ?? 20, MAX_LIMIT);
       const index = getIndex();
       const vaultPath = getVaultPath();
@@ -203,13 +210,13 @@ export function registerQueryTools(
           matchingNotes = matchingNotes.filter((note) => matchesFrontmatter(note, where));
         }
         if (has_tag) {
-          matchingNotes = matchingNotes.filter((note) => hasTag(note, has_tag));
+          matchingNotes = matchingNotes.filter((note) => hasTag(note, has_tag, include_children));
         }
         if (has_any_tag && has_any_tag.length > 0) {
-          matchingNotes = matchingNotes.filter((note) => hasAnyTag(note, has_any_tag));
+          matchingNotes = matchingNotes.filter((note) => hasAnyTag(note, has_any_tag, include_children));
         }
         if (has_all_tags && has_all_tags.length > 0) {
-          matchingNotes = matchingNotes.filter((note) => hasAllTags(note, has_all_tags));
+          matchingNotes = matchingNotes.filter((note) => hasAllTags(note, has_all_tags, include_children));
         }
         if (folder) {
           matchingNotes = matchingNotes.filter((note) => inFolder(note, folder));

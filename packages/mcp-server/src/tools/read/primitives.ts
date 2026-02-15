@@ -25,6 +25,7 @@ import {
 
 import {
   getLinkPath,
+  getWeightedLinkPath,
   getCommonNeighbors,
   getConnectionStrength,
 } from './graphAdvanced.js';
@@ -250,16 +251,19 @@ export function registerPrimitiveTools(
     'get_link_path',
     {
       title: 'Get Link Path',
-      description: 'Find the shortest path of links between two notes.',
+      description: 'Find the shortest path of links between two notes. Use weighted=true to penalize hub nodes for more meaningful paths.',
       inputSchema: {
         from: z.string().describe('Starting note path'),
         to: z.string().describe('Target note path'),
         max_depth: z.coerce.number().default(10).describe('Maximum path length to search'),
+        weighted: z.boolean().default(false).describe('Use weighted path-finding that penalizes hub nodes for more meaningful paths'),
       },
     },
-    async ({ from, to, max_depth }) => {
+    async ({ from, to, max_depth, weighted }) => {
       const index = getIndex();
-      const result = getLinkPath(index, from, to, max_depth);
+      const result = weighted
+        ? getWeightedLinkPath(index, from, to, max_depth)
+        : getLinkPath(index, from, to, max_depth);
 
       return {
         content: [{ type: 'text' as const, text: JSON.stringify({

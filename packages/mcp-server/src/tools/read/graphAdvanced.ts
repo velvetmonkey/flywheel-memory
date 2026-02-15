@@ -5,7 +5,7 @@
  */
 
 import type { VaultIndex, Backlink } from '../../core/read/types.js';
-import { getBacklinksForNote, resolveTarget } from '../../core/read/graph.js';
+import { getBacklinksForNote, resolveTarget, findHubNotes } from '../../core/read/graph.js';
 
 /**
  * Find shortest path between two notes using BFS
@@ -71,6 +71,123 @@ export function getLinkPath(
   }
 
   return { exists: false, path: [], length: -1 };
+}
+
+/**
+ * Find shortest weighted path between two notes using Dijkstra's algorithm.
+ * Penalizes hub nodes so paths reflect genuine conceptual connections.
+ */
+export function getWeightedLinkPath(
+  index: VaultIndex,
+  fromPath: string,
+  toPath: string,
+  maxDepth: number = 10
+): {
+  exists: boolean;
+  path: string[];
+  length: number;
+  total_weight: number;
+  weights: number[];
+} {
+  const from = index.notes.has(fromPath) ? fromPath : resolveTarget(index, fromPath);
+  const to = index.notes.has(toPath) ? toPath : resolveTarget(index, toPath);
+
+  if (!from || !to) {
+    return { exists: false, path: [], length: -1, total_weight: 0, weights: [] };
+  }
+
+  if (from === to) {
+    return { exists: true, path: [from], length: 0, total_weight: 0, weights: [] };
+  }
+
+  // Precompute hub connection counts
+  const hubNotes = findHubNotes(index, 0);
+  const connectionCounts = new Map<string, number>();
+  for (const hub of hubNotes) {
+    connectionCounts.set(hub.path, hub.total_connections);
+  }
+
+  // Dijkstra's algorithm
+  const dist = new Map<string, number>();
+  const prev = new Map<string, string>();
+  const depthMap = new Map<string, number>();
+  dist.set(from, 0);
+  depthMap.set(from, 0);
+
+  // Simple priority queue (sorted insert) — vault graphs are small
+  const pq: { node: string; cost: number }[] = [{ node: from, cost: 0 }];
+  const visited = new Set<string>();
+
+  while (pq.length > 0) {
+    const { node: current, cost: currentCost } = pq.shift()!;
+
+    if (current === to) break;
+    if (visited.has(current)) continue;
+    visited.add(current);
+
+    const currentDepth = depthMap.get(current) ?? 0;
+    if (currentDepth >= maxDepth) continue;
+
+    const note = index.notes.get(current);
+    if (!note) continue;
+
+    for (const link of note.outlinks) {
+      const targetPath = resolveTarget(index, link.target);
+      if (!targetPath || visited.has(targetPath)) continue;
+
+      // Edge weight: 1 / (1 + connectionStrength) * hub penalty
+      const strength = getConnectionStrength(index, current, targetPath);
+      const baseWeight = 1 / (1 + strength.score);
+      const targetConnections = connectionCounts.get(targetPath) ?? 0;
+      const hubPenalty = targetConnections > 0 ? 1 + Math.log2(targetConnections) : 1;
+      const edgeWeight = baseWeight * hubPenalty;
+
+      const newDist = currentCost + edgeWeight;
+      const existingDist = dist.get(targetPath);
+
+      if (existingDist === undefined || newDist < existingDist) {
+        dist.set(targetPath, newDist);
+        prev.set(targetPath, current);
+        depthMap.set(targetPath, currentDepth + 1);
+
+        // Insert in sorted order
+        const entry = { node: targetPath, cost: newDist };
+        const insertIdx = pq.findIndex(e => e.cost > newDist);
+        if (insertIdx === -1) {
+          pq.push(entry);
+        } else {
+          pq.splice(insertIdx, 0, entry);
+        }
+      }
+    }
+  }
+
+  if (!dist.has(to)) {
+    return { exists: false, path: [], length: -1, total_weight: 0, weights: [] };
+  }
+
+  // Reconstruct path
+  const resultPath: string[] = [];
+  let node: string | undefined = to;
+  while (node) {
+    resultPath.unshift(node);
+    node = prev.get(node);
+  }
+
+  // Compute per-edge weights
+  const weights: number[] = [];
+  for (let i = 0; i < resultPath.length - 1; i++) {
+    const edgeDist = (dist.get(resultPath[i + 1]) ?? 0) - (dist.get(resultPath[i]) ?? 0);
+    weights.push(Math.round(edgeDist * 1000) / 1000);
+  }
+
+  return {
+    exists: true,
+    path: resultPath,
+    length: resultPath.length - 1,
+    total_weight: Math.round((dist.get(to) ?? 0) * 1000) / 1000,
+    weights,
+  };
 }
 
 /**

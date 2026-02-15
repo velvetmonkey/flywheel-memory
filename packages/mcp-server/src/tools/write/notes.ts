@@ -43,6 +43,7 @@ export function registerNoteTools(
     {
       path: z.string().describe('Vault-relative path for the new note (e.g., "daily-notes/2026-01-28.md")'),
       content: z.string().default('').describe('Initial content for the note'),
+      template: z.string().optional().describe('Vault-relative path to a template file (e.g., "templates/person.md"). Template variables {{date}} and {{title}} are substituted. Template frontmatter is merged with the frontmatter parameter (explicit values take precedence).'),
       frontmatter: z.record(z.any()).default({}).describe('Frontmatter fields (JSON object)'),
       overwrite: z.boolean().default(false).describe('If true, overwrite existing file'),
       commit: z.boolean().default(false).describe('If true, commit this change to git (creates undo point)'),
@@ -52,7 +53,7 @@ export function registerNoteTools(
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),
     },
-    async ({ path: notePath, content, frontmatter, overwrite, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, agent_id, session_id }) => {
+    async ({ path: notePath, content, template, frontmatter, overwrite, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, agent_id, session_id }) => {
       try {
         // 1. Validate path
         if (!validatePath(vaultPath, notePath)) {
@@ -72,11 +73,41 @@ export function registerNoteTools(
         const dir = path.dirname(fullPath);
         await fs.mkdir(dir, { recursive: true });
 
-        // 3a. Note creation intelligence: preflight checks
+        // 3a. Load template if specified
+        let effectiveContent = content;
+        let effectiveFrontmatter = frontmatter;
+        if (template) {
+          const templatePath = path.join(vaultPath, template);
+          try {
+            const raw = await fs.readFile(templatePath, 'utf-8');
+            const matter = (await import('gray-matter')).default;
+            const parsed = matter(raw);
+
+            // Apply substitutions to template content
+            const dateStr = new Date().toISOString().split('T')[0];
+            const title = path.basename(notePath, '.md');
+            let templateContent = parsed.content
+              .replace(/\{\{date\}\}/g, dateStr)
+              .replace(/\{\{title\}\}/g, title);
+
+            // If user provided content, append it after template content
+            if (content) {
+              templateContent = templateContent.trimEnd() + '\n\n' + content;
+            }
+            effectiveContent = templateContent;
+
+            // Template frontmatter as base, user-provided overrides
+            effectiveFrontmatter = { ...(parsed.data || {}), ...frontmatter };
+          } catch {
+            return formatMcpResult(errorResult(notePath, `Template not found: ${template}`));
+          }
+        }
+
+        // 3b. Note creation intelligence: preflight checks
         const warnings: ValidationWarning[] = [];
         const noteName = path.basename(notePath, '.md');
-        const existingAliases: string[] = Array.isArray(frontmatter?.aliases)
-          ? frontmatter.aliases.filter((a: unknown) => typeof a === 'string')
+        const existingAliases: string[] = Array.isArray(effectiveFrontmatter?.aliases)
+          ? effectiveFrontmatter.aliases.filter((a: unknown) => typeof a === 'string')
           : [];
 
         // Preflight similarity check
@@ -107,7 +138,7 @@ export function registerNoteTools(
         }
 
         // 4. Apply wikilinks to content (unless skipped)
-        let { content: processedContent, wikilinkInfo } = maybeApplyWikilinks(content, skipWikilinks, notePath);
+        let { content: processedContent, wikilinkInfo } = maybeApplyWikilinks(effectiveContent, skipWikilinks, notePath);
 
         // 5. Suggest outgoing links (enabled by default)
         let suggestInfo: string | undefined;
@@ -120,9 +151,9 @@ export function registerNoteTools(
         }
 
         // 6. Inject scoping metadata if provided
-        let finalFrontmatter = frontmatter;
+        let finalFrontmatter = effectiveFrontmatter;
         if (agent_id || session_id) {
-          finalFrontmatter = injectMutationMetadata(frontmatter, { agent_id, session_id });
+          finalFrontmatter = injectMutationMetadata(effectiveFrontmatter, { agent_id, session_id });
         }
 
         // 7. Write the note
@@ -134,7 +165,7 @@ export function registerNoteTools(
         // Build preview with wikilink info
         const infoLines = [wikilinkInfo, suggestInfo].filter(Boolean);
         const previewLines = [
-          `Frontmatter fields: ${Object.keys(frontmatter).join(', ') || 'none'}`,
+          `Frontmatter fields: ${Object.keys(effectiveFrontmatter).join(', ') || 'none'}`,
           `Content length: ${processedContent.length} chars`,
         ];
         if (infoLines.length > 0) {
@@ -142,7 +173,7 @@ export function registerNoteTools(
         }
 
         // Smart alias suggestions (replace generic hint)
-        const hasAliases = frontmatter && ('aliases' in frontmatter);
+        const hasAliases = effectiveFrontmatter && ('aliases' in effectiveFrontmatter);
         if (!hasAliases) {
           const aliasSuggestions = suggestAliases(noteName, existingAliases);
           if (aliasSuggestions.length > 0) {

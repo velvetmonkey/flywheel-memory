@@ -23,6 +23,9 @@ import {
   getAllFeedbackBoosts,
   extractFolder,
   getEntityFolderAccuracy,
+  trackWikilinkApplications,
+  getTrackedApplications,
+  processImplicitFeedback,
 } from '../../../src/core/write/wikilinkFeedback.js';
 
 describe('wikilink_feedback', () => {
@@ -391,6 +394,88 @@ describe('wikilink_feedback', () => {
       // Daily folder: 2/5 = 40% → -2
       const dailyBoosts = getAllFeedbackBoosts(stateDb, 'daily');
       expect(dailyBoosts.get('Redis')).toBe(-2);
+    });
+  });
+
+  // --------------------------------------------------------
+  // Implicit feedback (application tracking & removal detection)
+  // --------------------------------------------------------
+  describe('implicit feedback', () => {
+    it('trackWikilinkApplications stores entities', () => {
+      trackWikilinkApplications(stateDb, 'projects/web.md', ['typescript', 'react']);
+
+      const tracked = getTrackedApplications(stateDb, 'projects/web.md');
+      expect(tracked).toHaveLength(2);
+      expect(tracked).toContain('typescript');
+      expect(tracked).toContain('react');
+    });
+
+    it('processImplicitFeedback detects removed wikilinks', () => {
+      // Track two entities as applied
+      trackWikilinkApplications(stateDb, 'projects/web.md', ['typescript', 'react']);
+
+      // Content only has [[React]] — TypeScript was removed
+      const content = 'Building a web app with [[React]] and some other tools';
+      const removed = processImplicitFeedback(stateDb, 'projects/web.md', content);
+
+      expect(removed).toHaveLength(1);
+      expect(removed).toContain('typescript');
+
+      // Verify negative feedback was recorded
+      const feedback = getFeedback(stateDb, 'typescript');
+      expect(feedback).toHaveLength(1);
+      expect(feedback[0].correct).toBe(false);
+      expect(feedback[0].context).toBe('implicit:removed');
+      expect(feedback[0].note_path).toBe('projects/web.md');
+    });
+
+    it('processImplicitFeedback ignores kept wikilinks', () => {
+      trackWikilinkApplications(stateDb, 'tech/stack.md', ['react', 'node']);
+
+      // Both wikilinks still present
+      const content = 'Using [[React]] with [[Node]] for the stack';
+      const removed = processImplicitFeedback(stateDb, 'tech/stack.md', content);
+
+      expect(removed).toHaveLength(0);
+
+      // No feedback should be recorded
+      const feedback = getFeedback(stateDb);
+      expect(feedback).toHaveLength(0);
+    });
+
+    it('processImplicitFeedback marks removed as status=removed', () => {
+      trackWikilinkApplications(stateDb, 'notes/test.md', ['docker']);
+
+      // Content has no wikilinks — docker removed
+      const removed = processImplicitFeedback(stateDb, 'notes/test.md', 'plain text');
+      expect(removed).toContain('docker');
+
+      // Status should be 'removed', so getTrackedApplications returns empty
+      const tracked = getTrackedApplications(stateDb, 'notes/test.md');
+      expect(tracked).toHaveLength(0);
+    });
+
+    it('re-application resets removed status', () => {
+      // Apply, remove, then re-apply
+      trackWikilinkApplications(stateDb, 'notes/test.md', ['kubernetes']);
+      processImplicitFeedback(stateDb, 'notes/test.md', 'no links here');
+
+      // Re-apply
+      trackWikilinkApplications(stateDb, 'notes/test.md', ['kubernetes']);
+
+      const tracked = getTrackedApplications(stateDb, 'notes/test.md');
+      expect(tracked).toHaveLength(1);
+      expect(tracked).toContain('kubernetes');
+    });
+
+    it('no false positives on new notes', () => {
+      // No tracked applications for this note
+      const removed = processImplicitFeedback(stateDb, 'brand-new.md', 'some content');
+
+      expect(removed).toHaveLength(0);
+
+      const feedback = getFeedback(stateDb);
+      expect(feedback).toHaveLength(0);
     });
   });
 

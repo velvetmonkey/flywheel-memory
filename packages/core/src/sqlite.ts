@@ -102,7 +102,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -258,6 +258,16 @@ CREATE TABLE IF NOT EXISTS wikilink_suppressions (
   false_positive_rate REAL NOT NULL,
   updated_at TEXT DEFAULT (datetime('now'))
 );
+
+-- Wikilink applications tracking (v5: implicit feedback)
+CREATE TABLE IF NOT EXISTS wikilink_applications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  entity TEXT NOT NULL,
+  note_path TEXT NOT NULL,
+  applied_at TEXT DEFAULT (datetime('now')),
+  status TEXT DEFAULT 'applied'
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wl_apps_unique ON wikilink_applications(entity, note_path);
 `;
 
 // =============================================================================
@@ -328,6 +338,9 @@ function initSchema(db: Database.Database): void {
     }
 
     // v4: vault_metrics, wikilink_feedback, wikilink_suppressions tables
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v5: wikilink_applications table (implicit feedback tracking)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(

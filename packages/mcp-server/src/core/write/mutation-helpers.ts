@@ -16,6 +16,8 @@ import { commitChange } from './git.js';
 import { estimateTokens } from './constants.js';
 import type { MutationResult, ValidationWarning, OutputIssue, ScopingMetadata } from './types.js';
 import { injectMutationMetadata } from './writer.js';
+import { getWriteStateDb } from './wikilinks.js';
+import { processImplicitFeedback } from './wikilinkFeedback.js';
 
 /**
  * Context provided to mutation operations
@@ -253,6 +255,12 @@ export async function withVaultFile(
 
     // 2. Read file with frontmatter
     const { content, frontmatter, lineEnding } = await readVaultFile(vaultPath, notePath);
+
+    // 2.5: Implicit feedback — detect removed auto-applied wikilinks
+    const writeStateDb = getWriteStateDb();
+    if (writeStateDb) {
+      processImplicitFeedback(writeStateDb, notePath, content);
+    }
 
     // 3. Find section if requested
     let sectionBoundary: SectionBoundary | undefined;

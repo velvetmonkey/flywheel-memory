@@ -6,6 +6,7 @@
  */
 
 import type { StateDb } from '@velvetmonkey/vault-core';
+import { extractLinkedEntities } from './wikilinks.js';
 
 // =============================================================================
 // TYPES
@@ -426,4 +427,87 @@ export function getAllFeedbackBoosts(stateDb: StateDb, folder?: string): Map<str
     }
   }
   return boosts;
+}
+
+// =============================================================================
+// IMPLICIT FEEDBACK (Application Tracking & Removal Detection)
+// =============================================================================
+
+/**
+ * Track wikilink applications for a note
+ * UPSERT each entity with status='applied' for later removal detection
+ */
+export function trackWikilinkApplications(
+  stateDb: StateDb,
+  notePath: string,
+  entities: string[],
+): void {
+  const upsert = stateDb.db.prepare(`
+    INSERT INTO wikilink_applications (entity, note_path, applied_at, status)
+    VALUES (?, ?, datetime('now'), 'applied')
+    ON CONFLICT(entity, note_path) DO UPDATE SET
+      applied_at = datetime('now'),
+      status = 'applied'
+  `);
+
+  const transaction = stateDb.db.transaction(() => {
+    for (const entity of entities) {
+      upsert.run(entity.toLowerCase(), notePath);
+    }
+  });
+
+  transaction();
+}
+
+/**
+ * Get tracked applications for a note (status='applied')
+ */
+export function getTrackedApplications(
+  stateDb: StateDb,
+  notePath: string,
+): string[] {
+  const rows = stateDb.db.prepare(
+    `SELECT entity FROM wikilink_applications WHERE note_path = ? AND status = 'applied'`
+  ).all(notePath) as Array<{ entity: string }>;
+
+  return rows.map(r => r.entity);
+}
+
+/**
+ * Detect removed auto-applied wikilinks and record implicit negative feedback
+ *
+ * Compares tracked applications against current content wikilinks.
+ * For each tracked entity whose [[wikilink]] is no longer in the note,
+ * records implicit:removed feedback and marks application as removed.
+ *
+ * @returns List of removed entity names
+ */
+export function processImplicitFeedback(
+  stateDb: StateDb,
+  notePath: string,
+  currentContent: string,
+): string[] {
+  const tracked = getTrackedApplications(stateDb, notePath);
+  if (tracked.length === 0) return [];
+
+  const currentLinks = extractLinkedEntities(currentContent);
+  const removed: string[] = [];
+
+  const markRemoved = stateDb.db.prepare(
+    `UPDATE wikilink_applications SET status = 'removed' WHERE entity = ? AND note_path = ?`
+  );
+
+  const transaction = stateDb.db.transaction(() => {
+    for (const entity of tracked) {
+      if (!currentLinks.has(entity)) {
+        recordFeedback(stateDb, entity, 'implicit:removed', notePath, false);
+        markRemoved.run(entity, notePath);
+        removed.push(entity);
+      }
+    }
+  });
+
+  transaction();
+
+  return removed;
 }

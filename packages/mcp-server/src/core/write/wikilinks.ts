@@ -40,7 +40,7 @@ import {
   type StateDb,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
-import { isSuppressed, getAllFeedbackBoosts, getEntityStats } from './wikilinkFeedback.js';
+import { isSuppressed, getAllFeedbackBoosts, getEntityStats, trackWikilinkApplications } from './wikilinkFeedback.js';
 import { setGitStateDb } from './git.js';
 import { setHintsStateDb } from './hints.js';
 import { setRecencyStateDb } from '../shared/recency.js';
@@ -77,6 +77,13 @@ export function setWriteStateDb(stateDb: StateDb | null): void {
   setGitStateDb(stateDb);
   setHintsStateDb(stateDb);
   setRecencyStateDb(stateDb);
+}
+
+/**
+ * Get the StateDb instance (for use by other modules like mutation-helpers)
+ */
+export function getWriteStateDb(): StateDb | null {
+  return moduleStateDb;
 }
 
 /**
@@ -394,6 +401,11 @@ export function maybeApplyWikilinks(
   const result = processWikilinks(content, notePath);
 
   if (result.linksAdded > 0) {
+    // Track applications for implicit feedback detection
+    if (moduleStateDb && notePath) {
+      trackWikilinkApplications(moduleStateDb, notePath, result.linkedEntities);
+    }
+
     return {
       content: result.content,
       wikilinkInfo: `Applied ${result.linksAdded} wikilink(s): ${result.linkedEntities.join(', ')}`,

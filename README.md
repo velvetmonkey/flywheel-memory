@@ -95,6 +95,8 @@ That's it. No API keys. No config files. No cloud accounts.
 
 ## Live Example: The Flywheel in Action
 
+<img align="right" src="demos/flywheel-demo.gif" alt="Flywheel demo — billing, auto-wikilinks, tasks, and search" width="420"/>
+
 ### Read: "How much have I billed Acme Corp?"
 
 From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant with 3 clients, 5 projects, and $27K in invoices.

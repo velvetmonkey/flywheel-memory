@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=800">
+<title>Flywheel Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #17212b;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    width: 800px;
+    height: 600px;
+    overflow: hidden;
+    color: #f5f5f5;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #1e2c3a;
+    border-bottom: 1px solid #0e1621;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .header-text h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f5f5f5;
+    line-height: 1.2;
+  }
+
+  .header-text .subtitle {
+    font-size: 13px;
+    color: #6c8ea3;
+    line-height: 1.2;
+  }
+
+  .chat {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: calc(600px - 65px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+
+  .chat::-webkit-scrollbar {
+    display: none;
+  }
+
+  .message {
+    max-width: 75%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.45;
+    animation: slideUp 250ms ease-out both;
+    opacity: 0;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.user {
+    align-self: flex-end;
+    background: #2b5278;
+    border-radius: 12px 12px 4px 12px;
+    color: #f5f5f5;
+  }
+
+  .message.bot {
+    align-self: flex-start;
+    background: #1e2c3a;
+    border-radius: 12px 12px 12px 4px;
+    color: #f5f5f5;
+  }
+
+  .message.bot .title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #ffffff;
+  }
+
+  .message.bot .stat-grid {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    gap: 2px 12px;
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 4px 0;
+  }
+
+  .message.bot .stat-grid .label {
+    color: #8b9fad;
+  }
+
+  .message.bot .stat-grid .amount {
+    text-align: right;
+    font-weight: 500;
+  }
+
+  .message.bot .stat-grid .period {
+    color: #6c8ea3;
+    font-size: 12px;
+  }
+
+  .dot-paid { color: #5cb85c; }
+  .dot-pending { color: #f0ad4e; }
+
+  .message.bot .meta {
+    font-size: 11px;
+    color: #5a7080;
+    margin-top: 6px;
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  }
+
+  .message.bot .note-path {
+    font-size: 12px;
+    color: #6c8ea3;
+    margin-bottom: 2px;
+  }
+
+  .wikilink {
+    color: #6cb4ee;
+    background: rgba(108, 180, 238, 0.1);
+    padding: 1px 2px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+
+  .wikilink-info {
+    font-size: 12px;
+    color: #5cb85c;
+    margin-top: 4px;
+  }
+
+  .message.bot .task-list {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .message.bot .task-list li {
+    color: #c8d6e0;
+  }
+
+  .message.bot .task-list .date {
+    color: #6c8ea3;
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+  }
+
+  .message.bot .invoice-card {
+    margin: 4px 0;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .message.bot .invoice-card .invoice-id {
+    font-weight: 600;
+    color: #c8d6e0;
+  }
+
+  .message.bot .invoice-card .invoice-detail {
+    color: #8b9fad;
+    padding-left: 12px;
+    font-size: 12px;
+  }
+
+  .typing {
+    align-self: flex-start;
+    background: #1e2c3a;
+    border-radius: 12px 12px 12px 4px;
+    padding: 10px 16px;
+    display: flex;
+    gap: 4px;
+    animation: slideUp 200ms ease-out both;
+    opacity: 0;
+  }
+
+  .typing .dot {
+    width: 7px;
+    height: 7px;
+    background: #5a7080;
+    border-radius: 50%;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  .typing .dot:nth-child(2) { animation-delay: 0.15s; }
+  .typing .dot:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <svg class="avatar" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="20" cy="20" r="19" fill="#1e2c3a" stroke="#2b5278" stroke-width="1.5"/>
+    <circle cx="20" cy="20" r="13" stroke="#6cb4ee" stroke-width="1.5" fill="none" opacity="0.6"/>
+    <circle cx="20" cy="20" r="7" stroke="#6cb4ee" stroke-width="1.5" fill="none"/>
+    <circle cx="20" cy="20" r="2.5" fill="#6cb4ee"/>
+  </svg>
+  <div class="header-text">
+    <h1>Flywheel</h1>
+    <div class="subtitle">carter-strategy vault</div>
+  </div>
+</div>
+
+<div class="chat" id="chat"></div>
+
+<script>
+const chat = document.getElementById('chat');
+
+const timeline = [
+  { at: 500,   type: 'user', text: 'How much have I billed Acme Corp?' },
+  { at: 1500,  type: 'typing' },
+  { at: 2200,  type: 'bot',  id: 'billing' },
+  { at: 5000,  type: 'user', text: 'Log that I finished the Acme strategy deck' },
+  { at: 6000,  type: 'typing' },
+  { at: 6700,  type: 'bot',  id: 'wikilink' },
+  { at: 9200,  type: 'user', text: 'What tasks are due this week?' },
+  { at: 10200, type: 'typing' },
+  { at: 10900, type: 'bot',  id: 'tasks' },
+  { at: 14400, type: 'user', text: 'Show pending invoices' },
+  { at: 15400, type: 'typing' },
+  { at: 16100, type: 'bot',  id: 'invoices' },
+  { at: 19100, type: 'done' },
+];
+
+function scrollToBottom() {
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() {
+  const el = chat.querySelector('.typing');
+  if (el) el.remove();
+}
+
+function addUser(text) {
+  removeTyping();
+  const div = document.createElement('div');
+  div.className = 'message user';
+  div.textContent = text;
+  chat.appendChild(div);
+  scrollToBottom();
+}
+
+function addTyping() {
+  removeTyping();
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  chat.appendChild(div);
+  scrollToBottom();
+}
+
+function addBilling() {
+  removeTyping();
+  const div = document.createElement('div');
+  div.className = 'message bot';
+  div.innerHTML = `
+    <div class="title">Acme Corp Billing Summary</div>
+    <div class="stat-grid">
+      <span class="label">Total</span>
+      <span class="amount">$27,000</span>
+      <span class="period"></span>
+
+      <span class="label"><span class="dot-paid">&#9679;</span> Paid</span>
+      <span class="amount">$15,000</span>
+      <span class="period">Nov 2025</span>
+
+      <span class="label"><span class="dot-pending">&#9679;</span> Pending</span>
+      <span class="amount">$12,000</span>
+      <span class="period">Dec 2025</span>
+    </div>
+    <div class="meta">4 tool calls &middot; 160 tokens &middot; 0 files read</div>
+  `;
+  chat.appendChild(div);
+  scrollToBottom();
+}
+
+function addWikilink() {
+  removeTyping();
+  const div = document.createElement('div');
+  div.className = 'message bot';
+  div.innerHTML = `
+    <div class="note-path">Added to daily-notes/2026-01-04.md &rsaquo; Log</div>
+    <div>finished the <span class="wikilink">[[Acme Corp]]</span> strategy deck</div>
+    <div class="wikilink-info">1 wikilink auto-linked</div>
+  `;
+  chat.appendChild(div);
+  scrollToBottom();
+}
+
+function addTasks() {
+  removeTyping();
+  const div = document.createElement('div');
+  div.className = 'message bot';
+  div.innerHTML = `
+    <div class="title">Due by Jan 10 &mdash; 5 tasks</div>
+    <ul class="task-list">
+      <li><span class="date">&#x1F4C5; Jan 5</span> &nbsp;Send <span class="wikilink">[[TechStart Phase 2]]</span> proposal</li>
+      <li><span class="date">&#x1F4C5; Jan 6</span> &nbsp;Prepare technical clarifications doc</li>
+      <li><span class="date">&#x1F4C5; Jan 7</span> &nbsp;Follow up on <span class="wikilink">[[INV-2025-048]]</span> payment</li>
+      <li><span class="date">&#x1F4C5; Jan 8</span> &nbsp;Review perf results with James</li>
+      <li><span class="date">&#x1F4C5; Jan 10</span> &nbsp;Complete <span class="wikilink">[[Acme Corp]]</span> validation</li>
+    </ul>
+    <div class="meta">1 tool call &middot; 90 tokens &middot; 0 files read</div>
+  `;
+  chat.appendChild(div);
+  scrollToBottom();
+}
+
+function addInvoices() {
+  removeTyping();
+  const div = document.createElement('div');
+  div.className = 'message bot';
+  div.innerHTML = `
+    <div class="title">1 result &mdash; pending invoices</div>
+    <div class="invoice-card">
+      <div><span class="invoice-id">INV-2025-048</span> &middot; <span class="wikilink">[[Acme Corp]]</span></div>
+      <div class="invoice-detail">$12,000 &middot; due Jan 15 &middot; 40 hrs</div>
+      <div class="invoice-detail">project: <span class="wikilink">[[Acme Data Migration]]</span></div>
+    </div>
+    <div class="meta">2 tool calls &middot; 45 tokens &middot; 0 files read</div>
+  `;
+  chat.appendChild(div);
+  scrollToBottom();
+}
+
+window.ANIMATION_DONE = false;
+
+timeline.forEach(({ at, type, text, id }) => {
+  setTimeout(() => {
+    if (type === 'user')    addUser(text);
+    if (type === 'typing')  addTyping();
+    if (type === 'bot' && id === 'billing')  addBilling();
+    if (type === 'bot' && id === 'wikilink') addWikilink();
+    if (type === 'bot' && id === 'tasks')    addTasks();
+    if (type === 'bot' && id === 'invoices') addInvoices();
+    if (type === 'done')    window.ANIMATION_DONE = true;
+  }, at);
+});
+</script>
+
+</body>
+</html>

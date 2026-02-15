@@ -14,6 +14,7 @@
 | [**Artemis Rocket**](./artemis-rocket/) | Chief Engineer at a rocket startup | "What's the propulsion system status?" |
 | [**Startup Ops**](./startup-ops/) | Co-founder of a SaaS startup | "Walk me through onboarding a customer" |
 | [**Nexus Lab**](./nexus-lab/) | PhD researcher in computational biology | "How does AlphaFold connect to my experiment?" |
+| [**Zettelkasten**](./zettelkasten/) | Student of cognitive science | "How does spaced repetition connect to active recall?" |
 
 ---
 
@@ -96,3 +97,5 @@ With Flywheel (same 3 queries):
 **The key insight:** Most queries don't need full file content. Flywheel returns just the metadata, links, and structure—letting Claude answer from the index instead of re-reading files.
 
 When Claude *does* need full content (explaining "why" or reading detailed notes), it does a **selective file read** of just that one file, not the entire vault.
+
+For a guided 5-minute walkthrough, see [Prove It Yourself](../docs/PROVE-IT.md).

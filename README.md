@@ -10,7 +10,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Scale](https://img.shields.io/badge/scale-100k%20notes-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![Tests](https://img.shields.io/badge/tests-1,757%20passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-1,812%20passed-brightgreen.svg)](docs/TESTING.md)
 
 One MCP server. 36 tools. Your Obsidian vault becomes a queryable knowledge graph.
 
@@ -36,6 +36,33 @@ File access gives Claude your content. Flywheel gives it your knowledge graph.
 | Scale tested to | Unknown | 100,000 notes |
 
 36 tools. 6-line config. Zero cloud dependencies.
+
+---
+
+## Why Deterministic
+
+When Flywheel suggests `[[Marcus Johnson]]`, it can tell you exactly why:
+
+| Layer | What | Score |
+|-------|------|------:|
+| Content match | "Marcus" exact word match | +10 |
+| Co-occurrence | Appears with "Turbopump" in 4 notes | +6 |
+| Type boost | Person entity | +5 |
+| Recency | Mentioned 2 hours ago | +8 |
+| Cross-folder | Entity in `team/`, note in `projects/` | +3 |
+| **Total** | | **32** |
+
+No black box. No embedding. No hallucinated connections.
+
+| | ML/Vector Approach | Flywheel |
+|---|---|---|
+| "Why was this suggested?" | "Embeddings are close" | "10 + 6 + 5 + 8 + 3 = 32" |
+| Requires training data? | Yes | No |
+| Same input → same output? | Not guaranteed | Always |
+| Runs offline? | Often not | Always |
+| Learns your preferences? | Retraining | Implicit feedback loop |
+
+Every number traces to a vault property. See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 10-layer pipeline.
 
 ---
 
@@ -129,15 +156,25 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ## The Flywheel Effect
 
-The name is literal. Every interaction makes the next one better.
+The name is literal. A flywheel is hard to start but once spinning, each push adds to the momentum. Your vault works the same way.
 
-1. **Claude reads** your vault through indexed queries instead of raw file scans
-2. **Claude writes** to your vault with auto-wikilinks, connecting new content to existing notes
-3. **The graph grows** -- more links mean better search results, hub detection, and path finding
-4. **Queries get richer** -- backlinks surface related context that raw search would miss
-5. **Repeat** -- each write strengthens the graph, each read leverages it
+### Week 1: Connections Appear
 
-When Claude writes to your vault, Flywheel scans every note title and alias, then links automatically:
+You have 30 disconnected notes. Auto-wikilinks create 47 connections on your first day of writing through Flywheel. Search returns structured metadata instead of raw files. You stop reading files and start querying a graph.
+
+### Month 1: Intelligence Emerges
+
+Hub notes surface. "Sarah Mitchell" has 23 backlinks -- she's clearly important. When you write about a project, her name appears in suggestions because co-occurrence tracking knows she's relevant. You didn't configure this. The vault structure revealed it.
+
+### Month 3: The Graph Is Self-Sustaining
+
+Every query leverages hundreds of accumulated connections. New content auto-links to the right places. The feedback system has learned which entities matter in which folders. You stop thinking about organization.
+
+### The Math
+
+A vault with 50 notes has 1,225 potential pairwise connections. With 500 notes: 124,750. Human ability to remember connections stays flat. The graph doesn't forget.
+
+### What This Looks Like
 
 ```
 Input:  "Met with Sarah about the data migration"
@@ -146,9 +183,29 @@ Output: "Met with [[Sarah Mitchell]] about the [[Acme Data Migration]]"
 
 No manual linking. No broken references. Use compounds into structure, structure compounds into intelligence.
 
-The more you use it, the smarter it gets. No training. No ML. Just your vault, getting more connected with every interaction.
-
 That's the flywheel.
+
+---
+
+## See How It Thinks
+
+Ask Flywheel to suggest wikilinks with detail mode and it shows its work:
+
+```
+❯ Suggest wikilinks for: "Turbopump delivery delayed. Marcus tracking with Acme."
+
+Entity              Score  Match  Co-oc  Type  Recency  Cross  Hub  Feedback
+─────────────────────────────────────────────────────────────────────────────
+Marcus Johnson        32    +10     +6    +5     +8      +3    +0     +0
+Acme Corp             25    +10     +6    +2     +5      +0    +1     +1
+Turbopump Assembly    21    +10     +3    +3     +3      +0    +3     -1
+
+→ [[Marcus Johnson]], [[Acme Corp]], [[Turbopump Assembly]]
+```
+
+Every column is a scoring layer. Every number traces to a vault property. No magic -- just math you can verify.
+
+See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 10-layer pipeline.
 
 ---
 
@@ -158,7 +215,7 @@ That's the flywheel.
 
 | Metric | Count |
 |---|---|
-| Tests | 1,757 |
+| Tests | 1,812 |
 | Test files | 78 |
 | Lines of test code | 33,000+ |
 
@@ -193,7 +250,7 @@ See [docs/TESTING.md](docs/TESTING.md) for the full testing methodology.
 
 ## Demo Vaults
 
-6 production-ready vaults representing real knowledge work:
+7 production-ready vaults representing real knowledge work:
 
 | Demo | You are | Ask this | Notes |
 |------|---------|----------|-------|
@@ -203,6 +260,7 @@ See [docs/TESTING.md](docs/TESTING.md) for the full testing methodology.
 | [nexus-lab](demos/nexus-lab/) | PhD researcher | "How does AlphaFold connect to my experiment?" | 32 |
 | [solo-operator](demos/solo-operator/) | Content creator | "How's revenue this month?" | 16 |
 | [support-desk](demos/support-desk/) | Support agent | "What's Sarah Chen's situation?" | 12 |
+| [zettelkasten](demos/zettelkasten/) | Zettelkasten student | "How does spaced repetition connect to active recall?" | 47 |
 
 Every demo is a real test fixture. If it works in the README, it passes in CI.
 
@@ -299,7 +357,7 @@ See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
 | Auto-wikilinks | Yes (with alias resolution) | No | No | No |
 | Schema intelligence | Yes (6 analysis modes) | No | No | No |
 | Git integration | Yes (auto-commit, undo) | No | No | No |
-| Test coverage | 1,757 tests | Unknown | Unknown | Unknown |
+| Test coverage | 1,812 tests | Unknown | Unknown | Unknown |
 | Runs locally | Yes (zero cloud) | Yes | Yes | Optional |
 | Tool count | 36 tools | ~10 | 0 (plugin) | ~5 |
 
@@ -315,6 +373,7 @@ and wants Claude to understand it -- not just read it.
 - **Founders** running ops, tracking MRR, and managing investors -- see [startup-ops](demos/startup-ops/)
 - **Researchers** navigating literature, experiment logs, and citation networks -- see [nexus-lab](demos/nexus-lab/)
 - **Creators** managing editorial calendars, drafts, and revenue -- see [solo-operator](demos/solo-operator/)
+- **Students** building Zettelkasten-style knowledge graphs across sources -- see [zettelkasten](demos/zettelkasten/)
 
 If your vault has more than a handful of notes, Flywheel makes Claude meaningfully better at working with it.
 
@@ -375,6 +434,8 @@ See [docs/VISION.md](docs/VISION.md) for the full picture.
 | [TESTING.md](docs/TESTING.md) | Test methodology, coverage, performance benchmarks |
 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Error recovery, diagnostics, common issues |
 | [VISION.md](docs/VISION.md) | The flywheel effect and where this goes |
+| [ALGORITHM.md](docs/ALGORITHM.md) | The 10-layer scoring system explained |
+| [PROVE-IT.md](docs/PROVE-IT.md) | Clone it, run it, see it in 5 minutes |
 
 ---
 

@@ -24,6 +24,8 @@
 | [TESTING.md](TESTING.md) | Test philosophy, performance benchmarks, security testing | "How is this tested and can I trust it?" |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Error recovery, diagnostics, common issues | "Something went wrong — how do I fix it?" |
 | [VISION.md](VISION.md) | The flywheel effect, design principles, ecosystem | "Where is this project going?" |
+| [ALGORITHM.md](ALGORITHM.md) | The 10-layer scoring system — how every suggestion is computed | "How does auto-wikilinks decide what to link?" |
+| [PROVE-IT.md](PROVE-IT.md) | Clone it, run it, see it in 5 minutes | "Can I try this right now?" |
 
 ---
 
@@ -39,6 +41,7 @@
 | [nexus-lab](../demos/nexus-lab/) | PhD researcher navigating literature | "How does AlphaFold connect to my experiment?" | 32 |
 | [solo-operator](../demos/solo-operator/) | Content creator managing revenue | "How's revenue this month?" | 16 |
 | [support-desk](../demos/support-desk/) | Support agent resolving tickets | "What's Sarah Chen's situation?" | 12 |
+| [zettelkasten](../demos/zettelkasten/) | Zettelkasten student studying learning science | "How does spaced repetition connect to active recall?" | 47 |
 
 Every demo is a real test fixture. If it works in the README, it passes in CI.
 
@@ -53,7 +56,7 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 ```bash
 npm run build    # Build both packages
-npm test         # Run full test suite (1,757 tests)
+npm test         # Run full test suite (1,812 tests)
 npm run dev      # Watch mode
 npm run lint     # Type check
 ```
@@ -71,7 +74,7 @@ No. Flywheel runs entirely on your machine. No cloud services, no API keys (beyo
 Tested to 100,000 notes. The in-memory index builds at startup (a few seconds cold, ~100ms cached) and queries return in under 10ms.
 
 **Will it corrupt my vault?**
-1,757 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
+1,812 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
 
 **How much does it cost in tokens?**
 A typical query uses 50-200 tokens of context. Compare that to reading files directly, which can consume 2,000-250,000 tokens for the same answer.

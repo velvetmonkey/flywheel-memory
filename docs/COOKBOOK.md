@@ -150,6 +150,34 @@ Understand your vault's structure and consistency.
 
 ---
 
+## Inspecting the Algorithm
+
+Understand how auto-wikilinks decides what to link and why.
+
+### Score breakdown
+
+> "Show me the score breakdown for wikilink suggestions in my last daily note"
+
+> "Why did Flywheel link 'migration' to [[Database Migration]] instead of [[Bird Migration]]?"
+
+### Suppressed entities
+
+> "What entities has Flywheel suppressed, and why?"
+
+> "Show me all suppressed wikilink suggestions for projects/Website Redesign.md"
+
+### Hub notes
+
+> "What are the hub notes in my vault? Which entities appear most often?"
+
+### Tracing a suggestion
+
+> "Trace the wikilink suggestion for 'Alex' in today's daily note -- show me every scoring layer"
+
+For the full specification of the 10-layer scoring algorithm, see [ALGORITHM.md](ALGORITHM.md).
+
+---
+
 ## Bulk Operations
 
 Manage vault-wide changes.

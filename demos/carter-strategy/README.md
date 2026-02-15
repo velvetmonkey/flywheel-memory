@@ -1,198 +1,153 @@
 # Carter Strategy
 
-> Run a solo consulting practice with an AI back-office that never drops the ball.
+> Solo strategy consultant, 3 clients, 5 projects, $27K in invoices, and no assistant -- until now.
 
 ---
 
-**You are**: A solo strategy consultant
+**You are**: A solo strategy consultant specializing in data migration and API architecture
 
-**Your situation**: You manage 3 clients, 4 active projects, $42K in pending invoices, and 15 open tasks. Your expertise is data strategy and API architecture. Your challenge is keeping everything organized without an assistant.
+**Your situation**: You juggle client work across Acme Corp, TechStart Inc, and GlobalBank. You have $12,000 in pending invoices, two active proposals worth $80K, and tasks scattered across 30 notes. Your challenge is tracking revenue, deadlines, and client relationships without anything slipping through the cracks.
 
-## Vault Map
+## Vault map
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   CARTER STRATEGY                       │
-│                                                         │
-│                   ┌─────────────┐                       │
-│                   │ Reference   │ (rates, context)      │
-│                   └──────┬──────┘                       │
-│                          │                              │
-│        ┌─────────────────┼─────────────────┐           │
-│        ▼                 ▼                 ▼           │
-│  ┌───────────┐    ┌───────────┐    ┌───────────┐       │
-│  │ Acme Corp │    │ TechStart │    │GlobalBank │       │
-│  └─────┬─────┘    └─────┬─────┘    └─────┬─────┘       │
-│        │ project        │                │             │
-│        ▼                ▼                ▼             │
-│  ┌───────────┐    ┌───────────┐    ┌───────────┐       │
-│  │ Project A │    │ Project B │    │ Project C │       │
-│  └─────┬─────┘    └─────┬─────┘    └─────┬─────┘       │
-│        │ invoice        │                │             │
-│        ▼                ▼                ▼             │
-│  ┌───────────┐    ┌───────────┐    ┌───────────┐       │
-│  │  INV-001  │    │  INV-002  │    │  INV-003  │       │
-│  └───────────┘    └───────────┘    └───────────┘       │
-└─────────────────────────────────────────────────────────┘
+carter-strategy/
+├── clients/
+│   ├── Acme Corp.md            ($300/hr, active)
+│   ├── GlobalBank.md           ($350/hr, inactive)
+│   └── TechStart Inc.md        ($250/hr, active)
+├── projects/
+│   ├── Acme Data Migration.md  ($75K budget, Phase 2)
+│   ├── Beta Corp Dashboard.md  ($28K budget, understaffed)
+│   ├── Cloud Strategy Template.md
+│   ├── GlobalBank API Audit.md (completed, $52K)
+│   └── TechStart MVP Build.md  (completed, $25K)
+├── invoices/
+│   ├── INV-2025-047.md         ($15,000 paid)
+│   └── INV-2025-048.md         ($12,000 pending)
+├── proposals/
+│   ├── Acme Analytics Add-on.md    ($35K draft)
+│   └── TechStart Phase 2.md       ($45K pending)
+├── knowledge/
+│   ├── API Security Checklist.md
+│   ├── Data Migration Playbook.md
+│   ├── Discovery Workshop Template.md
+│   └── Rate Card.md
+├── admin/
+│   ├── Business Goals 2026.md
+│   └── Quarterly Review Q4 2025.md
+├── team/
+│   └── Stacy Thompson.md      (40% utilization)
+├── daily-notes/                (8 entries)
+├── weekly-notes/               (2 entries)
+└── monthly-notes/
+    └── 2025-12.md
 ```
 
 ## Try it now
 
 Ask Claude:
 
-- "What's overdue this week?"
-- "How much have I billed Acme Corp?"
-- "Summarize my December"
-- "What client work needs follow-up?"
-- "Show me my active projects"
-
-## What you'll discover
-
-- See all your deadlines in one place - no more forgotten follow-ups
-- Track client revenue and project budgets automatically
-- Summarize your week or month instantly for planning
-
----
+- **"How much have I billed Acme Corp?"** -- sums invoices via backlinks and frontmatter
+- **"What's overdue this week?"** -- scans tasks with due dates across all notes
+- **"Who's available for the Beta Corp Dashboard?"** -- cross-references team skills with project needs
+- **"Summarize my Q4 2025"** -- pulls from Quarterly Review, monthly notes, and invoices
+- **"What proposals need follow-up?"** -- checks proposal statuses and decision dates
 
 ## How it works
 
-When you ask Claude questions or request changes, here's the flow:
-
-### Check what's overdue (metadata only)
-
-```
-You: "What's overdue this week?"
-
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Find tasks with due dates in the past       │
-│ Strategy: Query task index, no content needed       │
-│ Tools: mcp__flywheel__get_tasks_with_due_dates      │
-└─────────────────────────────────────────────────────┘
-
-┌─ FLYWHEEL READS ────────────────────────────────────┐
-│ mcp__flywheel__get_tasks_with_due_dates             │
-│   → 3 tasks with due_date < today                   │
-│   → clients/acme.md: "Follow up on proposal"        │
-│   → projects/beta-api.md: "Send status update"      │
-│   → invoices/INV-042.md: "Payment reminder"         │
-│                                                     │
-│ Total: ~90 tokens (vs ~6,000 reading all files)     │
-└─────────────────────────────────────────────────────┘
-
-┌─ CLAUDE SYNTHESIZES ────────────────────────────────┐
-│ Metadata sufficient - task text + dates returned    │
-│ No file reads needed                                │
-└─────────────────────────────────────────────────────┘
-
-Overdue Tasks (3):
-- clients/acme.md: Follow up on proposal 📅 Jan 2
-- projects/beta-api.md: Send status update 📅 Jan 3
-- invoices/INV-042.md: Payment reminder 📅 Jan 3
-```
-
-### Client revenue (metadata + aggregation)
+### Client revenue -- backlink traversal + frontmatter aggregation
 
 ```
 You: "How much have I billed Acme Corp?"
 
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Sum all invoice amounts for one client      │
-│ Strategy: Get backlinks from Acme, sum amounts      │
-│ Tools: mcp__flywheel__get_backlinks,                │
-│        mcp__flywheel__get_note_metadata (×N)        │
-└─────────────────────────────────────────────────────┘
+● flywheel › get_backlinks
+  path: "clients/Acme Corp.md"
+  ← invoices/INV-2025-047.md
+    invoices/INV-2025-048.md
+    projects/Acme Data Migration.md
+    proposals/Acme Analytics Add-on.md
 
-┌─ FLYWHEEL READS ────────────────────────────────────┐
-│ mcp__flywheel__get_backlinks("clients/acme.md")     │
-│   → invoices/INV-001.md, invoices/INV-007.md        │
-│   → projects/data-strategy.md                       │
-│                                                     │
-│ mcp__flywheel__get_note_metadata("INV-001.md")      │
-│   → amount: 16200, status: paid                     │
-│                                                     │
-│ mcp__flywheel__get_note_metadata("INV-007.md")      │
-│   → amount: 12200, status: pending                  │
-│                                                     │
-│ Total: ~120 tokens (vs ~3,600 reading full files)   │
-└─────────────────────────────────────────────────────┘
+┌─ CLAUDE THINKS ───────────────────────────────────────┐
+│ Backlinks found 2 invoices. Pull frontmatter from     │
+│ each to get amounts and payment status.                │
+└───────────────────────────────────────────────────────┘
 
-┌─ CLAUDE SYNTHESIZES ────────────────────────────────┐
-│ Aggregates amounts by status from frontmatter       │
-│ No file content needed - just metadata              │
-└─────────────────────────────────────────────────────┘
+● flywheel › get_note_metadata
+  path: "invoices/INV-2025-047.md"
+  ← { amount: 15000, status: "paid", client: "Acme Corp" }
 
-Acme Corp Revenue: $28,400
-  Paid: $16,200 (Data Strategy Phase 1)
-  Outstanding: $12,200 (API Architecture)
+● flywheel › get_note_metadata
+  path: "invoices/INV-2025-048.md"
+  ← { amount: 12000, status: "pending", client: "Acme Corp" }
+
+┌─ RESULT ──────────────────────────────────────────────┐
+│ Acme Corp billing: $27,000 total                      │
+│   Paid:    $15,000  (INV-2025-047, Nov 2025)          │
+│   Pending: $12,000  (INV-2025-048, due Jan 15 2026)   │
+│                                                        │
+│ 4 tool calls, ~160 tokens read                         │
+└───────────────────────────────────────────────────────┘
 ```
 
-### Summarize a project (requires file read)
+### Daily log -- write with auto-wikilinks
 
 ```
-You: "What's the status of the Acme API project?"
+You: "Log that I finished the Acme strategy deck and prepped the TechStart proposal"
 
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Get detailed project status + context       │
-│ Strategy: Get metadata first, then read for detail  │
-│ Tools: mcp__flywheel__get_note_metadata, then Read  │
-└─────────────────────────────────────────────────────┘
+┌─ CLAUDE THINKS ───────────────────────────────────────┐
+│ Write to today's daily note. Input mentions known      │
+│ vault entities -- auto-wikilinks will connect them.    │
+└───────────────────────────────────────────────────────┘
 
-┌─ FLYWHEEL READS ────────────────────────────────────┐
-│ mcp__flywheel__get_note_metadata("projects/acme-..") │
-│   → status: active, client: [[Acme Corp]]           │
-│   → budget: 12200, hours_remaining: 8               │
-│                                                     │
-│ Total: ~60 tokens                                   │
-└─────────────────────────────────────────────────────┘
+● flywheel › vault_add_to_section
+  path: "daily-notes/2026-01-04.md"
+  section: "Log"
+  content: "finished the [[Acme Corp]] strategy deck and prepped the [[TechStart Phase 2]] proposal"
 
-┌─ CLAUDE DECIDES: NEED MORE DETAIL ──────────────────┐
-│ Metadata shows status, but user wants "what's       │
-│ happening" - need to read deliverables/notes        │
-└─────────────────────────────────────────────────────┘
-
-┌─ SELECTIVE FILE READ ───────────────────────────────┐
-│ Read("projects/acme-api-architecture.md")           │
-│   → ## Deliverables, ## Recent Updates sections     │
-│                                                     │
-│ Total: ~350 tokens (1 targeted file)                │
-└─────────────────────────────────────────────────────┘
-
-Claude: "Acme API project is active with 8 hours
-remaining. Last update: endpoint spec delivered,
-awaiting client review. Next: integration testing
-scheduled for next week."
+┌─ RESULT ──────────────────────────────────────────────┐
+│ ## Log                                                 │
+│ - 09:00 - Morning standup                              │
+│ - 14:32 - finished the [[Acme Corp]] strategy deck     │
+│   and prepped the [[TechStart Phase 2]] proposal  NEW  │
+│                                                        │
+│ "Acme Corp" and "TechStart Phase 2" auto-linked to     │
+│ existing notes -- no manual wikilinks needed.           │
+└───────────────────────────────────────────────────────┘
 ```
 
-### Add a log entry (write operation)
+### Staffing gap -- graph query across team and projects
 
 ```
-You: "/log finished Acme strategy deck"
+You: "Who could help with the Beta Corp Dashboard?"
 
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Append to today's daily note log            │
-│ Strategy: Direct write - no reads needed            │
-│ Tools: mcp__flywheel__vault_add_to_section    │
-└─────────────────────────────────────────────────────┘
+● flywheel › get_note_metadata
+  path: "projects/Beta Corp Dashboard.md"
+  ← { skills_needed: ["React", "Dashboard", "Data Visualization"],
+      staffing: "understaffed" }
 
-┌─ FLYWHEEL WRITES ──────────────────────────────────────┐
-│ mcp__flywheel__vault_add_to_section           │
-│   path: "daily-notes/2026-01-04.md"                 │
-│   section: "Log"                                    │
-│   content: "finished Acme strategy deck"            │
-│   format: "timestamp-bullet"                        │
-└─────────────────────────────────────────────────────┘
+● flywheel › search_notes
+  query: { type: "person" }
+  ← team/Stacy Thompson.md
 
-## Log
-- 10:15 Morning review
-- 14:32 finished Acme strategy deck                ← NEW
+● flywheel › get_note_metadata
+  path: "team/Stacy Thompson.md"
+  ← { skills: ["React", "TypeScript", "UX Design"], utilization: 40 }
+
+┌─ RESULT ──────────────────────────────────────────────┐
+│ Stacy Thompson is a strong fit:                        │
+│   Skills match: React, UX Design                       │
+│   Current utilization: 40% (24 hrs/week available)     │
+│   Previous work: TechStart MVP Build, GlobalBank       │
+│                                                        │
+│ 3 tool calls, ~120 tokens read                         │
+└───────────────────────────────────────────────────────┘
 ```
 
 ---
 
-*30 notes. Just start asking questions.*
+*30 notes across 10 folders. Just start asking questions.*
 
 ---
 
-**Token savings:** Each note in this vault averages ~150 lines (~2,200 tokens).
-With Flywheel, graph queries cost ~50-100 tokens instead of reading full files.
-That's **22-44x savings** per query—enabling hundreds of queries in agentic workflows.
+**Token savings**: Notes in this vault average ~120 lines (~1,800 tokens each). Flywheel graph queries return ~50-100 tokens of targeted metadata instead of reading full files -- **18-36x savings** per query, enabling hundreds of lookups in a single agentic workflow.

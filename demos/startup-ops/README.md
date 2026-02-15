@@ -1,54 +1,71 @@
 # Startup Ops
 
-> Let AI handle operations while you focus on building the product.
+> Two co-founders, one paying customer, and 30 notes holding everything together.
 
 ---
 
 **You are**: Co-founder of MetricFlow, a B2B SaaS analytics startup
 
-**Your situation**: Pre-Series A with 3 customers and 2 co-founders doing everything. You need to run ops (onboarding, support, metrics, investor updates) without hiring yet. You've got playbooks, customer records, and decisions scattered across 30 notes.
+**Your situation**: Pre-seed with $100K in the bank, $499 MRR from one customer, and 12 months of runway. You and your co-founder do everything -- sales, product, support, fundraising. Your playbooks, customer records, and financial trackers are scattered across 30 notes. You need an AI ops partner that keeps the business running while you build product.
 
 ## Vault Map
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     STARTUP OPS                         │
-│                                                         │
-│           ┌──────────────────────────┐                 │
-│           │        Roadmap           │                 │
-│           └────────────┬─────────────┘                 │
-│                        │ drives                        │
-│     ┌──────────────────┼──────────────────┐           │
-│     ▼                  ▼                  ▼           │
-│ ┌─────────┐      ┌─────────┐      ┌─────────┐         │
-│ │DataDrive│      │TechStart│      │MetricsP │         │
-│ │   Co    │      │   Inc   │      │   lus   │         │
-│ └────┬────┘      └────┬────┘      └────┬────┘         │
-│      │                │                │               │
-│      └────────────────┼────────────────┘               │
-│                       │ follows                        │
-│                       ▼                                │
-│  ┌───────────────────────────────────────────────┐    │
-│  │ PLAYBOOKS  Onboard ─► Support ─► Renew ─► Upsell│    │
-│  └───────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────┘
+startup-ops/
+├── finance/
+│   ├── Investor Pipeline.md         # $500K seed round, 4 investors
+│   ├── MRR Tracker.md               # $499 MRR, 1 active customer
+│   └── Runway Calculator.md         # $100K cash, 12 months runway
+├── ops/
+│   ├── customers/
+│   │   ├── DataDriven Co.md          # Active, $499/mo, health 9/10
+│   │   ├── GrowthStack.md            # Trial, decision pending
+│   │   └── InsightHub.md             # Churned (performance issues)
+│   ├── meetings/
+│   │   ├── 2026-01-06 DataDriven Kickoff.md
+│   │   └── 2026-01-07 Investor Call.md
+│   ├── playbooks/
+│   │   ├── Customer Onboarding.md    # 5-step onboarding process
+│   │   ├── Investor Update.md        # Monthly investor email
+│   │   ├── Support Escalation.md     # P0-P3 severity levels
+│   │   └── Weekly Metrics Review.md  # Monday metrics checklist
+│   └── recurring/
+│       ├── Friday Wrap-up.md
+│       └── Monday Standup Prep.md
+├── product/
+│   ├── decisions/
+│   │   ├── DEC-001 Pricing Model.md  # $499 Pro, $1999 Enterprise
+│   │   └── DEC-002 Target Market.md  # 50-200 employee SMBs
+│   ├── research/
+│   │   ├── Competitor Analysis.md    # vs Tableau, PowerBI, Looker
+│   │   └── User Interview Synthesis.md  # 12 interviews
+│   └── roadmap/
+│       ├── Feature Priorities.md     # P0-P3 backlog
+│       └── Q1 2026 Roadmap.md        # Caching, alerts, reports
+├── team/
+│   ├── Alex Chen.md                  # Co-Founder & CEO, engineering
+│   ├── Jamie Patel.md               # Co-Founder & COO, sales
+│   └── Hiring Plan.md               # First hire at $10K MRR
+├── daily-notes/                      # 5 daily operations logs
+└── weekly-notes/
+    └── 2026-W01.md                   # Week 1 summary
 ```
 
 ## Try it now
 
 Ask Claude:
 
+- "What's our current MRR and who's paying?"
 - "Walk me through onboarding a new customer"
-- "What's our current MRR?"
-- "What decisions need my review this week?"
-- "Show me the support escalation process"
-- "Summarize what happened with DataDriven Co"
+- "What caused InsightHub to churn?"
+- "How much runway do we have left?"
+- "Prep this month's investor update"
 
 ## What you'll discover
 
 - Run operational playbooks step-by-step with AI guidance
-- Keep customer, product, and finance information connected
-- Separate routine ops from strategic decisions that need your brain
+- Track MRR, runway, and customer health from frontmatter
+- Trace how decisions connect to customers, roadmap, and revenue
 
 ---
 
@@ -56,172 +73,112 @@ Ask Claude:
 
 When you ask Claude questions or request changes, here's the flow:
 
-### Check MRR (metadata aggregation)
+### Check MRR (metadata only)
 
 ```
 You: "What's our current MRR?"
 
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Sum MRR across all active customers         │
-│ Strategy: Query customer frontmatter, aggregate     │
-│ Tools: mcp__flywheel__get_field_values              │
-└─────────────────────────────────────────────────────┘
+  ● flywheel › get_note_metadata
+    path: "ops/customers/DataDriven Co.md"
+    → Status: Active, MRR: $499, Plan: Professional
 
-┌─ FLYWHEEL READS ────────────────────────────────────┐
-│ mcp__flywheel__get_field_values                     │
-│   folder: "customers/"                              │
-│   field: "mrr"                                      │
-│   → datadriven-co.md: 1500, status: active          │
-│   → techstart-inc.md: 1200, status: active          │
-│   → metrics-plus.md: 1500, status: active           │
-│   → newclient.md: 2000, status: trial               │
-│                                                     │
-│ Total: ~80 tokens (vs ~4,600 reading all files)     │
-└─────────────────────────────────────────────────────┘
+  ● flywheel › get_note_metadata
+    path: "ops/customers/GrowthStack.md"
+    → status: trial, trial_end: 2026-01-20
 
-┌─ CLAUDE SYNTHESIZES ────────────────────────────────┐
-│ Filter by status=active, sum MRR values             │
-│ No file reads needed - frontmatter sufficient       │
-└─────────────────────────────────────────────────────┘
+  ● flywheel › get_note_metadata
+    path: "ops/customers/InsightHub.md"
+    → status: churned, original_mrr: 499
 
-MRR Dashboard: $4,200/mo (3 active customers)
-  DataDriven Co: $1,500/mo
-  TechStart Inc: $1,200/mo
-  Metrics Plus: $1,500/mo
-Pipeline: $2,000/mo (1 in trial)
+  ┌─ CLAUDE THINKS ─────────────────────────────────────┐
+  │ Filter by active status, sum MRR values.            │
+  │ Only DataDriven Co is paying. GrowthStack is trial. │
+  │ InsightHub churned Dec 28.                          │
+  └─────────────────────────────────────────────────────┘
+
+  ┌─ RESULT ────────────────────────────────────────────┐
+  │ MRR: $499/mo (1 active customer)                    │
+  │   DataDriven Co: $499/mo (Professional)             │
+  │ Pipeline: GrowthStack trial ends Jan 20 ($999 if    │
+  │   converted to Enterprise)                          │
+  │ Churned: InsightHub ($499, Dec 28 - performance)    │
+  └─────────────────────────────────────────────────────┘
+
+  ~80 tokens (vs ~4,600 reading all 3 customer files)
 ```
 
-### Run a playbook (requires file read)
+### Trace a churn reason (metadata + selective read)
+
+```
+You: "What caused InsightHub to churn?"
+
+  ● flywheel › get_note_metadata
+    path: "ops/customers/InsightHub.md"
+    → status: churned, churned_date: 2025-12-28, original_mrr: 499
+
+  ┌─ CLAUDE THINKS ─────────────────────────────────────┐
+  │ Metadata confirms churn but "what caused" needs     │
+  │ the full churn analysis from the file.              │
+  └─────────────────────────────────────────────────────┘
+
+  ● read_file
+    path: "ops/customers/InsightHub.md"
+    → Churn Reason: Performance issues with 10M+ rows
+    → David: "query timeouts on 30+ second loads"
+    → Lessons: DEC-001 should tier by data volume,
+    →   add caching to Q1 roadmap
+
+  ┌─ RESULT ────────────────────────────────────────────┐
+  │ InsightHub churned Dec 28 after 29 days paid.       │
+  │ Primary: Performance issues on 10M+ row datasets.   │
+  │ David Kim: "30+ second loads, need sub-second."     │
+  │ Actions taken:                                      │
+  │   - DEC-001 updated to tier by data volume          │
+  │   - Caching added to Q1 2026 Roadmap                │
+  │   - DEC-002 Target Market narrowed to <1M rows      │
+  └─────────────────────────────────────────────────────┘
+
+  ~350 tokens (1 targeted file read)
+```
+
+### Run the onboarding playbook (file read)
 
 ```
 You: "Walk me through onboarding a new customer"
 
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Get step-by-step onboarding instructions    │
-│ Strategy: Find playbook, read full content          │
-│ Tools: mcp__flywheel__search_notes, then Read       │
-└─────────────────────────────────────────────────────┘
+  ● flywheel › search_notes
+    query: "onboarding playbook"
+    → ops/playbooks/Customer Onboarding.md
 
-┌─ FLYWHEEL READS ────────────────────────────────────┐
-│ mcp__flywheel__search_notes("onboarding playbook")  │
-│   → ops/playbooks/customer-onboarding.md            │
-│                                                     │
-│ Total: ~40 tokens (search result only)              │
-└─────────────────────────────────────────────────────┘
+  ● read_file
+    path: "ops/playbooks/Customer Onboarding.md"
+    → 5 phases: Day 1 (welcome), Day 2-3 (setup),
+    →   Day 7 (check-in), Day 14 (check-in), Day 30 (review)
 
-┌─ CLAUDE DECIDES: NEED FULL PLAYBOOK ────────────────┐
-│ Search found the file, but "walk me through"        │
-│ requires reading all steps and instructions         │
-└─────────────────────────────────────────────────────┘
+  ┌─ RESULT ────────────────────────────────────────────┐
+  │ Customer Onboarding Playbook (5 phases):            │
+  │                                                     │
+  │ Day 1: Welcome & Setup                              │
+  │   - Send welcome email, create Slack channel        │
+  │   - Add to MRR Tracker, schedule kickoff            │
+  │   Owner: System + Alex Chen                         │
+  │                                                     │
+  │ Day 2-3: Technical Setup                            │
+  │   - Connect first data source, create dashboards    │
+  │   Owner: Alex Chen                                  │
+  │                                                     │
+  │ Day 7: First Check-in                               │
+  │   - Review usage, proactive outreach if low         │
+  │   Owner: Jamie Patel                                │
+  │                                                     │
+  │ Day 14: Check-in #2                                 │
+  │   - "What's working? What's not?"                   │
+  │                                                     │
+  │ Day 30: Month Review                                │
+  │   - Usage summary, upsell, request testimonial      │
+  └─────────────────────────────────────────────────────┘
 
-┌─ SELECTIVE FILE READ ───────────────────────────────┐
-│ Read("ops/playbooks/customer-onboarding.md")        │
-│   → Full playbook with 5 steps and templates        │
-│                                                     │
-│ Total: ~300 tokens (1 playbook file)                │
-└─────────────────────────────────────────────────────┘
-
-Customer Onboarding Playbook
-============================
-Step 1: Create customer record → /create customer [name]
-Step 2: Schedule kickoff call → Check calendar
-Step 3: Send welcome email → Use templates/welcome-email.md
-Step 4: Set up workspace → Provision API keys, Slack channel
-Step 5: Log completion → /log onboarded [customer name]
-
-Ready to start? Tell me the customer name.
-```
-
-### Customer summary (metadata + selective read)
-
-```
-You: "What's happening with DataDriven?"
-
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Get current status + recent activity        │
-│ Strategy: Metadata first, then read if needed       │
-│ Tools: mcp__flywheel__get_note_metadata,            │
-│        mcp__flywheel__get_backlinks                 │
-└─────────────────────────────────────────────────────┘
-
-┌─ FLYWHEEL READS ────────────────────────────────────┐
-│ mcp__flywheel__get_note_metadata("customers/data..")│
-│   → status: active, mrr: 1500, contract: monthly    │
-│   → health: green, next_renewal: 2026-02-01         │
-│                                                     │
-│ mcp__flywheel__get_backlinks("customers/data...")   │
-│   → daily-notes/2026-01-04.md (mentioned today)     │
-│   → meetings/2026-01-02-kickoff.md                  │
-│                                                     │
-│ Total: ~100 tokens                                  │
-└─────────────────────────────────────────────────────┘
-
-┌─ CLAUDE DECIDES: NEED RECENT CONTEXT ───────────────┐
-│ Metadata shows status, but "what's happening"       │
-│ needs recent meeting notes for context              │
-└─────────────────────────────────────────────────────┘
-
-┌─ SELECTIVE FILE READ ───────────────────────────────┐
-│ Read("daily-notes/2026-01-04.md", section="Log")    │
-│   → "call with DataDriven - they want API access"   │
-│                                                     │
-│ Total: ~150 tokens (1 section read)                 │
-└─────────────────────────────────────────────────────┘
-
-DataDriven Co: Active ($1,500/mo)
-  Health: Green | Renewal: Feb 1
-  Latest: They want API access (discussed today)
-  Next step: Send API documentation
-```
-
-### Update customer record (write operation)
-
-```
-You: "Update DataDriven status to pilot"
-
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Change status field in customer frontmatter │
-│ Strategy: Direct frontmatter update                 │
-│ Tools: mcp__flywheel__vault_update_frontmatter│
-└─────────────────────────────────────────────────────┘
-
-┌─ FLYWHEEL WRITES ──────────────────────────────────────┐
-│ mcp__flywheel__vault_update_frontmatter       │
-│   path: "customers/datadriven-co.md"                │
-│   updates:                                          │
-│     status: "pilot"                                 │
-│     last_contact: "2026-01-04"                      │
-└─────────────────────────────────────────────────────┘
-
----
-status: pilot                    ← CHANGED from 'lead'
-last_contact: 2026-01-04         ← UPDATED
-mrr: 1500
----
-```
-
-### Log customer interaction (write operation)
-
-```
-You: "/log call with DataDriven - they want API access"
-
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Append to today's log section               │
-│ Strategy: Direct write - no reads needed            │
-│ Tools: mcp__flywheel__vault_add_to_section    │
-└─────────────────────────────────────────────────────┘
-
-┌─ FLYWHEEL WRITES ──────────────────────────────────────┐
-│ mcp__flywheel__vault_add_to_section           │
-│   path: "daily-notes/2026-01-04.md"                 │
-│   section: "Log"                                    │
-│   content: "call with DataDriven - they want API.." │
-│   format: "timestamp-bullet"                        │
-└─────────────────────────────────────────────────────┘
-
-## Log
-- 10:00 Standup with Sarah
-- 11:30 call with DataDriven - they want API access ← NEW
+  ~300 tokens (1 playbook file)
 ```
 
 ---
@@ -230,6 +187,6 @@ You: "/log call with DataDriven - they want API access"
 
 ---
 
-**Token savings:** Each note in this vault averages ~155 lines (~2,300 tokens).
+**Token savings:** Each note in this vault averages ~150 lines (~2,200 tokens).
 With Flywheel, graph queries cost ~50-100 tokens instead of reading full files.
-That's **23-46x savings** per query—enabling hundreds of queries in agentic workflows.
+That's **22-44x savings** per query--enabling hundreds of queries in agentic workflows.

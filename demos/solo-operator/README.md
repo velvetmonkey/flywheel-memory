@@ -1,114 +1,52 @@
 # Solo Operator
 
-> Run your one-person business with an AI chief of staff.
+> One person, three revenue streams, and 16 notes running the whole business.
 
 ---
 
 **You are**: Jordan, a solopreneur running a content business
 
-**Your situation**: You make ~$8K/month from:
-- **Newsletter**: "AI Tools Weekly" (2,800 subscribers, 2x/week)
-- **Digital product**: AI Automation Course ($297)
-- **Consulting**: $300/hour for AI workflow design
-
-Your challenge: doing everything yourself. Claude Code is your chief of staff - it handles ops, tracking, and automation while you focus on creating.
+**Your situation**: You publish "AI Tools Weekly" to 2,847 subscribers, sell an AI Automation Course ($297), and do consulting at $300/hour. January MTD revenue is $2,388 against a $5K/month target. You need an AI chief of staff that tracks revenue, subscribers, and content schedules while you stay in creative mode.
 
 ## Vault Map
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    SOLO OPERATOR                        │
-│                                                         │
-│                   ┌─────────────┐                       │
-│                   │ Reference   │ (context hub)         │
-│                   └──────┬──────┘                       │
-│          ┌───────────────┼───────────────┐             │
-│          ▼               ▼               ▼             │
-│   ┌────────────┐  ┌────────────┐  ┌────────────┐       │
-│   │  Revenue   │  │ Subscriber │  │  Content   │       │
-│   │  Tracker   │  │  Tracker   │  │  Calendar  │       │
-│   └──────┬─────┘  └──────┬─────┘  └──────┬─────┘       │
-│          │               │               │             │
-│          └───────────────┼───────────────┘             │
-│                    updates│                            │
-│                          ▼                             │
-│                  ┌─────────────┐                       │
-│                  │ Daily Notes │                       │
-│                  └─────────────┘                       │
-└─────────────────────────────────────────────────────────┘
+solo-operator/
+├── ops/
+│   ├── Morning Briefing.md         # Daily briefing automation
+│   ├── Revenue Tracker.md          # $2,388 MTD, 3 streams
+│   └── Subscriber Metrics.md       # 2,847 subs, 38% open rate
+├── products/
+│   ├── AI Automation Course.md     # $297, 51 sales, $15,147 total
+│   └── Consulting Services.md      # $300/hr, 22 hours delivered
+├── content/
+│   ├── 2026-01-07 AI Tools Weekly.md  # Issue #48, 42% open rate
+│   ├── Content Calendar.md         # Tue/Thu newsletter schedule
+│   └── Newsletter Archive.md       # Performance tracking
+├── automations/
+│   ├── Monthly Review.md           # End-of-month review playbook
+│   └── Weekly Newsletter Prep.md   # Newsletter prep automation
+├── daily-notes/                    # 4 daily operations logs
+├── weekly-notes/
+│   └── 2026-W01.md                 # Week 1 summary
+└── Reference.md                    # Jordan's context, voice, goals
 ```
-
----
 
 ## Try it now
 
-Open this vault with Flywheel MCP connected, then ask Claude:
+Ask Claude:
 
-```
-"Run my morning briefing"
-"How's revenue this month?"
-"What content is due this week?"
-"Show me subscriber growth"
-"How am I doing this month?"
-```
-
----
+- **"How's revenue this month?"** -- pulls MTD by stream from Revenue Tracker frontmatter
+- **"Run my morning briefing"** -- aggregates yesterday's log, revenue, and content due today
+- **"Show me subscriber growth"** -- current count, weekly trend, and engagement metrics
+- **"Prep the next newsletter"** -- gathers research, past issues, and drafts an outline
+- **"Why did Tuesday's newsletter perform so well?"** -- analyzes issue #48's 42% open rate
 
 ## What you'll discover
 
-- **Automation handles daily ops** - briefings, tracking, alerts
-- **Track multiple revenue streams** in one place
-- **Connect content calendar** to actual writing workflow
-- **Track your wins** automatically from daily logs
-
----
-
-## Quick Setup
-
-### 1. Configure MCP
-
-Create `.mcp.json` in this folder with your platform config:
-
-**Windows (PowerShell/cmd)**:
-```json
-{
-  "mcpServers": {
-    "flywheel": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@velvetmonkey/flywheel-memory"],
-      "env": {
-        "OBSIDIAN_VAULT_PATH": "C:/Users/YOU/path/to/solo-operator"
-      }
-    }
-  }
-}
-```
-
-**macOS/Linux**:
-```json
-{
-  "mcpServers": {
-    "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
-      "env": {
-        "OBSIDIAN_VAULT_PATH": "/path/to/solo-operator"
-      }
-    }
-  }
-}
-```
-
-### 2. Open in Claude Code
-
-```bash
-cd demos/solo-operator
-claude
-```
-
-### 3. Start operating
-
-Try: "Run my morning briefing"
+- Track three revenue streams from frontmatter without spreadsheets
+- Run automated briefings and newsletter prep playbooks
+- Trace how subscriber growth drives course sales and revenue
 
 ---
 
@@ -121,195 +59,123 @@ When you ask Claude questions or request changes, here's the flow:
 ```
 You: "How's revenue this month?"
 
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Get current month revenue breakdown         │
-│ Strategy: Read tracker frontmatter only             │
-│ Tools: mcp__flywheel__get_note_metadata             │
-└─────────────────────────────────────────────────────┘
+● flywheel › get_note_metadata
+  path: "ops/Revenue Tracker.md"
+  → type: tracker, updated: 2026-01-07
 
-┌─ FLYWHEEL READS ────────────────────────────────────┐
-│ mcp__flywheel__get_note_metadata("ops/Revenue...")  │
-│   → revenue_mtd: 2888                               │
-│   → target: 8000                                    │
-│   → course_sales: 1188                              │
-│   → consulting: 1200                                │
-│   → sponsors: 500                                   │
-│                                                     │
-│ Total: ~60 tokens (vs ~800 reading full file)       │
-└─────────────────────────────────────────────────────┘
+● read_file
+  path: "ops/Revenue Tracker.md"
+  → Course: $1,188 | Consulting: $1,200 | Sponsors: $0
+  → Total MTD: $2,388 / $5,000 target (48%)
 
-┌─ CLAUDE SYNTHESIZES ────────────────────────────────┐
-│ Frontmatter has all metrics - no file read needed   │
-│ Calculate percentage, format dashboard              │
-└─────────────────────────────────────────────────────┘
+┌─ RESULT ──────────────────────────────────────────┐
+│ Revenue Dashboard (January 2026)                   │
+│                                                    │
+│ AI Automation Course:  $1,188 (4 sales)            │
+│ Consulting Services:   $1,200 (4 hours, TechCorp)  │
+│ Newsletter Sponsors:   $0 (paid mid-month)          │
+│ ───────────────────────────────────────────         │
+│ Total MTD: $2,388 / $5,000 (48%)                   │
+│                                                    │
+│ Pipeline: TechCorp 4-session expansion ($2,400)    │
+└────────────────────────────────────────────────────┘
 
-Revenue Dashboard (January 2026)
-================================
-Course Sales: $1,188 (4 sales)
-Consulting: $1,200 (4 hours)
-Newsletter Sponsors: $500/mo
---------------------------------
-Total MTD: $2,888 / $8,000 (36%)
+~400 tokens (1 tracker file)
 ```
 
-### Morning briefing (multi-source + file read)
+### Morning briefing (multi-source aggregation)
 
 ```
 You: "Run my morning briefing"
 
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Compile yesterday + today + alerts          │
-│ Strategy: Multiple metadata queries + content read  │
-│ Tools: mcp__flywheel__get_note_metadata (×3),       │
-│        Read for yesterday's log content             │
-└─────────────────────────────────────────────────────┘
+● flywheel › get_note_metadata
+  path: "ops/Revenue Tracker.md"
+  → revenue_mtd data for alerts
 
-┌─ FLYWHEEL READS ────────────────────────────────────┐
-│ mcp__flywheel__get_note_metadata("ops/Revenue...")  │
-│   → revenue_mtd, target (for alerts)                │
-│                                                     │
-│ mcp__flywheel__get_note_metadata("ops/Subscriber..")│
-│   → subscribers: 2847, growth_this_month: 47        │
-│                                                     │
-│ mcp__flywheel__get_tasks_with_due_dates             │
-│   → content/: 2 tasks due this week                 │
-│                                                     │
-│ Total: ~120 tokens                                  │
-└─────────────────────────────────────────────────────┘
+● flywheel › get_note_metadata
+  path: "ops/Subscriber Metrics.md"
+  → subscribers: 2847, weekly_growth: +36
 
-┌─ CLAUDE DECIDES: NEED YESTERDAY'S DETAILS ──────────┐
-│ Metadata shows metrics, but briefing needs          │
-│ yesterday's actual activities from ## Log           │
-└─────────────────────────────────────────────────────┘
+● flywheel › get_section_content
+  path: "daily-notes/2026-01-06.md"
+  section: "Log"
+  → Yesterday's activities
 
-┌─ SELECTIVE FILE READ ───────────────────────────────┐
-│ Read("daily-notes/2026-01-06.md")                   │
-│   → ## Log section with activities                  │
-│                                                     │
-│ Total: ~200 tokens (1 daily note)                   │
-└─────────────────────────────────────────────────────┘
+● flywheel › get_note_metadata
+  path: "content/Content Calendar.md"
+  → Today's scheduled content
 
-┌─ CLAUDE SYNTHESIZES ────────────────────────────────┐
-│ Combines: yesterday's log + tracker metrics +       │
-│ content calendar tasks → structured briefing        │
-└─────────────────────────────────────────────────────┘
+┌─ CLAUDE THINKS ───────────────────────────────────┐
+│ Combine yesterday's log + tracker metrics +        │
+│ content calendar into structured briefing.          │
+└────────────────────────────────────────────────────┘
 
-## Briefing
+┌─ RESULT ──────────────────────────────────────────┐
+│ Morning Briefing                                   │
+│                                                    │
+│ Yesterday:                                         │
+│   - 2 course sales ($594) from newsletter CTA      │
+│   - Newsletter outline completed                   │
+│                                                    │
+│ Today:                                             │
+│   - Newsletter: "5 Claude Code Workflows" (send)   │
+│   - TechCorp consulting session (2pm)              │
+│                                                    │
+│ Alerts:                                            │
+│   [green] Course sales on track                    │
+│   [yellow] Subscriber growth below target (-28%)   │
+└────────────────────────────────────────────────────┘
 
-**Yesterday:**
-- 2 course sales ($594)
-- Newsletter outline completed
-- Identified subscriber growth concern
-
-**Today:**
-- Draft next newsletter (due Thu)
-- TechCorp consulting session (2pm)
-
-**Alerts:**
-- [yellow] Subscriber growth below target (-28%)
+~200 tokens (metadata + 1 section read)
 ```
 
-### Add a log entry (write operation)
-
-```
-You: "log sent newsletter, 42% open rate"
-
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Append to today's log section               │
-│ Strategy: Direct write - no reads needed            │
-│ Tools: mcp__flywheel__vault_add_to_section    │
-└─────────────────────────────────────────────────────┘
-
-┌─ FLYWHEEL WRITES ──────────────────────────────────────┐
-│ mcp__flywheel__vault_add_to_section           │
-│   path: "daily-notes/2026-01-07.md"                 │
-│   section: "Log"                                    │
-│   content: "sent newsletter, 42% open rate"         │
-│   format: "timestamp-bullet"                        │
-└─────────────────────────────────────────────────────┘
-
-## Log
-- 09:00 Morning review
-- 10:30 sent newsletter, 42% open rate             ← NEW
-```
-
-### Analyze a newsletter (requires file read)
+### Analyze newsletter performance (metadata + selective read)
 
 ```
 You: "Why did Tuesday's newsletter perform so well?"
 
-┌─ CLAUDE INTERPRETS ─────────────────────────────────┐
-│ Intent: Understand what drove high performance      │
-│ Strategy: Get metadata first, then read content     │
-│ Tools: mcp__flywheel__search_notes, then Read       │
-└─────────────────────────────────────────────────────┘
+● flywheel › search_notes
+  query: "AI Tools Weekly"
+  → content/2026-01-07 AI Tools Weekly.md
 
-┌─ FLYWHEEL READS ────────────────────────────────────┐
-│ mcp__flywheel__search_notes("Tuesday newsletter")   │
-│   → content/2026-01-07 AI Tools Weekly.md           │
-│                                                     │
-│ mcp__flywheel__get_note_metadata("content/2026...") │
-│   → open_rate: 0.42, click_rate: 0.091              │
-│   → course_sales: 1                                 │
-│                                                     │
-│ Total: ~80 tokens                                   │
-└─────────────────────────────────────────────────────┘
+● flywheel › get_note_metadata
+  path: "content/2026-01-07 AI Tools Weekly.md"
+  → open_rate: 0.42, click_rate: 0.091, issue: 48
 
-┌─ CLAUDE DECIDES: NEED CONTENT ANALYSIS ─────────────┐
-│ Metrics show it performed well, but "why" requires  │
-│ reading the subject line, content, and notes        │
-└─────────────────────────────────────────────────────┘
+┌─ CLAUDE THINKS ───────────────────────────────────┐
+│ Metrics show high performance, but "why" needs     │
+│ the subject line, content structure, and notes.     │
+└────────────────────────────────────────────────────┘
 
-┌─ SELECTIVE FILE READ ───────────────────────────────┐
-│ Read("content/2026-01-07 AI Tools Weekly.md")       │
-│   → Subject line, content structure, ## Notes       │
-│                                                     │
-│ Total: ~400 tokens (1 file)                         │
-└─────────────────────────────────────────────────────┘
+● read_file
+  path: "content/2026-01-07 AI Tools Weekly.md"
+  → Subject: "5 Claude Code workflows that save me 10 hours/week"
+  → 47 replies for "SYSTEM" CTA
+  → Best performing issue in Q4
 
-Claude: "Tuesday's 42% open rate (best in Q4) likely
-came from: 1) Number + specific outcome subject line
-('5 workflows that save me 10 hours/week'), 2) Reply
-CTA ('Reply SYSTEM') drove 47 replies - high engagement
-signals boost deliverability."
+┌─ RESULT ──────────────────────────────────────────┐
+│ Issue #48: 42% open rate (best in Q4)              │
+│                                                    │
+│ Why it worked:                                     │
+│ 1. Subject line: number + specific outcome         │
+│    "5 Claude Code workflows that save 10 hrs/week" │
+│ 2. Reply CTA ("Reply SYSTEM") drove 47 replies     │
+│    -- high engagement boosts deliverability         │
+│ 3. Practical numbered list resonated               │
+│                                                    │
+│ Insight: 47 "SYSTEM" replies validate the          │
+│ lead magnet idea for subscriber growth.             │
+└────────────────────────────────────────────────────┘
+
+~450 tokens (metadata + 1 file read)
 ```
 
 ---
 
-## Vault structure
-
-```
-solo-operator/
-├── daily-notes/        # Daily operations log
-├── weekly-notes/       # AI-generated weekly summaries
-├── content/            # Newsletter and content calendar
-├── products/           # Course and consulting tracking
-├── ops/                # Revenue and subscriber metrics
-├── automations/        # Playbooks for recurring workflows
-├── Reference.md        # Personal context for AI
-└── .claude/            # Custom commands and config
-```
+*16 notes. Just start asking questions.*
 
 ---
 
-## The pattern
-
-This vault demonstrates the "AI-first operator" pattern:
-
-1. **Reference.md** gives Claude context about you
-2. **Daily notes** capture everything with `## Log`
-3. **Tracker notes** aggregate data with queryable frontmatter
-4. **Automation notes** define recurring workflows
-5. **`.claude/commands/`** provides quick triggers
-
-The result: Claude operates as your chief of staff, handling the operational overhead while you focus on creating value.
-
----
-
-*22 notes. Just start asking questions.*
-
----
-
-**Token savings:** Each note in this vault averages ~140 lines (~2,100 tokens).
+**Token savings:** Each note in this vault averages ~100 lines (~1,500 tokens).
 With Flywheel, graph queries cost ~50-100 tokens instead of reading full files.
-That's **21-42x savings** per query—enabling hundreds of queries in agentic workflows.
+That's **15-30x savings** per query--enabling hundreds of queries in agentic workflows.

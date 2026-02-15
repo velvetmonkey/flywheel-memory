@@ -26,8 +26,8 @@ describe('MCP Server Integration', () => {
     test('registers all expected tools', async () => {
       const result = await client.listTools();
 
-      // Should have 30+ tools registered
-      expect(result.tools.length).toBeGreaterThanOrEqual(30);
+      // Should have 24+ tools registered (read tools only in test server)
+      expect(result.tools.length).toBeGreaterThanOrEqual(24);
 
       // Check for key tool categories
       const toolNames = result.tools.map((t: { name: string }) => t.name);
@@ -35,28 +35,22 @@ describe('MCP Server Integration', () => {
       // Graph tools
       expect(toolNames).toContain('get_backlinks');
       expect(toolNames).toContain('get_forward_links');
-      expect(toolNames).toContain('find_orphan_notes');
-      expect(toolNames).toContain('find_hub_notes');
+      expect(toolNames).toContain('graph_analysis');
 
       // Wikilink tools
       expect(toolNames).toContain('suggest_wikilinks');
       expect(toolNames).toContain('validate_links');
-      expect(toolNames).toContain('find_broken_links');
 
       // Health tools
       expect(toolNames).toContain('health_check');
       expect(toolNames).toContain('get_vault_stats');
 
-      // Query tools
-      expect(toolNames).toContain('search_notes');
-      expect(toolNames).toContain('get_recent_notes');
+      // Query tools (unified search)
+      expect(toolNames).toContain('search');
 
-      // Periodic tools
-      expect(toolNames).toContain('detect_periodic_notes');
-
-      // Schema tools
-      expect(toolNames).toContain('infer_folder_conventions');
-      expect(toolNames).toContain('get_frontmatter_schema');
+      // Schema tools (unified)
+      expect(toolNames).toContain('vault_schema');
+      expect(toolNames).toContain('note_intelligence');
     });
 
     test('all tools have valid input schemas', async () => {
@@ -96,8 +90,8 @@ describe('MCP Server Integration', () => {
       expect(stats.total_notes).toBeGreaterThan(0);
     });
 
-    test('search_notes with no filters returns notes', async () => {
-      const result = await client.callTool('search_notes', { limit: 10 });
+    test('search with metadata scope returns notes', async () => {
+      const result = await client.callTool('search', { scope: 'metadata', limit: 10 });
 
       expect(result.content).toBeDefined();
       const data = JSON.parse(result.content[0].text);

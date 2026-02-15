@@ -430,8 +430,9 @@ describe('MCP Tool Integration', () => {
     client = connectTestClient(context.server);
   });
 
-  test('infer_folder_conventions tool returns JSON', async () => {
-    const result = await client.callTool('infer_folder_conventions', {
+  test('vault_schema conventions tool returns JSON', async () => {
+    const result = await client.callTool('vault_schema', {
+      analysis: 'conventions',
       folder: 'projects',
     });
 
@@ -443,8 +444,9 @@ describe('MCP Tool Integration', () => {
     expect(data.inferred_fields).toBeDefined();
   });
 
-  test('find_incomplete_notes tool returns JSON', async () => {
-    const result = await client.callTool('find_incomplete_notes', {
+  test('vault_schema incomplete tool returns JSON', async () => {
+    const result = await client.callTool('vault_schema', {
+      analysis: 'incomplete',
       folder: 'projects',
       min_frequency: 0.5,
     });
@@ -455,8 +457,9 @@ describe('MCP Tool Integration', () => {
     expect(data.notes).toBeDefined();
   });
 
-  test('suggest_field_values tool returns JSON', async () => {
-    const result = await client.callTool('suggest_field_values', {
+  test('vault_schema suggest_values tool returns JSON', async () => {
+    const result = await client.callTool('vault_schema', {
+      analysis: 'suggest_values',
       field: 'status',
     });
 

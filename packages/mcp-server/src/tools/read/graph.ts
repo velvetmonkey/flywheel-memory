@@ -11,10 +11,9 @@ import { MAX_LIMIT } from '../../core/read/constants.js';
 import {
   getBacklinksForNote,
   getForwardLinksForNote,
-  findOrphanNotes,
-  findHubNotes,
   resolveTarget,
 } from '../../core/read/graph.js';
+import { findBidirectionalLinks } from './graphAdvanced.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 
 /**
@@ -83,12 +82,13 @@ export function registerGraphTools(
       inputSchema: {
         path: z.string().describe('Path to the note (e.g., "daily/2024-01-15.md" or just "My Note")'),
         include_context: z.boolean().default(true).describe('Include surrounding text for context'),
+        include_bidirectional: z.boolean().default(false).describe('Also return bidirectional (mutual) link pairs involving this note'),
         limit: z.coerce.number().default(50).describe('Maximum number of results to return'),
         offset: z.coerce.number().default(0).describe('Number of results to skip (for pagination)'),
       },
       outputSchema: GetBacklinksOutputSchema,
     },
-    async ({ path: notePath, include_context, limit: requestedLimit, offset }): Promise<{
+    async ({ path: notePath, include_context, include_bidirectional, limit: requestedLimit, offset }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
       structuredContent: GetBacklinksOutput;
     }> => {
@@ -139,6 +139,13 @@ export function registerGraphTools(
         returned_count: results.length,
         backlinks: results,
       };
+
+      // Optionally include bidirectional pairs
+      if (include_bidirectional) {
+        const biPairs = findBidirectionalLinks(index, resolvedPath);
+        (output as any).bidirectional_pairs = biPairs;
+        (output as any).bidirectional_count = biPairs.length;
+      }
 
       return {
         content: [
@@ -234,151 +241,4 @@ export function registerGraphTools(
     }
   );
 
-  // find_orphan_notes - Find notes with no backlinks
-  const OrphanNoteSchema = z.object({
-    path: z.string().describe('Path to the orphan note'),
-    title: z.string().describe('Title of the note'),
-    modified: z.string().describe('Last modified date (ISO format)'),
-  });
-
-  const FindOrphansOutputSchema = {
-    orphan_count: z.coerce.number().describe('Total number of orphan notes found'),
-    returned_count: z.coerce.number().describe('Number of orphans returned (may be limited)'),
-    folder: z.string().optional().describe('Folder filter if specified'),
-    orphans: z.array(OrphanNoteSchema).describe('List of orphan notes'),
-  };
-
-  type FindOrphansOutput = {
-    orphan_count: number;
-    returned_count: number;
-    folder?: string;
-    orphans: Array<{
-      path: string;
-      title: string;
-      modified: string;
-    }>;
-  };
-
-  server.registerTool(
-    'find_orphan_notes',
-    {
-      title: 'Find Orphan Notes',
-      description: 'Find notes that have no backlinks (no other notes link to them). Useful for finding disconnected content.',
-      inputSchema: {
-        folder: z.string().optional().describe('Limit search to a specific folder (e.g., "daily-notes/")'),
-        limit: z.coerce.number().default(50).describe('Maximum number of results to return'),
-        offset: z.coerce.number().default(0).describe('Number of results to skip (for pagination)'),
-      },
-      outputSchema: FindOrphansOutputSchema,
-    },
-    async ({ folder, limit: requestedLimit, offset }): Promise<{
-      content: Array<{ type: 'text'; text: string }>;
-      structuredContent: FindOrphansOutput;
-    }> => {
-      requireIndex();
-      const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
-      const index = getIndex();
-
-      const allOrphans = findOrphanNotes(index, folder);
-      const orphans = allOrphans.slice(offset, offset + limit);
-
-      const output: FindOrphansOutput = {
-        orphan_count: allOrphans.length,
-        returned_count: orphans.length,
-        folder,
-        orphans: orphans.map((o) => ({
-          path: o.path,
-          title: o.title,
-          modified: o.modified.toISOString(),
-        })),
-      };
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(output, null, 2),
-          },
-        ],
-        structuredContent: output,
-      };
-    }
-  );
-
-  // find_hub_notes - Find highly connected notes
-  const HubNoteSchema = z.object({
-    path: z.string().describe('Path to the hub note'),
-    title: z.string().describe('Title of the note'),
-    backlink_count: z.coerce.number().describe('Number of notes linking TO this note'),
-    forward_link_count: z.coerce.number().describe('Number of notes this note links TO'),
-    total_connections: z.coerce.number().describe('Total connections (backlinks + forward links)'),
-  });
-
-  const FindHubsOutputSchema = {
-    hub_count: z.coerce.number().describe('Total number of hub notes found'),
-    returned_count: z.coerce.number().describe('Number of hubs returned (may be limited)'),
-    min_links: z.coerce.number().describe('Minimum connection threshold used'),
-    hubs: z.array(HubNoteSchema).describe('List of hub notes, sorted by total connections'),
-  };
-
-  type FindHubsOutput = {
-    hub_count: number;
-    returned_count: number;
-    min_links: number;
-    hubs: Array<{
-      path: string;
-      title: string;
-      backlink_count: number;
-      forward_link_count: number;
-      total_connections: number;
-    }>;
-  };
-
-  server.registerTool(
-    'find_hub_notes',
-    {
-      title: 'Find Hub Notes',
-      description: 'Find highly connected notes (hubs) that have many links to/from other notes. Useful for identifying key concepts.',
-      inputSchema: {
-        min_links: z.coerce.number().default(5).describe('Minimum total connections (backlinks + forward links) to qualify as a hub'),
-        limit: z.coerce.number().default(50).describe('Maximum number of results to return'),
-        offset: z.coerce.number().default(0).describe('Number of results to skip (for pagination)'),
-      },
-      outputSchema: FindHubsOutputSchema,
-    },
-    async ({ min_links, limit: requestedLimit, offset }): Promise<{
-      content: Array<{ type: 'text'; text: string }>;
-      structuredContent: FindHubsOutput;
-    }> => {
-      requireIndex();
-      const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
-      const index = getIndex();
-
-      const allHubs = findHubNotes(index, min_links);
-      const hubs = allHubs.slice(offset, offset + limit);
-
-      const output: FindHubsOutput = {
-        hub_count: allHubs.length,
-        returned_count: hubs.length,
-        min_links,
-        hubs: hubs.map((h) => ({
-          path: h.path,
-          title: h.title,
-          backlink_count: h.backlink_count,
-          forward_link_count: h.forward_link_count,
-          total_connections: h.total_connections,
-        })),
-      };
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(output, null, 2),
-          },
-        ],
-        structuredContent: output,
-      };
-    }
-  );
 }

@@ -13,11 +13,10 @@ import { registerHealthTools } from '../../../src/tools/read/health.js';
 import { registerQueryTools } from '../../../src/tools/read/query.js';
 import { registerSystemTools } from '../../../src/tools/read/system.js';
 import { registerPrimitiveTools } from '../../../src/tools/read/primitives.js';
-import { registerPeriodicTools } from '../../../src/tools/read/periodic.js';
-import { registerBidirectionalTools } from '../../../src/tools/read/bidirectional.js';
-import { registerSchemaTools } from '../../../src/tools/read/schema.js';
-import { registerComputedTools } from '../../../src/tools/read/computed.js';
 import { registerMigrationTools } from '../../../src/tools/read/migrations.js';
+import { registerGraphAnalysisTools } from '../../../src/tools/read/graphAnalysis.js';
+import { registerVaultSchemaTools } from '../../../src/tools/read/vaultSchema.js';
+import { registerNoteIntelligenceTools } from '../../../src/tools/read/noteIntelligence.js';
 import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
 import { setFTS5Database } from '../../../src/core/read/fts5.js';
 
@@ -99,21 +98,19 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     () => vaultPath
   );
 
-  registerPeriodicTools(server, () => currentIndex);
-
-  registerBidirectionalTools(
+  registerGraphAnalysisTools(
     server,
     () => currentIndex,
     () => vaultPath
   );
 
-  registerSchemaTools(
+  registerVaultSchemaTools(
     server,
     () => currentIndex,
     () => vaultPath
   );
 
-  registerComputedTools(
+  registerNoteIntelligenceTools(
     server,
     () => currentIndex,
     () => vaultPath

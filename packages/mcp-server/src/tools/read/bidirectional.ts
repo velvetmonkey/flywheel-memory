@@ -5,13 +5,10 @@
  * These tools detect patterns in prose and suggest frontmatter/wikilink additions.
  */
 
-import { z } from 'zod';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import matter from 'gray-matter';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex, VaultNote } from '../../core/read/types.js';
-import { requireIndex } from '../../core/read/indexGuard.js';
 
 // =============================================================================
 // TYPES
@@ -509,127 +506,3 @@ export async function validateCrossLayer(
   };
 }
 
-// =============================================================================
-// MCP TOOL REGISTRATION
-// =============================================================================
-
-/**
- * Register all bidirectional bridge tools
- */
-export function registerBidirectionalTools(
-  server: McpServer,
-  getIndex: () => VaultIndex,
-  getVaultPath: () => string
-): void {
-  // detect_prose_patterns
-  server.registerTool(
-    'detect_prose_patterns',
-    {
-      title: 'Detect Prose Patterns',
-      description:
-        'Find "Key: [[Value]]" or "Key: Value" patterns in note prose (not frontmatter). Useful for identifying implicit metadata.',
-      inputSchema: {
-        path: z.string().describe('Path to the note (e.g., "daily/2024-01-15.md")'),
-      },
-    },
-    async ({ path: notePath }) => {
-      const index = getIndex();
-      const vaultPath = getVaultPath();
-      const result = await detectProsePatterns(index, notePath, vaultPath);
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
-
-  // suggest_frontmatter_from_prose
-  server.registerTool(
-    'suggest_frontmatter_from_prose',
-    {
-      title: 'Suggest Frontmatter From Prose',
-      description:
-        'Analyze prose patterns and suggest YAML frontmatter additions. Groups repeated patterns and preserves wikilinks.',
-      inputSchema: {
-        path: z.string().describe('Path to the note'),
-      },
-    },
-    async ({ path: notePath }) => {
-      const index = getIndex();
-      const vaultPath = getVaultPath();
-      const result = await suggestFrontmatterFromProse(index, notePath, vaultPath);
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
-
-  // suggest_wikilinks_in_frontmatter
-  server.registerTool(
-    'suggest_wikilinks_in_frontmatter',
-    {
-      title: 'Suggest Wikilinks in Frontmatter',
-      description:
-        'Find frontmatter string values that match existing note titles or aliases, and suggest converting them to wikilinks.',
-      inputSchema: {
-        path: z.string().describe('Path to the note'),
-      },
-    },
-    async ({ path: notePath }) => {
-      const index = getIndex();
-      const vaultPath = getVaultPath();
-      const result = await suggestWikilinksInFrontmatter(
-        index,
-        notePath,
-        vaultPath
-      );
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
-
-  // validate_cross_layer
-  server.registerTool(
-    'validate_cross_layer',
-    {
-      title: 'Validate Cross Layer',
-      description:
-        'Check consistency between frontmatter references and prose wikilinks. Identifies references that appear in only one layer.',
-      inputSchema: {
-        path: z.string().describe('Path to the note'),
-      },
-    },
-    async ({ path: notePath }) => {
-      const index = getIndex();
-      const vaultPath = getVaultPath();
-      const result = await validateCrossLayer(index, notePath, vaultPath);
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
-}

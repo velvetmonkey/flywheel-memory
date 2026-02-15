@@ -22,11 +22,11 @@ describe('Query Tools', () => {
     client = connectTestClient(context.server);
   });
 
-  describe('search_notes', () => {
+  describe('search', () => {
     describe('Basic Functionality', () => {
       test('returns all notes when no filters', async () => {
 
-        const result = await client.callTool('search_notes', { limit: 100 });
+        const result = await client.callTool('search', { scope: 'metadata', limit: 100 });
 
         const data = JSON.parse(result.content[0].text);
         expect(data.total_matches).toBeGreaterThan(0);
@@ -35,7 +35,7 @@ describe('Query Tools', () => {
 
       test('respects limit parameter', async () => {
 
-        const result = await client.callTool('search_notes', { limit: 2 });
+        const result = await client.callTool('search', { scope: 'metadata', limit: 2 });
 
         const data = JSON.parse(result.content[0].text);
         expect(data.returned).toBeLessThanOrEqual(2);
@@ -44,7 +44,7 @@ describe('Query Tools', () => {
 
       test('returns notes in expected format', async () => {
 
-        const result = await client.callTool('search_notes', { limit: 1 });
+        const result = await client.callTool('search', { scope: 'metadata', limit: 1 });
 
         const data = JSON.parse(result.content[0].text);
         const note = data.notes[0];
@@ -60,7 +60,7 @@ describe('Query Tools', () => {
     describe('Frontmatter Matching (where)', () => {
       test('matches exact string values', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           where: { type: 'project' },
         });
 
@@ -75,7 +75,7 @@ describe('Query Tools', () => {
 
       test('case-insensitive string matching', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           where: { status: 'ACTIVE' },
         });
 
@@ -91,7 +91,7 @@ describe('Query Tools', () => {
       test('matches values in arrays', async () => {
 
         // Tags in frontmatter are often arrays
-        const result = await client.callTool('search_notes', { limit: 50 });
+        const result = await client.callTool('search', { scope: 'metadata', limit: 50 });
 
         const data = JSON.parse(result.content[0].text);
         expect(data).toBeDefined();
@@ -99,7 +99,7 @@ describe('Query Tools', () => {
 
       test('handles null/undefined filter values', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           where: { nonexistent: null },
         });
 
@@ -110,7 +110,7 @@ describe('Query Tools', () => {
 
       test('exact match for non-string types', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           where: { priority: 1 },
         });
 
@@ -124,7 +124,7 @@ describe('Query Tools', () => {
 
       test('multiple where conditions are AND-ed', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           where: { type: 'project', status: 'active' },
         });
 
@@ -142,7 +142,7 @@ describe('Query Tools', () => {
     describe('Tag Matching', () => {
       test('has_tag filters by single tag', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           has_tag: 'test',
         });
 
@@ -154,7 +154,7 @@ describe('Query Tools', () => {
 
       test('has_tag with # prefix works', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           has_tag: '#test',
         });
 
@@ -167,7 +167,7 @@ describe('Query Tools', () => {
 
       test('has_any_tag matches any of multiple tags (OR)', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           has_any_tag: ['test', 'example'],
         });
 
@@ -180,7 +180,7 @@ describe('Query Tools', () => {
 
       test('has_all_tags matches all specified tags (AND)', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           has_all_tags: ['test'],
         });
 
@@ -193,8 +193,9 @@ describe('Query Tools', () => {
 
       test('empty has_any_tag returns all notes', async () => {
 
-        const allNotes = await client.callTool('search_notes', { limit: 100 });
-        const emptyFilter = await client.callTool('search_notes', {
+        const allNotes = await client.callTool('search', { scope: 'metadata', limit: 100 });
+        const emptyFilter = await client.callTool('search', {
+          scope: 'metadata',
           has_any_tag: [],
           limit: 100,
         });
@@ -208,7 +209,7 @@ describe('Query Tools', () => {
     describe('Folder Matching', () => {
       test('filters by folder name', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           folder: 'edge-cases',
         });
 
@@ -220,7 +221,7 @@ describe('Query Tools', () => {
 
       test('folder with trailing slash works', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           folder: 'edge-cases/',
         });
 
@@ -234,7 +235,7 @@ describe('Query Tools', () => {
 
         // If we have folders "foo" and "foobar", searching for "foo"
         // should NOT match notes in "foobar"
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           folder: 'edge-cases',
         });
 
@@ -249,7 +250,7 @@ describe('Query Tools', () => {
     describe('Title Matching', () => {
       test('title_contains filters by substring', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           title_contains: 'note',
         });
 
@@ -261,7 +262,7 @@ describe('Query Tools', () => {
 
       test('title_contains is case-insensitive', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           title_contains: 'NOTE',
         });
 
@@ -275,7 +276,7 @@ describe('Query Tools', () => {
     describe('Sorting', () => {
       test('sorts by modified date descending by default', async () => {
 
-        const result = await client.callTool('search_notes', { limit: 10 });
+        const result = await client.callTool('search', { scope: 'metadata', limit: 10 });
 
         const data = JSON.parse(result.content[0].text);
         if (data.notes.length > 1) {
@@ -289,7 +290,8 @@ describe('Query Tools', () => {
 
       test('sorts by modified date ascending', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
+          scope: 'metadata',
           sort_by: 'modified',
           order: 'asc',
           limit: 10,
@@ -307,7 +309,8 @@ describe('Query Tools', () => {
 
       test('sorts by title alphabetically', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
+          scope: 'metadata',
           sort_by: 'title',
           order: 'asc',
           limit: 10,
@@ -323,7 +326,8 @@ describe('Query Tools', () => {
 
       test('sorts by created date', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
+          scope: 'metadata',
           sort_by: 'created',
           order: 'desc',
           limit: 10,
@@ -338,7 +342,7 @@ describe('Query Tools', () => {
     describe('Combined Filters', () => {
       test('combines where + has_tag', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           where: { type: 'project' },
           has_tag: 'test',
         });
@@ -354,7 +358,7 @@ describe('Query Tools', () => {
 
       test('combines folder + title_contains', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           folder: 'edge-cases',
           title_contains: 'note',
         });
@@ -370,7 +374,7 @@ describe('Query Tools', () => {
     describe('Edge Cases', () => {
       test('handles empty vault gracefully', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           folder: 'nonexistent-folder-xyz',
         });
 
@@ -381,7 +385,7 @@ describe('Query Tools', () => {
 
       test('handles special characters in search', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           title_contains: '日本',
         });
 
@@ -390,18 +394,18 @@ describe('Query Tools', () => {
         expect(data).toBeDefined();
       });
 
-      test('returns query in response', async () => {
+      test('returns scope in response', async () => {
 
-        const result = await client.callTool('search_notes', {
+        const result = await client.callTool('search', {
           has_tag: 'test',
           folder: 'edge-cases',
           limit: 5,
         });
 
         const data = JSON.parse(result.content[0].text);
-        expect(data.query.has_tag).toBe('test');
-        expect(data.query.folder).toBe('edge-cases');
-        expect(data.query.limit).toBe(5);
+        expect(data.scope).toBe('metadata');
+        expect(data.total_matches).toBeDefined();
+        expect(data.returned).toBeDefined();
       });
     });
   });

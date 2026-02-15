@@ -1,11 +1,12 @@
 /**
  * System tools for Flywheel Crank
- * Tools: vault_list_sections, vault_undo_last_mutation
+ * Tools: vault_undo_last_mutation
+ *
+ * Note: vault_list_sections was absorbed into get_note_structure (read/primitives.ts)
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { readVaultFile, extractHeadings, validatePath } from '../../core/write/writer.js';
 import {
   undoLastCommit,
   getLastCommit,
@@ -14,97 +15,11 @@ import {
   clearLastCrankCommit,
 } from '../../core/write/git.js';
 import type { MutationResult } from '../../core/write/types.js';
-import fs from 'fs/promises';
-import path from 'path';
-
-export interface SectionListResult {
-  success: boolean;
-  message: string;
-  path: string;
-  sections?: Array<{
-    level: number;
-    name: string;
-    line: number;
-  }>;
-}
 
 export function registerSystemTools(
   server: McpServer,
   vaultPath: string
 ): void {
-  // ========================================
-  // Tool: vault_list_sections
-  // ========================================
-  server.tool(
-    'vault_list_sections',
-    'List all sections (headings) in a markdown note',
-    {
-      path: z.string().describe('Vault-relative path to the note'),
-      minLevel: z.number().min(1).max(6).default(1).describe('Minimum heading level to include'),
-      maxLevel: z.number().min(1).max(6).default(6).describe('Maximum heading level to include'),
-    },
-    async ({ path: notePath, minLevel, maxLevel }) => {
-      try {
-        // 1. Validate path
-        if (!validatePath(vaultPath, notePath)) {
-          const result: SectionListResult = {
-            success: false,
-            message: 'Invalid path: path traversal not allowed',
-            path: notePath,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        // 2. Check if file exists
-        const fullPath = path.join(vaultPath, notePath);
-        try {
-          await fs.access(fullPath);
-        } catch {
-          const result: SectionListResult = {
-            success: false,
-            message: `File not found: ${notePath}`,
-            path: notePath,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        // 3. Read file
-        const { content: fileContent } = await readVaultFile(vaultPath, notePath);
-
-        // 4. Extract headings
-        const headings = extractHeadings(fileContent);
-
-        // 5. Filter by level
-        const filteredHeadings = headings.filter(
-          (h) => h.level >= minLevel && h.level <= maxLevel
-        );
-
-        // 6. Format result
-        const sections = filteredHeadings.map((h) => ({
-          level: h.level,
-          name: h.text,
-          line: h.line + 1, // 1-indexed for user display
-        }));
-
-        const result: SectionListResult = {
-          success: true,
-          message: `Found ${sections.length} section(s) in ${notePath}`,
-          path: notePath,
-          sections,
-        };
-
-        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-      } catch (error) {
-        const result: SectionListResult = {
-          success: false,
-          message: `Failed to list sections: ${error instanceof Error ? error.message : String(error)}`,
-          path: notePath,
-        };
-        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-      }
-    }
-  );
-
   // ========================================
   // Tool: vault_undo_last_mutation
   // ========================================

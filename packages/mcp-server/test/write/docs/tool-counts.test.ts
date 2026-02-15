@@ -32,8 +32,8 @@ async function countToolsInSource(): Promise<{
     for (const file of tsFiles) {
       const content = await fs.readFile(path.join(subdirPath, file), 'utf-8');
 
-      // Match server.tool('tool_name', patterns
-      const matches = content.matchAll(/server\.tool\(\s*['"]([^'"]+)['"]/g);
+      // Match server.tool('tool_name', or server.registerTool('tool_name', patterns
+      const matches = content.matchAll(/server\.(?:register)?[Tt]ool\(\s*['"]([^'"]+)['"]/g);
 
       const names: string[] = [];
       for (const match of matches) {
@@ -130,7 +130,6 @@ describe('Tool Count Verification', () => {
 
       const frontmatterTools = [
         'vault_update_frontmatter',
-        'vault_add_frontmatter_field',
       ];
 
       for (const tool of frontmatterTools) {
@@ -157,7 +156,6 @@ describe('Tool Count Verification', () => {
       const toolSet = new Set(toolNames);
 
       const systemTools = [
-        'vault_list_sections',
         'vault_undo_last_mutation',
       ];
 
@@ -200,12 +198,19 @@ describe('Tool Count Verification', () => {
   });
 
   describe('tool naming conventions', () => {
-    it('should use valid prefixes (vault_ or policy_)', async () => {
+    it('should use valid prefixes or known standalone names', async () => {
       const { toolNames } = await countToolsInSource();
 
+      // Some consolidated tools use short, non-prefixed names
+      const ALLOWED_STANDALONE = new Set([
+        'search', 'tasks', 'graph_analysis', 'vault_schema', 'note_intelligence', 'policy',
+        'health_check', 'refresh_index', 'suggest_wikilinks', 'validate_links',
+        'rename_field', 'migrate_field_values',
+      ]);
+
       for (const tool of toolNames) {
-        const hasValidPrefix = tool.startsWith('vault_') || tool.startsWith('policy_');
-        expect(hasValidPrefix, `Tool ${tool} should start with vault_ or policy_`).toBe(true);
+        const hasValidPrefix = tool.startsWith('vault_') || tool.startsWith('policy_') || tool.startsWith('get_') || tool.startsWith('find_') || ALLOWED_STANDALONE.has(tool);
+        expect(hasValidPrefix, `Tool ${tool} should start with vault_ or policy_ or be an allowed standalone name`).toBe(true);
       }
     });
 

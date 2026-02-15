@@ -5,11 +5,14 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import fs from 'fs/promises';
+import path from 'path';
 import {
   formatContent,
   insertInSection,
   removeFromSection,
   replaceInSection,
+  writeVaultFile,
   type MatchMode,
 } from '../../core/write/writer.js';
 import type { FormatType, Position } from '../../core/write/types.js';
@@ -22,25 +25,97 @@ import {
   withVaultFile,
   formatMcpResult,
   errorResult,
+  successResult,
+  handleGitCommit,
 } from '../../core/write/mutation-helpers.js';
+import type { FlywheelConfig } from '../../core/read/config.js';
+
+/**
+ * Create a note from template or minimal fallback.
+ * Returns the path that was created.
+ */
+async function createNoteFromTemplate(
+  vaultPath: string,
+  notePath: string,
+  config: FlywheelConfig
+): Promise<{ created: boolean; templateUsed?: string }> {
+  const fullPath = path.join(vaultPath, notePath);
+
+  // Ensure parent directories exist
+  await fs.mkdir(path.dirname(fullPath), { recursive: true });
+
+  // Try to find a matching template
+  const templates = config.templates || {};
+  const filename = path.basename(notePath, '.md').toLowerCase();
+
+  // Determine which type of periodic note this might be
+  let templatePath: string | undefined;
+  const dailyPattern = /^\d{4}-\d{2}-\d{2}/;
+  const weeklyPattern = /^\d{4}-W\d{2}/;
+  const monthlyPattern = /^\d{4}-\d{2}$/;
+  const quarterlyPattern = /^\d{4}-Q[1-4]$/;
+  const yearlyPattern = /^\d{4}$/;
+
+  if (dailyPattern.test(filename) && templates.daily) {
+    templatePath = templates.daily;
+  } else if (weeklyPattern.test(filename) && templates.weekly) {
+    templatePath = templates.weekly;
+  } else if (monthlyPattern.test(filename) && templates.monthly) {
+    templatePath = templates.monthly;
+  } else if (quarterlyPattern.test(filename) && templates.quarterly) {
+    templatePath = templates.quarterly;
+  } else if (yearlyPattern.test(filename) && templates.yearly) {
+    templatePath = templates.yearly;
+  }
+
+  // Read template content or use minimal fallback
+  let templateContent: string;
+  if (templatePath) {
+    try {
+      const absTemplatePath = path.join(vaultPath, templatePath);
+      templateContent = await fs.readFile(absTemplatePath, 'utf-8');
+    } catch {
+      // Template not readable, use fallback
+      const title = path.basename(notePath, '.md');
+      templateContent = `---\n---\n\n# ${title}\n`;
+      templatePath = undefined;
+    }
+  } else {
+    const title = path.basename(notePath, '.md');
+    templateContent = `---\n---\n\n# ${title}\n`;
+  }
+
+  // Perform simple date substitution in templates
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0];
+  templateContent = templateContent
+    .replace(/\{\{date\}\}/g, dateStr)
+    .replace(/\{\{title\}\}/g, path.basename(notePath, '.md'));
+
+  await fs.writeFile(fullPath, templateContent, 'utf-8');
+
+  return { created: true, templateUsed: templatePath };
+}
 
 /**
  * Register mutation tools with the MCP server
  */
 export function registerMutationTools(
   server: McpServer,
-  vaultPath: string
+  vaultPath: string,
+  getConfig: () => FlywheelConfig = () => ({})
 ): void {
   // ========================================
   // Tool: vault_add_to_section
   // ========================================
   server.tool(
     'vault_add_to_section',
-    'Add content to a specific section in a markdown note',
+    'Add content to a specific section in a markdown note. Set create_if_missing=true to auto-create the note from template if it doesn\'t exist (enables 1-call daily capture).',
     {
       path: z.string().describe('Vault-relative path to the note (e.g., "daily-notes/2026-01-28.md")'),
       section: z.string().describe('Heading text to add to (e.g., "Log" or "## Log")'),
       content: z.string().describe('Content to add to the section'),
+      create_if_missing: z.boolean().default(false).describe('If true and the note doesn\'t exist, create it from template first (enables 1-call daily capture)'),
       position: z.enum(['append', 'prepend']).default('append').describe('Where to insert content'),
       format: z
         .enum(['plain', 'bullet', 'task', 'numbered', 'timestamp-bullet'])
@@ -57,7 +132,23 @@ export function registerMutationTools(
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping (e.g., "claude-opus", "planning-agent")'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping (e.g., "sess-abc123")'),
     },
-    async ({ path: notePath, section, content, position, format, commit, skipWikilinks, preserveListNesting, suggestOutgoingLinks, maxSuggestions, validate, normalize, guardrails, agent_id, session_id }) => {
+    async ({ path: notePath, section, content, create_if_missing, position, format, commit, skipWikilinks, preserveListNesting, suggestOutgoingLinks, maxSuggestions, validate, normalize, guardrails, agent_id, session_id }) => {
+      // Handle create_if_missing: create note from template before proceeding
+      let noteCreated = false;
+      let templateUsed: string | undefined;
+      if (create_if_missing) {
+        const fullPath = path.join(vaultPath, notePath);
+        try {
+          await fs.access(fullPath);
+        } catch {
+          // File doesn't exist - create it from template
+          const config = getConfig();
+          const result = await createNoteFromTemplate(vaultPath, notePath, config);
+          noteCreated = result.created;
+          templateUsed = result.templateUsed;
+        }
+      }
+
       return withVaultFile(
         {
           vaultPath,
@@ -121,9 +212,13 @@ export function registerMutationTools(
           const infoLines = [wikilinkInfo, suggestInfo].filter(Boolean);
           const preview = formattedContent + (infoLines.length > 0 ? `\n(${infoLines.join('; ')})` : '');
 
+          const createdInfo = noteCreated
+            ? ` (note created${templateUsed ? ` from ${templateUsed}` : ' with minimal template'})`
+            : '';
+
           return {
             updatedContent,
-            message: `Added content to section "${ctx.sectionBoundary!.name}" in ${notePath}`,
+            message: `Added content to section "${ctx.sectionBoundary!.name}" in ${notePath}${createdInfo}`,
             preview,
             _debug,  // Temporary debug field for production troubleshooting
             warnings: validationResult.inputWarnings.length > 0 ? validationResult.inputWarnings : undefined,

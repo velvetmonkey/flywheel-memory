@@ -106,8 +106,8 @@ describe('README Blocking Chain Example', () => {
   describe('Blocking Chain is Traceable', () => {
     it('should find blocked/delayed notes via search', async () => {
       const result = await client.callTool({
-        name: 'search_notes',
-        arguments: { query: 'status', limit: 50 }
+        name: 'search',
+        arguments: { scope: 'metadata', limit: 50 }
       });
 
       expect(result.isError).toBeFalsy();

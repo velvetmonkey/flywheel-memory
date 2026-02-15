@@ -1,19 +1,15 @@
 /**
  * Frontmatter tools for Flywheel Crank
- * Tools: vault_update_frontmatter, vault_add_frontmatter_field
+ * Tools: vault_update_frontmatter (also handles add-if-missing via only_if_missing param)
+ *
+ * Note: vault_add_frontmatter_field was absorbed into vault_update_frontmatter
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import {
   withVaultFrontmatter,
-  ensureFileExists,
-  handleGitCommit,
-  formatMcpResult,
-  errorResult,
-  successResult,
 } from '../../core/write/mutation-helpers.js';
-import { readVaultFile, writeVaultFile } from '../../core/write/writer.js';
 
 /**
  * Register frontmatter tools with the MCP server
@@ -27,13 +23,14 @@ export function registerFrontmatterTools(
   // ========================================
   server.tool(
     'vault_update_frontmatter',
-    'Update frontmatter fields in a note (merge with existing frontmatter)',
+    'Update frontmatter fields in a note (merge with existing). Set only_if_missing=true to only add fields that don\'t already exist (absorbed vault_add_frontmatter_field).',
     {
       path: z.string().describe('Vault-relative path to the note'),
       frontmatter: z.record(z.any()).describe('Frontmatter fields to update (JSON object)'),
+      only_if_missing: z.boolean().default(false).describe('If true, only add fields that don\'t already exist in the frontmatter (skip existing keys)'),
       commit: z.boolean().default(false).describe('If true, commit this change to git (creates undo point)'),
     },
-    async ({ path: notePath, frontmatter: updates, commit }) => {
+    async ({ path: notePath, frontmatter: updates, only_if_missing, commit }) => {
       return withVaultFrontmatter(
         {
           vaultPath,
@@ -43,12 +40,40 @@ export function registerFrontmatterTools(
           actionDescription: 'update frontmatter',
         },
         async (ctx) => {
-          // Merge frontmatter (updates override existing)
-          const updatedFrontmatter = { ...ctx.frontmatter, ...updates };
+          let effectiveUpdates: Record<string, unknown>;
+
+          if (only_if_missing) {
+            // Only add keys that don't exist yet
+            effectiveUpdates = {};
+            const skippedKeys: string[] = [];
+            for (const [key, value] of Object.entries(updates)) {
+              if (key in ctx.frontmatter) {
+                skippedKeys.push(key);
+              } else {
+                effectiveUpdates[key] = value;
+              }
+            }
+
+            if (Object.keys(effectiveUpdates).length === 0) {
+              const skippedMsg = skippedKeys.length > 0
+                ? ` (skipped existing: ${skippedKeys.join(', ')})`
+                : '';
+              return {
+                updatedFrontmatter: ctx.frontmatter,
+                message: `No new fields to add${skippedMsg}`,
+                preview: skippedKeys.map(k => `${k}: already exists`).join('\n'),
+              };
+            }
+          } else {
+            effectiveUpdates = updates;
+          }
+
+          // Merge frontmatter (updates override existing, unless only_if_missing filtered them)
+          const updatedFrontmatter = { ...ctx.frontmatter, ...effectiveUpdates };
 
           // Generate preview
-          const updatedKeys = Object.keys(updates);
-          const preview = updatedKeys.map(k => `${k}: ${JSON.stringify(updates[k])}`).join('\n');
+          const updatedKeys = Object.keys(effectiveUpdates);
+          const preview = updatedKeys.map(k => `${k}: ${JSON.stringify(effectiveUpdates[k])}`).join('\n');
 
           return {
             updatedFrontmatter,
@@ -57,62 +82,6 @@ export function registerFrontmatterTools(
           };
         }
       );
-    }
-  );
-
-  // ========================================
-  // Tool: vault_add_frontmatter_field
-  // ========================================
-  server.tool(
-    'vault_add_frontmatter_field',
-    'Add a new frontmatter field to a note (only if it doesn\'t exist)',
-    {
-      path: z.string().describe('Vault-relative path to the note'),
-      key: z.string().describe('Field name to add'),
-      value: z.any().describe('Field value (string, number, boolean, array, object)'),
-      commit: z.boolean().default(false).describe('If true, commit this change to git (creates undo point)'),
-    },
-    async ({ path: notePath, key, value, commit }) => {
-      try {
-        // 1. Check if file exists
-        const existsError = await ensureFileExists(vaultPath, notePath);
-        if (existsError) {
-          return formatMcpResult(existsError);
-        }
-
-        // 2. Read file with frontmatter
-        const { content, frontmatter, lineEnding } = await readVaultFile(vaultPath, notePath);
-
-        // 3. Check if key already exists (custom validation for this tool)
-        if (key in frontmatter) {
-          return formatMcpResult(
-            errorResult(notePath, `Field "${key}" already exists. Use vault_update_frontmatter to modify existing fields.`)
-          );
-        }
-
-        // 4. Add new field
-        const updatedFrontmatter = { ...frontmatter, [key]: value };
-
-        // 5. Write back
-        await writeVaultFile(vaultPath, notePath, content, updatedFrontmatter, lineEnding);
-
-        // 6. Handle git commit
-        const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Crank:FM]');
-
-        // 7. Build result
-        return formatMcpResult(
-          successResult(notePath, `Added frontmatter field "${key}" to ${notePath}`, gitInfo, {
-            preview: `${key}: ${JSON.stringify(value)}`,
-          })
-        );
-      } catch (error) {
-        return formatMcpResult(
-          errorResult(
-            notePath,
-            `Failed to add frontmatter field: ${error instanceof Error ? error.message : String(error)}`
-          )
-        );
-      }
     }
   );
 }

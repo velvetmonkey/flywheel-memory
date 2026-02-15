@@ -61,10 +61,10 @@ describe('README Examples: Artemis Rocket Vault', () => {
       expect(healthData.vault_path).toContain('artemis-rocket');
     });
 
-    it('should find hub notes with find_hub_notes', async () => {
+    it('should find hub notes with graph_analysis', async () => {
       const result = await client.callTool({
-        name: 'find_hub_notes',
-        arguments: { limit: 10 },
+        name: 'graph_analysis',
+        arguments: { analysis: 'hubs', limit: 10 },
       });
 
       expect(result.isError).toBeFalsy();
@@ -83,10 +83,10 @@ describe('README Examples: Artemis Rocket Vault', () => {
     });
 
     it('should get backlinks for a note', async () => {
-      // Use get_recent_notes to find a note to test backlinks on
+      // Use search to find a note to test backlinks on
       const recentResult = await client.callTool({
-        name: 'get_recent_notes',
-        arguments: { limit: 5 },
+        name: 'search',
+        arguments: { scope: 'metadata', sort_by: 'modified', limit: 5 },
       });
 
       expect(recentResult.isError).toBeFalsy();
@@ -113,22 +113,22 @@ describe('README Examples: Artemis Rocket Vault', () => {
 
     it('should search notes by title', async () => {
       const result = await client.callTool({
-        name: 'search_notes',
-        arguments: { title_contains: 'project', limit: 10 },
+        name: 'search',
+        arguments: { scope: 'metadata', title_contains: 'project', limit: 10 },
       });
 
       expect(result.isError).toBeFalsy();
       const content = result.content as Array<{ type: string; text: string }>;
       const searchResults = JSON.parse(content[0].text);
 
-      // search_notes returns { notes: [...] }
+      // search returns { notes: [...] }
       expect(Array.isArray(searchResults.notes)).toBe(true);
     });
 
-    it('should get recent notes', async () => {
+    it('should get recent notes via search', async () => {
       const result = await client.callTool({
-        name: 'get_recent_notes',
-        arguments: { limit: 10 },
+        name: 'search',
+        arguments: { scope: 'metadata', sort_by: 'modified', limit: 10 },
       });
 
       expect(result.isError).toBeFalsy();
@@ -141,8 +141,8 @@ describe('README Examples: Artemis Rocket Vault', () => {
 
     it('should get orphan notes', async () => {
       const result = await client.callTool({
-        name: 'find_orphan_notes',
-        arguments: { limit: 20 },
+        name: 'graph_analysis',
+        arguments: { analysis: 'orphans', limit: 20 },
       });
 
       expect(result.isError).toBeFalsy();
@@ -229,21 +229,20 @@ describe('README Examples: Carter Strategy Vault', () => {
   it('should list all tools', async () => {
     const tools = await client.listTools();
 
-    expect(tools.tools.length).toBeGreaterThanOrEqual(30);
+    expect(tools.tools.length).toBeGreaterThanOrEqual(24);
 
     // Check for key tool categories
     const toolNames = tools.tools.map(t => t.name);
 
     // Graph tools
     expect(toolNames).toContain('get_backlinks');
-    expect(toolNames).toContain('find_hub_notes');
+    expect(toolNames).toContain('graph_analysis');
 
     // Health tools
     expect(toolNames).toContain('health_check');
 
     // Query tools
-    expect(toolNames).toContain('search_notes');
-    expect(toolNames).toContain('get_recent_notes');
+    expect(toolNames).toContain('search');
   });
 });
 
@@ -282,10 +281,8 @@ describe('Tool Registration Consistency', () => {
       'health_check',
       'get_backlinks',
       'get_forward_links',
-      'find_hub_notes',
-      'find_orphan_notes',
-      'search_notes',
-      'get_recent_notes',
+      'graph_analysis',
+      'search',
       'get_note_metadata',
       'get_folder_structure',
     ];
@@ -298,9 +295,9 @@ describe('Tool Registration Consistency', () => {
   it('should return valid JSON from all tools', async () => {
     const testCalls = [
       { name: 'health_check', arguments: {} },
-      { name: 'find_hub_notes', arguments: { limit: 5 } },
-      { name: 'find_orphan_notes', arguments: { limit: 5 } },
-      { name: 'get_recent_notes', arguments: { limit: 5 } },
+      { name: 'graph_analysis', arguments: { analysis: 'hubs', limit: 5 } },
+      { name: 'graph_analysis', arguments: { analysis: 'orphans', limit: 5 } },
+      { name: 'search', arguments: { scope: 'metadata', sort_by: 'modified', limit: 5 } },
     ];
 
     for (const call of testCalls) {

@@ -120,8 +120,8 @@ describe('End-to-End Blocking Chain Trace', () => {
     // Step 7: Verify the chain by searching for all blocked/delayed items
     console.log('\n--- STEP 7: Search for all blocked/delayed items ---');
     const blocked = await client.callTool({
-      name: 'search_notes',
-      arguments: { query: 'status', limit: 50 }
+      name: 'search',
+      arguments: { scope: 'metadata', limit: 50 }
     });
     const blockedData = JSON.parse((blocked.content as any)[0].text);
     const blockedItems = blockedData.notes.filter((n: any) =>

@@ -9,6 +9,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
 import { buildVaultIndex, setIndexState, setIndexError } from '../../core/read/graph.js';
 import { loadConfig, inferConfig, saveConfig, type FlywheelConfig } from '../../core/read/config.js';
+import { buildFTS5Index } from '../../core/read/fts5.js';
 import { scanVaultEntities, type StateDb } from '@velvetmonkey/vault-core';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
@@ -24,11 +25,12 @@ export function registerSystemTools(
   setConfig?: (config: FlywheelConfig) => void,
   getStateDb?: () => StateDb | null
 ) {
-  // refresh_index - Rebuild the vault index without server restart
+  // refresh_index - Rebuild vault index + FTS5 search index without server restart
   const RefreshIndexOutputSchema = {
     success: z.boolean().describe('Whether the refresh succeeded'),
     notes_count: z.number().describe('Number of notes indexed'),
     entities_count: z.number().describe('Number of entities (titles + aliases)'),
+    fts5_notes: z.number().describe('Number of notes in FTS5 search index'),
     duration_ms: z.number().describe('Time taken to rebuild index'),
   };
 
@@ -36,6 +38,7 @@ export function registerSystemTools(
     success: boolean;
     notes_count: number;
     entities_count: number;
+    fts5_notes: number;
     duration_ms: number;
   };
 
@@ -44,7 +47,7 @@ export function registerSystemTools(
     {
       title: 'Refresh Index',
       description:
-        'Rebuild the vault index without restarting the server. Use after making changes to notes in Obsidian.',
+        'Rebuild the vault index and FTS5 search index without restarting the server. Use after making changes to notes in Obsidian or if search results seem stale.',
       inputSchema: {},
       outputSchema: RefreshIndexOutputSchema,
     },
@@ -93,10 +96,21 @@ export function registerSystemTools(
           setConfig(loadConfig(stateDb));
         }
 
+        // Rebuild FTS5 search index
+        let fts5Notes = 0;
+        try {
+          const ftsState = await buildFTS5Index(vaultPath);
+          fts5Notes = ftsState.noteCount;
+          console.error(`[Flywheel] FTS5 index rebuilt: ${fts5Notes} notes`);
+        } catch (err) {
+          console.error('[Flywheel] FTS5 rebuild failed:', err);
+        }
+
         const output: RefreshIndexOutput = {
           success: true,
           notes_count: newIndex.notes.size,
           entities_count: newIndex.entities.size,
+          fts5_notes: fts5Notes,
           duration_ms: Date.now() - startTime,
         };
 
@@ -117,6 +131,7 @@ export function registerSystemTools(
           success: false,
           notes_count: 0,
           entities_count: 0,
+          fts5_notes: 0,
           duration_ms: Date.now() - startTime,
         };
 
@@ -219,126 +234,6 @@ export function registerSystemTools(
       const output: GetAllEntitiesOutput = {
         entity_count: limitedEntities.length,
         entities: limitedEntities,
-      };
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(output, null, 2),
-          },
-        ],
-        structuredContent: output,
-      };
-    }
-  );
-
-  // get_recent_notes - Get notes modified recently
-  const GetRecentNotesOutputSchema = {
-    count: z.number().describe('Number of notes returned'),
-    days: z.number().describe('Number of days looked back'),
-    notes: z
-      .array(
-        z.object({
-          path: z.string().describe('Path to the note'),
-          title: z.string().describe('Note title'),
-          modified: z.string().describe('Last modified date (ISO format)'),
-          tags: z.array(z.string()).describe('Tags on this note'),
-        })
-      )
-      .describe('List of recently modified notes'),
-  };
-
-  type GetRecentNotesOutput = {
-    count: number;
-    days: number;
-    notes: Array<{
-      path: string;
-      title: string;
-      modified: string;
-      tags: string[];
-    }>;
-  };
-
-  server.registerTool(
-    'get_recent_notes',
-    {
-      title: 'Get Recent Notes',
-      description:
-        'Get notes modified within the last N days. Useful for generating reviews and understanding recent activity.',
-      inputSchema: {
-        days: z.coerce.number().default(7).describe('Number of days to look back'),
-        limit: z.coerce
-          .number()
-          .default(50)
-          .describe('Maximum number of notes to return'),
-        folder: z
-          .string()
-          .optional()
-          .describe('Limit to notes in this folder'),
-      },
-      outputSchema: GetRecentNotesOutputSchema,
-    },
-    async ({
-      days,
-      limit: requestedLimit,
-      folder,
-    }): Promise<{
-      content: Array<{ type: 'text'; text: string }>;
-      structuredContent: GetRecentNotesOutput;
-    }> => {
-      requireIndex();
-      const index = getIndex();
-
-      // Cap limit to prevent massive payloads
-      const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
-
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - days);
-
-      const recentNotes: Array<{
-        path: string;
-        title: string;
-        modified: string;
-        tags: string[];
-        modifiedDate: Date;
-      }> = [];
-
-      for (const note of index.notes.values()) {
-        // Filter by folder if specified
-        if (folder && !note.path.startsWith(folder)) {
-          continue;
-        }
-
-        // Filter by date
-        if (note.modified >= cutoffDate) {
-          recentNotes.push({
-            path: note.path,
-            title: note.title,
-            modified: note.modified.toISOString(),
-            tags: note.tags,
-            modifiedDate: note.modified,
-          });
-        }
-      }
-
-      // Sort by modified date (most recent first)
-      recentNotes.sort(
-        (a, b) => b.modifiedDate.getTime() - a.modifiedDate.getTime()
-      );
-
-      // Apply limit
-      const limitedNotes = recentNotes.slice(0, limit);
-
-      const output: GetRecentNotesOutput = {
-        count: limitedNotes.length,
-        days,
-        notes: limitedNotes.map((n) => ({
-          path: n.path,
-          title: n.title,
-          modified: n.modified,
-          tags: n.tags,
-        })),
       };
 
       return {

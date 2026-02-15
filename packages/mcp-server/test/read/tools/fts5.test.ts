@@ -1,7 +1,7 @@
 /**
  * Tests for FTS5 Full-Text Search Tools
  *
- * These tests cover the full_text_search and rebuild_search_index tools,
+ * These tests cover the search and refresh_index tools,
  * including stemming, phrase matching, boolean operators, and edge cases.
  */
 
@@ -35,31 +35,32 @@ describe('FTS5 Full-Text Search Tools', () => {
     }
   });
 
-  describe('rebuild_search_index', () => {
+  describe('refresh_index', () => {
     test('builds index successfully', async () => {
-      const result = await client.callTool('rebuild_search_index', {});
+      const result = await client.callTool('refresh_index', {});
 
       const data = JSON.parse(result.content[0].text);
-      expect(data.status).toBe('success');
-      expect(data.notes_indexed).toBeGreaterThan(0);
-      expect(data.message).toContain('Successfully indexed');
+      expect(data.success).toBe(true);
+      expect(data.notes_count).toBeGreaterThan(0);
+      expect(data.fts5_notes).toBeGreaterThanOrEqual(0);
     });
 
     test('reports note count in response', async () => {
-      const result = await client.callTool('rebuild_search_index', {});
+      const result = await client.callTool('refresh_index', {});
 
       const data = JSON.parse(result.content[0].text);
       // Should index markdown files from fixtures
-      expect(data.notes_indexed).toBeGreaterThan(10);
+      expect(data.notes_count).toBeGreaterThan(10);
     });
   });
 
-  describe('full_text_search', () => {
+  describe('search (content scope)', () => {
     describe('Basic Functionality', () => {
       test('finds notes containing a simple term', async () => {
 
-        // full_text_search will auto-build index if needed
-        const result = await client.callTool('full_text_search', {
+        // search with scope content will auto-build index if needed
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'note',
         });
 
@@ -70,7 +71,8 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('returns expected result format', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'note',
           limit: 1,
         });
@@ -85,7 +87,8 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('respects limit parameter', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'note',
           limit: 2,
         });
@@ -95,7 +98,8 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('returns query in response', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'test search',
         });
 
@@ -107,33 +111,32 @@ describe('FTS5 Full-Text Search Tools', () => {
     describe('Stemming', () => {
       test('matches stemmed variations', async () => {
 
-        // Create test content with word variations
-        // Stemming should match "link" from "linking", "links", "linked"
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'link',
         });
 
         const data = JSON.parse(result.content[0].text);
-        // If fixtures contain wikilinks or linking content, should match
         expect(data).toBeDefined();
       });
     });
 
     describe('Phrase Search', () => {
       test('handles phrase queries with quotes', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: '"test note"',
         });
 
         const data = JSON.parse(result.content[0].text);
-        // Should not crash on phrase search
         expect(data.query).toBe('"test note"');
       });
     });
 
     describe('Boolean Operators', () => {
       test('handles AND operator', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'note AND test',
         });
 
@@ -142,7 +145,8 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('handles OR operator', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'note OR test',
         });
 
@@ -151,7 +155,8 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('handles NOT operator', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'note NOT test',
         });
 
@@ -162,26 +167,26 @@ describe('FTS5 Full-Text Search Tools', () => {
 
     describe('Prefix Matching', () => {
       test('handles prefix wildcard', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'not*',
         });
 
         const data = JSON.parse(result.content[0].text);
-        // Should match "note", "notes", etc.
         expect(data).toBeDefined();
       });
     });
 
     describe('Snippets', () => {
       test('returns highlighted snippets', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'note',
           limit: 5,
         });
 
         const data = JSON.parse(result.content[0].text);
         if (data.results.length > 0) {
-          // Snippets use [...] brackets for highlighting
           const hasSnippet = data.results.some(
             (r: { snippet: string }) => r.snippet && r.snippet.length > 0
           );
@@ -192,7 +197,8 @@ describe('FTS5 Full-Text Search Tools', () => {
 
     describe('Edge Cases', () => {
       test('handles empty results gracefully', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: 'xyznonexistenttermxyz123456',
         });
 
@@ -202,27 +208,25 @@ describe('FTS5 Full-Text Search Tools', () => {
       });
 
       test('handles special characters', async () => {
-
-        // FTS5 should handle special characters
         try {
-          const result = await client.callTool('full_text_search', {
+          const result = await client.callTool('search', {
+            scope: 'content',
             query: 'test',
           });
           const data = JSON.parse(result.content[0].text);
           expect(data).toBeDefined();
         } catch (err) {
-          // Some special queries may fail - that's expected
           expect(err).toBeDefined();
         }
       });
 
       test('handles unicode text', async () => {
-        const result = await client.callTool('full_text_search', {
+        const result = await client.callTool('search', {
+          scope: 'content',
           query: '日本',
         });
 
         const data = JSON.parse(result.content[0].text);
-        // Should not crash on unicode
         expect(data).toBeDefined();
       });
     });

@@ -2,11 +2,17 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * Combines:
- * - 51 read tools from Flywheel (search, backlinks, graph)
- * - 22 write tools from Flywheel-Crank (mutations, tasks, notes)
- *
- * Total: 73 tools
+ * Phase 1 consolidation: 76 → ~63 tools
+ * Phase 2 consolidation: ~63 → ~49 tools
+ * Phase 3 consolidation: ~49 → ~36 tools
+ * - policy (unified: list, validate, preview, execute, author, revise)
+ * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
+ * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
+ * - graph_analysis (unified: orphans, dead_ends, sources, hubs, stale)
+ * - vault_schema (unified: frontmatter schema, conventions, incomplete, suggest_values)
+ * - note_intelligence (unified: prose_patterns, suggest_frontmatter, wikilinks, cross_layer, compute)
+ * - get_backlinks (absorbed find_bidirectional_links via include_bidirectional param)
+ * - validate_links (absorbed find_broken_links via typos_only param)
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -47,11 +53,10 @@ import { registerHealthTools } from './tools/read/health.js';
 import { registerQueryTools } from './tools/read/query.js';
 import { registerSystemTools as registerReadSystemTools } from './tools/read/system.js';
 import { registerPrimitiveTools } from './tools/read/primitives.js';
-import { registerPeriodicTools } from './tools/read/periodic.js';
-import { registerBidirectionalTools } from './tools/read/bidirectional.js';
-import { registerSchemaTools } from './tools/read/schema.js';
-import { registerComputedTools } from './tools/read/computed.js';
 import { registerMigrationTools } from './tools/read/migrations.js';
+import { registerGraphAnalysisTools } from './tools/read/graphAnalysis.js';
+import { registerVaultSchemaTools } from './tools/read/vaultSchema.js';
+import { registerNoteIntelligenceTools } from './tools/read/noteIntelligence.js';
 
 // Write tool registrations
 import { registerMutationTools } from './tools/write/mutations.js';
@@ -81,48 +86,48 @@ let stateDb: StateDb | null = null;
 // FLYWHEEL_TOOLS env var controls which tools are loaded.
 //
 // Presets:
-//   minimal  - Voice graph building (~30 tools, ~5,200 tokens)
-//   full     - All tools (~76 tools, ~11,100 tokens) [DEFAULT]
+//   minimal  - Core tools for search, navigate, create, edit (~19 tools)
+//   full     - All tools (~63 tools) [DEFAULT]
 //
 // Fine-grained: use comma-separated category names for custom sets.
 //   FLYWHEEL_TOOLS=search,backlinks,append
 //
 // Categories:
-//   READ:  search, backlinks, orphans, hubs, paths, temporal, periodic,
+//   READ:  search, backlinks, orphans, hubs, paths,
 //          schema, structure, tasks, health, wikilinks
-//   WRITE: append, frontmatter, sections, notes, git, policy
+//   WRITE: append, frontmatter, notes, git, policy
 // ============================================================================
 
 type ToolCategory =
   // Read
   | 'backlinks' | 'orphans' | 'hubs' | 'paths'
-  | 'search' | 'temporal' | 'periodic'
+  | 'search'
   | 'schema' | 'structure' | 'tasks'
   | 'health' | 'wikilinks'
   // Write
-  | 'append' | 'frontmatter' | 'sections' | 'notes'
+  | 'append' | 'frontmatter' | 'notes'
   | 'git' | 'policy';
 
 const PRESETS: Record<string, ToolCategory[]> = {
-  // Core voice tools: search, navigate, create, edit
-  minimal: ['search', 'backlinks', 'health', 'tasks', 'append', 'frontmatter', 'notes'],
+  // Core tools: search, navigate, create, edit
+  minimal: ['search', 'backlinks', 'health', 'tasks', 'append', 'frontmatter', 'notes', 'structure'],
 
   // All tools (default)
   full: [
     'search', 'backlinks', 'orphans', 'hubs', 'paths',
-    'temporal', 'periodic', 'schema', 'structure', 'tasks',
+    'schema', 'structure', 'tasks',
     'health', 'wikilinks',
-    'append', 'frontmatter', 'sections', 'notes',
+    'append', 'frontmatter', 'notes',
     'git', 'policy',
   ],
 };
 
 const ALL_CATEGORIES: ToolCategory[] = [
   'backlinks', 'orphans', 'hubs', 'paths',
-  'search', 'temporal', 'periodic',
+  'search',
   'schema', 'structure', 'tasks',
   'health', 'wikilinks',
-  'append', 'frontmatter', 'sections', 'notes',
+  'append', 'frontmatter', 'notes',
   'git', 'policy',
 ];
 
@@ -174,77 +179,41 @@ const enabledCategories = parseEnabledCategories();
 
 // Per-tool category mapping (tool name → category)
 const TOOL_CATEGORY: Record<string, ToolCategory> = {
-  // health
+  // health (includes periodic detection in output)
   health_check: 'health',
   get_vault_stats: 'health',
   get_folder_structure: 'health',
-  refresh_index: 'health',
-  rebuild_search_index: 'health',
+  refresh_index: 'health',   // absorbed rebuild_search_index
   get_note_metadata: 'health',
   get_all_entities: 'health',
   get_unlinked_mentions: 'health',
-  get_recent_notes: 'health',
-  find_broken_links: 'health',
 
-  // search
-  search_notes: 'search',
-  full_text_search: 'search',
-  search_entities: 'search',
+  // search (unified: metadata + content + entities)
+  search: 'search',
 
   // backlinks
   get_backlinks: 'backlinks',
   get_forward_links: 'backlinks',
-  find_bidirectional_links: 'backlinks',
 
-  // orphans
-  find_orphan_notes: 'orphans',
-  find_dead_ends: 'orphans',
-  find_sources: 'orphans',
-
-  // hubs
-  find_hub_notes: 'hubs',
+  // orphans (graph_analysis covers orphans, dead_ends, sources, hubs, stale)
+  graph_analysis: 'orphans',
   get_connection_strength: 'hubs',
 
   // paths
   get_link_path: 'paths',
   get_common_neighbors: 'paths',
 
-  // temporal
-  get_stale_notes: 'temporal',
-  get_notes_in_range: 'temporal',
-  get_notes_modified_on: 'temporal',
-  get_contemporaneous_notes: 'temporal',
-  get_activity_summary: 'temporal',
+  // schema (vault_schema + note_intelligence cover all schema tools)
+  vault_schema: 'schema',
+  note_intelligence: 'schema',
 
-  // periodic
-  detect_periodic_notes: 'periodic',
-
-  // schema
-  get_frontmatter_schema: 'schema',
-  get_field_values: 'schema',
-  find_frontmatter_inconsistencies: 'schema',
-  validate_frontmatter: 'schema',
-  find_missing_frontmatter: 'schema',
-  infer_folder_conventions: 'schema',
-  find_incomplete_notes: 'schema',
-  suggest_field_values: 'schema',
-  detect_prose_patterns: 'schema',
-  suggest_frontmatter_from_prose: 'schema',
-  suggest_wikilinks_in_frontmatter: 'schema',
-  validate_cross_layer: 'schema',
-  compute_frontmatter: 'schema',
-
-  // structure
+  // structure (absorbed get_headings + vault_list_sections)
   get_note_structure: 'structure',
-  get_headings: 'structure',
   get_section_content: 'structure',
   find_sections: 'structure',
 
-  // tasks (read + write)
-  get_all_tasks: 'tasks',
-  get_tasks_from_note: 'tasks',
-  get_tasks_with_due_dates: 'tasks',
-  get_incomplete_tasks: 'tasks',
+  // tasks (unified: all task queries + write)
+  tasks: 'tasks',
   vault_toggle_task: 'tasks',
   vault_add_task: 'tasks',
 
@@ -257,12 +226,8 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_remove_from_section: 'append',
   vault_replace_in_section: 'append',
 
-  // frontmatter (metadata mutations)
+  // frontmatter (absorbed vault_add_frontmatter_field via only_if_missing)
   vault_update_frontmatter: 'frontmatter',
-  vault_add_frontmatter_field: 'frontmatter',
-
-  // sections
-  vault_list_sections: 'sections',
 
   // notes (CRUD)
   vault_create_note: 'notes',
@@ -274,15 +239,7 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_undo_last_mutation: 'git',
 
   // policy
-  policy_validate: 'policy',
-  policy_preview: 'policy',
-  policy_execute: 'policy',
-  policy_author: 'policy',
-  policy_revise: 'policy',
-  policy_list: 'policy',
-  policy_diff: 'policy',
-  policy_export: 'policy',
-  policy_import: 'policy',
+  policy: 'policy',
 
   // schema (migrations)
   rename_field: 'schema',
@@ -335,7 +292,7 @@ console.error(`[Memory] Tool categories: ${categoryList}`);
 // ============================================================================
 
 // Read tools
-registerHealthTools(server, () => vaultIndex, () => vaultPath);
+registerHealthTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
 registerReadSystemTools(
   server,
   () => vaultIndex,
@@ -348,21 +305,19 @@ registerGraphTools(server, () => vaultIndex, () => vaultPath);
 registerWikilinkTools(server, () => vaultIndex, () => vaultPath);
 registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
-registerPeriodicTools(server, () => vaultIndex);
-registerSchemaTools(server, () => vaultIndex, () => vaultPath);
-registerBidirectionalTools(server, () => vaultIndex, () => vaultPath);
-registerComputedTools(server, () => vaultIndex, () => vaultPath);
+registerGraphAnalysisTools(server, () => vaultIndex, () => vaultPath);
+registerVaultSchemaTools(server, () => vaultIndex, () => vaultPath);
+registerNoteIntelligenceTools(server, () => vaultIndex, () => vaultPath);
 registerMigrationTools(server, () => vaultIndex, () => vaultPath);
 
 // Write tools
-registerMutationTools(server, vaultPath);
+registerMutationTools(server, vaultPath, () => flywheelConfig);
 registerTaskTools(server, vaultPath);
 registerFrontmatterTools(server, vaultPath);
 registerNoteTools(server, vaultPath, () => vaultIndex);
 registerMoveNoteTools(server, vaultPath);
 registerWriteSystemTools(server, vaultPath);
 registerPolicyTools(server, vaultPath);
-// registerMemoryTools(server, vaultPath);
 
 console.error(`[Memory] Registered ${_registeredCount} tools, skipped ${_skippedCount}`);
 

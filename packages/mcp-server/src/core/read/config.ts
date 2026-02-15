@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import type { VaultIndex } from './types.js';
 import {
@@ -16,9 +17,19 @@ export interface FlywheelPaths {
   templates?: string;
 }
 
+/** Discovered template file paths (vault-relative) */
+export interface FlywheelTemplates {
+  daily?: string;      // e.g. "templates/daily.md"
+  weekly?: string;
+  monthly?: string;
+  quarterly?: string;
+  yearly?: string;
+}
+
 export interface FlywheelConfig {
   vault_name?: string;
   paths?: FlywheelPaths;
+  templates?: FlywheelTemplates;
   exclude_task_tags?: string[];
 }
 
@@ -148,6 +159,11 @@ export function inferConfig(index: VaultIndex, vaultPath?: string): FlywheelConf
   const templatesPath = findMatchingFolder(folders, FOLDER_PATTERNS.templates);
   if (templatesPath) inferred.paths!.templates = templatesPath;
 
+  // Scan templates folder for periodic note templates
+  if (templatesPath && vaultPath) {
+    inferred.templates = scanTemplatesFolder(vaultPath, templatesPath);
+  }
+
   // Find tags that match recurring patterns
   for (const tag of index.tags.keys()) {
     const lowerTag = tag.toLowerCase();
@@ -157,6 +173,39 @@ export function inferConfig(index: VaultIndex, vaultPath?: string): FlywheelConf
   }
 
   return inferred;
+}
+
+/** Template filename patterns (case-insensitive) mapped to periodic types */
+const TEMPLATE_PATTERNS: Record<keyof FlywheelTemplates, RegExp> = {
+  daily: /^daily[\s._-]*(note|template)?\.md$/i,
+  weekly: /^weekly[\s._-]*(note|template)?\.md$/i,
+  monthly: /^monthly[\s._-]*(note|template)?\.md$/i,
+  quarterly: /^quarterly[\s._-]*(note|template)?\.md$/i,
+  yearly: /^yearly[\s._-]*(note|template|review)?\.md$/i,
+};
+
+/**
+ * Scan the templates folder for periodic note templates.
+ * Matches files like daily.md, weekly-note.md, etc.
+ */
+function scanTemplatesFolder(vaultPath: string, templatesFolder: string): FlywheelTemplates {
+  const templates: FlywheelTemplates = {};
+  const absFolder = path.join(vaultPath, templatesFolder);
+
+  try {
+    const files = fs.readdirSync(absFolder);
+    for (const file of files) {
+      for (const [type, pattern] of Object.entries(TEMPLATE_PATTERNS)) {
+        if (pattern.test(file) && !templates[type as keyof FlywheelTemplates]) {
+          templates[type as keyof FlywheelTemplates] = `${templatesFolder}/${file}`;
+        }
+      }
+    }
+  } catch {
+    // Templates folder not readable - skip
+  }
+
+  return templates;
 }
 
 /**
@@ -174,10 +223,14 @@ export function saveConfig(
 ): void {
   try {
     // Existing config values take precedence over inferred
-    // Deep merge paths object so existing path values override inferred
+    // Deep merge paths and templates so existing values override inferred
     const mergedPaths: FlywheelPaths = {
       ...inferred.paths,
       ...existing?.paths,
+    };
+    const mergedTemplates: FlywheelTemplates = {
+      ...inferred.templates,
+      ...existing?.templates,
     };
     const merged: FlywheelConfig = {
       ...DEFAULT_CONFIG,
@@ -185,6 +238,7 @@ export function saveConfig(
       ...existing,
       // Only include paths if there are any detected values
       ...(Object.keys(mergedPaths).length > 0 ? { paths: mergedPaths } : {}),
+      ...(Object.keys(mergedTemplates).length > 0 ? { templates: mergedTemplates } : {}),
     };
     saveFlywheelConfigToDb(stateDb, merged as Record<string, unknown>);
     console.error('[Flywheel] Saved config to StateDb');

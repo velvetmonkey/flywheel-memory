@@ -2,12 +2,12 @@
  * Periodic note detection - zero-config vault convention discovery
  *
  * Answer: "Where does this vault keep daily/weekly/monthly notes?"
+ *
+ * Note: detect_periodic_notes tool was absorbed into health_check output.
+ * These functions are exported for internal use by health.ts and mutations.ts.
  */
 
-import { z } from 'zod';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
-import { requireIndex } from '../../core/read/indexGuard.js';
 
 /**
  * Date pattern regexes for different note types
@@ -47,7 +47,7 @@ const COMMON_FOLDERS = {
 /**
  * Get current date/period path for a type
  */
-function getCurrentPeriodPath(type: string, folder: string, pattern: string): string {
+export function getCurrentPeriodPath(type: string, folder: string, pattern: string): string {
   const now = new Date();
   let filename = '';
 
@@ -86,7 +86,7 @@ function getCurrentPeriodPath(type: string, folder: string, pattern: string): st
 /**
  * Get ISO week number
  */
-function getISOWeek(date: Date): number {
+export function getISOWeek(date: Date): number {
   const target = new Date(date.valueOf());
   const dayNr = (date.getDay() + 6) % 7;
   target.setDate(target.getDate() - dayNr + 3);
@@ -250,87 +250,3 @@ export function detectPeriodicNotes(
   };
 }
 
-/**
- * Register periodic note detection tools with the MCP server
- */
-export function registerPeriodicTools(
-  server: McpServer,
-  getIndex: () => VaultIndex
-) {
-  // detect_periodic_notes - Detect periodic note conventions
-  const DetectPeriodicNotesOutputSchema = {
-    type: z.string().describe('The type of periodic note (daily, weekly, etc.)'),
-    detected: z.boolean().describe('Whether a pattern was detected'),
-    folder: z.string().nullable().describe('Best-guess folder path (e.g., "daily-notes")'),
-    pattern: z.string().nullable().describe('Best-guess filename pattern (e.g., "YYYY-MM-DD")'),
-    confidence: z.number().describe('Confidence score 0-1'),
-    evidence: z.object({
-      note_count: z.number().describe('Number of notes matching pattern'),
-      recent_notes: z.number().describe('Notes modified in last 30 days'),
-      pattern_consistency: z.number().describe('Ratio of matching notes in folder'),
-    }),
-    today_path: z.string().nullable().describe('Path to today/current period note'),
-    today_exists: z.boolean().describe('Whether today/current note exists'),
-    candidates: z.array(
-      z.object({
-        folder: z.string(),
-        pattern: z.string(),
-        score: z.number(),
-      })
-    ).describe('Top 3 candidate folder/pattern combinations'),
-  };
-
-  type DetectPeriodicNotesOutput = {
-    type: string;
-    detected: boolean;
-    folder: string | null;
-    pattern: string | null;
-    confidence: number;
-    evidence: {
-      note_count: number;
-      recent_notes: number;
-      pattern_consistency: number;
-    };
-    today_path: string | null;
-    today_exists: boolean;
-    candidates: Array<{
-      folder: string;
-      pattern: string;
-      score: number;
-    }>;
-  };
-
-  server.registerTool(
-    'detect_periodic_notes',
-    {
-      title: 'Detect Periodic Note Conventions',
-      description:
-        'Detect where the vault keeps periodic notes (daily, weekly, monthly, etc.) without user configuration. Returns best-guess folder, filename pattern, and path to today/current period note.',
-      inputSchema: {
-        type: z
-          .enum(['daily', 'weekly', 'monthly', 'quarterly', 'yearly'])
-          .describe('Type of periodic note to detect'),
-      },
-      outputSchema: DetectPeriodicNotesOutputSchema,
-    },
-    async ({
-      type,
-    }): Promise<{
-      content: Array<{ type: 'text'; text: string }>;
-      structuredContent: DetectPeriodicNotesOutput;
-    }> => {
-      const index = getIndex();
-      const result = detectPeriodicNotes(index, type);
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      };
-    }
-  );
-}

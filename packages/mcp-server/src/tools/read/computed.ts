@@ -4,13 +4,10 @@
  * Auto-compute derived fields from note content.
  */
 
-import { z } from 'zod';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import matter from 'gray-matter';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
-import { requireIndex } from '../../core/read/indexGuard.js';
 
 // =============================================================================
 // TYPES
@@ -252,43 +249,3 @@ export async function computeFrontmatter(
   };
 }
 
-// =============================================================================
-// MCP TOOL REGISTRATION
-// =============================================================================
-
-/**
- * Register computed frontmatter tools
- */
-export function registerComputedTools(
-  server: McpServer,
-  getIndex: () => VaultIndex,
-  getVaultPath: () => string
-): void {
-  // compute_frontmatter
-  server.registerTool(
-    'compute_frontmatter',
-    {
-      title: 'Compute Frontmatter',
-      description:
-        'Auto-compute derived fields from note content. Computes: word_count, link_count, backlink_count, tag_count, reading_time, created, last_updated.',
-      inputSchema: {
-        path: z.string().describe('Path to the note'),
-        fields: z.array(z.string()).optional().describe('Specific fields to compute. If omitted, computes all available fields.'),
-      },
-    },
-    async ({ path: notePath, fields }) => {
-      const index = getIndex();
-      const vaultPath = getVaultPath();
-      const result = await computeFrontmatter(index, notePath, vaultPath, fields);
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
-}

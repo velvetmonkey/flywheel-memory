@@ -112,9 +112,9 @@ describe('Graph Tools via MCP', () => {
     });
   });
 
-  describe('find_orphan_notes', () => {
+  describe('graph_analysis: orphans', () => {
     test('finds notes with no backlinks', async () => {
-      const result = await client.callTool('find_orphan_notes', {});
+      const result = await client.callTool('graph_analysis', { analysis: 'orphans' });
 
       const data = JSON.parse(result.content[0].text);
       expect(data.orphans).toBeDefined();
@@ -122,7 +122,8 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('filters by folder', async () => {
-      const result = await client.callTool('find_orphan_notes', {
+      const result = await client.callTool('graph_analysis', {
+        analysis: 'orphans',
         folder: 'edge-cases',
       });
 
@@ -133,7 +134,8 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('respects limit and offset', async () => {
-      const result = await client.callTool('find_orphan_notes', {
+      const result = await client.callTool('graph_analysis', {
+        analysis: 'orphans',
         limit: 2,
         offset: 0,
       });
@@ -143,9 +145,10 @@ describe('Graph Tools via MCP', () => {
     });
   });
 
-  describe('find_hub_notes', () => {
+  describe('graph_analysis: hubs', () => {
     test('finds highly connected notes', async () => {
-      const result = await client.callTool('find_hub_notes', {
+      const result = await client.callTool('graph_analysis', {
+        analysis: 'hubs',
         min_links: 1,
       });
 
@@ -157,7 +160,8 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('respects min_links threshold', async () => {
-      const result = await client.callTool('find_hub_notes', {
+      const result = await client.callTool('graph_analysis', {
+        analysis: 'hubs',
         min_links: 5,
       });
 
@@ -168,7 +172,8 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('respects limit and offset', async () => {
-      const result = await client.callTool('find_hub_notes', {
+      const result = await client.callTool('graph_analysis', {
+        analysis: 'hubs',
         limit: 1,
       });
 
@@ -270,40 +275,32 @@ describe('Advanced Graph Tools via MCP', () => {
     });
   });
 
-  describe('find_bidirectional_links', () => {
-    test('finds mutual links', async () => {
-      const result = await client.callTool('find_bidirectional_links', {});
+  describe('get_backlinks with include_bidirectional', () => {
+    test('finds bidirectional pairs when requested', async () => {
+      const result = await client.callTool('get_backlinks', {
+        path: 'normal-note.md',
+        include_bidirectional: true,
+      });
 
       const data = JSON.parse(result.content[0].text);
-      expect(data.pairs).toBeDefined();
+      expect(data.bidirectional_pairs).toBeDefined();
+      expect(data.bidirectional_count).toBeDefined();
     });
 
-    test('filters to specific note', async () => {
-      const result = await client.callTool('find_bidirectional_links', {
+    test('does not include bidirectional by default', async () => {
+      const result = await client.callTool('get_backlinks', {
         path: 'normal-note.md',
       });
 
       const data = JSON.parse(result.content[0].text);
-      for (const pair of data.pairs) {
-        expect(
-          pair.noteA === 'normal-note.md' || pair.noteB === 'normal-note.md'
-        ).toBe(true);
-      }
-    });
-
-    test('respects limit and offset', async () => {
-      const result = await client.callTool('find_bidirectional_links', {
-        limit: 1,
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      expect(data.pairs.length).toBeLessThanOrEqual(1);
+      expect(data.bidirectional_pairs).toBeUndefined();
     });
   });
 
-  describe('find_dead_ends', () => {
+  describe('graph_analysis: dead_ends', () => {
     test('finds notes with backlinks but no outlinks', async () => {
-      const result = await client.callTool('find_dead_ends', {
+      const result = await client.callTool('graph_analysis', {
+        analysis: 'dead_ends',
         min_backlinks: 1,
       });
 
@@ -312,7 +309,8 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('respects min_backlinks threshold', async () => {
-      const result = await client.callTool('find_dead_ends', {
+      const result = await client.callTool('graph_analysis', {
+        analysis: 'dead_ends',
         min_backlinks: 2,
       });
 
@@ -323,7 +321,8 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('filters by folder', async () => {
-      const result = await client.callTool('find_dead_ends', {
+      const result = await client.callTool('graph_analysis', {
+        analysis: 'dead_ends',
         folder: 'edge-cases',
       });
 
@@ -334,9 +333,10 @@ describe('Advanced Graph Tools via MCP', () => {
     });
   });
 
-  describe('find_sources', () => {
+  describe('graph_analysis: sources', () => {
     test('finds notes with outlinks but no backlinks', async () => {
-      const result = await client.callTool('find_sources', {
+      const result = await client.callTool('graph_analysis', {
+        analysis: 'sources',
         min_outlinks: 1,
       });
 
@@ -345,7 +345,8 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('respects min_outlinks threshold', async () => {
-      const result = await client.callTool('find_sources', {
+      const result = await client.callTool('graph_analysis', {
+        analysis: 'sources',
         min_outlinks: 2,
       });
 

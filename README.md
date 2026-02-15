@@ -198,18 +198,6 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options, presets, and
 
 ---
 
-## Migration from Flywheel + Flywheel-Crank
-
-```diff
-- "flywheel": { "command": "npx", "args": ["-y", "@velvetmonkey/flywheel-mcp"] }
-- "flywheel-crank": { "command": "npx", "args": ["-y", "@velvetmonkey/flywheel-crank"] }
-+ "flywheel": { "command": "npx", "args": ["-y", "@velvetmonkey/flywheel-memory"] }
-```
-
-All tools work the same. One server instead of two. See [docs/MIGRATION.md](docs/MIGRATION.md) for details.
-
----
-
 ## Prove It
 
 1,771 tests. Verified at 100,000 notes. Every demo vault is a real test case.
@@ -225,10 +213,9 @@ cd flywheel-memory && npm install && npm test
 
 | | |
 |---|---|
-| [TOOLS.md](docs/TOOLS.md) | Full tool reference (76 tools, 18 categories) |
+| [TOOLS.md](docs/TOOLS.md) | Full tool reference |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Index strategy, FTS5, graph, auto-wikilinks |
 | [CONFIGURATION.md](docs/CONFIGURATION.md) | Env vars, presets, custom tool sets |
-| [MIGRATION.md](docs/MIGRATION.md) | From flywheel-mcp + flywheel-crank |
 | [VISION.md](docs/VISION.md) | The flywheel effect and where this goes |
 
 ---

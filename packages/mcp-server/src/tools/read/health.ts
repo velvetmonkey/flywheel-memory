@@ -7,7 +7,9 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
 import { resolveTarget, getBacklinksForNote, findSimilarEntity, getIndexState, getIndexProgress, getIndexError, type IndexState } from '../../core/read/graph.js';
-import { MAX_LIMIT } from '../../core/read/constants.js';
+import { detectPeriodicNotes } from './periodic.js';
+import { getActivitySummary } from './temporal.js';
+import type { FlywheelConfig } from '../../core/read/config.js';
 
 /** Staleness threshold in seconds (5 minutes) */
 const STALE_THRESHOLD_SECONDS = 300;
@@ -18,13 +20,23 @@ const STALE_THRESHOLD_SECONDS = 300;
 export function registerHealthTools(
   server: McpServer,
   getIndex: () => VaultIndex,
-  getVaultPath: () => string
+  getVaultPath: () => string,
+  getConfig: () => FlywheelConfig = () => ({})
 ): void {
-  // health_check - MCP server health status (Gate 5: MCP Connection Verification)
+  // health_check - MCP server health status + periodic note detection + config
   const IndexProgressSchema = z.object({
     parsed: z.coerce.number().describe('Number of files parsed so far'),
     total: z.coerce.number().describe('Total number of files to parse'),
   }).optional();
+
+  const PeriodicNoteInfoSchema = z.object({
+    type: z.string(),
+    detected: z.boolean(),
+    folder: z.string().nullable(),
+    pattern: z.string().nullable(),
+    today_path: z.string().nullable(),
+    today_exists: z.boolean(),
+  });
 
   const HealthCheckOutputSchema = {
     status: z.enum(['healthy', 'degraded', 'unhealthy']).describe('Overall health status'),
@@ -39,7 +51,18 @@ export function registerHealthTools(
     note_count: z.coerce.number().describe('Number of notes in the index'),
     entity_count: z.coerce.number().describe('Number of linkable entities (titles + aliases)'),
     tag_count: z.coerce.number().describe('Number of unique tags'),
+    periodic_notes: z.array(PeriodicNoteInfoSchema).optional().describe('Detected periodic note conventions'),
+    config: z.record(z.unknown()).optional().describe('Current flywheel config (paths, templates, etc.)'),
     recommendations: z.array(z.string()).describe('Suggested actions if any issues detected'),
+  };
+
+  type PeriodicNoteInfo = {
+    type: string;
+    detected: boolean;
+    folder: string | null;
+    pattern: string | null;
+    today_path: string | null;
+    today_exists: boolean;
   };
 
   type HealthCheckOutput = {
@@ -55,6 +78,8 @@ export function registerHealthTools(
     note_count: number;
     entity_count: number;
     tag_count: number;
+    periodic_notes?: PeriodicNoteInfo[];
+    config?: Record<string, unknown>;
     recommendations: string[];
   };
 
@@ -127,6 +152,29 @@ export function registerHealthTools(
         status = 'healthy';
       }
 
+      // Detect periodic note conventions (only when index is ready)
+      let periodicNotes: PeriodicNoteInfo[] | undefined;
+      if (indexBuilt) {
+        const types = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'] as const;
+        periodicNotes = types.map(type => {
+          const result = detectPeriodicNotes(index, type);
+          return {
+            type: result.type,
+            detected: result.detected,
+            folder: result.folder,
+            pattern: result.pattern,
+            today_path: result.today_path,
+            today_exists: result.today_exists,
+          };
+        }).filter(p => p.detected);
+      }
+
+      // Include config info
+      const config = getConfig();
+      const configInfo = Object.keys(config).length > 0
+        ? config as unknown as Record<string, unknown>
+        : undefined;
+
       const output: HealthCheckOutput = {
         status,
         vault_accessible: vaultAccessible,
@@ -140,143 +188,9 @@ export function registerHealthTools(
         note_count: noteCount,
         entity_count: entityCount,
         tag_count: tagCount,
+        periodic_notes: periodicNotes && periodicNotes.length > 0 ? periodicNotes : undefined,
+        config: configInfo,
         recommendations,
-      };
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(output, null, 2),
-          },
-        ],
-        structuredContent: output,
-      };
-    }
-  );
-
-  // find_broken_links - Find links that appear to be typos/mistakes (have a similar match)
-  const BrokenLinkSchema = z.object({
-    source: z.string().describe('Path to the note containing the broken link'),
-    target: z.string().describe('The broken link target'),
-    line: z.coerce.number().describe('Line number where the link appears'),
-    suggestion: z.string().describe('Suggested correct target (similar entity found)'),
-  });
-
-  const FindBrokenLinksOutputSchema = {
-    scope: z.string().describe('Folder searched, or "all" for entire vault'),
-    broken_count: z.coerce.number().describe('Total number of broken links found'),
-    returned_count: z.coerce.number().describe('Number of broken links returned (may be limited)'),
-    affected_notes: z.coerce.number().describe('Number of notes with broken links'),
-    broken_links: z.array(BrokenLinkSchema).describe('List of broken links with suggestions'),
-  };
-
-  type BrokenLink = {
-    source: string;
-    target: string;
-    line: number;
-    suggestion: string;
-  };
-
-  type FindBrokenLinksOutput = {
-    scope: string;
-    broken_count: number;
-    returned_count: number;
-    affected_notes: number;
-    broken_links: BrokenLink[];
-  };
-
-  server.registerTool(
-    'find_broken_links',
-    {
-      title: 'Find Broken Links',
-      description:
-        'Find wikilinks that appear to be typos or mistakes (links to non-existent notes that have a similar existing note). Links to notes that simply do not exist yet are not considered broken - only links where a similar note exists (suggesting a typo).',
-      inputSchema: {
-        folder: z.string().optional().describe('Limit search to a specific folder (e.g., "daily-notes/")'),
-        limit: z.coerce.number().default(50).describe('Maximum number of results to return (capped at 500)'),
-        offset: z.coerce.number().default(0).describe('Number of results to skip (for pagination)'),
-      },
-      outputSchema: FindBrokenLinksOutputSchema,
-    },
-    async ({ folder, limit: requestedLimit, offset }): Promise<{
-      content: Array<{ type: 'text'; text: string }>;
-      structuredContent: FindBrokenLinksOutput;
-    }> => {
-      const index = getIndex();
-      const affectedNotes = new Set<string>();
-
-      // Cap limit to prevent massive payloads
-      const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
-
-      // PHASE 1: Collect all unresolved links (fast - no similarity computation)
-      // Cache similarity results to avoid recomputing for same target
-      const similarityCache = new Map<string, { path: string; entity: string; distance: number } | null>();
-      const unresolvedLinks: Array<{
-        source: string;
-        target: string;
-        line: number;
-      }> = [];
-
-      for (const note of index.notes.values()) {
-        // Filter by folder if specified
-        if (folder && !note.path.startsWith(folder)) {
-          continue;
-        }
-
-        for (const link of note.outlinks) {
-          const resolved = resolveTarget(index, link.target);
-          if (!resolved) {
-            unresolvedLinks.push({
-              source: note.path,
-              target: link.target,
-              line: link.line,
-            });
-          }
-        }
-      }
-
-      // Sort by source path, then line number for consistent ordering
-      unresolvedLinks.sort((a, b) => {
-        const pathCompare = a.source.localeCompare(b.source);
-        if (pathCompare !== 0) return pathCompare;
-        return a.line - b.line;
-      });
-
-      // PHASE 2: Find broken links (with similarity) using caching
-      // Cache avoids recomputing for same target appearing multiple times
-      const allBrokenLinks: BrokenLink[] = [];
-
-      for (const link of unresolvedLinks) {
-        // Check cache first
-        let similar: { path: string; entity: string; distance: number } | null | undefined;
-        if (similarityCache.has(link.target)) {
-          similar = similarityCache.get(link.target);
-        } else {
-          const result = findSimilarEntity(index, link.target);
-          similar = result ?? null;
-          similarityCache.set(link.target, similar);
-        }
-
-        if (similar) {
-          allBrokenLinks.push({
-            source: link.source,
-            target: link.target,
-            line: link.line,
-            suggestion: similar.path,
-          });
-          affectedNotes.add(link.source);
-        }
-      }
-
-      const brokenLinks = allBrokenLinks.slice(offset, offset + limit);
-
-      const output: FindBrokenLinksOutput = {
-        scope: folder || 'all',
-        broken_count: allBrokenLinks.length,
-        returned_count: brokenLinks.length,
-        affected_notes: affectedNotes.size,
-        broken_links: brokenLinks,
       };
 
       return {
@@ -325,6 +239,13 @@ export function registerHealthTools(
       .describe('Top 10 most linked-to notes'),
     top_tags: z.array(TagStatSchema).describe('Top 20 most used tags'),
     folders: z.array(FolderStatSchema).describe('Note counts by top-level folder'),
+    recent_activity: z.object({
+      period_days: z.number(),
+      notes_modified: z.number(),
+      notes_created: z.number(),
+      most_active_day: z.string().nullable(),
+      daily_counts: z.record(z.number()),
+    }).describe('Activity summary for the last 7 days'),
   };
 
   type VaultStatsOutput = {
@@ -341,6 +262,13 @@ export function registerHealthTools(
     most_linked_notes: Array<{ path: string; backlinks: number }>;
     top_tags: Array<{ tag: string; count: number }>;
     folders: Array<{ folder: string; note_count: number }>;
+    recent_activity: {
+      period_days: number;
+      notes_modified: number;
+      notes_created: number;
+      most_active_day: string | null;
+      daily_counts: Record<string, number>;
+    };
   };
 
   /**
@@ -450,6 +378,9 @@ export function registerHealthTools(
         .map(([folder, count]) => ({ folder, note_count: count }))
         .sort((a, b) => b.note_count - a.note_count);
 
+      // Get recent activity summary (last 7 days)
+      const recentActivity = getActivitySummary(index, 7);
+
       const output: VaultStatsOutput = {
         total_notes: totalNotes,
         total_links: totalLinks,
@@ -464,6 +395,7 @@ export function registerHealthTools(
         most_linked_notes: mostLinkedNotes,
         top_tags: topTags,
         folders,
+        recent_activity: recentActivity,
       };
 
       return {

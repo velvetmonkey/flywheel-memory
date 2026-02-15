@@ -298,12 +298,13 @@ export function registerWikilinkTools(
           .string()
           .optional()
           .describe('Path to a specific note to validate. If omitted, validates all notes.'),
+        typos_only: z.boolean().default(false).describe('If true, only report broken links that have a similar existing note (likely typos)'),
         limit: z.coerce.number().default(50).describe('Maximum number of broken links to return'),
         offset: z.coerce.number().default(0).describe('Number of broken links to skip (for pagination)'),
       },
       outputSchema: ValidateLinksOutputSchema,
     },
-    async ({ path: notePath, limit: requestedLimit, offset }): Promise<{
+    async ({ path: notePath, typos_only, limit: requestedLimit, offset }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
       structuredContent: ValidateLinksOutput;
     }> => {
@@ -345,6 +346,9 @@ export function registerWikilinkTools(
           } else {
             // Find a suggestion
             const suggestion = findSimilarEntity(link.target, index.entities);
+
+            // When typos_only is true, only include broken links that have a suggestion
+            if (typos_only && !suggestion) continue;
 
             allBroken.push({
               source: sourcePath,

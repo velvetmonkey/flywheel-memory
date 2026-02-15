@@ -95,7 +95,7 @@ That's it. No API keys. No config files. No cloud accounts.
 
 ## Live Example: The Flywheel in Action
 
-![Flywheel demo — billing, auto-wikilinks, tasks, and search](https://velvetmonkey.github.io/flywheel-memory/demos/flywheel-demo.gif)
+![Flywheel demo — billing, auto-wikilinks, tasks, and search](demos/flywheel-demo.gif)
 
 ### Read: "How much have I billed Acme Corp?"
 

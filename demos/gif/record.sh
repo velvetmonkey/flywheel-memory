@@ -3,7 +3,7 @@ set -euo pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMES_DIR="$DIR/frames"
-OUTPUT_DIR="$(dirname "$DIR")/demos"
+OUTPUT_DIR="$(dirname "$DIR")"
 OUTPUT="$OUTPUT_DIR/flywheel-demo.gif"
 PALETTE="$DIR/palette.png"
 FPS=12

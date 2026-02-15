@@ -27,7 +27,7 @@ export function registerMetricsTools(
     {
       title: 'Vault Growth',
       description:
-        'Track vault growth over time. Modes: "current" (live snapshot), "history" (time series), "trends" (deltas vs N days ago). Tracks 8 metrics: note_count, link_count, orphan_count, tag_count, entity_count, avg_links_per_note, link_density, connected_ratio.',
+        'Track vault growth over time. Modes: "current" (live snapshot), "history" (time series), "trends" (deltas vs N days ago). Tracks 11 metrics: note_count, link_count, orphan_count, tag_count, entity_count, avg_links_per_note, link_density, connected_ratio, wikilink_accuracy, wikilink_feedback_volume, wikilink_suppressed_count.',
       inputSchema: {
         mode: z.enum(['current', 'history', 'trends']).describe('Query mode: current snapshot, historical time series, or trend analysis'),
         metric: z.string().optional().describe('Filter to specific metric (e.g., "note_count"). Omit for all metrics.'),
@@ -43,7 +43,7 @@ export function registerMetricsTools(
 
       switch (mode) {
         case 'current': {
-          const metrics = computeMetrics(index);
+          const metrics = computeMetrics(index, stateDb ?? undefined);
           result = {
             mode: 'current',
             metrics,
@@ -72,7 +72,7 @@ export function registerMetricsTools(
               content: [{ type: 'text' as const, text: JSON.stringify({ error: 'StateDb not available for trend analysis' }) }],
             };
           }
-          const currentMetrics = computeMetrics(index);
+          const currentMetrics = computeMetrics(index, stateDb);
           const trends = computeTrends(stateDb, currentMetrics, daysBack);
           result = {
             mode: 'trends',

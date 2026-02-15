@@ -7,6 +7,10 @@
 
 import type { StateDb } from '@velvetmonkey/vault-core';
 import type { VaultIndex } from '../read/types.js';
+import {
+  getEntityStats,
+  getSuppressedCount,
+} from '../write/wikilinkFeedback.js';
 
 // =============================================================================
 // TYPES
@@ -20,7 +24,10 @@ export type MetricName =
   | 'entity_count'
   | 'avg_links_per_note'
   | 'link_density'
-  | 'connected_ratio';
+  | 'connected_ratio'
+  | 'wikilink_accuracy'
+  | 'wikilink_feedback_volume'
+  | 'wikilink_suppressed_count';
 
 export const ALL_METRICS: MetricName[] = [
   'note_count',
@@ -31,6 +38,9 @@ export const ALL_METRICS: MetricName[] = [
   'avg_links_per_note',
   'link_density',
   'connected_ratio',
+  'wikilink_accuracy',
+  'wikilink_feedback_volume',
+  'wikilink_suppressed_count',
 ];
 
 export interface MetricSnapshot {
@@ -62,8 +72,10 @@ export interface GrowthResult {
 
 /**
  * Compute current metrics from VaultIndex
+ * @param index - VaultIndex for graph metrics
+ * @param stateDb - Optional StateDb for wikilink quality metrics
  */
-export function computeMetrics(index: VaultIndex): Record<MetricName, number> {
+export function computeMetrics(index: VaultIndex, stateDb?: StateDb): Record<MetricName, number> {
   const noteCount = index.notes.size;
 
   // Count total outlinks
@@ -111,6 +123,23 @@ export function computeMetrics(index: VaultIndex): Record<MetricName, number> {
 
   const connectedRatio = noteCount > 0 ? connectedNotes.size / noteCount : 0;
 
+  // Wikilink quality metrics (require StateDb)
+  let wikilinkAccuracy = 0;
+  let wikilinkFeedbackVolume = 0;
+  let wikilinkSuppressedCount = 0;
+
+  if (stateDb) {
+    const entityStatsList = getEntityStats(stateDb);
+    wikilinkFeedbackVolume = entityStatsList.reduce((sum, s) => sum + s.total, 0);
+
+    if (wikilinkFeedbackVolume > 0) {
+      const totalCorrect = entityStatsList.reduce((sum, s) => sum + s.correct, 0);
+      wikilinkAccuracy = Math.round((totalCorrect / wikilinkFeedbackVolume) * 1000) / 1000;
+    }
+
+    wikilinkSuppressedCount = getSuppressedCount(stateDb);
+  }
+
   return {
     note_count: noteCount,
     link_count: linkCount,
@@ -120,6 +149,9 @@ export function computeMetrics(index: VaultIndex): Record<MetricName, number> {
     avg_links_per_note: Math.round(avgLinksPerNote * 100) / 100,
     link_density: Math.round(linkDensity * 10000) / 10000,
     connected_ratio: Math.round(connectedRatio * 1000) / 1000,
+    wikilink_accuracy: wikilinkAccuracy,
+    wikilink_feedback_volume: wikilinkFeedbackVolume,
+    wikilink_suppressed_count: wikilinkSuppressedCount,
   };
 }
 

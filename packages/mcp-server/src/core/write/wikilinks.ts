@@ -40,12 +40,12 @@ import {
   type StateDb,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
-import { isSuppressed } from './wikilinkFeedback.js';
+import { isSuppressed, getAllFeedbackBoosts, getEntityStats } from './wikilinkFeedback.js';
 import { setGitStateDb } from './git.js';
 import { setHintsStateDb } from './hints.js';
 import { setRecencyStateDb } from '../shared/recency.js';
 import path from 'path';
-import type { SuggestOptions, SuggestResult, SuggestionConfig, StrictnessMode, NoteContext } from './types.js';
+import type { SuggestOptions, SuggestResult, SuggestionConfig, StrictnessMode, NoteContext, ScoreBreakdown, ScoredSuggestion, ConfidenceLevel } from './types.js';
 import { stem, tokenize } from '../shared/stemmer.js';
 import {
   mineCooccurrences,
@@ -339,11 +339,12 @@ export function processWikilinks(content: string, notePath?: string): WikilinkRe
   // eslint-disable-next-line no-console
   console.error(`[Flywheel:DEBUG] Processing wikilinks with ${entities.length} entities`);
 
-  // Filter out suppressed entities (from wikilink feedback)
+  // Filter out suppressed entities (from wikilink feedback, with folder context)
   if (moduleStateDb) {
+    const folder = notePath ? notePath.split('/')[0] : undefined;
     entities = entities.filter(e => {
       const name = getEntityName(e);
-      return !isSuppressed(moduleStateDb!, name);
+      return !isSuppressed(moduleStateDb!, name, folder);
     });
   }
 
@@ -975,7 +976,8 @@ export function suggestRelatedLinks(
     maxSuggestions = 3,
     excludeLinked = true,
     strictness = DEFAULT_STRICTNESS,
-    notePath
+    notePath,
+    detail = false,
   } = options;
 
   // Get config for the specified strictness mode
@@ -1036,8 +1038,19 @@ export function suggestRelatedLinks(
   // Get already-linked entities
   const linkedEntities = excludeLinked ? extractLinkedEntities(content) : new Set<string>();
 
+  // Load feedback boosts once (Layer 10), with folder context for stratification
+  const noteFolder = notePath ? notePath.split('/')[0] : undefined;
+  const feedbackBoosts = moduleStateDb ? getAllFeedbackBoosts(moduleStateDb, noteFolder) : new Map<string, number>();
+
   // First pass: Score entities and track which ones matched directly
-  const scoredEntities: Array<{ name: string; score: number; category: EntityCategory }> = [];
+  interface ScoredEntry {
+    name: string;
+    path: string;
+    score: number;
+    category: EntityCategory;
+    breakdown: ScoreBreakdown;
+  }
+  const scoredEntities: ScoredEntry[] = [];
   const directlyMatchedEntities = new Set<string>();
   // Track entities that have actual content matches (not just boosts)
   const entitiesWithContentMatch = new Set<string>();
@@ -1072,23 +1085,28 @@ export function suggestRelatedLinks(
     }
 
     // Layer 5: Type boost - prioritize people, projects over common technologies
-    score += TYPE_BOOST[category] || 0;
+    const layerTypeBoost = TYPE_BOOST[category] || 0;
+    score += layerTypeBoost;
 
     // Layer 6: Context boost - boost types relevant to note context
-    score += contextBoosts[category] || 0;
+    const layerContextBoost = contextBoosts[category] || 0;
+    score += layerContextBoost;
 
     // Layer 7: Recency boost - boost recently-mentioned entities
-    if (recencyIndex) {
-      score += getRecencyBoost(entityName, recencyIndex);
-    }
+    const layerRecencyBoost = recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0;
+    score += layerRecencyBoost;
 
     // Layer 8: Cross-folder boost - prioritize cross-cutting connections
-    if (notePath && entity.path) {
-      score += getCrossFolderBoost(entity.path, notePath);
-    }
+    const layerCrossFolderBoost = (notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0;
+    score += layerCrossFolderBoost;
 
     // Layer 9: Hub score boost - prioritize well-connected notes
-    score += getHubBoost(entity);
+    const layerHubBoost = getHubBoost(entity);
+    score += layerHubBoost;
+
+    // Layer 10: Feedback boost - adjust based on historical accuracy
+    const layerFeedbackAdj = feedbackBoosts.get(entityName) ?? 0;
+    score += layerFeedbackAdj;
 
     if (score > 0) {
       directlyMatchedEntities.add(entityName);
@@ -1096,7 +1114,22 @@ export function suggestRelatedLinks(
 
     // Minimum threshold (adaptive based on content length)
     if (score >= adaptiveMinScore) {
-      scoredEntities.push({ name: entityName, score, category });
+      scoredEntities.push({
+        name: entityName,
+        path: entity.path || '',
+        score,
+        category,
+        breakdown: {
+          contentMatch: contentScore,
+          cooccurrenceBoost: 0,
+          typeBoost: layerTypeBoost,
+          contextBoost: layerContextBoost,
+          recencyBoost: layerRecencyBoost,
+          crossFolderBoost: layerCrossFolderBoost,
+          hubBoost: layerHubBoost,
+          feedbackAdjustment: layerFeedbackAdj,
+        },
+      });
     }
   }
 
@@ -1121,6 +1154,7 @@ export function suggestRelatedLinks(
         const existing = scoredEntities.find(e => e.name === entityName);
         if (existing) {
           existing.score += boost;
+          existing.breakdown.cooccurrenceBoost += boost;
         } else {
           // NEW: Require minimal content overlap for co-occurrence suggestions
           // Prevents suggesting completely unrelated entities just because they're
@@ -1137,16 +1171,32 @@ export function suggestRelatedLinks(
           // Entity passed content overlap check - mark as having content match
           entitiesWithContentMatch.add(entityName);
 
-          // For purely co-occurrence-based suggestions, also add type, context, recency, cross-folder, and hub boosts
+          // For purely co-occurrence-based suggestions, also add type, context, recency, cross-folder, hub, and feedback boosts
           const typeBoost = TYPE_BOOST[category] || 0;
           const contextBoost = contextBoosts[category] || 0;
           const recencyBoostVal = recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0;
           const crossFolderBoost = (notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0;
           const hubBoost = getHubBoost(entity);
-          const totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost;
+          const feedbackAdj = feedbackBoosts.get(entityName) ?? 0;
+          const totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj;
           if (totalBoost >= adaptiveMinScore) {
             // Add entity if boost meets threshold
-            scoredEntities.push({ name: entityName, score: totalBoost, category });
+            scoredEntities.push({
+              name: entityName,
+              path: entity.path || '',
+              score: totalBoost,
+              category,
+              breakdown: {
+                contentMatch: 0,
+                cooccurrenceBoost: boost,
+                typeBoost,
+                contextBoost,
+                recencyBoost: recencyBoostVal,
+                crossFolderBoost,
+                hubBoost,
+                feedbackAdjustment: feedbackAdj,
+              },
+            });
           }
         }
       }
@@ -1178,7 +1228,8 @@ export function suggestRelatedLinks(
 
     return 0;
   });
-  const topSuggestions = relevantEntities.slice(0, maxSuggestions).map(e => e.name);
+  const topEntries = relevantEntities.slice(0, maxSuggestions);
+  const topSuggestions = topEntries.map(e => e.name);
 
   if (topSuggestions.length === 0) {
     return emptyResult;
@@ -1187,10 +1238,33 @@ export function suggestRelatedLinks(
   // Format suffix: → [[Entity1]], [[Entity2]]
   const suffix = '→ ' + topSuggestions.map(name => `[[${name}]]`).join(', ');
 
-  return {
+  const result: SuggestResult = {
     suggestions: topSuggestions,
     suffix,
   };
+
+  // Build detailed breakdown when requested
+  if (detail) {
+    // Load feedback stats for count/accuracy (only when detail requested)
+    const feedbackStats = moduleStateDb ? getEntityStats(moduleStateDb) : [];
+    const feedbackMap = new Map(feedbackStats.map(s => [s.entity, s]));
+
+    result.detailed = topEntries.map((e): ScoredSuggestion => {
+      const fb = feedbackMap.get(e.name);
+      const confidence: ConfidenceLevel = e.score >= 20 ? 'high' : e.score >= 12 ? 'medium' : 'low';
+      return {
+        entity: e.name,
+        path: e.path,
+        totalScore: e.score,
+        breakdown: e.breakdown,
+        confidence,
+        feedbackCount: fb?.total ?? 0,
+        accuracy: fb ? fb.accuracy : undefined,
+      };
+    });
+  }
+
+  return result;
 }
 
 // ========================================

@@ -5,9 +5,11 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
+import type { ScoredSuggestion } from '../../core/write/types.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { resolveTarget } from '../../core/read/graph.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
+import { suggestRelatedLinks } from '../../core/write/wikilinks.js';
 
 /**
  * Match entity in text, avoiding existing wikilinks and code blocks
@@ -188,6 +190,7 @@ export function registerWikilinkTools(
     suggestion_count: number;
     returned_count: number;
     suggestions: EntityMatch[];
+    scored_suggestions?: ScoredSuggestion[];
   };
 
   server.registerTool(
@@ -200,10 +203,11 @@ export function registerWikilinkTools(
         text: z.string().describe('The text to analyze for potential wikilinks'),
         limit: z.coerce.number().default(50).describe('Maximum number of suggestions to return'),
         offset: z.coerce.number().default(0).describe('Number of suggestions to skip (for pagination)'),
+        detail: z.boolean().default(false).describe('Include per-layer score breakdown for each suggestion'),
       },
       outputSchema: SuggestWikilinksOutputSchema,
     },
-    async ({ text, limit: requestedLimit, offset }): Promise<{
+    async ({ text, limit: requestedLimit, offset, detail }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
       structuredContent: SuggestWikilinksOutput;
     }> => {
@@ -218,6 +222,18 @@ export function registerWikilinkTools(
         returned_count: matches.length,
         suggestions: matches,
       };
+
+      // When detail=true, also call the scoring engine for per-layer breakdown
+      if (detail) {
+        const scored = suggestRelatedLinks(text, {
+          detail: true,
+          maxSuggestions: limit,
+          strictness: 'balanced',
+        });
+        if (scored.detailed) {
+          output.scored_suggestions = scored.detailed;
+        }
+      }
 
       return {
         content: [

@@ -111,11 +111,36 @@ export interface SuggestOptions {
   excludeLinked?: boolean;    // exclude entities already in content (default: true)
   strictness?: StrictnessMode; // default: 'conservative'
   notePath?: string;          // path to note for context-aware boosting
+  detail?: boolean;           // return per-layer score breakdown (default: false)
+}
+
+export interface ScoreBreakdown {
+  contentMatch: number;       // Layers 2+3
+  cooccurrenceBoost: number;  // Layer 4
+  typeBoost: number;          // Layer 5
+  contextBoost: number;       // Layer 6
+  recencyBoost: number;       // Layer 7
+  crossFolderBoost: number;   // Layer 8
+  hubBoost: number;           // Layer 9
+  feedbackAdjustment: number; // Layer 10
+}
+
+export type ConfidenceLevel = 'high' | 'medium' | 'low';
+
+export interface ScoredSuggestion {
+  entity: string;
+  path: string;
+  totalScore: number;
+  breakdown: ScoreBreakdown;
+  confidence: ConfidenceLevel;
+  feedbackCount: number;
+  accuracy?: number;
 }
 
 export interface SuggestResult {
   suggestions: string[];      // entity names suggested
   suffix: string;             // formatted suffix: "→ [[X]], [[Y]]"
+  detailed?: ScoredSuggestion[];  // per-layer breakdown when detail=true
 }
 
 // ========================================

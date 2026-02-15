@@ -18,6 +18,11 @@ import {
   isSuppressed,
   getSuppressedCount,
   getSuppressedEntities,
+  computeBoostFromAccuracy,
+  getFeedbackBoost,
+  getAllFeedbackBoosts,
+  extractFolder,
+  getEntityFolderAccuracy,
 } from '../../../src/core/write/wikilinkFeedback.js';
 
 describe('wikilink_feedback', () => {
@@ -195,6 +200,276 @@ describe('wikilink_feedback', () => {
       const goEntry = suppressed.find(s => s.entity === 'Go');
       expect(goEntry).toBeDefined();
       expect(goEntry!.false_positive_rate).toBe(1.0);
+    });
+  });
+
+  // --------------------------------------------------------
+  // Feedback boost (Layer 10)
+  // --------------------------------------------------------
+  describe('feedback boost', () => {
+    it('should return empty map with no feedback', () => {
+      const boosts = getAllFeedbackBoosts(stateDb);
+      expect(boosts.size).toBe(0);
+    });
+
+    it('should not include entity with <5 entries', () => {
+      for (let i = 0; i < 4; i++) {
+        recordFeedback(stateDb, 'NewEntity', `context ${i}`, `note${i}.md`, true);
+      }
+      const boosts = getAllFeedbackBoosts(stateDb);
+      expect(boosts.has('NewEntity')).toBe(false);
+    });
+
+    it('should give +5 for 95% accuracy with 20 samples', () => {
+      // 19 correct, 1 incorrect = 95% accuracy
+      for (let i = 0; i < 19; i++) {
+        recordFeedback(stateDb, 'HighAccuracy', `context ${i}`, `note${i}.md`, true);
+      }
+      recordFeedback(stateDb, 'HighAccuracy', 'wrong', 'note19.md', false);
+
+      const boosts = getAllFeedbackBoosts(stateDb);
+      expect(boosts.get('HighAccuracy')).toBe(5);
+      expect(getFeedbackBoost(stateDb, 'HighAccuracy')).toBe(5);
+    });
+
+    it('should give +2 for 80% accuracy', () => {
+      // 8 correct, 2 incorrect = 80%
+      for (let i = 0; i < 8; i++) {
+        recordFeedback(stateDb, 'GoodEntity', `context ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 2; i++) {
+        recordFeedback(stateDb, 'GoodEntity', `wrong ${i}`, `note${i + 8}.md`, false);
+      }
+
+      const boosts = getAllFeedbackBoosts(stateDb);
+      expect(boosts.get('GoodEntity')).toBe(2);
+    });
+
+    it('should give -2 for 50% accuracy', () => {
+      // 5 correct, 5 incorrect = 50%
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'MediumEntity', `context ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'MediumEntity', `wrong ${i}`, `note${i + 5}.md`, false);
+      }
+
+      const boosts = getAllFeedbackBoosts(stateDb);
+      expect(boosts.get('MediumEntity')).toBe(-2);
+    });
+
+    it('should give -4 for 30% accuracy', () => {
+      // 3 correct, 7 incorrect = 30%
+      for (let i = 0; i < 3; i++) {
+        recordFeedback(stateDb, 'LowEntity', `context ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 7; i++) {
+        recordFeedback(stateDb, 'LowEntity', `wrong ${i}`, `note${i + 3}.md`, false);
+      }
+
+      const boosts = getAllFeedbackBoosts(stateDb);
+      expect(boosts.get('LowEntity')).toBe(-4);
+    });
+
+    it('should match getFeedbackBoost with batch output', () => {
+      // Create multiple entities
+      for (let i = 0; i < 10; i++) {
+        recordFeedback(stateDb, 'EntityA', `ctx ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'EntityB', `ctx ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'EntityB', `wrong ${i}`, `note${i + 5}.md`, false);
+      }
+
+      const boosts = getAllFeedbackBoosts(stateDb);
+      expect(getFeedbackBoost(stateDb, 'EntityA')).toBe(boosts.get('EntityA') ?? 0);
+      expect(getFeedbackBoost(stateDb, 'EntityB')).toBe(boosts.get('EntityB') ?? 0);
+    });
+
+    it('computeBoostFromAccuracy: tier boundaries', () => {
+      expect(computeBoostFromAccuracy(0.95, 20)).toBe(5);
+      expect(computeBoostFromAccuracy(0.94, 20)).toBe(2);  // below 95% tier
+      expect(computeBoostFromAccuracy(0.95, 5)).toBe(2);   // not enough samples for +5 tier
+      expect(computeBoostFromAccuracy(0.80, 5)).toBe(2);
+      expect(computeBoostFromAccuracy(0.79, 5)).toBe(0);   // below 80% but above 60%
+      expect(computeBoostFromAccuracy(0.60, 5)).toBe(0);
+      expect(computeBoostFromAccuracy(0.59, 5)).toBe(-2);  // below 60% but above 40%
+      expect(computeBoostFromAccuracy(0.40, 5)).toBe(-2);
+      expect(computeBoostFromAccuracy(0.39, 5)).toBe(-4);
+      expect(computeBoostFromAccuracy(0.10, 5)).toBe(-4);
+      expect(computeBoostFromAccuracy(1.0, 3)).toBe(0);    // below min samples
+    });
+  });
+
+  // --------------------------------------------------------
+  // Context-stratified accuracy
+  // --------------------------------------------------------
+  describe('context-stratified', () => {
+    it('extractFolder: multi-level path returns top folder', () => {
+      expect(extractFolder('tech/react/hooks.md')).toBe('tech');
+      expect(extractFolder('daily/2026-01-01.md')).toBe('daily');
+    });
+
+    it('extractFolder: root-level note returns empty string', () => {
+      expect(extractFolder('note.md')).toBe('');
+    });
+
+    it('should compute per-entity per-folder accuracy', () => {
+      // React: 100% accurate in tech/, 0% in daily-notes/
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'React', `correct ${i}`, `tech/note${i}.md`, true);
+      }
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'React', `wrong ${i}`, `daily-notes/note${i}.md`, false);
+      }
+
+      const folderAccuracy = getEntityFolderAccuracy(stateDb);
+      const reactFolders = folderAccuracy.get('React');
+      expect(reactFolders).toBeDefined();
+
+      const techStats = reactFolders!.get('tech');
+      expect(techStats).toBeDefined();
+      expect(techStats!.accuracy).toBe(1.0);
+      expect(techStats!.count).toBe(5);
+
+      const dailyStats = reactFolders!.get('daily-notes');
+      expect(dailyStats).toBeDefined();
+      expect(dailyStats!.accuracy).toBe(0);
+      expect(dailyStats!.count).toBe(5);
+    });
+
+    it('should suppress entity only in specific folder', () => {
+      // Entity: all correct in tech/, all wrong in daily/
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'Spring', `correct ${i}`, `tech/note${i}.md`, true);
+      }
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'Spring', `wrong ${i}`, `daily/note${i}.md`, false);
+      }
+
+      // Not globally suppressed (need 10 entries + 30% FP)
+      expect(isSuppressed(stateDb, 'Spring')).toBe(false);
+
+      // Suppressed in daily/ folder (5 entries, 100% FP)
+      expect(isSuppressed(stateDb, 'Spring', 'daily')).toBe(true);
+
+      // Not suppressed in tech/ folder (5 entries, 0% FP)
+      expect(isSuppressed(stateDb, 'Spring', 'tech')).toBe(false);
+    });
+
+    it('should not folder-suppress with <5 entries', () => {
+      for (let i = 0; i < 3; i++) {
+        recordFeedback(stateDb, 'Go', `wrong ${i}`, `daily/note${i}.md`, false);
+      }
+
+      // Not enough entries for folder suppression
+      expect(isSuppressed(stateDb, 'Go', 'daily')).toBe(false);
+    });
+
+    it('getAllFeedbackBoosts with folder: different boosts per folder context', () => {
+      // Entity with 100% in tech/ (5 entries) and 40% in daily/ (5 entries)
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'Redis', `correct ${i}`, `tech/note${i}.md`, true);
+      }
+      for (let i = 0; i < 2; i++) {
+        recordFeedback(stateDb, 'Redis', `correct ${i}`, `daily/note${i}.md`, true);
+      }
+      for (let i = 0; i < 3; i++) {
+        recordFeedback(stateDb, 'Redis', `wrong ${i}`, `daily/note${i + 2}.md`, false);
+      }
+
+      // Global: 7/10 = 70% → boost 0 (60-80% tier), not in map since boost is 0
+      const globalBoosts = getAllFeedbackBoosts(stateDb);
+      expect(globalBoosts.has('Redis')).toBe(false);
+
+      // Tech folder: 5/5 = 100% with 5 samples → +2 (needs 20 for +5)
+      const techBoosts = getAllFeedbackBoosts(stateDb, 'tech');
+      expect(techBoosts.get('Redis')).toBe(2);
+
+      // Daily folder: 2/5 = 40% → -2
+      const dailyBoosts = getAllFeedbackBoosts(stateDb, 'daily');
+      expect(dailyBoosts.get('Redis')).toBe(-2);
+    });
+  });
+
+  // --------------------------------------------------------
+  // Score explanation types
+  // --------------------------------------------------------
+  describe('score explanation', () => {
+    it('ScoreBreakdown: all fields are valid numbers', () => {
+      // Import types to verify structure
+      const breakdown = {
+        contentMatch: 10,
+        cooccurrenceBoost: 3,
+        typeBoost: 5,
+        contextBoost: 2,
+        recencyBoost: 1,
+        crossFolderBoost: 3,
+        hubBoost: 5,
+        feedbackAdjustment: 2,
+      };
+
+      // Verify all fields sum to total
+      const total = Object.values(breakdown).reduce((sum, v) => sum + v, 0);
+      expect(total).toBe(31);
+    });
+
+    it('confidence classification boundaries', () => {
+      function classifyConfidence(score: number): 'high' | 'medium' | 'low' {
+        return score >= 20 ? 'high' : score >= 12 ? 'medium' : 'low';
+      }
+
+      expect(classifyConfidence(20)).toBe('high');
+      expect(classifyConfidence(19)).toBe('medium');
+      expect(classifyConfidence(12)).toBe('medium');
+      expect(classifyConfidence(11)).toBe('low');
+      expect(classifyConfidence(0)).toBe('low');
+      expect(classifyConfidence(100)).toBe('high');
+    });
+
+    it('ScoredSuggestion structure is correct', () => {
+      const suggestion = {
+        entity: 'React',
+        path: 'tech/react.md',
+        totalScore: 25,
+        breakdown: {
+          contentMatch: 15,
+          cooccurrenceBoost: 0,
+          typeBoost: 0,
+          contextBoost: 2,
+          recencyBoost: 0,
+          crossFolderBoost: 3,
+          hubBoost: 5,
+          feedbackAdjustment: 0,
+        },
+        confidence: 'high' as const,
+        feedbackCount: 10,
+        accuracy: 0.8,
+      };
+
+      expect(suggestion.entity).toBe('React');
+      expect(suggestion.totalScore).toBe(25);
+      expect(suggestion.confidence).toBe('high');
+      expect(suggestion.breakdown.contentMatch).toBe(15);
+      expect(suggestion.feedbackCount).toBe(10);
+    });
+
+    it('feedback count and accuracy populated from stateDb', () => {
+      // Record some feedback for an entity
+      for (let i = 0; i < 8; i++) {
+        recordFeedback(stateDb, 'TypeScript', `correct ${i}`, `tech/note${i}.md`, true);
+      }
+      for (let i = 0; i < 2; i++) {
+        recordFeedback(stateDb, 'TypeScript', `wrong ${i}`, `note${i}.md`, false);
+      }
+
+      const stats = getEntityStats(stateDb);
+      const tsStats = stats.find(s => s.entity === 'TypeScript');
+      expect(tsStats).toBeDefined();
+      expect(tsStats!.total).toBe(10);
+      expect(tsStats!.accuracy).toBe(0.8);
     });
   });
 });

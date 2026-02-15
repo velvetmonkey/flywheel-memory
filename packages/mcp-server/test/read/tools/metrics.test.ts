@@ -18,6 +18,7 @@ import {
   purgeOldMetrics,
   ALL_METRICS,
 } from '../../../src/core/shared/metrics.js';
+import { recordFeedback, updateSuppressionList } from '../../../src/core/write/wikilinkFeedback.js';
 import type { VaultIndex, VaultNote, Backlink } from '../../../src/core/read/types.js';
 
 // =============================================================================
@@ -215,6 +216,59 @@ describe('vault_growth', () => {
       const remaining = getMetricHistory(stateDb, 'note_count', 365);
       expect(remaining.length).toBe(1);
       expect(remaining[0].value).toBe(100);
+    });
+  });
+
+  // --------------------------------------------------------
+  // Wikilink quality metrics
+  // --------------------------------------------------------
+  describe('wikilink quality metrics', () => {
+    it('should return zero wikilink metrics without StateDb', () => {
+      const index = buildIndex([makeNote('note.md')]);
+      const metrics = computeMetrics(index);
+
+      expect(metrics.wikilink_accuracy).toBe(0);
+      expect(metrics.wikilink_feedback_volume).toBe(0);
+      expect(metrics.wikilink_suppressed_count).toBe(0);
+    });
+
+    it('should compute accuracy from mixed feedback entries', () => {
+      const index = buildIndex([makeNote('note.md')]);
+
+      // 8 correct, 2 incorrect for "React"
+      for (let i = 0; i < 8; i++) {
+        recordFeedback(stateDb, 'React', `context ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 2; i++) {
+        recordFeedback(stateDb, 'React', `context ${i}`, `note${i + 8}.md`, false);
+      }
+
+      // 3 correct, 7 incorrect for "Java"
+      for (let i = 0; i < 3; i++) {
+        recordFeedback(stateDb, 'Java', `context ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 7; i++) {
+        recordFeedback(stateDb, 'Java', `context ${i}`, `note${i + 3}.md`, false);
+      }
+
+      const metrics = computeMetrics(index, stateDb);
+
+      // Total: 11 correct / 20 entries = 0.55
+      expect(metrics.wikilink_accuracy).toBe(0.55);
+      expect(metrics.wikilink_feedback_volume).toBe(20);
+    });
+
+    it('should count suppressed entities', () => {
+      const index = buildIndex([makeNote('note.md')]);
+
+      // Create a suppressed entity (10+ entries, >=30% FP)
+      for (let i = 0; i < 10; i++) {
+        recordFeedback(stateDb, 'Go', `fp ${i}`, `note${i}.md`, false);
+      }
+      updateSuppressionList(stateDb);
+
+      const metrics = computeMetrics(index, stateDb);
+      expect(metrics.wikilink_suppressed_count).toBe(1);
     });
   });
 });

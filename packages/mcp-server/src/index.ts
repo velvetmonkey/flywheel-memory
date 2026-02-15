@@ -493,7 +493,7 @@ async function runPostIndexWork(index: VaultIndex) {
   // Record growth metrics
   if (stateDb) {
     try {
-      const metrics = computeMetrics(index);
+      const metrics = computeMetrics(index, stateDb);
       recordMetrics(stateDb, metrics);
       purgeOldMetrics(stateDb, 90);
       console.error('[Memory] Growth metrics recorded');

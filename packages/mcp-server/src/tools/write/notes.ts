@@ -6,7 +6,13 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { writeVaultFile, validatePath, injectMutationMetadata } from '../../core/write/writer.js';
-import { maybeApplyWikilinks, suggestRelatedLinks } from '../../core/write/wikilinks.js';
+import {
+  maybeApplyWikilinks,
+  suggestRelatedLinks,
+  detectAliasCollisions,
+  suggestAliases,
+  checkPreflightSimilarity,
+} from '../../core/write/wikilinks.js';
 import {
   handleGitCommit,
   formatMcpResult,
@@ -14,6 +20,9 @@ import {
   successResult,
   ensureFileExists,
 } from '../../core/write/mutation-helpers.js';
+import { getBacklinksForNote } from '../../core/read/graph.js';
+import type { VaultIndex } from '../../core/read/types.js';
+import type { ValidationWarning } from '../../core/write/types.js';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -22,7 +31,8 @@ import path from 'path';
  */
 export function registerNoteTools(
   server: McpServer,
-  vaultPath: string
+  vaultPath: string,
+  getIndex?: () => VaultIndex
 ): void {
   // ========================================
   // Tool: vault_create_note
@@ -62,6 +72,40 @@ export function registerNoteTools(
         const dir = path.dirname(fullPath);
         await fs.mkdir(dir, { recursive: true });
 
+        // 3a. Note creation intelligence: preflight checks
+        const warnings: ValidationWarning[] = [];
+        const noteName = path.basename(notePath, '.md');
+        const existingAliases: string[] = Array.isArray(frontmatter?.aliases)
+          ? frontmatter.aliases.filter((a: unknown) => typeof a === 'string')
+          : [];
+
+        // Preflight similarity check
+        const preflight = checkPreflightSimilarity(noteName);
+        if (preflight.existingEntity) {
+          warnings.push({
+            type: 'similar_note_exists',
+            message: `An entity "${preflight.existingEntity.name}" already exists at ${preflight.existingEntity.path}`,
+            suggestion: `Consider linking to the existing note instead, or choose a different name`,
+          });
+        }
+        for (const similar of preflight.similarEntities.slice(0, 3)) {
+          warnings.push({
+            type: 'similar_note_exists',
+            message: `Similar entity "${similar.name}" exists at ${similar.path}`,
+            suggestion: `Check if this is a duplicate`,
+          });
+        }
+
+        // Alias collision detection
+        const collisions = detectAliasCollisions(noteName, existingAliases);
+        for (const collision of collisions) {
+          warnings.push({
+            type: 'alias_collision',
+            message: `${collision.source === 'name' ? 'Note name' : 'Alias'} "${collision.term}" collides with ${collision.collidedWith.matchType} of "${collision.collidedWith.name}" (${collision.collidedWith.path})`,
+            suggestion: `This may cause ambiguous wikilink resolution`,
+          });
+        }
+
         // 4. Apply wikilinks to content (unless skipped)
         let { content: processedContent, wikilinkInfo } = maybeApplyWikilinks(content, skipWikilinks, notePath);
 
@@ -97,16 +141,26 @@ export function registerNoteTools(
           previewLines.push(`(${infoLines.join('; ')})`);
         }
 
-        // Add alias hint if frontmatter doesn't include aliases
+        // Smart alias suggestions (replace generic hint)
         const hasAliases = frontmatter && ('aliases' in frontmatter);
         if (!hasAliases) {
-          previewLines.push('');
-          previewLines.push('Tip: Add aliases to frontmatter for flexible wikilink matching (e.g., aliases: ["Short Name"])');
+          const aliasSuggestions = suggestAliases(noteName, existingAliases);
+          if (aliasSuggestions.length > 0) {
+            previewLines.push('');
+            previewLines.push('Suggested aliases:');
+            for (const s of aliasSuggestions) {
+              previewLines.push(`  - "${s.alias}" (${s.reason})`);
+            }
+          } else {
+            previewLines.push('');
+            previewLines.push('Tip: Add aliases to frontmatter for flexible wikilink matching (e.g., aliases: ["Short Name"])');
+          }
         }
 
         return formatMcpResult(
           successResult(notePath, `Created note: ${notePath}`, gitInfo, {
             preview: previewLines.join('\n'),
+            warnings: warnings.length > 0 ? warnings : undefined,
           })
         );
       } catch (error) {
@@ -130,30 +184,59 @@ export function registerNoteTools(
     },
     async ({ path: notePath, confirm, commit }) => {
       try {
-        // 1. Require confirmation
-        if (!confirm) {
-          return formatMcpResult(errorResult(notePath, 'Deletion requires explicit confirmation (confirm=true)'));
-        }
-
-        // 2. Validate path
+        // 1. Validate path
         if (!validatePath(vaultPath, notePath)) {
           return formatMcpResult(errorResult(notePath, 'Invalid path: path traversal not allowed'));
         }
 
-        // 3. Check if file exists
+        // 2. Check if file exists
         const existsError = await ensureFileExists(vaultPath, notePath);
         if (existsError) {
           return formatMcpResult(existsError);
         }
 
-        // 4. Delete the file
+        // 3. Check for backlinks
+        let backlinkWarning: string | undefined;
+        if (getIndex) {
+          try {
+            const index = getIndex();
+            const backlinks = getBacklinksForNote(index, notePath);
+            if (backlinks.length > 0) {
+              const sources = backlinks
+                .slice(0, 10)
+                .map(bl => `  - ${bl.source}${bl.context ? ` ("${bl.context.slice(0, 60)}")` : ''}`)
+                .join('\n');
+              backlinkWarning = `This note is referenced from ${backlinks.length} other note(s):\n${sources}`;
+              if (backlinks.length > 10) {
+                backlinkWarning += `\n  ... and ${backlinks.length - 10} more`;
+              }
+            }
+          } catch {
+            // Index may not be ready - skip backlink check
+          }
+        }
+
+        // 4. Preview mode: show warning without deleting
+        if (!confirm) {
+          const previewLines = ['Deletion requires explicit confirmation (confirm=true)'];
+          if (backlinkWarning) {
+            previewLines.push('');
+            previewLines.push('Warning: ' + backlinkWarning);
+          }
+          return formatMcpResult(errorResult(notePath, previewLines.join('\n')));
+        }
+
+        // 5. Delete the file
         const fullPath = path.join(vaultPath, notePath);
         await fs.unlink(fullPath);
 
-        // 5. Handle git commit
+        // 6. Handle git commit
         const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Crank:Delete]');
 
-        return formatMcpResult(successResult(notePath, `Deleted note: ${notePath}`, gitInfo));
+        const message = backlinkWarning
+          ? `Deleted note: ${notePath}\n\nWarning: ${backlinkWarning}`
+          : `Deleted note: ${notePath}`;
+        return formatMcpResult(successResult(notePath, message, gitInfo));
       } catch (error) {
         return formatMcpResult(
           errorResult(notePath, `Failed to delete note: ${error instanceof Error ? error.message : String(error)}`)

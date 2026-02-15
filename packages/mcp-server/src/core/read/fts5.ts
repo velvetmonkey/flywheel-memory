@@ -2,6 +2,8 @@
  * FTS5 Full-Text Search Module
  *
  * Provides SQLite FTS5-based full-text search for vault content.
+ * Uses the shared StateDb (notes_fts + fts_metadata tables).
+ *
  * Features:
  * - Porter stemming (running matches run, runs, ran)
  * - Phrase search with quotes
@@ -10,9 +12,8 @@
  * - Highlighted snippets in results
  */
 
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import * as fs from 'fs';
-import * as path from 'path';
 import { scanVault } from './vault.js';
 
 /** Search result with highlighted snippet */
@@ -38,6 +39,7 @@ const EXCLUDED_DIRS = new Set([
   'node_modules',
   'templates',
   '.claude',
+  '.flywheel',
 ]);
 
 /** Maximum file size to index (5MB) */
@@ -55,39 +57,33 @@ let state: FTS5State = {
 };
 
 /**
- * Get the database path for a vault
+ * Set the FTS5 database handle (injected from StateDb)
+ *
+ * Call this once during startup after opening the StateDb.
+ * The notes_fts and fts_metadata tables must already exist in the database.
  */
-function getDbPath(vaultPath: string): string {
-  const claudeDir = path.join(vaultPath, '.claude');
-  if (!fs.existsSync(claudeDir)) {
-    fs.mkdirSync(claudeDir, { recursive: true });
+export function setFTS5Database(database: Database.Database): void {
+  db = database;
+
+  // Check if there's existing metadata indicating a previous build
+  try {
+    const row = db.prepare(
+      'SELECT value FROM fts_metadata WHERE key = ?'
+    ).get('last_built') as { value: string } | undefined;
+
+    if (row) {
+      const lastBuilt = new Date(row.value);
+      const countRow = db.prepare('SELECT COUNT(*) as count FROM notes_fts').get() as { count: number };
+      state = {
+        ready: countRow.count > 0,
+        lastBuilt,
+        noteCount: countRow.count,
+        error: null,
+      };
+    }
+  } catch {
+    // Tables may not have data yet, that's fine
   }
-  return path.join(claudeDir, 'vault-search.db');
-}
-
-/**
- * Initialize the FTS5 database
- */
-function initDatabase(vaultPath: string): Database.Database {
-  const dbPath = getDbPath(vaultPath);
-  const database = new Database(dbPath);
-
-  // Create FTS5 virtual table with porter tokenizer for stemming
-  database.exec(`
-    CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
-      path,
-      title,
-      content,
-      tokenize='porter'
-    );
-
-    CREATE TABLE IF NOT EXISTS fts_metadata (
-      key TEXT PRIMARY KEY,
-      value TEXT
-    );
-  `);
-
-  return database;
 }
 
 /**
@@ -105,8 +101,9 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
   try {
     state.error = null;
 
-    // Initialize database
-    db = initDatabase(vaultPath);
+    if (!db) {
+      throw new Error('FTS5 database not initialized. Call setFTS5Database() first.');
+    }
 
     // Clear existing index
     db.exec('DELETE FROM notes_fts');
@@ -176,21 +173,15 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
 /**
  * Check if index needs rebuilding
  */
-export function isIndexStale(vaultPath: string): boolean {
-  const dbPath = getDbPath(vaultPath);
-
-  // No database = definitely stale
-  if (!fs.existsSync(dbPath)) {
+export function isIndexStale(_vaultPath?: string): boolean {
+  if (!db) {
     return true;
   }
 
-  // Check last build time from metadata
   try {
-    const database = new Database(dbPath, { readonly: true });
-    const row = database.prepare(
+    const row = db.prepare(
       'SELECT value FROM fts_metadata WHERE key = ?'
     ).get('last_built') as { value: string } | undefined;
-    database.close();
 
     if (!row) {
       return true;
@@ -205,20 +196,6 @@ export function isIndexStale(vaultPath: string): boolean {
 }
 
 /**
- * Ensure database is ready for queries
- */
-function ensureDb(vaultPath: string): Database.Database {
-  if (!db) {
-    const dbPath = getDbPath(vaultPath);
-    if (!fs.existsSync(dbPath)) {
-      throw new Error('Search index not built. Call rebuild_search_index first.');
-    }
-    db = new Database(dbPath);
-  }
-  return db;
-}
-
-/**
  * Search the FTS5 index
  *
  * Supports FTS5 query syntax:
@@ -229,15 +206,17 @@ function ensureDb(vaultPath: string): Database.Database {
  * - Column filter: title:api
  */
 export function searchFTS5(
-  vaultPath: string,
+  _vaultPath: string,
   query: string,
   limit: number = 10
 ): FTS5Result[] {
-  const database = ensureDb(vaultPath);
+  if (!db) {
+    throw new Error('FTS5 database not initialized. Call setFTS5Database() first.');
+  }
 
   try {
     // Use snippet() to get highlighted matches with context
-    const stmt = database.prepare(`
+    const stmt = db.prepare(`
       SELECT
         path,
         title,
@@ -268,10 +247,15 @@ export function getFTS5State(): FTS5State {
 
 /**
  * Close the database connection
+ * Note: With injected db, this is a no-op since the StateDb owns the connection.
  */
 export function closeFTS5(): void {
-  if (db) {
-    db.close();
-    db = null;
-  }
+  // Don't close - the StateDb owns the connection lifecycle
+  db = null;
+  state = {
+    ready: false,
+    lastBuilt: null,
+    noteCount: 0,
+    error: null,
+  };
 }

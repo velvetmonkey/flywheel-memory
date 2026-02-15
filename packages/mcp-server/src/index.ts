@@ -35,6 +35,7 @@ import { initializeLogger as initializeReadLogger, getLogger } from './core/read
 // Core imports - Write
 import { initializeEntityIndex, setCrankStateDb } from './core/write/wikilinks.js';
 import { initializeLogger as initializeWriteLogger, flushLogs } from './core/write/logging.js';
+import { setFTS5Database } from './core/read/fts5.js';
 
 // Vault-core shared imports
 import { openStateDb, scanVaultEntities, type StateDb } from '@velvetmonkey/vault-core';
@@ -357,7 +358,7 @@ registerMigrationTools(server, () => vaultIndex, () => vaultPath);
 registerMutationTools(server, vaultPath);
 registerTaskTools(server, vaultPath);
 registerFrontmatterTools(server, vaultPath);
-registerNoteTools(server, vaultPath);
+registerNoteTools(server, vaultPath, () => vaultIndex);
 registerMoveNoteTools(server, vaultPath);
 registerWriteSystemTools(server, vaultPath);
 registerPolicyTools(server, vaultPath);
@@ -379,6 +380,9 @@ async function main() {
   try {
     stateDb = openStateDb(vaultPath);
     console.error('[Memory] StateDb initialized');
+
+    // Inject StateDb handle for FTS5 content search (notes_fts table)
+    setFTS5Database(stateDb.db);
 
     // Initialize entity index for wikilinks (used by write tools)
     setCrankStateDb(stateDb);

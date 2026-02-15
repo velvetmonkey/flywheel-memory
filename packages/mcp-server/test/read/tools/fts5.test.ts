@@ -24,14 +24,14 @@ describe('FTS5 Full-Text Search Tools', () => {
   });
 
   afterAll(() => {
-    // Clean up test database - wrapped in try-catch for Windows file locking
-    const dbPath = path.join(FIXTURES_PATH, '.claude', 'vault-search.db');
+    // Clean up StateDb (which now hosts notes_fts)
+    const flywheelDir = path.join(FIXTURES_PATH, '.flywheel');
     try {
-      if (fs.existsSync(dbPath)) {
-        fs.unlinkSync(dbPath);
+      if (fs.existsSync(flywheelDir)) {
+        fs.rmSync(flywheelDir, { recursive: true });
       }
     } catch {
-      // File may still be locked on Windows - ignore cleanup failure
+      // File may still be locked - ignore cleanup failure
     }
   });
 

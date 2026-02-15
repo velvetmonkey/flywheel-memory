@@ -13,11 +13,9 @@ import {
   searchEntities,
   searchEntitiesPrefix,
   getEntityByName,
+  getEntitiesByAlias,
   getAllEntitiesFromDb,
   getEntityIndexFromDb,
-  getBacklinks,
-  getOutlinks,
-  replaceLinksFromSource,
   recordEntityMention,
   getEntityRecency,
   getAllRecency,
@@ -77,7 +75,7 @@ describe('SQLite State Management', () => {
     it('should have correct schema version', () => {
       stateDb = openStateDb(testVaultPath);
       const metadata = getStateDbMetadata(stateDb);
-      expect(metadata.schemaVersion).toBe(1);
+      expect(metadata.schemaVersion).toBe(2);
     });
   });
 
@@ -197,40 +195,48 @@ describe('SQLite State Management', () => {
     });
   });
 
-  describe('Link Operations', () => {
+  describe('Entity Alias Lookup', () => {
     beforeEach(() => {
       stateDb = openStateDb(testVaultPath);
     });
 
-    it('should store and retrieve backlinks', () => {
-      stateDb.insertLink.run('notes/a.md', 'B', 'notes/b.md', 10);
-      stateDb.insertLink.run('notes/c.md', 'B', 'notes/b.md', 20);
+    it('should find entities by alias', () => {
+      stateDb.insertEntity.run('TypeScript', 'typescript', 'tech/typescript.md', 'technologies', '["TS", "typescript"]', 10);
+      stateDb.insertEntity.run('JavaScript', 'javascript', 'tech/javascript.md', 'technologies', '["JS"]', 8);
 
-      const backlinks = getBacklinks(stateDb, 'notes/b.md');
-      expect(backlinks.length).toBe(2);
-      expect(backlinks.map(l => l.sourcePath).sort()).toEqual(['notes/a.md', 'notes/c.md']);
+      const results = getEntitiesByAlias(stateDb, 'TS');
+      expect(results.length).toBe(1);
+      expect(results[0].name).toBe('TypeScript');
     });
 
-    it('should store and retrieve outlinks', () => {
-      stateDb.insertLink.run('notes/a.md', 'B', 'notes/b.md', 10);
-      stateDb.insertLink.run('notes/a.md', 'C', 'notes/c.md', 20);
+    it('should be case-insensitive', () => {
+      stateDb.insertEntity.run('TypeScript', 'typescript', 'tech/typescript.md', 'technologies', '["TS"]', 10);
 
-      const outlinks = getOutlinks(stateDb, 'notes/a.md');
-      expect(outlinks.length).toBe(2);
-      expect(outlinks.map(l => l.target).sort()).toEqual(['B', 'C']);
+      const results = getEntitiesByAlias(stateDb, 'ts');
+      expect(results.length).toBe(1);
+      expect(results[0].name).toBe('TypeScript');
     });
 
-    it('should replace links from a source', () => {
-      stateDb.insertLink.run('notes/a.md', 'B', 'notes/b.md', 10);
-      stateDb.insertLink.run('notes/a.md', 'C', 'notes/c.md', 20);
+    it('should find multiple entities with the same alias', () => {
+      stateDb.insertEntity.run('Production Environment', 'production environment', 'ops/prod.md', 'concepts', '["production"]', 5);
+      stateDb.insertEntity.run('Production Line', 'production line', 'manufacturing/line.md', 'concepts', '["production"]', 3);
 
-      replaceLinksFromSource(stateDb, 'notes/a.md', [
-        { target: 'D', targetPath: 'notes/d.md', lineNumber: 5 },
-      ]);
+      const results = getEntitiesByAlias(stateDb, 'production');
+      expect(results.length).toBe(2);
+    });
 
-      const outlinks = getOutlinks(stateDb, 'notes/a.md');
-      expect(outlinks.length).toBe(1);
-      expect(outlinks[0].target).toBe('D');
+    it('should return empty array for non-existent alias', () => {
+      stateDb.insertEntity.run('TypeScript', 'typescript', 'tech/typescript.md', 'technologies', '["TS"]', 10);
+
+      const results = getEntitiesByAlias(stateDb, 'nonexistent');
+      expect(results.length).toBe(0);
+    });
+
+    it('should handle null aliases_json', () => {
+      stateDb.insertEntity.run('TypeScript', 'typescript', 'tech/typescript.md', 'technologies', null, 10);
+
+      const results = getEntitiesByAlias(stateDb, 'typescript');
+      expect(results.length).toBe(0);
     });
   });
 

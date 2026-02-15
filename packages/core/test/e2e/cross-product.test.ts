@@ -20,9 +20,6 @@ import {
   getEntityByName,
   getAllEntitiesFromDb,
   getEntityIndexFromDb,
-  getBacklinks,
-  getOutlinks,
-  replaceLinksFromSource,
   recordEntityMention,
   getEntityRecency,
   scanVaultEntities,
@@ -124,30 +121,12 @@ date: 2026-02-02
       expect(withWikilinks).toContain('[[Jordan Smith]]');
       expect(withWikilinks).toContain('[[Artemis Launch Project]]');
 
-      // Step 5: Write back and update links in StateDb
+      // Step 5: Write back
       fs.writeFileSync(
         path.join(testVaultPath, 'daily-notes/2026-02-02.md'),
         withWikilinks,
         'utf-8'
       );
-
-      // Record the links
-      replaceLinksFromSource(stateDb, 'daily-notes/2026-02-02.md', [
-        { target: 'Jordan Smith', targetPath: 'people/Jordan Smith.md', lineNumber: 10 },
-        { target: 'Artemis Launch Project', targetPath: 'projects/Artemis Launch Project.md', lineNumber: 10 },
-        { target: 'Artemis Launch Project', targetPath: 'projects/Artemis Launch Project.md', lineNumber: 11 },
-      ]);
-
-      // Step 6: Verify graph updated (flywheel reads backlinks)
-      const jordanBacklinks = getBacklinks(stateDb, 'people/Jordan Smith.md');
-      expect(jordanBacklinks.length).toBe(1);
-      expect(jordanBacklinks[0].sourcePath).toBe('daily-notes/2026-02-02.md');
-
-      const mcpBacklinks = getBacklinks(stateDb, 'projects/Artemis Launch Project.md');
-      expect(mcpBacklinks.length).toBe(2); // Two links to Artemis Launch Project
-
-      const dailyOutlinks = getOutlinks(stateDb, 'daily-notes/2026-02-02.md');
-      expect(dailyOutlinks.length).toBe(3);
     });
 
     it('should maintain entity recency across products', async () => {

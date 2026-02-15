@@ -19,6 +19,7 @@ import { registerSchemaTools } from '../../../src/tools/read/schema.js';
 import { registerComputedTools } from '../../../src/tools/read/computed.js';
 import { registerMigrationTools } from '../../../src/tools/read/migrations.js';
 import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
+import { setFTS5Database } from '../../../src/core/read/fts5.js';
 
 export interface TestServerContext {
   stateDb: StateDb | null;
@@ -42,6 +43,8 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
   let stateDb: StateDb | null = null;
   try {
     stateDb = openStateDb(vaultPath);
+    // Inject StateDb handle for FTS5 content search
+    setFTS5Database(stateDb.db);
   } catch (err) {
     console.error('Failed to open StateDb:', err);
   }

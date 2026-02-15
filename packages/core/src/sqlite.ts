@@ -32,26 +32,6 @@ export interface EntitySearchResult {
   rank: number;
 }
 
-/** Note metadata stored in database */
-export interface NoteRow {
-  id: number;
-  path: string;
-  title: string;
-  contentHash: string | null;
-  modifiedAt: number;
-  aliases: string[];
-  tags: string[];
-}
-
-/** Link between notes */
-export interface LinkRow {
-  id: number;
-  sourcePath: string;
-  target: string;
-  targetPath: string | null;
-  lineNumber: number | null;
-}
-
 /** Recency tracking for entities */
 export interface RecencyRow {
   entityNameLower: string;
@@ -85,12 +65,8 @@ export interface StateDb {
   searchEntitiesFts: Statement;
   clearEntities: Statement;
 
-  // Link operations
-  insertLink: Statement;
-  deleteLinksFromSource: Statement;
-  getBacklinks: Statement;
-  getOutlinks: Statement;
-  clearLinks: Statement;
+  // Entity alias lookup
+  getEntitiesByAlias: Statement;
 
   // Recency operations
   upsertRecency: Statement;
@@ -109,21 +85,12 @@ export interface StateDb {
   getAllFlywheelConfigStmt: Statement;
   deleteFlywheelConfigStmt: Statement;
 
-  // Notes operations
-  insertNote: Statement;
-  updateNote: Statement;
-  deleteNote: Statement;
-  getNoteByPath: Statement;
-  getAllNotes: Statement;
-  clearNotes: Statement;
-
   // Metadata
   getMetadataValue: Statement;
   setMetadataValue: Statement;
 
   // Transactions
   bulkInsertEntities: Transaction<(entities: EntityWithAliases[], category: EntityCategory) => number>;
-  bulkInsertLinks: Transaction<(links: Omit<LinkRow, 'id'>[]) => number>;
   replaceAllEntities: Transaction<(index: EntityIndex) => number>;
 
   // Cleanup
@@ -135,7 +102,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -160,18 +127,6 @@ CREATE TABLE IF NOT EXISTS metadata (
   value TEXT NOT NULL,
   updated_at TEXT DEFAULT (datetime('now'))
 );
-
--- Notes metadata
-CREATE TABLE IF NOT EXISTS notes (
-  id INTEGER PRIMARY KEY,
-  path TEXT UNIQUE NOT NULL,
-  title TEXT NOT NULL,
-  content_hash TEXT,
-  modified_at INTEGER NOT NULL,
-  aliases_json TEXT,
-  tags_json TEXT
-);
-CREATE INDEX IF NOT EXISTS idx_notes_path ON notes(path);
 
 -- Entity index (replaces wikilink-entities.json)
 CREATE TABLE IF NOT EXISTS entities (
@@ -233,18 +188,6 @@ CREATE TRIGGER IF NOT EXISTS entities_au AFTER UPDATE ON entities BEGIN
   );
 END;
 
--- Links table (replaces in-memory backlinks)
-CREATE TABLE IF NOT EXISTS links (
-  id INTEGER PRIMARY KEY,
-  source_path TEXT NOT NULL,
-  target TEXT NOT NULL,
-  target_path TEXT,
-  line_number INTEGER
-);
-CREATE INDEX IF NOT EXISTS idx_links_source_path ON links(source_path);
-CREATE INDEX IF NOT EXISTS idx_links_target_path ON links(target_path);
-CREATE INDEX IF NOT EXISTS idx_links_target ON links(target);
-
 -- Recency tracking (replaces entity-recency.json)
 CREATE TABLE IF NOT EXISTS recency (
   entity_name_lower TEXT PRIMARY KEY,
@@ -263,6 +206,12 @@ CREATE TABLE IF NOT EXISTS crank_state (
 CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
   path, title, content,
   tokenize='porter'
+);
+
+-- FTS5 build metadata (consolidated from vault-search.db)
+CREATE TABLE IF NOT EXISTS fts_metadata (
+  key TEXT PRIMARY KEY,
+  value TEXT
 );
 
 -- Vault index cache (for fast startup)
@@ -315,13 +264,13 @@ function initSchema(db: Database.Database): void {
   // This catches cases where schema execution silently failed (e.g., corrupted db)
   const tables = db.prepare(`
     SELECT name FROM sqlite_master
-    WHERE type='table' AND name IN ('entities', 'notes', 'schema_version', 'metadata')
+    WHERE type='table' AND name IN ('entities', 'schema_version', 'metadata')
   `).all() as Array<{ name: string }>;
 
-  if (tables.length < 4) {
+  if (tables.length < 3) {
     const foundTables = tables.map(t => t.name).join(', ') || 'none';
     throw new Error(
-      `[vault-core] Schema validation failed: expected 4 critical tables, found ${tables.length} (${foundTables}). ` +
+      `[vault-core] Schema validation failed: expected 3 critical tables, found ${tables.length} (${foundTables}). ` +
       `Database may be corrupted. Delete ${db.name} and restart.`
     );
   }
@@ -334,8 +283,12 @@ function initSchema(db: Database.Database): void {
   const currentVersion = versionRow?.version ?? 0;
 
   if (currentVersion < SCHEMA_VERSION) {
-    // Run migrations here when we add new schema versions
-    // For now, just record the current version
+    // v2: Drop dead notes/links tables if they exist from v1
+    if (currentVersion < 2) {
+      db.exec('DROP TABLE IF EXISTS notes');
+      db.exec('DROP TABLE IF EXISTS links');
+    }
+
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
     ).run(SCHEMA_VERSION);
@@ -424,25 +377,12 @@ export function openStateDb(vaultPath: string): StateDb {
 
     clearEntities: db.prepare('DELETE FROM entities'),
 
-    // Link operations
-    insertLink: db.prepare(`
-      INSERT INTO links (source_path, target, target_path, line_number)
-      VALUES (?, ?, ?, ?)
+    // Entity alias lookup
+    getEntitiesByAlias: db.prepare(`
+      SELECT e.id, e.name, e.name_lower, e.path, e.category, e.aliases_json, e.hub_score
+      FROM entities e
+      WHERE EXISTS (SELECT 1 FROM json_each(e.aliases_json) WHERE LOWER(value) = ?)
     `),
-
-    deleteLinksFromSource: db.prepare('DELETE FROM links WHERE source_path = ?'),
-
-    getBacklinks: db.prepare(`
-      SELECT id, source_path, target, target_path, line_number
-      FROM links WHERE target_path = ?
-    `),
-
-    getOutlinks: db.prepare(`
-      SELECT id, source_path, target, target_path, line_number
-      FROM links WHERE source_path = ?
-    `),
-
-    clearLinks: db.prepare('DELETE FROM links'),
 
     // Recency operations
     upsertRecency: db.prepare(`
@@ -493,32 +433,6 @@ export function openStateDb(vaultPath: string): StateDb {
 
     deleteFlywheelConfigStmt: db.prepare('DELETE FROM flywheel_config WHERE key = ?'),
 
-    // Notes operations
-    insertNote: db.prepare(`
-      INSERT INTO notes (path, title, content_hash, modified_at, aliases_json, tags_json)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `),
-
-    updateNote: db.prepare(`
-      UPDATE notes
-      SET title = ?, content_hash = ?, modified_at = ?, aliases_json = ?, tags_json = ?
-      WHERE path = ?
-    `),
-
-    deleteNote: db.prepare('DELETE FROM notes WHERE path = ?'),
-
-    getNoteByPath: db.prepare(`
-      SELECT id, path, title, content_hash, modified_at, aliases_json, tags_json
-      FROM notes WHERE path = ?
-    `),
-
-    getAllNotes: db.prepare(`
-      SELECT id, path, title, content_hash, modified_at, aliases_json, tags_json
-      FROM notes ORDER BY path
-    `),
-
-    clearNotes: db.prepare('DELETE FROM notes'),
-
     // Metadata operations
     getMetadataValue: db.prepare('SELECT value FROM metadata WHERE key = ?'),
 
@@ -541,20 +455,6 @@ export function openStateDb(vaultPath: string): StateDb {
           category,
           JSON.stringify(entity.aliases),
           entity.hubScore ?? 0
-        );
-        count++;
-      }
-      return count;
-    }),
-
-    bulkInsertLinks: db.transaction((links: Omit<LinkRow, 'id'>[]) => {
-      let count = 0;
-      for (const link of links) {
-        stateDb.insertLink.run(
-          link.sourcePath,
-          link.target,
-          link.targetPath,
-          link.lineNumber
         );
         count++;
       }
@@ -764,72 +664,37 @@ export function getEntityIndexFromDb(stateDb: StateDb): EntityIndex {
   return index;
 }
 
-// =============================================================================
-// Link Operations
-// =============================================================================
-
 /**
- * Get all notes that link to a given path (backlinks)
+ * Get entities that have a given alias (case-insensitive)
+ *
+ * @param stateDb - State database instance
+ * @param alias - Alias to search for (case-insensitive)
+ * @returns Array of matching entities
  */
-export function getBacklinks(stateDb: StateDb, targetPath: string): LinkRow[] {
-  const rows = stateDb.getBacklinks.all(targetPath) as Array<{
-    id: number;
-    source_path: string;
-    target: string;
-    target_path: string | null;
-    line_number: number | null;
-  }>;
-
-  return rows.map(row => ({
-    id: row.id,
-    sourcePath: row.source_path,
-    target: row.target,
-    targetPath: row.target_path,
-    lineNumber: row.line_number,
-  }));
-}
-
-/**
- * Get all links from a given note (outlinks)
- */
-export function getOutlinks(stateDb: StateDb, sourcePath: string): LinkRow[] {
-  const rows = stateDb.getOutlinks.all(sourcePath) as Array<{
-    id: number;
-    source_path: string;
-    target: string;
-    target_path: string | null;
-    line_number: number | null;
-  }>;
-
-  return rows.map(row => ({
-    id: row.id,
-    sourcePath: row.source_path,
-    target: row.target,
-    targetPath: row.target_path,
-    lineNumber: row.line_number,
-  }));
-}
-
-/**
- * Replace all links from a source note
- */
-export function replaceLinksFromSource(
+export function getEntitiesByAlias(
   stateDb: StateDb,
-  sourcePath: string,
-  links: Omit<LinkRow, 'id' | 'sourcePath'>[]
-): void {
-  const transaction = stateDb.db.transaction(() => {
-    stateDb.deleteLinksFromSource.run(sourcePath);
-    for (const link of links) {
-      stateDb.insertLink.run(
-        sourcePath,
-        link.target,
-        link.targetPath,
-        link.lineNumber
-      );
-    }
-  });
-  transaction();
+  alias: string
+): EntitySearchResult[] {
+  const rows = stateDb.getEntitiesByAlias.all(alias.toLowerCase()) as Array<{
+    id: number;
+    name: string;
+    name_lower: string;
+    path: string;
+    category: string;
+    aliases_json: string | null;
+    hub_score: number;
+  }>;
+
+  return rows.map(row => ({
+    id: row.id,
+    name: row.name,
+    nameLower: row.name_lower,
+    path: row.path,
+    category: row.category as EntityCategory,
+    aliases: row.aliases_json ? JSON.parse(row.aliases_json) : [],
+    hubScore: row.hub_score,
+    rank: 0,
+  }));
 }
 
 // =============================================================================
@@ -1211,324 +1076,3 @@ export function isVaultIndexCacheValid(
   return true;
 }
 
-// =============================================================================
-// Migration Utilities
-// =============================================================================
-
-/** Result of a migration operation */
-export interface MigrationResult {
-  success: boolean;
-  entitiesMigrated: number;
-  recencyMigrated: number;
-  crankStateMigrated: number;
-  linksMigrated: number;
-  configMigrated: boolean;
-  /** True if no legacy files were found to migrate */
-  skipped: boolean;
-  errors: string[];
-}
-
-/** Paths to legacy JSON files */
-export interface LegacyPaths {
-  config?: string | null;        // .claude/.flywheel.json
-  entityCache?: string | null;   // .claude/wikilink-entities.json
-  recency?: string | null;       // .claude/entity-recency.json
-  lastCommit?: string | null;    // .claude/last-crank-commit.json
-  hints?: string | null;         // .claude/crank-mutation-hints.json
-  backlinks?: string | null;     // .claude/backlinks.json (legacy)
-}
-
-/**
- * Get default legacy file paths for a vault
- * Returns null for paths that don't exist (for easy checking)
- */
-export function getLegacyPaths(vaultPath: string): LegacyPaths {
-  const claudeDir = path.join(vaultPath, '.claude');
-
-  const checkPath = (filename: string): string | null => {
-    const filePath = path.join(claudeDir, filename);
-    return fs.existsSync(filePath) ? filePath : null;
-  };
-
-  return {
-    config: checkPath('.flywheel.json'),
-    entityCache: checkPath('wikilink-entities.json'),
-    recency: checkPath('entity-recency.json'),
-    lastCommit: checkPath('last-crank-commit.json'),
-    hints: checkPath('crank-mutation-hints.json'),
-    backlinks: checkPath('backlinks.json'),
-  };
-}
-
-/**
- * Migrate legacy JSON files to SQLite state database
- *
- * This function reads existing JSON state files and imports them
- * into the consolidated SQLite database. It does NOT delete the
- * original JSON files - that should be done manually after verifying
- * the migration was successful.
- *
- * Can be called with just a vault path (convenience) or with
- * an existing StateDb and legacy paths (for more control).
- *
- * @param stateDbOrVaultPath - Open state database OR vault path string
- * @param legacyPaths - Paths to legacy JSON files (optional if vault path provided)
- * @returns Migration result with counts and any errors
- */
-export async function migrateFromJsonToSqlite(
-  stateDbOrVaultPath: StateDb | string,
-  legacyPaths?: LegacyPaths
-): Promise<MigrationResult> {
-  // Handle convenience signature: migrateFromJsonToSqlite(vaultPath)
-  let stateDb: StateDb;
-  let paths: LegacyPaths;
-  let shouldCloseDb = false;
-
-  if (typeof stateDbOrVaultPath === 'string') {
-    const vaultPath = stateDbOrVaultPath;
-    stateDb = openStateDb(vaultPath);
-    paths = getLegacyPaths(vaultPath);
-    shouldCloseDb = true;
-  } else {
-    stateDb = stateDbOrVaultPath;
-    paths = legacyPaths ?? {};
-  }
-  const result: MigrationResult = {
-    success: true,
-    entitiesMigrated: 0,
-    recencyMigrated: 0,
-    crankStateMigrated: 0,
-    linksMigrated: 0,
-    configMigrated: false,
-    skipped: false,
-    errors: [],
-  };
-
-  try {
-    // Migrate flywheel config
-    if (paths.config && fs.existsSync(paths.config)) {
-      try {
-        const content = fs.readFileSync(paths.config, 'utf-8');
-        const config = JSON.parse(content) as Record<string, unknown>;
-        saveFlywheelConfigToDb(stateDb, config);
-        result.configMigrated = true;
-      } catch (error) {
-        result.errors.push(`Failed to migrate config: ${error}`);
-        result.success = false;
-      }
-    }
-
-    // Migrate entities
-    if (paths.entityCache && fs.existsSync(paths.entityCache)) {
-      try {
-        const content = fs.readFileSync(paths.entityCache, 'utf-8');
-        const index = JSON.parse(content) as import('./types.js').EntityIndex;
-        result.entitiesMigrated = stateDb.replaceAllEntities(index);
-      } catch (error) {
-        result.errors.push(`Failed to migrate entities: ${error}`);
-        result.success = false;
-      }
-    }
-
-    // Migrate recency data
-    if (paths.recency && fs.existsSync(paths.recency)) {
-      try {
-        const content = fs.readFileSync(paths.recency, 'utf-8');
-        const data = JSON.parse(content) as {
-          lastMentioned: Record<string, number>;
-          lastUpdated: number;
-          version: number;
-        };
-
-        for (const [entityName, timestamp] of Object.entries(data.lastMentioned)) {
-          recordEntityMention(stateDb, entityName, new Date(timestamp));
-          result.recencyMigrated++;
-        }
-      } catch (error) {
-        result.errors.push(`Failed to migrate recency: ${error}`);
-        result.success = false;
-      }
-    }
-
-    // Migrate last commit tracking
-    if (paths.lastCommit && fs.existsSync(paths.lastCommit)) {
-      try {
-        const content = fs.readFileSync(paths.lastCommit, 'utf-8');
-        const data = JSON.parse(content);
-        setCrankState(stateDb, 'last_commit', data);
-        result.crankStateMigrated++;
-      } catch (error) {
-        result.errors.push(`Failed to migrate last commit: ${error}`);
-        result.success = false;
-      }
-    }
-
-    // Migrate mutation hints
-    if (paths.hints && fs.existsSync(paths.hints)) {
-      try {
-        const content = fs.readFileSync(paths.hints, 'utf-8');
-        const data = JSON.parse(content);
-        setCrankState(stateDb, 'mutation_hints', data);
-        result.crankStateMigrated++;
-      } catch (error) {
-        result.errors.push(`Failed to migrate hints: ${error}`);
-        result.success = false;
-      }
-    }
-
-    // Migrate backlinks
-    if (paths.backlinks && fs.existsSync(paths.backlinks)) {
-      try {
-        const content = fs.readFileSync(paths.backlinks, 'utf-8');
-        const backlinks = JSON.parse(content) as Record<string, string[]>;
-
-        // Convert backlinks to link records
-        // backlinks format: { "target.md": ["source1.md", "source2.md"] }
-        for (const [targetPath, sources] of Object.entries(backlinks)) {
-          for (const sourcePath of sources) {
-            stateDb.insertLink.run(sourcePath, targetPath, targetPath, null);
-            result.linksMigrated++;
-          }
-        }
-      } catch (error) {
-        result.errors.push(`Failed to migrate backlinks: ${error}`);
-        result.success = false;
-      }
-    }
-
-    // Mark as skipped if nothing was migrated
-    const totalMigrated = result.entitiesMigrated + result.recencyMigrated +
-      result.crankStateMigrated + result.linksMigrated + (result.configMigrated ? 1 : 0);
-    if (totalMigrated === 0 && result.errors.length === 0) {
-      result.skipped = true;
-    }
-
-    return result;
-  } finally {
-    // Close db if we opened it
-    if (shouldCloseDb) {
-      stateDb.close();
-    }
-  }
-}
-
-/** Result of backup operation */
-export interface BackupResult {
-  success: boolean;
-  backedUpFiles: string[];
-  errors: string[];
-}
-
-/** Result of delete operation */
-export interface DeleteResult {
-  success: boolean;
-  deletedFiles: string[];
-  errors: string[];
-  error?: string;
-}
-
-/** Options for delete operation */
-export interface DeleteOptions {
-  /** If true, require StateDb to exist before deleting legacy files */
-  requireStateDb?: boolean;
-}
-
-/**
- * Backup legacy JSON files before migration
- *
- * Creates .bak files alongside the originals.
- * Can accept either a vault path (convenience) or LegacyPaths object.
- */
-export async function backupLegacyFiles(
-  vaultPathOrLegacyPaths: string | LegacyPaths
-): Promise<BackupResult> {
-  const paths = typeof vaultPathOrLegacyPaths === 'string'
-    ? getLegacyPaths(vaultPathOrLegacyPaths)
-    : vaultPathOrLegacyPaths;
-
-  const result: BackupResult = {
-    success: true,
-    backedUpFiles: [],
-    errors: [],
-  };
-
-  const timestamp = Date.now();
-
-  for (const [key, filePath] of Object.entries(paths)) {
-    if (filePath && typeof filePath === 'string' && fs.existsSync(filePath)) {
-      try {
-        // Create backup with timestamp: file.json -> file.backup.1234567890.json
-        const ext = path.extname(filePath);
-        const base = filePath.slice(0, -ext.length);
-        const backupPath = `${base}.backup.${timestamp}${ext}`;
-        fs.copyFileSync(filePath, backupPath);
-        result.backedUpFiles.push(filePath);
-      } catch (error) {
-        result.errors.push(`Failed to backup ${key}: ${error}`);
-        result.success = false;
-      }
-    }
-  }
-
-  return result;
-}
-
-/**
- * Delete legacy JSON files after successful migration
- *
- * Can accept either a vault path (convenience) or LegacyPaths object.
- * Use options.requireStateDb to ensure StateDb exists before deleting.
- */
-export async function deleteLegacyFiles(
-  vaultPathOrLegacyPaths: string | LegacyPaths,
-  options?: DeleteOptions
-): Promise<DeleteResult> {
-  // Determine vault path for StateDb check
-  let vaultPath: string | undefined;
-  let paths: LegacyPaths;
-
-  if (typeof vaultPathOrLegacyPaths === 'string') {
-    vaultPath = vaultPathOrLegacyPaths;
-    // For deletion, we need to get the full paths, not just existing ones
-    const claudeDir = path.join(vaultPath, '.claude');
-    paths = {
-      config: path.join(claudeDir, '.flywheel.json'),
-      entityCache: path.join(claudeDir, 'wikilink-entities.json'),
-      recency: path.join(claudeDir, 'entity-recency.json'),
-      lastCommit: path.join(claudeDir, 'last-crank-commit.json'),
-      hints: path.join(claudeDir, 'crank-mutation-hints.json'),
-      backlinks: path.join(claudeDir, 'backlinks.json'),
-    };
-  } else {
-    paths = vaultPathOrLegacyPaths;
-  }
-
-  const result: DeleteResult = {
-    success: true,
-    deletedFiles: [],
-    errors: [],
-  };
-
-  // Check requireStateDb option
-  if (options?.requireStateDb && vaultPath) {
-    if (!stateDbExists(vaultPath)) {
-      result.success = false;
-      result.error = 'StateDb does not exist. Migrate before deleting legacy files.';
-      return result;
-    }
-  }
-
-  for (const [key, filePath] of Object.entries(paths)) {
-    if (filePath && typeof filePath === 'string' && fs.existsSync(filePath)) {
-      try {
-        fs.unlinkSync(filePath);
-        result.deletedFiles.push(filePath);
-      } catch (error) {
-        result.errors.push(`Failed to delete ${key}: ${error}`);
-        result.success = false;
-      }
-    }
-  }
-
-  return result;
-}

@@ -1,6 +1,6 @@
 # The Scoring Algorithm
 
-When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 11 layers. Here's exactly how.
+When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 9 layers. Here's exactly how.
 
 ---
 
@@ -184,7 +184,10 @@ When entity embeddings are available (built via `init_semantic`), candidates rec
 
 ## Strictness Modes
 
-Three modes control the precision/recall trade-off:
+Three modes control the precision/recall trade-off. Strictness is set per call site — not configurable by the user:
+
+- **Write mutations** (`vault_add_to_section`, `vault_replace_in_section`) use **conservative** — minimizes false positives when auto-linking
+- **`suggest_wikilinks`** with `detail: true` uses **balanced** — more permissive for exploration
 
 | Setting | Conservative | Balanced | Aggressive |
 |---|---|---|---|
@@ -240,6 +243,7 @@ Let's trace three entities through all 9 layers:
 | 6. Cross-Folder | `people/` != `daily-notes/` | +3 |
 | 7. Hub Boost | 12 backlinks (>= 5) | +1 |
 | 8. Feedback | 85% accuracy over 8 samples | +2 |
+| 9. Semantic | "tracking delivery" ↔ Marcus: 0.25 (below 0.30 min) | 0 |
 | **Total** | | **34** |
 
 ### Acme Corp (organizations, path: `organizations/Acme Corp.md`)
@@ -254,6 +258,7 @@ Let's trace three entities through all 9 layers:
 | 6. Cross-Folder | `organizations/` != `daily-notes/` | +3 |
 | 7. Hub Boost | 7 backlinks (>= 5) | +1 |
 | 8. Feedback | no feedback yet | 0 |
+| 9. Semantic | "delivery delayed" ↔ Acme: 0.22 (below 0.30 min) | 0 |
 | **Total** | | **24** |
 
 ### Turbopump (projects, path: `projects/Turbopump.md`)
@@ -268,9 +273,10 @@ Let's trace three entities through all 9 layers:
 | 6. Cross-Folder | `projects/` != `daily-notes/` | +3 |
 | 7. Hub Boost | 25 backlinks (>= 20) | +3 |
 | 8. Feedback | 92% accuracy over 12 samples | +2 |
-| **Total** | | **34** |
+| 9. Semantic | "delivery delayed" ↔ Turbopump: 0.41 × 12 × 0.6 = 2.95 | +2.95 |
+| **Total** | | **36.95** |
 
-With entity embeddings built, Layer 9 (Semantic Similarity) would add additional scoring based on conceptual relevance. For example, if the content discusses "delivery delays", entities like `[[Supply Chain]]` could receive a semantic boost even without exact keyword matches.
+Layer 9 is where it gets interesting. "Turbopump delivery delayed" is semantically close to the Turbopump entity (0.41 similarity). That exceeds the 0.30 minimum, so the formula kicks in: `0.41 × 12 × 0.6 = 2.95` (conservative multiplier). Marcus and Acme didn't clear the 0.30 threshold — their names already matched via Layer 1, so semantic adds nothing new for them.
 
 ### Final ranking
 
@@ -278,13 +284,13 @@ Sorted by score descending, then by recency as tiebreaker:
 
 | Rank | Entity | Score | Recency |
 |---|---|---|---|
-| 1 | Turbopump | 34 | 30 min ago |
+| 1 | Turbopump | 36.95 | 30 min ago |
 | 2 | Marcus Johnson | 34 | 2 hours ago |
 | 3 | Acme Corp | 24 | 18 hours ago |
 
 **Output:** `-> [[Turbopump]], [[Marcus Johnson]], [[Acme Corp]]`
 
-All three exceed the conservative threshold of 15. Turbopump and Marcus are tied at 34, but Turbopump wins the tiebreak because it was mentioned more recently. The top 3 are returned by default.
+All three exceed the conservative threshold of 15. Turbopump pulls ahead with the Layer 9 semantic boost. The top 3 are returned by default.
 
 ---
 

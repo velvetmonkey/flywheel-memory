@@ -242,7 +242,7 @@ Understand how auto-wikilinks decides what to link and why.
 
 > "Trace the wikilink suggestion for 'Alex' in today's daily note -- show me every scoring layer"
 
-For the full specification of the 11-layer scoring algorithm, see [ALGORITHM.md](ALGORITHM.md).
+For the full specification of the 9-layer scoring algorithm, see [ALGORITHM.md](ALGORITHM.md).
 
 ---
 

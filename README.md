@@ -17,7 +17,7 @@
 | "What's overdue?" | Read every file | Indexed query, <10ms |
 | "What links here?" | grep every file | Pre-indexed backlink graph |
 | "Add a meeting note" | Raw write, no linking | Write + auto-wikilink |
-| "What should I link?" | Manual or grep | 11-layer scoring + semantic understanding |
+| "What should I link?" | Manual or grep | 9-layer scoring + semantic understanding |
 | Token cost | 2,000-250,000 | 50-200 |
 
 42 tools. 6-line config. Zero cloud dependencies.
@@ -104,7 +104,7 @@ Marcus Johnson        32    +10     +6    +5     +8      +3    +0
 
 Every number traces to a vault property. No magic -- just math you can verify.
 
-See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 11-layer scoring pipeline.
+See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 9-layer scoring pipeline.
 
 ### 3. Your Vault's Hidden Structure
 

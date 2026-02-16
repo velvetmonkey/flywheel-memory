@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Schema version 6 → 10 (v7: tool_invocations, v8: graph_snapshots, v9:
   note_embeddings, v10: entity_embeddings)
-- `suggestRelatedLinks()` is now async with 11-layer scoring (was 10)
+- `suggestRelatedLinks()` is now async with 9-layer scoring (was 8)
 - Tool count 41 → 42 (added init_semantic)
 - Removed `FLYWHEEL_SEMANTIC` env var — semantic search is now always-on when
   embeddings are built

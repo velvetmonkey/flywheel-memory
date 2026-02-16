@@ -32,7 +32,7 @@ npm test
 ```
 packages/
   core/         # @velvetmonkey/vault-core -- shared utilities (entity scanning, wikilinks, SQLite)
-  mcp-server/   # @velvetmonkey/flywheel-memory -- the MCP server (39 tools)
+  mcp-server/   # @velvetmonkey/flywheel-memory -- the MCP server (42 tools)
   bench/        # @velvetmonkey/flywheel-bench -- benchmark infrastructure and vault generation
   demos/        # Demo vault fixtures (also used as test fixtures in CI)
 ```

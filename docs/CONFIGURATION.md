@@ -67,7 +67,7 @@ Vault root detection order:
 
 | Preset | Tools | ~Tokens | Use case |
 |--------|-------|---------|----------|
-| `full` (default) | 41 | ~12,400 | Everything — graph, schema, tasks, policy |
+| `full` (default) | 42 | ~12,400 | Everything — graph, schema, tasks, policy |
 | `minimal` | 13 | ~3,800 | Note-taking essentials — search, read, create, edit |
 
 The fewer tools you load, the less context Claude needs to pick the right one.
@@ -92,7 +92,7 @@ Start with `minimal`, then add what you need:
 | `minimal,graph,tasks` | 22 | ~6,575 | + backlinks, orphans, hubs, paths, tasks |
 | `minimal,graph,analysis` | 28 | ~8,575 | + backlinks, orphans, hubs, paths, schema, wikilinks |
 | `minimal,graph,tasks,health` | 30 | ~9,275 | + backlinks, orphans, hubs, paths, tasks, health |
-| `full` | 41 | ~12,400 | All 15 categories |
+| `full` | 42 | ~12,400 | All 15 categories |
 
 #### How It Works
 
@@ -114,7 +114,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 
 | Category | Tools | Description |
 |----------|-------|-------------|
-| `search` | 1 | Unified search (metadata, content, entities) |
+| `search` | 2 | Unified search (metadata, content, entities), semantic index initialization |
 | `backlinks` | 2 | Backlinks (+ bidirectional), forward links |
 | `orphans` | 1 | Graph analysis (orphans, dead ends, sources, hubs, stale) |
 | `hubs` | 1 | Connection strength |
@@ -167,6 +167,16 @@ For network drives, Docker volumes, or file systems where native events are unre
   }
 }
 ```
+
+### Semantic Search
+
+The `init_semantic` tool builds a semantic search index by generating embeddings for all vault notes using the `all-MiniLM-L6-v2` model. This is a one-time build step — once the index exists, `search` and `find_similar` automatically upgrade to hybrid mode.
+
+**How hybrid search works:** Queries run through both BM25 (keyword matching via FTS5) and semantic similarity (cosine distance on embeddings). Results are merged using Reciprocal Rank Fusion (RRF), which combines the two ranked lists into a single ranking that benefits from both keyword precision and semantic recall.
+
+**Model download:** The model is downloaded automatically on first run to `~/.cache/huggingface/`. No environment variables are needed — just run `init_semantic` and the index builds from your existing vault content.
+
+**Keeping embeddings current:** The file watcher automatically generates embeddings for new and modified notes, so the semantic index stays up to date after the initial build.
 
 ---
 

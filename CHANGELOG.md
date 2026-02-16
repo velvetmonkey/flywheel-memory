@@ -28,11 +28,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Graph topology snapshots: records avg_degree, max_degree, cluster_count,
   largest_cluster_size, and top 10 hubs on every index rebuild (schema v8,
   `graph_snapshots` table)
+- `init_semantic` tool for on-demand semantic search initialization
+- Hybrid search: automatic BM25 + semantic via Reciprocal Rank Fusion when
+  embeddings exist
+- `@huggingface/transformers` dependency for local embedding generation
 
 ### Changed
 
 - Schema version 6 → 8 (v7: tool_invocations, v8: graph_snapshots)
-- Tool count 39 → 41 (added vault_activity, find_similar)
+- Schema v9: `note_embeddings` table for semantic search
+- Tool count 41 → 42 (added init_semantic)
+- Removed `FLYWHEEL_SEMANTIC` env var — semantic search is now always-on when
+  embeddings are built
 - Documentation: updated TOOLS.md, ARCHITECTURE.md (schema versioning section),
   CONFIGURATION.md (corrected tool counts), COOKBOOK.md (new examples),
   CLAUDE.md, vault-core README

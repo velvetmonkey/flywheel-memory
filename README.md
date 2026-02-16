@@ -12,7 +12,7 @@
 [![Scale](https://img.shields.io/badge/scale-100k%20notes-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Tests](https://img.shields.io/badge/tests-1,812%20passed-brightgreen.svg)](docs/TESTING.md)
 
-One MCP server. 39 tools. Your Obsidian vault becomes a queryable knowledge graph.
+One MCP server. 42 tools. Your Obsidian vault becomes a queryable knowledge graph.
 
 ---
 
@@ -35,11 +35,17 @@ File access gives Claude your content. Flywheel gives it your knowledge graph.
 | Query speed | Seconds of file I/O | <10ms in-memory index |
 | Scale tested to | Unknown | 100,000 notes |
 
-39 tools. 6-line config. Zero cloud dependencies.
+42 tools. 6-line config. Zero cloud dependencies.
 
 ---
 
-## Why Deterministic
+## Why Flywheel
+
+Three pillars make Flywheel different from file-access tools and cloud-only AI:
+
+- **Graph intelligence** -- backlinks, hubs, orphans, shortest paths. Your vault's structure becomes queryable.
+- **Deterministic wikilinks** -- 10-layer scoring, fully explainable. Every suggestion traces to vault properties.
+- **Hybrid search** -- FTS5 keyword + semantic embeddings fused via Reciprocal Rank Fusion. Fast and meaning-aware.
 
 When Flywheel suggests `[[Marcus Johnson]]`, it can tell you exactly why:
 
@@ -52,17 +58,32 @@ When Flywheel suggests `[[Marcus Johnson]]`, it can tell you exactly why:
 | Cross-folder | Entity in `team/`, note in `projects/` | +3 |
 | **Total** | | **32** |
 
-No black box. No embedding. No hallucinated connections.
+Deterministic where it matters. Semantic where it helps.
 
-| | ML/Vector Approach | Flywheel |
-|---|---|---|
-| "Why was this suggested?" | "Embeddings are close" | "10 + 6 + 5 + 8 + 3 = 32" |
-| Requires training data? | Yes | No |
-| Same input → same output? | Not guaranteed | Always |
-| Runs offline? | Often not | Always |
-| Learns your preferences? | Retraining | Implicit feedback loop |
+| | Pure Vector Search | Pure Keyword Search | Flywheel |
+|---|---|---|---|
+| "Why was this suggested?" | "Embeddings are close" | "Term frequency" | "10 + 6 + 5 + 8 + 3 = 32" |
+| Finds synonyms/concepts? | Yes | No | Yes (semantic search) |
+| Exact phrase matching? | Weak | Yes | Yes (FTS5) |
+| Same input → same output? | Not guaranteed | Always | Always (linking is deterministic) |
+| Runs offline? | Often not | Yes | Yes (local embeddings) |
+| Learns your preferences? | Retraining | No | Implicit feedback loop |
 
 Every number traces to a vault property. See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 10-layer pipeline.
+
+---
+
+## Hybrid Search
+
+Flywheel ships with FTS5 keyword search out of the box. Run `init_semantic` to upgrade to hybrid search:
+
+1. **`init_semantic`** downloads [all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2) (~23 MB) and embeds every note locally.
+2. Queries run FTS5 (keyword) and semantic (embedding similarity) in parallel.
+3. Results are fused via **Reciprocal Rank Fusion (RRF)** -- combining exact-match precision with meaning-aware recall.
+
+Everything runs locally. No API keys. No data leaves your machine. Embeddings are stored in `.flywheel/state.db` alongside the FTS5 index and rebuild automatically if deleted.
+
+Without `init_semantic`, search uses FTS5 only -- still fast, still useful. Hybrid search is an upgrade, not a requirement.
 
 ---
 
@@ -311,11 +332,11 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all environment variables
 
 ## Tools Overview
 
-15 categories. 39 tools. Load all of them, or just the ones you need.
+15 categories. 42 tools. Load all of them, or just the ones you need.
 
 | Preset | Tools | ~Tokens | What you get |
 |--------|-------|---------|--------------|
-| `full` (default) | 39 | ~11,800 | Everything |
+| `full` (default) | 42 | ~12,400 | Everything |
 | `minimal` | 13 | ~3,800 | Search, read, create, edit |
 
 Start with `minimal`, then add composable bundles:
@@ -355,13 +376,14 @@ See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
 | Protocol | MCP (native) | MCP | Obsidian plugin | Web API |
 | Backlink graph | Yes (bidirectional) | No | No | No |
 | FTS5 search | Yes (<10ms) | Basic | Semantic only | Yes |
+| Semantic search | Yes (local embeddings, hybrid RRF) | No | Yes (cloud) | Yes (cloud) |
 | Entity extraction | Auto (8 categories) | No | No | No |
 | Auto-wikilinks | Yes (with alias resolution) | No | No | No |
 | Schema intelligence | Yes (6 analysis modes) | No | No | No |
 | Git integration | Yes (auto-commit, undo) | No | No | No |
 | Test coverage | 1,812 tests | Unknown | Unknown | Unknown |
 | Runs locally | Yes (zero cloud) | Yes | Yes | Optional |
-| Tool count | 39 tools | ~10 | 0 (plugin) | ~5 |
+| Tool count | 42 tools | ~10 | 0 (plugin) | ~5 |
 
 ---
 
@@ -429,7 +451,7 @@ See [docs/VISION.md](docs/VISION.md) for the full picture.
 | Doc | Description |
 |---|---|
 | [SETUP.md](docs/SETUP.md) | Set up your own vault -- prerequisites, config, first commands |
-| [TOOLS.md](docs/TOOLS.md) | Full tool reference -- all 39 tools, parameters, examples |
+| [TOOLS.md](docs/TOOLS.md) | Full tool reference -- all 42 tools, parameters, examples |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts organized by use case |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Index strategy, FTS5, graph, auto-wikilinks |
 | [CONFIGURATION.md](docs/CONFIGURATION.md) | Env vars, presets, custom tool sets |

@@ -1,6 +1,6 @@
 # Architecture
 
-Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 39 tools for search, graph queries, and mutations.
+Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 42 tools for search, graph queries, and mutations.
 
 ---
 
@@ -38,6 +38,9 @@ packages/
 │           │   ├── vault.ts     # Vault scanner (find all .md files)
 │           │   ├── parser.ts    # Note parser (frontmatter, outlinks, tags)
 │           │   ├── fts5.ts      # FTS5 full-text search
+│           │   ├── embeddings.ts # Embedding generation (all-MiniLM-L6-v2)
+│           │   ├── similarity.ts # Semantic similarity search
+│           │   ├── semantic.ts  # Hybrid search (BM25 + semantic via RRF)
 │           │   ├── config.ts    # Config inference and storage
 │           │   ├── types.ts     # VaultIndex, VaultNote, Backlink types
 │           │   ├── constants.ts # MAX_LIMIT and other constants
@@ -149,6 +152,30 @@ Two FTS5 indexes, both in `.flywheel/state.db`:
 
 ---
 
+## Semantic Search & Embeddings
+
+Optional semantic search layer that complements FTS5 keyword search. Built on-demand via the `init_semantic` tool.
+
+### Embeddings Module
+
+The `embeddings.ts` module generates vector embeddings for note content using the `all-MiniLM-L6-v2` model from Hugging Face Transformers. The model is downloaded automatically to `~/.cache/huggingface/` on first use. Each note's content is chunked and embedded into a 384-dimensional vector.
+
+### Storage
+
+Embeddings are stored in the `note_embeddings` table in StateDb (`.flywheel/state.db`). Each row maps a note path to its embedding vector and a content hash for staleness detection.
+
+### Hybrid Search
+
+The `semantic.ts` module merges BM25 keyword results (from FTS5) with semantic similarity results (from cosine distance on embeddings) using **Reciprocal Rank Fusion (RRF)**. RRF combines two ranked lists by summing `1 / (k + rank)` for each result across both lists, producing a single ranking that benefits from keyword precision and semantic recall.
+
+When embeddings exist, `search` (content scope) and `find_similar` automatically upgrade to hybrid mode. When embeddings are not available, both tools fall back to FTS5-only mode with no degradation.
+
+### File Watcher Integration
+
+The file watcher automatically generates embeddings for new and modified notes after the initial build, keeping the semantic index up to date without requiring manual rebuilds.
+
+---
+
 ## Knowledge Graph
 
 ### Backlinks
@@ -231,6 +258,7 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 | `index_events` | Index rebuild activity |
 | `tool_invocations` | Tool usage analytics |
 | `graph_snapshots` | Graph topology evolution |
+| `note_embeddings` | Semantic search embeddings (path, vector, content hash) |
 
 **Database settings:** WAL journal mode for concurrent read performance. Foreign keys enabled. Schema version tracking with migration support.
 
@@ -258,6 +286,7 @@ New tables are added directly to `SCHEMA_SQL` with `CREATE TABLE IF NOT EXISTS`,
 | v6 | Added `index_events` table (index activity history) |
 | v7 | Added `tool_invocations` table (usage analytics) |
 | v8 | Added `graph_snapshots` table (structural evolution) |
+| v9 | Added `note_embeddings` table (semantic search) |
 
 ---
 
@@ -295,3 +324,4 @@ Every write tool follows the same pipeline:
 | `simple-git` | Git operations (commit, undo, diff) |
 | `chokidar` | File system watching |
 | `zod` | Input schema validation |
+| `@huggingface/transformers` | Embedding generation (all-MiniLM-L6-v2) |

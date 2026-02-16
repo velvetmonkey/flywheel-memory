@@ -86,7 +86,7 @@ The demo vaults in this repo cover these personas with production-realistic data
 
 ### Flywheel Memory
 
-The MCP server. 39 tools across 15 categories give Claude structured access to Obsidian vaults: search, graph queries, frontmatter analysis, content mutations, task management, and policy automation. Published as `@velvetmonkey/flywheel-memory`.
+The MCP server. 42 tools across 15 categories give Claude structured access to Obsidian vaults: search, graph queries, frontmatter analysis, content mutations, task management, and policy automation. Published as `@velvetmonkey/flywheel-memory`.
 
 ### Vault-Core
 

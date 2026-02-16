@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 41 tools across 15 categories for search, graph analysis, schema intelligence, tasks, frontmatter, and note mutations — all local, all markdown.
+**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 42 tools across 15 categories for search, graph analysis, schema intelligence, tasks, frontmatter, and note mutations — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -25,7 +25,8 @@ packages/mcp-server/src/
 │   │   ├── wikilinks.ts     # suggest_wikilinks, validate_links
 │   │   ├── migrations.ts    # rename_field, migrate_field_values
 │   │   ├── activity.ts      # vault_activity (session, sessions, note_access, tool_usage)
-│   │   └── similarity.ts    # find_similar (FTS5 BM25 content similarity)
+│   │   ├── similarity.ts    # find_similar (FTS5 BM25 content similarity)
+│   │   └── semantic.ts      # init_semantic (on-demand semantic embedding build)
 │   └── write/               # Write tool registrations
 │       ├── mutations.ts     # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
 │       ├── tasks.ts         # vault_toggle_task, vault_add_task
@@ -37,7 +38,8 @@ packages/mcp-server/src/
 └── core/
     ├── read/                # Read-side core logic (graph, vault, parser, fts5, config, watcher)
     ├── write/               # Write-side core logic (writer, wikilinks, git, validator, policy engine)
-    └── shared/              # Shared utilities (recency, cooccurrence, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots)
+    ├── shared/              # Shared utilities (recency, cooccurrence, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots)
+    └── semantic/            # Semantic search (embeddings.ts — embedding generation, similarity.ts — hybrid ranking)
 ```
 
 ### Dependencies
@@ -56,7 +58,7 @@ packages/mcp-server/src/
 Controlled by `FLYWHEEL_TOOLS` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`full`** (default) — All 15 categories, 41 tools (~12,400 tokens)
+- **`full`** (default) — All 15 categories, 42 tools (~12,400 tokens)
 - **`minimal`** — 5 categories, 13 tools (~3,800 tokens): search, structure, append, frontmatter, notes
 
 **Composable bundles** (add to minimal or each other):

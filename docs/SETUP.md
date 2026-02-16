@@ -109,7 +109,7 @@ Flywheel auto-links any mentions of existing notes. If "Sarah Mitchell" has a no
 
 ## Step 4: Choose a Tool Preset
 
-Flywheel ships 39 tools. Loading all of them works, but fewer tools means Claude picks the right one faster.
+Flywheel ships 42 tools. Loading all of them works, but fewer tools means Claude picks the right one faster.
 
 | Preset | Tools | ~Tokens | Best for |
 |--------|-------|---------|----------|
@@ -117,7 +117,7 @@ Flywheel ships 39 tools. Loading all of them works, but fewer tools means Claude
 | `minimal,graph` | 19 | ~5,650 | + backlinks, orphans, hubs, paths |
 | `minimal,graph,tasks` | 22 | ~6,575 | + task queries and mutations |
 | `minimal,graph,analysis` | 25 | ~7,500 | + schema intelligence, wikilink validation |
-| `full` (default) | 39 | ~11,800 | Everything |
+| `full` (default) | 42 | ~12,400 | Everything |
 
 **Recommendation:** Start with `minimal`. If you find yourself needing graph navigation or task management, add those bundles. You can always switch by editing the `FLYWHEEL_TOOLS` value in your `.mcp.json`.
 
@@ -255,6 +255,18 @@ Start simple and build up:
 
 ---
 
+## Step 6: Enable Semantic Search (Optional)
+
+Flywheel supports hybrid search that combines keyword matching (BM25) with semantic similarity. To enable it:
+
+> "Build the semantic search index for my vault"
+
+This calls `init_semantic`, which performs a one-time build of semantic embeddings using the `all-MiniLM-L6-v2` model. The process is fully local -- no API keys needed.
+
+Once embeddings are built, all `search` and `find_similar` calls automatically upgrade to hybrid ranking (BM25 + semantic via Reciprocal Rank Fusion). No configuration changes required.
+
+---
+
 ## Common Issues
 
 ### "Vault not found"
@@ -317,6 +329,6 @@ All vault operations work without git. You just won't have undo or commit histor
 ## Next Steps
 
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full reference for all 39 tools
+- **[TOOLS.md](TOOLS.md)** -- Full reference for all 42 tools
 - **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics

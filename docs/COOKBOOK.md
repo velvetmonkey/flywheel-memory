@@ -78,6 +78,30 @@ Find connections and navigate the knowledge graph.
 
 ---
 
+## Semantic Search
+
+Hybrid search that combines keyword matching with conceptual similarity.
+
+### Build the index
+
+> "Build the semantic search index for my vault"
+
+Calls `init_semantic` to generate embeddings using all-MiniLM-L6-v2. Runs locally, no API keys needed. Only needs to be done once.
+
+### Search by concept
+
+> "Search for notes conceptually related to 'knowledge management'"
+
+When embeddings exist, search automatically uses hybrid ranking (BM25 + semantic via Reciprocal Rank Fusion) -- no extra parameters needed.
+
+### Find similar notes
+
+> "Find notes similar to projects/alpha.md using semantic similarity"
+
+`find_similar` upgrades to hybrid ranking when embeddings are available, surfacing conceptually related notes even if they don't share keywords.
+
+---
+
 ## Maintenance
 
 Keep your vault clean and well-linked.
@@ -227,3 +251,4 @@ Manage vault-wide changes.
 - **Let auto-wikilinks work.** When writing through Flywheel, entity mentions are linked automatically. Write naturally -- don't add `[[brackets]]` yourself.
 - **Check before deleting.** `vault_delete_note` shows backlink warnings before deletion. If a note has backlinks, consider moving or renaming instead.
 - **Dry-run bulk changes.** `rename_field` and `migrate_field_values` default to dry-run mode. Always preview before committing.
+- **Build semantic search once with `init_semantic`** -- all subsequent searches auto-upgrade to hybrid ranking.

@@ -1,14 +1,14 @@
 # Tool Reference
 
-41 tools across 15 categories. All enabled by default (`full` preset).
+42 tools across 15 categories. All enabled by default (`full` preset).
 
 ---
 
-## Search & Discovery (1 tool)
+## Search & Discovery (2 tools)
 
 ### `search`
 
-Unified search across metadata, content, and entities. The `scope` parameter controls what to search.
+Unified search across metadata, content, and entities. The `scope` parameter controls what to search. When semantic embeddings are available (built via `init_semantic`), content and entity searches automatically upgrade to hybrid mode combining BM25 keyword matching with semantic similarity for improved recall.
 
 | Scope | Description |
 |-------|-------------|
@@ -18,6 +18,12 @@ Unified search across metadata, content, and entities. The `scope` parameter con
 | `all` | (default) Tries metadata first, falls back to content search. |
 
 **Key parameters:** `query`, `scope`, `where` (frontmatter key-value filters), `has_tag`, `has_any_tag`, `has_all_tags`, `folder`, `title_contains`, `modified_after`, `modified_before`, `sort_by` (modified/created/title), `order` (asc/desc), `prefix` (entity autocomplete), `limit`
+
+### `init_semantic`
+
+Initialize or rebuild the semantic search index. Generates embeddings for all vault notes using the `all-MiniLM-L6-v2` model (downloaded automatically to `~/.cache/huggingface/` on first run). Once built, `search` and `find_similar` automatically upgrade to hybrid mode combining BM25 keyword matching with semantic similarity via Reciprocal Rank Fusion (RRF).
+
+**Key parameters:** (none required)
 
 ---
 
@@ -215,7 +221,7 @@ Undo the last git commit (typically the last Flywheel mutation). Performs a soft
 
 ### `find_similar`
 
-Find notes similar to a given note using FTS5 BM25 content similarity. Extracts key terms from the source note, queries the full-text index, and ranks by relevance. Use `exclude_linked` to filter out notes already connected via wikilinks.
+Find notes similar to a given note using content similarity. Extracts key terms from the source note, queries the full-text index, and ranks by relevance. When semantic embeddings are available (built via `init_semantic`), automatically upgrades to hybrid mode combining BM25 keyword matching with semantic similarity for improved results. Use `exclude_linked` to filter out notes already connected via wikilinks.
 
 **Key parameters:** `path` (required), `limit` (default 10), `exclude_linked` (default true)
 
@@ -225,7 +231,7 @@ Find notes similar to a given note using FTS5 BM25 content similarity. Extracts 
 
 | Category | Tools | Included in `full` | Included in `minimal` |
 |----------|------:|:-------------------:|:---------------------:|
-| search | 1 | Yes | Yes |
+| search | 2 | Yes | Yes |
 | backlinks | 2 | Yes | |
 | orphans | 1 | Yes | |
 | hubs | 1 | Yes | |
@@ -240,4 +246,4 @@ Find notes similar to a given note using FTS5 BM25 content similarity. Extracts 
 | notes | 4 | Yes | Yes |
 | git | 1 | Yes | |
 | policy | 1 | Yes | |
-| **Total** | **41** | **41** | **13** |
+| **Total** | **42** | **42** | **13** |

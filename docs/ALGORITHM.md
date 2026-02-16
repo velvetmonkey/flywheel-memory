@@ -291,16 +291,20 @@ Suppression is reversible. If new positive feedback brings the false positive ra
 
 ---
 
-## Why Not Vectors?
+## Vectors + Structure
 
-Five reasons this scoring approach was chosen over embedding-based similarity:
+Flywheel uses two complementary systems: the deterministic scoring pipeline above handles **wikilink suggestions** (where explainability matters), and optional semantic embeddings handle **content discovery** (where meaning matters). They serve different purposes and do not interfere with each other.
 
-**Deterministic** -- Same input always produces the same output. No model temperature, no sampling variance, no "it worked yesterday but not today." Every suggestion is reproducible and debuggable.
+Five reasons the wikilink scoring pipeline remains fully deterministic:
 
-**Fast** -- The full pipeline runs in under 25ms for 1000 characters of content against thousands of entities. No embedding model to load, no vector database to query. It's a loop over arrays with arithmetic.
+**Deterministic** -- Same input always produces the same output. No model temperature, no sampling variance, no "it worked yesterday but not today." Every wikilink suggestion is reproducible and debuggable.
 
-**Explainable** -- Every score is a sum of named layers. You can inspect exactly why `[[Turbopump]]` scored 34: content match contributed 10, recency contributed 8, hub boost contributed 3, and so on. Try explaining why cosine similarity returned 0.82.
+**Fast** -- The full pipeline runs in under 25ms for 1000 characters of content against thousands of entities. It's a loop over arrays with arithmetic -- no inference step in the hot path.
 
-**Graph-aware** -- Vector embeddings encode semantic meaning but know nothing about your vault's structure. This algorithm uses backlink counts (hub boost), folder topology (cross-folder boost), entity co-occurrence patterns, and note context. These are structural signals that embeddings cannot capture.
+**Explainable** -- Every score is a sum of named layers. You can inspect exactly why `[[Turbopump]]` scored 34: content match contributed 10, recency contributed 8, hub boost contributed 3, and so on. Wikilink suggestions must be auditable because they modify your notes.
 
-**Private** -- No content leaves your machine. No embeddings are computed by external APIs. No vectors are stored in cloud databases. The entire algorithm runs locally on your filesystem and a SQLite database.
+**Graph-aware** -- The scoring algorithm uses backlink counts (hub boost), folder topology (cross-folder boost), entity co-occurrence patterns, and note context. These are structural signals that encode your vault's unique topology -- something embeddings alone cannot capture.
+
+**Private** -- No content leaves your machine. The wikilink pipeline runs locally on your filesystem and a SQLite database. Semantic embeddings, when enabled, are also generated locally using the `all-MiniLM-L6-v2` model -- no external APIs, no cloud storage.
+
+Semantic embeddings complement this by powering `search` and `find_similar` in hybrid mode. When you search for a concept, BM25 keyword matching finds exact term hits while semantic similarity finds notes that are conceptually related even without shared vocabulary. The two result sets are merged via Reciprocal Rank Fusion (RRF). This improves discovery without touching the deterministic wikilink pipeline.

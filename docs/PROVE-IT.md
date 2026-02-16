@@ -225,6 +225,6 @@ See [SETUP.md](SETUP.md) for full configuration details, Claude Desktop setup, a
 ## Next Steps
 
 - **[SETUP.md](SETUP.md)** -- Full setup guide for your own vault
-- **[TOOLS.md](TOOLS.md)** -- Reference for all 39 tools
+- **[TOOLS.md](TOOLS.md)** -- Reference for all 42 tools
 - **[ALGORITHM.md](ALGORITHM.md)** -- How scoring, ranking, and wikilink suggestion work
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts by use case

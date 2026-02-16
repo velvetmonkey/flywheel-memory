@@ -1,7 +1,7 @@
 {
   "name": "@velvetmonkey/flywheel-memory",
   "version": "2.0.19",
-  "description": "MCP server that gives Claude full read/write access to your Obsidian vault. 39 tools for search, backlinks, graph queries, and mutations.",
+  "description": "MCP server that gives Claude full read/write access to your Obsidian vault. 42 tools for search, backlinks, graph queries, mutations, and hybrid semantic search.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

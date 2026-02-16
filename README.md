@@ -17,7 +17,7 @@
 | "What's overdue?" | Read every file | Indexed query, <10ms |
 | "What links here?" | grep every file | Pre-indexed backlink graph |
 | "Add a meeting note" | Raw write, no linking | Write + auto-wikilink |
-| "What should I link?" | Manual or grep | 9-layer scoring + semantic understanding |
+| "What should I link?" | Manual or grep | Smart scoring + semantic understanding |
 | Token cost | 2,000-250,000 | 50-200 |
 
 42 tools. 6-line config. Zero cloud dependencies.
@@ -104,7 +104,7 @@ Marcus Johnson        32    +10     +6    +5     +8      +3    +0
 
 Every number traces to a vault property. No magic -- just math you can verify.
 
-See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 9-layer scoring pipeline.
+See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
 ### 3. Your Vault's Hidden Structure
 
@@ -118,7 +118,7 @@ Content about "deployment automation" suggests `[[CI/CD]]` — no keyword match 
 
 - **Semantic bridges**: Discovers high-value missing links between conceptually related but unlinked notes
 - **Semantic clusters**: Groups notes by meaning instead of folder structure
-- **Layer 9**: Wikilink suggestions gain conceptual scoring — the only vault tool that suggests links based on what you *mean*
+- **Semantic wikilinks**: Suggestions based on what you *mean*, not just what you typed
 
 Build once with `init_semantic`. Everything upgrades automatically.
 
@@ -127,7 +127,7 @@ Build once with `init_semantic`. Everything upgrades automatically.
 | | Pure Vector Search | Pure Keyword Search | Flywheel |
 |---|---|---|---|
 | "Why was this suggested?" | "Embeddings are close" | "Term frequency" | "10 + 6 + 5 + 8 + 3 = 32" |
-| Semantic wikilinks | No | No | Yes (Layer 9 entity embeddings) |
+| Semantic wikilinks | No | No | Yes (semantic) |
 | Finds synonyms/concepts? | Yes | No | Yes (semantic search) |
 | Exact phrase matching? | Weak | Yes | Yes |
 | Same input → same output? | Not guaranteed | Always | Always |

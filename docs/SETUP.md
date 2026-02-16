@@ -79,7 +79,7 @@ Start with these to see Flywheel in action on your vault:
 
 > "Search for notes about [topic]"
 
-This uses FTS5 full-text search. Results return in under 10ms with highlighted snippets.
+This uses full-text search. Results return in under 10ms with highlighted snippets.
 
 ### 2. Explore connections
 
@@ -264,13 +264,13 @@ Flywheel supports deep semantic integration that goes far beyond keyword search.
 This runs `init_semantic`, which builds **two** indexes:
 
 ### Note Embeddings (Hybrid Search)
-- Embeds all vault notes using the `all-MiniLM-L6-v2` model (23 MB, downloaded once to `~/.cache/huggingface/`)
-- After build: `search` and `find_similar` auto-upgrade to hybrid ranking (BM25 + semantic via Reciprocal Rank Fusion)
+- Embeds all vault notes using a local model (23 MB, downloaded once)
+- After build: `search` and `find_similar` automatically combine keyword and semantic matching
 - No configuration changes needed — hybrid mode activates automatically
 
 ### Entity Embeddings (Semantic Wikilinks + Graph Analysis)
 - Embeds all vault entities (note titles, aliases, categories)
-- After build: wikilink suggestions gain **Layer 9 semantic scoring** — content about "deployment automation" can suggest `[[CI/CD]]` without keyword matches
+- After build: wikilink suggestions gain **semantic scoring** — content about "deployment automation" can suggest `[[CI/CD]]` without keyword matches
 - Unlocks new analysis modes: `semantic_clusters`, `semantic_bridges`, `semantic_links`
 
 ### Build Details
@@ -279,7 +279,7 @@ This runs `init_semantic`, which builds **two** indexes:
 |---|---|
 | **Build time** | ~2-3 minutes for 500 entities |
 | **Memory** | ~768 KB for 500 entities (loaded into memory at startup) |
-| **Model** | `all-MiniLM-L6-v2` (384 dimensions, runs locally) |
+| **Model** | Local model, 23 MB (runs entirely on your machine) |
 | **Incremental** | File watcher keeps embeddings current as you edit |
 | **Runs once** | Subsequent startups load from cache |
 
@@ -287,7 +287,7 @@ This runs `init_semantic`, which builds **two** indexes:
 
 After building semantic embeddings:
 
-- **Wikilink suggestions**: Layer 9 semantic scoring finds conceptual links that keyword matching misses
+- **Wikilink suggestions**: Semantic scoring finds conceptual links that keyword matching misses
 - **Semantic bridges**: `graph_analysis({ analysis: "semantic_bridges" })` — find notes that should be connected but aren't
 - **Semantic clusters**: `graph_analysis({ analysis: "semantic_clusters" })` — group notes by meaning, not folder
 - **Semantic links**: `note_intelligence({ analysis: "semantic_links" })` — find missing entity links for a specific note

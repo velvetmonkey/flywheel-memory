@@ -8,20 +8,20 @@
 
 ### `search`
 
-Unified search across metadata, content, and entities. The `scope` parameter controls what to search. When semantic embeddings are available (built via `init_semantic`), content and entity searches automatically upgrade to hybrid mode combining BM25 keyword matching with semantic similarity for improved recall.
+Unified search across metadata, content, and entities. The `scope` parameter controls what to search. When semantic embeddings are available (built via `init_semantic`), content and entity searches automatically upgrade to hybrid mode combining keyword and semantic matching for improved recall.
 
 | Scope | Description |
 |-------|-------------|
 | `metadata` | Search frontmatter fields, tags, folders, titles. Use `where`, `has_tag`, `has_any_tag`, `has_all_tags`, `folder`, `title_contains` filters. |
-| `content` | Full-text search using SQLite FTS5. Supports stemming, phrases (`"exact phrase"`), boolean operators (`term1 AND term2`), prefix matching (`prefix*`). |
-| `entities` | Search vault entities (people, projects, technologies) with FTS5 Porter stemming. Supports `prefix` mode for autocomplete. |
+| `content` | Full-text search. Supports word variations, phrases (`"exact phrase"`), boolean operators (`term1 AND term2`), prefix matching (`prefix*`). |
+| `entities` | Search vault entities (people, projects, technologies) with stemming. Supports `prefix` mode for autocomplete. |
 | `all` | (default) Tries metadata first, falls back to content search. |
 
 **Key parameters:** `query`, `scope`, `where` (frontmatter key-value filters), `has_tag`, `has_any_tag`, `has_all_tags`, `folder`, `title_contains`, `modified_after`, `modified_before`, `sort_by` (modified/created/title), `order` (asc/desc), `prefix` (entity autocomplete), `limit`
 
 ### `init_semantic`
 
-Initialize or rebuild the semantic search index. Generates embeddings for all vault notes AND entity-level embeddings using the `all-MiniLM-L6-v2` model (downloaded automatically to `~/.cache/huggingface/` on first run). Note embeddings power hybrid search — `search` and `find_similar` automatically upgrade to hybrid mode combining BM25 keyword matching with semantic similarity via Reciprocal Rank Fusion (RRF). Entity embeddings power Layer 9 semantic scoring in wikilink suggestions, semantic graph analysis (`semantic_clusters`, `semantic_bridges`), and semantic note intelligence (`semantic_links`).
+Initialize or rebuild the semantic search index. Generates embeddings for all vault notes and entities using a local model (downloaded automatically on first run). After building, `search` and `find_similar` automatically combine keyword and semantic matching. Wikilink suggestions gain semantic scoring. Unlocks `semantic_clusters`, `semantic_bridges`, and `semantic_links` analysis modes.
 
 **Key parameters:** (none required)
 
@@ -122,7 +122,7 @@ Analyze a note for patterns, suggestions, and consistency. The `analysis` parame
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `suggest_wikilinks` | Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases. When entity embeddings are built (via `init_semantic`), suggestions include Layer 9 semantic scoring — entities can be suggested based on conceptual similarity even without keyword matches. | `text`, `limit`, `offset` |
+| `suggest_wikilinks` | Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases. When entity embeddings are built (via `init_semantic`), suggestions include semantic scoring — entities can be suggested based on conceptual similarity even without keyword matches. | `text`, `limit`, `offset` |
 | `validate_links` | Check wikilinks in a note (or all notes) and report broken links. Suggests fixes for typos. When embeddings are available, broken links are also resolved via embedding similarity as a fallback. | `path` (optional, omit for all), `typos_only`, `limit`, `offset` |
 | `wikilink_feedback` | Report and query wikilink accuracy feedback. Modes: report, list, stats. Auto-suppresses entities with >=30% false positive rate. | `mode` (report/list/stats), `entity`, `note_path`, `context`, `correct`, `limit` |
 
@@ -185,7 +185,7 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 | `health_check` | Check MCP server health. Returns vault accessibility, index freshness, periodic note detection, config, last index rebuild info, and recommendations. | (none) |
 | `get_vault_stats` | Comprehensive vault statistics: notes, links, tags, orphans, folders. Includes 7-day recent activity summary. | (none) |
 | `get_folder_structure` | Get vault folder structure with note counts and subfolder counts. | (none) |
-| `refresh_index` | Rebuild the vault index and FTS5 search index without restarting the server. | (none) |
+| `refresh_index` | Rebuild the vault index and full-text search index without restarting the server. | (none) |
 | `get_all_entities` | Get all linkable entities (note titles and aliases). | `include_aliases`, `limit` |
 | `get_unlinked_mentions` | Find places where an entity is mentioned but not linked. | `entity`, `limit` |
 | `vault_growth` | Track vault growth over time. Modes: current (live snapshot), history (time series), trends (deltas), index_activity (rebuild history). | `mode` (current/history/trends/index_activity), `metric`, `days_back`, `limit` |
@@ -224,7 +224,7 @@ Undo the last git commit (typically the last Flywheel mutation). Performs a soft
 
 ### `find_similar`
 
-Find notes similar to a given note using content similarity. Extracts key terms from the source note, queries the full-text index, and ranks by relevance. When semantic embeddings are available (built via `init_semantic`), automatically upgrades to hybrid mode combining BM25 keyword matching with semantic similarity for improved results. Use `exclude_linked` to filter out notes already connected via wikilinks.
+Find notes similar to a given note using content similarity. Extracts key terms from the source note, queries the full-text index, and ranks by relevance. When semantic embeddings are available (built via `init_semantic`), automatically upgrades to hybrid mode combining keyword and semantic matching for improved results. Use `exclude_linked` to filter out notes already connected via wikilinks.
 
 **Key parameters:** `path` (required), `limit` (default 10), `exclude_linked` (default true)
 

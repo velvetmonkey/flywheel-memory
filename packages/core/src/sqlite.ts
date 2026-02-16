@@ -380,8 +380,14 @@ function initSchema(db: Database.Database): void {
       const hasCrankState = db.prepare(
         `SELECT name FROM sqlite_master WHERE type='table' AND name='crank_state'`
       ).get();
-      if (hasCrankState) {
+      const hasWriteState = db.prepare(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name='write_state'`
+      ).get();
+      if (hasCrankState && !hasWriteState) {
         db.exec('ALTER TABLE crank_state RENAME TO write_state');
+      } else if (hasCrankState && hasWriteState) {
+        // Both exist (stale db) — drop the old one
+        db.exec('DROP TABLE crank_state');
       }
     }
 

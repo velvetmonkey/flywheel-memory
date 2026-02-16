@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 41 tools across 15 categories
+ * 42 tools across 15 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -71,6 +71,7 @@ import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js
 import { registerMetricsTools } from './tools/read/metrics.js';
 import { registerActivityTools } from './tools/read/activity.js';
 import { registerSimilarityTools } from './tools/read/similarity.js';
+import { registerSemanticTools } from './tools/read/semantic.js';
 
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
@@ -98,8 +99,9 @@ import { registerVaultResources } from './resources/vault.js';
 // Auto-detect vault root, with PROJECT_PATH as override
 const vaultPath: string = process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot();
 
-// Semantic search opt-in
-const semanticEnabled = process.env.FLYWHEEL_SEMANTIC === 'true';
+// Semantic search opt-in (mutable — init_semantic tool can flip at runtime)
+let semanticEnabled = process.env.FLYWHEEL_SEMANTIC === 'true';
+const enableSemantic = () => { semanticEnabled = true; };
 
 // State variables
 let vaultIndex: VaultIndex;
@@ -113,7 +115,7 @@ let stateDb: StateDb | null = null;
 //
 // Presets:
 //   minimal  - Note-taking essentials: search, read, create, edit (13 tools)
-//   full     - All tools (41 tools) [DEFAULT]
+//   full     - All tools (42 tools) [DEFAULT]
 //
 // Composable bundles (combine with minimal or each other):
 //   graph    - Backlinks, orphans, hubs, paths (6 tools)
@@ -230,6 +232,7 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
   // search (unified: metadata + content + entities)
   search: 'search',
+  init_semantic: 'search',
 
   // backlinks
   get_backlinks: 'backlinks',
@@ -434,6 +437,7 @@ registerWikilinkFeedbackTools(server, () => stateDb);
 registerMetricsTools(server, () => vaultIndex, () => stateDb);
 registerActivityTools(server, () => stateDb, () => { try { return getSessionId(); } catch { return null; } });
 registerSimilarityTools(server, () => vaultIndex, () => vaultPath, () => stateDb, () => semanticEnabled);
+registerSemanticTools(server, () => vaultPath, () => stateDb, enableSemantic);
 
 // Resources (always registered, not gated by tool presets)
 registerVaultResources(server, () => vaultIndex ?? null);

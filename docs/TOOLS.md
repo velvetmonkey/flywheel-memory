@@ -21,7 +21,7 @@ Unified search across metadata, content, and entities. The `scope` parameter con
 
 ### `init_semantic`
 
-Initialize or rebuild the semantic search index. Generates embeddings for all vault notes using the `all-MiniLM-L6-v2` model (downloaded automatically to `~/.cache/huggingface/` on first run). Once built, `search` and `find_similar` automatically upgrade to hybrid mode combining BM25 keyword matching with semantic similarity via Reciprocal Rank Fusion (RRF).
+Initialize or rebuild the semantic search index. Generates embeddings for all vault notes AND entity-level embeddings using the `all-MiniLM-L6-v2` model (downloaded automatically to `~/.cache/huggingface/` on first run). Note embeddings power hybrid search — `search` and `find_similar` automatically upgrade to hybrid mode combining BM25 keyword matching with semantic similarity via Reciprocal Rank Fusion (RRF). Entity embeddings power Layer 11 semantic scoring in wikilink suggestions, semantic graph analysis (`semantic_clusters`, `semantic_bridges`), and semantic note intelligence (`semantic_links`).
 
 **Key parameters:** (none required)
 
@@ -52,6 +52,8 @@ Analyze vault link graph structure. The `analysis` parameter selects the mode.
 | `immature` | Notes scored by maturity (word count, outlinks, frontmatter completeness, backlinks) sorted least mature first | `folder`, `limit`, `offset` |
 | `evolution` | Graph topology metrics over time (avg_degree, cluster_count, etc.) | `days` (defaults to 30) |
 | `emerging_hubs` | Entities growing fastest in connection count | `days` (defaults to 30) |
+| `semantic_clusters` | Group notes by embedding similarity into semantic clusters | `min_similarity` (default 0.5), `limit` |
+| `semantic_bridges` | Find notes with high semantic similarity but no link path between them | `min_similarity` (default 0.5), `limit` |
 
 ### Other graph tools
 
@@ -103,6 +105,7 @@ Analyze a note for patterns, suggestions, and consistency. The `analysis` parame
 | `suggest_wikilinks` | Find frontmatter values that could be wikilinks | `path` (required) |
 | `cross_layer` | Check consistency between frontmatter and prose references | `path` (required) |
 | `compute` | Auto-compute derived fields (word_count, link_count, etc.) | `path` (required), `fields` |
+| `semantic_links` | Find entities semantically related to this note but not currently linked | `path` (required), `limit` |
 | `all` | Run all analyses and return combined result | `path` (required), `fields` |
 
 ### Field migration tools
@@ -119,8 +122,8 @@ Analyze a note for patterns, suggestions, and consistency. The `analysis` parame
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `suggest_wikilinks` | Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases. | `text`, `limit`, `offset` |
-| `validate_links` | Check wikilinks in a note (or all notes) and report broken links. Suggests fixes for typos. | `path` (optional, omit for all), `typos_only`, `limit`, `offset` |
+| `suggest_wikilinks` | Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases. When entity embeddings are built (via `init_semantic`), suggestions include Layer 11 semantic scoring — entities can be suggested based on conceptual similarity even without keyword matches. | `text`, `limit`, `offset` |
+| `validate_links` | Check wikilinks in a note (or all notes) and report broken links. Suggests fixes for typos. When embeddings are available, broken links are also resolved via embedding similarity as a fallback. | `path` (optional, omit for all), `typos_only`, `limit`, `offset` |
 | `wikilink_feedback` | Report and query wikilink accuracy feedback. Modes: report, list, stats. Auto-suppresses entities with >=30% false positive rate. | `mode` (report/list/stats), `entity`, `note_path`, `context`, `correct`, `limit` |
 
 ---
@@ -146,9 +149,9 @@ Unified task query tool. Use `path` to scope to a single note, `has_due_date` to
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `vault_add_to_section` | Add content to a specific section. Set `create_if_missing=true` to auto-create the note from template. | `path`, `section`, `content`, `create_if_missing`, `position`, `format` (plain/bullet/task/numbered/timestamp-bullet), `commit` |
+| `vault_add_to_section` | Add content to a specific section. Set `create_if_missing=true` to auto-create the note from template. Set `bumpHeadings=false` to disable automatic heading level adjustment in inserted content. | `path`, `section`, `content`, `create_if_missing`, `position`, `format` (plain/bullet/task/numbered/timestamp-bullet), `bumpHeadings` (default: true), `commit` |
 | `vault_remove_from_section` | Remove content matching a pattern from a section | `path`, `section`, `pattern`, `mode` (first/last/all), `useRegex`, `commit` |
-| `vault_replace_in_section` | Replace content matching a pattern in a section | `path`, `section`, `search`, `replacement`, `mode` (first/last/all), `useRegex`, `commit` |
+| `vault_replace_in_section` | Replace content matching a pattern in a section. Error responses include a structured `diagnostic` field with closest matches, per-line analysis, and actionable suggestions when the replacement target isn't found. | `path`, `section`, `search`, `replacement`, `mode` (first/last/all), `useRegex`, `commit` |
 
 **Shared features:** Auto-wikilinks on every write, content validation and normalization, guardrail modes (warn/strict/off), list nesting preservation, outgoing link suggestions.
 
@@ -168,7 +171,7 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `vault_create_note` | Create a new note with optional frontmatter and content. Includes preflight checks for similar notes and alias collisions. | `path`, `content`, `frontmatter`, `overwrite`, `commit` |
+| `vault_create_note` | Create a new note with optional frontmatter and content. Includes preflight checks for similar notes and alias collisions. When embeddings are available, also checks for semantically similar existing notes and warns about potential duplicates. | `path`, `content`, `frontmatter`, `overwrite`, `commit` |
 | `vault_delete_note` | Delete a note. Shows backlink warnings before deletion. | `path`, `confirm` (required), `commit` |
 | `vault_move_note` | Move a note to a new location. Updates all backlinks across the vault. | `oldPath`, `newPath`, `updateBacklinks`, `commit` |
 | `vault_rename_note` | Rename a note in place. Updates all backlinks across the vault. | `path`, `newTitle`, `updateBacklinks`, `commit` |

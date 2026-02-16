@@ -174,6 +174,29 @@ When embeddings exist, `search` (content scope) and `find_similar` automatically
 
 The file watcher automatically generates embeddings for new and modified notes after the initial build, keeping the semantic index up to date without requiring manual rebuilds.
 
+### Entity Embeddings
+
+In addition to note-level embeddings, Flywheel builds entity-level embeddings for semantic wikilink scoring and graph analysis.
+
+**Text composition:** Each entity's embedding text is composed from:
+- Entity name (doubled for emphasis)
+- Aliases
+- Category (people, projects, technologies, etc.)
+- First 500 characters of the entity's backing note body
+
+**Storage:** `entity_embeddings` table in StateDb (path, name, vector, content hash).
+
+**Loading:** `loadEntityEmbeddingsToMemory()` loads all entity embeddings into an in-memory Map at startup. Layer 11 scoring queries this Map directly — no database access in the hot path (<1ms for 500 entities).
+
+**Incremental updates:** The file watcher detects when an entity's backing note changes and regenerates its embedding. Entity additions and removals are handled on index rebuild.
+
+**Integration points:**
+- **Layer 11 scoring** in `suggestRelatedLinks()` — cosine similarity against in-memory entity embeddings
+- **Semantic graph analysis** — `semantic_clusters` and `semantic_bridges` modes
+- **Semantic note intelligence** — `semantic_links` mode
+- **Preflight duplicate detection** — `vault_create_note` checks semantic similarity before creation
+- **Broken link fallback** — `validate_links` uses embedding similarity to suggest corrections
+
 ---
 
 ## Knowledge Graph
@@ -259,6 +282,7 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 | `tool_invocations` | Tool usage analytics |
 | `graph_snapshots` | Graph topology evolution |
 | `note_embeddings` | Semantic search embeddings (path, vector, content hash) |
+| `entity_embeddings` | Entity-level embeddings for semantic scoring (path, name, vector, content hash) |
 
 **Database settings:** WAL journal mode for concurrent read performance. Foreign keys enabled. Schema version tracking with migration support.
 
@@ -287,6 +311,7 @@ New tables are added directly to `SCHEMA_SQL` with `CREATE TABLE IF NOT EXISTS`,
 | v7 | Added `tool_invocations` table (usage analytics) |
 | v8 | Added `graph_snapshots` table (structural evolution) |
 | v9 | Added `note_embeddings` table (semantic search) |
+| v10 | Added `entity_embeddings` table (semantic entity scoring) |
 
 ---
 
@@ -300,10 +325,11 @@ Every write tool follows the same pipeline:
 4. **Input validation** -- Checks for common issues (double timestamps, non-markdown bullets)
 5. **Normalization** -- Auto-fixes issues (replace `*` with `-`, trim whitespace)
 6. **Auto-wikilinks** -- Applies `[[wikilinks]]` to known entities
+6a. **Heading level bumping** -- `bumpHeadingLevels()` adjusts heading levels in inserted content to nest under the target section's level (opt-out via `bumpHeadings: false`)
 7. **Outgoing link suggestions** -- Suggests related links based on content
 8. **Content formatting** -- Applies format (plain, bullet, task, numbered, timestamp-bullet)
 9. **Section insertion** -- Inserts at position (append/prepend) with list nesting preservation
-10. **Guardrails** -- Output validation (warn/strict/off modes)
+10. **Guardrails** -- Output validation (warn/strict/off modes). Write errors use `DiagnosticError` for structured diagnostics — includes closest match to target section, per-line analysis of the content, and actionable fix suggestions on `MutationResult.diagnostic`
 11. **File write** -- Writes back with frontmatter via `gray-matter`
 12. **Git commit** -- Optional auto-commit with `[Flywheel:*]` prefix
 

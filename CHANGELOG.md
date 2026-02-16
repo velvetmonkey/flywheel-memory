@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.20] - 2026-02-16
+
 ### Added
 
 - Tool invocation tracking: every tool call is recorded with tool name, session
@@ -32,11 +34,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hybrid search: automatic BM25 + semantic via Reciprocal Rank Fusion when
   embeddings exist
 - `@huggingface/transformers` dependency for local embedding generation
+- **Entity Embeddings**: `entity_embeddings` table (schema v10),
+  `init_semantic` now builds note + entity embeddings, incremental updates via
+  file watcher
+- **Layer 11 Semantic Scoring**: `suggestRelatedLinks()` async with semantic
+  similarity layer, conceptual link discovery (e.g., "deployment pipeline" →
+  `[[CI/CD]]`), graceful degradation when embeddings unavailable
+- **Semantic Graph Analysis**: `semantic_clusters` (embedding-based grouping),
+  `semantic_bridges` (high similarity + no link path) modes in `graph_analysis`
+- **Semantic Note Intelligence**: `semantic_links` mode in `note_intelligence`
+- **Preflight Duplicate Detection**: semantic similarity check on note creation
+- **Broken Link Semantic Fallback**: resolves broken links via embedding
+  similarity
+- **Heading Level Bumping**: `bumpHeadingLevels()` auto-nests headings in
+  `insertInSection()`, opt-out via `bumpHeadings: false`
+- **Diagnostic Errors**: `DiagnosticError` with closest match, per-line
+  analysis, actionable suggestions on `MutationResult.diagnostic`
 
 ### Changed
 
-- Schema version 6 → 8 (v7: tool_invocations, v8: graph_snapshots)
-- Schema v9: `note_embeddings` table for semantic search
+- Schema version 6 → 10 (v7: tool_invocations, v8: graph_snapshots, v9:
+  note_embeddings, v10: entity_embeddings)
+- `suggestRelatedLinks()` is now async with 11-layer scoring (was 10)
 - Tool count 41 → 42 (added init_semantic)
 - Removed `FLYWHEEL_SEMANTIC` env var — semantic search is now always-on when
   embeddings are built
@@ -194,7 +213,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI workflows for linting and testing
 - Strategic README with project positioning
 
-[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.13...HEAD
+[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.20...HEAD
+[2.0.20]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.13...flywheel-memory-v2.0.20
 [2.0.13]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.12...flywheel-memory-v2.0.13
 [2.0.12]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.11...flywheel-memory-v2.0.12
 [2.0.11]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.10...flywheel-memory-v2.0.11

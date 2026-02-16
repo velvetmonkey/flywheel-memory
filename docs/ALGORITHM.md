@@ -1,6 +1,6 @@
 # The Scoring Algorithm
 
-When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 10 layers. Here's exactly how.
+When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 11 layers. Here's exactly how.
 
 ---
 
@@ -12,7 +12,7 @@ When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a scor
                          +-----------+
                                |
                          +-----------+
-           Candidates -->| SCORE x8  |----> Scored list
+           Candidates -->| SCORE x9  |----> Scored list
                          +-----------+
                                |
                          +-----------+
@@ -42,9 +42,9 @@ Before scoring begins, candidates are pruned. This keeps the hot path fast and p
 
 ---
 
-## Phase 2: Scoring (8 Dimensions)
+## Phase 2: Scoring (9 Dimensions)
 
-Every candidate that survives filtering gets scored across 8 independent dimensions. Each dimension adds (or subtracts) points. The total determines rank.
+Every candidate that survives filtering gets scored across 9 independent dimensions. Each dimension adds (or subtracts) points. The total determines rank.
 
 ### Layer 1: Content Match
 
@@ -153,6 +153,33 @@ Historical accuracy of suggestions adjusts future scores. High-accuracy entities
 
 Feedback is stratified by folder. An entity that performs well in `projects/` but poorly in `daily-notes/` will get different adjustments depending on where the current note lives.
 
+### Layer 9: Semantic Similarity
+
+When entity embeddings are available (built via `init_semantic`), candidates receive a semantic boost based on how closely the content's meaning aligns with each entity.
+
+**Prerequisites:** Entity embeddings must be built via `init_semantic`. If unavailable, this layer is silently skipped.
+
+| Parameter | Value |
+|---|---|
+| Minimum similarity | 0.30 (`SEMANTIC_MIN_SIMILARITY`) |
+| Maximum boost | 12 (`SEMANTIC_MAX_BOOST`) |
+
+**Strictness multipliers:**
+
+| Strictness | Multiplier |
+|---|---|
+| Conservative | 0.6x |
+| Balanced | 1.0x |
+| Aggressive | 1.3x |
+
+**Formula:** `boost = similarity × SEMANTIC_MAX_BOOST × strictnessMultiplier`
+
+**Short-circuit:** Content shorter than 20 characters skips semantic scoring entirely.
+
+**The killer feature:** Entities found ONLY by semantic similarity -- with zero content match -- still enter the scoring pipeline. They receive semantic + type + context + hub boosts, opening the `entitiesWithContentMatch` gate. This means content about "deployment automation" can suggest `[[CI/CD]]` even though those exact words never appear.
+
+**Graceful degradation:** All semantic paths check `hasEntityEmbeddingsIndex()` before attempting queries. Errors are caught and logged -- semantic failures never break suggestions.
+
 ---
 
 ## Strictness Modes
@@ -199,7 +226,7 @@ This is a daily note at `daily-notes/2025-06-15.md`. Strictness is `conservative
 
 The entity index contains thousands of entities. After filtering (length <= 25, word count <= 3, not already linked, no article patterns, not suppressed), the scoring loop evaluates each survivor.
 
-Let's trace three entities through all 8 layers:
+Let's trace three entities through all 9 layers:
 
 ### Marcus Johnson (people, path: `people/Marcus Johnson.md`)
 
@@ -242,6 +269,8 @@ Let's trace three entities through all 8 layers:
 | 7. Hub Boost | 25 backlinks (>= 20) | +3 |
 | 8. Feedback | 92% accuracy over 12 samples | +2 |
 | **Total** | | **34** |
+
+With entity embeddings built, Layer 9 (Semantic Similarity) would add additional scoring based on conceptual relevance. For example, if the content discusses "delivery delays", entities like `[[Supply Chain]]` could receive a semantic boost even without exact keyword matches.
 
 ### Final ranking
 
@@ -291,20 +320,22 @@ Suppression is reversible. If new positive feedback brings the false positive ra
 
 ---
 
-## Vectors + Structure
+## Vectors + Structure: Deeply Integrated
 
-Flywheel uses two complementary systems: the deterministic scoring pipeline above handles **wikilink suggestions** (where explainability matters), and optional semantic embeddings handle **content discovery** (where meaning matters). They serve different purposes and do not interfere with each other.
+Flywheel uses embeddings in two complementary ways:
 
-Five reasons the wikilink scoring pipeline remains fully deterministic:
+**Inside the scoring pipeline (Layer 9)** -- Entity-level embeddings participate directly in wikilink scoring. When you write about "deployment automation", Layer 9 finds `[[CI/CD]]` at similarity 0.72 even though those words don't appear in the content. This is the same deterministic pipeline -- the semantic boost is just another number in the sum.
 
-**Deterministic** -- Same input always produces the same output. No model temperature, no sampling variance, no "it worked yesterday but not today." Every wikilink suggestion is reproducible and debuggable.
+**Alongside the scoring pipeline** -- Note-level embeddings power `search` (hybrid mode) and `find_similar` via Reciprocal Rank Fusion. Graph analysis gains `semantic_clusters` and `semantic_bridges` modes. These serve different purposes: discovery and exploration rather than wikilink suggestions.
 
-**Fast** -- The full pipeline runs in under 25ms for 1000 characters of content against thousands of entities. It's a loop over arrays with arithmetic -- no inference step in the hot path.
+Five properties of the scoring pipeline remain unchanged:
 
-**Explainable** -- Every score is a sum of named layers. You can inspect exactly why `[[Turbopump]]` scored 34: content match contributed 10, recency contributed 8, hub boost contributed 3, and so on. Wikilink suggestions must be auditable because they modify your notes.
+**Deterministic** -- Same input always produces the same output. Semantic scores are computed from fixed embeddings with cosine similarity -- no model inference in the hot path, no sampling variance.
 
-**Graph-aware** -- The scoring algorithm uses backlink counts (hub boost), folder topology (cross-folder boost), entity co-occurrence patterns, and note context. These are structural signals that encode your vault's unique topology -- something embeddings alone cannot capture.
+**Fast** -- Entity embeddings are loaded into memory at startup. Layer 9 queries are in-memory cosine comparisons (<1ms for 500 entities).
 
-**Private** -- No content leaves your machine. The wikilink pipeline runs locally on your filesystem and a SQLite database. Semantic embeddings, when enabled, are also generated locally using the `all-MiniLM-L6-v2` model -- no external APIs, no cloud storage.
+**Explainable** -- The semantic boost is a named number in the score breakdown, just like every other layer. `detail: true` shows the exact similarity score and resulting boost.
 
-Semantic embeddings complement this by powering `search` and `find_similar` in hybrid mode. When you search for a concept, BM25 keyword matching finds exact term hits while semantic similarity finds notes that are conceptually related even without shared vocabulary. The two result sets are merged via Reciprocal Rank Fusion (RRF). This improves discovery without touching the deterministic wikilink pipeline.
+**Graph-aware** -- Structural signals (backlinks, co-occurrence, folder topology) still dominate. Semantic similarity complements structure -- it doesn't replace it.
+
+**Private** -- All embeddings are generated locally using the `all-MiniLM-L6-v2` model. No content leaves your machine.

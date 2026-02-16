@@ -255,15 +255,44 @@ Start simple and build up:
 
 ---
 
-## Step 6: Enable Hybrid Search (Optional)
+## Step 6: Enable Semantic Intelligence (Optional)
 
-Flywheel supports hybrid search that combines keyword matching with semantic similarity. To enable it:
+Flywheel supports deep semantic integration that goes far beyond keyword search. To enable it:
 
 > "Build the semantic search index for my vault"
 
-This performs a one-time build of semantic embeddings using the `all-MiniLM-L6-v2` model. Runs locally -- no API keys needed.
+This runs `init_semantic`, which builds **two** indexes:
 
-Once built, all searches automatically upgrade to hybrid ranking. Notes that score high on both keyword match and conceptual similarity surface first. No configuration changes required.
+### Note Embeddings (Hybrid Search)
+- Embeds all vault notes using the `all-MiniLM-L6-v2` model (23 MB, downloaded once to `~/.cache/huggingface/`)
+- After build: `search` and `find_similar` auto-upgrade to hybrid ranking (BM25 + semantic via Reciprocal Rank Fusion)
+- No configuration changes needed — hybrid mode activates automatically
+
+### Entity Embeddings (Semantic Wikilinks + Graph Analysis)
+- Embeds all vault entities (note titles, aliases, categories)
+- After build: wikilink suggestions gain **Layer 11 semantic scoring** — content about "deployment automation" can suggest `[[CI/CD]]` without keyword matches
+- Unlocks new analysis modes: `semantic_clusters`, `semantic_bridges`, `semantic_links`
+
+### Build Details
+
+| | |
+|---|---|
+| **Build time** | ~2-3 minutes for 500 entities |
+| **Memory** | ~768 KB for 500 entities (loaded into memory at startup) |
+| **Model** | `all-MiniLM-L6-v2` (384 dimensions, runs locally) |
+| **Incremental** | File watcher keeps embeddings current as you edit |
+| **Runs once** | Subsequent startups load from cache |
+
+### What Unlocks
+
+After building semantic embeddings:
+
+- **Wikilink suggestions**: Layer 11 semantic scoring finds conceptual links that keyword matching misses
+- **Semantic bridges**: `graph_analysis({ analysis: "semantic_bridges" })` — find notes that should be connected but aren't
+- **Semantic clusters**: `graph_analysis({ analysis: "semantic_clusters" })` — group notes by meaning, not folder
+- **Semantic links**: `note_intelligence({ analysis: "semantic_links" })` — find missing entity links for a specific note
+- **Preflight checks**: `vault_create_note` warns when a semantically similar note already exists
+- **Broken link recovery**: `validate_links` suggests fixes via semantic similarity when exact matches fail
 
 ---
 

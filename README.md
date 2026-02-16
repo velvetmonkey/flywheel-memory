@@ -10,13 +10,14 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Scale](https://img.shields.io/badge/scale-100k%20notes-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![Tests](https://img.shields.io/badge/tests-1,812%20passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-1,824%20passed-brightgreen.svg)](docs/TESTING.md)
 
 | | Without Flywheel | With Flywheel |
 |---|---|---|
 | "What's overdue?" | Read every file | Indexed query, <10ms |
 | "What links here?" | grep every file | Pre-indexed backlink graph |
 | "Add a meeting note" | Raw write, no linking | Write + auto-wikilink |
+| "What should I link?" | Manual or grep | 11-layer scoring + semantic understanding |
 | Token cost | 2,000-250,000 | 50-200 |
 
 42 tools. 6-line config. Zero cloud dependencies.
@@ -103,7 +104,7 @@ Marcus Johnson        32    +10     +6    +5     +8      +3    +0
 
 Every number traces to a vault property. No magic -- just math you can verify.
 
-See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 10-layer scoring pipeline.
+See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 11-layer scoring pipeline.
 
 ### 3. Your Vault's Hidden Structure
 
@@ -111,11 +112,22 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 10-layer scoring pipelin
 
 Backlinks, forward links, hubs, orphans, shortest paths -- your vault is a queryable graph. Every note you write through Flywheel gets auto-linked. Denser graphs make every query more precise. That's the flywheel.
 
+### 4. Semantic Understanding
+
+Content about "deployment automation" suggests `[[CI/CD]]` — no keyword match needed. Entity-level embeddings mean your knowledge graph understands meaning, not just words.
+
+- **Semantic bridges**: Discovers high-value missing links between conceptually related but unlinked notes
+- **Semantic clusters**: Groups notes by meaning instead of folder structure
+- **Layer 11**: Wikilink suggestions gain conceptual scoring — the only vault tool that suggests links based on what you *mean*
+
+Build once with `init_semantic`. Everything upgrades automatically.
+
 ### How It Compares to Other Approaches
 
 | | Pure Vector Search | Pure Keyword Search | Flywheel |
 |---|---|---|---|
 | "Why was this suggested?" | "Embeddings are close" | "Term frequency" | "10 + 6 + 5 + 8 + 3 = 32" |
+| Semantic wikilinks | No | No | Yes (Layer 11 entity embeddings) |
 | Finds synonyms/concepts? | Yes | No | Yes (semantic search) |
 | Exact phrase matching? | Weak | Yes | Yes |
 | Same input → same output? | Not guaranteed | Always | Always |
@@ -153,7 +165,7 @@ No manual linking. No broken references. Use compounds into structure, structure
 
 ## Battle-Tested
 
-**1,812 tests. 78 test files. 33,000+ lines of test code.**
+**1,824 tests. 78 test files. 33,000+ lines of test code.**
 
 ### Performance
 
@@ -189,7 +201,7 @@ See [docs/PROVE-IT.md](docs/PROVE-IT.md) and [docs/TESTING.md](docs/TESTING.md).
 | Auto-wikilinks | Yes (alias resolution) | No | No | No |
 | Schema intelligence | 6 analysis modes | No | No | No |
 | Entity extraction | Auto (8 categories) | No | No | No |
-| Test coverage | 1,812 tests | Unknown | Unknown | Unknown |
+| Test coverage | 1,824 tests | Unknown | Unknown | Unknown |
 | Tool count | 42 | ~10 | 0 (plugin) | ~5 |
 
 ---

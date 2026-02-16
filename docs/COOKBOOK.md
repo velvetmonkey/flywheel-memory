@@ -100,6 +100,30 @@ When embeddings exist, search automatically uses hybrid ranking (BM25 + semantic
 
 `find_similar` upgrades to hybrid ranking when embeddings are available, surfacing conceptually related notes even if they don't share keywords.
 
+### Discover semantic bridges
+
+> "Find notes that are conceptually related but have no link between them"
+
+Uses `graph_analysis({ analysis: "semantic_bridges" })` to discover high-value missing connections. Great for finding notes that *should* be linked but aren't.
+
+### Cluster by meaning
+
+> "Group my notes by semantic similarity instead of folder structure"
+
+Uses `graph_analysis({ analysis: "semantic_clusters" })` to organize notes by what they're about, not where they live.
+
+### Find semantic links for a note
+
+> "What entities are semantically related to projects/AI-Agent.md but not linked?"
+
+Uses `note_intelligence({ path: "projects/AI-Agent.md", analysis: "semantic_links" })` to find conceptually relevant entities that should be linked.
+
+### Inspect Layer 11 scoring
+
+> "Show me the detailed score breakdown for wikilink suggestions — I want to see the semantic boost"
+
+Use `suggest_wikilinks` with `detail: true` to see `semanticBoost` in the score breakdown for each suggestion. This reveals which suggestions were found purely through semantic similarity vs keyword matching.
+
 ---
 
 ## Maintenance
@@ -218,7 +242,7 @@ Understand how auto-wikilinks decides what to link and why.
 
 > "Trace the wikilink suggestion for 'Alex' in today's daily note -- show me every scoring layer"
 
-For the full specification of the 10-layer scoring algorithm, see [ALGORITHM.md](ALGORITHM.md).
+For the full specification of the 11-layer scoring algorithm, see [ALGORITHM.md](ALGORITHM.md).
 
 ---
 
@@ -251,4 +275,4 @@ Manage vault-wide changes.
 - **Let auto-wikilinks work.** When writing through Flywheel, entity mentions are linked automatically. Write naturally -- don't add `[[brackets]]` yourself.
 - **Check before deleting.** `vault_delete_note` shows backlink warnings before deletion. If a note has backlinks, consider moving or renaming instead.
 - **Dry-run bulk changes.** `rename_field` and `migrate_field_values` default to dry-run mode. Always preview before committing.
-- **Build the semantic index once** -- ask Claude to "build the semantic search index" and all subsequent searches auto-upgrade to hybrid ranking.
+- **Build the semantic index once** — `init_semantic` now builds both note embeddings (for hybrid search) and entity embeddings (for Layer 11 wikilink scoring). Takes ~2-3 minutes for 500 entities. After that, wikilink suggestions gain semantic understanding, and new analyses unlock: `semantic_clusters`, `semantic_bridges`, `semantic_links`.

@@ -749,7 +749,7 @@ describe('vault_add_task suggestOutgoingLinks parameter', () => {
   });
 
   it('should suggest entities based on task content', async () => {
-    const result = suggestRelatedLinks('Review TypeScript implementation');
+    const result = await suggestRelatedLinks('Review TypeScript implementation');
 
     // Verify suggestion mechanism works for task content
     if (result.suggestions.length > 0) {
@@ -759,7 +759,7 @@ describe('vault_add_task suggestOutgoingLinks parameter', () => {
 
   it('should not suggest already-linked entities in task', async () => {
     const taskContent = 'Work with [[Jordan Smith]] on API design';
-    const result = suggestRelatedLinks(taskContent, { excludeLinked: true });
+    const result = await suggestRelatedLinks(taskContent, { excludeLinked: true });
 
     // Jordan Smith should not be in suggestions since already linked
     if (result.suggestions.length > 0) {
@@ -769,7 +769,7 @@ describe('vault_add_task suggestOutgoingLinks parameter', () => {
 
   it('should be idempotent for task content', async () => {
     const content = 'Review code → [[TypeScript]] [[MCP Server]]';
-    const result = suggestRelatedLinks(content);
+    const result = await suggestRelatedLinks(content);
 
     // Should detect existing suffix and return empty
     expect(result.suggestions).toEqual([]);
@@ -777,7 +777,7 @@ describe('vault_add_task suggestOutgoingLinks parameter', () => {
   });
 
   it('should handle task with multiple potential entities', async () => {
-    const result = suggestRelatedLinks('Update TypeScript and JavaScript for MCP Server');
+    const result = await suggestRelatedLinks('Update TypeScript and JavaScript for MCP Server');
 
     // Should return multiple suggestions (up to maxSuggestions)
     expect(result.suggestions.length).toBeLessThanOrEqual(3);

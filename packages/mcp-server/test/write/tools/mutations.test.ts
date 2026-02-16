@@ -1110,7 +1110,7 @@ describe('vault_add_to_section suggestOutgoingLinks parameter', () => {
 
   it('should append suggestions when suggestOutgoingLinks is true (default)', async () => {
     // Test directly with suggestRelatedLinks to verify the feature works
-    const result = suggestRelatedLinks('Working on a TypeScript project with the team');
+    const result = await suggestRelatedLinks('Working on a TypeScript project with the team');
 
     // If index is ready and matches entities, suggestions should be returned
     if (result.suggestions.length > 0) {
@@ -1121,7 +1121,7 @@ describe('vault_add_to_section suggestOutgoingLinks parameter', () => {
 
   it('should not suggest entities already linked in content', async () => {
     const content = 'Working with [[TypeScript]] on the project';
-    const result = suggestRelatedLinks(content, { excludeLinked: true });
+    const result = await suggestRelatedLinks(content, { excludeLinked: true });
 
     // TypeScript should NOT be in suggestions since it's already linked
     if (result.suggestions.length > 0) {
@@ -1131,7 +1131,7 @@ describe('vault_add_to_section suggestOutgoingLinks parameter', () => {
 
   it('should be idempotent - not duplicate suffix if already present', async () => {
     const content = 'Some content → [[ExistingLink]] [[AnotherLink]]';
-    const result = suggestRelatedLinks(content);
+    const result = await suggestRelatedLinks(content);
 
     // Should detect existing suffix and return empty
     expect(result.suggestions).toEqual([]);
@@ -1139,7 +1139,7 @@ describe('vault_add_to_section suggestOutgoingLinks parameter', () => {
   });
 
   it('should respect maxSuggestions limit', async () => {
-    const result = suggestRelatedLinks('TypeScript JavaScript Python programming', {
+    const result = await suggestRelatedLinks('TypeScript JavaScript Python programming', {
       maxSuggestions: 2,
     });
 
@@ -1171,7 +1171,7 @@ describe('vault_replace_in_section suggestOutgoingLinks parameter', () => {
   });
 
   it('should work with replacement content containing entities', async () => {
-    const result = suggestRelatedLinks('Updated TypeScript implementation');
+    const result = await suggestRelatedLinks('Updated TypeScript implementation');
 
     // Verify the suggestion mechanism works for replacement content
     if (result.suggestions.length > 0) {
@@ -1181,7 +1181,7 @@ describe('vault_replace_in_section suggestOutgoingLinks parameter', () => {
 
   it('should handle replacement with existing wikilinks', async () => {
     const content = 'Working with [[Jordan Smith]] on updates';
-    const result = suggestRelatedLinks(content, { excludeLinked: true });
+    const result = await suggestRelatedLinks(content, { excludeLinked: true });
 
     // Jordan Smith should not be suggested since already linked
     if (result.suggestions.length > 0) {

@@ -198,7 +198,7 @@ Content here.
 
       // Get suggestions
       const content = 'Working with team on project implementation';
-      const result = suggestRelatedLinks(content, { maxSuggestions: 3 });
+      const result = await suggestRelatedLinks(content, { maxSuggestions: 3 });
 
       expect(result.suggestions).toBeInstanceOf(Array);
       // May or may not have suggestions depending on matching
@@ -214,7 +214,7 @@ Content here.
 
       // Content with already-linked entities
       const content = 'Working with [[Alice]] on [[Project X]] implementation with Bob';
-      const result = suggestRelatedLinks(content, {
+      const result = await suggestRelatedLinks(content, {
         maxSuggestions: 5,
         excludeLinked: true,
       });

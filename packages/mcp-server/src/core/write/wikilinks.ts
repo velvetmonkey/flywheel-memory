@@ -61,6 +61,7 @@ import {
   saveRecencyToStateDb,
   type RecencyIndex,
 } from '../shared/recency.js';
+import { embedTextCached, findSemanticallySimilarEntities, hasEntityEmbeddingsIndex } from '../read/embeddings.js';
 
 /**
  * Module-level StateDb reference
@@ -692,6 +693,12 @@ const HUB_TIERS = [
 ] as const;
 
 /**
+ * Semantic similarity constants for Layer 11
+ */
+const SEMANTIC_MIN_SIMILARITY = 0.30;
+const SEMANTIC_MAX_BOOST = 12;
+
+/**
  * Get cross-folder boost for an entity
  *
  * @param entityPath - Path to the entity note
@@ -980,10 +987,10 @@ function scoreEntity(
  * @param options - Configuration options
  * @returns Suggestion result with entity names and formatted suffix
  */
-export function suggestRelatedLinks(
+export async function suggestRelatedLinks(
   content: string,
   options: SuggestOptions = {}
-): SuggestResult {
+): Promise<SuggestResult> {
   const {
     maxSuggestions = 3,
     excludeLinked = true,
@@ -1212,6 +1219,89 @@ export function suggestRelatedLinks(
           }
         }
       }
+    }
+  }
+
+  // ═══════════════════════════════════
+  // LAYER 11: Semantic Similarity
+  // ═══════════════════════════════════
+  if (content.length >= 20 && hasEntityEmbeddingsIndex()) {
+    try {
+      const contentEmbedding = await embedTextCached(content);
+
+      // Build sets for already-scored and already-linked entity names
+      const alreadyScoredNames = new Set(scoredEntities.map(e => e.name));
+
+      // Strictness multiplier for semantic boost
+      const semanticStrictnessMultiplier = strictness === 'conservative' ? 0.6
+        : strictness === 'aggressive' ? 1.3
+        : 1.0;
+
+      const semanticMatches = findSemanticallySimilarEntities(
+        contentEmbedding,
+        (maxSuggestions || 3) * 3,
+        linkedEntities
+      );
+
+      for (const match of semanticMatches) {
+        if (match.similarity < SEMANTIC_MIN_SIMILARITY) continue;
+
+        const boost = match.similarity * SEMANTIC_MAX_BOOST * semanticStrictnessMultiplier;
+
+        // Check if entity already has a score
+        const existing = scoredEntities.find(e => e.name === match.entityName);
+        if (existing) {
+          existing.score += boost;
+          existing.breakdown.semanticBoost = boost;
+        } else if (!linkedEntities.has(match.entityName.toLowerCase())) {
+          // NEW entity not in scored list and not already linked
+          // Look up the entity in the entity index
+          const entityWithType = entitiesWithTypes.find(
+            et => et.entity.name === match.entityName
+          );
+          if (!entityWithType) continue;
+
+          // Skip length/article filters (same as main loop)
+          if (match.entityName.length > MAX_ENTITY_LENGTH) continue;
+          if (isLikelyArticleTitle(match.entityName)) continue;
+
+          const { entity, category } = entityWithType;
+
+          // Reuse existing layer logic for base boosts
+          const layerTypeBoost = TYPE_BOOST[category] || 0;
+          const layerContextBoost = contextBoosts[category] || 0;
+          const layerHubBoost = getHubBoost(entity);
+          const layerCrossFolderBoost = (notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0;
+          const layerFeedbackAdj = feedbackBoosts.get(match.entityName) ?? 0;
+
+          const totalScore = boost + layerTypeBoost + layerContextBoost + layerHubBoost + layerCrossFolderBoost + layerFeedbackAdj;
+
+          if (totalScore >= adaptiveMinScore) {
+            scoredEntities.push({
+              name: match.entityName,
+              path: entity.path || '',
+              score: totalScore,
+              category,
+              breakdown: {
+                contentMatch: 0,
+                cooccurrenceBoost: 0,
+                typeBoost: layerTypeBoost,
+                contextBoost: layerContextBoost,
+                recencyBoost: 0,
+                crossFolderBoost: layerCrossFolderBoost,
+                hubBoost: layerHubBoost,
+                feedbackAdjustment: layerFeedbackAdj,
+                semanticBoost: boost,
+              },
+            });
+
+            // Add to content match set so it passes the gate below
+            entitiesWithContentMatch.add(match.entityName);
+          }
+        }
+      }
+    } catch {
+      // Semantic scoring failure never breaks suggestions
     }
   }
 
@@ -1476,11 +1566,12 @@ function inferCategoryFromName(name: string): string | undefined {
  * Checks:
  * 1. Exact name match: Does an entity with this name already exist?
  * 2. FTS5 search: Find entities with similar names
+ * 3. Semantic similarity: Find conceptually similar entities via embeddings
  *
  * @param noteName - Name of the note to check
  * @returns Preflight result with existing/similar entities
  */
-export function checkPreflightSimilarity(noteName: string): PreflightResult {
+export async function checkPreflightSimilarity(noteName: string): Promise<PreflightResult> {
   const result: PreflightResult = { similarEntities: [] };
 
   if (!moduleStateDb) return result;
@@ -1496,11 +1587,13 @@ export function checkPreflightSimilarity(noteName: string): PreflightResult {
   }
 
   // 2. FTS5 search for similar entities
+  const ftsNames = new Set<string>();
   try {
     const searchResults = searchEntitiesDb(moduleStateDb, noteName, 5);
     for (const sr of searchResults) {
       // Skip exact match (already reported above)
       if (sr.name.toLowerCase() === noteName.toLowerCase()) continue;
+      ftsNames.add(sr.name.toLowerCase());
       result.similarEntities.push({
         name: sr.name,
         path: sr.path,
@@ -1510,6 +1603,35 @@ export function checkPreflightSimilarity(noteName: string): PreflightResult {
     }
   } catch {
     // FTS5 query may fail on special characters - that's fine
+  }
+
+  // 3. Semantic similarity check via entity embeddings
+  try {
+    if (hasEntityEmbeddingsIndex()) {
+      const titleEmbedding = await embedTextCached(noteName);
+      const semanticMatches = findSemanticallySimilarEntities(titleEmbedding, 5);
+
+      for (const match of semanticMatches) {
+        // Only surface high-confidence semantic duplicates
+        if (match.similarity < 0.85) continue;
+        // Skip if already found by exact match or FTS5
+        if (match.entityName.toLowerCase() === noteName.toLowerCase()) continue;
+        if (ftsNames.has(match.entityName.toLowerCase())) continue;
+
+        // Look up entity details from StateDb
+        const entity = getEntityByName(moduleStateDb!, match.entityName);
+        if (entity) {
+          result.similarEntities.push({
+            name: entity.name,
+            path: entity.path,
+            category: entity.category,
+            rank: match.similarity,
+          });
+        }
+      }
+    }
+  } catch {
+    // Semantic check failure never blocks note creation
   }
 
   return result;

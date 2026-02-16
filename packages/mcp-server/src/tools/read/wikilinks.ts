@@ -225,7 +225,7 @@ export function registerWikilinkTools(
 
       // When detail=true, also call the scoring engine for per-layer breakdown
       if (detail) {
-        const scored = suggestRelatedLinks(text, {
+        const scored = await suggestRelatedLinks(text, {
           detail: true,
           maxSuggestions: limit,
           strictness: 'balanced',

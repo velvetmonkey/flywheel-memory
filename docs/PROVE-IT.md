@@ -162,52 +162,20 @@ Same tools, completely different domain. Flywheel doesn't know anything about bi
 
 ## Phase 6: Your Own Vault
 
-Point Flywheel at your Obsidian vault.
+Ready to point Flywheel at your own vault? See the [full setup guide](SETUP.md) for:
 
-### 1. Create `.mcp.json` in your vault root
+- MCP config for Claude Code and Claude Desktop
+- Tool preset recommendations
+- CLAUDE.md persona file setup
+- Semantic search enablement
 
-```json
-{
-  "mcpServers": {
-    "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
-      "env": {
-        "FLYWHEEL_TOOLS": "minimal"
-      }
-    }
-  }
-}
-```
+Quick version:
 
-### 2. Launch
+1. Add `.mcp.json` to your vault root with the Flywheel server config
+2. `cd /path/to/your/vault && claude`
+3. Start asking questions
 
-```bash
-cd /path/to/your/vault
-claude
-```
-
-On first run, Flywheel indexes your vault into `.flywheel/state.db`. This takes seconds, even for large vaults. Add `.flywheel/` to `.gitignore`.
-
-### 3. Start asking questions
-
-- "Search for notes about [topic]"
-- "What links to my note on [concept]?"
-- "Run a health check"
-- "Add to today's daily note: [text]"
-
-### 4. Scale up
-
-Start with `minimal` (13 tools, ~3,800 tokens). Add bundles as you need them:
-
-| Preset | Tools | Adds |
-|--------|-------|------|
-| `minimal` | 13 | Search, structure, append, frontmatter, notes |
-| `minimal,graph` | 19 | Backlinks, orphans, hubs, paths |
-| `minimal,graph,analysis` | 25 | Schema intelligence, wikilink suggestions |
-| `full` | 39 | Everything |
-
-See [SETUP.md](SETUP.md) for full configuration details, Claude Desktop setup, and troubleshooting.
+See [SETUP.md](SETUP.md) for the complete walkthrough.
 
 ---
 

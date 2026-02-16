@@ -7,6 +7,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import { HEADING_REGEX } from './constants.js';
 import type { FormatType, Position, InsertionOptions, ScopingMetadata, ScopingFrontmatter } from './types.js';
+import { levenshteinDistance } from '../shared/levenshtein.js';
 
 /**
  * Sensitive file patterns that should never be written via vault mutations.
@@ -595,6 +596,65 @@ export function detectListIndentation(
 }
 
 /**
+ * Bump heading levels in content so they nest under a parent heading.
+ *
+ * Algorithm:
+ * 1. Find the minimum heading level in content (ignoring code blocks)
+ * 2. Calculate bump = parentLevel + 1 - minLevel
+ * 3. If bump <= 0 or no headings found, return content unchanged
+ * 4. Add bump additional # characters to each heading line (cap at 6)
+ */
+export function bumpHeadingLevels(content: string, parentLevel: number): string {
+  const lines = content.split('\n');
+  let inCodeBlock = false;
+  let minLevel = Infinity;
+
+  // First pass: find minimum heading level (outside code blocks)
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
+      inCodeBlock = !inCodeBlock;
+      continue;
+    }
+    if (inCodeBlock) continue;
+
+    const match = line.match(HEADING_REGEX);
+    if (match) {
+      const level = match[1].length;
+      if (level < minLevel) {
+        minLevel = level;
+      }
+    }
+  }
+
+  // No headings found or already nested correctly
+  if (minLevel === Infinity) return content;
+
+  const bump = parentLevel + 1 - minLevel;
+  if (bump <= 0) return content;
+
+  // Second pass: bump heading levels
+  inCodeBlock = false;
+  const result = lines.map(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
+      inCodeBlock = !inCodeBlock;
+      return line;
+    }
+    if (inCodeBlock) return line;
+
+    const match = line.match(HEADING_REGEX);
+    if (match) {
+      const newLevel = Math.min(match[1].length + bump, 6);
+      return '#'.repeat(newLevel) + ' ' + match[2];
+    }
+    return line;
+  });
+
+  return result.join('\n');
+}
+
+/**
  * Insert content into a section at the specified position
  *
  * Smart template handling: When appending, if the last content line is an
@@ -611,7 +671,12 @@ export function insertInSection(
   options?: InsertionOptions
 ): string {
   const lines = content.split('\n');
-  const formattedContent = newContent.trim();
+  let formattedContent = newContent.trim();
+
+  // Bump heading levels so inserted headings nest under the parent section
+  if (options?.bumpHeadings !== false) {
+    formattedContent = bumpHeadingLevels(formattedContent, section.level);
+  }
 
   if (position === 'prepend') {
     // Insert right after the heading
@@ -1107,6 +1172,119 @@ export function replaceInSection(
     replacedCount: indicesToReplace.length,
     originalLines,
     newLines,
+  };
+}
+
+// ========================================
+// Diagnostic Error Support
+// ========================================
+
+/**
+ * Error class that carries structured diagnostic information.
+ * Used to provide actionable feedback when mutations fail.
+ */
+export class DiagnosticError extends Error {
+  public diagnostic: Record<string, unknown>;
+  constructor(message: string, diagnostic: Record<string, unknown>) {
+    super(message);
+    this.name = 'DiagnosticError';
+    this.diagnostic = diagnostic;
+  }
+}
+
+/**
+ * Build a structured diagnostic for "replace not found" errors.
+ * Analyzes the section content to find the closest match and provide suggestions.
+ */
+export function buildReplaceNotFoundDiagnostic(
+  sectionContent: string,
+  searchText: string,
+  sectionName: string,
+  sectionStartLine: number
+): Record<string, unknown> {
+  const sectionLines = sectionContent.split('\n');
+  const sectionLineCount = sectionLines.length;
+  const sectionEndLine = sectionStartLine + sectionLineCount - 1;
+
+  // Find closest match via sliding window over section lines
+  const searchLines = searchText.split('\n');
+  const isMultiLine = searchLines.length > 1;
+
+  let closestMatch: { text: string; distance: number; line: number } | null = null;
+
+  if (!isMultiLine) {
+    // Single-line search: compare against each line in section
+    for (let i = 0; i < sectionLines.length; i++) {
+      const line = sectionLines[i].trim();
+      if (line === '') continue;
+
+      const dist = levenshteinDistance(searchText.trim(), line);
+      if (closestMatch === null || dist < closestMatch.distance) {
+        closestMatch = {
+          text: sectionLines[i],
+          distance: dist,
+          line: sectionStartLine + i,
+        };
+      }
+    }
+  } else {
+    // Multi-line search: sliding window of searchLines.length over section
+    const windowSize = searchLines.length;
+    for (let i = 0; i <= sectionLines.length - windowSize; i++) {
+      const windowText = sectionLines.slice(i, i + windowSize).join('\n');
+      const dist = levenshteinDistance(searchText, windowText);
+      if (closestMatch === null || dist < closestMatch.distance) {
+        closestMatch = {
+          text: windowText,
+          distance: dist,
+          line: sectionStartLine + i,
+        };
+      }
+    }
+  }
+
+  // For multi-line search: analyze per-line matches
+  let lineAnalysis: Array<{ lineNumber: number; searchLine: string; found: boolean }> | null = null;
+  if (isMultiLine) {
+    lineAnalysis = searchLines.map((searchLine, idx) => {
+      const trimmedSearch = searchLine.trim();
+      const found = sectionLines.some(sl => sl.includes(trimmedSearch));
+      return {
+        lineNumber: idx + 1,
+        searchLine: trimmedSearch,
+        found,
+      };
+    });
+  }
+
+  // Build suggestions
+  const suggestions: string[] = [];
+
+  if (closestMatch && closestMatch.distance <= Math.max(3, Math.floor(searchText.length * 0.2))) {
+    suggestions.push(`Did you mean: "${closestMatch.text.trim()}"?`);
+  }
+
+  suggestions.push('Try using useRegex: true for pattern matching');
+
+  if (isMultiLine) {
+    suggestions.push('For multi-line content, try breaking into smaller replacements');
+  }
+
+  if (searchText !== searchText.trim() || /^\s|\s$/.test(searchText)) {
+    suggestions.push('Check for whitespace differences');
+  }
+
+  return {
+    sectionName,
+    sectionLineRange: { start: sectionStartLine, end: sectionEndLine },
+    sectionLineCount,
+    closestMatch: closestMatch ? {
+      text: closestMatch.text,
+      distance: closestMatch.distance,
+      line: closestMatch.line,
+    } : null,
+    lineAnalysis,
+    suggestions,
   };
 }
 

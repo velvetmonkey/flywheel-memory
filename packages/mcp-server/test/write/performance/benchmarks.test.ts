@@ -189,7 +189,7 @@ type: test
   });
 
   describe('heading extraction performance', () => {
-    it('should extract headings from 1000-line file in <10ms', () => {
+    it('should extract headings from 1000-line file in <10ms', async () => {
       // Generate content with many headings
       const lines: string[] = [];
       for (let i = 0; i < 50; i++) {
@@ -235,7 +235,7 @@ type: test
       for (let run = 0; run < 5; run++) {
         const start = performance.now();
         for (let i = 0; i < 5; i++) { // 5 calls * 200 entities = 1000 entity evaluations
-          suggestRelatedLinks(content);
+          await suggestRelatedLinks(content);
         }
         times.push(performance.now() - start);
       }
@@ -268,7 +268,7 @@ type: test
       for (let run = 0; run < 3; run++) {
         const start = performance.now();
         for (let i = 0; i < 5; i++) { // 5 calls * 1000 entities = 5000 entity evaluations
-          suggestRelatedLinks(content);
+          await suggestRelatedLinks(content);
         }
         times.push(performance.now() - start);
       }
@@ -303,7 +303,7 @@ Python scripting helps with Go deployment automation.
       for (let run = 0; run < 10; run++) {
         const start = performance.now();
         // Use suggestRelatedLinks which performs entity scoring
-        suggestRelatedLinks(content);
+        await suggestRelatedLinks(content);
         times.push(performance.now() - start);
       }
 

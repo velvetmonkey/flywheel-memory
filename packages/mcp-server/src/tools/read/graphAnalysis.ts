@@ -12,11 +12,12 @@ import type { VaultIndex } from '../../core/read/types.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
-import { findOrphanNotes, findHubNotes } from '../../core/read/graph.js';
+import { findOrphanNotes, findHubNotes, getBacklinksForNote, resolveTarget } from '../../core/read/graph.js';
 import { findDeadEnds, findSources } from './graphAdvanced.js';
 import { getStaleNotes } from './temporal.js';
 import { inferFolderConventions } from './schema.js';
 import { getGraphEvolution, getEmergingHubs } from '../../core/shared/graphSnapshots.js';
+import { hasEmbeddingsIndex, loadAllNoteEmbeddings, cosineSimilarity } from '../../core/read/embeddings.js';
 
 /**
  * Register the unified graph_analysis tool
@@ -40,14 +41,18 @@ export function registerGraphAnalysisTools(
         '- "stale": Important notes (by backlink count) not recently modified\n' +
         '- "immature": Notes scored by maturity (word count, links, frontmatter completeness, backlinks)\n' +
         '- "evolution": Graph topology metrics over time (avg_degree, cluster_count, etc.)\n' +
-        '- "emerging_hubs": Entities growing fastest in connection count\n\n' +
+        '- "emerging_hubs": Entities growing fastest in connection count\n' +
+        '- "semantic_clusters": Group notes by embedding similarity (requires init_semantic)\n' +
+        '- "semantic_bridges": Find semantically similar but unlinked notes (highest-value link suggestions)\n\n' +
         'Example: graph_analysis({ analysis: "hubs", limit: 10 })\n' +
         'Example: graph_analysis({ analysis: "stale", days: 30, min_backlinks: 3 })\n' +
         'Example: graph_analysis({ analysis: "immature", folder: "projects", limit: 20 })\n' +
         'Example: graph_analysis({ analysis: "evolution", days: 30 })\n' +
-        'Example: graph_analysis({ analysis: "emerging_hubs", days: 30 })',
+        'Example: graph_analysis({ analysis: "emerging_hubs", days: 30 })\n' +
+        'Example: graph_analysis({ analysis: "semantic_clusters", limit: 20 })\n' +
+        'Example: graph_analysis({ analysis: "semantic_bridges", limit: 20 })',
       inputSchema: {
-        analysis: z.enum(['orphans', 'dead_ends', 'sources', 'hubs', 'stale', 'immature', 'evolution', 'emerging_hubs']).describe('Type of graph analysis to perform'),
+        analysis: z.enum(['orphans', 'dead_ends', 'sources', 'hubs', 'stale', 'immature', 'evolution', 'emerging_hubs', 'semantic_clusters', 'semantic_bridges']).describe('Type of graph analysis to perform'),
         folder: z.string().optional().describe('Limit to notes in this folder (orphans, dead_ends, sources)'),
         min_links: z.coerce.number().default(5).describe('Minimum total connections for hubs'),
         min_backlinks: z.coerce.number().default(1).describe('Minimum backlinks (dead_ends, stale)'),
@@ -280,6 +285,162 @@ export function registerGraphAnalysisTools(
               days_back: daysBack,
               count: hubs.length,
               hubs,
+            }, null, 2) }],
+          };
+        }
+
+        case 'semantic_clusters': {
+          if (!hasEmbeddingsIndex()) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({
+                error: 'Note embeddings not available. Run init_semantic first.',
+              }, null, 2) }],
+            };
+          }
+
+          const embeddings = loadAllNoteEmbeddings();
+          const CLUSTER_THRESHOLD = 0.6;
+
+          // Greedy clustering: pick unassigned note, gather all similar notes
+          const unassigned = new Set(embeddings.keys());
+          const clusters: Array<{ label: string; notes: Array<{ path: string; title: string }> }> = [];
+
+          while (unassigned.size > 0) {
+            const seedPath = unassigned.values().next().value as string;
+            unassigned.delete(seedPath);
+            const seedEmb = embeddings.get(seedPath)!;
+
+            const clusterNotes: Array<{ path: string; title: string }> = [
+              { path: seedPath, title: seedPath.replace(/\.md$/, '').split('/').pop() || seedPath },
+            ];
+
+            for (const candidatePath of [...unassigned]) {
+              const candidateEmb = embeddings.get(candidatePath)!;
+              const sim = cosineSimilarity(seedEmb, candidateEmb);
+              if (sim >= CLUSTER_THRESHOLD) {
+                unassigned.delete(candidatePath);
+                clusterNotes.push({
+                  path: candidatePath,
+                  title: candidatePath.replace(/\.md$/, '').split('/').pop() || candidatePath,
+                });
+              }
+            }
+
+            // Only keep non-trivial clusters (2+ notes)
+            if (clusterNotes.length >= 2) {
+              // Label from common path prefix or first note title
+              const commonPrefix = clusterNotes[0].path.split('/').slice(0, -1).join('/');
+              const label = commonPrefix || clusterNotes[0].title;
+              clusters.push({ label, notes: clusterNotes });
+            }
+          }
+
+          // Sort by cluster size descending
+          clusters.sort((a, b) => b.notes.length - a.notes.length);
+          const paginated = clusters.slice(offset, offset + limit);
+
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify({
+              analysis: 'semantic_clusters',
+              total_clusters: clusters.length,
+              returned_count: paginated.length,
+              clusters: paginated.map(c => ({
+                label: c.label,
+                note_count: c.notes.length,
+                notes: c.notes,
+              })),
+            }, null, 2) }],
+          };
+        }
+
+        case 'semantic_bridges': {
+          if (!hasEmbeddingsIndex()) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({
+                error: 'Note embeddings not available. Run init_semantic first.',
+              }, null, 2) }],
+            };
+          }
+
+          const embeddings = loadAllNoteEmbeddings();
+          const BRIDGE_SIM_THRESHOLD = 0.5;
+
+          // Build a set of direct link pairs for fast lookup
+          const linkedPairs = new Set<string>();
+          for (const note of index.notes.values()) {
+            for (const link of note.outlinks) {
+              const targetPath = resolveTarget(index, link.target);
+              if (targetPath) {
+                // Store both directions for undirected check
+                linkedPairs.add(`${note.path}|${targetPath}`);
+                linkedPairs.add(`${targetPath}|${note.path}`);
+              }
+            }
+          }
+
+          // Also check 2-hop connections
+          const twoHopConnected = (pathA: string, pathB: string): boolean => {
+            if (linkedPairs.has(`${pathA}|${pathB}`)) return true;
+            // Check if they share a common neighbor
+            const noteA = index.notes.get(pathA);
+            const noteB = index.notes.get(pathB);
+            if (!noteA || !noteB) return false;
+
+            const neighborsA = new Set<string>();
+            for (const link of noteA.outlinks) {
+              const resolved = resolveTarget(index, link.target);
+              if (resolved) neighborsA.add(resolved);
+            }
+            // Also add notes linking TO A
+            const backlinksA = getBacklinksForNote(index, pathA);
+            for (const bl of backlinksA) {
+              neighborsA.add(bl.source);
+            }
+
+            for (const link of noteB.outlinks) {
+              const resolved = resolveTarget(index, link.target);
+              if (resolved && neighborsA.has(resolved)) return true;
+            }
+            const backlinksB = getBacklinksForNote(index, pathB);
+            for (const bl of backlinksB) {
+              if (neighborsA.has(bl.source)) return true;
+            }
+            return false;
+          };
+
+          // Find pairs with high semantic similarity but no link connection
+          const paths = [...embeddings.keys()];
+          const bridges: Array<{
+            noteA: { path: string; title: string };
+            noteB: { path: string; title: string };
+            similarity: number;
+          }> = [];
+
+          for (let i = 0; i < paths.length; i++) {
+            const embA = embeddings.get(paths[i])!;
+            for (let j = i + 1; j < paths.length; j++) {
+              const sim = cosineSimilarity(embA, embeddings.get(paths[j])!);
+              if (sim >= BRIDGE_SIM_THRESHOLD && !twoHopConnected(paths[i], paths[j])) {
+                bridges.push({
+                  noteA: { path: paths[i], title: paths[i].replace(/\.md$/, '').split('/').pop() || paths[i] },
+                  noteB: { path: paths[j], title: paths[j].replace(/\.md$/, '').split('/').pop() || paths[j] },
+                  similarity: Math.round(sim * 1000) / 1000,
+                });
+              }
+            }
+          }
+
+          // Sort by similarity descending (highest-value suggestions first)
+          bridges.sort((a, b) => b.similarity - a.similarity);
+          const paginatedBridges = bridges.slice(offset, offset + limit);
+
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify({
+              analysis: 'semantic_bridges',
+              total_bridges: bridges.length,
+              returned_count: paginatedBridges.length,
+              description: 'Notes with high semantic similarity but no direct or 2-hop link path. These represent the highest-value missing link suggestions.',
+              bridges: paginatedBridges,
             }, null, 2) }],
           };
         }

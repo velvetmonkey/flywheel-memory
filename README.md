@@ -1,7 +1,7 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Your vault already knows the answer. Flywheel finds it.</strong></p>
+  <p><strong>Claude reads files. Flywheel reads your knowledge graph.</strong><br/>42 tools. Zero cloud. Your Obsidian vault becomes a queryable second brain.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
@@ -12,109 +12,18 @@
 [![Scale](https://img.shields.io/badge/scale-100k%20notes-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Tests](https://img.shields.io/badge/tests-1,812%20passed-brightgreen.svg)](docs/TESTING.md)
 
-One MCP server. 42 tools. Your Obsidian vault becomes a queryable knowledge graph.
-
----
-
-## The Problem
-
-You have 500 notes. Claude has to read them to answer a question.
-
-A 500-note Obsidian vault is ~250,000 tokens of raw markdown. Dumping that into context
-is expensive, slow, and imprecise. Worse, it misses the structure that makes a vault
-useful: which notes link to which, what's changed recently, what's orphaned, what's a hub.
-
-File access gives Claude your content. Flywheel gives it your knowledge graph.
-
 | | Without Flywheel | With Flywheel |
 |---|---|---|
-| "What's overdue?" | Read every file, hope you catch it | Indexed query, <10ms, ~90 tokens |
-| "What links here?" | `grep` every file | `get_backlinks` -- pre-indexed graph |
-| "Add a meeting note" | Raw file write, no linking | Write + auto-wikilink to existing notes |
-| Token cost per query | 2,000-250,000 | 50-200 |
-| Query speed | Seconds of file I/O | <10ms in-memory index |
-| Scale tested to | Unknown | 100,000 notes |
+| "What's overdue?" | Read every file | Indexed query, <10ms |
+| "What links here?" | grep every file | Pre-indexed backlink graph |
+| "Add a meeting note" | Raw write, no linking | Write + auto-wikilink |
+| Token cost | 2,000-250,000 | 50-200 |
 
 42 tools. 6-line config. Zero cloud dependencies.
 
 ---
 
-## Why Flywheel
-
-Three pillars make Flywheel different from file-access tools and cloud-only AI:
-
-- **Graph intelligence** -- backlinks, hubs, orphans, shortest paths. Your vault's structure becomes queryable.
-- **Deterministic wikilinks** -- 10-layer scoring, fully explainable. Every suggestion traces to vault properties.
-- **Hybrid search** -- FTS5 keyword + semantic embeddings fused via Reciprocal Rank Fusion. Fast and meaning-aware.
-
-When Flywheel suggests `[[Marcus Johnson]]`, it can tell you exactly why:
-
-| Layer | What | Score |
-|-------|------|------:|
-| Content match | "Marcus" exact word match | +10 |
-| Co-occurrence | Appears with "Turbopump" in 4 notes | +6 |
-| Type boost | Person entity | +5 |
-| Recency | Mentioned 2 hours ago | +8 |
-| Cross-folder | Entity in `team/`, note in `projects/` | +3 |
-| **Total** | | **32** |
-
-Deterministic where it matters. Semantic where it helps.
-
-| | Pure Vector Search | Pure Keyword Search | Flywheel |
-|---|---|---|---|
-| "Why was this suggested?" | "Embeddings are close" | "Term frequency" | "10 + 6 + 5 + 8 + 3 = 32" |
-| Finds synonyms/concepts? | Yes | No | Yes (semantic search) |
-| Exact phrase matching? | Weak | Yes | Yes (FTS5) |
-| Same input → same output? | Not guaranteed | Always | Always (linking is deterministic) |
-| Runs offline? | Often not | Yes | Yes (local embeddings) |
-| Learns your preferences? | Retraining | No | Implicit feedback loop |
-
-Every number traces to a vault property. See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 10-layer pipeline.
-
----
-
-## Hybrid Search
-
-Flywheel ships with FTS5 keyword search out of the box. Run `init_semantic` to upgrade to hybrid search:
-
-1. **`init_semantic`** downloads [all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2) (~23 MB) and embeds every note locally.
-2. Queries run FTS5 (keyword) and semantic (embedding similarity) in parallel.
-3. Results are fused via **Reciprocal Rank Fusion (RRF)** -- combining exact-match precision with meaning-aware recall.
-
-Everything runs locally. No API keys. No data leaves your machine. Embeddings are stored in `.flywheel/state.db` alongside the FTS5 index and rebuild automatically if deleted.
-
-Without `init_semantic`, search uses FTS5 only -- still fast, still useful. Hybrid search is an upgrade, not a requirement.
-
----
-
-## Quick Start
-
-**1.** Add `.mcp.json` to your vault root:
-
-```json
-{
-  "mcpServers": {
-    "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"]
-    }
-  }
-}
-```
-
-**2.** Open your vault in Claude Code:
-
-```bash
-cd /path/to/your/vault && claude
-```
-
-**3.** Ask a question. Claude can now search, query, and edit your vault through Flywheel's indexed tools instead of reading raw files.
-
-That's it. No API keys. No config files. No cloud accounts.
-
----
-
-## Live Example: The Flywheel in Action
+## See It Work
 
 ![Flywheel demo — billing, auto-wikilinks, tasks, and search](demos/flywheel-demo.gif)
 
@@ -131,11 +40,6 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
     invoices/INV-2025-048.md
     projects/Acme Data Migration.md
     proposals/Acme Analytics Add-on.md
-
-┌─ CLAUDE THINKS ───────────────────────────────────────┐
-│ 2 invoices found. Pull frontmatter for amounts.       │
-│ Skip projects, proposals -- not billing data.         │
-└───────────────────────────────────────────────────────┘
 
 ● flywheel › get_note_metadata
   path: "invoices/INV-2025-047.md"
@@ -155,11 +59,13 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
 └───────────────────────────────────────────────────────┘
 ```
 
-Claude didn't read any files. It navigated the graph: backlinks to find related notes,
-metadata to extract the numbers. 4 tool calls. ~160 tokens. 0 files read.
+Claude didn't read any files. It navigated the graph: backlinks to find related notes, metadata to extract the numbers.
 
-The same question without Flywheel would require reading every file in the vault --
-thousands of tokens just to find two invoice amounts.
+```
+Same 3 queries without Flywheel: 11,150 tokens (reading files repeatedly)
+Same 3 queries with Flywheel:       300 tokens (querying the index)
+                                     37x savings
+```
 
 ### Write: Auto-wikilinks on every mutation
 
@@ -177,13 +83,54 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ---
 
+## What Makes Flywheel Different
+
+### 1. Hybrid Search
+
+Search "authentication" -- exact matches. Search "login security" -- same notes, plus every note about auth that never uses the word.
+
+Keyword search finds what you said. Semantic search finds what you meant. Flywheel runs both and fuses the results. Runs locally on a 23 MB model. Nothing leaves your machine.
+
+### 2. Every Suggestion Has a Receipt
+
+Ask why Flywheel suggested `[[Marcus Johnson]]`:
+
+```
+Entity              Score  Match  Co-oc  Type  Recency  Cross  Hub
+─────────────────────────────────────────────────────────────────────
+Marcus Johnson        32    +10     +6    +5     +8      +3    +0
+```
+
+Every number traces to a vault property. No magic -- just math you can verify.
+
+See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 10-layer scoring pipeline.
+
+### 3. Your Vault's Hidden Structure
+
+"What's the shortest path between AlphaFold and my docking experiment?"
+
+Backlinks, forward links, hubs, orphans, shortest paths -- your vault is a queryable graph. Every note you write through Flywheel gets auto-linked. Denser graphs make every query more precise. That's the flywheel.
+
+### How It Compares to Other Approaches
+
+| | Pure Vector Search | Pure Keyword Search | Flywheel |
+|---|---|---|---|
+| "Why was this suggested?" | "Embeddings are close" | "Term frequency" | "10 + 6 + 5 + 8 + 3 = 32" |
+| Finds synonyms/concepts? | Yes | No | Yes (semantic search) |
+| Exact phrase matching? | Weak | Yes | Yes |
+| Same input → same output? | Not guaranteed | Always | Always |
+| Runs offline? | Often not | Yes | Yes (local embeddings) |
+| Learns your preferences? | Retraining | No | Implicit feedback loop |
+
+---
+
 ## The Flywheel Effect
 
-The name is literal. A flywheel is hard to start but once spinning, each push adds to the momentum. Your vault works the same way.
+The name is literal. A flywheel is hard to start but once spinning, each push adds to the momentum.
 
 ### Week 1: Connections Appear
 
-You have 30 disconnected notes. Auto-wikilinks create 47 connections on your first day of writing through Flywheel. Search returns structured metadata instead of raw files. You stop reading files and start querying a graph.
+You have 30 disconnected notes. Auto-wikilinks create 47 connections on your first day of writing through Flywheel. You stop reading files and start querying a graph.
 
 ### Month 1: Intelligence Emerges
 
@@ -191,11 +138,7 @@ Hub notes surface. "Sarah Mitchell" has 23 backlinks -- she's clearly important.
 
 ### Month 3: The Graph Is Self-Sustaining
 
-Every query leverages hundreds of accumulated connections. New content auto-links to the right places. The feedback system has learned which entities matter in which folders. You stop thinking about organization.
-
-### The Math
-
-A vault with 50 notes has 1,225 potential pairwise connections. With 500 notes: 124,750. Human ability to remember connections stays flat. The graph doesn't forget.
+Every query leverages hundreds of accumulated connections. New content auto-links to the right places. You stop thinking about organization.
 
 ### What This Looks Like
 
@@ -206,41 +149,11 @@ Output: "Met with [[Sarah Mitchell]] about the [[Acme Data Migration]]"
 
 No manual linking. No broken references. Use compounds into structure, structure compounds into intelligence.
 
-That's the flywheel.
-
 ---
 
-## See How It Thinks
+## Battle-Tested
 
-Ask Flywheel to suggest wikilinks with detail mode and it shows its work:
-
-```
-❯ Suggest wikilinks for: "Turbopump delivery delayed. Marcus tracking with Acme."
-
-Entity              Score  Match  Co-oc  Type  Recency  Cross  Hub  Feedback
-─────────────────────────────────────────────────────────────────────────────
-Marcus Johnson        32    +10     +6    +5     +8      +3    +0     +0
-Acme Corp             25    +10     +6    +2     +5      +0    +1     +1
-Turbopump Assembly    21    +10     +3    +3     +3      +0    +3     -1
-
-→ [[Marcus Johnson]], [[Acme Corp]], [[Turbopump Assembly]]
-```
-
-Every column is a scoring layer. Every number traces to a vault property. No magic -- just math you can verify.
-
-See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 10-layer pipeline.
-
----
-
-## Prove It: The Numbers
-
-### Test Coverage
-
-| Metric | Count |
-|---|---|
-| Tests | 1,812 |
-| Test files | 78 |
-| Lines of test code | 33,000+ |
+**1,812 tests. 78 test files. 33,000+ lines of test code.**
 
 ### Performance
 
@@ -250,13 +163,9 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full 10-layer pipeline.
 | 10k-line mutation | <500ms | -- |
 | 100k-line mutation | <2s | -- |
 
-### Battle-Hardened
-
-This isn't a prototype. Flywheel is tested like production infrastructure:
-
 - **100 parallel writes, zero corruption** -- concurrent mutations verified under stress
-- **Property-based fuzzing** -- fast-check with 50+ randomized scenarios testing edge cases
-- **SQL injection prevention** -- parameterized queries throughout, no string interpolation
+- **Property-based fuzzing** -- fast-check with 50+ randomized scenarios
+- **SQL injection prevention** -- parameterized queries throughout
 - **Path traversal blocking** -- all file paths validated against vault root
 - **Deterministic output** -- every tool produces the same result given the same input
 
@@ -267,38 +176,46 @@ git clone https://github.com/velvetmonkey/flywheel-memory.git
 cd flywheel-memory && npm install && npm test
 ```
 
-See [docs/TESTING.md](docs/TESTING.md) for the full testing methodology.
+See [docs/PROVE-IT.md](docs/PROVE-IT.md) and [docs/TESTING.md](docs/TESTING.md).
 
 ---
 
-## Demo Vaults
+## How It Compares
 
-7 production-ready vaults representing real knowledge work:
+| Feature | Flywheel Memory | Obsidian CLI (MCP) | Smart Connections | Khoj |
+|---------|----------------|-------------------|-------------------|------|
+| Backlink graph | Bidirectional | No | No | No |
+| Hybrid search | Local (keyword + semantic) | No | Cloud only | Cloud |
+| Auto-wikilinks | Yes (alias resolution) | No | No | No |
+| Schema intelligence | 6 analysis modes | No | No | No |
+| Entity extraction | Auto (8 categories) | No | No | No |
+| Test coverage | 1,812 tests | Unknown | Unknown | Unknown |
+| Tool count | 42 | ~10 | 0 (plugin) | ~5 |
 
-| Demo | You are | Ask this | Notes |
-|------|---------|----------|-------|
-| [carter-strategy](demos/carter-strategy/) | Solo consultant | "How much have I billed Acme Corp?" | 32 |
-| [artemis-rocket](demos/artemis-rocket/) | Rocket engineer | "What's blocking the propulsion milestone?" | 63 |
-| [startup-ops](demos/startup-ops/) | SaaS co-founder | "What's our MRR?" | 31 |
-| [nexus-lab](demos/nexus-lab/) | PhD researcher | "How does AlphaFold connect to my experiment?" | 32 |
-| [solo-operator](demos/solo-operator/) | Content creator | "How's revenue this month?" | 16 |
-| [support-desk](demos/support-desk/) | Support agent | "What's Sarah Chen's situation?" | 12 |
-| [zettelkasten](demos/zettelkasten/) | Zettelkasten student | "How does spaced repetition connect to active recall?" | 47 |
+---
 
-Every demo is a real test fixture. If it works in the README, it passes in CI.
+## Try It
+
+### Step 1: Try a demo
 
 ```bash
 git clone https://github.com/velvetmonkey/flywheel-memory.git
 cd flywheel-memory/demos/carter-strategy && claude
 ```
 
----
+| Demo | You are | Ask this |
+|------|---------|----------|
+| [carter-strategy](demos/carter-strategy/) | Solo consultant | "How much have I billed Acme Corp?" |
+| [artemis-rocket](demos/artemis-rocket/) | Rocket engineer | "What's blocking propulsion?" |
+| [startup-ops](demos/startup-ops/) | SaaS co-founder | "What's our MRR?" |
+| [nexus-lab](demos/nexus-lab/) | PhD researcher | "How does AlphaFold connect to my experiment?" |
+| [solo-operator](demos/solo-operator/) | Content creator | "How's revenue this month?" |
+| [support-desk](demos/support-desk/) | Support agent | "What's Sarah Chen's situation?" |
+| [zettelkasten](demos/zettelkasten/) | Zettelkasten student | "How does spaced repetition connect to active recall?" |
 
-## Set Up Your Own Vault
+### Step 2: Your own vault
 
-After trying the demos, point Flywheel at your own vault:
-
-**1.** Add `.mcp.json` to your vault root:
+Add `.mcp.json` to your vault root:
 
 ```json
 {
@@ -314,32 +231,22 @@ After trying the demos, point Flywheel at your own vault:
 }
 ```
 
-Start with the `minimal` preset (13 tools, ~3,800 tokens). Add bundles like `graph` or `tasks` as needed -- see [Tools Overview](#tools-overview) below.
-
-**2.** Optionally, add a `CLAUDE.md` persona file to your vault root. This tells Claude how to navigate your vault -- what folders matter, what frontmatter fields exist, what questions to expect. See the [demo vaults](demos/) for examples (e.g., [carter-strategy/CLAUDE.md](demos/carter-strategy/CLAUDE.md)).
-
-**3.** Open your vault in Claude Code:
-
 ```bash
 cd /path/to/your/vault && claude
 ```
 
-On first run, Flywheel creates a `.flywheel/` directory containing its SQLite index. Add `.flywheel/` to your `.gitignore`. Indexing is automatic and typically takes under a second for vaults up to a few thousand notes. The index is derived and deletable -- see [Troubleshooting](#troubleshooting) if anything goes wrong.
-
-See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all environment variables and advanced options.
+Start with the `minimal` preset (13 tools, ~3,800 tokens). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
 
 ---
 
 ## Tools Overview
-
-15 categories. 42 tools. Load all of them, or just the ones you need.
 
 | Preset | Tools | ~Tokens | What you get |
 |--------|-------|---------|--------------|
 | `full` (default) | 42 | ~12,400 | Everything |
 | `minimal` | 13 | ~3,800 | Search, read, create, edit |
 
-Start with `minimal`, then add composable bundles:
+Composable bundles (add to minimal or each other):
 
 | Bundle | Tools | ~Tokens | What it adds |
 |--------|-------|---------|--------------|
@@ -349,117 +256,24 @@ Start with `minimal`, then add composable bundles:
 | `health` | 7 | ~2,150 | Vault diagnostics, index management |
 | `ops` | 2 | ~625 | Git undo, policy automation |
 
-```json
-{
-  "mcpServers": {
-    "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
-      "env": {
-        "FLYWHEEL_TOOLS": "minimal,graph,tasks"
-      }
-    }
-  }
-}
-```
-
-The fewer tools you load, the less context Claude needs to pick the right one.
-
-See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
-
----
-
-## How It Compares
-
-| Feature | Flywheel Memory | Obsidian CLI (MCP) | Smart Connections | Khoj |
-|---------|----------------|-------------------|-------------------|------|
-| Protocol | MCP (native) | MCP | Obsidian plugin | Web API |
-| Backlink graph | Yes (bidirectional) | No | No | No |
-| FTS5 search | Yes (<10ms) | Basic | Semantic only | Yes |
-| Semantic search | Yes (local embeddings, hybrid RRF) | No | Yes (cloud) | Yes (cloud) |
-| Entity extraction | Auto (8 categories) | No | No | No |
-| Auto-wikilinks | Yes (with alias resolution) | No | No | No |
-| Schema intelligence | Yes (6 analysis modes) | No | No | No |
-| Git integration | Yes (auto-commit, undo) | No | No | No |
-| Test coverage | 1,812 tests | Unknown | Unknown | Unknown |
-| Runs locally | Yes (zero cloud) | Yes | Yes | Optional |
-| Tool count | 42 tools | ~10 | 0 (plugin) | ~5 |
-
----
-
-## Who This Is For
-
-Flywheel is for anyone who uses an Obsidian vault as their working memory
-and wants Claude to understand it -- not just read it.
-
-- **Consultants** tracking clients, projects, invoices, and meetings -- see [carter-strategy](demos/carter-strategy/)
-- **Engineers** maintaining project docs, decision logs, and architecture notes -- see [artemis-rocket](demos/artemis-rocket/)
-- **Founders** running ops, tracking MRR, and managing investors -- see [startup-ops](demos/startup-ops/)
-- **Researchers** navigating literature, experiment logs, and citation networks -- see [nexus-lab](demos/nexus-lab/)
-- **Creators** managing editorial calendars, drafts, and revenue -- see [solo-operator](demos/solo-operator/)
-- **Students** building Zettelkasten-style knowledge graphs across sources -- see [zettelkasten](demos/zettelkasten/)
-
-If your vault has more than a handful of notes, Flywheel makes Claude meaningfully better at working with it.
-
----
-
-## Configuration
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `VAULT_PATH` | cwd | Path to your Obsidian vault |
-| `FLYWHEEL_TOOLS` | `full` | Tool preset or comma-separated categories |
-
-See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options, presets, and platform-specific setup.
-
----
-
-## The Vision
-
-Flywheel is one layer of something bigger:
-
-```
-voice → transcription → AI agent → structured knowledge → queryable vault
-```
-
-Speak into your phone. Your AI processes it. Flywheel writes it to your vault
-with proper wikilinks, frontmatter, and structure. Tomorrow, you ask a question
-and the answer is already there -- linked, indexed, searchable.
-
-Your vault isn't a filing cabinet. It's a second brain that actually works.
-
-Files are data. Links are relationships. AI agents are operators.
-
-See [docs/VISION.md](docs/VISION.md) for the full picture.
-
----
-
-## Troubleshooting
-
-**Safety model:** Your markdown files are the source of truth. The `.flywheel/` directory (SQLite index, FTS5 data) is entirely derived and can be deleted at any time -- Flywheel rebuilds it on next startup.
-
-**Undo a mutation:** Every write tool records a git-backed snapshot. Use `vault_undo_last_mutation` to revert the last change (soft git reset). If you need to go further back, use standard `git log` / `git checkout` on your vault.
-
-**Rebuild the index:** If searches return stale results or the server behaves unexpectedly, delete the `.flywheel/` directory and restart. The index rebuilds automatically.
-
-**Failed mutations:** If a write operation fails validation (path traversal, missing file, protected zone), Flywheel rejects it before touching disk. You will see an error message explaining why the operation was blocked. No partial writes occur.
+The fewer tools you load, the less context Claude needs to pick the right one. See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
 
 ---
 
 ## Documentation
 
-| Doc | Description |
+| Doc | Why read this |
 |---|---|
-| [SETUP.md](docs/SETUP.md) | Set up your own vault -- prerequisites, config, first commands |
-| [TOOLS.md](docs/TOOLS.md) | Full tool reference -- all 42 tools, parameters, examples |
-| [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts organized by use case |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Index strategy, FTS5, graph, auto-wikilinks |
+| [PROVE-IT.md](docs/PROVE-IT.md) | See it working in 5 minutes |
+| [TOOLS.md](docs/TOOLS.md) | All 42 tools documented |
+| [ALGORITHM.md](docs/ALGORITHM.md) | How the scoring works |
+| [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts by use case |
+| [SETUP.md](docs/SETUP.md) | Full setup guide for your vault |
 | [CONFIGURATION.md](docs/CONFIGURATION.md) | Env vars, presets, custom tool sets |
-| [TESTING.md](docs/TESTING.md) | Test methodology, coverage, performance benchmarks |
-| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Error recovery, diagnostics, common issues |
-| [VISION.md](docs/VISION.md) | The flywheel effect and where this goes |
-| [ALGORITHM.md](docs/ALGORITHM.md) | The 10-layer scoring system explained |
-| [PROVE-IT.md](docs/PROVE-IT.md) | Clone it, run it, see it in 5 minutes |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Index strategy, graph, auto-wikilinks |
+| [TESTING.md](docs/TESTING.md) | Test methodology and benchmarks |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Error recovery and diagnostics |
+| [VISION.md](docs/VISION.md) | Where this is going |
 
 ---
 

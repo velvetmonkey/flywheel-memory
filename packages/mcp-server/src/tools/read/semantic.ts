@@ -11,7 +11,11 @@ import {
   hasEmbeddingsIndex,
   getEmbeddingsCount,
   buildEmbeddingsIndex,
+  buildEntityEmbeddingsIndex,
+  loadEntityEmbeddingsToMemory,
+  getEntityEmbeddingsCount,
 } from '../../core/read/embeddings.js';
+import { getAllEntitiesFromDb } from '@velvetmonkey/vault-core';
 
 /**
  * Register semantic search tools
@@ -74,6 +78,33 @@ export function registerSemanticTools(
       });
 
       const embedded = progress.total - progress.skipped;
+
+      // Build entity embeddings
+      let entityEmbedded = 0;
+      try {
+        const allEntities = getAllEntitiesFromDb(stateDb);
+        const entityMap = new Map<string, { name: string; path: string; category: string; aliases: string[] }>();
+        for (const e of allEntities) {
+          entityMap.set(e.name, {
+            name: e.name,
+            path: e.path,
+            category: e.category,
+            aliases: e.aliases,
+          });
+        }
+
+        if (entityMap.size > 0) {
+          entityEmbedded = await buildEntityEmbeddingsIndex(vaultPath, entityMap, (done, total) => {
+            if (done % 50 === 0 || done === total) {
+              console.error(`[Semantic] Entity embedding ${done}/${total}...`);
+            }
+          });
+          loadEntityEmbeddingsToMemory();
+        }
+      } catch (err) {
+        console.error('[Semantic] Entity embeddings failed:', err instanceof Error ? err.message : err);
+      }
+
       return {
         content: [{
           type: 'text' as const,
@@ -82,6 +113,8 @@ export function registerSemanticTools(
             embedded,
             skipped: progress.skipped,
             total: progress.total,
+            entity_embeddings: entityEmbedded,
+            entity_total: getEntityEmbeddingsCount(),
             hint: 'Embeddings built. All searches now automatically use hybrid ranking.',
           }, null, 2),
         }],

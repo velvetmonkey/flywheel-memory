@@ -16,6 +16,13 @@ import {
   validateCrossLayer,
 } from './bidirectional.js';
 import { computeFrontmatter } from './computed.js';
+import {
+  hasEntityEmbeddingsIndex,
+  embedTextCached,
+  findSemanticallySimilarEntities,
+} from '../../core/read/embeddings.js';
+import fs from 'node:fs';
+import nodePath from 'node:path';
 
 /**
  * Register the unified note_intelligence tool
@@ -36,13 +43,15 @@ export function registerNoteIntelligenceTools(
         '- "suggest_wikilinks": Find frontmatter values that could be wikilinks\n' +
         '- "cross_layer": Check consistency between frontmatter and prose references\n' +
         '- "compute": Auto-compute derived fields (word_count, link_count, etc.)\n' +
+        '- "semantic_links": Find semantically related entities not currently linked in the note (requires init_semantic)\n' +
         '- "all": Run all analyses and return combined result\n\n' +
         'Example: note_intelligence({ path: "projects/alpha.md", analysis: "wikilinks" })\n' +
-        'Example: note_intelligence({ path: "projects/alpha.md", analysis: "compute", fields: ["word_count", "link_count"] })',
+        'Example: note_intelligence({ path: "projects/alpha.md", analysis: "compute", fields: ["word_count", "link_count"] })\n' +
+        'Example: note_intelligence({ path: "projects/alpha.md", analysis: "semantic_links" })',
       inputSchema: {
         analysis: z.enum([
           'prose_patterns', 'suggest_frontmatter', 'suggest_wikilinks',
-          'cross_layer', 'compute', 'all',
+          'cross_layer', 'compute', 'semantic_links', 'all',
         ]).describe('Type of note analysis to perform'),
         path: z.string().describe('Path to the note to analyze'),
         fields: z.array(z.string()).optional().describe('Specific fields to compute (compute/all modes)'),
@@ -87,6 +96,64 @@ export function registerNoteIntelligenceTools(
           return {
             content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
           };
+        }
+
+        case 'semantic_links': {
+          if (!hasEntityEmbeddingsIndex()) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({
+                error: 'Entity embeddings not available. Run init_semantic first.',
+              }, null, 2) }],
+            };
+          }
+
+          // Read the note content
+          let noteContent: string;
+          try {
+            noteContent = fs.readFileSync(nodePath.join(vaultPath, notePath), 'utf-8');
+          } catch {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({
+                error: `Could not read note: ${notePath}`,
+              }, null, 2) }],
+            };
+          }
+
+          // Extract already-linked entities
+          const linkedEntities = new Set<string>();
+          const wikilinkRegex = /\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;
+          let wlMatch;
+          while ((wlMatch = wikilinkRegex.exec(noteContent)) !== null) {
+            linkedEntities.add(wlMatch[1].toLowerCase());
+          }
+
+          try {
+            const contentEmbedding = await embedTextCached(noteContent);
+            const matches = findSemanticallySimilarEntities(contentEmbedding, 20, linkedEntities);
+
+            const suggestions = matches
+              .filter(m => m.similarity >= 0.3)
+              .map(m => ({
+                entity: m.entityName,
+                similarity: m.similarity,
+              }));
+
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({
+                path: notePath,
+                analysis: 'semantic_links',
+                linked_count: linkedEntities.size,
+                suggestion_count: suggestions.length,
+                suggestions,
+              }, null, 2) }],
+            };
+          } catch {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({
+                error: 'Failed to compute semantic links',
+              }, null, 2) }],
+            };
+          }
         }
 
         case 'all': {

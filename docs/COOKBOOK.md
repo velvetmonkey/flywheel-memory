@@ -82,11 +82,11 @@ Find connections and navigate the knowledge graph.
 
 Hybrid search that combines keyword matching with conceptual similarity.
 
-### Build the index
+### Enable hybrid search
 
 > "Build the semantic search index for my vault"
 
-Calls `init_semantic` to generate embeddings using all-MiniLM-L6-v2. Runs locally, no API keys needed. Only needs to be done once.
+Generates embeddings using all-MiniLM-L6-v2. Runs locally, no API keys needed. Only needs to be done once — all subsequent searches automatically upgrade to hybrid ranking.
 
 ### Search by concept
 
@@ -251,4 +251,4 @@ Manage vault-wide changes.
 - **Let auto-wikilinks work.** When writing through Flywheel, entity mentions are linked automatically. Write naturally -- don't add `[[brackets]]` yourself.
 - **Check before deleting.** `vault_delete_note` shows backlink warnings before deletion. If a note has backlinks, consider moving or renaming instead.
 - **Dry-run bulk changes.** `rename_field` and `migrate_field_values` default to dry-run mode. Always preview before committing.
-- **Build semantic search once with `init_semantic`** -- all subsequent searches auto-upgrade to hybrid ranking.
+- **Build the semantic index once** -- ask Claude to "build the semantic search index" and all subsequent searches auto-upgrade to hybrid ranking.

@@ -84,7 +84,7 @@ async function createNote(
     // Suggest outgoing links (enabled by default)
     let suggestInfo: string | undefined;
     if (suggestOutgoingLinks && !skipWikilinks) {
-      const result = suggestRelatedLinks(processedContent, { maxSuggestions, notePath });
+      const result = await suggestRelatedLinks(processedContent, { maxSuggestions, notePath });
       if (result.suffix) {
         processedContent = processedContent + ' ' + result.suffix;
         suggestInfo = `Suggested: ${result.suggestions.join(', ')}`;

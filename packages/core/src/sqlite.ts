@@ -102,7 +102,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 9;
+export const SCHEMA_VERSION = 10;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -316,6 +316,15 @@ CREATE TABLE IF NOT EXISTS note_embeddings (
   model TEXT NOT NULL,
   updated_at INTEGER NOT NULL
 );
+
+-- Entity embeddings for semantic entity search (v10)
+CREATE TABLE IF NOT EXISTS entity_embeddings (
+  entity_name TEXT PRIMARY KEY,
+  embedding BLOB NOT NULL,
+  source_hash TEXT NOT NULL,
+  model TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
 `;
 
 // =============================================================================
@@ -407,6 +416,9 @@ function initSchema(db: Database.Database): void {
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     // v9: note_embeddings table (semantic search)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v10: entity_embeddings table (semantic entity search)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(

@@ -115,7 +115,7 @@ date: 2026-02-01
       expect(hasWikilinks).toBe(true);
 
       // Step 4: Get suggestions for future content
-      const suggestions = suggestRelatedLinks('Working on the TypeScript project with the team');
+      const suggestions = await suggestRelatedLinks('Working on the TypeScript project with the team');
       expect(suggestions).toBeDefined();
       expect(suggestions.suggestions).toBeInstanceOf(Array);
     });
@@ -342,7 +342,7 @@ Charlie will join tomorrow.
 
       // Get suggestions for content
       const content = 'Working on projects with the team';
-      const result = suggestRelatedLinks(content, { maxSuggestions: 3 });
+      const result = await suggestRelatedLinks(content, { maxSuggestions: 3 });
 
       expect(result).toBeDefined();
       expect(result.suggestions).toBeInstanceOf(Array);
@@ -363,7 +363,7 @@ Charlie will join tomorrow.
 
       await initializeEntityIndex(tempVault);
 
-      const result = suggestRelatedLinks('Working with team on projects', {
+      const result = await suggestRelatedLinks('Working with team on projects', {
         maxSuggestions: 2,
       });
 

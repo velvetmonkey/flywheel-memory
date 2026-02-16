@@ -589,7 +589,7 @@ describe('extractLinkedEntities', () => {
     expect(linked.size).toBe(1);
   });
 
-  it('should extract multiple wikilinks', () => {
+  it('should extract multiple wikilinks', async () => {
     const content = '[[TypeScript]] and [[MCP Server]] integration';
     const linked = extractLinkedEntities(content);
 
@@ -598,7 +598,7 @@ describe('extractLinkedEntities', () => {
     expect(linked.size).toBe(2);
   });
 
-  it('should handle aliased wikilinks', () => {
+  it('should handle aliased wikilinks', async () => {
     const content = 'See [[Jordan Smith|Jordan]] for details';
     const linked = extractLinkedEntities(content);
 
@@ -606,19 +606,19 @@ describe('extractLinkedEntities', () => {
     expect(linked.size).toBe(1);
   });
 
-  it('should return empty set for content without wikilinks', () => {
+  it('should return empty set for content without wikilinks', async () => {
     const content = 'Plain text without any links';
     const linked = extractLinkedEntities(content);
 
     expect(linked.size).toBe(0);
   });
 
-  it('should handle empty content', () => {
+  it('should handle empty content', async () => {
     const linked = extractLinkedEntities('');
     expect(linked.size).toBe(0);
   });
 
-  it('should lowercase entity names for comparison', () => {
+  it('should lowercase entity names for comparison', async () => {
     const content = '[[DAVE EVANS]] and [[TypeScript]]';
     const linked = extractLinkedEntities(content);
 
@@ -633,8 +633,8 @@ describe('extractLinkedEntities', () => {
 
 describe('suggestRelatedLinks', () => {
   describe('basic functionality', () => {
-    it('should return SuggestResult structure', () => {
-      const result = suggestRelatedLinks('Test content about programming');
+    it('should return SuggestResult structure', async () => {
+      const result = await suggestRelatedLinks('Test content about programming');
 
       expect(result).toHaveProperty('suggestions');
       expect(result).toHaveProperty('suffix');
@@ -642,23 +642,23 @@ describe('suggestRelatedLinks', () => {
       expect(typeof result.suffix).toBe('string');
     });
 
-    it('should return empty result when index not ready', () => {
+    it('should return empty result when index not ready', async () => {
       // In test environment, index may not be ready
-      const result = suggestRelatedLinks('Some content here');
+      const result = await suggestRelatedLinks('Some content here');
 
       // Either returns suggestions or empty (depends on index state)
       expect(result.suggestions.length).toBe(result.suffix ? result.suggestions.length : 0);
     });
 
-    it('should handle empty content', () => {
-      const result = suggestRelatedLinks('');
+    it('should handle empty content', async () => {
+      const result = await suggestRelatedLinks('');
 
       expect(result.suggestions).toEqual([]);
       expect(result.suffix).toBe('');
     });
 
-    it('should handle whitespace-only content', () => {
-      const result = suggestRelatedLinks('   \n\t  ');
+    it('should handle whitespace-only content', async () => {
+      const result = await suggestRelatedLinks('   \n\t  ');
 
       expect(result.suggestions).toEqual([]);
       expect(result.suffix).toBe('');
@@ -666,17 +666,17 @@ describe('suggestRelatedLinks', () => {
   });
 
   describe('suffix format', () => {
-    it('should format suffix with arrow notation', () => {
+    it('should format suffix with arrow notation', async () => {
       // If suggestions are returned, they should be formatted correctly
-      const result = suggestRelatedLinks('TypeScript programming language');
+      const result = await suggestRelatedLinks('TypeScript programming language');
 
       if (result.suggestions.length > 0) {
         expect(result.suffix).toMatch(/^→ \[\[.+\]\]/);
       }
     });
 
-    it('should format multiple suggestions with spaces', () => {
-      const result = suggestRelatedLinks('Advanced TypeScript API development');
+    it('should format multiple suggestions with spaces', async () => {
+      const result = await suggestRelatedLinks('Advanced TypeScript API development');
 
       if (result.suggestions.length > 1) {
         // Should have format: → [[X]] [[Y]]
@@ -687,17 +687,17 @@ describe('suggestRelatedLinks', () => {
   });
 
   describe('idempotency', () => {
-    it('should not add suggestions if content already has suffix', () => {
+    it('should not add suggestions if content already has suffix', async () => {
       const content = 'Some content → [[ExistingLink]]';
-      const result = suggestRelatedLinks(content);
+      const result = await suggestRelatedLinks(content);
 
       expect(result.suggestions).toEqual([]);
       expect(result.suffix).toBe('');
     });
 
-    it('should detect suffix pattern at end of content', () => {
+    it('should detect suffix pattern at end of content', async () => {
       const content = 'Text with wikilinks about AI → [[Philosophy]] [[Consciousness]]';
-      const result = suggestRelatedLinks(content);
+      const result = await suggestRelatedLinks(content);
 
       expect(result.suggestions).toEqual([]);
       expect(result.suffix).toBe('');
@@ -705,16 +705,16 @@ describe('suggestRelatedLinks', () => {
   });
 
   describe('options', () => {
-    it('should respect maxSuggestions option', () => {
-      const result = suggestRelatedLinks('TypeScript API development project', {
+    it('should respect maxSuggestions option', async () => {
+      const result = await suggestRelatedLinks('TypeScript API development project', {
         maxSuggestions: 1,
       });
 
       expect(result.suggestions.length).toBeLessThanOrEqual(1);
     });
 
-    it('should handle maxSuggestions of 0', () => {
-      const result = suggestRelatedLinks('TypeScript content', {
+    it('should handle maxSuggestions of 0', async () => {
+      const result = await suggestRelatedLinks('TypeScript content', {
         maxSuggestions: 0,
       });
 
@@ -722,9 +722,9 @@ describe('suggestRelatedLinks', () => {
       expect(result.suffix).toBe('');
     });
 
-    it('should respect excludeLinked=true (default)', () => {
+    it('should respect excludeLinked=true (default)', async () => {
       const content = 'Working with [[TypeScript]] on the project';
-      const result = suggestRelatedLinks(content, { excludeLinked: true });
+      const result = await suggestRelatedLinks(content, { excludeLinked: true });
 
       // Should not suggest TypeScript since it's already linked
       if (result.suggestions.length > 0) {
@@ -766,7 +766,7 @@ describe('suggestRelatedLinks integration', () => {
     await initializeEntityIndex(tempVault);
 
     // Now test suggestions with content that should match
-    const result = suggestRelatedLinks('Working on a TypeScript project');
+    const result = await suggestRelatedLinks('Working on a TypeScript project');
 
     // The result depends on whether entities match content tokens
     expect(result).toHaveProperty('suggestions');
@@ -777,7 +777,7 @@ describe('suggestRelatedLinks integration', () => {
     // StateDb exists but empty
 
     // Should still work, just return empty
-    const result = suggestRelatedLinks('Some content about programming');
+    const result = await suggestRelatedLinks('Some content about programming');
 
     expect(result.suggestions.length).toBeGreaterThanOrEqual(0);
   });
@@ -795,7 +795,7 @@ describe('suggestRelatedLinks integration', () => {
     await initializeEntityIndex(tempVault);
 
     // This call should NOT throw TypeError: Cannot read properties of undefined
-    const result = suggestRelatedLinks('Working on TypeScript with Jordan Smith');
+    const result = await suggestRelatedLinks('Working on TypeScript with Jordan Smith');
 
     // Should return valid result structure
     expect(result).toHaveProperty('suggestions');
@@ -844,7 +844,7 @@ describe('suggestRelatedLinks scoring layers', () => {
       await initializeEntityIndex(tempVault);
 
       // Content contains words that match the long entity name
-      const result = suggestRelatedLinks('Completed the guide to fitness');
+      const result = await suggestRelatedLinks('Completed the guide to fitness');
 
       // Should NOT suggest the long entity
       expect(result.suggestions).not.toContain('Complete Guide To Fat Loss And Fitness');
@@ -858,7 +858,7 @@ describe('suggestRelatedLinks scoring layers', () => {
 
       await initializeEntityIndex(tempVault);
 
-      const result = suggestRelatedLinks('Working on TypeScript development');
+      const result = await suggestRelatedLinks('Working on TypeScript development');
 
       // Should potentially include TypeScript if it matches
       // The test verifies the filter doesn't incorrectly exclude short names
@@ -880,7 +880,7 @@ describe('suggestRelatedLinks scoring layers', () => {
       await initializeEntityIndex(tempVault);
 
       // "TypeScript" should match with exact word match
-      const result = suggestRelatedLinks('Learning TypeScript today');
+      const result = await suggestRelatedLinks('Learning TypeScript today');
 
       // TypeScript should be suggested (exact match gets +10)
       if (result.suggestions.length > 0) {
@@ -900,7 +900,7 @@ describe('suggestRelatedLinks scoring layers', () => {
       await initializeEntityIndex(tempVault);
 
       // "philosophical" should stem-match "Philosophy"
-      const result = suggestRelatedLinks('Having philosophical thoughts today');
+      const result = await suggestRelatedLinks('Having philosophical thoughts today');
 
       // Philosophy should be suggested via stem matching
       // Both stem to "philosoph"
@@ -919,7 +919,7 @@ describe('suggestRelatedLinks scoring layers', () => {
       await initializeEntityIndex(tempVault);
 
       // Test that stemming enables conceptual matching
-      const result = suggestRelatedLinks('I was thinking about the problem');
+      const result = await suggestRelatedLinks('I was thinking about the problem');
 
       // Critical Thinking could match via "thinking" stem
       expect(result.suggestions).toBeDefined();
@@ -935,10 +935,10 @@ describe('suggestRelatedLinks scoring layers', () => {
       await initializeEntityIndex(tempVault);
 
       // Only "Server" matches - 1/4 = 25%, below threshold
-      const resultLow = suggestRelatedLinks('Setting up a database server');
+      const resultLow = await suggestRelatedLinks('Setting up a database server');
 
       // "Context" and "Protocol" match - 2/4 = 50%, above threshold
-      const resultHigh = suggestRelatedLinks('Learning about context and protocol design');
+      const resultHigh = await suggestRelatedLinks('Learning about context and protocol design');
 
       // The high match rate should potentially suggest the entity
       // The low match rate should not
@@ -957,7 +957,7 @@ describe('suggestRelatedLinks scoring layers', () => {
       await initializeEntityIndex(tempVault);
 
       // Content with no matching words
-      const result = suggestRelatedLinks('The quick brown fox jumps over');
+      const result = await suggestRelatedLinks('The quick brown fox jumps over');
 
       // Should return empty since nothing meets minimum score
       // (no words in content match entity names)
@@ -975,7 +975,7 @@ describe('suggestRelatedLinks scoring layers', () => {
       await initializeEntityIndex(tempVault);
 
       // TypeScript appears as exact match, API appears partially
-      const result = suggestRelatedLinks('TypeScript and API development today');
+      const result = await suggestRelatedLinks('TypeScript and API development today');
 
       if (result.suggestions.length >= 2) {
         // Higher scoring entities should come first
@@ -1017,7 +1017,7 @@ describe('garbage suggestion prevention', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Completed 0.5.1 of Flywheel Memory');
+    const result = await suggestRelatedLinks('Completed 0.5.1 of Flywheel Memory');
 
     // Should NOT contain the garbage article title
     for (const suggestion of result.suggestions) {
@@ -1043,7 +1043,7 @@ describe('garbage suggestion prevention', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Thinking about AI consciousness and ethics');
+    const result = await suggestRelatedLinks('Thinking about AI consciousness and ethics');
 
     // Should suggest Consciousness and/or Ethics (exact matches)
     // Should NOT suggest random unrelated entities
@@ -1163,16 +1163,16 @@ describe('isLikelyArticleTitle', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle empty string', () => {
+    it('should handle empty string', async () => {
       // Empty has 0 words after filtering, which is ≤3
       expect(isLikelyArticleTitle('')).toBe(false);
     });
 
-    it('should handle single character', () => {
+    it('should handle single character', async () => {
       expect(isLikelyArticleTitle('A')).toBe(false);
     });
 
-    it('should handle names with special characters', () => {
+    it('should handle names with special characters', async () => {
       expect(isLikelyArticleTitle('C++')).toBe(false);
       expect(isLikelyArticleTitle('C#')).toBe(false);
     });
@@ -1207,7 +1207,7 @@ describe('suggestion quality - length filter', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Working on Natural Language Process today');
+    const result = await suggestRelatedLinks('Working on Natural Language Process today');
 
     expect(result.suggestions).toContain('Natural Language Process');
   });
@@ -1219,7 +1219,7 @@ describe('suggestion quality - length filter', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Working on Natural Language Processing V2');
+    const result = await suggestRelatedLinks('Working on Natural Language Processing V2');
 
     expect(result.suggestions).not.toContain('Natural Language Processing V2');
   });
@@ -1254,7 +1254,7 @@ describe('suggestion quality - article pattern filter', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Learning about Git and Docker today');
+    const result = await suggestRelatedLinks('Learning about Git and Docker today');
 
     // Should suggest the concept names, not the article titles
     const suggestions = result.suggestions.map(s => s.toLowerCase());
@@ -1272,7 +1272,7 @@ describe('suggestion quality - article pattern filter', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Today I worked on coding skills');
+    const result = await suggestRelatedLinks('Today I worked on coding skills');
 
     for (const suggestion of result.suggestions) {
       expect(suggestion.toLowerCase()).not.toContain('how to');
@@ -1304,7 +1304,7 @@ describe('suggestion quality - word count filter', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Deployed to Azure App Service');
+    const result = await suggestRelatedLinks('Deployed to Azure App Service');
 
     expect(result.suggestions).toContain('Azure App Service');
   });
@@ -1316,7 +1316,7 @@ describe('suggestion quality - word count filter', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Working on Very Long Name Here');
+    const result = await suggestRelatedLinks('Working on Very Long Name Here');
 
     expect(result.suggestions).not.toContain('Very Long Name Here');
   });
@@ -1357,7 +1357,7 @@ describe('suggestion quality - real-world scenarios', () => {
     await initializeEntityIndex(tempVault);
 
     // Use exact entity name in content to ensure match
-    const result = suggestRelatedLinks('Versioning Flywheel Memory release');
+    const result = await suggestRelatedLinks('Versioning Flywheel Memory release');
 
     // Should suggest Flywheel-related entities, not the clipping titles
     if (result.suggestions.length > 0) {
@@ -1383,7 +1383,7 @@ describe('suggestion quality - real-world scenarios', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Working on TypeScript today');
+    const result = await suggestRelatedLinks('Working on TypeScript today');
 
     // TypeScript should be the highest scored match
     if (result.suggestions.length > 0) {
@@ -1425,7 +1425,7 @@ describe('strictness modes', () => {
 
       // Conservative mode requires higher threshold and exact matches
       // "Started working" should NOT suggest "Start" (stem-only match)
-      const result = suggestRelatedLinks('Started working on the project');
+      const result = await suggestRelatedLinks('Started working on the project');
 
       // "Start" should NOT be suggested (only stem match, no exact match)
       expect(result.suggestions).not.toContain('Start');
@@ -1440,7 +1440,7 @@ describe('strictness modes', () => {
 
       // "Completed" stems to "complet", "Complete" stems to "complet"
       // In conservative mode, single-word entities need exact match
-      const result = suggestRelatedLinks('Completed the documentation');
+      const result = await suggestRelatedLinks('Completed the documentation');
 
       // "Complete" should NOT be suggested (only stem match)
       expect(result.suggestions).not.toContain('Complete');
@@ -1457,7 +1457,7 @@ describe('strictness modes', () => {
       await initializeEntityIndex(tempVault);
 
       // Balanced mode allows stem matching with lower threshold
-      const result = suggestRelatedLinks('philosophical discussion about life', {
+      const result = await suggestRelatedLinks('philosophical discussion about life', {
         strictness: 'balanced',
       });
 
@@ -1474,10 +1474,10 @@ describe('strictness modes', () => {
       await initializeEntityIndex(tempVault);
 
       // Use content with exact entity name (TypeScript)
-      const conservativeResult = suggestRelatedLinks('TypeScript programming language', {
+      const conservativeResult = await suggestRelatedLinks('TypeScript programming language', {
         strictness: 'conservative',
       });
-      const balancedResult = suggestRelatedLinks('TypeScript programming language', {
+      const balancedResult = await suggestRelatedLinks('TypeScript programming language', {
         strictness: 'balanced',
       });
 
@@ -1505,7 +1505,7 @@ describe('strictness modes', () => {
       await initializeEntityIndex(tempVault);
 
       // Aggressive mode has lowest threshold
-      const result = suggestRelatedLinks('learning about machines', {
+      const result = await suggestRelatedLinks('learning about machines', {
         strictness: 'aggressive',
       });
 
@@ -1545,7 +1545,7 @@ describe('false positive prevention', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Completed 0.5.1 of Flywheel Memory');
+    const result = await suggestRelatedLinks('Completed 0.5.1 of Flywheel Memory');
 
     // "Complete Guide" should NOT be suggested
     for (const suggestion of result.suggestions) {
@@ -1569,7 +1569,7 @@ describe('false positive prevention', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Started working on API development');
+    const result = await suggestRelatedLinks('Started working on API development');
 
     // "Start" and "Getting Started" should NOT be suggested
     expect(result.suggestions).not.toContain('Start');
@@ -1584,7 +1584,7 @@ describe('false positive prevention', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Testing the feature today');
+    const result = await suggestRelatedLinks('Testing the feature today');
 
     // "Test" should NOT be suggested (stopword)
     expect(result.suggestions).not.toContain('Test');
@@ -1598,7 +1598,7 @@ describe('false positive prevention', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Working on MCP Server today');
+    const result = await suggestRelatedLinks('Working on MCP Server today');
 
     // "Work" and "Works" should NOT be suggested (stopwords)
     expect(result.suggestions).not.toContain('Work');
@@ -1613,7 +1613,7 @@ describe('false positive prevention', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Working on TypeScript today');
+    const result = await suggestRelatedLinks('Working on TypeScript today');
 
     // Time words are stopwords
     expect(result.suggestions).not.toContain('Today');
@@ -1629,7 +1629,7 @@ describe('false positive prevention', () => {
     await initializeEntityIndex(tempVault);
 
     // Content has many stopwords but also valid entity matches
-    const result = suggestRelatedLinks(
+    const result = await suggestRelatedLinks(
       'Working on TypeScript and JavaScript development for Flywheel Memory today'
     );
 
@@ -1672,7 +1672,7 @@ describe('expanded stopwords', () => {
     await initializeEntityIndex(tempVault);
 
     // All these verbs are now stopwords
-    const result = suggestRelatedLinks(
+    const result = await suggestRelatedLinks(
       'Created and updated the code, then fixed and built it'
     );
 
@@ -1691,7 +1691,7 @@ describe('expanded stopwords', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks(
+    const result = await suggestRelatedLinks(
       'This morning I did my weekly review and monthly planning'
     );
 
@@ -1708,7 +1708,7 @@ describe('expanded stopwords', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks(
+    const result = await suggestRelatedLinks(
       'This thing is something better and different'
     );
 
@@ -1732,17 +1732,17 @@ describe('expanded stopwords', () => {
 
     // Generic words like "message", "file" should be filtered out
     // and not trigger any entity matches
-    const result1 = suggestRelatedLinks('a test message');
+    const result1 = await suggestRelatedLinks('a test message');
     expect(result1.suggestions).toHaveLength(0);
 
-    const result2 = suggestRelatedLinks('this is a simple message');
+    const result2 = await suggestRelatedLinks('this is a simple message');
     expect(result2.suggestions).toHaveLength(0);
 
-    const result3 = suggestRelatedLinks('processing the file');
+    const result3 = await suggestRelatedLinks('processing the file');
     expect(result3.suggestions).toHaveLength(0);
 
     // But specific technical terms should still work
-    const result4 = suggestRelatedLinks('Configuring Active Directory integration');
+    const result4 = await suggestRelatedLinks('Configuring Active Directory integration');
     expect(result4.suggestions.length).toBeGreaterThan(0);
     expect(result4.suggestions).toContain('Active Directory');
   });
@@ -1786,7 +1786,7 @@ describe('alias matching', () => {
 
     // Content uses alias words "Production" and "Requirements" which should match entity
     // Use balanced mode to allow stem-based matching
-    const result = suggestRelatedLinks('Reviewing Production Requirements today', {
+    const result = await suggestRelatedLinks('Reviewing Production Requirements today', {
       strictness: 'balanced',
     });
 
@@ -1809,7 +1809,7 @@ describe('alias matching', () => {
 
     // "production" stems to "product", which should match alias "Production System"
     // Use balanced mode for stem matching
-    const result = suggestRelatedLinks('Improving our production workflow', { strictness: 'balanced' });
+    const result = await suggestRelatedLinks('Improving our production workflow', { strictness: 'balanced' });
 
     // Should match via alias stem
     // "production" → stem "product" matches "Production" in alias
@@ -1837,7 +1837,7 @@ describe('alias matching', () => {
 
     // "Product Requirements" is an alias of Product Reqs
     // Use balanced mode for reliable matching
-    const result = suggestRelatedLinks('Reviewing the Product Requirements document', {
+    const result = await suggestRelatedLinks('Reviewing the Product Requirements document', {
       strictness: 'balanced',
     });
 
@@ -1866,7 +1866,7 @@ describe('alias matching', () => {
     await initializeEntityIndex(tempVault);
 
     // Content already links to Product Reqs - should not suggest it again
-    const result = suggestRelatedLinks('Working on [[Product Reqs]] and Production Requirements', {
+    const result = await suggestRelatedLinks('Working on [[Product Reqs]] and Production Requirements', {
       strictness: 'balanced',
     });
 
@@ -1892,7 +1892,7 @@ describe('alias matching', () => {
     await initializeEntityIndex(tempVault);
 
     // Content contains filtered alias phrase
-    const result = suggestRelatedLinks(
+    const result = await suggestRelatedLinks(
       'Reviewing the Product Requirements Document today'
     );
 
@@ -1916,14 +1916,14 @@ describe('alias matching', () => {
     await initializeEntityIndex(tempVault);
 
     // Test first alias - use balanced mode for reliable matching
-    const result1 = suggestRelatedLinks('Studying Artificial Intelligence systems', {
+    const result1 = await suggestRelatedLinks('Studying Artificial Intelligence systems', {
       strictness: 'balanced',
     });
     // "Artificial Intelligence" = 2 exact matches = 20 points in balanced mode
     expect(result1.suggestions).toContain('Artificial Intel');
 
     // Test second alias
-    const result2 = suggestRelatedLinks('Working on Machine Learning models', {
+    const result2 = await suggestRelatedLinks('Working on Machine Learning models', {
       strictness: 'balanced',
     });
     // "Machine Learning" = 2 exact matches = 20 points in balanced mode
@@ -1941,7 +1941,7 @@ describe('alias matching', () => {
 
     // Should match in conservative mode (default) due to full alias bonus
     // "production" exact match (10) + full alias bonus (8) = 18 >= 15 threshold
-    const result = suggestRelatedLinks('Deploying to production today');
+    const result = await suggestRelatedLinks('Deploying to production today');
 
     expect(result.suggestions).toContain('prd');
   });
@@ -1962,7 +1962,7 @@ describe('alias matching', () => {
     // Should still match by name
     // Use balanced mode since single-word exact match (10 points) is below
     // conservative threshold (15 points)
-    const result = suggestRelatedLinks('Learning TypeScript programming', {
+    const result = await suggestRelatedLinks('Learning TypeScript programming', {
       strictness: 'balanced',
     });
 
@@ -2000,7 +2000,7 @@ describe('adaptive thresholds', () => {
 
     // Short content - threshold should be lowered
     // Conservative base is 15, with 0.6 multiplier = 9
-    const result = suggestRelatedLinks('Alex Johnson', {
+    const result = await suggestRelatedLinks('Alex Johnson', {
       strictness: 'conservative',
     });
 
@@ -2018,7 +2018,7 @@ describe('adaptive thresholds', () => {
     // Long content - threshold should be raised
     // Conservative base is 15, with 1.2 multiplier = 18
     const longContent = 'This is a very long piece of content that contains many words and phrases. It discusses various topics and ideas. The purpose is to test that longer content requires stronger entity matches. TypeScript is mentioned here but surrounded by lots of other text that might dilute the signal.';
-    const result = suggestRelatedLinks(longContent, {
+    const result = await suggestRelatedLinks(longContent, {
       strictness: 'conservative',
     });
 
@@ -2035,7 +2035,7 @@ describe('adaptive thresholds', () => {
 
     // Medium content (50-200 chars) - standard threshold
     const mediumContent = 'Working on TypeScript development today with the team.';
-    const result = suggestRelatedLinks(mediumContent, {
+    const result = await suggestRelatedLinks(mediumContent, {
       strictness: 'balanced',
     });
 
@@ -2077,7 +2077,7 @@ describe('entity type boosting', () => {
     await initializeEntityIndex(tempVault);
 
     // Both should match "Carter" but person should score higher
-    const result = suggestRelatedLinks('Meeting with Carter about the project', {
+    const result = await suggestRelatedLinks('Meeting with Carter about the project', {
       strictness: 'balanced',
     });
 
@@ -2096,7 +2096,7 @@ describe('entity type boosting', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Flywheel Memory and React integration', {
+    const result = await suggestRelatedLinks('Flywheel Memory and React integration', {
       strictness: 'balanced',
     });
 
@@ -2114,7 +2114,7 @@ describe('entity type boosting', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Working with the Anthropic Team today', {
+    const result = await suggestRelatedLinks('Working with the Anthropic Team today', {
       strictness: 'balanced',
     });
 
@@ -2154,7 +2154,7 @@ describe('context-aware matching', () => {
     await initializeEntityIndex(tempVault);
 
     // Daily notes path should boost people
-    const result = suggestRelatedLinks('Met with Alex Johnson about TypeScript', {
+    const result = await suggestRelatedLinks('Met with Alex Johnson about TypeScript', {
       strictness: 'balanced',
       notePath: 'daily-notes/2026-01-31.md',
     });
@@ -2179,7 +2179,7 @@ describe('context-aware matching', () => {
     await initializeEntityIndex(tempVault);
 
     // Project path should boost projects
-    const result = suggestRelatedLinks('Alex Johnson working on Flywheel Memory', {
+    const result = await suggestRelatedLinks('Alex Johnson working on Flywheel Memory', {
       strictness: 'balanced',
       notePath: 'projects/flywheel/overview.md',
     });
@@ -2200,7 +2200,7 @@ describe('context-aware matching', () => {
     await initializeEntityIndex(tempVault);
 
     // Tech path should boost technologies
-    const result = suggestRelatedLinks('TypeScript for MCP Server development', {
+    const result = await suggestRelatedLinks('TypeScript for MCP Server development', {
       strictness: 'balanced',
       notePath: 'tech/typescript/guide.md',
     });
@@ -2220,7 +2220,7 @@ describe('context-aware matching', () => {
     await initializeEntityIndex(tempVault);
 
     // Unknown path - no context boost
-    const result = suggestRelatedLinks('TypeScript development', {
+    const result = await suggestRelatedLinks('TypeScript development', {
       strictness: 'balanced',
       notePath: 'random/note.md',
     });
@@ -2237,7 +2237,7 @@ describe('context-aware matching', () => {
     await initializeEntityIndex(tempVault);
 
     // Journal path should be treated as daily context
-    const result = suggestRelatedLinks('Met with Alex Johnson today', {
+    const result = await suggestRelatedLinks('Met with Alex Johnson today', {
       strictness: 'balanced',
       notePath: 'journal/2026-01.md',
     });
@@ -2279,7 +2279,7 @@ describe('combined scoring formula', () => {
 
     // Daily notes context + people entity = maximum boost
     // Type boost (+5) + Context boost (+5) = +10 bonus
-    const result = suggestRelatedLinks('Met with Alex Johnson', {
+    const result = await suggestRelatedLinks('Met with Alex Johnson', {
       strictness: 'conservative',
       notePath: 'daily-notes/2026-01-31.md',
     });
@@ -2297,7 +2297,7 @@ describe('combined scoring formula', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Alex Johnson working on TypeScript', {
+    const result = await suggestRelatedLinks('Alex Johnson working on TypeScript', {
       strictness: 'balanced',
       notePath: 'daily-notes/2026-01-31.md',
     });
@@ -2345,7 +2345,7 @@ describe('Cross-Folder Boost', () => {
     await initializeEntityIndex(tempVault);
 
     // When editing a people note, project from different folder should be boosted
-    const result = suggestRelatedLinks('Working with Alice Smith on Project Alpha', {
+    const result = await suggestRelatedLinks('Working with Alice Smith on Project Alpha', {
       strictness: 'balanced',
       notePath: 'people/Alice Smith.md',
     });
@@ -2373,7 +2373,7 @@ describe('Cross-Folder Boost', () => {
     await initializeEntityIndex(tempVault);
 
     // When editing a project note, other projects don't get cross-folder boost
-    const result = suggestRelatedLinks('Project Alpha relates to Project Beta', {
+    const result = await suggestRelatedLinks('Project Alpha relates to Project Beta', {
       strictness: 'balanced',
       notePath: 'projects/Project Alpha.md',
     });
@@ -2394,7 +2394,7 @@ describe('Cross-Folder Boost', () => {
     await initializeEntityIndex(tempVault);
 
     // Should not crash, empty path gets no boost
-    const result = suggestRelatedLinks('Concept One and Concept Two discussion', {
+    const result = await suggestRelatedLinks('Concept One and Concept Two discussion', {
       strictness: 'balanced',
       notePath: 'daily-notes/2026-01-31.md',
     });
@@ -2435,7 +2435,7 @@ describe('Hub Score Boost', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Hub Concept and Regular Concept and New Concept', {
+    const result = await suggestRelatedLinks('Hub Concept and Regular Concept and New Concept', {
       strictness: 'balanced',
     });
 
@@ -2459,7 +2459,7 @@ describe('Hub Score Boost', () => {
 
     await initializeEntityIndex(tempVault);
 
-    const result = suggestRelatedLinks('Project A and Project B discussion', {
+    const result = await suggestRelatedLinks('Project A and Project B discussion', {
       strictness: 'balanced',
     });
 
@@ -2485,7 +2485,7 @@ describe('Hub Score Boost', () => {
     await initializeEntityIndex(tempVault);
 
     // Should not crash with missing/zero hubScore
-    const result = suggestRelatedLinks('TypeScript and React development', {
+    const result = await suggestRelatedLinks('TypeScript and React development', {
       strictness: 'balanced',
     });
 
@@ -2530,7 +2530,7 @@ describe('Combined Cross-Folder and Hub Boosts', () => {
     await initializeEntityIndex(tempVault);
 
     // When editing a daily note
-    const result = suggestRelatedLinks('Alice Smith working on Test Concept', {
+    const result = await suggestRelatedLinks('Alice Smith working on Test Concept', {
       strictness: 'balanced',
       notePath: 'daily-notes/2026-01-31.md',
     });
@@ -2601,7 +2601,7 @@ describe('zero-relevance content filtering', () => {
     await initializeEntityIndex(tempVault);
 
     // Content completely unrelated to entities
-    const result = suggestRelatedLinks('Morning stretches feel flexible today', {
+    const result = await suggestRelatedLinks('Morning stretches feel flexible today', {
       strictness: 'balanced',
     });
 
@@ -2628,7 +2628,7 @@ describe('zero-relevance content filtering', () => {
     await initializeEntityIndex(tempVault);
 
     // Personal/health content with no entity matches
-    const result = suggestRelatedLinks('Made myself a cappuccino this morning', {
+    const result = await suggestRelatedLinks('Made myself a cappuccino this morning', {
       strictness: 'balanced',
     });
 
@@ -2651,7 +2651,7 @@ describe('zero-relevance content filtering', () => {
     await initializeEntityIndex(tempVault);
 
     // Content that matches TypeScript but not Popular Person
-    const result = suggestRelatedLinks('Working on TypeScript development', {
+    const result = await suggestRelatedLinks('Working on TypeScript development', {
       strictness: 'balanced',
     });
 
@@ -2675,7 +2675,7 @@ describe('zero-relevance content filtering', () => {
     await initializeEntityIndex(tempVault);
 
     // Content only matches "Project Alpha"
-    const result = suggestRelatedLinks('Working on the Project Alpha deployment', {
+    const result = await suggestRelatedLinks('Working on the Project Alpha deployment', {
       strictness: 'balanced',
     });
 
@@ -2702,7 +2702,7 @@ describe('zero-relevance content filtering', () => {
     await initializeEntityIndex(tempVault);
 
     // Content that matches "Random Activity" but not "Important Person"
-    const result = suggestRelatedLinks('Logging a random activity for the day', {
+    const result = await suggestRelatedLinks('Logging a random activity for the day', {
       strictness: 'balanced',
     });
 

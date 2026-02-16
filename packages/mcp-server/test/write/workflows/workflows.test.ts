@@ -179,7 +179,7 @@ describe('Daily Note Workflow', () => {
 
     // Add task with content that should trigger suggestions
     const taskContent = 'Review TypeScript changes with Jordan Smith';
-    const suggestions = suggestRelatedLinks(taskContent);
+    const suggestions = await suggestRelatedLinks(taskContent);
 
     await addToSection(
       tempVault,
@@ -398,7 +398,7 @@ describe('Meeting Notes Workflow', () => {
 
     // Test the suggestion mechanism with entity content
     const noteContent = 'Jordan Smith presented MCP Server architecture';
-    const suggestions = suggestRelatedLinks(noteContent);
+    const suggestions = await suggestRelatedLinks(noteContent);
 
     await addToSection(
       tempVault,

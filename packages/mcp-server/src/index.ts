@@ -39,10 +39,19 @@ import { initializeLogger as initializeReadLogger, getLogger } from './core/read
 import { initializeEntityIndex, setWriteStateDb } from './core/write/wikilinks.js';
 import { initializeLogger as initializeWriteLogger, flushLogs } from './core/write/logging.js';
 import { setFTS5Database } from './core/read/fts5.js';
-import { setEmbeddingsDatabase, updateEmbedding, removeEmbedding, buildEmbeddingsIndex, hasEmbeddingsIndex } from './core/read/embeddings.js';
+import {
+  setEmbeddingsDatabase,
+  updateEmbedding,
+  removeEmbedding,
+  buildEmbeddingsIndex,
+  hasEmbeddingsIndex,
+  loadEntityEmbeddingsToMemory,
+  updateEntityEmbedding,
+  hasEntityEmbeddingsIndex,
+} from './core/read/embeddings.js';
 
 // Vault-core shared imports
-import { openStateDb, scanVaultEntities, getSessionId, type StateDb } from '@velvetmonkey/vault-core';
+import { openStateDb, scanVaultEntities, getSessionId, getAllEntitiesFromDb, type StateDb } from '@velvetmonkey/vault-core';
 
 // Read tool registrations
 import { registerGraphTools } from './tools/read/graph.js';
@@ -461,6 +470,9 @@ async function main() {
     // Inject StateDb handle for embeddings (note_embeddings table)
     setEmbeddingsDatabase(stateDb.db);
 
+    // Load entity embeddings into memory (if previously built)
+    loadEntityEmbeddingsToMemory();
+
     // Initialize entity index for wikilinks (used by write tools)
     setWriteStateDb(stateDb);
     await initializeEntityIndex(vaultPath);
@@ -681,6 +693,28 @@ async function runPostIndexWork(index: VaultIndex) {
               } catch {
                 // Don't let embedding errors affect watcher
               }
+            }
+          }
+
+          // Update entity embeddings for changed files (if entity embeddings have been built)
+          if (hasEntityEmbeddingsIndex() && stateDb) {
+            try {
+              const allEntities = getAllEntitiesFromDb(stateDb);
+              for (const event of batch.events) {
+                if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+                // Find entities whose backing note matches this changed path
+                const matching = allEntities.filter(e => e.path === event.path);
+                for (const entity of matching) {
+                  await updateEntityEmbedding(entity.name, {
+                    name: entity.name,
+                    path: entity.path,
+                    category: entity.category,
+                    aliases: entity.aliases,
+                  }, vaultPath);
+                }
+              }
+            } catch {
+              // Don't let entity embedding errors affect watcher
             }
           }
           if (stateDb) {

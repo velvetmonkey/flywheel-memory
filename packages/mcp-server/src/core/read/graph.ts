@@ -18,6 +18,8 @@ import {
   saveVaultIndexCache,
 } from '@velvetmonkey/vault-core';
 import { parseNote } from './parser.js';
+import { levenshteinDistance } from '../shared/levenshtein.js';
+import { embedTextCached, findSemanticallySimilarEntities, hasEntityEmbeddingsIndex } from './embeddings.js';
 
 /** Default timeout for vault indexing (5 minutes) */
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
@@ -373,43 +375,8 @@ export function findHubNotes(
   return hubs.sort((a, b) => b.total_connections - a.total_connections);
 }
 
-/**
- * Calculate Levenshtein distance between two strings
- * Returns the minimum number of single-character edits needed
- */
-export function levenshteinDistance(a: string, b: string): number {
-  if (a.length === 0) return b.length;
-  if (b.length === 0) return a.length;
-
-  const matrix: number[][] = [];
-
-  // Initialize first column
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
-  }
-
-  // Initialize first row
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
-  }
-
-  // Fill in the rest of the matrix
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1, // substitution
-          matrix[i][j - 1] + 1,     // insertion
-          matrix[i - 1][j] + 1      // deletion
-        );
-      }
-    }
-  }
-
-  return matrix[b.length][a.length];
-}
+// Re-export levenshteinDistance from shared module for backward compatibility
+export { levenshteinDistance } from '../shared/levenshtein.js';
 
 /**
  * Find a similar entity in the index (for detecting typos/broken links)
@@ -465,6 +432,51 @@ export function findSimilarEntity(
   }
 
   return bestMatch;
+}
+
+/**
+ * Find a similar entity with semantic fallback.
+ *
+ * First tries the fast synchronous prefix/contains/Levenshtein approach.
+ * If that fails and entity embeddings are available, falls back to
+ * semantic similarity search (threshold ~0.7).
+ *
+ * This helps resolve broken links like [[deployment automation]] -> [[CI/CD]]
+ * where the names are conceptually similar but textually different.
+ */
+export async function findSimilarEntityWithSemantic(
+  index: VaultIndex,
+  target: string
+): Promise<{ path: string; entity: string; distance: number; semantic?: boolean } | undefined> {
+  // Try fast synchronous match first
+  const levenshteinMatch = findSimilarEntity(index, target);
+  if (levenshteinMatch) return levenshteinMatch;
+
+  // Semantic fallback
+  try {
+    if (!hasEntityEmbeddingsIndex()) return undefined;
+
+    const targetEmbedding = await embedTextCached(target);
+    const matches = findSemanticallySimilarEntities(targetEmbedding, 1);
+
+    if (matches.length > 0 && matches[0].similarity >= 0.7) {
+      const entityName = matches[0].entityName;
+      // Resolve entity name to a path in the index
+      const entityPath = index.entities.get(entityName.toLowerCase());
+      if (entityPath) {
+        return {
+          path: entityPath,
+          entity: entityName,
+          distance: Math.round((1 - matches[0].similarity) * 100), // pseudo-distance
+          semantic: true,
+        };
+      }
+    }
+  } catch {
+    // Semantic search failure never blocks link resolution
+  }
+
+  return undefined;
 }
 
 // =============================================================================

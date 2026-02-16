@@ -32,6 +32,8 @@ export interface MutationResult {
   staleLockDetected?: boolean;
   /** Age of the lock file in milliseconds (if detected) */
   lockAgeMs?: number;
+  /** Structured diagnostic information for debugging failed mutations */
+  diagnostic?: Record<string, unknown>;
 }
 
 /** Warning from input validation */
@@ -61,6 +63,7 @@ export type Position = 'append' | 'prepend';
 
 export interface InsertionOptions {
   preserveListNesting?: boolean;
+  bumpHeadings?: boolean;
 }
 
 /**
@@ -123,6 +126,7 @@ export interface ScoreBreakdown {
   crossFolderBoost: number;   // Layer 8
   hubBoost: number;           // Layer 9
   feedbackAdjustment: number; // Layer 10
+  semanticBoost?: number;     // Layer 11
 }
 
 export type ConfidenceLevel = 'high' | 'medium' | 'low';

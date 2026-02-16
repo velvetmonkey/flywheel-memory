@@ -111,7 +111,7 @@ export function registerNoteTools(
           : [];
 
         // Preflight similarity check
-        const preflight = checkPreflightSimilarity(noteName);
+        const preflight = await checkPreflightSimilarity(noteName);
         if (preflight.existingEntity) {
           warnings.push({
             type: 'similar_note_exists',
@@ -143,7 +143,7 @@ export function registerNoteTools(
         // 5. Suggest outgoing links (enabled by default)
         let suggestInfo: string | undefined;
         if (suggestOutgoingLinks && !skipWikilinks) {
-          const result = suggestRelatedLinks(processedContent, { maxSuggestions, notePath });
+          const result = await suggestRelatedLinks(processedContent, { maxSuggestions, notePath });
           if (result.suffix) {
             processedContent = processedContent + ' ' + result.suffix;
             suggestInfo = `Suggested: ${result.suggestions.join(', ')}`;

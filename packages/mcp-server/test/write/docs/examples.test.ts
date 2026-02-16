@@ -298,7 +298,7 @@ Met with Alice and Bob to discuss Project X progress.
 
       // Get suggestions for content
       const content = 'Working on the project with the team using modern tech stack';
-      const result = suggestRelatedLinks(content, {
+      const result = await suggestRelatedLinks(content, {
         maxSuggestions: 3,
       });
 

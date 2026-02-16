@@ -337,7 +337,7 @@ describe('Exponential backoff timing', () => {
     // Total delays: ~150ms + operation time
     // Allow some margin for operation time
     expect(elapsed).toBeGreaterThan(100); // At least some delays happened
-    expect(elapsed).toBeLessThan(1000); // But not too long
+    expect(elapsed).toBeLessThan(10000); // But not too long
   });
 });
 

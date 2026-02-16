@@ -10,6 +10,7 @@ import {
   writeVaultFile,
   findSection,
   extractHeadings,
+  DiagnosticError,
   type SectionBoundary,
 } from './writer.js';
 import { commitChange } from './git.js';
@@ -307,9 +308,14 @@ export async function withVaultFile(
 
     return formatMcpResult(result);
   } catch (error) {
+    const extras: Partial<MutationResult> = {};
+    if (error instanceof DiagnosticError) {
+      extras.diagnostic = error.diagnostic;
+    }
     const result = errorResult(
       notePath,
-      `Failed to ${actionDescription}: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to ${actionDescription}: ${error instanceof Error ? error.message : String(error)}`,
+      extras
     );
     return formatMcpResult(result);
   }

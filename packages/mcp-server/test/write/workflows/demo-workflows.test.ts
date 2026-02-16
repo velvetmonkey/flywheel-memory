@@ -108,7 +108,7 @@ describe('Demo 1: Agent Builder - Artemis Rocket', () => {
     // Agent logs overnight research about propulsion
     const logContent = 'Overnight analysis identified propulsion Test 4 at risk due to Turbopump delivery delay. Marcus Johnson tracking with Acme Aerospace - status call today.';
 
-    const suggestions = suggestRelatedLinks(logContent);
+    const suggestions = await suggestRelatedLinks(logContent);
 
     // Should suggest entities from the context cloud
     // Note: The algorithm has strict thresholds, so suggestions may be empty
@@ -132,7 +132,7 @@ describe('Demo 1: Agent Builder - Artemis Rocket', () => {
     // When querying about propulsion, high-hub entities should be suggested
     const queryContent = 'Current state of engine hot fire testing';
 
-    const suggestions = suggestRelatedLinks(queryContent);
+    const suggestions = await suggestRelatedLinks(queryContent);
 
     // Propulsion System has hubScore: 200 and should be suggested
     if (suggestions.suggestions.length > 0) {
@@ -160,7 +160,7 @@ type: daily
 
     // Add log entry with entity references
     const logContent = 'Propulsion Test 4 at risk due to Turbopump delay. Marcus tracking with Acme.';
-    const suggestions = suggestRelatedLinks(logContent, { maxSuggestions: 3 });
+    const suggestions = await suggestRelatedLinks(logContent, { maxSuggestions: 3 });
 
     // Add to section
     await addToSection(
@@ -212,7 +212,7 @@ Pending Chief Engineer review.
 
     // Get suggestions for the context section
     const contextText = 'Turbopump delivery delayed from Jan 5 to Jan 20. Affects propulsion test schedule. Marcus Johnson coordinating with Acme Aerospace.';
-    const suggestions = suggestRelatedLinks(contextText, { maxSuggestions: 5 });
+    const suggestions = await suggestRelatedLinks(contextText, { maxSuggestions: 5 });
 
     // Should suggest related entities (if algorithm thresholds are met)
     if (suggestions.suggestions.length > 0) {
@@ -272,7 +272,7 @@ describe('Demo 2: Voice/PKM - Carter Strategy', () => {
     // Simulated voice transcription
     const voiceTranscript = 'Just wrapped up the call with Sarah at Acme about the data migration. Validation showing 85% complete now.';
 
-    const suggestions = suggestRelatedLinks(voiceTranscript, { maxSuggestions: 5 });
+    const suggestions = await suggestRelatedLinks(voiceTranscript, { maxSuggestions: 5 });
 
     // Algorithm may or may not suggest based on thresholds
     if (suggestions.suggestions.length > 0) {
@@ -304,7 +304,7 @@ type: daily
 
     // Voice memo content
     const memoContent = 'Call with Sarah Thompson at Acme Corp about the data migration. Follow up with IT team re staging access.';
-    const suggestions = suggestRelatedLinks(memoContent, { maxSuggestions: 3 });
+    const suggestions = await suggestRelatedLinks(memoContent, { maxSuggestions: 3 });
 
     // Add to log with suggestions
     const contentWithSuggestions = memoContent + (suggestions.suffix ? ' ' + suggestions.suffix : '');
@@ -371,7 +371,7 @@ describe('Demo 3: Corporate CRM - Startup Ops', () => {
   it('should suggest customer context for daily logs', async () => {
     const logContent = 'Day 2 check-in with Sarah at DataDriven. Dashboard usage looking good - 3 team members active. She asked about API access for their BI tool.';
 
-    const suggestions = suggestRelatedLinks(logContent, { maxSuggestions: 5 });
+    const suggestions = await suggestRelatedLinks(logContent, { maxSuggestions: 5 });
 
     // Algorithm may or may not suggest based on thresholds
     if (suggestions.suggestions.length > 0) {
@@ -393,7 +393,7 @@ describe('Demo 3: Corporate CRM - Startup Ops', () => {
     // When logging about one customer, might suggest similar customers
     const logContent = 'DataDriven onboarding going well. Day 2 complete.';
 
-    const suggestions = suggestRelatedLinks(logContent, { maxSuggestions: 5 });
+    const suggestions = await suggestRelatedLinks(logContent, { maxSuggestions: 5 });
 
     // GrowthStack (another customer at similar stage) might be suggested
     // This demonstrates the "context cloud" - suggesting related entities
@@ -421,7 +421,7 @@ describe('Demo 3: Corporate CRM - Startup Ops', () => {
 - API access requested for BI tool integration
 - Sarah enthusiastic about Q1 rollout`;
 
-    const suggestions = suggestRelatedLinks(meetingContent, { maxSuggestions: 5 });
+    const suggestions = await suggestRelatedLinks(meetingContent, { maxSuggestions: 5 });
 
     // Should suggest entities from meeting context (if thresholds are met)
     if (suggestions.suggestions.length > 0) {
@@ -459,7 +459,7 @@ describe('Context Cloud Philosophy', () => {
     // Content about a specific system
     const content = 'Reviewed engine test results this morning.';
 
-    const suggestions = suggestRelatedLinks(content, { maxSuggestions: 5 });
+    const suggestions = await suggestRelatedLinks(content, { maxSuggestions: 5 });
 
     // Even though "Engine Design" might be the precise match,
     // other entities like "Marcus Johnson" (propulsion lead) or
@@ -497,7 +497,7 @@ type: daily
     ];
 
     for (const entry of entries) {
-      const suggestions = suggestRelatedLinks(entry, { maxSuggestions: 2 });
+      const suggestions = await suggestRelatedLinks(entry, { maxSuggestions: 2 });
       const contentWithSuggestions = entry + (suggestions.suffix ? ' ' + suggestions.suffix : '');
 
       await addToSection(

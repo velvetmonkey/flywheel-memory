@@ -34,6 +34,19 @@ interface EmbeddingRow {
   updated_at: number;
 }
 
+interface EntityEmbeddingRow {
+  entity_name: string;
+  embedding: Buffer;
+  source_hash: string;
+  model: string;
+  updated_at: number;
+}
+
+export interface EntitySimilarityResult {
+  entityName: string;
+  similarity: number;
+}
+
 // =============================================================================
 // Constants
 // =============================================================================
@@ -62,6 +75,13 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 let db: Database.Database | null = null;
 let pipeline: any = null;
 let initPromise: Promise<void> | null = null;
+
+/** LRU cache for embedText results (max 500 entries) */
+const embeddingCache = new Map<string, Float32Array>();
+const EMBEDDING_CACHE_MAX = 500;
+
+/** In-memory entity embeddings for fast cosine search */
+const entityEmbeddingsMap = new Map<string, Float32Array>();
 
 // =============================================================================
 // Database Injection
@@ -133,6 +153,26 @@ export async function embedText(text: string): Promise<Float32Array> {
 
   // result.data is a Float32Array
   return new Float32Array(result.data);
+}
+
+/**
+ * LRU-cached wrapper around embedText().
+ * Avoids re-computing embeddings for repeated text inputs.
+ */
+export async function embedTextCached(text: string): Promise<Float32Array> {
+  const existing = embeddingCache.get(text);
+  if (existing) return existing;
+
+  const embedding = await embedText(text);
+
+  // Evict oldest entry if at capacity
+  if (embeddingCache.size >= EMBEDDING_CACHE_MAX) {
+    const firstKey = embeddingCache.keys().next().value;
+    if (firstKey !== undefined) embeddingCache.delete(firstKey);
+  }
+
+  embeddingCache.set(text, embedding);
+  return embedding;
 }
 
 // =============================================================================
@@ -425,6 +465,240 @@ export function getEmbeddingsCount(): number {
   if (!db) return 0;
   try {
     const row = db.prepare('SELECT COUNT(*) as count FROM note_embeddings').get() as { count: number };
+    return row.count;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Load all note embeddings from DB as a Map<path, Float32Array>.
+ * Used by graph analysis for clustering and bridge detection.
+ */
+export function loadAllNoteEmbeddings(): Map<string, Float32Array> {
+  const result = new Map<string, Float32Array>();
+  if (!db) return result;
+
+  try {
+    const rows = db.prepare('SELECT path, embedding FROM note_embeddings').all() as EmbeddingRow[];
+    for (const row of rows) {
+      const embedding = new Float32Array(
+        row.embedding.buffer,
+        row.embedding.byteOffset,
+        row.embedding.byteLength / Float32Array.BYTES_PER_ELEMENT
+      );
+      result.set(row.path, embedding);
+    }
+  } catch {
+    // Table might not exist
+  }
+
+  return result;
+}
+
+// =============================================================================
+// Entity Embeddings
+// =============================================================================
+
+interface EntityInfo {
+  name: string;
+  path: string;
+  category: string;
+  aliases: string[];
+}
+
+/**
+ * Build embedding text for an entity.
+ * Format: entityName entityName aliases category first500CharsOfNoteBody
+ */
+function buildEntityEmbeddingText(entity: EntityInfo, vaultPath: string): string {
+  const parts: string[] = [entity.name, entity.name];
+
+  if (entity.aliases.length > 0) {
+    parts.push(entity.aliases.join(' '));
+  }
+
+  parts.push(entity.category);
+
+  // Read first 500 chars of the entity's backing note
+  if (entity.path) {
+    try {
+      const absPath = path.join(vaultPath, entity.path);
+      const content = fs.readFileSync(absPath, 'utf-8');
+      parts.push(content.slice(0, 500));
+    } catch {
+      // Note might not exist
+    }
+  }
+
+  return parts.join(' ');
+}
+
+/**
+ * Batch-build all entity embeddings.
+ * Skips entities whose source_hash hasn't changed.
+ *
+ * @returns Count of updated embeddings
+ */
+export async function buildEntityEmbeddingsIndex(
+  vaultPath: string,
+  entities: Map<string, EntityInfo>,
+  onProgress?: (done: number, total: number) => void
+): Promise<number> {
+  if (!db) {
+    throw new Error('Embeddings database not initialized. Call setEmbeddingsDatabase() first.');
+  }
+
+  await initEmbeddings();
+
+  // Load existing hashes for change detection
+  const existingHashes = new Map<string, string>();
+  const rows = db.prepare('SELECT entity_name, source_hash FROM entity_embeddings').all() as Array<{ entity_name: string; source_hash: string }>;
+  for (const row of rows) {
+    existingHashes.set(row.entity_name, row.source_hash);
+  }
+
+  const upsert = db.prepare(`
+    INSERT OR REPLACE INTO entity_embeddings (entity_name, embedding, source_hash, model, updated_at)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+
+  const total = entities.size;
+  let done = 0;
+  let updated = 0;
+
+  for (const [name, entity] of entities) {
+    done++;
+
+    try {
+      const text = buildEntityEmbeddingText(entity, vaultPath);
+      const hash = contentHash(text);
+
+      // Skip if unchanged
+      if (existingHashes.get(name) === hash) {
+        if (onProgress) onProgress(done, total);
+        continue;
+      }
+
+      const embedding = await embedTextCached(text);
+      const buf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
+      upsert.run(name, buf, hash, MODEL_ID, Date.now());
+      updated++;
+    } catch {
+      // Skip entities we can't process
+    }
+
+    if (onProgress) onProgress(done, total);
+  }
+
+  // Remove embeddings for deleted entities
+  const deleteStmt = db.prepare('DELETE FROM entity_embeddings WHERE entity_name = ?');
+  for (const existingName of existingHashes.keys()) {
+    if (!entities.has(existingName)) {
+      deleteStmt.run(existingName);
+    }
+  }
+
+  console.error(`[Semantic] Entity embeddings: ${updated} updated, ${total - updated} unchanged`);
+  return updated;
+}
+
+/**
+ * Update embedding for a single entity.
+ */
+export async function updateEntityEmbedding(
+  entityName: string,
+  entity: EntityInfo,
+  vaultPath: string
+): Promise<void> {
+  if (!db) return;
+
+  try {
+    const text = buildEntityEmbeddingText(entity, vaultPath);
+    const hash = contentHash(text);
+
+    // Check if unchanged
+    const existing = db.prepare('SELECT source_hash FROM entity_embeddings WHERE entity_name = ?').get(entityName) as { source_hash: string } | undefined;
+    if (existing?.source_hash === hash) return;
+
+    const embedding = await embedTextCached(text);
+    const buf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
+
+    db.prepare(`
+      INSERT OR REPLACE INTO entity_embeddings (entity_name, embedding, source_hash, model, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(entityName, buf, hash, MODEL_ID, Date.now());
+
+    // Update in-memory map
+    entityEmbeddingsMap.set(entityName, embedding);
+  } catch {
+    // Skip entities we can't process
+  }
+}
+
+/**
+ * Find entities semantically similar to a query embedding.
+ * Uses pre-loaded in-memory entity embeddings for fast (<1ms) cosine search.
+ */
+export function findSemanticallySimilarEntities(
+  queryEmbedding: Float32Array,
+  limit: number,
+  excludeEntities?: Set<string>
+): EntitySimilarityResult[] {
+  const scored: EntitySimilarityResult[] = [];
+
+  for (const [entityName, embedding] of entityEmbeddingsMap) {
+    if (excludeEntities?.has(entityName)) continue;
+
+    const similarity = cosineSimilarity(queryEmbedding, embedding);
+    scored.push({ entityName, similarity: Math.round(similarity * 1000) / 1000 });
+  }
+
+  scored.sort((a, b) => b.similarity - a.similarity);
+  return scored.slice(0, limit);
+}
+
+/**
+ * Check if entity embeddings are loaded in memory.
+ */
+export function hasEntityEmbeddingsIndex(): boolean {
+  return entityEmbeddingsMap.size > 0;
+}
+
+/**
+ * Load all entity embeddings from DB into memory for fast cosine search.
+ */
+export function loadEntityEmbeddingsToMemory(): void {
+  if (!db) return;
+
+  try {
+    const rows = db.prepare('SELECT entity_name, embedding FROM entity_embeddings').all() as EntityEmbeddingRow[];
+    entityEmbeddingsMap.clear();
+
+    for (const row of rows) {
+      const embedding = new Float32Array(
+        row.embedding.buffer,
+        row.embedding.byteOffset,
+        row.embedding.byteLength / Float32Array.BYTES_PER_ELEMENT
+      );
+      entityEmbeddingsMap.set(row.entity_name, embedding);
+    }
+
+    if (rows.length > 0) {
+      console.error(`[Semantic] Loaded ${rows.length} entity embeddings into memory`);
+    }
+  } catch {
+    // Table might not exist yet
+  }
+}
+
+/**
+ * Get the number of entity embeddings in the database.
+ */
+export function getEntityEmbeddingsCount(): number {
+  if (!db) return 0;
+  try {
+    const row = db.prepare('SELECT COUNT(*) as count FROM entity_embeddings').get() as { count: number };
     return row.count;
   } catch {
     return 0;

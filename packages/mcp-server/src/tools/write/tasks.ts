@@ -246,7 +246,7 @@ export function registerTaskTools(
           // 3. Suggest outgoing links (enabled by default)
           let suggestInfo: string | undefined;
           if (suggestOutgoingLinks && !skipWikilinks) {
-            const result = suggestRelatedLinks(processedTask, { maxSuggestions, notePath });
+            const result = await suggestRelatedLinks(processedTask, { maxSuggestions, notePath });
             if (result.suffix) {
               processedTask = processedTask + ' ' + result.suffix;
               suggestInfo = `Suggested: ${result.suggestions.join(', ')}`;

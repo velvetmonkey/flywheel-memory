@@ -255,15 +255,15 @@ Start simple and build up:
 
 ---
 
-## Step 6: Enable Semantic Search (Optional)
+## Step 6: Enable Hybrid Search (Optional)
 
-Flywheel supports hybrid search that combines keyword matching (BM25) with semantic similarity. To enable it:
+Flywheel supports hybrid search that combines keyword matching with semantic similarity. To enable it:
 
 > "Build the semantic search index for my vault"
 
-This calls `init_semantic`, which performs a one-time build of semantic embeddings using the `all-MiniLM-L6-v2` model. The process is fully local -- no API keys needed.
+This performs a one-time build of semantic embeddings using the `all-MiniLM-L6-v2` model. Runs locally -- no API keys needed.
 
-Once embeddings are built, all `search` and `find_similar` calls automatically upgrade to hybrid ranking (BM25 + semantic via Reciprocal Rank Fusion). No configuration changes required.
+Once built, all searches automatically upgrade to hybrid ranking. Notes that score high on both keyword match and conceptual similarity surface first. No configuration changes required.
 
 ---
 

@@ -38,7 +38,7 @@ import { initializeLogger as initializeReadLogger, getLogger } from './core/read
 // Core imports - Write
 import { initializeEntityIndex, setWriteStateDb } from './core/write/wikilinks.js';
 import { initializeLogger as initializeWriteLogger, flushLogs } from './core/write/logging.js';
-import { setFTS5Database } from './core/read/fts5.js';
+import { setFTS5Database, buildFTS5Index, isIndexStale } from './core/read/fts5.js';
 import {
   setEmbeddingsDatabase,
   updateEmbedding,
@@ -637,6 +637,17 @@ async function runPostIndexWork(index: VaultIndex) {
     } catch (err) {
       console.error('[Memory] Failed to update suppression list:', err);
     }
+  }
+
+  // Build FTS5 search index if stale or missing
+  if (isIndexStale(vaultPath)) {
+    buildFTS5Index(vaultPath).then(() => {
+      console.error('[Memory] FTS5 search index ready');
+    }).catch(err => {
+      console.error('[Memory] FTS5 build failed:', err);
+    });
+  } else {
+    console.error('[Memory] FTS5 search index already fresh, skipping rebuild');
   }
 
   // Load/infer config

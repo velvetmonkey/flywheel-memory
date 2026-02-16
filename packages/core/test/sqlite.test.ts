@@ -75,7 +75,7 @@ describe('SQLite State Management', () => {
     it('should have correct schema version', () => {
       stateDb = openStateDb(testVaultPath);
       const metadata = getStateDbMetadata(stateDb);
-      expect(metadata.schemaVersion).toBe(10);
+      expect(metadata.schemaVersion).toBe(11);
     });
   });
 
@@ -149,6 +149,15 @@ describe('SQLite State Management', () => {
         organizations: [],
         locations: [],
         concepts: [],
+        animals: [],
+        media: [],
+        events: [],
+        documents: [],
+        vehicles: [],
+        health: [],
+        finance: [],
+        food: [],
+        hobbies: [],
         other: [],
         _metadata: {
           total_entities: 3,
@@ -177,6 +186,15 @@ describe('SQLite State Management', () => {
         organizations: [],
         locations: [],
         concepts: [],
+        animals: [],
+        media: [],
+        events: [],
+        documents: [],
+        vehicles: [],
+        health: [],
+        finance: [],
+        food: [],
+        hobbies: [],
         other: [],
         _metadata: {
           total_entities: 2,
@@ -330,6 +348,15 @@ describe('SQLite State Management', () => {
         organizations: [],
         locations: [],
         concepts: [],
+        animals: [],
+        media: [],
+        events: [],
+        documents: [],
+        vehicles: [],
+        health: [],
+        finance: [],
+        food: [],
+        hobbies: [],
         other: [],
         _metadata: {
           total_entities: 1,

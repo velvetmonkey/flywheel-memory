@@ -94,34 +94,49 @@ function isValidAlias(alias: string): boolean {
 }
 
 /**
- * Parse frontmatter from markdown content and extract aliases
+ * Frontmatter fields extracted from note content
+ */
+interface FrontmatterFields {
+  aliases: string[];
+  type?: string;
+}
+
+/**
+ * Parse frontmatter from markdown content and extract aliases and type
  * Handles YAML array format: aliases: [Alias1, Alias2]
  * And YAML list format:
  *   aliases:
  *     - Alias1
  *     - Alias2
  */
-function extractAliasesFromContent(content: string): string[] {
+function extractFrontmatterFields(content: string): FrontmatterFields {
   // Check for frontmatter delimiter
   if (!content.startsWith('---')) {
-    return [];
+    return { aliases: [] };
   }
 
   // Find end of frontmatter
   const endIndex = content.indexOf('\n---', 3);
   if (endIndex === -1) {
-    return [];
+    return { aliases: [] };
   }
 
   const frontmatter = content.substring(4, endIndex);
 
+  // Extract type field
+  const typeMatch = frontmatter.match(/^type:\s*["']?([^"'\n]+?)["']?\s*$/m);
+  const type = typeMatch ? typeMatch[1].trim() : undefined;
+
   // Try inline array format: aliases: [Alias1, Alias2]
   const inlineMatch = frontmatter.match(/^aliases:\s*\[([^\]]*)\]/m);
   if (inlineMatch) {
-    return inlineMatch[1]
-      .split(',')
-      .map(s => s.trim().replace(/^["']|["']$/g, '')) // Remove quotes
-      .filter(s => s.length > 0 && isValidAlias(s));
+    return {
+      aliases: inlineMatch[1]
+        .split(',')
+        .map(s => s.trim().replace(/^["']|["']$/g, '')) // Remove quotes
+        .filter(s => s.length > 0 && isValidAlias(s)),
+      type,
+    };
   }
 
   // Try multiline list format
@@ -132,9 +147,9 @@ function extractAliasesFromContent(content: string): string[] {
     const singleMatch = frontmatter.match(/^aliases:\s+(.+)$/m);
     if (singleMatch && !singleMatch[1].startsWith('[')) {
       const alias = singleMatch[1].trim().replace(/^["']|["']$/g, '');
-      return isValidAlias(alias) ? [alias] : [];
+      return { aliases: isValidAlias(alias) ? [alias] : [], type };
     }
-    return [];
+    return { aliases: [], type };
   }
 
   // Parse list items following "aliases:"
@@ -159,7 +174,7 @@ function extractAliasesFromContent(content: string): string[] {
     }
   }
 
-  return aliases;
+  return { aliases, type };
 }
 
 /**
@@ -192,9 +207,59 @@ const LOCATION_KEYWORDS = ['city', 'county', 'region', 'district', 'province'];
 const REGION_PATTERNS = ['eu', 'apac', 'emea', 'latam', 'amer'];
 
 /**
- * Categorize an entity based on its name
+ * Map frontmatter `type` values to EntityCategory
+ * Returns undefined if the type doesn't map to a known category
+ */
+const FRONTMATTER_TYPE_MAP: Record<string, EntityCategory> = {
+  // animals
+  animal: 'animals', pet: 'animals', horse: 'animals', dog: 'animals',
+  cat: 'animals', bird: 'animals', fish: 'animals',
+  // people
+  person: 'people', contact: 'people', friend: 'people',
+  colleague: 'people', family: 'people',
+  // media
+  movie: 'media', book: 'media', show: 'media', game: 'media',
+  music: 'media', album: 'media', film: 'media', podcast: 'media', series: 'media',
+  // events
+  event: 'events', meeting: 'events', conference: 'events',
+  trip: 'events', holiday: 'events', milestone: 'events',
+  // documents
+  document: 'documents', report: 'documents', guide: 'documents',
+  reference: 'documents', template: 'documents', note: 'documents',
+  // vehicles
+  vehicle: 'vehicles', car: 'vehicles', bike: 'vehicles',
+  boat: 'vehicles', motorcycle: 'vehicles',
+  // health
+  health: 'health', medical: 'health', fitness: 'health',
+  condition: 'health', wellness: 'health', exercise: 'health',
+  // finance
+  finance: 'finance', account: 'finance', investment: 'finance',
+  budget: 'finance', transaction: 'finance', bank: 'finance',
+  // food
+  food: 'food', recipe: 'food', restaurant: 'food',
+  meal: 'food', ingredient: 'food', drink: 'food',
+  // hobbies
+  hobby: 'hobbies', sport: 'hobbies', craft: 'hobbies',
+  activity: 'hobbies', collection: 'hobbies',
+  // existing categories
+  project: 'projects',
+  tool: 'technologies', technology: 'technologies', framework: 'technologies',
+  library: 'technologies', language: 'technologies',
+  company: 'organizations', organization: 'organizations', org: 'organizations', team: 'organizations',
+  place: 'locations', location: 'locations', city: 'locations',
+  country: 'locations', region: 'locations',
+  concept: 'concepts', idea: 'concepts', topic: 'concepts',
+};
+
+function mapFrontmatterType(type: string): EntityCategory | undefined {
+  return FRONTMATTER_TYPE_MAP[type.toLowerCase()];
+}
+
+/**
+ * Categorize an entity based on its name and optional frontmatter type
  *
  * Detection order (most specific first):
+ * 0. Frontmatter type - explicit declaration takes priority
  * 1. Technologies - matches tech keyword
  * 2. Acronyms - all uppercase 2-6 chars
  * 3. Organizations - ends with company/team suffixes
@@ -206,8 +271,14 @@ const REGION_PATTERNS = ['eu', 'apac', 'emea', 'latam', 'amer'];
  */
 function categorizeEntity(
   name: string,
-  techKeywords: string[]
+  techKeywords: string[],
+  frontmatterType?: string,
 ): EntityCategory {
+  // 0. Frontmatter type takes priority
+  if (frontmatterType) {
+    const mapped = mapFrontmatterType(frontmatterType);
+    if (mapped) return mapped;
+  }
   const nameLower = name.toLowerCase();
   const words = name.split(/\s+/);
 
@@ -262,6 +333,7 @@ interface ScannedEntity {
   name: string;
   relativePath: string;
   aliases: string[];
+  frontmatterType?: string;
 }
 
 /**
@@ -304,11 +376,14 @@ async function scanDirectory(
         const stem = path.basename(entry.name, '.md');
         const relativePath = path.relative(basePath, fullPath);
 
-        // Read file content to extract aliases
+        // Read file content to extract aliases and type
         let aliases: string[] = [];
+        let frontmatterType: string | undefined;
         try {
           const content = await fs.readFile(fullPath, 'utf-8');
-          aliases = extractAliasesFromContent(content);
+          const fields = extractFrontmatterFields(content);
+          aliases = fields.aliases;
+          frontmatterType = fields.type;
         } catch {
           // Skip if can't read file - just use empty aliases
         }
@@ -317,6 +392,7 @@ async function scanDirectory(
           name: stem,
           relativePath,
           aliases,
+          frontmatterType,
         });
       }
     }
@@ -365,6 +441,15 @@ export async function scanVaultEntities(
     organizations: [],
     locations: [],
     concepts: [],
+    animals: [],
+    media: [],
+    events: [],
+    documents: [],
+    vehicles: [],
+    health: [],
+    finance: [],
+    food: [],
+    hobbies: [],
     other: [],
     _metadata: {
       total_entities: 0,
@@ -376,7 +461,7 @@ export async function scanVaultEntities(
   };
 
   for (const entity of uniqueEntities) {
-    const category = categorizeEntity(entity.name, techKeywords);
+    const category = categorizeEntity(entity.name, techKeywords, entity.frontmatterType);
     // Store as EntityWithAliases object
     const entityObj: EntityWithAliases = {
       name: entity.name,
@@ -392,25 +477,19 @@ export async function scanVaultEntities(
     const nameB = typeof b === 'string' ? b : b.name;
     return nameA.localeCompare(nameB);
   };
-  index.technologies.sort(sortByName);
-  index.acronyms.sort(sortByName);
-  index.people.sort(sortByName);
-  index.projects.sort(sortByName);
-  index.organizations.sort(sortByName);
-  index.locations.sort(sortByName);
-  index.concepts.sort(sortByName);
-  index.other.sort(sortByName);
+  const allCategories: (keyof Omit<EntityIndex, '_metadata'>)[] = [
+    'technologies', 'acronyms', 'people', 'projects', 'organizations',
+    'locations', 'concepts', 'animals', 'media', 'events', 'documents',
+    'vehicles', 'health', 'finance', 'food', 'hobbies', 'other',
+  ];
+  for (const cat of allCategories) {
+    index[cat].sort(sortByName);
+  }
 
   // Update metadata
-  index._metadata.total_entities =
-    index.technologies.length +
-    index.acronyms.length +
-    index.people.length +
-    index.projects.length +
-    index.organizations.length +
-    index.locations.length +
-    index.concepts.length +
-    index.other.length;
+  index._metadata.total_entities = allCategories.reduce(
+    (sum, cat) => sum + index[cat].length, 0
+  );
 
   return index;
 }
@@ -419,17 +498,19 @@ export async function scanVaultEntities(
  * Get all entities as a flat array (for wikilink matching)
  * Handles both legacy string format and new EntityWithAliases format
  */
+/** All entity category keys (excludes _metadata) */
+const ALL_ENTITY_CATEGORIES: EntityCategory[] = [
+  'technologies', 'acronyms', 'people', 'projects', 'organizations',
+  'locations', 'concepts', 'animals', 'media', 'events', 'documents',
+  'vehicles', 'health', 'finance', 'food', 'hobbies', 'other',
+];
+
 export function getAllEntities(index: EntityIndex): Entity[] {
-  return [
-    ...index.technologies,
-    ...index.acronyms,
-    ...index.people,
-    ...index.projects,
-    ...index.organizations,
-    ...index.locations,
-    ...index.concepts,
-    ...index.other,
-  ];
+  const result: Entity[] = [];
+  for (const cat of ALL_ENTITY_CATEGORIES) {
+    if (index[cat]) result.push(...index[cat]);
+  }
+  return result;
 }
 
 /**
@@ -444,16 +525,7 @@ export function getAllEntities(index: EntityIndex): Entity[] {
  */
 export function getAllEntitiesWithTypes(index: EntityIndex): EntityWithType[] {
   const result: EntityWithType[] = [];
-  const categories: EntityCategory[] = [
-    'technologies',
-    'acronyms',
-    'people',
-    'projects',
-    'organizations',
-    'locations',
-    'concepts',
-    'other',
-  ];
+  const categories = ALL_ENTITY_CATEGORIES;
 
   for (const category of categories) {
     const entities = index[category];

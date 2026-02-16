@@ -102,7 +102,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 10;
+export const SCHEMA_VERSION = 11;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -203,8 +203,9 @@ CREATE TABLE IF NOT EXISTS write_state (
 );
 
 -- Content search FTS5 (migrated from vault-search.db)
+-- v11: Added frontmatter column for weighted search (path, title, frontmatter, content)
 CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
-  path, title, content,
+  path, title, frontmatter, content,
   tokenize='porter'
 );
 
@@ -421,6 +422,18 @@ function initSchema(db: Database.Database): void {
     // v10: entity_embeddings table (semantic entity search)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
+    // v11: notes_fts gains frontmatter column (4-col: path, title, frontmatter, content)
+    // Virtual tables can't ALTER, so drop and recreate
+    if (currentVersion < 11) {
+      db.exec('DROP TABLE IF EXISTS notes_fts');
+      db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
+        path, title, frontmatter, content,
+        tokenize='porter'
+      )`);
+      // Clear FTS metadata to force rebuild with new schema
+      db.exec(`DELETE FROM fts_metadata WHERE key = 'last_built'`);
+    }
+
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
     ).run(SCHEMA_VERSION);
@@ -600,7 +613,9 @@ export function openStateDb(vaultPath: string): StateDb {
       // Insert all entities by category
       const categories: EntityCategory[] = [
         'technologies', 'acronyms', 'people', 'projects',
-        'organizations', 'locations', 'concepts', 'other'
+        'organizations', 'locations', 'concepts', 'animals',
+        'media', 'events', 'documents', 'vehicles', 'health',
+        'finance', 'food', 'hobbies', 'other',
       ];
 
       let total = 0;
@@ -774,6 +789,15 @@ export function getEntityIndexFromDb(stateDb: StateDb): EntityIndex {
     organizations: [],
     locations: [],
     concepts: [],
+    animals: [],
+    media: [],
+    events: [],
+    documents: [],
+    vehicles: [],
+    health: [],
+    finance: [],
+    food: [],
+    hobbies: [],
     other: [],
     _metadata: {
       total_entities: entities.length,

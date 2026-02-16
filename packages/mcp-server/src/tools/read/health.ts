@@ -10,8 +10,10 @@ import { resolveTarget, getBacklinksForNote, findSimilarEntity, getIndexState, g
 import { detectPeriodicNotes } from './periodic.js';
 import { getActivitySummary } from './temporal.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
-import type { StateDb } from '@velvetmonkey/vault-core';
+import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
 import { getRecentIndexEvents } from '../../core/shared/indexActivity.js';
+import { getFTS5State } from '../../core/read/fts5.js';
+import { hasEmbeddingsIndex, getEmbeddingsCount } from '../../core/read/embeddings.js';
 
 /** Staleness threshold in seconds (5 minutes) */
 const STALE_THRESHOLD_SECONDS = 300;
@@ -43,6 +45,7 @@ export function registerHealthTools(
 
   const HealthCheckOutputSchema = {
     status: z.enum(['healthy', 'degraded', 'unhealthy']).describe('Overall health status'),
+    schema_version: z.coerce.number().describe('StateDb schema version'),
     vault_accessible: z.boolean().describe('Whether the vault path is accessible'),
     vault_path: z.string().describe('The vault path being used'),
     index_state: z.enum(['building', 'ready', 'error']).describe('Current state of the vault index'),
@@ -62,6 +65,10 @@ export function registerHealthTools(
       duration_ms: z.number(),
       ago_seconds: z.number(),
     }).optional().describe('Most recent index rebuild event'),
+    fts5_ready: z.boolean().describe('Whether the FTS5 keyword search index is ready'),
+    fts5_building: z.boolean().describe('Whether the FTS5 keyword search index is currently building'),
+    embeddings_ready: z.boolean().describe('Whether semantic embeddings have been built (enables hybrid keyword+semantic search)'),
+    embeddings_count: z.coerce.number().describe('Number of notes with semantic embeddings'),
     recommendations: z.array(z.string()).describe('Suggested actions if any issues detected'),
   };
 
@@ -76,6 +83,7 @@ export function registerHealthTools(
 
   type HealthCheckOutput = {
     status: 'healthy' | 'degraded' | 'unhealthy';
+    schema_version: number;
     vault_accessible: boolean;
     vault_path: string;
     index_state: IndexState;
@@ -95,6 +103,10 @@ export function registerHealthTools(
       duration_ms: number;
       ago_seconds: number;
     };
+    fts5_ready: boolean;
+    fts5_building: boolean;
+    embeddings_ready: boolean;
+    embeddings_count: number;
     recommendations: string[];
   };
 
@@ -210,8 +222,11 @@ export function registerHealthTools(
         }
       }
 
+      const ftsState = getFTS5State();
+
       const output: HealthCheckOutput = {
         status,
+        schema_version: SCHEMA_VERSION,
         vault_accessible: vaultAccessible,
         vault_path: vaultPath,
         index_state: indexState,
@@ -226,6 +241,10 @@ export function registerHealthTools(
         periodic_notes: periodicNotes && periodicNotes.length > 0 ? periodicNotes : undefined,
         config: configInfo,
         last_rebuild: lastRebuild,
+        fts5_ready: ftsState.ready,
+        fts5_building: ftsState.building,
+        embeddings_ready: hasEmbeddingsIndex(),
+        embeddings_count: getEmbeddingsCount(),
         recommendations,
       };
 

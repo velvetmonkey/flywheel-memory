@@ -26,6 +26,7 @@ export interface FTS5Result {
 /** FTS5 index state */
 export interface FTS5State {
   ready: boolean;
+  building: boolean;
   lastBuilt: Date | null;
   noteCount: number;
   error: string | null;
@@ -48,9 +49,27 @@ const MAX_INDEX_FILE_SIZE = 5 * 1024 * 1024;
 /** Index staleness threshold (1 hour in ms) */
 const STALE_THRESHOLD_MS = 60 * 60 * 1000;
 
+/**
+ * Split frontmatter from markdown content for separate FTS5 indexing.
+ * Extracts YAML values (not keys) as searchable text for the frontmatter column.
+ */
+function splitFrontmatter(raw: string): { frontmatter: string; body: string } {
+  if (!raw.startsWith('---')) return { frontmatter: '', body: raw };
+  const end = raw.indexOf('\n---', 3);
+  if (end === -1) return { frontmatter: '', body: raw };
+  // Flatten frontmatter YAML values into searchable text
+  const yaml = raw.substring(4, end);
+  const values = yaml.split('\n')
+    .map(line => line.replace(/^[\s-]*/, '').replace(/^[\w]+:\s*/, ''))
+    .filter(v => v && !v.startsWith('[') && !v.startsWith('{'))
+    .join(' ');
+  return { frontmatter: values, body: raw.substring(end + 4) };
+}
+
 let db: Database.Database | null = null;
 let state: FTS5State = {
   ready: false,
+  building: false,
   lastBuilt: null,
   noteCount: 0,
   error: null,
@@ -76,6 +95,7 @@ export function setFTS5Database(database: Database.Database): void {
       const countRow = db.prepare('SELECT COUNT(*) as count FROM notes_fts').get() as { count: number };
       state = {
         ready: countRow.count > 0,
+        building: false,
         lastBuilt,
         noteCount: countRow.count,
         error: null,
@@ -100,6 +120,7 @@ function shouldIndexFile(filePath: string): boolean {
 export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
   try {
     state.error = null;
+    state.building = true;
 
     if (!db) {
       throw new Error('FTS5 database not initialized. Call setFTS5Database() first.');
@@ -112,9 +133,9 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
     const files = await scanVault(vaultPath);
     const indexableFiles = files.filter(f => shouldIndexFile(f.path));
 
-    // Prepare insert statement
+    // Prepare insert statement (4-col: path, title, frontmatter, content)
     const insert = db.prepare(
-      'INSERT INTO notes_fts (path, title, content) VALUES (?, ?, ?)'
+      'INSERT INTO notes_fts (path, title, frontmatter, content) VALUES (?, ?, ?, ?)'
     );
 
     // Index files in a transaction for performance
@@ -127,12 +148,13 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
             continue; // Skip very large files
           }
 
-          const content = fs.readFileSync(file.absolutePath, 'utf-8');
+          const raw = fs.readFileSync(file.absolutePath, 'utf-8');
+          const { frontmatter, body } = splitFrontmatter(raw);
 
           // Extract title from filename
           const title = file.path.replace(/\.md$/, '').split('/').pop() || file.path;
 
-          insert.run(file.path, title, content);
+          insert.run(file.path, title, frontmatter, body);
           indexed++;
         } catch (err) {
           // Skip files we can't read
@@ -152,6 +174,7 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
 
     state = {
       ready: true,
+      building: false,
       lastBuilt: now,
       noteCount: indexed,
       error: null,
@@ -162,6 +185,7 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
   } catch (err) {
     state = {
       ready: false,
+      building: false,
       lastBuilt: null,
       noteCount: 0,
       error: err instanceof Error ? err.message : String(err),
@@ -215,15 +239,16 @@ export function searchFTS5(
   }
 
   try {
-    // Use snippet() to get highlighted matches with context
+    // Use snippet() on content column (index 3) with BM25 column weights:
+    // path=0 (ignore), title=5x, frontmatter=10x, content=1x (baseline)
     const stmt = db.prepare(`
       SELECT
         path,
         title,
-        snippet(notes_fts, 2, '[', ']', '...', 20) as snippet
+        snippet(notes_fts, 3, '<mark>', '</mark>', '...', 20) as snippet
       FROM notes_fts
       WHERE notes_fts MATCH ?
-      ORDER BY rank
+      ORDER BY bm25(notes_fts, 0.0, 5.0, 10.0, 1.0)
       LIMIT ?
     `);
 
@@ -254,6 +279,7 @@ export function closeFTS5(): void {
   db = null;
   state = {
     ready: false,
+    building: false,
     lastBuilt: null,
     noteCount: 0,
     error: null,

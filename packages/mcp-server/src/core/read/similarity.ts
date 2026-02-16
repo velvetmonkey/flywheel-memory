@@ -101,15 +101,17 @@ export function findSimilarNotes(
   const query = terms.join(' OR ');
 
   try {
+    // BM25 weights: path=0, title=5x, frontmatter=10x, content=1x
+    // Snippet from content column (index 3)
     const results = db.prepare(`
       SELECT
         path,
         title,
-        bm25(notes_fts) as score,
-        snippet(notes_fts, 2, '[', ']', '...', 15) as snippet
+        bm25(notes_fts, 0.0, 5.0, 10.0, 1.0) as score,
+        snippet(notes_fts, 3, '[', ']', '...', 15) as snippet
       FROM notes_fts
       WHERE notes_fts MATCH ?
-      ORDER BY rank
+      ORDER BY bm25(notes_fts, 0.0, 5.0, 10.0, 1.0)
       LIMIT ?
     `).all(query, limit + 20) as Array<{
       path: string;

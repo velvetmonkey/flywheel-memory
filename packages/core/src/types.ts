@@ -13,6 +13,15 @@ export type EntityCategory =
   | 'organizations'
   | 'locations'
   | 'concepts'
+  | 'animals'
+  | 'media'
+  | 'events'
+  | 'documents'
+  | 'vehicles'
+  | 'health'
+  | 'finance'
+  | 'food'
+  | 'hobbies'
   | 'other';
 
 /**
@@ -55,6 +64,15 @@ export interface EntityIndex {
   organizations: Entity[];
   locations: Entity[];
   concepts: Entity[];
+  animals: Entity[];
+  media: Entity[];
+  events: Entity[];
+  documents: Entity[];
+  vehicles: Entity[];
+  health: Entity[];
+  finance: Entity[];
+  food: Entity[];
+  hobbies: Entity[];
   other: Entity[];
   _metadata: {
     total_entities: number;

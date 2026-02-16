@@ -445,6 +445,15 @@ export function getEntityIndexStats(): {
       organizations: entityIndex.organizations?.length ?? 0,
       locations: entityIndex.locations?.length ?? 0,
       concepts: entityIndex.concepts?.length ?? 0,
+      animals: entityIndex.animals?.length ?? 0,
+      media: entityIndex.media?.length ?? 0,
+      events: entityIndex.events?.length ?? 0,
+      documents: entityIndex.documents?.length ?? 0,
+      vehicles: entityIndex.vehicles?.length ?? 0,
+      health: entityIndex.health?.length ?? 0,
+      finance: entityIndex.finance?.length ?? 0,
+      food: entityIndex.food?.length ?? 0,
+      hobbies: entityIndex.hobbies?.length ?? 0,
       other: entityIndex.other.length,
     },
   };
@@ -657,10 +666,19 @@ const DEFAULT_STRICTNESS: StrictnessMode = 'conservative';
  */
 const TYPE_BOOST: Record<EntityCategory, number> = {
   people: 5,         // Names are high value for connections
+  animals: 3,        // Pets and animals are personal and specific
   projects: 3,       // Projects provide context
   organizations: 2,  // Companies/teams relevant
+  events: 2,         // Meetings, trips, milestones
+  media: 2,          // Movies, books, shows
+  health: 2,         // Medical, fitness — personal relevance
+  vehicles: 2,       // Cars, bikes — specific items
   locations: 1,      // Geographic context
   concepts: 1,       // Abstract concepts
+  documents: 1,      // Reports, guides
+  food: 1,           // Recipes, restaurants
+  hobbies: 1,        // Crafts, sports
+  finance: 1,        // Accounts, budgets
   technologies: 0,   // Common, avoid over-suggesting
   acronyms: 0,       // Acronyms may be ambiguous
   other: 0,          // Unknown category
@@ -751,11 +769,16 @@ function getHubBoost(entity: { hubScore?: number }): number {
 const CONTEXT_BOOST: Record<NoteContext, Partial<Record<EntityCategory, number>>> = {
   daily: {
     people: 5,       // Daily notes often mention people
+    animals: 3,      // Pets in daily life
+    events: 3,       // Daily events and meetings
     projects: 2,     // Work updates reference projects
+    food: 2,         // Meals and recipes in daily logs
+    health: 2,       // Fitness and wellness tracking
   },
   project: {
     projects: 5,     // Project docs reference other projects
     technologies: 2, // Technical dependencies
+    documents: 2,    // Reference documents
   },
   tech: {
     technologies: 5, // Tech docs reference technologies

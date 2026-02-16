@@ -270,7 +270,7 @@ This runs `init_semantic`, which builds **two** indexes:
 
 ### Entity Embeddings (Semantic Wikilinks + Graph Analysis)
 - Embeds all vault entities (note titles, aliases, categories)
-- After build: wikilink suggestions gain **Layer 11 semantic scoring** — content about "deployment automation" can suggest `[[CI/CD]]` without keyword matches
+- After build: wikilink suggestions gain **Layer 9 semantic scoring** — content about "deployment automation" can suggest `[[CI/CD]]` without keyword matches
 - Unlocks new analysis modes: `semantic_clusters`, `semantic_bridges`, `semantic_links`
 
 ### Build Details
@@ -287,7 +287,7 @@ This runs `init_semantic`, which builds **two** indexes:
 
 After building semantic embeddings:
 
-- **Wikilink suggestions**: Layer 11 semantic scoring finds conceptual links that keyword matching misses
+- **Wikilink suggestions**: Layer 9 semantic scoring finds conceptual links that keyword matching misses
 - **Semantic bridges**: `graph_analysis({ analysis: "semantic_bridges" })` — find notes that should be connected but aren't
 - **Semantic clusters**: `graph_analysis({ analysis: "semantic_clusters" })` — group notes by meaning, not folder
 - **Semantic links**: `note_intelligence({ analysis: "semantic_links" })` — find missing entity links for a specific note

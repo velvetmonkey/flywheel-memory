@@ -21,7 +21,7 @@ Unified search across metadata, content, and entities. The `scope` parameter con
 
 ### `init_semantic`
 
-Initialize or rebuild the semantic search index. Generates embeddings for all vault notes AND entity-level embeddings using the `all-MiniLM-L6-v2` model (downloaded automatically to `~/.cache/huggingface/` on first run). Note embeddings power hybrid search — `search` and `find_similar` automatically upgrade to hybrid mode combining BM25 keyword matching with semantic similarity via Reciprocal Rank Fusion (RRF). Entity embeddings power Layer 11 semantic scoring in wikilink suggestions, semantic graph analysis (`semantic_clusters`, `semantic_bridges`), and semantic note intelligence (`semantic_links`).
+Initialize or rebuild the semantic search index. Generates embeddings for all vault notes AND entity-level embeddings using the `all-MiniLM-L6-v2` model (downloaded automatically to `~/.cache/huggingface/` on first run). Note embeddings power hybrid search — `search` and `find_similar` automatically upgrade to hybrid mode combining BM25 keyword matching with semantic similarity via Reciprocal Rank Fusion (RRF). Entity embeddings power Layer 9 semantic scoring in wikilink suggestions, semantic graph analysis (`semantic_clusters`, `semantic_bridges`), and semantic note intelligence (`semantic_links`).
 
 **Key parameters:** (none required)
 
@@ -122,7 +122,7 @@ Analyze a note for patterns, suggestions, and consistency. The `analysis` parame
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `suggest_wikilinks` | Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases. When entity embeddings are built (via `init_semantic`), suggestions include Layer 11 semantic scoring — entities can be suggested based on conceptual similarity even without keyword matches. | `text`, `limit`, `offset` |
+| `suggest_wikilinks` | Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases. When entity embeddings are built (via `init_semantic`), suggestions include Layer 9 semantic scoring — entities can be suggested based on conceptual similarity even without keyword matches. | `text`, `limit`, `offset` |
 | `validate_links` | Check wikilinks in a note (or all notes) and report broken links. Suggests fixes for typos. When embeddings are available, broken links are also resolved via embedding similarity as a fallback. | `path` (optional, omit for all), `typos_only`, `limit`, `offset` |
 | `wikilink_feedback` | Report and query wikilink accuracy feedback. Modes: report, list, stats. Auto-suppresses entities with >=30% false positive rate. | `mode` (report/list/stats), `entity`, `note_path`, `context`, `correct`, `limit` |
 

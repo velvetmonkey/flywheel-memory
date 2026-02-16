@@ -186,12 +186,12 @@ In addition to note-level embeddings, Flywheel builds entity-level embeddings fo
 
 **Storage:** `entity_embeddings` table in StateDb (path, name, vector, content hash).
 
-**Loading:** `loadEntityEmbeddingsToMemory()` loads all entity embeddings into an in-memory Map at startup. Layer 11 scoring queries this Map directly — no database access in the hot path (<1ms for 500 entities).
+**Loading:** `loadEntityEmbeddingsToMemory()` loads all entity embeddings into an in-memory Map at startup. Layer 9 scoring queries this Map directly — no database access in the hot path (<1ms for 500 entities).
 
 **Incremental updates:** The file watcher detects when an entity's backing note changes and regenerates its embedding. Entity additions and removals are handled on index rebuild.
 
 **Integration points:**
-- **Layer 11 scoring** in `suggestRelatedLinks()` — cosine similarity against in-memory entity embeddings
+- **Layer 9 scoring** in `suggestRelatedLinks()` — cosine similarity against in-memory entity embeddings
 - **Semantic graph analysis** — `semantic_clusters` and `semantic_bridges` modes
 - **Semantic note intelligence** — `semantic_links` mode
 - **Preflight duplicate detection** — `vault_create_note` checks semantic similarity before creation

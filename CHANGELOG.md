@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Entity Embeddings**: `entity_embeddings` table (schema v10),
   `init_semantic` now builds note + entity embeddings, incremental updates via
   file watcher
-- **Layer 11 Semantic Scoring**: `suggestRelatedLinks()` async with semantic
+- **Layer 9 Semantic Scoring**: `suggestRelatedLinks()` async with semantic
   similarity layer, conceptual link discovery (e.g., "deployment pipeline" →
   `[[CI/CD]]`), graceful degradation when embeddings unavailable
 - **Semantic Graph Analysis**: `semantic_clusters` (embedding-based grouping),

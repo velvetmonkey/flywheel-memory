@@ -118,7 +118,7 @@ Content about "deployment automation" suggests `[[CI/CD]]` — no keyword match 
 
 - **Semantic bridges**: Discovers high-value missing links between conceptually related but unlinked notes
 - **Semantic clusters**: Groups notes by meaning instead of folder structure
-- **Layer 11**: Wikilink suggestions gain conceptual scoring — the only vault tool that suggests links based on what you *mean*
+- **Layer 9**: Wikilink suggestions gain conceptual scoring — the only vault tool that suggests links based on what you *mean*
 
 Build once with `init_semantic`. Everything upgrades automatically.
 
@@ -127,7 +127,7 @@ Build once with `init_semantic`. Everything upgrades automatically.
 | | Pure Vector Search | Pure Keyword Search | Flywheel |
 |---|---|---|---|
 | "Why was this suggested?" | "Embeddings are close" | "Term frequency" | "10 + 6 + 5 + 8 + 3 = 32" |
-| Semantic wikilinks | No | No | Yes (Layer 11 entity embeddings) |
+| Semantic wikilinks | No | No | Yes (Layer 9 entity embeddings) |
 | Finds synonyms/concepts? | Yes | No | Yes (semantic search) |
 | Exact phrase matching? | Weak | Yes | Yes |
 | Same input → same output? | Not guaranteed | Always | Always |

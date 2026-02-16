@@ -22,7 +22,6 @@ import {
 } from '@velvetmonkey/vault-core';
 import {
   semanticSearch,
-  buildEmbeddingsIndex,
   hasEmbeddingsIndex,
   reciprocalRankFusion,
   type ScoredNote,
@@ -147,18 +146,17 @@ export function registerQueryTools(
   server: McpServer,
   getIndex: () => VaultIndex,
   getVaultPath: () => string,
-  getStateDb: () => StateDb | null,
-  getSemanticEnabled: () => boolean = () => false
+  getStateDb: () => StateDb | null
 ): void {
   // ========================================
   // Unified search tool
   // ========================================
   server.tool(
     'search',
-    'Search the vault across metadata, content, and entities. Scope controls what to search: "metadata" for frontmatter/tags/folders, "content" for full-text search (FTS5), "entities" for people/projects/technologies, "all" (default) tries metadata then falls back to content search. When semantic search is enabled (FLYWHEEL_SEMANTIC=true), content and all scopes automatically include embedding-based results via hybrid ranking.\n\nExample: search({ query: "quarterly review", scope: "content", limit: 5 })\nExample: search({ where: { type: "project", status: "active" }, scope: "metadata" })',
+    'Search the vault across metadata, content, and entities. Scope controls what to search: "metadata" for frontmatter/tags/folders, "content" for full-text search (FTS5), "entities" for people/projects/technologies, "all" (default) tries metadata then falls back to content search. When embeddings have been built (via init_semantic), content and all scopes automatically include embedding-based results via hybrid ranking.\n\nExample: search({ query: "quarterly review", scope: "content", limit: 5 })\nExample: search({ where: { type: "project", status: "active" }, scope: "metadata" })',
     {
       query: z.string().optional().describe('Search query text. Required for scope "content", "entities", "all". For "metadata" scope, use filters instead.'),
-      scope: z.enum(['metadata', 'content', 'entities', 'all']).default('all').describe('What to search: metadata (frontmatter/tags/folders), content (FTS5 full-text), entities (people/projects), all (metadata then content). Semantic results are automatically included when FLYWHEEL_SEMANTIC=true.'),
+      scope: z.enum(['metadata', 'content', 'entities', 'all']).default('all').describe('What to search: metadata (frontmatter/tags/folders), content (FTS5 full-text), entities (people/projects), all (metadata then content). Semantic results are automatically included when embeddings have been built (via init_semantic).'),
 
       // Metadata filters (used with scope "metadata" or "all")
       where: z.record(z.unknown()).optional().describe('Frontmatter filters as key-value pairs. Example: { "type": "project", "status": "active" }'),
@@ -298,14 +296,9 @@ export function registerQueryTools(
 
         const fts5Results = searchFTS5(vaultPath, query, limit);
 
-        // Hybrid merge with semantic if enabled (applies to both 'content' and 'all' scopes)
-        if (getSemanticEnabled()) {
+        // Hybrid merge with semantic when embeddings exist (applies to both 'content' and 'all' scopes)
+        if (hasEmbeddingsIndex()) {
           try {
-            if (!hasEmbeddingsIndex()) {
-              console.error('[Semantic] Building embeddings index on first use...');
-              await buildEmbeddingsIndex(vaultPath);
-            }
-
             const semanticResults = await semanticSearch(query, limit);
 
             // RRF merge of FTS5 and semantic results
@@ -336,13 +329,15 @@ export function registerQueryTools(
               total_results: Math.min(merged.length, limit),
               results: merged.slice(0, limit),
             }, null, 2) }] };
-          } catch {
+          } catch (err) {
             // Semantic failed, fall back to FTS5 only
+            console.error('[Semantic] Hybrid search failed, falling back to FTS5:', err instanceof Error ? err.message : err);
           }
         }
 
         return { content: [{ type: 'text' as const, text: JSON.stringify({
           scope: 'content',
+          method: 'fts5',
           query,
           total_results: fts5Results.length,
           results: fts5Results,

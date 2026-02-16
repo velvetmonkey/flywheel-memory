@@ -2,7 +2,7 @@
  * Semantic Search Embeddings Module
  *
  * Local embedding-based semantic search using @huggingface/transformers
- * with all-MiniLM-L6-v2. Opt-in via FLYWHEEL_SEMANTIC=true env var.
+ * with all-MiniLM-L6-v2. Automatic when embeddings have been built via init_semantic.
  *
  * Follows the fts5.ts pattern:
  * - Module-level db handle via setEmbeddingsDatabase()

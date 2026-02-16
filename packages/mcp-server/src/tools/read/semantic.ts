@@ -19,8 +19,7 @@ import {
 export function registerSemanticTools(
   server: McpServer,
   getVaultPath: () => string,
-  getStateDb: () => StateDb | null,
-  enableSemantic: () => void
+  getStateDb: () => StateDb | null
 ): void {
   server.registerTool(
     'init_semantic',
@@ -53,8 +52,6 @@ export function registerSemanticTools(
       // Check if already built
       if (hasEmbeddingsIndex() && !force) {
         const count = getEmbeddingsCount();
-        // Still enable semantic for this session
-        enableSemantic();
         return {
           content: [{
             type: 'text' as const,
@@ -62,7 +59,7 @@ export function registerSemanticTools(
               success: true,
               already_built: true,
               embedded: count,
-              hint: 'Add FLYWHEEL_SEMANTIC=true to your MCP config for persistence across restarts.',
+              hint: 'Embeddings already built. All searches automatically use hybrid ranking.',
             }, null, 2),
           }],
         };
@@ -76,9 +73,6 @@ export function registerSemanticTools(
         }
       });
 
-      // Flip runtime flag
-      enableSemantic();
-
       const embedded = progress.total - progress.skipped;
       return {
         content: [{
@@ -88,7 +82,7 @@ export function registerSemanticTools(
             embedded,
             skipped: progress.skipped,
             total: progress.total,
-            hint: 'Add FLYWHEEL_SEMANTIC=true to your MCP config for persistence across restarts.',
+            hint: 'Embeddings built. All searches now automatically use hybrid ranking.',
           }, null, 2),
         }],
       };

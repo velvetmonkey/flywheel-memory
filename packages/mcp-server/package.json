@@ -55,9 +55,7 @@
     "chokidar": "^4.0.0",
     "gray-matter": "^4.0.3",
     "simple-git": "^3.22.0",
-    "zod": "^3.22.4"
-  },
-  "optionalDependencies": {
+    "zod": "^3.22.4",
     "@huggingface/transformers": "^3.8.1"
   },
   "devDependencies": {

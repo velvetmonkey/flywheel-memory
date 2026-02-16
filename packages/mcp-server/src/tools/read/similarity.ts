@@ -8,6 +8,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { findSimilarNotes, findHybridSimilarNotes } from '../../core/read/similarity.js';
+import { hasEmbeddingsIndex } from '../../core/read/embeddings.js';
 
 /**
  * Register content similarity tools
@@ -16,8 +17,7 @@ export function registerSimilarityTools(
   server: McpServer,
   getIndex: () => VaultIndex,
   getVaultPath: () => string,
-  getStateDb: () => StateDb | null,
-  getSemanticEnabled: () => boolean = () => false
+  getStateDb: () => StateDb | null
 ): void {
   server.registerTool(
     'find_similar',
@@ -25,7 +25,7 @@ export function registerSimilarityTools(
       title: 'Find Similar Notes',
       description:
         'Find notes similar to a given note using FTS5 keyword matching. ' +
-        'When semantic search is enabled (FLYWHEEL_SEMANTIC=true), automatically uses hybrid ranking (BM25 + embedding similarity via Reciprocal Rank Fusion). ' +
+        'When embeddings have been built (via init_semantic), automatically uses hybrid ranking (BM25 + embedding similarity via Reciprocal Rank Fusion). ' +
         'Use exclude_linked to filter out notes already connected via wikilinks.',
       inputSchema: {
         path: z.string().describe('Path to the source note (relative to vault root, e.g. "projects/alpha.md")'),
@@ -59,7 +59,7 @@ export function registerSimilarityTools(
         excludeLinked: exclude_linked ?? true,
       };
 
-      const useHybrid = getSemanticEnabled();
+      const useHybrid = hasEmbeddingsIndex();
       const method = useHybrid ? 'hybrid' : 'bm25';
 
       const results = useHybrid

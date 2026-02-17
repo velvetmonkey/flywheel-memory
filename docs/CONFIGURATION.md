@@ -168,6 +168,21 @@ For network drives, Docker volumes, or file systems where native events are unre
 }
 ```
 
+#### Windows
+
+Native file system events (`inotify`) don't work across the WSL/Windows boundary. If your vault lives on the Windows side (e.g. `/mnt/c/...`), you must enable polling:
+
+```json
+{
+  "env": {
+    "FLYWHEEL_WATCH_POLL": "true",
+    "VAULT_PATH": "/mnt/c/Users/you/Obsidian/MyVault"
+  }
+}
+```
+
+This also applies to Docker volumes mounted from Windows and network drives (SMB/CIFS). Native Windows (no WSL) works without polling.
+
 ### Semantic Search
 
 The `init_semantic` tool builds a semantic search index by generating embeddings for all vault notes using the `all-MiniLM-L6-v2` model. This is a one-time build step — once the index exists, `search` and `find_similar` automatically upgrade to hybrid mode.

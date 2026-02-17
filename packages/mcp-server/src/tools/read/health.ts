@@ -13,7 +13,7 @@ import type { FlywheelConfig } from '../../core/read/config.js';
 import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
 import { getRecentIndexEvents } from '../../core/shared/indexActivity.js';
 import { getFTS5State } from '../../core/read/fts5.js';
-import { hasEmbeddingsIndex, getEmbeddingsCount } from '../../core/read/embeddings.js';
+import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount } from '../../core/read/embeddings.js';
 
 /** Staleness threshold in seconds (5 minutes) */
 const STALE_THRESHOLD_SECONDS = 300;
@@ -67,6 +67,7 @@ export function registerHealthTools(
     }).optional().describe('Most recent index rebuild event'),
     fts5_ready: z.boolean().describe('Whether the FTS5 keyword search index is ready'),
     fts5_building: z.boolean().describe('Whether the FTS5 keyword search index is currently building'),
+    embeddings_building: z.boolean().describe('Whether semantic embeddings are currently building'),
     embeddings_ready: z.boolean().describe('Whether semantic embeddings have been built (enables hybrid keyword+semantic search)'),
     embeddings_count: z.coerce.number().describe('Number of notes with semantic embeddings'),
     recommendations: z.array(z.string()).describe('Suggested actions if any issues detected'),
@@ -105,6 +106,7 @@ export function registerHealthTools(
     };
     fts5_ready: boolean;
     fts5_building: boolean;
+    embeddings_building: boolean;
     embeddings_ready: boolean;
     embeddings_count: number;
     recommendations: string[];
@@ -243,6 +245,7 @@ export function registerHealthTools(
         last_rebuild: lastRebuild,
         fts5_ready: ftsState.ready,
         fts5_building: ftsState.building,
+        embeddings_building: isEmbeddingsBuilding(),
         embeddings_ready: hasEmbeddingsIndex(),
         embeddings_count: getEmbeddingsCount(),
         recommendations,

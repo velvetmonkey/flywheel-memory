@@ -75,6 +75,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 let db: Database.Database | null = null;
 let pipeline: any = null;
 let initPromise: Promise<void> | null = null;
+let embeddingsBuilding = false;
 
 /** LRU cache for embedText results (max 500 entries) */
 const embeddingCache = new Map<string, Float32Array>();
@@ -213,6 +214,7 @@ export async function buildEmbeddingsIndex(
     throw new Error('Embeddings database not initialized. Call setEmbeddingsDatabase() first.');
   }
 
+  embeddingsBuilding = true;
   await initEmbeddings();
 
   const files = await scanVault(vaultPath);
@@ -271,6 +273,7 @@ export async function buildEmbeddingsIndex(
     }
   }
 
+  embeddingsBuilding = false;
   console.error(`[Semantic] Indexed ${progress.current - progress.skipped} notes, skipped ${progress.skipped}`);
   return progress;
 }
@@ -448,6 +451,14 @@ export function reciprocalRankFusion<T extends { path: string }>(
 /**
  * Check if the embeddings index has been built.
  */
+export function isEmbeddingsBuilding(): boolean {
+  return embeddingsBuilding;
+}
+
+export function setEmbeddingsBuilding(value: boolean): void {
+  embeddingsBuilding = value;
+}
+
 export function hasEmbeddingsIndex(): boolean {
   if (!db) return false;
   try {

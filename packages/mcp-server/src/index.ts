@@ -44,7 +44,9 @@ import {
   updateEmbedding,
   removeEmbedding,
   buildEmbeddingsIndex,
+  buildEntityEmbeddingsIndex,
   hasEmbeddingsIndex,
+  setEmbeddingsBuilding,
   loadEntityEmbeddingsToMemory,
   updateEntityEmbedding,
   hasEntityEmbeddingsIndex,
@@ -473,16 +475,15 @@ async function main() {
     // Load entity embeddings into memory (if previously built)
     loadEntityEmbeddingsToMemory();
 
-    // Initialize entity index for wikilinks (used by write tools)
+    // Set StateDb for wikilinks (entity index loads lazily from StateDb on first write)
     setWriteStateDb(stateDb);
-    await initializeEntityIndex(vaultPath);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(`[Memory] StateDb initialization failed: ${msg}`);
     console.error('[Memory] Auto-wikilinks will be disabled for this session');
   }
 
-  // Start the MCP server
+  // Connect MCP immediately so crank can talk to us while we build indexes
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error('[Memory] MCP server connected');
@@ -500,6 +501,17 @@ async function main() {
   initializeWriteLogger(vaultPath).catch(err => {
     console.error(`[Memory] Write logger initialization failed: ${err}`);
   });
+
+  // Kick off FTS5 immediately (fire-and-forget, parallel with graph build)
+  if (isIndexStale(vaultPath)) {
+    buildFTS5Index(vaultPath).then(() => {
+      console.error('[Memory] FTS5 search index ready');
+    }).catch(err => {
+      console.error('[Memory] FTS5 build failed:', err);
+    });
+  } else {
+    console.error('[Memory] FTS5 search index already fresh, skipping rebuild');
+  }
 
   // Try loading index from cache
   let cachedIndex: VaultIndex | null = null;
@@ -602,6 +614,9 @@ async function runPostIndexWork(index: VaultIndex) {
   // Scan and save entities to StateDb
   await updateEntitiesInStateDb();
 
+  // Initialize wikilink entity index from StateDb (now populated)
+  await initializeEntityIndex(vaultPath);
+
   // Export hub scores
   await exportHubScores(index, stateDb);
 
@@ -639,17 +654,6 @@ async function runPostIndexWork(index: VaultIndex) {
     }
   }
 
-  // Build FTS5 search index if stale or missing
-  if (isIndexStale(vaultPath)) {
-    buildFTS5Index(vaultPath).then(() => {
-      console.error('[Memory] FTS5 search index ready');
-    }).catch(err => {
-      console.error('[Memory] FTS5 build failed:', err);
-    });
-  } else {
-    console.error('[Memory] FTS5 search index already fresh, skipping rebuild');
-  }
-
   // Load/infer config
   const existing = loadConfig(stateDb);
   const inferred = inferConfig(index, vaultPath);
@@ -660,6 +664,36 @@ async function runPostIndexWork(index: VaultIndex) {
 
   if (flywheelConfig.vault_name) {
     console.error(`[Memory] Vault: ${flywheelConfig.vault_name}`);
+  }
+
+  // Auto-build embeddings in background (fire-and-forget)
+  // Skip if embeddings already populated (file watcher handles incremental updates)
+  if (hasEmbeddingsIndex()) {
+    console.error('[Memory] Embeddings already built, skipping full scan');
+  } else {
+    setEmbeddingsBuilding(true);
+    buildEmbeddingsIndex(vaultPath, (p) => {
+      if (p.current % 100 === 0 || p.current === p.total) {
+        console.error(`[Semantic] ${p.current}/${p.total}`);
+      }
+    }).then(async () => {
+      if (stateDb) {
+        const entities = getAllEntitiesFromDb(stateDb);
+        if (entities.length > 0) {
+          const entityMap = new Map(entities.map(e => [e.name, {
+            name: e.name,
+            path: e.path,
+            category: e.category,
+            aliases: e.aliases,
+          }]));
+          await buildEntityEmbeddingsIndex(vaultPath, entityMap);
+        }
+      }
+      loadEntityEmbeddingsToMemory();
+      console.error('[Memory] Embeddings refreshed');
+    }).catch(err => {
+      console.error('[Memory] Embeddings refresh failed:', err);
+    });
   }
 
   // Setup file watcher

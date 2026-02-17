@@ -503,14 +503,18 @@ async function main() {
   });
 
   // Kick off FTS5 immediately (fire-and-forget, parallel with graph build)
-  if (isIndexStale(vaultPath)) {
-    buildFTS5Index(vaultPath).then(() => {
-      console.error('[Memory] FTS5 search index ready');
-    }).catch(err => {
-      console.error('[Memory] FTS5 build failed:', err);
-    });
+  if (process.env.FLYWHEEL_SKIP_FTS5 !== 'true') {
+    if (isIndexStale(vaultPath)) {
+      buildFTS5Index(vaultPath).then(() => {
+        console.error('[Memory] FTS5 search index ready');
+      }).catch(err => {
+        console.error('[Memory] FTS5 build failed:', err);
+      });
+    } else {
+      console.error('[Memory] FTS5 search index already fresh, skipping rebuild');
+    }
   } else {
-    console.error('[Memory] FTS5 search index already fresh, skipping rebuild');
+    console.error('[Memory] FTS5 indexing skipped (FLYWHEEL_SKIP_FTS5=true)');
   }
 
   // Try loading index from cache
@@ -668,32 +672,36 @@ async function runPostIndexWork(index: VaultIndex) {
 
   // Auto-build embeddings in background (fire-and-forget)
   // Skip if embeddings already populated (file watcher handles incremental updates)
-  if (hasEmbeddingsIndex()) {
-    console.error('[Memory] Embeddings already built, skipping full scan');
-  } else {
-    setEmbeddingsBuilding(true);
-    buildEmbeddingsIndex(vaultPath, (p) => {
-      if (p.current % 100 === 0 || p.current === p.total) {
-        console.error(`[Semantic] ${p.current}/${p.total}`);
-      }
-    }).then(async () => {
-      if (stateDb) {
-        const entities = getAllEntitiesFromDb(stateDb);
-        if (entities.length > 0) {
-          const entityMap = new Map(entities.map(e => [e.name, {
-            name: e.name,
-            path: e.path,
-            category: e.category,
-            aliases: e.aliases,
-          }]));
-          await buildEntityEmbeddingsIndex(vaultPath, entityMap);
+  if (process.env.FLYWHEEL_SKIP_EMBEDDINGS !== 'true') {
+    if (hasEmbeddingsIndex()) {
+      console.error('[Memory] Embeddings already built, skipping full scan');
+    } else {
+      setEmbeddingsBuilding(true);
+      buildEmbeddingsIndex(vaultPath, (p) => {
+        if (p.current % 100 === 0 || p.current === p.total) {
+          console.error(`[Semantic] ${p.current}/${p.total}`);
         }
-      }
-      loadEntityEmbeddingsToMemory();
-      console.error('[Memory] Embeddings refreshed');
-    }).catch(err => {
-      console.error('[Memory] Embeddings refresh failed:', err);
-    });
+      }).then(async () => {
+        if (stateDb) {
+          const entities = getAllEntitiesFromDb(stateDb);
+          if (entities.length > 0) {
+            const entityMap = new Map(entities.map(e => [e.name, {
+              name: e.name,
+              path: e.path,
+              category: e.category,
+              aliases: e.aliases,
+            }]));
+            await buildEntityEmbeddingsIndex(vaultPath, entityMap);
+          }
+        }
+        loadEntityEmbeddingsToMemory();
+        console.error('[Memory] Embeddings refreshed');
+      }).catch(err => {
+        console.error('[Memory] Embeddings refresh failed:', err);
+      });
+    }
+  } else {
+    console.error('[Memory] Embeddings skipped (FLYWHEEL_SKIP_EMBEDDINGS=true)');
   }
 
   // Setup file watcher

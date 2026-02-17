@@ -437,10 +437,6 @@ export function formatContent(content: string, format: FormatType): string {
       return lines.map((line, i) => {
         if (i === 0) return `- ${line}`;
         if (line === '') return '';
-        // Preserve structured lines and lines inside code blocks
-        if (isInsideCodeBlock(lines, i) || isStructuredLine(line)) {
-          return line;
-        }
         return `  ${line}`;
       }).join('\n');
     }
@@ -455,10 +451,6 @@ export function formatContent(content: string, format: FormatType): string {
       return lines.map((line, i) => {
         if (i === 0) return `- [ ] ${line}`;
         if (line === '') return '';
-        // Preserve structured lines and lines inside code blocks
-        if (isInsideCodeBlock(lines, i) || isStructuredLine(line)) {
-          return line;
-        }
         return `      ${line}`;
       }).join('\n');
     }
@@ -473,10 +465,6 @@ export function formatContent(content: string, format: FormatType): string {
       return lines.map((line, i) => {
         if (i === 0) return `1. ${line}`;
         if (line === '') return '';
-        // Preserve structured lines and lines inside code blocks
-        if (isInsideCodeBlock(lines, i) || isStructuredLine(line)) {
-          return line;
-        }
         return `   ${line}`;
       }).join('\n');
     }
@@ -496,10 +484,6 @@ export function formatContent(content: string, format: FormatType): string {
       return lines.map((line, i) => {
         if (i === 0) return `${prefix}${line}`;
         if (line === '') return '';
-        // Preserve structured lines and lines inside code blocks
-        if (isInsideCodeBlock(lines, i) || isStructuredLine(line)) {
-          return line;
-        }
         return `${indent}${line}`;
       }).join('\n');
     }
@@ -688,11 +672,8 @@ export function insertInSection(
       if (indent) {
         const contentLines = formattedContent.split('\n');
         const indentedContent = contentLines
-          .map((line, i) => {
-            // Preserve structured lines and lines inside code blocks
-            if (line === '' || isInsideCodeBlock(contentLines, i) || isStructuredLine(line)) {
-              return line;
-            }
+          .map((line) => {
+            if (line === '') return line;
             return indent + line;
           })
           .join('\n');
@@ -722,11 +703,8 @@ export function insertInSection(
         const indent = detectSectionBaseIndentation(lines, section.contentStartLine, section.endLine);
         const contentLines = formattedContent.split('\n');
         const indentedContent = contentLines
-          .map((line, i) => {
-            // Preserve structured lines and lines inside code blocks
-            if (line === '' || isInsideCodeBlock(contentLines, i) || isStructuredLine(line)) {
-              return line;
-            }
+          .map((line) => {
+            if (line === '') return line;
             return indent + line;
           })
           .join('\n');
@@ -762,11 +740,8 @@ export function insertInSection(
         const indent = detectSectionBaseIndentation(lines, section.contentStartLine, section.endLine);
         const contentLines = formattedContent.split('\n');
         const indentedContent = contentLines
-          .map((line, i) => {
-            // Preserve structured lines and lines inside code blocks
-            if (line === '' || isInsideCodeBlock(contentLines, i) || isStructuredLine(line)) {
-              return line;
-            }
+          .map((line) => {
+            if (line === '') return line;
             return indent + line;
           })
           .join('\n');

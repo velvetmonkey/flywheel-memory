@@ -328,79 +328,76 @@ describe('formatContent', () => {
 
   // Block-awareness tests
   describe('block-aware formatting', () => {
-    it('should preserve code blocks without indenting content inside', () => {
+    it('should indent code blocks inside bullet list items', () => {
       const content = 'Description\n```javascript\nconst x = 1;\nfunction foo() {\n  return x;\n}\n```';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Description\n```javascript\nconst x = 1;\nfunction foo() {\n  return x;\n}\n```');
+      expect(result).toBe('- Description\n  ```javascript\n  const x = 1;\n  function foo() {\n    return x;\n  }\n  ```');
     });
 
-    it('should not indent code fence markers', () => {
+    it('should indent code fence markers inside bullet list items', () => {
       const content = 'Code example:\n```\ncode here\n```';
       const result = formatContent(content, 'bullet');
-      // Code fence markers should not be indented
-      expect(result).toContain('```\ncode here\n```');
-      expect(result).not.toContain('  ```');
+      expect(result).toBe('- Code example:\n  ```\n  code here\n  ```');
     });
 
-    it('should preserve table rows without indentation', () => {
+    it('should indent table rows inside bullet list items', () => {
       const content = 'Table below:\n| Header 1 | Header 2 |\n| -------- | -------- |\n| Cell 1   | Cell 2   |';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Table below:\n| Header 1 | Header 2 |\n| -------- | -------- |\n| Cell 1   | Cell 2   |');
+      expect(result).toBe('- Table below:\n  | Header 1 | Header 2 |\n  | -------- | -------- |\n  | Cell 1   | Cell 2   |');
     });
 
-    it('should preserve blockquotes without indentation', () => {
+    it('should indent blockquotes inside bullet list items', () => {
       const content = 'Quote:\n> This is a quote\n> Second line of quote';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Quote:\n> This is a quote\n> Second line of quote');
+      expect(result).toBe('- Quote:\n  > This is a quote\n  > Second line of quote');
     });
 
-    it('should preserve horizontal rules', () => {
+    it('should indent horizontal rules inside bullet list items', () => {
       const content = 'Before rule\n---\nAfter rule';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Before rule\n---\n  After rule');
+      expect(result).toBe('- Before rule\n  ---\n  After rule');
     });
 
-    it('should preserve asterisk horizontal rules', () => {
+    it('should indent asterisk horizontal rules inside bullet list items', () => {
       const content = 'Before rule\n***\nAfter rule';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Before rule\n***\n  After rule');
+      expect(result).toBe('- Before rule\n  ***\n  After rule');
     });
 
-    it('should preserve underscore horizontal rules', () => {
+    it('should indent underscore horizontal rules inside bullet list items', () => {
       const content = 'Before rule\n___\nAfter rule';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Before rule\n___\n  After rule');
+      expect(result).toBe('- Before rule\n  ___\n  After rule');
     });
 
-    it('should handle mixed content with code blocks and tables', () => {
+    it('should indent mixed content with code blocks and tables', () => {
       const content = 'Log entry with data:\n| Col A | Col B |\n| ----- | ----- |\n| 1     | 2     |\n\n```\ncode\n```\n\nRegular text continues here';
       const result = formatContent(content, 'bullet');
-      // Tables and code should be preserved
-      expect(result).toContain('| Col A | Col B |');
-      expect(result).toContain('```\ncode\n```');
-      // Regular text should be indented
+      // All continuation lines should be indented
+      expect(result).toContain('  | Col A | Col B |');
+      expect(result).toContain('  ```\n  code\n  ```');
       expect(result).toContain('  Regular text continues here');
     });
 
-    it('should handle task format with code blocks', () => {
+    it('should indent code blocks inside task list items', () => {
       const content = 'Review code:\n```js\nconst test = 1;\n```';
       const result = formatContent(content, 'task');
-      expect(result).toBe('- [ ] Review code:\n```js\nconst test = 1;\n```');
+      expect(result).toBe('- [ ] Review code:\n      ```js\n      const test = 1;\n      ```');
     });
 
-    it('should handle numbered format with tables', () => {
+    it('should indent tables inside numbered list items', () => {
       const content = 'Step with table:\n| A | B |\n| - | - |\n| 1 | 2 |';
       const result = formatContent(content, 'numbered');
-      expect(result).toBe('1. Step with table:\n| A | B |\n| - | - |\n| 1 | 2 |');
+      expect(result).toBe('1. Step with table:\n   | A | B |\n   | - | - |\n   | 1 | 2 |');
     });
 
-    it('should handle timestamp-bullet format with blockquotes', () => {
+    it('should indent blockquotes inside timestamp-bullet list items', () => {
       const content = 'Discussion:\n> Important quote\n> More quote';
       const result = formatContent(content, 'timestamp-bullet');
       const lines = result.split('\n');
       expect(lines[0]).toMatch(/^- \*\*\d{2}:\d{2}\*\* Discussion:$/);
-      expect(lines[1]).toBe('> Important quote');
-      expect(lines[2]).toBe('> More quote');
+      expect(lines[1]).toBe('  > Important quote');
+      expect(lines[2]).toBe('  > More quote');
     });
   });
 

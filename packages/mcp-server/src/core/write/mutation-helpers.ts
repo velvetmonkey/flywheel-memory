@@ -290,7 +290,7 @@ export async function withVaultFile(
     // 2. First attempt
     let result = await runMutation();
     if ('error' in result) {
-      return formatMcpResult(result.error);
+      return formatMcpResult(result.error!);
     }
 
     // 3. Check for external modification before writing
@@ -301,7 +301,7 @@ export async function withVaultFile(
       console.warn(`[withVaultFile] External modification detected on ${notePath}, re-reading and retrying`);
       result = await runMutation();
       if ('error' in result) {
-        return formatMcpResult(result.error);
+        return formatMcpResult(result.error!);
       }
     }
 

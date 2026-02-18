@@ -209,6 +209,9 @@ describe('Tool Count Verification', () => {
         'rename_tag', 'wikilink_feedback',
         'init_semantic',
         'list_entities', 'flywheel_config',
+        'server_log',
+        'suggest_entity_merges', 'dismiss_merge_suggestion',
+        'suggest_entity_aliases', 'merge_entities',
       ]);
 
       for (const tool of toolNames) {

@@ -103,7 +103,12 @@ export function registerNoteTools(
           }
         }
 
-        // 3b. Note creation intelligence: preflight checks
+        // 3b. Ensure frontmatter always contains a date field
+        if (!effectiveFrontmatter.date) {
+          effectiveFrontmatter.date = new Date().toISOString().split('T')[0];
+        }
+
+        // 3c. Note creation intelligence: preflight checks
         const warnings: ValidationWarning[] = [];
         const noteName = path.basename(notePath, '.md');
         const existingAliases: string[] = Array.isArray(effectiveFrontmatter?.aliases)

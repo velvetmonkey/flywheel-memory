@@ -94,6 +94,14 @@ async function createNoteFromTemplate(
     .replace(/\{\{date\}\}/g, dateStr)
     .replace(/\{\{title\}\}/g, path.basename(notePath, '.md'));
 
+  // Ensure frontmatter always contains a date field
+  const matter = (await import('gray-matter')).default;
+  const parsed = matter(templateContent);
+  if (!parsed.data.date) {
+    parsed.data.date = dateStr;
+  }
+  templateContent = matter.stringify(parsed.content, parsed.data);
+
   await fs.writeFile(fullPath, templateContent, 'utf-8');
 
   return { created: true, templateUsed: templatePath };

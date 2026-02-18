@@ -19,7 +19,7 @@
     "url": "git+https://github.com/velvetmonkey/flywheel-memory.git"
   },
   "author": "velvetmonkey",
-  "license": "Apache-2.0",
+  "license": "AGPL-3.0-only",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"

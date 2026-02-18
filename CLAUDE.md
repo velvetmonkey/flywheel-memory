@@ -97,4 +97,4 @@ npm run lint     # Type check
 
 ## License
 
-Apache-2.0
+AGPL-3.0

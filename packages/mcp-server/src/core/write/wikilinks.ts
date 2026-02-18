@@ -27,6 +27,7 @@ import {
   getEntityAliases,
   applyWikilinks,
   resolveAliasWikilinks,
+  detectImplicitEntities,
   getEntityIndexFromDb,
   getStateDbMetadata,
   getEntityByName,
@@ -371,7 +372,56 @@ export function processWikilinks(content: string, notePath?: string): WikilinkRe
     caseInsensitive: true,
   });
 
-  // Combine results from both steps
+  // Step 3: Detect implicit entities (dead wikilinks for unrecognized proper nouns, camelCase, acronyms)
+  const implicitMatches = detectImplicitEntities(result.content, {
+    detectImplicit: true,
+    implicitPatterns: ['proper-nouns', 'single-caps', 'quoted-terms', 'camel-case', 'acronyms'],
+    minEntityLength: 3,
+  });
+
+  // Filter: skip terms already linked or matching known entity names
+  const alreadyLinked = new Set(
+    [...resolved.linkedEntities, ...result.linkedEntities].map(e => e.toLowerCase())
+  );
+  for (const entity of sortedEntities) {
+    const name = getEntityName(entity);
+    alreadyLinked.add(name.toLowerCase());
+    // Also exclude aliases
+    const aliases = getEntityAliases(entity);
+    for (const alias of aliases) {
+      alreadyLinked.add(alias.toLowerCase());
+    }
+  }
+
+  // Self-link avoidance
+  const currentNoteName = notePath
+    ? notePath.replace(/\.md$/, '').split('/').pop()?.toLowerCase()
+    : null;
+
+  const newImplicits = implicitMatches.filter(m => {
+    const normalized = m.text.toLowerCase();
+    if (alreadyLinked.has(normalized)) return false;
+    if (currentNoteName && normalized === currentNoteName) return false;
+    return true;
+  });
+
+  if (newImplicits.length > 0) {
+    let processedContent = result.content;
+    // Apply in reverse order to preserve positions
+    for (let i = newImplicits.length - 1; i >= 0; i--) {
+      const m = newImplicits[i];
+      processedContent = processedContent.slice(0, m.start) + `[[${m.text}]]` + processedContent.slice(m.end);
+    }
+
+    return {
+      content: processedContent,
+      linksAdded: resolved.linksAdded + result.linksAdded + newImplicits.length,
+      linkedEntities: [...resolved.linkedEntities, ...result.linkedEntities],
+      implicitEntities: newImplicits.map(m => m.text),
+    };
+  }
+
+  // No implicit matches — return combined result as before
   return {
     content: result.content,
     linksAdded: resolved.linksAdded + result.linksAdded,
@@ -407,9 +457,13 @@ export function maybeApplyWikilinks(
       trackWikilinkApplications(moduleStateDb, notePath, result.linkedEntities);
     }
 
+    const implicitCount = result.implicitEntities?.length ?? 0;
+    const implicitInfo = implicitCount > 0
+      ? ` + ${implicitCount} implicit: ${result.implicitEntities!.join(', ')}`
+      : '';
     return {
       content: result.content,
-      wikilinkInfo: `Applied ${result.linksAdded} wikilink(s): ${result.linkedEntities.join(', ')}`,
+      wikilinkInfo: `Applied ${result.linksAdded} wikilink(s): ${result.linkedEntities.join(', ')}${implicitInfo}`,
     };
   }
 

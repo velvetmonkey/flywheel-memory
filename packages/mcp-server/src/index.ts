@@ -795,7 +795,7 @@ async function runPostIndexWork(index: VaultIndex) {
           serverLog('watcher', `Entity scan: ${entitiesAfter.length} entities`);
 
           // Step 3: Hub scores
-          tracker.start('hub_scores', { entity_count: entityCount });
+          tracker.start('hub_scores', { entity_count: entitiesAfter.length });
           const hubUpdated = await exportHubScores(vaultIndex, stateDb);
           tracker.end({ updated: hubUpdated ?? 0 });
           serverLog('watcher', `Hub scores: ${hubUpdated ?? 0} updated`);

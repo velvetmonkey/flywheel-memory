@@ -241,6 +241,8 @@ export function registerPrimitiveTools(
           content: [{ type: 'text' as const, text: JSON.stringify({
             total_count: result.total,
             open_count: result.open_count,
+            completed_count: result.completed_count,
+            cancelled_count: result.cancelled_count,
             returned_count: result.tasks.length,
             tasks: result.tasks,
           }, null, 2) }],
@@ -278,6 +280,8 @@ export function registerPrimitiveTools(
         content: [{ type: 'text' as const, text: JSON.stringify({
           total_count: result.total,
           open_count: result.open_count,
+          completed_count: result.completed_count,
+          cancelled_count: result.cancelled_count,
           returned_count: paged.length,
           tasks: paged,
         }, null, 2) }],

@@ -254,59 +254,80 @@ export async function withVaultFile(
       return formatMcpResult(existsError);
     }
 
-    // 2. Read file with frontmatter
-    const { content, frontmatter, lineEnding } = await readVaultFile(vaultPath, notePath);
+    // Helper: read file, find section, build context, run operation
+    const runMutation = async () => {
+      const { content, frontmatter, lineEnding, mtimeMs } = await readVaultFile(vaultPath, notePath);
 
-    // 2.5: Implicit feedback — detect removed auto-applied wikilinks
-    const writeStateDb = getWriteStateDb();
-    if (writeStateDb) {
-      processImplicitFeedback(writeStateDb, notePath, content);
-    }
-
-    // 3. Find section if requested
-    let sectionBoundary: SectionBoundary | undefined;
-    if (section) {
-      const sectionResult = ensureSectionExists(content, section, notePath);
-      if ('error' in sectionResult) {
-        return formatMcpResult(sectionResult.error);
+      // Implicit feedback — detect removed auto-applied wikilinks
+      const writeStateDb = getWriteStateDb();
+      if (writeStateDb) {
+        processImplicitFeedback(writeStateDb, notePath, content);
       }
-      sectionBoundary = sectionResult.boundary;
-    }
 
-    // 4. Build context for operation
-    const ctx: VaultFileContext = {
-      content,
-      frontmatter,
-      lineEnding,
-      sectionBoundary,
-      vaultPath,
-      notePath,
+      // Find section if requested
+      let sectionBoundary: SectionBoundary | undefined;
+      if (section) {
+        const sectionResult = ensureSectionExists(content, section, notePath);
+        if ('error' in sectionResult) {
+          return { error: sectionResult.error };
+        }
+        sectionBoundary = sectionResult.boundary;
+      }
+
+      const ctx: VaultFileContext = {
+        content,
+        frontmatter,
+        lineEnding,
+        sectionBoundary,
+        vaultPath,
+        notePath,
+      };
+
+      const opResult = await operation(ctx);
+      return { opResult, frontmatter, lineEnding, mtimeMs };
     };
 
-    // 5. Execute the mutation operation
-    const opResult = await operation(ctx);
+    // 2. First attempt
+    let result = await runMutation();
+    if ('error' in result) {
+      return formatMcpResult(result.error);
+    }
 
-    // 6. Prepare frontmatter (inject metadata if scoping provided)
+    // 3. Check for external modification before writing
+    const fullPath = path.join(vaultPath, notePath);
+    const statBefore = await fs.stat(fullPath);
+    if (statBefore.mtimeMs !== result.mtimeMs) {
+      // File was modified externally between our read and now — retry once
+      console.warn(`[withVaultFile] External modification detected on ${notePath}, re-reading and retrying`);
+      result = await runMutation();
+      if ('error' in result) {
+        return formatMcpResult(result.error);
+      }
+    }
+
+    const { opResult, frontmatter, lineEnding } = result;
+
+    // 4. Prepare frontmatter (inject metadata if scoping provided)
     let finalFrontmatter = opResult.updatedFrontmatter ?? frontmatter;
     if (scoping && (scoping.agent_id || scoping.session_id)) {
       finalFrontmatter = injectMutationMetadata(finalFrontmatter, scoping);
     }
 
-    // 7. Write file back
+    // 5. Write file back
     await writeVaultFile(vaultPath, notePath, opResult.updatedContent, finalFrontmatter, lineEnding);
 
-    // 8. Handle git commit
+    // 6. Handle git commit
     const gitInfo = await handleGitCommit(vaultPath, notePath, commit, commitPrefix);
 
-    // 9. Build result
-    const result = successResult(notePath, opResult.message, gitInfo, {
+    // 7. Build result
+    const successRes = successResult(notePath, opResult.message, gitInfo, {
       preview: opResult.preview,
       warnings: opResult.warnings,
       outputIssues: opResult.outputIssues,
       normalizationChanges: opResult.normalizationChanges,
     });
 
-    return formatMcpResult(result);
+    return formatMcpResult(successRes);
   } catch (error) {
     const extras: Partial<MutationResult> = {};
     if (error instanceof DiagnosticError) {

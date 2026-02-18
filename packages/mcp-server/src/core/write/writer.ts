@@ -925,13 +925,17 @@ export async function readVaultFile(
   frontmatter: Record<string, unknown>;
   rawContent: string;
   lineEnding: LineEnding;
+  mtimeMs: number;
 }> {
   if (!validatePath(vaultPath, notePath)) {
     throw new Error('Invalid path: path traversal not allowed');
   }
 
   const fullPath = path.join(vaultPath, notePath);
-  const rawContent = await fs.readFile(fullPath, 'utf-8');
+  const [rawContent, stat] = await Promise.all([
+    fs.readFile(fullPath, 'utf-8'),
+    fs.stat(fullPath),
+  ]);
 
   // Detect line ending before parsing
   const lineEnding = detectLineEnding(rawContent);
@@ -951,6 +955,7 @@ export async function readVaultFile(
     frontmatter,
     rawContent,
     lineEnding,
+    mtimeMs: stat.mtimeMs,
   };
 }
 

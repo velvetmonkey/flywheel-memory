@@ -11,6 +11,7 @@ import { buildVaultIndex, setIndexState, setIndexError } from '../../core/read/g
 import { loadConfig, inferConfig, saveConfig, type FlywheelConfig } from '../../core/read/config.js';
 import { buildFTS5Index } from '../../core/read/fts5.js';
 import { scanVaultEntities, getEntityIndexFromDb, type StateDb } from '@velvetmonkey/vault-core';
+import { suggestEntityAliases } from '../../core/read/aliasSuggestions.js';
 import { recordIndexEvent } from '../../core/shared/indexActivity.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
@@ -711,6 +712,42 @@ export function registerSystemTools(
 
       return {
         content: [{ type: 'text', text: JSON.stringify(entityIndex) }],
+      };
+    }
+  );
+
+  // suggest_entity_aliases - Generate alias suggestions for entities
+  server.registerTool(
+    'suggest_entity_aliases',
+    {
+      title: 'Suggest Entity Aliases',
+      description:
+        'Generate alias suggestions for entities in a folder based on acronyms and short forms, validated against vault content.',
+      inputSchema: {
+        folder: z.string().optional().describe('Folder path to scope suggestions to'),
+        limit: z.number().default(20).describe('Max suggestions to return'),
+      },
+    },
+    async ({
+      folder,
+      limit: requestedLimit,
+    }): Promise<{
+      content: Array<{ type: 'text'; text: string }>;
+    }> => {
+      const stateDb = getStateDb?.();
+      if (!stateDb) {
+        return {
+          content: [{ type: 'text', text: JSON.stringify({ error: 'StateDb not available' }) }],
+        };
+      }
+
+      const suggestions = suggestEntityAliases(stateDb, folder || undefined);
+      const limit = Math.min(requestedLimit ?? 20, 50);
+      const limited = suggestions.slice(0, limit);
+
+      const output = { suggestion_count: limited.length, suggestions: limited };
+      return {
+        content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
       };
     }
   );

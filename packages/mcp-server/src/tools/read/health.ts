@@ -58,6 +58,7 @@ export function registerHealthTools(
     note_count: z.coerce.number().describe('Number of notes in the index'),
     entity_count: z.coerce.number().describe('Number of linkable entities (titles + aliases)'),
     tag_count: z.coerce.number().describe('Number of unique tags'),
+    link_count: z.coerce.number().describe('Total number of outgoing wikilinks'),
     periodic_notes: z.array(PeriodicNoteInfoSchema).optional().describe('Detected periodic note conventions'),
     config: z.record(z.unknown()).optional().describe('Current flywheel config (paths, templates, etc.)'),
     last_rebuild: z.object({
@@ -97,6 +98,7 @@ export function registerHealthTools(
     note_count: number;
     entity_count: number;
     tag_count: number;
+    link_count: number;
     periodic_notes?: PeriodicNoteInfo[];
     config?: Record<string, unknown>;
     last_rebuild?: {
@@ -167,6 +169,10 @@ export function registerHealthTools(
       const noteCount = indexBuilt ? index.notes.size : 0;
       const entityCount = indexBuilt ? index.entities.size : 0;
       const tagCount = indexBuilt ? index.tags.size : 0;
+      let linkCount = 0;
+      if (indexBuilt) {
+        for (const note of index.notes.values()) linkCount += note.outlinks.length;
+      }
 
       if (indexBuilt && noteCount === 0 && vaultAccessible) {
         recommendations.push('No notes found in vault. Is PROJECT_PATH pointing to a markdown vault?');
@@ -241,6 +247,7 @@ export function registerHealthTools(
         note_count: noteCount,
         entity_count: entityCount,
         tag_count: tagCount,
+        link_count: linkCount,
         periodic_notes: periodicNotes && periodicNotes.length > 0 ? periodicNotes : undefined,
         config: configInfo,
         last_rebuild: lastRebuild,

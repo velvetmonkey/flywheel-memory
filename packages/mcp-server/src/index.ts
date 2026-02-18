@@ -51,6 +51,12 @@ import {
   updateEntityEmbedding,
   hasEntityEmbeddingsIndex,
 } from './core/read/embeddings.js';
+import {
+  setTaskCacheDatabase,
+  buildTaskCache,
+  updateTaskCacheForFile,
+  removeTaskCacheForFile,
+} from './core/read/taskCache.js';
 
 // Vault-core shared imports
 import { openStateDb, scanVaultEntities, getSessionId, getAllEntitiesFromDb, type StateDb } from '@velvetmonkey/vault-core';
@@ -77,6 +83,7 @@ import { registerSystemTools as registerWriteSystemTools } from './tools/write/s
 import { registerPolicyTools } from './tools/write/policy.js';
 import { registerTagTools } from './tools/write/tags.js';
 import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
+import { registerConfigTools } from './tools/write/config.js';
 
 // Read tool registrations (additional)
 import { registerMetricsTools } from './tools/read/metrics.js';
@@ -309,6 +316,9 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
   // schema (content similarity)
   find_similar: 'schema',
+
+  // health (config management)
+  flywheel_config: 'health',
 };
 
 // ============================================================================
@@ -425,9 +435,9 @@ registerGraphTools(server, () => vaultIndex, () => vaultPath);
 registerWikilinkTools(server, () => vaultIndex, () => vaultPath);
 registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
-registerGraphAnalysisTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
+registerGraphAnalysisTools(server, () => vaultIndex, () => vaultPath, () => stateDb, () => flywheelConfig);
 registerVaultSchemaTools(server, () => vaultIndex, () => vaultPath);
-registerNoteIntelligenceTools(server, () => vaultIndex, () => vaultPath);
+registerNoteIntelligenceTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
 registerMigrationTools(server, () => vaultIndex, () => vaultPath);
 
 // Write tools
@@ -440,6 +450,12 @@ registerWriteSystemTools(server, vaultPath);
 registerPolicyTools(server, vaultPath);
 registerTagTools(server, () => vaultIndex, () => vaultPath);
 registerWikilinkFeedbackTools(server, () => stateDb);
+registerConfigTools(
+  server,
+  () => flywheelConfig,
+  (newConfig) => { flywheelConfig = newConfig; },
+  () => stateDb
+);
 
 // Additional read tools
 registerMetricsTools(server, () => vaultIndex, () => stateDb);
@@ -472,6 +488,9 @@ async function main() {
 
     // Inject StateDb handle for embeddings (note_embeddings table)
     setEmbeddingsDatabase(stateDb.db);
+
+    // Inject StateDb handle for task cache
+    setTaskCacheDatabase(stateDb.db);
 
     // Load entity embeddings into memory (if previously built)
     loadEntityEmbeddingsToMemory();
@@ -659,13 +678,22 @@ async function runPostIndexWork(index: VaultIndex) {
     }
   }
 
-  // Load/infer config
+  // Load/infer config early so task cache can use exclude_task_tags
   const existing = loadConfig(stateDb);
   const inferred = inferConfig(index, vaultPath);
   if (stateDb) {
     saveConfig(stateDb, inferred, existing);
   }
   flywheelConfig = loadConfig(stateDb);
+
+  // Build task cache in background
+  if (stateDb) {
+    buildTaskCache(vaultPath, index, flywheelConfig.exclude_task_tags).then(() => {
+      console.error('[Memory] Task cache ready');
+    }).catch(err => {
+      console.error('[Memory] Task cache build failed:', err);
+    });
+  }
 
   if (flywheelConfig.vault_name) {
     console.error(`[Memory] Vault: ${flywheelConfig.vault_name}`);
@@ -776,6 +804,19 @@ async function runPostIndexWork(index: VaultIndex) {
               saveVaultIndexToCache(stateDb, vaultIndex);
             } catch (err) {
               console.error('[Memory] Failed to update index cache:', err);
+            }
+          }
+
+          // Update task cache for changed files
+          for (const event of batch.events) {
+            try {
+              if (event.type === 'delete') {
+                removeTaskCacheForFile(event.path);
+              } else if (event.path.endsWith('.md')) {
+                await updateTaskCacheForFile(vaultPath, event.path);
+              }
+            } catch {
+              // Don't let task cache errors affect watcher
             }
           }
         } catch (err) {

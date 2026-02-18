@@ -27,6 +27,7 @@ import {
   errorResult,
   successResult,
 } from '../../core/write/mutation-helpers.js';
+import { updateTaskCacheForFile } from '../../core/read/taskCache.js';
 
 // Task regex patterns
 const TASK_REGEX = /^(\s*)-\s*\[([ xX])\]\s*(.*)$/;
@@ -170,6 +171,9 @@ export function registerTaskTools(
 
         // 8. Write file
         await writeVaultFile(vaultPath, notePath, toggleResult.content, finalFrontmatter);
+
+        // 8b. Update task cache immediately
+        await updateTaskCacheForFile(vaultPath, notePath).catch(() => {});
 
         // 9. Handle git commit
         const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Flywheel:Task]');

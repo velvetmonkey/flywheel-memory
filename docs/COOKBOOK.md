@@ -212,10 +212,6 @@ Understand your vault's structure and consistency.
 
 > "Are there conflicting frontmatter values across notes that reference [[Project Alpha]]?"
 
-### Note intelligence
-
-> "Analyze projects/Website Redesign.md -- check for prose patterns that should be frontmatter, suggest wikilinks, and check cross-layer consistency"
-
 ---
 
 ## Inspecting the Algorithm

@@ -85,6 +85,12 @@ export interface StateDb {
   getAllFlywheelConfigStmt: Statement;
   deleteFlywheelConfigStmt: Statement;
 
+  // Task cache operations
+  insertTask: Statement;
+  deleteTasksForPath: Statement;
+  clearAllTasks: Statement;
+  countTasksByStatus: Statement;
+
   // Metadata
   getMetadataValue: Statement;
   setMetadataValue: Statement;
@@ -102,7 +108,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION = 12;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -326,6 +332,23 @@ CREATE TABLE IF NOT EXISTS entity_embeddings (
   model TEXT NOT NULL,
   updated_at INTEGER NOT NULL
 );
+
+-- Task cache for fast task queries (v12)
+CREATE TABLE IF NOT EXISTS tasks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  path TEXT NOT NULL,
+  line INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  status TEXT NOT NULL,
+  raw TEXT NOT NULL,
+  context TEXT,
+  tags_json TEXT,
+  due_date TEXT,
+  UNIQUE(path, line)
+);
+CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+CREATE INDEX IF NOT EXISTS idx_tasks_path ON tasks(path);
+CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(due_date);
 `;
 
 // =============================================================================
@@ -433,6 +456,8 @@ function initSchema(db: Database.Database): void {
       // Clear FTS metadata to force rebuild with new schema
       db.exec(`DELETE FROM fts_metadata WHERE key = 'last_built'`);
     }
+
+    // v12: tasks cache table (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
@@ -577,6 +602,18 @@ export function openStateDb(vaultPath: string): StateDb {
     getAllFlywheelConfigStmt: db.prepare('SELECT key, value FROM flywheel_config'),
 
     deleteFlywheelConfigStmt: db.prepare('DELETE FROM flywheel_config WHERE key = ?'),
+
+    // Task cache operations
+    insertTask: db.prepare(`
+      INSERT OR REPLACE INTO tasks (path, line, text, status, raw, context, tags_json, due_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `),
+
+    deleteTasksForPath: db.prepare('DELETE FROM tasks WHERE path = ?'),
+
+    clearAllTasks: db.prepare('DELETE FROM tasks'),
+
+    countTasksByStatus: db.prepare('SELECT status, COUNT(*) as cnt FROM tasks GROUP BY status'),
 
     // Metadata operations
     getMetadataValue: db.prepare('SELECT value FROM metadata WHERE key = ?'),

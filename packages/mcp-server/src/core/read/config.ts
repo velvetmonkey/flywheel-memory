@@ -31,11 +31,13 @@ export interface FlywheelConfig {
   paths?: FlywheelPaths;
   templates?: FlywheelTemplates;
   exclude_task_tags?: string[];
+  exclude_analysis_tags?: string[];
 }
 
 /** Default config for new vaults */
 const DEFAULT_CONFIG: FlywheelConfig = {
   exclude_task_tags: [],
+  exclude_analysis_tags: [],
 };
 
 /**
@@ -128,6 +130,7 @@ function findMatchingFolder(folders: string[], patterns: string[]): string | und
 export function inferConfig(index: VaultIndex, vaultPath?: string): FlywheelConfig {
   const inferred: FlywheelConfig = {
     exclude_task_tags: [],
+    exclude_analysis_tags: [],
     paths: {},
   };
 
@@ -169,6 +172,7 @@ export function inferConfig(index: VaultIndex, vaultPath?: string): FlywheelConf
     const lowerTag = tag.toLowerCase();
     if (RECURRING_TAG_PATTERNS.some((pattern) => lowerTag.includes(pattern))) {
       inferred.exclude_task_tags!.push(tag);
+      inferred.exclude_analysis_tags!.push(tag);
     }
   }
 

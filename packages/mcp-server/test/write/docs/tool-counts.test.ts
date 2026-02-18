@@ -208,6 +208,7 @@ describe('Tool Count Verification', () => {
         'rename_field', 'migrate_field_values',
         'rename_tag', 'wikilink_feedback',
         'init_semantic',
+        'list_entities', 'flywheel_config',
       ]);
 
       for (const tool of toolNames) {

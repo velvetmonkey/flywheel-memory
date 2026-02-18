@@ -65,7 +65,7 @@ function extractDueDate(text: string): string | undefined {
 /**
  * Extract all tasks from a single note
  */
-async function extractTasksFromNote(
+export async function extractTasksFromNote(
   notePath: string,
   absolutePath: string
 ): Promise<Task[]> {

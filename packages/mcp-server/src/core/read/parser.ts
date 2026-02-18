@@ -29,6 +29,31 @@ function isBinaryContent(content: string): boolean {
   return nonPrintable / sample.length > 0.1;
 }
 
+/**
+ * Parse a frontmatter date value (string, Date, or number) into a Date.
+ * Returns undefined if the value is missing, unparseable, or outside sanity bounds.
+ */
+function parseFrontmatterDate(value: unknown): Date | undefined {
+  if (value == null) return undefined;
+
+  let date: Date;
+  if (value instanceof Date) {
+    date = value;
+  } else if (typeof value === 'string' || typeof value === 'number') {
+    date = new Date(value);
+  } else {
+    return undefined;
+  }
+
+  if (isNaN(date.getTime())) return undefined;
+
+  // Sanity bounds: not before 2000, not in the future
+  const year = date.getFullYear();
+  if (year < 2000 || date.getTime() > Date.now() + 86_400_000) return undefined;
+
+  return date;
+}
+
 /** Regex to match wikilinks: [[target]], [[target|alias]], [[target#heading]] */
 const WIKILINK_REGEX = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g;
 
@@ -222,6 +247,9 @@ export async function parseNoteWithWarnings(file: VaultFile): Promise<ParseResul
   // Extract title from filename
   const title = file.path.replace(/\.md$/, '').split('/').pop() || file.path;
 
+  // Prefer frontmatter `created` over filesystem birthtime (unreliable on WSL2/synced vaults)
+  const created = parseFrontmatterDate(frontmatter.created) ?? file.created;
+
   return {
     note: {
       path: file.path,
@@ -231,7 +259,7 @@ export async function parseNoteWithWarnings(file: VaultFile): Promise<ParseResul
       outlinks: extractWikilinks(markdown),
       tags: extractTags(markdown, frontmatter),
       modified: file.modified,
-      created: file.created,
+      created,
     },
     warnings,
     skipped: false,

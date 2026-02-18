@@ -10,6 +10,7 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
+import type { FlywheelConfig } from '../../core/read/config.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { findOrphanNotes, findHubNotes, getBacklinksForNote, resolveTarget } from '../../core/read/graph.js';
@@ -27,6 +28,7 @@ export function registerGraphAnalysisTools(
   getIndex: () => VaultIndex,
   getVaultPath: () => string,
   getStateDb?: () => StateDb | null,
+  getConfig?: () => FlywheelConfig,
 ): void {
   server.registerTool(
     'graph_analysis',
@@ -118,7 +120,17 @@ export function registerGraphAnalysisTools(
         }
 
         case 'hubs': {
-          const allHubs = findHubNotes(index, min_links);
+          const excludeTags = new Set(
+            (getConfig?.()?.exclude_analysis_tags ?? []).map(t => t.toLowerCase())
+          );
+          const allHubs = findHubNotes(index, min_links).filter(h => {
+            if (excludeTags.size === 0) return true;
+            const note = index.notes.get(h.path);
+            if (!note) return true;
+            const tags = note.frontmatter?.tags;
+            const tagList = Array.isArray(tags) ? tags : typeof tags === 'string' ? [tags] : [];
+            return !tagList.some(t => excludeTags.has(String(t).toLowerCase()));
+          });
           const hubs = allHubs.slice(offset, offset + limit);
 
           return {

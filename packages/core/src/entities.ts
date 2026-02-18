@@ -241,6 +241,10 @@ const FRONTMATTER_TYPE_MAP: Record<string, EntityCategory> = {
   // hobbies
   hobby: 'hobbies', sport: 'hobbies', craft: 'hobbies',
   activity: 'hobbies', collection: 'hobbies',
+  // identity categories (for reverse-mapping)
+  acronym: 'acronyms',
+  media: 'media',
+  other: 'other',
   // existing categories
   project: 'projects',
   tool: 'technologies', technology: 'technologies', framework: 'technologies',

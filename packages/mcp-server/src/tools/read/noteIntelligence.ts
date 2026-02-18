@@ -2,7 +2,7 @@
  * Note Intelligence - Unified note analysis tool
  *
  * Replaces: detect_prose_patterns, suggest_frontmatter_from_prose,
- *           suggest_wikilinks_in_frontmatter, validate_cross_layer, compute_frontmatter
+ *           suggest_wikilinks_in_frontmatter, compute_frontmatter
  */
 
 import { z } from 'zod';
@@ -13,7 +13,6 @@ import {
   detectProsePatterns,
   suggestFrontmatterFromProse,
   suggestWikilinksInFrontmatter,
-  validateCrossLayer,
 } from './bidirectional.js';
 import { computeFrontmatter } from './computed.js';
 import {
@@ -21,6 +20,7 @@ import {
   embedTextCached,
   findSemanticallySimilarEntities,
 } from '../../core/read/embeddings.js';
+import type { FlywheelConfig } from '../../core/read/config.js';
 import fs from 'node:fs';
 import nodePath from 'node:path';
 
@@ -30,7 +30,8 @@ import nodePath from 'node:path';
 export function registerNoteIntelligenceTools(
   server: McpServer,
   getIndex: () => VaultIndex,
-  getVaultPath: () => string
+  getVaultPath: () => string,
+  getConfig?: () => FlywheelConfig
 ): void {
   server.registerTool(
     'note_intelligence',
@@ -41,7 +42,6 @@ export function registerNoteIntelligenceTools(
         '- "prose_patterns": Find "Key: Value" or "Key: [[wikilink]]" patterns in prose\n' +
         '- "suggest_frontmatter": Suggest YAML frontmatter from detected prose patterns\n' +
         '- "suggest_wikilinks": Find frontmatter values that could be wikilinks\n' +
-        '- "cross_layer": Check consistency between frontmatter and prose references\n' +
         '- "compute": Auto-compute derived fields (word_count, link_count, etc.)\n' +
         '- "semantic_links": Find semantically related entities not currently linked in the note (requires init_semantic)\n' +
         '- "all": Run all analyses and return combined result\n\n' +
@@ -51,7 +51,7 @@ export function registerNoteIntelligenceTools(
       inputSchema: {
         analysis: z.enum([
           'prose_patterns', 'suggest_frontmatter', 'suggest_wikilinks',
-          'cross_layer', 'compute', 'semantic_links', 'all',
+          'compute', 'semantic_links', 'all',
         ]).describe('Type of note analysis to perform'),
         path: z.string().describe('Path to the note to analyze'),
         fields: z.array(z.string()).optional().describe('Specific fields to compute (compute/all modes)'),
@@ -79,13 +79,6 @@ export function registerNoteIntelligenceTools(
 
         case 'suggest_wikilinks': {
           const result = await suggestWikilinksInFrontmatter(index, notePath, vaultPath);
-          return {
-            content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
-          };
-        }
-
-        case 'cross_layer': {
-          const result = await validateCrossLayer(index, notePath, vaultPath);
           return {
             content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
           };
@@ -127,12 +120,35 @@ export function registerNoteIntelligenceTools(
             linkedEntities.add(wlMatch[1].toLowerCase());
           }
 
+          // Build set of excluded tags for filtering
+          const excludeTags = new Set(
+            (getConfig?.()?.exclude_analysis_tags ?? []).map(t => t.toLowerCase())
+          );
+
           try {
             const contentEmbedding = await embedTextCached(noteContent);
             const matches = findSemanticallySimilarEntities(contentEmbedding, 20, linkedEntities);
 
             const suggestions = matches
-              .filter(m => m.similarity >= 0.3)
+              .filter(m => {
+                if (m.similarity < 0.3) return false;
+                // Filter out entities whose backing notes have excluded tags
+                if (excludeTags.size > 0) {
+                  const entityNote = index.notes.get(m.entityName.toLowerCase() + '.md')
+                    ?? [...index.notes.values()].find(n => n.title.toLowerCase() === m.entityName.toLowerCase());
+                  if (entityNote) {
+                    const noteTags = Object.keys(entityNote.frontmatter)
+                      .filter(k => k === 'tags')
+                      .flatMap(k => {
+                        const v = entityNote.frontmatter[k];
+                        return Array.isArray(v) ? v : typeof v === 'string' ? [v] : [];
+                      })
+                      .map(t => String(t).toLowerCase());
+                    if (noteTags.some(t => excludeTags.has(t))) return false;
+                  }
+                }
+                return true;
+              })
               .map(m => ({
                 entity: m.entityName,
                 similarity: m.similarity,
@@ -157,12 +173,11 @@ export function registerNoteIntelligenceTools(
         }
 
         case 'all': {
-          const [prosePatterns, suggestedFrontmatter, suggestedWikilinks, crossLayer, computed] =
+          const [prosePatterns, suggestedFrontmatter, suggestedWikilinks, computed] =
             await Promise.all([
               detectProsePatterns(index, notePath, vaultPath),
               suggestFrontmatterFromProse(index, notePath, vaultPath),
               suggestWikilinksInFrontmatter(index, notePath, vaultPath),
-              validateCrossLayer(index, notePath, vaultPath),
               computeFrontmatter(index, notePath, vaultPath, fields),
             ]);
 
@@ -172,7 +187,6 @@ export function registerNoteIntelligenceTools(
               prose_patterns: prosePatterns,
               suggested_frontmatter: suggestedFrontmatter,
               suggested_wikilinks: suggestedWikilinks,
-              cross_layer: crossLayer,
               computed,
             }, null, 2) }],
           };

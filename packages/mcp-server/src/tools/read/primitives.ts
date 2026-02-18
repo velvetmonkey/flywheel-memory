@@ -31,6 +31,7 @@ import {
 } from './graphAdvanced.js';
 
 import type { FlywheelConfig } from '../../core/read/config.js';
+import { isTaskCacheReady, queryTasksFromCache, refreshIfStale } from '../../core/read/taskCache.js';
 
 /**
  * Register all Phase 5 primitive tools
@@ -173,7 +174,7 @@ export function registerPrimitiveTools(
       const vaultPath = getVaultPath();
       const config = getConfig();
 
-      // Single-note mode
+      // Single-note mode — always read from file (fast for one note)
       if (path) {
         const result = await getTasksFromNote(index, path, vaultPath, config.exclude_task_tags || []);
 
@@ -203,7 +204,50 @@ export function registerPrimitiveTools(
         };
       }
 
-      // Due-date mode
+      // Use task cache if available (fast SQL queries vs full disk scan)
+      if (isTaskCacheReady()) {
+        // Trigger background refresh if stale
+        refreshIfStale(vaultPath, index, config.exclude_task_tags);
+
+        if (has_due_date) {
+          const result = queryTasksFromCache({
+            status,
+            folder,
+            excludeTags: config.exclude_task_tags,
+            has_due_date: true,
+            limit,
+            offset,
+          });
+
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify({
+              total_count: result.total,
+              returned_count: result.tasks.length,
+              tasks: result.tasks,
+            }, null, 2) }],
+          };
+        }
+
+        const result = queryTasksFromCache({
+          status,
+          folder,
+          tag,
+          excludeTags: config.exclude_task_tags,
+          limit,
+          offset,
+        });
+
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify({
+            total_count: result.total,
+            open_count: result.open_count,
+            returned_count: result.tasks.length,
+            tasks: result.tasks,
+          }, null, 2) }],
+        };
+      }
+
+      // Fallback: full disk scan (cache not ready yet)
       if (has_due_date) {
         const allResults = await getTasksWithDueDates(index, vaultPath, {
           status,
@@ -221,7 +265,6 @@ export function registerPrimitiveTools(
         };
       }
 
-      // Default: vault-wide task query
       const result = await getAllTasks(index, vaultPath, {
         status,
         folder,

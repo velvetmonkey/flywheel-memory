@@ -9,6 +9,7 @@ import type Database from 'better-sqlite3';
 import * as path from 'path';
 import type { VaultIndex } from './types.js';
 import { extractTasksFromNote, type Task } from '../../tools/read/tasks.js';
+import { serverLog } from '../shared/serverLog.js';
 
 // Module-level database reference
 let db: Database.Database | null = null;
@@ -63,6 +64,9 @@ export async function buildTaskCache(
 
   if (rebuildInProgress) return;
   rebuildInProgress = true;
+
+  // Mark cache as not ready during rebuild so queries fall through to disk scan
+  cacheReady = false;
 
   const start = Date.now();
 
@@ -126,7 +130,7 @@ export async function buildTaskCache(
 
     cacheReady = true;
     const duration = Date.now() - start;
-    console.error(`[Memory] Task cache built: ${totalTasks} tasks from ${notePaths.length} notes in ${duration}ms`);
+    serverLog('tasks', `Task cache built: ${totalTasks} tasks from ${notePaths.length} notes in ${duration}ms`);
   } finally {
     rebuildInProgress = false;
   }
@@ -343,6 +347,6 @@ export function refreshIfStale(
   if (!isTaskCacheStale() || rebuildInProgress) return;
 
   buildTaskCache(vaultPath, index, excludeTags).catch(err => {
-    console.error('[Memory] Task cache background refresh failed:', err);
+    serverLog('tasks', `Task cache background refresh failed: ${err instanceof Error ? err.message : err}`, 'error');
   });
 }

@@ -14,6 +14,7 @@ import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
 import { getRecentIndexEvents } from '../../core/shared/indexActivity.js';
 import { getFTS5State } from '../../core/read/fts5.js';
 import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount } from '../../core/read/embeddings.js';
+import { getServerLog, type LogEntry } from '../../core/shared/serverLog.js';
 
 /** Staleness threshold in seconds (5 minutes) */
 const STALE_THRESHOLD_SECONDS = 300;
@@ -464,6 +465,59 @@ export function registerHealthTools(
           },
         ],
         structuredContent: output,
+      };
+    }
+  );
+
+  // server_log — Query the in-memory activity log
+  const LogEntrySchema = z.object({
+    ts: z.number().describe('Unix timestamp (ms)'),
+    component: z.string().describe('Source component'),
+    message: z.string().describe('Log message'),
+    level: z.enum(['info', 'warn', 'error']).describe('Log level'),
+  });
+
+  const ServerLogOutputSchema = {
+    entries: z.array(LogEntrySchema).describe('Log entries (oldest first)'),
+    server_uptime_ms: z.coerce.number().describe('Server uptime in milliseconds'),
+  };
+
+  type ServerLogOutput = {
+    entries: LogEntry[];
+    server_uptime_ms: number;
+  };
+
+  server.registerTool(
+    'server_log',
+    {
+      title: 'Server Activity Log',
+      description:
+        'Query the server activity log. Returns timestamped entries for startup stages, indexing progress, errors, and runtime events. Useful for diagnosing startup issues or checking what the server has been doing.',
+      inputSchema: {
+        since: z.coerce.number().optional().describe('Only return entries after this Unix timestamp (ms)'),
+        component: z.string().optional().describe('Filter by component (server, index, fts5, semantic, tasks, watcher, statedb, config)'),
+        limit: z.coerce.number().optional().describe('Max entries to return (default 100)'),
+      },
+      outputSchema: ServerLogOutputSchema,
+    },
+    async (params: { since?: number; component?: string; limit?: number }): Promise<{
+      content: Array<{ type: 'text'; text: string }>;
+      structuredContent: ServerLogOutput;
+    }> => {
+      const result = getServerLog({
+        since: params.since,
+        component: params.component,
+        limit: params.limit,
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+        structuredContent: result,
       };
     }
   );

@@ -103,6 +103,9 @@ import { recordToolInvocation, purgeOldInvocations } from './core/shared/toolTra
 // Core imports - Graph Snapshots
 import { computeGraphMetrics, recordGraphSnapshot, purgeOldSnapshots } from './core/shared/graphSnapshots.js';
 
+// Core imports - Server Activity Log
+import { serverLog } from './core/shared/serverLog.js';
+
 // Core imports - Wikilink Feedback
 import { updateSuppressionList } from './core/write/wikilinkFeedback.js';
 
@@ -219,13 +222,13 @@ function parseEnabledCategories(): Set<ToolCategory> {
         categories.add(c);
       }
     } else {
-      console.error(`[Memory] Warning: Unknown tool category "${item}" - ignoring`);
+      serverLog('server', `Unknown tool category "${item}" — ignoring`, 'warn');
     }
   }
 
   // If nothing valid, fall back to default
   if (categories.size === 0) {
-    console.error(`[Memory] No valid categories found, using default (${DEFAULT_PRESET})`);
+    serverLog('server', `No valid categories found, using default (${DEFAULT_PRESET})`, 'warn');
     return new Set(PRESETS[DEFAULT_PRESET]);
   }
 
@@ -319,6 +322,9 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
   // health (config management)
   flywheel_config: 'health',
+
+  // health (server activity log)
+  server_log: 'health',
 };
 
 // ============================================================================
@@ -415,7 +421,7 @@ if (_originalRegisterTool) {
 
 // Log enabled categories
 const categoryList = Array.from(enabledCategories).sort().join(', ');
-console.error(`[Memory] Tool categories: ${categoryList}`);
+serverLog('server', `Tool categories: ${categoryList}`);
 
 // ============================================================================
 // Register All Tools (per-tool filtering via patched server.tool())
@@ -466,22 +472,22 @@ registerSemanticTools(server, () => vaultPath, () => stateDb);
 // Resources (always registered, not gated by tool presets)
 registerVaultResources(server, () => vaultIndex ?? null);
 
-console.error(`[Memory] Registered ${_registeredCount} tools, skipped ${_skippedCount}`);
+serverLog('server', `Registered ${_registeredCount} tools, skipped ${_skippedCount}`);
 
 // ============================================================================
 // Main Entry Point
 // ============================================================================
 
 async function main() {
-  console.error(`[Memory] Starting Flywheel Memory server...`);
-  console.error(`[Memory] Vault: ${vaultPath}`);
+  serverLog('server', 'Starting Flywheel Memory server...');
+  serverLog('server', `Vault: ${vaultPath}`);
 
   const startTime = Date.now();
 
   // Initialize StateDb early
   try {
     stateDb = openStateDb(vaultPath);
-    console.error('[Memory] StateDb initialized');
+    serverLog('statedb', 'StateDb initialized');
 
     // Inject StateDb handle for FTS5 content search (notes_fts table)
     setFTS5Database(stateDb.db);
@@ -499,42 +505,42 @@ async function main() {
     setWriteStateDb(stateDb);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[Memory] StateDb initialization failed: ${msg}`);
-    console.error('[Memory] Auto-wikilinks will be disabled for this session');
+    serverLog('statedb', `StateDb initialization failed: ${msg}`, 'error');
+    serverLog('server', 'Auto-wikilinks will be disabled for this session', 'warn');
   }
 
   // Connect MCP immediately so crank can talk to us while we build indexes
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('[Memory] MCP server connected');
+  serverLog('server', 'MCP server connected');
 
   // Initialize logging
   initializeReadLogger(vaultPath).then(() => {
     const logger = getLogger();
     if (logger?.enabled) {
-      console.error(`[Memory] Unified logging enabled`);
+      serverLog('server', 'Unified logging enabled');
     }
   }).catch(() => {
     // Logging initialization failed, continue without it
   });
 
   initializeWriteLogger(vaultPath).catch(err => {
-    console.error(`[Memory] Write logger initialization failed: ${err}`);
+    serverLog('server', `Write logger initialization failed: ${err}`, 'error');
   });
 
   // Kick off FTS5 immediately (fire-and-forget, parallel with graph build)
   if (process.env.FLYWHEEL_SKIP_FTS5 !== 'true') {
     if (isIndexStale(vaultPath)) {
       buildFTS5Index(vaultPath).then(() => {
-        console.error('[Memory] FTS5 search index ready');
+        serverLog('fts5', 'Search index ready');
       }).catch(err => {
-        console.error('[Memory] FTS5 build failed:', err);
+        serverLog('fts5', `Build failed: ${err instanceof Error ? err.message : err}`, 'error');
       });
     } else {
-      console.error('[Memory] FTS5 search index already fresh, skipping rebuild');
+      serverLog('fts5', 'Search index already fresh, skipping rebuild');
     }
   } else {
-    console.error('[Memory] FTS5 indexing skipped (FLYWHEEL_SKIP_FTS5=true)');
+    serverLog('fts5', 'Skipping — FLYWHEEL_SKIP_FTS5');
   }
 
   // Try loading index from cache
@@ -543,10 +549,10 @@ async function main() {
     try {
       const files = await scanVault(vaultPath);
       const noteCount = files.length;
-      console.error(`[Memory] Found ${noteCount} markdown files`);
+      serverLog('index', `Found ${noteCount} markdown files`);
       cachedIndex = loadVaultIndexFromCache(stateDb, noteCount);
     } catch (err) {
-      console.error('[Memory] Cache check failed:', err);
+      serverLog('index', `Cache check failed: ${err instanceof Error ? err.message : err}`, 'warn');
     }
   }
 
@@ -555,7 +561,7 @@ async function main() {
     vaultIndex = cachedIndex;
     setIndexState('ready');
     const duration = Date.now() - startTime;
-    console.error(`[Memory] Index loaded from cache in ${duration}ms`);
+    serverLog('index', `Loaded from cache in ${duration}ms — ${cachedIndex.notes.size} notes`);
     if (stateDb) {
       recordIndexEvent(stateDb, {
         trigger: 'startup_cache',
@@ -566,13 +572,13 @@ async function main() {
     runPostIndexWork(vaultIndex);
   } else {
     // Cache miss - build index
-    console.error('[Memory] Building vault index...');
+    serverLog('index', 'Building vault index...');
 
     try {
       vaultIndex = await buildVaultIndex(vaultPath);
       setIndexState('ready');
       const duration = Date.now() - startTime;
-      console.error(`[Memory] Vault index ready in ${duration}ms`);
+      serverLog('index', `Vault index ready in ${duration}ms — ${vaultIndex.notes.size} notes`);
       if (stateDb) {
         recordIndexEvent(stateDb, {
           trigger: 'startup_build',
@@ -585,9 +591,9 @@ async function main() {
       if (stateDb) {
         try {
           saveVaultIndexToCache(stateDb, vaultIndex);
-          console.error('[Memory] Index cache saved');
+          serverLog('index', 'Index cache saved');
         } catch (err) {
-          console.error('[Memory] Failed to save index cache:', err);
+          serverLog('index', `Failed to save index cache: ${err instanceof Error ? err.message : err}`, 'error');
         }
       }
 
@@ -604,7 +610,7 @@ async function main() {
           error: err instanceof Error ? err.message : String(err),
         });
       }
-      console.error('[Memory] Failed to build vault index:', err);
+      serverLog('index', `Failed to build vault index: ${err instanceof Error ? err.message : err}`, 'error');
     }
   }
 }
@@ -625,9 +631,9 @@ async function updateEntitiesInStateDb(): Promise<void> {
       ],
     });
     stateDb.replaceAllEntities(entityIndex);
-    console.error(`[Memory] Updated ${entityIndex._metadata.total_entities} entities in StateDb`);
+    serverLog('index', `Updated ${entityIndex._metadata.total_entities} entities in StateDb`);
   } catch (e) {
-    console.error('[Memory] Failed to update entities in StateDb:', e);
+    serverLog('index', `Failed to update entities in StateDb: ${e instanceof Error ? e.message : e}`, 'error');
   }
 }
 
@@ -652,9 +658,9 @@ async function runPostIndexWork(index: VaultIndex) {
       purgeOldMetrics(stateDb, 90);
       purgeOldIndexEvents(stateDb, 90);
       purgeOldInvocations(stateDb, 90);
-      console.error('[Memory] Growth metrics recorded');
+      serverLog('server', 'Growth metrics recorded');
     } catch (err) {
-      console.error('[Memory] Failed to record metrics:', err);
+      serverLog('server', `Failed to record metrics: ${err instanceof Error ? err.message : err}`, 'error');
     }
   }
 
@@ -665,7 +671,7 @@ async function runPostIndexWork(index: VaultIndex) {
       recordGraphSnapshot(stateDb, graphMetrics);
       purgeOldSnapshots(stateDb, 90);
     } catch (err) {
-      console.error('[Memory] Failed to record graph snapshot:', err);
+      serverLog('server', `Failed to record graph snapshot: ${err instanceof Error ? err.message : err}`, 'error');
     }
   }
 
@@ -674,7 +680,7 @@ async function runPostIndexWork(index: VaultIndex) {
     try {
       updateSuppressionList(stateDb);
     } catch (err) {
-      console.error('[Memory] Failed to update suppression list:', err);
+      serverLog('server', `Failed to update suppression list: ${err instanceof Error ? err.message : err}`, 'error');
     }
   }
 
@@ -689,26 +695,26 @@ async function runPostIndexWork(index: VaultIndex) {
   // Build task cache in background
   if (stateDb) {
     buildTaskCache(vaultPath, index, flywheelConfig.exclude_task_tags).then(() => {
-      console.error('[Memory] Task cache ready');
+      serverLog('tasks', 'Task cache ready');
     }).catch(err => {
-      console.error('[Memory] Task cache build failed:', err);
+      serverLog('tasks', `Task cache build failed: ${err instanceof Error ? err.message : err}`, 'error');
     });
   }
 
   if (flywheelConfig.vault_name) {
-    console.error(`[Memory] Vault: ${flywheelConfig.vault_name}`);
+    serverLog('config', `Vault: ${flywheelConfig.vault_name}`);
   }
 
   // Auto-build embeddings in background (fire-and-forget)
   // Skip if embeddings already populated (file watcher handles incremental updates)
   if (process.env.FLYWHEEL_SKIP_EMBEDDINGS !== 'true') {
     if (hasEmbeddingsIndex()) {
-      console.error('[Memory] Embeddings already built, skipping full scan');
+      serverLog('semantic', 'Embeddings already built, skipping full scan');
     } else {
       setEmbeddingsBuilding(true);
       buildEmbeddingsIndex(vaultPath, (p) => {
         if (p.current % 100 === 0 || p.current === p.total) {
-          console.error(`[Semantic] ${p.current}/${p.total}`);
+          serverLog('semantic', `Embedding ${p.current}/${p.total} notes...`);
         }
       }).then(async () => {
         if (stateDb) {
@@ -724,32 +730,32 @@ async function runPostIndexWork(index: VaultIndex) {
           }
         }
         loadEntityEmbeddingsToMemory();
-        console.error('[Memory] Embeddings refreshed');
+        serverLog('semantic', 'Embeddings ready');
       }).catch(err => {
-        console.error('[Memory] Embeddings refresh failed:', err);
+        serverLog('semantic', `Embeddings build failed: ${err instanceof Error ? err.message : err}`, 'error');
       });
     }
   } else {
-    console.error('[Memory] Embeddings skipped (FLYWHEEL_SKIP_EMBEDDINGS=true)');
+    serverLog('semantic', 'Skipping — FLYWHEEL_SKIP_EMBEDDINGS');
   }
 
   // Setup file watcher
   if (process.env.FLYWHEEL_WATCH !== 'false') {
     const config = parseWatcherConfig();
-    console.error(`[Memory] File watcher enabled (debounce: ${config.debounceMs}ms)`);
+    serverLog('watcher', `File watcher enabled (debounce: ${config.debounceMs}ms)`);
 
     const watcher = createVaultWatcher({
       vaultPath,
       config,
       onBatch: async (batch) => {
-        console.error(`[Memory] Processing ${batch.events.length} file changes`);
+        serverLog('watcher', `Processing ${batch.events.length} file changes`);
         const batchStart = Date.now();
         const changedPaths = batch.events.map(e => e.path);
         try {
           vaultIndex = await buildVaultIndex(vaultPath);
           setIndexState('ready');
           const duration = Date.now() - batchStart;
-          console.error(`[Memory] Index rebuilt in ${duration}ms`);
+          serverLog('watcher', `Index rebuilt in ${duration}ms`);
           if (stateDb) {
             recordIndexEvent(stateDb, {
               trigger: 'watcher',
@@ -803,7 +809,7 @@ async function runPostIndexWork(index: VaultIndex) {
             try {
               saveVaultIndexToCache(stateDb, vaultIndex);
             } catch (err) {
-              console.error('[Memory] Failed to update index cache:', err);
+              serverLog('index', `Failed to update index cache: ${err instanceof Error ? err.message : err}`, 'error');
             }
           }
 
@@ -833,16 +839,16 @@ async function runPostIndexWork(index: VaultIndex) {
               error: err instanceof Error ? err.message : String(err),
             });
           }
-          console.error('[Memory] Failed to rebuild index:', err);
+          serverLog('watcher', `Failed to rebuild index: ${err instanceof Error ? err.message : err}`, 'error');
         }
       },
       onStateChange: (status) => {
         if (status.state === 'dirty') {
-          console.error('[Memory] Warning: Index may be stale');
+          serverLog('watcher', 'Index may be stale', 'warn');
         }
       },
       onError: (err) => {
-        console.error('[Memory] Watcher error:', err.message);
+        serverLog('watcher', `Watcher error: ${err.message}`, 'error');
       },
     });
 

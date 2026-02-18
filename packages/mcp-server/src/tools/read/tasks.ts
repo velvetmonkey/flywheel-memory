@@ -172,6 +172,21 @@ export async function getAllTasks(
     );
   }
 
+  // Sort: due date desc (tasks with dates first), then note recency desc
+  filteredTasks.sort((a, b) => {
+    if (a.due_date && !b.due_date) return -1;
+    if (!a.due_date && b.due_date) return 1;
+    if (a.due_date && b.due_date) {
+      const cmp = b.due_date.localeCompare(a.due_date);
+      if (cmp !== 0) return cmp;
+    }
+    const noteA = index.notes.get(a.path);
+    const noteB = index.notes.get(b.path);
+    const mtimeA = noteA?.modified?.getTime() ?? 0;
+    const mtimeB = noteB?.modified?.getTime() ?? 0;
+    return mtimeB - mtimeA;
+  });
+
   // Count by status
   const openCount = allTasks.filter(t => t.status === 'open').length;
   const completedCount = allTasks.filter(t => t.status === 'completed').length;

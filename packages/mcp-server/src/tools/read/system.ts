@@ -10,7 +10,7 @@ import type { VaultIndex } from '../../core/read/types.js';
 import { buildVaultIndex, setIndexState, setIndexError } from '../../core/read/graph.js';
 import { loadConfig, inferConfig, saveConfig, type FlywheelConfig } from '../../core/read/config.js';
 import { buildFTS5Index } from '../../core/read/fts5.js';
-import { scanVaultEntities, type StateDb } from '@velvetmonkey/vault-core';
+import { scanVaultEntities, getEntityIndexFromDb, type StateDb } from '@velvetmonkey/vault-core';
 import { recordIndexEvent } from '../../core/shared/indexActivity.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
@@ -651,6 +651,66 @@ export function registerSystemTools(
           },
         ],
         structuredContent: output,
+      };
+    }
+  );
+
+  // list_entities - Get all entities grouped by category with hub scores (for UI panels)
+  server.registerTool(
+    'list_entities',
+    {
+      title: 'List Entities',
+      description:
+        'Get all entities grouped by category with aliases and hub scores. Returns the full EntityIndex from StateDb.',
+      inputSchema: {
+        category: z
+          .string()
+          .optional()
+          .describe('Filter to a specific category (e.g. "people", "technologies")'),
+        limit: z.coerce
+          .number()
+          .default(2000)
+          .describe('Maximum entities per category'),
+      },
+    },
+    async ({
+      category,
+      limit: perCategoryLimit,
+    }): Promise<{
+      content: Array<{ type: 'text'; text: string }>;
+    }> => {
+      const stateDb = getStateDb?.();
+      if (!stateDb) {
+        return {
+          content: [{ type: 'text', text: JSON.stringify({ error: 'StateDb not available' }) }],
+        };
+      }
+
+      const entityIndex = getEntityIndexFromDb(stateDb);
+
+      // If category filter is specified, zero out other categories
+      if (category) {
+        const allCategories = Object.keys(entityIndex).filter(k => k !== '_metadata') as string[];
+        for (const cat of allCategories) {
+          if (cat !== category) {
+            (entityIndex as any)[cat] = [];
+          }
+        }
+      }
+
+      // Apply per-category limit
+      if (perCategoryLimit) {
+        const allCategories = Object.keys(entityIndex).filter(k => k !== '_metadata') as string[];
+        for (const cat of allCategories) {
+          const arr = (entityIndex as any)[cat];
+          if (Array.isArray(arr) && arr.length > perCategoryLimit) {
+            (entityIndex as any)[cat] = arr.slice(0, perCategoryLimit);
+          }
+        }
+      }
+
+      return {
+        content: [{ type: 'text', text: JSON.stringify(entityIndex) }],
       };
     }
   );

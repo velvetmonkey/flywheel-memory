@@ -235,6 +235,7 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   get_folder_structure: 'health',
   refresh_index: 'health',   // absorbed rebuild_search_index
   get_all_entities: 'health',
+  list_entities: 'hubs',
   get_unlinked_mentions: 'health',
 
   // search (unified: metadata + content + entities)

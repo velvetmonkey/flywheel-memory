@@ -12,6 +12,7 @@ import {
   getEntityStats,
   updateSuppressionList,
   getSuppressedCount,
+  getDashboardData,
   type FeedbackResult,
 } from '../../core/write/wikilinkFeedback.js';
 
@@ -27,9 +28,9 @@ export function registerWikilinkFeedbackTools(
     {
       title: 'Wikilink Feedback',
       description:
-        'Report and query wikilink accuracy feedback. Modes: "report" (record feedback), "list" (view recent feedback), "stats" (entity accuracy statistics). Entities with >=30% false positive rate (and >=10 samples) are auto-suppressed from future wikilink application.',
+        'Report and query wikilink accuracy feedback. Modes: "report" (record feedback), "list" (view recent feedback), "stats" (entity accuracy statistics), "dashboard" (full feedback loop data for visualization). Entities with >=30% false positive rate (and >=10 samples) are auto-suppressed from future wikilink application.',
       inputSchema: {
-        mode: z.enum(['report', 'list', 'stats']).describe('Operation mode'),
+        mode: z.enum(['report', 'list', 'stats', 'dashboard']).describe('Operation mode'),
         entity: z.string().optional().describe('Entity name (required for report mode, optional filter for list/stats)'),
         note_path: z.string().optional().describe('Note path where the wikilink appeared (for report mode)'),
         context: z.string().optional().describe('Surrounding text context (for report mode)'),
@@ -87,6 +88,17 @@ export function registerWikilinkFeedbackTools(
             stats,
             total_feedback: stats.reduce((sum, s) => sum + s.total, 0),
             total_suppressed: getSuppressedCount(stateDb),
+          };
+          break;
+        }
+
+        case 'dashboard': {
+          const dashboard = getDashboardData(stateDb);
+          result = {
+            mode: 'dashboard',
+            dashboard,
+            total_feedback: dashboard.total_feedback,
+            total_suppressed: dashboard.total_suppressed,
           };
           break;
         }

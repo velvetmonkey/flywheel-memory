@@ -31,12 +31,37 @@ export interface EntityStats {
 }
 
 export interface FeedbackResult {
-  mode: 'report' | 'list' | 'stats';
+  mode: 'report' | 'list' | 'stats' | 'dashboard';
   reported?: { entity: string; correct: boolean; suppression_updated: boolean };
   entries?: FeedbackEntry[];
   stats?: EntityStats[];
   total_feedback?: number;
   total_suppressed?: number;
+  dashboard?: DashboardData;
+}
+
+export interface DashboardData {
+  total_feedback: number;
+  total_correct: number;
+  total_incorrect: number;
+  overall_accuracy: number;
+  total_suppressed: number;
+  feedback_sources: {
+    explicit: { count: number; correct: number };
+    implicit: { count: number; correct: number };
+  };
+  applications: { applied: number; removed: number };
+  boost_tiers: Array<{
+    label: string;
+    boost: number;
+    min_accuracy: number;
+    min_samples: number;
+    entities: Array<{ entity: string; accuracy: number; total: number }>;
+  }>;
+  learning: Array<{ entity: string; accuracy: number; total: number }>;
+  suppressed: Array<{ entity: string; false_positive_rate: number }>;
+  recent: FeedbackEntry[];
+  timeline: Array<{ day: string; count: number; correct: number; incorrect: number }>;
 }
 
 // =============================================================================
@@ -510,4 +535,121 @@ export function processImplicitFeedback(
   transaction();
 
   return removed;
+}
+
+// =============================================================================
+// DASHBOARD DATA
+// =============================================================================
+
+const TIER_LABELS: ReadonlyArray<{ label: string; boost: number; minAccuracy: number; minSamples: number }> = [
+  { label: 'Champion (+5)', boost: 5, minAccuracy: 0.95, minSamples: 20 },
+  { label: 'Strong (+2)', boost: 2, minAccuracy: 0.80, minSamples: 5 },
+  { label: 'Neutral (0)', boost: 0, minAccuracy: 0.60, minSamples: 5 },
+  { label: 'Weak (-2)', boost: -2, minAccuracy: 0.40, minSamples: 5 },
+  { label: 'Poor (-4)', boost: -4, minAccuracy: 0, minSamples: 5 },
+];
+
+/**
+ * Aggregate all feedback data for the dashboard view
+ */
+export function getDashboardData(stateDb: StateDb): DashboardData {
+  // 1. Entity stats + boost tiers
+  const entityStats = getEntityStats(stateDb);
+  const boostTiers: DashboardData['boost_tiers'] = TIER_LABELS.map(t => ({
+    label: t.label,
+    boost: t.boost,
+    min_accuracy: t.minAccuracy,
+    min_samples: t.minSamples,
+    entities: [],
+  }));
+  const learning: DashboardData['learning'] = [];
+
+  for (const es of entityStats) {
+    if (es.total < FEEDBACK_BOOST_MIN_SAMPLES) {
+      learning.push({ entity: es.entity, accuracy: es.accuracy, total: es.total });
+      continue;
+    }
+    const boost = computeBoostFromAccuracy(es.accuracy, es.total);
+    const tierIdx = boostTiers.findIndex(t => t.boost === boost);
+    if (tierIdx >= 0) {
+      boostTiers[tierIdx].entities.push({ entity: es.entity, accuracy: es.accuracy, total: es.total });
+    }
+  }
+
+  // 2. Implicit vs explicit sources
+  const sourceRows = stateDb.db.prepare(`
+    SELECT
+      CASE WHEN context LIKE 'implicit:%' THEN 'implicit' ELSE 'explicit' END as source,
+      COUNT(*) as count,
+      SUM(CASE WHEN correct = 1 THEN 1 ELSE 0 END) as correct_count
+    FROM wikilink_feedback
+    GROUP BY source
+  `).all() as Array<{ source: string; count: number; correct_count: number }>;
+
+  const feedbackSources = {
+    explicit: { count: 0, correct: 0 },
+    implicit: { count: 0, correct: 0 },
+  };
+  for (const row of sourceRows) {
+    if (row.source === 'implicit') {
+      feedbackSources.implicit = { count: row.count, correct: row.correct_count };
+    } else {
+      feedbackSources.explicit = { count: row.count, correct: row.correct_count };
+    }
+  }
+
+  // 3. Application tracking
+  const appRows = stateDb.db.prepare(
+    `SELECT status, COUNT(*) as count FROM wikilink_applications GROUP BY status`
+  ).all() as Array<{ status: string; count: number }>;
+
+  const applications = { applied: 0, removed: 0 };
+  for (const row of appRows) {
+    if (row.status === 'applied') applications.applied = row.count;
+    else if (row.status === 'removed') applications.removed = row.count;
+  }
+
+  // 4. Recent feedback
+  const recent = getFeedback(stateDb, undefined, 50);
+
+  // 5. Suppressed entities
+  const suppressed = getSuppressedEntities(stateDb);
+
+  // 6. 30-day timeline
+  const timeline = stateDb.db.prepare(`
+    SELECT
+      date(created_at) as day,
+      COUNT(*) as count,
+      SUM(CASE WHEN correct = 1 THEN 1 ELSE 0 END) as correct_count,
+      SUM(CASE WHEN correct = 0 THEN 1 ELSE 0 END) as incorrect_count
+    FROM wikilink_feedback
+    WHERE created_at >= datetime('now', '-30 days')
+    GROUP BY day
+    ORDER BY day
+  `).all() as Array<{ day: string; count: number; correct_count: number; incorrect_count: number }>;
+
+  // Totals
+  const totalFeedback = feedbackSources.explicit.count + feedbackSources.implicit.count;
+  const totalCorrect = feedbackSources.explicit.correct + feedbackSources.implicit.correct;
+  const totalIncorrect = totalFeedback - totalCorrect;
+
+  return {
+    total_feedback: totalFeedback,
+    total_correct: totalCorrect,
+    total_incorrect: totalIncorrect,
+    overall_accuracy: totalFeedback > 0 ? Math.round((totalCorrect / totalFeedback) * 1000) / 1000 : 0,
+    total_suppressed: suppressed.length,
+    feedback_sources: feedbackSources,
+    applications,
+    boost_tiers: boostTiers,
+    learning,
+    suppressed,
+    recent,
+    timeline: timeline.map(t => ({
+      day: t.day,
+      count: t.count,
+      correct: t.correct_count,
+      incorrect: t.incorrect_count,
+    })),
+  };
 }

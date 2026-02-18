@@ -54,6 +54,7 @@ import {
 import {
   setTaskCacheDatabase,
   buildTaskCache,
+  refreshIfStale,
   updateTaskCacheForFile,
   removeTaskCacheForFile,
 } from './core/read/taskCache.js';
@@ -703,13 +704,10 @@ async function runPostIndexWork(index: VaultIndex) {
   }
   flywheelConfig = loadConfig(stateDb);
 
-  // Build task cache in background
+  // Build task cache (skip rebuild if SQLite cache is already fresh)
   if (stateDb) {
-    buildTaskCache(vaultPath, index, flywheelConfig.exclude_task_tags).then(() => {
-      serverLog('tasks', 'Task cache ready');
-    }).catch(err => {
-      serverLog('tasks', `Task cache build failed: ${err instanceof Error ? err.message : err}`, 'error');
-    });
+    refreshIfStale(vaultPath, index, flywheelConfig.exclude_task_tags);
+    serverLog('tasks', 'Task cache ready');
   }
 
   if (flywheelConfig.vault_name) {

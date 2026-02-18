@@ -52,6 +52,10 @@ export function isTaskCacheReady(): boolean {
 
 /**
  * Full rebuild: scan all notes, extract tasks, bulk INSERT
+ *
+ * If the cache was previously built (cacheReady=true from a prior session),
+ * we keep serving stale data during the rebuild rather than falling through
+ * to the expensive full-disk scan.
  */
 export async function buildTaskCache(
   vaultPath: string,
@@ -65,8 +69,8 @@ export async function buildTaskCache(
   if (rebuildInProgress) return;
   rebuildInProgress = true;
 
-  // Mark cache as not ready during rebuild so queries fall through to disk scan
-  cacheReady = false;
+  // Keep cacheReady=true if it was already set (serve stale data during rebuild)
+  // Only mark as not-ready if this is the very first build (no prior cache data)
 
   const start = Date.now();
 

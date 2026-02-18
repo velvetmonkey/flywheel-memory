@@ -108,7 +108,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 13;
+export const SCHEMA_VERSION = 14;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -286,7 +286,8 @@ CREATE TABLE IF NOT EXISTS index_events (
   note_count INTEGER,
   files_changed INTEGER,
   changed_paths TEXT,
-  error TEXT
+  error TEXT,
+  steps TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_index_events_ts ON index_events(timestamp);
 
@@ -471,6 +472,16 @@ function initSchema(db: Database.Database): void {
     // v12: tasks cache table (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     // v13: merge_dismissals table (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v14: Add steps column to index_events (pipeline observability)
+    if (currentVersion < 14) {
+      const hasSteps = db.prepare(
+        `SELECT COUNT(*) as cnt FROM pragma_table_info('index_events') WHERE name = 'steps'`
+      ).get() as { cnt: number };
+      if (hasSteps.cnt === 0) {
+        db.exec('ALTER TABLE index_events ADD COLUMN steps TEXT');
+      }
+    }
 
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'

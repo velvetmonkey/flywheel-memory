@@ -11,9 +11,10 @@ import { detectPeriodicNotes } from './periodic.js';
 import { getActivitySummary } from './temporal.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
 import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
-import { getRecentIndexEvents } from '../../core/shared/indexActivity.js';
+import { getRecentIndexEvents, type PipelineStep } from '../../core/shared/indexActivity.js';
 import { getFTS5State } from '../../core/read/fts5.js';
 import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount } from '../../core/read/embeddings.js';
+import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache.js';
 import { getServerLog, type LogEntry } from '../../core/shared/serverLog.js';
 
 /** Staleness threshold in seconds (5 minutes) */
@@ -67,11 +68,27 @@ export function registerHealthTools(
       duration_ms: z.number(),
       ago_seconds: z.number(),
     }).optional().describe('Most recent index rebuild event'),
+    last_pipeline: z.object({
+      timestamp: z.number(),
+      trigger: z.string(),
+      duration_ms: z.number(),
+      files_changed: z.number().nullable(),
+      steps: z.array(z.object({
+        name: z.string(),
+        duration_ms: z.number(),
+        input: z.record(z.unknown()),
+        output: z.record(z.unknown()),
+        skipped: z.boolean().optional(),
+        skip_reason: z.string().optional(),
+      })),
+    }).optional().describe('Most recent watcher pipeline run with per-step timing'),
     fts5_ready: z.boolean().describe('Whether the FTS5 keyword search index is ready'),
     fts5_building: z.boolean().describe('Whether the FTS5 keyword search index is currently building'),
     embeddings_building: z.boolean().describe('Whether semantic embeddings are currently building'),
     embeddings_ready: z.boolean().describe('Whether semantic embeddings have been built (enables hybrid keyword+semantic search)'),
     embeddings_count: z.coerce.number().describe('Number of notes with semantic embeddings'),
+    tasks_ready: z.boolean().describe('Whether the task cache is ready to serve queries'),
+    tasks_building: z.boolean().describe('Whether the task cache is currently rebuilding'),
     recommendations: z.array(z.string()).describe('Suggested actions if any issues detected'),
   };
 
@@ -107,11 +124,20 @@ export function registerHealthTools(
       duration_ms: number;
       ago_seconds: number;
     };
+    last_pipeline?: {
+      timestamp: number;
+      trigger: string;
+      duration_ms: number;
+      files_changed: number | null;
+      steps: PipelineStep[];
+    };
     fts5_ready: boolean;
     fts5_building: boolean;
     embeddings_building: boolean;
     embeddings_ready: boolean;
     embeddings_count: number;
+    tasks_ready: boolean;
+    tasks_building: boolean;
     recommendations: string[];
   };
 
@@ -231,6 +257,26 @@ export function registerHealthTools(
         }
       }
 
+      // Get last pipeline run (most recent event with steps data)
+      let lastPipeline: HealthCheckOutput['last_pipeline'];
+      if (stateDb) {
+        try {
+          const events = getRecentIndexEvents(stateDb, 1);
+          if (events.length > 0 && events[0].steps && events[0].steps.length > 0) {
+            const evt = events[0];
+            lastPipeline = {
+              timestamp: evt.timestamp,
+              trigger: evt.trigger,
+              duration_ms: evt.duration_ms,
+              files_changed: evt.files_changed,
+              steps: evt.steps!,
+            };
+          }
+        } catch {
+          // Ignore errors reading pipeline data
+        }
+      }
+
       const ftsState = getFTS5State();
 
       const output: HealthCheckOutput = {
@@ -251,11 +297,14 @@ export function registerHealthTools(
         periodic_notes: periodicNotes && periodicNotes.length > 0 ? periodicNotes : undefined,
         config: configInfo,
         last_rebuild: lastRebuild,
+        last_pipeline: lastPipeline,
         fts5_ready: ftsState.ready,
         fts5_building: ftsState.building,
         embeddings_building: isEmbeddingsBuilding(),
         embeddings_ready: hasEmbeddingsIndex(),
         embeddings_count: getEmbeddingsCount(),
+        tasks_ready: isTaskCacheReady(),
+        tasks_building: isTaskCacheBuilding(),
         recommendations,
       };
 

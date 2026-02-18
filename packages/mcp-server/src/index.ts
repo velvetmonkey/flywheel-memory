@@ -55,6 +55,7 @@ import {
   setTaskCacheDatabase,
   buildTaskCache,
   refreshIfStale,
+  isTaskCacheStale,
   updateTaskCacheForFile,
   removeTaskCacheForFile,
 } from './core/read/taskCache.js';
@@ -98,7 +99,7 @@ import { registerMergeTools as registerReadMergeTools } from './tools/read/merge
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
 
 // Core imports - Index Activity
-import { recordIndexEvent, purgeOldIndexEvents } from './core/shared/indexActivity.js';
+import { recordIndexEvent, purgeOldIndexEvents, createStepTracker } from './core/shared/indexActivity.js';
 
 // Core imports - Tool Tracking
 import { recordToolInvocation, purgeOldInvocations } from './core/shared/toolTracking.js';
@@ -510,6 +511,8 @@ async function main() {
     // Inject StateDb handle for task cache
     setTaskCacheDatabase(stateDb.db);
 
+    serverLog('statedb', 'Injected FTS5, embeddings, task cache handles');
+
     // Load entity embeddings into memory (if previously built)
     loadEntityEmbeddingsToMemory();
 
@@ -573,7 +576,8 @@ async function main() {
     vaultIndex = cachedIndex;
     setIndexState('ready');
     const duration = Date.now() - startTime;
-    serverLog('index', `Loaded from cache in ${duration}ms — ${cachedIndex.notes.size} notes`);
+    const cacheAge = cachedIndex.builtAt ? Math.round((Date.now() - cachedIndex.builtAt.getTime()) / 1000) : 0;
+    serverLog('index', `Cache hit: ${cachedIndex.notes.size} notes, ${cacheAge}s old — loaded in ${duration}ms`);
     if (stateDb) {
       recordIndexEvent(stateDb, {
         trigger: 'startup_cache',
@@ -584,7 +588,7 @@ async function main() {
     runPostIndexWork(vaultIndex);
   } else {
     // Cache miss - build index
-    serverLog('index', 'Building vault index...');
+    serverLog('index', 'Cache miss: building from scratch');
 
     try {
       vaultIndex = await buildVaultIndex(vaultPath);
@@ -653,14 +657,19 @@ async function updateEntitiesInStateDb(): Promise<void> {
  * Post-index work: config inference, hub export, file watcher
  */
 async function runPostIndexWork(index: VaultIndex) {
+  const postStart = Date.now();
+
   // Scan and save entities to StateDb
+  serverLog('index', 'Scanning entities...');
   await updateEntitiesInStateDb();
 
   // Initialize wikilink entity index from StateDb (now populated)
   await initializeEntityIndex(vaultPath);
+  serverLog('index', 'Entity index initialized');
 
   // Export hub scores
   await exportHubScores(index, stateDb);
+  serverLog('index', 'Hub scores exported');
 
   // Record growth metrics
   if (stateDb) {
@@ -691,6 +700,7 @@ async function runPostIndexWork(index: VaultIndex) {
   if (stateDb) {
     try {
       updateSuppressionList(stateDb);
+      serverLog('index', 'Suppression list updated');
     } catch (err) {
       serverLog('server', `Failed to update suppression list: ${err instanceof Error ? err.message : err}`, 'error');
     }
@@ -703,11 +713,17 @@ async function runPostIndexWork(index: VaultIndex) {
     saveConfig(stateDb, inferred, existing);
   }
   flywheelConfig = loadConfig(stateDb);
+  const configKeys = Object.keys(flywheelConfig).filter(k => (flywheelConfig as Record<string, unknown>)[k] != null);
+  serverLog('config', `Config inferred: ${configKeys.join(', ')}`);
 
   // Build task cache (skip rebuild if SQLite cache is already fresh)
   if (stateDb) {
-    refreshIfStale(vaultPath, index, flywheelConfig.exclude_task_tags);
-    serverLog('tasks', 'Task cache ready');
+    if (isTaskCacheStale()) {
+      serverLog('tasks', 'Task cache stale, rebuilding...');
+      refreshIfStale(vaultPath, index, flywheelConfig.exclude_task_tags);
+    } else {
+      serverLog('tasks', 'Task cache fresh, skipping rebuild');
+    }
   }
 
   if (flywheelConfig.vault_name) {
@@ -760,46 +776,61 @@ async function runPostIndexWork(index: VaultIndex) {
         serverLog('watcher', `Processing ${batch.events.length} file changes`);
         const batchStart = Date.now();
         const changedPaths = batch.events.map(e => e.path);
+        const tracker = createStepTracker();
         try {
+          // Step 1: Index rebuild
+          tracker.start('index_rebuild', { files_changed: batch.events.length, changed_paths: changedPaths });
           vaultIndex = await buildVaultIndex(vaultPath);
           setIndexState('ready');
-          const duration = Date.now() - batchStart;
-          serverLog('watcher', `Index rebuilt in ${duration}ms`);
-          if (stateDb) {
-            recordIndexEvent(stateDb, {
-              trigger: 'watcher',
-              duration_ms: duration,
-              note_count: vaultIndex.notes.size,
-              files_changed: batch.events.length,
-              changed_paths: changedPaths,
-            });
-          }
-          await updateEntitiesInStateDb();
-          await exportHubScores(vaultIndex, stateDb);
+          tracker.end({ note_count: vaultIndex.notes.size, entity_count: vaultIndex.entities.size, tag_count: vaultIndex.tags.size });
+          serverLog('watcher', `Index rebuilt: ${vaultIndex.notes.size} notes, ${vaultIndex.entities.size} entities`);
 
-          // Update embeddings for changed files (if index has been built)
+          // Step 2: Entity scan
+          tracker.start('entity_scan', { note_count: vaultIndex.notes.size });
+          await updateEntitiesInStateDb();
+          const entityCount = stateDb ? getAllEntitiesFromDb(stateDb).length : 0;
+          tracker.end({ entity_count: entityCount });
+          serverLog('watcher', `Entity scan: ${entityCount} entities`);
+
+          // Step 3: Hub scores
+          tracker.start('hub_scores', { entity_count: entityCount });
+          const hubUpdated = await exportHubScores(vaultIndex, stateDb);
+          tracker.end({ updated: hubUpdated ?? 0 });
+          serverLog('watcher', `Hub scores: ${hubUpdated ?? 0} updated`);
+
+          // Step 4: Note embeddings
           if (hasEmbeddingsIndex()) {
+            tracker.start('note_embeddings', { files: batch.events.length });
+            let embUpdated = 0;
+            let embRemoved = 0;
             for (const event of batch.events) {
               try {
                 if (event.type === 'delete') {
                   removeEmbedding(event.path);
+                  embRemoved++;
                 } else if (event.path.endsWith('.md')) {
                   const absPath = path.join(vaultPath, event.path);
                   await updateEmbedding(event.path, absPath);
+                  embUpdated++;
                 }
               } catch {
                 // Don't let embedding errors affect watcher
               }
             }
+            tracker.end({ updated: embUpdated, removed: embRemoved });
+            serverLog('watcher', `Note embeddings: ${embUpdated} updated, ${embRemoved} removed`);
+          } else {
+            tracker.skip('note_embeddings', 'not built');
           }
 
-          // Update entity embeddings for changed files (if entity embeddings have been built)
+          // Step 5: Entity embeddings
           if (hasEntityEmbeddingsIndex() && stateDb) {
+            tracker.start('entity_embeddings', { files: batch.events.length });
+            let entEmbUpdated = 0;
             try {
               const allEntities = getAllEntitiesFromDb(stateDb);
               for (const event of batch.events) {
                 if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
-                // Find entities whose backing note matches this changed path
                 const matching = allEntities.filter(e => e.path === event.path);
                 for (const entity of matching) {
                   await updateEntityEmbedding(entity.name, {
@@ -808,32 +839,66 @@ async function runPostIndexWork(index: VaultIndex) {
                     category: entity.category,
                     aliases: entity.aliases,
                   }, vaultPath);
+                  entEmbUpdated++;
                 }
               }
             } catch {
               // Don't let entity embedding errors affect watcher
             }
-          }
-          if (stateDb) {
-            try {
-              saveVaultIndexToCache(stateDb, vaultIndex);
-            } catch (err) {
-              serverLog('index', `Failed to update index cache: ${err instanceof Error ? err.message : err}`, 'error');
-            }
+            tracker.end({ updated: entEmbUpdated });
+            serverLog('watcher', `Entity embeddings: ${entEmbUpdated} updated`);
+          } else {
+            tracker.skip('entity_embeddings', !stateDb ? 'no stateDb' : 'not built');
           }
 
-          // Update task cache for changed files
+          // Step 6: Index cache
+          if (stateDb) {
+            tracker.start('index_cache', { note_count: vaultIndex.notes.size });
+            try {
+              saveVaultIndexToCache(stateDb, vaultIndex);
+              tracker.end({ saved: true });
+              serverLog('watcher', 'Index cache saved');
+            } catch (err) {
+              tracker.end({ saved: false, error: err instanceof Error ? err.message : String(err) });
+              serverLog('index', `Failed to update index cache: ${err instanceof Error ? err.message : err}`, 'error');
+            }
+          } else {
+            tracker.skip('index_cache', 'no stateDb');
+          }
+
+          // Step 7: Task cache
+          tracker.start('task_cache', { files: batch.events.length });
+          let taskUpdated = 0;
+          let taskRemoved = 0;
           for (const event of batch.events) {
             try {
               if (event.type === 'delete') {
                 removeTaskCacheForFile(event.path);
+                taskRemoved++;
               } else if (event.path.endsWith('.md')) {
                 await updateTaskCacheForFile(vaultPath, event.path);
+                taskUpdated++;
               }
             } catch {
               // Don't let task cache errors affect watcher
             }
           }
+          tracker.end({ updated: taskUpdated, removed: taskRemoved });
+          serverLog('watcher', `Task cache: ${taskUpdated} updated, ${taskRemoved} removed`);
+
+          // Record event with all steps
+          const duration = Date.now() - batchStart;
+          if (stateDb) {
+            recordIndexEvent(stateDb, {
+              trigger: 'watcher',
+              duration_ms: duration,
+              note_count: vaultIndex.notes.size,
+              files_changed: batch.events.length,
+              changed_paths: changedPaths,
+              steps: tracker.steps,
+            });
+          }
+          serverLog('watcher', `Batch complete: ${batch.events.length} files, ${duration}ms, ${tracker.steps.length} steps`);
         } catch (err) {
           setIndexState('error');
           setIndexError(err instanceof Error ? err : new Error(String(err)));
@@ -846,6 +911,7 @@ async function runPostIndexWork(index: VaultIndex) {
               files_changed: batch.events.length,
               changed_paths: changedPaths,
               error: err instanceof Error ? err.message : String(err),
+              steps: tracker.steps,
             });
           }
           serverLog('watcher', `Failed to rebuild index: ${err instanceof Error ? err.message : err}`, 'error');
@@ -862,7 +928,11 @@ async function runPostIndexWork(index: VaultIndex) {
     });
 
     watcher.start();
+    serverLog('watcher', 'File watcher started');
   }
+
+  const postDuration = Date.now() - postStart;
+  serverLog('server', `Post-index work complete in ${postDuration}ms`);
 }
 
 // ============================================================================

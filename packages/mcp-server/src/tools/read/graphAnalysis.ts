@@ -30,6 +30,41 @@ function isPeriodicNote(notePath: string): boolean {
   const folder = notePath.split('/')[0]?.toLowerCase() || '';
   return patterns.some(p => p.test(nameWithoutExt)) || periodicFolders.includes(folder);
 }
+/** Build a set of note paths that should be excluded from analysis based on config. */
+function getExcludedPaths(index: VaultIndex, config: FlywheelConfig): Set<string> {
+  const excluded = new Set<string>();
+  const excludeTags = new Set((config.exclude_analysis_tags ?? []).map(t => t.toLowerCase()));
+  const excludeEntities = new Set((config.exclude_entities ?? []).map(e => e.toLowerCase()));
+
+  if (excludeTags.size === 0 && excludeEntities.size === 0) return excluded;
+
+  for (const note of index.notes.values()) {
+    // Exclude by tag
+    if (excludeTags.size > 0) {
+      const tags = note.frontmatter?.tags;
+      const tagList = Array.isArray(tags) ? tags : typeof tags === 'string' ? [tags] : [];
+      if (tagList.some(t => excludeTags.has(String(t).toLowerCase()))) {
+        excluded.add(note.path);
+        continue;
+      }
+    }
+    // Exclude by entity name (matches note title or aliases)
+    if (excludeEntities.size > 0) {
+      if (excludeEntities.has(note.title.toLowerCase())) {
+        excluded.add(note.path);
+        continue;
+      }
+      for (const alias of note.aliases) {
+        if (excludeEntities.has(alias.toLowerCase())) {
+          excluded.add(note.path);
+          break;
+        }
+      }
+    }
+  }
+  return excluded;
+}
+
 import { findDeadEnds, findSources } from './graphAdvanced.js';
 import { getStaleNotes } from './temporal.js';
 import { inferFolderConventions } from './schema.js';
@@ -84,10 +119,12 @@ export function registerGraphAnalysisTools(
       requireIndex();
       const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
       const index = getIndex();
+      const config = getConfig?.() ?? {};
+      const excludedPaths = getExcludedPaths(index, config);
 
       switch (analysis) {
         case 'orphans': {
-          const allOrphans = findOrphanNotes(index, folder).filter(o => !isPeriodicNote(o.path));
+          const allOrphans = findOrphanNotes(index, folder).filter(o => !isPeriodicNote(o.path) && !excludedPaths.has(o.path));
           const orphans = allOrphans.slice(offset, offset + limit);
 
           return {
@@ -106,7 +143,7 @@ export function registerGraphAnalysisTools(
         }
 
         case 'dead_ends': {
-          const allResults = findDeadEnds(index, folder, min_backlinks);
+          const allResults = findDeadEnds(index, folder, min_backlinks).filter(n => !excludedPaths.has(n.path));
           const result = allResults.slice(offset, offset + limit);
 
           return {
@@ -121,7 +158,7 @@ export function registerGraphAnalysisTools(
         }
 
         case 'sources': {
-          const allResults = findSources(index, folder, min_outlinks);
+          const allResults = findSources(index, folder, min_outlinks).filter(n => !excludedPaths.has(n.path));
           const result = allResults.slice(offset, offset + limit);
 
           return {
@@ -136,17 +173,7 @@ export function registerGraphAnalysisTools(
         }
 
         case 'hubs': {
-          const excludeTags = new Set(
-            (getConfig?.()?.exclude_analysis_tags ?? []).map(t => t.toLowerCase())
-          );
-          const allHubs = findHubNotes(index, min_links).filter(h => {
-            if (excludeTags.size === 0) return true;
-            const note = index.notes.get(h.path);
-            if (!note) return true;
-            const tags = note.frontmatter?.tags;
-            const tagList = Array.isArray(tags) ? tags : typeof tags === 'string' ? [tags] : [];
-            return !tagList.some(t => excludeTags.has(String(t).toLowerCase()));
-          });
+          const allHubs = findHubNotes(index, min_links).filter(h => !excludedPaths.has(h.path));
           const hubs = allHubs.slice(offset, offset + limit);
 
           return {
@@ -175,7 +202,7 @@ export function registerGraphAnalysisTools(
             };
           }
 
-          const result = getStaleNotes(index, days, min_backlinks).slice(0, limit);
+          const result = getStaleNotes(index, days, min_backlinks).filter(n => !excludedPaths.has(n.path)).slice(0, limit);
 
           return {
             content: [{ type: 'text' as const, text: JSON.stringify({
@@ -196,7 +223,8 @@ export function registerGraphAnalysisTools(
           // Get notes, optionally filtered by folder, excluding periodic notes
           const allNotes = Array.from(index.notes.values()).filter(note =>
             (!folder || note.path.startsWith(folder + '/') || note.path.substring(0, note.path.lastIndexOf('/')) === folder) &&
-            !isPeriodicNote(note.path)
+            !isPeriodicNote(note.path) &&
+            !excludedPaths.has(note.path)
           );
 
           // Infer folder conventions for frontmatter completeness scoring
@@ -308,22 +336,21 @@ export function registerGraphAnalysisTools(
           const daysBack = days ?? 30;
           let hubs = getEmergingHubs(db, daysBack);
 
-          // Filter out entities whose backing note has excluded tags
-          const excludeTags = new Set(
-            (getConfig?.()?.exclude_analysis_tags ?? []).map(t => t.toLowerCase())
-          );
-          if (excludeTags.size > 0) {
-            const notesByTitle = new Map<string, { frontmatter: Record<string, unknown> }>();
+          // Filter out entities whose backing note is excluded by tags/entity name
+          if (excludedPaths.size > 0) {
+            const notesByTitle = new Map<string, { path: string }>();
             for (const note of index.notes.values()) {
               notesByTitle.set(note.title.toLowerCase(), note);
             }
             hubs = hubs.filter(hub => {
               const note = notesByTitle.get(hub.entity.toLowerCase());
-              if (!note) return true;
-              const tags = note.frontmatter?.tags;
-              const tagList = Array.isArray(tags) ? tags : typeof tags === 'string' ? [tags] : [];
-              return !tagList.some(t => excludeTags.has(String(t).toLowerCase()));
+              return !note || !excludedPaths.has(note.path);
             });
+          }
+          // Also filter by entity name directly (entity may not have a backing note)
+          const excludeEntities = new Set((config.exclude_entities ?? []).map(e => e.toLowerCase()));
+          if (excludeEntities.size > 0) {
+            hubs = hubs.filter(hub => !excludeEntities.has(hub.entity.toLowerCase()));
           }
 
           return {

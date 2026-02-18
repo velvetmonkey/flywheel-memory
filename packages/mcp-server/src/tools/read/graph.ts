@@ -28,12 +28,25 @@ async function getContext(
   try {
     const fullPath = path.join(vaultPath, sourcePath);
     const content = await fs.promises.readFile(fullPath, 'utf-8');
-    const lines = content.split('\n');
+    const allLines = content.split('\n');
 
-    const startLine = Math.max(0, line - 1 - contextLines);
-    const endLine = Math.min(lines.length, line + contextLines);
+    // Line numbers from the parser are relative to the body (after frontmatter).
+    // Compute the frontmatter offset so we index into the full file correctly.
+    let fmLines = 0;
+    if (allLines[0]?.trimEnd() === '---') {
+      for (let i = 1; i < allLines.length; i++) {
+        if (allLines[i].trimEnd() === '---') {
+          fmLines = i + 1; // lines consumed by frontmatter (including both ---)
+          break;
+        }
+      }
+    }
 
-    return lines.slice(startLine, endLine).join('\n').trim();
+    const absLine = line + fmLines; // convert body-relative to absolute (1-indexed)
+    const startLine = Math.max(0, absLine - 1 - contextLines);
+    const endLine = Math.min(allLines.length, absLine + contextLines);
+
+    return allLines.slice(startLine, endLine).join('\n').trim();
   } catch {
     return '';
   }

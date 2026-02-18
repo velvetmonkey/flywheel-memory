@@ -75,7 +75,7 @@ describe('SQLite State Management', () => {
     it('should have correct schema version', () => {
       stateDb = openStateDb(testVaultPath);
       const metadata = getStateDbMetadata(stateDb);
-      expect(metadata.schemaVersion).toBe(13);
+      expect(metadata.schemaVersion).toBe(14);
     });
   });
 

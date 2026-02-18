@@ -126,51 +126,47 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
       throw new Error('FTS5 database not initialized. Call setFTS5Database() first.');
     }
 
-    // Clear existing index
-    db.exec('DELETE FROM notes_fts');
-
     // Scan vault for markdown files
     const files = await scanVault(vaultPath);
     const indexableFiles = files.filter(f => shouldIndexFile(f.path));
 
-    // Prepare insert statement (4-col: path, title, frontmatter, content)
+    // Read all file content into memory first, then do atomic swap
+    const rows: Array<[string, string, string, string]> = [];
+    for (const file of indexableFiles) {
+      try {
+        const stats = fs.statSync(file.absolutePath);
+        if (stats.size > MAX_INDEX_FILE_SIZE) {
+          continue; // Skip very large files
+        }
+
+        const raw = fs.readFileSync(file.absolutePath, 'utf-8');
+        const { frontmatter, body } = splitFrontmatter(raw);
+        const title = file.path.replace(/\.md$/, '').split('/').pop() || file.path;
+        rows.push([file.path, title, frontmatter, body]);
+      } catch (err) {
+        // Skip files we can't read
+        console.error(`[FTS5] Skipping ${file.path}:`, err);
+      }
+    }
+
+    // Atomic swap: DELETE + INSERT all in one transaction
     const insert = db.prepare(
       'INSERT INTO notes_fts (path, title, frontmatter, content) VALUES (?, ?, ?, ?)'
     );
+    const now = new Date();
 
-    // Index files in a transaction for performance
-    const insertMany = db.transaction((filesToIndex: typeof indexableFiles) => {
-      let indexed = 0;
-      for (const file of filesToIndex) {
-        try {
-          const stats = fs.statSync(file.absolutePath);
-          if (stats.size > MAX_INDEX_FILE_SIZE) {
-            continue; // Skip very large files
-          }
-
-          const raw = fs.readFileSync(file.absolutePath, 'utf-8');
-          const { frontmatter, body } = splitFrontmatter(raw);
-
-          // Extract title from filename
-          const title = file.path.replace(/\.md$/, '').split('/').pop() || file.path;
-
-          insert.run(file.path, title, frontmatter, body);
-          indexed++;
-        } catch (err) {
-          // Skip files we can't read
-          console.error(`[FTS5] Skipping ${file.path}:`, err);
-        }
+    const swapAll = db.transaction(() => {
+      db!.exec('DELETE FROM notes_fts');
+      for (const row of rows) {
+        insert.run(...row);
       }
-      return indexed;
+      db!.prepare(
+        'INSERT OR REPLACE INTO fts_metadata (key, value) VALUES (?, ?)'
+      ).run('last_built', now.toISOString());
     });
 
-    const indexed = insertMany(indexableFiles);
-
-    // Update metadata
-    const now = new Date();
-    db.prepare(
-      'INSERT OR REPLACE INTO fts_metadata (key, value) VALUES (?, ?)'
-    ).run('last_built', now.toISOString());
+    swapAll();
+    const indexed = rows.length;
 
     state = {
       ready: true,

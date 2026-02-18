@@ -51,6 +51,13 @@ export function isTaskCacheReady(): boolean {
 }
 
 /**
+ * Check if a task cache rebuild is currently in progress
+ */
+export function isTaskCacheBuilding(): boolean {
+  return rebuildInProgress;
+}
+
+/**
  * Full rebuild: scan all notes, extract tasks, bulk INSERT
  *
  * If the cache was previously built (cacheReady=true from a prior session),
@@ -75,66 +82,56 @@ export async function buildTaskCache(
   const start = Date.now();
 
   try {
+    // Collect all note paths
+    const notePaths: string[] = [];
+    for (const note of index.notes.values()) {
+      notePaths.push(note.path);
+    }
+
+    // Phase 1: Extract all tasks into memory (async file reads, no DB writes)
+    const allRows: Array<[string, number, string, string, string, string | null, string | null, string | null]> = [];
+    for (const notePath of notePaths) {
+      const absolutePath = path.join(vaultPath, notePath);
+      const tasks = await extractTasksFromNote(notePath, absolutePath);
+
+      for (const task of tasks) {
+        if (excludeTags?.length && excludeTags.some(t => task.tags.includes(t))) {
+          continue;
+        }
+        allRows.push([
+          task.path,
+          task.line,
+          task.text,
+          task.status,
+          task.raw,
+          task.context ?? null,
+          task.tags.length > 0 ? JSON.stringify(task.tags) : null,
+          task.due_date ?? null,
+        ]);
+      }
+    }
+
+    // Phase 2: Atomic swap — DELETE + INSERT all in one transaction
     const insertStmt = db.prepare(`
       INSERT OR REPLACE INTO tasks (path, line, text, status, raw, context, tags_json, due_date)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const insertAll = db.transaction(() => {
+    const swapAll = db.transaction(() => {
       db!.prepare('DELETE FROM tasks').run();
-
-      let count = 0;
-      const promises: Promise<void>[] = [];
-
-      // Collect all note paths
-      const notePaths: string[] = [];
-      for (const note of index.notes.values()) {
-        notePaths.push(note.path);
+      for (const row of allRows) {
+        insertStmt.run(...row);
       }
-
-      return { notePaths, insertStmt };
+      db!.prepare(
+        'INSERT OR REPLACE INTO fts_metadata (key, value) VALUES (?, ?)'
+      ).run('task_cache_built', new Date().toISOString());
     });
 
-    const { notePaths, insertStmt: stmt } = insertAll();
-
-    // Extract tasks from all notes (async file reads)
-    let totalTasks = 0;
-    for (const notePath of notePaths) {
-      const absolutePath = path.join(vaultPath, notePath);
-      const tasks = await extractTasksFromNote(notePath, absolutePath);
-
-      if (tasks.length > 0) {
-        const insertBatch = db.transaction(() => {
-          for (const task of tasks) {
-            // Skip tasks with excluded tags
-            if (excludeTags?.length && excludeTags.some(t => task.tags.includes(t))) {
-              continue;
-            }
-            stmt.run(
-              task.path,
-              task.line,
-              task.text,
-              task.status,
-              task.raw,
-              task.context ?? null,
-              task.tags.length > 0 ? JSON.stringify(task.tags) : null,
-              task.due_date ?? null
-            );
-            totalTasks++;
-          }
-        });
-        insertBatch();
-      }
-    }
-
-    // Record build timestamp
-    db.prepare(
-      'INSERT OR REPLACE INTO fts_metadata (key, value) VALUES (?, ?)'
-    ).run('task_cache_built', new Date().toISOString());
+    swapAll();
 
     cacheReady = true;
     const duration = Date.now() - start;
-    serverLog('tasks', `Task cache built: ${totalTasks} tasks from ${notePaths.length} notes in ${duration}ms`);
+    serverLog('tasks', `Task cache built: ${allRows.length} tasks from ${notePaths.length} notes in ${duration}ms`);
   } finally {
     rebuildInProgress = false;
   }

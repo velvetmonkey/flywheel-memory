@@ -108,7 +108,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 12;
+export const SCHEMA_VERSION = 13;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -349,6 +349,17 @@ CREATE TABLE IF NOT EXISTS tasks (
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
 CREATE INDEX IF NOT EXISTS idx_tasks_path ON tasks(path);
 CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(due_date);
+
+-- Merge dismissals (v13: persistent merge pair suppression)
+CREATE TABLE IF NOT EXISTS merge_dismissals (
+  pair_key TEXT PRIMARY KEY,
+  source_path TEXT NOT NULL,
+  target_path TEXT NOT NULL,
+  source_name TEXT NOT NULL,
+  target_name TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  dismissed_at TEXT DEFAULT (datetime('now'))
+);
 `;
 
 // =============================================================================
@@ -458,6 +469,8 @@ function initSchema(db: Database.Database): void {
     }
 
     // v12: tasks cache table (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v13: merge_dismissals table (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
@@ -1058,6 +1071,36 @@ export function loadFlywheelConfigFromDb(stateDb: StateDb): Record<string, unkno
     return null;
   }
   return config;
+}
+
+// =============================================================================
+// Merge Dismissal Operations
+// =============================================================================
+
+/**
+ * Record a merge dismissal so the pair never reappears in suggestions.
+ */
+export function recordMergeDismissal(
+  db: StateDb,
+  sourcePath: string,
+  targetPath: string,
+  sourceName: string,
+  targetName: string,
+  reason: string
+): void {
+  const pairKey = [sourcePath, targetPath].sort().join('::');
+  db.db.prepare(`INSERT OR IGNORE INTO merge_dismissals
+    (pair_key, source_path, target_path, source_name, target_name, reason)
+    VALUES (?, ?, ?, ?, ?, ?)`)
+    .run(pairKey, sourcePath, targetPath, sourceName, targetName, reason);
+}
+
+/**
+ * Get all dismissed merge pair keys for filtering.
+ */
+export function getDismissedMergePairs(db: StateDb): Set<string> {
+  const rows = db.db.prepare('SELECT pair_key FROM merge_dismissals').all() as { pair_key: string }[];
+  return new Set(rows.map(r => r.pair_key));
 }
 
 // =============================================================================

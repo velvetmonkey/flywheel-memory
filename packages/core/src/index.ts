@@ -91,6 +91,9 @@ export {
   saveFlywheelConfigToDb,
   loadFlywheelConfigFromDb,
   getStateDbMetadata,
+  // Merge Dismissals
+  recordMergeDismissal,
+  getDismissedMergePairs,
   // Vault Index Cache
   saveVaultIndexCache,
   loadVaultIndexCache,

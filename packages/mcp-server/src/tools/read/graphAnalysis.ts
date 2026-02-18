@@ -14,6 +14,22 @@ import type { FlywheelConfig } from '../../core/read/config.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { findOrphanNotes, findHubNotes, getBacklinksForNote, resolveTarget } from '../../core/read/graph.js';
+
+/** Check if a note path looks like a periodic note (daily, weekly, monthly, quarterly, yearly). */
+function isPeriodicNote(notePath: string): boolean {
+  const filename = notePath.split('/').pop() || '';
+  const nameWithoutExt = filename.replace(/\.md$/, '');
+  const patterns = [
+    /^\d{4}-\d{2}-\d{2}$/,     // YYYY-MM-DD (daily)
+    /^\d{4}-W\d{2}$/,           // YYYY-Wnn (weekly)
+    /^\d{4}-\d{2}$/,            // YYYY-MM (monthly)
+    /^\d{4}-Q[1-4]$/,           // YYYY-Qn (quarterly)
+    /^\d{4}$/,                   // YYYY (yearly)
+  ];
+  const periodicFolders = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'journal', 'journals'];
+  const folder = notePath.split('/')[0]?.toLowerCase() || '';
+  return patterns.some(p => p.test(nameWithoutExt)) || periodicFolders.includes(folder);
+}
 import { findDeadEnds, findSources } from './graphAdvanced.js';
 import { getStaleNotes } from './temporal.js';
 import { inferFolderConventions } from './schema.js';
@@ -71,7 +87,7 @@ export function registerGraphAnalysisTools(
 
       switch (analysis) {
         case 'orphans': {
-          const allOrphans = findOrphanNotes(index, folder);
+          const allOrphans = findOrphanNotes(index, folder).filter(o => !isPeriodicNote(o.path));
           const orphans = allOrphans.slice(offset, offset + limit);
 
           return {
@@ -177,9 +193,10 @@ export function registerGraphAnalysisTools(
         case 'immature': {
           const vaultPath = getVaultPath();
 
-          // Get notes, optionally filtered by folder
+          // Get notes, optionally filtered by folder, excluding periodic notes
           const allNotes = Array.from(index.notes.values()).filter(note =>
-            !folder || note.path.startsWith(folder + '/') || note.path.substring(0, note.path.lastIndexOf('/')) === folder
+            (!folder || note.path.startsWith(folder + '/') || note.path.substring(0, note.path.lastIndexOf('/')) === folder) &&
+            !isPeriodicNote(note.path)
           );
 
           // Infer folder conventions for frontmatter completeness scoring
@@ -289,7 +306,25 @@ export function registerGraphAnalysisTools(
           }
 
           const daysBack = days ?? 30;
-          const hubs = getEmergingHubs(db, daysBack);
+          let hubs = getEmergingHubs(db, daysBack);
+
+          // Filter out entities whose backing note has excluded tags
+          const excludeTags = new Set(
+            (getConfig?.()?.exclude_analysis_tags ?? []).map(t => t.toLowerCase())
+          );
+          if (excludeTags.size > 0) {
+            const notesByTitle = new Map<string, { frontmatter: Record<string, unknown> }>();
+            for (const note of index.notes.values()) {
+              notesByTitle.set(note.title.toLowerCase(), note);
+            }
+            hubs = hubs.filter(hub => {
+              const note = notesByTitle.get(hub.entity.toLowerCase());
+              if (!note) return true;
+              const tags = note.frontmatter?.tags;
+              const tagList = Array.isArray(tags) ? tags : typeof tags === 'string' ? [tags] : [];
+              return !tagList.some(t => excludeTags.has(String(t).toLowerCase()));
+            });
+          }
 
           return {
             content: [{ type: 'text' as const, text: JSON.stringify({

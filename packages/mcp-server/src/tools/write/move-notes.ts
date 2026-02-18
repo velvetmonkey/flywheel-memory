@@ -18,7 +18,7 @@ import matter from 'gray-matter';
 /**
  * Escape special regex characters in a string
  */
-function escapeRegex(str: string): string {
+export function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
@@ -45,7 +45,7 @@ function extractWikilinks(content: string): Array<{ target: string; displayText?
 /**
  * Get the title from a file path (filename without .md extension)
  */
-function getTitleFromPath(filePath: string): string {
+export function getTitleFromPath(filePath: string): string {
   return path.basename(filePath, '.md');
 }
 
@@ -53,7 +53,7 @@ function getTitleFromPath(filePath: string): string {
  * Find all backlinks to a given note (by title and aliases)
  * Returns files that contain wikilinks pointing to the target
  */
-async function findBacklinks(
+export async function findBacklinks(
   vaultPath: string,
   targetTitle: string,
   targetAliases: string[]
@@ -108,7 +108,7 @@ async function findBacklinks(
 /**
  * Update wikilinks in a file, replacing old title references with new title
  */
-async function updateBacklinksInFile(
+export async function updateBacklinksInFile(
   vaultPath: string,
   filePath: string,
   oldTitles: string[],
@@ -145,7 +145,7 @@ async function updateBacklinksInFile(
 /**
  * Extract aliases from frontmatter (supports multiple formats)
  */
-function extractAliases(frontmatter: Record<string, unknown>): string[] {
+export function extractAliases(frontmatter: Record<string, unknown>): string[] {
   const aliases: string[] = [];
 
   if (frontmatter.aliases) {

@@ -79,6 +79,7 @@ import { registerTaskTools } from './tools/write/tasks.js';
 import { registerFrontmatterTools } from './tools/write/frontmatter.js';
 import { registerNoteTools } from './tools/write/notes.js';
 import { registerMoveNoteTools } from './tools/write/move-notes.js';
+import { registerMergeTools as registerWriteMergeTools } from './tools/write/merge.js';
 import { registerSystemTools as registerWriteSystemTools } from './tools/write/system.js';
 import { registerPolicyTools } from './tools/write/policy.js';
 import { registerTagTools } from './tools/write/tags.js';
@@ -90,6 +91,7 @@ import { registerMetricsTools } from './tools/read/metrics.js';
 import { registerActivityTools } from './tools/read/activity.js';
 import { registerSimilarityTools } from './tools/read/similarity.js';
 import { registerSemanticTools } from './tools/read/semantic.js';
+import { registerMergeTools as registerReadMergeTools } from './tools/read/merges.js';
 
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
@@ -325,6 +327,13 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
   // health (server activity log)
   server_log: 'health',
+
+  // health (merge suggestions)
+  suggest_entity_merges: 'health',
+  dismiss_merge_suggestion: 'health',
+
+  // notes (entity merge)
+  merge_entities: 'notes',
 };
 
 // ============================================================================
@@ -452,6 +461,7 @@ registerTaskTools(server, vaultPath);
 registerFrontmatterTools(server, vaultPath);
 registerNoteTools(server, vaultPath, () => vaultIndex);
 registerMoveNoteTools(server, vaultPath);
+registerWriteMergeTools(server, vaultPath);
 registerWriteSystemTools(server, vaultPath);
 registerPolicyTools(server, vaultPath);
 registerTagTools(server, () => vaultIndex, () => vaultPath);
@@ -468,6 +478,7 @@ registerMetricsTools(server, () => vaultIndex, () => stateDb);
 registerActivityTools(server, () => stateDb, () => { try { return getSessionId(); } catch { return null; } });
 registerSimilarityTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerSemanticTools(server, () => vaultPath, () => stateDb);
+registerReadMergeTools(server, () => stateDb);
 
 // Resources (always registered, not gated by tool presets)
 registerVaultResources(server, () => vaultIndex ?? null);

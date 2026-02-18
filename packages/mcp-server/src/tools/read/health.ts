@@ -11,7 +11,7 @@ import { detectPeriodicNotes } from './periodic.js';
 import { getActivitySummary } from './temporal.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
 import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
-import { getRecentIndexEvents, type PipelineStep } from '../../core/shared/indexActivity.js';
+import { getRecentIndexEvents, getRecentPipelineEvent, type PipelineStep } from '../../core/shared/indexActivity.js';
 import { getFTS5State } from '../../core/read/fts5.js';
 import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount } from '../../core/read/embeddings.js';
 import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache.js';
@@ -257,19 +257,18 @@ export function registerHealthTools(
         }
       }
 
-      // Get last pipeline run (most recent event with steps data)
+      // Get last pipeline run (most recent event with steps data — survives restarts)
       let lastPipeline: HealthCheckOutput['last_pipeline'];
       if (stateDb) {
         try {
-          const events = getRecentIndexEvents(stateDb, 1);
-          if (events.length > 0 && events[0].steps && events[0].steps.length > 0) {
-            const evt = events[0];
+          const evt = getRecentPipelineEvent(stateDb);
+          if (evt && evt.steps && evt.steps.length > 0) {
             lastPipeline = {
               timestamp: evt.timestamp,
               trigger: evt.trigger,
               duration_ms: evt.duration_ms,
               files_changed: evt.files_changed,
-              steps: evt.steps!,
+              steps: evt.steps,
             };
           }
         } catch {

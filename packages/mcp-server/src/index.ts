@@ -99,7 +99,7 @@ import { registerMergeTools as registerReadMergeTools } from './tools/read/merge
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
 
 // Core imports - Index Activity
-import { recordIndexEvent, purgeOldIndexEvents, createStepTracker } from './core/shared/indexActivity.js';
+import { recordIndexEvent, purgeOldIndexEvents, createStepTracker, computeEntityDiff } from './core/shared/indexActivity.js';
 
 // Core imports - Tool Tracking
 import { recordToolInvocation, purgeOldInvocations } from './core/shared/toolTracking.js';
@@ -785,12 +785,14 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.end({ note_count: vaultIndex.notes.size, entity_count: vaultIndex.entities.size, tag_count: vaultIndex.tags.size });
           serverLog('watcher', `Index rebuilt: ${vaultIndex.notes.size} notes, ${vaultIndex.entities.size} entities`);
 
-          // Step 2: Entity scan
+          // Step 2: Entity scan (with diff tracking)
+          const entitiesBefore = stateDb ? getAllEntitiesFromDb(stateDb) : [];
           tracker.start('entity_scan', { note_count: vaultIndex.notes.size });
           await updateEntitiesInStateDb();
-          const entityCount = stateDb ? getAllEntitiesFromDb(stateDb).length : 0;
-          tracker.end({ entity_count: entityCount });
-          serverLog('watcher', `Entity scan: ${entityCount} entities`);
+          const entitiesAfter = stateDb ? getAllEntitiesFromDb(stateDb) : [];
+          const entityDiff = computeEntityDiff(entitiesBefore, entitiesAfter);
+          tracker.end({ entity_count: entitiesAfter.length, ...entityDiff });
+          serverLog('watcher', `Entity scan: ${entitiesAfter.length} entities`);
 
           // Step 3: Hub scores
           tracker.start('hub_scores', { entity_count: entityCount });

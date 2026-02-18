@@ -5,7 +5,7 @@
  * Stored in StateDb index_events table (schema v6).
  */
 
-import type { StateDb } from '@velvetmonkey/vault-core';
+import type { StateDb, EntitySearchResult } from '@velvetmonkey/vault-core';
 
 // =============================================================================
 // TYPES
@@ -129,6 +129,53 @@ function rowToEvent(row: RawEventRow): IndexEvent {
     error: row.error,
     steps: row.steps ? JSON.parse(row.steps) : null,
   };
+}
+
+/**
+ * Get most recent pipeline event (one with steps data).
+ * Used by health check to survive restarts where startup events lack steps.
+ */
+export function getRecentPipelineEvent(stateDb: StateDb): IndexEvent | null {
+  const row = stateDb.db.prepare(
+    'SELECT * FROM index_events WHERE steps IS NOT NULL ORDER BY timestamp DESC LIMIT 1'
+  ).get() as RawEventRow | undefined;
+  return row ? rowToEvent(row) : null;
+}
+
+/**
+ * Compute diff between two entity snapshots (before/after a scan).
+ */
+export function computeEntityDiff(
+  before: EntitySearchResult[],
+  after: EntitySearchResult[],
+): { added: string[]; removed: string[]; alias_changes: Array<{ entity: string; before: string[]; after: string[] }> } {
+  const beforeMap = new Map(before.map(e => [e.nameLower, e]));
+  const afterMap = new Map(after.map(e => [e.nameLower, e]));
+
+  const added: string[] = [];
+  const removed: string[] = [];
+  const alias_changes: Array<{ entity: string; before: string[]; after: string[] }> = [];
+
+  for (const [key, entity] of afterMap) {
+    if (!beforeMap.has(key)) {
+      added.push(entity.name);
+    } else {
+      const prev = beforeMap.get(key)!;
+      const prevAliases = JSON.stringify(prev.aliases.sort());
+      const currAliases = JSON.stringify(entity.aliases.sort());
+      if (prevAliases !== currAliases) {
+        alias_changes.push({ entity: entity.name, before: prev.aliases, after: entity.aliases });
+      }
+    }
+  }
+
+  for (const [key, entity] of beforeMap) {
+    if (!afterMap.has(key)) {
+      removed.push(entity.name);
+    }
+  }
+
+  return { added, removed, alias_changes };
 }
 
 /**

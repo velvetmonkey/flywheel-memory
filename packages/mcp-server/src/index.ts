@@ -111,7 +111,10 @@ import { computeGraphMetrics, recordGraphSnapshot, purgeOldSnapshots } from './c
 import { serverLog } from './core/shared/serverLog.js';
 
 // Core imports - Wikilink Feedback
-import { updateSuppressionList } from './core/write/wikilinkFeedback.js';
+import { updateSuppressionList, getTrackedApplications, processImplicitFeedback } from './core/write/wikilinkFeedback.js';
+
+// Node builtins
+import * as fs from 'node:fs/promises';
 
 // Resources
 import { registerVaultResources } from './resources/vault.js';
@@ -794,13 +797,26 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.end({ entity_count: entitiesAfter.length, ...entityDiff });
           serverLog('watcher', `Entity scan: ${entitiesAfter.length} entities`);
 
-          // Step 3: Hub scores
+          // Step 3: Hub scores (with before/after diffs)
+          const hubBefore = new Map<string, number>();
+          if (stateDb) {
+            const rows = stateDb.db.prepare('SELECT name, hub_score FROM entities').all() as Array<{ name: string; hub_score: number }>;
+            for (const r of rows) hubBefore.set(r.name, r.hub_score);
+          }
           tracker.start('hub_scores', { entity_count: entitiesAfter.length });
           const hubUpdated = await exportHubScores(vaultIndex, stateDb);
-          tracker.end({ updated: hubUpdated ?? 0 });
+          const hubDiffs: Array<{ entity: string; before: number; after: number }> = [];
+          if (stateDb) {
+            const rows = stateDb.db.prepare('SELECT name, hub_score FROM entities').all() as Array<{ name: string; hub_score: number }>;
+            for (const r of rows) {
+              const prev = hubBefore.get(r.name) ?? 0;
+              if (prev !== r.hub_score) hubDiffs.push({ entity: r.name, before: prev, after: r.hub_score });
+            }
+          }
+          tracker.end({ updated: hubUpdated ?? 0, diffs: hubDiffs.slice(0, 10) });
           serverLog('watcher', `Hub scores: ${hubUpdated ?? 0} updated`);
 
-          // Step 4: Note embeddings
+          // Step 4: Note embeddings (with updated paths)
           if (hasEmbeddingsIndex()) {
             tracker.start('note_embeddings', { files: batch.events.length });
             let embUpdated = 0;
@@ -825,10 +841,11 @@ async function runPostIndexWork(index: VaultIndex) {
             tracker.skip('note_embeddings', 'not built');
           }
 
-          // Step 5: Entity embeddings
+          // Step 5: Entity embeddings (with entity names)
           if (hasEntityEmbeddingsIndex() && stateDb) {
             tracker.start('entity_embeddings', { files: batch.events.length });
             let entEmbUpdated = 0;
+            const entEmbNames: string[] = [];
             try {
               const allEntities = getAllEntitiesFromDb(stateDb);
               for (const event of batch.events) {
@@ -842,12 +859,13 @@ async function runPostIndexWork(index: VaultIndex) {
                     aliases: entity.aliases,
                   }, vaultPath);
                   entEmbUpdated++;
+                  entEmbNames.push(entity.name);
                 }
               }
             } catch {
               // Don't let entity embedding errors affect watcher
             }
-            tracker.end({ updated: entEmbUpdated });
+            tracker.end({ updated: entEmbUpdated, updated_entities: entEmbNames.slice(0, 10) });
             serverLog('watcher', `Entity embeddings: ${entEmbUpdated} updated`);
           } else {
             tracker.skip('entity_embeddings', !stateDb ? 'no stateDb' : 'not built');
@@ -887,6 +905,39 @@ async function runPostIndexWork(index: VaultIndex) {
           }
           tracker.end({ updated: taskUpdated, removed: taskRemoved });
           serverLog('watcher', `Task cache: ${taskUpdated} updated, ${taskRemoved} removed`);
+
+          // Step 8: Wikilink check — which tracked links exist in changed files
+          tracker.start('wikilink_check', { files: batch.events.length });
+          const trackedLinks: Array<{ file: string; entities: string[] }> = [];
+          if (stateDb) {
+            for (const event of batch.events) {
+              if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+              try {
+                const apps = getTrackedApplications(stateDb, event.path);
+                if (apps.length > 0) trackedLinks.push({ file: event.path, entities: apps });
+              } catch { /* ignore */ }
+            }
+          }
+          tracker.end({ tracked: trackedLinks });
+          serverLog('watcher', `Wikilink check: ${trackedLinks.reduce((s, t) => s + t.entities.length, 0)} tracked links in ${trackedLinks.length} files`);
+
+          // Step 9: Implicit feedback — which entities had links removed
+          tracker.start('implicit_feedback', { files: batch.events.length });
+          const feedbackResults: Array<{ entity: string; file: string }> = [];
+          if (stateDb) {
+            for (const event of batch.events) {
+              if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+              try {
+                const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+                const removed = processImplicitFeedback(stateDb, event.path, content);
+                for (const entity of removed) feedbackResults.push({ entity, file: event.path });
+              } catch { /* ignore */ }
+            }
+          }
+          tracker.end({ removals: feedbackResults });
+          if (feedbackResults.length > 0) {
+            serverLog('watcher', `Implicit feedback: ${feedbackResults.length} removals detected`);
+          }
 
           // Record event with all steps
           const duration = Date.now() - batchStart;

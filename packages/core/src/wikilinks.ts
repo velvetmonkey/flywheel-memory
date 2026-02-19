@@ -568,7 +568,7 @@ export function resolveAliasWikilinks(
  */
 const DEFAULT_IMPLICIT_CONFIG: Required<ImplicitEntityConfig> = {
   detectImplicit: false,
-  implicitPatterns: ['proper-nouns', 'single-caps', 'quoted-terms', 'camel-case', 'acronyms'],
+  implicitPatterns: ['proper-nouns', 'quoted-terms'],
   excludePatterns: ['^The ', '^A ', '^An ', '^This ', '^That ', '^These ', '^Those '],
   minEntityLength: 3,
 };

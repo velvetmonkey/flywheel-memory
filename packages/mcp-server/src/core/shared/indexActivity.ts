@@ -148,17 +148,21 @@ export function getRecentPipelineEvent(stateDb: StateDb): IndexEvent | null {
 export function computeEntityDiff(
   before: EntitySearchResult[],
   after: EntitySearchResult[],
-): { added: string[]; removed: string[]; alias_changes: Array<{ entity: string; before: string[]; after: string[] }> } {
+): {
+  added: Array<{ name: string; category: string; path: string }>;
+  removed: Array<{ name: string; category: string; path: string }>;
+  alias_changes: Array<{ entity: string; before: string[]; after: string[] }>;
+} {
   const beforeMap = new Map(before.map(e => [e.nameLower, e]));
   const afterMap = new Map(after.map(e => [e.nameLower, e]));
 
-  const added: string[] = [];
-  const removed: string[] = [];
+  const added: Array<{ name: string; category: string; path: string }> = [];
+  const removed: Array<{ name: string; category: string; path: string }> = [];
   const alias_changes: Array<{ entity: string; before: string[]; after: string[] }> = [];
 
   for (const [key, entity] of afterMap) {
     if (!beforeMap.has(key)) {
-      added.push(entity.name);
+      added.push({ name: entity.name, category: entity.category, path: entity.path });
     } else {
       const prev = beforeMap.get(key)!;
       const prevAliases = JSON.stringify(prev.aliases.sort());
@@ -171,7 +175,7 @@ export function computeEntityDiff(
 
   for (const [key, entity] of beforeMap) {
     if (!afterMap.has(key)) {
-      removed.push(entity.name);
+      removed.push({ name: entity.name, category: entity.category, path: entity.path });
     }
   }
 

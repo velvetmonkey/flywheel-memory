@@ -1,6 +1,6 @@
 {
   "name": "@velvetmonkey/vault-core",
-  "version": "2.0.32",
+  "version": "2.0.33",
   "description": "Shared vault utilities for Flywheel ecosystem (entity scanning, wikilinks, protected zones)",
   "type": "module",
   "main": "dist/index.js",

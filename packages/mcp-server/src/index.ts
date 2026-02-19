@@ -634,6 +634,8 @@ async function main() {
   }
 }
 
+const DEFAULT_ENTITY_EXCLUDE_FOLDERS = ['node_modules', 'templates', 'attachments', 'tmp'];
+
 /**
  * Scan vault for entities and save to StateDb
  */
@@ -641,13 +643,13 @@ async function updateEntitiesInStateDb(): Promise<void> {
   if (!stateDb) return;
 
   try {
+    const config = loadConfig(stateDb);
+    const excludeFolders = config.exclude_entity_folders?.length
+      ? config.exclude_entity_folders
+      : DEFAULT_ENTITY_EXCLUDE_FOLDERS;
+
     const entityIndex = await scanVaultEntities(vaultPath, {
-      excludeFolders: [
-        'daily-notes', 'daily', 'weekly', 'weekly-notes', 'monthly',
-        'monthly-notes', 'quarterly', 'yearly-notes', 'periodic', 'journal',
-        'inbox', 'templates', 'attachments', 'tmp',
-        'clippings', 'readwise', 'articles', 'bookmarks', 'web-clips',
-      ],
+      excludeFolders,
     });
     stateDb.replaceAllEntities(entityIndex);
     serverLog('index', `Updated ${entityIndex._metadata.total_entities} entities in StateDb`);

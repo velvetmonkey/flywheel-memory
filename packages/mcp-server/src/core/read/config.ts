@@ -33,6 +33,7 @@ export interface FlywheelConfig {
   exclude_task_tags?: string[];
   exclude_analysis_tags?: string[];
   exclude_entities?: string[];
+  exclude_entity_folders?: string[];
 }
 
 /** Default config for new vaults */
@@ -40,6 +41,7 @@ const DEFAULT_CONFIG: FlywheelConfig = {
   exclude_task_tags: [],
   exclude_analysis_tags: [],
   exclude_entities: [],
+  exclude_entity_folders: [],
 };
 
 /**

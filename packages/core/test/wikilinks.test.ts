@@ -581,6 +581,45 @@ describe('detectImplicitEntities', () => {
       expect(matches.map(m => m.text)).not.toContain('January');
     });
   });
+
+  describe('overlap filtering', () => {
+    it('should keep longer match when proper-nouns and single-caps overlap', () => {
+      const content = 'Morning Briefing was productive today.';
+      const matches = detectImplicitEntities(content, {
+        implicitPatterns: ['proper-nouns', 'single-caps']
+      });
+
+      expect(matches.map(m => m.text)).toContain('Morning Briefing');
+      expect(matches.map(m => m.text)).not.toContain('Briefing');
+    });
+
+    it('should not produce corrupted wikilinks like ]]ng]]', () => {
+      const content = 'Morning Briefing (34.9s) was great.';
+      const matches = detectImplicitEntities(content, {
+        implicitPatterns: ['proper-nouns', 'single-caps']
+      });
+
+      // Apply matches in reverse order (simulating what processWikilinks does)
+      let result = content;
+      const sorted = [...matches].sort((a, b) => b.start - a.start);
+      for (const m of sorted) {
+        result = result.slice(0, m.start) + `[[${m.text}]]` + result.slice(m.end);
+      }
+
+      expect(result).toContain('[[Morning Briefing]]');
+      expect(result).not.toMatch(/\]\]\w+\]\]/);
+    });
+
+    it('should keep non-overlapping matches from different patterns', () => {
+      const content = 'Sam Altman discussed the Specialist Verticals topic.';
+      const matches = detectImplicitEntities(content, {
+        implicitPatterns: ['proper-nouns', 'single-caps']
+      });
+
+      expect(matches.map(m => m.text)).toContain('Sam Altman');
+      expect(matches.map(m => m.text)).toContain('Specialist Verticals');
+    });
+  });
 });
 
 describe('processWikilinks', () => {

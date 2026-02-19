@@ -398,12 +398,27 @@ export function processWikilinks(content: string, notePath?: string): WikilinkRe
     ? notePath.replace(/\.md$/, '').split('/').pop()?.toLowerCase()
     : null;
 
-  const newImplicits = implicitMatches.filter(m => {
+  let newImplicits = implicitMatches.filter(m => {
     const normalized = m.text.toLowerCase();
     if (alreadyLinked.has(normalized)) return false;
     if (currentNoteName && normalized === currentNoteName) return false;
     return true;
   });
+
+  // Filter overlapping matches (defense-in-depth)
+  const nonOverlapping: typeof newImplicits = [];
+  for (const match of newImplicits) {
+    const overlaps = nonOverlapping.some(
+      existing =>
+        (match.start >= existing.start && match.start < existing.end) ||
+        (match.end > existing.start && match.end <= existing.end) ||
+        (match.start <= existing.start && match.end >= existing.end)
+    );
+    if (!overlaps) {
+      nonOverlapping.push(match);
+    }
+  }
+  newImplicits = nonOverlapping;
 
   if (newImplicits.length > 0) {
     let processedContent = result.content;

@@ -775,10 +775,27 @@ export function detectImplicitEntities(
     }
   }
 
-  // Sort by position
-  detected.sort((a, b) => a.start - b.start);
+  // Sort by position (earliest first; longest first at same position)
+  detected.sort((a, b) => {
+    if (a.start !== b.start) return a.start - b.start;
+    return (b.end - b.start) - (a.end - a.start);
+  });
 
-  return detected;
+  // Filter overlapping matches — prefer longer matches (earlier in sorted order at same position)
+  const filtered: ImplicitEntityMatch[] = [];
+  for (const match of detected) {
+    const overlaps = filtered.some(
+      existing =>
+        (match.start >= existing.start && match.start < existing.end) ||
+        (match.end > existing.start && match.end <= existing.end) ||
+        (match.start <= existing.start && match.end >= existing.end)
+    );
+    if (!overlaps) {
+      filtered.push(match);
+    }
+  }
+
+  return filtered;
 }
 
 /**
@@ -860,13 +877,31 @@ export function processWikilinks(
     return result;
   }
 
+  // Step 4b: Filter overlapping matches (defense-in-depth)
+  const nonOverlapping: typeof newImplicitMatches = [];
+  for (const match of newImplicitMatches) {
+    const overlaps = nonOverlapping.some(
+      existing =>
+        (match.start >= existing.start && match.start < existing.end) ||
+        (match.end > existing.start && match.end <= existing.end) ||
+        (match.start <= existing.start && match.end >= existing.end)
+    );
+    if (!overlaps) {
+      nonOverlapping.push(match);
+    }
+  }
+
+  if (nonOverlapping.length === 0) {
+    return result;
+  }
+
   // Step 5: Apply implicit wikilinks (process from end to preserve positions)
   let processedContent = result.content;
   const implicitEntities: string[] = [];
 
   // Process from end to start
-  for (let i = newImplicitMatches.length - 1; i >= 0; i--) {
-    const match = newImplicitMatches[i];
+  for (let i = nonOverlapping.length - 1; i >= 0; i--) {
+    const match = nonOverlapping[i];
 
     // For quoted terms, we replace "Term" with [[Term]]
     // For other patterns, we replace Term with [[Term]]
@@ -898,7 +933,7 @@ export function processWikilinks(
 
   return {
     content: processedContent,
-    linksAdded: result.linksAdded + newImplicitMatches.length,
+    linksAdded: result.linksAdded + nonOverlapping.length,
     linkedEntities: result.linkedEntities,
     implicitEntities,
   };

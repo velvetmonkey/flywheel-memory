@@ -31,11 +31,11 @@ const MAX_ENTITY_WORDS = 3;
  * Default patterns for filtering out periodic notes and system files
  */
 const DEFAULT_EXCLUDE_PATTERNS = [
-  /^\d{4}-\d{2}-\d{2}$/,           // ISO dates: 2025-01-01
+  /^\d{4}-\d{2}-\d{2}/,            // ISO dates: 2025-01-01, 2025-01-01 Meeting Notes
   /^\d{1,2}\/\d{1,2}\/\d{4}$/,     // UK dates: 1/10/2024
-  /^\d{4}-W\d{2}$/,                 // Week dates: 2025-W17
-  /^\d{4}-\d{2}$/,                  // Month format: 2025-01
-  /^\d{4}-Q\d$/,                    // Quarter dates: 2025-Q4
+  /^\d{4}-W\d{2}/,                  // Week dates: 2025-W17, 2025-W17 Sprint Review
+  /^\d{4}-\d{2}/,                   // Month format: 2025-01, 2025-01 Monthly Review
+  /^\d{4}-Q\d/,                     // Quarter dates: 2025-Q4, 2025-Q4 Quarterly Report
   /^\d+$/,                          // Pure numbers
   /^@/,                             // Twitter handles
   /^</,                             // XML/HTML tags

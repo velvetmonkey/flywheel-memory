@@ -73,6 +73,7 @@ export function registerHealthTools(
       trigger: z.string(),
       duration_ms: z.number(),
       files_changed: z.number().nullable(),
+      changed_paths: z.array(z.string()).nullable(),
       steps: z.array(z.object({
         name: z.string(),
         duration_ms: z.number(),
@@ -82,6 +83,21 @@ export function registerHealthTools(
         skip_reason: z.string().optional(),
       })),
     }).optional().describe('Most recent watcher pipeline run with per-step timing'),
+    recent_pipelines: z.array(z.object({
+      timestamp: z.number(),
+      trigger: z.string(),
+      duration_ms: z.number(),
+      files_changed: z.number().nullable(),
+      changed_paths: z.array(z.string()).nullable(),
+      steps: z.array(z.object({
+        name: z.string(),
+        duration_ms: z.number(),
+        input: z.record(z.unknown()),
+        output: z.record(z.unknown()),
+        skipped: z.boolean().optional(),
+        skip_reason: z.string().optional(),
+      })),
+    })).optional().describe('Up to 5 most recent pipeline runs with steps data'),
     fts5_ready: z.boolean().describe('Whether the FTS5 keyword search index is ready'),
     fts5_building: z.boolean().describe('Whether the FTS5 keyword search index is currently building'),
     embeddings_building: z.boolean().describe('Whether semantic embeddings are currently building'),
@@ -129,8 +145,17 @@ export function registerHealthTools(
       trigger: string;
       duration_ms: number;
       files_changed: number | null;
+      changed_paths: string[] | null;
       steps: PipelineStep[];
     };
+    recent_pipelines?: Array<{
+      timestamp: number;
+      trigger: string;
+      duration_ms: number;
+      files_changed: number | null;
+      changed_paths: string[] | null;
+      steps: PipelineStep[];
+    }>;
     fts5_ready: boolean;
     fts5_building: boolean;
     embeddings_building: boolean;
@@ -259,6 +284,7 @@ export function registerHealthTools(
 
       // Get last pipeline run (most recent event with steps data — survives restarts)
       let lastPipeline: HealthCheckOutput['last_pipeline'];
+      let recentPipelines: HealthCheckOutput['recent_pipelines'];
       if (stateDb) {
         try {
           const evt = getRecentPipelineEvent(stateDb);
@@ -268,11 +294,31 @@ export function registerHealthTools(
               trigger: evt.trigger,
               duration_ms: evt.duration_ms,
               files_changed: evt.files_changed,
+              changed_paths: evt.changed_paths,
               steps: evt.steps,
             };
           }
         } catch {
           // Ignore errors reading pipeline data
+        }
+
+        // Recent pipeline events (last 5 with steps)
+        try {
+          const events = getRecentIndexEvents(stateDb, 10)
+            .filter(e => e.steps && e.steps.length > 0)
+            .slice(0, 5);
+          if (events.length > 0) {
+            recentPipelines = events.map(e => ({
+              timestamp: e.timestamp,
+              trigger: e.trigger,
+              duration_ms: e.duration_ms,
+              files_changed: e.files_changed,
+              changed_paths: e.changed_paths,
+              steps: e.steps!,
+            }));
+          }
+        } catch {
+          // Ignore errors reading recent pipeline data
         }
       }
 
@@ -297,6 +343,7 @@ export function registerHealthTools(
         config: configInfo,
         last_rebuild: lastRebuild,
         last_pipeline: lastPipeline,
+        recent_pipelines: recentPipelines,
         fts5_ready: ftsState.ready,
         fts5_building: ftsState.building,
         embeddings_building: isEmbeddingsBuilding(),

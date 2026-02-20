@@ -415,12 +415,13 @@ export function processWikilinks(content: string, notePath?: string): WikilinkRe
 
   // Step 3: Detect implicit entities (dead wikilinks for unrecognized proper nouns, camelCase, acronyms)
   const implicitEnabled = moduleConfig?.implicit_detection !== false; // default: true
+  const validPatterns = new Set<string>(ALL_IMPLICIT_PATTERNS);
   const implicitPatterns = moduleConfig?.implicit_patterns?.length
-    ? moduleConfig.implicit_patterns
+    ? moduleConfig.implicit_patterns.filter(p => validPatterns.has(p)) as Array<typeof ALL_IMPLICIT_PATTERNS[number]>
     : [...ALL_IMPLICIT_PATTERNS];
   const implicitMatches = detectImplicitEntities(result.content, {
     detectImplicit: implicitEnabled,
-    implicitPatterns: implicitPatterns as string[],
+    implicitPatterns,
     minEntityLength: 3,
   });
 

@@ -653,3 +653,316 @@ export function getDashboardData(stateDb: StateDb): DashboardData {
     })),
   };
 }
+
+// =============================================================================
+// PIPELINE OBSERVABILITY — Entity Journey & Algorithm Attribution
+// =============================================================================
+
+/** Score breakdown per layer (mirrors ScoreBreakdown from types.ts) */
+export interface SuggestionBreakdown {
+  contentMatch: number;
+  cooccurrenceBoost: number;
+  typeBoost: number;
+  contextBoost: number;
+  recencyBoost: number;
+  crossFolderBoost: number;
+  hubBoost: number;
+  feedbackAdjustment: number;
+  semanticBoost?: number;
+}
+
+/** Recent suggestion event from suggestion_events table */
+export interface SuggestionEvent {
+  note_path: string;
+  timestamp: number;
+  total_score: number;
+  breakdown: SuggestionBreakdown;
+  threshold: number;
+  passed: boolean;
+  top_contributing_layer: string;
+}
+
+/** Complete entity journey through the 5-stage pipeline */
+export interface EntityJourney {
+  entity: string;
+  stages: {
+    discover: {
+      first_detected: number | null;
+      source_notes: string[];
+      category: string;
+      aliases: string[];
+      hub_score: number;
+    };
+    suggest: {
+      total_suggestions: number;
+      recent: SuggestionEvent[];
+    };
+    apply: {
+      applied_count: number;
+      removed_count: number;
+      active: Array<{ note_path: string; applied_at: string }>;
+    };
+    learn: {
+      total_feedback: number;
+      correct: number;
+      incorrect: number;
+      accuracy: number;
+      recent: Array<{
+        note_path: string;
+        correct: boolean;
+        context: string;
+        timestamp: string;
+      }>;
+    };
+    adapt: {
+      boost_tier: string;
+      current_boost: number;
+      suppressed: boolean;
+      suppression_reason?: string;
+    };
+  };
+}
+
+/**
+ * Identify the top contributing layer from a score breakdown
+ */
+function getTopContributingLayer(breakdown: SuggestionBreakdown): string {
+  const layers: Array<[string, number]> = [
+    ['content_match', breakdown.contentMatch],
+    ['cooccurrence', breakdown.cooccurrenceBoost],
+    ['type_boost', breakdown.typeBoost],
+    ['context_boost', breakdown.contextBoost],
+    ['recency', breakdown.recencyBoost],
+    ['cross_folder', breakdown.crossFolderBoost],
+    ['hub_boost', breakdown.hubBoost],
+    ['feedback', breakdown.feedbackAdjustment],
+  ];
+  if (breakdown.semanticBoost !== undefined) {
+    layers.push(['semantic', breakdown.semanticBoost]);
+  }
+
+  layers.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+  const top = layers[0];
+  if (!top || top[1] === 0) return 'none';
+  const sign = top[1] > 0 ? '+' : '';
+  return `${top[0]} (${sign}${top[1].toFixed(1)})`;
+}
+
+/**
+ * Get the boost tier label for a given accuracy and sample count
+ */
+function getBoostTierLabel(accuracy: number, sampleCount: number): string {
+  if (sampleCount < FEEDBACK_BOOST_MIN_SAMPLES) return 'learning';
+  if (accuracy >= 0.95 && sampleCount >= 20) return 'champion';
+  if (accuracy >= 0.80) return 'strong';
+  if (accuracy >= 0.60) return 'neutral';
+  if (accuracy >= 0.40) return 'weak';
+  return 'poor';
+}
+
+/**
+ * Trace an entity's complete journey through the 5-stage pipeline.
+ *
+ * Queries across: entities, suggestion_events, wikilink_applications,
+ * wikilink_feedback, and wikilink_suppressions tables.
+ *
+ * @param stateDb - State database instance
+ * @param entityName - Entity name to trace
+ * @param daysBack - Number of days to look back (default: 30)
+ */
+export function getEntityJourney(
+  stateDb: StateDb,
+  entityName: string,
+  daysBack: number = 30,
+): EntityJourney {
+  const cutoff = Date.now() - (daysBack * 24 * 60 * 60 * 1000);
+
+  // Stage 1: Discover — entity metadata from entities table
+  const entityRow = stateDb.db.prepare(`
+    SELECT name, path, category, aliases_json, hub_score
+    FROM entities WHERE name_lower = ?
+  `).get(entityName.toLowerCase()) as {
+    name: string; path: string; category: string;
+    aliases_json: string | null; hub_score: number;
+  } | undefined;
+
+  const discover = {
+    first_detected: null as number | null,
+    source_notes: entityRow ? [entityRow.path] : [],
+    category: entityRow?.category ?? 'unknown',
+    aliases: entityRow?.aliases_json ? JSON.parse(entityRow.aliases_json) : [],
+    hub_score: entityRow?.hub_score ?? 0,
+  };
+
+  // Stage 2: Suggest — from suggestion_events table
+  const suggestionRows = stateDb.db.prepare(`
+    SELECT note_path, timestamp, total_score, breakdown_json, threshold, passed
+    FROM suggestion_events
+    WHERE entity = ? AND timestamp >= ?
+    ORDER BY timestamp DESC
+    LIMIT 20
+  `).all(entityName, cutoff) as Array<{
+    note_path: string; timestamp: number; total_score: number;
+    breakdown_json: string; threshold: number; passed: number;
+  }>;
+
+  const totalSuggestions = stateDb.db.prepare(`
+    SELECT COUNT(*) as cnt FROM suggestion_events WHERE entity = ?
+  `).get(entityName) as { cnt: number };
+
+  const suggest = {
+    total_suggestions: totalSuggestions.cnt,
+    recent: suggestionRows.map(r => {
+      const breakdown = JSON.parse(r.breakdown_json) as SuggestionBreakdown;
+      return {
+        note_path: r.note_path,
+        timestamp: r.timestamp,
+        total_score: r.total_score,
+        breakdown,
+        threshold: r.threshold,
+        passed: r.passed === 1,
+        top_contributing_layer: getTopContributingLayer(breakdown),
+      };
+    }),
+  };
+
+  // Stage 3: Apply — from wikilink_applications table
+  const appRows = stateDb.db.prepare(`
+    SELECT note_path, applied_at, status
+    FROM wikilink_applications
+    WHERE entity = ?
+  `).all(entityName.toLowerCase()) as Array<{
+    note_path: string; applied_at: string; status: string;
+  }>;
+
+  const apply = {
+    applied_count: appRows.filter(r => r.status === 'applied').length,
+    removed_count: appRows.filter(r => r.status === 'removed').length,
+    active: appRows
+      .filter(r => r.status === 'applied')
+      .map(r => ({ note_path: r.note_path, applied_at: r.applied_at })),
+  };
+
+  // Stage 4: Learn — from wikilink_feedback table
+  const feedbackRows = stateDb.db.prepare(`
+    SELECT note_path, correct, context, created_at
+    FROM wikilink_feedback
+    WHERE entity = ?
+    ORDER BY created_at DESC
+    LIMIT 20
+  `).all(entityName) as Array<{
+    note_path: string; correct: number; context: string; created_at: string;
+  }>;
+
+  const totalFeedback = stateDb.db.prepare(`
+    SELECT COUNT(*) as total,
+           SUM(CASE WHEN correct = 1 THEN 1 ELSE 0 END) as correct_count
+    FROM wikilink_feedback WHERE entity = ?
+  `).get(entityName) as { total: number; correct_count: number };
+
+  const learn = {
+    total_feedback: totalFeedback.total,
+    correct: totalFeedback.correct_count,
+    incorrect: totalFeedback.total - totalFeedback.correct_count,
+    accuracy: totalFeedback.total > 0
+      ? Math.round((totalFeedback.correct_count / totalFeedback.total) * 1000) / 1000
+      : 0,
+    recent: feedbackRows.map(r => ({
+      note_path: r.note_path,
+      correct: r.correct === 1,
+      context: r.context,
+      timestamp: r.created_at,
+    })),
+  };
+
+  // Stage 5: Adapt — boost tier + suppression from computed values
+  const boost = computeBoostFromAccuracy(learn.accuracy, learn.total_feedback);
+  const suppressed = isSuppressed(stateDb, entityName);
+
+  let suppressionReason: string | undefined;
+  if (suppressed) {
+    const suppRow = stateDb.db.prepare(
+      'SELECT false_positive_rate FROM wikilink_suppressions WHERE entity = ?'
+    ).get(entityName) as { false_positive_rate: number } | undefined;
+    if (suppRow) {
+      suppressionReason = `false_positive_rate ${(suppRow.false_positive_rate * 100).toFixed(0)}% exceeds ${(SUPPRESSION_THRESHOLD * 100).toFixed(0)}% threshold`;
+    }
+  }
+
+  const adapt = {
+    boost_tier: getBoostTierLabel(learn.accuracy, learn.total_feedback),
+    current_boost: boost,
+    suppressed,
+    suppression_reason: suppressionReason,
+  };
+
+  return {
+    entity: entityName,
+    stages: { discover, suggest, apply, learn, adapt },
+  };
+}
+
+/**
+ * Generate a human-readable reason string explaining an action in the pipeline.
+ *
+ * Used for algorithm attribution in the observability UI and PROVE-IT.md.
+ */
+export function formatActionReason(
+  action: 'discovered' | 'suggested' | 'filtered' | 'applied' | 'feedback_positive' | 'feedback_negative' | 'boosted' | 'suppressed',
+  details: {
+    entity?: string;
+    sourcePath?: string;
+    category?: string;
+    aliases?: string[];
+    score?: number;
+    threshold?: number;
+    breakdown?: SuggestionBreakdown;
+    strictness?: string;
+    notePath?: string;
+    accuracy?: number;
+    sampleCount?: number;
+    tier?: string;
+    falsePositiveRate?: number;
+  },
+): string {
+  switch (action) {
+    case 'discovered': {
+      const aliasStr = details.aliases?.length
+        ? `, aliases: [${details.aliases.map(a => `"${a}"`).join(', ')}]`
+        : '';
+      return `Scanned from \`${details.sourcePath}\` (type: ${details.category}${aliasStr})`;
+    }
+    case 'suggested': {
+      const parts: string[] = [];
+      if (details.breakdown) {
+        const b = details.breakdown;
+        if (b.contentMatch > 0) parts.push(`content_match +${b.contentMatch}`);
+        if (b.cooccurrenceBoost > 0) parts.push(`cooccurrence +${b.cooccurrenceBoost}`);
+        if (b.typeBoost > 0) parts.push(`type_boost +${b.typeBoost}`);
+        if (b.contextBoost > 0) parts.push(`context_boost +${b.contextBoost}`);
+        if (b.recencyBoost > 0) parts.push(`recency +${b.recencyBoost}`);
+        if (b.crossFolderBoost > 0) parts.push(`cross_folder +${b.crossFolderBoost}`);
+        if (b.hubBoost > 0) parts.push(`hub_boost +${b.hubBoost}`);
+        if (b.feedbackAdjustment !== 0) parts.push(`feedback ${b.feedbackAdjustment > 0 ? '+' : ''}${b.feedbackAdjustment}`);
+        if (b.semanticBoost && b.semanticBoost > 0) parts.push(`semantic +${b.semanticBoost.toFixed(1)}`);
+      }
+      return `Score ${details.score?.toFixed(1)} (threshold ${details.threshold}, ${details.strictness}): ${parts.join(', ')}`;
+    }
+    case 'filtered': {
+      const topLayer = details.breakdown ? getTopContributingLayer(details.breakdown) : 'unknown';
+      return `Score ${details.score?.toFixed(1)} below threshold ${details.threshold} (${details.strictness}). Top layer: ${topLayer}`;
+    }
+    case 'applied':
+      return `Applied wikilink [[${details.entity}]] to \`${details.notePath}\``;
+    case 'feedback_positive':
+      return `Link retained in \`${details.notePath}\` → implicit positive feedback`;
+    case 'feedback_negative':
+      return `Link [[${details.entity}]] removed from \`${details.notePath}\` → implicit negative feedback`;
+    case 'boosted':
+      return `Entity accuracy ${((details.accuracy ?? 0) * 100).toFixed(0)}% over ${details.sampleCount} samples → ${details.tier} tier → ${details.breakdown?.feedbackAdjustment ?? 0 > 0 ? '+' : ''}${details.breakdown?.feedbackAdjustment ?? 0} boost`;
+    case 'suppressed':
+      return `Entity accuracy ${((details.accuracy ?? 0) * 100).toFixed(0)}% → suppressed (false_positive_rate ${((details.falsePositiveRate ?? 0) * 100).toFixed(0)}% > ${(SUPPRESSION_THRESHOLD * 100).toFixed(0)}%)`;
+    default:
+      return `Unknown action: ${action}`;
+  }
+}

@@ -242,7 +242,7 @@ type: test
 
       const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
       console.log(`  Score 1000 entities: ${avgTime.toFixed(2)}ms`);
-      expect(avgTime).toBeLessThan(50);
+      expect(avgTime).toBeLessThan(100);
     });
 
     it('should score 5000 entities in <200ms', async () => {

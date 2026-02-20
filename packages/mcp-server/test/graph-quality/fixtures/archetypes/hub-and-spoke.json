@@ -1,0 +1,1714 @@
+{
+  "archetype": "hub-and-spoke",
+  "seed": 101,
+  "description": "Three dominant hub notes (ESGHub, TypeScript, David Chen) with 15+ backlinks each, surrounded by 60 spoke notes with 1-2 outlinks. Tests hub boost (Layer 9), power-law detection, and orphan reduction.",
+  "entities": [
+    {
+      "name": "API",
+      "category": "acronyms",
+      "path": "acronyms/api.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Acme Corp",
+      "category": "organizations",
+      "path": "organizations/acme-corp.md",
+      "aliases": [],
+      "hubScore": 33
+    },
+    {
+      "name": "Agile Methodology",
+      "category": "concepts",
+      "path": "concepts/agile-methodology.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "Aisha Patel",
+      "category": "people",
+      "path": "people/aisha-patel.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Bella",
+      "category": "animals",
+      "path": "animals/bella.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Blade Runner",
+      "category": "media",
+      "path": "media/blade-runner.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Board of Directors",
+      "category": "organizations",
+      "path": "organizations/board-of-directors.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "CI/CD",
+      "category": "acronyms",
+      "path": "acronyms/cicd.md",
+      "aliases": [],
+      "hubScore": 7
+    },
+    {
+      "name": "Code Review",
+      "category": "concepts",
+      "path": "concepts/code-review.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Continuous Integration",
+      "category": "concepts",
+      "path": "concepts/continuous-integration.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "DataPipeline",
+      "category": "projects",
+      "path": "projects/datapipeline.md",
+      "aliases": [],
+      "hubScore": 14
+    },
+    {
+      "name": "David Chen",
+      "category": "people",
+      "path": "people/david-chen.md",
+      "aliases": [],
+      "hubScore": 37
+    },
+    {
+      "name": "DevOps Team",
+      "category": "organizations",
+      "path": "organizations/devops-team.md",
+      "aliases": [],
+      "hubScore": 10
+    },
+    {
+      "name": "Docker",
+      "category": "technologies",
+      "path": "technologies/docker.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Dune",
+      "category": "media",
+      "path": "media/dune.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "ESGHub",
+      "category": "projects",
+      "path": "projects/esghub.md",
+      "aliases": [],
+      "hubScore": 49
+    },
+    {
+      "name": "Elena Torres",
+      "category": "people",
+      "path": "people/elena-torres.md",
+      "aliases": [],
+      "hubScore": 16
+    },
+    {
+      "name": "Feedback Loop",
+      "category": "concepts",
+      "path": "concepts/feedback-loop.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "GraphQL",
+      "category": "technologies",
+      "path": "technologies/graphql.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "James Franklin",
+      "category": "people",
+      "path": "people/james-franklin.md",
+      "aliases": [],
+      "hubScore": 8
+    },
+    {
+      "name": "Kubernetes",
+      "category": "technologies",
+      "path": "technologies/kubernetes.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "London",
+      "category": "locations",
+      "path": "locations/london.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Machine Learning",
+      "category": "concepts",
+      "path": "concepts/machine-learning.md",
+      "aliases": [],
+      "hubScore": 8
+    },
+    {
+      "name": "Marcus Johnson",
+      "category": "people",
+      "path": "people/marcus-johnson.md",
+      "aliases": [],
+      "hubScore": 13
+    },
+    {
+      "name": "Max",
+      "category": "animals",
+      "path": "animals/max.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Microservices",
+      "category": "concepts",
+      "path": "concepts/microservices.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "MobileFirst",
+      "category": "projects",
+      "path": "projects/mobilefirst.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "New York City",
+      "category": "locations",
+      "path": "locations/new-york-city.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "Node.js",
+      "category": "technologies",
+      "path": "technologies/nodejs.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Observability",
+      "category": "concepts",
+      "path": "concepts/observability.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "technologies",
+      "path": "technologies/postgresql.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Priya Sharma",
+      "category": "people",
+      "path": "people/priya-sharma.md",
+      "aliases": [],
+      "hubScore": 8
+    },
+    {
+      "name": "Project Atlas",
+      "category": "projects",
+      "path": "projects/project-atlas.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Quantum Leap",
+      "category": "projects",
+      "path": "projects/quantum-leap.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "REST",
+      "category": "acronyms",
+      "path": "acronyms/rest.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "React",
+      "category": "technologies",
+      "path": "technologies/react.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Redis",
+      "category": "technologies",
+      "path": "technologies/redis.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Research Lab",
+      "category": "organizations",
+      "path": "organizations/research-lab.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "SLA",
+      "category": "acronyms",
+      "path": "acronyms/sla.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "San Francisco",
+      "category": "locations",
+      "path": "locations/san-francisco.md",
+      "aliases": [],
+      "hubScore": 11
+    },
+    {
+      "name": "Sarah O'Brien",
+      "category": "people",
+      "path": "people/sarah-obrien.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Stretch",
+      "category": "health",
+      "path": "health/stretch.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Technical Debt",
+      "category": "concepts",
+      "path": "concepts/technical-debt.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "The Matrix",
+      "category": "media",
+      "path": "media/the-matrix.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Tom Williams",
+      "category": "people",
+      "path": "people/tom-williams.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "TypeScript",
+      "category": "technologies",
+      "path": "technologies/typescript.md",
+      "aliases": [],
+      "hubScore": 34
+    },
+    {
+      "name": "Vault Core",
+      "category": "projects",
+      "path": "projects/vault-core.md",
+      "aliases": [],
+      "hubScore": 8
+    },
+    {
+      "name": "Vitamins",
+      "category": "health",
+      "path": "health/vitamins.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Walk",
+      "category": "health",
+      "path": "health/walk.md",
+      "aliases": [],
+      "hubScore": 2
+    }
+  ],
+  "noteCount": 80,
+  "topology": {
+    "hubCount": 3,
+    "hubMinBacklinks": 15,
+    "spokeMaxLinks": 2
+  },
+  "notes": [
+    {
+      "path": "projects/esghub.md",
+      "title": "ESGHub",
+      "frontmatter": {
+        "type": "project",
+        "status": "active"
+      },
+      "content": "ESGHub is the primary sustainability reporting platform for [[Acme Corp]]. The application is built with [[TypeScript]] and [[React]] on the frontend, with a [[Node.js]] backend serving [[GraphQL]] endpoints. [[David Chen]] leads the engineering effort, with [[Elena Torres]] managing the product roadmap. The platform tracks environmental, social, and governance metrics for enterprise clients across [[San Francisco]] and [[London]] offices. We use [[PostgreSQL]] for the data layer and [[Redis]] for caching high-frequency dashboard queries. The [[DevOps Team]] manages our [[Kubernetes]] deployment pipeline with full [[CI/CD]] automation.",
+      "links": [
+        "Acme Corp",
+        "TypeScript",
+        "React",
+        "Node.js",
+        "GraphQL",
+        "David Chen",
+        "Elena Torres",
+        "San Francisco",
+        "London",
+        "PostgreSQL",
+        "Redis",
+        "DevOps Team",
+        "Kubernetes",
+        "CI/CD"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "technologies/typescript.md",
+      "title": "TypeScript",
+      "frontmatter": {
+        "type": "technology",
+        "category": "language"
+      },
+      "content": "TypeScript is our primary development language across all major projects. We adopted TS in 2021 after [[David Chen]] championed the migration from plain JavaScript. The type system has dramatically reduced runtime errors in [[ESGHub]] and [[Vault Core]]. Our [[Code Review]] guidelines require strict TS config with no-any rules. [[React]] components use TSX exclusively, and the [[Node.js]] backend leverages TypeScript for [[API]] type safety. The [[DevOps Team]] has also started writing infrastructure-as-code scripts in TypeScript. We maintain shared type packages consumed by [[DataPipeline]] and [[Project Atlas]].",
+      "links": [
+        "David Chen",
+        "ESGHub",
+        "Vault Core",
+        "Code Review",
+        "React",
+        "Node.js",
+        "API",
+        "DevOps Team",
+        "DataPipeline",
+        "Project Atlas"
+      ],
+      "folder": "technologies"
+    },
+    {
+      "path": "people/david-chen.md",
+      "title": "David Chen",
+      "frontmatter": {
+        "type": "person",
+        "role": "Staff Engineer"
+      },
+      "content": "David Chen is a Staff Engineer at [[Acme Corp]] and the technical lead for [[ESGHub]]. He joined the company in 2019 from a startup in [[San Francisco]] and quickly became the go-to architect for distributed systems. David is an expert in [[TypeScript]], [[Kubernetes]], and [[Microservices]] architecture. He mentors junior engineers through the [[Code Review]] process and has spoken at internal tech talks about [[Observability]] and [[Machine Learning]] applications. He works closely with [[Elena Torres]] on product direction and [[Marcus Johnson]] on infrastructure decisions. David champions [[Agile Methodology]] and runs weekly sprint retrospectives for his team.",
+      "links": [
+        "Acme Corp",
+        "ESGHub",
+        "San Francisco",
+        "TypeScript",
+        "Kubernetes",
+        "Microservices",
+        "Code Review",
+        "Observability",
+        "Machine Learning",
+        "Elena Torres",
+        "Marcus Johnson",
+        "Agile Methodology"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "projects/esghub-frontend.md",
+      "title": "ESGHub Frontend",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "The ESGHub frontend is a single-page application built on [[React]] with [[TypeScript]]. The team uses component-driven development with Storybook for isolated component testing. Data fetching is handled through Apollo Client connecting to our GraphQL layer. Performance optimization includes code splitting and lazy loading for dashboard modules. We recently migrated from Create React App to Vite for faster build times.",
+      "links": [
+        "React",
+        "TypeScript"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-api.md",
+      "title": "ESGHub API Layer",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "The [[ESGHub]] API layer exposes [[GraphQL]] endpoints for all client applications. Built with [[Node.js]] and Apollo Server, it provides type-safe resolvers that map directly to our domain models. Authentication uses JWT tokens with refresh rotation. Rate limiting is handled at the gateway level before requests reach the resolvers.",
+      "links": [
+        "ESGHub",
+        "GraphQL",
+        "Node.js"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-data.md",
+      "title": "ESGHub Data Layer",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "The data layer for [[ESGHub]] uses [[PostgreSQL]] as the primary data store with read replicas for reporting queries. We use Prisma as the ORM, which integrates well with our [[TypeScript]] codebase. Database migrations are version-controlled and applied through our CI pipeline. Caching strategy leverages Redis for frequently accessed dashboard data.",
+      "links": [
+        "ESGHub",
+        "PostgreSQL",
+        "TypeScript"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-auth.md",
+      "title": "ESGHub Authentication",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "Authentication for [[ESGHub]] is built on a custom OAuth2 implementation. [[David Chen]] designed the token rotation scheme that handles both browser sessions and API-to-API communication. The auth service is deployed as a separate microservice with its own PostgreSQL database. Multi-factor authentication was added in Q3 2024 after a security audit.",
+      "links": [
+        "ESGHub",
+        "David Chen"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-reporting.md",
+      "title": "ESGHub Reporting Module",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "The reporting module generates sustainability reports for [[ESGHub]] clients. It pulls data from the main database and applies configurable templates. [[Elena Torres]] led the requirements gathering with enterprise customers. Reports are generated as PDFs using a headless browser rendering pipeline built in [[TypeScript]]. Export formats include CSV, Excel, and interactive HTML dashboards.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "TypeScript"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-mobile.md",
+      "title": "ESGHub Mobile",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "The mobile companion for [[ESGHub]] lets field auditors capture sustainability data on-site. Built with React Native and [[TypeScript]], it syncs data when connectivity is available. [[Aisha Patel]] led the mobile development effort. The app uses offline-first architecture with SQLite for local storage and conflict resolution when syncing back to the server.",
+      "links": [
+        "ESGHub",
+        "TypeScript",
+        "Aisha Patel"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/vault-core.md",
+      "title": "Vault Core",
+      "frontmatter": {
+        "type": "project",
+        "status": "active"
+      },
+      "content": "Vault Core is a shared utilities package for markdown processing, entity scanning, and SQLite operations. [[David Chen]] and [[James Franklin]] maintain the core library. It is written entirely in [[TypeScript]] and uses better-sqlite3 for local database operations. The package powers the indexing engine that processes wikilinks, frontmatter, and full-text search across the vault. Testing is done within the flywheel-memory workspace due to native module constraints.",
+      "links": [
+        "David Chen",
+        "James Franklin",
+        "TypeScript"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/project-atlas.md",
+      "title": "Project Atlas",
+      "frontmatter": {
+        "type": "project",
+        "status": "planning"
+      },
+      "content": "Project Atlas is a next-generation mapping and geospatial analytics platform. [[Marcus Johnson]] proposed the project during the Q4 planning cycle. The architecture uses [[TypeScript]] on both client and server, with [[PostgreSQL]] and PostGIS for spatial queries. The team plans to leverage [[Machine Learning]] for predictive location analysis. Initial prototyping is being done in [[San Francisco]] with a small team.",
+      "links": [
+        "Marcus Johnson",
+        "TypeScript",
+        "PostgreSQL",
+        "Machine Learning",
+        "San Francisco"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/datapipeline.md",
+      "title": "DataPipeline",
+      "frontmatter": {
+        "type": "project",
+        "status": "active"
+      },
+      "content": "DataPipeline is our data ingestion and transformation platform. It handles ETL workflows from dozens of external data sources into our central [[PostgreSQL]] data warehouse. Written in [[TypeScript]] with [[Node.js]], the pipeline uses a job queue backed by [[Redis]] for reliable processing. [[Sarah O'Brien]] leads the data engineering team that maintains the system. The pipeline integrates tightly with [[ESGHub]] for sustainability data feeds.",
+      "links": [
+        "PostgreSQL",
+        "TypeScript",
+        "Node.js",
+        "Redis",
+        "Sarah O'Brien",
+        "ESGHub"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/mobilefirst.md",
+      "title": "MobileFirst",
+      "frontmatter": {
+        "type": "project",
+        "status": "active"
+      },
+      "content": "MobileFirst is our cross-platform mobile application framework. It provides shared components and utilities for all mobile projects at [[Acme Corp]]. [[Aisha Patel]] is the technical lead. The framework uses [[React]] Native with [[TypeScript]] and includes built-in analytics, crash reporting, and feature flagging. It powers the mobile versions of both [[ESGHub]] and internal tools.",
+      "links": [
+        "Acme Corp",
+        "Aisha Patel",
+        "React",
+        "TypeScript",
+        "ESGHub"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/quantum-leap.md",
+      "title": "Quantum Leap",
+      "frontmatter": {
+        "type": "project",
+        "status": "experimental"
+      },
+      "content": "Quantum Leap is an experimental research project exploring quantum computing applications for optimization problems. [[Priya Sharma]] from the [[Research Lab]] leads the initiative. The project is still in early stages, with proof-of-concept implementations in Python. The team is evaluating whether quantum algorithms could improve the recommendation engines used in [[ESGHub]].",
+      "links": [
+        "Priya Sharma",
+        "Research Lab",
+        "ESGHub"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "technologies/react.md",
+      "title": "React",
+      "frontmatter": {
+        "type": "technology",
+        "category": "framework"
+      },
+      "content": "React is our primary frontend framework. We standardized on React after evaluating Angular and Vue in 2020. All new frontend projects at [[Acme Corp]] use React with [[TypeScript]]. Our component library provides reusable UI elements for [[ESGHub]], [[Project Atlas]], and internal dashboards. [[Elena Torres]] maintains the design system that wraps our React components. We follow a functional component pattern with hooks exclusively.",
+      "links": [
+        "Acme Corp",
+        "TypeScript",
+        "ESGHub",
+        "Project Atlas",
+        "Elena Torres"
+      ],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/kubernetes.md",
+      "title": "Kubernetes",
+      "frontmatter": {
+        "type": "technology",
+        "category": "infrastructure"
+      },
+      "content": "Kubernetes orchestrates all our production workloads. [[Marcus Johnson]] and the [[DevOps Team]] manage our k8s clusters across three regions. We run [[ESGHub]], [[DataPipeline]], and all microservices on k8s with auto-scaling policies. [[David Chen]] designed the namespace strategy that isolates environments. Helm charts are versioned alongside application code. We use ArgoCD for GitOps-based deployments.",
+      "links": [
+        "Marcus Johnson",
+        "DevOps Team",
+        "ESGHub",
+        "DataPipeline",
+        "David Chen"
+      ],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/postgresql.md",
+      "title": "PostgreSQL",
+      "frontmatter": {
+        "type": "technology",
+        "category": "database"
+      },
+      "content": "PostgreSQL is our primary relational database. We run Postgres 16 across all production services. [[David Chen]] established our database standards including connection pooling with PgBouncer and automated backup strategies. [[ESGHub]] uses the largest cluster with 2TB of sustainability data. The [[DataPipeline]] team manages ETL into our Postgres data warehouse. We leverage PostGIS extensions for [[Project Atlas]] geospatial features.",
+      "links": [
+        "David Chen",
+        "ESGHub",
+        "DataPipeline",
+        "Project Atlas"
+      ],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/docker.md",
+      "title": "Docker",
+      "frontmatter": {
+        "type": "technology",
+        "category": "containerization"
+      },
+      "content": "Docker containers package all our applications for consistent deployment. Every service at [[Acme Corp]] ships as a Docker image through our [[CI/CD]] pipeline. [[David Chen]] wrote the base Dockerfile templates that teams extend. We use multi-stage builds to keep production images small. Local development uses Docker Compose to spin up service dependencies including [[PostgreSQL]], [[Redis]], and mock APIs.",
+      "links": [
+        "Acme Corp",
+        "CI/CD",
+        "David Chen",
+        "PostgreSQL",
+        "Redis"
+      ],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/redis.md",
+      "title": "Redis",
+      "frontmatter": {
+        "type": "technology",
+        "category": "cache"
+      },
+      "content": "Redis serves as our primary caching and message broker layer. [[ESGHub]] uses Redis for session storage and dashboard query caching, reducing [[PostgreSQL]] load by 60%. [[DataPipeline]] uses Redis Streams for job queuing. [[David Chen]] configured our Redis Sentinel setup for high availability. We also use Redis pub/sub for real-time notifications across microservices.",
+      "links": [
+        "ESGHub",
+        "PostgreSQL",
+        "DataPipeline",
+        "David Chen"
+      ],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/graphql.md",
+      "title": "GraphQL",
+      "frontmatter": {
+        "type": "technology",
+        "category": "api"
+      },
+      "content": "GraphQL powers the [[API]] layer for [[ESGHub]] and several internal services. We chose GraphQL over [[REST]] for its flexibility in handling complex nested data queries. [[TypeScript]] code generation from our schema ensures type safety end-to-end. Apollo Federation lets us compose multiple service schemas into a unified graph. [[David Chen]] designed the federation architecture.",
+      "links": [
+        "API",
+        "ESGHub",
+        "REST",
+        "TypeScript",
+        "David Chen"
+      ],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/nodejs.md",
+      "title": "Node.js",
+      "frontmatter": {
+        "type": "technology",
+        "category": "runtime"
+      },
+      "content": "Node.js is the runtime for all our backend [[TypeScript]] services. We standardized on Node 20 LTS across the organization. [[ESGHub]], [[DataPipeline]], and [[Vault Core]] all run on Node. The event-driven architecture works well for our I/O-heavy workloads. [[David Chen]] maintains our Node.js best practices guide covering error handling, logging, and graceful shutdown patterns.",
+      "links": [
+        "TypeScript",
+        "ESGHub",
+        "DataPipeline",
+        "Vault Core",
+        "David Chen"
+      ],
+      "folder": "technologies"
+    },
+    {
+      "path": "people/marcus-johnson.md",
+      "title": "Marcus Johnson",
+      "frontmatter": {
+        "type": "person",
+        "role": "Infrastructure Lead"
+      },
+      "content": "Marcus Johnson leads infrastructure at [[Acme Corp]]. He manages the [[DevOps Team]] and oversees all [[Kubernetes]] clusters. Marcus joined from Amazon where he ran large-scale container orchestration. He works closely with [[David Chen]] on platform architecture and [[Sarah O'Brien]] on data infrastructure. Based in [[San Francisco]], he also coordinates with the [[London]] office on multi-region deployment.",
+      "links": [
+        "Acme Corp",
+        "DevOps Team",
+        "Kubernetes",
+        "David Chen",
+        "Sarah O'Brien",
+        "San Francisco",
+        "London"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/elena-torres.md",
+      "title": "Elena Torres",
+      "frontmatter": {
+        "type": "person",
+        "role": "Product Manager"
+      },
+      "content": "Elena Torres is the Product Manager for [[ESGHub]]. She joined [[Acme Corp]] after working in sustainability consulting in [[New York City]]. Elena works closely with [[David Chen]] on feature prioritization and [[Priya Sharma]] on research integrations. She maintains the product roadmap and conducts quarterly stakeholder reviews with the [[Board of Directors]]. Her background in environmental science gives her deep domain expertise.",
+      "links": [
+        "ESGHub",
+        "Acme Corp",
+        "New York City",
+        "David Chen",
+        "Priya Sharma",
+        "Board of Directors"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/james-franklin.md",
+      "title": "James Franklin",
+      "frontmatter": {
+        "type": "person",
+        "role": "Senior Developer"
+      },
+      "content": "James Franklin is a Senior Developer at [[Acme Corp]] focused on developer tooling and the [[Vault Core]] library. He built the FTS5 search engine and entity extraction pipeline. James works primarily in [[TypeScript]] and has deep expertise in SQLite internals. He collaborates with [[David Chen]] on architecture decisions and [[Tom Williams]] on testing strategies. Based in [[London]], he works asynchronously with the SF team.",
+      "links": [
+        "Acme Corp",
+        "Vault Core",
+        "TypeScript",
+        "David Chen",
+        "Tom Williams",
+        "London"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/sarah-obrien.md",
+      "title": "Sarah O'Brien",
+      "frontmatter": {
+        "type": "person",
+        "role": "Data Engineer"
+      },
+      "content": "Sarah O'Brien leads the data engineering team at [[Acme Corp]]. She is the primary maintainer of [[DataPipeline]] and works closely with [[Marcus Johnson]] on infrastructure. Sarah has expertise in [[PostgreSQL]] optimization and ETL architecture. She mentors [[Tom Williams]] on data engineering practices. Based in [[San Francisco]], she frequently collaborates with the [[ESGHub]] team on data integration.",
+      "links": [
+        "Acme Corp",
+        "DataPipeline",
+        "Marcus Johnson",
+        "PostgreSQL",
+        "Tom Williams",
+        "San Francisco",
+        "ESGHub"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/priya-sharma.md",
+      "title": "Priya Sharma",
+      "frontmatter": {
+        "type": "person",
+        "role": "Research Scientist"
+      },
+      "content": "Priya Sharma is a Research Scientist at the [[Research Lab]] within [[Acme Corp]]. She leads the [[Quantum Leap]] project and contributes [[Machine Learning]] models to [[ESGHub]]. Priya has a PhD in computational physics and publishes regularly on quantum optimization. She works with [[Elena Torres]] on translating research into product features.",
+      "links": [
+        "Research Lab",
+        "Acme Corp",
+        "Quantum Leap",
+        "Machine Learning",
+        "ESGHub",
+        "Elena Torres"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/aisha-patel.md",
+      "title": "Aisha Patel",
+      "frontmatter": {
+        "type": "person",
+        "role": "Mobile Lead"
+      },
+      "content": "Aisha Patel leads mobile development at [[Acme Corp]]. She is the technical lead for [[MobileFirst]] and built the [[ESGHub]] mobile companion app. Aisha specializes in [[React]] Native and cross-platform development with [[TypeScript]]. She coordinates with [[David Chen]] on API contracts and [[Elena Torres]] on mobile UX design. Based in [[New York City]].",
+      "links": [
+        "Acme Corp",
+        "MobileFirst",
+        "ESGHub",
+        "React",
+        "TypeScript",
+        "David Chen",
+        "Elena Torres",
+        "New York City"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/tom-williams.md",
+      "title": "Tom Williams",
+      "frontmatter": {
+        "type": "person",
+        "role": "Junior Developer"
+      },
+      "content": "Tom Williams is a Junior Developer at [[Acme Corp]] who recently joined the [[DataPipeline]] team. He is learning [[TypeScript]] and [[PostgreSQL]] under the mentorship of [[Sarah O'Brien]]. Tom handles data validation scripts and integration tests. He is based in [[London]] and participates in [[Code Review]] sessions to improve his skills.",
+      "links": [
+        "Acme Corp",
+        "DataPipeline",
+        "TypeScript",
+        "PostgreSQL",
+        "Sarah O'Brien",
+        "London",
+        "Code Review"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "organizations/acme-corp.md",
+      "title": "Acme Corp",
+      "frontmatter": {
+        "type": "organization"
+      },
+      "content": "Acme Corp is a technology company focused on sustainability and enterprise software. Headquartered in [[San Francisco]] with offices in [[New York City]] and [[London]]. The company runs several major projects including [[ESGHub]], [[DataPipeline]], and [[Project Atlas]]. [[David Chen]] is the most senior technical leader. The [[Board of Directors]] oversees strategic direction. Acme follows [[Agile Methodology]] across all teams.",
+      "links": [
+        "San Francisco",
+        "New York City",
+        "London",
+        "ESGHub",
+        "DataPipeline",
+        "Project Atlas",
+        "David Chen",
+        "Board of Directors",
+        "Agile Methodology"
+      ],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/devops-team.md",
+      "title": "DevOps Team",
+      "frontmatter": {
+        "type": "team"
+      },
+      "content": "The DevOps Team manages infrastructure and deployment pipelines at [[Acme Corp]]. Led by [[Marcus Johnson]], the team maintains [[Kubernetes]] clusters, [[Docker]] image registries, and [[CI/CD]] automation. They provide platform services to all engineering teams including [[ESGHub]] and [[DataPipeline]]. The team follows a GitOps approach with ArgoCD and uses Terraform for infrastructure provisioning.",
+      "links": [
+        "Acme Corp",
+        "Marcus Johnson",
+        "Kubernetes",
+        "Docker",
+        "CI/CD",
+        "ESGHub",
+        "DataPipeline"
+      ],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/research-lab.md",
+      "title": "Research Lab",
+      "frontmatter": {
+        "type": "team"
+      },
+      "content": "The Research Lab is [[Acme Corp]]'s advanced research division. [[Priya Sharma]] leads the small team exploring [[Machine Learning]] and quantum computing applications. The lab collaborates with universities and publishes open-source contributions. Their work feeds into [[ESGHub]] via predictive analytics models. The team operates with more autonomy than product teams, following a research sprint cadence.",
+      "links": [
+        "Acme Corp",
+        "Priya Sharma",
+        "Machine Learning",
+        "ESGHub"
+      ],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/board-of-directors.md",
+      "title": "Board of Directors",
+      "frontmatter": {
+        "type": "organization"
+      },
+      "content": "The Board of Directors provides strategic oversight for [[Acme Corp]]. They meet quarterly to review financials, product strategy, and sustainability metrics from [[ESGHub]]. [[Elena Torres]] presents product updates at board meetings. The board has been particularly interested in the [[Machine Learning]] capabilities and the [[Quantum Leap]] research initiative.",
+      "links": [
+        "Acme Corp",
+        "ESGHub",
+        "Elena Torres",
+        "Machine Learning",
+        "Quantum Leap"
+      ],
+      "folder": "organizations"
+    },
+    {
+      "path": "concepts/feedback-loop.md",
+      "title": "Feedback Loop",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Feedback loops are a core principle in our engineering culture at [[Acme Corp]]. [[David Chen]] advocates for tight feedback loops in development through [[Continuous Integration]], automated testing, and quick [[Code Review]] turnaround. The concept extends to product development where [[Elena Torres]] runs bi-weekly user feedback sessions for [[ESGHub]].",
+      "links": [
+        "Acme Corp",
+        "David Chen",
+        "Continuous Integration",
+        "Code Review",
+        "Elena Torres",
+        "ESGHub"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/machine-learning.md",
+      "title": "Machine Learning",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Machine Learning is applied across several initiatives at [[Acme Corp]]. [[Priya Sharma]] leads ML research in the [[Research Lab]], focusing on predictive models for [[ESGHub]] sustainability scoring. The [[DataPipeline]] team provides feature engineering support. We use Python for model training and [[TypeScript]] for serving predictions via [[API]] endpoints. [[David Chen]] ensures ML services integrate cleanly into our microservices architecture.",
+      "links": [
+        "Acme Corp",
+        "Priya Sharma",
+        "Research Lab",
+        "ESGHub",
+        "DataPipeline",
+        "TypeScript",
+        "API",
+        "David Chen"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/microservices.md",
+      "title": "Microservices",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Our microservices architecture decomposes applications into independently deployable services. [[David Chen]] established the microservices guidelines including service boundaries, inter-service communication via gRPC and [[REST]] APIs, and shared [[TypeScript]] libraries. Each service runs in [[Docker]] containers orchestrated by [[Kubernetes]]. [[Observability]] is critical in this distributed architecture.",
+      "links": [
+        "David Chen",
+        "REST",
+        "TypeScript",
+        "Docker",
+        "Kubernetes",
+        "Observability"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/observability.md",
+      "title": "Observability",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Observability encompasses logging, metrics, and tracing across our [[Microservices]] landscape. The [[DevOps Team]] manages the observability stack including Grafana, Prometheus, and Jaeger. [[David Chen]] defined the three pillars of observability for our systems. [[ESGHub]] was the first project to achieve full observability coverage. Alerts are configured with [[SLA]]-aware thresholds.",
+      "links": [
+        "Microservices",
+        "DevOps Team",
+        "David Chen",
+        "ESGHub",
+        "SLA"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/technical-debt.md",
+      "title": "Technical Debt",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Technical debt tracking is formalized at [[Acme Corp]]. Each sprint allocates 20% capacity to debt reduction. [[David Chen]] maintains a tech debt register for [[ESGHub]] and coordinates with [[James Franklin]] on [[Vault Core]] debt items. The [[Board of Directors]] reviews quarterly technical health metrics. Common sources include deprecated dependencies, missing tests, and [[TypeScript]] strict mode violations.",
+      "links": [
+        "Acme Corp",
+        "David Chen",
+        "ESGHub",
+        "James Franklin",
+        "Vault Core",
+        "Board of Directors",
+        "TypeScript"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/continuous-integration.md",
+      "title": "Continuous Integration",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Continuous Integration is a cornerstone of our development workflow. Every pull request triggers automated builds, tests, and linting via our [[CI/CD]] pipeline. [[David Chen]] set up the initial CI configuration for [[ESGHub]], which became the template for all projects. The [[DevOps Team]] maintains the shared CI runners on [[Kubernetes]]. [[TypeScript]] type checking is enforced as a CI gate.",
+      "links": [
+        "CI/CD",
+        "David Chen",
+        "ESGHub",
+        "DevOps Team",
+        "Kubernetes",
+        "TypeScript"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/code-review.md",
+      "title": "Code Review",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Code review is mandatory for all changes at [[Acme Corp]]. [[David Chen]] wrote the review guidelines that require at least one approval from a domain expert. Reviews check for [[TypeScript]] best practices, test coverage, and architectural alignment. [[James Franklin]] is particularly thorough on [[Vault Core]] changes. The process reinforces knowledge sharing and catches bugs early as part of our [[Feedback Loop]].",
+      "links": [
+        "Acme Corp",
+        "David Chen",
+        "TypeScript",
+        "James Franklin",
+        "Vault Core",
+        "Feedback Loop"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/agile-methodology.md",
+      "title": "Agile Methodology",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Agile Methodology guides project management at [[Acme Corp]]. Teams run two-week sprints with daily standups. [[Elena Torres]] facilitates sprint planning for [[ESGHub]] while [[David Chen]] runs technical grooming sessions. The [[Board of Directors]] receives quarterly agile maturity reports. Retrospectives are taken seriously with action items tracked to completion.",
+      "links": [
+        "Acme Corp",
+        "Elena Torres",
+        "ESGHub",
+        "David Chen",
+        "Board of Directors"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "locations/san-francisco.md",
+      "title": "San Francisco",
+      "frontmatter": {
+        "type": "location"
+      },
+      "content": "San Francisco is the headquarters of [[Acme Corp]]. The office houses the core engineering team including [[David Chen]], [[Marcus Johnson]], and [[Sarah O'Brien]]. The Bay Area location provides access to the tech talent pool. Most of the [[ESGHub]] and [[DataPipeline]] development happens here.",
+      "links": [
+        "Acme Corp",
+        "David Chen",
+        "Marcus Johnson",
+        "Sarah O'Brien",
+        "ESGHub",
+        "DataPipeline"
+      ],
+      "folder": "locations"
+    },
+    {
+      "path": "locations/new-york-city.md",
+      "title": "New York City",
+      "frontmatter": {
+        "type": "location"
+      },
+      "content": "The New York City office of [[Acme Corp]] focuses on client relations and mobile development. [[Elena Torres]] and [[Aisha Patel]] are based here. The office is closer to many enterprise [[ESGHub]] clients on the East Coast. The NYC team handles client onboarding and customization requests.",
+      "links": [
+        "Acme Corp",
+        "Elena Torres",
+        "Aisha Patel",
+        "ESGHub"
+      ],
+      "folder": "locations"
+    },
+    {
+      "path": "locations/london.md",
+      "title": "London",
+      "frontmatter": {
+        "type": "location"
+      },
+      "content": "The London office is [[Acme Corp]]'s European hub. [[James Franklin]] and [[Tom Williams]] work from here, focusing on [[Vault Core]] development and European [[ESGHub]] client support. The office coordinates with [[San Francisco]] on infrastructure and deployment timing to minimize downtime during updates.",
+      "links": [
+        "Acme Corp",
+        "James Franklin",
+        "Tom Williams",
+        "Vault Core",
+        "ESGHub",
+        "San Francisco"
+      ],
+      "folder": "locations"
+    },
+    {
+      "path": "acronyms/api.md",
+      "title": "API",
+      "frontmatter": {
+        "type": "acronym"
+      },
+      "content": "API stands for Application Programming Interface. At [[Acme Corp]], we primarily build [[REST]] and [[GraphQL]] APIs using [[TypeScript]] and [[Node.js]]. [[David Chen]] maintains the API design guidelines. Our APIs serve [[ESGHub]] clients and internal consumers.",
+      "links": [
+        "Acme Corp",
+        "REST",
+        "GraphQL",
+        "TypeScript",
+        "Node.js",
+        "David Chen",
+        "ESGHub"
+      ],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/cicd.md",
+      "title": "CI/CD",
+      "frontmatter": {
+        "type": "acronym"
+      },
+      "content": "CI/CD stands for Continuous Integration and Continuous Delivery. Our [[CI/CD]] pipeline runs on GitHub Actions with self-hosted runners on [[Kubernetes]]. The [[DevOps Team]] maintains the pipeline configuration. All projects including [[ESGHub]] and [[DataPipeline]] use the shared pipeline templates. [[Docker]] images are built and pushed automatically on merge to main.",
+      "links": [
+        "Kubernetes",
+        "DevOps Team",
+        "ESGHub",
+        "DataPipeline",
+        "Docker"
+      ],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/rest.md",
+      "title": "REST",
+      "frontmatter": {
+        "type": "acronym"
+      },
+      "content": "REST (Representational State Transfer) is one of our [[API]] patterns. While [[ESGHub]] primarily uses [[GraphQL]], several internal services expose RESTful endpoints. [[David Chen]] authored the REST API style guide for [[Acme Corp]]. REST APIs follow OpenAPI 3.0 specification with auto-generated [[TypeScript]] clients.",
+      "links": [
+        "API",
+        "ESGHub",
+        "GraphQL",
+        "David Chen",
+        "Acme Corp",
+        "TypeScript"
+      ],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/sla.md",
+      "title": "SLA",
+      "frontmatter": {
+        "type": "acronym"
+      },
+      "content": "SLA stands for Service Level Agreement. [[Acme Corp]] commits to 99.9% uptime for [[ESGHub]] production services. [[Marcus Johnson]] and the [[DevOps Team]] monitor SLA compliance through the [[Observability]] platform. Breaches trigger incident reviews led by [[David Chen]].",
+      "links": [
+        "Acme Corp",
+        "ESGHub",
+        "Marcus Johnson",
+        "DevOps Team",
+        "Observability",
+        "David Chen"
+      ],
+      "folder": "acronyms"
+    },
+    {
+      "path": "concepts/apple.md",
+      "title": "Apple",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Apple's ecosystem influences our mobile development strategy. The [[MobileFirst]] framework targets iOS as a primary platform. [[Aisha Patel]] manages App Store submissions and handles Apple's review process. Our [[ESGHub]] mobile app follows Apple Human Interface Guidelines. We also use Xcode Cloud for iOS-specific [[CI/CD]] builds.",
+      "links": [
+        "MobileFirst",
+        "Aisha Patel",
+        "ESGHub",
+        "CI/CD"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/mercury.md",
+      "title": "Mercury",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Mercury is our internal communication protocol for inter-service messaging. It provides lightweight publish-subscribe semantics on top of [[Redis]]. [[David Chen]] designed Mercury to handle event-driven workflows in [[ESGHub]]. The protocol supports message replay for debugging and uses [[TypeScript]] type definitions for message schemas.",
+      "links": [
+        "Redis",
+        "David Chen",
+        "ESGHub",
+        "TypeScript"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "health/stretch.md",
+      "title": "Stretch",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "Morning stretching is part of the wellness program at [[Acme Corp]]. [[Elena Torres]] championed the initiative after research showed it reduces repetitive strain injuries. The San Francisco office has a dedicated stretch room. Teams take 10-minute stretch breaks during long sprint planning sessions. It pairs well with the daily [[Walk]] program.",
+      "links": [
+        "Acme Corp",
+        "Elena Torres",
+        "Walk"
+      ],
+      "folder": "health"
+    },
+    {
+      "path": "health/vitamins.md",
+      "title": "Vitamins",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "The company wellness program at [[Acme Corp]] includes vitamin supplementation guidance. The [[San Francisco]] office stocks common supplements. [[Priya Sharma]] researched the evidence base for supplementation as a side project. The program is part of the broader health initiative that includes [[Stretch]] routines and [[Walk]] programs.",
+      "links": [
+        "Acme Corp",
+        "San Francisco",
+        "Priya Sharma",
+        "Stretch",
+        "Walk"
+      ],
+      "folder": "health"
+    },
+    {
+      "path": "health/walk.md",
+      "title": "Walk",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "The daily walk program encourages employees at [[Acme Corp]] to take walking meetings and afternoon walks. [[Marcus Johnson]] started the tradition in [[San Francisco]], and it spread to the [[New York City]] and [[London]] offices. Walking meetings are especially popular during one-on-ones. The program complements the [[Stretch]] routine and [[Vitamins]] initiative.",
+      "links": [
+        "Acme Corp",
+        "Marcus Johnson",
+        "San Francisco",
+        "New York City",
+        "London",
+        "Stretch",
+        "Vitamins"
+      ],
+      "folder": "health"
+    },
+    {
+      "path": "animals/bella.md",
+      "title": "Bella",
+      "frontmatter": {
+        "type": "animal",
+        "species": "cat"
+      },
+      "content": "Bella is the office cat at the [[San Francisco]] headquarters of [[Acme Corp]]. She was adopted by the team in 2022. [[David Chen]] originally brought her in. Bella has become a morale booster and unofficial mascot. She can often be found sleeping on keyboards during deployments. [[Max]] the dog visits on Fridays.",
+      "links": [
+        "San Francisco",
+        "Acme Corp",
+        "David Chen",
+        "Max"
+      ],
+      "folder": "animals"
+    },
+    {
+      "path": "animals/max.md",
+      "title": "Max",
+      "frontmatter": {
+        "type": "animal",
+        "species": "dog"
+      },
+      "content": "Max is [[Marcus Johnson]]'s golden retriever who visits the [[San Francisco]] office on Fridays. He is popular with the team and has his own Slack channel. Max gets along well with [[Bella]] the cat. The pet-friendly office policy was a recruitment selling point highlighted by [[Elena Torres]].",
+      "links": [
+        "Marcus Johnson",
+        "San Francisco",
+        "Bella",
+        "Elena Torres"
+      ],
+      "folder": "animals"
+    },
+    {
+      "path": "media/dune.md",
+      "title": "Dune",
+      "frontmatter": {
+        "type": "media",
+        "category": "film"
+      },
+      "content": "Dune was a popular movie among the [[Acme Corp]] team. [[David Chen]] organized a group viewing for the sequel. The sci-fi themes resonate with the engineering culture. [[Priya Sharma]] drew parallels between spice optimization and her [[Quantum Leap]] research. The movie club also watched [[Blade Runner]] and [[The Matrix]].",
+      "links": [
+        "Acme Corp",
+        "David Chen",
+        "Priya Sharma",
+        "Quantum Leap",
+        "Blade Runner",
+        "The Matrix"
+      ],
+      "folder": "media"
+    },
+    {
+      "path": "media/blade-runner.md",
+      "title": "Blade Runner",
+      "frontmatter": {
+        "type": "media",
+        "category": "film"
+      },
+      "content": "Blade Runner 2049 was screened at the [[Acme Corp]] movie night. [[James Franklin]] picked it as his favorite film. The themes of artificial intelligence sparked discussions about [[Machine Learning]] ethics in the office. The movie club previously watched [[Dune]] and plans to rewatch [[The Matrix]].",
+      "links": [
+        "Acme Corp",
+        "James Franklin",
+        "Machine Learning",
+        "Dune",
+        "The Matrix"
+      ],
+      "folder": "media"
+    },
+    {
+      "path": "media/the-matrix.md",
+      "title": "The Matrix",
+      "frontmatter": {
+        "type": "media",
+        "category": "film"
+      },
+      "content": "The Matrix trilogy is a team favorite at [[Acme Corp]]. [[Tom Williams]] references it constantly in code review comments. The concept of simulated reality connects to discussions about virtual environments and [[Docker]] containerization. Other movie club picks include [[Dune]] and [[Blade Runner]].",
+      "links": [
+        "Acme Corp",
+        "Tom Williams",
+        "Docker",
+        "Dune",
+        "Blade Runner"
+      ],
+      "folder": "media"
+    },
+    {
+      "path": "projects/esghub-onboarding.md",
+      "title": "ESGHub Client Onboarding",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "The client onboarding flow for [[ESGHub]] guides new enterprise customers through platform setup. [[Elena Torres]] designed the guided wizard with input from the sales team. The onboarding process configures data sources, sets up [[API]] integrations, and creates initial dashboards. [[TypeScript]] validation ensures data quality from the start.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "API",
+        "TypeScript"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-analytics.md",
+      "title": "ESGHub Analytics Engine",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "The analytics engine is the computational core of [[ESGHub]]. It processes sustainability metrics and generates trend analyses. [[David Chen]] designed the pipeline architecture using [[TypeScript]] stream processors. The engine leverages [[Machine Learning]] models from [[Priya Sharma]]'s team for predictive scoring. Data flows through [[Redis]] queues for asynchronous processing.",
+      "links": [
+        "ESGHub",
+        "David Chen",
+        "TypeScript",
+        "Machine Learning",
+        "Priya Sharma",
+        "Redis"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-compliance.md",
+      "title": "ESGHub Compliance Module",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "The compliance module ensures [[ESGHub]] meets regulatory requirements for sustainability reporting. It validates data against EU taxonomy standards and TCFD frameworks. [[Elena Torres]] works with legal counsel to keep compliance rules current. The module uses rule engines written in [[TypeScript]] that are configured per jurisdiction.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "TypeScript"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-notifications.md",
+      "title": "ESGHub Notification System",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "The notification system for [[ESGHub]] delivers alerts via email, Slack, and push notifications. It uses the Mercury protocol built on [[Redis]] for real-time delivery. [[David Chen]] implemented the notification routing engine. Notification preferences are managed per-user with [[TypeScript]] configuration objects.",
+      "links": [
+        "ESGHub",
+        "Redis",
+        "David Chen",
+        "TypeScript"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-testing.md",
+      "title": "ESGHub Testing Strategy",
+      "frontmatter": {
+        "type": "project-module"
+      },
+      "content": "The testing strategy for [[ESGHub]] covers unit, integration, and end-to-end tests. [[James Franklin]] established the testing patterns used across the project. Tests are written in [[TypeScript]] using Vitest for unit tests and Playwright for E2E. The [[CI/CD]] pipeline runs the full test suite on every pull request. Coverage thresholds are enforced at 80%.",
+      "links": [
+        "ESGHub",
+        "James Franklin",
+        "TypeScript",
+        "CI/CD"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "meetings/2024-q3-review.md",
+      "title": "Q3 2024 Review",
+      "frontmatter": {
+        "type": "meeting",
+        "date": "2024-10-01"
+      },
+      "content": "Quarterly review meeting for Q3 2024. [[David Chen]] presented the [[ESGHub]] platform metrics showing 40% growth in active users. [[Elena Torres]] shared the product roadmap for Q4. [[Marcus Johnson]] reported on infrastructure cost optimization through better [[Kubernetes]] resource management. The [[Board of Directors]] approved the budget for [[Project Atlas]] expansion.",
+      "links": [
+        "David Chen",
+        "ESGHub",
+        "Elena Torres",
+        "Marcus Johnson",
+        "Kubernetes",
+        "Board of Directors",
+        "Project Atlas"
+      ],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/2024-sprint-retro.md",
+      "title": "Sprint Retrospective - Oct 2024",
+      "frontmatter": {
+        "type": "meeting",
+        "date": "2024-10-15"
+      },
+      "content": "Sprint retrospective led by [[David Chen]]. The team discussed improvements to the [[Code Review]] process. [[Sarah O'Brien]] raised concerns about [[DataPipeline]] test flakiness. [[Tom Williams]] suggested better [[TypeScript]] type narrowing patterns. Action items included updating the [[Continuous Integration]] config to retry flaky tests and scheduling a [[Technical Debt]] grooming session.",
+      "links": [
+        "David Chen",
+        "Code Review",
+        "Sarah O'Brien",
+        "DataPipeline",
+        "Tom Williams",
+        "TypeScript",
+        "Continuous Integration",
+        "Technical Debt"
+      ],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/2024-architecture-review.md",
+      "title": "Architecture Review - Nov 2024",
+      "frontmatter": {
+        "type": "meeting",
+        "date": "2024-11-05"
+      },
+      "content": "Architecture review session led by [[David Chen]] covering the [[Microservices]] landscape. The team evaluated the [[GraphQL]] federation setup and discussed adding a service mesh. [[Marcus Johnson]] proposed enhanced [[Observability]] tooling. [[James Franklin]] presented [[Vault Core]] improvements to the entity resolution engine. [[TypeScript]] strict mode adoption was approved for all new services.",
+      "links": [
+        "David Chen",
+        "Microservices",
+        "GraphQL",
+        "Marcus Johnson",
+        "Observability",
+        "James Franklin",
+        "Vault Core",
+        "TypeScript"
+      ],
+      "folder": "meetings"
+    },
+    {
+      "path": "daily/2024-10-20.md",
+      "title": "Daily Note - Oct 20, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-10-20"
+      },
+      "content": "Worked on [[ESGHub]] dashboard performance optimization today. Identified slow queries in the reporting module that were hitting [[PostgreSQL]] without proper indexes. Added composite indexes and verified the fix in staging. Had a good pairing session with [[David Chen]] on the [[TypeScript]] migration of legacy modules.",
+      "links": [
+        "ESGHub",
+        "PostgreSQL",
+        "David Chen",
+        "TypeScript"
+      ],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-10-21.md",
+      "title": "Daily Note - Oct 21, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-10-21"
+      },
+      "content": "Reviewed [[Aisha Patel]]'s pull request for the [[MobileFirst]] offline sync feature. The implementation uses a clever conflict resolution strategy. Also attended the [[DevOps Team]] standup where [[Marcus Johnson]] discussed [[Kubernetes]] cluster upgrades. Need to follow up on the [[ESGHub]] API rate limiting issue.",
+      "links": [
+        "Aisha Patel",
+        "MobileFirst",
+        "DevOps Team",
+        "Marcus Johnson",
+        "Kubernetes",
+        "ESGHub"
+      ],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-10-22.md",
+      "title": "Daily Note - Oct 22, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-10-22"
+      },
+      "content": "Deep dive into [[Machine Learning]] model serving with [[Priya Sharma]]. She demonstrated the new sustainability scoring model for [[ESGHub]]. The model runs in a [[Docker]] container with a [[REST]] API interface. [[David Chen]] joined to discuss integration architecture. Good progress on understanding the prediction pipeline.",
+      "links": [
+        "Machine Learning",
+        "Priya Sharma",
+        "ESGHub",
+        "Docker",
+        "REST",
+        "David Chen"
+      ],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-10-23.md",
+      "title": "Daily Note - Oct 23, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-10-23"
+      },
+      "content": "Helped [[Tom Williams]] debug a [[DataPipeline]] issue with malformed CSV ingestion. The problem was in the [[TypeScript]] parsing logic. Also reviewed the [[CI/CD]] pipeline changes from [[DevOps Team]]. Took [[Bella]] for a tour of the new break room during lunch. [[Sarah O'Brien]] is making great progress on the data warehouse optimization.",
+      "links": [
+        "Tom Williams",
+        "DataPipeline",
+        "TypeScript",
+        "CI/CD",
+        "DevOps Team",
+        "Bella",
+        "Sarah O'Brien"
+      ],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-10-24.md",
+      "title": "Daily Note - Oct 24, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-10-24"
+      },
+      "content": "Productive day working on [[Vault Core]] entity extraction improvements with [[James Franklin]]. We refactored the stemmer module and improved alias matching accuracy. [[TypeScript]] generics simplified the type-safe extraction pipeline. Later attended a demo of [[Project Atlas]] geospatial features presented by [[Marcus Johnson]].",
+      "links": [
+        "Vault Core",
+        "James Franklin",
+        "TypeScript",
+        "Project Atlas",
+        "Marcus Johnson"
+      ],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-10-25.md",
+      "title": "Daily Note - Oct 25, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-10-25"
+      },
+      "content": "Friday wrap-up. [[Max]] was in the office as usual. Paired with [[Elena Torres]] on [[ESGHub]] compliance feature specs. She has a strong vision for the regulatory reporting module. Also caught up with [[Aisha Patel]] about [[React]] Native performance on older devices. The [[Agile Methodology]] retro was productive with good action items.",
+      "links": [
+        "Max",
+        "Elena Torres",
+        "ESGHub",
+        "Aisha Patel",
+        "React",
+        "Agile Methodology"
+      ],
+      "folder": "daily"
+    }
+  ],
+  "groundTruth": [
+    {
+      "notePath": "projects/esghub-frontend.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Note title contains 'ESGHub' and content references the ESGHub frontend explicitly"
+    },
+    {
+      "notePath": "projects/esghub-frontend.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "ESGHub frontend is led by David Chen's team but not mentioned directly"
+    },
+    {
+      "notePath": "projects/esghub-frontend.md",
+      "entity": "Node.js",
+      "tier": 3,
+      "reason": "Frontend connects to Node.js backend but relationship is indirect"
+    },
+    {
+      "notePath": "projects/esghub-data.md",
+      "entity": "Redis",
+      "tier": 1,
+      "reason": "Content mentions 'Caching strategy leverages Redis' without wikilink"
+    },
+    {
+      "notePath": "projects/esghub-data.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "David Chen architected the data layer but not directly mentioned"
+    },
+    {
+      "notePath": "projects/esghub-auth.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Auth service is built in TypeScript like all ESGHub services"
+    },
+    {
+      "notePath": "projects/esghub-auth.md",
+      "entity": "Microservices",
+      "tier": 2,
+      "reason": "Content describes 'deployed as a separate microservice'"
+    },
+    {
+      "notePath": "projects/esghub-auth.md",
+      "entity": "PostgreSQL",
+      "tier": 1,
+      "reason": "Content mentions 'its own PostgreSQL database' without wikilink"
+    },
+    {
+      "notePath": "projects/esghub-mobile.md",
+      "entity": "MobileFirst",
+      "tier": 2,
+      "reason": "ESGHub mobile is built on the MobileFirst framework"
+    },
+    {
+      "notePath": "projects/esghub-reporting.md",
+      "entity": "DataPipeline",
+      "tier": 3,
+      "reason": "Reporting module pulls data that flows through DataPipeline"
+    },
+    {
+      "notePath": "projects/quantum-leap.md",
+      "entity": "Machine Learning",
+      "tier": 2,
+      "reason": "Quantum computing overlaps with ML optimization approaches"
+    },
+    {
+      "notePath": "projects/quantum-leap.md",
+      "entity": "David Chen",
+      "tier": 3,
+      "reason": "David Chen oversees all technical architecture including experimental projects"
+    },
+    {
+      "notePath": "concepts/feedback-loop.md",
+      "entity": "Agile Methodology",
+      "tier": 2,
+      "reason": "Feedback loops are a core agile principle"
+    },
+    {
+      "notePath": "concepts/feedback-loop.md",
+      "entity": "TypeScript",
+      "tier": 3,
+      "reason": "Feedback loops in development apply to TypeScript tooling"
+    },
+    {
+      "notePath": "concepts/observability.md",
+      "entity": "Docker",
+      "tier": 2,
+      "reason": "Observability tools monitor Docker container health"
+    },
+    {
+      "notePath": "concepts/observability.md",
+      "entity": "TypeScript",
+      "tier": 3,
+      "reason": "Observability dashboards and alerts configured via TypeScript"
+    },
+    {
+      "notePath": "meetings/2024-q3-review.md",
+      "entity": "TypeScript",
+      "tier": 3,
+      "reason": "Technical discussion context implies TypeScript usage"
+    },
+    {
+      "notePath": "meetings/2024-q3-review.md",
+      "entity": "Acme Corp",
+      "tier": 1,
+      "reason": "Quarterly review is an Acme Corp meeting"
+    },
+    {
+      "notePath": "daily/2024-10-20.md",
+      "entity": "Continuous Integration",
+      "tier": 2,
+      "reason": "Performance fixes verified in staging through CI pipeline"
+    },
+    {
+      "notePath": "daily/2024-10-21.md",
+      "entity": "TypeScript",
+      "tier": 2,
+      "reason": "MobileFirst PR review involves TypeScript code"
+    },
+    {
+      "notePath": "daily/2024-10-22.md",
+      "entity": "Node.js",
+      "tier": 3,
+      "reason": "ML model serving runs on Node.js runtime"
+    },
+    {
+      "notePath": "daily/2024-10-23.md",
+      "entity": "Node.js",
+      "tier": 3,
+      "reason": "DataPipeline runs on Node.js but only TypeScript mentioned"
+    },
+    {
+      "notePath": "daily/2024-10-24.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "David Chen oversees Vault Core architecture but not mentioned in this daily"
+    },
+    {
+      "notePath": "daily/2024-10-25.md",
+      "entity": "TypeScript",
+      "tier": 2,
+      "reason": "React Native performance discussion implies TypeScript context"
+    }
+  ]
+}

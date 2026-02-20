@@ -47,7 +47,7 @@ import { setHintsStateDb } from './hints.js';
 import { setRecencyStateDb } from '../shared/recency.js';
 import path from 'path';
 import type { FlywheelConfig } from '../read/config.js';
-import type { SuggestOptions, SuggestResult, SuggestionConfig, StrictnessMode, NoteContext, ScoreBreakdown, ScoredSuggestion, ConfidenceLevel } from './types.js';
+import type { SuggestOptions, SuggestResult, SuggestionConfig, StrictnessMode, NoteContext, ScoreBreakdown, ScoredSuggestion, ConfidenceLevel, ScoringLayer } from './types.js';
 import { stem, tokenize } from '../shared/stemmer.js';
 import {
   mineCooccurrences,
@@ -1135,7 +1135,11 @@ export async function suggestRelatedLinks(
     strictness = getEffectiveStrictness(options.notePath),
     notePath,
     detail = false,
+    disabledLayers = [],
   } = options;
+
+  // Build disabled layer set for ablation testing
+  const disabled = new Set<ScoringLayer>(disabledLayers);
 
   // Get config for the specified strictness mode
   const config = STRICTNESS_CONFIGS[strictness];
@@ -1218,12 +1222,12 @@ export async function suggestRelatedLinks(
     if (!entityName) continue;
 
     // Layer 1a: Length filter - skip article titles, clippings (>25 chars)
-    if (entityName.length > MAX_ENTITY_LENGTH) {
+    if (!disabled.has('length_filter') && entityName.length > MAX_ENTITY_LENGTH) {
       continue;
     }
 
     // Layer 1b: Article pattern filter - skip "Guide to", "How to", >3 words, etc.
-    if (isLikelyArticleTitle(entityName)) {
+    if (!disabled.has('article_filter') && isLikelyArticleTitle(entityName)) {
       continue;
     }
 
@@ -1233,7 +1237,9 @@ export async function suggestRelatedLinks(
     }
 
     // Layers 2+3: Exact match, stem match, and alias matching (bonuses depend on strictness)
-    const contentScore = scoreEntity(entity, contentTokens, contentStems, config);
+    const contentScore = (disabled.has('exact_match') && disabled.has('stem_match'))
+      ? 0
+      : scoreEntity(entity, contentTokens, contentStems, config);
     let score = contentScore;
 
     // Track entities with actual content matches
@@ -1242,27 +1248,27 @@ export async function suggestRelatedLinks(
     }
 
     // Layer 5: Type boost - prioritize people, projects over common technologies
-    const layerTypeBoost = TYPE_BOOST[category] || 0;
+    const layerTypeBoost = disabled.has('type_boost') ? 0 : (TYPE_BOOST[category] || 0);
     score += layerTypeBoost;
 
     // Layer 6: Context boost - boost types relevant to note context
-    const layerContextBoost = contextBoosts[category] || 0;
+    const layerContextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
     score += layerContextBoost;
 
     // Layer 7: Recency boost - boost recently-mentioned entities
-    const layerRecencyBoost = recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0;
+    const layerRecencyBoost = disabled.has('recency') ? 0 : (recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0);
     score += layerRecencyBoost;
 
     // Layer 8: Cross-folder boost - prioritize cross-cutting connections
-    const layerCrossFolderBoost = (notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0;
+    const layerCrossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
     score += layerCrossFolderBoost;
 
     // Layer 9: Hub score boost - prioritize well-connected notes
-    const layerHubBoost = getHubBoost(entity);
+    const layerHubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
     score += layerHubBoost;
 
     // Layer 10: Feedback boost - adjust based on historical accuracy
-    const layerFeedbackAdj = feedbackBoosts.get(entityName) ?? 0;
+    const layerFeedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
     score += layerFeedbackAdj;
 
     if (score > 0) {
@@ -1293,14 +1299,14 @@ export async function suggestRelatedLinks(
   // Layer 4: Add co-occurrence boost for entities related to matched ones
   // This allows entities that didn't match directly but are conceptually related
   // to be suggested
-  if (cooccurrenceIndex && directlyMatchedEntities.size > 0) {
+  if (!disabled.has('cooccurrence') && cooccurrenceIndex && directlyMatchedEntities.size > 0) {
     for (const { entity, category } of entitiesWithTypes) {
       const entityName = entity.name;
       if (!entityName) continue;
 
       // Skip if already scored, already linked, too long, or article-like
-      if (entityName.length > MAX_ENTITY_LENGTH) continue;
-      if (isLikelyArticleTitle(entityName)) continue;
+      if (!disabled.has('length_filter') && entityName.length > MAX_ENTITY_LENGTH) continue;
+      if (!disabled.has('article_filter') && isLikelyArticleTitle(entityName)) continue;
       if (linkedEntities.has(entityName.toLowerCase())) continue;
 
       // Get co-occurrence boost (with recency weighting)
@@ -1329,12 +1335,12 @@ export async function suggestRelatedLinks(
           entitiesWithContentMatch.add(entityName);
 
           // For purely co-occurrence-based suggestions, also add type, context, recency, cross-folder, hub, and feedback boosts
-          const typeBoost = TYPE_BOOST[category] || 0;
-          const contextBoost = contextBoosts[category] || 0;
-          const recencyBoostVal = recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0;
-          const crossFolderBoost = (notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0;
-          const hubBoost = getHubBoost(entity);
-          const feedbackAdj = feedbackBoosts.get(entityName) ?? 0;
+          const typeBoost = disabled.has('type_boost') ? 0 : (TYPE_BOOST[category] || 0);
+          const contextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
+          const recencyBoostVal = disabled.has('recency') ? 0 : (recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0);
+          const crossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
+          const hubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
+          const feedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
           const totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj;
           if (totalBoost >= adaptiveMinScore) {
             // Add entity if boost meets threshold
@@ -1363,7 +1369,7 @@ export async function suggestRelatedLinks(
   // ═══════════════════════════════════
   // LAYER 11: Semantic Similarity
   // ═══════════════════════════════════
-  if (content.length >= 20 && hasEntityEmbeddingsIndex()) {
+  if (!disabled.has('semantic') && content.length >= 20 && hasEntityEmbeddingsIndex()) {
     try {
       const contentEmbedding = await embedTextCached(content);
 
@@ -1400,17 +1406,17 @@ export async function suggestRelatedLinks(
           if (!entityWithType) continue;
 
           // Skip length/article filters (same as main loop)
-          if (match.entityName.length > MAX_ENTITY_LENGTH) continue;
-          if (isLikelyArticleTitle(match.entityName)) continue;
+          if (!disabled.has('length_filter') && match.entityName.length > MAX_ENTITY_LENGTH) continue;
+          if (!disabled.has('article_filter') && isLikelyArticleTitle(match.entityName)) continue;
 
           const { entity, category } = entityWithType;
 
           // Reuse existing layer logic for base boosts
-          const layerTypeBoost = TYPE_BOOST[category] || 0;
-          const layerContextBoost = contextBoosts[category] || 0;
-          const layerHubBoost = getHubBoost(entity);
-          const layerCrossFolderBoost = (notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0;
-          const layerFeedbackAdj = feedbackBoosts.get(match.entityName) ?? 0;
+          const layerTypeBoost = disabled.has('type_boost') ? 0 : (TYPE_BOOST[category] || 0);
+          const layerContextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
+          const layerHubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
+          const layerCrossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
+          const layerFeedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(match.entityName) ?? 0);
 
           const totalScore = boost + layerTypeBoost + layerContextBoost + layerHubBoost + layerCrossFolderBoost + layerFeedbackAdj;
 
@@ -1468,7 +1474,60 @@ export async function suggestRelatedLinks(
 
     return 0;
   });
-  const topEntries = relevantEntities.slice(0, maxSuggestions);
+
+  // Persist suggestion events for pipeline observability (Pillar 6)
+  if (moduleStateDb && notePath) {
+    try {
+      const now = Date.now();
+      const insertStmt = moduleStateDb.db.prepare(`
+        INSERT OR IGNORE INTO suggestion_events
+          (timestamp, note_path, entity, total_score, breakdown_json, threshold, passed, strictness, applied, pipeline_event_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL)
+      `);
+      const persistTransaction = moduleStateDb.db.transaction(() => {
+        for (const e of relevantEntities) {
+          insertStmt.run(
+            now,
+            notePath,
+            e.name,
+            e.score,
+            JSON.stringify(e.breakdown),
+            adaptiveMinScore,
+            1,  // passed threshold (these are relevantEntities)
+            strictness
+          );
+        }
+        // Also persist entities that were scored but didn't meet threshold
+        for (const e of scoredEntities) {
+          if (!entitiesWithContentMatch.has(e.name)) continue;
+          if (relevantEntities.some(r => r.name === e.name)) continue;
+          insertStmt.run(
+            now,
+            notePath,
+            e.name,
+            e.score,
+            JSON.stringify(e.breakdown),
+            adaptiveMinScore,
+            0,  // did not pass threshold
+            strictness
+          );
+        }
+      });
+      persistTransaction();
+    } catch {
+      // Score persistence failure never breaks suggestions
+    }
+  }
+
+  // Self-reference avoidance: don't suggest the entity whose note IS the current note
+  const currentNoteStem = notePath
+    ? notePath.replace(/\.md$/, '').split('/').pop()?.toLowerCase()
+    : null;
+  const filtered = currentNoteStem
+    ? relevantEntities.filter(e => e.name.toLowerCase() !== currentNoteStem)
+    : relevantEntities;
+
+  const topEntries = filtered.slice(0, maxSuggestions);
   const topSuggestions = topEntries.map(e => e.name);
 
   if (topSuggestions.length === 0) {

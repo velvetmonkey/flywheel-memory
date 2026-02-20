@@ -108,7 +108,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 14;
+export const SCHEMA_VERSION = 15;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -361,6 +361,24 @@ CREATE TABLE IF NOT EXISTS merge_dismissals (
   reason TEXT NOT NULL,
   dismissed_at TEXT DEFAULT (datetime('now'))
 );
+
+-- Suggestion events audit log (v15: pipeline observability)
+CREATE TABLE IF NOT EXISTS suggestion_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp INTEGER NOT NULL,
+  note_path TEXT NOT NULL,
+  entity TEXT NOT NULL,
+  total_score REAL NOT NULL,
+  breakdown_json TEXT NOT NULL,
+  threshold REAL NOT NULL,
+  passed INTEGER NOT NULL,
+  strictness TEXT NOT NULL,
+  applied INTEGER DEFAULT 0,
+  pipeline_event_id INTEGER,
+  UNIQUE(timestamp, note_path, entity)
+);
+CREATE INDEX IF NOT EXISTS idx_suggestion_entity ON suggestion_events(entity);
+CREATE INDEX IF NOT EXISTS idx_suggestion_note ON suggestion_events(note_path);
 `;
 
 // =============================================================================
@@ -482,6 +500,9 @@ function initSchema(db: Database.Database): void {
         db.exec('ALTER TABLE index_events ADD COLUMN steps TEXT');
       }
     }
+
+    // v15: suggestion_events table (pipeline observability audit log)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'

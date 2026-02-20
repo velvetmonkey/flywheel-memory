@@ -1,0 +1,1508 @@
+{
+  "archetype": "dense-mesh",
+  "seed": 103,
+  "description": "5 clusters of 10 notes each, internally fully connected (45 links per cluster = 225 total internal links), zero inter-cluster links. Tests over-connection detection, suggestion restraint, and precision under high density.",
+  "entities": [
+    {
+      "name": "API Design Principles",
+      "category": "concepts",
+      "path": "backend/api-design-principles.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "API Documentation Generator",
+      "category": "concepts",
+      "path": "backend/api-docs-generator.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "API Rate Limiting",
+      "category": "concepts",
+      "path": "backend/rate-limiting.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Accessibility Standards",
+      "category": "concepts",
+      "path": "frontend/accessibility.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Analytics Query Patterns",
+      "category": "concepts",
+      "path": "data/analytics-queries.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Auth Middleware Configuration",
+      "category": "concepts",
+      "path": "backend/auth-middleware.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Backend Performance Budgets",
+      "category": "concepts",
+      "path": "backend/backend-perf.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Backend TypeScript Standards",
+      "category": "concepts",
+      "path": "backend/backend-typescript.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Budget Allocation Framework",
+      "category": "concepts",
+      "path": "leadership/budget-allocation.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "CSS Module Standards",
+      "category": "concepts",
+      "path": "frontend/css-modules.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Certificate Automation",
+      "category": "concepts",
+      "path": "devops/certificate-automation.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Cloud Cost Tracking",
+      "category": "concepts",
+      "path": "devops/cloud-cost-tracking.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Container Registry Management",
+      "category": "concepts",
+      "path": "devops/container-registry.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "DNS Management System",
+      "category": "concepts",
+      "path": "devops/dns-management.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Data Partitioning Strategy",
+      "category": "concepts",
+      "path": "data/data-partitioning.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Data Quality Scoring",
+      "category": "concepts",
+      "path": "data/data-quality.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Data Recovery Procedures",
+      "category": "concepts",
+      "path": "data/data-recovery.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Data Transformation Standards",
+      "category": "concepts",
+      "path": "data/data-transformation.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Data Validation Rules",
+      "category": "concepts",
+      "path": "data/data-validation.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Database Query Patterns",
+      "category": "concepts",
+      "path": "backend/database-patterns.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Decision Log Process",
+      "category": "concepts",
+      "path": "leadership/decision-log.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Dependency Mapping",
+      "category": "concepts",
+      "path": "leadership/dependency-mapping.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Disaster Recovery Plan",
+      "category": "concepts",
+      "path": "devops/disaster-recovery.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "ETL Pipeline Design",
+      "category": "concepts",
+      "path": "data/etl-pipeline-design.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Error Handling Framework",
+      "category": "concepts",
+      "path": "backend/error-handling.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Executive Dashboard Metrics",
+      "category": "concepts",
+      "path": "leadership/executive-dashboard.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Frontend Linting Rules",
+      "category": "concepts",
+      "path": "frontend/frontend-linting.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Frontend Performance Metrics",
+      "category": "concepts",
+      "path": "frontend/frontend-perf.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Frontend Testing Strategy",
+      "category": "concepts",
+      "path": "frontend/frontend-testing.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "GitOps Workflow",
+      "category": "concepts",
+      "path": "devops/gitops-workflow.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "GraphQL Schema Convention",
+      "category": "concepts",
+      "path": "backend/graphql-schema.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Job Queue Architecture",
+      "category": "concepts",
+      "path": "data/job-queue.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Kubernetes Namespace Config",
+      "category": "concepts",
+      "path": "devops/k8s-namespace.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Leadership Communication Cadence",
+      "category": "concepts",
+      "path": "leadership/communication-cadence.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Network Policy Framework",
+      "category": "concepts",
+      "path": "devops/network-policy.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Pipeline Monitoring Dashboard",
+      "category": "concepts",
+      "path": "data/pipeline-monitoring.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Quarterly Planning Process",
+      "category": "concepts",
+      "path": "leadership/quarterly-planning.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "React Component Architecture",
+      "category": "concepts",
+      "path": "frontend/react-component-architecture.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "React State Management",
+      "category": "concepts",
+      "path": "frontend/react-state-mgmt.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Resource Allocation Model",
+      "category": "concepts",
+      "path": "leadership/resource-allocation.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Risk Management Framework",
+      "category": "concepts",
+      "path": "leadership/risk-management.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Schema Evolution Policy",
+      "category": "concepts",
+      "path": "data/schema-evolution.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Secret Management Strategy",
+      "category": "concepts",
+      "path": "devops/secret-management.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Storybook Configuration",
+      "category": "concepts",
+      "path": "frontend/storybook-config.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Strategic Goal Setting",
+      "category": "concepts",
+      "path": "leadership/strategic-goals.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Structured Logging Standards",
+      "category": "concepts",
+      "path": "backend/structured-logging.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Talent Pipeline Strategy",
+      "category": "concepts",
+      "path": "leadership/talent-pipeline.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Terraform Module Library",
+      "category": "concepts",
+      "path": "devops/terraform-modules.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "TypeScript Component Patterns",
+      "category": "concepts",
+      "path": "frontend/typescript-component-patterns.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Vite Build Configuration",
+      "category": "concepts",
+      "path": "frontend/vite-config.md",
+      "aliases": [],
+      "hubScore": 9
+    }
+  ],
+  "noteCount": 50,
+  "topology": {
+    "clusterCount": 5,
+    "notesPerCluster": 10,
+    "internalLinksPerCluster": 45,
+    "interClusterLinks": 0
+  },
+  "notes": [
+    {
+      "path": "frontend/react-component-architecture.md",
+      "title": "React Component Architecture",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Our React component architecture follows atomic design principles. Components are organized into atoms, molecules, organisms, and templates. Each component is built with [[TypeScript Component Patterns]] and tested using [[Frontend Testing Strategy]]. The design system is documented in [[Storybook Configuration]] and integrates with [[CSS Module Standards]]. State management follows patterns defined in [[React State Management]]. Performance is monitored through [[Frontend Performance Metrics]]. The architecture supports [[Accessibility Standards]] compliance. Build tooling is configured in [[Vite Build Configuration]]. Code quality is maintained through [[Frontend Linting Rules]].",
+      "links": [
+        "TypeScript Component Patterns",
+        "Frontend Testing Strategy",
+        "Storybook Configuration",
+        "CSS Module Standards",
+        "React State Management",
+        "Frontend Performance Metrics",
+        "Accessibility Standards",
+        "Vite Build Configuration",
+        "Frontend Linting Rules"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/typescript-component-patterns.md",
+      "title": "TypeScript Component Patterns",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "TypeScript Component Patterns define how we write type-safe React components. Generic component patterns allow reusable data display components. Discriminated unions model complex component states. The patterns are showcased in [[Storybook Configuration]] and enforce [[Accessibility Standards]] compliance. They integrate with [[React Component Architecture]] principles and [[CSS Module Standards]] for styling. Testing approaches are covered in [[Frontend Testing Strategy]]. Performance implications are tracked in [[Frontend Performance Metrics]]. Build compatibility is ensured via [[Vite Build Configuration]]. Code quality checks use [[Frontend Linting Rules]] and [[React State Management]] patterns.",
+      "links": [
+        "Storybook Configuration",
+        "Accessibility Standards",
+        "React Component Architecture",
+        "CSS Module Standards",
+        "Frontend Testing Strategy",
+        "Frontend Performance Metrics",
+        "Vite Build Configuration",
+        "Frontend Linting Rules",
+        "React State Management"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/frontend-testing.md",
+      "title": "Frontend Testing Strategy",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Our frontend testing strategy uses Vitest for unit tests and Playwright for end-to-end testing. Component tests render with [[React Component Architecture]] patterns and verify [[TypeScript Component Patterns]] type safety. Visual regression tests use [[Storybook Configuration]] snapshots. Tests validate [[CSS Module Standards]] rendering and [[Accessibility Standards]] compliance via axe-core. Performance tests check [[Frontend Performance Metrics]] budgets. The test pipeline integrates with [[Vite Build Configuration]] for fast execution. [[Frontend Linting Rules]] catch issues before tests run. [[React State Management]] logic has dedicated test suites.",
+      "links": [
+        "React Component Architecture",
+        "TypeScript Component Patterns",
+        "Storybook Configuration",
+        "CSS Module Standards",
+        "Accessibility Standards",
+        "Frontend Performance Metrics",
+        "Vite Build Configuration",
+        "Frontend Linting Rules",
+        "React State Management"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/storybook-config.md",
+      "title": "Storybook Configuration",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Storybook serves as our component documentation and development environment. Every component from [[React Component Architecture]] has stories demonstrating different states. [[TypeScript Component Patterns]] are documented with interactive controls. Stories validate [[CSS Module Standards]] visually and check [[Accessibility Standards]] using the a11y addon. [[Frontend Testing Strategy]] uses Storybook for snapshot testing. Performance stories track [[Frontend Performance Metrics]]. The Storybook build uses [[Vite Build Configuration]]. Addons enforce [[Frontend Linting Rules]]. State examples demonstrate [[React State Management]] patterns.",
+      "links": [
+        "React Component Architecture",
+        "TypeScript Component Patterns",
+        "CSS Module Standards",
+        "Accessibility Standards",
+        "Frontend Testing Strategy",
+        "Frontend Performance Metrics",
+        "Vite Build Configuration",
+        "Frontend Linting Rules",
+        "React State Management"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/css-modules.md",
+      "title": "CSS Module Standards",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "CSS Module Standards define our approach to component styling. Each component from [[React Component Architecture]] has a co-located CSS module. Design tokens ensure consistency with the [[Storybook Configuration]] design system. Styles follow [[TypeScript Component Patterns]] for conditional class application. [[Accessibility Standards]] require sufficient contrast ratios and focus indicators. [[Frontend Testing Strategy]] includes visual regression for style changes. Performance impact is measured in [[Frontend Performance Metrics]]. The build pipeline via [[Vite Build Configuration]] handles module compilation. [[Frontend Linting Rules]] include stylelint for CSS. [[React State Management]] drives dynamic styling decisions.",
+      "links": [
+        "React Component Architecture",
+        "Storybook Configuration",
+        "TypeScript Component Patterns",
+        "Accessibility Standards",
+        "Frontend Testing Strategy",
+        "Frontend Performance Metrics",
+        "Vite Build Configuration",
+        "Frontend Linting Rules",
+        "React State Management"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/react-state-mgmt.md",
+      "title": "React State Management",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "React State Management uses a combination of local state, context, and Zustand for global state. Patterns align with [[React Component Architecture]] principles and use [[TypeScript Component Patterns]] for type-safe stores. State changes are tested in [[Frontend Testing Strategy]] suites. [[Storybook Configuration]] demonstrates state transitions interactively. State affects [[CSS Module Standards]] through conditional styling. Performance of state updates is tracked in [[Frontend Performance Metrics]]. Build configuration in [[Vite Build Configuration]] supports tree-shaking unused state code. [[Frontend Linting Rules]] enforce state management best practices. [[Accessibility Standards]] require state changes to be announced to screen readers.",
+      "links": [
+        "React Component Architecture",
+        "TypeScript Component Patterns",
+        "Frontend Testing Strategy",
+        "Storybook Configuration",
+        "CSS Module Standards",
+        "Frontend Performance Metrics",
+        "Vite Build Configuration",
+        "Frontend Linting Rules",
+        "Accessibility Standards"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/frontend-perf.md",
+      "title": "Frontend Performance Metrics",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Frontend Performance Metrics track Core Web Vitals and custom application metrics. Each component from [[React Component Architecture]] has a render budget. [[TypeScript Component Patterns]] include memoization strategies. [[Frontend Testing Strategy]] includes performance regression tests. [[Storybook Configuration]] displays render time badges. [[CSS Module Standards]] optimization reduces paint time. [[React State Management]] performance is measured for update frequency. [[Vite Build Configuration]] chunk splitting targets fast initial load. [[Frontend Linting Rules]] flag performance anti-patterns. [[Accessibility Standards]] consider performance impact on assistive technology rendering.",
+      "links": [
+        "React Component Architecture",
+        "TypeScript Component Patterns",
+        "Frontend Testing Strategy",
+        "Storybook Configuration",
+        "CSS Module Standards",
+        "React State Management",
+        "Vite Build Configuration",
+        "Frontend Linting Rules",
+        "Accessibility Standards"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/accessibility.md",
+      "title": "Accessibility Standards",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Accessibility Standards ensure WCAG 2.1 AA compliance across all frontend applications. Every component in [[React Component Architecture]] must pass accessibility audits. [[TypeScript Component Patterns]] include ARIA attribute types. [[Frontend Testing Strategy]] runs axe-core checks on all components. [[Storybook Configuration]] has the a11y addon enabled. [[CSS Module Standards]] enforce contrast ratios and focus styles. [[React State Management]] handles focus management during state transitions. [[Frontend Performance Metrics]] ensure assistive tech responsiveness. [[Vite Build Configuration]] preserves semantic HTML. [[Frontend Linting Rules]] include jsx-a11y plugin rules.",
+      "links": [
+        "React Component Architecture",
+        "TypeScript Component Patterns",
+        "Frontend Testing Strategy",
+        "Storybook Configuration",
+        "CSS Module Standards",
+        "React State Management",
+        "Frontend Performance Metrics",
+        "Vite Build Configuration",
+        "Frontend Linting Rules"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/vite-config.md",
+      "title": "Vite Build Configuration",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Vite Build Configuration manages the frontend build pipeline. It compiles [[React Component Architecture]] code with optimal chunk splitting. [[TypeScript Component Patterns]] are transpiled with SWC for speed. [[Frontend Testing Strategy]] runs in Vitest which shares the Vite config. [[Storybook Configuration]] uses a Vite builder for consistency. [[CSS Module Standards]] compilation uses PostCSS plugins. [[React State Management]] code is tree-shaken to minimize bundle size. [[Frontend Performance Metrics]] are baked into production builds. [[Accessibility Standards]] tests run during the build. [[Frontend Linting Rules]] are checked pre-build.",
+      "links": [
+        "React Component Architecture",
+        "TypeScript Component Patterns",
+        "Frontend Testing Strategy",
+        "Storybook Configuration",
+        "CSS Module Standards",
+        "React State Management",
+        "Frontend Performance Metrics",
+        "Accessibility Standards",
+        "Frontend Linting Rules"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/frontend-linting.md",
+      "title": "Frontend Linting Rules",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Frontend Linting Rules enforce code quality across all frontend code. ESLint rules validate [[React Component Architecture]] patterns. [[TypeScript Component Patterns]] are checked with typescript-eslint. [[Frontend Testing Strategy]] has its own lint rules for test files. [[Storybook Configuration]] stories follow naming conventions. [[CSS Module Standards]] use stylelint with custom rules. [[React State Management]] has rules against direct mutation. [[Frontend Performance Metrics]] anti-patterns are flagged. [[Accessibility Standards]] are checked via jsx-a11y. [[Vite Build Configuration]] ensures linting runs before builds.",
+      "links": [
+        "React Component Architecture",
+        "TypeScript Component Patterns",
+        "Frontend Testing Strategy",
+        "Storybook Configuration",
+        "CSS Module Standards",
+        "React State Management",
+        "Frontend Performance Metrics",
+        "Accessibility Standards",
+        "Vite Build Configuration"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "backend/api-design-principles.md",
+      "title": "API Design Principles",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "API Design Principles define how we build and evolve our service interfaces. All APIs follow the patterns in [[GraphQL Schema Convention]] with type safety from [[Backend TypeScript Standards]]. Error handling follows [[Error Handling Framework]] patterns. Authentication is validated per [[Auth Middleware Configuration]]. Rate limiting is configured through [[API Rate Limiting]]. Logging follows [[Structured Logging Standards]]. APIs are documented via [[API Documentation Generator]]. Performance targets align with [[Backend Performance Budgets]]. Database access follows [[Database Query Patterns]].",
+      "links": [
+        "GraphQL Schema Convention",
+        "Backend TypeScript Standards",
+        "Error Handling Framework",
+        "Auth Middleware Configuration",
+        "API Rate Limiting",
+        "Structured Logging Standards",
+        "API Documentation Generator",
+        "Backend Performance Budgets",
+        "Database Query Patterns"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "backend/graphql-schema.md",
+      "title": "GraphQL Schema Convention",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "GraphQL Schema Convention standardizes how we define and evolve our API schemas. Schema-first design drives [[API Design Principles]] with generated [[Backend TypeScript Standards]] types. Resolvers follow [[Error Handling Framework]] for consistent error responses. [[Auth Middleware Configuration]] decorates resolver fields with permission checks. Complex queries respect [[API Rate Limiting]] budgets. Schema changes are logged via [[Structured Logging Standards]]. [[API Documentation Generator]] extracts descriptions from schema comments. Query complexity affects [[Backend Performance Budgets]]. Data fetching uses [[Database Query Patterns]] via DataLoader.",
+      "links": [
+        "API Design Principles",
+        "Backend TypeScript Standards",
+        "Error Handling Framework",
+        "Auth Middleware Configuration",
+        "API Rate Limiting",
+        "Structured Logging Standards",
+        "API Documentation Generator",
+        "Backend Performance Budgets",
+        "Database Query Patterns"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "backend/backend-typescript.md",
+      "title": "Backend TypeScript Standards",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Backend TypeScript Standards govern all server-side TypeScript code. Type strictness aligns with [[API Design Principles]] requirements. Generated types from [[GraphQL Schema Convention]] are used throughout. Error types follow [[Error Handling Framework]] hierarchies. Middleware types support [[Auth Middleware Configuration]]. Rate limiter types are defined in [[API Rate Limiting]]. Logger types comply with [[Structured Logging Standards]]. Documentation types serve [[API Documentation Generator]]. Performance types track [[Backend Performance Budgets]]. Query builder types enforce [[Database Query Patterns]] safety.",
+      "links": [
+        "API Design Principles",
+        "GraphQL Schema Convention",
+        "Error Handling Framework",
+        "Auth Middleware Configuration",
+        "API Rate Limiting",
+        "Structured Logging Standards",
+        "API Documentation Generator",
+        "Backend Performance Budgets",
+        "Database Query Patterns"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "backend/error-handling.md",
+      "title": "Error Handling Framework",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "The Error Handling Framework provides structured error management across all backend services. Custom error classes align with [[API Design Principles]] response codes. [[GraphQL Schema Convention]] errors map to typed error unions. [[Backend TypeScript Standards]] define the error hierarchy. [[Auth Middleware Configuration]] throws specific authentication errors. [[API Rate Limiting]] uses throttle errors. [[Structured Logging Standards]] capture error context. [[API Documentation Generator]] documents error responses. [[Backend Performance Budgets]] track error rates. [[Database Query Patterns]] handle connection and query failures.",
+      "links": [
+        "API Design Principles",
+        "GraphQL Schema Convention",
+        "Backend TypeScript Standards",
+        "Auth Middleware Configuration",
+        "API Rate Limiting",
+        "Structured Logging Standards",
+        "API Documentation Generator",
+        "Backend Performance Budgets",
+        "Database Query Patterns"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "backend/auth-middleware.md",
+      "title": "Auth Middleware Configuration",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Auth Middleware Configuration manages request authentication and authorization. It integrates with [[API Design Principles]] for consistent security posture. [[GraphQL Schema Convention]] field-level permissions use directive-based authorization. Types follow [[Backend TypeScript Standards]]. Authentication failures use [[Error Handling Framework]] error classes. Authenticated requests bypass [[API Rate Limiting]] anonymous tiers. Auth events are recorded via [[Structured Logging Standards]]. [[API Documentation Generator]] marks protected endpoints. Auth overhead is tracked in [[Backend Performance Budgets]]. Token validation queries use [[Database Query Patterns]].",
+      "links": [
+        "API Design Principles",
+        "GraphQL Schema Convention",
+        "Backend TypeScript Standards",
+        "Error Handling Framework",
+        "API Rate Limiting",
+        "Structured Logging Standards",
+        "API Documentation Generator",
+        "Backend Performance Budgets",
+        "Database Query Patterns"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "backend/rate-limiting.md",
+      "title": "API Rate Limiting",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "API Rate Limiting protects backend services from abuse and overload. Rate limits follow [[API Design Principles]] for fair usage. [[GraphQL Schema Convention]] query complexity scoring feeds into rate calculations. Implementation uses [[Backend TypeScript Standards]] types. Limit exceeded responses follow [[Error Handling Framework]] patterns. [[Auth Middleware Configuration]] provides tiered rate limits. Rate limit events are logged via [[Structured Logging Standards]]. Limits are documented in [[API Documentation Generator]] output. Impact on [[Backend Performance Budgets]] is monitored. Rate limit counters use [[Database Query Patterns]] with Redis.",
+      "links": [
+        "API Design Principles",
+        "GraphQL Schema Convention",
+        "Backend TypeScript Standards",
+        "Error Handling Framework",
+        "Auth Middleware Configuration",
+        "Structured Logging Standards",
+        "API Documentation Generator",
+        "Backend Performance Budgets",
+        "Database Query Patterns"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "backend/structured-logging.md",
+      "title": "Structured Logging Standards",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Structured Logging Standards define how all backend services produce log output. Every log follows [[API Design Principles]] for consistent metadata. [[GraphQL Schema Convention]] resolver tracing adds query context. Log types use [[Backend TypeScript Standards]]. [[Error Handling Framework]] errors include full context. [[Auth Middleware Configuration]] logs authentication decisions. [[API Rate Limiting]] events include client identifiers. [[API Documentation Generator]] includes log format documentation. Performance logs feed [[Backend Performance Budgets]]. [[Database Query Patterns]] include slow query logging.",
+      "links": [
+        "API Design Principles",
+        "GraphQL Schema Convention",
+        "Backend TypeScript Standards",
+        "Error Handling Framework",
+        "Auth Middleware Configuration",
+        "API Rate Limiting",
+        "API Documentation Generator",
+        "Backend Performance Budgets",
+        "Database Query Patterns"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "backend/api-docs-generator.md",
+      "title": "API Documentation Generator",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "The API Documentation Generator automatically produces developer documentation from code. It reads [[API Design Principles]] annotations and [[GraphQL Schema Convention]] descriptions. Type documentation comes from [[Backend TypeScript Standards]]. Error documentation follows [[Error Handling Framework]] definitions. Security sections reference [[Auth Middleware Configuration]]. Usage limits from [[API Rate Limiting]] are included. Log format from [[Structured Logging Standards]] helps debugging. Performance notes reference [[Backend Performance Budgets]]. Query examples demonstrate [[Database Query Patterns]].",
+      "links": [
+        "API Design Principles",
+        "GraphQL Schema Convention",
+        "Backend TypeScript Standards",
+        "Error Handling Framework",
+        "Auth Middleware Configuration",
+        "API Rate Limiting",
+        "Structured Logging Standards",
+        "Backend Performance Budgets",
+        "Database Query Patterns"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "backend/backend-perf.md",
+      "title": "Backend Performance Budgets",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Backend Performance Budgets set latency and throughput targets for all services. Budgets align with [[API Design Principles]] SLA commitments. [[GraphQL Schema Convention]] query complexity maps to response time budgets. Monitoring uses [[Backend TypeScript Standards]] typed metrics. Error rate budgets follow [[Error Handling Framework]] categorization. [[Auth Middleware Configuration]] overhead is budgeted separately. [[API Rate Limiting]] prevents budget exhaustion. Performance logs follow [[Structured Logging Standards]]. [[API Documentation Generator]] publishes performance expectations. [[Database Query Patterns]] have dedicated query time budgets.",
+      "links": [
+        "API Design Principles",
+        "GraphQL Schema Convention",
+        "Backend TypeScript Standards",
+        "Error Handling Framework",
+        "Auth Middleware Configuration",
+        "API Rate Limiting",
+        "Structured Logging Standards",
+        "API Documentation Generator",
+        "Database Query Patterns"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "backend/database-patterns.md",
+      "title": "Database Query Patterns",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Database Query Patterns standardize how services interact with PostgreSQL and Redis. Patterns support [[API Design Principles]] data access requirements. [[GraphQL Schema Convention]] DataLoader batching reduces N+1 queries. Types follow [[Backend TypeScript Standards]] with Prisma generated types. [[Error Handling Framework]] wraps database errors. [[Auth Middleware Configuration]] queries use connection pooling. [[API Rate Limiting]] counters use Redis patterns. Query logs follow [[Structured Logging Standards]]. [[API Documentation Generator]] documents available queries. Query performance feeds into [[Backend Performance Budgets]].",
+      "links": [
+        "API Design Principles",
+        "GraphQL Schema Convention",
+        "Backend TypeScript Standards",
+        "Error Handling Framework",
+        "Auth Middleware Configuration",
+        "API Rate Limiting",
+        "Structured Logging Standards",
+        "API Documentation Generator",
+        "Backend Performance Budgets"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "data/etl-pipeline-design.md",
+      "title": "ETL Pipeline Design",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "ETL Pipeline Design defines how data flows from external sources to our analytics warehouse. Pipelines use [[Data Validation Rules]] at every stage. Transformation logic follows [[Data Transformation Standards]]. [[Job Queue Architecture]] manages pipeline execution. [[Data Partitioning Strategy]] optimizes storage and query performance. [[Schema Evolution Policy]] handles source changes. Quality is measured by [[Data Quality Scoring]]. Processing is monitored via [[Pipeline Monitoring Dashboard]]. Failure handling uses [[Data Recovery Procedures]]. Output feeds [[Analytics Query Patterns]].",
+      "links": [
+        "Data Validation Rules",
+        "Data Transformation Standards",
+        "Job Queue Architecture",
+        "Data Partitioning Strategy",
+        "Schema Evolution Policy",
+        "Data Quality Scoring",
+        "Pipeline Monitoring Dashboard",
+        "Data Recovery Procedures",
+        "Analytics Query Patterns"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/data-validation.md",
+      "title": "Data Validation Rules",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Data Validation Rules ensure data integrity at every pipeline stage. Rules are applied during [[ETL Pipeline Design]] ingestion. [[Data Transformation Standards]] include pre and post-transformation validation. Validation runs as [[Job Queue Architecture]] tasks. Partitioned data validated per [[Data Partitioning Strategy]] boundaries. Schema changes trigger validation updates via [[Schema Evolution Policy]]. Validation scores feed [[Data Quality Scoring]]. Failures appear on [[Pipeline Monitoring Dashboard]]. Recovery from validation failures follows [[Data Recovery Procedures]]. Validated data serves [[Analytics Query Patterns]].",
+      "links": [
+        "ETL Pipeline Design",
+        "Data Transformation Standards",
+        "Job Queue Architecture",
+        "Data Partitioning Strategy",
+        "Schema Evolution Policy",
+        "Data Quality Scoring",
+        "Pipeline Monitoring Dashboard",
+        "Data Recovery Procedures",
+        "Analytics Query Patterns"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/data-transformation.md",
+      "title": "Data Transformation Standards",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Data Transformation Standards govern how raw data is cleaned and structured. Transformations are pipeline stages in [[ETL Pipeline Design]]. Input quality is ensured by [[Data Validation Rules]]. Transformation jobs run on [[Job Queue Architecture]]. Output is organized per [[Data Partitioning Strategy]]. Schema changes are handled via [[Schema Evolution Policy]]. Quality impact is measured by [[Data Quality Scoring]]. Transformation metrics appear on [[Pipeline Monitoring Dashboard]]. Failed transforms follow [[Data Recovery Procedures]]. Transformed data supports [[Analytics Query Patterns]].",
+      "links": [
+        "ETL Pipeline Design",
+        "Data Validation Rules",
+        "Job Queue Architecture",
+        "Data Partitioning Strategy",
+        "Schema Evolution Policy",
+        "Data Quality Scoring",
+        "Pipeline Monitoring Dashboard",
+        "Data Recovery Procedures",
+        "Analytics Query Patterns"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/job-queue.md",
+      "title": "Job Queue Architecture",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Job Queue Architecture manages asynchronous data processing using Redis-backed queues. Queues execute [[ETL Pipeline Design]] workflows. [[Data Validation Rules]] run as queue tasks. [[Data Transformation Standards]] jobs are queued with dependencies. Partitioning tasks follow [[Data Partitioning Strategy]]. Schema migration jobs are triggered by [[Schema Evolution Policy]]. Job success rates feed [[Data Quality Scoring]]. Queue health shows on [[Pipeline Monitoring Dashboard]]. Failed jobs trigger [[Data Recovery Procedures]]. Query cache warming uses [[Analytics Query Patterns]].",
+      "links": [
+        "ETL Pipeline Design",
+        "Data Validation Rules",
+        "Data Transformation Standards",
+        "Data Partitioning Strategy",
+        "Schema Evolution Policy",
+        "Data Quality Scoring",
+        "Pipeline Monitoring Dashboard",
+        "Data Recovery Procedures",
+        "Analytics Query Patterns"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/data-partitioning.md",
+      "title": "Data Partitioning Strategy",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Data Partitioning Strategy defines how data is physically organized for performance. Partitions align with [[ETL Pipeline Design]] output stages. [[Data Validation Rules]] run within partition boundaries. [[Data Transformation Standards]] produce partition-compatible output. Partition jobs run on [[Job Queue Architecture]]. Schema changes via [[Schema Evolution Policy]] may trigger repartitioning. Partition health feeds [[Data Quality Scoring]]. Partition status shows on [[Pipeline Monitoring Dashboard]]. Partition recovery follows [[Data Recovery Procedures]]. [[Analytics Query Patterns]] leverage partition pruning.",
+      "links": [
+        "ETL Pipeline Design",
+        "Data Validation Rules",
+        "Data Transformation Standards",
+        "Job Queue Architecture",
+        "Schema Evolution Policy",
+        "Data Quality Scoring",
+        "Pipeline Monitoring Dashboard",
+        "Data Recovery Procedures",
+        "Analytics Query Patterns"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/schema-evolution.md",
+      "title": "Schema Evolution Policy",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Schema Evolution Policy manages how data schemas change over time without breaking pipelines. Migrations are coordinated with [[ETL Pipeline Design]] updates. [[Data Validation Rules]] are updated for new schemas. [[Data Transformation Standards]] adapt to schema changes. Migration jobs run on [[Job Queue Architecture]]. [[Data Partitioning Strategy]] may need adjustment. Schema quality tracked via [[Data Quality Scoring]]. Changes appear on [[Pipeline Monitoring Dashboard]]. Rollback follows [[Data Recovery Procedures]]. [[Analytics Query Patterns]] are updated for new schemas.",
+      "links": [
+        "ETL Pipeline Design",
+        "Data Validation Rules",
+        "Data Transformation Standards",
+        "Job Queue Architecture",
+        "Data Partitioning Strategy",
+        "Data Quality Scoring",
+        "Pipeline Monitoring Dashboard",
+        "Data Recovery Procedures",
+        "Analytics Query Patterns"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/data-quality.md",
+      "title": "Data Quality Scoring",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Data Quality Scoring assigns quality ratings to every dataset in the warehouse. Scores reflect [[ETL Pipeline Design]] processing completeness. [[Data Validation Rules]] pass rates are a primary input. [[Data Transformation Standards]] compliance is measured. [[Job Queue Architecture]] reliability affects scores. [[Data Partitioning Strategy]] consistency is checked. [[Schema Evolution Policy]] adherence is verified. Scores display on [[Pipeline Monitoring Dashboard]]. Low scores may trigger [[Data Recovery Procedures]]. [[Analytics Query Patterns]] include quality score filters.",
+      "links": [
+        "ETL Pipeline Design",
+        "Data Validation Rules",
+        "Data Transformation Standards",
+        "Job Queue Architecture",
+        "Data Partitioning Strategy",
+        "Schema Evolution Policy",
+        "Pipeline Monitoring Dashboard",
+        "Data Recovery Procedures",
+        "Analytics Query Patterns"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/pipeline-monitoring.md",
+      "title": "Pipeline Monitoring Dashboard",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "The Pipeline Monitoring Dashboard provides real-time visibility into data processing health. It displays [[ETL Pipeline Design]] stage progress. [[Data Validation Rules]] failure rates are highlighted. [[Data Transformation Standards]] throughput is tracked. [[Job Queue Architecture]] depth and latency are monitored. [[Data Partitioning Strategy]] balance is visualized. [[Schema Evolution Policy]] migration status is shown. [[Data Quality Scoring]] trends are graphed. Alerts trigger [[Data Recovery Procedures]]. [[Analytics Query Patterns]] performance is displayed.",
+      "links": [
+        "ETL Pipeline Design",
+        "Data Validation Rules",
+        "Data Transformation Standards",
+        "Job Queue Architecture",
+        "Data Partitioning Strategy",
+        "Schema Evolution Policy",
+        "Data Quality Scoring",
+        "Data Recovery Procedures",
+        "Analytics Query Patterns"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/data-recovery.md",
+      "title": "Data Recovery Procedures",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Data Recovery Procedures handle failures in data processing and storage. Recovery restores [[ETL Pipeline Design]] pipeline state. [[Data Validation Rules]] are re-run after recovery. [[Data Transformation Standards]] are reapplied to recovered data. Recovery jobs use [[Job Queue Architecture]] priority queues. [[Data Partitioning Strategy]] consistency is verified post-recovery. [[Schema Evolution Policy]] rollback procedures are included. [[Data Quality Scoring]] is recalculated. Recovery status shows on [[Pipeline Monitoring Dashboard]]. [[Analytics Query Patterns]] are validated after recovery.",
+      "links": [
+        "ETL Pipeline Design",
+        "Data Validation Rules",
+        "Data Transformation Standards",
+        "Job Queue Architecture",
+        "Data Partitioning Strategy",
+        "Schema Evolution Policy",
+        "Data Quality Scoring",
+        "Pipeline Monitoring Dashboard",
+        "Analytics Query Patterns"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/analytics-queries.md",
+      "title": "Analytics Query Patterns",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Analytics Query Patterns define how consumers access the data warehouse efficiently. Patterns depend on [[ETL Pipeline Design]] output format. [[Data Validation Rules]] ensure query input quality. [[Data Transformation Standards]] produce query-optimized schemas. Query jobs may use [[Job Queue Architecture]] for heavy reports. [[Data Partitioning Strategy]] enables partition pruning. Queries adapt to [[Schema Evolution Policy]] changes. [[Data Quality Scoring]] filters exclude low-quality data. Query performance shows on [[Pipeline Monitoring Dashboard]]. Failed queries follow [[Data Recovery Procedures]].",
+      "links": [
+        "ETL Pipeline Design",
+        "Data Validation Rules",
+        "Data Transformation Standards",
+        "Job Queue Architecture",
+        "Data Partitioning Strategy",
+        "Schema Evolution Policy",
+        "Data Quality Scoring",
+        "Pipeline Monitoring Dashboard",
+        "Data Recovery Procedures"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "devops/terraform-modules.md",
+      "title": "Terraform Module Library",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "devops"
+      },
+      "content": "The Terraform Module Library provides reusable infrastructure building blocks. Modules provision resources for [[Kubernetes Namespace Config]] and [[Container Registry Management]]. Secrets are managed through [[Secret Management Strategy]]. Network configuration uses [[Network Policy Framework]]. Deployment pipelines leverage [[GitOps Workflow]]. Resources are tagged for [[Cloud Cost Tracking]]. DNS is managed via [[DNS Management System]]. Certificates are handled by [[Certificate Automation]]. Backups follow [[Disaster Recovery Plan]].",
+      "links": [
+        "Kubernetes Namespace Config",
+        "Container Registry Management",
+        "Secret Management Strategy",
+        "Network Policy Framework",
+        "GitOps Workflow",
+        "Cloud Cost Tracking",
+        "DNS Management System",
+        "Certificate Automation",
+        "Disaster Recovery Plan"
+      ],
+      "folder": "devops"
+    },
+    {
+      "path": "devops/k8s-namespace.md",
+      "title": "Kubernetes Namespace Config",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "devops"
+      },
+      "content": "Kubernetes Namespace Configuration defines how workloads are isolated in our clusters. Namespaces are provisioned by [[Terraform Module Library]]. Container images come from [[Container Registry Management]]. Secrets are injected via [[Secret Management Strategy]]. Network boundaries follow [[Network Policy Framework]]. Deployments use [[GitOps Workflow]] patterns. Namespace costs are tracked in [[Cloud Cost Tracking]]. Service DNS uses [[DNS Management System]]. TLS termination uses [[Certificate Automation]]. Namespace recovery follows [[Disaster Recovery Plan]].",
+      "links": [
+        "Terraform Module Library",
+        "Container Registry Management",
+        "Secret Management Strategy",
+        "Network Policy Framework",
+        "GitOps Workflow",
+        "Cloud Cost Tracking",
+        "DNS Management System",
+        "Certificate Automation",
+        "Disaster Recovery Plan"
+      ],
+      "folder": "devops"
+    },
+    {
+      "path": "devops/container-registry.md",
+      "title": "Container Registry Management",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "devops"
+      },
+      "content": "Container Registry Management handles Docker image storage and distribution. Registry infrastructure is provisioned by [[Terraform Module Library]]. Images are deployed to [[Kubernetes Namespace Config]]. Image secrets use [[Secret Management Strategy]]. Registry network access follows [[Network Policy Framework]]. Image builds are triggered by [[GitOps Workflow]]. Registry storage costs tracked in [[Cloud Cost Tracking]]. Registry DNS managed by [[DNS Management System]]. Registry TLS handled by [[Certificate Automation]]. Image recovery follows [[Disaster Recovery Plan]].",
+      "links": [
+        "Terraform Module Library",
+        "Kubernetes Namespace Config",
+        "Secret Management Strategy",
+        "Network Policy Framework",
+        "GitOps Workflow",
+        "Cloud Cost Tracking",
+        "DNS Management System",
+        "Certificate Automation",
+        "Disaster Recovery Plan"
+      ],
+      "folder": "devops"
+    },
+    {
+      "path": "devops/secret-management.md",
+      "title": "Secret Management Strategy",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "devops"
+      },
+      "content": "Secret Management Strategy governs how sensitive data is stored and accessed. Secrets infrastructure uses [[Terraform Module Library]] modules. Kubernetes secrets integrate with [[Kubernetes Namespace Config]]. Registry credentials are managed for [[Container Registry Management]]. Network access to vaults follows [[Network Policy Framework]]. Secret rotation is part of [[GitOps Workflow]]. Secret storage costs in [[Cloud Cost Tracking]]. Secret DNS for vault endpoints via [[DNS Management System]]. Vault TLS via [[Certificate Automation]]. Secret recovery in [[Disaster Recovery Plan]].",
+      "links": [
+        "Terraform Module Library",
+        "Kubernetes Namespace Config",
+        "Container Registry Management",
+        "Network Policy Framework",
+        "GitOps Workflow",
+        "Cloud Cost Tracking",
+        "DNS Management System",
+        "Certificate Automation",
+        "Disaster Recovery Plan"
+      ],
+      "folder": "devops"
+    },
+    {
+      "path": "devops/network-policy.md",
+      "title": "Network Policy Framework",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "devops"
+      },
+      "content": "The Network Policy Framework defines inter-service communication rules. Policies are provisioned via [[Terraform Module Library]]. [[Kubernetes Namespace Config]] boundaries enforce isolation. [[Container Registry Management]] access is controlled. [[Secret Management Strategy]] vault access is restricted. [[GitOps Workflow]] applies policy changes. Policy costs minimal but tracked in [[Cloud Cost Tracking]]. [[DNS Management System]] resolves service endpoints. [[Certificate Automation]] provides mTLS between services. Network recovery follows [[Disaster Recovery Plan]].",
+      "links": [
+        "Terraform Module Library",
+        "Kubernetes Namespace Config",
+        "Container Registry Management",
+        "Secret Management Strategy",
+        "GitOps Workflow",
+        "Cloud Cost Tracking",
+        "DNS Management System",
+        "Certificate Automation",
+        "Disaster Recovery Plan"
+      ],
+      "folder": "devops"
+    },
+    {
+      "path": "devops/gitops-workflow.md",
+      "title": "GitOps Workflow",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "devops"
+      },
+      "content": "GitOps Workflow manages all infrastructure and application deployments through Git. Infrastructure changes use [[Terraform Module Library]] modules. Deployments target [[Kubernetes Namespace Config]] environments. Container images from [[Container Registry Management]] are referenced. Secrets synced via [[Secret Management Strategy]]. Network changes follow [[Network Policy Framework]]. Deployment costs tracked in [[Cloud Cost Tracking]]. DNS updates via [[DNS Management System]]. Certificates managed by [[Certificate Automation]]. Rollback procedures align with [[Disaster Recovery Plan]].",
+      "links": [
+        "Terraform Module Library",
+        "Kubernetes Namespace Config",
+        "Container Registry Management",
+        "Secret Management Strategy",
+        "Network Policy Framework",
+        "Cloud Cost Tracking",
+        "DNS Management System",
+        "Certificate Automation",
+        "Disaster Recovery Plan"
+      ],
+      "folder": "devops"
+    },
+    {
+      "path": "devops/cloud-cost-tracking.md",
+      "title": "Cloud Cost Tracking",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "devops"
+      },
+      "content": "Cloud Cost Tracking monitors and optimizes infrastructure spending. Costs are attributed to resources from [[Terraform Module Library]]. [[Kubernetes Namespace Config]] resource quotas control spending. [[Container Registry Management]] storage costs are tracked. [[Secret Management Strategy]] vault costs are monitored. [[Network Policy Framework]] has minimal cost impact. [[GitOps Workflow]] deployment frequency affects costs. [[DNS Management System]] query costs are tracked. [[Certificate Automation]] costs from certificate authorities. [[Disaster Recovery Plan]] backup storage costs included.",
+      "links": [
+        "Terraform Module Library",
+        "Kubernetes Namespace Config",
+        "Container Registry Management",
+        "Secret Management Strategy",
+        "Network Policy Framework",
+        "GitOps Workflow",
+        "DNS Management System",
+        "Certificate Automation",
+        "Disaster Recovery Plan"
+      ],
+      "folder": "devops"
+    },
+    {
+      "path": "devops/dns-management.md",
+      "title": "DNS Management System",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "devops"
+      },
+      "content": "The DNS Management System handles domain registration and service discovery. DNS zones are provisioned via [[Terraform Module Library]]. Service discovery integrates with [[Kubernetes Namespace Config]]. Registry endpoints managed for [[Container Registry Management]]. Vault endpoints for [[Secret Management Strategy]]. Service mesh DNS via [[Network Policy Framework]]. DNS changes deployed via [[GitOps Workflow]]. DNS costs tracked in [[Cloud Cost Tracking]]. DNS linked to [[Certificate Automation]] for domain validation. DNS recovery in [[Disaster Recovery Plan]].",
+      "links": [
+        "Terraform Module Library",
+        "Kubernetes Namespace Config",
+        "Container Registry Management",
+        "Secret Management Strategy",
+        "Network Policy Framework",
+        "GitOps Workflow",
+        "Cloud Cost Tracking",
+        "Certificate Automation",
+        "Disaster Recovery Plan"
+      ],
+      "folder": "devops"
+    },
+    {
+      "path": "devops/certificate-automation.md",
+      "title": "Certificate Automation",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "devops"
+      },
+      "content": "Certificate Automation manages TLS certificates across all services. cert-manager is configured via [[Terraform Module Library]]. Certificates are scoped to [[Kubernetes Namespace Config]] workloads. Registry TLS for [[Container Registry Management]]. Vault TLS via [[Secret Management Strategy]]. mTLS between services per [[Network Policy Framework]]. Certificate deployments via [[GitOps Workflow]]. Certificate costs in [[Cloud Cost Tracking]]. DNS validation through [[DNS Management System]]. Certificate recovery in [[Disaster Recovery Plan]].",
+      "links": [
+        "Terraform Module Library",
+        "Kubernetes Namespace Config",
+        "Container Registry Management",
+        "Secret Management Strategy",
+        "Network Policy Framework",
+        "GitOps Workflow",
+        "Cloud Cost Tracking",
+        "DNS Management System",
+        "Disaster Recovery Plan"
+      ],
+      "folder": "devops"
+    },
+    {
+      "path": "devops/disaster-recovery.md",
+      "title": "Disaster Recovery Plan",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "devops"
+      },
+      "content": "The Disaster Recovery Plan ensures business continuity in case of infrastructure failures. Backup infrastructure uses [[Terraform Module Library]] modules. Cluster recovery targets [[Kubernetes Namespace Config]] restoration. Image recovery from [[Container Registry Management]] backups. Secret recovery via [[Secret Management Strategy]] vault replication. Network restoration follows [[Network Policy Framework]]. Recovery deployments use [[GitOps Workflow]]. Recovery costs tracked in [[Cloud Cost Tracking]]. DNS failover via [[DNS Management System]]. Certificate reissuance by [[Certificate Automation]].",
+      "links": [
+        "Terraform Module Library",
+        "Kubernetes Namespace Config",
+        "Container Registry Management",
+        "Secret Management Strategy",
+        "Network Policy Framework",
+        "GitOps Workflow",
+        "Cloud Cost Tracking",
+        "DNS Management System",
+        "Certificate Automation"
+      ],
+      "folder": "devops"
+    },
+    {
+      "path": "leadership/quarterly-planning.md",
+      "title": "Quarterly Planning Process",
+      "frontmatter": {
+        "type": "management",
+        "cluster": "leadership"
+      },
+      "content": "The Quarterly Planning Process aligns company priorities with team capacity. OKRs are set through [[Strategic Goal Setting]] and informed by [[Budget Allocation Framework]]. Progress is tracked in [[Executive Dashboard Metrics]]. Team capacity is managed via [[Resource Allocation Model]]. Cross-team dependencies are surfaced in [[Dependency Mapping]]. Risk assessment follows [[Risk Management Framework]]. Communication uses [[Leadership Communication Cadence]]. Decisions are documented in [[Decision Log Process]]. Hiring needs feed into [[Talent Pipeline Strategy]].",
+      "links": [
+        "Strategic Goal Setting",
+        "Budget Allocation Framework",
+        "Executive Dashboard Metrics",
+        "Resource Allocation Model",
+        "Dependency Mapping",
+        "Risk Management Framework",
+        "Leadership Communication Cadence",
+        "Decision Log Process",
+        "Talent Pipeline Strategy"
+      ],
+      "folder": "leadership"
+    },
+    {
+      "path": "leadership/strategic-goals.md",
+      "title": "Strategic Goal Setting",
+      "frontmatter": {
+        "type": "management",
+        "cluster": "leadership"
+      },
+      "content": "Strategic Goal Setting defines company-level objectives and key results. Goals feed into [[Quarterly Planning Process]] cycles. [[Budget Allocation Framework]] funds strategic initiatives. Progress is visible on [[Executive Dashboard Metrics]]. [[Resource Allocation Model]] assigns teams to goals. [[Dependency Mapping]] identifies cross-goal blockers. [[Risk Management Framework]] assesses goal feasibility. Goals are communicated via [[Leadership Communication Cadence]]. Strategic decisions logged in [[Decision Log Process]]. Talent needs from [[Talent Pipeline Strategy]] support goal execution.",
+      "links": [
+        "Quarterly Planning Process",
+        "Budget Allocation Framework",
+        "Executive Dashboard Metrics",
+        "Resource Allocation Model",
+        "Dependency Mapping",
+        "Risk Management Framework",
+        "Leadership Communication Cadence",
+        "Decision Log Process",
+        "Talent Pipeline Strategy"
+      ],
+      "folder": "leadership"
+    },
+    {
+      "path": "leadership/budget-allocation.md",
+      "title": "Budget Allocation Framework",
+      "frontmatter": {
+        "type": "management",
+        "cluster": "leadership"
+      },
+      "content": "The Budget Allocation Framework distributes financial resources across initiatives. Budgets support [[Quarterly Planning Process]] priorities. Funding aligns with [[Strategic Goal Setting]] objectives. Spending is tracked on [[Executive Dashboard Metrics]]. [[Resource Allocation Model]] translates budget to headcount. [[Dependency Mapping]] identifies shared cost centers. [[Risk Management Framework]] includes budget risk. Budget updates via [[Leadership Communication Cadence]]. Allocation decisions in [[Decision Log Process]]. Hiring budget feeds [[Talent Pipeline Strategy]].",
+      "links": [
+        "Quarterly Planning Process",
+        "Strategic Goal Setting",
+        "Executive Dashboard Metrics",
+        "Resource Allocation Model",
+        "Dependency Mapping",
+        "Risk Management Framework",
+        "Leadership Communication Cadence",
+        "Decision Log Process",
+        "Talent Pipeline Strategy"
+      ],
+      "folder": "leadership"
+    },
+    {
+      "path": "leadership/executive-dashboard.md",
+      "title": "Executive Dashboard Metrics",
+      "frontmatter": {
+        "type": "management",
+        "cluster": "leadership"
+      },
+      "content": "Executive Dashboard Metrics provide real-time visibility into company performance. Dashboards track [[Quarterly Planning Process]] progress. KPIs align with [[Strategic Goal Setting]] objectives. Financial metrics from [[Budget Allocation Framework]]. Team metrics from [[Resource Allocation Model]]. Dependency status from [[Dependency Mapping]]. Risk indicators from [[Risk Management Framework]]. Dashboard reviews in [[Leadership Communication Cadence]]. Metric-driven decisions in [[Decision Log Process]]. Hiring metrics from [[Talent Pipeline Strategy]].",
+      "links": [
+        "Quarterly Planning Process",
+        "Strategic Goal Setting",
+        "Budget Allocation Framework",
+        "Resource Allocation Model",
+        "Dependency Mapping",
+        "Risk Management Framework",
+        "Leadership Communication Cadence",
+        "Decision Log Process",
+        "Talent Pipeline Strategy"
+      ],
+      "folder": "leadership"
+    },
+    {
+      "path": "leadership/resource-allocation.md",
+      "title": "Resource Allocation Model",
+      "frontmatter": {
+        "type": "management",
+        "cluster": "leadership"
+      },
+      "content": "The Resource Allocation Model assigns people and capacity to initiatives. Allocations support [[Quarterly Planning Process]] plans. Teams align with [[Strategic Goal Setting]] priorities. [[Budget Allocation Framework]] funds team capacity. Utilization tracked on [[Executive Dashboard Metrics]]. [[Dependency Mapping]] reveals allocation conflicts. [[Risk Management Framework]] identifies under-staffed risks. Changes communicated via [[Leadership Communication Cadence]]. Allocation decisions in [[Decision Log Process]]. Gaps trigger [[Talent Pipeline Strategy]] hiring.",
+      "links": [
+        "Quarterly Planning Process",
+        "Strategic Goal Setting",
+        "Budget Allocation Framework",
+        "Executive Dashboard Metrics",
+        "Dependency Mapping",
+        "Risk Management Framework",
+        "Leadership Communication Cadence",
+        "Decision Log Process",
+        "Talent Pipeline Strategy"
+      ],
+      "folder": "leadership"
+    },
+    {
+      "path": "leadership/dependency-mapping.md",
+      "title": "Dependency Mapping",
+      "frontmatter": {
+        "type": "management",
+        "cluster": "leadership"
+      },
+      "content": "Dependency Mapping identifies and tracks cross-team and cross-project dependencies. Dependencies are surfaced during [[Quarterly Planning Process]]. [[Strategic Goal Setting]] drives dependency identification. [[Budget Allocation Framework]] funds dependency resolution. Dependency status on [[Executive Dashboard Metrics]]. [[Resource Allocation Model]] assigns owners. [[Risk Management Framework]] escalates blocked dependencies. Dependencies communicated via [[Leadership Communication Cadence]]. Resolution decisions in [[Decision Log Process]]. External dependencies may need [[Talent Pipeline Strategy]] hires.",
+      "links": [
+        "Quarterly Planning Process",
+        "Strategic Goal Setting",
+        "Budget Allocation Framework",
+        "Executive Dashboard Metrics",
+        "Resource Allocation Model",
+        "Risk Management Framework",
+        "Leadership Communication Cadence",
+        "Decision Log Process",
+        "Talent Pipeline Strategy"
+      ],
+      "folder": "leadership"
+    },
+    {
+      "path": "leadership/risk-management.md",
+      "title": "Risk Management Framework",
+      "frontmatter": {
+        "type": "management",
+        "cluster": "leadership"
+      },
+      "content": "The Risk Management Framework identifies, assesses, and mitigates organizational risks. Risks are reviewed each [[Quarterly Planning Process]]. [[Strategic Goal Setting]] includes risk appetite. [[Budget Allocation Framework]] reserves for risk mitigation. Risk metrics on [[Executive Dashboard Metrics]]. [[Resource Allocation Model]] includes risk buffer. Dependencies from [[Dependency Mapping]] are risk inputs. Risks communicated via [[Leadership Communication Cadence]]. Risk decisions in [[Decision Log Process]]. Talent risks feed [[Talent Pipeline Strategy]].",
+      "links": [
+        "Quarterly Planning Process",
+        "Strategic Goal Setting",
+        "Budget Allocation Framework",
+        "Executive Dashboard Metrics",
+        "Resource Allocation Model",
+        "Dependency Mapping",
+        "Leadership Communication Cadence",
+        "Decision Log Process",
+        "Talent Pipeline Strategy"
+      ],
+      "folder": "leadership"
+    },
+    {
+      "path": "leadership/communication-cadence.md",
+      "title": "Leadership Communication Cadence",
+      "frontmatter": {
+        "type": "management",
+        "cluster": "leadership"
+      },
+      "content": "Leadership Communication Cadence defines how executives share information with the organization. Cadence supports [[Quarterly Planning Process]] transparency. [[Strategic Goal Setting]] updates are shared monthly. [[Budget Allocation Framework]] summaries go to managers. [[Executive Dashboard Metrics]] are reviewed weekly. [[Resource Allocation Model]] changes are announced. [[Dependency Mapping]] blockers are escalated. [[Risk Management Framework]] alerts use the cadence. Communications reference [[Decision Log Process]] entries. [[Talent Pipeline Strategy]] updates are shared quarterly.",
+      "links": [
+        "Quarterly Planning Process",
+        "Strategic Goal Setting",
+        "Budget Allocation Framework",
+        "Executive Dashboard Metrics",
+        "Resource Allocation Model",
+        "Dependency Mapping",
+        "Risk Management Framework",
+        "Decision Log Process",
+        "Talent Pipeline Strategy"
+      ],
+      "folder": "leadership"
+    },
+    {
+      "path": "leadership/decision-log.md",
+      "title": "Decision Log Process",
+      "frontmatter": {
+        "type": "management",
+        "cluster": "leadership"
+      },
+      "content": "The Decision Log Process records significant organizational decisions with context and rationale. Decisions emerge from [[Quarterly Planning Process]] reviews. [[Strategic Goal Setting]] decisions are logged first. [[Budget Allocation Framework]] decisions include financial justification. Decisions reference [[Executive Dashboard Metrics]]. [[Resource Allocation Model]] changes are documented. [[Dependency Mapping]] resolutions are recorded. [[Risk Management Framework]] mitigations are logged. Decisions shared per [[Leadership Communication Cadence]]. Hiring decisions reference [[Talent Pipeline Strategy]].",
+      "links": [
+        "Quarterly Planning Process",
+        "Strategic Goal Setting",
+        "Budget Allocation Framework",
+        "Executive Dashboard Metrics",
+        "Resource Allocation Model",
+        "Dependency Mapping",
+        "Risk Management Framework",
+        "Leadership Communication Cadence",
+        "Talent Pipeline Strategy"
+      ],
+      "folder": "leadership"
+    },
+    {
+      "path": "leadership/talent-pipeline.md",
+      "title": "Talent Pipeline Strategy",
+      "frontmatter": {
+        "type": "management",
+        "cluster": "leadership"
+      },
+      "content": "Talent Pipeline Strategy manages hiring, retention, and growth of the engineering organization. Hiring plans support [[Quarterly Planning Process]] staffing needs. Roles align with [[Strategic Goal Setting]] priorities. [[Budget Allocation Framework]] funds headcount. Hiring metrics on [[Executive Dashboard Metrics]]. Allocation gaps from [[Resource Allocation Model]] trigger recruiting. [[Dependency Mapping]] may reveal skill gaps. [[Risk Management Framework]] includes talent risk. Updates shared via [[Leadership Communication Cadence]]. Hiring decisions in [[Decision Log Process]].",
+      "links": [
+        "Quarterly Planning Process",
+        "Strategic Goal Setting",
+        "Budget Allocation Framework",
+        "Executive Dashboard Metrics",
+        "Resource Allocation Model",
+        "Dependency Mapping",
+        "Risk Management Framework",
+        "Leadership Communication Cadence",
+        "Decision Log Process"
+      ],
+      "folder": "leadership"
+    }
+  ],
+  "groundTruth": [
+    {
+      "notePath": "frontend/react-component-architecture.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "David Chen established the component architecture patterns used by the frontend team"
+    },
+    {
+      "notePath": "backend/api-design-principles.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "David Chen authored the API design guidelines referenced in the principles"
+    },
+    {
+      "notePath": "backend/api-design-principles.md",
+      "entity": "ESGHub",
+      "tier": 2,
+      "reason": "API design principles primarily serve the ESGHub platform"
+    },
+    {
+      "notePath": "backend/database-patterns.md",
+      "entity": "PostgreSQL",
+      "tier": 1,
+      "reason": "Content explicitly mentions 'PostgreSQL and Redis' as database targets"
+    },
+    {
+      "notePath": "backend/database-patterns.md",
+      "entity": "Redis",
+      "tier": 1,
+      "reason": "Content mentions 'Redis patterns' for rate limiting counters"
+    },
+    {
+      "notePath": "data/etl-pipeline-design.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "ETL pipeline design describes the DataPipeline system"
+    },
+    {
+      "notePath": "data/etl-pipeline-design.md",
+      "entity": "Sarah O'Brien",
+      "tier": 2,
+      "reason": "Sarah O'Brien leads the data engineering team that owns ETL"
+    },
+    {
+      "notePath": "data/job-queue.md",
+      "entity": "Redis",
+      "tier": 1,
+      "reason": "Content describes 'Redis-backed queues' for job processing"
+    },
+    {
+      "notePath": "devops/terraform-modules.md",
+      "entity": "Marcus Johnson",
+      "tier": 2,
+      "reason": "Marcus Johnson leads the DevOps team that maintains Terraform modules"
+    },
+    {
+      "notePath": "devops/k8s-namespace.md",
+      "entity": "Kubernetes",
+      "tier": 1,
+      "reason": "Content directly describes Kubernetes namespace configuration"
+    },
+    {
+      "notePath": "devops/container-registry.md",
+      "entity": "Docker",
+      "tier": 1,
+      "reason": "Content describes 'Docker image storage and distribution'"
+    },
+    {
+      "notePath": "devops/gitops-workflow.md",
+      "entity": "CI/CD",
+      "tier": 2,
+      "reason": "GitOps workflow is the deployment component of CI/CD"
+    },
+    {
+      "notePath": "leadership/quarterly-planning.md",
+      "entity": "Acme Corp",
+      "tier": 1,
+      "reason": "Quarterly planning is a company-level Acme Corp process"
+    },
+    {
+      "notePath": "leadership/quarterly-planning.md",
+      "entity": "Agile Methodology",
+      "tier": 2,
+      "reason": "Planning process follows agile principles"
+    },
+    {
+      "notePath": "leadership/executive-dashboard.md",
+      "entity": "Board of Directors",
+      "tier": 2,
+      "reason": "Executive dashboard serves the Board of Directors"
+    }
+  ]
+}

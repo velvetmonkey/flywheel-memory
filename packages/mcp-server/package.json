@@ -42,6 +42,8 @@
     "test:write": "vitest run test/write/",
     "test:security": "vitest run test/write/security/",
     "test:stress": "vitest run test/write/stress/ test/write/battle-hardening/",
+    "test:quality": "vitest run test/graph-quality/",
+    "test:quality:report": "tsx test/graph-quality/generate-proof.ts",
     "test:coverage": "vitest run --coverage",
     "test:ci": "vitest run --reporter=github-actions",
     "lint": "tsc --noEmit",

@@ -1,0 +1,1282 @@
+{
+  "seed": 200,
+  "description": "Chaos vault for fuzzy/adversarial testing. Simulates a real-world disorganized vault with typos, partial names, ambiguous entities, orphan notes, hub notes, stub notes, mixed domains, and inconsistent frontmatter. ~25 entities, ~50 notes.",
+  "entities": [
+    {
+      "name": "Marcus Johnson",
+      "category": "people",
+      "path": "people/marcus-johnson.md",
+      "aliases": ["Marcus", "MJ"],
+      "hubScore": 55
+    },
+    {
+      "name": "Lena Kowalski",
+      "category": "people",
+      "path": "people/lena-kowalski.md",
+      "aliases": ["Lena", "LK"],
+      "hubScore": 40
+    },
+    {
+      "name": "Raj Patel",
+      "category": "people",
+      "path": "people/raj-patel.md",
+      "aliases": ["Raj"],
+      "hubScore": 70
+    },
+    {
+      "name": "Samira Osei",
+      "category": "people",
+      "path": "people/samira-osei.md",
+      "aliases": ["Samira"],
+      "hubScore": 25
+    },
+    {
+      "name": "David Chen",
+      "category": "people",
+      "path": "people/david-chen.md",
+      "aliases": ["David", "DC"],
+      "hubScore": 90
+    },
+    {
+      "name": "Project Helios",
+      "category": "projects",
+      "path": "projects/project-helios.md",
+      "aliases": ["Helios"],
+      "hubScore": 110
+    },
+    {
+      "name": "Nightingale",
+      "category": "projects",
+      "path": "projects/nightingale.md",
+      "aliases": ["Project Nightingale", "NG"],
+      "hubScore": 60
+    },
+    {
+      "name": "Mercury Platform",
+      "category": "projects",
+      "path": "projects/mercury-platform.md",
+      "aliases": ["Mercury"],
+      "hubScore": 45
+    },
+    {
+      "name": "Kubernetes",
+      "category": "technologies",
+      "path": "technologies/kubernetes.md",
+      "aliases": ["k8s", "K8s"],
+      "hubScore": 80
+    },
+    {
+      "name": "Terraform",
+      "category": "technologies",
+      "path": "technologies/terraform.md",
+      "aliases": ["TF", "tf"],
+      "hubScore": 50
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "technologies",
+      "path": "technologies/postgresql.md",
+      "aliases": ["Postgres", "psql"],
+      "hubScore": 55
+    },
+    {
+      "name": "React",
+      "category": "technologies",
+      "path": "technologies/react.md",
+      "aliases": ["ReactJS", "React.js"],
+      "hubScore": 65
+    },
+    {
+      "name": "Apple",
+      "category": "organizations",
+      "path": "organizations/apple.md",
+      "aliases": ["Apple Inc", "Apple Inc."],
+      "hubScore": 75
+    },
+    {
+      "name": "Mercury Insurance",
+      "category": "organizations",
+      "path": "organizations/mercury-insurance.md",
+      "aliases": ["Mercury Ins"],
+      "hubScore": 20
+    },
+    {
+      "name": "Nexus Labs",
+      "category": "organizations",
+      "path": "organizations/nexus-labs.md",
+      "aliases": ["Nexus", "NL"],
+      "hubScore": 85
+    },
+    {
+      "name": "Microservices",
+      "category": "concepts",
+      "path": "concepts/microservices.md",
+      "aliases": ["microservice", "micro-services"],
+      "hubScore": 50
+    },
+    {
+      "name": "Technical Debt",
+      "category": "concepts",
+      "path": "concepts/technical-debt.md",
+      "aliases": ["tech debt"],
+      "hubScore": 30
+    },
+    {
+      "name": "Berlin",
+      "category": "locations",
+      "path": "locations/berlin.md",
+      "aliases": ["Berlin, Germany"],
+      "hubScore": 35
+    },
+    {
+      "name": "Austin",
+      "category": "locations",
+      "path": "locations/austin.md",
+      "aliases": ["Austin, TX", "ATX"],
+      "hubScore": 40
+    },
+    {
+      "name": "API",
+      "category": "acronyms",
+      "path": "acronyms/api.md",
+      "aliases": ["Application Programming Interface", "APIs"],
+      "hubScore": 95
+    },
+    {
+      "name": "Migraine",
+      "category": "health",
+      "path": "health/migraine.md",
+      "aliases": ["migraines", "headache"],
+      "hubScore": 15
+    },
+    {
+      "name": "Cleo",
+      "category": "animals",
+      "path": "animals/cleo.md",
+      "aliases": ["Cleo-cat", "the cat"],
+      "hubScore": 10
+    },
+    {
+      "name": "Dune",
+      "category": "media",
+      "path": "media/dune.md",
+      "aliases": ["Dune (2021)", "Dune movie"],
+      "hubScore": 20
+    },
+    {
+      "name": "SRE",
+      "category": "acronyms",
+      "path": "acronyms/sre.md",
+      "aliases": ["Site Reliability Engineering", "site reliability"],
+      "hubScore": 35
+    },
+    {
+      "name": "Apple Pie Recipe",
+      "category": "food",
+      "path": "food/apple-pie-recipe.md",
+      "aliases": ["apple pie", "grandma's pie"],
+      "hubScore": 5
+    }
+  ],
+  "notes": [
+    {
+      "path": "projects/project-helios.md",
+      "title": "Project Helios",
+      "frontmatter": { "type": "project", "status": "active", "lead": "Raj Patel" },
+      "content": "Project Helios is our flagship cloud migration initiative at [[Nexus Labs]]. The goal is to move all legacy on-prem services to [[Kubernetes]] clusters managed by [[Terraform]]. [[Raj Patel]] is the overall tech lead, with [[Lena Kowalski]] handling the database migration from Oracle to [[PostgreSQL]]. The frontend dashboards are built in [[React]] and communicate with backend services via [[API]] gateways.\n\nWe've already migrated 60% of services. The remaining 40% involve tightly coupled legacy systems that require significant refactoring. [[David Chen]] from the platform team has been consulting on the [[Microservices]] decomposition strategy.\n\nKey milestones:\n- Q1: Core infrastructure on k8s\n- Q2: Database cutover\n- Q3: Frontend consolidation\n- Q4: Decommission legacy hardware\n\nThe project operates from both [[Austin]] and [[Berlin]] offices. Weekly syncs happen Tuesday mornings to bridge the timezone gap.",
+      "links": ["Nexus Labs", "Kubernetes", "Terraform", "Raj Patel", "Lena Kowalski", "PostgreSQL", "React", "API", "David Chen", "Microservices", "Austin", "Berlin"],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/nightingale.md",
+      "title": "Nightingale",
+      "frontmatter": { "type": "project", "status": "active" },
+      "content": "Nightingale is an internal health monitoring tool for [[Nexus Labs]] employees. The system tracks wellness metrics and integrates with wearable devices. [[Samira Osei]] designed the privacy-first architecture.\n\nThe backend runs on [[Kubernetes]] with [[PostgreSQL]] for structured data. The team uses a serverless approach for event ingestion.\n\nThe project name was chosen because Florence Nightingale pioneered data-driven healthcare. Not to be confused with the [[Mercury Platform]] which also has health-related dashboards but for external clients.",
+      "links": ["Nexus Labs", "Samira Osei", "Kubernetes", "PostgreSQL", "Mercury Platform"],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/mercury-platform.md",
+      "title": "Mercury Platform",
+      "frontmatter": { "type": "project", "status": "beta" },
+      "content": "Mercury Platform is the client-facing analytics product at [[Nexus Labs]]. It provides real-time dashboards powered by streaming data pipelines. [[Raj Patel]] architected the initial version, and [[Marcus Johnson]] now maintains the frontend.\n\nThe platform uses [[React]] for the UI layer and communicates through [[API]] endpoints backed by [[PostgreSQL]] and Redis. Deployment is fully automated on [[Kubernetes]] with [[Terraform]]-managed infrastructure.\n\nNote: \"Mercury\" is also the name of [[Mercury Insurance]], one of our clients. Don't confuse the two in documentation.",
+      "links": ["Nexus Labs", "Raj Patel", "Marcus Johnson", "React", "API", "PostgreSQL", "Kubernetes", "Terraform", "Mercury Insurance"],
+      "folder": "projects"
+    },
+    {
+      "path": "people/marcus-johnson.md",
+      "title": "Marcus Johnson",
+      "frontmatter": { "type": "person", "role": "Senior Frontend Engineer" },
+      "content": "Marcus Johnson is a Senior Frontend Engineer at [[Nexus Labs]], based in the [[Austin]] office. He specializes in [[React]] and design systems. Marcus leads the frontend chapter and maintains the shared component library used across [[Project Helios]], [[Mercury Platform]], and [[Nightingale]].\n\nPreviously he worked at [[Apple]] on their internal tooling team. He adopted a rescue cat named [[Cleo]] during the pandemic.\n\nMarcus is known for his thorough [[Technical Debt]] tracking and advocates for dedicated refactoring sprints.",
+      "links": ["Nexus Labs", "Austin", "React", "Project Helios", "Mercury Platform", "Nightingale", "Apple", "Cleo", "Technical Debt"],
+      "folder": "people"
+    },
+    {
+      "path": "people/lena-kowalski.md",
+      "title": "Lena Kowalski",
+      "frontmatter": { "type": "person", "role": "Database Architect" },
+      "content": "Lena Kowalski is the Database Architect at [[Nexus Labs]], working from [[Berlin]]. She oversees all [[PostgreSQL]] deployments and designed the multi-region replication strategy for [[Project Helios]].\n\nShe previously worked in fintech and has deep expertise with both SQL and NoSQL systems. Lena mentors junior engineers and runs the monthly \"Data Deep Dives\" knowledge-sharing sessions.\n\nShe suffers from chronic [[Migraine]] which occasionally affects her availability for late-evening cross-timezone calls.",
+      "links": ["Nexus Labs", "Berlin", "PostgreSQL", "Project Helios", "Migraine"],
+      "folder": "people"
+    },
+    {
+      "path": "people/raj-patel.md",
+      "title": "Raj Patel",
+      "frontmatter": { "type": "person", "role": "Principal Engineer" },
+      "content": "Raj Patel is a Principal Engineer and the most senior technical leader at [[Nexus Labs]]. He splits time between the [[Austin]] and [[Berlin]] offices. Raj architected both [[Project Helios]] and [[Mercury Platform]], and provides technical oversight for [[Nightingale]].\n\nHis expertise spans [[Kubernetes]], [[Terraform]], [[Microservices]], and distributed systems. He championed the move from monolith to microservices which reduced deploy times by 80%.\n\n[[David Chen]] and Raj collaborate frequently on cross-team architecture decisions. They co-authored the internal \"Cloud-Native Manifesto\" document.\n\nRaj is also a cinephile and hosts a monthly movie night. Last month they watched [[Dune]].",
+      "links": ["Nexus Labs", "Austin", "Berlin", "Project Helios", "Mercury Platform", "Nightingale", "Kubernetes", "Terraform", "Microservices", "David Chen", "Dune"],
+      "folder": "people"
+    },
+    {
+      "path": "people/samira-osei.md",
+      "title": "Samira Osei",
+      "frontmatter": { "type": "person", "role": "Security Engineer" },
+      "content": "Samira Osei is a Security Engineer at [[Nexus Labs]], focused on data privacy and compliance. She designed the privacy framework for [[Nightingale]] and conducts security audits across all products including [[Project Helios]] and [[Mercury Platform]].\n\nBased in [[Berlin]], Samira has CISSP and CISM certifications. She works closely with [[Lena Kowalski]] on database encryption strategies.",
+      "links": ["Nexus Labs", "Nightingale", "Project Helios", "Mercury Platform", "Berlin", "Lena Kowalski"],
+      "folder": "people"
+    },
+    {
+      "path": "people/david-chen.md",
+      "title": "David Chen",
+      "frontmatter": { "type": "person", "role": "Staff Platform Engineer" },
+      "content": "David Chen is a Staff Platform Engineer who consults across teams at [[Nexus Labs]]. He's the go-to expert for [[Kubernetes]] cluster architecture and [[Microservices]] patterns.\n\nDavid works primarily from [[Austin]] but travels to [[Berlin]] quarterly. He's been instrumental in the [[Project Helios]] migration and advises on [[Mercury Platform]] scalability.\n\nHe maintains the internal infrastructure-as-code repository written in [[Terraform]] and has contributed to several open source projects.",
+      "links": ["Nexus Labs", "Kubernetes", "Microservices", "Austin", "Berlin", "Project Helios", "Mercury Platform", "Terraform"],
+      "folder": "people"
+    },
+    {
+      "path": "technologies/kubernetes.md",
+      "title": "Kubernetes",
+      "frontmatter": { "type": "technology", "category": "orchestration" },
+      "content": "Kubernetes is the container orchestration platform used across all [[Nexus Labs]] projects. [[Raj Patel]] and [[David Chen]] manage the cluster configurations. We run separate clusters for dev, staging, and production environments.\n\nAll services for [[Project Helios]], [[Mercury Platform]], and [[Nightingale]] are deployed on k8s. We use Helm charts for templating and ArgoCD for GitOps-style deployments. The [[SRE]] team monitors cluster health 24/7.",
+      "links": ["Nexus Labs", "Raj Patel", "David Chen", "Project Helios", "Mercury Platform", "Nightingale", "SRE"],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/terraform.md",
+      "title": "Terraform",
+      "frontmatter": { "type": "technology", "category": "infrastructure" },
+      "content": "Terraform manages all cloud infrastructure at [[Nexus Labs]]. [[David Chen]] established the Terraform module library. Infrastructure for [[Project Helios]] and [[Mercury Platform]] is fully codified.\n\nWe use Terraform Cloud for state management and plan approvals. The [[SRE]] team reviews all infrastructure changes before apply.",
+      "links": ["Nexus Labs", "David Chen", "Project Helios", "Mercury Platform", "SRE"],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/postgresql.md",
+      "title": "PostgreSQL",
+      "frontmatter": { "type": "technology", "category": "database" },
+      "content": "PostgreSQL is the primary relational database at [[Nexus Labs]]. [[Lena Kowalski]] is the domain expert. We run managed Postgres on AWS RDS with multi-AZ failover.\n\n[[Project Helios]] is migrating from Oracle to PostgreSQL. [[Mercury Platform]] and [[Nightingale]] both use Postgres as their primary data store. Connection pooling is handled by PgBouncer.",
+      "links": ["Nexus Labs", "Lena Kowalski", "Project Helios", "Mercury Platform", "Nightingale"],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/react.md",
+      "title": "React",
+      "frontmatter": { "type": "technology", "category": "frontend" },
+      "content": "React is the standard frontend framework at [[Nexus Labs]]. [[Marcus Johnson]] leads frontend architecture. All client-facing UIs for [[Project Helios]], [[Mercury Platform]], and [[Nightingale]] use React with TypeScript.\n\nThe shared component library includes 200+ components with Storybook documentation. We recently migrated to React 19 for improved server components support.",
+      "links": ["Nexus Labs", "Marcus Johnson", "Project Helios", "Mercury Platform", "Nightingale"],
+      "folder": "technologies"
+    },
+    {
+      "path": "organizations/apple.md",
+      "title": "Apple",
+      "frontmatter": { "type": "organization", "industry": "technology" },
+      "content": "Apple Inc. is the technology company where [[Marcus Johnson]] previously worked on internal developer tooling. Several [[Nexus Labs]] engineers have Apple backgrounds.\n\nNote: Apple the company should not be confused with food references. See [[Apple Pie Recipe]] for grandma's recipe.",
+      "links": ["Marcus Johnson", "Nexus Labs", "Apple Pie Recipe"],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/mercury-insurance.md",
+      "title": "Mercury Insurance",
+      "frontmatter": { "type": "organization", "industry": "insurance" },
+      "content": "Mercury Insurance is one of [[Nexus Labs]]' enterprise clients. They use the [[Mercury Platform]] for analytics dashboards. Contact is through their CTO's office.\n\nThe naming overlap between Mercury Insurance and [[Mercury Platform]] causes frequent confusion in internal communications. Always use the full name to distinguish.",
+      "links": ["Nexus Labs", "Mercury Platform"],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/nexus-labs.md",
+      "title": "Nexus Labs",
+      "frontmatter": { "type": "organization", "industry": "software", "founded": 2018 },
+      "content": "Nexus Labs is the parent organization employing the entire engineering team. Founded in 2018, the company builds data analytics and cloud infrastructure products.\n\nKey people: [[Raj Patel]] (Principal Engineer), [[David Chen]] (Staff Platform), [[Marcus Johnson]] (Senior Frontend), [[Lena Kowalski]] (Database Architect), [[Samira Osei]] (Security).\n\nProducts include [[Project Helios]], [[Mercury Platform]], and [[Nightingale]]. The company operates from [[Austin]] (HQ) and [[Berlin]] (EU office).\n\nThe tech stack centers on [[Kubernetes]], [[Terraform]], [[PostgreSQL]], and [[React]] with a strong commitment to infrastructure-as-code and [[Microservices]] architecture. All inter-service communication uses [[API]] gateways. The [[SRE]] team ensures 99.9% uptime. [[Mercury Insurance]] is our largest enterprise client. The team tracks [[Technical Debt]] quarterly. Office cat [[Cleo]] is the unofficial mascot. [[Dune]] is the official movie of movie night.",
+      "links": ["Raj Patel", "David Chen", "Marcus Johnson", "Lena Kowalski", "Samira Osei", "Project Helios", "Mercury Platform", "Nightingale", "Austin", "Berlin", "Kubernetes", "Terraform", "PostgreSQL", "React", "Microservices", "API", "SRE", "Mercury Insurance", "Technical Debt", "Cleo", "Dune"],
+      "folder": "organizations"
+    },
+    {
+      "path": "concepts/microservices.md",
+      "title": "Microservices",
+      "frontmatter": { "type": "concept" },
+      "content": "Microservices architecture is the standard approach at [[Nexus Labs]]. [[Raj Patel]] drove the migration from monolith to microservices in 2022. Each service runs in its own container on [[Kubernetes]].\n\nBenefits include independent deployability, technology flexibility, and team autonomy. Drawbacks include increased operational complexity and the need for robust [[SRE]] practices.\n\nAll services communicate via gRPC or REST [[API]] calls. Service discovery uses Consul.",
+      "links": ["Nexus Labs", "Raj Patel", "Kubernetes", "SRE", "API"],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/technical-debt.md",
+      "title": "Technical Debt",
+      "frontmatter": { "type": "concept" },
+      "content": "Technical debt is tracked systematically at [[Nexus Labs]]. [[Marcus Johnson]] maintains a debt register for frontend code. Each team allocates 20% of sprint capacity to debt reduction.\n\nCommon sources include: outdated dependencies, missing tests, copy-pasted code, and TODO comments. [[Project Helios]] has the highest debt load due to the legacy migration. The [[SRE]] team tracks infrastructure debt separately.",
+      "links": ["Nexus Labs", "Marcus Johnson", "Project Helios", "SRE"],
+      "folder": "concepts"
+    },
+    {
+      "path": "locations/berlin.md",
+      "title": "Berlin",
+      "frontmatter": { "type": "location" },
+      "content": "Berlin is the European office of [[Nexus Labs]]. [[Lena Kowalski]] and [[Samira Osei]] are based here full-time. [[Raj Patel]] visits quarterly.\n\nThe Berlin team focuses on database operations, security, and EU compliance. The office is located in the Kreuzberg district near several tech hubs.",
+      "links": ["Nexus Labs", "Lena Kowalski", "Samira Osei", "Raj Patel"],
+      "folder": "locations"
+    },
+    {
+      "path": "locations/austin.md",
+      "title": "Austin",
+      "frontmatter": { "type": "location" },
+      "content": "Austin, Texas is the headquarters of [[Nexus Labs]]. [[Marcus Johnson]], [[Raj Patel]], and [[David Chen]] work from the Austin office. The engineering bullpen is located downtown near the University of Texas campus.\n\nAustin's growing tech scene provides a strong hiring pipeline. The office hosts monthly meetups and hackathons.",
+      "links": ["Nexus Labs", "Marcus Johnson", "Raj Patel", "David Chen"],
+      "folder": "locations"
+    },
+    {
+      "path": "acronyms/api.md",
+      "title": "API",
+      "frontmatter": { "type": "acronym" },
+      "content": "API stands for Application Programming Interface. At [[Nexus Labs]], we build REST and gRPC APIs for inter-service communication. The [[Mercury Platform]] exposes public APIs for client integrations.\n\n[[David Chen]] maintains the API design guidelines. All APIs require OpenAPI 3.1 specification and automated contract testing.",
+      "links": ["Nexus Labs", "Mercury Platform", "David Chen"],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/sre.md",
+      "title": "SRE",
+      "frontmatter": { "type": "acronym" },
+      "content": "SRE stands for Site Reliability Engineering. The SRE practice at [[Nexus Labs]] ensures production stability across all services. [[Raj Patel]] established the SRE discipline, and the team monitors [[Kubernetes]] clusters, [[PostgreSQL]] databases, and [[API]] gateway health.\n\nOn-call rotations follow a sun-follows-the-moon model between [[Austin]] and [[Berlin]].",
+      "links": ["Nexus Labs", "Raj Patel", "Kubernetes", "PostgreSQL", "API", "Austin", "Berlin"],
+      "folder": "acronyms"
+    },
+    {
+      "path": "health/migraine.md",
+      "title": "Migraine",
+      "frontmatter": { "type": "health", "severity": "chronic" },
+      "content": "Migraine tracking note. [[Lena Kowalski]] experiences chronic migraines triggered by stress and screen fatigue. Medication: sumatriptan as needed.\n\nTrigger log:\n- Late-night on-call shifts\n- Fluorescent office lighting in [[Berlin]] office\n- Extended video calls across timezones",
+      "links": ["Lena Kowalski", "Berlin"],
+      "folder": "health"
+    },
+    {
+      "path": "animals/cleo.md",
+      "title": "Cleo",
+      "frontmatter": { "type": "animal", "species": "cat" },
+      "content": "Cleo is [[Marcus Johnson]]'s rescue cat, adopted in 2021 during the pandemic. She's a calico with a fondness for sitting on keyboards during standup meetings.\n\nCleo has appeared in several team video calls and has become an unofficial mascot for the [[Austin]] office.",
+      "links": ["Marcus Johnson", "Austin"],
+      "folder": "animals"
+    },
+    {
+      "path": "media/dune.md",
+      "title": "Dune",
+      "frontmatter": { "type": "media", "category": "film" },
+      "content": "Dune (2021) directed by Denis Villeneuve. [[Raj Patel]] is a massive fan and organized a team viewing at the [[Austin]] office.\n\nThe film's themes of ecology and resource management resonate with some of the sustainability features being built into [[Mercury Platform]].",
+      "links": ["Raj Patel", "Austin", "Mercury Platform"],
+      "folder": "media"
+    },
+    {
+      "path": "food/apple-pie-recipe.md",
+      "title": "Apple Pie Recipe",
+      "frontmatter": { "type": "recipe", "cuisine": "American" },
+      "content": "Grandma's classic apple pie recipe. [[Marcus Johnson]] brought this to the office potluck and it became legendary.\n\nIngredients:\n- 6 Granny Smith apples (not to be confused with [[Apple]] the company!)\n- 3/4 cup sugar\n- 2 tbsp flour\n- 1 tsp cinnamon\n- 1/4 tsp nutmeg\n- Dash of salt\n- Pie crust (store-bought is fine)\n\nBake at 375F for 50 minutes.",
+      "links": ["Marcus Johnson", "Apple"],
+      "folder": "food"
+    },
+    {
+      "path": "daily/2025-01-15.md",
+      "title": "2025-01-15",
+      "frontmatter": { "type": "daily" },
+      "content": "## Morning standup\n\n- [[Project Helios]] migration is on track. Raj said the k8s clusters are stable.\n- Marcus J mentioned he's refactoring the [[React]] component library\n- Lena is dealing with a Postgres replication lag issue\n\n## Afternoon\n\nHad a long debug session with David on the Terrafrom configs. Turns out the VPC peering was misconfigured. Fixed by EOD.\n\nSamira flagged a potential data leak in the Nightengale health data pipeline. Need to investigate tomorrow.\n\n## Personal\n\nPicked up apple pie ingredients on the way home. Cleo knocked over the flour bag.",
+      "links": ["Project Helios", "React"],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2025-01-20.md",
+      "title": "2025-01-20",
+      "frontmatter": { "type": "daily" },
+      "content": "## Work\n\n[[Mercury Platform]] demo to [[Mercury Insurance]] went well. They loved the new dashboard widgets. Raj P. presented the roadmap.\n\n- Need to fix the API rate limiting bug before GA\n- Marcus is blocked on a React 19 migration issue\n\n## Health\n\nMigrane kicked in around 3pm. Took sumatriptan and logged off early. The Berlin office lighting really triggers it.\n\n## Notes\n\nDavid mentioned Apple might be interested in our developer tooling approach. Worth following up.",
+      "links": ["Mercury Platform", "Mercury Insurance"],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2025-02-03.md",
+      "title": "2025-02-03",
+      "frontmatter": { "type": "daily" },
+      "content": "## Standup\n\n- [[Project Helios]]: database cutover scheduled for next week. [[Lena Kowalski]] is running point.\n- [[Nightingale]]: privacy audit passed! [[Samira Osei]] confirmed compliance.\n- Mercery Platform: new client onboarding flow deployed.\n\n## Architecture Review\n\nRaj led a session on microservice boundaries. Key decision: split the analytics service into three smaller services. David Chen agreed this reduces blast radius.\n\nKubernets cluster capacity planning:\n- Current: 12 nodes\n- Projected Q2: 18 nodes\n- Need to update Terraform configs\n\n## Personal\n\nRaj's movie night: watched Dune again. Still amazing.",
+      "links": ["Project Helios", "Lena Kowalski", "Nightingale", "Samira Osei"],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2025-02-10.md",
+      "title": "2025-02-10",
+      "frontmatter": {},
+      "content": "Quick day. Nothing much happened.\n\nMarcus showed off the new design system components. Looks good.\n\nLena K. fixed the replication lag from last month. Postgre SQL performance is back to normal.\n\nTech debt review:\n- 47 open items across all projects\n- Helios has 22 of them\n- Need to prioritize the API gateway refactor",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2025-02-14.md",
+      "title": "2025-02-14",
+      "content": "Valentine's Day!\n\nBrought apple pie to the office (Marcus's famous recipe). Everyone loved it.\n\nShort day — most people left early. Did some code review on the Mercury Platfrom client SDK.\n\nCleo update: she's been extra cuddly lately. Marcus says it's because of the cold weather in Austin.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2025-03-01.md",
+      "title": "2025-03-01",
+      "frontmatter": { "type": "daily" },
+      "content": "## Q1 Retrospective\n\n### What went well\n- [[Project Helios]] migration 80% complete\n- [[Nightingale]] passed security audit\n- [[Mercury Platform]] landed 3 new enterprise clients\n- Zero P1 incidents in February\n\n### What could improve\n- Cross-timezone communication (Austin/Berlin gap)\n- Technical debt keeps growing in Helios\n- Documentation is sparse\n\n### Action items\n- Raj: write architecture decision records for all major choices\n- Lena: document database runbooks\n- Marcus: create frontend style guide\n- Samira: publish security checklist for new services\n- David: standardize Terraform module structure",
+      "links": ["Project Helios", "Nightingale", "Mercury Platform"],
+      "folder": "daily"
+    },
+    {
+      "path": "meetings/2025-01-10-architecture-review.md",
+      "title": "Architecture Review - Jan 10",
+      "frontmatter": { "type": "meeting", "attendees": ["Raj Patel", "David Chen", "Lena Kowalski"] },
+      "content": "# Architecture Review\n\nDate: 2025-01-10\nAttendees: [[Raj Patel]], [[David Chen]], [[Lena Kowalski]]\n\n## Agenda\n1. [[Project Helios]] migration status\n2. [[Kubernetes]] cluster sizing\n3. Database replication strategy\n\n## Notes\n\nRaj presented the current state of the Helios migration. 60% of services are now on k8s. The remaining services have hard dependencies on legacy Oracle stored procedures.\n\nDavid proposed a strangler fig pattern for the remaining services. This would let us gradually redirect traffic without a big-bang cutover.\n\nLena raised concerns about PostgresQL connection pooling under the projected Q2 load. She recommends upgrading PgBouncer and adding read replicas.\n\n## Action Items\n- [ ] David: prototype strangler fig for payment service\n- [ ] Lena: benchmark PgBouncer alternatives\n- [ ] Raj: update project timeline in Jira",
+      "links": ["Raj Patel", "David Chen", "Lena Kowalski", "Project Helios", "Kubernetes"],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/2025-01-24-mercury-planning.md",
+      "title": "Mercury Platform Planning",
+      "frontmatter": { "type": "meeting" },
+      "content": "# Mercury Platform Planning\n\nAttendees: [[Raj Patel]], [[Marcus Johnson]], Samira\n\n## Topics\n\n- Client onboarding flow redesign\n- [[API]] versioning strategy\n- Security review findings from Samira\n\nRaj wants to ship the v2 API by end of Q1. Marcus is concerned about breaking changes for existing [[Mercury Insurance]] integrations.\n\nSamira presented 3 medium-severity findings from the pen test. All related to input validation on the dashboard API. Need to fix before GA.\n\nThe Mercury name keeps confusing people — Mercury Platform vs Mercury Insurance. We should consider a rebrand.\n\n- [ ] Marcus: mock up new onboarding flow\n- [ ] Raj: draft API migration guide\n- [ ] Samira: write remediation tickets for pen test findings",
+      "links": ["Raj Patel", "Marcus Johnson", "API", "Mercury Insurance"],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/2025-02-07-sre-review.md",
+      "title": "SRE Review - Feb 7",
+      "frontmatter": { "type": "meeting", "attendees": ["David Chen", "Raj Patel"] },
+      "content": "# SRE Review\n\n[[David Chen]] and [[Raj Patel]] reviewed the SRE metrics for January.\n\n## Highlights\n- 99.97% uptime across all [[Kubernetes]] services\n- Mean time to recovery: 4.2 minutes\n- On-call pages: 7 total, 5 auto-resolved\n\n## Concerns\n- The [[Mercury Platform]] streaming pipeline had 3 minor incidents\n- [[PostgreSQL]] connection exhaustion on Feb 2 (fixed by [[Lena Kowalski]])\n- Terrform state locking issues causing deploy delays\n\n## Decisions\n- Increase node pool from 12 to 16 nodes\n- Add dedicated monitoring for database connections\n- Automate Terraform lock recovery",
+      "links": ["David Chen", "Raj Patel", "Kubernetes", "Mercury Platform", "PostgreSQL", "Lena Kowalski"],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/2025-02-21-all-hands.md",
+      "title": "All Hands - Feb 21",
+      "frontmatter": { "type": "meeting" },
+      "content": "# All Hands Meeting\n\nFull company all-hands at [[Nexus Labs]].\n\n## Announcements\n- [[Project Helios]] is 80% complete\n- [[Mercury Platform]] secured 3 new enterprise clients including a major insurance company\n- [[Nightingale]] passed its privacy audit\n- Hiring: looking for 2 SREs and 1 frontend engineer\n\n## Shoutouts\n- Raj for leading the Helios migration flawlessly\n- Samira for the Nightingale security work\n- Marcus for the new component library\n- Lena for solving the replication crisis\n- David for the Terraform module standardization\n\n## Social\nRaj organized Dune watch party for next Friday. RSVP in #social channel.",
+      "links": ["Nexus Labs", "Project Helios", "Mercury Platform", "Nightingale"],
+      "folder": "meetings"
+    },
+    {
+      "path": "notes/infrastructure-philosophy.md",
+      "title": "Infrastructure Philosophy",
+      "frontmatter": { "type": "note", "tags": ["infrastructure", "opinion"] },
+      "content": "# Infrastructure Philosophy\n\nThoughts on how we should approach infrastructure at Nexus Labs.\n\n## Core Principles\n\n1. **Everything as code** — All infrastructure must be defined in [[Terraform]]. No manual changes allowed.\n2. **Immutable infrastructure** — Never patch running instances. Rebuild from scratch.\n3. **Cattle not pets** — Services on [[Kubernetes]] should be disposable and replaceable.\n\n## Anti-patterns to avoid\n\n- Snowflake servers\n- Manual database migrations (use [[PostgreSQL]] migration tools)\n- Hardcoded configuration values\n- Monolithic deployments (embrace [[Microservices]])\n\n## Inspiration\n\nDavid Chen wrote a great internal blog post about this. Raj's talk at KubeCon was also influential.\n\nThe [[SRE]] handbook by Google is required reading for all infrastructure engineers.",
+      "links": ["Terraform", "Kubernetes", "PostgreSQL", "Microservices", "SRE"],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/database-runbook.md",
+      "title": "Database Runbook",
+      "frontmatter": { "type": "runbook" },
+      "content": "# Database Runbook\n\nMaintained by [[Lena Kowalski]].\n\n## Emergency Procedures\n\n### Connection Exhaustion\n1. Check active connections: `SELECT count(*) FROM pg_stat_activity;`\n2. Kill idle connections older than 10 minutes\n3. Restart PgBouncer if needed\n4. Notify [[SRE]] on-call\n\n### Replication Lag\n1. Check lag: `SELECT pg_last_wal_replay_lsn();`\n2. If lag > 5 minutes, check network between AZs\n3. Consider promoting replica if primary is failing\n\n### Backup Recovery\n1. Identify target backup from S3\n2. Spin up new RDS instance from snapshot\n3. Update [[Terraform]] configs for new endpoint\n4. Run data integrity checks\n\n## Regular Maintenance\n- Weekly: VACUUM ANALYZE on large tables\n- Monthly: Review slow query log\n- Quarterly: Test backup restoration\n\nFor Postgres-specific configs see the [[PostgreSQL]] entity page.",
+      "links": ["Lena Kowalski", "SRE", "Terraform", "PostgreSQL"],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/frontend-architecture.md",
+      "title": "Frontend Architecture",
+      "frontmatter": { "tags": ["frontend", "architecture"] },
+      "content": "# Frontend Architecture\n\nOur frontend stack is built on React with TypeScript. Marcus Johnson is the frontend chapter lead.\n\n## Component Library\n\nThe shared component library has 200+ components. It uses:\n- Radix UI for accessible primitives\n- Tailwind CSS for styling\n- Storybook for documentation\n- Vitest for unit tests\n\n## State Management\n\nWe use Zustand for client state and TanStack Query for server state. Redux was phased out in 2024.\n\n## Performance\n\n- Code splitting via React.lazy()\n- Image optimization with next/image patterns\n- Bundle analysis on every PR\n- Core Web Vitals monitoring in production\n\n## Challenges\n\nThe biggest challenge is keeping consistency across Project Helios, Mercury Platform, and Nightingale frontends. The component library helps but each project has diverged in minor ways.\n\nTech debt: about 15 open items related to accessibility and i18n.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/onboarding-guide.md",
+      "title": "Onboarding Guide",
+      "frontmatter": { "type": "guide" },
+      "content": "# New Engineer Onboarding\n\nWelcome to [[Nexus Labs]]! Here's everything you need to get started.\n\n## Week 1\n- [ ] Set up development environment (MacOS or Linux)\n- [ ] Get access to GitHub, Jira, Slack, and AWS\n- [ ] Clone the mono-repo and run `make setup`\n- [ ] Read the [[Microservices]] architecture overview\n- [ ] Meet your buddy (assigned by your manager)\n\n## Week 2\n- [ ] Deploy your first change to staging via the CI/CD pipeline\n- [ ] Complete security training with [[Samira Osei]]\n- [ ] Review [[Kubernetes]] basics (for backend engineers)\n- [ ] Review [[React]] component library docs (for frontend engineers)\n\n## Key Contacts\n- Infrastructure: [[David Chen]] or [[Raj Patel]]\n- Database: [[Lena Kowalski]]\n- Frontend: [[Marcus Johnson]]\n- Security: [[Samira Osei]]\n\n## Important Reading\n- Cloud-Native Manifesto (internal wiki)\n- [[API]] design guidelines\n- [[SRE]] runbooks",
+      "links": ["Nexus Labs", "Microservices", "Samira Osei", "Kubernetes", "React", "David Chen", "Raj Patel", "Lena Kowalski", "Marcus Johnson", "API", "SRE"],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/mercury-confusion.md",
+      "title": "Mercury Naming Confusion",
+      "frontmatter": { "type": "note" },
+      "content": "# Mercury Naming Confusion\n\nWe have a persistent naming collision problem:\n\n1. **[[Mercury Platform]]** — our analytics product\n2. **[[Mercury Insurance]]** — one of our clients\n\nPeople frequently write \"Mercury\" in docs and Slack without clarifying which one. This has caused:\n- Misdirected emails\n- Confused meeting invites\n- Wrong Jira boards being updated\n\nProposal: rename Mercury Platform to something else. Suggestions:\n- Horizon Analytics\n- Prism Dashboard\n- Nexus Analytics\n\n[[Raj Patel]] is open to a rebrand. [[Marcus Johnson]] prefers keeping the name for brand continuity.\n\nAlso unrelated: Mercury the planet is the closest to the sun. And Mercury was the Roman messenger god. Neither relevant but I keep getting distracted during this naming discussion.",
+      "links": ["Mercury Platform", "Mercury Insurance", "Raj Patel", "Marcus Johnson"],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/apple-ecosystem-thoughts.md",
+      "title": "Apple Ecosystem Thoughts",
+      "frontmatter": {},
+      "content": "Random thoughts on the Apple ecosystem and how it affects our dev workflow.\n\nMost engineers at Nexus Labs use MacBooks (Apple Silicon). The M-series chips are great for local Kuberntes development — fast builds, good battery life.\n\nMarcus used to work at Apple and has strong opinions about their design philosophy. He pushes for similar attention to detail in our React component library.\n\nThe apple pie Marcus makes is also legendary (unrelated but I always think of it when someone mentions Apple).\n\nSome tools we use don't have great Apple Silicon support yet:\n- Terraform sometimes has ARM compatibility issues\n- Some Docker images need multi-arch builds\n- The legacy Oracle client for Helios doesn't run natively on ARM\n\nOverall the Apple hardware investment has been worth it. Productivity gains are measurable.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/q2-planning-draft.md",
+      "title": "Q2 Planning Draft",
+      "frontmatter": { "type": "planning", "quarter": "Q2 2025" },
+      "content": "# Q2 2025 Planning\n\n## [[Project Helios]]\n- Complete remaining 20% of migration\n- Decommission legacy Oracle servers\n- Target: zero on-prem by June 30\n- Owner: [[Raj Patel]]\n\n## [[Mercury Platform]]\n- Ship v2 [[API]]\n- Onboard 5 new enterprise clients including [[Mercury Insurance]]\n- Implement real-time streaming dashboard\n- Owner: [[Marcus Johnson]] (frontend), Raj (backend)\n\n## [[Nightingale]]\n- Launch beta to all employees\n- Add wearable device integrations\n- GDPR compliance audit\n- Owner: [[Samira Osei]]\n\n## Infrastructure\n- Expand [[Kubernetes]] to 20 nodes\n- Upgrade [[Terraform]] to v1.8\n- Implement blue-green deployments\n- [[SRE]] on-call improvements\n- Owner: [[David Chen]]\n\n## Tech Debt\n- Reduce [[Technical Debt]] items from 47 to under 25\n- Focus areas: [[React]] component consistency, [[PostgreSQL]] query optimization\n- Owner: [[Lena Kowalski]] (DB), Marcus (frontend)\n\n## Cross-cutting\n- [[Microservices]] boundary review\n- Update [[Nexus Labs]] public documentation\n- Coordinate with [[Austin]] and [[Berlin]] offices on hiring\n- Team movie night: [[Dune]] Part Two screening",
+      "links": ["Project Helios", "Raj Patel", "Mercury Platform", "API", "Mercury Insurance", "Marcus Johnson", "Nightingale", "Samira Osei", "Kubernetes", "Terraform", "SRE", "David Chen", "Technical Debt", "React", "PostgreSQL", "Lena Kowalski", "Microservices", "Nexus Labs", "Austin", "Berlin", "Dune"],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/interview-questions.md",
+      "title": "Interview Questions",
+      "content": "# Interview Questions Bank\n\nFor hiring SREs and frontend engineers.\n\n## SRE Questions\n1. Explain how Kubernetes handles pod scheduling\n2. What is a Terraform state file and why is it important?\n3. Describe a time you debugged a production database issue\n4. How would you implement a zero-downtime deployment?\n5. What metrics would you monitor for a PostgresQL cluster?\n\n## Frontend Questions\n1. Explain React's reconciliation algorithm\n2. How do you handle state management in a large React app?\n3. What are Web Vitals and why do they matter?\n4. Describe your approach to accessibility\n5. How do you test React components?\n\n## General\n1. Tell me about a time you dealt with significant technical debt\n2. How do you approach learning a new codebase?\n3. Describe your experience with microservices architecture\n4. What's your philosophy on code reviews?",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/security-audit-findings.md",
+      "title": "Security Audit Findings",
+      "frontmatter": { "type": "report", "date": "2025-01-15", "author": "Samira Osei" },
+      "content": "# Security Audit Findings — January 2025\n\nAuditor: [[Samira Osei]]\n\n## Critical (0)\nNone found.\n\n## High (1)\n- **H1**: API gateway allows unauthenticated access to internal health endpoints\n  - Affected: [[Mercury Platform]], [[Project Helios]]\n  - Fix: Add auth middleware to all /internal/* routes\n  - Owner: [[David Chen]]\n\n## Medium (3)\n- **M1**: SQL injection possible on legacy search endpoint\n  - Affected: [[Mercury Platform]]\n  - Fix: Parameterize all queries (Lena K. to review)\n  \n- **M2**: Outdated TLS certificates on staging environment\n  - Affected: All projects\n  - Fix: Automate cert rotation via Terraform\n\n- **M3**: [[Nightingale]] health data not encrypted at rest\n  - Fix: Enable RDS encryption, rotate keys\n  - Owner: [[Lena Kowalski]]\n\n## Low (5)\nMinor issues documented in Jira. All assigned to respective team leads.",
+      "links": ["Samira Osei", "Mercury Platform", "Project Helios", "David Chen", "Nightingale", "Lena Kowalski"],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/random-thoughts.md",
+      "title": "Random Thoughts",
+      "content": "Assorted thoughts and ideas, no particular order.\n\n---\n\nSaw an article about how Mercury (the planet) has extreme temperature swings. Kind of like our Mercury Platfrom when it's under load — runs hot then cold. Ha.\n\n---\n\nApple announced new developer APIs at WWDC. Marcus would know more about this.\n\n---\n\nNeed to remember to take migraine medication before the next all-hands. Those long meetings in the conference room with bad lighting always trigger it.\n\n---\n\nRaj recommended Dune as a book too, not just the movie. Should read it.\n\n---\n\nKubernets vs Kubernetes — I keep making this typo. Need to set up autocorrect.\n\n---\n\nShould we adopt Terrform CDK instead of HCL? David seems skeptical but it would let us use TypeScript for infra.\n\n---\n\nThe apple pie Marcus brought last week was different — he tried adding cardamom. Mixed reviews.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/movie-recommendations.md",
+      "title": "Movie Recommendations",
+      "frontmatter": { "type": "list" },
+      "content": "# Movie Recommendations\n\nFrom [[Raj Patel]]'s movie nights and general team suggestions.\n\n## Sci-Fi\n- [[Dune]] (2021) — mandatory viewing per Raj\n- Arrival (2016) — linguistic aliens, beautiful\n- Interstellar (2014) — time dilation, crying\n- Blade Runner 2049 — stunning visuals\n\n## Drama\n- Oppenheimer (2023) — Nolan's best\n- The Social Network (2010) — relevant to tech workers\n\n## Documentary\n- AlphaGo (2017) — AI and human intuition\n- The Great Hack (2019) — data privacy, Samira's recommendation\n\nNext movie night: TBD. Raj is pushing for Dune Part Two.",
+      "links": ["Raj Patel", "Dune"],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/weekend-notes.md",
+      "title": "Weekend Notes",
+      "content": "Saturday: tried that new BBQ place in Austin. Really good brisket. David recommended it.\n\nSunday: helped Raj set up his home Kubernetes cluster. He's using old Mac Minis running k3s. Pretty cool actually.\n\nNeed to remember to water the plants at the Berlin office next week when I'm there. Lena said they're dying.\n\nCleo apparently caught a mouse over the weekend. Marcus was proud and horrified simultaneously.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/conference-notes.md",
+      "title": "KubeCon Notes",
+      "frontmatter": { "tags": ["conference"] },
+      "content": "Notes from KubeCon 2024.\n\nKey takeaways:\n1. Service mesh adoption is accelerating — Istio vs Linkerd debate continues\n2. eBPF-based observability is the future\n3. GitOps with ArgoCD is now mainstream\n4. Platform engineering is the new DevOps\n\nRaj gave a lightning talk on our migration journey. Got great feedback from the audience. Several people asked about our Terraform module structure.\n\nMet some folks from Apple's infrastructure team. They have similar challenges with multi-region Postgres deployments.\n\nThe vendor hall was overwhelming. Too many CNCF projects to keep track of.\n\nAction items:\n- Evaluate Cilium for networking\n- Look into Backstage for developer portal\n- Share notes with David and the SRE team",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/lunch-spots.md",
+      "title": "Lunch Spots",
+      "content": "## Austin\n- Franklin BBQ (long wait but worth it)\n- Torchy's Tacos (Marcus's favorite)\n- Ramen Tatsu-ya (good for rainy days)\n- Uchi (fancy sushi, save for celebrations)\n\n## Berlin\n- Mustafa's Gemüse Kebap (insane line always)\n- Burgermeister (under the U-bahn tracks)\n- Cocolo Ramen (Lena's pick)\n- The Bowl (healthy option near the office)\n\nNote: the Austin office has free snacks but the Berlin office has better coffee. Raj always brings back coffee beans from his Berlin trips.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "stubs/terraform-modules.md",
+      "title": "Terraform Modules",
+      "frontmatter": { "type": "reference" },
+      "content": "TODO: Document all [[Terraform]] modules.",
+      "links": ["Terraform"],
+      "folder": "stubs"
+    },
+    {
+      "path": "stubs/incident-response.md",
+      "title": "Incident Response",
+      "frontmatter": { "type": "runbook" },
+      "content": "Incident response playbook. Needs content.",
+      "links": [],
+      "folder": "stubs"
+    },
+    {
+      "path": "stubs/api-versioning.md",
+      "title": "API Versioning",
+      "content": "Notes on [[API]] versioning strategy. TODO.",
+      "links": ["API"],
+      "folder": "stubs"
+    },
+    {
+      "path": "stubs/team-directory.md",
+      "title": "Team Directory",
+      "frontmatter": { "type": "reference" },
+      "content": "[[Nexus Labs]] team directory. Needs updating.",
+      "links": ["Nexus Labs"],
+      "folder": "stubs"
+    },
+    {
+      "path": "stubs/compliance-checklist.md",
+      "title": "Compliance Checklist",
+      "content": "GDPR and SOC2 compliance checklist for [[Nightingale]].",
+      "links": ["Nightingale"],
+      "folder": "stubs"
+    }
+  ],
+  "groundTruth": [
+    {
+      "notePath": "daily/2025-01-15.md",
+      "entity": "Lena Kowalski",
+      "tier": 1,
+      "reason": "Content mentions 'Lena is dealing with a Postgres replication lag issue' without wikilink",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-01-15.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Content mentions 'long debug session with David on the Terrafrom configs' without wikilink",
+      "chaosFactors": ["typo", "partial_name"]
+    },
+    {
+      "notePath": "daily/2025-01-15.md",
+      "entity": "Terraform",
+      "tier": 1,
+      "reason": "Content mentions 'Terrafrom configs' — misspelled but clearly Terraform",
+      "chaosFactors": ["typo"]
+    },
+    {
+      "notePath": "daily/2025-01-15.md",
+      "entity": "Nightingale",
+      "tier": 2,
+      "reason": "Content mentions 'Nightengale health data pipeline' — typo of Nightingale",
+      "chaosFactors": ["typo"]
+    },
+    {
+      "notePath": "daily/2025-01-15.md",
+      "entity": "Samira Osei",
+      "tier": 1,
+      "reason": "Content mentions 'Samira flagged a potential data leak' — first name only",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "daily/2025-01-15.md",
+      "entity": "PostgreSQL",
+      "tier": 1,
+      "reason": "Content mentions 'Postgres replication lag' — alias used directly in context of database work",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "daily/2025-01-15.md",
+      "entity": "Apple Pie Recipe",
+      "tier": 3,
+      "reason": "Content mentions 'picked up apple pie ingredients' — indirect reference to recipe",
+      "chaosFactors": ["ambiguous"]
+    },
+    {
+      "notePath": "daily/2025-01-15.md",
+      "entity": "Cleo",
+      "tier": 3,
+      "reason": "Content mentions 'Cleo knocked over the flour bag' without wikilink",
+      "chaosFactors": []
+    },
+    {
+      "notePath": "daily/2025-01-20.md",
+      "entity": "Migraine",
+      "tier": 1,
+      "reason": "Content mentions 'Migrane kicked in around 3pm' — typo of migraine",
+      "chaosFactors": ["typo"]
+    },
+    {
+      "notePath": "daily/2025-01-20.md",
+      "entity": "Raj Patel",
+      "tier": 1,
+      "reason": "Content mentions 'Raj P. presented the roadmap' — partial name",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "daily/2025-01-20.md",
+      "entity": "Apple",
+      "tier": 2,
+      "reason": "Content mentions 'Apple might be interested in our developer tooling' — ambiguous: company or food?",
+      "chaosFactors": ["ambiguous"]
+    },
+    {
+      "notePath": "daily/2025-01-20.md",
+      "entity": "Berlin",
+      "tier": 2,
+      "reason": "Content mentions 'The Berlin office lighting really triggers it' without wikilink",
+      "chaosFactors": []
+    },
+    {
+      "notePath": "daily/2025-01-20.md",
+      "entity": "Marcus Johnson",
+      "tier": 2,
+      "reason": "Content mentions 'Marcus is blocked on a React 19 migration issue' — first name only",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "daily/2025-02-03.md",
+      "entity": "Mercury Platform",
+      "tier": 1,
+      "reason": "Content mentions 'Mercery Platform' — typo but clearly Mercury Platform",
+      "chaosFactors": ["typo"]
+    },
+    {
+      "notePath": "daily/2025-02-03.md",
+      "entity": "Kubernetes",
+      "tier": 1,
+      "reason": "Content mentions 'Kubernets cluster capacity planning' — typo",
+      "chaosFactors": ["typo"]
+    },
+    {
+      "notePath": "daily/2025-02-03.md",
+      "entity": "Raj Patel",
+      "tier": 2,
+      "reason": "Content mentions 'Raj led a session' and 'Raj's movie night' — first name only",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "daily/2025-02-03.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Content mentions 'David Chen agreed' — full name used directly without wikilink",
+      "chaosFactors": []
+    },
+    {
+      "notePath": "daily/2025-02-03.md",
+      "entity": "Terraform",
+      "tier": 1,
+      "reason": "Content mentions 'Need to update Terraform configs' — direct reference by name",
+      "chaosFactors": []
+    },
+    {
+      "notePath": "daily/2025-02-03.md",
+      "entity": "Dune",
+      "tier": 3,
+      "reason": "Content mentions 'watched Dune again' without wikilink",
+      "chaosFactors": []
+    },
+    {
+      "notePath": "daily/2025-02-10.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Content mentions 'Marcus showed off the new design system components' — first name only",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-02-10.md",
+      "entity": "Lena Kowalski",
+      "tier": 1,
+      "reason": "Content mentions 'Lena K. fixed the replication lag' — partial name",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-02-10.md",
+      "entity": "PostgreSQL",
+      "tier": 1,
+      "reason": "Content mentions 'Postgre SQL performance' — typo/split of PostgreSQL",
+      "chaosFactors": ["typo", "missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-02-10.md",
+      "entity": "Project Helios",
+      "tier": 2,
+      "reason": "Content mentions 'Helios has 22 of them' — partial name without wikilink",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-02-10.md",
+      "entity": "Technical Debt",
+      "tier": 1,
+      "reason": "Content discusses 'Tech debt review' in detail without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-02-10.md",
+      "entity": "API",
+      "tier": 2,
+      "reason": "Content mentions 'API gateway refactor' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-02-14.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Content mentions 'Marcus's famous recipe' — first name only",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-02-14.md",
+      "entity": "Mercury Platform",
+      "tier": 2,
+      "reason": "Content mentions 'Mercury Platfrom client SDK' — typo",
+      "chaosFactors": ["typo", "missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-02-14.md",
+      "entity": "Cleo",
+      "tier": 2,
+      "reason": "Content mentions 'Cleo update: she's been extra cuddly' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-02-14.md",
+      "entity": "Austin",
+      "tier": 3,
+      "reason": "Content mentions 'cold weather in Austin' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "daily/2025-02-14.md",
+      "entity": "Apple Pie Recipe",
+      "tier": 2,
+      "reason": "Content mentions 'Brought apple pie to the office' — indirect recipe reference",
+      "chaosFactors": ["ambiguous", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/frontend-architecture.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Content mentions 'Marcus Johnson is the frontend chapter lead' without wikilink",
+      "chaosFactors": ["mixed_formatting"]
+    },
+    {
+      "notePath": "notes/frontend-architecture.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Content heavily discusses React without wikilink — 'built on React with TypeScript'",
+      "chaosFactors": ["mixed_formatting"]
+    },
+    {
+      "notePath": "notes/frontend-architecture.md",
+      "entity": "Project Helios",
+      "tier": 2,
+      "reason": "Content mentions 'keeping consistency across Project Helios' without wikilink",
+      "chaosFactors": ["mixed_formatting"]
+    },
+    {
+      "notePath": "notes/frontend-architecture.md",
+      "entity": "Mercury Platform",
+      "tier": 2,
+      "reason": "Content mentions 'Mercury Platform' without wikilink in the challenges section",
+      "chaosFactors": ["mixed_formatting"]
+    },
+    {
+      "notePath": "notes/frontend-architecture.md",
+      "entity": "Nightingale",
+      "tier": 2,
+      "reason": "Content mentions 'Nightingale frontends' (typo: frontends) without wikilink",
+      "chaosFactors": ["mixed_formatting"]
+    },
+    {
+      "notePath": "notes/frontend-architecture.md",
+      "entity": "Technical Debt",
+      "tier": 1,
+      "reason": "Content discusses 'Tech debt: about 15 open items' — directly about technical debt tracking",
+      "chaosFactors": ["mixed_formatting"]
+    },
+    {
+      "notePath": "notes/apple-ecosystem-thoughts.md",
+      "entity": "Apple",
+      "tier": 1,
+      "reason": "Content extensively discusses Apple ecosystem without wikilink",
+      "chaosFactors": ["ambiguous", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/apple-ecosystem-thoughts.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Content mentions 'Marcus used to work at Apple' — first name only",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/apple-ecosystem-thoughts.md",
+      "entity": "Nexus Labs",
+      "tier": 1,
+      "reason": "Content mentions 'engineers at Nexus Labs' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/apple-ecosystem-thoughts.md",
+      "entity": "Kubernetes",
+      "tier": 2,
+      "reason": "Content mentions 'Kuberntes development' — typo",
+      "chaosFactors": ["typo", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/apple-ecosystem-thoughts.md",
+      "entity": "Terraform",
+      "tier": 2,
+      "reason": "Content mentions 'Terraform sometimes has ARM compatibility issues' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/apple-ecosystem-thoughts.md",
+      "entity": "React",
+      "tier": 3,
+      "reason": "Content mentions 'React component library' without wikilink — indirect reference",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/apple-ecosystem-thoughts.md",
+      "entity": "Apple Pie Recipe",
+      "tier": 3,
+      "reason": "Content mentions 'the apple pie Marcus makes' — ambiguous food vs entity",
+      "chaosFactors": ["ambiguous", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/apple-ecosystem-thoughts.md",
+      "entity": "Project Helios",
+      "tier": 3,
+      "reason": "Content mentions 'legacy Oracle client for Helios' — partial name",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/random-thoughts.md",
+      "entity": "Mercury Platform",
+      "tier": 2,
+      "reason": "Content mentions 'Mercury Platfrom' — typo, discussing load behavior",
+      "chaosFactors": ["typo", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/random-thoughts.md",
+      "entity": "Marcus Johnson",
+      "tier": 2,
+      "reason": "Content mentions 'Marcus' multiple times without wikilink or full name",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/random-thoughts.md",
+      "entity": "Migraine",
+      "tier": 2,
+      "reason": "Content mentions 'migraine medication' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/random-thoughts.md",
+      "entity": "Raj Patel",
+      "tier": 2,
+      "reason": "Content mentions 'Raj recommended Dune' — first name only",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/random-thoughts.md",
+      "entity": "Dune",
+      "tier": 3,
+      "reason": "Content mentions 'Dune as a book' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/random-thoughts.md",
+      "entity": "Kubernetes",
+      "tier": 2,
+      "reason": "Content mentions 'Kubernets vs Kubernetes — I keep making this typo' — meta-typo",
+      "chaosFactors": ["typo", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/random-thoughts.md",
+      "entity": "Terraform",
+      "tier": 2,
+      "reason": "Content mentions 'Terrform CDK' — typo, and 'David seems skeptical'",
+      "chaosFactors": ["typo", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/random-thoughts.md",
+      "entity": "David Chen",
+      "tier": 3,
+      "reason": "Content mentions 'David seems skeptical' — first name only, weak reference",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/random-thoughts.md",
+      "entity": "Apple Pie Recipe",
+      "tier": 3,
+      "reason": "Content mentions 'apple pie Marcus brought' — ambiguous, no wikilink",
+      "chaosFactors": ["ambiguous", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/interview-questions.md",
+      "entity": "Kubernetes",
+      "tier": 1,
+      "reason": "Content mentions 'Kubernetes handles pod scheduling' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/interview-questions.md",
+      "entity": "Terraform",
+      "tier": 1,
+      "reason": "Content mentions 'Terraform state file' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/interview-questions.md",
+      "entity": "PostgreSQL",
+      "tier": 2,
+      "reason": "Content mentions 'PostgresQL cluster' — typo, without wikilink",
+      "chaosFactors": ["typo", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/interview-questions.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Content mentions 'React's reconciliation algorithm' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/interview-questions.md",
+      "entity": "Technical Debt",
+      "tier": 2,
+      "reason": "Content mentions 'significant technical debt' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/interview-questions.md",
+      "entity": "Microservices",
+      "tier": 2,
+      "reason": "Content mentions 'microservices architecture' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "meetings/2025-01-10-architecture-review.md",
+      "entity": "PostgreSQL",
+      "tier": 1,
+      "reason": "Content mentions 'PostgresQL connection pooling' — typo, without wikilink for that mention",
+      "chaosFactors": ["typo"]
+    },
+    {
+      "notePath": "meetings/2025-02-07-sre-review.md",
+      "entity": "SRE",
+      "tier": 1,
+      "reason": "Note is about SRE review but the title and content don't wikilink to SRE entity",
+      "chaosFactors": []
+    },
+    {
+      "notePath": "meetings/2025-02-07-sre-review.md",
+      "entity": "Terraform",
+      "tier": 2,
+      "reason": "Content mentions 'Terrform state locking issues' — typo, without wikilink",
+      "chaosFactors": ["typo"]
+    },
+    {
+      "notePath": "meetings/2025-02-21-all-hands.md",
+      "entity": "Raj Patel",
+      "tier": 1,
+      "reason": "Content mentions 'Raj for leading the Helios migration' — first name only",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "meetings/2025-02-21-all-hands.md",
+      "entity": "Samira Osei",
+      "tier": 1,
+      "reason": "Content mentions 'Samira for the Nightingale security work' — first name only",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "meetings/2025-02-21-all-hands.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Content mentions 'Marcus for the new component library' — first name only",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "meetings/2025-02-21-all-hands.md",
+      "entity": "Lena Kowalski",
+      "tier": 1,
+      "reason": "Content mentions 'Lena for solving the replication crisis' — first name only",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "meetings/2025-02-21-all-hands.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Content mentions 'David for the Terraform module standardization' — first name only",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "meetings/2025-02-21-all-hands.md",
+      "entity": "SRE",
+      "tier": 2,
+      "reason": "Content mentions 'looking for 2 SREs' — plural form without wikilink",
+      "chaosFactors": []
+    },
+    {
+      "notePath": "meetings/2025-02-21-all-hands.md",
+      "entity": "Dune",
+      "tier": 3,
+      "reason": "Content mentions 'Dune watch party' without wikilink",
+      "chaosFactors": []
+    },
+    {
+      "notePath": "meetings/2025-01-24-mercury-planning.md",
+      "entity": "Samira Osei",
+      "tier": 1,
+      "reason": "Content mentions 'Samira' multiple times in meeting context — first name only",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "meetings/2025-01-24-mercury-planning.md",
+      "entity": "Mercury Platform",
+      "tier": 1,
+      "reason": "Note is about Mercury Platform planning but title uses short name",
+      "chaosFactors": []
+    },
+    {
+      "notePath": "stubs/incident-response.md",
+      "entity": "SRE",
+      "tier": 2,
+      "reason": "Incident response is an SRE concern, but the stub has no links",
+      "chaosFactors": ["stub_note"]
+    },
+    {
+      "notePath": "stubs/terraform-modules.md",
+      "entity": "David Chen",
+      "tier": 3,
+      "reason": "David Chen maintains the Terraform module library, but stub doesn't mention him",
+      "chaosFactors": ["stub_note"]
+    },
+    {
+      "notePath": "stubs/compliance-checklist.md",
+      "entity": "Samira Osei",
+      "tier": 2,
+      "reason": "Samira handles security and compliance, but stub only links Nightingale",
+      "chaosFactors": ["stub_note"]
+    },
+    {
+      "notePath": "notes/weekend-notes.md",
+      "entity": "Austin",
+      "tier": 1,
+      "reason": "Content mentions 'that new BBQ place in Austin' — direct location reference",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/weekend-notes.md",
+      "entity": "David Chen",
+      "tier": 3,
+      "reason": "Content mentions 'David recommended it' — first name only, weak food context",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/weekend-notes.md",
+      "entity": "Raj Patel",
+      "tier": 2,
+      "reason": "Content mentions 'helped Raj set up his home Kubernetes cluster' — first name only",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/weekend-notes.md",
+      "entity": "Kubernetes",
+      "tier": 2,
+      "reason": "Content mentions 'home Kubernetes cluster' and 'k3s' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/weekend-notes.md",
+      "entity": "Berlin",
+      "tier": 3,
+      "reason": "Content mentions 'plants at the Berlin office' — weak indirect reference",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/weekend-notes.md",
+      "entity": "Lena Kowalski",
+      "tier": 3,
+      "reason": "Content mentions 'Lena said they're dying' — first name only, about plants",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/weekend-notes.md",
+      "entity": "Cleo",
+      "tier": 2,
+      "reason": "Content mentions 'Cleo apparently caught a mouse' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/weekend-notes.md",
+      "entity": "Marcus Johnson",
+      "tier": 3,
+      "reason": "Content mentions 'Marcus was proud' — first name only, casual context",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/conference-notes.md",
+      "entity": "Raj Patel",
+      "tier": 1,
+      "reason": "Content mentions 'Raj gave a lightning talk' — first name only",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/conference-notes.md",
+      "entity": "Terraform",
+      "tier": 2,
+      "reason": "Content mentions 'our Terraform module structure' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/conference-notes.md",
+      "entity": "Apple",
+      "tier": 3,
+      "reason": "Content mentions 'folks from Apple's infrastructure team' — ambiguous company reference",
+      "chaosFactors": ["ambiguous", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/conference-notes.md",
+      "entity": "PostgreSQL",
+      "tier": 3,
+      "reason": "Content mentions 'multi-region Postgres deployments' — alias without wikilink",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/conference-notes.md",
+      "entity": "David Chen",
+      "tier": 3,
+      "reason": "Content mentions 'Share notes with David' — first name only, action item",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/conference-notes.md",
+      "entity": "SRE",
+      "tier": 2,
+      "reason": "Content mentions 'the SRE team' without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/conference-notes.md",
+      "entity": "Kubernetes",
+      "tier": 1,
+      "reason": "Content is about KubeCon — entirely about Kubernetes ecosystem",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/lunch-spots.md",
+      "entity": "Austin",
+      "tier": 1,
+      "reason": "Content has 'Austin' as a section header for lunch spots without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/lunch-spots.md",
+      "entity": "Berlin",
+      "tier": 1,
+      "reason": "Content has 'Berlin' as a section header for lunch spots without wikilink",
+      "chaosFactors": ["missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/lunch-spots.md",
+      "entity": "Marcus Johnson",
+      "tier": 3,
+      "reason": "Content mentions 'Marcus's favorite' — first name only, food context",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/lunch-spots.md",
+      "entity": "Lena Kowalski",
+      "tier": 3,
+      "reason": "Content mentions 'Lena's pick' — first name only, food context",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/lunch-spots.md",
+      "entity": "Raj Patel",
+      "tier": 3,
+      "reason": "Content mentions 'Raj always brings back coffee beans' — first name only",
+      "chaosFactors": ["partial_name", "missing_frontmatter"]
+    },
+    {
+      "notePath": "notes/movie-recommendations.md",
+      "entity": "Samira Osei",
+      "tier": 3,
+      "reason": "Content mentions 'Samira's recommendation' — first name only",
+      "chaosFactors": ["partial_name"]
+    },
+    {
+      "notePath": "stubs/incident-response.md",
+      "entity": "Nexus Labs",
+      "tier": 3,
+      "reason": "Incident response is a company-wide concern but stub has no links at all",
+      "chaosFactors": ["stub_note"]
+    }
+  ]
+}

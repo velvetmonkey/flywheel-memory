@@ -1,0 +1,1616 @@
+{
+  "archetype": "sparse-orphan",
+  "seed": 104,
+  "description": "100 notes with 40 orphans (0 links), 30 loosely connected (1-2 links), and 30 moderately connected (3-5 links). Entity mentions appear in content but are not linked. Tests orphan reduction rate, entity coverage from near-zero, and cold-start scenarios.",
+  "entities": [
+    {
+      "name": "API",
+      "category": "documents",
+      "path": "tech/api-standards.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "Acme Corp",
+      "category": "organizations",
+      "path": "organizations/acme-overview.md",
+      "aliases": [],
+      "hubScore": 29
+    },
+    {
+      "name": "Agile Methodology",
+      "category": "concepts",
+      "path": "concepts/agile-methodology.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Aisha Patel",
+      "category": "people",
+      "path": "people/aisha-patel-profile.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Bella",
+      "category": "animals",
+      "path": "animals/bella.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Blade Runner",
+      "category": "media",
+      "path": "media/blade-runner.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Board of Directors",
+      "category": "organizations",
+      "path": "organizations/board-overview.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "CI/CD",
+      "category": "documents",
+      "path": "tech/cicd-guide.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Code Review",
+      "category": "concepts",
+      "path": "concepts/code-review-overview.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Continuous Integration",
+      "category": "concepts",
+      "path": "concepts/ci-overview.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "DataPipeline",
+      "category": "projects",
+      "path": "projects/datapipeline-overview.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "David Chen",
+      "category": "people",
+      "path": "people/david-chen-profile.md",
+      "aliases": [],
+      "hubScore": 16
+    },
+    {
+      "name": "DevOps Team",
+      "category": "organizations",
+      "path": "organizations/devops-overview.md",
+      "aliases": [],
+      "hubScore": 7
+    },
+    {
+      "name": "Docker",
+      "category": "documents",
+      "path": "tech/docker-guide.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Dune",
+      "category": "media",
+      "path": "media/dune.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "ESGHub",
+      "category": "projects",
+      "path": "projects/esghub.md",
+      "aliases": [],
+      "hubScore": 11
+    },
+    {
+      "name": "Elena Torres",
+      "category": "people",
+      "path": "people/elena-torres-profile.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "Feedback Loop",
+      "category": "concepts",
+      "path": "concepts/feedback-loop.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "GraphQL",
+      "category": "documents",
+      "path": "tech/graphql-guide.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "James Franklin",
+      "category": "people",
+      "path": "people/james-franklin-profile.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "Kubernetes",
+      "category": "documents",
+      "path": "tech/kubernetes-runbook.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "London",
+      "category": "locations",
+      "path": "locations/london-office.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "Machine Learning",
+      "category": "concepts",
+      "path": "concepts/ml-overview.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "Marcus Johnson",
+      "category": "people",
+      "path": "people/marcus-johnson-profile.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Max",
+      "category": "animals",
+      "path": "animals/max.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Microservices",
+      "category": "concepts",
+      "path": "concepts/microservices-overview.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "MobileFirst",
+      "category": "projects",
+      "path": "projects/mobilefirst.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "New York City",
+      "category": "locations",
+      "path": "locations/nyc-office.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "Node.js",
+      "category": "documents",
+      "path": "tech/nodejs-guide.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Observability",
+      "category": "concepts",
+      "path": "concepts/observability-overview.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "documents",
+      "path": "tech/database-guide.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Priya Sharma",
+      "category": "people",
+      "path": "people/priya-sharma-profile.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "Project Atlas",
+      "category": "projects",
+      "path": "projects/atlas-overview.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Quantum Leap",
+      "category": "projects",
+      "path": "projects/quantum-leap.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "REST",
+      "category": "technologies",
+      "path": "technologies/rest.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "React",
+      "category": "technologies",
+      "path": "technologies/react.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Redis",
+      "category": "documents",
+      "path": "tech/redis-guide.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "Research Lab",
+      "category": "organizations",
+      "path": "organizations/research-overview.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "SLA",
+      "category": "acronyms",
+      "path": "acronyms/sla.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "San Francisco",
+      "category": "locations",
+      "path": "locations/sf-office.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "Sarah O'Brien",
+      "category": "people",
+      "path": "people/sarah-obrien-profile.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Stretch",
+      "category": "health",
+      "path": "health/stretch.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Technical Debt",
+      "category": "concepts",
+      "path": "concepts/tech-debt-overview.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "The Matrix",
+      "category": "media",
+      "path": "media/the-matrix.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Tom Williams",
+      "category": "people",
+      "path": "people/tom-williams-profile.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "TypeScript",
+      "category": "documents",
+      "path": "tech/typescript-guide.md",
+      "aliases": [],
+      "hubScore": 11
+    },
+    {
+      "name": "Vault Core",
+      "category": "projects",
+      "path": "projects/vault-core.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "Vitamins",
+      "category": "health",
+      "path": "health/vitamins.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Walk",
+      "category": "health",
+      "path": "health/walk.md",
+      "aliases": [],
+      "hubScore": 1
+    }
+  ],
+  "noteCount": 100,
+  "topology": {
+    "orphanCount": 40,
+    "looselyConnected": 30,
+    "moderatelyConnected": 30,
+    "totalExistingLinks": 130
+  },
+  "notes": [
+    {
+      "path": "daily/2024-09-01.md",
+      "title": "Daily Note - Sep 1, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-01"
+      },
+      "content": "Quiet Sunday. Went for a walk around the neighborhood with Max. The weather in San Francisco has been unusually warm this week. Caught up on some reading about machine learning applications in sustainability. Need to finish the TypeScript migration for the auth module before the sprint ends on Tuesday.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-02.md",
+      "title": "Daily Note - Sep 2, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-02"
+      },
+      "content": "Monday standup went long. David had questions about the Kubernetes cluster upgrade timeline. Sarah mentioned DataPipeline is handling record volumes this month. Elena wants to discuss ESGHub reporting features at the next product sync. Took vitamins and did my morning stretch routine.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-03.md",
+      "title": "Daily Note - Sep 3, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-03"
+      },
+      "content": "Deep work day. Spent most of the morning refactoring the GraphQL resolvers for better error handling. The REST fallback API also needs attention but that can wait. Paired with Tom Williams on some PostgreSQL query optimization for the reporting views. Good progress overall.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-04.md",
+      "title": "Daily Note - Sep 4, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-04"
+      },
+      "content": "Architecture review with David Chen and Marcus Johnson today. We discussed the microservices communication patterns and whether to adopt gRPC for internal services. The observability stack needs better distributed tracing. James Franklin called in from London with feedback on the Vault Core API design.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-05.md",
+      "title": "Daily Note - Sep 5, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-05"
+      },
+      "content": "Worked from the New York City office today. Had lunch with Elena Torres and Aisha Patel to discuss the MobileFirst framework roadmap. The React Native performance on older Android devices is becoming a concern. Need to investigate bundle size optimization.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-06.md",
+      "title": "Daily Note - Sep 6, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-06"
+      },
+      "content": "Friday. Max was in the office as usual. Bella seems to have claimed the new sofa in the break room. Sprint review went well. The ESGHub compliance module passed QA and is ready for staging deployment. Docker image sizes are still larger than we would like for the reporting service.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-07.md",
+      "title": "Daily Note - Sep 7, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-07"
+      },
+      "content": "Weekend project: setting up a personal knowledge base. Tried several tools before settling on Obsidian. The wikilink syntax is intuitive and the graph view is mesmerizing. Read an article about feedback loops in personal productivity systems. Did some stretching and took a long walk.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-08.md",
+      "title": "Daily Note - Sep 8, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-08"
+      },
+      "content": "Lazy Sunday. Watched Dune Part Two with a few folks from work. The visual effects are stunning. Priya mentioned it reminded her of optimization landscapes in her quantum computing research. Also started reading about continuous integration best practices for monorepo setups.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-09.md",
+      "title": "Daily Note - Sep 9, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-09"
+      },
+      "content": "Monday. Sprint planning for the new cycle. The Board of Directors wants accelerated delivery on the ESGHub analytics features. Priya Sharma presented her latest ML model accuracy improvements. The agile methodology retrospective from last sprint had some good action items about code review turnaround time.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-10.md",
+      "title": "Daily Note - Sep 10, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-10"
+      },
+      "content": "CI/CD pipeline was flaky this morning. The DevOps team is investigating. Redis connection timeouts are causing intermittent test failures. Marcus Johnson is coordinating the fix. Meanwhile, I worked on the technical debt backlog for the Node.js services. Took my vitamins but skipped the walk due to rain.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-11.md",
+      "title": "Daily Note - Sep 11, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-11"
+      },
+      "content": "Good pairing session with Tom on DataPipeline error handling. The ETL jobs need better retry logic when external APIs are rate-limited. Sarah O'Brien reviewed our proposed changes and suggested using exponential backoff. Also helped Aisha debug a React Native crash on the ESGHub mobile app.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-12.md",
+      "title": "Daily Note - Sep 12, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-12"
+      },
+      "content": "Research Lab demo day. Priya showed the quantum optimization proof of concept. Interesting but still far from production applicability. The NLP document classifier is more immediately useful for ESGHub. Had a good chat with James about Blade Runner themes and AI ethics during lunch.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-13.md",
+      "title": "Daily Note - Sep 13, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-13"
+      },
+      "content": "Friday the 13th was uneventful thankfully. Merged the SLA monitoring dashboard improvements. The observability platform now shows p99 latency breakdowns per service. Project Atlas team presented their geospatial query prototype using PostGIS. Elena was impressed with the visualization capabilities.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-14.md",
+      "title": "Daily Note - Sep 14, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-14"
+      },
+      "content": "Spent the morning reading about Watts-Strogatz small world networks. Fascinating how short path lengths emerge from just a few random connections. Reminds me of how knowledge graphs in Obsidian develop similar properties. Afternoon walk with Max around Golden Gate Park.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-15.md",
+      "title": "Daily Note - Sep 15, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-15"
+      },
+      "content": "Rewatched The Matrix with fresh eyes. The simulation hypothesis has interesting parallels with our work on digital twins for sustainability modeling. Also organized my reading notes about API design patterns and RESTful service architecture. Need to share these with the team.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-16.md",
+      "title": "Daily Note - Sep 16, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-16"
+      },
+      "content": "Back to the grind. The London office had some network issues overnight that affected the CI pipeline. James Franklin and Tom Williams handled the incident response. Kubernetes pod autoscaling kicked in for the ESGHub services during peak European traffic. The Acme Corp disaster recovery plan needs updating.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-17.md",
+      "title": "Daily Note - Sep 17, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-17"
+      },
+      "content": "Productive day. Finished the TypeScript strict mode migration for the auth service. David reviewed and approved the PR with minor suggestions. The Apple developer certificate renewal for the ESGHub iOS app is due next week. Aisha will handle it. Morning stretch felt good today.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-18.md",
+      "title": "Daily Note - Sep 18, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-18"
+      },
+      "content": "Data engineering sync with Sarah. The DataPipeline throughput has doubled since the Redis queue optimization. PostgreSQL connection pooling changes also helped significantly. We discussed the Mercury messaging protocol improvements David designed. Need to update the technical documentation.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-19.md",
+      "title": "Daily Note - Sep 19, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-19"
+      },
+      "content": "Q3 planning prep meeting. Elena presented the ESGHub roadmap for Q4. The Board wants stronger API integrations for enterprise clients. The Research Lab will deliver two new ML models by year end. Marcus is budgeting for additional Kubernetes capacity in the EU-West region. Long day but productive.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "daily/2024-09-20.md",
+      "title": "Daily Note - Sep 20, 2024",
+      "frontmatter": {
+        "type": "daily",
+        "date": "2024-09-20"
+      },
+      "content": "Friday wrap-up. Max greeted everyone at the door as usual. Bella and Max have reached some kind of detente in the break room. Sprint demo showed good progress on the Quantum Leap feasibility study. Took a nice afternoon walk. Weekend plans: catch up on tech debt in the Vault Core entity resolver.",
+      "links": [],
+      "folder": "daily"
+    },
+    {
+      "path": "notes/meeting-notes-sep-standup.md",
+      "title": "September Standup Notes",
+      "frontmatter": {
+        "type": "meeting"
+      },
+      "content": "Collected standup notes from September. Key themes: DataPipeline scaling challenges, ESGHub compliance deadlines, TypeScript migration progress, and Kubernetes upgrade planning. The DevOps team flagged concerns about Docker image bloat. Sarah raised PostgreSQL connection limit issues during peak hours. Marcus proposed adding Redis Sentinel for high availability.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/reading-list-sep.md",
+      "title": "September Reading List",
+      "frontmatter": {
+        "type": "reading"
+      },
+      "content": "Books and articles read in September: Designing Data-Intensive Applications by Martin Kleppmann (chapters on distributed systems), several articles on GraphQL federation patterns, a paper on quantum computing for combinatorial optimization, and blog posts about React server components. Also bookmarked articles on continuous integration best practices.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/tech-radar-q3.md",
+      "title": "Tech Radar Q3 2024",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "Technology radar assessment for Q3 2024. Adopt: TypeScript strict mode, GraphQL federation, Vite. Trial: Bun runtime, Biome linter. Assess: Deno 2.0, quantum computing SDKs. Hold: webpack, REST-only APIs. The team consensus is that TypeScript and React remain our core stack. Kubernetes is mature and stable. Docker buildx for multi-arch images is recommended.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/onboarding-checklist.md",
+      "title": "New Engineer Onboarding Checklist",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "Checklist for onboarding new engineers at Acme Corp. Day 1: Set up development environment with Docker and Node.js. Day 2: Clone key repos including ESGHub, DataPipeline, and Vault Core. Day 3: Complete TypeScript coding exercise. Week 1: Shadow code reviews and attend sprint ceremonies. Week 2: First small PR with mentor review. Mentor assignments coordinated by David Chen.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/incident-sep-12.md",
+      "title": "Incident Report - Sep 12 Redis Outage",
+      "frontmatter": {
+        "type": "incident",
+        "date": "2024-09-12",
+        "severity": "P2"
+      },
+      "content": "Redis cluster experienced a split-brain scenario at 14:23 UTC lasting 47 minutes. Impact: ESGHub dashboard latency increased 10x, DataPipeline job queue stalled. Root cause: network partition between Redis Sentinel nodes during a maintenance window. Resolution: manual failover by Marcus Johnson and the DevOps team. Action items: improve Sentinel configuration, add automated failover testing.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/architecture-decision-001.md",
+      "title": "ADR-001: GraphQL over REST",
+      "frontmatter": {
+        "type": "adr",
+        "status": "accepted"
+      },
+      "content": "Architecture Decision Record for adopting GraphQL as the primary API pattern for ESGHub. Context: clients need flexible data queries for diverse dashboard configurations. Decision: adopt Apollo Federation for a unified graph across microservices. Consequences: increased complexity in the API gateway, but better client developer experience. REST endpoints maintained for simple webhook integrations.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/architecture-decision-002.md",
+      "title": "ADR-002: TypeScript Strict Mode",
+      "frontmatter": {
+        "type": "adr",
+        "status": "accepted"
+      },
+      "content": "Architecture Decision Record for enforcing TypeScript strict mode across all services. Context: runtime type errors account for 15% of production incidents. Decision: enable strict mode incrementally, starting with new services and migrating existing code. Consequences: short-term velocity impact during migration, long-term reliability improvement. David Chen will coordinate the migration across teams.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/architecture-decision-003.md",
+      "title": "ADR-003: Kubernetes Multi-Region",
+      "frontmatter": {
+        "type": "adr",
+        "status": "accepted"
+      },
+      "content": "Architecture Decision Record for expanding Kubernetes to three regions. Context: European clients require data residency guarantees, and Asia-Pacific expansion is planned. Decision: deploy clusters in US-West, US-East, and EU-West using Terraform automation. Marcus Johnson and the DevOps team will lead the expansion. Traffic routing via global load balancer with geography-based routing.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/wellness-program.md",
+      "title": "Company Wellness Program",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "Overview of the Acme Corp wellness program. Components include morning stretching sessions, daily walk encouragement, vitamin supplementation guidance, and ergonomic workspace assessments. Elena Torres championed the program after attending a conference on workplace wellness. The San Francisco office has the highest participation rates. The London office recently started their own walking group.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/movie-club.md",
+      "title": "Office Movie Club",
+      "frontmatter": {
+        "type": "social"
+      },
+      "content": "The office movie club meets monthly to watch and discuss films. Recent picks: Dune Part Two (David's pick), Blade Runner 2049 (James's pick), and The Matrix rewatch (Tom's suggestion). Upcoming: Arrival and Ex Machina. The club usually meets at the San Francisco office with remote viewing parties for London and NYC. Priya always connects the sci-fi themes to her research.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "projects/esghub-overview.md",
+      "title": "ESGHub Platform Overview",
+      "frontmatter": {
+        "type": "project"
+      },
+      "content": "ESGHub is the flagship sustainability reporting platform at [[Acme Corp]]. Built with [[TypeScript]] and [[React]], it serves enterprise clients tracking ESG metrics. [[David Chen]] leads the engineering team. The platform uses [[PostgreSQL]] for data storage and [[Redis]] for caching.",
+      "links": [
+        "Acme Corp",
+        "TypeScript",
+        "React",
+        "David Chen",
+        "PostgreSQL",
+        "Redis"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/datapipeline-overview.md",
+      "title": "DataPipeline Overview",
+      "frontmatter": {
+        "type": "project"
+      },
+      "content": "[[DataPipeline]] handles all data ingestion and transformation for [[Acme Corp]]. [[Sarah O'Brien]] leads the team. The system processes data from external sources into [[PostgreSQL]]. Job queues use [[Redis]] for reliability.",
+      "links": [
+        "DataPipeline",
+        "Acme Corp",
+        "Sarah O'Brien",
+        "PostgreSQL",
+        "Redis"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/atlas-overview.md",
+      "title": "Project Atlas Overview",
+      "frontmatter": {
+        "type": "project"
+      },
+      "content": "[[Project Atlas]] is a geospatial analytics platform using [[PostgreSQL]] with PostGIS extensions. [[Marcus Johnson]] sponsors the project. The team uses [[TypeScript]] on both client and server. [[Machine Learning]] models will power predictive location analytics.",
+      "links": [
+        "Project Atlas",
+        "PostgreSQL",
+        "Marcus Johnson",
+        "TypeScript",
+        "Machine Learning"
+      ],
+      "folder": "projects"
+    },
+    {
+      "path": "people/david-chen-profile.md",
+      "title": "David Chen Profile",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "[[David Chen]] is Staff Engineer at [[Acme Corp]], leading [[ESGHub]] engineering. Expert in [[TypeScript]], [[Kubernetes]], and [[Microservices]].",
+      "links": [
+        "David Chen",
+        "Acme Corp",
+        "ESGHub",
+        "TypeScript",
+        "Kubernetes",
+        "Microservices"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/elena-torres-profile.md",
+      "title": "Elena Torres Profile",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "[[Elena Torres]] is Product Manager for [[ESGHub]] at [[Acme Corp]], based in [[New York City]]. She works closely with [[David Chen]] on feature prioritization.",
+      "links": [
+        "Elena Torres",
+        "ESGHub",
+        "Acme Corp",
+        "New York City",
+        "David Chen"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/marcus-johnson-profile.md",
+      "title": "Marcus Johnson Profile",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "[[Marcus Johnson]] leads infrastructure at [[Acme Corp]]. He manages the [[DevOps Team]] and [[Kubernetes]] operations from [[San Francisco]].",
+      "links": [
+        "Marcus Johnson",
+        "Acme Corp",
+        "DevOps Team",
+        "Kubernetes",
+        "San Francisco"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/sarah-obrien-profile.md",
+      "title": "Sarah O'Brien Profile",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "[[Sarah O'Brien]] leads data engineering at [[Acme Corp]], maintaining [[DataPipeline]]. She specializes in [[PostgreSQL]] optimization.",
+      "links": [
+        "Sarah O'Brien",
+        "Acme Corp",
+        "DataPipeline",
+        "PostgreSQL"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/james-franklin-profile.md",
+      "title": "James Franklin Profile",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "[[James Franklin]] is a Senior Developer at [[Acme Corp]] working on [[Vault Core]] from the [[London]] office. He specializes in [[TypeScript]].",
+      "links": [
+        "James Franklin",
+        "Acme Corp",
+        "Vault Core",
+        "London",
+        "TypeScript"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/priya-sharma-profile.md",
+      "title": "Priya Sharma Profile",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "[[Priya Sharma]] is a Research Scientist at the [[Research Lab]], leading [[Quantum Leap]] and [[Machine Learning]] initiatives.",
+      "links": [
+        "Priya Sharma",
+        "Research Lab",
+        "Quantum Leap",
+        "Machine Learning"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/aisha-patel-profile.md",
+      "title": "Aisha Patel Profile",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "[[Aisha Patel]] leads mobile development at [[Acme Corp]], building [[MobileFirst]] with [[React]] Native and [[TypeScript]].",
+      "links": [
+        "Aisha Patel",
+        "Acme Corp",
+        "MobileFirst",
+        "React",
+        "TypeScript"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/tom-williams-profile.md",
+      "title": "Tom Williams Profile",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "[[Tom Williams]] is a Junior Developer on the [[DataPipeline]] team at [[Acme Corp]], based in [[London]]. Mentored by [[Sarah O'Brien]].",
+      "links": [
+        "Tom Williams",
+        "DataPipeline",
+        "Acme Corp",
+        "London",
+        "Sarah O'Brien"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "tech/typescript-guide.md",
+      "title": "TypeScript Style Guide",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "The [[TypeScript]] style guide for [[Acme Corp]]. Strict mode is required for all new projects. [[David Chen]] maintains the guide. Key rules include no-any, explicit return types on public functions, and discriminated unions for state modeling.",
+      "links": [
+        "TypeScript",
+        "Acme Corp",
+        "David Chen"
+      ],
+      "folder": "tech"
+    },
+    {
+      "path": "tech/kubernetes-runbook.md",
+      "title": "Kubernetes Operations Runbook",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "Operational runbook for [[Kubernetes]] cluster management. Maintained by the [[DevOps Team]] under [[Marcus Johnson]]. Covers pod troubleshooting, node scaling, and upgrade procedures. References [[Docker]] container debugging techniques.",
+      "links": [
+        "Kubernetes",
+        "DevOps Team",
+        "Marcus Johnson",
+        "Docker"
+      ],
+      "folder": "tech"
+    },
+    {
+      "path": "tech/database-guide.md",
+      "title": "PostgreSQL Best Practices",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "[[PostgreSQL]] best practices guide for [[Acme Corp]]. Covers indexing strategies, query optimization, connection pooling with PgBouncer, and backup procedures. [[David Chen]] and [[Sarah O'Brien]] co-authored the guide.",
+      "links": [
+        "PostgreSQL",
+        "Acme Corp",
+        "David Chen",
+        "Sarah O'Brien"
+      ],
+      "folder": "tech"
+    },
+    {
+      "path": "tech/graphql-guide.md",
+      "title": "GraphQL Standards",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "[[GraphQL]] standards and conventions for [[ESGHub]] development. Schema-first design with Apollo Federation. [[TypeScript]] code generation for type safety. Maintained by [[David Chen]].",
+      "links": [
+        "GraphQL",
+        "ESGHub",
+        "TypeScript",
+        "David Chen"
+      ],
+      "folder": "tech"
+    },
+    {
+      "path": "tech/docker-guide.md",
+      "title": "Docker Configuration Guide",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "[[Docker]] containerization guide for [[Acme Corp]] services. Covers multi-stage builds, base image selection, and [[CI/CD]] integration. The [[DevOps Team]] maintains the base images.",
+      "links": [
+        "Docker",
+        "Acme Corp",
+        "CI/CD",
+        "DevOps Team"
+      ],
+      "folder": "tech"
+    },
+    {
+      "path": "tech/redis-guide.md",
+      "title": "Redis Usage Patterns",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "[[Redis]] usage patterns at [[Acme Corp]]. Covers caching strategies, pub/sub patterns, and the job queue architecture used by [[DataPipeline]]. [[David Chen]] designed the Sentinel configuration.",
+      "links": [
+        "Redis",
+        "Acme Corp",
+        "DataPipeline",
+        "David Chen"
+      ],
+      "folder": "tech"
+    },
+    {
+      "path": "tech/api-standards.md",
+      "title": "API Design Standards",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "[[API]] design standards for [[Acme Corp]]. Covers [[REST]] and [[GraphQL]] patterns, versioning, authentication, and rate limiting. [[David Chen]] authored the original standards.",
+      "links": [
+        "API",
+        "Acme Corp",
+        "REST",
+        "GraphQL",
+        "David Chen"
+      ],
+      "folder": "tech"
+    },
+    {
+      "path": "tech/cicd-guide.md",
+      "title": "CI/CD Pipeline Guide",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "[[CI/CD]] pipeline documentation for [[Acme Corp]]. GitHub Actions workflows with self-hosted runners on [[Kubernetes]]. [[Docker]] image builds and automated testing. The [[DevOps Team]] maintains the pipeline.",
+      "links": [
+        "CI/CD",
+        "Acme Corp",
+        "Kubernetes",
+        "Docker",
+        "DevOps Team"
+      ],
+      "folder": "tech"
+    },
+    {
+      "path": "tech/nodejs-guide.md",
+      "title": "Node.js Service Template",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "[[Node.js]] service template and best practices for [[Acme Corp]] backend services. Uses [[TypeScript]] with strict mode. Includes error handling, logging, and graceful shutdown patterns. [[David Chen]] maintains the template.",
+      "links": [
+        "Node.js",
+        "Acme Corp",
+        "TypeScript",
+        "David Chen"
+      ],
+      "folder": "tech"
+    },
+    {
+      "path": "concepts/microservices-overview.md",
+      "title": "Microservices at Acme",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Overview of [[Microservices]] architecture at [[Acme Corp]]. Services communicate via [[GraphQL]] federation and [[REST]] APIs. Deployed as [[Docker]] containers on [[Kubernetes]]. [[David Chen]] established the service boundary guidelines.",
+      "links": [
+        "Microservices",
+        "Acme Corp",
+        "GraphQL",
+        "REST",
+        "Docker",
+        "Kubernetes",
+        "David Chen"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/observability-overview.md",
+      "title": "Observability Platform",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "The [[Observability]] platform at [[Acme Corp]] uses Grafana, Prometheus, and Jaeger. The [[DevOps Team]] maintains the stack. [[David Chen]] defined the three pillars approach. SLA monitoring is integrated.",
+      "links": [
+        "Observability",
+        "Acme Corp",
+        "DevOps Team",
+        "David Chen"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/ml-overview.md",
+      "title": "Machine Learning at Acme",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "[[Machine Learning]] applications at [[Acme Corp]]. [[Priya Sharma]] leads the [[Research Lab]] ML team. Models serve [[ESGHub]] sustainability scoring. Training uses Python, serving uses [[TypeScript]] [[API]] wrappers.",
+      "links": [
+        "Machine Learning",
+        "Acme Corp",
+        "Priya Sharma",
+        "Research Lab",
+        "ESGHub",
+        "TypeScript",
+        "API"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/agile-overview.md",
+      "title": "Agile at Acme",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "[[Agile Methodology]] practices at [[Acme Corp]]. Two-week sprints with [[David Chen]] running technical grooming. [[Elena Torres]] facilitates product planning for [[ESGHub]].",
+      "links": [
+        "Agile Methodology",
+        "Acme Corp",
+        "David Chen",
+        "Elena Torres",
+        "ESGHub"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/ci-overview.md",
+      "title": "Continuous Integration Practices",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "[[Continuous Integration]] is fundamental to our workflow at [[Acme Corp]]. The [[CI/CD]] pipeline runs on every PR. [[TypeScript]] type checking and linting are CI gates. The [[DevOps Team]] maintains shared runners.",
+      "links": [
+        "Continuous Integration",
+        "Acme Corp",
+        "CI/CD",
+        "TypeScript",
+        "DevOps Team"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/code-review-overview.md",
+      "title": "Code Review Culture",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "[[Code Review]] is mandatory at [[Acme Corp]]. [[David Chen]] wrote the guidelines. Reviews check [[TypeScript]] best practices. [[James Franklin]] is thorough on [[Vault Core]] reviews. Part of our [[Feedback Loop]] culture.",
+      "links": [
+        "Code Review",
+        "Acme Corp",
+        "David Chen",
+        "TypeScript",
+        "James Franklin",
+        "Vault Core",
+        "Feedback Loop"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/tech-debt-overview.md",
+      "title": "Technical Debt Strategy",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "[[Technical Debt]] management at [[Acme Corp]]. 20% sprint capacity for debt reduction. [[David Chen]] maintains the register for [[ESGHub]]. The [[Board of Directors]] reviews quarterly health metrics.",
+      "links": [
+        "Technical Debt",
+        "Acme Corp",
+        "David Chen",
+        "ESGHub",
+        "Board of Directors"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "locations/sf-office.md",
+      "title": "San Francisco Office",
+      "frontmatter": {
+        "type": "location"
+      },
+      "content": "The [[San Francisco]] office is [[Acme Corp]] headquarters. [[David Chen]], [[Marcus Johnson]], and [[Sarah O'Brien]] are based here. Home to [[Bella]] the cat and [[Max]] on Fridays.",
+      "links": [
+        "San Francisco",
+        "Acme Corp",
+        "David Chen",
+        "Marcus Johnson",
+        "Sarah O'Brien",
+        "Bella",
+        "Max"
+      ],
+      "folder": "locations"
+    },
+    {
+      "path": "locations/nyc-office.md",
+      "title": "New York City Office",
+      "frontmatter": {
+        "type": "location"
+      },
+      "content": "The [[New York City]] office focuses on client relations and mobile development. [[Elena Torres]] and [[Aisha Patel]] work from here. Closer to enterprise [[ESGHub]] clients.",
+      "links": [
+        "New York City",
+        "Elena Torres",
+        "Aisha Patel",
+        "ESGHub"
+      ],
+      "folder": "locations"
+    },
+    {
+      "path": "locations/london-office.md",
+      "title": "London Office",
+      "frontmatter": {
+        "type": "location"
+      },
+      "content": "The [[London]] office is the European hub. [[James Franklin]] and [[Tom Williams]] work here on [[Vault Core]] and European [[ESGHub]] support.",
+      "links": [
+        "London",
+        "James Franklin",
+        "Tom Williams",
+        "Vault Core",
+        "ESGHub"
+      ],
+      "folder": "locations"
+    },
+    {
+      "path": "organizations/acme-overview.md",
+      "title": "Acme Corp Overview",
+      "frontmatter": {
+        "type": "organization"
+      },
+      "content": "[[Acme Corp]] is a technology company focused on sustainability software. Offices in [[San Francisco]], [[New York City]], and [[London]]. Major projects: [[ESGHub]], [[DataPipeline]], [[Project Atlas]].",
+      "links": [
+        "Acme Corp",
+        "San Francisco",
+        "New York City",
+        "London",
+        "ESGHub",
+        "DataPipeline",
+        "Project Atlas"
+      ],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/devops-overview.md",
+      "title": "DevOps Team Overview",
+      "frontmatter": {
+        "type": "team"
+      },
+      "content": "The [[DevOps Team]] at [[Acme Corp]] manages [[Kubernetes]], [[Docker]], and [[CI/CD]] infrastructure. Led by [[Marcus Johnson]].",
+      "links": [
+        "DevOps Team",
+        "Acme Corp",
+        "Kubernetes",
+        "Docker",
+        "CI/CD",
+        "Marcus Johnson"
+      ],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/research-overview.md",
+      "title": "Research Lab Overview",
+      "frontmatter": {
+        "type": "team"
+      },
+      "content": "The [[Research Lab]] explores [[Machine Learning]] and quantum computing. [[Priya Sharma]] leads the team. Research feeds into [[ESGHub]] analytics.",
+      "links": [
+        "Research Lab",
+        "Machine Learning",
+        "Priya Sharma",
+        "ESGHub"
+      ],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/board-overview.md",
+      "title": "Board of Directors Overview",
+      "frontmatter": {
+        "type": "organization"
+      },
+      "content": "The [[Board of Directors]] oversees [[Acme Corp]] strategy. Quarterly reviews with [[Elena Torres]] on [[ESGHub]] progress.",
+      "links": [
+        "Board of Directors",
+        "Acme Corp",
+        "Elena Torres",
+        "ESGHub"
+      ],
+      "folder": "organizations"
+    },
+    {
+      "path": "health/wellness-notes.md",
+      "title": "Wellness Notes",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "Personal wellness tracking. [[Stretch]] routine every morning. [[Walk]] daily, weather permitting. [[Vitamins]] taken with breakfast. The program at [[Acme Corp]] supports these habits.",
+      "links": [
+        "Stretch",
+        "Walk",
+        "Vitamins",
+        "Acme Corp"
+      ],
+      "folder": "health"
+    },
+    {
+      "path": "animals/pets-at-office.md",
+      "title": "Office Pets",
+      "frontmatter": {
+        "type": "social"
+      },
+      "content": "[[Bella]] the cat lives at the [[San Francisco]] office. [[Max]] visits on Fridays with [[Marcus Johnson]]. The pet-friendly policy helps with team morale.",
+      "links": [
+        "Bella",
+        "San Francisco",
+        "Max",
+        "Marcus Johnson"
+      ],
+      "folder": "animals"
+    },
+    {
+      "path": "media/movie-reviews.md",
+      "title": "Movie Reviews",
+      "frontmatter": {
+        "type": "media"
+      },
+      "content": "Movie club reviews. [[Dune]] was visually stunning. [[Blade Runner]] raised AI ethics questions. [[The Matrix]] still holds up on rewatch. [[David Chen]] organizes the viewings.",
+      "links": [
+        "Dune",
+        "Blade Runner",
+        "The Matrix",
+        "David Chen"
+      ],
+      "folder": "media"
+    },
+    {
+      "path": "acronyms/glossary.md",
+      "title": "Technical Glossary",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "Key acronyms: [[API]] (Application Programming Interface), [[CI/CD]] (Continuous Integration/Delivery), [[REST]] (Representational State Transfer), [[SLA]] (Service Level Agreement). Used across [[Acme Corp]] engineering documentation.",
+      "links": [
+        "API",
+        "CI/CD",
+        "REST",
+        "SLA",
+        "Acme Corp"
+      ],
+      "folder": "acronyms"
+    },
+    {
+      "path": "notes/bookmarks-sep.md",
+      "title": "September Bookmarks",
+      "frontmatter": {
+        "type": "reading"
+      },
+      "content": "Bookmarked articles from September. Topics include React server components, TypeScript 5.3 features, Kubernetes cost optimization strategies, GraphQL best practices for large schemas, and PostgreSQL 16 new features. Also saved a paper on machine learning for climate modeling that Priya recommended.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/personal-goals-q4.md",
+      "title": "Q4 Personal Goals",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Goals for Q4 2024: Complete TypeScript strict mode migration for remaining services. Contribute to the Vault Core entity extraction improvements. Mentor Tom Williams on backend development patterns. Maintain daily walk and stretching habits. Read at least two technical books. Attend the React conference in November.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/1on1-david-sep.md",
+      "title": "1:1 with David - September",
+      "frontmatter": {
+        "type": "meeting"
+      },
+      "content": "Monthly 1:1 with David Chen. Discussed career growth path toward staff engineer. He recommended deepening Kubernetes expertise and taking on more cross-team projects. We talked about the ESGHub architecture challenges and the technical debt reduction initiative. David suggested I present at the next architecture review on the GraphQL federation improvements.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/sprint-retro-sep.md",
+      "title": "Sprint Retrospective - September",
+      "frontmatter": {
+        "type": "meeting"
+      },
+      "content": "Sprint retrospective notes. What went well: TypeScript migration on track, CI/CD pipeline reliability improved, DataPipeline throughput doubled. What to improve: code review turnaround time, flaky test detection, documentation updates. Action items: implement review time SLAs, add test retry analysis to the pipeline, schedule documentation sprints.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/conference-notes.md",
+      "title": "Conference Notes - Node Congress 2024",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "Notes from Node Congress 2024. Key talks: Node.js performance tuning with V8 optimizations, TypeScript at scale in large organizations, real-world GraphQL federation patterns, and observability for Node services. Met several engineers from companies facing similar challenges with microservices architecture. The Redis talk on streams was particularly relevant to our DataPipeline work.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/project-ideas.md",
+      "title": "Project Ideas Backlog",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Ideas for side projects and improvements. Build a CLI tool for Vault Core entity testing. Create a TypeScript library for automated API documentation. Explore using machine learning for code review automation. Set up a personal Kubernetes cluster for learning. Build a React component for interactive graph visualization of knowledge bases.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/lunch-and-learn-sep.md",
+      "title": "Lunch & Learn - September Topics",
+      "frontmatter": {
+        "type": "meeting"
+      },
+      "content": "Lunch and learn sessions in September. Week 1: David Chen on GraphQL federation architecture. Week 2: Priya Sharma on quantum computing basics. Week 3: Marcus Johnson on Kubernetes cost optimization. Week 4: Sarah O'Brien on PostgreSQL query planning. All sessions were well attended and sparked good discussions.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/garden-notes.md",
+      "title": "Office Garden Project",
+      "frontmatter": {
+        "type": "social"
+      },
+      "content": "The San Francisco office has a rooftop garden project. Elena Torres started it as part of the sustainability culture initiative. We grow herbs and vegetables. Tom Williams set up an automated watering system using a Raspberry Pi when he visited from London. The garden connects to the ESGHub mission of environmental awareness.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/team-building.md",
+      "title": "Team Building Activities",
+      "frontmatter": {
+        "type": "social"
+      },
+      "content": "Team building activities for Q3 2024. Monthly movie club (Dune, Blade Runner, The Matrix). Weekly walking meetings in San Francisco. Game nights organized by Aisha Patel in New York. Quarterly off-sites. The London team does pub quizzes with James Franklin as quizmaster. Cross-office virtual events help maintain team cohesion.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/desk-setup.md",
+      "title": "Desk Setup Notes",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Current desk setup at the San Francisco office. Standing desk with dual monitors. MacBook Pro M3 Max for development. Mechanical keyboard and ergonomic mouse. The wellness program recommends alternating between sitting and standing every 30 minutes. Bella the cat frequently claims the keyboard when I step away.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/coffee-notes.md",
+      "title": "Coffee Shop Reviews",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Favorite coffee spots near the offices. San Francisco: Blue Bottle on Linden, Sightglass on 7th. New York City: Joe Coffee on 13th, Stumptown on 8th. London: Monmouth Coffee, Workshop Coffee. Walking to coffee shops doubles as the daily walk routine. Sometimes do walking meetings to the nearby spots.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/book-notes-ddia.md",
+      "title": "Book Notes - Designing Data-Intensive Applications",
+      "frontmatter": {
+        "type": "reading"
+      },
+      "content": "Notes from reading DDIA by Martin Kleppmann. Chapter on replication is highly relevant to our PostgreSQL setup with read replicas. The stream processing chapter aligns with DataPipeline architecture. Distributed systems concepts apply directly to our Kubernetes microservices. Shared the key takeaways with David Chen and Sarah O'Brien. The consistency model discussion helped frame our Redis caching strategy.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/travel-london-oct.md",
+      "title": "London Trip Planning - October",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Planning a trip to the London office in October. Will pair with James Franklin on Vault Core improvements and meet with Tom Williams for mentoring. Need to coordinate with Marcus Johnson on the Kubernetes cluster access for the EU-West region. Elena wants me to visit a London ESGHub client while there. Pack warm layers for the weather.",
+      "links": [],
+      "folder": "notes"
+    },
+    {
+      "path": "notes/hackathon-ideas.md",
+      "title": "Hackathon Ideas - Q4",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Ideas for the Q4 hackathon at Acme Corp. Option 1: AI-powered code review assistant using ML. Option 2: Real-time collaboration features for ESGHub dashboards. Option 3: Knowledge graph visualization tool for Vault Core. Option 4: Mobile offline-first improvements for the MobileFirst framework. Team: David, Priya, and maybe Tom.",
+      "links": [],
+      "folder": "notes"
+    }
+  ],
+  "groundTruth": [
+    {
+      "notePath": "daily/2024-09-01.md",
+      "entity": "Max",
+      "tier": 1,
+      "reason": "Content mentions 'walk around the neighborhood with Max' - direct entity reference"
+    },
+    {
+      "notePath": "daily/2024-09-01.md",
+      "entity": "San Francisco",
+      "tier": 1,
+      "reason": "Content mentions 'San Francisco' explicitly"
+    },
+    {
+      "notePath": "daily/2024-09-01.md",
+      "entity": "Machine Learning",
+      "tier": 1,
+      "reason": "Content mentions 'machine learning applications'"
+    },
+    {
+      "notePath": "daily/2024-09-01.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Content mentions 'TypeScript migration'"
+    },
+    {
+      "notePath": "daily/2024-09-02.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Content mentions 'David' - alias for David Chen"
+    },
+    {
+      "notePath": "daily/2024-09-02.md",
+      "entity": "Kubernetes",
+      "tier": 1,
+      "reason": "Content mentions 'Kubernetes cluster upgrade'"
+    },
+    {
+      "notePath": "daily/2024-09-02.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Content mentions 'ESGHub reporting features'"
+    },
+    {
+      "notePath": "daily/2024-09-03.md",
+      "entity": "GraphQL",
+      "tier": 1,
+      "reason": "Content mentions 'GraphQL resolvers'"
+    },
+    {
+      "notePath": "daily/2024-09-03.md",
+      "entity": "REST",
+      "tier": 1,
+      "reason": "Content mentions 'REST fallback API'"
+    },
+    {
+      "notePath": "daily/2024-09-03.md",
+      "entity": "Tom Williams",
+      "tier": 1,
+      "reason": "Content mentions 'Tom Williams' by full name"
+    },
+    {
+      "notePath": "daily/2024-09-03.md",
+      "entity": "PostgreSQL",
+      "tier": 1,
+      "reason": "Content mentions 'PostgreSQL query optimization'"
+    },
+    {
+      "notePath": "daily/2024-09-04.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Content mentions 'David Chen' by full name"
+    },
+    {
+      "notePath": "daily/2024-09-04.md",
+      "entity": "Microservices",
+      "tier": 1,
+      "reason": "Content mentions 'microservices communication patterns'"
+    },
+    {
+      "notePath": "daily/2024-09-04.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Content mentions 'James Franklin' by full name"
+    },
+    {
+      "notePath": "daily/2024-09-05.md",
+      "entity": "New York City",
+      "tier": 1,
+      "reason": "Content mentions 'New York City office'"
+    },
+    {
+      "notePath": "daily/2024-09-05.md",
+      "entity": "MobileFirst",
+      "tier": 1,
+      "reason": "Content mentions 'MobileFirst framework'"
+    },
+    {
+      "notePath": "daily/2024-09-06.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Content mentions 'ESGHub compliance module'"
+    },
+    {
+      "notePath": "daily/2024-09-06.md",
+      "entity": "Docker",
+      "tier": 1,
+      "reason": "Content mentions 'Docker image sizes'"
+    },
+    {
+      "notePath": "daily/2024-09-09.md",
+      "entity": "Agile Methodology",
+      "tier": 2,
+      "reason": "Content mentions 'agile methodology retrospective' as a stem match"
+    },
+    {
+      "notePath": "daily/2024-09-10.md",
+      "entity": "CI/CD",
+      "tier": 1,
+      "reason": "Content mentions 'CI/CD pipeline'"
+    },
+    {
+      "notePath": "daily/2024-09-10.md",
+      "entity": "Redis",
+      "tier": 1,
+      "reason": "Content mentions 'Redis connection timeouts'"
+    },
+    {
+      "notePath": "daily/2024-09-10.md",
+      "entity": "Node.js",
+      "tier": 1,
+      "reason": "Content mentions 'Node.js services'"
+    },
+    {
+      "notePath": "daily/2024-09-14.md",
+      "entity": "Max",
+      "tier": 2,
+      "reason": "Content mentions 'walk with Max' in personal context"
+    },
+    {
+      "notePath": "daily/2024-09-16.md",
+      "entity": "Acme Corp",
+      "tier": 2,
+      "reason": "Content references 'Acme Corp disaster recovery plan'"
+    },
+    {
+      "notePath": "notes/bookmarks-sep.md",
+      "entity": "React",
+      "tier": 2,
+      "reason": "Content mentions 'React server components' article"
+    },
+    {
+      "notePath": "notes/bookmarks-sep.md",
+      "entity": "TypeScript",
+      "tier": 2,
+      "reason": "Content mentions 'TypeScript 5.3 features' article"
+    },
+    {
+      "notePath": "notes/hackathon-ideas.md",
+      "entity": "Machine Learning",
+      "tier": 2,
+      "reason": "Content mentions 'AI-powered code review assistant using ML'"
+    },
+    {
+      "notePath": "notes/hackathon-ideas.md",
+      "entity": "ESGHub",
+      "tier": 2,
+      "reason": "Content mentions 'real-time collaboration features for ESGHub'"
+    },
+    {
+      "notePath": "notes/book-notes-ddia.md",
+      "entity": "PostgreSQL",
+      "tier": 2,
+      "reason": "Content mentions 'PostgreSQL setup with read replicas'"
+    },
+    {
+      "notePath": "notes/conference-notes.md",
+      "entity": "Node.js",
+      "tier": 1,
+      "reason": "Content mentions 'Node.js performance tuning' directly"
+    },
+    {
+      "notePath": "notes/conference-notes.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Content mentions 'TypeScript at scale'"
+    }
+  ]
+}

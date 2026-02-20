@@ -1,0 +1,1723 @@
+{
+  "archetype": "bridge-network",
+  "seed": 105,
+  "description": "80 notes: 5 clusters of 12 notes each (60 total), 5 bridge notes connecting adjacent clusters, and 15 isolated notes. Tests bridge note emergence, betweenness centrality growth, and cluster merging via new wikilink suggestions.",
+  "entities": [
+    {
+      "name": "API Layer",
+      "category": "concepts",
+      "path": "cluster-backend/api-layer.md",
+      "aliases": [],
+      "hubScore": 8
+    },
+    {
+      "name": "Accessibility Compliance",
+      "category": "concepts",
+      "path": "cluster-frontend/accessibility.md",
+      "aliases": [],
+      "hubScore": 8
+    },
+    {
+      "name": "Acme Corp",
+      "category": "organizations",
+      "path": "organizations/acme-corp.md",
+      "aliases": [],
+      "hubScore": 7
+    },
+    {
+      "name": "Analytics Enhancements",
+      "category": "concepts",
+      "path": "cluster-product/analytics-enhancements.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Auth Service",
+      "category": "projects",
+      "path": "cluster-backend/auth-service.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Backend Caching",
+      "category": "concepts",
+      "path": "cluster-backend/backend-caching.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "Backend Error Handling",
+      "category": "concepts",
+      "path": "cluster-backend/backend-error-handling.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "Backend Logging",
+      "category": "concepts",
+      "path": "cluster-backend/backend-logging.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "CI/CD",
+      "category": "acronyms",
+      "path": "cluster-infra/cicd-pipeline.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "CI/CD Pipeline Operations",
+      "category": "concepts",
+      "path": "cluster-infra/cicd-pipeline.md",
+      "aliases": [],
+      "hubScore": 7
+    },
+    {
+      "name": "CSS Architecture",
+      "category": "concepts",
+      "path": "cluster-frontend/css-architecture.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Client Feedback Program",
+      "category": "concepts",
+      "path": "cluster-product/client-feedback.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Client Onboarding Flow",
+      "category": "concepts",
+      "path": "cluster-product/client-onboarding.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Cluster Monitoring",
+      "category": "concepts",
+      "path": "cluster-infra/cluster-monitoring.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Compliance Features",
+      "category": "concepts",
+      "path": "cluster-product/compliance.md",
+      "aliases": [],
+      "hubScore": 8
+    },
+    {
+      "name": "Component Library",
+      "category": "projects",
+      "path": "cluster-frontend/component-library.md",
+      "aliases": [],
+      "hubScore": 10
+    },
+    {
+      "name": "Container Registry Ops",
+      "category": "concepts",
+      "path": "cluster-infra/container-registry.md",
+      "aliases": [],
+      "hubScore": 7
+    },
+    {
+      "name": "Cost Optimization Infra",
+      "category": "concepts",
+      "path": "cluster-infra/cost-optimization.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Data Quality Scores",
+      "category": "concepts",
+      "path": "cluster-data/data-quality-scores.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Data Transformation",
+      "category": "concepts",
+      "path": "cluster-data/data-transformation.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Data Validation",
+      "category": "concepts",
+      "path": "cluster-data/data-validation.md",
+      "aliases": [],
+      "hubScore": 7
+    },
+    {
+      "name": "Data Warehouse Views",
+      "category": "concepts",
+      "path": "cluster-data/data-warehouse.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "DataPipeline",
+      "category": "projects",
+      "path": "cluster-data/datapipeline-core.md",
+      "aliases": [],
+      "hubScore": 10
+    },
+    {
+      "name": "DataPipeline Core",
+      "category": "projects",
+      "path": "cluster-data/datapipeline-core.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "David Chen",
+      "category": "people",
+      "path": "people/david-chen.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Dead Letter Queue",
+      "category": "concepts",
+      "path": "cluster-data/dead-letter-queue.md",
+      "aliases": [],
+      "hubScore": 3
+    },
+    {
+      "name": "Design Tokens",
+      "category": "concepts",
+      "path": "cluster-frontend/design-tokens.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "ESGHub",
+      "category": "projects",
+      "path": "cluster-frontend/esghub-frontend.md",
+      "aliases": [],
+      "hubScore": 17
+    },
+    {
+      "name": "ESGHub Data Feed",
+      "category": "concepts",
+      "path": "cluster-data/esghub-data-feed.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "ESGHub Frontend",
+      "category": "projects",
+      "path": "cluster-frontend/esghub-frontend.md",
+      "aliases": [],
+      "hubScore": 10
+    },
+    {
+      "name": "ESGHub Roadmap",
+      "category": "concepts",
+      "path": "cluster-product/esghub-roadmap.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Elena Torres",
+      "category": "people",
+      "path": "people/elena-torres.md",
+      "aliases": [],
+      "hubScore": 14
+    },
+    {
+      "name": "Frontend Metrics",
+      "category": "concepts",
+      "path": "cluster-frontend/frontend-metrics.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Frontend Testing",
+      "category": "concepts",
+      "path": "cluster-frontend/frontend-testing.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "GitOps Deployment",
+      "category": "concepts",
+      "path": "cluster-infra/gitops-deployment.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "GraphQL",
+      "category": "technologies",
+      "path": "cluster-backend/graphql-federation.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "GraphQL Federation",
+      "category": "concepts",
+      "path": "cluster-backend/graphql-federation.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Job Queue System",
+      "category": "concepts",
+      "path": "cluster-data/job-queue.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "Kubernetes",
+      "category": "technologies",
+      "path": "cluster-infra/kubernetes-ops.md",
+      "aliases": [],
+      "hubScore": 10
+    },
+    {
+      "name": "Kubernetes Operations",
+      "category": "concepts",
+      "path": "cluster-infra/kubernetes-ops.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Marcus Johnson",
+      "category": "people",
+      "path": "people/marcus-johnson.md",
+      "aliases": [],
+      "hubScore": 10
+    },
+    {
+      "name": "Microservices Backend",
+      "category": "concepts",
+      "path": "cluster-backend/microservices-backend.md",
+      "aliases": [],
+      "hubScore": 4
+    },
+    {
+      "name": "Node.js",
+      "category": "technologies",
+      "path": "technologies/node-js.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Pipeline Monitoring",
+      "category": "concepts",
+      "path": "cluster-data/pipeline-monitoring.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "technologies",
+      "path": "cluster-backend/postgresql-backend.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "PostgreSQL Backend",
+      "category": "technologies",
+      "path": "cluster-backend/postgresql-backend.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "Pricing Model",
+      "category": "concepts",
+      "path": "cluster-product/pricing-model.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Product Metrics",
+      "category": "concepts",
+      "path": "cluster-product/product-metrics.md",
+      "aliases": [],
+      "hubScore": 6
+    },
+    {
+      "name": "React",
+      "category": "technologies",
+      "path": "cluster-frontend/react-architecture.md",
+      "aliases": [],
+      "hubScore": 12
+    },
+    {
+      "name": "React Architecture",
+      "category": "concepts",
+      "path": "cluster-frontend/react-architecture.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Sarah O'Brien",
+      "category": "people",
+      "path": "people/sarah-o-brien.md",
+      "aliases": [],
+      "hubScore": 9
+    },
+    {
+      "name": "Storybook Docs",
+      "category": "technologies",
+      "path": "cluster-frontend/storybook-docs.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Supply Chain Module",
+      "category": "concepts",
+      "path": "cluster-product/supply-chain.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
+      "name": "Terraform Infra",
+      "category": "concepts",
+      "path": "cluster-infra/terraform-infra.md",
+      "aliases": [],
+      "hubScore": 8
+    },
+    {
+      "name": "TypeScript",
+      "category": "technologies",
+      "path": "technologies/typescript.md",
+      "aliases": [],
+      "hubScore": 23
+    },
+    {
+      "name": "Vulnerability Scanning",
+      "category": "concepts",
+      "path": "cluster-infra/vulnerability-scanning.md",
+      "aliases": [],
+      "hubScore": 3
+    }
+  ],
+  "noteCount": 80,
+  "topology": {
+    "clusterCount": 5,
+    "notesPerCluster": 12,
+    "bridgeNotes": 5,
+    "isolatedNotes": 15,
+    "interClusterLinks": 10
+  },
+  "notes": [
+    {
+      "path": "cluster-frontend/react-architecture.md",
+      "title": "React Architecture",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Our [[React]] architecture at [[Acme Corp]] follows component-driven design. We use functional components with hooks exclusively. The component library provides shared UI elements across [[ESGHub Frontend]] and internal tools. [[TypeScript]] strict mode is enforced for all component code.",
+      "links": [
+        "React",
+        "Acme Corp",
+        "ESGHub Frontend",
+        "TypeScript"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/esghub-frontend.md",
+      "title": "ESGHub Frontend",
+      "frontmatter": {
+        "type": "project",
+        "cluster": "frontend"
+      },
+      "content": "The [[ESGHub]] frontend is built with [[React]] and [[TypeScript]]. It renders sustainability dashboards with interactive charts. [[Elena Torres]] manages the product requirements. The team uses [[Storybook Docs]] for component documentation. Performance budgets are tracked in [[Frontend Metrics]].",
+      "links": [
+        "ESGHub",
+        "React",
+        "TypeScript",
+        "Elena Torres",
+        "Storybook Docs",
+        "Frontend Metrics"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/component-library.md",
+      "title": "Component Library",
+      "frontmatter": {
+        "type": "project",
+        "cluster": "frontend"
+      },
+      "content": "The component library provides reusable UI elements for all [[React]] applications at [[Acme Corp]]. Components follow the design system maintained by [[Elena Torres]]. Each component has [[Storybook Docs]] stories and [[TypeScript]] type definitions. [[Accessibility Compliance]] is tested on every component.",
+      "links": [
+        "React",
+        "Acme Corp",
+        "Elena Torres",
+        "Storybook Docs",
+        "TypeScript",
+        "Accessibility Compliance"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/storybook-docs.md",
+      "title": "Storybook Docs",
+      "frontmatter": {
+        "type": "tool",
+        "cluster": "frontend"
+      },
+      "content": "Storybook is our component documentation platform for [[React]] components. It showcases the [[Component Library]] with interactive controls. Stories validate [[TypeScript]] types and visual rendering. [[Accessibility Compliance]] checks run as Storybook addons. [[Frontend Metrics]] monitor story load times.",
+      "links": [
+        "React",
+        "Component Library",
+        "TypeScript",
+        "Accessibility Compliance",
+        "Frontend Metrics"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/frontend-metrics.md",
+      "title": "Frontend Metrics",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Frontend Metrics tracks Core Web Vitals for all [[React]] applications. [[ESGHub Frontend]] has strict performance budgets. Metrics are collected via the [[Component Library]] instrumentation. [[TypeScript]] typed metric events ensure data quality. [[Frontend Testing]] validates metric collection accuracy.",
+      "links": [
+        "React",
+        "ESGHub Frontend",
+        "Component Library",
+        "TypeScript",
+        "Frontend Testing"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/frontend-testing.md",
+      "title": "Frontend Testing",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Frontend Testing covers the [[Component Library]] and [[ESGHub Frontend]] with Vitest and Playwright. Tests verify [[React]] rendering, [[TypeScript]] type safety, and [[Accessibility Compliance]]. Visual regression uses [[Storybook Docs]] snapshots. [[Frontend Metrics]] performance budgets are validated.",
+      "links": [
+        "Component Library",
+        "ESGHub Frontend",
+        "React",
+        "TypeScript",
+        "Accessibility Compliance",
+        "Storybook Docs",
+        "Frontend Metrics"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/accessibility.md",
+      "title": "Accessibility Compliance",
+      "frontmatter": {
+        "type": "standard",
+        "cluster": "frontend"
+      },
+      "content": "Accessibility Compliance ensures WCAG 2.1 AA standards across all [[React]] applications. The [[Component Library]] components pass automated a11y checks. [[ESGHub Frontend]] requires keyboard navigation for all interactive elements. [[TypeScript]] types include ARIA prop definitions. Tests run in [[Frontend Testing]] suites.",
+      "links": [
+        "React",
+        "Component Library",
+        "ESGHub Frontend",
+        "TypeScript",
+        "Frontend Testing"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/css-architecture.md",
+      "title": "CSS Architecture",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "CSS architecture uses CSS Modules co-located with [[React]] components. Design tokens from the [[Component Library]] ensure visual consistency. [[ESGHub Frontend]] follows the naming conventions strictly. [[Storybook Docs]] renders styles in isolation. [[Accessibility Compliance]] requires sufficient contrast ratios.",
+      "links": [
+        "React",
+        "Component Library",
+        "ESGHub Frontend",
+        "Storybook Docs",
+        "Accessibility Compliance"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/frontend-build.md",
+      "title": "Frontend Build Pipeline",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "The frontend build uses Vite for fast compilation of [[React]] and [[TypeScript]] code. It builds the [[Component Library]] and [[ESGHub Frontend]] with optimized chunks. [[Frontend Metrics]] bundle size budgets are checked at build time. [[Frontend Testing]] runs in the build pipeline.",
+      "links": [
+        "React",
+        "TypeScript",
+        "Component Library",
+        "ESGHub Frontend",
+        "Frontend Metrics",
+        "Frontend Testing"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/design-tokens.md",
+      "title": "Design Tokens",
+      "frontmatter": {
+        "type": "standard",
+        "cluster": "frontend"
+      },
+      "content": "Design tokens define colors, typography, and spacing for all [[React]] applications. They are consumed by the [[Component Library]] and enforced in [[Storybook Docs]]. [[Elena Torres]] manages the token definitions. [[CSS Architecture]] uses tokens for all style values. [[Accessibility Compliance]] contrast ratios are calculated from token colors.",
+      "links": [
+        "React",
+        "Component Library",
+        "Storybook Docs",
+        "Elena Torres",
+        "CSS Architecture",
+        "Accessibility Compliance"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/form-components.md",
+      "title": "Form Components",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Form components in the [[Component Library]] handle user input across [[ESGHub Frontend]]. Built with [[React]] hook form and [[TypeScript]] validation schemas. [[Accessibility Compliance]] requires proper label associations. [[Frontend Testing]] covers form submission and validation scenarios.",
+      "links": [
+        "Component Library",
+        "ESGHub Frontend",
+        "React",
+        "TypeScript",
+        "Accessibility Compliance",
+        "Frontend Testing"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-frontend/chart-components.md",
+      "title": "Chart Components",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "frontend"
+      },
+      "content": "Chart components render sustainability data in the [[ESGHub Frontend]]. They are part of the [[Component Library]] built with [[React]] and D3. [[TypeScript]] types ensure data shape correctness. [[Frontend Metrics]] track chart render times. [[Accessibility Compliance]] provides screen reader descriptions for charts.",
+      "links": [
+        "ESGHub Frontend",
+        "Component Library",
+        "React",
+        "TypeScript",
+        "Frontend Metrics",
+        "Accessibility Compliance"
+      ],
+      "folder": "cluster-frontend"
+    },
+    {
+      "path": "cluster-backend/api-layer.md",
+      "title": "API Layer",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "The API layer exposes [[GraphQL]] endpoints for all [[ESGHub]] clients. Built with [[Node.js]] and Apollo Server. [[David Chen]] designed the federation architecture. [[TypeScript]] code generation ensures type-safe resolvers. [[Auth Service]] validates request tokens.",
+      "links": [
+        "GraphQL",
+        "ESGHub",
+        "Node.js",
+        "David Chen",
+        "TypeScript",
+        "Auth Service"
+      ],
+      "folder": "cluster-backend"
+    },
+    {
+      "path": "cluster-backend/auth-service.md",
+      "title": "Auth Service",
+      "frontmatter": {
+        "type": "project",
+        "cluster": "backend"
+      },
+      "content": "The [[Auth Service]] provides OAuth2 authentication for [[ESGHub]]. [[David Chen]] designed the token rotation scheme. Built with [[Node.js]] and [[TypeScript]]. It uses [[PostgreSQL Backend]] for session storage. [[API Layer]] validates tokens on each request.",
+      "links": [
+        "ESGHub",
+        "David Chen",
+        "Node.js",
+        "TypeScript",
+        "PostgreSQL Backend",
+        "API Layer"
+      ],
+      "folder": "cluster-backend"
+    },
+    {
+      "path": "cluster-backend/graphql-federation.md",
+      "title": "GraphQL Federation",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "[[GraphQL]] federation composes multiple service schemas into a unified API for [[ESGHub]]. [[David Chen]] designed the federation strategy. Each [[Microservices Backend]] exposes a subgraph. [[TypeScript]] codegen produces typed resolvers. [[Backend Error Handling]] standardizes error responses.",
+      "links": [
+        "GraphQL",
+        "ESGHub",
+        "David Chen",
+        "Microservices Backend",
+        "TypeScript",
+        "Backend Error Handling"
+      ],
+      "folder": "cluster-backend"
+    },
+    {
+      "path": "cluster-backend/microservices-backend.md",
+      "title": "Microservices Backend",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Backend microservices are independently deployable [[Node.js]] services. Each owns its data and exposes [[GraphQL]] subgraph endpoints. [[David Chen]] established service boundary guidelines. [[TypeScript]] shared libraries provide common utilities. [[Backend Error Handling]] ensures consistent error responses. [[PostgreSQL Backend]] handles persistence.",
+      "links": [
+        "Node.js",
+        "GraphQL",
+        "David Chen",
+        "TypeScript",
+        "Backend Error Handling",
+        "PostgreSQL Backend"
+      ],
+      "folder": "cluster-backend"
+    },
+    {
+      "path": "cluster-backend/postgresql-backend.md",
+      "title": "PostgreSQL Backend",
+      "frontmatter": {
+        "type": "technology",
+        "cluster": "backend"
+      },
+      "content": "[[PostgreSQL]] is the primary database for backend services. [[David Chen]] established database standards including connection pooling. [[ESGHub]] uses the largest cluster with 2TB of data. [[Backend Caching]] reduces database load. [[Backend Logging]] tracks slow queries. Prisma ORM integrates with [[TypeScript]].",
+      "links": [
+        "PostgreSQL",
+        "David Chen",
+        "ESGHub",
+        "Backend Caching",
+        "Backend Logging",
+        "TypeScript"
+      ],
+      "folder": "cluster-backend"
+    },
+    {
+      "path": "cluster-backend/backend-caching.md",
+      "title": "Backend Caching",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Backend caching uses Redis for frequently accessed data. [[ESGHub]] dashboard queries are cached to reduce [[PostgreSQL Backend]] load by 60%. Cache invalidation uses pub/sub from the [[API Layer]]. [[David Chen]] configured the Redis Sentinel setup. [[Backend Logging]] tracks cache hit rates.",
+      "links": [
+        "ESGHub",
+        "PostgreSQL Backend",
+        "API Layer",
+        "David Chen",
+        "Backend Logging"
+      ],
+      "folder": "cluster-backend"
+    },
+    {
+      "path": "cluster-backend/backend-error-handling.md",
+      "title": "Backend Error Handling",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Error handling framework for backend services. Custom error classes map to [[GraphQL]] error codes. [[TypeScript]] discriminated unions model error states. [[Backend Logging]] captures full error context. [[API Layer]] transforms errors for clients. [[Microservices Backend]] services use shared error utilities.",
+      "links": [
+        "GraphQL",
+        "TypeScript",
+        "Backend Logging",
+        "API Layer",
+        "Microservices Backend"
+      ],
+      "folder": "cluster-backend"
+    },
+    {
+      "path": "cluster-backend/backend-logging.md",
+      "title": "Backend Logging",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Structured logging across all backend [[Node.js]] services. JSON log format with correlation IDs. [[Backend Error Handling]] includes error context in logs. [[PostgreSQL Backend]] slow query logging. [[Backend Caching]] hit/miss rates. [[API Layer]] request/response logging. [[TypeScript]] typed log events.",
+      "links": [
+        "Node.js",
+        "Backend Error Handling",
+        "PostgreSQL Backend",
+        "Backend Caching",
+        "API Layer",
+        "TypeScript"
+      ],
+      "folder": "cluster-backend"
+    },
+    {
+      "path": "cluster-backend/backend-testing.md",
+      "title": "Backend Testing",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Backend testing uses Vitest for unit tests and Supertest for integration tests. [[API Layer]] endpoints are tested with GraphQL query assertions. [[Auth Service]] has dedicated security test suites. [[Microservices Backend]] services test in isolation. [[TypeScript]] types ensure test data matches schemas. [[Backend Error Handling]] scenarios are covered.",
+      "links": [
+        "API Layer",
+        "Auth Service",
+        "Microservices Backend",
+        "TypeScript",
+        "Backend Error Handling"
+      ],
+      "folder": "cluster-backend"
+    },
+    {
+      "path": "cluster-backend/backend-config.md",
+      "title": "Backend Configuration",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "backend"
+      },
+      "content": "Configuration management for backend services. Environment-specific settings for [[Node.js]] applications. [[TypeScript]] typed config objects prevent misconfiguration. [[PostgreSQL Backend]] connection strings are managed securely. [[Backend Caching]] TTL values are configurable per environment. [[API Layer]] rate limits use config-driven thresholds.",
+      "links": [
+        "Node.js",
+        "TypeScript",
+        "PostgreSQL Backend",
+        "Backend Caching",
+        "API Layer"
+      ],
+      "folder": "cluster-backend"
+    },
+    {
+      "path": "cluster-data/datapipeline-core.md",
+      "title": "DataPipeline Core",
+      "frontmatter": {
+        "type": "project",
+        "cluster": "data"
+      },
+      "content": "[[DataPipeline]] is the central ETL engine at [[Acme Corp]]. [[Sarah O'Brien]] leads the team. Built with [[TypeScript]] on [[Node.js]]. [[Data Validation]] runs at every stage. [[Job Queue System]] manages pipeline execution.",
+      "links": [
+        "DataPipeline",
+        "Acme Corp",
+        "Sarah O'Brien",
+        "TypeScript",
+        "Node.js",
+        "Data Validation",
+        "Job Queue System"
+      ],
+      "folder": "cluster-data"
+    },
+    {
+      "path": "cluster-data/data-validation.md",
+      "title": "Data Validation",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Data validation ensures integrity in [[DataPipeline]] processing. Schema checks, null detection, and range validation run on every batch. [[Sarah O'Brien]] defined the validation rules. [[Data Quality Scores]] aggregate validation results. Failed records go to the [[Dead Letter Queue]].",
+      "links": [
+        "DataPipeline",
+        "Sarah O'Brien",
+        "Data Quality Scores",
+        "Dead Letter Queue"
+      ],
+      "folder": "cluster-data"
+    },
+    {
+      "path": "cluster-data/data-quality-scores.md",
+      "title": "Data Quality Scores",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Data quality scoring rates every dataset processed by [[DataPipeline]]. Scores reflect [[Data Validation]] pass rates and [[Data Transformation]] consistency. [[Sarah O'Brien]] designed the scoring algorithm. Results feed into [[Pipeline Monitoring]]. [[ESGHub Data Feed]] consumers filter by quality threshold.",
+      "links": [
+        "DataPipeline",
+        "Data Validation",
+        "Data Transformation",
+        "Sarah O'Brien",
+        "Pipeline Monitoring",
+        "ESGHub Data Feed"
+      ],
+      "folder": "cluster-data"
+    },
+    {
+      "path": "cluster-data/job-queue.md",
+      "title": "Job Queue System",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "The job queue manages asynchronous processing for [[DataPipeline]]. Redis-backed queues handle task scheduling with retries. [[Data Validation]] and [[Data Transformation]] run as queue jobs. [[Pipeline Monitoring]] tracks queue depth. [[Dead Letter Queue]] captures permanently failed jobs.",
+      "links": [
+        "DataPipeline",
+        "Data Validation",
+        "Data Transformation",
+        "Pipeline Monitoring",
+        "Dead Letter Queue"
+      ],
+      "folder": "cluster-data"
+    },
+    {
+      "path": "cluster-data/data-transformation.md",
+      "title": "Data Transformation",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Data transformation standards govern how raw data is cleaned in [[DataPipeline]]. Transformations run after [[Data Validation]] passes. Output feeds the [[Data Warehouse Views]] and [[ESGHub Data Feed]]. [[Data Quality Scores]] measure transformation accuracy. [[TypeScript]] stream processors handle the logic.",
+      "links": [
+        "DataPipeline",
+        "Data Validation",
+        "Data Warehouse Views",
+        "ESGHub Data Feed",
+        "Data Quality Scores",
+        "TypeScript"
+      ],
+      "folder": "cluster-data"
+    },
+    {
+      "path": "cluster-data/pipeline-monitoring.md",
+      "title": "Pipeline Monitoring",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Pipeline monitoring provides real-time visibility into [[DataPipeline]] health. Grafana dashboards display job throughput and latency. [[Data Quality Scores]] trends are graphed. [[Job Queue System]] depth is tracked. [[Data Validation]] failure rates trigger alerts. [[Dead Letter Queue]] volume is monitored.",
+      "links": [
+        "DataPipeline",
+        "Data Quality Scores",
+        "Job Queue System",
+        "Data Validation",
+        "Dead Letter Queue"
+      ],
+      "folder": "cluster-data"
+    },
+    {
+      "path": "cluster-data/dead-letter-queue.md",
+      "title": "Dead Letter Queue",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "The dead letter queue captures failed [[DataPipeline]] jobs for investigation. Failed [[Data Validation]] records and [[Data Transformation]] errors land here. [[Pipeline Monitoring]] alerts on DLQ volume spikes. [[Sarah O'Brien]] reviews DLQ contents weekly. [[Job Queue System]] routes failures after max retries.",
+      "links": [
+        "DataPipeline",
+        "Data Validation",
+        "Data Transformation",
+        "Pipeline Monitoring",
+        "Sarah O'Brien",
+        "Job Queue System"
+      ],
+      "folder": "cluster-data"
+    },
+    {
+      "path": "cluster-data/data-warehouse.md",
+      "title": "Data Warehouse Views",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Data warehouse views aggregate processed data from [[DataPipeline]]. Materialized views in PostgreSQL optimize analytical queries. [[Data Transformation]] output populates the warehouse. [[Data Quality Scores]] filter low-quality data. [[ESGHub Data Feed]] draws from warehouse views. [[Sarah O'Brien]] manages refresh schedules.",
+      "links": [
+        "DataPipeline",
+        "Data Transformation",
+        "Data Quality Scores",
+        "ESGHub Data Feed",
+        "Sarah O'Brien"
+      ],
+      "folder": "cluster-data"
+    },
+    {
+      "path": "cluster-data/esghub-data-feed.md",
+      "title": "ESGHub Data Feed",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "The ESGHub data feed delivers processed sustainability data to [[ESGHub]]. Data flows from [[DataPipeline]] through [[Data Transformation]] and [[Data Warehouse Views]]. [[Data Quality Scores]] ensure feed reliability. [[Pipeline Monitoring]] tracks feed latency. [[Sarah O'Brien]] manages the feed SLA.",
+      "links": [
+        "ESGHub",
+        "DataPipeline",
+        "Data Transformation",
+        "Data Warehouse Views",
+        "Data Quality Scores",
+        "Pipeline Monitoring",
+        "Sarah O'Brien"
+      ],
+      "folder": "cluster-data"
+    },
+    {
+      "path": "cluster-data/data-connectors.md",
+      "title": "Data Connectors",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "data"
+      },
+      "content": "Data connectors provide source integrations for [[DataPipeline]]. Supports REST APIs, SFTP, databases, and cloud storage. [[Data Validation]] runs immediately after ingestion. [[Job Queue System]] schedules connector pulls. [[Sarah O'Brien]] reviews new connector implementations. [[TypeScript]] types define connector interfaces.",
+      "links": [
+        "DataPipeline",
+        "Data Validation",
+        "Job Queue System",
+        "Sarah O'Brien",
+        "TypeScript"
+      ],
+      "folder": "cluster-data"
+    },
+    {
+      "path": "cluster-infra/kubernetes-ops.md",
+      "title": "Kubernetes Operations",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "infrastructure"
+      },
+      "content": "[[Kubernetes]] operations manages all production clusters at [[Acme Corp]]. [[Marcus Johnson]] leads the team. Three clusters run across US-West, US-East, and EU-West. [[Container Registry Ops]] supplies Docker images. [[Terraform Infra]] provisions cluster resources. [[Cluster Monitoring]] tracks health.",
+      "links": [
+        "Kubernetes",
+        "Acme Corp",
+        "Marcus Johnson",
+        "Container Registry Ops",
+        "Terraform Infra",
+        "Cluster Monitoring"
+      ],
+      "folder": "cluster-infra"
+    },
+    {
+      "path": "cluster-infra/cicd-pipeline.md",
+      "title": "CI/CD Pipeline Operations",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "infrastructure"
+      },
+      "content": "[[CI/CD]] pipeline operations at [[Acme Corp]]. GitHub Actions with self-hosted runners on [[Kubernetes]]. [[Container Registry Ops]] stores built images. [[Terraform Infra]] manages runner infrastructure. [[Marcus Johnson]] oversees pipeline reliability. [[GitOps Deployment]] applies changes to clusters.",
+      "links": [
+        "CI/CD",
+        "Acme Corp",
+        "Kubernetes",
+        "Container Registry Ops",
+        "Terraform Infra",
+        "Marcus Johnson",
+        "GitOps Deployment"
+      ],
+      "folder": "cluster-infra"
+    },
+    {
+      "path": "cluster-infra/container-registry.md",
+      "title": "Container Registry Ops",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "infrastructure"
+      },
+      "content": "Container Registry Ops manages Docker image storage and scanning. Images are deployed to [[Kubernetes]] clusters. The [[CI/CD Pipeline Operations]] builds and pushes images automatically. [[Vulnerability Scanning]] checks every image. [[Terraform Infra]] provisions the registry. [[Cluster Monitoring]] tracks image pull latency.",
+      "links": [
+        "Kubernetes",
+        "CI/CD Pipeline Operations",
+        "Vulnerability Scanning",
+        "Terraform Infra",
+        "Cluster Monitoring"
+      ],
+      "folder": "cluster-infra"
+    },
+    {
+      "path": "cluster-infra/terraform-infra.md",
+      "title": "Terraform Infra",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "infrastructure"
+      },
+      "content": "Terraform manages all cloud infrastructure as code. Provisions [[Kubernetes]] clusters, databases, and networking. Changes reviewed via [[GitOps Deployment]] workflows. [[Marcus Johnson]] maintains the module library. [[Container Registry Ops]] and [[CI/CD Pipeline Operations]] infrastructure are Terraform-managed. [[Cost Optimization Infra]] uses Terraform tags for attribution.",
+      "links": [
+        "Kubernetes",
+        "GitOps Deployment",
+        "Marcus Johnson",
+        "Container Registry Ops",
+        "CI/CD Pipeline Operations",
+        "Cost Optimization Infra"
+      ],
+      "folder": "cluster-infra"
+    },
+    {
+      "path": "cluster-infra/gitops-deployment.md",
+      "title": "GitOps Deployment",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "infrastructure"
+      },
+      "content": "GitOps deployment uses ArgoCD to apply changes to [[Kubernetes]] clusters. All infrastructure changes go through Git reviews. [[Terraform Infra]] changes trigger ArgoCD syncs. [[CI/CD Pipeline Operations]] update deployment manifests. [[Container Registry Ops]] image references are updated. [[Marcus Johnson]] approves production deployments. [[Cluster Monitoring]] validates rollouts.",
+      "links": [
+        "Kubernetes",
+        "Terraform Infra",
+        "CI/CD Pipeline Operations",
+        "Container Registry Ops",
+        "Marcus Johnson",
+        "Cluster Monitoring"
+      ],
+      "folder": "cluster-infra"
+    },
+    {
+      "path": "cluster-infra/cluster-monitoring.md",
+      "title": "Cluster Monitoring",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "infrastructure"
+      },
+      "content": "Cluster monitoring provides visibility into [[Kubernetes]] health. Prometheus collects metrics, Grafana visualizes dashboards. [[Container Registry Ops]] image pull metrics tracked. [[CI/CD Pipeline Operations]] runner health monitored. [[GitOps Deployment]] sync status displayed. [[Vulnerability Scanning]] results aggregated. [[Cost Optimization Infra]] spending trends graphed.",
+      "links": [
+        "Kubernetes",
+        "Container Registry Ops",
+        "CI/CD Pipeline Operations",
+        "GitOps Deployment",
+        "Vulnerability Scanning",
+        "Cost Optimization Infra"
+      ],
+      "folder": "cluster-infra"
+    },
+    {
+      "path": "cluster-infra/vulnerability-scanning.md",
+      "title": "Vulnerability Scanning",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "infrastructure"
+      },
+      "content": "Vulnerability scanning checks container images and dependencies. Integrated into [[CI/CD Pipeline Operations]] to block unsafe deployments. [[Container Registry Ops]] images are scanned on push. [[Kubernetes]] admission controllers enforce scanning. [[Cluster Monitoring]] aggregates vulnerability counts. [[Marcus Johnson]] reviews critical findings weekly.",
+      "links": [
+        "CI/CD Pipeline Operations",
+        "Container Registry Ops",
+        "Kubernetes",
+        "Cluster Monitoring",
+        "Marcus Johnson"
+      ],
+      "folder": "cluster-infra"
+    },
+    {
+      "path": "cluster-infra/cost-optimization.md",
+      "title": "Cost Optimization Infra",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "infrastructure"
+      },
+      "content": "Infrastructure cost optimization at [[Acme Corp]]. [[Marcus Johnson]] reviews monthly spending. [[Kubernetes]] right-sizing and spot instances reduce compute costs. [[Terraform Infra]] tags resources for cost attribution. [[Cluster Monitoring]] spending dashboards track trends. Reserved instances for [[CI/CD Pipeline Operations]] runners.",
+      "links": [
+        "Acme Corp",
+        "Marcus Johnson",
+        "Kubernetes",
+        "Terraform Infra",
+        "Cluster Monitoring",
+        "CI/CD Pipeline Operations"
+      ],
+      "folder": "cluster-infra"
+    },
+    {
+      "path": "cluster-infra/network-security.md",
+      "title": "Network Security Policies",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "infrastructure"
+      },
+      "content": "Network security policies restrict communication between services on [[Kubernetes]]. [[Terraform Infra]] defines network policies as code. [[GitOps Deployment]] applies policy changes. [[Vulnerability Scanning]] identifies network exposure. [[Cluster Monitoring]] tracks policy violations. [[Marcus Johnson]] reviews security posture quarterly.",
+      "links": [
+        "Kubernetes",
+        "Terraform Infra",
+        "GitOps Deployment",
+        "Vulnerability Scanning",
+        "Cluster Monitoring",
+        "Marcus Johnson"
+      ],
+      "folder": "cluster-infra"
+    },
+    {
+      "path": "cluster-infra/disaster-recovery.md",
+      "title": "Disaster Recovery Infra",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "infrastructure"
+      },
+      "content": "Disaster recovery ensures business continuity for [[Acme Corp]]. [[Kubernetes]] cluster backup and restoration procedures. [[Terraform Infra]] enables infrastructure recreation. [[Container Registry Ops]] images are replicated across regions. [[Cluster Monitoring]] detects failures triggering DR plans. [[Marcus Johnson]] runs annual DR drills.",
+      "links": [
+        "Acme Corp",
+        "Kubernetes",
+        "Terraform Infra",
+        "Container Registry Ops",
+        "Cluster Monitoring",
+        "Marcus Johnson"
+      ],
+      "folder": "cluster-infra"
+    },
+    {
+      "path": "cluster-product/esghub-roadmap.md",
+      "title": "ESGHub Roadmap",
+      "frontmatter": {
+        "type": "planning",
+        "cluster": "product"
+      },
+      "content": "The [[ESGHub]] product roadmap for the next four quarters. [[Elena Torres]] maintains the roadmap. Key themes: [[Supply Chain Module]], [[Compliance Features]], [[Analytics Enhancements]], and [[Client Onboarding Flow]]. Quarterly reviews with stakeholders guide prioritization.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "Supply Chain Module",
+        "Compliance Features",
+        "Analytics Enhancements",
+        "Client Onboarding Flow"
+      ],
+      "folder": "cluster-product"
+    },
+    {
+      "path": "cluster-product/supply-chain.md",
+      "title": "Supply Chain Module",
+      "frontmatter": {
+        "type": "feature",
+        "cluster": "product"
+      },
+      "content": "The supply chain module tracks upstream sustainability data for [[ESGHub]]. [[Elena Torres]] gathered requirements from enterprise clients. Integration with [[Client Onboarding Flow]] for supplier setup. [[Compliance Features]] ensure regulatory compliance. [[Analytics Enhancements]] provide supply chain insights.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "Client Onboarding Flow",
+        "Compliance Features",
+        "Analytics Enhancements"
+      ],
+      "folder": "cluster-product"
+    },
+    {
+      "path": "cluster-product/compliance.md",
+      "title": "Compliance Features",
+      "frontmatter": {
+        "type": "feature",
+        "cluster": "product"
+      },
+      "content": "Compliance features ensure [[ESGHub]] meets regulatory requirements. EU taxonomy, TCFD, and CSRD frameworks are supported. [[Elena Torres]] works with legal counsel on rule updates. [[Supply Chain Module]] compliance is integrated. [[Client Feedback Program]] captures compliance needs. [[Product Metrics]] track compliance usage.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "Supply Chain Module",
+        "Client Feedback Program",
+        "Product Metrics"
+      ],
+      "folder": "cluster-product"
+    },
+    {
+      "path": "cluster-product/analytics-enhancements.md",
+      "title": "Analytics Enhancements",
+      "frontmatter": {
+        "type": "feature",
+        "cluster": "product"
+      },
+      "content": "Analytics enhancements add predictive capabilities to [[ESGHub]]. Trend analysis and benchmarking features. [[Elena Torres]] prioritized these based on [[Client Feedback Program]] requests. [[Supply Chain Module]] analytics integrated. [[Product Metrics]] measure feature adoption. Data sourced from the [[ESGHub Roadmap]] priorities.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "Client Feedback Program",
+        "Supply Chain Module",
+        "Product Metrics",
+        "ESGHub Roadmap"
+      ],
+      "folder": "cluster-product"
+    },
+    {
+      "path": "cluster-product/client-onboarding.md",
+      "title": "Client Onboarding Flow",
+      "frontmatter": {
+        "type": "feature",
+        "cluster": "product"
+      },
+      "content": "The client onboarding flow guides new enterprise customers through [[ESGHub]] setup. [[Elena Torres]] designed the guided wizard. Data source configuration and [[Supply Chain Module]] setup are included. [[Compliance Features]] are configured per jurisdiction. [[Client Feedback Program]] improves the onboarding experience.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "Supply Chain Module",
+        "Compliance Features",
+        "Client Feedback Program"
+      ],
+      "folder": "cluster-product"
+    },
+    {
+      "path": "cluster-product/client-feedback.md",
+      "title": "Client Feedback Program",
+      "frontmatter": {
+        "type": "process",
+        "cluster": "product"
+      },
+      "content": "The client feedback program collects and prioritizes customer input for [[ESGHub]]. Quarterly NPS surveys and feature request tracking. [[Elena Torres]] incorporates feedback into the [[ESGHub Roadmap]]. [[Compliance Features]] and [[Analytics Enhancements]] are top requests. [[Product Metrics]] correlate feedback with usage. [[Client Onboarding Flow]] satisfaction is measured.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "ESGHub Roadmap",
+        "Compliance Features",
+        "Analytics Enhancements",
+        "Product Metrics",
+        "Client Onboarding Flow"
+      ],
+      "folder": "cluster-product"
+    },
+    {
+      "path": "cluster-product/product-metrics.md",
+      "title": "Product Metrics",
+      "frontmatter": {
+        "type": "engineering",
+        "cluster": "product"
+      },
+      "content": "Product metrics track feature adoption and user engagement in [[ESGHub]]. [[Elena Torres]] reviews metrics weekly. [[Client Feedback Program]] NPS scores are tracked. [[Compliance Features]] usage rates monitored. [[Analytics Enhancements]] adoption measured. [[Client Onboarding Flow]] time-to-value tracked. Data feeds the [[ESGHub Roadmap]].",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "Client Feedback Program",
+        "Compliance Features",
+        "Analytics Enhancements",
+        "Client Onboarding Flow",
+        "ESGHub Roadmap"
+      ],
+      "folder": "cluster-product"
+    },
+    {
+      "path": "cluster-product/pricing-model.md",
+      "title": "Pricing Model",
+      "frontmatter": {
+        "type": "planning",
+        "cluster": "product"
+      },
+      "content": "The [[ESGHub]] pricing model uses seat-based pricing with add-on modules. [[Elena Torres]] manages pricing strategy. [[Compliance Features]] and [[Analytics Enhancements]] are premium add-ons. [[Supply Chain Module]] has separate pricing tiers. [[Product Metrics]] inform pricing decisions. [[Client Feedback Program]] captures pricing sentiment.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "Compliance Features",
+        "Analytics Enhancements",
+        "Supply Chain Module",
+        "Product Metrics",
+        "Client Feedback Program"
+      ],
+      "folder": "cluster-product"
+    },
+    {
+      "path": "cluster-product/competitive-analysis.md",
+      "title": "Competitive Analysis",
+      "frontmatter": {
+        "type": "planning",
+        "cluster": "product"
+      },
+      "content": "Competitive analysis for [[ESGHub]] evaluates rival sustainability platforms. [[Elena Torres]] maintains the competitive matrix. [[Compliance Features]] differentiate from competitors. [[Analytics Enhancements]] are a key advantage. [[Product Metrics]] benchmark against industry. Findings inform the [[ESGHub Roadmap]] and [[Pricing Model]].",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "Compliance Features",
+        "Analytics Enhancements",
+        "Product Metrics",
+        "ESGHub Roadmap",
+        "Pricing Model"
+      ],
+      "folder": "cluster-product"
+    },
+    {
+      "path": "cluster-product/partner-integrations.md",
+      "title": "Partner Integrations",
+      "frontmatter": {
+        "type": "planning",
+        "cluster": "product"
+      },
+      "content": "Partner integrations connect [[ESGHub]] with third-party sustainability data providers. [[Elena Torres]] evaluates partnership opportunities. [[Client Onboarding Flow]] includes partner setup. [[Compliance Features]] leverage partner data for regulatory coverage. [[Product Metrics]] track partner integration usage. Part of the [[ESGHub Roadmap]] strategy.",
+      "links": [
+        "ESGHub",
+        "Elena Torres",
+        "Client Onboarding Flow",
+        "Compliance Features",
+        "Product Metrics",
+        "ESGHub Roadmap"
+      ],
+      "folder": "cluster-product"
+    },
+    {
+      "path": "bridges/fullstack-bridge.md",
+      "title": "Full-Stack Integration Guide",
+      "frontmatter": {
+        "type": "guide"
+      },
+      "content": "This guide connects frontend and backend development practices. [[React Architecture]] components consume the [[API Layer]] via Apollo Client. [[TypeScript]] types are shared between the [[ESGHub Frontend]] and [[GraphQL Federation]] schemas. [[David Chen]] authored the integration patterns.",
+      "links": [
+        "React Architecture",
+        "API Layer",
+        "TypeScript",
+        "ESGHub Frontend",
+        "GraphQL Federation",
+        "David Chen"
+      ],
+      "folder": "bridges"
+    },
+    {
+      "path": "bridges/data-backend-bridge.md",
+      "title": "Data-Backend Integration",
+      "frontmatter": {
+        "type": "guide"
+      },
+      "content": "Integration patterns between the data platform and backend services. [[DataPipeline Core]] feeds data into [[PostgreSQL Backend]] tables. [[ESGHub Data Feed]] is consumed by the [[API Layer]] resolvers. [[Sarah O'Brien]] and [[David Chen]] coordinate on data contracts.",
+      "links": [
+        "DataPipeline Core",
+        "PostgreSQL Backend",
+        "ESGHub Data Feed",
+        "API Layer",
+        "Sarah O'Brien",
+        "David Chen"
+      ],
+      "folder": "bridges"
+    },
+    {
+      "path": "bridges/infra-backend-bridge.md",
+      "title": "Infrastructure-Backend Integration",
+      "frontmatter": {
+        "type": "guide"
+      },
+      "content": "How backend services deploy and operate on infrastructure. [[Microservices Backend]] runs on [[Kubernetes Operations]] clusters. [[CI/CD Pipeline Operations]] builds and deploys backend services. [[Backend Logging]] feeds into [[Cluster Monitoring]] dashboards. [[Marcus Johnson]] and [[David Chen]] coordinate platform decisions.",
+      "links": [
+        "Microservices Backend",
+        "Kubernetes Operations",
+        "CI/CD Pipeline Operations",
+        "Backend Logging",
+        "Cluster Monitoring",
+        "Marcus Johnson",
+        "David Chen"
+      ],
+      "folder": "bridges"
+    },
+    {
+      "path": "bridges/product-frontend-bridge.md",
+      "title": "Product-Frontend Alignment",
+      "frontmatter": {
+        "type": "guide"
+      },
+      "content": "Alignment between product requirements and frontend implementation. [[ESGHub Roadmap]] priorities drive [[ESGHub Frontend]] development. [[Elena Torres]] provides design specs using [[Design Tokens]] from the [[Component Library]]. [[Client Feedback Program]] insights guide [[Accessibility Compliance]] priorities.",
+      "links": [
+        "ESGHub Roadmap",
+        "ESGHub Frontend",
+        "Elena Torres",
+        "Design Tokens",
+        "Component Library",
+        "Client Feedback Program",
+        "Accessibility Compliance"
+      ],
+      "folder": "bridges"
+    },
+    {
+      "path": "bridges/data-infra-bridge.md",
+      "title": "Data-Infrastructure Alignment",
+      "frontmatter": {
+        "type": "guide"
+      },
+      "content": "How the data platform relies on infrastructure services. [[DataPipeline Core]] runs on [[Kubernetes Operations]] with dedicated node pools. [[Pipeline Monitoring]] dashboards are hosted in [[Cluster Monitoring]]. [[Terraform Infra]] provisions database instances for [[Data Warehouse Views]]. [[Marcus Johnson]] and [[Sarah O'Brien]] coordinate capacity planning.",
+      "links": [
+        "DataPipeline Core",
+        "Kubernetes Operations",
+        "Pipeline Monitoring",
+        "Cluster Monitoring",
+        "Terraform Infra",
+        "Data Warehouse Views",
+        "Marcus Johnson",
+        "Sarah O'Brien"
+      ],
+      "folder": "bridges"
+    },
+    {
+      "path": "isolated/reading-distributed-systems.md",
+      "title": "Distributed Systems Reading Notes",
+      "frontmatter": {
+        "type": "reading"
+      },
+      "content": "Notes from reading about distributed systems. CAP theorem implications for our database architecture. Consensus algorithms like Raft and Paxos. Event sourcing patterns for audit trails. The two-generals problem applies to our inter-service communication challenges.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/standup-template.md",
+      "title": "Standup Template",
+      "frontmatter": {
+        "type": "template"
+      },
+      "content": "Template for daily standup updates. Format: Yesterday (what was completed), Today (what is planned), Blockers (anything preventing progress). Keep updates under 2 minutes. Use thread replies for discussion. Post by 10am local time.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/interview-rubric.md",
+      "title": "Interview Rubric",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "Rubric for evaluating engineering candidates. Technical skills: system design, coding proficiency, debugging approach. Soft skills: communication, collaboration, ownership. Each dimension scored 1-5. Senior candidates expected to score 4+ on system design. Strong-hire threshold is average 3.5 across all dimensions.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/home-network.md",
+      "title": "Home Network Setup",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Set up a home lab with a UniFi Dream Machine Pro. Three VLANs: work, IoT, and guest. WireGuard VPN for remote access to the lab. Running a local Kubernetes cluster with k3s for experimentation. Monitoring with a Grafana stack on a Raspberry Pi.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/workout-routine.md",
+      "title": "Workout Routine",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "Current workout routine: morning stretching, lunchtime walk, evening strength training three times per week. The company wellness program supports this with flexible hours. Tracking progress with a fitness app. Goal is to maintain energy levels for sustained focus during deep work sessions.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/podcast-notes.md",
+      "title": "Podcast Notes",
+      "frontmatter": {
+        "type": "reading"
+      },
+      "content": "Notes from engineering podcasts. Software Engineering Daily: episode on database scaling strategies. The Changelog: discussion about open-source sustainability. Ship It: practical DevOps patterns for small teams. CoRecursive: deep dive into SQLite internals and design philosophy.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/recipe-collection.md",
+      "title": "Recipe Collection",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Collection of easy lunch recipes for the office. Quick pasta with pesto and sun-dried tomatoes. Grain bowls with roasted vegetables. Overnight oats for busy mornings. The office kitchen in San Francisco has all the basic equipment needed.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/presentation-tips.md",
+      "title": "Presentation Tips",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "Tips for effective technical presentations. Start with the problem, not the solution. Use diagrams instead of bullet points. Demo live when possible. Practice timing to fit the slot. Record rehearsals to catch filler words. End with clear next steps or ask.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/git-tips.md",
+      "title": "Git Advanced Tips",
+      "frontmatter": {
+        "type": "reference"
+      },
+      "content": "Advanced git tips for daily workflow. Interactive rebase for clean commit history. Git bisect for finding bug-introducing commits. Worktrees for parallel branch work. Reflog for recovering lost commits. Sparse checkout for large monorepos. Signed commits for supply chain security.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/rust-notes.md",
+      "title": "Rust Learning Notes",
+      "frontmatter": {
+        "type": "reading"
+      },
+      "content": "Learning Rust for potential performance-critical modules. Ownership and borrowing concepts are challenging but elegant. Pattern matching with match expressions is powerful. Cargo build system is excellent. The async runtime with tokio enables efficient IO. Could be useful for data processing pipelines.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/desk-ergonomics.md",
+      "title": "Desk Ergonomics Guide",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "Ergonomic desk setup recommendations. Monitor at eye level, 20-26 inches away. Keyboard at elbow height with slight negative tilt. Chair adjusted so feet are flat on the floor. Take breaks every 30 minutes. Alternating sitting and standing throughout the day reduces back strain.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/photography-notes.md",
+      "title": "Photography Notes",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Notes on improving photography skills. Composition rules of thirds and leading lines. Golden hour lighting produces the best natural portraits. Manual mode for consistent exposure. Post-processing with Lightroom presets saves time. The San Francisco skyline is great for practice shots.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/book-recommendations.md",
+      "title": "Book Recommendations",
+      "frontmatter": {
+        "type": "reading"
+      },
+      "content": "Book recommendations from colleagues. David suggested Clean Architecture by Robert Martin. Sarah recommended Fundamentals of Data Engineering. James likes The Pragmatic Programmer for new engineers. Priya suggested Life 3.0 for AI perspectives. Elena recommended Inspired for product management.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/travel-packing.md",
+      "title": "Travel Packing List",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Packing list for work travel. Essentials: laptop, charger, USB-C hub, noise-canceling headphones, portable monitor. Clothes for 3-5 days with business casual options. Travel adapter for London trips. Compression packing cubes save space. Always pack a light jacket regardless of destination.",
+      "links": [],
+      "folder": "isolated"
+    },
+    {
+      "path": "isolated/chess-notes.md",
+      "title": "Chess Study Notes",
+      "frontmatter": {
+        "type": "personal"
+      },
+      "content": "Chess improvement notes. Studying the Sicilian Defense and Queen's Gambit openings. Tactical puzzles daily on Lichess to improve pattern recognition. Endgame theory with Silman's Complete Endgame Course. Playing weekly blitz games with Marcus and James during lunch breaks.",
+      "links": [],
+      "folder": "isolated"
+    }
+  ],
+  "groundTruth": [
+    {
+      "notePath": "cluster-frontend/react-architecture.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "David Chen established the component architecture patterns used across Acme Corp"
+    },
+    {
+      "notePath": "cluster-frontend/esghub-frontend.md",
+      "entity": "David Chen",
+      "tier": 3,
+      "reason": "David Chen leads ESGHub engineering including frontend teams"
+    },
+    {
+      "notePath": "cluster-frontend/design-tokens.md",
+      "entity": "Acme Corp",
+      "tier": 2,
+      "reason": "Design tokens apply to all Acme Corp products"
+    },
+    {
+      "notePath": "cluster-backend/api-layer.md",
+      "entity": "Acme Corp",
+      "tier": 3,
+      "reason": "API layer serves all Acme Corp products"
+    },
+    {
+      "notePath": "cluster-backend/backend-caching.md",
+      "entity": "Redis",
+      "tier": 1,
+      "reason": "Content explicitly mentions 'Redis' for caching without wikilink"
+    },
+    {
+      "notePath": "cluster-backend/postgresql-backend.md",
+      "entity": "DataPipeline",
+      "tier": 2,
+      "reason": "PostgreSQL databases are populated by DataPipeline ETL workflows"
+    },
+    {
+      "notePath": "cluster-backend/auth-service.md",
+      "entity": "Microservices",
+      "tier": 2,
+      "reason": "Auth service is deployed as an independent microservice"
+    },
+    {
+      "notePath": "cluster-data/datapipeline-core.md",
+      "entity": "PostgreSQL",
+      "tier": 1,
+      "reason": "DataPipeline stores processed data in PostgreSQL"
+    },
+    {
+      "notePath": "cluster-data/datapipeline-core.md",
+      "entity": "Redis",
+      "tier": 1,
+      "reason": "Job queue system uses Redis for reliable processing"
+    },
+    {
+      "notePath": "cluster-data/data-warehouse.md",
+      "entity": "PostgreSQL",
+      "tier": 1,
+      "reason": "Content mentions 'Materialized views in PostgreSQL' without wikilink"
+    },
+    {
+      "notePath": "cluster-data/esghub-data-feed.md",
+      "entity": "Acme Corp",
+      "tier": 3,
+      "reason": "ESGHub data feed is an Acme Corp organizational asset"
+    },
+    {
+      "notePath": "cluster-infra/kubernetes-ops.md",
+      "entity": "DevOps Team",
+      "tier": 1,
+      "reason": "Kubernetes operations are managed by the DevOps Team"
+    },
+    {
+      "notePath": "cluster-infra/cicd-pipeline.md",
+      "entity": "DevOps Team",
+      "tier": 1,
+      "reason": "CI/CD pipeline is maintained by the DevOps Team"
+    },
+    {
+      "notePath": "cluster-infra/cost-optimization.md",
+      "entity": "ESGHub",
+      "tier": 3,
+      "reason": "Cost optimization primarily serves ESGHub infrastructure"
+    },
+    {
+      "notePath": "cluster-product/esghub-roadmap.md",
+      "entity": "Acme Corp",
+      "tier": 2,
+      "reason": "ESGHub roadmap is an Acme Corp strategic planning document"
+    },
+    {
+      "notePath": "cluster-product/esghub-roadmap.md",
+      "entity": "David Chen",
+      "tier": 3,
+      "reason": "David Chen provides technical input on roadmap feasibility"
+    },
+    {
+      "notePath": "cluster-product/pricing-model.md",
+      "entity": "Acme Corp",
+      "tier": 2,
+      "reason": "Pricing model is an Acme Corp business decision"
+    },
+    {
+      "notePath": "isolated/book-recommendations.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "Content mentions 'David suggested' a book recommendation"
+    },
+    {
+      "notePath": "isolated/book-recommendations.md",
+      "entity": "Sarah O'Brien",
+      "tier": 2,
+      "reason": "Content mentions 'Sarah recommended' a book"
+    },
+    {
+      "notePath": "isolated/book-recommendations.md",
+      "entity": "James Franklin",
+      "tier": 2,
+      "reason": "Content mentions 'James likes' a book"
+    },
+    {
+      "notePath": "isolated/chess-notes.md",
+      "entity": "Marcus Johnson",
+      "tier": 2,
+      "reason": "Content mentions 'Marcus' in chess games, alias for Marcus Johnson"
+    },
+    {
+      "notePath": "isolated/chess-notes.md",
+      "entity": "James Franklin",
+      "tier": 2,
+      "reason": "Content mentions 'James' in chess games, alias for James Franklin"
+    },
+    {
+      "notePath": "isolated/recipe-collection.md",
+      "entity": "San Francisco",
+      "tier": 2,
+      "reason": "Content mentions 'San Francisco' office kitchen"
+    },
+    {
+      "notePath": "isolated/workout-routine.md",
+      "entity": "Stretch",
+      "tier": 2,
+      "reason": "Content mentions 'morning stretching' matching the Stretch entity"
+    },
+    {
+      "notePath": "isolated/workout-routine.md",
+      "entity": "Walk",
+      "tier": 2,
+      "reason": "Content mentions 'lunchtime walk' matching the Walk entity"
+    }
+  ]
+}

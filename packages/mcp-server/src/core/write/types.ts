@@ -81,6 +81,31 @@ export interface InsertionOptions {
 export type StrictnessMode = 'conservative' | 'balanced' | 'aggressive';
 
 /**
+ * Scoring layers that can be individually disabled for ablation testing.
+ *
+ * Maps to the 11-layer scoring architecture in suggestRelatedLinks():
+ * - 1a: length_filter (>25 chars)
+ * - 1b: article_filter (article-like titles)
+ * - 2: exact_match (verbatim token match)
+ * - 3: stem_match (porter stemmer match)
+ * - 4: cooccurrence (co-appearing entities)
+ * - 5: type_boost (entity category priority)
+ * - 6: context_boost (note context relevance)
+ * - 7: recency (recently-mentioned entities)
+ * - 8: cross_folder (cross-cutting connections)
+ * - 9: hub_boost (well-connected entities)
+ * - 10: feedback (historical accuracy adjustment)
+ * - 11: semantic (embedding similarity)
+ */
+export type ScoringLayer =
+  | 'length_filter' | 'article_filter'
+  | 'exact_match' | 'stem_match'
+  | 'cooccurrence'
+  | 'type_boost' | 'context_boost'
+  | 'recency' | 'cross_folder'
+  | 'hub_boost' | 'feedback' | 'semantic';
+
+/**
  * Note context type inferred from path
  *
  * Used for context-aware entity boosting:
@@ -115,6 +140,7 @@ export interface SuggestOptions {
   strictness?: StrictnessMode; // default: 'conservative'
   notePath?: string;          // path to note for context-aware boosting
   detail?: boolean;           // return per-layer score breakdown (default: false)
+  disabledLayers?: ScoringLayer[];  // layers to skip for ablation testing (default: [])
 }
 
 export interface ScoreBreakdown {

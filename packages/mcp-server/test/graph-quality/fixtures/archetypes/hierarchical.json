@@ -1,0 +1,1871 @@
+{
+  "archetype": "hierarchical",
+  "seed": 102,
+  "description": "Strict 4-level hierarchy: 1 root -> 4 L2 departments -> 16 L3 teams -> 59 leaf notes. Only parent-to-child links exist. Tests cross-level linking, depth navigation, and bridge discovery.",
+  "entities": [
+    {
+      "name": "A/B Testing Platform",
+      "category": "projects",
+      "path": "projects/ab-testing.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "API Gateway Project",
+      "category": "projects",
+      "path": "projects/api-gateway.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Access Control System",
+      "category": "concepts",
+      "path": "security/access-control.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Accessibility Audit",
+      "category": "projects",
+      "path": "projects/accessibility-audit.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Alerting Configuration",
+      "category": "technologies",
+      "path": "infrastructure/alerting.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Analytics Team",
+      "category": "organizations",
+      "path": "teams/analytics.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Anomaly Detection System",
+      "category": "concepts",
+      "path": "research/anomaly-detection.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Applied Research Team",
+      "category": "organizations",
+      "path": "teams/applied-research.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Auth Service Project",
+      "category": "projects",
+      "path": "projects/auth-service.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "CI/CD Pipeline Maintenance",
+      "category": "technologies",
+      "path": "infrastructure/cicd-maintenance.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Capacity Planning",
+      "category": "technologies",
+      "path": "infrastructure/capacity-planning.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Churn Prediction Model",
+      "category": "projects",
+      "path": "projects/churn-prediction.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Client Training Curriculum",
+      "category": "projects",
+      "path": "projects/client-training.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Component Library Project",
+      "category": "projects",
+      "path": "projects/component-library.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Cost Optimization Program",
+      "category": "technologies",
+      "path": "infrastructure/cost-optimization.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Customer Health Scoring",
+      "category": "projects",
+      "path": "projects/customer-health.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Customer Success Team",
+      "category": "organizations",
+      "path": "teams/customer-success.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Data Engineering Team",
+      "category": "organizations",
+      "path": "teams/data-engineering.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Data Quality Framework",
+      "category": "projects",
+      "path": "projects/data-quality-framework.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Data Warehouse Project",
+      "category": "projects",
+      "path": "projects/data-warehouse.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "DataPipeline Core",
+      "category": "projects",
+      "path": "projects/datapipeline-core.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Design System Maintenance",
+      "category": "projects",
+      "path": "projects/design-system.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "DevOps Infrastructure Team",
+      "category": "organizations",
+      "path": "teams/devops-infra.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "ESGHub Core Services",
+      "category": "projects",
+      "path": "projects/esghub-core-services.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "ESGHub Dashboard",
+      "category": "projects",
+      "path": "projects/esghub-dashboard.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "ESGHub Mobile App",
+      "category": "projects",
+      "path": "projects/esghub-mobile-app.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "ESGHub Reporting UI",
+      "category": "projects",
+      "path": "projects/esghub-reporting-ui.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "ESGHub Roadmap",
+      "category": "projects",
+      "path": "projects/esghub-roadmap.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "ESGHub UX Improvements",
+      "category": "projects",
+      "path": "projects/esghub-ux.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "ETL Monitoring",
+      "category": "projects",
+      "path": "projects/etl-monitoring.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Employee Tech Onboarding",
+      "category": "concepts",
+      "path": "internal/employee-tech-onboarding.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Engineering Department",
+      "category": "organizations",
+      "path": "departments/engineering.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Enterprise Feature Planning",
+      "category": "projects",
+      "path": "projects/enterprise-feature-planning.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Enterprise Onboarding Program",
+      "category": "projects",
+      "path": "projects/enterprise-onboarding.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Experiment Tracking Platform",
+      "category": "technologies",
+      "path": "infrastructure/experiment-tracking.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Feature Extraction Framework",
+      "category": "concepts",
+      "path": "research/feature-extraction.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Frontend Build Tools",
+      "category": "projects",
+      "path": "projects/frontend-build-tools.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Frontend Team",
+      "category": "organizations",
+      "path": "teams/frontend.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "GPU Cluster Management",
+      "category": "technologies",
+      "path": "infrastructure/gpu-cluster.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Hardware Procurement",
+      "category": "concepts",
+      "path": "internal/hardware-procurement.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Hybrid Classical-Quantum Pipeline",
+      "category": "concepts",
+      "path": "research/hybrid-pipeline.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "IT Support Team",
+      "category": "organizations",
+      "path": "teams/it-support.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Incident Response Plan",
+      "category": "concepts",
+      "path": "security/incident-response.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Incident Runbooks",
+      "category": "technologies",
+      "path": "infrastructure/incident-runbooks.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Infrastructure as Code",
+      "category": "technologies",
+      "path": "infrastructure/iac.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Internal Tooling",
+      "category": "concepts",
+      "path": "internal/internal-tooling.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Kubernetes Cluster Management",
+      "category": "technologies",
+      "path": "infrastructure/k8s-cluster-mgmt.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "ML Research Team",
+      "category": "organizations",
+      "path": "teams/ml-research.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Mobile Analytics SDK",
+      "category": "projects",
+      "path": "projects/mobile-analytics-sdk.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Mobile Team",
+      "category": "organizations",
+      "path": "teams/mobile.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "MobileFirst Framework Core",
+      "category": "projects",
+      "path": "projects/mobilefirst-core.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Model Registry",
+      "category": "technologies",
+      "path": "infrastructure/model-registry.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Model Serving Infrastructure",
+      "category": "concepts",
+      "path": "research/model-serving-infra.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Monitoring Stack",
+      "category": "technologies",
+      "path": "infrastructure/monitoring-stack.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "NLP Document Classifier",
+      "category": "concepts",
+      "path": "research/nlp-classifier.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Office Network Management",
+      "category": "concepts",
+      "path": "internal/office-network.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Offline Sync Engine",
+      "category": "projects",
+      "path": "projects/offline-sync-engine.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Operations Department",
+      "category": "organizations",
+      "path": "departments/operations.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Partner Integration Strategy",
+      "category": "projects",
+      "path": "projects/partner-integration-strategy.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Platform Team",
+      "category": "organizations",
+      "path": "teams/platform.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Pricing Strategy",
+      "category": "projects",
+      "path": "projects/pricing-strategy.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Product Analytics Dashboard",
+      "category": "projects",
+      "path": "projects/product-analytics-dashboard.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Product Department",
+      "category": "organizations",
+      "path": "departments/product.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Product Strategy Team",
+      "category": "organizations",
+      "path": "teams/product-strategy.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Quantum Computing Team",
+      "category": "organizations",
+      "path": "teams/quantum-computing.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Quantum Hardware Evaluation",
+      "category": "concepts",
+      "path": "research/quantum-hardware-eval.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Quantum Optimization POC",
+      "category": "concepts",
+      "path": "research/quantum-optimization-poc.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Quantum Simulation Study",
+      "category": "concepts",
+      "path": "research/quantum-simulation.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Recommendation Engine",
+      "category": "concepts",
+      "path": "research/recommendation-engine.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Research API Layer",
+      "category": "concepts",
+      "path": "research/research-api.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Research Data Store",
+      "category": "technologies",
+      "path": "infrastructure/research-data-store.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Research Department",
+      "category": "organizations",
+      "path": "departments/research.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Research Ops Team",
+      "category": "organizations",
+      "path": "teams/research-ops.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Research-to-Production Pipeline",
+      "category": "concepts",
+      "path": "research/research-to-production.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Security Audit Program",
+      "category": "concepts",
+      "path": "security/security-audit.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Security Team",
+      "category": "organizations",
+      "path": "teams/security.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Shared Libraries Project",
+      "category": "projects",
+      "path": "projects/shared-libraries.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Site Reliability Team",
+      "category": "organizations",
+      "path": "teams/sre.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Support Escalation Process",
+      "category": "projects",
+      "path": "projects/support-escalation.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Sustainability Scoring Model",
+      "category": "concepts",
+      "path": "research/sustainability-scoring.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "UX Design Team",
+      "category": "organizations",
+      "path": "teams/ux-design.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "User Behavior Analysis",
+      "category": "projects",
+      "path": "projects/user-behavior-analysis.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "User Research Program",
+      "category": "projects",
+      "path": "projects/user-research.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Vulnerability Management",
+      "category": "concepts",
+      "path": "security/vulnerability-mgmt.md",
+      "aliases": [],
+      "hubScore": 1
+    }
+  ],
+  "noteCount": 80,
+  "topology": {
+    "levels": 4,
+    "rootCount": 1,
+    "l2Count": 4,
+    "l3Count": 16,
+    "leafCount": 59
+  },
+  "notes": [
+    {
+      "path": "company/acme-overview.md",
+      "title": "Acme Corp Overview",
+      "frontmatter": {
+        "type": "organization",
+        "level": "root"
+      },
+      "content": "Acme Corp is a technology company specializing in sustainability software and enterprise solutions. The company operates through four major departments: [[Engineering Department]], [[Product Department]], [[Research Department]], and [[Operations Department]]. Founded in 2015 and headquartered in San Francisco, Acme has grown to over 200 employees across three offices. The company's flagship product is ESGHub, a sustainability reporting platform used by Fortune 500 companies.",
+      "links": [
+        "Engineering Department",
+        "Product Department",
+        "Research Department",
+        "Operations Department"
+      ],
+      "folder": "company"
+    },
+    {
+      "path": "departments/engineering.md",
+      "title": "Engineering Department",
+      "frontmatter": {
+        "type": "department",
+        "level": "L2"
+      },
+      "content": "The Engineering Department is the largest division at Acme Corp, responsible for all software development. It is organized into four teams: [[Platform Team]], [[Frontend Team]], [[Data Engineering Team]], and [[Mobile Team]]. The department uses TypeScript as its primary language and follows agile methodology with two-week sprints. David Chen serves as the department's technical lead, overseeing architecture decisions across all teams.",
+      "links": [
+        "Platform Team",
+        "Frontend Team",
+        "Data Engineering Team",
+        "Mobile Team"
+      ],
+      "folder": "departments"
+    },
+    {
+      "path": "departments/product.md",
+      "title": "Product Department",
+      "frontmatter": {
+        "type": "department",
+        "level": "L2"
+      },
+      "content": "The Product Department drives product strategy and user experience across all Acme Corp products. It comprises four teams: [[Product Strategy Team]], [[UX Design Team]], [[Customer Success Team]], and [[Analytics Team]]. Elena Torres leads the department and maintains close collaboration with engineering. The team conducts quarterly business reviews with the Board of Directors to align product direction with company strategy.",
+      "links": [
+        "Product Strategy Team",
+        "UX Design Team",
+        "Customer Success Team",
+        "Analytics Team"
+      ],
+      "folder": "departments"
+    },
+    {
+      "path": "departments/research.md",
+      "title": "Research Department",
+      "frontmatter": {
+        "type": "department",
+        "level": "L2"
+      },
+      "content": "The Research Department explores emerging technologies and their applications to Acme Corp's product suite. It consists of four teams: [[ML Research Team]], [[Quantum Computing Team]], [[Applied Research Team]], and [[Research Ops Team]]. Priya Sharma heads the department and ensures research outputs translate into product features. The department publishes papers and contributes to open-source projects.",
+      "links": [
+        "ML Research Team",
+        "Quantum Computing Team",
+        "Applied Research Team",
+        "Research Ops Team"
+      ],
+      "folder": "departments"
+    },
+    {
+      "path": "departments/operations.md",
+      "title": "Operations Department",
+      "frontmatter": {
+        "type": "department",
+        "level": "L2"
+      },
+      "content": "The Operations Department keeps the infrastructure running and supports all engineering teams. It includes four teams: [[DevOps Infrastructure Team]], [[Security Team]], [[Site Reliability Team]], and [[IT Support Team]]. Marcus Johnson leads the department with a focus on reliability, cost optimization, and developer experience. The team manages Kubernetes clusters across three regions.",
+      "links": [
+        "DevOps Infrastructure Team",
+        "Security Team",
+        "Site Reliability Team",
+        "IT Support Team"
+      ],
+      "folder": "departments"
+    },
+    {
+      "path": "teams/platform.md",
+      "title": "Platform Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "engineering"
+      },
+      "content": "The Platform Team builds and maintains the core services that power ESGHub. The team owns the GraphQL API layer, authentication, and shared libraries. They manage four key areas: [[ESGHub Core Services]], [[API Gateway Project]], [[Auth Service Project]], and [[Shared Libraries Project]]. David Chen directly oversees this team and participates in their sprint planning. The team uses TypeScript exclusively and maintains the highest code coverage standards in the company.",
+      "links": [
+        "ESGHub Core Services",
+        "API Gateway Project",
+        "Auth Service Project",
+        "Shared Libraries Project"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/frontend.md",
+      "title": "Frontend Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "engineering"
+      },
+      "content": "The Frontend Team owns all client-side applications at Acme Corp. They build with React and TypeScript, maintaining a shared component library. The team manages four projects: [[ESGHub Dashboard]], [[ESGHub Reporting UI]], [[Component Library Project]], and [[Frontend Build Tools]]. The team follows component-driven development with Storybook for documentation. They work closely with the UX Design Team on implementation.",
+      "links": [
+        "ESGHub Dashboard",
+        "ESGHub Reporting UI",
+        "Component Library Project",
+        "Frontend Build Tools"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/data-engineering.md",
+      "title": "Data Engineering Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "engineering"
+      },
+      "content": "The Data Engineering Team manages all data infrastructure and pipelines. Led by Sarah O'Brien, the team handles ETL workflows, database optimization, and data warehouse management. They own four key areas: [[DataPipeline Core]], [[Data Warehouse Project]], [[ETL Monitoring]], and [[Data Quality Framework]]. The team uses PostgreSQL extensively and is exploring Apache Spark for large-scale processing.",
+      "links": [
+        "DataPipeline Core",
+        "Data Warehouse Project",
+        "ETL Monitoring",
+        "Data Quality Framework"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/mobile.md",
+      "title": "Mobile Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "engineering"
+      },
+      "content": "The Mobile Team builds cross-platform mobile applications using React Native and TypeScript. Aisha Patel leads the team from the New York City office. They manage four projects: [[ESGHub Mobile App]], [[MobileFirst Framework Core]], [[Mobile Analytics SDK]], and [[Offline Sync Engine]]. The team follows a biweekly release cadence with staged rollouts to TestFlight and Google Play beta channels.",
+      "links": [
+        "ESGHub Mobile App",
+        "MobileFirst Framework Core",
+        "Mobile Analytics SDK",
+        "Offline Sync Engine"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/product-strategy.md",
+      "title": "Product Strategy Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "product"
+      },
+      "content": "The Product Strategy Team defines the roadmap for all Acme Corp products. Elena Torres directly manages this team, which handles market research, competitive analysis, and feature prioritization. They oversee four workstreams: [[ESGHub Roadmap]], [[Enterprise Feature Planning]], [[Pricing Strategy]], and [[Partner Integration Strategy]]. The team presents quarterly updates to the Board of Directors.",
+      "links": [
+        "ESGHub Roadmap",
+        "Enterprise Feature Planning",
+        "Pricing Strategy",
+        "Partner Integration Strategy"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/ux-design.md",
+      "title": "UX Design Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "product"
+      },
+      "content": "The UX Design Team creates intuitive interfaces for all Acme Corp products. The team maintains the design system and conducts user research. They manage four focus areas: [[Design System Maintenance]], [[User Research Program]], [[ESGHub UX Improvements]], and [[Accessibility Audit]]. The team uses Figma for design and collaborates closely with the Frontend Team on implementation handoff.",
+      "links": [
+        "Design System Maintenance",
+        "User Research Program",
+        "ESGHub UX Improvements",
+        "Accessibility Audit"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/customer-success.md",
+      "title": "Customer Success Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "product"
+      },
+      "content": "The Customer Success Team ensures enterprise clients get maximum value from ESGHub. They handle onboarding, training, and ongoing support. The team manages four programs: [[Enterprise Onboarding Program]], [[Client Training Curriculum]], [[Support Escalation Process]], and [[Customer Health Scoring]]. The team operates from the New York City office, close to major financial clients.",
+      "links": [
+        "Enterprise Onboarding Program",
+        "Client Training Curriculum",
+        "Support Escalation Process",
+        "Customer Health Scoring"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/analytics.md",
+      "title": "Analytics Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "product"
+      },
+      "content": "The Analytics Team provides data-driven insights to guide product decisions. They instrument features, analyze user behavior, and run experiments. The team manages four areas: [[Product Analytics Dashboard]], [[A/B Testing Platform]], [[User Behavior Analysis]], and [[Churn Prediction Model]]. They work closely with the Data Engineering Team for data pipeline access.",
+      "links": [
+        "Product Analytics Dashboard",
+        "A/B Testing Platform",
+        "User Behavior Analysis",
+        "Churn Prediction Model"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/ml-research.md",
+      "title": "ML Research Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "research"
+      },
+      "content": "The ML Research Team develops machine learning models for sustainability scoring and predictive analytics. Priya Sharma directly manages this team. They work on four projects: [[Sustainability Scoring Model]], [[Anomaly Detection System]], [[NLP Document Classifier]], and [[Recommendation Engine]]. Models are trained in Python and served via TypeScript API wrappers for integration with ESGHub.",
+      "links": [
+        "Sustainability Scoring Model",
+        "Anomaly Detection System",
+        "NLP Document Classifier",
+        "Recommendation Engine"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/quantum-computing.md",
+      "title": "Quantum Computing Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "research"
+      },
+      "content": "The Quantum Computing Team explores quantum algorithms for optimization problems. This is an experimental team within the Research Department. They work on four initiatives: [[Quantum Optimization POC]], [[Quantum Simulation Study]], [[Hybrid Classical-Quantum Pipeline]], and [[Quantum Hardware Evaluation]]. The team collaborates with universities and quantum hardware providers.",
+      "links": [
+        "Quantum Optimization POC",
+        "Quantum Simulation Study",
+        "Hybrid Classical-Quantum Pipeline",
+        "Quantum Hardware Evaluation"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/applied-research.md",
+      "title": "Applied Research Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "research"
+      },
+      "content": "The Applied Research Team bridges the gap between pure research and product engineering. They take research prototypes and productionize them for integration into Acme Corp systems. The team manages four tracks: [[Research-to-Production Pipeline]], [[Feature Extraction Framework]], [[Model Serving Infrastructure]], and [[Research API Layer]]. They coordinate closely with both the ML Research Team and the Platform Team.",
+      "links": [
+        "Research-to-Production Pipeline",
+        "Feature Extraction Framework",
+        "Model Serving Infrastructure",
+        "Research API Layer"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/research-ops.md",
+      "title": "Research Ops Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "research"
+      },
+      "content": "The Research Ops Team provides infrastructure and tooling for all research activities. They manage GPU clusters, experiment tracking, and model registries. The team oversees four areas: [[GPU Cluster Management]], [[Experiment Tracking Platform]], [[Model Registry]], and [[Research Data Store]]. They ensure reproducibility and compliance with data governance policies.",
+      "links": [
+        "GPU Cluster Management",
+        "Experiment Tracking Platform",
+        "Model Registry",
+        "Research Data Store"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/devops-infra.md",
+      "title": "DevOps Infrastructure Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "operations"
+      },
+      "content": "The DevOps Infrastructure Team manages the cloud infrastructure and deployment pipelines. Marcus Johnson leads this team directly. They own four key areas: [[Kubernetes Cluster Management]], [[CI/CD Pipeline Maintenance]], [[Infrastructure as Code]], and [[Cost Optimization Program]]. The team runs three Kubernetes clusters across US-West, US-East, and EU-West regions.",
+      "links": [
+        "Kubernetes Cluster Management",
+        "CI/CD Pipeline Maintenance",
+        "Infrastructure as Code",
+        "Cost Optimization Program"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/security.md",
+      "title": "Security Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "operations"
+      },
+      "content": "The Security Team handles all aspects of information security at Acme Corp. They conduct audits, manage vulnerabilities, and ensure compliance with SOC2 and ISO 27001 standards. The team manages four programs: [[Security Audit Program]], [[Vulnerability Management]], [[Access Control System]], and [[Incident Response Plan]]. They work closely with the Platform Team on authentication and authorization.",
+      "links": [
+        "Security Audit Program",
+        "Vulnerability Management",
+        "Access Control System",
+        "Incident Response Plan"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/sre.md",
+      "title": "Site Reliability Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "operations"
+      },
+      "content": "The Site Reliability Team ensures the availability and performance of all production systems. They manage monitoring, alerting, and incident response for ESGHub and all internal services. The team oversees four areas: [[Monitoring Stack]], [[Alerting Configuration]], [[Incident Runbooks]], and [[Capacity Planning]]. They maintain the observability platform using Grafana, Prometheus, and Jaeger.",
+      "links": [
+        "Monitoring Stack",
+        "Alerting Configuration",
+        "Incident Runbooks",
+        "Capacity Planning"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "teams/it-support.md",
+      "title": "IT Support Team",
+      "frontmatter": {
+        "type": "team",
+        "level": "L3",
+        "department": "operations"
+      },
+      "content": "The IT Support Team manages internal tooling, hardware, and employee onboarding from a technology perspective. They ensure all offices have reliable connectivity and equipment. The team handles four areas: [[Internal Tooling]], [[Hardware Procurement]], [[Office Network Management]], and [[Employee Tech Onboarding]]. They coordinate across the San Francisco, New York City, and London offices.",
+      "links": [
+        "Internal Tooling",
+        "Hardware Procurement",
+        "Office Network Management",
+        "Employee Tech Onboarding"
+      ],
+      "folder": "teams"
+    },
+    {
+      "path": "projects/esghub-core-services.md",
+      "title": "ESGHub Core Services",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "platform"
+      },
+      "content": "ESGHub Core Services is the backbone of the sustainability platform. This project encompasses the main application server, business logic layer, and domain models. The codebase is written in TypeScript running on Node.js. The service handles sustainability metric calculations, report generation triggers, and client configuration management. It processes over 50,000 API requests per hour during peak reporting seasons.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/api-gateway.md",
+      "title": "API Gateway Project",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "platform"
+      },
+      "content": "The API Gateway Project manages the entry point for all client requests to the ESGHub platform. Built on Apollo Gateway, it federates multiple GraphQL subgraphs into a unified API. The gateway handles authentication token validation, rate limiting, and request routing. Performance optimization includes query complexity analysis to prevent expensive operations from degrading service quality.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/auth-service.md",
+      "title": "Auth Service Project",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "platform"
+      },
+      "content": "The Auth Service Project provides centralized authentication and authorization for all Acme Corp applications. It implements OAuth2 with PKCE for browser clients and service-to-service JWT tokens for internal communication. The service maintains its own PostgreSQL database for user accounts and sessions. Multi-factor authentication was added in Q3 2024 after a comprehensive security audit by the Security Team.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/shared-libraries.md",
+      "title": "Shared Libraries Project",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "platform"
+      },
+      "content": "The Shared Libraries Project maintains reusable TypeScript packages consumed by all engineering teams. Key packages include the logging library, error handling utilities, database connection helpers, and configuration management. The libraries follow semantic versioning and are published to an internal npm registry. Code review standards are especially strict for these packages since changes affect every service.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-dashboard.md",
+      "title": "ESGHub Dashboard",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "frontend"
+      },
+      "content": "The ESGHub Dashboard is the primary user interface for sustainability data visualization. Built with React and TypeScript, it provides interactive charts, data grids, and real-time metric displays. The dashboard uses Apollo Client for GraphQL data fetching with optimistic UI updates. Performance optimization includes virtualized rendering for large datasets and code splitting for module-level lazy loading.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-reporting-ui.md",
+      "title": "ESGHub Reporting UI",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "frontend"
+      },
+      "content": "The ESGHub Reporting UI allows clients to generate, customize, and export sustainability reports. It features a drag-and-drop report builder, template management, and scheduled report generation. Reports can be exported as PDF, Excel, or interactive HTML. The UI handles complex multi-step workflows including data selection, template configuration, and review-before-publish flows.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/component-library.md",
+      "title": "Component Library Project",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "frontend"
+      },
+      "content": "The Component Library Project provides a unified design system implemented as React components. Every UI element follows the Acme Corp design tokens for colors, typography, and spacing. Components are documented in Storybook with interactive examples. The library includes form elements, data visualization widgets, navigation patterns, and layout primitives. Accessibility compliance is tested automatically in CI.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/frontend-build-tools.md",
+      "title": "Frontend Build Tools",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "frontend"
+      },
+      "content": "The Frontend Build Tools project maintains the build pipeline for all client-side applications. The team migrated from webpack to Vite for significantly faster local development. The toolchain includes TypeScript compilation, CSS processing, asset optimization, and bundle analysis. Custom Vite plugins handle environment configuration and feature flag injection at build time.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/datapipeline-core.md",
+      "title": "DataPipeline Core",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "data-engineering"
+      },
+      "content": "DataPipeline Core is the central data ingestion and transformation engine. It processes data from dozens of external sources through configurable ETL workflows. The pipeline uses a job queue backed by Redis for reliable processing with automatic retries. Written in TypeScript on Node.js, the system handles CSV, JSON, XML, and API-based data sources. Throughput exceeds 10 million records per day during peak ingestion periods.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/data-warehouse.md",
+      "title": "Data Warehouse Project",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "data-engineering"
+      },
+      "content": "The Data Warehouse Project manages the analytical data store built on PostgreSQL. It aggregates data from all operational databases into a star schema optimized for reporting. The warehouse supports the ESGHub reporting module and the Analytics Team's dashboards. Materialized views are refreshed on a schedule to balance freshness with query performance. The team is evaluating a move to columnar storage for historical data.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/etl-monitoring.md",
+      "title": "ETL Monitoring",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "data-engineering"
+      },
+      "content": "The ETL Monitoring project provides visibility into data pipeline health and data quality. It tracks job completion rates, processing latency, and data validation failures. Dashboards built on Grafana display real-time pipeline status. Alerts fire when jobs fail or data quality thresholds are breached. The monitoring system helped reduce silent data corruption incidents by 90% since its introduction.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/data-quality-framework.md",
+      "title": "Data Quality Framework",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "data-engineering"
+      },
+      "content": "The Data Quality Framework provides automated data validation for all ingested and processed data. It includes schema validation, referential integrity checks, statistical anomaly detection, and business rule enforcement. Quality scores are attached to every dataset and displayed in the ESGHub UI. The framework runs as a post-processing step in every DataPipeline job. Sarah O'Brien designed the scoring algorithm that weights different quality dimensions.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-mobile-app.md",
+      "title": "ESGHub Mobile App",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "mobile"
+      },
+      "content": "The ESGHub Mobile App allows field auditors to capture sustainability data on-site using their phones and tablets. Built with React Native and TypeScript, the app features offline data capture, barcode scanning for asset identification, and photo documentation. Data syncs to the server when connectivity is restored using a conflict resolution algorithm. The app has over 5,000 active users across enterprise clients.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/mobilefirst-core.md",
+      "title": "MobileFirst Framework Core",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "mobile"
+      },
+      "content": "The MobileFirst Framework Core provides shared infrastructure for all mobile applications at Acme Corp. It includes navigation patterns, state management helpers, network layer abstractions, and platform-specific utilities. The framework handles push notifications, deep linking, and app lifecycle management. Aisha Patel architectected the framework to minimize boilerplate when starting new mobile projects.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/mobile-analytics-sdk.md",
+      "title": "Mobile Analytics SDK",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "mobile"
+      },
+      "content": "The Mobile Analytics SDK captures user interaction data from mobile applications for product analysis. It tracks screen views, tap events, session duration, and crash reports. The SDK is designed to minimize battery impact and network usage by batching events and sending them during wifi connections. Privacy controls allow users to opt out of analytics collection in compliance with GDPR and CCPA regulations.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/offline-sync-engine.md",
+      "title": "Offline Sync Engine",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "mobile"
+      },
+      "content": "The Offline Sync Engine enables mobile applications to function without network connectivity. It uses SQLite for local data storage and implements a last-write-wins conflict resolution strategy with manual conflict review for critical data. The engine queues mutations locally and replays them when connectivity returns. It supports partial sync for bandwidth-constrained environments where field auditors work in remote locations.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-roadmap.md",
+      "title": "ESGHub Roadmap",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "product-strategy"
+      },
+      "content": "The ESGHub Roadmap defines the feature development plan for the next four quarters. Elena Torres maintains the roadmap with input from customer success, sales, and engineering. Key upcoming features include enhanced supply chain tracking, automated regulatory compliance checks, and AI-powered sustainability recommendations. The roadmap is reviewed quarterly with the Board of Directors and adjusted based on market feedback and competitive analysis.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/enterprise-feature-planning.md",
+      "title": "Enterprise Feature Planning",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "product-strategy"
+      },
+      "content": "Enterprise Feature Planning manages the customization and configuration features required by large corporate clients. This includes multi-tenant data isolation, custom branding, SSO integration, and role-based access control extensions. The planning process involves discovery calls with enterprise prospects and existing customer advisory board sessions. Feature requests are scored using a RICE framework to prioritize development effort.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/pricing-strategy.md",
+      "title": "Pricing Strategy",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "product-strategy"
+      },
+      "content": "The Pricing Strategy project defines the commercial model for ESGHub. The current model uses seat-based pricing with add-on modules for advanced analytics and compliance reporting. The team regularly analyzes competitor pricing, customer willingness to pay, and usage patterns. A usage-based pricing tier is under consideration for smaller organizations that need sustainability reporting but cannot justify enterprise pricing.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/partner-integration-strategy.md",
+      "title": "Partner Integration Strategy",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "product-strategy"
+      },
+      "content": "The Partner Integration Strategy project manages technical and business partnerships with sustainability data providers, consulting firms, and technology vendors. Current integrations include carbon offset marketplaces, environmental data feeds, and audit platform connectors. The team evaluates new partnership opportunities and maintains the integration marketplace within ESGHub where clients discover and enable partner connections.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/design-system.md",
+      "title": "Design System Maintenance",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "ux-design"
+      },
+      "content": "The Design System Maintenance project keeps the Acme Corp visual language consistent across all products. It includes design tokens, component specifications, interaction patterns, and brand guidelines. The design system is maintained in Figma with automated syncing to the React component library. Regular audits ensure all products comply with the design system. New component proposals go through a review process before acceptance.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/user-research.md",
+      "title": "User Research Program",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "ux-design"
+      },
+      "content": "The User Research Program conducts ongoing studies to understand how sustainability professionals use ESGHub. Research methods include contextual inquiries, usability testing, surveys, and analytics review. Insights are synthesized into personas and journey maps that guide product decisions. Monthly research readouts share findings with the entire product and engineering organization to maintain user empathy across teams.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/esghub-ux.md",
+      "title": "ESGHub UX Improvements",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "ux-design"
+      },
+      "content": "The ESGHub UX Improvements project focuses on iterative enhancement of the user experience based on research findings and user feedback. Current initiatives include simplifying the report creation workflow, improving dashboard customization, and redesigning the data import experience. Each improvement goes through design exploration, prototype testing, and phased rollout. The team tracks task completion rates and time-on-task as key UX metrics.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/accessibility-audit.md",
+      "title": "Accessibility Audit",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "ux-design"
+      },
+      "content": "The Accessibility Audit project ensures all Acme Corp products meet WCAG 2.1 AA standards. The team conducts regular audits using automated tools and manual testing with screen readers. Issues are categorized by severity and tracked to resolution. The project also includes accessibility training for engineers and designers. Compliance is required for enterprise contracts, particularly those with government agencies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/enterprise-onboarding.md",
+      "title": "Enterprise Onboarding Program",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "customer-success"
+      },
+      "content": "The Enterprise Onboarding Program guides new corporate clients through their first 90 days with ESGHub. The program includes technical setup, data migration, user training, and success milestone tracking. A dedicated onboarding specialist is assigned to each enterprise account. The program has reduced time-to-value by 40% since its formalization. Templates and checklists ensure consistency across diverse client requirements.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/client-training.md",
+      "title": "Client Training Curriculum",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "customer-success"
+      },
+      "content": "The Client Training Curriculum provides structured learning paths for ESGHub users. It includes self-paced video courses, live webinars, and hands-on workshops. Content covers basic platform navigation, report creation, data management, and advanced analytics features. The curriculum is maintained in an LMS and updated quarterly to reflect new features. Certification badges motivate completion and demonstrate proficiency to employers.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/support-escalation.md",
+      "title": "Support Escalation Process",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "customer-success"
+      },
+      "content": "The Support Escalation Process defines how client issues are triaged, routed, and resolved. Level 1 support handles common questions using knowledge base articles. Level 2 involves technical specialists who can investigate data and configuration issues. Level 3 escalations go directly to engineering teams for bug fixes or feature gaps. SLA response times vary by client tier, with premium accounts guaranteed 4-hour response during business hours.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/customer-health.md",
+      "title": "Customer Health Scoring",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "customer-success"
+      },
+      "content": "The Customer Health Scoring system predicts client satisfaction and churn risk using product usage data, support ticket volume, and engagement metrics. The scoring model was developed with the ML Research Team and assigns each account a red, yellow, or green health status. Customer success managers review health scores weekly and proactively reach out to at-risk accounts. The system has contributed to a 15% improvement in retention rates.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/product-analytics-dashboard.md",
+      "title": "Product Analytics Dashboard",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "analytics"
+      },
+      "content": "The Product Analytics Dashboard provides real-time visibility into how users interact with ESGHub. It tracks key metrics including daily active users, feature adoption rates, session duration, and conversion funnels. The dashboard is built on Metabase connected to the data warehouse. Product managers use it daily to monitor feature launches and identify areas for improvement. Custom views allow each team to see metrics relevant to their domain.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/ab-testing.md",
+      "title": "A/B Testing Platform",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "analytics"
+      },
+      "content": "The A/B Testing Platform enables controlled experiments on ESGHub features. It supports multivariate testing, gradual rollouts, and statistical significance calculation. The platform integrates with the feature flag system to target specific user segments. Experiment results are automatically analyzed and presented with confidence intervals. The team has run over 50 experiments in the past year, leading to measurable improvements in conversion and engagement.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/user-behavior-analysis.md",
+      "title": "User Behavior Analysis",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "analytics"
+      },
+      "content": "The User Behavior Analysis project studies patterns in how sustainability professionals use ESGHub. Using event stream data, the team identifies common workflows, pain points, and feature discovery paths. Cohort analysis reveals how different user segments engage with the platform over time. Findings are shared monthly with product and engineering teams to inform roadmap decisions. The analysis helped identify that report customization was the most common drop-off point in the user journey.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/churn-prediction.md",
+      "title": "Churn Prediction Model",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf",
+        "team": "analytics"
+      },
+      "content": "The Churn Prediction Model uses machine learning to identify accounts at risk of not renewing their ESGHub subscription. The model considers usage frequency, support interactions, feature breadth, and billing patterns. Predictions feed into the Customer Health Scoring system used by the customer success team. The model achieves 78% accuracy at predicting churn 60 days in advance. Regular retraining incorporates new behavioral signals as the product evolves.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "research/sustainability-scoring.md",
+      "title": "Sustainability Scoring Model",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "ml-research"
+      },
+      "content": "The Sustainability Scoring Model assigns numerical ratings to companies based on their environmental, social, and governance data. The model uses a combination of supervised learning on historical ratings and rule-based adjustments for regulatory standards. Input features include carbon emissions, workforce diversity metrics, board composition, and supply chain audits. The model is updated quarterly as new regulatory frameworks are published and training data accumulates.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/anomaly-detection.md",
+      "title": "Anomaly Detection System",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "ml-research"
+      },
+      "content": "The Anomaly Detection System identifies unusual patterns in sustainability data that may indicate errors, fraud, or significant events. It uses isolation forests and autoencoders trained on historical data patterns. When anomalies are detected, they are flagged for human review in the ESGHub interface. The system has caught several instances of data entry errors that would have resulted in incorrect sustainability reports for major clients.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/nlp-classifier.md",
+      "title": "NLP Document Classifier",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "ml-research"
+      },
+      "content": "The NLP Document Classifier automatically categorizes sustainability documents uploaded to ESGHub. It handles annual reports, audit findings, policy documents, and press releases. The model is built on a fine-tuned transformer architecture that understands sustainability-specific terminology. Classification accuracy exceeds 92% across twelve document categories. The classifier reduces manual effort for clients who upload hundreds of documents during reporting periods.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/recommendation-engine.md",
+      "title": "Recommendation Engine",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "ml-research"
+      },
+      "content": "The Recommendation Engine suggests relevant reports, benchmarks, and improvement actions to ESGHub users based on their industry, historical data, and peer comparisons. It uses collaborative filtering combined with content-based recommendations. The engine surfaces insights that users might not discover through manual exploration of the platform. Early results show a 25% increase in report generation when recommendations are enabled.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/quantum-optimization-poc.md",
+      "title": "Quantum Optimization POC",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "quantum-computing"
+      },
+      "content": "The Quantum Optimization POC explores whether quantum algorithms can solve sustainability portfolio optimization problems faster than classical approaches. Initial experiments use IBM Qiskit to implement QAOA (Quantum Approximate Optimization Algorithm) for carbon offset allocation. Results so far show quantum advantage only for problems with over 1,000 variables, which limits practical applications but suggests future potential as quantum hardware improves.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/quantum-simulation.md",
+      "title": "Quantum Simulation Study",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "quantum-computing"
+      },
+      "content": "The Quantum Simulation Study investigates how quantum computers could simulate environmental systems for climate modeling. The team explores variational quantum eigensolvers for molecular simulations relevant to carbon capture materials. While current quantum hardware is too noisy for production use, the study establishes methodologies that will be applicable when fault-tolerant quantum computers become available.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/hybrid-pipeline.md",
+      "title": "Hybrid Classical-Quantum Pipeline",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "quantum-computing"
+      },
+      "content": "The Hybrid Classical-Quantum Pipeline combines classical preprocessing with quantum subroutines for optimization tasks. Classical algorithms handle data preparation and constraint formulation while quantum circuits solve the core optimization. The pipeline is designed to be hardware-agnostic, supporting both gate-based and annealing quantum computers. Integration testing uses quantum simulators until hardware access becomes more reliable.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/quantum-hardware-eval.md",
+      "title": "Quantum Hardware Evaluation",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "quantum-computing"
+      },
+      "content": "The Quantum Hardware Evaluation project benchmarks available quantum computing platforms for suitability in Acme Corp's use cases. The team evaluates IBM Quantum, Google Sycamore, IonQ, and Rigetti systems on metrics including qubit count, gate fidelity, connectivity, and job queue times. Results help inform hardware procurement decisions and guide algorithm development toward the most practical platforms.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/research-to-production.md",
+      "title": "Research-to-Production Pipeline",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "applied-research"
+      },
+      "content": "The Research-to-Production Pipeline formalizes the process of taking ML models from research prototypes to production-ready services. It includes model validation, performance benchmarking, A/B testing integration, and monitoring setup. The pipeline reduces the typical model deployment timeline from three months to three weeks. Each model goes through a checklist covering accuracy thresholds, latency budgets, and failure mode analysis.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/feature-extraction.md",
+      "title": "Feature Extraction Framework",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "applied-research"
+      },
+      "content": "The Feature Extraction Framework provides standardized tools for transforming raw data into features suitable for machine learning models. It handles text preprocessing, numerical normalization, categorical encoding, and temporal feature engineering. The framework ensures consistency between training and serving environments, preventing training-serving skew. Features are versioned and stored in a feature store for reuse across models.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/model-serving-infra.md",
+      "title": "Model Serving Infrastructure",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "applied-research"
+      },
+      "content": "The Model Serving Infrastructure hosts ML models as scalable API endpoints. It uses TensorFlow Serving and custom TypeScript wrappers for integration with the rest of the ESGHub platform. The infrastructure supports model versioning, canary deployments, and automatic rollback if accuracy metrics degrade. Serving latency is monitored with p99 targets under 200ms for real-time predictions.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "research/research-api.md",
+      "title": "Research API Layer",
+      "frontmatter": {
+        "type": "research",
+        "level": "leaf",
+        "team": "applied-research"
+      },
+      "content": "The Research API Layer exposes research capabilities as internal APIs consumed by product teams. It abstracts the complexity of ML models behind simple REST endpoints with TypeScript client libraries. The API includes endpoints for sustainability scoring, document classification, anomaly detection, and recommendations. Rate limiting and caching protect backend model servers from traffic spikes during peak usage periods.",
+      "links": [],
+      "folder": "research"
+    },
+    {
+      "path": "infrastructure/gpu-cluster.md",
+      "title": "GPU Cluster Management",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "research-ops"
+      },
+      "content": "GPU Cluster Management oversees the shared GPU resources used for model training and inference. The cluster runs on Kubernetes with NVIDIA GPU operator for scheduling. Job prioritization ensures production inference workloads take precedence over training experiments. The team manages costs by using spot instances for training and reserved instances for serving. Current capacity includes 32 A100 GPUs across two availability zones.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "infrastructure/experiment-tracking.md",
+      "title": "Experiment Tracking Platform",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "research-ops"
+      },
+      "content": "The Experiment Tracking Platform provides MLflow-based tracking for all research experiments. Every training run records hyperparameters, metrics, artifacts, and environment details for reproducibility. The platform integrates with the model registry for promotion of successful experiments to production. Researchers can compare runs visually and share results with colleagues. Automated cleanup removes stale experiments to manage storage costs.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "infrastructure/model-registry.md",
+      "title": "Model Registry",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "research-ops"
+      },
+      "content": "The Model Registry is the central catalog of all ML models at Acme Corp. It tracks model versions, metadata, lineage, and deployment status. Models progress through stages: experimental, staging, production, and archived. The registry integrates with the CI/CD pipeline for automated deployment when models are promoted to production. Each model entry includes documentation, performance benchmarks, and known limitations.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "infrastructure/research-data-store.md",
+      "title": "Research Data Store",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "research-ops"
+      },
+      "content": "The Research Data Store provides versioned datasets for model training and evaluation. It ensures researchers always work with reproducible data snapshots rather than live production data. The store supports large datasets with columnar storage and efficient sampling. Data governance policies enforce access controls and audit logging. The store connects to the feature extraction framework for preprocessed feature datasets.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "infrastructure/k8s-cluster-mgmt.md",
+      "title": "Kubernetes Cluster Management",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "devops-infra"
+      },
+      "content": "Kubernetes Cluster Management covers the provisioning, upgrading, and monitoring of all production Kubernetes clusters. The team maintains three clusters in US-West, US-East, and EU-West using Terraform for infrastructure provisioning. Cluster upgrades follow a rolling strategy: staging first, then production regions sequentially. Node auto-scaling adjusts capacity based on workload demand with both CPU and memory thresholds.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "infrastructure/cicd-maintenance.md",
+      "title": "CI/CD Pipeline Maintenance",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "devops-infra"
+      },
+      "content": "CI/CD Pipeline Maintenance keeps the continuous integration and delivery infrastructure reliable and fast. The team manages GitHub Actions workflows, self-hosted runners on Kubernetes, and the container registry. Pipeline optimization focuses on caching strategies, parallel test execution, and build time reduction. The team tracks pipeline reliability with a target of 99.5% success rate for non-flaky runs.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "infrastructure/iac.md",
+      "title": "Infrastructure as Code",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "devops-infra"
+      },
+      "content": "Infrastructure as Code manages all cloud resources through version-controlled Terraform configurations. Every environment from development to production is defined declaratively. Changes go through pull request review before being applied by the CI/CD pipeline. The team maintains Terraform modules for common patterns including VPCs, databases, cache clusters, and Kubernetes namespaces. State is stored remotely with locking to prevent concurrent modifications.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "infrastructure/cost-optimization.md",
+      "title": "Cost Optimization Program",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "devops-infra"
+      },
+      "content": "The Cost Optimization Program continuously analyzes and reduces cloud infrastructure spending. Monthly cost reviews identify underutilized resources, oversized instances, and opportunities for reserved instance purchases. The team has implemented automated rightsizing recommendations and savings plans. Dashboard reporting breaks costs down by team, project, and environment. Year-over-year, the program has achieved 30% cost reduction while supporting 40% growth in platform usage.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "security/security-audit.md",
+      "title": "Security Audit Program",
+      "frontmatter": {
+        "type": "security",
+        "level": "leaf",
+        "team": "security"
+      },
+      "content": "The Security Audit Program conducts regular security assessments of all Acme Corp systems. Annual penetration tests are performed by external firms. Quarterly internal audits cover code repositories, infrastructure configurations, and access controls. Audit findings are tracked to resolution with severity-based SLAs. The program ensures compliance with SOC2 Type II and ISO 27001 certification requirements.",
+      "links": [],
+      "folder": "security"
+    },
+    {
+      "path": "security/vulnerability-mgmt.md",
+      "title": "Vulnerability Management",
+      "frontmatter": {
+        "type": "security",
+        "level": "leaf",
+        "team": "security"
+      },
+      "content": "Vulnerability Management provides continuous scanning and remediation of security vulnerabilities. Automated scanners check container images, npm dependencies, and infrastructure configurations. Critical vulnerabilities require patching within 48 hours. The team maintains a vulnerability database and tracks mean-time-to-remediation metrics. Integration with the CI/CD pipeline blocks deployments that introduce known critical vulnerabilities.",
+      "links": [],
+      "folder": "security"
+    },
+    {
+      "path": "security/access-control.md",
+      "title": "Access Control System",
+      "frontmatter": {
+        "type": "security",
+        "level": "leaf",
+        "team": "security"
+      },
+      "content": "The Access Control System manages authentication and authorization across all Acme Corp systems. It implements role-based access control with principle of least privilege. Identity is managed through Okta with SSO for all internal applications. Periodic access reviews ensure permissions remain appropriate as employees change roles. Privileged access to production systems requires multi-factor authentication and is logged for audit trails.",
+      "links": [],
+      "folder": "security"
+    },
+    {
+      "path": "security/incident-response.md",
+      "title": "Incident Response Plan",
+      "frontmatter": {
+        "type": "security",
+        "level": "leaf",
+        "team": "security"
+      },
+      "content": "The Incident Response Plan defines procedures for handling security incidents at Acme Corp. It covers detection, containment, eradication, recovery, and post-incident review. The plan designates incident commanders and communication leads for different severity levels. Tabletop exercises are conducted quarterly to test the plan. Lessons learned from each incident are incorporated into preventive measures and shared with the engineering organization.",
+      "links": [],
+      "folder": "security"
+    },
+    {
+      "path": "infrastructure/monitoring-stack.md",
+      "title": "Monitoring Stack",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "sre"
+      },
+      "content": "The Monitoring Stack provides comprehensive visibility into all production systems. It consists of Prometheus for metrics collection, Grafana for visualization, Jaeger for distributed tracing, and Loki for log aggregation. The stack monitors application health, infrastructure performance, and business metrics. Custom dashboards exist for each service team. The stack processes over 5 million metrics data points per minute across all monitored services.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "infrastructure/alerting.md",
+      "title": "Alerting Configuration",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "sre"
+      },
+      "content": "Alerting Configuration manages the rules and routing for all production alerts. Alerts are defined as code and reviewed through pull requests. Routing sends alerts to the appropriate on-call teams via PagerDuty. Alert fatigue is combated through regular threshold tuning and deduplication. The team maintains runbooks for every alert that describe initial diagnosis steps and common resolutions.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "infrastructure/incident-runbooks.md",
+      "title": "Incident Runbooks",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "sre"
+      },
+      "content": "Incident Runbooks provide step-by-step guides for responding to common production incidents. Each runbook covers a specific failure mode including symptoms, diagnosis commands, mitigation steps, and escalation criteria. Runbooks are stored alongside alerting configuration and linked directly from alert notifications. The team reviews and updates runbooks after every incident. New runbooks are created when novel failure modes are discovered.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "infrastructure/capacity-planning.md",
+      "title": "Capacity Planning",
+      "frontmatter": {
+        "type": "infrastructure",
+        "level": "leaf",
+        "team": "sre"
+      },
+      "content": "Capacity Planning forecasts resource requirements based on growth trends and upcoming feature launches. The team models CPU, memory, storage, and network projections for the next six months. Plans account for seasonal patterns in ESGHub usage that peak during quarterly reporting periods. Capacity is provisioned with headroom to handle unexpected traffic spikes. Cost projections are shared with finance and the cost optimization team for budget alignment.",
+      "links": [],
+      "folder": "infrastructure"
+    },
+    {
+      "path": "internal/internal-tooling.md",
+      "title": "Internal Tooling",
+      "frontmatter": {
+        "type": "internal",
+        "level": "leaf",
+        "team": "it-support"
+      },
+      "content": "Internal Tooling manages the suite of productivity and collaboration tools used by Acme Corp employees. This includes Slack configuration, Confluence administration, Jira project setup, and custom internal applications. The team builds lightweight tools to automate repetitive tasks like environment provisioning and access request workflows. Tool adoption metrics guide decisions about renewing or replacing vendor subscriptions.",
+      "links": [],
+      "folder": "internal"
+    },
+    {
+      "path": "internal/hardware-procurement.md",
+      "title": "Hardware Procurement",
+      "frontmatter": {
+        "type": "internal",
+        "level": "leaf",
+        "team": "it-support"
+      },
+      "content": "Hardware Procurement handles the purchasing, deployment, and lifecycle management of employee equipment. Standard configurations include MacBook Pro for engineers and MacBook Air for non-technical roles. The team manages inventory across three offices and handles shipping for remote employees. Equipment refresh cycles are set at three years. Decommissioned hardware is securely wiped and recycled through certified e-waste programs.",
+      "links": [],
+      "folder": "internal"
+    },
+    {
+      "path": "internal/office-network.md",
+      "title": "Office Network Management",
+      "frontmatter": {
+        "type": "internal",
+        "level": "leaf",
+        "team": "it-support"
+      },
+      "content": "Office Network Management maintains reliable and secure connectivity across all Acme Corp locations. Each office has redundant internet connections and enterprise wifi with WPA3 security. The network supports both corporate devices and a guest network for visitors. VPN access allows remote workers to reach internal resources. Network monitoring alerts on connectivity issues before they impact productivity.",
+      "links": [],
+      "folder": "internal"
+    },
+    {
+      "path": "internal/employee-tech-onboarding.md",
+      "title": "Employee Tech Onboarding",
+      "frontmatter": {
+        "type": "internal",
+        "level": "leaf",
+        "team": "it-support"
+      },
+      "content": "Employee Tech Onboarding ensures new hires have everything they need to be productive from day one. The process includes account provisioning, equipment setup, VPN configuration, and orientation to internal tools. An automated checklist tracks onboarding progress and notifies managers when their new team members are fully set up. The onboarding process has been refined to take less than two hours for standard engineering roles.",
+      "links": [],
+      "folder": "internal"
+    }
+  ],
+  "groundTruth": [
+    {
+      "notePath": "projects/esghub-core-services.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Title and content directly reference ESGHub as the parent project"
+    },
+    {
+      "notePath": "projects/esghub-core-services.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Content states 'written in TypeScript' without wikilink"
+    },
+    {
+      "notePath": "projects/esghub-core-services.md",
+      "entity": "Node.js",
+      "tier": 1,
+      "reason": "Content states 'running on Node.js' without wikilink"
+    },
+    {
+      "notePath": "projects/api-gateway.md",
+      "entity": "GraphQL",
+      "tier": 1,
+      "reason": "Content describes 'GraphQL subgraphs' and Apollo Gateway"
+    },
+    {
+      "notePath": "projects/api-gateway.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Title and content reference the ESGHub platform"
+    },
+    {
+      "notePath": "projects/auth-service.md",
+      "entity": "PostgreSQL",
+      "tier": 1,
+      "reason": "Content mentions 'its own PostgreSQL database'"
+    },
+    {
+      "notePath": "projects/auth-service.md",
+      "entity": "Acme Corp",
+      "tier": 2,
+      "reason": "Auth service serves all Acme Corp applications"
+    },
+    {
+      "notePath": "projects/shared-libraries.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Content describes 'reusable TypeScript packages'"
+    },
+    {
+      "notePath": "projects/shared-libraries.md",
+      "entity": "Code Review",
+      "tier": 2,
+      "reason": "Content mentions strict code review standards"
+    },
+    {
+      "notePath": "projects/esghub-dashboard.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Content states 'Built with React and TypeScript'"
+    },
+    {
+      "notePath": "projects/esghub-dashboard.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Content states 'Built with React and TypeScript'"
+    },
+    {
+      "notePath": "projects/datapipeline-core.md",
+      "entity": "Redis",
+      "tier": 1,
+      "reason": "Content mentions 'job queue backed by Redis'"
+    },
+    {
+      "notePath": "projects/datapipeline-core.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Content states 'Written in TypeScript on Node.js'"
+    },
+    {
+      "notePath": "projects/datapipeline-core.md",
+      "entity": "Node.js",
+      "tier": 1,
+      "reason": "Content states 'Written in TypeScript on Node.js'"
+    },
+    {
+      "notePath": "projects/data-warehouse.md",
+      "entity": "PostgreSQL",
+      "tier": 1,
+      "reason": "Content describes 'analytical data store built on PostgreSQL'"
+    },
+    {
+      "notePath": "projects/data-warehouse.md",
+      "entity": "ESGHub",
+      "tier": 2,
+      "reason": "Content mentions supporting ESGHub reporting module"
+    },
+    {
+      "notePath": "projects/esghub-mobile-app.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Content states 'Built with React Native'"
+    },
+    {
+      "notePath": "projects/esghub-mobile-app.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Content states 'React Native and TypeScript'"
+    },
+    {
+      "notePath": "research/model-serving-infra.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Content mentions 'custom TypeScript wrappers'"
+    },
+    {
+      "notePath": "research/model-serving-infra.md",
+      "entity": "ESGHub",
+      "tier": 2,
+      "reason": "Content mentions 'integration with ESGHub platform'"
+    },
+    {
+      "notePath": "research/research-api.md",
+      "entity": "REST",
+      "tier": 1,
+      "reason": "Content mentions 'simple REST endpoints'"
+    },
+    {
+      "notePath": "research/research-api.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Content mentions 'TypeScript client libraries'"
+    },
+    {
+      "notePath": "projects/churn-prediction.md",
+      "entity": "Machine Learning",
+      "tier": 1,
+      "reason": "Content describes 'machine learning to identify accounts'"
+    },
+    {
+      "notePath": "infrastructure/model-registry.md",
+      "entity": "CI/CD",
+      "tier": 2,
+      "reason": "Content mentions integration with CI/CD pipeline"
+    }
+  ]
+}

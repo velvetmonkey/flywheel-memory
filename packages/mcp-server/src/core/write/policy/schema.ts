@@ -223,8 +223,8 @@ export function validatePolicySchema(policy: unknown): PolicyValidationResult {
         const match = ref.match(/\{\{(?:variables\.)?(\w+)/);
         if (match) {
           const varName = match[1];
-          // Skip builtins
-          if (['now', 'today', 'time', 'date', 'conditions'].includes(varName)) {
+          // Skip builtins, conditions, and steps
+          if (['now', 'today', 'time', 'date', 'conditions', 'steps'].includes(varName)) {
             continue;
           }
           if (!varNames.has(varName)) {

@@ -73,12 +73,19 @@ async function executeStep(
   try {
     const result = await executeToolCall(step.tool, resolvedParams, vaultPath, context);
 
+    // Capture outputs from tool result
+    const outputs: Record<string, unknown> = {};
+    if (result.path) {
+      outputs.path = result.path;
+    }
+
     return {
       stepId: step.id,
       success: result.success,
       message: result.message,
       path: result.path,
       preview: result.preview,
+      outputs,
     };
   } catch (error) {
     return {
@@ -685,6 +692,11 @@ export async function executePolicy(
     // Track modified files
     if (result.path && result.success && !result.skipped) {
       filesModified.add(result.path);
+    }
+
+    // Capture step outputs for subsequent steps
+    if (result.success && !result.skipped && result.outputs) {
+      context.steps[step.id] = result.outputs;
     }
 
     // Fail-fast: stop on first error

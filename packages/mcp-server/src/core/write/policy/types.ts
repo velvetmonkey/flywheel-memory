@@ -127,6 +127,8 @@ export interface StepExecutionResult {
   path?: string;
   /** Preview of changes */
   preview?: string;
+  /** Outputs that can be referenced by subsequent steps via {{steps.stepId.outputKey}} */
+  outputs?: Record<string, unknown>;
 }
 
 /**
@@ -239,6 +241,8 @@ export interface PolicyContext {
     time: string;     // HH:MM
     date: string;     // Same as today for clarity
   };
+  /** Outputs from previous steps (for step chaining via {{steps.stepId.outputKey}}) */
+  steps: Record<string, Record<string, unknown>>;
 }
 
 /**

@@ -135,6 +135,7 @@ export function createContext(variables: Record<string, unknown> = {}): PolicyCo
       time: formatTime(now),
       date: formatDate(now),
     },
+    steps: {},
   };
 }
 
@@ -209,6 +210,10 @@ export function resolveExpression(expr: string, context: PolicyContext): unknown
     return resolvePath(context.builtins, trimmed.slice('builtins.'.length));
   }
 
+  if (trimmed.startsWith('steps.')) {
+    return resolvePath(context.steps, trimmed.slice('steps.'.length));
+  }
+
   // Default: look up in variables
   return resolvePath(context.variables, trimmed);
 }
@@ -271,7 +276,7 @@ export function extractExpressions(template: string): string[] {
 
 /**
  * Extract variable names referenced in a template
- * Returns only variable references (not conditions or builtins)
+ * Returns only variable references (not conditions, steps, or builtins)
  */
 export function extractVariableRefs(template: string): string[] {
   const expressions = extractExpressions(template);
@@ -286,8 +291,9 @@ export function extractVariableRefs(template: string): string[] {
     // Skip builtins
     if (builtins.includes(path)) continue;
 
-    // Skip conditions
+    // Skip conditions and steps
     if (path.startsWith('conditions.')) continue;
+    if (path.startsWith('steps.')) continue;
 
     // Remove variables. prefix if present
     const varName = path.startsWith('variables.')

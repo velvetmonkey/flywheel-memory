@@ -103,9 +103,13 @@ export function registerNoteTools(
           }
         }
 
-        // 3b. Ensure frontmatter always contains a date field
+        // 3b. Ensure frontmatter always contains date and created fields
+        const now = new Date();
         if (!effectiveFrontmatter.date) {
-          effectiveFrontmatter.date = new Date().toISOString().split('T')[0];
+          effectiveFrontmatter.date = now.toISOString().split('T')[0];
+        }
+        if (!effectiveFrontmatter.created) {
+          effectiveFrontmatter.created = now.toISOString();
         }
 
         // 3c. Note creation intelligence: preflight checks

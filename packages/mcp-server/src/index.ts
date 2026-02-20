@@ -14,8 +14,15 @@
  */
 
 import * as path from 'path';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const pkg = JSON.parse(readFileSync(join(__dirname, '../../../package.json'), 'utf-8'));
 // Core imports - Read
 import type { VaultIndex } from './core/read/types.js';
 import {
@@ -350,7 +357,7 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
 const server = new McpServer({
   name: 'flywheel-memory',
-  version: '2.0.0',
+  version: pkg.version,
 });
 
 // Monkey-patch server.tool() and server.registerTool() to gate by per-tool category
@@ -498,7 +505,7 @@ serverLog('server', `Registered ${_registeredCount} tools, skipped ${_skippedCou
 // ============================================================================
 
 async function main() {
-  serverLog('server', 'Starting Flywheel Memory server...');
+  serverLog('server', `Starting Flywheel Memory v${pkg.version}...`);
   serverLog('server', `Vault: ${vaultPath}`);
 
   const startTime = Date.now();

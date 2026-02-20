@@ -212,6 +212,7 @@ describe('Tool Count Verification', () => {
         'server_log',
         'suggest_entity_merges', 'dismiss_merge_suggestion',
         'suggest_entity_aliases', 'merge_entities',
+        'unlinked_mentions_report', 'discover_stub_candidates', 'discover_cooccurrence_gaps',
       ]);
 
       for (const tool of toolNames) {

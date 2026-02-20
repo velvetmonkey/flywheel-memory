@@ -7,7 +7,7 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 
 export interface AliasCandidate {
   candidate: string;
-  type: 'acronym' | 'short_form';
+  type: 'acronym' | 'short_form' | 'name_fragment';
 }
 
 export interface AliasSuggestion {
@@ -15,7 +15,7 @@ export interface AliasSuggestion {
   entity_path: string;
   current_aliases: string[];
   candidate: string;
-  type: 'acronym' | 'short_form';
+  type: 'acronym' | 'short_form' | 'name_fragment';
   mentions: number;
 }
 
@@ -41,6 +41,17 @@ function generateAliasCandidates(entityName: string, existingAliases: string[]):
       if (short.length >= 3 && !existing.has(short.toLowerCase())) {
         candidates.push({ candidate: short, type: 'short_form' });
       }
+    }
+
+    // Name fragments: individual words from multi-word names (skip stopwords and short words)
+    const STOPWORDS = new Set(['the', 'and', 'for', 'with', 'from', 'into', 'that', 'this', 'are', 'was', 'has', 'its']);
+    for (const word of words) {
+      if (word.length < 4) continue;
+      if (STOPWORDS.has(word.toLowerCase())) continue;
+      if (existing.has(word.toLowerCase())) continue;
+      // Skip the first word if it was already added as short_form
+      if (words.length >= 3 && word === words[0]) continue;
+      candidates.push({ candidate: word, type: 'name_fragment' });
     }
   }
 
@@ -92,6 +103,9 @@ export function suggestEntityAliases(
       } catch {
         // FTS5 query error — skip
       }
+
+      // Name fragments need higher mention threshold to reduce noise
+      if (type === 'name_fragment' && mentions < 5) continue;
 
       suggestions.push({
         entity: row.name,

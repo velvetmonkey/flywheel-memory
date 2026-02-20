@@ -1,6 +1,6 @@
 # The Scoring Algorithm
 
-When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 9 layers. Here's exactly how.
+When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 9 scoring layers (plus filtering, suppression, and adaptive thresholds). Here's exactly how.
 
 ---
 
@@ -184,10 +184,12 @@ When entity embeddings are available (built via `init_semantic`), candidates rec
 
 ## Strictness Modes
 
-Three modes control the precision/recall trade-off. Strictness is set per call site — not configurable by the user:
+Three modes control the precision/recall trade-off:
 
-- **Write mutations** (`vault_add_to_section`, `vault_replace_in_section`) use **conservative** — minimizes false positives when auto-linking
-- **`suggest_wikilinks`** with `detail: true` uses **balanced** — more permissive for exploration
+- **Default:** `conservative` — minimizes false positives when auto-linking
+- **Configurable:** Set `wikilink_strictness` in `flywheel_config` to `balanced` or `aggressive`
+- **Adaptive:** Set `adaptive_strictness: true` to auto-select `balanced` for daily notes while keeping `conservative` for everything else
+- **`suggest_wikilinks`** with `detail: true` always uses `balanced` for exploration
 
 | Setting | Conservative | Balanced | Aggressive |
 |---|---|---|---|

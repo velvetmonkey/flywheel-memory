@@ -15,6 +15,7 @@ import { suggestEntityAliases } from '../../core/read/aliasSuggestions.js';
 import { recordIndexEvent } from '../../core/shared/indexActivity.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
+import { countFTS5Mentions } from '../../core/read/fts5.js';
 
 /**
  * Register system/utility tools with the MCP server
@@ -746,6 +747,88 @@ export function registerSystemTools(
       const limited = suggestions.slice(0, limit);
 
       const output = { suggestion_count: limited.length, suggestions: limited };
+      return {
+        content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
+      };
+    }
+  );
+
+  // unlinked_mentions_report - Find entities with the most unlinked mentions vault-wide
+  server.registerTool(
+    'unlinked_mentions_report',
+    {
+      title: 'Unlinked Mentions Report',
+      description:
+        'Find which entities have the most unlinked mentions across the vault — highest-ROI linking opportunities. Uses FTS5 to count mentions and subtracts known wikilinks.',
+      inputSchema: {
+        limit: z.coerce.number().default(20).describe('Maximum entities to return (default 20)'),
+      },
+    },
+    async ({ limit: requestedLimit }): Promise<{
+      content: Array<{ type: 'text'; text: string }>;
+    }> => {
+      requireIndex();
+      const index = getIndex();
+      const limit = Math.min(requestedLimit ?? 20, 100);
+
+      // Build a map of entity path → linked mention count from index outlinks
+      const linkedCounts = new Map<string, number>();
+      for (const note of index.notes.values()) {
+        for (const link of note.outlinks) {
+          const key = link.target.toLowerCase();
+          linkedCounts.set(key, (linkedCounts.get(key) || 0) + 1);
+        }
+      }
+
+      // For each entity, count FTS5 mentions and subtract linked count
+      const results: Array<{
+        entity: string;
+        path: string;
+        total_mentions: number;
+        linked_mentions: number;
+        unlinked_mentions: number;
+      }> = [];
+
+      // Collect unique entities (deduplicate aliases pointing to same path)
+      const seen = new Set<string>();
+      for (const [name, entityPath] of index.entities) {
+        if (seen.has(entityPath)) continue;
+        seen.add(entityPath);
+
+        const totalMentions = countFTS5Mentions(name);
+        if (totalMentions === 0) continue;
+
+        // Count linked mentions: look up both the entity name and its path
+        const pathKey = entityPath.toLowerCase().replace(/\.md$/, '');
+        const linkedByName = linkedCounts.get(name) || 0;
+        const linkedByPath = linkedCounts.get(pathKey) || 0;
+        const linked = Math.max(linkedByName, linkedByPath);
+
+        const unlinked = Math.max(0, totalMentions - linked - 1); // -1 for self-mention
+        if (unlinked <= 0) continue;
+
+        // Use display name from the note title
+        const note = index.notes.get(entityPath);
+        const displayName = note?.title || name;
+
+        results.push({
+          entity: displayName,
+          path: entityPath,
+          total_mentions: totalMentions,
+          linked_mentions: linked,
+          unlinked_mentions: unlinked,
+        });
+      }
+
+      results.sort((a, b) => b.unlinked_mentions - a.unlinked_mentions);
+      const top = results.slice(0, limit);
+
+      const output = {
+        total_entities_checked: seen.size,
+        entities_with_unlinked: results.length,
+        top_entities: top,
+      };
+
       return {
         content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
       };

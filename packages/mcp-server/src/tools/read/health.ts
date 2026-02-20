@@ -105,6 +105,11 @@ export function registerHealthTools(
     embeddings_count: z.coerce.number().describe('Number of notes with semantic embeddings'),
     tasks_ready: z.boolean().describe('Whether the task cache is ready to serve queries'),
     tasks_building: z.boolean().describe('Whether the task cache is currently rebuilding'),
+    dead_link_count: z.coerce.number().describe('Total number of broken/dead wikilinks across the vault'),
+    top_dead_link_targets: z.array(z.object({
+      target: z.string().describe('The dead link target'),
+      mention_count: z.coerce.number().describe('How many notes reference this dead target'),
+    })).describe('Top 5 most-referenced dead link targets (highest-ROI candidates to create)'),
     recommendations: z.array(z.string()).describe('Suggested actions if any issues detected'),
   };
 
@@ -163,6 +168,8 @@ export function registerHealthTools(
     embeddings_count: number;
     tasks_ready: boolean;
     tasks_building: boolean;
+    dead_link_count: number;
+    top_dead_link_targets: Array<{ target: string; mention_count: number }>;
     recommendations: string[];
   };
 
@@ -324,6 +331,25 @@ export function registerHealthTools(
 
       const ftsState = getFTS5State();
 
+      // Dead link scan — lightweight, uses already-parsed index outlinks
+      let deadLinkCount = 0;
+      const deadTargetCounts = new Map<string, number>();
+      if (indexBuilt) {
+        for (const note of index.notes.values()) {
+          for (const link of note.outlinks) {
+            if (!resolveTarget(index, link.target)) {
+              deadLinkCount++;
+              const key = link.target.toLowerCase();
+              deadTargetCounts.set(key, (deadTargetCounts.get(key) || 0) + 1);
+            }
+          }
+        }
+      }
+      const topDeadLinkTargets = Array.from(deadTargetCounts.entries())
+        .map(([target, mention_count]) => ({ target, mention_count }))
+        .sort((a, b) => b.mention_count - a.mention_count)
+        .slice(0, 5);
+
       const output: HealthCheckOutput = {
         status,
         schema_version: SCHEMA_VERSION,
@@ -351,6 +377,8 @@ export function registerHealthTools(
         embeddings_count: getEmbeddingsCount(),
         tasks_ready: isTaskCacheReady(),
         tasks_building: isTaskCacheBuilding(),
+        dead_link_count: deadLinkCount,
+        top_dead_link_targets: topDeadLinkTargets,
         recommendations,
       };
 

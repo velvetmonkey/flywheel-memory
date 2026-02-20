@@ -267,6 +267,22 @@ export function getFTS5State(): FTS5State {
 }
 
 /**
+ * Count how many notes mention a term (exact phrase match via FTS5).
+ * Returns 0 if FTS5 is not ready or query fails.
+ */
+export function countFTS5Mentions(term: string): number {
+  if (!db) return 0;
+  try {
+    const result = db.prepare(
+      'SELECT COUNT(*) as cnt FROM notes_fts WHERE content MATCH ?'
+    ).get(`"${term}"`) as { cnt: number } | undefined;
+    return result?.cnt ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
  * Close the database connection
  * Note: With injected db, this is a no-op since the StateDb owns the connection.
  */

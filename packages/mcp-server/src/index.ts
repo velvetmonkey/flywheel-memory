@@ -36,7 +36,7 @@ import { exportHubScores } from './core/shared/hubExport.js';
 import { initializeLogger as initializeReadLogger, getLogger } from './core/read/logging.js';
 
 // Core imports - Write
-import { initializeEntityIndex, setWriteStateDb } from './core/write/wikilinks.js';
+import { initializeEntityIndex, setWriteStateDb, setWikilinkConfig } from './core/write/wikilinks.js';
 import { initializeLogger as initializeWriteLogger, flushLogs } from './core/write/logging.js';
 import { setFTS5Database, buildFTS5Index, isIndexStale } from './core/read/fts5.js';
 import {
@@ -448,7 +448,7 @@ registerReadSystemTools(
   () => vaultIndex,
   (newIndex) => { vaultIndex = newIndex; },
   () => vaultPath,
-  (newConfig) => { flywheelConfig = newConfig; },
+  (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
   () => stateDb
 );
 registerGraphTools(server, () => vaultIndex, () => vaultPath);
@@ -474,7 +474,7 @@ registerWikilinkFeedbackTools(server, () => stateDb);
 registerConfigTools(
   server,
   () => flywheelConfig,
-  (newConfig) => { flywheelConfig = newConfig; },
+  (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
   () => stateDb
 );
 
@@ -718,6 +718,7 @@ async function runPostIndexWork(index: VaultIndex) {
     saveConfig(stateDb, inferred, existing);
   }
   flywheelConfig = loadConfig(stateDb);
+  setWikilinkConfig(flywheelConfig);
   const configKeys = Object.keys(flywheelConfig).filter(k => (flywheelConfig as Record<string, unknown>)[k] != null);
   serverLog('config', `Config inferred: ${configKeys.join(', ')}`);
 

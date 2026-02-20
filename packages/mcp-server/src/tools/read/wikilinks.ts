@@ -9,7 +9,8 @@ import type { ScoredSuggestion } from '../../core/write/types.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { resolveTarget } from '../../core/read/graph.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
-import { suggestRelatedLinks } from '../../core/write/wikilinks.js';
+import { suggestRelatedLinks, getCooccurrenceIndex } from '../../core/write/wikilinks.js';
+import { countFTS5Mentions } from '../../core/read/fts5.js';
 
 /**
  * Match entity in text, avoiding existing wikilinks and code blocks
@@ -315,14 +316,15 @@ export function registerWikilinkTools(
           .optional()
           .describe('Path to a specific note to validate. If omitted, validates all notes.'),
         typos_only: z.boolean().default(false).describe('If true, only report broken links that have a similar existing note (likely typos)'),
+        group_by_target: z.boolean().default(false).describe('If true, aggregate dead links by target and rank by mention frequency. Returns targets[] instead of broken[].'),
         limit: z.coerce.number().default(50).describe('Maximum number of broken links to return'),
         offset: z.coerce.number().default(0).describe('Number of broken links to skip (for pagination)'),
       },
       outputSchema: ValidateLinksOutputSchema,
     },
-    async ({ path: notePath, typos_only, limit: requestedLimit, offset }): Promise<{
+    async ({ path: notePath, typos_only, group_by_target, limit: requestedLimit, offset }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
-      structuredContent: ValidateLinksOutput;
+      structuredContent: ValidateLinksOutput | Record<string, unknown>;
     }> => {
       const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
       const index = getIndex();
@@ -376,6 +378,49 @@ export function registerWikilinkTools(
         }
       }
 
+      // Group by target mode: aggregate and rank by frequency
+      if (group_by_target) {
+        const targetMap = new Map<string, { count: number; sources: Set<string>; suggestion?: string }>();
+        for (const broken of allBroken) {
+          const key = broken.target.toLowerCase();
+          const existing = targetMap.get(key);
+          if (existing) {
+            existing.count++;
+            if (existing.sources.size < 5) existing.sources.add(broken.source);
+            if (!existing.suggestion && broken.suggestion) existing.suggestion = broken.suggestion;
+          } else {
+            targetMap.set(key, {
+              count: 1,
+              sources: new Set([broken.source]),
+              suggestion: broken.suggestion,
+            });
+          }
+        }
+
+        const targets = Array.from(targetMap.entries())
+          .map(([target, data]) => ({
+            target,
+            mention_count: data.count,
+            sources: Array.from(data.sources),
+            ...(data.suggestion ? { suggestion: data.suggestion } : {}),
+          }))
+          .sort((a, b) => b.mention_count - a.mention_count)
+          .slice(offset, offset + limit);
+
+        const grouped = {
+          scope: notePath || 'all',
+          total_dead_targets: targetMap.size,
+          total_broken_links: allBroken.length,
+          returned_count: targets.length,
+          targets,
+        };
+
+        return {
+          content: [{ type: 'text', text: JSON.stringify(grouped, null, 2) }],
+          structuredContent: grouped,
+        };
+      }
+
       const broken = allBroken.slice(offset, offset + limit);
 
       const output: ValidateLinksOutput = {
@@ -395,6 +440,145 @@ export function registerWikilinkTools(
           },
         ],
         structuredContent: output,
+      };
+    }
+  );
+
+  // discover_stub_candidates - Find terms that are referenced frequently but have no note
+  server.registerTool(
+    'discover_stub_candidates',
+    {
+      title: 'Discover Stub Candidates',
+      description:
+        'Find terms referenced via dead wikilinks across the vault that have no backing note. These are "invisible concepts" — topics your vault considers important enough to link to but that don\'t have their own notes yet. Ranked by reference frequency.',
+      inputSchema: {
+        min_frequency: z.coerce.number().default(2).describe('Minimum number of references to include (default 2)'),
+        limit: z.coerce.number().default(20).describe('Maximum candidates to return (default 20)'),
+      },
+    },
+    async ({ min_frequency, limit: requestedLimit }): Promise<{
+      content: Array<{ type: 'text'; text: string }>;
+    }> => {
+      const index = getIndex();
+      const limit = Math.min(requestedLimit ?? 20, 100);
+      const minFreq = min_frequency ?? 2;
+
+      // Collect all dead link targets with their sources
+      const targetMap = new Map<string, { count: number; sources: Set<string> }>();
+      for (const note of index.notes.values()) {
+        for (const link of note.outlinks) {
+          if (!resolveTarget(index, link.target)) {
+            const key = link.target.toLowerCase();
+            const existing = targetMap.get(key);
+            if (existing) {
+              existing.count++;
+              if (existing.sources.size < 3) existing.sources.add(note.path);
+            } else {
+              targetMap.set(key, { count: 1, sources: new Set([note.path]) });
+            }
+          }
+        }
+      }
+
+      // Also check FTS5 for additional plain-text mentions of each dead target
+      const candidates = Array.from(targetMap.entries())
+        .filter(([, data]) => data.count >= minFreq)
+        .map(([target, data]) => {
+          const fts5Mentions = countFTS5Mentions(target);
+          return {
+            term: target,
+            wikilink_references: data.count,
+            content_mentions: fts5Mentions,
+            sample_notes: Array.from(data.sources),
+          };
+        })
+        .sort((a, b) => b.wikilink_references - a.wikilink_references)
+        .slice(0, limit);
+
+      const output = {
+        total_dead_targets: targetMap.size,
+        candidates_above_threshold: candidates.length,
+        candidates,
+      };
+
+      return {
+        content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
+      };
+    }
+  );
+
+  // discover_cooccurrence_gaps - Find entity pairs that co-occur but lack connecting notes
+  server.registerTool(
+    'discover_cooccurrence_gaps',
+    {
+      title: 'Discover Co-occurrence Gaps',
+      description:
+        'Find entity pairs that frequently co-occur across vault notes but where one or both entities lack a backing note. These represent relationship patterns worth making explicit with hub notes or links.',
+      inputSchema: {
+        min_cooccurrence: z.coerce.number().default(3).describe('Minimum co-occurrence count to include (default 3)'),
+        limit: z.coerce.number().default(20).describe('Maximum gaps to return (default 20)'),
+      },
+    },
+    async ({ min_cooccurrence, limit: requestedLimit }): Promise<{
+      content: Array<{ type: 'text'; text: string }>;
+    }> => {
+      const index = getIndex();
+      const coocIndex = getCooccurrenceIndex();
+      const limit = Math.min(requestedLimit ?? 20, 100);
+      const minCount = min_cooccurrence ?? 3;
+
+      if (!coocIndex) {
+        return {
+          content: [{ type: 'text', text: JSON.stringify({ error: 'Co-occurrence index not built yet. Wait for entity index initialization.' }) }],
+        };
+      }
+
+      const gaps: Array<{
+        entity_a: string;
+        entity_b: string;
+        cooccurrence_count: number;
+        a_has_note: boolean;
+        b_has_note: boolean;
+      }> = [];
+
+      // Deduplicate pairs (A↔B and B↔A are the same)
+      const seenPairs = new Set<string>();
+
+      for (const [entityA, associations] of Object.entries(coocIndex.associations)) {
+        for (const [entityB, count] of associations) {
+          if (count < minCount) continue;
+
+          const pairKey = [entityA, entityB].sort().join('||');
+          if (seenPairs.has(pairKey)) continue;
+          seenPairs.add(pairKey);
+
+          const aHasNote = resolveTarget(index, entityA) !== null;
+          const bHasNote = resolveTarget(index, entityB) !== null;
+
+          // Only report gaps where at least one entity lacks a note
+          if (aHasNote && bHasNote) continue;
+
+          gaps.push({
+            entity_a: entityA,
+            entity_b: entityB,
+            cooccurrence_count: count,
+            a_has_note: aHasNote,
+            b_has_note: bHasNote,
+          });
+        }
+      }
+
+      gaps.sort((a, b) => b.cooccurrence_count - a.cooccurrence_count);
+      const top = gaps.slice(0, limit);
+
+      const output = {
+        total_gaps: gaps.length,
+        returned_count: top.length,
+        gaps: top,
+      };
+
+      return {
+        content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
       };
     }
   );

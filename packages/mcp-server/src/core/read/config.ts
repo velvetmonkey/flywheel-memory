@@ -34,6 +34,14 @@ export interface FlywheelConfig {
   exclude_analysis_tags?: string[];
   exclude_entities?: string[];
   exclude_entity_folders?: string[];
+  /** Wikilink suggestion strictness: conservative (default), balanced, aggressive */
+  wikilink_strictness?: 'conservative' | 'balanced' | 'aggressive';
+  /** Enable implicit entity detection (dead wikilinks for proper nouns, camelCase, etc.) */
+  implicit_detection?: boolean;
+  /** Which implicit patterns to use (default: all 5) */
+  implicit_patterns?: string[];
+  /** Auto-select balanced strictness for daily notes */
+  adaptive_strictness?: boolean;
 }
 
 /** Default config for new vaults */

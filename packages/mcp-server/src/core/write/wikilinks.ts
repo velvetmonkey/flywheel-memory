@@ -46,6 +46,7 @@ import { setGitStateDb } from './git.js';
 import { setHintsStateDb } from './hints.js';
 import { setRecencyStateDb } from '../shared/recency.js';
 import path from 'path';
+import type { FlywheelConfig } from '../read/config.js';
 import type { SuggestOptions, SuggestResult, SuggestionConfig, StrictnessMode, NoteContext, ScoreBreakdown, ScoredSuggestion, ConfidenceLevel } from './types.js';
 import { stem, tokenize } from '../shared/stemmer.js';
 import {
@@ -86,6 +87,44 @@ export function setWriteStateDb(stateDb: StateDb | null): void {
  */
 export function getWriteStateDb(): StateDb | null {
   return moduleStateDb;
+}
+
+/**
+ * Module-level FlywheelConfig reference for wikilink behavior
+ */
+let moduleConfig: FlywheelConfig | null = null;
+
+const ALL_IMPLICIT_PATTERNS = ['proper-nouns', 'single-caps', 'quoted-terms', 'camel-case', 'acronyms'] as const;
+
+/** Set the FlywheelConfig for wikilink behavior (called at startup and on config change) */
+export function setWikilinkConfig(config: FlywheelConfig): void {
+  moduleConfig = config;
+}
+
+/** Get the configured strictness mode (default: conservative) */
+export function getWikilinkStrictness(): StrictnessMode {
+  return moduleConfig?.wikilink_strictness ?? 'conservative';
+}
+
+/**
+ * Get effective strictness, optionally adapting for note type.
+ * When adaptive_strictness is enabled, daily notes use 'balanced'.
+ */
+function getEffectiveStrictness(notePath?: string): StrictnessMode {
+  const base = getWikilinkStrictness();
+  if (!moduleConfig?.adaptive_strictness) return base;
+  if (base !== 'conservative') return base; // user already chose non-default, honor it
+  const context = notePath ? getNoteContext(notePath) : 'general';
+  if (context === 'daily') return 'balanced';
+  return base;
+}
+
+/**
+ * Get the co-occurrence index (if built).
+ * Used by discovery tools to find co-occurrence gaps.
+ */
+export function getCooccurrenceIndex(): CooccurrenceIndex | null {
+  return cooccurrenceIndex;
 }
 
 /**
@@ -373,9 +412,13 @@ export function processWikilinks(content: string, notePath?: string): WikilinkRe
   });
 
   // Step 3: Detect implicit entities (dead wikilinks for unrecognized proper nouns, camelCase, acronyms)
+  const implicitEnabled = moduleConfig?.implicit_detection !== false; // default: true
+  const implicitPatterns = moduleConfig?.implicit_patterns?.length
+    ? moduleConfig.implicit_patterns
+    : [...ALL_IMPLICIT_PATTERNS];
   const implicitMatches = detectImplicitEntities(result.content, {
-    detectImplicit: true,
-    implicitPatterns: ['proper-nouns', 'single-caps', 'quoted-terms', 'camel-case', 'acronyms'],
+    detectImplicit: implicitEnabled,
+    implicitPatterns: implicitPatterns as string[],
     minEntityLength: 3,
   });
 
@@ -1086,7 +1129,7 @@ export async function suggestRelatedLinks(
   const {
     maxSuggestions = 3,
     excludeLinked = true,
-    strictness = DEFAULT_STRICTNESS,
+    strictness = getEffectiveStrictness(options.notePath),
     notePath,
     detail = false,
   } = options;

@@ -34,22 +34,25 @@ export interface FlywheelConfig {
   exclude_analysis_tags?: string[];
   exclude_entities?: string[];
   exclude_entity_folders?: string[];
-  /** Wikilink suggestion strictness: conservative (default), balanced, aggressive */
+  /** Wikilink suggestion strictness: conservative, balanced (default), aggressive */
   wikilink_strictness?: 'conservative' | 'balanced' | 'aggressive';
-  /** Enable implicit entity detection (dead wikilinks for proper nouns, camelCase, etc.) */
+  /** Enable implicit entity detection — dead wikilinks for proper nouns, camelCase, etc. (default: true) */
   implicit_detection?: boolean;
   /** Which implicit patterns to use (default: all 5) */
   implicit_patterns?: string[];
-  /** Auto-select balanced strictness for daily notes */
+  /** Auto-select aggressive strictness for daily notes (default: true) */
   adaptive_strictness?: boolean;
 }
 
-/** Default config for new vaults */
+/** Default config for new vaults — opinionated: aggressive linking by default, opt out to dial back */
 const DEFAULT_CONFIG: FlywheelConfig = {
   exclude_task_tags: [],
   exclude_analysis_tags: [],
   exclude_entities: [],
   exclude_entity_folders: [],
+  wikilink_strictness: 'balanced',
+  implicit_detection: true,
+  adaptive_strictness: true,
 };
 
 /**

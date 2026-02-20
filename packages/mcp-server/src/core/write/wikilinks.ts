@@ -101,21 +101,23 @@ export function setWikilinkConfig(config: FlywheelConfig): void {
   moduleConfig = config;
 }
 
-/** Get the configured strictness mode (default: conservative) */
+/** Get the configured strictness mode (default: balanced) */
 export function getWikilinkStrictness(): StrictnessMode {
-  return moduleConfig?.wikilink_strictness ?? 'conservative';
+  return moduleConfig?.wikilink_strictness ?? 'balanced';
 }
 
 /**
- * Get effective strictness, optionally adapting for note type.
- * When adaptive_strictness is enabled, daily notes use 'balanced'.
+ * Get effective strictness, adapting for note type.
+ * Default: balanced everywhere, aggressive for daily notes.
+ * When adaptive_strictness is enabled (default), daily notes use aggressive
+ * to maximize link discovery on quick captures.
  */
 function getEffectiveStrictness(notePath?: string): StrictnessMode {
   const base = getWikilinkStrictness();
-  if (!moduleConfig?.adaptive_strictness) return base;
-  if (base !== 'conservative') return base; // user already chose non-default, honor it
+  if (moduleConfig?.adaptive_strictness === false) return base;
+  // Adaptive is on by default — daily notes get aggressive
   const context = notePath ? getNoteContext(notePath) : 'general';
-  if (context === 'daily') return 'balanced';
+  if (context === 'daily') return 'aggressive';
   return base;
 }
 

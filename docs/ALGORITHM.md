@@ -186,9 +186,9 @@ When entity embeddings are available (built via `init_semantic`), candidates rec
 
 Three modes control the precision/recall trade-off:
 
-- **Default:** `conservative` — minimizes false positives when auto-linking
-- **Configurable:** Set `wikilink_strictness` in `flywheel_config` to `balanced` or `aggressive`
-- **Adaptive:** Set `adaptive_strictness: true` to auto-select `balanced` for daily notes while keeping `conservative` for everything else
+- **Default:** `balanced` — opinionated toward link discovery, opt out to `conservative` if too noisy
+- **Configurable:** Set `wikilink_strictness` in `flywheel_config` to `conservative` or `aggressive`
+- **Adaptive (on by default):** Daily notes auto-escalate to `aggressive` for maximum capture. Set `adaptive_strictness: false` to disable.
 - **`suggest_wikilinks`** with `detail: true` always uses `balanced` for exploration
 
 | Setting | Conservative | Balanced | Aggressive |
@@ -199,11 +199,11 @@ Three modes control the precision/recall trade-off:
 | `stemMatchBonus` | 3 | 5 | 6 |
 | `exactMatchBonus` | 10 | 10 | 10 |
 
-**Conservative** (default) requires either an exact word match plus a stem match, or strong contextual signals. Single-word entities must have at least one exact match -- stem-only matches are rejected. This minimizes false positives at the cost of missing some valid suggestions.
+**Conservative** requires either an exact word match plus a stem match, or strong contextual signals. Single-word entities must have at least one exact match -- stem-only matches are rejected. Opt into this with `wikilink_strictness: 'conservative'` if link noise is too high.
 
-**Balanced** accepts any entity that passes a single exact match or two stem matches. Good for vaults with well-curated entity names.
+**Balanced** (default) accepts any entity that passes a single exact match or two stem matches. The sweet spot for most vaults -- enough coverage to build a dense graph without flooding notes with weak links.
 
-**Aggressive** accepts single stem matches. Maximizes recall for discovery-oriented workflows, but may suggest loosely related entities.
+**Aggressive** accepts single stem matches. Used automatically for daily notes via adaptive strictness. Daily captures are low-stakes and benefit from maximum recall -- the feedback loop (Layer 8) self-corrects bad suggestions over time.
 
 ---
 

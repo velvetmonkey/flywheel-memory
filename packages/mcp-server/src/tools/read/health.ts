@@ -16,6 +16,7 @@ import { getFTS5State } from '../../core/read/fts5.js';
 import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount } from '../../core/read/embeddings.js';
 import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache.js';
 import { getServerLog, type LogEntry } from '../../core/shared/serverLog.js';
+import { getSweepResults, type SweepResults } from '../../core/read/sweep.js';
 
 /** Staleness threshold in seconds (5 minutes) */
 const STALE_THRESHOLD_SECONDS = 300;
@@ -110,6 +111,21 @@ export function registerHealthTools(
       target: z.string().describe('The dead link target'),
       mention_count: z.coerce.number().describe('How many notes reference this dead target'),
     })).describe('Top 5 most-referenced dead link targets (highest-ROI candidates to create)'),
+    sweep: z.object({
+      last_sweep_at: z.number().describe('When the last background sweep completed (ms epoch)'),
+      sweep_duration_ms: z.number().describe('How long the last sweep took'),
+      dead_link_count: z.number().describe('Dead links found by sweep'),
+      top_dead_targets: z.array(z.object({
+        target: z.string(),
+        wikilink_references: z.number(),
+        content_mentions: z.number(),
+      })).describe('Top dead link targets with FTS5 content mention counts'),
+      top_unlinked_entities: z.array(z.object({
+        entity: z.string(),
+        path: z.string(),
+        unlinked_mentions: z.number(),
+      })).describe('Entities with the most unlinked plain-text mentions'),
+    }).optional().describe('Background sweep results (graph hygiene metrics, updated every 5 min)'),
     recommendations: z.array(z.string()).describe('Suggested actions if any issues detected'),
   };
 
@@ -170,6 +186,7 @@ export function registerHealthTools(
     tasks_building: boolean;
     dead_link_count: number;
     top_dead_link_targets: Array<{ target: string; mention_count: number }>;
+    sweep?: SweepResults;
     recommendations: string[];
   };
 
@@ -379,6 +396,7 @@ export function registerHealthTools(
         tasks_building: isTaskCacheBuilding(),
         dead_link_count: deadLinkCount,
         top_dead_link_targets: topDeadLinkTargets,
+        sweep: getSweepResults() ?? undefined,
         recommendations,
       };
 

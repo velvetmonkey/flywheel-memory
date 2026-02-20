@@ -95,6 +95,9 @@ import { registerSimilarityTools } from './tools/read/similarity.js';
 import { registerSemanticTools } from './tools/read/semantic.js';
 import { registerMergeTools as registerReadMergeTools } from './tools/read/merges.js';
 
+// Core imports - Sweep
+import { startSweepTimer } from './core/read/sweep.js';
+
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
 
@@ -986,6 +989,10 @@ async function runPostIndexWork(index: VaultIndex) {
     watcher.start();
     serverLog('watcher', 'File watcher started');
   }
+
+  // Start periodic sweep for graph hygiene metrics
+  startSweepTimer(() => vaultIndex);
+  serverLog('server', 'Sweep timer started (5 min interval)');
 
   const postDuration = Date.now() - postStart;
   serverLog('server', `Post-index work complete in ${postDuration}ms`);

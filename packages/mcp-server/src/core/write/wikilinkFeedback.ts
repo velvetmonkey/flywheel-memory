@@ -31,7 +31,7 @@ export interface EntityStats {
 }
 
 export interface FeedbackResult {
-  mode: 'report' | 'list' | 'stats' | 'dashboard';
+  mode: 'report' | 'list' | 'stats' | 'dashboard' | 'entity_timeline' | 'layer_timeseries' | 'snapshot_diff';
   reported?: { entity: string; correct: boolean; suppression_updated: boolean };
   entries?: FeedbackEntry[];
   stats?: EntityStats[];
@@ -906,6 +906,261 @@ export function getEntityJourney(
     stages: { discover, suggest, apply, learn, adapt },
   };
 }
+
+// =============================================================================
+// DEEP OBSERVABILITY APIs (Phase 4)
+// =============================================================================
+
+/** Score timeline entry for a single entity */
+export interface EntityScoreTimelineEntry {
+  timestamp: number;
+  score: number;
+  breakdown: SuggestionBreakdown;
+  notePath: string;
+  passed: boolean;
+  threshold: number;
+}
+
+/** Layer contribution for a time bucket */
+export interface LayerContributionBucket {
+  bucket: string;
+  layers: Record<string, number>;
+}
+
+/**
+ * 4.1 Get an entity's score timeline from suggestion_events.
+ * Returns chronological score history for visualization.
+ */
+export function getEntityScoreTimeline(
+  stateDb: StateDb,
+  entityName: string,
+  daysBack: number = 30,
+  limit: number = 100,
+): EntityScoreTimelineEntry[] {
+  const cutoff = Date.now() - (daysBack * 24 * 60 * 60 * 1000);
+
+  const rows = stateDb.db.prepare(`
+    SELECT timestamp, total_score, breakdown_json, note_path, passed, threshold
+    FROM suggestion_events
+    WHERE entity = ? AND timestamp >= ?
+    ORDER BY timestamp ASC
+    LIMIT ?
+  `).all(entityName, cutoff, limit) as Array<{
+    timestamp: number;
+    total_score: number;
+    breakdown_json: string;
+    note_path: string;
+    passed: number;
+    threshold: number;
+  }>;
+
+  return rows.map(r => ({
+    timestamp: r.timestamp,
+    score: r.total_score,
+    breakdown: JSON.parse(r.breakdown_json) as SuggestionBreakdown,
+    notePath: r.note_path,
+    passed: r.passed === 1,
+    threshold: r.threshold,
+  }));
+}
+
+/**
+ * 4.3 Get per-layer contribution averages bucketed by day or week.
+ * Aggregates breakdown_json from suggestion_events.
+ */
+export function getLayerContributionTimeseries(
+  stateDb: StateDb,
+  granularity: 'day' | 'week' = 'day',
+  daysBack: number = 30,
+): LayerContributionBucket[] {
+  const cutoff = Date.now() - (daysBack * 24 * 60 * 60 * 1000);
+
+  const rows = stateDb.db.prepare(`
+    SELECT timestamp, breakdown_json
+    FROM suggestion_events
+    WHERE timestamp >= ?
+    ORDER BY timestamp ASC
+  `).all(cutoff) as Array<{ timestamp: number; breakdown_json: string }>;
+
+  // Group by bucket
+  const buckets = new Map<string, { count: number; layers: Record<string, number> }>();
+
+  for (const row of rows) {
+    const date = new Date(row.timestamp);
+    let bucket: string;
+    if (granularity === 'week') {
+      // ISO week: YYYY-Www
+      const jan4 = new Date(date.getFullYear(), 0, 4);
+      const weekNum = Math.ceil(((date.getTime() - jan4.getTime()) / 86400000 + jan4.getDay() + 1) / 7);
+      bucket = `${date.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+    } else {
+      bucket = date.toISOString().slice(0, 10);
+    }
+
+    if (!buckets.has(bucket)) {
+      buckets.set(bucket, { count: 0, layers: {} });
+    }
+    const acc = buckets.get(bucket)!;
+    acc.count++;
+
+    const breakdown = JSON.parse(row.breakdown_json) as SuggestionBreakdown;
+    const layerMap: Record<string, number> = {
+      contentMatch: breakdown.contentMatch,
+      cooccurrenceBoost: breakdown.cooccurrenceBoost,
+      typeBoost: breakdown.typeBoost,
+      contextBoost: breakdown.contextBoost,
+      recencyBoost: breakdown.recencyBoost,
+      crossFolderBoost: breakdown.crossFolderBoost,
+      hubBoost: breakdown.hubBoost,
+      feedbackAdjustment: breakdown.feedbackAdjustment,
+    };
+    if (breakdown.semanticBoost !== undefined) {
+      layerMap.semanticBoost = breakdown.semanticBoost;
+    }
+
+    for (const [layer, value] of Object.entries(layerMap)) {
+      acc.layers[layer] = (acc.layers[layer] ?? 0) + value;
+    }
+  }
+
+  // Convert sums to averages
+  const result: LayerContributionBucket[] = [];
+  for (const [bucket, acc] of buckets) {
+    const avgLayers: Record<string, number> = {};
+    for (const [layer, sum] of Object.entries(acc.layers)) {
+      avgLayers[layer] = Math.round((sum / acc.count) * 1000) / 1000;
+    }
+    result.push({ bucket, layers: avgLayers });
+  }
+
+  return result;
+}
+
+/**
+ * 4.4 Extended dashboard data — additional fields for crank visualization.
+ */
+export interface ExtendedDashboardData extends DashboardData {
+  layerHealth: Array<{
+    layer: string;
+    status: 'contributing' | 'dormant' | 'zero-data';
+    avgContribution: number;
+    eventCount: number;
+  }>;
+  topEntities: Array<{
+    entity: string;
+    suggestionCount: number;
+    avgScore: number;
+    passRate: number;
+  }>;
+  feedbackTrend: Array<{
+    day: string;
+    count: number;
+  }>;
+  suppressionChanges: Array<{
+    entity: string;
+    falsePositiveRate: number;
+    updatedAt: string;
+  }>;
+}
+
+/**
+ * Get extended dashboard data with observability fields.
+ */
+export function getExtendedDashboardData(stateDb: StateDb): ExtendedDashboardData {
+  const base = getDashboardData(stateDb);
+
+  // Layer health: analyze recent suggestion_events for per-layer contribution
+  const recentCutoff = Date.now() - (7 * 24 * 60 * 60 * 1000); // last 7 days
+  const eventRows = stateDb.db.prepare(`
+    SELECT breakdown_json FROM suggestion_events WHERE timestamp >= ?
+  `).all(recentCutoff) as Array<{ breakdown_json: string }>;
+
+  const layerSums: Record<string, { sum: number; count: number }> = {};
+  const LAYER_NAMES = [
+    'contentMatch', 'cooccurrenceBoost', 'typeBoost', 'contextBoost',
+    'recencyBoost', 'crossFolderBoost', 'hubBoost', 'feedbackAdjustment', 'semanticBoost',
+  ];
+  for (const name of LAYER_NAMES) {
+    layerSums[name] = { sum: 0, count: 0 };
+  }
+
+  for (const row of eventRows) {
+    const breakdown = JSON.parse(row.breakdown_json) as SuggestionBreakdown;
+    for (const name of LAYER_NAMES) {
+      const val = (breakdown as Record<string, number | undefined>)[name];
+      if (val !== undefined) {
+        layerSums[name].sum += Math.abs(val);
+        layerSums[name].count++;
+      }
+    }
+  }
+
+  const layerHealth = LAYER_NAMES.map(layer => {
+    const s = layerSums[layer];
+    const avg = s.count > 0 ? Math.round((s.sum / s.count) * 1000) / 1000 : 0;
+    let status: 'contributing' | 'dormant' | 'zero-data';
+    if (s.count === 0) status = 'zero-data';
+    else if (avg > 0) status = 'contributing';
+    else status = 'dormant';
+    return { layer, status, avgContribution: avg, eventCount: s.count };
+  });
+
+  // Top entities by suggestion frequency
+  const topEntityRows = stateDb.db.prepare(`
+    SELECT entity, COUNT(*) as cnt, AVG(total_score) as avg_score,
+           SUM(CASE WHEN passed = 1 THEN 1 ELSE 0 END) * 1.0 / COUNT(*) as pass_rate
+    FROM suggestion_events
+    GROUP BY entity
+    ORDER BY cnt DESC
+    LIMIT 10
+  `).all() as Array<{ entity: string; cnt: number; avg_score: number; pass_rate: number }>;
+
+  const topEntities = topEntityRows.map(r => ({
+    entity: r.entity,
+    suggestionCount: r.cnt,
+    avgScore: Math.round(r.avg_score * 100) / 100,
+    passRate: Math.round(r.pass_rate * 1000) / 1000,
+  }));
+
+  // Feedback trend: count per day (last 30 days)
+  const feedbackTrendRows = stateDb.db.prepare(`
+    SELECT date(created_at) as day, COUNT(*) as count
+    FROM wikilink_feedback
+    WHERE created_at >= datetime('now', '-30 days')
+    GROUP BY day
+    ORDER BY day
+  `).all() as Array<{ day: string; count: number }>;
+
+  const feedbackTrend = feedbackTrendRows.map(r => ({
+    day: r.day,
+    count: r.count,
+  }));
+
+  // Suppression changes: all current suppressions with timestamps
+  const suppressionRows = stateDb.db.prepare(`
+    SELECT entity, false_positive_rate, updated_at
+    FROM wikilink_suppressions
+    ORDER BY updated_at DESC
+  `).all() as Array<{ entity: string; false_positive_rate: number; updated_at: string }>;
+
+  const suppressionChanges = suppressionRows.map(r => ({
+    entity: r.entity,
+    falsePositiveRate: r.false_positive_rate,
+    updatedAt: r.updated_at,
+  }));
+
+  return {
+    ...base,
+    layerHealth,
+    topEntities,
+    feedbackTrend,
+    suppressionChanges,
+  };
+}
+
+// =============================================================================
+// PIPELINE OBSERVABILITY — Action Attribution
+// =============================================================================
 
 /**
  * Generate a human-readable reason string explaining an action in the pipeline.

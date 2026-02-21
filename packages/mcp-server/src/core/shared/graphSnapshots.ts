@@ -372,6 +372,102 @@ export function getEmergingHubs(
 }
 
 // =============================================================================
+// SNAPSHOT COMPARISON (Phase 4.2)
+// =============================================================================
+
+export interface SnapshotDiff {
+  metricChanges: Array<{
+    metric: string;
+    before: number;
+    after: number;
+    delta: number;
+    deltaPercent: number;
+  }>;
+  hubScoreChanges: Array<{
+    entity: string;
+    before: number;
+    after: number;
+    delta: number;
+  }>;
+}
+
+/**
+ * Compare two graph snapshots by timestamp.
+ * Returns metric-level and hub-level diffs.
+ */
+export function compareGraphSnapshots(
+  stateDb: StateDb,
+  timestampBefore: number,
+  timestampAfter: number,
+): SnapshotDiff {
+  const SCALAR_METRICS = ['avg_degree', 'max_degree', 'cluster_count', 'largest_cluster_size'];
+
+  // Get snapshot rows closest to each timestamp
+  function getSnapshotAt(ts: number) {
+    // Find the actual snapshot timestamp closest to (and <=) the requested timestamp
+    const row = stateDb.db.prepare(
+      `SELECT DISTINCT timestamp FROM graph_snapshots WHERE timestamp <= ? ORDER BY timestamp DESC LIMIT 1`
+    ).get(ts) as { timestamp: number } | undefined;
+    if (!row) return null;
+
+    const rows = stateDb.db.prepare(
+      `SELECT metric, value, details FROM graph_snapshots WHERE timestamp = ?`
+    ).all(row.timestamp) as Array<{ metric: string; value: number; details: string | null }>;
+    return rows;
+  }
+
+  const beforeRows = getSnapshotAt(timestampBefore) ?? [];
+  const afterRows = getSnapshotAt(timestampAfter) ?? [];
+
+  // Build maps
+  const beforeMap = new Map<string, { value: number; details: string | null }>();
+  const afterMap = new Map<string, { value: number; details: string | null }>();
+  for (const r of beforeRows) beforeMap.set(r.metric, { value: r.value, details: r.details });
+  for (const r of afterRows) afterMap.set(r.metric, { value: r.value, details: r.details });
+
+  // Scalar metric changes
+  const metricChanges = SCALAR_METRICS.map(metric => {
+    const before = beforeMap.get(metric)?.value ?? 0;
+    const after = afterMap.get(metric)?.value ?? 0;
+    const delta = after - before;
+    const deltaPercent = before !== 0
+      ? Math.round((delta / before) * 10000) / 100
+      : (delta !== 0 ? 100 : 0);
+    return { metric, before, after, delta, deltaPercent };
+  });
+
+  // Hub score changes
+  const beforeHubs: Array<{ entity: string; degree: number }> =
+    beforeMap.get('hub_scores_top10')?.details
+      ? JSON.parse(beforeMap.get('hub_scores_top10')!.details!)
+      : [];
+  const afterHubs: Array<{ entity: string; degree: number }> =
+    afterMap.get('hub_scores_top10')?.details
+      ? JSON.parse(afterMap.get('hub_scores_top10')!.details!)
+      : [];
+
+  const beforeHubMap = new Map<string, number>();
+  for (const h of beforeHubs) beforeHubMap.set(h.entity, h.degree);
+
+  const afterHubMap = new Map<string, number>();
+  for (const h of afterHubs) afterHubMap.set(h.entity, h.degree);
+
+  // Union of all entities in either snapshot
+  const allHubEntities = new Set([...beforeHubMap.keys(), ...afterHubMap.keys()]);
+  const hubScoreChanges: SnapshotDiff['hubScoreChanges'] = [];
+  for (const entity of allHubEntities) {
+    const before = beforeHubMap.get(entity) ?? 0;
+    const after = afterHubMap.get(entity) ?? 0;
+    if (before !== after) {
+      hubScoreChanges.push({ entity, before, after, delta: after - before });
+    }
+  }
+  hubScoreChanges.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+
+  return { metricChanges, hubScoreChanges };
+}
+
+// =============================================================================
 // MAINTENANCE
 // =============================================================================
 

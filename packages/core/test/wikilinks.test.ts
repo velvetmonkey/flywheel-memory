@@ -173,6 +173,36 @@ Learn React here`;
     expect(result.linksAdded).toBe(0);
   });
 
+  describe('bracket-adjacent filtering', () => {
+    it('does not insert wikilinks adjacent to closing parenthesis', () => {
+      const content = '("You\'ve got momentum, focus on X today")';
+      const result = applyWikilinks(content, ['today']);
+      expect(result.content).toBe(content);
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it('does not insert wikilinks adjacent to opening bracket', () => {
+      const content = 'This is a [test] example';
+      const result = applyWikilinks(content, ['test']);
+      expect(result.content).toBe(content);
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it('still links entities surrounded by spaces', () => {
+      const content = 'We discussed React the progress';
+      const result = applyWikilinks(content, ['React']);
+      expect(result.content).toBe('We discussed [[React]] the progress');
+      expect(result.linksAdded).toBe(1);
+    });
+
+    it('does not insert wikilinks adjacent to curly braces', () => {
+      const content = 'The value is {test} here';
+      const result = applyWikilinks(content, ['test']);
+      expect(result.content).toBe(content);
+      expect(result.linksAdded).toBe(0);
+    });
+  });
+
   describe('alias matching', () => {
     it('should match entity via alias and use display text format', () => {
       const content = 'The PRD is ready for review';

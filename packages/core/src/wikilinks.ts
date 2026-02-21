@@ -70,6 +70,8 @@ function shouldExcludeEntity(entity: string): boolean {
 /**
  * Find all matches of an entity in content with word boundaries
  */
+const BRACKET_CHARS = new Set(['(', ')', '[', ']', '{', '}']);
+
 function findEntityMatches(
   content: string,
   entity: string,
@@ -83,9 +85,15 @@ function findEntityMatches(
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(content)) !== null) {
+    const start = match.index;
+    const end = start + match[0].length;
+    const charBefore = start > 0 ? content[start - 1] : '';
+    const charAfter = end < content.length ? content[end] : '';
+    if (BRACKET_CHARS.has(charBefore) || BRACKET_CHARS.has(charAfter)) continue;
+
     matches.push({
-      start: match.index,
-      end: match.index + match[0].length,
+      start,
+      end,
       matched: match[0],
     });
   }

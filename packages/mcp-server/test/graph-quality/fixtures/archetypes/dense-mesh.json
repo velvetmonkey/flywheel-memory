@@ -352,9 +352,100 @@
       "path": "frontend/vite-config.md",
       "aliases": [],
       "hubScore": 9
+    },
+    {
+      "name": "David Chen",
+      "category": "people",
+      "path": "people/david-chen.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "ESGHub",
+      "category": "projects",
+      "path": "projects/esghub.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "technologies",
+      "path": "technologies/postgresql.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "Redis",
+      "category": "technologies",
+      "path": "technologies/redis.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "DataPipeline",
+      "category": "projects",
+      "path": "projects/datapipeline.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Sarah O'Brien",
+      "category": "people",
+      "path": "people/sarah-obrien.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Marcus Johnson",
+      "category": "people",
+      "path": "people/marcus-johnson.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Kubernetes",
+      "category": "technologies",
+      "path": "technologies/kubernetes.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Docker",
+      "category": "technologies",
+      "path": "technologies/docker.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "CI/CD",
+      "category": "concepts",
+      "path": "concepts/cicd.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Acme Corp",
+      "category": "organizations",
+      "path": "organizations/acme-corp.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Agile Methodology",
+      "category": "concepts",
+      "path": "concepts/agile-methodology.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Board of Directors",
+      "category": "organizations",
+      "path": "organizations/board-of-directors.md",
+      "aliases": [],
+      "hubScore": 1
     }
   ],
-  "noteCount": 50,
+  "noteCount": 63,
   "topology": {
     "clusterCount": 5,
     "notesPerCluster": 10,
@@ -1411,6 +1502,149 @@
         "Decision Log Process"
       ],
       "folder": "leadership"
+    },
+    {
+      "path": "people/david-chen.md",
+      "title": "David Chen",
+      "frontmatter": {
+        "type": "person",
+        "cluster": "people"
+      },
+      "content": "David Chen is a senior staff engineer who established the frontend component architecture and API design guidelines. He has been with the company for over six years and mentors junior engineers across multiple teams. David specializes in TypeScript patterns and scalable system design.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "projects/esghub.md",
+      "title": "ESGHub",
+      "frontmatter": {
+        "type": "project",
+        "cluster": "projects"
+      },
+      "content": "ESGHub is the company's primary environmental, social, and governance reporting platform. It serves as the main consumer of the backend API services and drives many of the API design decisions. The platform handles regulatory compliance data for enterprise clients.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "technologies/postgresql.md",
+      "title": "PostgreSQL",
+      "frontmatter": {
+        "type": "technology",
+        "cluster": "technologies"
+      },
+      "content": "PostgreSQL is the primary relational database used across backend services. It handles transactional data storage, complex queries, and supports the Prisma ORM layer. The database runs in high-availability configuration with read replicas for analytics workloads.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/redis.md",
+      "title": "Redis",
+      "frontmatter": {
+        "type": "technology",
+        "cluster": "technologies"
+      },
+      "content": "Redis serves as the in-memory data store for caching, rate limiting counters, and job queue backends. It is deployed in a clustered configuration for high availability. Redis is used extensively by both the backend API layer and the data processing pipeline.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "projects/datapipeline.md",
+      "title": "DataPipeline",
+      "frontmatter": {
+        "type": "project",
+        "cluster": "projects"
+      },
+      "content": "DataPipeline is the internal project name for the ETL system that moves data from external sources into the analytics warehouse. It processes millions of records daily and supports both batch and streaming ingestion modes. The system is maintained by the data engineering team.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "people/sarah-obrien.md",
+      "title": "Sarah O'Brien",
+      "frontmatter": {
+        "type": "person",
+        "cluster": "people"
+      },
+      "content": "Sarah O'Brien is the data engineering team lead responsible for the ETL pipeline infrastructure. She has deep expertise in distributed data processing and warehouse architecture. Sarah drives the data quality and pipeline reliability initiatives across the organization.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/marcus-johnson.md",
+      "title": "Marcus Johnson",
+      "frontmatter": {
+        "type": "person",
+        "cluster": "people"
+      },
+      "content": "Marcus Johnson leads the DevOps team and is responsible for the Terraform module library and infrastructure automation. He has extensive experience with cloud infrastructure and infrastructure-as-code practices. Marcus champions the GitOps workflow adopted by the engineering organization.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "technologies/kubernetes.md",
+      "title": "Kubernetes",
+      "frontmatter": {
+        "type": "technology",
+        "cluster": "technologies"
+      },
+      "content": "Kubernetes is the container orchestration platform used for all production workloads. It provides namespace isolation, resource management, and service discovery across the infrastructure. The cluster is managed through Terraform modules and GitOps deployment workflows.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/docker.md",
+      "title": "Docker",
+      "frontmatter": {
+        "type": "technology",
+        "cluster": "technologies"
+      },
+      "content": "Docker is used for containerizing all application services and managing image lifecycles. Container images are stored in the internal registry and deployed to Kubernetes clusters. Docker builds are automated through the CI pipeline and follow standardized base image conventions.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "concepts/cicd.md",
+      "title": "CI/CD",
+      "frontmatter": {
+        "type": "concept",
+        "cluster": "concepts"
+      },
+      "content": "CI/CD encompasses the continuous integration and continuous deployment practices used across all engineering teams. The pipeline automates testing, building, and deploying applications through the GitOps workflow. It ensures code quality and rapid, reliable delivery of changes to production.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "organizations/acme-corp.md",
+      "title": "Acme Corp",
+      "frontmatter": {
+        "type": "organization",
+        "cluster": "organizations"
+      },
+      "content": "Acme Corp is the parent organization that encompasses all engineering teams and business units. Company-level processes such as quarterly planning, budget allocation, and strategic goal setting are coordinated at the Acme Corp level. The organization employs over 500 people across multiple offices.",
+      "links": [],
+      "folder": "organizations"
+    },
+    {
+      "path": "concepts/agile-methodology.md",
+      "title": "Agile Methodology",
+      "frontmatter": {
+        "type": "concept",
+        "cluster": "concepts"
+      },
+      "content": "Agile Methodology underpins the planning and execution processes used by engineering and leadership teams. It emphasizes iterative delivery, continuous feedback, and adaptive planning. The quarterly planning process and sprint cadences are structured around agile principles.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "organizations/board-of-directors.md",
+      "title": "Board of Directors",
+      "frontmatter": {
+        "type": "organization",
+        "cluster": "organizations"
+      },
+      "content": "The Board of Directors provides governance and strategic oversight for the organization. They review executive dashboard metrics and quarterly performance reports. The board meets regularly to evaluate company direction, financial performance, and risk management posture.",
+      "links": [],
+      "folder": "organizations"
     }
   ],
   "groundTruth": [

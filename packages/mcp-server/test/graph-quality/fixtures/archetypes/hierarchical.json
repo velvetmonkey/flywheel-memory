@@ -32,6 +32,13 @@
       "hubScore": 1
     },
     {
+      "name": "Acme Corp",
+      "category": "organizations",
+      "path": "company/acme-corp.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
       "name": "Alerting Configuration",
       "category": "technologies",
       "path": "infrastructure/alerting.md",
@@ -81,6 +88,13 @@
       "hubScore": 1
     },
     {
+      "name": "CI/CD",
+      "category": "technologies",
+      "path": "technologies/cicd.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
       "name": "Churn Prediction Model",
       "category": "projects",
       "path": "projects/churn-prediction.md",
@@ -91,6 +105,13 @@
       "name": "Client Training Curriculum",
       "category": "projects",
       "path": "projects/client-training.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Code Review",
+      "category": "concepts",
+      "path": "concepts/code-review.md",
       "aliases": [],
       "hubScore": 1
     },
@@ -228,6 +249,13 @@
       "hubScore": 1
     },
     {
+      "name": "ESGHub",
+      "category": "projects",
+      "path": "projects/esghub.md",
+      "aliases": [],
+      "hubScore": 5
+    },
+    {
       "name": "Enterprise Feature Planning",
       "category": "projects",
       "path": "projects/enterprise-feature-planning.md",
@@ -273,6 +301,13 @@
       "name": "GPU Cluster Management",
       "category": "technologies",
       "path": "infrastructure/gpu-cluster.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "GraphQL",
+      "category": "technologies",
+      "path": "technologies/graphql.md",
       "aliases": [],
       "hubScore": 1
     },
@@ -333,6 +368,13 @@
       "hubScore": 1
     },
     {
+      "name": "Machine Learning",
+      "category": "concepts",
+      "path": "concepts/machine-learning.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
       "name": "ML Research Team",
       "category": "organizations",
       "path": "teams/ml-research.md",
@@ -359,6 +401,13 @@
       "path": "projects/mobilefirst-core.md",
       "aliases": [],
       "hubScore": 1
+    },
+    {
+      "name": "Node.js",
+      "category": "technologies",
+      "path": "technologies/nodejs.md",
+      "aliases": [],
+      "hubScore": 2
     },
     {
       "name": "Model Registry",
@@ -424,6 +473,13 @@
       "hubScore": 1
     },
     {
+      "name": "PostgreSQL",
+      "category": "technologies",
+      "path": "technologies/postgresql.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
       "name": "Pricing Strategy",
       "category": "projects",
       "path": "projects/pricing-strategy.md",
@@ -480,9 +536,23 @@
       "hubScore": 1
     },
     {
+      "name": "React",
+      "category": "technologies",
+      "path": "technologies/react.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
       "name": "Recommendation Engine",
       "category": "concepts",
       "path": "research/recommendation-engine.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "Redis",
+      "category": "technologies",
+      "path": "technologies/redis.md",
       "aliases": [],
       "hubScore": 1
     },
@@ -518,6 +588,13 @@
       "name": "Research-to-Production Pipeline",
       "category": "concepts",
       "path": "research/research-to-production.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
+      "name": "REST",
+      "category": "technologies",
+      "path": "technologies/rest.md",
       "aliases": [],
       "hubScore": 1
     },
@@ -564,6 +641,13 @@
       "hubScore": 1
     },
     {
+      "name": "TypeScript",
+      "category": "technologies",
+      "path": "technologies/typescript.md",
+      "aliases": [],
+      "hubScore": 7
+    },
+    {
       "name": "UX Design Team",
       "category": "organizations",
       "path": "teams/ux-design.md",
@@ -592,13 +676,13 @@
       "hubScore": 1
     }
   ],
-  "noteCount": 80,
+  "noteCount": 92,
   "topology": {
     "levels": 4,
     "rootCount": 1,
     "l2Count": 4,
     "l3Count": 16,
-    "leafCount": 59
+    "leafCount": 71
   },
   "notes": [
     {
@@ -1720,6 +1804,138 @@
       "content": "Employee Tech Onboarding ensures new hires have everything they need to be productive from day one. The process includes account provisioning, equipment setup, VPN configuration, and orientation to internal tools. An automated checklist tracks onboarding progress and notifies managers when their new team members are fully set up. The onboarding process has been refined to take less than two hours for standard engineering roles.",
       "links": [],
       "folder": "internal"
+    },
+    {
+      "path": "projects/esghub.md",
+      "title": "ESGHub",
+      "frontmatter": {
+        "type": "project",
+        "level": "leaf"
+      },
+      "content": "ESGHub is Acme Corp's flagship sustainability reporting platform used by Fortune 500 companies. The platform enables enterprises to collect, analyze, and report on environmental, social, and governance metrics across their organizations. ESGHub generates the majority of Acme Corp's revenue and is supported by dedicated engineering, product, and research teams.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "technologies/typescript.md",
+      "title": "TypeScript",
+      "frontmatter": {
+        "type": "technology",
+        "level": "leaf"
+      },
+      "content": "TypeScript is the primary programming language used across Acme Corp's engineering organization. It is used for backend services running on Node.js, frontend applications built with React, mobile apps via React Native, and shared libraries distributed through the internal npm registry. The Engineering Department standardized on TypeScript to enable code sharing and consistent tooling across all teams.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/nodejs.md",
+      "title": "Node.js",
+      "frontmatter": {
+        "type": "technology",
+        "level": "leaf"
+      },
+      "content": "Node.js is the server-side runtime used by Acme Corp for backend services and data processing pipelines. The ESGHub Core Services and DataPipeline Core both run on Node.js, chosen for its performance with I/O-heavy workloads and its compatibility with the TypeScript ecosystem. The Platform Team maintains standardized Node.js base images for container deployments.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/graphql.md",
+      "title": "GraphQL",
+      "frontmatter": {
+        "type": "technology",
+        "level": "leaf"
+      },
+      "content": "GraphQL is the API query language used by Acme Corp's API Gateway to expose a unified interface to client applications. The gateway federates multiple GraphQL subgraphs into a single schema using Apollo Federation. GraphQL was adopted to give frontend teams flexible data fetching without requiring backend changes for each new view or feature.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/postgresql.md",
+      "title": "PostgreSQL",
+      "frontmatter": {
+        "type": "technology",
+        "level": "leaf"
+      },
+      "content": "PostgreSQL is the primary relational database used at Acme Corp for transactional and analytical workloads. The Auth Service maintains a dedicated PostgreSQL instance for user accounts and sessions, while the Data Warehouse is built on PostgreSQL with a star schema optimized for reporting queries. The Data Engineering Team manages PostgreSQL operations including backups, replication, and performance tuning.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/redis.md",
+      "title": "Redis",
+      "frontmatter": {
+        "type": "technology",
+        "level": "leaf"
+      },
+      "content": "Redis is used at Acme Corp as an in-memory data store for job queues and caching. The DataPipeline Core relies on Redis-backed queues for reliable ETL job processing with automatic retries and prioritization. Redis is managed by the Platform Team and deployed as a highly available cluster across production regions.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/react.md",
+      "title": "React",
+      "frontmatter": {
+        "type": "technology",
+        "level": "leaf"
+      },
+      "content": "React is the frontend framework used by Acme Corp for all web and mobile applications. The ESGHub Dashboard and Reporting UI are built with React and TypeScript, while the ESGHub Mobile App uses React Native for cross-platform mobile development. The Frontend Team maintains a shared React component library documented in Storybook.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "company/acme-corp.md",
+      "title": "Acme Corp",
+      "frontmatter": {
+        "type": "organization",
+        "level": "leaf"
+      },
+      "content": "Acme Corp is a technology company founded in 2015 and headquartered in San Francisco, specializing in sustainability software and enterprise solutions. The company operates through four departments: Engineering, Product, Research, and Operations, employing over 200 people across offices in San Francisco, New York City, and London. Acme Corp's flagship product is the ESGHub sustainability reporting platform.",
+      "links": [],
+      "folder": "company"
+    },
+    {
+      "path": "concepts/code-review.md",
+      "title": "Code Review",
+      "frontmatter": {
+        "type": "concept",
+        "level": "leaf"
+      },
+      "content": "Code review is a core engineering practice at Acme Corp, required for all changes before merging to main branches. The Shared Libraries Project enforces especially strict code review standards since changes affect every service across the organization. All pull requests require at least one approval, and the Platform Team requires two reviewers for infrastructure-critical changes.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/machine-learning.md",
+      "title": "Machine Learning",
+      "frontmatter": {
+        "type": "concept",
+        "level": "leaf"
+      },
+      "content": "Machine learning is a core capability at Acme Corp, applied across sustainability scoring, anomaly detection, document classification, and churn prediction. The ML Research Team develops models in Python, while the Applied Research Team productionizes them for integration with the ESGHub platform. The Research Ops Team provides GPU infrastructure and experiment tracking to support model training and evaluation.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "technologies/cicd.md",
+      "title": "CI/CD",
+      "frontmatter": {
+        "type": "technology",
+        "level": "leaf"
+      },
+      "content": "CI/CD refers to the continuous integration and continuous delivery practices used across Acme Corp. The DevOps Infrastructure Team maintains GitHub Actions workflows and self-hosted runners for automated testing and deployment. The Model Registry integrates with the CI/CD pipeline for automated model deployment when research models are promoted to production.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/rest.md",
+      "title": "REST",
+      "frontmatter": {
+        "type": "technology",
+        "level": "leaf"
+      },
+      "content": "REST is an architectural style used by the Research API Layer to expose machine learning capabilities as internal API endpoints. While the primary client-facing API uses GraphQL, internal service-to-service communication for research capabilities uses REST endpoints with TypeScript client libraries for ease of integration.",
+      "links": [],
+      "folder": "technologies"
     }
   ],
   "groundTruth": [

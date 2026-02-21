@@ -1,7 +1,7 @@
 {
   "archetype": "sparse-orphan",
   "seed": 104,
-  "description": "100 notes with 40 orphans (0 links), 30 loosely connected (1-2 links), and 30 moderately connected (3-5 links). Entity mentions appear in content but are not linked. Tests orphan reduction rate, entity coverage from near-zero, and cold-start scenarios.",
+  "description": "99 notes with 40 orphans (0 links), 30 loosely connected (1-2 links), and 30 moderately connected (3-5 links). Entity mentions appear in content but are not linked. Tests orphan reduction rate, entity coverage from near-zero, and cold-start scenarios.",
   "entities": [
     {
       "name": "API",
@@ -347,7 +347,7 @@
       "hubScore": 1
     }
   ],
-  "noteCount": 100,
+  "noteCount": 99,
   "topology": {
     "orphanCount": 40,
     "looselyConnected": 30,
@@ -1423,6 +1423,176 @@
       "content": "Ideas for the Q4 hackathon at Acme Corp. Option 1: AI-powered code review assistant using ML. Option 2: Real-time collaboration features for ESGHub dashboards. Option 3: Knowledge graph visualization tool for Vault Core. Option 4: Mobile offline-first improvements for the MobileFirst framework. Team: David, Priya, and maybe Tom.",
       "links": [],
       "folder": "notes"
+    },
+    {
+      "path": "animals/max.md",
+      "title": "Max",
+      "frontmatter": {
+        "type": "animal"
+      },
+      "content": "Max is a friendly dog who visits the San Francisco office every Friday. He belongs to Marcus Johnson and is a beloved fixture in the workplace.",
+      "links": [],
+      "folder": "animals"
+    },
+    {
+      "path": "animals/bella.md",
+      "title": "Bella",
+      "frontmatter": {
+        "type": "animal"
+      },
+      "content": "Bella is the resident cat at the San Francisco office. She has claimed the break room sofa and occasionally commandeers unattended keyboards.",
+      "links": [],
+      "folder": "animals"
+    },
+    {
+      "path": "projects/esghub.md",
+      "title": "ESGHub",
+      "frontmatter": {
+        "type": "project"
+      },
+      "content": "ESGHub is the flagship sustainability reporting platform. It serves enterprise clients tracking environmental, social, and governance metrics.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/mobilefirst.md",
+      "title": "MobileFirst",
+      "frontmatter": {
+        "type": "project"
+      },
+      "content": "MobileFirst is the cross-platform mobile development framework. It targets both iOS and Android using React Native with TypeScript.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/quantum-leap.md",
+      "title": "Quantum Leap",
+      "frontmatter": {
+        "type": "project"
+      },
+      "content": "Quantum Leap is a research initiative exploring quantum computing applications for combinatorial optimization problems in sustainability modeling.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/vault-core.md",
+      "title": "Vault Core",
+      "frontmatter": {
+        "type": "project"
+      },
+      "content": "Vault Core is the shared library for entity extraction, wikilink resolution, and knowledge graph operations. It powers the core indexing pipeline.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "concepts/agile-methodology.md",
+      "title": "Agile Methodology",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Agile Methodology encompasses iterative development practices including two-week sprints, daily standups, retrospectives, and continuous improvement cycles.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/feedback-loop.md",
+      "title": "Feedback Loop",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Feedback Loop is a process pattern where outputs are routed back as inputs to drive continuous improvement. Applied in code review culture and sprint retrospectives.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "technologies/rest.md",
+      "title": "REST",
+      "frontmatter": {
+        "type": "technology"
+      },
+      "content": "REST (Representational State Transfer) is an architectural style for designing networked applications using standard HTTP methods and stateless communication.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/react.md",
+      "title": "React",
+      "frontmatter": {
+        "type": "technology"
+      },
+      "content": "React is a JavaScript library for building user interfaces with a component-based architecture. It is part of the core frontend stack.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "acronyms/sla.md",
+      "title": "SLA",
+      "frontmatter": {
+        "type": "acronym"
+      },
+      "content": "SLA (Service Level Agreement) defines the expected level of service between a provider and a client, including uptime targets and response time guarantees.",
+      "links": [],
+      "folder": "acronyms"
+    },
+    {
+      "path": "health/stretch.md",
+      "title": "Stretch",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "Stretch is a daily morning routine activity. Part of the company wellness program encouraging flexibility and injury prevention at the workplace.",
+      "links": [],
+      "folder": "health"
+    },
+    {
+      "path": "health/walk.md",
+      "title": "Walk",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "Walk is a daily wellness habit encouraged by the company wellness program. Walking meetings are common at the San Francisco office.",
+      "links": [],
+      "folder": "health"
+    },
+    {
+      "path": "health/vitamins.md",
+      "title": "Vitamins",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "Vitamins are taken daily with breakfast as part of the personal wellness routine. The company wellness program provides supplementation guidance.",
+      "links": [],
+      "folder": "health"
+    },
+    {
+      "path": "media/blade-runner.md",
+      "title": "Blade Runner",
+      "frontmatter": {
+        "type": "media"
+      },
+      "content": "Blade Runner is a science fiction film exploring themes of artificial intelligence, consciousness, and what it means to be human. A movie club selection.",
+      "links": [],
+      "folder": "media"
+    },
+    {
+      "path": "media/dune.md",
+      "title": "Dune",
+      "frontmatter": {
+        "type": "media"
+      },
+      "content": "Dune is a science fiction epic known for its stunning visual effects and world-building. It was selected for the office movie club.",
+      "links": [],
+      "folder": "media"
+    },
+    {
+      "path": "media/the-matrix.md",
+      "title": "The Matrix",
+      "frontmatter": {
+        "type": "media"
+      },
+      "content": "The Matrix is a science fiction film about simulated reality. It remains a classic and was rewatched by the office movie club.",
+      "links": [],
+      "folder": "media"
     }
   ],
   "groundTruth": [

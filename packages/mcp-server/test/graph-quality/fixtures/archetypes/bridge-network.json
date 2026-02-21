@@ -193,6 +193,13 @@
       "hubScore": 1
     },
     {
+      "name": "DevOps Team",
+      "category": "organizations",
+      "path": "organizations/devops-team.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
       "name": "ESGHub",
       "category": "projects",
       "path": "cluster-frontend/esghub-frontend.md",
@@ -263,6 +270,13 @@
       "hubScore": 1
     },
     {
+      "name": "James Franklin",
+      "category": "people",
+      "path": "people/james-franklin.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
       "name": "Job Queue System",
       "category": "concepts",
       "path": "cluster-data/job-queue.md",
@@ -289,6 +303,13 @@
       "path": "people/marcus-johnson.md",
       "aliases": [],
       "hubScore": 10
+    },
+    {
+      "name": "Microservices",
+      "category": "concepts",
+      "path": "concepts/microservices.md",
+      "aliases": [],
+      "hubScore": 1
     },
     {
       "name": "Microservices Backend",
@@ -354,6 +375,20 @@
       "hubScore": 1
     },
     {
+      "name": "Redis",
+      "category": "technologies",
+      "path": "technologies/redis.md",
+      "aliases": [],
+      "hubScore": 2
+    },
+    {
+      "name": "San Francisco",
+      "category": "locations",
+      "path": "locations/san-francisco.md",
+      "aliases": [],
+      "hubScore": 1
+    },
+    {
       "name": "Sarah O'Brien",
       "category": "people",
       "path": "people/sarah-o-brien.md",
@@ -366,6 +401,13 @@
       "path": "cluster-frontend/storybook-docs.md",
       "aliases": [],
       "hubScore": 5
+    },
+    {
+      "name": "Stretch",
+      "category": "health",
+      "path": "health/stretch.md",
+      "aliases": [],
+      "hubScore": 1
     },
     {
       "name": "Supply Chain Module",
@@ -394,9 +436,16 @@
       "path": "cluster-infra/vulnerability-scanning.md",
       "aliases": [],
       "hubScore": 3
+    },
+    {
+      "name": "Walk",
+      "category": "health",
+      "path": "health/walk.md",
+      "aliases": [],
+      "hubScore": 1
     }
   ],
-  "noteCount": 80,
+  "noteCount": 86,
   "topology": {
     "clusterCount": 5,
     "notesPerCluster": 12,
@@ -1416,6 +1465,146 @@
         "Sarah O'Brien"
       ],
       "folder": "bridges"
+    },
+    {
+      "path": "people/david-chen.md",
+      "title": "David Chen",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "David Chen is a senior engineer at Acme Corp. He leads backend architecture and designed the GraphQL federation strategy for ESGHub.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/marcus-johnson.md",
+      "title": "Marcus Johnson",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "Marcus Johnson leads the infrastructure team at Acme Corp. He oversees Kubernetes operations, CI/CD pipelines, and cloud cost optimization.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/elena-torres.md",
+      "title": "Elena Torres",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "Elena Torres is the product manager for ESGHub at Acme Corp. She manages the product roadmap, design system, and client relationships.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/sarah-o-brien.md",
+      "title": "Sarah O'Brien",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "Sarah O'Brien leads the data engineering team at Acme Corp. She oversees DataPipeline development, data quality standards, and warehouse operations.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/james-franklin.md",
+      "title": "James Franklin",
+      "frontmatter": {
+        "type": "person"
+      },
+      "content": "James Franklin is an engineer at Acme Corp. He mentors new engineers and enjoys chess and book discussions with colleagues.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "organizations/acme-corp.md",
+      "title": "Acme Corp",
+      "frontmatter": {
+        "type": "organization"
+      },
+      "content": "Acme Corp is a technology company building sustainability software. Its flagship product is ESGHub, a platform for environmental and social governance reporting.",
+      "links": [],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/devops-team.md",
+      "title": "DevOps Team",
+      "frontmatter": {
+        "type": "organization"
+      },
+      "content": "The DevOps Team manages infrastructure operations at Acme Corp. They maintain Kubernetes clusters, CI/CD pipelines, and deployment automation.",
+      "links": [],
+      "folder": "organizations"
+    },
+    {
+      "path": "technologies/typescript.md",
+      "title": "TypeScript",
+      "frontmatter": {
+        "type": "technology"
+      },
+      "content": "TypeScript is the primary programming language used across Acme Corp projects. Strict mode is enforced for all production code to ensure type safety.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/node-js.md",
+      "title": "Node.js",
+      "frontmatter": {
+        "type": "technology"
+      },
+      "content": "Node.js is the server-side runtime used for backend services at Acme Corp. All microservices and the DataPipeline engine run on Node.js.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/redis.md",
+      "title": "Redis",
+      "frontmatter": {
+        "type": "technology"
+      },
+      "content": "Redis is used for caching and job queue management at Acme Corp. Backend services use Redis Sentinel for high availability caching.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "concepts/microservices.md",
+      "title": "Microservices",
+      "frontmatter": {
+        "type": "concept"
+      },
+      "content": "Microservices is the architectural pattern used for backend services at Acme Corp. Each service is independently deployable and owns its data.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "locations/san-francisco.md",
+      "title": "San Francisco",
+      "frontmatter": {
+        "type": "location"
+      },
+      "content": "San Francisco is where Acme Corp has its main office. The office includes a well-equipped kitchen and collaborative workspaces.",
+      "links": [],
+      "folder": "locations"
+    },
+    {
+      "path": "health/stretch.md",
+      "title": "Stretch",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "Stretching is a daily morning routine activity. Regular stretching improves flexibility and reduces injury risk during exercise.",
+      "links": [],
+      "folder": "health"
+    },
+    {
+      "path": "health/walk.md",
+      "title": "Walk",
+      "frontmatter": {
+        "type": "health"
+      },
+      "content": "Walking is a lunchtime activity for maintaining energy levels. A midday walk helps with focus and productivity during afternoon work sessions.",
+      "links": [],
+      "folder": "health"
     },
     {
       "path": "isolated/reading-distributed-systems.md",

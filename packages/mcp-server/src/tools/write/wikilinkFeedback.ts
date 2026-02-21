@@ -50,7 +50,8 @@ export function registerWikilinkFeedbackTools(
       const stateDb = getStateDb();
       if (!stateDb) {
         return {
-          content: [{ type: 'text' as const, text: JSON.stringify({ error: 'StateDb not available' }) }],
+          content: [{ type: 'text' as const, text: JSON.stringify({ error: 'StateDb not available — database not initialized yet' }) }],
+          isError: true,
         };
       }
 

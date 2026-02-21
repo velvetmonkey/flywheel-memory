@@ -1202,6 +1202,15 @@ export function escapeFts5Query(query: string): string {
 }
 
 /**
+ * Rebuild the entities_fts index from the entities table.
+ * Uses FTS5's built-in 'rebuild' command to resynchronize.
+ * Call this if the FTS index gets out of sync (e.g., T.aliases errors).
+ */
+export function rebuildEntitiesFts(stateDb: StateDb): void {
+  stateDb.db.exec(`INSERT INTO entities_fts(entities_fts) VALUES('rebuild')`);
+}
+
+/**
  * Check if the state database exists for a vault
  */
 export function stateDbExists(vaultPath: string): boolean {

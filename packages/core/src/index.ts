@@ -99,6 +99,7 @@ export {
   saveVaultIndexCache,
   loadVaultIndexCache,
   getVaultIndexCacheInfo,
+  rebuildEntitiesFts,
   SCHEMA_VERSION,
   STATE_DB_FILENAME,
   FLYWHEEL_DIR,

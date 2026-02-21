@@ -22,7 +22,8 @@ import {
   runValidationPipeline,
   type GuardrailMode,
 } from '../../core/write/validator.js';
-import { maybeApplyWikilinks, suggestRelatedLinks, getEntityIndexStats } from '../../core/write/wikilinks.js';
+import { maybeApplyWikilinks, suggestRelatedLinks, getEntityIndexStats, getWriteStateDb } from '../../core/write/wikilinks.js';
+import { trackWikilinkApplications } from '../../core/write/wikilinkFeedback.js';
 import {
   withVaultFile,
   formatMcpResult,
@@ -140,10 +141,11 @@ export function registerMutationTools(
       validate: z.boolean().default(true).describe('Check input for common issues (double timestamps, non-markdown bullets, etc.)'),
       normalize: z.boolean().default(true).describe('Auto-fix common issues before formatting (replace • with -, trim excessive whitespace, etc.)'),
       guardrails: z.enum(['warn', 'strict', 'off']).default('warn').describe('Output validation mode: "warn" returns issues but proceeds, "strict" blocks on errors, "off" disables'),
+      linkedEntities: z.array(z.string()).optional().describe('Entity names already linked in the content. When skipWikilinks=true, these are tracked for feedback without re-processing the content.'),
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping (e.g., "claude-opus", "planning-agent")'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping (e.g., "sess-abc123")'),
     },
-    async ({ path: notePath, section, content, create_if_missing, position, format, commit, skipWikilinks, preserveListNesting, bumpHeadings, suggestOutgoingLinks, maxSuggestions, validate, normalize, guardrails, agent_id, session_id }) => {
+    async ({ path: notePath, section, content, create_if_missing, position, format, commit, skipWikilinks, preserveListNesting, bumpHeadings, suggestOutgoingLinks, maxSuggestions, validate, normalize, guardrails, linkedEntities, agent_id, session_id }) => {
       // Handle create_if_missing: create note from template before proceeding
       let noteCreated = false;
       let templateUsed: string | undefined;
@@ -188,6 +190,14 @@ export function registerMutationTools(
 
           // 2. Apply wikilinks to content (unless skipped)
           let { content: processedContent, wikilinkInfo } = maybeApplyWikilinks(workingContent, skipWikilinks, notePath);
+
+          // Track explicitly-declared linked entities (when skipWikilinks=true)
+          if (linkedEntities?.length) {
+            const stateDb = getWriteStateDb();
+            if (stateDb) {
+              trackWikilinkApplications(stateDb, notePath, linkedEntities);
+            }
+          }
 
           // DEBUG: Capture entity index state for troubleshooting
           const _debug = {

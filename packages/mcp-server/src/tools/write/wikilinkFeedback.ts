@@ -56,7 +56,15 @@ export function registerWikilinkFeedbackTools(
             };
           }
 
-          recordFeedback(stateDb, entity, context || '', note_path || '', correct);
+          try {
+            recordFeedback(stateDb, entity, context || '', note_path || '', correct);
+          } catch (e) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({
+                error: `Failed to record feedback: ${e instanceof Error ? e.message : String(e)}`
+              }) }],
+            };
+          }
           const suppressionUpdated = updateSuppressionList(stateDb) > 0;
 
           result = {

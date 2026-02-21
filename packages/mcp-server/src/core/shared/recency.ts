@@ -232,15 +232,17 @@ export function loadRecencyFromStateDb(): RecencyIndex | null {
  */
 export function saveRecencyToStateDb(index: RecencyIndex): void {
   if (!moduleStateDb) {
-    console.error('[Flywheel] No StateDb available for saving recency');
+    console.error('[Flywheel] saveRecencyToStateDb: No StateDb available (moduleStateDb is null)');
     return;
   }
 
+  console.error(`[Flywheel] saveRecencyToStateDb: Saving ${index.lastMentioned.size} entries...`);
   try {
     for (const [entityNameLower, timestamp] of index.lastMentioned) {
       recordEntityMention(moduleStateDb, entityNameLower, new Date(timestamp));
     }
-    console.error(`[Flywheel] Saved ${index.lastMentioned.size} recency entries to StateDb`);
+    const count = moduleStateDb.db.prepare('SELECT COUNT(*) as cnt FROM recency').get() as { cnt: number };
+    console.error(`[Flywheel] Saved recency: ${index.lastMentioned.size} entries → ${count.cnt} rows in table`);
   } catch (e) {
     console.error('[Flywheel] Failed to save recency to StateDb:', e);
   }

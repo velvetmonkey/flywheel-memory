@@ -1087,7 +1087,7 @@ export function getExtendedDashboardData(stateDb: StateDb): ExtendedDashboardDat
   for (const row of eventRows) {
     const breakdown = JSON.parse(row.breakdown_json) as SuggestionBreakdown;
     for (const name of LAYER_NAMES) {
-      const val = (breakdown as Record<string, number | undefined>)[name];
+      const val = (breakdown as unknown as Record<string, number | undefined>)[name];
       if (val !== undefined) {
         layerSums[name].sum += Math.abs(val);
         layerSums[name].count++;

@@ -191,7 +191,10 @@ async function buildVaultIndexInternal(
   }
 
   if (parseErrors.length > 0) {
-    console.error(`Failed to parse ${parseErrors.length} files`);
+    console.error(`Failed to parse ${parseErrors.length} files:`);
+    for (const errorPath of parseErrors) {
+      console.error(`  - ${errorPath}`);
+    }
   }
 
   // Build entities map (for resolving link targets)

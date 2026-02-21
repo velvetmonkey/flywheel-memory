@@ -45,10 +45,18 @@ function getSearchTerms(entity: Entity): Array<{ term: string; entityName: strin
  * Common words to exclude from wikilink suggestions
  */
 const EXCLUDE_WORDS = new Set([
+  // Day names
   'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  // Month names
   'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august',
   'september', 'october', 'november', 'december',
+  // Temporal words
   'today', 'tomorrow', 'yesterday', 'week', 'month', 'year',
+  // Periodic review compounds
+  'month end', 'month start', 'year end', 'year start',
+  'quarter end', 'quarter start', 'quarterly review',
+  'weekly review', 'monthly review', 'annual review',
+  // Stop words
   'the', 'and', 'for', 'with', 'from', 'this', 'that',
   'christmas', 'holiday', 'break',
 ]);

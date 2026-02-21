@@ -147,6 +147,24 @@ Learn React here`;
     expect(result.content).toContain('[[Project]]');
   });
 
+  it('excludes "Month End" from auto-linking', () => {
+    const content = 'The config files are off-limits for Month End to edit';
+    const result = applyWikilinks(content, [
+      { name: 'Month End', path: 'month-end.md', aliases: [] }
+    ]);
+    expect(result.content).toBe(content);
+    expect(result.linksAdded).toBe(0);
+  });
+
+  it('excludes "Quarterly Review" from auto-linking', () => {
+    const content = 'Prepare for the Quarterly Review next week';
+    const result = applyWikilinks(content, [
+      { name: 'Quarterly Review', path: 'quarterly-review.md', aliases: [] }
+    ]);
+    expect(result.content).toBe(content);
+    expect(result.linksAdded).toBe(0);
+  });
+
   it('should handle case-insensitive matching', () => {
     const content = 'Using react for development';
     const entities = ['React'];

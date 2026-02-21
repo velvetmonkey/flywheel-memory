@@ -39,6 +39,7 @@ import {
   createVaultWatcher,
   parseWatcherConfig,
 } from './core/read/watch/index.js';
+import { processBatch } from './core/read/watch/batchProcessor.js';
 import { exportHubScores } from './core/shared/hubExport.js';
 import { initializeLogger as initializeReadLogger, getLogger } from './core/read/logging.js';
 
@@ -131,6 +132,8 @@ import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecen
 
 // Node builtins
 import * as fs from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import type { CoalescedEvent } from './core/read/watch/types.js';
 
 // Resources
 import { registerVaultResources } from './resources/vault.js';
@@ -794,6 +797,7 @@ async function runPostIndexWork(index: VaultIndex) {
   // Setup file watcher
   if (process.env.FLYWHEEL_WATCH !== 'false') {
     const config = parseWatcherConfig();
+    const lastContentHashes = new Map<string, string>();
     serverLog('watcher', `File watcher enabled (debounce: ${config.debounceMs}ms)`);
 
     const watcher = createVaultWatcher({
@@ -845,17 +849,61 @@ async function runPostIndexWork(index: VaultIndex) {
           }
         }
 
-        serverLog('watcher', `Processing ${batch.events.length} file changes`);
+        // Content hash gate: skip files that haven't changed since last batch
+        const filteredEvents: CoalescedEvent[] = [];
+        for (const event of batch.events) {
+          if (event.type === 'delete') {
+            filteredEvents.push(event);
+            lastContentHashes.delete(event.path);
+            continue;
+          }
+          try {
+            const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+            const hash = createHash('md5').update(content).digest('hex');
+            if (lastContentHashes.get(event.path) === hash) {
+              serverLog('watcher', `Hash unchanged, skipping: ${event.path}`);
+              continue;
+            }
+            lastContentHashes.set(event.path, hash);
+            filteredEvents.push(event);
+          } catch {
+            filteredEvents.push(event); // File may have been deleted mid-batch
+          }
+        }
+
+        if (filteredEvents.length === 0) {
+          serverLog('watcher', 'All files unchanged (hash gate), skipping batch');
+          return;
+        }
+
+        serverLog('watcher', `Processing ${filteredEvents.length} file changes`);
         const batchStart = Date.now();
-        const changedPaths = batch.events.map(e => e.path);
+        const changedPaths = filteredEvents.map(e => e.path);
         const tracker = createStepTracker();
         try {
-          // Step 1: Index rebuild
-          tracker.start('index_rebuild', { files_changed: batch.events.length, changed_paths: changedPaths });
-          vaultIndex = await buildVaultIndex(vaultPath);
+          // Step 1: Index rebuild (incremental when possible)
+          tracker.start('index_rebuild', { files_changed: filteredEvents.length, changed_paths: changedPaths });
+          if (!vaultIndex) {
+            // First run or null index: full build needed
+            vaultIndex = await buildVaultIndex(vaultPath);
+            serverLog('watcher', `Index rebuilt (full): ${vaultIndex.notes.size} notes, ${vaultIndex.entities.size} entities`);
+          } else {
+            // Incremental update: only process changed files
+            // processBatch expects absolute paths (it calls getRelativePath internally),
+            // but onBatch has already normalized event.path to vault-relative.
+            // Reconstruct absolute paths for processBatch.
+            const absoluteBatch = {
+              ...batch,
+              events: filteredEvents.map(e => ({
+                ...e,
+                path: path.join(vaultPath, e.path),
+              })),
+            };
+            const batchResult = await processBatch(vaultIndex, vaultPath, absoluteBatch);
+            serverLog('watcher', `Incremental: ${batchResult.successful}/${batchResult.total} files in ${batchResult.durationMs}ms`);
+          }
           setIndexState('ready');
           tracker.end({ note_count: vaultIndex.notes.size, entity_count: vaultIndex.entities.size, tag_count: vaultIndex.tags.size });
-          serverLog('watcher', `Index rebuilt: ${vaultIndex.notes.size} notes, ${vaultIndex.entities.size} entities`);
 
           // Capture hub scores BEFORE entity scan resets them
           const hubBefore = new Map<string, number>();
@@ -909,10 +957,10 @@ async function runPostIndexWork(index: VaultIndex) {
 
           // Step 4: Note embeddings (with updated paths)
           if (hasEmbeddingsIndex()) {
-            tracker.start('note_embeddings', { files: batch.events.length });
+            tracker.start('note_embeddings', { files: filteredEvents.length });
             let embUpdated = 0;
             let embRemoved = 0;
-            for (const event of batch.events) {
+            for (const event of filteredEvents) {
               try {
                 if (event.type === 'delete') {
                   removeEmbedding(event.path);
@@ -934,12 +982,12 @@ async function runPostIndexWork(index: VaultIndex) {
 
           // Step 5: Entity embeddings (with entity names)
           if (hasEntityEmbeddingsIndex() && stateDb) {
-            tracker.start('entity_embeddings', { files: batch.events.length });
+            tracker.start('entity_embeddings', { files: filteredEvents.length });
             let entEmbUpdated = 0;
             const entEmbNames: string[] = [];
             try {
               const allEntities = getAllEntitiesFromDb(stateDb);
-              for (const event of batch.events) {
+              for (const event of filteredEvents) {
                 if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
                 const matching = allEntities.filter(e => e.path === event.path);
                 for (const entity of matching) {
@@ -978,10 +1026,10 @@ async function runPostIndexWork(index: VaultIndex) {
           }
 
           // Step 7: Task cache
-          tracker.start('task_cache', { files: batch.events.length });
+          tracker.start('task_cache', { files: filteredEvents.length });
           let taskUpdated = 0;
           let taskRemoved = 0;
-          for (const event of batch.events) {
+          for (const event of filteredEvents) {
             try {
               if (event.type === 'delete') {
                 removeTaskCacheForFile(event.path);
@@ -998,11 +1046,11 @@ async function runPostIndexWork(index: VaultIndex) {
           serverLog('watcher', `Task cache: ${taskUpdated} updated, ${taskRemoved} removed`);
 
           // Step 8: Forward link scan — all wikilinks in changed files
-          tracker.start('forward_links', { files: batch.events.length });
+          tracker.start('forward_links', { files: filteredEvents.length });
           const forwardLinkResults: Array<{ file: string; resolved: string[]; dead: string[] }> = [];
           let totalResolved = 0;
           let totalDead = 0;
-          for (const event of batch.events) {
+          for (const event of filteredEvents) {
             if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
             try {
               const links = getForwardLinksForNote(vaultIndex, event.path);
@@ -1031,10 +1079,10 @@ async function runPostIndexWork(index: VaultIndex) {
           serverLog('watcher', `Forward links: ${totalResolved} resolved, ${totalDead} dead`);
 
           // Step 9: Wikilink check — which tracked links exist in changed files
-          tracker.start('wikilink_check', { files: batch.events.length });
+          tracker.start('wikilink_check', { files: filteredEvents.length });
           const trackedLinks: Array<{ file: string; entities: string[] }> = [];
           if (stateDb) {
-            for (const event of batch.events) {
+            for (const event of filteredEvents) {
               if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
               try {
                 const apps = getTrackedApplications(stateDb, event.path);
@@ -1046,10 +1094,10 @@ async function runPostIndexWork(index: VaultIndex) {
           serverLog('watcher', `Wikilink check: ${trackedLinks.reduce((s, t) => s + t.entities.length, 0)} tracked links in ${trackedLinks.length} files`);
 
           // Step 10: Implicit feedback — which entities had links removed
-          tracker.start('implicit_feedback', { files: batch.events.length });
+          tracker.start('implicit_feedback', { files: filteredEvents.length });
           const feedbackResults: Array<{ entity: string; file: string }> = [];
           if (stateDb) {
-            for (const event of batch.events) {
+            for (const event of filteredEvents) {
               if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
               try {
                 const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
@@ -1070,12 +1118,12 @@ async function runPostIndexWork(index: VaultIndex) {
               trigger: 'watcher',
               duration_ms: duration,
               note_count: vaultIndex.notes.size,
-              files_changed: batch.events.length,
+              files_changed: filteredEvents.length,
               changed_paths: changedPaths,
               steps: tracker.steps,
             });
           }
-          serverLog('watcher', `Batch complete: ${batch.events.length} files, ${duration}ms, ${tracker.steps.length} steps`);
+          serverLog('watcher', `Batch complete: ${filteredEvents.length} files, ${duration}ms, ${tracker.steps.length} steps`);
         } catch (err) {
           setIndexState('error');
           setIndexError(err instanceof Error ? err : new Error(String(err)));
@@ -1085,7 +1133,7 @@ async function runPostIndexWork(index: VaultIndex) {
               trigger: 'watcher',
               duration_ms: duration,
               success: false,
-              files_changed: batch.events.length,
+              files_changed: filteredEvents.length,
               changed_paths: changedPaths,
               error: err instanceof Error ? err.message : String(err),
               steps: tracker.steps,

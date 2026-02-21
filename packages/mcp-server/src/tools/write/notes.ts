@@ -48,7 +48,7 @@ export function registerNoteTools(
       overwrite: z.boolean().default(false).describe('If true, overwrite existing file'),
       commit: z.boolean().default(false).describe('If true, commit this change to git (creates undo point)'),
       skipWikilinks: z.boolean().default(false).describe('If true, skip auto-wikilink application (wikilinks are applied by default)'),
-      suggestOutgoingLinks: z.boolean().default(false).describe('Append suggested outgoing wikilinks based on content (e.g., "→ [[AI]], [[Philosophy]]"). Disabled by default for templates; enable for content-rich notes.'),
+      suggestOutgoingLinks: z.boolean().default(true).describe('Append suggested outgoing wikilinks based on content (e.g., "→ [[AI]], [[Philosophy]]").'),
       maxSuggestions: z.number().min(1).max(10).default(3).describe('Maximum number of suggested wikilinks to append (1-10, default: 3)'),
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),

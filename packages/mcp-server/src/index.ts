@@ -14,7 +14,7 @@
  */
 
 import * as path from 'path';
-import { readFileSync } from 'fs';
+import { readFileSync, realpathSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -120,6 +120,9 @@ import { computeGraphMetrics, recordGraphSnapshot, purgeOldSnapshots } from './c
 // Core imports - Server Activity Log
 import { serverLog } from './core/shared/serverLog.js';
 
+// Core imports - Graph (forward links)
+import { getForwardLinksForNote } from './core/read/graph.js';
+
 // Core imports - Wikilink Feedback
 import { updateSuppressionList, getTrackedApplications, processImplicitFeedback } from './core/write/wikilinkFeedback.js';
 
@@ -136,6 +139,8 @@ import { registerVaultResources } from './resources/vault.js';
 
 // Auto-detect vault root, with PROJECT_PATH as override
 const vaultPath: string = process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot();
+let resolvedVaultPath: string;
+try { resolvedVaultPath = realpathSync(vaultPath).replace(/\\/g, '/'); } catch { resolvedVaultPath = vaultPath.replace(/\\/g, '/'); }
 
 // State variables
 let vaultIndex: VaultIndex;
@@ -789,6 +794,51 @@ async function runPostIndexWork(index: VaultIndex) {
       vaultPath,
       config,
       onBatch: async (batch) => {
+        // Convert event paths from absolute to vault-relative
+        // Handles symlink mismatches (e.g., WSL /mnt/c/ vs /home/user/ mounts)
+        const vaultPrefixes = new Set([
+          vaultPath.replace(/\\/g, '/'),
+          resolvedVaultPath,
+        ]);
+        for (const event of batch.events) {
+          const normalized = event.path.replace(/\\/g, '/');
+          let matched = false;
+          for (const prefix of vaultPrefixes) {
+            if (normalized.startsWith(prefix + '/')) {
+              event.path = normalized.slice(prefix.length + 1);
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) {
+            // Try resolving the event path itself (handles other symlink layouts)
+            try {
+              const resolved = realpathSync(event.path).replace(/\\/g, '/');
+              for (const prefix of vaultPrefixes) {
+                if (resolved.startsWith(prefix + '/')) {
+                  event.path = resolved.slice(prefix.length + 1);
+                  matched = true;
+                  break;
+                }
+              }
+            } catch { /* deleted file — try parent */
+              try {
+                const dir = path.dirname(event.path);
+                const base = path.basename(event.path);
+                const resolvedDir = realpathSync(dir).replace(/\\/g, '/');
+                for (const prefix of vaultPrefixes) {
+                  if (resolvedDir.startsWith(prefix + '/') || resolvedDir === prefix) {
+                    const relDir = resolvedDir === prefix ? '' : resolvedDir.slice(prefix.length + 1);
+                    event.path = relDir ? `${relDir}/${base}` : base;
+                    matched = true;
+                    break;
+                  }
+                }
+              } catch { /* give up, keep as-is */ }
+            }
+          }
+        }
+
         serverLog('watcher', `Processing ${batch.events.length} file changes`);
         const batchStart = Date.now();
         const changedPaths = batch.events.map(e => e.path);
@@ -801,6 +851,13 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.end({ note_count: vaultIndex.notes.size, entity_count: vaultIndex.entities.size, tag_count: vaultIndex.tags.size });
           serverLog('watcher', `Index rebuilt: ${vaultIndex.notes.size} notes, ${vaultIndex.entities.size} entities`);
 
+          // Capture hub scores BEFORE entity scan resets them
+          const hubBefore = new Map<string, number>();
+          if (stateDb) {
+            const rows = stateDb.db.prepare('SELECT name, hub_score FROM entities').all() as Array<{ name: string; hub_score: number }>;
+            for (const r of rows) hubBefore.set(r.name, r.hub_score);
+          }
+
           // Step 2: Entity scan (with diff tracking)
           const entitiesBefore = stateDb ? getAllEntitiesFromDb(stateDb) : [];
           tracker.start('entity_scan', { note_count: vaultIndex.notes.size });
@@ -811,11 +868,6 @@ async function runPostIndexWork(index: VaultIndex) {
           serverLog('watcher', `Entity scan: ${entitiesAfter.length} entities`);
 
           // Step 3: Hub scores (with before/after diffs)
-          const hubBefore = new Map<string, number>();
-          if (stateDb) {
-            const rows = stateDb.db.prepare('SELECT name, hub_score FROM entities').all() as Array<{ name: string; hub_score: number }>;
-            for (const r of rows) hubBefore.set(r.name, r.hub_score);
-          }
           tracker.start('hub_scores', { entity_count: entitiesAfter.length });
           const hubUpdated = await exportHubScores(vaultIndex, stateDb);
           const hubDiffs: Array<{ entity: string; before: number; after: number }> = [];
@@ -919,7 +971,40 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.end({ updated: taskUpdated, removed: taskRemoved });
           serverLog('watcher', `Task cache: ${taskUpdated} updated, ${taskRemoved} removed`);
 
-          // Step 8: Wikilink check — which tracked links exist in changed files
+          // Step 8: Forward link scan — all wikilinks in changed files
+          tracker.start('forward_links', { files: batch.events.length });
+          const forwardLinkResults: Array<{ file: string; resolved: string[]; dead: string[] }> = [];
+          let totalResolved = 0;
+          let totalDead = 0;
+          for (const event of batch.events) {
+            if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+            try {
+              const links = getForwardLinksForNote(vaultIndex, event.path);
+              const resolved: string[] = [];
+              const dead: string[] = [];
+              const seen = new Set<string>();
+              for (const link of links) {
+                const name = link.target;
+                if (seen.has(name.toLowerCase())) continue;
+                seen.add(name.toLowerCase());
+                if (link.exists) resolved.push(name);
+                else dead.push(name);
+              }
+              if (resolved.length > 0 || dead.length > 0) {
+                forwardLinkResults.push({ file: event.path, resolved, dead });
+              }
+              totalResolved += resolved.length;
+              totalDead += dead.length;
+            } catch { /* ignore */ }
+          }
+          tracker.end({
+            total_resolved: totalResolved,
+            total_dead: totalDead,
+            links: forwardLinkResults,
+          });
+          serverLog('watcher', `Forward links: ${totalResolved} resolved, ${totalDead} dead`);
+
+          // Step 9: Wikilink check — which tracked links exist in changed files
           tracker.start('wikilink_check', { files: batch.events.length });
           const trackedLinks: Array<{ file: string; entities: string[] }> = [];
           if (stateDb) {
@@ -934,7 +1019,7 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.end({ tracked: trackedLinks });
           serverLog('watcher', `Wikilink check: ${trackedLinks.reduce((s, t) => s + t.entities.length, 0)} tracked links in ${trackedLinks.length} files`);
 
-          // Step 9: Implicit feedback — which entities had links removed
+          // Step 10: Implicit feedback — which entities had links removed
           tracker.start('implicit_feedback', { files: batch.events.length });
           const feedbackResults: Array<{ entity: string; file: string }> = [];
           if (stateDb) {

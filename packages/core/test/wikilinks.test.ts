@@ -147,6 +147,24 @@ Learn React here`;
     expect(result.content).toContain('[[Project]]');
   });
 
+  it('excludes "Month End" from auto-linking', () => {
+    const content = 'The config files are off-limits for Month End to edit';
+    const result = applyWikilinks(content, [
+      { name: 'Month End', path: 'month-end.md', aliases: [] }
+    ]);
+    expect(result.content).toBe(content);
+    expect(result.linksAdded).toBe(0);
+  });
+
+  it('excludes "Quarterly Review" from auto-linking', () => {
+    const content = 'Prepare for the Quarterly Review next week';
+    const result = applyWikilinks(content, [
+      { name: 'Quarterly Review', path: 'quarterly-review.md', aliases: [] }
+    ]);
+    expect(result.content).toBe(content);
+    expect(result.linksAdded).toBe(0);
+  });
+
   it('should handle case-insensitive matching', () => {
     const content = 'Using react for development';
     const entities = ['React'];
@@ -171,6 +189,36 @@ Learn React here`;
 
     expect(result.content).toBe(content);
     expect(result.linksAdded).toBe(0);
+  });
+
+  describe('bracket-adjacent filtering', () => {
+    it('does not insert wikilinks adjacent to closing parenthesis', () => {
+      const content = '("You\'ve got momentum, focus on X today")';
+      const result = applyWikilinks(content, ['today']);
+      expect(result.content).toBe(content);
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it('does not insert wikilinks adjacent to opening bracket', () => {
+      const content = 'This is a [test] example';
+      const result = applyWikilinks(content, ['test']);
+      expect(result.content).toBe(content);
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it('still links entities surrounded by spaces', () => {
+      const content = 'We discussed React the progress';
+      const result = applyWikilinks(content, ['React']);
+      expect(result.content).toBe('We discussed [[React]] the progress');
+      expect(result.linksAdded).toBe(1);
+    });
+
+    it('does not insert wikilinks adjacent to curly braces', () => {
+      const content = 'The value is {test} here';
+      const result = applyWikilinks(content, ['test']);
+      expect(result.content).toBe(content);
+      expect(result.linksAdded).toBe(0);
+    });
   });
 
   describe('alias matching', () => {

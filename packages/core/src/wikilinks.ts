@@ -45,10 +45,18 @@ function getSearchTerms(entity: Entity): Array<{ term: string; entityName: strin
  * Common words to exclude from wikilink suggestions
  */
 const EXCLUDE_WORDS = new Set([
+  // Day names
   'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  // Month names
   'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august',
   'september', 'october', 'november', 'december',
+  // Temporal words
   'today', 'tomorrow', 'yesterday', 'week', 'month', 'year',
+  // Periodic review compounds
+  'month end', 'month start', 'year end', 'year start',
+  'quarter end', 'quarter start', 'quarterly review',
+  'weekly review', 'monthly review', 'annual review',
+  // Stop words
   'the', 'and', 'for', 'with', 'from', 'this', 'that',
   'christmas', 'holiday', 'break',
 ]);
@@ -70,6 +78,8 @@ function shouldExcludeEntity(entity: string): boolean {
 /**
  * Find all matches of an entity in content with word boundaries
  */
+const BRACKET_CHARS = new Set(['(', ')', '[', ']', '{', '}']);
+
 function findEntityMatches(
   content: string,
   entity: string,
@@ -83,9 +93,15 @@ function findEntityMatches(
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(content)) !== null) {
+    const start = match.index;
+    const end = start + match[0].length;
+    const charBefore = start > 0 ? content[start - 1] : '';
+    const charAfter = end < content.length ? content[end] : '';
+    if (BRACKET_CHARS.has(charBefore) || BRACKET_CHARS.has(charAfter)) continue;
+
     matches.push({
-      start: match.index,
-      end: match.index + match[0].length,
+      start,
+      end,
       matched: match[0],
     });
   }

@@ -126,6 +126,9 @@ import { getForwardLinksForNote } from './core/read/graph.js';
 // Core imports - Wikilink Feedback
 import { updateSuppressionList, getTrackedApplications, processImplicitFeedback } from './core/write/wikilinkFeedback.js';
 
+// Core imports - Recency
+import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from './core/shared/recency.js';
+
 // Node builtins
 import * as fs from 'node:fs/promises';
 
@@ -536,6 +539,9 @@ async function main() {
 
     // Set StateDb for wikilinks (entity index loads lazily from StateDb on first write)
     setWriteStateDb(stateDb);
+
+    // Set StateDb for recency tracking
+    setRecencyStateDb(stateDb);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     serverLog('statedb', `StateDb initialization failed: ${msg}`, 'error');
@@ -880,6 +886,26 @@ async function runPostIndexWork(index: VaultIndex) {
           }
           tracker.end({ updated: hubUpdated ?? 0, diffs: hubDiffs.slice(0, 10) });
           serverLog('watcher', `Hub scores: ${hubUpdated ?? 0} updated`);
+
+          // Step 3.5: Recency index — rebuild if stale (> 1 hour)
+          tracker.start('recency', { entity_count: entitiesAfter.length });
+          try {
+            const cachedRecency = loadRecencyFromStateDb();
+            const cacheAgeMs = cachedRecency ? Date.now() - (cachedRecency.lastUpdated ?? 0) : Infinity;
+            if (cacheAgeMs >= 60 * 60 * 1000) {
+              const entities = entitiesAfter.map(e => ({ name: e.name, path: e.path, aliases: e.aliases }));
+              const recencyIndex = await buildRecencyIndex(vaultPath, entities);
+              saveRecencyToStateDb(recencyIndex);
+              tracker.end({ rebuilt: true, entities: recencyIndex.lastMentioned.size });
+              serverLog('watcher', `Recency: rebuilt ${recencyIndex.lastMentioned.size} entities`);
+            } else {
+              tracker.end({ rebuilt: false, cached_age_ms: cacheAgeMs });
+              serverLog('watcher', `Recency: cache valid (${Math.round(cacheAgeMs / 1000)}s old)`);
+            }
+          } catch (e) {
+            tracker.end({ error: String(e) });
+            serverLog('watcher', `Recency: failed: ${e}`);
+          }
 
           // Step 4: Note embeddings (with updated paths)
           if (hasEmbeddingsIndex()) {

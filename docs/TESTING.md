@@ -2,7 +2,7 @@
 
 Your vault is your second brain. You don't hand it to software you can't trust.
 
-**1,812 tests | 78 test files | 33,000+ lines of test code**
+**2,001 tests | 91 test files | 37,000+ lines of test code**
 
 ---
 
@@ -99,6 +99,36 @@ Tests for first-run and degraded environments:
 - **Read-only vault:** appropriate error handling when the filesystem denies writes.
 
 Source: [`packages/mcp-server/test/write/coldstart/`](../packages/mcp-server/test/write/coldstart/)
+
+---
+
+## Graph Quality (162 tests, 14 files)
+
+The graph quality suite validates that the wikilink suggestion engine works correctly across every scenario that matters: precision/recall, scoring layers, archetypes, feedback loops, temporal evolution, and regression gates.
+
+**Pillars 1-6 (Phase 1-2):**
+
+- **Precision/Recall** -- per-mode, per-tier, per-category metrics against a 96-note/61-entity/60-link ground truth vault (18 tests)
+- **Scoring Layers** -- 12-layer ablation proving each layer's contribution to F1 (13 tests)
+- **Graph Health** -- topology metrics: link density, orphan rate, connectedness, clustering coefficient (11 tests)
+- **Archetypes** -- 6 structural topologies: hub-and-spoke, hierarchical, dense-mesh, sparse-orphan, bridge-network, small-world (32 tests)
+- **Chaos** -- adversarial vault conditions: typos, abbreviations, ambiguous entities (7 tests)
+- **Observability** -- pipeline tracing, algorithm attribution, suggestion events with ScoreBreakdown (33 tests)
+
+**Full Spectrum (Phase 3):**
+
+- **Regression Gate** -- locks F1/precision/recall/MRR per mode into `baselines.json`; CI fails if any metric regresses >5% (5 tests)
+- **Feedback Integration** -- positive boosts, negative suppression, entity journey stages, Champion tier validation (7 tests)
+- **Strictness Differentiation** -- proves 3 modes produce different outputs with expected ordering (7 tests)
+- **Temporal Evolution** -- 5-cycle vault growth simulation proving F1 is non-decreasing (5 tests)
+- **Golden Set** -- 20 hand-curated "obvious" links with 100% recall target (4 tests)
+- **Parameter Sweep** -- maxSuggestions sweep (1-10), curve smoothness, mode comparison (5 tests)
+
+Measured baselines: conservative F1=82.7%, balanced F1=76.9%, precision=90.9%, recall=66.7%.
+
+Sources: [`packages/mcp-server/test/graph-quality/`](../packages/mcp-server/test/graph-quality/)
+
+To regenerate baselines: `npx tsx packages/mcp-server/test/graph-quality/generate-baselines.ts`
 
 ---
 

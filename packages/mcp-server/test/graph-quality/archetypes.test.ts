@@ -11,10 +11,13 @@ import {
   stripLinks,
   runSuggestionsOnVault,
   evaluateSuggestions,
+  computeGraphHealth,
+  validateFixture,
   loadArchetype,
   type TempVault,
   type GroundTruthSpec,
   type PrecisionRecallReport,
+  type GraphHealthReport,
 } from './harness.js';
 
 const ARCHETYPES = [
@@ -27,6 +30,50 @@ const ARCHETYPES = [
 ] as const;
 
 type ArchetypeName = (typeof ARCHETYPES)[number];
+
+// F1 and precision thresholds per archetype (measured baselines minus ~5% headroom)
+const THRESHOLDS: Record<ArchetypeName, { f1: number; precision: number }> = {
+  'hub-and-spoke':  { f1: 0.06, precision: 0.05 },
+  'hierarchical':   { f1: 0.42, precision: 0.29 },
+  'dense-mesh':     { f1: 0.14, precision: 0.08 },
+  'sparse-orphan':  { f1: 0.17, precision: 0.13 },
+  'bridge-network': { f1: 0.27, precision: 0.27 },
+  'small-world':    { f1: 0.66, precision: 0.63 },
+};
+
+// Per-archetype topology expectations
+const TOPOLOGY: Record<ArchetypeName, (h: GraphHealthReport) => void> = {
+  'hub-and-spoke': (h) => {
+    expect(h.connectedness).toBe(1.0);
+    expect(h.clusteringCoefficient).toBeGreaterThan(0.3);
+    expect(h.giniCoefficient).toBeLessThan(0.5);
+  },
+  'hierarchical': (h) => {
+    expect(h.orphanRate).toBeGreaterThan(0.5);
+    expect(h.giniCoefficient).toBeGreaterThan(0.5);
+    expect(h.clusteringCoefficient).toBeLessThan(0.1);
+  },
+  'dense-mesh': (h) => {
+    expect(h.clusteringCoefficient).toBeGreaterThan(0.5);
+    expect(h.linkDensity).toBeGreaterThan(5.0);
+    expect(h.orphanRate).toBeLessThan(0.3);
+  },
+  'sparse-orphan': (h) => {
+    expect(h.orphanRate).toBeGreaterThan(0.3);
+    expect(h.giniCoefficient).toBeGreaterThan(0.5);
+    expect(h.linkDensity).toBeLessThan(3.0);
+  },
+  'bridge-network': (h) => {
+    expect(h.connectedness).toBeGreaterThan(0.5);
+    expect(h.avgPathLength).toBeGreaterThan(2.5);
+    expect(h.clusteringCoefficient).toBeGreaterThan(0.3);
+  },
+  'small-world': (h) => {
+    expect(h.connectedness).toBeGreaterThan(0.7);
+    expect(h.avgPathLength).toBeLessThan(5.0);
+    expect(h.orphanRate).toBeLessThan(0.2);
+  },
+};
 
 // Collect results across archetypes for cross-archetype tests
 const archetypeResults = new Map<ArchetypeName, PrecisionRecallReport>();
@@ -61,22 +108,31 @@ describe('Pillar 4: Structural Archetype Resilience', () => {
         if (vault) await vault.cleanup();
       });
 
-      it('achieves F1 >= 0 (baseline measurement)', () => {
+      it('fixture has valid ground truth', () => {
         if (!fixtureFound) return;
-        // Baseline measurement — some archetypes have fixture issues that need
-        // fixing before thresholds can be tightened. F1=0 means the fixture's
-        // ground truth doesn't align with the entity index.
-        expect(report.f1).toBeGreaterThanOrEqual(0);
+        const missing = validateFixture(spec);
+        expect(missing, `Ground truth validation errors:\n${missing.join('\n')}`).toHaveLength(0);
       });
 
-      it('has precision >= 0 (baseline measurement)', () => {
+      it(`achieves F1 >= ${THRESHOLDS[archetype].f1}`, () => {
         if (!fixtureFound) return;
-        expect(report.precision).toBeGreaterThanOrEqual(0);
+        expect(report.f1).toBeGreaterThanOrEqual(THRESHOLDS[archetype].f1);
+      });
+
+      it(`has precision >= ${THRESHOLDS[archetype].precision}`, () => {
+        if (!fixtureFound) return;
+        expect(report.precision).toBeGreaterThanOrEqual(THRESHOLDS[archetype].precision);
       });
 
       it('produces suggestions', () => {
         if (!fixtureFound) return;
         expect(report.totalSuggestions).toBeGreaterThan(0);
+      });
+
+      it('has expected topology', async () => {
+        if (!fixtureFound) return;
+        const health = await computeGraphHealth(vault.vaultPath);
+        TOPOLOGY[archetype](health);
       });
     });
   }

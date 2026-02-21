@@ -849,6 +849,30 @@ function computeBetweennessCentrality(
 }
 
 // =============================================================================
+// Fixture Validation
+// =============================================================================
+
+/**
+ * Validate that a fixture's ground truth references actually exist in the spec.
+ * Returns an array of missing-reference error messages (empty = valid).
+ */
+export function validateFixture(spec: GroundTruthSpec): string[] {
+  const entityNames = new Set(spec.entities.map(e => e.name.toLowerCase()));
+  const notePathSet = new Set(spec.notes.map(n => n.path));
+  const missing: string[] = [];
+
+  for (const gt of spec.groundTruth) {
+    if (!entityNames.has(gt.entity.toLowerCase())) {
+      missing.push(`Ground truth entity "${gt.entity}" not found in fixture entities`);
+    }
+    if (!notePathSet.has(gt.notePath)) {
+      missing.push(`Ground truth note "${gt.notePath}" not found in fixture notes`);
+    }
+  }
+  return missing;
+}
+
+// =============================================================================
 // Fixture Loading
 // =============================================================================
 

@@ -1,0 +1,23 @@
+{
+  "generated": "2026-02-21",
+  "primary": {
+    "conservative": {
+      "f1": 0.827,
+      "precision": 0.977,
+      "recall": 0.717,
+      "mrr": 0.48
+    },
+    "balanced": {
+      "f1": 0.769,
+      "precision": 0.909,
+      "recall": 0.667,
+      "mrr": 0.424
+    },
+    "aggressive": {
+      "f1": 0.769,
+      "precision": 0.909,
+      "recall": 0.667,
+      "mrr": 0.424
+    }
+  }
+}

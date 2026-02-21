@@ -111,9 +111,22 @@
 | Degree Centrality StdDev | 9.042 | 0.500-5.000 | FAIL |
 | Cluster Count | 1.000 | 1.000-5.000 | PASS |
 
-## 11. Methodology
+## 11. Full Spectrum Coverage (Phase 3)
 
-- All tests deterministic (fixed seeds)
+| Test File | Tests | Purpose |
+|---|---|---|
+| regression-gate | 5 | Locks metrics into baselines.json; CI fails if any regresses >5% |
+| feedback-integration | 7 | Feedback loop: boost tiers, suppression, entity journey, F1 improvement |
+| strictness | 7 | Mode differentiation: suggestion counts, precision/recall ordering |
+| temporal | 5 | 5-cycle vault growth: F1 non-decreasing, data accumulation |
+| golden-set | 4 | 20 hand-curated obvious links with 100% recall target |
+| parameter-sweep | 5 | maxSuggestions sweep (1-10), curve smoothness, mode comparison |
+
+**Total: 162 graph-quality tests across 14 files. 2,001 tests project-wide.**
+
+## 12. Methodology
+
+- All tests deterministic (fixed seeds, reproducible fixtures)
 - Ground truth links are stripped from notes before testing; the engine must rediscover them
 - Precision = true positives / total suggestions
 - Recall = true positives / total ground truth

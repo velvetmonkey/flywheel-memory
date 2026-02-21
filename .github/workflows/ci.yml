@@ -154,6 +154,26 @@ jobs:
         working-directory: packages/mcp-server
         run: npx vitest run test/read/platform/ test/read/publish/ test/write/platform/ test/write/publish/
 
+  test-graph-quality:
+    name: "Test: graph quality"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Run graph quality tests
+        working-directory: packages/mcp-server
+        run: npx vitest run test/graph-quality/
+      - name: Regression gate (baselines.json)
+        working-directory: packages/mcp-server
+        run: |
+          npx vitest run test/graph-quality/regression-gate.test.ts
+
   # ---------------------------------------------------------------------------
   # Full matrix — catches cross-platform + older Node regressions
   # ---------------------------------------------------------------------------

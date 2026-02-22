@@ -69,7 +69,7 @@ import {
 } from './core/read/taskCache.js';
 
 // Vault-core shared imports
-import { openStateDb, scanVaultEntities, getSessionId, getAllEntitiesFromDb, type StateDb } from '@velvetmonkey/vault-core';
+import { openStateDb, scanVaultEntities, getSessionId, getAllEntitiesFromDb, findEntityMatches, getProtectedZones, rangeOverlapsProtectedZone, type StateDb } from '@velvetmonkey/vault-core';
 
 // Read tool registrations
 import { registerGraphTools } from './tools/read/graph.js';
@@ -1259,6 +1259,20 @@ async function runPostIndexWork(index: VaultIndex) {
                 }
               }
             }
+
+            // Handle upserts where all wikilinks were removed (0 remaining links).
+            // These were excluded from forwardLinkResults so their note_links
+            // were never diffed. Check stored state and emit removals.
+            const processedFiles = new Set(forwardLinkResults.map(r => r.file));
+            for (const event of filteredEvents) {
+              if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+              if (processedFiles.has(event.path)) continue;
+              const previousSet = getStoredNoteLinks(stateDb, event.path);
+              if (previousSet.size > 0) {
+                linkDiffs.push({ file: event.path, added: [], removed: [...previousSet] });
+                updateStoredNoteLinks(stateDb, event.path, new Set());
+              }
+            }
           }
 
           tracker.end({
@@ -1300,8 +1314,45 @@ async function runPostIndexWork(index: VaultIndex) {
             }
           }
 
-          tracker.end({ tracked: trackedLinks });
-          serverLog('watcher', `Wikilink check: ${trackedLinks.reduce((s, t) => s + t.entities.length, 0)} tracked links in ${trackedLinks.length} files`);
+          // Detect unwikified entity mentions in changed files
+          const mentionResults: Array<{ file: string; entities: string[] }> = [];
+          for (const event of filteredEvents) {
+            if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+            try {
+              const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+              const zones = getProtectedZones(content);
+              // Already-wikified entities for this file (from step 8)
+              const linked = new Set(
+                (forwardLinkResults.find(r => r.file === event.path)?.resolved ?? [])
+                  .map(n => n.toLowerCase())
+              );
+              const mentions: string[] = [];
+              for (const entity of entitiesAfter) {
+                if (linked.has(entity.nameLower)) continue; // already wikified
+                // Check entity name
+                const matches = findEntityMatches(content, entity.name, true);
+                const valid = matches.some(m => !rangeOverlapsProtectedZone(m.start, m.end, zones));
+                if (valid) {
+                  mentions.push(entity.name);
+                  continue;
+                }
+                // Check aliases
+                for (const alias of (entity.aliases ?? [])) {
+                  const aliasMatches = findEntityMatches(content, alias, true);
+                  if (aliasMatches.some(m => !rangeOverlapsProtectedZone(m.start, m.end, zones))) {
+                    mentions.push(entity.name);
+                    break;
+                  }
+                }
+              }
+              if (mentions.length > 0) {
+                mentionResults.push({ file: event.path, entities: mentions });
+              }
+            } catch { /* ignore */ }
+          }
+
+          tracker.end({ tracked: trackedLinks, mentions: mentionResults });
+          serverLog('watcher', `Wikilink check: ${trackedLinks.reduce((s, t) => s + t.entities.length, 0)} tracked links in ${trackedLinks.length} files, ${mentionResults.reduce((s, m) => s + m.entities.length, 0)} unwikified mentions`);
 
           // Step 10: Implicit feedback — which entities had links removed
           tracker.start('implicit_feedback', { files: filteredEvents.length });

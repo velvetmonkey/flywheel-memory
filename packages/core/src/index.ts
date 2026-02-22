@@ -42,6 +42,7 @@ export {
   resolveAliasWikilinks,
   suggestWikilinks,
   detectImplicitEntities,
+  findEntityMatches,
 } from './wikilinks.js';
 
 // Protected zones

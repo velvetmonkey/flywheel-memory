@@ -80,7 +80,7 @@ function shouldExcludeEntity(entity: string): boolean {
  */
 const BRACKET_CHARS = new Set(['(', ')', '[', ']', '{', '}']);
 
-function findEntityMatches(
+export function findEntityMatches(
   content: string,
   entity: string,
   caseInsensitive: boolean

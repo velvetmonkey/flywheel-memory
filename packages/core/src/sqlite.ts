@@ -108,7 +108,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 18;
+export const SCHEMA_VERSION = 19;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -403,6 +403,16 @@ CREATE TABLE IF NOT EXISTS note_tags (
   tag TEXT NOT NULL,
   PRIMARY KEY (note_path, tag)
 );
+
+-- Wikilink survival tracking for positive feedback signals (v19)
+CREATE TABLE IF NOT EXISTS note_link_history (
+  note_path TEXT NOT NULL,
+  target TEXT NOT NULL,
+  first_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+  edits_survived INTEGER NOT NULL DEFAULT 0,
+  last_positive_at TEXT,
+  PRIMARY KEY (note_path, target)
+);
 `;
 
 // =============================================================================
@@ -535,6 +545,9 @@ function initSchema(db: Database.Database): void {
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     // v18: note_tags table (tag persistence for diff-based feedback)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v19: note_link_history table (wikilink survival tracking for positive feedback)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(

@@ -1135,6 +1135,19 @@ async function runPostIndexWork(index: VaultIndex) {
           // Diff against stored links to detect additions/removals
           const linkDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
           if (stateDb) {
+            // Prepared statements for link survival tracking (T2)
+            const upsertHistory = stateDb.db.prepare(`
+              INSERT INTO note_link_history (note_path, target) VALUES (?, ?)
+              ON CONFLICT(note_path, target) DO UPDATE SET edits_survived = edits_survived + 1
+            `);
+            const checkThreshold = stateDb.db.prepare(`
+              SELECT target FROM note_link_history
+              WHERE note_path = ? AND target = ? AND edits_survived >= 3 AND last_positive_at IS NULL
+            `);
+            const markPositive = stateDb.db.prepare(`
+              UPDATE note_link_history SET last_positive_at = datetime('now') WHERE note_path = ? AND target = ?
+            `);
+
             for (const entry of forwardLinkResults) {
               const currentSet = new Set([
                 ...entry.resolved.map(n => n.toLowerCase()),
@@ -1152,6 +1165,23 @@ async function runPostIndexWork(index: VaultIndex) {
                 linkDiffs.push({ file: entry.file, ...diff });
               }
               updateStoredNoteLinks(stateDb, entry.file, currentSet);
+
+              // Track survival of persisted links and emit positive feedback at threshold
+              for (const link of currentSet) {
+                if (!previousSet.has(link)) continue; // only persisted links
+                upsertHistory.run(entry.file, link);
+                const hit = checkThreshold.get(entry.file, link) as { target: string } | undefined;
+                if (hit) {
+                  const entity = entitiesAfter.find(
+                    e => e.nameLower === link ||
+                         (e.aliases ?? []).some((a: string) => a.toLowerCase() === link)
+                  );
+                  if (entity) {
+                    recordFeedback(stateDb, entity.name, 'implicit:kept', entry.file, true);
+                    markPositive.run(entry.file, link);
+                  }
+                }
+              }
             }
             // Handle deleted files — clear their stored links and report removals
             for (const event of filteredEvents) {

@@ -1314,8 +1314,8 @@ async function runPostIndexWork(index: VaultIndex) {
                 // Avoid duplicates with processImplicitFeedback results
                 if (feedbackResults.some(r => r.entity === target && r.file === diff.file)) continue;
                 // Only record feedback for known entities (not arbitrary dead-link text)
-                const entity = vaultIndex.entities?.find(
-                  (e: { name: string; aliases?: string[] }) => e.name.toLowerCase() === target ||
+                const entity = entitiesAfter.find(
+                  e => e.nameLower === target ||
                     (e.aliases ?? []).some((a: string) => a.toLowerCase() === target)
                 );
                 if (entity) {

@@ -125,7 +125,8 @@ import { serverLog } from './core/shared/serverLog.js';
 import { getForwardLinksForNote } from './core/read/graph.js';
 
 // Core imports - Wikilink Feedback
-import { updateSuppressionList, getTrackedApplications, processImplicitFeedback } from './core/write/wikilinkFeedback.js';
+import { updateSuppressionList, getTrackedApplications, processImplicitFeedback,
+         getStoredNoteLinks, updateStoredNoteLinks, diffNoteLinks, recordFeedback } from './core/write/wikilinkFeedback.js';
 
 // Core imports - Recency
 import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from './core/shared/recency.js';
@@ -1087,6 +1088,7 @@ async function runPostIndexWork(index: VaultIndex) {
 
           // Step 8: Forward link scan — all wikilinks in changed files
           tracker.start('forward_links', { files: filteredEvents.length });
+          const eventTypeMap = new Map(filteredEvents.map(e => [e.path, e.type]));
           const forwardLinkResults: Array<{ file: string; resolved: string[]; dead: string[] }> = [];
           let totalResolved = 0;
           let totalDead = 0;
@@ -1111,10 +1113,45 @@ async function runPostIndexWork(index: VaultIndex) {
               totalDead += dead.length;
             } catch { /* ignore */ }
           }
+
+          // Diff against stored links to detect additions/removals
+          const linkDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
+          if (stateDb) {
+            for (const entry of forwardLinkResults) {
+              const currentSet = new Set([
+                ...entry.resolved.map(n => n.toLowerCase()),
+                ...entry.dead.map(n => n.toLowerCase()),
+              ]);
+              const previousSet = getStoredNoteLinks(stateDb, entry.file);
+              // First-run mitigation: if no stored links, seed without reporting additions
+              // (avoids flooding on first pipeline run after schema upgrade)
+              if (previousSet.size === 0) {
+                updateStoredNoteLinks(stateDb, entry.file, currentSet);
+                continue;
+              }
+              const diff = diffNoteLinks(previousSet, currentSet);
+              if (diff.added.length > 0 || diff.removed.length > 0) {
+                linkDiffs.push({ file: entry.file, ...diff });
+              }
+              updateStoredNoteLinks(stateDb, entry.file, currentSet);
+            }
+            // Handle deleted files — clear their stored links and report removals
+            for (const event of filteredEvents) {
+              if (event.type === 'delete') {
+                const previousSet = getStoredNoteLinks(stateDb, event.path);
+                if (previousSet.size > 0) {
+                  linkDiffs.push({ file: event.path, added: [], removed: [...previousSet] });
+                  updateStoredNoteLinks(stateDb, event.path, new Set());
+                }
+              }
+            }
+          }
+
           tracker.end({
             total_resolved: totalResolved,
             total_dead: totalDead,
             links: forwardLinkResults,
+            link_diffs: linkDiffs,
           });
           serverLog('watcher', `Forward links: ${totalResolved} resolved, ${totalDead} dead`);
 
@@ -1130,6 +1167,24 @@ async function runPostIndexWork(index: VaultIndex) {
               } catch { /* ignore */ }
             }
           }
+
+          // Also include manual wikilink additions from forward_links diff
+          for (const diff of linkDiffs) {
+            if (diff.added.length === 0) continue;
+            const existing = trackedLinks.find(t => t.file === diff.file);
+            if (existing) {
+              const set = new Set(existing.entities.map(e => e.toLowerCase()));
+              for (const a of diff.added) {
+                if (!set.has(a)) {
+                  existing.entities.push(a);
+                  set.add(a);
+                }
+              }
+            } else {
+              trackedLinks.push({ file: diff.file, entities: diff.added });
+            }
+          }
+
           tracker.end({ tracked: trackedLinks });
           serverLog('watcher', `Wikilink check: ${trackedLinks.reduce((s, t) => s + t.entities.length, 0)} tracked links in ${trackedLinks.length} files`);
 
@@ -1146,6 +1201,26 @@ async function runPostIndexWork(index: VaultIndex) {
               } catch { /* ignore */ }
             }
           }
+
+          // Also detect manual wikilink removals via forward_links diff
+          if (stateDb && linkDiffs.length > 0) {
+            for (const diff of linkDiffs) {
+              for (const target of diff.removed) {
+                // Avoid duplicates with processImplicitFeedback results
+                if (feedbackResults.some(r => r.entity === target && r.file === diff.file)) continue;
+                // Only record feedback for known entities (not arbitrary dead-link text)
+                const entity = vaultIndex.entities?.find(
+                  (e: { name: string; aliases?: string[] }) => e.name.toLowerCase() === target ||
+                    (e.aliases ?? []).some((a: string) => a.toLowerCase() === target)
+                );
+                if (entity) {
+                  recordFeedback(stateDb, entity.name, 'implicit:removed', diff.file, false);
+                  feedbackResults.push({ entity: entity.name, file: diff.file });
+                }
+              }
+            }
+          }
+
           tracker.end({ removals: feedbackResults });
           if (feedbackResults.length > 0) {
             serverLog('watcher', `Implicit feedback: ${feedbackResults.length} removals detected`);

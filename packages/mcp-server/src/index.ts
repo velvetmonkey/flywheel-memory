@@ -126,7 +126,8 @@ import { getForwardLinksForNote } from './core/read/graph.js';
 
 // Core imports - Wikilink Feedback
 import { updateSuppressionList, getTrackedApplications, processImplicitFeedback,
-         getStoredNoteLinks, updateStoredNoteLinks, diffNoteLinks, recordFeedback } from './core/write/wikilinkFeedback.js';
+         getStoredNoteLinks, updateStoredNoteLinks, diffNoteLinks, recordFeedback,
+         getStoredNoteTags, updateStoredNoteTags } from './core/write/wikilinkFeedback.js';
 
 // Core imports - Recency
 import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from './core/shared/recency.js';
@@ -1241,6 +1242,54 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.end({ removals: feedbackResults });
           if (feedbackResults.length > 0) {
             serverLog('watcher', `Implicit feedback: ${feedbackResults.length} removals detected`);
+          }
+
+          // Step 11: Tag scan — detect tag additions/removals per changed note
+          tracker.start('tag_scan', { files: filteredEvents.length });
+          const tagDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
+          if (stateDb) {
+            // Build forward lookup: note path → tags (from VaultIndex inverted index)
+            const noteTagsForward = new Map<string, Set<string>>();
+            for (const [tag, paths] of vaultIndex.tags) {
+              for (const notePath of paths) {
+                if (!noteTagsForward.has(notePath)) noteTagsForward.set(notePath, new Set());
+                noteTagsForward.get(notePath)!.add(tag);
+              }
+            }
+
+            for (const event of filteredEvents) {
+              if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+              const currentSet = noteTagsForward.get(event.path) ?? new Set<string>();
+              const previousSet = getStoredNoteTags(stateDb, event.path);
+              // First-run mitigation: seed without reporting additions
+              if (previousSet.size === 0 && currentSet.size > 0) {
+                updateStoredNoteTags(stateDb, event.path, currentSet);
+                continue;
+              }
+              const added = [...currentSet].filter(t => !previousSet.has(t));
+              const removed = [...previousSet].filter(t => !currentSet.has(t));
+              if (added.length > 0 || removed.length > 0) {
+                tagDiffs.push({ file: event.path, added, removed });
+              }
+              updateStoredNoteTags(stateDb, event.path, currentSet);
+            }
+
+            // Handle deleted files — clear stored tags and report removals
+            for (const event of filteredEvents) {
+              if (event.type === 'delete') {
+                const previousSet = getStoredNoteTags(stateDb, event.path);
+                if (previousSet.size > 0) {
+                  tagDiffs.push({ file: event.path, added: [], removed: [...previousSet] });
+                  updateStoredNoteTags(stateDb, event.path, new Set());
+                }
+              }
+            }
+          }
+          const totalTagsAdded = tagDiffs.reduce((s, d) => s + d.added.length, 0);
+          const totalTagsRemoved = tagDiffs.reduce((s, d) => s + d.removed.length, 0);
+          tracker.end({ total_added: totalTagsAdded, total_removed: totalTagsRemoved, tag_diffs: tagDiffs });
+          if (tagDiffs.length > 0) {
+            serverLog('watcher', `Tag scan: ${totalTagsAdded} added, ${totalTagsRemoved} removed across ${tagDiffs.length} files`);
           }
 
           // Record event with all steps

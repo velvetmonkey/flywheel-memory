@@ -108,7 +108,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 17;
+export const SCHEMA_VERSION = 18;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -396,6 +396,13 @@ CREATE TABLE IF NOT EXISTS entity_changes (
   changed_at TEXT NOT NULL DEFAULT (datetime('now')),
   PRIMARY KEY (entity, field, changed_at)
 );
+
+-- Note tag persistence for diff-based feedback (v18)
+CREATE TABLE IF NOT EXISTS note_tags (
+  note_path TEXT NOT NULL,
+  tag TEXT NOT NULL,
+  PRIMARY KEY (note_path, tag)
+);
 `;
 
 // =============================================================================
@@ -525,6 +532,9 @@ function initSchema(db: Database.Database): void {
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     // v17: entity_changes table (entity field change audit log)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v18: note_tags table (tag persistence for diff-based feedback)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(

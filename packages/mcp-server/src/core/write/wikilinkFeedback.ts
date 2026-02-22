@@ -539,6 +539,31 @@ export function diffNoteLinks(
   };
 }
 
+/** Get previously stored tags for a note */
+export function getStoredNoteTags(stateDb: StateDb, notePath: string): Set<string> {
+  const rows = stateDb.db.prepare(
+    'SELECT tag FROM note_tags WHERE note_path = ?'
+  ).all(notePath) as Array<{ tag: string }>;
+  return new Set(rows.map(r => r.tag));
+}
+
+/** Replace stored tags for a note with current set */
+export function updateStoredNoteTags(
+  stateDb: StateDb,
+  notePath: string,
+  currentTags: Set<string>,
+): void {
+  const del = stateDb.db.prepare('DELETE FROM note_tags WHERE note_path = ?');
+  const ins = stateDb.db.prepare('INSERT INTO note_tags (note_path, tag) VALUES (?, ?)');
+  const tx = stateDb.db.transaction(() => {
+    del.run(notePath);
+    for (const tag of currentTags) {
+      ins.run(notePath, tag);
+    }
+  });
+  tx();
+}
+
 /**
  * Detect removed auto-applied wikilinks and record implicit negative feedback
  *

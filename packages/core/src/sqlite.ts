@@ -108,7 +108,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 19;
+export const SCHEMA_VERSION = 20;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -413,6 +413,19 @@ CREATE TABLE IF NOT EXISTS note_link_history (
   last_positive_at TEXT,
   PRIMARY KEY (note_path, target)
 );
+
+-- Note move history (v20): records when files are moved/renamed to a different folder
+CREATE TABLE IF NOT EXISTS note_moves (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  old_path TEXT NOT NULL,
+  new_path TEXT NOT NULL,
+  moved_at TEXT NOT NULL DEFAULT (datetime('now')),
+  old_folder TEXT,
+  new_folder TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_note_moves_old_path ON note_moves(old_path);
+CREATE INDEX IF NOT EXISTS idx_note_moves_new_path ON note_moves(new_path);
+CREATE INDEX IF NOT EXISTS idx_note_moves_moved_at ON note_moves(moved_at);
 `;
 
 // =============================================================================
@@ -548,6 +561,9 @@ function initSchema(db: Database.Database): void {
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     // v19: note_link_history table (wikilink survival tracking for positive feedback)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v20: note_moves table (records file renames/moves detected by the watcher)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(

@@ -68,7 +68,7 @@ export type WatchEventType = 'add' | 'change' | 'unlink';
 /**
  * Coalesced event type for processing
  */
-export type CoalescedEventType = 'upsert' | 'delete';
+export type CoalescedEventType = 'upsert' | 'delete' | 'rename';
 
 /**
  * Raw file watch event
@@ -89,10 +89,23 @@ export interface CoalescedEvent {
 }
 
 /**
+ * Rename event: a file was moved from oldPath to newPath.
+ * Detected when a 'delete' and an 'upsert' share the same file stem
+ * within a 5-second timestamp window.
+ */
+export interface RenameEvent {
+  type: 'rename';
+  oldPath: string;
+  newPath: string;
+  timestamp: number;
+}
+
+/**
  * Batch of events to process
  */
 export interface EventBatch {
   events: CoalescedEvent[];
+  renames: RenameEvent[];
   timestamp: number;
 }
 

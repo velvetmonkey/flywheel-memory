@@ -135,7 +135,7 @@ import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecen
 // Node builtins
 import * as fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import type { CoalescedEvent, EventBatch } from './core/read/watch/types.js';
+import type { CoalescedEvent, EventBatch, RenameEvent } from './core/read/watch/types.js';
 import type { BatchHandler } from './core/read/watch/index.js';
 
 // Resources
@@ -852,44 +852,48 @@ async function runPostIndexWork(index: VaultIndex) {
           vaultPath.replace(/\\/g, '/'),
           resolvedVaultPath,
         ]);
-        for (const event of batch.events) {
-          const normalized = event.path.replace(/\\/g, '/');
-          let matched = false;
+        /** Normalize a single path from absolute to vault-relative */
+        const normalizeEventPath = (rawPath: string): string => {
+          const normalized = rawPath.replace(/\\/g, '/');
           for (const prefix of vaultPrefixes) {
             if (normalized.startsWith(prefix + '/')) {
-              event.path = normalized.slice(prefix.length + 1);
-              matched = true;
-              break;
+              return normalized.slice(prefix.length + 1);
             }
           }
-          if (!matched) {
-            // Try resolving the event path itself (handles other symlink layouts)
+          // Try resolving the path itself (handles other symlink layouts)
+          try {
+            const resolved = realpathSync(rawPath).replace(/\\/g, '/');
+            for (const prefix of vaultPrefixes) {
+              if (resolved.startsWith(prefix + '/')) {
+                return resolved.slice(prefix.length + 1);
+              }
+            }
+          } catch { /* deleted file — try parent */
             try {
-              const resolved = realpathSync(event.path).replace(/\\/g, '/');
+              const dir = path.dirname(rawPath);
+              const base = path.basename(rawPath);
+              const resolvedDir = realpathSync(dir).replace(/\\/g, '/');
               for (const prefix of vaultPrefixes) {
-                if (resolved.startsWith(prefix + '/')) {
-                  event.path = resolved.slice(prefix.length + 1);
-                  matched = true;
-                  break;
+                if (resolvedDir.startsWith(prefix + '/') || resolvedDir === prefix) {
+                  const relDir = resolvedDir === prefix ? '' : resolvedDir.slice(prefix.length + 1);
+                  return relDir ? `${relDir}/${base}` : base;
                 }
               }
-            } catch { /* deleted file — try parent */
-              try {
-                const dir = path.dirname(event.path);
-                const base = path.basename(event.path);
-                const resolvedDir = realpathSync(dir).replace(/\\/g, '/');
-                for (const prefix of vaultPrefixes) {
-                  if (resolvedDir.startsWith(prefix + '/') || resolvedDir === prefix) {
-                    const relDir = resolvedDir === prefix ? '' : resolvedDir.slice(prefix.length + 1);
-                    event.path = relDir ? `${relDir}/${base}` : base;
-                    matched = true;
-                    break;
-                  }
-                }
-              } catch { /* give up, keep as-is */ }
-            }
+            } catch { /* give up, return as-is */ }
           }
+          return normalized;
+        };
+
+        for (const event of batch.events) {
+          event.path = normalizeEventPath(event.path);
         }
+
+        // Normalize rename paths too
+        const batchRenames: RenameEvent[] = (batch.renames ?? []).map(r => ({
+          ...r,
+          oldPath: normalizeEventPath(r.oldPath),
+          newPath: normalizeEventPath(r.newPath),
+        }));
 
         // Content hash gate: skip files that haven't changed since last batch
         const filteredEvents: CoalescedEvent[] = [];
@@ -913,8 +917,52 @@ async function runPostIndexWork(index: VaultIndex) {
           }
         }
 
+        // Process rename events: record moves and update path references in DB
+        if (batchRenames.length > 0 && stateDb) {
+          try {
+            const insertMove = stateDb.db.prepare(`
+              INSERT INTO note_moves (old_path, new_path, old_folder, new_folder)
+              VALUES (?, ?, ?, ?)
+            `);
+            const renameNoteLinks = stateDb.db.prepare(
+              'UPDATE note_links SET note_path = ? WHERE note_path = ?'
+            );
+            const renameNoteTags = stateDb.db.prepare(
+              'UPDATE note_tags SET note_path = ? WHERE note_path = ?'
+            );
+            const renameNoteLinkHistory = stateDb.db.prepare(
+              'UPDATE note_link_history SET note_path = ? WHERE note_path = ?'
+            );
+            const renameWikilinkApplications = stateDb.db.prepare(
+              'UPDATE wikilink_applications SET note_path = ? WHERE note_path = ?'
+            );
+            for (const rename of batchRenames) {
+              const oldFolder = rename.oldPath.includes('/') ? rename.oldPath.split('/').slice(0, -1).join('/') : '';
+              const newFolder = rename.newPath.includes('/') ? rename.newPath.split('/').slice(0, -1).join('/') : '';
+              insertMove.run(rename.oldPath, rename.newPath, oldFolder || null, newFolder || null);
+              renameNoteLinks.run(rename.newPath, rename.oldPath);
+              renameNoteTags.run(rename.newPath, rename.oldPath);
+              renameNoteLinkHistory.run(rename.newPath, rename.oldPath);
+              renameWikilinkApplications.run(rename.newPath, rename.oldPath);
+              // Also update the content hash map
+              const oldHash = lastContentHashes.get(rename.oldPath);
+              if (oldHash !== undefined) {
+                lastContentHashes.set(rename.newPath, oldHash);
+                lastContentHashes.delete(rename.oldPath);
+              }
+            }
+            serverLog('watcher', `Renames: recorded ${batchRenames.length} move(s) in note_moves`);
+          } catch (err) {
+            serverLog('watcher', `Rename recording failed: ${err instanceof Error ? err.message : err}`, 'error');
+          }
+        }
+
         if (filteredEvents.length === 0) {
-          serverLog('watcher', 'All files unchanged (hash gate), skipping batch');
+          if (batchRenames.length > 0) {
+            serverLog('watcher', `Batch complete (renames only): ${batchRenames.length} rename(s)`);
+          } else {
+            serverLog('watcher', 'All files unchanged (hash gate), skipping batch');
+          }
           return;
         }
 
@@ -946,6 +994,15 @@ async function runPostIndexWork(index: VaultIndex) {
           }
           setIndexState('ready');
           tracker.end({ note_count: vaultIndex.notes.size, entity_count: vaultIndex.entities.size, tag_count: vaultIndex.tags.size });
+
+          // Step 1.5: Note moves (rename pairs already recorded above; emit step for pipeline visibility)
+          tracker.start('note_moves', { count: batchRenames.length });
+          tracker.end({
+            renames: batchRenames.map(r => ({ oldPath: r.oldPath, newPath: r.newPath })),
+          });
+          if (batchRenames.length > 0) {
+            serverLog('watcher', `Note moves: ${batchRenames.length} rename(s) recorded`);
+          }
 
           // Capture hub scores BEFORE entity scan resets them
           const hubBefore = new Map<string, number>();
@@ -1378,7 +1435,7 @@ async function runPostIndexWork(index: VaultIndex) {
         if (catchupEvents.length > 0) {
           // eslint-disable-next-line no-console
           console.error(`[Flywheel] Startup catch-up: ${catchupEvents.length} file(s) modified while offline`);
-          await handleBatch({ events: catchupEvents, timestamp: Date.now() });
+          await handleBatch({ events: catchupEvents, renames: [], timestamp: Date.now() });
         }
       }
     }

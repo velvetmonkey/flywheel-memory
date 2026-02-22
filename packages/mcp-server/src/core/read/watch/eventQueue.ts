@@ -7,12 +7,14 @@
  * - Batch flush: Events are batched for efficient processing
  */
 
+import * as path from 'path';
 import type {
   WatchEvent,
   WatchEventType,
   CoalescedEvent,
   CoalescedEventType,
   EventBatch,
+  RenameEvent,
   WatcherConfig,
 } from './types.js';
 import { normalizePath } from './pathFilter.js';
@@ -63,6 +65,92 @@ function coalesceEvents(events: WatchEvent[]): CoalescedEventType | null {
   }
 
   return null;
+}
+
+/** Maximum milliseconds between a delete and add to be considered a rename pair */
+const RENAME_PROXIMITY_MS = 5000;
+
+/**
+ * Get the file stem (basename without extension)
+ */
+function fileStem(p: string): string {
+  return path.basename(p).replace(/\.[^.]+$/, '');
+}
+
+/**
+ * Detect rename pairs within a batch of coalesced events.
+ *
+ * A rename = one 'delete' event + one 'upsert' event where:
+ * - Both have the same file stem (basename without extension)
+ * - The timestamps of their latest raw events are within RENAME_PROXIMITY_MS
+ *
+ * When multiple deletes or upserts share the same stem, the pair with the
+ * closest timestamp delta is chosen.
+ *
+ * Returns matched renames and the remaining non-rename events.
+ */
+function detectRenames(events: CoalescedEvent[]): {
+  nonRenameEvents: CoalescedEvent[];
+  renames: RenameEvent[];
+} {
+  const deletes = events.filter(e => e.type === 'delete');
+  const upserts = events.filter(e => e.type === 'upsert');
+  const others = events.filter(e => e.type !== 'delete' && e.type !== 'upsert');
+
+  const usedDeletes = new Set<string>();
+  const usedUpserts = new Set<string>();
+  const renames: RenameEvent[] = [];
+
+  // For each delete, find the best matching upsert by stem + timestamp proximity
+  for (const del of deletes) {
+    const stem = fileStem(del.path);
+    const delTimestamp = del.originalEvents.length > 0
+      ? Math.max(...del.originalEvents.map(e => e.timestamp))
+      : 0;
+
+    // Gather candidate upserts with the same stem not yet used
+    const candidates = upserts.filter(u =>
+      !usedUpserts.has(u.path) &&
+      fileStem(u.path) === stem
+    );
+
+    if (candidates.length === 0) continue;
+
+    // Pick the candidate with the smallest timestamp delta within the proximity window
+    let bestCandidate: CoalescedEvent | null = null;
+    let bestDelta = Infinity;
+
+    for (const candidate of candidates) {
+      const addTimestamp = candidate.originalEvents.length > 0
+        ? Math.max(...candidate.originalEvents.map(e => e.timestamp))
+        : 0;
+      const delta = Math.abs(addTimestamp - delTimestamp);
+      if (delta <= RENAME_PROXIMITY_MS && delta < bestDelta) {
+        bestDelta = delta;
+        bestCandidate = candidate;
+      }
+    }
+
+    if (bestCandidate) {
+      usedDeletes.add(del.path);
+      usedUpserts.add(bestCandidate.path);
+      renames.push({
+        type: 'rename',
+        oldPath: del.path,
+        newPath: bestCandidate.path,
+        timestamp: Date.now(),
+      });
+    }
+  }
+
+  // Non-rename events = deletes and upserts not matched + others
+  const nonRenameEvents: CoalescedEvent[] = [
+    ...deletes.filter(e => !usedDeletes.has(e.path)),
+    ...upserts.filter(e => !usedUpserts.has(e.path)),
+    ...others,
+  ];
+
+  return { nonRenameEvents, renames };
 }
 
 /**
@@ -163,9 +251,10 @@ export class EventQueue {
         originalEvents: [...pending.events],
       };
 
-      // Send as single-event batch
+      // Send as single-event batch (no rename detection for single-path flushes)
       this.onBatch({
         events: [coalesced],
+        renames: [],
         timestamp: Date.now(),
       });
     }
@@ -211,8 +300,10 @@ export class EventQueue {
 
     // Send batch if we have events
     if (events.length > 0) {
+      const { nonRenameEvents, renames } = detectRenames(events);
       this.onBatch({
-        events,
+        events: nonRenameEvents,
+        renames,
         timestamp: Date.now(),
       });
     }

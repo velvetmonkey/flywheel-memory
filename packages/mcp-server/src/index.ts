@@ -1204,6 +1204,11 @@ async function runPostIndexWork(index: VaultIndex) {
             const markPositive = stateDb.db.prepare(`
               UPDATE note_link_history SET last_positive_at = datetime('now') WHERE note_path = ? AND target = ?
             `);
+            const getEdgeCount = stateDb.db.prepare(
+              'SELECT edits_survived FROM note_link_history WHERE note_path=? AND target=?'
+            );
+
+            const survivedLinks: Array<{ entity: string; file: string; count: number }> = [];
 
             for (const entry of forwardLinkResults) {
               const currentSet = new Set([
@@ -1227,6 +1232,10 @@ async function runPostIndexWork(index: VaultIndex) {
               for (const link of currentSet) {
                 if (!previousSet.has(link)) continue; // only persisted links
                 upsertHistory.run(entry.file, link);
+                const countRow = getEdgeCount.get(entry.file, link) as { edits_survived: number } | undefined;
+                if (countRow) {
+                  survivedLinks.push({ entity: link, file: entry.file, count: countRow.edits_survived });
+                }
                 const hit = checkThreshold.get(entry.file, link) as { target: string } | undefined;
                 if (hit) {
                   const entity = entitiesAfter.find(
@@ -1257,6 +1266,7 @@ async function runPostIndexWork(index: VaultIndex) {
             total_dead: totalDead,
             links: forwardLinkResults,
             link_diffs: linkDiffs,
+            survived: survivedLinks,
           });
           serverLog('watcher', `Forward links: ${totalResolved} resolved, ${totalDead} dead`);
 

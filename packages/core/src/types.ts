@@ -140,6 +140,13 @@ export interface WikilinkOptions {
    * @default true
    */
   caseInsensitive?: boolean;
+
+  /**
+   * Entity names (lowercase) already linked by a prior step (e.g. resolveAliasWikilinks).
+   * When firstOccurrenceOnly is true, these entities are treated as already seen and
+   * will not be linked again by applyWikilinks.
+   */
+  alreadyLinked?: Set<string>;
 }
 
 /**

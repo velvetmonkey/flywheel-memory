@@ -883,3 +883,62 @@ describe('resolveAliasWikilinks', () => {
     expect(result.linksAdded).toBe(1);
   });
 });
+
+describe('applyWikilinks alreadyLinked option', () => {
+  it('does not re-link an entity that was already linked by a prior step', () => {
+    // Simulate: resolveAliasWikilinks already resolved [[OC-39181]] → [[OC39181|OC-39181]]
+    // Step 2 (applyWikilinks) should NOT also insert [[OC39181]] for a later plain occurrence
+    const contentAfterStep1 = 'Ticket [[OC39181|OC-39181]] was closed. Review OC39181 again later.';
+    const entities = [{ name: 'OC39181', path: 'OC39181.md', aliases: ['OC-39181'] }];
+    const step1Linked = new Set(['oc39181']);
+
+    const result = applyWikilinks(contentAfterStep1, entities, {
+      firstOccurrenceOnly: true,
+      caseInsensitive: true,
+      alreadyLinked: step1Linked,
+    });
+
+    // The existing piped link should remain unchanged
+    expect(result.content).toContain('[[OC39181|OC-39181]]');
+    // No bare [[OC39181]] should be inserted (entity already linked)
+    expect(result.content.match(/\[\[OC39181/g)?.length).toBe(1);
+    expect(result.linksAdded).toBe(0);
+  });
+
+  it('links entity when alreadyLinked is empty', () => {
+    const content = 'Review OC39181 again later.';
+    const entities = [{ name: 'OC39181', path: 'OC39181.md', aliases: ['OC-39181'] }];
+
+    const result = applyWikilinks(content, entities, {
+      firstOccurrenceOnly: true,
+      alreadyLinked: new Set(),
+    });
+
+    expect(result.content).toContain('[[OC39181]]');
+    expect(result.linksAdded).toBe(1);
+  });
+
+  it('combines resolveAliasWikilinks + applyWikilinks without double-linking', () => {
+    // Full two-step simulation: the exact bug scenario for OC39181/OC-39181
+    const originalContent = 'Ticket [[OC-39181]] was closed. Review OC39181 again later.';
+    const entities = [{ name: 'OC39181', path: 'OC39181.md', aliases: ['OC-39181'] }];
+
+    // Step 1: resolve alias wikilinks
+    const resolved = resolveAliasWikilinks(originalContent, entities, { caseInsensitive: true });
+    expect(resolved.content).toContain('[[OC39181|OC-39181]]');
+    expect(resolved.linkedEntities).toContain('OC39181');
+
+    // Step 2: apply wikilinks with step1 results fed in as alreadyLinked
+    const step1Linked = new Set(resolved.linkedEntities.map(e => e.toLowerCase()));
+    const final = applyWikilinks(resolved.content, entities, {
+      firstOccurrenceOnly: true,
+      caseInsensitive: true,
+      alreadyLinked: step1Linked,
+    });
+
+    // Should have exactly one [[OC39181... link (the piped one from Step 1)
+    expect(final.content).toContain('[[OC39181|OC-39181]]');
+    expect(final.content.match(/\[\[OC39181/g)?.length).toBe(1);
+    expect(final.linksAdded).toBe(0);
+  });
+});

@@ -408,9 +408,13 @@ export function processWikilinks(content: string, notePath?: string): WikilinkRe
   });
 
   // Step 2: Apply wikilinks to plain text (normal processing)
+  // Pass entities resolved by Step 1 as alreadyLinked so firstOccurrenceOnly
+  // treats them as already seen and won't link a second occurrence.
+  const step1LinkedEntities = new Set(resolved.linkedEntities.map(e => e.toLowerCase()));
   const result = applyWikilinks(resolved.content, sortedEntities, {
     firstOccurrenceOnly: true,
     caseInsensitive: true,
+    alreadyLinked: step1LinkedEntities,
   });
 
   // Step 3: Detect implicit entities (dead wikilinks for unrecognized proper nouns, camelCase, acronyms)

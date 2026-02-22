@@ -125,6 +125,7 @@ export function applyWikilinks(
   const {
     firstOccurrenceOnly = true,
     caseInsensitive = true,
+    alreadyLinked,
   } = options;
 
   if (!entities.length) {
@@ -218,9 +219,11 @@ export function applyWikilinks(
     });
 
     // Select non-overlapping matches, preferring longer ones at same position
-    // Each entity gets at most one match
+    // Each entity gets at most one match.
+    // Pre-seed with any entities already linked by a prior step (e.g. resolveAliasWikilinks)
+    // so firstOccurrenceOnly skips them in this pass.
     const selectedMatches: typeof allCandidates = [];
-    const selectedEntityNames = new Set<string>();
+    const selectedEntityNames = new Set<string>(alreadyLinked ?? []);
 
     for (const candidate of allCandidates) {
       const entityKey = candidate.entityName.toLowerCase();

@@ -189,7 +189,9 @@ export function registerMutationTools(
           let workingContent = validationResult.content;
 
           // 2. Apply wikilinks to content (unless skipped)
-          let { content: processedContent, wikilinkInfo } = maybeApplyWikilinks(workingContent, skipWikilinks, notePath);
+          // Pass existing note content so entities already linked in prior sections
+          // are treated as already seen, preventing duplicate links across calls.
+          let { content: processedContent, wikilinkInfo } = maybeApplyWikilinks(workingContent, skipWikilinks, notePath, ctx.content);
 
           // Track explicitly-declared linked entities (when skipWikilinks=true)
           if (linkedEntities?.length) {

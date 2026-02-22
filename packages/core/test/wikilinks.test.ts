@@ -941,4 +941,50 @@ describe('applyWikilinks alreadyLinked option', () => {
     expect(final.content.match(/\[\[OC39181/g)?.length).toBe(1);
     expect(final.linksAdded).toBe(0);
   });
+
+  it('does not link entity already present in existing note content (cross-call deduplication)', () => {
+    // Simulate: a prior vault_add_to_section call already linked OC39181 in a previous section.
+    // When the next call processes new content, it should extract already-linked entities
+    // from the existing note and add them to alreadyLinked, preventing double-linking.
+    const existingNoteContent = 'Previous section.\n[[OC39181|OC-39181]] was closed.\n';
+    const newSectionContent = 'Follow-up: OC39181 still needs review.';
+    const entities = [{ name: 'OC39181', path: 'OC39181.md', aliases: ['OC-39181'] }];
+
+    // Extract already-linked entities from existing content (as processWikilinks now does)
+    const alreadyLinked = new Set<string>();
+    for (const match of existingNoteContent.matchAll(/\[\[([^\]|]+?)(?:\|[^\]]+?)?\]\]/g)) {
+      alreadyLinked.add(match[1].toLowerCase());
+    }
+    expect(alreadyLinked.has('oc39181')).toBe(true);
+
+    const result = applyWikilinks(newSectionContent, entities, {
+      firstOccurrenceOnly: true,
+      caseInsensitive: true,
+      alreadyLinked,
+    });
+
+    // Entity already linked in note → should not be linked in new section
+    expect(result.content).toBe(newSectionContent);
+    expect(result.linksAdded).toBe(0);
+  });
+
+  it('still links entity when existing content has no prior link for it', () => {
+    const existingNoteContent = 'Previous section with unrelated content.\n';
+    const newSectionContent = 'Follow-up: OC39181 needs review.';
+    const entities = [{ name: 'OC39181', path: 'OC39181.md', aliases: [] }];
+
+    const alreadyLinked = new Set<string>();
+    for (const match of existingNoteContent.matchAll(/\[\[([^\]|]+?)(?:\|[^\]]+?)?\]\]/g)) {
+      alreadyLinked.add(match[1].toLowerCase());
+    }
+
+    const result = applyWikilinks(newSectionContent, entities, {
+      firstOccurrenceOnly: true,
+      caseInsensitive: true,
+      alreadyLinked,
+    });
+
+    expect(result.content).toContain('[[OC39181]]');
+    expect(result.linksAdded).toBe(1);
+  });
 });

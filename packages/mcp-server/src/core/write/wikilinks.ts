@@ -374,7 +374,7 @@ function sortEntitiesByPriority(entities: Entity[], notePath?: string): Entity[]
  * @param notePath - Optional path to the note for priority sorting
  * @returns Content with wikilinks applied, or original if index not ready
  */
-export function processWikilinks(content: string, notePath?: string): WikilinkResult {
+export function processWikilinks(content: string, notePath?: string, existingContent?: string): WikilinkResult {
   if (!isEntityIndexReady() || !entityIndex) {
     // eslint-disable-next-line no-console
     console.error('[Flywheel:DEBUG] Entity index not ready, entities:', entityIndex?._metadata?.total_entities ?? 0);
@@ -411,6 +411,17 @@ export function processWikilinks(content: string, notePath?: string): WikilinkRe
   // Pass entities resolved by Step 1 as alreadyLinked so firstOccurrenceOnly
   // treats them as already seen and won't link a second occurrence.
   const step1LinkedEntities = new Set(resolved.linkedEntities.map(e => e.toLowerCase()));
+
+  // Also treat entities already linked in the existing note content as already seen.
+  // This prevents duplicate wikilinks when vault_add_to_section is called multiple
+  // times on the same note — each call independently applies wikilinks, so without
+  // this guard the same entity ends up linked in every section it appears in.
+  if (existingContent) {
+    for (const match of existingContent.matchAll(/\[\[([^\]|]+?)(?:\|[^\]]+?)?\]\]/g)) {
+      step1LinkedEntities.add(match[1].toLowerCase());
+    }
+  }
+
   const result = applyWikilinks(resolved.content, sortedEntities, {
     firstOccurrenceOnly: true,
     caseInsensitive: true,
@@ -505,7 +516,8 @@ export function processWikilinks(content: string, notePath?: string): WikilinkRe
 export function maybeApplyWikilinks(
   content: string,
   skipWikilinks: boolean,
-  notePath?: string
+  notePath?: string,
+  existingContent?: string,
 ): { content: string; wikilinkInfo?: string } {
   if (skipWikilinks) {
     return { content };
@@ -514,7 +526,7 @@ export function maybeApplyWikilinks(
   // Check if Flywheel updated entities since we loaded
   checkAndRefreshIfStale();
 
-  const result = processWikilinks(content, notePath);
+  const result = processWikilinks(content, notePath, existingContent);
 
   if (result.linksAdded > 0) {
     // Track applications for implicit feedback detection

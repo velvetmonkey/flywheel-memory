@@ -503,6 +503,42 @@ export function getTrackedApplications(
   return rows.map(r => r.entity);
 }
 
+/** Get previously stored forward links for a note */
+export function getStoredNoteLinks(stateDb: StateDb, notePath: string): Set<string> {
+  const rows = stateDb.db.prepare(
+    'SELECT target FROM note_links WHERE note_path = ?'
+  ).all(notePath) as Array<{ target: string }>;
+  return new Set(rows.map(r => r.target));
+}
+
+/** Replace stored links for a note with current set */
+export function updateStoredNoteLinks(
+  stateDb: StateDb,
+  notePath: string,
+  currentLinks: Set<string>,
+): void {
+  const del = stateDb.db.prepare('DELETE FROM note_links WHERE note_path = ?');
+  const ins = stateDb.db.prepare('INSERT INTO note_links (note_path, target) VALUES (?, ?)');
+  const tx = stateDb.db.transaction(() => {
+    del.run(notePath);
+    for (const target of currentLinks) {
+      ins.run(notePath, target);
+    }
+  });
+  tx();
+}
+
+/** Compute link additions and removals between previous and current */
+export function diffNoteLinks(
+  previous: Set<string>,
+  current: Set<string>,
+): { added: string[]; removed: string[] } {
+  return {
+    added: [...current].filter(l => !previous.has(l)),
+    removed: [...previous].filter(l => !current.has(l)),
+  };
+}
+
 /**
  * Detect removed auto-applied wikilinks and record implicit negative feedback
  *

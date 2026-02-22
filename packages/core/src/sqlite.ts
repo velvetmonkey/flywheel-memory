@@ -108,7 +108,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 15;
+export const SCHEMA_VERSION = 16;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -379,6 +379,13 @@ CREATE TABLE IF NOT EXISTS suggestion_events (
 );
 CREATE INDEX IF NOT EXISTS idx_suggestion_entity ON suggestion_events(entity);
 CREATE INDEX IF NOT EXISTS idx_suggestion_note ON suggestion_events(note_path);
+
+-- Forward-link persistence for diff-based feedback (v16)
+CREATE TABLE IF NOT EXISTS note_links (
+  note_path TEXT NOT NULL,
+  target TEXT NOT NULL,
+  PRIMARY KEY (note_path, target)
+);
 `;
 
 // =============================================================================
@@ -502,6 +509,9 @@ function initSchema(db: Database.Database): void {
     }
 
     // v15: suggestion_events table (pipeline observability audit log)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v16: note_links table (forward-link persistence for diff-based feedback)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(

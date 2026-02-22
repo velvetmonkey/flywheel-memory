@@ -110,7 +110,7 @@ import { startSweepTimer } from './core/read/sweep.js';
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
 
 // Core imports - Index Activity
-import { recordIndexEvent, purgeOldIndexEvents, createStepTracker, computeEntityDiff } from './core/shared/indexActivity.js';
+import { recordIndexEvent, purgeOldIndexEvents, createStepTracker, computeEntityDiff, getRecentPipelineEvent } from './core/shared/indexActivity.js';
 
 // Core imports - Tool Tracking
 import { recordToolInvocation, purgeOldInvocations } from './core/shared/toolTracking.js';
@@ -133,7 +133,8 @@ import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecen
 // Node builtins
 import * as fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import type { CoalescedEvent } from './core/read/watch/types.js';
+import type { CoalescedEvent, EventBatch } from './core/read/watch/types.js';
+import type { BatchHandler } from './core/read/watch/index.js';
 
 // Resources
 import { registerVaultResources } from './resources/vault.js';
@@ -683,6 +684,47 @@ async function updateEntitiesInStateDb(): Promise<void> {
 }
 
 /**
+ * Returns CoalescedEvents for vault .md files modified after sinceMs.
+ * Used on startup to catch up on edits made while the server was offline.
+ */
+async function buildStartupCatchupBatch(
+  vaultPath: string,
+  sinceMs: number
+): Promise<CoalescedEvent[]> {
+  const events: CoalescedEvent[] = [];
+
+  async function scanDir(dir: string): Promise<void> {
+    let entries: Awaited<ReturnType<typeof fs.readdir>>;
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
+        await scanDir(fullPath);
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        try {
+          const stat = await fs.stat(fullPath);
+          if (stat.mtimeMs > sinceMs) {
+            events.push({
+              type: 'upsert',
+              path: path.relative(vaultPath, fullPath),
+              originalEvents: [],
+            });
+          }
+        } catch { /* skip unreadable files */ }
+      }
+    }
+  }
+
+  await scanDir(vaultPath);
+  return events;
+}
+
+/**
  * Post-index work: config inference, hub export, file watcher
  */
 async function runPostIndexWork(index: VaultIndex) {
@@ -800,10 +842,8 @@ async function runPostIndexWork(index: VaultIndex) {
     const lastContentHashes = new Map<string, string>();
     serverLog('watcher', `File watcher enabled (debounce: ${config.debounceMs}ms)`);
 
-    const watcher = createVaultWatcher({
-      vaultPath,
-      config,
-      onBatch: async (batch) => {
+    // Define before createVaultWatcher so we can call it directly for catch-up
+    const handleBatch: BatchHandler = async (batch) => {
         // Convert event paths from absolute to vault-relative
         // Handles symlink mismatches (e.g., WSL /mnt/c/ vs /home/user/ mounts)
         const vaultPrefixes = new Set([
@@ -1141,7 +1181,12 @@ async function runPostIndexWork(index: VaultIndex) {
           }
           serverLog('watcher', `Failed to rebuild index: ${err instanceof Error ? err.message : err}`, 'error');
         }
-      },
+    };
+
+    const watcher = createVaultWatcher({
+      vaultPath,
+      config,
+      onBatch: handleBatch,
       onStateChange: (status) => {
         if (status.state === 'dirty') {
           serverLog('watcher', 'Index may be stale', 'warn');
@@ -1151,6 +1196,21 @@ async function runPostIndexWork(index: VaultIndex) {
         serverLog('watcher', `Watcher error: ${err.message}`, 'error');
       },
     });
+
+    // Startup catch-up: process files that were modified while the server was offline.
+    // getRecentPipelineEvent returns the last event with steps (i.e. last watcher run).
+    // Files with mtime > that timestamp were not seen by the watcher last session.
+    if (stateDb) {
+      const lastPipelineEvent = getRecentPipelineEvent(stateDb);
+      if (lastPipelineEvent) {
+        const catchupEvents = await buildStartupCatchupBatch(vaultPath, lastPipelineEvent.timestamp);
+        if (catchupEvents.length > 0) {
+          // eslint-disable-next-line no-console
+          console.error(`[Flywheel] Startup catch-up: ${catchupEvents.length} file(s) modified while offline`);
+          await handleBatch({ events: catchupEvents, timestamp: Date.now() });
+        }
+      }
+    }
 
     watcher.start();
     serverLog('watcher', 'File watcher started');

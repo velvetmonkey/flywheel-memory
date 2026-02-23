@@ -1200,6 +1200,7 @@ async function runPostIndexWork(index: VaultIndex) {
 
           // Diff against stored links to detect additions/removals
           const linkDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
+          const survivedLinks: Array<{ entity: string; file: string; count: number }> = [];
           if (stateDb) {
             // Prepared statements for link survival tracking (T2)
             const upsertHistory = stateDb.db.prepare(`
@@ -1216,8 +1217,6 @@ async function runPostIndexWork(index: VaultIndex) {
             const getEdgeCount = stateDb.db.prepare(
               'SELECT edits_survived FROM note_link_history WHERE note_path=? AND target=?'
             );
-
-            const survivedLinks: Array<{ entity: string; file: string; count: number }> = [];
 
             for (const entry of forwardLinkResults) {
               const currentSet = new Set([

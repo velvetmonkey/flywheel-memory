@@ -30,6 +30,7 @@ export interface EntitySearchResult {
   aliases: string[];
   hubScore: number;
   rank: number;
+  description?: string;
 }
 
 /** Recency tracking for entities */
@@ -108,7 +109,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 20;
+export const SCHEMA_VERSION = 21;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -142,7 +143,8 @@ CREATE TABLE IF NOT EXISTS entities (
   path TEXT NOT NULL,
   category TEXT NOT NULL,
   aliases_json TEXT,
-  hub_score INTEGER DEFAULT 0
+  hub_score INTEGER DEFAULT 0,
+  description TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_entities_name_lower ON entities(name_lower);
 CREATE INDEX IF NOT EXISTS idx_entities_category ON entities(category);
@@ -566,6 +568,16 @@ function initSchema(db: Database.Database): void {
     // v20: note_moves table (records file renames/moves detected by the watcher)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
+    // v21: description TEXT column on entities table
+    if (currentVersion < 21) {
+      const hasDesc = db.prepare(
+        `SELECT COUNT(*) as cnt FROM pragma_table_info('entities') WHERE name = 'description'`
+      ).get() as { cnt: number };
+      if (hasDesc.cnt === 0) {
+        db.exec('ALTER TABLE entities ADD COLUMN description TEXT');
+      }
+    }
+
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
     ).run(SCHEMA_VERSION);
@@ -610,40 +622,40 @@ export function openStateDb(vaultPath: string): StateDb {
 
     // Entity operations
     insertEntity: db.prepare(`
-      INSERT INTO entities (name, name_lower, path, category, aliases_json, hub_score)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO entities (name, name_lower, path, category, aliases_json, hub_score, description)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `),
 
     updateEntity: db.prepare(`
       UPDATE entities
-      SET name = ?, name_lower = ?, path = ?, category = ?, aliases_json = ?, hub_score = ?
+      SET name = ?, name_lower = ?, path = ?, category = ?, aliases_json = ?, hub_score = ?, description = ?
       WHERE id = ?
     `),
 
     deleteEntity: db.prepare('DELETE FROM entities WHERE id = ?'),
 
     getEntityByName: db.prepare(`
-      SELECT id, name, name_lower, path, category, aliases_json, hub_score
+      SELECT id, name, name_lower, path, category, aliases_json, hub_score, description
       FROM entities WHERE name_lower = ?
     `),
 
     getEntityById: db.prepare(`
-      SELECT id, name, name_lower, path, category, aliases_json, hub_score
+      SELECT id, name, name_lower, path, category, aliases_json, hub_score, description
       FROM entities WHERE id = ?
     `),
 
     getAllEntities: db.prepare(`
-      SELECT id, name, name_lower, path, category, aliases_json, hub_score
+      SELECT id, name, name_lower, path, category, aliases_json, hub_score, description
       FROM entities ORDER BY name
     `),
 
     getEntitiesByCategory: db.prepare(`
-      SELECT id, name, name_lower, path, category, aliases_json, hub_score
+      SELECT id, name, name_lower, path, category, aliases_json, hub_score, description
       FROM entities WHERE category = ? ORDER BY name
     `),
 
     searchEntitiesFts: db.prepare(`
-      SELECT e.id, e.name, e.name_lower, e.path, e.category, e.aliases_json, e.hub_score,
+      SELECT e.id, e.name, e.name_lower, e.path, e.category, e.aliases_json, e.hub_score, e.description,
              bm25(entities_fts) as rank
       FROM entities_fts
       JOIN entities e ON e.id = entities_fts.rowid
@@ -656,7 +668,7 @@ export function openStateDb(vaultPath: string): StateDb {
 
     // Entity alias lookup
     getEntitiesByAlias: db.prepare(`
-      SELECT e.id, e.name, e.name_lower, e.path, e.category, e.aliases_json, e.hub_score
+      SELECT e.id, e.name, e.name_lower, e.path, e.category, e.aliases_json, e.hub_score, e.description
       FROM entities e
       WHERE EXISTS (SELECT 1 FROM json_each(e.aliases_json) WHERE LOWER(value) = ?)
     `),
@@ -743,7 +755,8 @@ export function openStateDb(vaultPath: string): StateDb {
           entity.path,
           category,
           JSON.stringify(entity.aliases),
-          entity.hubScore ?? 0
+          entity.hubScore ?? 0,
+          entity.description ?? null
         );
         count++;
       }
@@ -779,7 +792,8 @@ export function openStateDb(vaultPath: string): StateDb {
             entityObj.path,
             category,
             JSON.stringify(entityObj.aliases),
-            entityObj.hubScore ?? 0
+            entityObj.hubScore ?? 0,
+            entityObj.description ?? null
           );
           total++;
         }
@@ -832,6 +846,7 @@ export function searchEntities(
     category: string;
     aliases_json: string | null;
     hub_score: number;
+    description: string | null;
     rank: number;
   }>;
 
@@ -843,6 +858,7 @@ export function searchEntities(
     category: row.category as EntityCategory,
     aliases: row.aliases_json ? JSON.parse(row.aliases_json) : [],
     hubScore: row.hub_score,
+    description: row.description ?? undefined,
     rank: row.rank,
   }));
 }
@@ -877,6 +893,7 @@ export function getEntityByName(
     category: string;
     aliases_json: string | null;
     hub_score: number;
+    description: string | null;
   } | undefined;
 
   if (!row) return null;
@@ -889,6 +906,7 @@ export function getEntityByName(
     category: row.category as EntityCategory,
     aliases: row.aliases_json ? JSON.parse(row.aliases_json) : [],
     hubScore: row.hub_score,
+    description: row.description ?? undefined,
     rank: 0,
   };
 }
@@ -905,6 +923,7 @@ export function getAllEntitiesFromDb(stateDb: StateDb): EntitySearchResult[] {
     category: string;
     aliases_json: string | null;
     hub_score: number;
+    description: string | null;
   }>;
 
   return rows.map(row => ({
@@ -915,6 +934,7 @@ export function getAllEntitiesFromDb(stateDb: StateDb): EntitySearchResult[] {
     category: row.category as EntityCategory,
     aliases: row.aliases_json ? JSON.parse(row.aliases_json) : [],
     hubScore: row.hub_score,
+    description: row.description ?? undefined,
     rank: 0,
   }));
 }
@@ -957,6 +977,7 @@ export function getEntityIndexFromDb(stateDb: StateDb): EntityIndex {
       path: entity.path,
       aliases: entity.aliases,
       hubScore: entity.hubScore,
+      description: entity.description,
     };
     index[entity.category].push(entityObj);
   }
@@ -983,6 +1004,7 @@ export function getEntitiesByAlias(
     category: string;
     aliases_json: string | null;
     hub_score: number;
+    description: string | null;
   }>;
 
   return rows.map(row => ({
@@ -993,6 +1015,7 @@ export function getEntitiesByAlias(
     category: row.category as EntityCategory,
     aliases: row.aliases_json ? JSON.parse(row.aliases_json) : [],
     hubScore: row.hub_score,
+    description: row.description ?? undefined,
     rank: 0,
   }));
 }

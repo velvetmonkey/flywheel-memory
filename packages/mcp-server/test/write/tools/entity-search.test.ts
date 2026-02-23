@@ -49,7 +49,8 @@ describe('Entity Search Tool (search_entities)', () => {
         '',
         entity.category,
         JSON.stringify(entity.aliases),
-        entity.hubScore
+        entity.hubScore,
+        null
       );
     }
 
@@ -231,7 +232,8 @@ describe('Entity Search Tool (search_entities)', () => {
         '',
         'concepts',
         JSON.stringify([]),
-        0
+        0,
+        null
       );
 
       // Should be immediately searchable

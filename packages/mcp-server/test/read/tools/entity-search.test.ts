@@ -44,7 +44,8 @@ describe('Entity Search (scope: entities)', () => {
           '',
           entity.category,
           JSON.stringify(entity.aliases),
-          entity.hubScore
+          entity.hubScore,
+          null
         );
       }
 

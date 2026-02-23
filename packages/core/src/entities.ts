@@ -331,6 +331,33 @@ function categorizeEntity(
 }
 
 /**
+ * Extract a short description for an entity note.
+ * Uses frontmatter `description:` if present, else the first non-empty paragraph (≥10 chars).
+ * Strips heading markers and wikilinks, truncates to 200 chars.
+ */
+export function extractEntityDescription(content: string): string | null {
+  if (content.startsWith('---')) {
+    const fmEnd = content.indexOf('\n---', 3);
+    if (fmEnd !== -1) {
+      const fm = content.slice(3, fmEnd);
+      const descMatch = fm.match(/^description:\s*['"]?(.+?)['"]?\s*$/m);
+      if (descMatch?.[1]?.trim()) return descMatch[1].trim().slice(0, 200);
+      const body = content.slice(fmEnd + 4).trim();
+      const firstPara = body.split(/\n\s*\n/)[0]?.trim() ?? '';
+      if (firstPara.length >= 10) {
+        return firstPara.replace(/^#+\s+/gm, '').replace(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g, '$1').trim().slice(0, 200) || null;
+      }
+      return null;
+    }
+  }
+  const firstPara = content.trim().split(/\n\s*\n/)[0]?.trim() ?? '';
+  if (firstPara.length >= 10) {
+    return firstPara.replace(/^#+\s+/gm, '').replace(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g, '$1').trim().slice(0, 200) || null;
+  }
+  return null;
+}
+
+/**
  * Entity info collected during scanning
  */
 interface ScannedEntity {
@@ -338,6 +365,7 @@ interface ScannedEntity {
   relativePath: string;
   aliases: string[];
   frontmatterType?: string;
+  description?: string;
 }
 
 /**
@@ -380,14 +408,16 @@ async function scanDirectory(
         const stem = path.basename(entry.name, '.md');
         const relativePath = path.relative(basePath, fullPath);
 
-        // Read file content to extract aliases and type
+        // Read file content to extract aliases, type, and description
         let aliases: string[] = [];
         let frontmatterType: string | undefined;
+        let description: string | undefined;
         try {
           const content = await fs.readFile(fullPath, 'utf-8');
           const fields = extractFrontmatterFields(content);
           aliases = fields.aliases;
           frontmatterType = fields.type;
+          description = extractEntityDescription(content) ?? undefined;
         } catch {
           // Skip if can't read file - just use empty aliases
         }
@@ -397,6 +427,7 @@ async function scanDirectory(
           relativePath,
           aliases,
           frontmatterType,
+          description,
         });
       }
     }
@@ -471,6 +502,7 @@ export async function scanVaultEntities(
       name: entity.name,
       path: entity.relativePath,
       aliases: entity.aliases,
+      description: entity.description,
     };
     index[category].push(entityObj);
   }

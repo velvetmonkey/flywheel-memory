@@ -36,6 +36,8 @@ export interface EntityWithAliases {
   aliases: string[];
   /** Hub score: backlink count for prioritization (set by Flywheel after graph build) */
   hubScore?: number;
+  /** Short description: frontmatter description: field or first paragraph, max 200 chars */
+  description?: string;
 }
 
 /**

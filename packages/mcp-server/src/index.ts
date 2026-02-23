@@ -1020,6 +1020,7 @@ async function runPostIndexWork(index: VaultIndex) {
 
           // Detect category changes and record in entity_changes audit log
           const categoryChanges: Array<{ entity: string; from: string; to: string }> = [];
+          const descriptionChanges: Array<{ entity: string; from: string | null; to: string | null }> = [];
           if (stateDb) {
             const beforeMap = new Map(entitiesBefore.map(e => [e.name, e]));
             const insertChange = stateDb.db.prepare(
@@ -1031,10 +1032,18 @@ async function runPostIndexWork(index: VaultIndex) {
                 insertChange.run(after.name, 'category', before.category, after.category);
                 categoryChanges.push({ entity: after.name, from: before.category, to: after.category });
               }
+              if (before) {
+                const oldDesc = before.description ?? null;
+                const newDesc = after.description ?? null;
+                if (oldDesc !== newDesc) {
+                  insertChange.run(after.name, 'description', oldDesc, newDesc);
+                  descriptionChanges.push({ entity: after.name, from: oldDesc, to: newDesc });
+                }
+              }
             }
           }
 
-          tracker.end({ entity_count: entitiesAfter.length, ...entityDiff, category_changes: categoryChanges });
+          tracker.end({ entity_count: entitiesAfter.length, ...entityDiff, category_changes: categoryChanges, description_changes: descriptionChanges });
           serverLog('watcher', `Entity scan: ${entitiesAfter.length} entities`);
 
           // Step 3: Hub scores (with before/after diffs)

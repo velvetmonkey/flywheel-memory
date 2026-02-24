@@ -84,7 +84,8 @@ type GetBacklinksOutput = {
 export function registerGraphTools(
   server: McpServer,
   getIndex: () => VaultIndex,
-  getVaultPath: () => string
+  getVaultPath: () => string,
+  getStateDb?: () => import('@velvetmonkey/vault-core').StateDb | null
 ) {
   // get_backlinks - What notes link TO this note?
   server.registerTool(
@@ -250,6 +251,109 @@ export function registerGraphTools(
           },
         ],
         structuredContent: output,
+      };
+    }
+  );
+
+  // get_weighted_links - Get outgoing links with edge weights
+  server.tool(
+    'get_weighted_links',
+    'Get outgoing links from a note ranked by edge weight. Weights reflect link survival, co-session access, and source activity. Time decay is applied at query time.',
+    {
+      path: z.string().describe('Path to the note (e.g., "daily/2026-02-24.md")'),
+      min_weight: z.number().default(0).describe('Minimum weight threshold (default 0 = all links)'),
+      limit: z.number().default(20).describe('Maximum number of results to return'),
+    },
+    async ({ path: notePath, min_weight, limit: requestedLimit }) => {
+      const stateDb = getStateDb?.();
+      if (!stateDb) {
+        return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'StateDb not initialized' }) }] };
+      }
+
+      const limit = Math.min(requestedLimit ?? 20, MAX_LIMIT);
+      const now = Date.now();
+
+      const rows = stateDb.db.prepare(`
+        SELECT target, weight, weight_updated_at
+        FROM note_links
+        WHERE note_path = ?
+        ORDER BY weight DESC
+      `).all(notePath) as Array<{ target: string; weight: number; weight_updated_at: number | null }>;
+
+      const results = rows
+        .map(row => {
+          const daysSinceUpdated = row.weight_updated_at
+            ? (now - row.weight_updated_at) / (1000 * 60 * 60 * 24)
+            : 0;
+          const decayFactor = Math.max(0.1, 1.0 - daysSinceUpdated / 180);
+          const effectiveWeight = Math.round(row.weight * decayFactor * 1000) / 1000;
+          return {
+            target: row.target,
+            weight: row.weight,
+            weight_effective: effectiveWeight,
+            last_updated: row.weight_updated_at,
+          };
+        })
+        .filter(r => r.weight_effective >= min_weight)
+        .slice(0, limit);
+
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({
+            note: notePath,
+            count: results.length,
+            links: results,
+          }, null, 2),
+        }],
+      };
+    }
+  );
+
+  // get_strong_connections - Bidirectional connections ranked by combined weight
+  server.tool(
+    'get_strong_connections',
+    'Get bidirectional connections for a note ranked by combined edge weight. Returns both outgoing and incoming links.',
+    {
+      path: z.string().describe('Path to the note (e.g., "daily/2026-02-24.md")'),
+      limit: z.number().default(20).describe('Maximum number of results to return'),
+    },
+    async ({ path: notePath, limit: requestedLimit }) => {
+      const stateDb = getStateDb?.();
+      if (!stateDb) {
+        return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'StateDb not initialized' }) }] };
+      }
+
+      const limit = Math.min(requestedLimit ?? 20, MAX_LIMIT);
+
+      // For incoming links, we need to resolve target names to note_paths.
+      // note_links.target stores lowercase wikilink text, so we look for
+      // rows where target matches the note's entity name (file stem).
+      const stem = notePath.replace(/\.md$/, '').split('/').pop()?.toLowerCase() ?? '';
+
+      const rows = stateDb.db.prepare(`
+        SELECT target AS node, weight, 'outgoing' AS direction
+        FROM note_links WHERE note_path = ?
+        UNION ALL
+        SELECT note_path AS node, weight, 'incoming' AS direction
+        FROM note_links WHERE target = ?
+        ORDER BY weight DESC
+        LIMIT ?
+      `).all(notePath, stem, limit) as Array<{ node: string; weight: number; direction: string }>;
+
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({
+            note: notePath,
+            count: rows.length,
+            connections: rows.map(r => ({
+              node: r.node,
+              weight: r.weight,
+              direction: r.direction,
+            })),
+          }, null, 2),
+        }],
       };
     }
   );

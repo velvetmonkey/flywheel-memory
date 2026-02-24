@@ -16,6 +16,7 @@ import { recordIndexEvent } from '../../core/shared/indexActivity.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { countFTS5Mentions } from '../../core/read/fts5.js';
+import { recomputeEdgeWeights } from '../../core/write/edgeWeights.js';
 
 /**
  * Register system/utility tools with the MCP server
@@ -34,6 +35,7 @@ export function registerSystemTools(
     notes_count: z.number().describe('Number of notes indexed'),
     entities_count: z.number().describe('Number of entities (titles + aliases)'),
     fts5_notes: z.number().describe('Number of notes in FTS5 search index'),
+    edges_recomputed: z.number().optional().describe('Number of edges with recomputed weights'),
     duration_ms: z.number().describe('Time taken to rebuild index'),
   };
 
@@ -42,6 +44,7 @@ export function registerSystemTools(
     notes_count: number;
     entities_count: number;
     fts5_notes: number;
+    edges_recomputed?: number;
     duration_ms: number;
   };
 
@@ -109,6 +112,18 @@ export function registerSystemTools(
           console.error('[Flywheel] FTS5 rebuild failed:', err);
         }
 
+        // Recompute edge weights
+        let edgesRecomputed = 0;
+        if (stateDb) {
+          try {
+            const edgeResult = recomputeEdgeWeights(stateDb);
+            edgesRecomputed = edgeResult.edges_updated;
+            console.error(`[Flywheel] Edge weights: ${edgeResult.edges_updated} edges in ${edgeResult.duration_ms}ms`);
+          } catch (err) {
+            console.error('[Flywheel] Edge weight recompute failed:', err);
+          }
+        }
+
         const duration = Date.now() - startTime;
 
         // Record index event
@@ -125,6 +140,7 @@ export function registerSystemTools(
           notes_count: newIndex.notes.size,
           entities_count: newIndex.entities.size,
           fts5_notes: fts5Notes,
+          edges_recomputed: edgesRecomputed,
           duration_ms: duration,
         };
 

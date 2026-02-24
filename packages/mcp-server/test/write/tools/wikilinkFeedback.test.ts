@@ -26,6 +26,7 @@ import {
   trackWikilinkApplications,
   getTrackedApplications,
   processImplicitFeedback,
+  updateStoredNoteLinks,
 } from '../../../src/core/write/wikilinkFeedback.js';
 
 describe('wikilink_feedback', () => {
@@ -555,6 +556,59 @@ describe('wikilink_feedback', () => {
       expect(tsStats).toBeDefined();
       expect(tsStats!.total).toBe(10);
       expect(tsStats!.accuracy).toBe(0.8);
+    });
+  });
+
+  // --------------------------------------------------------
+  // updateStoredNoteLinks — weight preservation
+  // --------------------------------------------------------
+  describe('updateStoredNoteLinks — weight preservation', () => {
+    it('preserves weight for existing links', () => {
+      // Seed a link with custom weight
+      stateDb.db.prepare(
+        "INSERT INTO note_links (note_path, target, weight) VALUES (?, ?, ?)"
+      ).run('daily/2026-02-24.md', 'typescript', 3.5);
+
+      // Update with same link + a new one
+      updateStoredNoteLinks(stateDb, 'daily/2026-02-24.md', new Set(['typescript', 'react']));
+
+      const rows = stateDb.db.prepare(
+        'SELECT target, weight FROM note_links WHERE note_path = ? ORDER BY target'
+      ).all('daily/2026-02-24.md') as Array<{ target: string; weight: number }>;
+
+      expect(rows).toHaveLength(2);
+      expect(rows.find(r => r.target === 'typescript')!.weight).toBe(3.5); // preserved
+      expect(rows.find(r => r.target === 'react')!.weight).toBe(1.0);     // default
+    });
+
+    it('removes orphaned links', () => {
+      stateDb.db.prepare(
+        "INSERT INTO note_links (note_path, target, weight) VALUES (?, ?, ?)"
+      ).run('note.md', 'old-link', 2.0);
+      stateDb.db.prepare(
+        "INSERT INTO note_links (note_path, target) VALUES (?, ?)"
+      ).run('note.md', 'kept-link');
+
+      updateStoredNoteLinks(stateDb, 'note.md', new Set(['kept-link']));
+
+      const rows = stateDb.db.prepare(
+        'SELECT target FROM note_links WHERE note_path = ?'
+      ).all('note.md') as Array<{ target: string }>;
+      expect(rows).toHaveLength(1);
+      expect(rows[0].target).toBe('kept-link');
+    });
+
+    it('handles empty current set (clears all)', () => {
+      stateDb.db.prepare(
+        "INSERT INTO note_links (note_path, target) VALUES (?, ?)"
+      ).run('note.md', 'link1');
+
+      updateStoredNoteLinks(stateDb, 'note.md', new Set());
+
+      const count = stateDb.db.prepare(
+        'SELECT COUNT(*) as cnt FROM note_links WHERE note_path = ?'
+      ).get('note.md') as { cnt: number };
+      expect(count.cnt).toBe(0);
     });
   });
 });

@@ -513,18 +513,32 @@ export function getStoredNoteLinks(stateDb: StateDb, notePath: string): Set<stri
   return new Set(rows.map(r => r.target));
 }
 
-/** Replace stored links for a note with current set */
+/** Update stored links for a note, preserving weights on existing rows */
 export function updateStoredNoteLinks(
   stateDb: StateDb,
   notePath: string,
   currentLinks: Set<string>,
 ): void {
-  const del = stateDb.db.prepare('DELETE FROM note_links WHERE note_path = ?');
-  const ins = stateDb.db.prepare('INSERT INTO note_links (note_path, target) VALUES (?, ?)');
+  const ins = stateDb.db.prepare(
+    'INSERT OR IGNORE INTO note_links (note_path, target) VALUES (?, ?)'
+  );
+  const del = stateDb.db.prepare(
+    'DELETE FROM note_links WHERE note_path = ? AND target = ?'
+  );
+  const existing = stateDb.db.prepare(
+    'SELECT target FROM note_links WHERE note_path = ?'
+  );
   const tx = stateDb.db.transaction(() => {
-    del.run(notePath);
+    // Insert new links (existing rows untouched due to OR IGNORE)
     for (const target of currentLinks) {
       ins.run(notePath, target);
+    }
+    // Remove orphaned links no longer in current set
+    const rows = existing.all(notePath) as Array<{ target: string }>;
+    for (const row of rows) {
+      if (!currentLinks.has(row.target)) {
+        del.run(notePath, row.target);
+      }
     }
   });
   tx();

@@ -135,6 +135,9 @@ import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecen
 // Core imports - Co-occurrence
 import { mineCooccurrences } from './core/shared/cooccurrence.js';
 
+// Core imports - Edge Weights
+import { setEdgeWeightStateDb, recomputeEdgeWeights } from './core/write/edgeWeights.js';
+
 // Node builtins
 import * as fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -478,7 +481,7 @@ registerReadSystemTools(
   (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
   () => stateDb
 );
-registerGraphTools(server, () => vaultIndex, () => vaultPath);
+registerGraphTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerWikilinkTools(server, () => vaultIndex, () => vaultPath);
 registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
@@ -551,6 +554,9 @@ async function main() {
 
     // Set StateDb for recency tracking
     setRecencyStateDb(stateDb);
+
+    // Set StateDb for edge weight computation
+    setEdgeWeightStateDb(stateDb);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     serverLog('statedb', `StateDb initialization failed: ${msg}`, 'error');
@@ -668,6 +674,9 @@ const DEFAULT_ENTITY_EXCLUDE_FOLDERS = ['node_modules', 'templates', 'attachment
 
 /** Timestamp of last co-occurrence index rebuild (epoch ms) */
 let lastCooccurrenceRebuildAt = 0;
+
+/** Timestamp of last edge weight recompute (epoch ms) */
+let lastEdgeWeightRebuildAt = 0;
 
 /**
  * Scan vault for entities and save to StateDb
@@ -1106,6 +1115,28 @@ async function runPostIndexWork(index: VaultIndex) {
           } catch (e) {
             tracker.end({ error: String(e) });
             serverLog('watcher', `Co-occurrence: failed: ${e}`);
+          }
+
+          // Step 3.7: Edge weights — recompute if stale (> 1 hour)
+          if (stateDb) {
+            tracker.start('edge_weights', {});
+            try {
+              const edgeWeightAgeMs = lastEdgeWeightRebuildAt > 0
+                ? Date.now() - lastEdgeWeightRebuildAt
+                : Infinity;
+              if (edgeWeightAgeMs >= 60 * 60 * 1000) {
+                const result = recomputeEdgeWeights(stateDb);
+                lastEdgeWeightRebuildAt = Date.now();
+                tracker.end({ rebuilt: true, edges: result.edges_updated, duration_ms: result.duration_ms });
+                serverLog('watcher', `Edge weights: ${result.edges_updated} edges in ${result.duration_ms}ms`);
+              } else {
+                tracker.end({ rebuilt: false, age_ms: edgeWeightAgeMs });
+                serverLog('watcher', `Edge weights: cache valid (${Math.round(edgeWeightAgeMs / 1000)}s old)`);
+              }
+            } catch (e) {
+              tracker.end({ error: String(e) });
+              serverLog('watcher', `Edge weights: failed: ${e}`);
+            }
           }
 
           // Step 4: Note embeddings (with updated paths)

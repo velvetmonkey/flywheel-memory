@@ -180,8 +180,11 @@ export function registerQueryTools(
 
       // Pagination
       limit: z.number().default(20).describe('Maximum number of results to return'),
+
+      // Context boost (edge weights)
+      context_note: z.string().optional().describe('Path of the note providing context. When set, results connected to this note via weighted edges get an RRF boost.'),
     },
-    async ({ query, scope, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit }) => {
+    async ({ query, scope, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, context_note }) => {
       const limit = Math.min(requestedLimit ?? 20, MAX_LIMIT);
       const index = getIndex();
       const vaultPath = getVaultPath();
@@ -315,22 +318,61 @@ export function registerQueryTools(
           }
         }
 
+        // Build edge-weight ranked list if context_note is provided
+        let edgeRanked: Array<{ path: string; title: string }> = [];
+        if (context_note) {
+          const ctxStateDb = getStateDb();
+          if (ctxStateDb) {
+            try {
+              // Get weighted edges from context_note, resolve targets to paths via entities
+              const edgeRows = ctxStateDb.db.prepare(`
+                SELECT nl.target, nl.weight FROM note_links nl
+                WHERE nl.note_path = ? AND nl.weight > 1.0
+                ORDER BY nl.weight DESC LIMIT ?
+              `).all(context_note, limit) as Array<{ target: string; weight: number }>;
+
+              if (edgeRows.length > 0) {
+                // Build target->path map from entities table
+                const entityRows = ctxStateDb.db.prepare(
+                  'SELECT path, name_lower FROM entities'
+                ).all() as Array<{ path: string; name_lower: string }>;
+                const targetToPath = new Map<string, string>();
+                for (const e of entityRows) {
+                  targetToPath.set(e.name_lower, e.path);
+                }
+
+                edgeRanked = edgeRows
+                  .map(r => {
+                    const entityPath = targetToPath.get(r.target);
+                    return entityPath ? { path: entityPath, title: r.target } : null;
+                  })
+                  .filter((r): r is { path: string; title: string } => r !== null);
+              }
+            } catch {
+              // Edge weight boost is best-effort
+            }
+          }
+        }
+
         // Hybrid merge with semantic when embeddings exist (applies to both 'content' and 'all' scopes)
         if (hasEmbeddingsIndex()) {
           try {
             const semanticResults = await semanticSearch(query, limit);
 
-            // RRF merge of FTS5, semantic, and entity results
+            // RRF merge of FTS5, semantic, entity, and edge-weight results
             const fts5Ranked = fts5Results.map(r => ({ path: r.path, title: r.title, snippet: r.snippet }));
             const semanticRanked = semanticResults.map(r => ({ path: r.path, title: r.title }));
-            const entityRanked = entityResults.map(r => ({ path: r.path, title: r.name }));
-            const rrfScores = reciprocalRankFusion(fts5Ranked, semanticRanked, entityRanked);
+            const entityRankedList = entityResults.map(r => ({ path: r.path, title: r.name }));
+            const rrfLists: Array<Array<{ path: string; title?: string }>> = [fts5Ranked, semanticRanked, entityRankedList];
+            if (edgeRanked.length > 0) rrfLists.push(edgeRanked);
+            const rrfScores = reciprocalRankFusion(...rrfLists);
 
             // Build merged result set
             const allPaths = new Set([
               ...fts5Results.map(r => r.path),
               ...semanticResults.map(r => r.path),
               ...entityResults.map(r => r.path),
+              ...edgeRanked.map(r => r.path),
             ]);
             const fts5Map = new Map(fts5Results.map(r => [r.path, r]));
             const semanticMap = new Map(semanticResults.map(r => [r.path, r]));

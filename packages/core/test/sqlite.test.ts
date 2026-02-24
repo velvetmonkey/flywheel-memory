@@ -75,7 +75,24 @@ describe('SQLite State Management', () => {
     it('should have correct schema version', () => {
       stateDb = openStateDb(testVaultPath);
       const metadata = getStateDbMetadata(stateDb);
-      expect(metadata.schemaVersion).toBe(21);
+      expect(metadata.schemaVersion).toBe(22);
+    });
+
+    it('note_links has weight column with default 1.0', () => {
+      stateDb = openStateDb(testVaultPath);
+      const cols = stateDb.db.prepare(
+        "SELECT name, dflt_value FROM pragma_table_info('note_links') WHERE name = 'weight'"
+      ).get() as { name: string; dflt_value: string };
+      expect(cols).toBeDefined();
+      expect(cols.dflt_value).toBe('1.0');
+    });
+
+    it('note_links has weight_updated_at column', () => {
+      stateDb = openStateDb(testVaultPath);
+      const col = stateDb.db.prepare(
+        "SELECT name FROM pragma_table_info('note_links') WHERE name = 'weight_updated_at'"
+      ).get();
+      expect(col).toBeDefined();
     });
   });
 

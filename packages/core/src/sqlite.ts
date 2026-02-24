@@ -109,7 +109,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 21;
+export const SCHEMA_VERSION = 22;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -382,10 +382,12 @@ CREATE TABLE IF NOT EXISTS suggestion_events (
 CREATE INDEX IF NOT EXISTS idx_suggestion_entity ON suggestion_events(entity);
 CREATE INDEX IF NOT EXISTS idx_suggestion_note ON suggestion_events(note_path);
 
--- Forward-link persistence for diff-based feedback (v16)
+-- Forward-link persistence for diff-based feedback (v16), edge weights (v22)
 CREATE TABLE IF NOT EXISTS note_links (
   note_path TEXT NOT NULL,
   target TEXT NOT NULL,
+  weight REAL NOT NULL DEFAULT 1.0,
+  weight_updated_at INTEGER,
   PRIMARY KEY (note_path, target)
 );
 
@@ -575,6 +577,17 @@ function initSchema(db: Database.Database): void {
       ).get() as { cnt: number };
       if (hasDesc.cnt === 0) {
         db.exec('ALTER TABLE entities ADD COLUMN description TEXT');
+      }
+    }
+
+    // v22: Edge weight columns on note_links table
+    if (currentVersion < 22) {
+      const hasWeight = db.prepare(
+        `SELECT COUNT(*) as cnt FROM pragma_table_info('note_links') WHERE name = 'weight'`
+      ).get() as { cnt: number };
+      if (hasWeight.cnt === 0) {
+        db.exec('ALTER TABLE note_links ADD COLUMN weight REAL NOT NULL DEFAULT 1.0');
+        db.exec('ALTER TABLE note_links ADD COLUMN weight_updated_at INTEGER');
       }
     }
 

@@ -104,9 +104,11 @@ export function recordFeedback(
   correct: boolean,
 ): void {
   try {
-    stateDb.db.prepare(
+    console.error(`[Flywheel] recordFeedback: entity="${entity}" context="${context}" notePath="${notePath}" correct=${correct}`);
+    const result = stateDb.db.prepare(
       'INSERT INTO wikilink_feedback (entity, context, note_path, correct) VALUES (?, ?, ?, ?)'
     ).run(entity, context, notePath, correct ? 1 : 0);
+    console.error(`[Flywheel] recordFeedback: inserted id=${result.lastInsertRowid}`);
   } catch (e) {
     console.error(`[Flywheel] recordFeedback failed for entity="${entity}": ${e}`);
     throw e;

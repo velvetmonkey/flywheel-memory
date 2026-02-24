@@ -44,7 +44,7 @@ import { exportHubScores } from './core/shared/hubExport.js';
 import { initializeLogger as initializeReadLogger, getLogger } from './core/read/logging.js';
 
 // Core imports - Write
-import { initializeEntityIndex, setWriteStateDb, setWikilinkConfig } from './core/write/wikilinks.js';
+import { initializeEntityIndex, setWriteStateDb, setWikilinkConfig, setCooccurrenceIndex } from './core/write/wikilinks.js';
 import { initializeLogger as initializeWriteLogger, flushLogs } from './core/write/logging.js';
 import { setFTS5Database, buildFTS5Index, isIndexStale } from './core/read/fts5.js';
 import {
@@ -131,6 +131,9 @@ import { updateSuppressionList, getTrackedApplications, processImplicitFeedback,
 
 // Core imports - Recency
 import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from './core/shared/recency.js';
+
+// Core imports - Co-occurrence
+import { mineCooccurrences } from './core/shared/cooccurrence.js';
 
 // Node builtins
 import * as fs from 'node:fs/promises';
@@ -663,6 +666,9 @@ async function main() {
 
 const DEFAULT_ENTITY_EXCLUDE_FOLDERS = ['node_modules', 'templates', 'attachments', 'tmp'];
 
+/** Timestamp of last co-occurrence index rebuild (epoch ms) */
+let lastCooccurrenceRebuildAt = 0;
+
 /**
  * Scan vault for entities and save to StateDb
  */
@@ -1080,6 +1086,28 @@ async function runPostIndexWork(index: VaultIndex) {
             serverLog('watcher', `Recency: failed: ${e}`);
           }
 
+          // Step 3.6: Co-occurrence index — rebuild if stale (> 1 hour)
+          tracker.start('cooccurrence', { entity_count: entitiesAfter.length });
+          try {
+            const cooccurrenceAgeMs = lastCooccurrenceRebuildAt > 0
+              ? Date.now() - lastCooccurrenceRebuildAt
+              : Infinity;
+            if (cooccurrenceAgeMs >= 60 * 60 * 1000) {
+              const entityNames = entitiesAfter.map(e => e.name);
+              const cooccurrenceIdx = await mineCooccurrences(vaultPath, entityNames);
+              setCooccurrenceIndex(cooccurrenceIdx);
+              lastCooccurrenceRebuildAt = Date.now();
+              tracker.end({ rebuilt: true, associations: cooccurrenceIdx._metadata.total_associations });
+              serverLog('watcher', `Co-occurrence: rebuilt ${cooccurrenceIdx._metadata.total_associations} associations`);
+            } else {
+              tracker.end({ rebuilt: false, age_ms: cooccurrenceAgeMs });
+              serverLog('watcher', `Co-occurrence: cache valid (${Math.round(cooccurrenceAgeMs / 1000)}s old)`);
+            }
+          } catch (e) {
+            tracker.end({ error: String(e) });
+            serverLog('watcher', `Co-occurrence: failed: ${e}`);
+          }
+
           // Step 4: Note embeddings (with updated paths)
           if (hasEmbeddingsIndex()) {
             tracker.start('note_embeddings', { files: filteredEvents.length });
@@ -1236,7 +1264,11 @@ async function runPostIndexWork(index: VaultIndex) {
               }
               updateStoredNoteLinks(stateDb, entry.file, currentSet);
 
-              // Track survival of persisted links and emit positive feedback at threshold
+              // Track survival of persisted links and emit positive feedback at threshold.
+              // Only when links were actually removed — removals mean the user was curating
+              // links and chose to keep the remaining ones. Additions alone (especially from
+              // engine wikilink insertions) are not evidence of deliberate retention.
+              if (diff.removed.length === 0) continue;
               for (const link of currentSet) {
                 if (!previousSet.has(link)) continue; // only persisted links
                 upsertHistory.run(entry.file, link);

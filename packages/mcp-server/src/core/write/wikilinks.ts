@@ -130,6 +130,14 @@ export function getCooccurrenceIndex(): CooccurrenceIndex | null {
 }
 
 /**
+ * Set the co-occurrence index (called by watcher to inject rebuilt index).
+ * Follows established pattern from setWriteStateDb, setRecencyStateDb, etc.
+ */
+export function setCooccurrenceIndex(index: CooccurrenceIndex | null): void {
+  cooccurrenceIndex = index;
+}
+
+/**
  * Global entity index state
  */
 let entityIndex: EntityIndex | null = null;
@@ -319,6 +327,13 @@ export function checkAndRefreshIfStale(): void {
         lastLoadedAt = Date.now();
         console.error(`[Flywheel] Reloaded ${dbIndex._metadata.total_entities} entities`);
       }
+    }
+
+    // Always refresh recency from StateDb (watcher updates it independently of entities)
+    const freshRecency = loadRecencyFromStateDb();
+    if (freshRecency && freshRecency.lastUpdated > (recencyIndex?.lastUpdated ?? 0)) {
+      recencyIndex = freshRecency;
+      console.error(`[Flywheel] Refreshed recency index (${freshRecency.lastMentioned.size} entities)`);
     }
   } catch (e) {
     // StateDb might be locked or corrupted - skip refresh silently

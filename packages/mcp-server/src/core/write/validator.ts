@@ -196,6 +196,15 @@ export function normalizeInput(
     changes.push('Trimmed excessive blank lines');
   }
 
+  // Fix multi-line wikilinks: [[text\n...\n...]] → [[text ...]]
+  const multiLineWikilink = /\[\[([^\]]*\n[^\]]*)\]\]/g;
+  if (multiLineWikilink.test(normalized)) {
+    normalized = normalized.replace(multiLineWikilink, (_match, inner: string) => {
+      return '[[' + inner.replace(/\s*\n\s*/g, ' ').trim() + ']]';
+    });
+    changes.push('Fixed multi-line wikilinks');
+  }
+
   return {
     content: normalized,
     normalized: changes.length > 0,

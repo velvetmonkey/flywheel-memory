@@ -59,9 +59,11 @@ export function registerWikilinkFeedbackTools(
 
       switch (mode) {
         case 'report': {
+          console.error(`[Flywheel] wikilink_feedback report: entity="${entity}" correct=${JSON.stringify(correct)} (type: ${typeof correct})`);
           if (!entity || correct === undefined) {
             return {
               content: [{ type: 'text' as const, text: JSON.stringify({ error: 'entity and correct are required for report mode' }) }],
+              isError: true,
             };
           }
 
@@ -72,6 +74,7 @@ export function registerWikilinkFeedbackTools(
               content: [{ type: 'text' as const, text: JSON.stringify({
                 error: `Failed to record feedback: ${e instanceof Error ? e.message : String(e)}`
               }) }],
+              isError: true,
             };
           }
           const suppressionUpdated = updateSuppressionList(stateDb) > 0;

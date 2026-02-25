@@ -18,6 +18,9 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 export interface EdgeWeightResult {
   edges_updated: number;
   duration_ms: number;
+  total_weighted: number;     // edges with weight > 1.0
+  avg_weight: number;         // average weight of weighted edges
+  strong_count: number;       // edges with weight > 3.0
 }
 
 // =============================================================================
@@ -97,7 +100,7 @@ export function recomputeEdgeWeights(stateDb: StateDb): EdgeWeightResult {
   ).all() as Array<{ note_path: string; target: string }>;
 
   if (edges.length === 0) {
-    return { edges_updated: 0, duration_ms: Date.now() - start };
+    return { edges_updated: 0, duration_ms: Date.now() - start, total_weighted: 0, avg_weight: 0, strong_count: 0 };
   }
 
   // 2. Build survival map: (note_path, target) -> edits_survived
@@ -209,5 +212,44 @@ export function recomputeEdgeWeights(stateDb: StateDb): EdgeWeightResult {
   });
   tx();
 
-  return { edges_updated: edges.length, duration_ms: Date.now() - start };
+  const stats = stateDb.db.prepare(`
+    SELECT
+      COUNT(*) as total_weighted,
+      AVG(weight) as avg_weight,
+      SUM(CASE WHEN weight > 3.0 THEN 1 ELSE 0 END) as strong_count
+    FROM note_links
+    WHERE weight > 1.0
+  `).get() as { total_weighted: number; avg_weight: number; strong_count: number } | undefined;
+
+  return {
+    edges_updated: edges.length,
+    duration_ms: Date.now() - start,
+    total_weighted: stats?.total_weighted ?? 0,
+    avg_weight: Math.round((stats?.avg_weight ?? 0) * 100) / 100,
+    strong_count: stats?.strong_count ?? 0,
+  };
+}
+
+// =============================================================================
+// Query helpers for scoring integration
+// =============================================================================
+
+/**
+ * Build a map of entity name (lowercased) -> average incoming edge weight
+ * for entities that have at least one weighted edge (weight > 1.0).
+ * Used by Layer 12 in suggestRelatedLinks().
+ */
+export function getEntityEdgeWeightMap(stateDb: StateDb): Map<string, number> {
+  const rows = stateDb.db.prepare(`
+    SELECT LOWER(target) as target_lower, AVG(weight) as avg_weight
+    FROM note_links
+    WHERE weight > 1.0
+    GROUP BY LOWER(target)
+  `).all() as Array<{ target_lower: string; avg_weight: number }>;
+
+  const map = new Map<string, number>();
+  for (const row of rows) {
+    map.set(row.target_lower, row.avg_weight);
+  }
+  return map;
 }

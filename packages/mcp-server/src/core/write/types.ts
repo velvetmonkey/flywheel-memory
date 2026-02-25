@@ -96,6 +96,7 @@ export type StrictnessMode = 'conservative' | 'balanced' | 'aggressive';
  * - 9: hub_boost (well-connected entities)
  * - 10: feedback (historical accuracy adjustment)
  * - 11: semantic (embedding similarity)
+ * - 12: edge_weight (high-quality incoming link boost)
  */
 export type ScoringLayer =
   | 'length_filter' | 'article_filter'
@@ -103,7 +104,8 @@ export type ScoringLayer =
   | 'cooccurrence'
   | 'type_boost' | 'context_boost'
   | 'recency' | 'cross_folder'
-  | 'hub_boost' | 'feedback' | 'semantic';
+  | 'hub_boost' | 'feedback' | 'semantic'
+  | 'edge_weight';
 
 /**
  * Note context type inferred from path
@@ -153,6 +155,7 @@ export interface ScoreBreakdown {
   hubBoost: number;           // Layer 9
   feedbackAdjustment: number; // Layer 10
   semanticBoost?: number;     // Layer 11
+  edgeWeightBoost?: number;   // Layer 12
 }
 
 export type ConfidenceLevel = 'high' | 'medium' | 'low';

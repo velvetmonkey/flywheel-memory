@@ -64,6 +64,7 @@ import {
   type RecencyIndex,
 } from '../shared/recency.js';
 import { embedTextCached, findSemanticallySimilarEntities, hasEntityEmbeddingsIndex } from '../read/embeddings.js';
+import { getEntityEdgeWeightMap } from './edgeWeights.js';
 
 /**
  * Module-level StateDb reference
@@ -1156,6 +1157,18 @@ function scoreEntity(
  * @param options - Configuration options
  * @returns Suggestion result with entity names and formatted suffix
  */
+
+/**
+ * Layer 12: Compute edge weight boost for an entity.
+ * Entities with high-quality incoming links (avg weight > 1.0) get a boost.
+ * Capped at 4 points to prevent domination.
+ */
+function getEdgeWeightBoostScore(entityName: string, map: Map<string, number>): number {
+  const avgWeight = map.get(entityName.toLowerCase());
+  if (!avgWeight) return 0;
+  return Math.min((avgWeight - 1.0) * 2, 4);
+}
+
 export async function suggestRelatedLinks(
   content: string,
   options: SuggestOptions = {}
@@ -1234,6 +1247,9 @@ export async function suggestRelatedLinks(
   const noteFolder = notePath ? notePath.split('/')[0] : undefined;
   const feedbackBoosts = moduleStateDb ? getAllFeedbackBoosts(moduleStateDb, noteFolder) : new Map<string, number>();
 
+  // Load edge weight map once (Layer 12)
+  const edgeWeightMap = moduleStateDb ? getEntityEdgeWeightMap(moduleStateDb) : new Map<string, number>();
+
   // First pass: Score entities and track which ones matched directly
   interface ScoredEntry {
     name: string;
@@ -1302,6 +1318,10 @@ export async function suggestRelatedLinks(
     const layerFeedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
     score += layerFeedbackAdj;
 
+    // Layer 12: Edge weight boost — entities with high-quality incoming links
+    const layerEdgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
+    score += layerEdgeWeightBoost;
+
     if (score > 0) {
       directlyMatchedEntities.add(entityName);
     }
@@ -1322,6 +1342,7 @@ export async function suggestRelatedLinks(
           crossFolderBoost: layerCrossFolderBoost,
           hubBoost: layerHubBoost,
           feedbackAdjustment: layerFeedbackAdj,
+          edgeWeightBoost: layerEdgeWeightBoost,
         },
       });
     }
@@ -1365,14 +1386,15 @@ export async function suggestRelatedLinks(
           // Entity passed content overlap check - mark as having content match
           entitiesWithContentMatch.add(entityName);
 
-          // For purely co-occurrence-based suggestions, also add type, context, recency, cross-folder, hub, and feedback boosts
+          // For purely co-occurrence-based suggestions, also add type, context, recency, cross-folder, hub, feedback, and edge weight boosts
           const typeBoost = disabled.has('type_boost') ? 0 : (TYPE_BOOST[category] || 0);
           const contextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
           const recencyBoostVal = disabled.has('recency') ? 0 : (recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0);
           const crossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
           const hubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
           const feedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
-          const totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj;
+          const edgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
+          const totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj + edgeWeightBoost;
           if (totalBoost >= adaptiveMinScore) {
             // Add entity if boost meets threshold
             scoredEntities.push({
@@ -1389,6 +1411,7 @@ export async function suggestRelatedLinks(
                 crossFolderBoost,
                 hubBoost,
                 feedbackAdjustment: feedbackAdj,
+                edgeWeightBoost,
               },
             });
           }
@@ -1448,8 +1471,9 @@ export async function suggestRelatedLinks(
           const layerHubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
           const layerCrossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
           const layerFeedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(match.entityName) ?? 0);
+          const layerEdgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(match.entityName, edgeWeightMap);
 
-          const totalScore = boost + layerTypeBoost + layerContextBoost + layerHubBoost + layerCrossFolderBoost + layerFeedbackAdj;
+          const totalScore = boost + layerTypeBoost + layerContextBoost + layerHubBoost + layerCrossFolderBoost + layerFeedbackAdj + layerEdgeWeightBoost;
 
           if (totalScore >= adaptiveMinScore) {
             scoredEntities.push({
@@ -1467,6 +1491,7 @@ export async function suggestRelatedLinks(
                 hubBoost: layerHubBoost,
                 feedbackAdjustment: layerFeedbackAdj,
                 semanticBoost: boost,
+                edgeWeightBoost: layerEdgeWeightBoost,
               },
             });
 

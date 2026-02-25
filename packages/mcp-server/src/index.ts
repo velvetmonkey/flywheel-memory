@@ -95,6 +95,7 @@ import { registerPolicyTools } from './tools/write/policy.js';
 import { registerTagTools } from './tools/write/tags.js';
 import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
 import { registerConfigTools } from './tools/write/config.js';
+import { registerInitTools } from './tools/write/enrich.js';
 
 // Read tool registrations (additional)
 import { registerMetricsTools } from './tools/read/metrics.js';
@@ -501,6 +502,7 @@ registerWriteSystemTools(server, vaultPath);
 registerPolicyTools(server, vaultPath);
 registerTagTools(server, () => vaultIndex, () => vaultPath);
 registerWikilinkFeedbackTools(server, () => stateDb);
+registerInitTools(server, vaultPath, () => stateDb);
 registerConfigTools(
   server,
   () => flywheelConfig,
@@ -557,6 +559,12 @@ async function main() {
 
     // Set StateDb for edge weight computation
     setEdgeWeightStateDb(stateDb);
+
+    // Nudge if vault_init has never been run
+    const vaultInitRow = stateDb.getMetadataValue.get('vault_init_last_run_at') as { value: string } | undefined;
+    if (!vaultInitRow) {
+      serverLog('server', 'Vault not initialized — call vault_init to enrich legacy notes');
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     serverLog('statedb', `StateDb initialization failed: ${msg}`, 'error');

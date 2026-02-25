@@ -1,6 +1,6 @@
 # The Scoring Algorithm
 
-When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 9 scoring layers (plus filtering, suppression, and adaptive thresholds). Here's exactly how.
+When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 10 scoring layers (plus filtering, suppression, and adaptive thresholds). Here's exactly how.
 
 ---
 
@@ -12,7 +12,7 @@ When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a scor
                          +-----------+
                                |
                          +-----------+
-           Candidates -->| SCORE x9  |----> Scored list
+           Candidates -->| SCORE x10 |----> Scored list
                          +-----------+
                                |
                          +-----------+
@@ -86,15 +86,25 @@ Co-occurrence candidates must also have at least 1 word overlapping with the con
 
 Different entity categories have different baseline value for linking. People are almost always worth linking. Common technology names can over-saturate if boosted.
 
-| Category | Boost |
-|---|---|
-| People | +5 |
-| Projects | +3 |
-| Organizations | +2 |
-| Locations | +1 |
-| Concepts | +1 |
-| Technologies | 0 |
-| Acronyms | 0 |
+| Category | Boost | Notes |
+|----------|-------|-------|
+| People | +5 | Names are high-value connections |
+| Projects | +3 | Provide context for work |
+| Animals | +3 | Pets and animals are personal and specific |
+| Organizations | +2 | Companies and teams |
+| Events | +2 | Meetings, trips, milestones |
+| Media | +2 | Movies, books, shows |
+| Health | +2 | Medical, fitness — personal relevance |
+| Vehicles | +2 | Cars, bikes — specific items |
+| Locations | +1 | Geographic context |
+| Concepts | +1 | Abstract concepts |
+| Documents | +1 | Reports, guides |
+| Food | +1 | Recipes, restaurants |
+| Hobbies | +1 | Crafts, sports |
+| Finance | +1 | Accounts, budgets |
+| Technologies | 0 | Common — avoid over-suggesting |
+| Acronyms | 0 | May be ambiguous |
+| Other | 0 | Unknown category |
 
 ### Layer 4: Context Boost
 
@@ -179,6 +189,33 @@ When entity embeddings are available (built via `init_semantic`), candidates rec
 **The killer feature:** Entities found ONLY by semantic similarity -- with zero content match -- still enter the scoring pipeline. They receive semantic + type + context + hub boosts, opening the `entitiesWithContentMatch` gate. This means content about "deployment automation" can suggest `[[CI/CD]]` even though those exact words never appear.
 
 **Graceful degradation:** All semantic paths check `hasEntityEmbeddingsIndex()` before attempting queries. Errors are caught and logged -- semantic failures never break suggestions.
+
+### Layer 10: Edge Weight
+
+High-quality links strengthen future suggestions. Each wikilink in your vault accumulates an edge weight based on survival:
+
+**Formula:** `weight = 1.0 + (edits_survived × 0.3) + (co_sessions × 0.2) + (source_access × 0.1)`
+
+Three signals:
+
+| Signal | What it measures |
+|--------|-----------------|
+| `edits_survived` | Link persists through note edits without being removed |
+| `co_sessions` | Source and target note edited in the same session |
+| `source_access` | Source note is actively read and edited |
+
+**Scoring boost:** `min((avgWeight − 1) × 2, 4)` — capped at +4.
+
+| Edge weight | Boost |
+|------------|-------|
+| 1.0 (new) | 0 |
+| 2.0 (moderate) | +2 |
+| 3.0 (established) | +4 (capped) |
+| 4.0+ (strong) | +4 (capped) |
+
+A link that survives 10 edits (weight ~4.0) earns the maximum +4 boost. This creates a feedback loop: links that survive are trusted, and trusted links score higher in future suggestions.
+
+**Prerequisites:** Edge weights are computed by the watcher pipeline's `edge_weights` step (staleness-gated to once per hour). Available without `init_semantic`.
 
 ---
 

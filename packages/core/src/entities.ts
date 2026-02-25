@@ -27,6 +27,14 @@ const MAX_ENTITY_LENGTH = 25;
  */
 const MAX_ENTITY_WORDS = 3;
 
+/** Entities that should never be indexed regardless of vault files */
+export const STOP_ENTITIES = new Set([
+  'me', 'my', 'i',
+  'ok', 'no', 'yes', 'hi', 'hey',
+  'mcp', 're', 'cc', 'id',
+  'am', 'pm', 'vs', 'etc',
+]);
+
 /**
  * Default patterns for filtering out periodic notes and system files
  */
@@ -452,20 +460,30 @@ export async function scanVaultEntities(
   // Scan vault for all markdown files
   const allEntities = await scanDirectory(vaultPath, vaultPath, excludeFolders);
 
-  // Filter out periodic notes and invalid entries
+  // Filter out periodic notes, invalid entries, and stop-listed entities
   const validEntities = allEntities.filter(entity =>
-    entity.name.length >= 2 && !matchesExcludePattern(entity.name)
+    entity.name.length >= 2
+    && !matchesExcludePattern(entity.name)
+    && !STOP_ENTITIES.has(entity.name.toLowerCase())
   );
 
-  // Remove duplicates by name (keep first occurrence)
-  const seenNames = new Set<string>();
-  const uniqueEntities = validEntities.filter(entity => {
-    if (seenNames.has(entity.name.toLowerCase())) {
-      return false;
+  // Deduplicate by name, preferring entity whose name matches its filename stem
+  const casingMap = new Map<string, typeof validEntities[0]>();
+  for (const entity of validEntities) {
+    const key = entity.name.toLowerCase();
+    const existing = casingMap.get(key);
+    if (!existing) {
+      casingMap.set(key, entity);
+      continue;
     }
-    seenNames.add(entity.name.toLowerCase());
-    return true;
-  });
+    // Prefer entity whose name matches its filename stem exactly
+    const existingStemMatch = existing.name === path.basename(existing.relativePath, '.md');
+    const newStemMatch = entity.name === path.basename(entity.relativePath, '.md');
+    if (newStemMatch && !existingStemMatch) {
+      casingMap.set(key, entity);
+    }
+  }
+  const uniqueEntities = Array.from(casingMap.values());
 
   // Categorize entities
   const index: EntityIndex = {

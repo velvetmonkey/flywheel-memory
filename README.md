@@ -102,15 +102,19 @@ Entity              Score  Match  Co-oc  Type  Recency  Cross  Hub
 Marcus Johnson        32    +10     +6    +5     +8      +3    +0
 ```
 
-Every number traces to a vault property. No magic -- just math you can verify.
+Every number traces to vault usage, not configuration. Recency came from what you last wrote. Co-occurrence came from notes you've written before. Hub came from how many other notes link there. The score learns as you use it.
 
 See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
-### 3. Your Vault's Hidden Structure
+### 3. Read and Write Build the Graph
 
-"What's the shortest path between AlphaFold and my docking experiment?"
+**Every interaction is a graph-building operation.**
 
-Backlinks, forward links, hubs, orphans, shortest paths -- your vault is a queryable graph. Every note you write through Flywheel gets auto-linked. Denser graphs make every query more precise. That's the flywheel.
+When you write a note, entities are auto-linked — creating edges. When you keep a `[[link]]` through 10 edits, that edge gains weight. When two entities appear together in 20 notes, they build a co-occurrence bond. When you read frequently, recent entities surface in suggestions.
+
+The 10-layer score tracks this: hub boost measures structural centrality, recency measures recent relevance, co-occurrence measures associative relationships, feedback adjusts for historical accuracy. Each number traces to vault usage, not configuration.
+
+Result: a queryable graph. "What's the shortest path between AlphaFold and my docking experiment?" Backlinks, forward links, hubs, orphans, shortest paths — every query leverages hundreds of accumulated connections. Denser graphs make every query more precise.
 
 ### 4. Semantic Understanding
 

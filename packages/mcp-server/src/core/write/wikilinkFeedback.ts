@@ -69,7 +69,7 @@ export interface DashboardData {
 // =============================================================================
 
 /** Minimum feedback entries before considering suppression */
-const MIN_FEEDBACK_COUNT = 5;
+const MIN_FEEDBACK_COUNT = 10;
 
 /** False positive rate threshold for suppression (30%) */
 const SUPPRESSION_THRESHOLD = 0.30;

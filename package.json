@@ -2,7 +2,7 @@
   "name": "flywheel-memory-monorepo",
   "version": "2.0.5",
   "private": true,
-  "description": "Local-first memory for AI agents. 42 tools. No cloud. Everything connects.",
+  "description": "Local-first memory for AI agents. Select from 42 tools. No cloud. Everything connects.",
   "workspaces": [
     "packages/*"
   ],

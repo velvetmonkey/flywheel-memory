@@ -1,7 +1,7 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Claude reads files. Flywheel reads your knowledge graph.</strong><br/>42 tools. Zero cloud. Your Obsidian vault becomes a queryable second brain.</p>
+  <p><strong>Claude reads files. Flywheel reads your knowledge graph.</strong><br/>Select from 42 tools. Zero cloud. Your Obsidian vault becomes a queryable second brain.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
@@ -20,7 +20,7 @@
 | "What should I link?" | Manual or grep | Smart scoring + semantic understanding |
 | Token cost | 2,000-250,000 | 50-200 |
 
-42 tools. 6-line config. Zero cloud dependencies.
+Select from 42 tools. 6-line config. Zero cloud dependencies.
 
 ---
 

@@ -19,6 +19,7 @@ import {
   updateBacklinksInFile,
   extractAliases,
   getTitleFromPath,
+  escapeRegex,
 } from './move-notes.js';
 import fs from 'fs/promises';
 
@@ -172,6 +173,138 @@ export function registerMergeTools(
           success: false,
           message: `Failed to merge entities: ${error instanceof Error ? error.message : String(error)}`,
           path: source_path,
+        };
+        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      }
+    }
+  );
+
+  // ========================================
+  // Tool: absorb_as_alias
+  // ========================================
+  server.tool(
+    'absorb_as_alias',
+    'Absorb an entity name as an alias of a target note: adds alias to target frontmatter and rewrites all [[source]] links to [[target|source]]. Lighter than merge_entities — no source note required, no content append, no deletion.',
+    {
+      source_name: z.string().describe('The entity name to absorb (e.g. "Foo")'),
+      target_path: z.string().describe('Vault-relative path of the target entity note (e.g. "entities/Bar.md")'),
+    },
+    async ({ source_name, target_path }) => {
+      try {
+        // 1. Validate target path
+        if (!validatePath(vaultPath, target_path)) {
+          const result: MutationResult = {
+            success: false,
+            message: 'Invalid target path: path traversal not allowed',
+            path: target_path,
+          };
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+        }
+
+        // 2. Read target note
+        let targetContent: string;
+        let targetFrontmatter: Record<string, unknown>;
+        try {
+          const target = await readVaultFile(vaultPath, target_path);
+          targetContent = target.content;
+          targetFrontmatter = target.frontmatter;
+        } catch {
+          const result: MutationResult = {
+            success: false,
+            message: `Target file not found: ${target_path}`,
+            path: target_path,
+          };
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+        }
+
+        const targetTitle = getTitleFromPath(target_path);
+
+        // 3. Add source_name to target's aliases (dedup, skip if matches target title)
+        const existingAliases = extractAliases(targetFrontmatter);
+        const deduped = new Set(existingAliases);
+        if (source_name.toLowerCase() !== targetTitle.toLowerCase()) {
+          deduped.add(source_name);
+        }
+        targetFrontmatter.aliases = Array.from(deduped);
+
+        // 4. Write updated target frontmatter
+        await writeVaultFile(vaultPath, target_path, targetContent, targetFrontmatter);
+
+        // 5. Find all backlinks to source_name
+        const backlinks = await findBacklinks(vaultPath, source_name, []);
+        let totalBacklinksUpdated = 0;
+        const modifiedFiles: string[] = [];
+
+        // 6. For each file, replace [[source_name]] → [[target|source_name]]
+        for (const backlink of backlinks) {
+          // Skip the target (we already wrote it)
+          if (backlink.path === target_path) continue;
+
+          let fileData: { content: string; frontmatter: Record<string, unknown> };
+          try {
+            fileData = await readVaultFile(vaultPath, backlink.path);
+          } catch {
+            continue; // skip unreadable files
+          }
+
+          let content = fileData.content;
+          let linksUpdated = 0;
+
+          const pattern = new RegExp(
+            `\\[\\[${escapeRegex(source_name)}(\\|[^\\]]+)?\\]\\]`,
+            'gi'
+          );
+
+          content = content.replace(pattern, (_match, displayPart) => {
+            linksUpdated++;
+            if (displayPart) {
+              // Preserve existing display text: [[Foo|X]] → [[Bar|X]]
+              return `[[${targetTitle}${displayPart}]]`;
+            }
+            // Bare link: [[Foo]] → [[Bar|Foo]]
+            if (source_name.toLowerCase() === targetTitle.toLowerCase()) {
+              return `[[${targetTitle}]]`;
+            }
+            return `[[${targetTitle}|${source_name}]]`;
+          });
+
+          if (linksUpdated > 0) {
+            await writeVaultFile(vaultPath, backlink.path, content, fileData.frontmatter);
+            totalBacklinksUpdated += linksUpdated;
+            modifiedFiles.push(backlink.path);
+          }
+        }
+
+        // 7. Rebuild entity index in background
+        initializeEntityIndex(vaultPath).catch(err => {
+          console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
+        });
+
+        // 8. Build result
+        const aliasAdded = source_name.toLowerCase() !== targetTitle.toLowerCase();
+        const previewLines = [
+          `Absorbed: "${source_name}" → "${targetTitle}"`,
+          `Alias added: ${aliasAdded ? source_name : 'no (matches target title)'}`,
+          `Backlinks updated: ${totalBacklinksUpdated}`,
+        ];
+        if (modifiedFiles.length > 0) {
+          previewLines.push(`Files modified: ${modifiedFiles.join(', ')}`);
+        }
+
+        const result: MutationResult & { backlinks_updated?: number } = {
+          success: true,
+          message: `Absorbed "${source_name}" as alias of "${targetTitle}"`,
+          path: target_path,
+          preview: previewLines.join('\n'),
+          backlinks_updated: totalBacklinksUpdated,
+        };
+
+        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      } catch (error) {
+        const result: MutationResult = {
+          success: false,
+          message: `Failed to absorb as alias: ${error instanceof Error ? error.message : String(error)}`,
+          path: target_path,
         };
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
       }

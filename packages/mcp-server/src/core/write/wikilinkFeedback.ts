@@ -484,7 +484,7 @@ export function trackWikilinkApplications(
 
   const transaction = stateDb.db.transaction(() => {
     for (const entity of entities) {
-      upsert.run(entity.toLowerCase(), notePath);
+      upsert.run(entity, notePath);
     }
   });
 
@@ -606,7 +606,7 @@ export function processImplicitFeedback(
 
   const transaction = stateDb.db.transaction(() => {
     for (const entity of tracked) {
-      if (!currentLinks.has(entity)) {
+      if (!currentLinks.has(entity.toLowerCase())) {
         recordFeedback(stateDb, entity, 'implicit:removed', notePath, false);
         markRemoved.run(entity, notePath);
         removed.push(entity);

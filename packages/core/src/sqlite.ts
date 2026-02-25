@@ -109,7 +109,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 22;
+export const SCHEMA_VERSION = 23;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -276,7 +276,7 @@ CREATE TABLE IF NOT EXISTS wikilink_applications (
   applied_at TEXT DEFAULT (datetime('now')),
   status TEXT DEFAULT 'applied'
 );
-CREATE UNIQUE INDEX IF NOT EXISTS idx_wl_apps_unique ON wikilink_applications(entity, note_path);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wl_apps_unique ON wikilink_applications(entity COLLATE NOCASE, note_path);
 
 -- Index events tracking (v6: index activity history)
 CREATE TABLE IF NOT EXISTS index_events (
@@ -589,6 +589,12 @@ function initSchema(db: Database.Database): void {
         db.exec('ALTER TABLE note_links ADD COLUMN weight REAL NOT NULL DEFAULT 1.0');
         db.exec('ALTER TABLE note_links ADD COLUMN weight_updated_at INTEGER');
       }
+    }
+
+    // v23: Case-insensitive unique index on wikilink_applications
+    if (currentVersion < 23) {
+      db.exec('DROP INDEX IF EXISTS idx_wl_apps_unique');
+      db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_wl_apps_unique ON wikilink_applications(entity COLLATE NOCASE, note_path)');
     }
 
     db.prepare(

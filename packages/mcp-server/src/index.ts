@@ -1127,7 +1127,15 @@ async function runPostIndexWork(index: VaultIndex) {
               if (edgeWeightAgeMs >= 60 * 60 * 1000) {
                 const result = recomputeEdgeWeights(stateDb);
                 lastEdgeWeightRebuildAt = Date.now();
-                tracker.end({ rebuilt: true, edges: result.edges_updated, duration_ms: result.duration_ms });
+                tracker.end({
+                  rebuilt: true,
+                  edges: result.edges_updated,
+                  duration_ms: result.duration_ms,
+                  total_weighted: result.total_weighted,
+                  avg_weight: result.avg_weight,
+                  strong_count: result.strong_count,
+                  top_changes: result.top_changes,
+                });
                 serverLog('watcher', `Edge weights: ${result.edges_updated} edges in ${result.duration_ms}ms`);
               } else {
                 tracker.end({ rebuilt: false, age_ms: edgeWeightAgeMs });

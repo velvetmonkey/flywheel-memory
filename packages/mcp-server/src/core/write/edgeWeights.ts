@@ -15,12 +15,24 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 // Types
 // =============================================================================
 
+export interface EdgeWeightChange {
+  note_path: string;
+  target: string;
+  old_weight: number;
+  new_weight: number;
+  delta: number;
+  edits_survived: number;
+  co_sessions: number;
+  source_access: number;
+}
+
 export interface EdgeWeightResult {
   edges_updated: number;
   duration_ms: number;
   total_weighted: number;     // edges with weight > 1.0
   avg_weight: number;         // average weight of weighted edges
   strong_count: number;       // edges with weight > 3.0
+  top_changes: EdgeWeightChange[];  // top 10 by |delta|
 }
 
 // =============================================================================
@@ -100,7 +112,7 @@ export function recomputeEdgeWeights(stateDb: StateDb): EdgeWeightResult {
   ).all() as Array<{ note_path: string; target: string }>;
 
   if (edges.length === 0) {
-    return { edges_updated: 0, duration_ms: Date.now() - start, total_weighted: 0, avg_weight: 0, strong_count: 0 };
+    return { edges_updated: 0, duration_ms: Date.now() - start, total_weighted: 0, avg_weight: 0, strong_count: 0, top_changes: [] };
   }
 
   // 2. Build survival map: (note_path, target) -> edits_survived
@@ -187,11 +199,22 @@ export function recomputeEdgeWeights(stateDb: StateDb): EdgeWeightResult {
     }
   }
 
-  // 7. Compute weights and update
+  // 7. Snapshot old weights for change tracking
+  const oldWeights = new Map<string, number>();
+  const oldRows = stateDb.db.prepare(
+    'SELECT note_path, target, weight FROM note_links'
+  ).all() as Array<{ note_path: string; target: string; weight: number }>;
+  for (const row of oldRows) {
+    oldWeights.set(`${row.note_path}\0${row.target}`, row.weight);
+  }
+
+  // 8. Compute weights and update
   const now = Date.now();
   const update = stateDb.db.prepare(
     'UPDATE note_links SET weight = ?, weight_updated_at = ? WHERE note_path = ? AND target = ?'
   );
+
+  const changes: EdgeWeightChange[] = [];
 
   const tx = stateDb.db.transaction(() => {
     for (const edge of edges) {
@@ -207,10 +230,31 @@ export function recomputeEdgeWeights(stateDb: StateDb): EdgeWeightResult {
         + Math.min(coSessions * 0.5, 3.0)
         + Math.min(sourceAccess * 0.2, 2.0);
 
-      update.run(Math.round(weight * 1000) / 1000, now, edge.note_path, edge.target);
+      const roundedWeight = Math.round(weight * 1000) / 1000;
+      const oldWeight = oldWeights.get(edgeKey) ?? 1.0;
+      const delta = roundedWeight - oldWeight;
+
+      if (Math.abs(delta) >= 0.001) {
+        changes.push({
+          note_path: edge.note_path,
+          target: edge.target,
+          old_weight: oldWeight,
+          new_weight: roundedWeight,
+          delta: Math.round(delta * 1000) / 1000,
+          edits_survived: editsSurvived,
+          co_sessions: coSessions,
+          source_access: sourceAccess,
+        });
+      }
+
+      update.run(roundedWeight, now, edge.note_path, edge.target);
     }
   });
   tx();
+
+  // Top 10 changes by |delta|
+  changes.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  const top_changes = changes.slice(0, 10);
 
   const stats = stateDb.db.prepare(`
     SELECT
@@ -227,6 +271,7 @@ export function recomputeEdgeWeights(stateDb: StateDb): EdgeWeightResult {
     total_weighted: stats?.total_weighted ?? 0,
     avg_weight: Math.round((stats?.avg_weight ?? 0) * 100) / 100,
     strong_count: stats?.strong_count ?? 0,
+    top_changes,
   };
 }
 

@@ -616,6 +616,10 @@ export function processImplicitFeedback(
 
   transaction();
 
+  if (removed.length > 0) {
+    updateSuppressionList(stateDb);
+  }
+
   return removed;
 }
 

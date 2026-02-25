@@ -44,9 +44,10 @@ export function registerWikilinkFeedbackTools(
         granularity: z.enum(['day', 'week']).optional().describe('Time bucket granularity for layer_timeseries (default: day)'),
         timestamp_before: z.number().optional().describe('Earlier timestamp for snapshot_diff'),
         timestamp_after: z.number().optional().describe('Later timestamp for snapshot_diff'),
+        skip_status_update: z.boolean().optional().describe('Skip marking application as removed (caller will trigger implicit detection via file edit)'),
       },
     },
-    async ({ mode, entity, note_path, context, correct, limit, days_back, granularity, timestamp_before, timestamp_after }) => {
+    async ({ mode, entity, note_path, context, correct, limit, days_back, granularity, timestamp_before, timestamp_after, skip_status_update }) => {
       const stateDb = getStateDb();
       if (!stateDb) {
         return {
@@ -77,6 +78,13 @@ export function registerWikilinkFeedbackTools(
               isError: true,
             };
           }
+
+          if (!correct && note_path && !skip_status_update) {
+            stateDb.db.prepare(
+              `UPDATE wikilink_applications SET status = 'removed' WHERE entity = ? AND note_path = ? COLLATE NOCASE`
+            ).run(entity, note_path);
+          }
+
           const suppressionUpdated = updateSuppressionList(stateDb) > 0;
 
           result = {

@@ -242,6 +242,29 @@ export function updateSuppressionList(stateDb: StateDb): number {
 }
 
 /**
+ * Explicitly suppress an entity (immediate, bypasses threshold logic).
+ * Used for explicit negative feedback where user says "this is wrong."
+ */
+export function suppressEntity(stateDb: StateDb, entity: string): void {
+  stateDb.db.prepare(`
+    INSERT INTO wikilink_suppressions (entity, false_positive_rate, updated_at)
+    VALUES (?, 1.0, datetime('now'))
+    ON CONFLICT(entity) DO UPDATE SET false_positive_rate = 1.0, updated_at = datetime('now')
+  `).run(entity);
+}
+
+/**
+ * Remove an entity from the suppression list.
+ * Returns true if the entity was actually suppressed (and is now removed).
+ */
+export function unsuppressEntity(stateDb: StateDb, entity: string): boolean {
+  const result = stateDb.db.prepare(
+    'DELETE FROM wikilink_suppressions WHERE entity = ? COLLATE NOCASE'
+  ).run(entity);
+  return result.changes > 0;
+}
+
+/**
  * Check if an entity is currently suppressed
  * @param folder - Optional folder for context-stratified suppression
  */

@@ -75,7 +75,7 @@ describe('SQLite State Management', () => {
     it('should have correct schema version', () => {
       stateDb = openStateDb(testVaultPath);
       const metadata = getStateDbMetadata(stateDb);
-      expect(metadata.schemaVersion).toBe(23);
+      expect(metadata.schemaVersion).toBe(24);
     });
 
     it('note_links has weight column with default 1.0', () => {

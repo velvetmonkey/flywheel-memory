@@ -11,6 +11,8 @@ import {
   getFeedback,
   getEntityStats,
   updateSuppressionList,
+  suppressEntity,
+  unsuppressEntity,
   getSuppressedCount,
   getDashboardData,
   getEntityScoreTimeline,
@@ -34,7 +36,7 @@ export function registerWikilinkFeedbackTools(
       description:
         'Report and query wikilink accuracy feedback. Modes: "report" (record feedback), "list" (view recent feedback), "stats" (entity accuracy statistics), "dashboard" (full feedback loop data), "entity_timeline" (score history for an entity), "layer_timeseries" (per-layer contribution over time), "snapshot_diff" (compare two graph snapshots).',
       inputSchema: {
-        mode: z.enum(['report', 'list', 'stats', 'dashboard', 'entity_timeline', 'layer_timeseries', 'snapshot_diff']).describe('Operation mode'),
+        mode: z.enum(['report', 'list', 'stats', 'dashboard', 'entity_timeline', 'layer_timeseries', 'snapshot_diff', 'suppress', 'unsuppress']).describe('Operation mode'),
         entity: z.string().optional().describe('Entity name (required for report and entity_timeline modes, optional filter for list/stats)'),
         note_path: z.string().optional().describe('Note path where the wikilink appeared (for report mode)'),
         context: z.string().optional().describe('Surrounding text context (for report mode)'),
@@ -86,6 +88,11 @@ export function registerWikilinkFeedbackTools(
           }
 
           const suppressionUpdated = updateSuppressionList(stateDb) > 0;
+
+          // Auto-suppress on explicit negative feedback
+          if (!correct) {
+            suppressEntity(stateDb, entity);
+          }
 
           result = {
             mode: 'report',
@@ -168,6 +175,40 @@ export function registerWikilinkFeedbackTools(
           result = {
             mode: 'snapshot_diff',
             diff,
+          };
+          break;
+        }
+
+        case 'suppress': {
+          if (!entity) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({ error: 'entity is required for suppress mode' }) }],
+              isError: true,
+            };
+          }
+          suppressEntity(stateDb, entity);
+          result = {
+            mode: 'suppress' as string,
+            entity,
+            suppressed: true,
+            total_suppressed: getSuppressedCount(stateDb),
+          };
+          break;
+        }
+
+        case 'unsuppress': {
+          if (!entity) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({ error: 'entity is required for unsuppress mode' }) }],
+              isError: true,
+            };
+          }
+          const wasRemoved = unsuppressEntity(stateDb, entity);
+          result = {
+            mode: 'unsuppress' as string,
+            entity,
+            was_suppressed: wasRemoved,
+            total_suppressed: getSuppressedCount(stateDb),
           };
           break;
         }

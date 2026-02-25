@@ -84,6 +84,51 @@ describe('scanVaultEntities', () => {
     });
   });
 
+  describe('minimum name length filtering', () => {
+    it('should exclude single-character entity names', async () => {
+      writeNote('X');
+      writeNote('a');
+      writeNote('React');
+
+      const index = await scanVaultEntities(tmpDir);
+      const all = getAllEntities(index);
+      const names = all.map(e => (typeof e === 'string' ? e : e.name));
+
+      // Single-character names should be filtered (length < 2)
+      expect(names).not.toContain('X');
+      expect(names).not.toContain('a');
+      // Normal names should pass
+      expect(names).toContain('React');
+    });
+
+    it('should keep 2-character entity names', async () => {
+      writeNote('Go', '---\ntype: technology\n---\n');
+      writeNote('AI', '---\ntype: acronym\n---\n');
+
+      const index = await scanVaultEntities(tmpDir);
+      const all = getAllEntities(index);
+      const names = all.map(e => (typeof e === 'string' ? e : e.name));
+
+      // 2-char names should pass the length filter (may still be stop-listed)
+      // "AI" is not in STOP_ENTITIES, so it should appear
+      expect(names).toContain('AI');
+    });
+
+    it('should exclude entities matching date patterns', async () => {
+      writeNote('2025-01-01');
+      writeNote('2025-W17');
+      writeNote('React');
+
+      const index = await scanVaultEntities(tmpDir);
+      const all = getAllEntities(index);
+      const names = all.map(e => (typeof e === 'string' ? e : e.name));
+
+      expect(names).not.toContain('2025-01-01');
+      expect(names).not.toContain('2025-W17');
+      expect(names).toContain('React');
+    });
+  });
+
   describe('canonical casing from filename', () => {
     it('should prefer entity name matching filename stem over alias variant', async () => {
       // Python.md has the canonical casing "Python"

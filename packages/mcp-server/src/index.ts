@@ -95,6 +95,7 @@ import { registerSystemTools as registerWriteSystemTools } from './tools/write/s
 import { registerPolicyTools } from './tools/write/policy.js';
 import { registerTagTools } from './tools/write/tags.js';
 import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
+import { registerCorrectionTools } from './tools/write/corrections.js';
 import { registerConfigTools } from './tools/write/config.js';
 import { registerInitTools } from './tools/write/enrich.js';
 
@@ -507,6 +508,7 @@ registerWriteSystemTools(server, vaultPath);
 registerPolicyTools(server, vaultPath);
 registerTagTools(server, () => vaultIndex, () => vaultPath);
 registerWikilinkFeedbackTools(server, () => stateDb);
+registerCorrectionTools(server, () => stateDb);
 registerInitTools(server, vaultPath, () => stateDb);
 registerConfigTools(
   server,

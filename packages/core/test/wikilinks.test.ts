@@ -988,3 +988,68 @@ describe('applyWikilinks alreadyLinked option', () => {
     expect(result.linksAdded).toBe(1);
   });
 });
+
+describe('P2/T3: Deduplication and format consistency', () => {
+  it('same entity appears 3 times — only first is linked (firstOccurrenceOnly)', () => {
+    const content = 'React is great. I love React. React rocks!';
+    const entities = ['React'];
+    const result = applyWikilinks(content, entities, { firstOccurrenceOnly: true });
+
+    // Only the first occurrence should be linked
+    expect(result.content).toBe('[[React]] is great. I love React. React rocks!');
+    expect(result.linksAdded).toBe(1);
+
+    // Count wikilinks: should be exactly 1
+    const wikilinks = result.content.match(/\[\[React\]\]/g);
+    expect(wikilinks).toHaveLength(1);
+  });
+
+  it('consistent format: alias entity linked via alias gets piped format only once', () => {
+    // Entity "OC39181" has alias "OC-39181"
+    // Text has: [[OC-39181]] (existing alias link), then "OC39181" (plain), then "OC-39181" (plain)
+    const content = 'Ticket [[OC-39181]] was closed. Review OC39181 again. Also see OC-39181.';
+    const entities = [{ name: 'OC39181', path: 'OC39181.md', aliases: ['OC-39181'] }];
+
+    // Step 1: resolve alias wikilinks
+    const resolved = resolveAliasWikilinks(content, entities, { caseInsensitive: true });
+
+    // Step 2: apply with alreadyLinked from step 1
+    const step1Linked = new Set(resolved.linkedEntities.map(e => e.toLowerCase()));
+    const final = applyWikilinks(resolved.content, entities, {
+      firstOccurrenceOnly: true,
+      caseInsensitive: true,
+      alreadyLinked: step1Linked,
+    });
+
+    // Should have exactly one piped wikilink from Step 1, no additional bare wikilinks
+    const allLinks = final.content.match(/\[\[OC39181[^\]]*\]\]/g) || [];
+    expect(allLinks).toHaveLength(1);
+    expect(allLinks[0]).toBe('[[OC39181|OC-39181]]');
+  });
+
+  it('no mixed formats: bare and piped links for same entity should not coexist', () => {
+    // Simulate content that already has a bare [[React]] link
+    const content = 'Using [[React]] for the UI. Also React is great.';
+    const entities = [{ name: 'React', path: 'React.md', aliases: [] }];
+
+    // Extract already-linked from existing content
+    const alreadyLinked = new Set<string>();
+    for (const match of content.matchAll(/\[\[([^\]|]+?)(?:\|[^\]]+?)?\]\]/g)) {
+      alreadyLinked.add(match[1].toLowerCase());
+    }
+
+    const result = applyWikilinks(content, entities, {
+      firstOccurrenceOnly: true,
+      caseInsensitive: true,
+      alreadyLinked,
+    });
+
+    // Should not add a second link — entity is already linked
+    expect(result.linksAdded).toBe(0);
+    expect(result.content).toBe(content);
+
+    // Only one [[React]] in the output
+    const reactLinks = result.content.match(/\[\[React[^\]]*\]\]/g) || [];
+    expect(reactLinks).toHaveLength(1);
+  });
+});

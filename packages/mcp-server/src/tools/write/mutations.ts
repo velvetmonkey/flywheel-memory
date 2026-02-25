@@ -356,7 +356,7 @@ export function registerMutationTools(
           let workingReplacement = validationResult.content;
 
           // 2. Apply wikilinks to replacement text (unless skipped)
-          let { content: processedReplacement } = maybeApplyWikilinks(workingReplacement, skipWikilinks, notePath);
+          let { content: processedReplacement } = maybeApplyWikilinks(workingReplacement, skipWikilinks, notePath, ctx.content);
 
           // 3. Suggest outgoing links (enabled by default)
           if (suggestOutgoingLinks && !skipWikilinks && processedReplacement.length >= 100) {

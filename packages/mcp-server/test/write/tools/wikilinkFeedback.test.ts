@@ -128,9 +128,9 @@ describe('wikilink_feedback', () => {
   // Suppression threshold
   // --------------------------------------------------------
   describe('suppression', () => {
-    it('should NOT suppress entity with < 10 feedback entries', () => {
-      // Only 5 entries, all incorrect
-      for (let i = 0; i < 5; i++) {
+    it('should NOT suppress entity with < 5 feedback entries', () => {
+      // Only 3 entries, all incorrect
+      for (let i = 0; i < 3; i++) {
         recordFeedback(stateDb, 'Java', `false positive ${i}`, `note${i}.md`, false);
       }
 
@@ -138,13 +138,13 @@ describe('wikilink_feedback', () => {
       expect(isSuppressed(stateDb, 'Java')).toBe(false);
     });
 
-    it('should suppress entity with >= 10 entries and >= 30% false positive rate', () => {
-      // 10 entries: 6 correct, 4 incorrect (40% FP rate)
-      for (let i = 0; i < 6; i++) {
+    it('should suppress entity with >= 5 entries and >= 30% false positive rate', () => {
+      // 5 entries: 3 correct, 2 incorrect (40% FP rate)
+      for (let i = 0; i < 3; i++) {
         recordFeedback(stateDb, 'Java', `correct ${i}`, `note${i}.md`, true);
       }
-      for (let i = 0; i < 4; i++) {
-        recordFeedback(stateDb, 'Java', `incorrect ${i}`, `note${i + 6}.md`, false);
+      for (let i = 0; i < 2; i++) {
+        recordFeedback(stateDb, 'Java', `incorrect ${i}`, `note${i + 3}.md`, false);
       }
 
       updateSuppressionList(stateDb);
@@ -153,32 +153,30 @@ describe('wikilink_feedback', () => {
     });
 
     it('should NOT suppress entity with < 30% false positive rate', () => {
-      // 10 entries: 8 correct, 2 incorrect (20% FP rate)
-      for (let i = 0; i < 8; i++) {
+      // 5 entries: 4 correct, 1 incorrect (20% FP rate)
+      for (let i = 0; i < 4; i++) {
         recordFeedback(stateDb, 'TypeScript', `correct ${i}`, `note${i}.md`, true);
       }
-      for (let i = 0; i < 2; i++) {
-        recordFeedback(stateDb, 'TypeScript', `incorrect ${i}`, `note${i + 8}.md`, false);
-      }
+      recordFeedback(stateDb, 'TypeScript', 'incorrect 0', 'note4.md', false);
 
       updateSuppressionList(stateDb);
       expect(isSuppressed(stateDb, 'TypeScript')).toBe(false);
     });
 
     it('should remove suppression when rate drops below threshold', () => {
-      // First: 10 entries with 40% FP rate → suppressed
-      for (let i = 0; i < 6; i++) {
+      // First: 5 entries with 40% FP rate → suppressed
+      for (let i = 0; i < 3; i++) {
         recordFeedback(stateDb, 'Spring', `correct ${i}`, `note${i}.md`, true);
       }
-      for (let i = 0; i < 4; i++) {
-        recordFeedback(stateDb, 'Spring', `incorrect ${i}`, `note${i + 6}.md`, false);
+      for (let i = 0; i < 2; i++) {
+        recordFeedback(stateDb, 'Spring', `incorrect ${i}`, `note${i + 3}.md`, false);
       }
       updateSuppressionList(stateDb);
       expect(isSuppressed(stateDb, 'Spring')).toBe(true);
 
-      // Add 10 more correct entries → FP rate drops to 4/20 = 20%
-      for (let i = 0; i < 10; i++) {
-        recordFeedback(stateDb, 'Spring', `correct extra ${i}`, `note${i + 10}.md`, true);
+      // Add 5 more correct entries → FP rate drops to 2/10 = 20%
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'Spring', `correct extra ${i}`, `note${i + 5}.md`, true);
       }
       updateSuppressionList(stateDb);
       expect(isSuppressed(stateDb, 'Spring')).toBe(false);
@@ -186,14 +184,14 @@ describe('wikilink_feedback', () => {
 
     it('should return suppressed entities list', () => {
       // Create two entities that should be suppressed
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 5; i++) {
         recordFeedback(stateDb, 'Go', `fp ${i}`, `note${i}.md`, false);
       }
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 3; i++) {
         recordFeedback(stateDb, 'Rust', `correct ${i}`, `note${i}.md`, true);
       }
-      for (let i = 0; i < 5; i++) {
-        recordFeedback(stateDb, 'Rust', `fp ${i}`, `note${i + 5}.md`, false);
+      for (let i = 0; i < 3; i++) {
+        recordFeedback(stateDb, 'Rust', `fp ${i}`, `note${i + 3}.md`, false);
       }
 
       updateSuppressionList(stateDb);
@@ -346,14 +344,15 @@ describe('wikilink_feedback', () => {
 
     it('should suppress entity only in specific folder', () => {
       // Entity: all correct in tech/, all wrong in daily/
-      for (let i = 0; i < 5; i++) {
+      // 12 correct in tech + 5 incorrect in daily = 29.4% FP globally (under 30%)
+      for (let i = 0; i < 12; i++) {
         recordFeedback(stateDb, 'Spring', `correct ${i}`, `tech/note${i}.md`, true);
       }
       for (let i = 0; i < 5; i++) {
         recordFeedback(stateDb, 'Spring', `wrong ${i}`, `daily/note${i}.md`, false);
       }
 
-      // Not globally suppressed (need 10 entries + 30% FP)
+      // Not globally suppressed (29.4% FP < 30% threshold)
       expect(isSuppressed(stateDb, 'Spring')).toBe(false);
 
       // Suppressed in daily/ folder (5 entries, 100% FP)

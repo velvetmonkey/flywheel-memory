@@ -129,7 +129,7 @@ import { getForwardLinksForNote } from './core/read/graph.js';
 // Core imports - Wikilink Feedback
 import { updateSuppressionList, getTrackedApplications, processImplicitFeedback,
          getStoredNoteLinks, updateStoredNoteLinks, diffNoteLinks, recordFeedback,
-         getStoredNoteTags, updateStoredNoteTags } from './core/write/wikilinkFeedback.js';
+         getStoredNoteTags, updateStoredNoteTags, isSuppressed } from './core/write/wikilinkFeedback.js';
 
 // Core imports - Recency
 import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from './core/shared/recency.js';
@@ -1421,6 +1421,7 @@ async function runPostIndexWork(index: VaultIndex) {
               const mentions: string[] = [];
               for (const entity of entitiesAfter) {
                 if (linked.has(entity.nameLower)) continue; // already wikified
+                if (stateDb && isSuppressed(stateDb, entity.name)) continue; // suppressed
                 // Check entity name
                 const matches = findEntityMatches(content, entity.name, true);
                 const valid = matches.some(m => !rangeOverlapsProtectedZone(m.start, m.end, zones));

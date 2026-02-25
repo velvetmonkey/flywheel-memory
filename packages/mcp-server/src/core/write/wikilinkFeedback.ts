@@ -69,7 +69,7 @@ export interface DashboardData {
 // =============================================================================
 
 /** Minimum feedback entries before considering suppression */
-const MIN_FEEDBACK_COUNT = 10;
+const MIN_FEEDBACK_COUNT = 5;
 
 /** False positive rate threshold for suppression (30%) */
 const SUPPRESSION_THRESHOLD = 0.30;
@@ -163,7 +163,7 @@ export function getEntityStats(stateDb: StateDb): EntityStats[] {
       SUM(CASE WHEN correct = 1 THEN 1 ELSE 0 END) as correct_count,
       SUM(CASE WHEN correct = 0 THEN 1 ELSE 0 END) as incorrect_count
     FROM wikilink_feedback
-    GROUP BY entity
+    GROUP BY entity COLLATE NOCASE
     ORDER BY total DESC
   `).all() as Array<{
     entity: string;
@@ -201,7 +201,7 @@ export function updateSuppressionList(stateDb: StateDb): number {
       COUNT(*) as total,
       SUM(CASE WHEN correct = 0 THEN 1 ELSE 0 END) as false_positives
     FROM wikilink_feedback
-    GROUP BY entity
+    GROUP BY entity COLLATE NOCASE
     HAVING total >= ?
   `).all(MIN_FEEDBACK_COUNT) as Array<{
     entity: string;
@@ -248,7 +248,7 @@ export function updateSuppressionList(stateDb: StateDb): number {
 export function isSuppressed(stateDb: StateDb, entity: string, folder?: string): boolean {
   // Global suppression check first
   const row = stateDb.db.prepare(
-    'SELECT entity FROM wikilink_suppressions WHERE entity = ?'
+    'SELECT entity FROM wikilink_suppressions WHERE entity = ? COLLATE NOCASE'
   ).get(entity);
   if (row) return true;
 
@@ -259,7 +259,7 @@ export function isSuppressed(stateDb: StateDb, entity: string, folder?: string):
         COUNT(*) as total,
         SUM(CASE WHEN correct = 0 THEN 1 ELSE 0 END) as false_positives
       FROM wikilink_feedback
-      WHERE entity = ? AND (
+      WHERE entity = ? COLLATE NOCASE AND (
         CASE WHEN ? = '' THEN note_path NOT LIKE '%/%'
         ELSE note_path LIKE ? || '/%'
         END
@@ -293,7 +293,7 @@ export function getSuppressedCount(stateDb: StateDb): number {
 export function getSuppressedEntities(stateDb: StateDb): Array<{ entity: string; false_positive_rate: number; total: number }> {
   return stateDb.db.prepare(`
     SELECT s.entity, s.false_positive_rate,
-      COALESCE((SELECT COUNT(*) FROM wikilink_feedback WHERE entity = s.entity), 0) as total
+      COALESCE((SELECT COUNT(*) FROM wikilink_feedback WHERE entity = s.entity COLLATE NOCASE), 0) as total
     FROM wikilink_suppressions s
     ORDER BY s.false_positive_rate DESC
   `).all() as Array<{ entity: string; false_positive_rate: number; total: number }>;
@@ -971,7 +971,7 @@ export function getEntityJourney(
   let suppressionReason: string | undefined;
   if (suppressed) {
     const suppRow = stateDb.db.prepare(
-      'SELECT false_positive_rate FROM wikilink_suppressions WHERE entity = ?'
+      'SELECT false_positive_rate FROM wikilink_suppressions WHERE entity = ? COLLATE NOCASE'
     ).get(entityName) as { false_positive_rate: number } | undefined;
     if (suppRow) {
       suppressionReason = `false_positive_rate ${(suppRow.false_positive_rate * 100).toFixed(0)}% exceeds ${(SUPPRESSION_THRESHOLD * 100).toFixed(0)}% threshold`;

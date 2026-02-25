@@ -711,9 +711,9 @@ async function buildStartupCatchupBatch(
   const events: CoalescedEvent[] = [];
 
   async function scanDir(dir: string): Promise<void> {
-    let entries: Awaited<ReturnType<typeof fs.readdir>>;
+    let entries: import('fs').Dirent[];
     try {
-      entries = await fs.readdir(dir, { withFileTypes: true });
+      entries = await fs.readdir(dir, { withFileTypes: true }) as import('fs').Dirent[];
     } catch {
       return;
     }

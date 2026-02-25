@@ -1112,8 +1112,8 @@ describe('vault_add_to_section suggestOutgoingLinks parameter', () => {
     // Test directly with suggestRelatedLinks to verify the feature works
     const result = await suggestRelatedLinks('Working on a TypeScript project with the team');
 
-    // If index is ready and matches entities, suggestions should be returned
-    if (result.suggestions.length > 0) {
+    // If entities score high enough (>= MIN_SUFFIX_SCORE=12), suffix is generated
+    if (result.suffix) {
       expect(result.suffix).toMatch(/^→ \[\[/);
       expect(result.suffix).toContain('TypeScript');
     }
@@ -1174,7 +1174,8 @@ describe('vault_replace_in_section suggestOutgoingLinks parameter', () => {
     const result = await suggestRelatedLinks('Updated TypeScript implementation');
 
     // Verify the suggestion mechanism works for replacement content
-    if (result.suggestions.length > 0) {
+    // suffix is only generated for entities scoring >= MIN_SUFFIX_SCORE=12
+    if (result.suffix) {
       expect(result.suffix).toContain('[[');
     }
   });

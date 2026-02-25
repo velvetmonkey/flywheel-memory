@@ -59,7 +59,7 @@ export interface DashboardData {
     entities: Array<{ entity: string; accuracy: number; total: number }>;
   }>;
   learning: Array<{ entity: string; accuracy: number; total: number }>;
-  suppressed: Array<{ entity: string; false_positive_rate: number }>;
+  suppressed: Array<{ entity: string; false_positive_rate: number; total: number }>;
   recent: FeedbackEntry[];
   timeline: Array<{ day: string; count: number; correct: number; incorrect: number }>;
 }
@@ -290,10 +290,13 @@ export function getSuppressedCount(stateDb: StateDb): number {
 /**
  * Get all suppressed entities
  */
-export function getSuppressedEntities(stateDb: StateDb): Array<{ entity: string; false_positive_rate: number }> {
-  return stateDb.db.prepare(
-    'SELECT entity, false_positive_rate FROM wikilink_suppressions ORDER BY false_positive_rate DESC'
-  ).all() as Array<{ entity: string; false_positive_rate: number }>;
+export function getSuppressedEntities(stateDb: StateDb): Array<{ entity: string; false_positive_rate: number; total: number }> {
+  return stateDb.db.prepare(`
+    SELECT s.entity, s.false_positive_rate,
+      COALESCE((SELECT COUNT(*) FROM wikilink_feedback WHERE entity = s.entity), 0) as total
+    FROM wikilink_suppressions s
+    ORDER BY s.false_positive_rate DESC
+  `).all() as Array<{ entity: string; false_positive_rate: number; total: number }>;
 }
 
 // =============================================================================

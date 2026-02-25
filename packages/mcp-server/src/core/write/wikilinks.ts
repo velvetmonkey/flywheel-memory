@@ -1283,6 +1283,14 @@ export async function suggestRelatedLinks(
       continue;
     }
 
+    // Layer 0: Suppression filter — hard block suppressed entities
+    if (moduleStateDb && !disabled.has('feedback')) {
+      const noteFolder = notePath ? notePath.split('/').slice(0, -1).join('/') : undefined;
+      if (isSuppressed(moduleStateDb, entityName, noteFolder)) {
+        continue;
+      }
+    }
+
     // Layers 2+3: Exact match, stem match, and alias matching (bonuses depend on strictness)
     const contentScore = (disabled.has('exact_match') && disabled.has('stem_match'))
       ? 0
@@ -1360,6 +1368,12 @@ export async function suggestRelatedLinks(
       if (!disabled.has('length_filter') && entityName.length > MAX_ENTITY_LENGTH) continue;
       if (!disabled.has('article_filter') && isLikelyArticleTitle(entityName)) continue;
       if (linkedEntities.has(entityName.toLowerCase())) continue;
+
+      // Layer 0: Suppression filter — hard block suppressed entities
+      if (moduleStateDb && !disabled.has('feedback')) {
+        const noteFolder = notePath ? notePath.split('/').slice(0, -1).join('/') : undefined;
+        if (isSuppressed(moduleStateDb, entityName, noteFolder)) continue;
+      }
 
       // Get co-occurrence boost (with recency weighting)
       const boost = getCooccurrenceBoost(entityName, directlyMatchedEntities, cooccurrenceIndex, recencyIndex);
@@ -1453,6 +1467,13 @@ export async function suggestRelatedLinks(
           existing.breakdown.semanticBoost = boost;
         } else if (!linkedEntities.has(match.entityName.toLowerCase())) {
           // NEW entity not in scored list and not already linked
+
+          // Layer 0: Suppression filter — hard block suppressed entities
+          if (moduleStateDb && !disabled.has('feedback')) {
+            const noteFolder = notePath ? notePath.split('/').slice(0, -1).join('/') : undefined;
+            if (isSuppressed(moduleStateDb, match.entityName, noteFolder)) continue;
+          }
+
           // Look up the entity in the entity index
           const entityWithType = entitiesWithTypes.find(
             et => et.entity.name === match.entityName
@@ -1590,8 +1611,14 @@ export async function suggestRelatedLinks(
     return emptyResult;
   }
 
-  // Format suffix: → [[Entity1]], [[Entity2]]
-  const suffix = '→ ' + topSuggestions.map(name => `[[${name}]]`).join(', ');
+  // Score floor: only append medium+ confidence entities to note content.
+  // Lower-scoring entities still appear in suggestions/suggestion_events for
+  // dashboard observability — we just don't write them into the suffix.
+  const MIN_SUFFIX_SCORE = 12;
+  const suffixEntries = topEntries.filter(e => e.score >= MIN_SUFFIX_SCORE);
+  const suffix = suffixEntries.length > 0
+    ? '→ ' + suffixEntries.map(e => `[[${e.name}]]`).join(', ')
+    : '';
 
   const result: SuggestResult = {
     suggestions: topSuggestions,

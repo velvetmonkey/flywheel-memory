@@ -348,8 +348,8 @@ Charlie will join tomorrow.
       expect(result.suggestions).toBeInstanceOf(Array);
       expect(typeof result.suffix).toBe('string');
 
-      // If there are suggestions, suffix should contain arrow
-      if (result.suggestions.length > 0) {
+      // If entities score high enough (>= MIN_SUFFIX_SCORE=12), suffix is populated
+      if (result.suffix) {
         expect(result.suffix).toContain('→');
         expect(result.suffix).toMatch(/\[\[.*\]\]/);
       }

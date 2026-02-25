@@ -172,7 +172,7 @@ export interface ScoredSuggestion {
 
 export interface SuggestResult {
   suggestions: string[];      // entity names suggested
-  suffix: string;             // formatted suffix: "→ [[X]], [[Y]]"
+  suffix: string;             // formatted suffix: "→ [[X]], [[Y]]" (empty when all scores < MIN_SUFFIX_SCORE)
   detailed?: ScoredSuggestion[];  // per-layer breakdown when detail=true
 }
 

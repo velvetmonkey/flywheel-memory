@@ -752,7 +752,8 @@ describe('vault_add_task suggestOutgoingLinks parameter', () => {
     const result = await suggestRelatedLinks('Review TypeScript implementation');
 
     // Verify suggestion mechanism works for task content
-    if (result.suggestions.length > 0) {
+    // suffix is only generated for entities scoring >= MIN_SUFFIX_SCORE=12
+    if (result.suffix) {
       expect(result.suffix).toMatch(/^→ \[\[/);
     }
   });

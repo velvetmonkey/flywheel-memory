@@ -211,7 +211,7 @@ export function registerMutationTools(
 
           // 3. Suggest outgoing links (enabled by default)
           let suggestInfo: string | undefined;
-          if (suggestOutgoingLinks && !skipWikilinks) {
+          if (suggestOutgoingLinks && !skipWikilinks && processedContent.length >= 100) {
             const result = await suggestRelatedLinks(processedContent, { maxSuggestions, notePath });
             if (result.suffix) {
               processedContent = processedContent + ' ' + result.suffix;
@@ -359,7 +359,7 @@ export function registerMutationTools(
           let { content: processedReplacement } = maybeApplyWikilinks(workingReplacement, skipWikilinks, notePath);
 
           // 3. Suggest outgoing links (enabled by default)
-          if (suggestOutgoingLinks && !skipWikilinks) {
+          if (suggestOutgoingLinks && !skipWikilinks && processedReplacement.length >= 100) {
             const result = await suggestRelatedLinks(processedReplacement, { maxSuggestions, notePath });
             if (result.suffix) {
               processedReplacement = processedReplacement + ' ' + result.suffix;

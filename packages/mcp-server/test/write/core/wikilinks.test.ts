@@ -1959,14 +1959,19 @@ describe('alias matching', () => {
 
     await initializeEntityIndex(tempVault);
 
-    // Should still match by name
-    // Use balanced mode since single-word exact match (10 points) is below
-    // conservative threshold (15 points)
+    // Should still match by name.
+    // Single-word exact match (10 points) is below conservative threshold
+    // (15 points) so use balanced mode. Score is below MIN_SUFFIX_SCORE (12)
+    // so suffix is undefined, but the entity still appears in suggestions
+    // for dashboard observability.
     const result = await suggestRelatedLinks('Learning TypeScript programming', {
       strictness: 'balanced',
     });
 
     expect(result.suggestions).toContain('TypeScript');
+    // Score 10 < MIN_SUFFIX_SCORE (12), so suffix is empty but entity
+    // still appears in suggestions for dashboard observability.
+    expect(result.suffix).toBe('');
   });
 });
 

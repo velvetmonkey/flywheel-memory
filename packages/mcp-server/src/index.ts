@@ -1466,9 +1466,32 @@ async function runPostIndexWork(index: VaultIndex) {
             }
           }
 
-          tracker.end({ removals: feedbackResults });
-          if (feedbackResults.length > 0) {
-            serverLog('watcher', `Implicit feedback: ${feedbackResults.length} removals detected`);
+          // Detect manual wikilink additions via forward_links diff
+          const additionResults: Array<{ entity: string; file: string }> = [];
+          if (stateDb && linkDiffs.length > 0) {
+            const checkApplication = stateDb.db.prepare(
+              `SELECT 1 FROM wikilink_applications WHERE LOWER(entity) = LOWER(?) AND note_path = ? AND status = 'applied'`
+            );
+            for (const diff of linkDiffs) {
+              for (const target of diff.added) {
+                // Skip engine-applied links (they get feedback via survival mechanism)
+                if (checkApplication.get(target, diff.file)) continue;
+                // Only record feedback for known entities
+                const entity = entitiesAfter.find(
+                  e => e.nameLower === target ||
+                    (e.aliases ?? []).some((a: string) => a.toLowerCase() === target)
+                );
+                if (entity) {
+                  recordFeedback(stateDb, entity.name, 'implicit:manual_added', diff.file, true);
+                  additionResults.push({ entity: entity.name, file: diff.file });
+                }
+              }
+            }
+          }
+
+          tracker.end({ removals: feedbackResults, additions: additionResults });
+          if (feedbackResults.length > 0 || additionResults.length > 0) {
+            serverLog('watcher', `Implicit feedback: ${feedbackResults.length} removals, ${additionResults.length} manual additions detected`);
           }
 
           // Step 11: Tag scan — detect tag additions/removals per changed note

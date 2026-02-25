@@ -38,6 +38,7 @@ import { findVaultRoot } from './core/read/vaultRoot.js';
 import {
   createVaultWatcher,
   parseWatcherConfig,
+  type WatcherStatus,
 } from './core/read/watch/index.js';
 import { processBatch } from './core/read/watch/batchProcessor.js';
 import { exportHubScores } from './core/shared/hubExport.js';
@@ -162,6 +163,10 @@ try { resolvedVaultPath = realpathSync(vaultPath).replace(/\\/g, '/'); } catch {
 let vaultIndex: VaultIndex;
 let flywheelConfig: FlywheelConfig = {};
 let stateDb: StateDb | null = null;
+let watcherStatus: WatcherStatus | null = null;
+
+/** Current watcher status (used by health_check to expose watcher state). */
+export function getWatcherStatus(): WatcherStatus | null { return watcherStatus; }
 
 // ============================================================================
 // Tool Presets & Composable Bundles
@@ -473,7 +478,7 @@ serverLog('server', `Tool categories: ${categoryList}`);
 // ============================================================================
 
 // Read tools
-registerHealthTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb);
+registerHealthTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb, getWatcherStatus);
 registerReadSystemTools(
   server,
   () => vaultIndex,
@@ -1587,6 +1592,7 @@ async function runPostIndexWork(index: VaultIndex) {
       config,
       onBatch: handleBatch,
       onStateChange: (status) => {
+        watcherStatus = status;
         if (status.state === 'dirty') {
           serverLog('watcher', 'Index may be stale', 'warn');
         }

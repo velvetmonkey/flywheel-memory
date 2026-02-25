@@ -17,6 +17,7 @@ import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount } from '..
 import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache.js';
 import { getServerLog, type LogEntry } from '../../core/shared/serverLog.js';
 import { getSweepResults, type SweepResults } from '../../core/read/sweep.js';
+import type { WatcherStatus } from '../../core/read/watch/types.js';
 
 /** Staleness threshold in seconds (5 minutes) */
 const STALE_THRESHOLD_SECONDS = 300;
@@ -29,7 +30,8 @@ export function registerHealthTools(
   getIndex: () => VaultIndex,
   getVaultPath: () => string,
   getConfig: () => FlywheelConfig = () => ({}),
-  getStateDb: () => StateDb | null = () => null
+  getStateDb: () => StateDb | null = () => null,
+  getWatcherStatus: () => WatcherStatus | null = () => null
 ): void {
   // health_check - MCP server health status + periodic note detection + config
   const IndexProgressSchema = z.object({
@@ -106,6 +108,10 @@ export function registerHealthTools(
     embeddings_count: z.coerce.number().describe('Number of notes with semantic embeddings'),
     tasks_ready: z.boolean().describe('Whether the task cache is ready to serve queries'),
     tasks_building: z.boolean().describe('Whether the task cache is currently rebuilding'),
+    watcher_state: z.enum(['starting', 'ready', 'rebuilding', 'dirty', 'error']).optional()
+      .describe('Current file watcher state'),
+    watcher_pending: z.coerce.number().optional()
+      .describe('Number of pending file events in the watcher queue'),
     dead_link_count: z.coerce.number().describe('Total number of broken/dead wikilinks across the vault'),
     top_dead_link_targets: z.array(z.object({
       target: z.string().describe('The dead link target'),
@@ -184,6 +190,8 @@ export function registerHealthTools(
     embeddings_count: number;
     tasks_ready: boolean;
     tasks_building: boolean;
+    watcher_state?: 'starting' | 'ready' | 'rebuilding' | 'dirty' | 'error';
+    watcher_pending?: number;
     dead_link_count: number;
     top_dead_link_targets: Array<{ target: string; mention_count: number }>;
     sweep?: SweepResults;
@@ -394,6 +402,8 @@ export function registerHealthTools(
         embeddings_count: getEmbeddingsCount(),
         tasks_ready: isTaskCacheReady(),
         tasks_building: isTaskCacheBuilding(),
+        watcher_state: getWatcherStatus()?.state,
+        watcher_pending: getWatcherStatus()?.pendingEvents,
         dead_link_count: deadLinkCount,
         top_dead_link_targets: topDeadLinkTargets,
         sweep: getSweepResults() ?? undefined,

@@ -592,7 +592,7 @@
           "NR"
         ]
       },
-      "content": "# Nadia Reyes\n\nNadia Reyes is a team member at Meridian Labs.\nWorks on various projects using modern tech.",
+      "content": "# Nadia Reyes\n\nNadia Reyes is a team member at [[Meridian Labs]].\nWorks on [[Project Meridian]] using [[PostgreSQL]].\nAlso known as: Nadia, NR.",
       "links": [],
       "folder": "people"
     },
@@ -606,7 +606,7 @@
           "OP"
         ]
       },
-      "content": "# Owen Park\n\nOwen Park is a team member at Meridian Labs.\nWorks on various projects using modern tech.",
+      "content": "# Owen Park\n\nOwen Park is a team member at [[Meridian Labs]].\nWorks on [[CloudShift]] using [[Python]].\nAlso known as: Owen, OP.",
       "links": [],
       "folder": "people"
     },
@@ -619,7 +619,7 @@
           "Leo"
         ]
       },
-      "content": "# Leo Vasquez\n\nLeo Vasquez is a team member at Apex Systems.\nWorks on various projects using PostgreSQL.",
+      "content": "# Leo Vasquez\n\nLeo Vasquez is a team member at [[Apex Systems]].\nWorks on [[Project Meridian]] using [[Python]].\nAlso known as: Leo.",
       "links": [],
       "folder": "people"
     },
@@ -632,7 +632,7 @@
           "Mira"
         ]
       },
-      "content": "# Mira Okonkwo\n\nMira Okonkwo is a team member at Meridian Labs.\nWorks on various projects using Kubernetes.",
+      "content": "# Mira Okonkwo\n\nMira Okonkwo is a team member at [[Quantum Data]].\nWorks on [[Project Meridian]] using [[Docker]].\nAlso known as: Mira.",
       "links": [],
       "folder": "people"
     },
@@ -645,7 +645,7 @@
           "Tessa"
         ]
       },
-      "content": "# Tessa Liu\n\nTessa Liu is a team member at Meridian Labs.\nWorks on Prism Core using modern tech.",
+      "content": "# Tessa Liu\n\nTessa Liu is a team member at [[Apex Systems]].\nWorks on [[DevHub]] using [[Redis]].\nAlso known as: Tessa.",
       "links": [],
       "folder": "people"
     },
@@ -658,7 +658,7 @@
           "Freya"
         ]
       },
-      "content": "# Freya Nakamura\n\nFreya Nakamura is a team member at Apex Systems.\nWorks on Prism Core using modern tech.",
+      "content": "# Freya Nakamura\n\nFreya Nakamura is a team member at [[Meridian Labs]].\nWorks on [[CloudShift]] using [[React]].\nAlso known as: Freya.",
       "links": [],
       "folder": "people"
     },
@@ -671,7 +671,7 @@
           "Dmitri"
         ]
       },
-      "content": "# Dmitri Sokolov\n\nDmitri Sokolov is a team member at Apex Systems.\nWorks on various projects using TypeScript.",
+      "content": "# Dmitri Sokolov\n\nDmitri Sokolov is a team member at [[Quantum Data]].\nWorks on [[DevHub]] using [[Python]].\nAlso known as: Dmitri.",
       "links": [],
       "folder": "people"
     },
@@ -684,7 +684,7 @@
           "Amara"
         ]
       },
-      "content": "# Amara Diallo\n\nAmara Diallo is a team member at Meridian Labs.\nWorks on various projects using React.",
+      "content": "# Amara Diallo\n\nAmara Diallo is a team member at [[Apex Systems]].\nWorks on [[Prism Core]] using [[PostgreSQL]].\nAlso known as: Amara.",
       "links": [],
       "folder": "people"
     },
@@ -698,7 +698,7 @@
           "nova-spark"
         ]
       },
-      "content": "# NovaSpark\n\nNovaSpark is an internal project.\nBuilt with various technologies.",
+      "content": "# NovaSpark\n\nNovaSpark is an internal project.\nBuilt with [[Python]].\nAlso known as: Nova Spark, nova-spark.",
       "links": [],
       "folder": "projects"
     },
@@ -712,7 +712,7 @@
           "data-forge"
         ]
       },
-      "content": "# DataForge\n\nDataForge is an internal project.\nBuilt with various technologies.",
+      "content": "# DataForge\n\nDataForge is an internal project.\nBuilt with [[Python]].\nAlso known as: Data Forge, data-forge.",
       "links": [],
       "folder": "projects"
     },
@@ -726,7 +726,7 @@
           "PrismCore"
         ]
       },
-      "content": "# Prism Core\n\nPrism Core is an internal project.\nBuilt with various technologies.",
+      "content": "# Prism Core\n\nPrism Core is an internal project.\nBuilt with [[Python]].\nAlso known as: prism-core, PrismCore.",
       "links": [],
       "folder": "projects"
     },
@@ -739,7 +739,7 @@
           "Meridian"
         ]
       },
-      "content": "# Project Meridian\n\nProject Meridian is an internal project.\nBuilt with Docker.",
+      "content": "# Project Meridian\n\nProject Meridian is an internal project.\nBuilt with [[Python]].\nAlso known as: Meridian.",
       "links": [],
       "folder": "projects"
     },
@@ -752,7 +752,7 @@
           "Cloud Shift"
         ]
       },
-      "content": "# CloudShift\n\nCloudShift is an internal project.\nBuilt with various technologies.",
+      "content": "# CloudShift\n\nCloudShift is an internal project.\nBuilt with [[TypeScript]].\nAlso known as: Cloud Shift.",
       "links": [],
       "folder": "projects"
     },
@@ -766,7 +766,7 @@
           "Developer Hub"
         ]
       },
-      "content": "# DevHub\n\nDevHub is an internal project.\nBuilt with various technologies.",
+      "content": "# DevHub\n\nDevHub is an internal project.\nBuilt with [[React]].\nAlso known as: Dev Hub, Developer Hub.",
       "links": [],
       "folder": "projects"
     },
@@ -780,7 +780,7 @@
           "React.js"
         ]
       },
-      "content": "# React\n\nReact — technologies.",
+      "content": "# React\n\nReact — technologies.\nRelated to [[Quantum Data]] and [[SkyForge]].\nAlso known as: ReactJS, React.js.",
       "links": [],
       "folder": "technologies"
     },
@@ -793,7 +793,7 @@
           "TS"
         ]
       },
-      "content": "# TypeScript\n\nTypeScript — technologies.",
+      "content": "# TypeScript\n\nTypeScript — technologies.\nRelated to [[Freya Nakamura]] and [[Docker]].\nAlso known as: TS.",
       "links": [],
       "folder": "technologies"
     },
@@ -807,7 +807,7 @@
           "py"
         ]
       },
-      "content": "# Python\n\nPython — technologies.",
+      "content": "# Python\n\nPython — technologies.\nRelated to [[Hackathon Spring]] and [[The Daily Build]].\nAlso known as: python3, py.",
       "links": [],
       "folder": "technologies"
     },
@@ -821,7 +821,7 @@
           "container"
         ]
       },
-      "content": "# Docker\n\nDocker — technologies.",
+      "content": "# Docker\n\nDocker — technologies.\nRelated to [[PostgreSQL]] and [[Python]].\nAlso known as: docker, container.",
       "links": [],
       "folder": "technologies"
     },
@@ -835,7 +835,7 @@
           "K8s"
         ]
       },
-      "content": "# Kubernetes\n\nKubernetes — technologies.",
+      "content": "# Kubernetes\n\nKubernetes — technologies.\nRelated to [[Q1 Review]] and [[Hackathon Spring]].\nAlso known as: k8s, K8s.",
       "links": [],
       "folder": "technologies"
     },
@@ -849,7 +849,7 @@
           "psql"
         ]
       },
-      "content": "# PostgreSQL\n\nPostgreSQL — technologies.",
+      "content": "# PostgreSQL\n\nPostgreSQL — technologies.\nRelated to [[Quantum Data]] and [[Redis]].\nAlso known as: Postgres, psql.",
       "links": [],
       "folder": "technologies"
     },
@@ -862,7 +862,7 @@
           "redis"
         ]
       },
-      "content": "# Redis\n\nRedis — technologies.",
+      "content": "# Redis\n\nRedis — technologies.\nRelated to [[Signal Patterns]] and [[Board Games]].\nAlso known as: redis.",
       "links": [],
       "folder": "technologies"
     },
@@ -876,7 +876,7 @@
           "GQL"
         ]
       },
-      "content": "# GraphQL\n\nGraphQL — technologies.",
+      "content": "# GraphQL\n\nGraphQL — technologies.\nRelated to [[PostgreSQL]] and [[Redis]].\nAlso known as: graphql, GQL.",
       "links": [],
       "folder": "technologies"
     },
@@ -890,7 +890,7 @@
           "micro-services"
         ]
       },
-      "content": "# Microservices\n\nMicroservices — concepts.",
+      "content": "# Microservices\n\nMicroservices — concepts.\nRelated to [[Amara Diallo]] and [[Technical Debt]].\nAlso known as: microservice, micro-services.",
       "links": [],
       "folder": "concepts"
     },
@@ -903,7 +903,7 @@
           "devops"
         ]
       },
-      "content": "# DevOps\n\nDevOps — concepts.",
+      "content": "# DevOps\n\nDevOps — concepts.\nRelated to [[Microservices]] and [[Project Meridian]].\nAlso known as: devops.",
       "links": [],
       "folder": "concepts"
     },
@@ -916,7 +916,7 @@
           "agile methodology"
         ]
       },
-      "content": "# Agile\n\nAgile — concepts.",
+      "content": "# Agile\n\nAgile — concepts.\nRelated to [[Nadia Reyes]] and [[The Daily Build]].\nAlso known as: agile methodology.",
       "links": [],
       "folder": "concepts"
     },
@@ -929,7 +929,7 @@
           "clean arch"
         ]
       },
-      "content": "# Clean Architecture\n\nClean Architecture — concepts.",
+      "content": "# Clean Architecture\n\nClean Architecture — concepts.\nRelated to [[Nadia Reyes]] and [[Quantum Data]].\nAlso known as: clean arch.",
       "links": [],
       "folder": "concepts"
     },
@@ -942,7 +942,7 @@
           "o11y"
         ]
       },
-      "content": "# Observability\n\nObservability — concepts.",
+      "content": "# Observability\n\nObservability — concepts.\nRelated to [[MCP]] and [[Microservices]].\nAlso known as: o11y.",
       "links": [],
       "folder": "concepts"
     },
@@ -956,7 +956,7 @@
           "api-first design"
         ]
       },
-      "content": "# API-First\n\nAPI-First — concepts.",
+      "content": "# API-First\n\nAPI-First — concepts.\nRelated to [[Staging]] and [[Dmitri Sokolov]].\nAlso known as: API First, api-first design.",
       "links": [],
       "folder": "concepts"
     },
@@ -970,7 +970,7 @@
           "machine learning"
         ]
       },
-      "content": "# Machine Learning\n\nMachine Learning — concepts.",
+      "content": "# Machine Learning\n\nMachine Learning — concepts.\nRelated to [[Python]] and [[Microservices]].\nAlso known as: ML, machine learning.",
       "links": [],
       "folder": "concepts"
     },
@@ -984,7 +984,7 @@
           "continuous integration"
         ]
       },
-      "content": "# Continuous Integration\n\nContinuous Integration — concepts.",
+      "content": "# Continuous Integration\n\nContinuous Integration — concepts.\nRelated to [[Event Sourcing]] and [[Mira Okonkwo]].\nAlso known as: CI, continuous integration.",
       "links": [],
       "folder": "concepts"
     },
@@ -997,7 +997,7 @@
           "tech debt"
         ]
       },
-      "content": "# Technical Debt\n\nTechnical Debt — concepts.",
+      "content": "# Technical Debt\n\nTechnical Debt — concepts.\nRelated to [[Hackathon Spring]] and [[Yoga]].\nAlso known as: tech debt.",
       "links": [],
       "folder": "concepts"
     },
@@ -1010,7 +1010,7 @@
           "event-sourcing"
         ]
       },
-      "content": "# Event Sourcing\n\nEvent Sourcing — concepts.",
+      "content": "# Event Sourcing\n\nEvent Sourcing — concepts.\nRelated to [[Signal Patterns]] and [[Microservices]].\nAlso known as: event-sourcing.",
       "links": [],
       "folder": "concepts"
     },
@@ -1024,7 +1024,7 @@
           "Meridian Corp"
         ]
       },
-      "content": "# Meridian Labs\n\nMeridian Labs — organizations.",
+      "content": "# Meridian Labs\n\nMeridian Labs — organizations.\nRelated to [[Project Meridian]] and [[Nadia Reyes]].\nAlso known as: Meridian, Meridian Corp.",
       "links": [],
       "folder": "organizations"
     },
@@ -1038,7 +1038,7 @@
           "Apex Sys"
         ]
       },
-      "content": "# Apex Systems\n\nApex Systems — organizations.",
+      "content": "# Apex Systems\n\nApex Systems — organizations.\nRelated to [[SkyForge]] and [[Rex]].\nAlso known as: Apex, Apex Sys.",
       "links": [],
       "folder": "organizations"
     },
@@ -1052,7 +1052,7 @@
           "quantumdata"
         ]
       },
-      "content": "# Quantum Data\n\nQuantum Data — organizations.",
+      "content": "# Quantum Data\n\nQuantum Data — organizations.\nRelated to [[Docker]] and [[Microservices]].\nAlso known as: QD, quantumdata.",
       "links": [],
       "folder": "organizations"
     },
@@ -1065,7 +1065,7 @@
           "Sky Forge"
         ]
       },
-      "content": "# SkyForge\n\nSkyForge — organizations.",
+      "content": "# SkyForge\n\nSkyForge — organizations.\nRelated to [[Clean Architecture]] and [[Q1 Review]].\nAlso known as: Sky Forge.",
       "links": [],
       "folder": "organizations"
     },
@@ -1079,7 +1079,7 @@
           "Rose City"
         ]
       },
-      "content": "# Portland\n\nPortland — locations.",
+      "content": "# Portland\n\nPortland — locations.\nRelated to [[Q1 Budget]] and [[Clean Architecture]].\nAlso known as: PDX, Rose City.",
       "links": [],
       "folder": "locations"
     },
@@ -1092,7 +1092,7 @@
           "ZRH"
         ]
       },
-      "content": "# Zurich\n\nZurich — locations.",
+      "content": "# Zurich\n\nZurich — locations.\nRelated to [[Meridian Labs]] and [[Freya Nakamura]].\nAlso known as: ZRH.",
       "links": [],
       "folder": "locations"
     },
@@ -1105,7 +1105,7 @@
           "MEL"
         ]
       },
-      "content": "# Melbourne\n\nMelbourne — locations.",
+      "content": "# Melbourne\n\nMelbourne — locations.\nRelated to [[Code Breakers]] and [[Microservices]].\nAlso known as: MEL.",
       "links": [],
       "folder": "locations"
     },
@@ -1119,7 +1119,7 @@
           "morning yoga"
         ]
       },
-      "content": "# Yoga\n\nDaily habit: Yoga.\nAlso known as: yoga practice, morning yoga.",
+      "content": "# Yoga\n\nDaily habit: Yoga.\nUsually done with [[Tessa Liu]].\n[[Luna]] joins for yoga sessions.\nAlso known as: yoga practice, morning yoga.",
       "links": [],
       "folder": "health"
     },
@@ -1133,7 +1133,7 @@
           "daily swim"
         ]
       },
-      "content": "# Swim\n\nDaily habit: Swim.\nAlso known as: swimming, daily swim.",
+      "content": "# Swim\n\nDaily habit: Swim.\nUsually done with [[Owen Park]].\n[[Rex]] joins for swim sessions.\nAlso known as: swimming, daily swim.",
       "links": [],
       "folder": "health"
     },
@@ -1147,7 +1147,7 @@
           "daily supplements"
         ]
       },
-      "content": "# Supplements\n\nDaily habit: Supplements.\nAlso known as: vitamins, daily supplements.",
+      "content": "# Supplements\n\nDaily habit: Supplements.\nUsually done with [[Freya Nakamura]].\n[[Rex]] joins for supplements sessions.\nAlso known as: vitamins, daily supplements.",
       "links": [],
       "folder": "health"
     },
@@ -1161,7 +1161,7 @@
           "STG"
         ]
       },
-      "content": "# Staging\n\nStaging — acronyms.",
+      "content": "# Staging\n\nStaging — acronyms.\nRelated to [[Continuous Integration]] and [[Observability]].\nAlso known as: stg, STG.",
       "links": [],
       "folder": "acronyms"
     },
@@ -1176,7 +1176,7 @@
           "prod"
         ]
       },
-      "content": "# Production\n\nProduction — acronyms.",
+      "content": "# Production\n\nProduction — acronyms.\nRelated to [[Melbourne]] and [[Quantum Data]].\nAlso known as: prd, PRD, prod.",
       "links": [],
       "folder": "acronyms"
     },
@@ -1190,7 +1190,7 @@
           "User Acceptance Testing"
         ]
       },
-      "content": "# UAT\n\nUAT — acronyms.",
+      "content": "# UAT\n\nUAT — acronyms.\nRelated to [[Kubernetes]] and [[Production]].\nAlso known as: uat, User Acceptance Testing.",
       "links": [],
       "folder": "acronyms"
     },
@@ -1204,7 +1204,7 @@
           "Model Context Protocol"
         ]
       },
-      "content": "# MCP\n\nMCP — acronyms.",
+      "content": "# MCP\n\nMCP — acronyms.\nRelated to [[Docker]] and [[Q1 Budget]].\nAlso known as: mcp, Model Context Protocol.",
       "links": [],
       "folder": "acronyms"
     },
@@ -1217,7 +1217,7 @@
           "Luna the cat"
         ]
       },
-      "content": "# Luna\n\nLuna — animals.",
+      "content": "# Luna\n\nLuna is [[Amara Diallo]]'s pet.\nOften accompanies during [[Supplements]] sessions.\nAlso known as: Luna the cat.",
       "links": [],
       "folder": "animals"
     },
@@ -1230,7 +1230,7 @@
           "Rex the dog"
         ]
       },
-      "content": "# Rex\n\nRex — animals.",
+      "content": "# Rex\n\nRex is [[Nadia Reyes]]'s pet.\nOften accompanies during [[Supplements]] sessions.\nAlso known as: Rex the dog.",
       "links": [],
       "folder": "animals"
     },
@@ -1243,7 +1243,7 @@
           "Signal Patterns podcast"
         ]
       },
-      "content": "# Signal Patterns\n\nSignal Patterns — media.",
+      "content": "# Signal Patterns\n\nSignal Patterns — media.\nRelated to [[Nadia Reyes]] and [[PostgreSQL]].\nAlso known as: Signal Patterns podcast.",
       "links": [],
       "folder": "media"
     },
@@ -1256,7 +1256,7 @@
           "Code Breakers book"
         ]
       },
-      "content": "# Code Breakers\n\nCode Breakers — media.",
+      "content": "# Code Breakers\n\nCode Breakers — media.\nRelated to [[Amara Diallo]] and [[Python]].\nAlso known as: Code Breakers book.",
       "links": [],
       "folder": "media"
     },
@@ -1269,7 +1269,7 @@
           "Daily Build newsletter"
         ]
       },
-      "content": "# The Daily Build\n\nThe Daily Build — media.",
+      "content": "# The Daily Build\n\nThe Daily Build — media.\nRelated to [[Freya Nakamura]] and [[PostgreSQL]].\nAlso known as: Daily Build newsletter.",
       "links": [],
       "folder": "media"
     },
@@ -1282,7 +1282,7 @@
           "DevCon"
         ]
       },
-      "content": "# DevCon 2026\n\nDevCon 2026 — events.",
+      "content": "# DevCon 2026\n\nDevCon 2026 — events.\nRelated to [[Dmitri Sokolov]] and [[Meridian Labs]].\nAlso known as: DevCon.",
       "links": [],
       "folder": "events"
     },
@@ -1295,7 +1295,7 @@
           "Spring Hackathon"
         ]
       },
-      "content": "# Hackathon Spring\n\nHackathon Spring — events.",
+      "content": "# Hackathon Spring\n\nHackathon Spring — events.\nRelated to [[Dmitri Sokolov]] and [[Quantum Data]].\nAlso known as: Spring Hackathon.",
       "links": [],
       "folder": "events"
     },
@@ -1308,7 +1308,7 @@
           "quarterly review"
         ]
       },
-      "content": "# Q1 Review\n\nQ1 Review — documents.",
+      "content": "# Q1 Review\n\nQ1 Review — documents.\nRelated to [[DataForge]] and [[Owen Park]].\nAlso known as: quarterly review.",
       "links": [],
       "folder": "documents"
     },
@@ -1321,7 +1321,7 @@
           "arch RFC"
         ]
       },
-      "content": "# Architecture RFC\n\nArchitecture RFC — documents.",
+      "content": "# Architecture RFC\n\nArchitecture RFC — documents.\nRelated to [[Project Meridian]] and [[Owen Park]].\nAlso known as: arch RFC.",
       "links": [],
       "folder": "documents"
     },
@@ -1334,7 +1334,7 @@
           "quarterly budget"
         ]
       },
-      "content": "# Q1 Budget\n\nQ1 Budget — finance.",
+      "content": "# Q1 Budget\n\nQ1 Budget — finance.\nRelated to [[Prism Core]] and [[Meridian Labs]].\nAlso known as: quarterly budget.",
       "links": [],
       "folder": "finance"
     },
@@ -1347,7 +1347,7 @@
           "expenses"
         ]
       },
-      "content": "# Expense Report\n\nExpense Report — finance.",
+      "content": "# Expense Report\n\nExpense Report — finance.\nRelated to [[CloudShift]] and [[Meridian Labs]].\nAlso known as: expenses.",
       "links": [],
       "folder": "finance"
     },
@@ -1360,7 +1360,7 @@
           "pho"
         ]
       },
-      "content": "# Pho Bowl\n\nPho Bowl — food.",
+      "content": "# Pho Bowl\n\nPho Bowl — food spot.\nLocated in [[Portland]].\nAlso known as: pho.",
       "links": [],
       "folder": "food"
     },
@@ -1373,7 +1373,7 @@
           "matcha"
         ]
       },
-      "content": "# Matcha Latte\n\nMatcha Latte — food.",
+      "content": "# Matcha Latte\n\nMatcha Latte — food spot.\nLocated in [[Portland]].\nAlso known as: matcha.",
       "links": [],
       "folder": "food"
     },
@@ -1387,7 +1387,7 @@
           "bouldering"
         ]
       },
-      "content": "# Rock Climbing\n\nRock Climbing — hobbies.",
+      "content": "# Rock Climbing\n\nRock Climbing — hobbies.\nRelated to [[Freya Nakamura]] and [[Zurich]].\nAlso known as: climbing, bouldering.",
       "links": [],
       "folder": "hobbies"
     },
@@ -1400,7 +1400,7 @@
           "tabletop games"
         ]
       },
-      "content": "# Board Games\n\nBoard Games — hobbies.",
+      "content": "# Board Games\n\nBoard Games — hobbies.\nRelated to [[Amara Diallo]] and [[Zurich]].\nAlso known as: tabletop games.",
       "links": [],
       "folder": "hobbies"
     },

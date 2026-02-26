@@ -1,23 +1,23 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-02-26T12:14:58.988Z",
-  "duration_ms": 21589,
+  "timestamp": "2026-02-26T15:18:23.904Z",
+  "duration_ms": 31000,
   "summary": {
-    "round0_f1": 0.857,
+    "round0_f1": 0.879,
     "roundN_f1": 0.879,
-    "f1_improvement": 0.022,
-    "total_suppressions": 11
+    "f1_improvement": 0,
+    "total_suppressions": 18
   },
   "details": [
     {
       "round": 0,
-      "f1": 0.857,
+      "f1": 0.879,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.572,
-      "truePositives": 45,
+      "recall": 0.783,
+      "mrr": 0.61,
+      "truePositives": 47,
       "falsePositives": 0,
-      "falseNegatives": 15,
+      "falseNegatives": 13,
       "suppressionCount": 0,
       "feedbackLayerAvgContribution": 0,
       "byCategory": {
@@ -83,8 +83,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 4
         },
         "locations": {
@@ -127,8 +127,8 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.2,
+          "f1": 0.33333333333333337,
           "count": 15
         }
       },
@@ -165,22 +165,12 @@
           "tier": 3
         },
         {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-09.md",
           "tier": 3
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -213,15 +203,15 @@
     },
     {
       "round": 1,
-      "f1": 0.857,
+      "f1": 0.879,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.55,
-      "truePositives": 45,
+      "recall": 0.783,
+      "mrr": 0.58,
+      "truePositives": 47,
       "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 0,
-      "feedbackLayerAvgContribution": 0.1905,
+      "falseNegatives": 13,
+      "suppressionCount": 2,
+      "feedbackLayerAvgContribution": 0.072,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -285,8 +275,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 4
         },
         "locations": {
@@ -329,12 +319,15 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.2,
+          "f1": 0.33333333333333337,
           "count": 15
         }
       },
-      "suppressedEntities": [],
+      "suppressedEntities": [
+        "supplements",
+        "yoga"
+      ],
       "unresolvedLinks": [
         {
           "entity": "Pho Bowl",
@@ -367,22 +360,12 @@
           "tier": 3
         },
         {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-09.md",
           "tier": 3
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -415,15 +398,15 @@
     },
     {
       "round": 2,
-      "f1": 0.857,
+      "f1": 0.879,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.618,
-      "truePositives": 45,
+      "recall": 0.783,
+      "mrr": 0.633,
+      "truePositives": 47,
       "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 1,
-      "feedbackLayerAvgContribution": 0.3571,
+      "falseNegatives": 13,
+      "suppressionCount": 2,
+      "feedbackLayerAvgContribution": 0.6,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -487,8 +470,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 4
         },
         "locations": {
@@ -531,13 +514,14 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.2,
+          "f1": 0.33333333333333337,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "clean-architecture"
+        "supplements",
+        "yoga"
       ],
       "unresolvedLinks": [
         {
@@ -571,22 +555,12 @@
           "tier": 3
         },
         {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-09.md",
           "tier": 3
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -619,15 +593,15 @@
     },
     {
       "round": 3,
-      "f1": 0.857,
+      "f1": 0.868,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.663,
-      "truePositives": 45,
+      "recall": 0.767,
+      "mrr": 0.667,
+      "truePositives": 46,
       "falsePositives": 0,
-      "falseNegatives": 15,
+      "falseNegatives": 14,
       "suppressionCount": 2,
-      "feedbackLayerAvgContribution": 0.9328,
+      "feedbackLayerAvgContribution": 1.144,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -691,8 +665,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -735,1261 +709,13 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "clean-architecture",
-        "q1-review"
-      ],
-      "unresolvedLinks": [
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 2
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-01.md",
-          "tier": 3
-        },
-        {
-          "entity": "Code Breakers",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-04.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-09.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-12.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 3
-        },
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        }
-      ]
-    },
-    {
-      "round": 4,
-      "f1": 0.857,
-      "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.688,
-      "truePositives": 45,
-      "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 3,
-      "feedbackLayerAvgContribution": 1.2245,
-      "byCategory": {
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 9
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "hobbies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "media": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 12
-        },
-        "documents": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 6
-        },
-        "events": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "food": {
-          "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
-          "count": 3
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 3
-        },
-        "health": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "locations": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "finance": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
-          "count": 8
-        }
-      },
-      "byTier": {
-        "1": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 24
-        },
-        "2": {
-          "precision": 1,
-          "recall": 0.9523809523809523,
-          "f1": 0.975609756097561,
-          "count": 21
-        },
-        "3": {
-          "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
-          "count": 15
-        }
-      },
-      "suppressedEntities": [
-        "clean-architecture",
-        "meridian-labs",
-        "q1-review"
-      ],
-      "unresolvedLinks": [
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 2
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-01.md",
-          "tier": 3
-        },
-        {
-          "entity": "Code Breakers",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-04.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-09.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-12.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 3
-        },
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        }
-      ]
-    },
-    {
-      "round": 5,
-      "f1": 0.857,
-      "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.716,
-      "truePositives": 45,
-      "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 3,
-      "feedbackLayerAvgContribution": 1.6797,
-      "byCategory": {
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 9
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "hobbies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "media": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 12
-        },
-        "documents": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 6
-        },
-        "events": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "food": {
-          "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
-          "count": 3
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 3
-        },
-        "health": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "locations": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "finance": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
-          "count": 8
-        }
-      },
-      "byTier": {
-        "1": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 24
-        },
-        "2": {
-          "precision": 1,
-          "recall": 0.9523809523809523,
-          "f1": 0.975609756097561,
-          "count": 21
-        },
-        "3": {
-          "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
-          "count": 15
-        }
-      },
-      "suppressedEntities": [
-        "clean-architecture",
-        "meridian-labs",
-        "q1-review"
-      ],
-      "unresolvedLinks": [
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 2
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-01.md",
-          "tier": 3
-        },
-        {
-          "entity": "Code Breakers",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-04.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-09.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-12.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 3
-        },
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        }
-      ]
-    },
-    {
-      "round": 6,
-      "f1": 0.857,
-      "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.692,
-      "truePositives": 45,
-      "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 3,
-      "feedbackLayerAvgContribution": 1.265,
-      "byCategory": {
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 9
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "hobbies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "media": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 12
-        },
-        "documents": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 6
-        },
-        "events": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "food": {
-          "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
-          "count": 3
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 3
-        },
-        "health": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "locations": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "finance": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
-          "count": 8
-        }
-      },
-      "byTier": {
-        "1": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 24
-        },
-        "2": {
-          "precision": 1,
-          "recall": 0.9523809523809523,
-          "f1": 0.975609756097561,
-          "count": 21
-        },
-        "3": {
-          "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
-          "count": 15
-        }
-      },
-      "suppressedEntities": [
-        "clean-architecture",
-        "meridian-labs",
-        "q1-review"
-      ],
-      "unresolvedLinks": [
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 2
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-01.md",
-          "tier": 3
-        },
-        {
-          "entity": "Code Breakers",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-04.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-09.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-12.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 3
-        },
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        }
-      ]
-    },
-    {
-      "round": 7,
-      "f1": 0.857,
-      "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.692,
-      "truePositives": 45,
-      "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 6,
-      "feedbackLayerAvgContribution": 1.2876,
-      "byCategory": {
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 9
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "hobbies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "media": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 12
-        },
-        "documents": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 6
-        },
-        "events": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "food": {
-          "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
-          "count": 3
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 3
-        },
-        "health": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "locations": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "finance": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
-          "count": 8
-        }
-      },
-      "byTier": {
-        "1": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 24
-        },
-        "2": {
-          "precision": 1,
-          "recall": 0.9523809523809523,
-          "f1": 0.975609756097561,
-          "count": 21
-        },
-        "3": {
-          "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
-          "count": 15
-        }
-      },
-      "suppressedEntities": [
-        "api-first",
-        "clean-architecture",
-        "meridian-labs",
-        "project-meridian",
-        "q1-review",
-        "signal-patterns"
-      ],
-      "unresolvedLinks": [
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 2
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-01.md",
-          "tier": 3
-        },
-        {
-          "entity": "Code Breakers",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-04.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-09.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-12.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 3
-        },
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        }
-      ]
-    },
-    {
-      "round": 8,
-      "f1": 0.857,
-      "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.67,
-      "truePositives": 45,
-      "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 7,
-      "feedbackLayerAvgContribution": 1.3048,
-      "byCategory": {
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 9
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "hobbies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "media": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 12
-        },
-        "documents": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 6
-        },
-        "events": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "food": {
-          "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
-          "count": 3
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 3
-        },
-        "health": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "locations": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "finance": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
-          "count": 8
-        }
-      },
-      "byTier": {
-        "1": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 24
-        },
-        "2": {
-          "precision": 1,
-          "recall": 0.9523809523809523,
-          "f1": 0.975609756097561,
-          "count": 21
-        },
-        "3": {
-          "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
-          "count": 15
-        }
-      },
-      "suppressedEntities": [
-        "api-first",
-        "clean-architecture",
-        "meridian-labs",
-        "prism-core",
-        "project-meridian",
-        "q1-review",
-        "signal-patterns"
-      ],
-      "unresolvedLinks": [
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 2
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-01.md",
-          "tier": 3
-        },
-        {
-          "entity": "Code Breakers",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-04.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-09.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-12.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 3
-        },
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        }
-      ]
-    },
-    {
-      "round": 9,
-      "f1": 0.857,
-      "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.669,
-      "truePositives": 45,
-      "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 8,
-      "feedbackLayerAvgContribution": 1.1875,
-      "byCategory": {
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 9
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "hobbies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "media": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 12
-        },
-        "documents": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 6
-        },
-        "events": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "food": {
-          "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
-          "count": 3
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 3
-        },
-        "health": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "locations": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "finance": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
-          "count": 8
-        }
-      },
-      "byTier": {
-        "1": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 24
-        },
-        "2": {
-          "precision": 1,
-          "recall": 0.9523809523809523,
-          "f1": 0.975609756097561,
-          "count": 21
-        },
-        "3": {
-          "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
-          "count": 15
-        }
-      },
-      "suppressedEntities": [
-        "clean-architecture",
-        "meridian-labs",
-        "prism-core",
-        "project-meridian",
-        "q1-review",
-        "signal-patterns",
-        "tessa-liu",
+        "supplements",
         "yoga"
       ],
       "unresolvedLinks": [
@@ -2039,7 +765,1243 @@
           "tier": 3
         },
         {
-          "entity": "Swim",
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-12.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 3
+        },
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-14.md",
+          "tier": 3
+        },
+        {
+          "entity": "Hackathon Spring",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "round": 4,
+      "f1": 0.868,
+      "precision": 1,
+      "recall": 0.767,
+      "mrr": 0.667,
+      "truePositives": 46,
+      "falsePositives": 0,
+      "falseNegatives": 14,
+      "suppressionCount": 5,
+      "feedbackLayerAvgContribution": 0.9227,
+      "byCategory": {
+        "people": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 9
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "hobbies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "media": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 12
+        },
+        "documents": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 6
+        },
+        "events": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "food": {
+          "precision": 1,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
+          "count": 3
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 3
+        },
+        "health": {
+          "precision": 1,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
+          "count": 4
+        },
+        "locations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 4
+        },
+        "finance": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "animals": {
+          "precision": 1,
+          "recall": 0.125,
+          "f1": 0.2222222222222222,
+          "count": 8
+        }
+      },
+      "byTier": {
+        "1": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 24
+        },
+        "2": {
+          "precision": 1,
+          "recall": 0.9523809523809523,
+          "f1": 0.975609756097561,
+          "count": 21
+        },
+        "3": {
+          "precision": 1,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
+          "count": 15
+        }
+      },
+      "suppressedEntities": [
+        "project-meridian",
+        "q1-review",
+        "signal-patterns",
+        "supplements",
+        "yoga"
+      ],
+      "unresolvedLinks": [
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-01.md",
+          "tier": 3
+        },
+        {
+          "entity": "Code Breakers",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Yoga",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-09.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-10.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-12.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 3
+        },
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-14.md",
+          "tier": 3
+        },
+        {
+          "entity": "Hackathon Spring",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "round": 5,
+      "f1": 0.868,
+      "precision": 1,
+      "recall": 0.767,
+      "mrr": 0.663,
+      "truePositives": 46,
+      "falsePositives": 0,
+      "falseNegatives": 14,
+      "suppressionCount": 8,
+      "feedbackLayerAvgContribution": 0.6187,
+      "byCategory": {
+        "people": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 9
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "hobbies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "media": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 12
+        },
+        "documents": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 6
+        },
+        "events": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "food": {
+          "precision": 1,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
+          "count": 3
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 3
+        },
+        "health": {
+          "precision": 1,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
+          "count": 4
+        },
+        "locations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 4
+        },
+        "finance": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "animals": {
+          "precision": 1,
+          "recall": 0.125,
+          "f1": 0.2222222222222222,
+          "count": 8
+        }
+      },
+      "byTier": {
+        "1": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 24
+        },
+        "2": {
+          "precision": 1,
+          "recall": 0.9523809523809523,
+          "f1": 0.975609756097561,
+          "count": 21
+        },
+        "3": {
+          "precision": 1,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
+          "count": 15
+        }
+      },
+      "suppressedEntities": [
+        "prism-core",
+        "production",
+        "project-meridian",
+        "q1-review",
+        "signal-patterns",
+        "supplements",
+        "swim",
+        "yoga"
+      ],
+      "unresolvedLinks": [
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-01.md",
+          "tier": 3
+        },
+        {
+          "entity": "Code Breakers",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Yoga",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-09.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-10.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-12.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 3
+        },
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-14.md",
+          "tier": 3
+        },
+        {
+          "entity": "Hackathon Spring",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "round": 6,
+      "f1": 0.868,
+      "precision": 1,
+      "recall": 0.767,
+      "mrr": 0.686,
+      "truePositives": 46,
+      "falsePositives": 0,
+      "falseNegatives": 14,
+      "suppressionCount": 9,
+      "feedbackLayerAvgContribution": 0.3813,
+      "byCategory": {
+        "people": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 9
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "hobbies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "media": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 12
+        },
+        "documents": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 6
+        },
+        "events": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "food": {
+          "precision": 1,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
+          "count": 3
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 3
+        },
+        "health": {
+          "precision": 1,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
+          "count": 4
+        },
+        "locations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 4
+        },
+        "finance": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "animals": {
+          "precision": 1,
+          "recall": 0.125,
+          "f1": 0.2222222222222222,
+          "count": 8
+        }
+      },
+      "byTier": {
+        "1": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 24
+        },
+        "2": {
+          "precision": 1,
+          "recall": 0.9523809523809523,
+          "f1": 0.975609756097561,
+          "count": 21
+        },
+        "3": {
+          "precision": 1,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
+          "count": 15
+        }
+      },
+      "suppressedEntities": [
+        "clean-architecture",
+        "prism-core",
+        "production",
+        "project-meridian",
+        "q1-review",
+        "signal-patterns",
+        "supplements",
+        "swim",
+        "yoga"
+      ],
+      "unresolvedLinks": [
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-01.md",
+          "tier": 3
+        },
+        {
+          "entity": "Code Breakers",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Yoga",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-09.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-10.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-12.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 3
+        },
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-14.md",
+          "tier": 3
+        },
+        {
+          "entity": "Hackathon Spring",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "round": 7,
+      "f1": 0.868,
+      "precision": 1,
+      "recall": 0.767,
+      "mrr": 0.663,
+      "truePositives": 46,
+      "falsePositives": 0,
+      "falseNegatives": 14,
+      "suppressionCount": 12,
+      "feedbackLayerAvgContribution": 0.2827,
+      "byCategory": {
+        "people": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 9
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "hobbies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "media": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 12
+        },
+        "documents": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 6
+        },
+        "events": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "food": {
+          "precision": 1,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
+          "count": 3
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 3
+        },
+        "health": {
+          "precision": 1,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
+          "count": 4
+        },
+        "locations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 4
+        },
+        "finance": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "animals": {
+          "precision": 1,
+          "recall": 0.125,
+          "f1": 0.2222222222222222,
+          "count": 8
+        }
+      },
+      "byTier": {
+        "1": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 24
+        },
+        "2": {
+          "precision": 1,
+          "recall": 0.9523809523809523,
+          "f1": 0.975609756097561,
+          "count": 21
+        },
+        "3": {
+          "precision": 1,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
+          "count": 15
+        }
+      },
+      "suppressedEntities": [
+        "clean-architecture",
+        "docker",
+        "meridian-labs",
+        "novaspark",
+        "prism-core",
+        "production",
+        "project-meridian",
+        "q1-review",
+        "signal-patterns",
+        "supplements",
+        "swim",
+        "yoga"
+      ],
+      "unresolvedLinks": [
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-01.md",
+          "tier": 3
+        },
+        {
+          "entity": "Code Breakers",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Yoga",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-09.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-10.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-12.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 3
+        },
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-14.md",
+          "tier": 3
+        },
+        {
+          "entity": "Hackathon Spring",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "round": 8,
+      "f1": 0.868,
+      "precision": 1,
+      "recall": 0.767,
+      "mrr": 0.663,
+      "truePositives": 46,
+      "falsePositives": 0,
+      "falseNegatives": 14,
+      "suppressionCount": 11,
+      "feedbackLayerAvgContribution": 0.2433,
+      "byCategory": {
+        "people": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 9
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "hobbies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "media": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 12
+        },
+        "documents": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 6
+        },
+        "events": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "food": {
+          "precision": 1,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
+          "count": 3
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 3
+        },
+        "health": {
+          "precision": 1,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
+          "count": 4
+        },
+        "locations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 4
+        },
+        "finance": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "animals": {
+          "precision": 1,
+          "recall": 0.125,
+          "f1": 0.2222222222222222,
+          "count": 8
+        }
+      },
+      "byTier": {
+        "1": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 24
+        },
+        "2": {
+          "precision": 1,
+          "recall": 0.9523809523809523,
+          "f1": 0.975609756097561,
+          "count": 21
+        },
+        "3": {
+          "precision": 1,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
+          "count": 15
+        }
+      },
+      "suppressedEntities": [
+        "clean-architecture",
+        "docker",
+        "meridian-labs",
+        "prism-core",
+        "production",
+        "project-meridian",
+        "q1-review",
+        "signal-patterns",
+        "supplements",
+        "swim",
+        "yoga"
+      ],
+      "unresolvedLinks": [
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-01.md",
+          "tier": 3
+        },
+        {
+          "entity": "Code Breakers",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Yoga",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-09.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-10.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-12.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 3
+        },
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-14.md",
+          "tier": 3
+        },
+        {
+          "entity": "Hackathon Spring",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "round": 9,
+      "f1": 0.879,
+      "precision": 1,
+      "recall": 0.783,
+      "mrr": 0.663,
+      "truePositives": 47,
+      "falsePositives": 0,
+      "falseNegatives": 13,
+      "suppressionCount": 13,
+      "feedbackLayerAvgContribution": 0.1147,
+      "byCategory": {
+        "people": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 9
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "hobbies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "media": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 12
+        },
+        "documents": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 6
+        },
+        "events": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "food": {
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "count": 3
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 3
+        },
+        "health": {
+          "precision": 1,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
+          "count": 4
+        },
+        "locations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 4
+        },
+        "finance": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "animals": {
+          "precision": 1,
+          "recall": 0.125,
+          "f1": 0.2222222222222222,
+          "count": 8
+        }
+      },
+      "byTier": {
+        "1": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 24
+        },
+        "2": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 21
+        },
+        "3": {
+          "precision": 1,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
+          "count": 15
+        }
+      },
+      "suppressedEntities": [
+        "clean-architecture",
+        "docker",
+        "meridian-labs",
+        "novaspark",
+        "prism-core",
+        "project-meridian",
+        "q1-review",
+        "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
+        "tessa-liu",
+        "yoga"
+      ],
+      "unresolvedLinks": [
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-01.md",
+          "tier": 3
+        },
+        {
+          "entity": "Code Breakers",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Yoga",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-09.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -2075,12 +2037,12 @@
       "f1": 0.868,
       "precision": 1,
       "recall": 0.767,
-      "mrr": 0.719,
+      "mrr": 0.689,
       "truePositives": 46,
       "falsePositives": 0,
       "falseNegatives": 14,
-      "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 1.3727,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 0.2347,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2132,8 +2094,8 @@
         },
         "food": {
           "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
           "count": 3
         },
         "acronyms": {
@@ -2144,8 +2106,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -2182,30 +2144,39 @@
         },
         "2": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.9523809523809523,
+          "f1": 0.975609756097561,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
         "clean-architecture",
+        "docker",
         "meridian-labs",
+        "novaspark",
         "prism-core",
+        "production",
         "project-meridian",
         "q1-review",
         "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
         {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
@@ -2243,11 +2214,6 @@
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -2280,15 +2246,15 @@
     },
     {
       "round": 11,
-      "f1": 0.857,
+      "f1": 0.868,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.692,
-      "truePositives": 45,
+      "recall": 0.767,
+      "mrr": 0.667,
+      "truePositives": 46,
       "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 1.2398,
+      "falseNegatives": 14,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 0.2827,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2352,8 +2318,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -2396,20 +2362,24 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
         "clean-architecture",
+        "docker",
         "meridian-labs",
+        "novaspark",
         "prism-core",
         "project-meridian",
+        "python",
         "q1-review",
         "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
         "tessa-liu",
         "yoga"
       ],
@@ -2456,11 +2426,6 @@
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -2493,15 +2458,15 @@
     },
     {
       "round": 12,
-      "f1": 0.857,
+      "f1": 0.868,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.692,
-      "truePositives": 45,
+      "recall": 0.767,
+      "mrr": 0.663,
+      "truePositives": 46,
       "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 1.2925,
+      "falseNegatives": 14,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 0.1547,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2565,8 +2530,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -2609,20 +2574,24 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
         "clean-architecture",
+        "docker",
         "meridian-labs",
+        "novaspark",
+        "postgresql",
         "prism-core",
         "project-meridian",
         "q1-review",
         "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
         "tessa-liu",
         "yoga"
       ],
@@ -2669,11 +2638,6 @@
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -2706,15 +2670,15 @@
     },
     {
       "round": 13,
-      "f1": 0.857,
+      "f1": 0.868,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.692,
-      "truePositives": 45,
+      "recall": 0.767,
+      "mrr": 0.678,
+      "truePositives": 46,
       "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 9,
-      "feedbackLayerAvgContribution": 1.2358,
+      "falseNegatives": 14,
+      "suppressionCount": 16,
+      "feedbackLayerAvgContribution": 0.1629,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2778,8 +2742,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -2822,19 +2786,26 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "architecture-rfc",
         "clean-architecture",
+        "docker",
         "meridian-labs",
+        "novaspark",
+        "postgresql",
         "prism-core",
         "project-meridian",
+        "python",
         "q1-review",
+        "react",
         "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
         "tessa-liu",
         "yoga"
       ],
@@ -2881,11 +2852,6 @@
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -2918,15 +2884,15 @@
     },
     {
       "round": 14,
-      "f1": 0.857,
+      "f1": 0.868,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.726,
-      "truePositives": 45,
+      "recall": 0.767,
+      "mrr": 0.659,
+      "truePositives": 46,
       "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 1.4886,
+      "falseNegatives": 14,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 0.3164,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2990,8 +2956,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -3034,20 +3000,25 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
         "clean-architecture",
+        "docker",
         "meridian-labs",
+        "novaspark",
+        "postgresql",
         "prism-core",
         "project-meridian",
         "q1-review",
+        "react",
         "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
         "tessa-liu",
         "yoga"
       ],
@@ -3094,11 +3065,6 @@
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -3131,15 +3097,15 @@
     },
     {
       "round": 15,
-      "f1": 0.857,
+      "f1": 0.868,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.726,
-      "truePositives": 45,
+      "recall": 0.767,
+      "mrr": 0.678,
+      "truePositives": 46,
       "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 1.4886,
+      "falseNegatives": 14,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.196,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3203,8 +3169,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -3247,21 +3213,29 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
         "clean-architecture",
+        "docker",
         "meridian-labs",
+        "novaspark",
+        "postgresql",
         "prism-core",
+        "production",
         "project-meridian",
+        "python",
         "q1-review",
+        "react",
         "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
         "tessa-liu",
+        "typescript",
         "yoga"
       ],
       "unresolvedLinks": [
@@ -3307,11 +3281,6 @@
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -3344,15 +3313,15 @@
     },
     {
       "round": 16,
-      "f1": 0.857,
+      "f1": 0.879,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.726,
-      "truePositives": 45,
+      "recall": 0.783,
+      "mrr": 0.689,
+      "truePositives": 47,
       "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 1.4247,
+      "falseNegatives": 13,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.3091,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3404,8 +3373,8 @@
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
@@ -3416,8 +3385,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -3454,35 +3423,38 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.9523809523809523,
-          "f1": 0.975609756097561,
+          "recall": 1,
+          "f1": 1,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
         "clean-architecture",
+        "docker",
         "meridian-labs",
+        "novaspark",
+        "postgresql",
         "prism-core",
+        "production",
         "project-meridian",
+        "python",
         "q1-review",
+        "react",
         "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
         "tessa-liu",
+        "typescript",
         "yoga"
       ],
       "unresolvedLinks": [
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 2
-        },
         {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
@@ -3520,11 +3492,6 @@
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -3557,15 +3524,15 @@
     },
     {
       "round": 17,
-      "f1": 0.857,
+      "f1": 0.879,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.692,
-      "truePositives": 45,
+      "recall": 0.783,
+      "mrr": 0.686,
+      "truePositives": 47,
       "falsePositives": 0,
-      "falseNegatives": 15,
-      "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 1.4155,
+      "falseNegatives": 13,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.2773,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3617,8 +3584,8 @@
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
@@ -3629,8 +3596,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -3667,36 +3634,38 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.9523809523809523,
-          "f1": 0.975609756097561,
+          "recall": 1,
+          "f1": 1,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
         "clean-architecture",
+        "docker",
         "meridian-labs",
-        "nadia-reyes",
+        "novaspark",
+        "postgresql",
         "prism-core",
+        "production",
         "project-meridian",
+        "python",
         "q1-review",
+        "react",
         "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
         "tessa-liu",
+        "typescript",
         "yoga"
       ],
       "unresolvedLinks": [
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 2
-        },
         {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
@@ -3734,11 +3703,6 @@
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -3771,224 +3735,15 @@
     },
     {
       "round": 18,
-      "f1": 0.868,
-      "precision": 1,
-      "recall": 0.767,
-      "mrr": 0.716,
-      "truePositives": 46,
-      "falsePositives": 0,
-      "falseNegatives": 14,
-      "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 1.4352,
-      "byCategory": {
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 9
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "hobbies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "media": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 12
-        },
-        "documents": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 6
-        },
-        "events": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "food": {
-          "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
-          "count": 3
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 3
-        },
-        "health": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "locations": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "finance": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
-          "count": 8
-        }
-      },
-      "byTier": {
-        "1": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 24
-        },
-        "2": {
-          "precision": 1,
-          "recall": 0.9523809523809523,
-          "f1": 0.975609756097561,
-          "count": 21
-        },
-        "3": {
-          "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
-          "count": 15
-        }
-      },
-      "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
-        "clean-architecture",
-        "meridian-labs",
-        "nadia-reyes",
-        "prism-core",
-        "project-meridian",
-        "q1-review",
-        "signal-patterns",
-        "tessa-liu",
-        "yoga"
-      ],
-      "unresolvedLinks": [
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 2
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-01.md",
-          "tier": 3
-        },
-        {
-          "entity": "Code Breakers",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-04.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-09.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Swim",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-12.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 3
-        },
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        }
-      ]
-    },
-    {
-      "round": 19,
       "f1": 0.879,
       "precision": 1,
       "recall": 0.783,
-      "mrr": 0.715,
+      "mrr": 0.686,
       "truePositives": 47,
       "falsePositives": 0,
       "falseNegatives": 13,
-      "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 1.4101,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.4,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -4034,8 +3789,8 @@
         },
         "events": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
           "count": 2
         },
         "food": {
@@ -4052,8 +3807,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -4102,16 +3857,23 @@
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
         "clean-architecture",
+        "docker",
+        "kubernetes",
         "meridian-labs",
-        "nadia-reyes",
+        "novaspark",
+        "postgresql",
         "prism-core",
         "project-meridian",
+        "python",
         "q1-review",
+        "react",
         "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
         "tessa-liu",
+        "typescript",
         "yoga"
       ],
       "unresolvedLinks": [
@@ -4156,7 +3918,213 @@
           "tier": 3
         },
         {
-          "entity": "Swim",
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-12.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 3
+        },
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-14.md",
+          "tier": 3
+        },
+        {
+          "entity": "Hackathon Spring",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "round": 19,
+      "f1": 0.879,
+      "precision": 1,
+      "recall": 0.783,
+      "mrr": 0.678,
+      "truePositives": 47,
+      "falsePositives": 0,
+      "falseNegatives": 13,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.2225,
+      "byCategory": {
+        "people": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 9
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "hobbies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "media": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 12
+        },
+        "documents": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 6
+        },
+        "events": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "food": {
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "count": 3
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 3
+        },
+        "health": {
+          "precision": 1,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
+          "count": 4
+        },
+        "locations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 4
+        },
+        "finance": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "animals": {
+          "precision": 1,
+          "recall": 0.125,
+          "f1": 0.2222222222222222,
+          "count": 8
+        }
+      },
+      "byTier": {
+        "1": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 24
+        },
+        "2": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 21
+        },
+        "3": {
+          "precision": 1,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
+          "count": 15
+        }
+      },
+      "suppressedEntities": [
+        "clean-architecture",
+        "docker",
+        "kubernetes",
+        "meridian-labs",
+        "novaspark",
+        "postgresql",
+        "prism-core",
+        "project-meridian",
+        "python",
+        "q1-review",
+        "react",
+        "signal-patterns",
+        "staging",
+        "supplements",
+        "swim",
+        "tessa-liu",
+        "typescript",
+        "yoga"
+      ],
+      "unresolvedLinks": [
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-01.md",
+          "tier": 3
+        },
+        {
+          "entity": "Code Breakers",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Yoga",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-09.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
           "notePath": "daily-notes/2026-01-10.md",
           "tier": 3
         },
@@ -4176,6 +4144,11 @@
           "tier": 3
         },
         {
+          "entity": "Hackathon Spring",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        },
+        {
           "entity": "Melbourne",
           "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
@@ -4188,7 +4161,7 @@
       "parameter": "FEEDBACK_BOOST_MIN_SAMPLES",
       "current_value": 5,
       "suggested_value": 3,
-      "evidence": "F1 improvement over 20 rounds was only 2.2% (< 5%). Tightening feedback thresholds may help the system learn faster.",
+      "evidence": "F1 improvement over 20 rounds was only 0.0% (< 5%). Tightening feedback thresholds may help the system learn faster.",
       "confidence": "medium"
     }
   ]

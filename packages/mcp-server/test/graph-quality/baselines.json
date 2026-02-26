@@ -2,22 +2,22 @@
   "generated": "2026-02-26",
   "primary": {
     "conservative": {
-      "f1": 0.835,
+      "f1": 0.846,
       "precision": 1,
-      "recall": 0.717,
-      "mrr": 0.572
+      "recall": 0.733,
+      "mrr": 0.617
     },
     "balanced": {
-      "f1": 0.857,
+      "f1": 0.879,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.572
+      "recall": 0.783,
+      "mrr": 0.61
     },
     "aggressive": {
-      "f1": 0.857,
+      "f1": 0.879,
       "precision": 1,
-      "recall": 0.75,
-      "mrr": 0.572
+      "recall": 0.783,
+      "mrr": 0.61
     }
   }
 }

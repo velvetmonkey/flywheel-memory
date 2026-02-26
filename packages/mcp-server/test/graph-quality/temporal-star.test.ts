@@ -196,7 +196,7 @@ describe('Suite: Temporal-Star Learning Curve', () => {
         feedbackLayerAvgContribution: feedbackCount > 0 ? feedbackSum / feedbackCount : 0,
       });
     }
-  }, 600000); // 10 min timeout for 40 rounds on larger fixture
+  }, 900000); // 15 min timeout for 20 rounds on larger fixture
 
   afterAll(async () => {
     if (roundMetrics.length > 0) {

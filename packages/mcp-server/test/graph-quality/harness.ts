@@ -188,6 +188,24 @@ export async function buildGroundTruthVault(spec: GroundTruthSpec): Promise<Temp
   setRecencyStateDb(stateDb);
   await initializeEntityIndex(vaultPath);
 
+  // Inject hub scores from fixture spec into StateDb
+  // (Production does this via exportHubScores after graph build;
+  //  tests must do it explicitly since there's no VaultIndex)
+  const updateHub = stateDb.db.prepare(
+    'UPDATE entities SET hub_score = ? WHERE name_lower = ?'
+  );
+  const hubTransaction = stateDb.db.transaction(() => {
+    for (const entity of spec.entities) {
+      if (entity.hubScore > 0) {
+        updateHub.run(entity.hubScore, entity.name.toLowerCase());
+      }
+    }
+  });
+  hubTransaction();
+
+  // Re-load entity index so in-memory index has hub scores
+  await initializeEntityIndex(vaultPath);
+
   const cleanup = async () => {
     setWriteStateDb(null);
     setRecencyStateDb(null);

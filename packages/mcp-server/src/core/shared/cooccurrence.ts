@@ -53,7 +53,7 @@ export interface CooccurrenceIndex {
  *   - 3 co-occurrences in 8-entity notes: 3 * 1/log2(8) = 1.0
  *   - 2 co-occurrences in 3-entity notes: 2 * 1/log2(3) = 1.26
  */
-const DEFAULT_MIN_COOCCURRENCE = 1;
+const DEFAULT_MIN_COOCCURRENCE = 0.5;
 
 /**
  * Folders to exclude from co-occurrence mining (templates, etc.)

@@ -1,14 +1,14 @@
 {
   "suite": "vault-lifecycle",
-  "timestamp": "2026-02-26T11:35:11.053Z",
-  "duration_ms": 18718,
+  "timestamp": "2026-02-26T15:10:03.566Z",
+  "duration_ms": 20841,
   "summary": {
     "total_epochs": 5,
     "genesis_entities": 216,
     "recovery_entities": 216,
-    "genesis_coverage": 0.965,
-    "min_coverage": 0.74,
-    "max_coverage": 0.965
+    "genesis_coverage": 0.978,
+    "min_coverage": 0.745,
+    "max_coverage": 0.978
   },
   "details": [
     {
@@ -30,12 +30,12 @@
         },
         "degreeCentralityStdDev": 1.492
       },
-      "suggestionCoverage": 0.965,
+      "suggestionCoverage": 0.978,
       "scoreDistribution": {
-        "mean": 35.5332,
+        "mean": 34.3934,
         "p50": 38,
         "p90": 40,
-        "min": 22,
+        "min": 11,
         "max": 50
       },
       "entityStats": {
@@ -60,7 +60,7 @@
           "other": 9
         }
       },
-      "duration_ms": 4351
+      "duration_ms": 2827
     },
     {
       "epoch": "growth",
@@ -81,12 +81,12 @@
         },
         "degreeCentralityStdDev": 3.586
       },
-      "suggestionCoverage": 0.764,
+      "suggestionCoverage": 0.774,
       "scoreDistribution": {
-        "mean": 35.1305,
-        "p50": 38,
+        "mean": 33.9931,
+        "p50": 37,
         "p90": 40,
-        "min": 22,
+        "min": 11,
         "max": 50
       },
       "entityStats": {
@@ -111,7 +111,7 @@
           "other": 9
         }
       },
-      "duration_ms": 3202
+      "duration_ms": 5895
     },
     {
       "epoch": "reorganization",
@@ -132,12 +132,12 @@
         },
         "degreeCentralityStdDev": 3.543
       },
-      "suggestionCoverage": 0.769,
+      "suggestionCoverage": 0.774,
       "scoreDistribution": {
-        "mean": 35.1567,
-        "p50": 38,
+        "mean": 34.0354,
+        "p50": 37,
         "p90": 40,
-        "min": 22,
+        "min": 11,
         "max": 50
       },
       "entityStats": {
@@ -162,7 +162,7 @@
           "other": 9
         }
       },
-      "duration_ms": 5029
+      "duration_ms": 4265
     },
     {
       "epoch": "pruning",
@@ -183,12 +183,12 @@
         },
         "degreeCentralityStdDev": 3.403
       },
-      "suggestionCoverage": 0.74,
+      "suggestionCoverage": 0.745,
       "scoreDistribution": {
-        "mean": 34.5724,
+        "mean": 33.2877,
         "p50": 37,
         "p90": 40,
-        "min": 22,
+        "min": 11,
         "max": 50
       },
       "entityStats": {
@@ -213,7 +213,7 @@
           "other": 9
         }
       },
-      "duration_ms": 2999
+      "duration_ms": 3678
     },
     {
       "epoch": "recovery",
@@ -234,12 +234,12 @@
         },
         "degreeCentralityStdDev": 3.187
       },
-      "suggestionCoverage": 0.777,
+      "suggestionCoverage": 0.781,
       "scoreDistribution": {
-        "mean": 34.0443,
-        "p50": 37,
+        "mean": 29.9398,
+        "p50": 30,
         "p90": 40,
-        "min": 22,
+        "min": 11,
         "max": 50
       },
       "entityStats": {
@@ -264,14 +264,14 @@
           "other": 9
         }
       },
-      "duration_ms": 3137
+      "duration_ms": 4176
     }
   ],
   "tuning_recommendations": [
     {
       "parameter": "suggestion_coverage",
-      "current_value": 76,
-      "suggested_value": 97,
+      "current_value": 77,
+      "suggested_value": 98,
       "evidence": "growth epoch dropped coverage by 20% from genesis",
       "confidence": "high"
     }

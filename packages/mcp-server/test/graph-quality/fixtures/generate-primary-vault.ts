@@ -539,11 +539,54 @@ function generateContentNotes(): { notes: NoteDef[] } {
 /**
  * Generate entity notes — one per entity, in category folders.
  */
+/**
+ * Select category-appropriate related entities for entity note body generation.
+ * Ensures animals get people+health, health gets people+animals, etc.
+ */
+function selectRelatedEntities(entity: EntityDef, all: EntityDef[]): EntityDef[] {
+  const others = all.filter(e => e !== entity);
+
+  // Category-specific priorities for better co-occurrence graph
+  const priorityCategories: Record<string, string[]> = {
+    animals: ['people', 'health', 'locations'],
+    health: ['people', 'animals', 'locations'],
+    food: ['locations', 'people', 'organizations'],
+    people: ['organizations', 'projects', 'technologies'],
+    projects: ['technologies', 'people', 'organizations'],
+    hobbies: ['people', 'locations', 'health'],
+    media: ['people', 'technologies', 'concepts'],
+    events: ['people', 'organizations', 'projects'],
+    documents: ['projects', 'people', 'organizations'],
+    finance: ['projects', 'organizations', 'people'],
+  };
+
+  const priorities = priorityCategories[entity.category];
+  if (priorities) {
+    const result: EntityDef[] = [];
+    for (const cat of priorities) {
+      const candidates = others.filter(e => e.category === cat);
+      if (candidates.length > 0) {
+        result.push(shuffle(rng, candidates)[0]);
+      }
+      if (result.length >= 3) break;
+    }
+    // Fill remaining slots with random others
+    if (result.length < 3) {
+      const remaining = shuffle(rng, others.filter(e => !result.includes(e)));
+      result.push(...remaining.slice(0, 3 - result.length));
+    }
+    return result;
+  }
+
+  // Default: random selection
+  return shuffle(rng, others).slice(0, 3);
+}
+
 function generateEntityNotes(): NoteDef[] {
   const notes: NoteDef[] = [];
 
   for (const entity of allEntities) {
-    const related = shuffle(rng, allEntities.filter(e => e !== entity)).slice(0, 3);
+    const related = selectRelatedEntities(entity, allEntities);
     const content = entityNoteBody(entity, related);
 
     const frontmatter: Record<string, unknown> = { type: entity.category };

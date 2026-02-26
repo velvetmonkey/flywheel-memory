@@ -1326,8 +1326,9 @@ export async function suggestRelatedLinks(
     score += layerEdgeWeightBoost;
 
     // Add to directlyMatchedEntities BEFORE suppression penalty
-    // (suppressed entities still contribute to co-occurrence graph)
-    if (score > 0) {
+    // Only content-matched entities should seed co-occurrence lookups;
+    // entities with only type/hub/recency boosts (no content match) are noise seeds.
+    if (contentScore > 0) {
       directlyMatchedEntities.add(entityName);
     }
 
@@ -1336,7 +1337,9 @@ export async function suggestRelatedLinks(
     score += layerSuppressionPenalty;
 
     // Minimum threshold (adaptive based on content length)
-    if (score >= adaptiveMinScore) {
+    // Require content match — entities with only type/hub/recency boosts are
+    // discovered via the co-occurrence loop below if they're graph-connected.
+    if (contentScore > 0 && score >= adaptiveMinScore) {
       scoredEntities.push({
         name: entityName,
         path: entity.path || '',
@@ -1360,8 +1363,24 @@ export async function suggestRelatedLinks(
 
   // Layer 4: Add co-occurrence boost for entities related to matched ones
   // This allows entities that didn't match directly but are conceptually related
-  // to be suggested
-  if (!disabled.has('cooccurrence') && cooccurrenceIndex && directlyMatchedEntities.size > 0) {
+  // to be suggested.
+  // Use both directly matched AND already-linked entities as co-occurrence seeds.
+  // Linked entities provide strong context about what's in the note, even though
+  // they're excluded from suggestions themselves.
+  const cooccurrenceSeeds = new Set(directlyMatchedEntities);
+  // linkedEntities are lowercase; co-occurrence index uses display-case names.
+  // Build a lowercase→display-case lookup from entitiesWithTypes.
+  if (linkedEntities.size > 0) {
+    const lowerToDisplay = new Map<string, string>();
+    for (const { entity } of entitiesWithTypes) {
+      if (entity.name) lowerToDisplay.set(entity.name.toLowerCase(), entity.name);
+    }
+    for (const linked of linkedEntities) {
+      const displayName = lowerToDisplay.get(linked);
+      if (displayName) cooccurrenceSeeds.add(displayName);
+    }
+  }
+  if (!disabled.has('cooccurrence') && cooccurrenceIndex && cooccurrenceSeeds.size > 0) {
     for (const { entity, category } of entitiesWithTypes) {
       const entityName = entity.name;
       if (!entityName) continue;
@@ -1372,7 +1391,7 @@ export async function suggestRelatedLinks(
       if (linkedEntities.has(entityName.toLowerCase())) continue;
 
       // Get co-occurrence boost (with recency weighting)
-      const boost = getCooccurrenceBoost(entityName, directlyMatchedEntities, cooccurrenceIndex, recencyIndex);
+      const boost = getCooccurrenceBoost(entityName, cooccurrenceSeeds, cooccurrenceIndex, recencyIndex);
 
       if (boost > 0) {
         // Check if entity is already in scored list (already has content match)
@@ -1397,15 +1416,20 @@ export async function suggestRelatedLinks(
             continue;  // Skip entities with zero content relevance and weak co-occurrence
           }
 
-          // Entity passed content overlap or strong co-occurrence check
-          if (hasContentOverlap) {
+          // Entity passed content overlap or strong co-occurrence check —
+          // qualify it for final results
+          if (hasContentOverlap || strongCooccurrence) {
             entitiesWithContentMatch.add(entityName);
           }
 
-          // For purely co-occurrence-based suggestions, also add type, context, recency, cross-folder, hub, feedback, and edge weight boosts
+          // For purely co-occurrence-based suggestions, add relevant boosts.
+          // Recency is omitted for graph-only entities — it's a "recently seen" signal
+          // that shouldn't inflate scores for entities absent from the note's text.
           const typeBoost = disabled.has('type_boost') ? 0 : (TYPE_BOOST[category] || 0);
           const contextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
-          const recencyBoostVal = disabled.has('recency') ? 0 : (recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0);
+          const recencyBoostVal = hasContentOverlap && !disabled.has('recency')
+            ? (recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0)
+            : 0;
           const crossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
           const hubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
           const feedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
@@ -1415,7 +1439,7 @@ export async function suggestRelatedLinks(
 
           // Graph-only suggestions (no content overlap) need a higher score floor
           const effectiveMinScore = !hasContentOverlap
-            ? Math.max(adaptiveMinScore, 12)
+            ? Math.max(adaptiveMinScore, 10)
             : adaptiveMinScore;
 
           if (totalBoost >= effectiveMinScore) {

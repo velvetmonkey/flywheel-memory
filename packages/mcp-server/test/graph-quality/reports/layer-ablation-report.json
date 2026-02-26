@@ -1,44 +1,44 @@
 {
   "suite": "layer-ablation-report",
-  "timestamp": "2026-02-26T11:34:51.537Z",
-  "duration_ms": 8112,
+  "timestamp": "2026-02-26T15:09:10.758Z",
+  "duration_ms": 3945,
   "summary": {
-    "primary_baseline_f1": 0.723,
+    "primary_baseline_f1": 0.868,
     "primary_baseline_precision": 1,
-    "primary_baseline_recall": 0.567,
-    "generated_baseline_f1": 0.839,
-    "generated_baseline_precision": 0.783,
-    "generated_baseline_recall": 0.903,
+    "primary_baseline_recall": 0.767,
+    "generated_baseline_f1": 0.763,
+    "generated_baseline_precision": 0.617,
+    "generated_baseline_recall": 1,
     "total_ablation_runs": 28,
-    "core_layers": 1,
-    "useful_layers": 2,
-    "marginal_layers": 23,
-    "harmful_layers": 0
+    "core_layers": 0,
+    "useful_layers": 3,
+    "marginal_layers": 22,
+    "harmful_layers": 1
   },
   "details": [
     {
       "vault": "primary",
       "baseline": {
         "precision": 1,
-        "recall": 0.567,
-        "f1": 0.723,
+        "recall": 0.767,
+        "f1": 0.868,
         "fpRate": 0,
-        "truePositives": 34,
+        "truePositives": 46,
         "falsePositives": 0,
-        "falseNegatives": 26,
-        "totalSuggestions": 34,
+        "falseNegatives": 14,
+        "totalSuggestions": 46,
         "totalGroundTruth": 60,
         "byTier": {
           "1": {
             "precision": 1,
-            "recall": 0.8333333333333334,
-            "f1": 0.9090909090909091,
+            "recall": 1,
+            "f1": 1,
             "count": 24
           },
           "2": {
             "precision": 1,
-            "recall": 0.6190476190476191,
-            "f1": 0.7647058823529412,
+            "recall": 1,
+            "f1": 1,
             "count": 21
           },
           "3": {
@@ -75,8 +75,8 @@
           },
           "concepts": {
             "precision": 1,
-            "recall": 0.8333333333333334,
-            "f1": 0.9090909090909091,
+            "recall": 1,
+            "f1": 1,
             "count": 12
           },
           "documents": {
@@ -87,8 +87,8 @@
           },
           "projects": {
             "precision": 1,
-            "recall": 0.5,
-            "f1": 0.6666666666666666,
+            "recall": 1,
+            "f1": 1,
             "count": 6
           },
           "events": {
@@ -99,14 +99,14 @@
           },
           "food": {
             "precision": 1,
-            "recall": 0.3333333333333333,
-            "f1": 0.5,
+            "recall": 0.6666666666666666,
+            "f1": 0.8,
             "count": 3
           },
           "acronyms": {
-            "precision": 0,
-            "recall": 0,
-            "f1": 0,
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
             "count": 3
           },
           "health": {
@@ -116,9 +116,9 @@
             "count": 4
           },
           "locations": {
-            "precision": 0,
-            "recall": 0,
-            "f1": 0,
+            "precision": 1,
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
             "count": 4
           },
           "finance": {
@@ -128,9 +128,9 @@
             "count": 1
           },
           "technologies": {
-            "precision": 0,
-            "recall": 0,
-            "f1": 0,
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
             "count": 1
           },
           "animals": {
@@ -141,66 +141,6 @@
           }
         },
         "falseNegativeDetails": [
-          {
-            "entity": "Microservices",
-            "notePath": "daily-notes/2026-01-15.md",
-            "tier": 1
-          },
-          {
-            "entity": "DataForge",
-            "notePath": "inbox/tech-guides/graphql-patterns.md",
-            "tier": 1
-          },
-          {
-            "entity": "NovaSpark",
-            "notePath": "inbox/tech-guides/graphql-patterns.md",
-            "tier": 1
-          },
-          {
-            "entity": "DataForge",
-            "notePath": "inbox/weekly-review-w2.md",
-            "tier": 1
-          },
-          {
-            "entity": "UAT",
-            "notePath": "daily-notes/2026-01-05.md",
-            "tier": 2
-          },
-          {
-            "entity": "Observability",
-            "notePath": "daily-notes/2026-01-06.md",
-            "tier": 2
-          },
-          {
-            "entity": "Production",
-            "notePath": "daily-notes/2026-01-08.md",
-            "tier": 2
-          },
-          {
-            "entity": "Portland",
-            "notePath": "daily-notes/2026-01-10.md",
-            "tier": 2
-          },
-          {
-            "entity": "Zurich",
-            "notePath": "daily-notes/2026-01-11.md",
-            "tier": 2
-          },
-          {
-            "entity": "Kubernetes",
-            "notePath": "daily-notes/2026-01-12.md",
-            "tier": 2
-          },
-          {
-            "entity": "Pho Bowl",
-            "notePath": "daily-notes/2026-01-13.md",
-            "tier": 2
-          },
-          {
-            "entity": "Staging",
-            "notePath": "inbox/project-docs/dataforge-runbook.md",
-            "tier": 2
-          },
           {
             "entity": "Luna",
             "notePath": "daily-notes/2026-01-01.md",
@@ -272,177 +212,177 @@
             "tier": 3
           }
         ],
-        "mrr": 0.591,
+        "mrr": 0.604,
         "hitsAt3": 0.636,
         "precisionAtK": 1
       },
       "layers": [
         {
           "layer": "length_filter",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "article_filter",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "exact_match",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "stem_match",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "cooccurrence",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "type_boost",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "context_boost",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "recency",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "cross_folder",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
-          "f1Delta": 0,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.857,
+          "f1Delta": 0.01100000000000001,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
-          "recallDelta": 0,
-          "classification": "MARGINAL"
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.75,
+          "recallDelta": 0.017000000000000015,
+          "classification": "USEFUL"
         },
         {
           "layer": "hub_boost",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
-          "f1Delta": 0,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.857,
+          "f1Delta": 0.01100000000000001,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
-          "recallDelta": 0,
-          "classification": "MARGINAL"
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.75,
+          "recallDelta": 0.017000000000000015,
+          "classification": "USEFUL"
         },
         {
           "layer": "feedback",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "semantic",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "edge_weight",
-          "baselineF1": 0.723,
-          "ablatedF1": 0.723,
+          "baselineF1": 0.868,
+          "ablatedF1": 0.868,
           "f1Delta": 0,
           "baselinePrecision": 1,
           "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.567,
-          "ablatedRecall": 0.567,
+          "baselineRecall": 0.767,
+          "ablatedRecall": 0.767,
           "recallDelta": 0,
           "classification": "MARGINAL"
         }
@@ -451,26 +391,26 @@
     {
       "vault": "generated",
       "baseline": {
-        "precision": 0.783,
-        "recall": 0.903,
-        "f1": 0.839,
-        "fpRate": 0.217,
-        "truePositives": 112,
-        "falsePositives": 31,
-        "falseNegatives": 12,
-        "totalSuggestions": 143,
+        "precision": 0.617,
+        "recall": 1,
+        "f1": 0.763,
+        "fpRate": 0.383,
+        "truePositives": 124,
+        "falsePositives": 77,
+        "falseNegatives": 0,
+        "totalSuggestions": 201,
         "totalGroundTruth": 124,
         "byTier": {
           "1": {
             "precision": 1,
-            "recall": 0.8969072164948454,
-            "f1": 0.9456521739130436,
+            "recall": 1,
+            "f1": 1,
             "count": 97
           },
           "2": {
             "precision": 1,
-            "recall": 0.9259259259259259,
-            "f1": 0.9615384615384615,
+            "recall": 1,
+            "f1": 1,
             "count": 27
           },
           "3": {
@@ -489,255 +429,202 @@
           },
           "projects": {
             "precision": 1,
-            "recall": 0.9795918367346939,
-            "f1": 0.9896907216494846,
+            "recall": 1,
+            "f1": 1,
             "count": 49
           },
           "technologies": {
             "precision": 1,
-            "recall": 0.6944444444444444,
-            "f1": 0.819672131147541,
+            "recall": 1,
+            "f1": 1,
             "count": 36
           }
         },
-        "falseNegativeDetails": [
-          {
-            "entity": "PostgreSQL",
-            "notePath": "docs/architecture-overview.md",
-            "tier": 1
-          },
-          {
-            "entity": "TypeScript",
-            "notePath": "docs/architecture-overview.md",
-            "tier": 1
-          },
-          {
-            "entity": "PostgreSQL",
-            "notePath": "docs/onboarding-guide.md",
-            "tier": 1
-          },
-          {
-            "entity": "Redis",
-            "notePath": "docs/onboarding-guide.md",
-            "tier": 1
-          },
-          {
-            "entity": "Redis",
-            "notePath": "docs/deployment-runbook.md",
-            "tier": 2
-          },
-          {
-            "entity": "Atlas Platform",
-            "notePath": "meetings/2026-01-20-sprint-planning.md",
-            "tier": 1
-          },
-          {
-            "entity": "Kubernetes",
-            "notePath": "meetings/2026-01-22-infra-review.md",
-            "tier": 1
-          },
-          {
-            "entity": "GraphQL",
-            "notePath": "meetings/2026-01-25-architecture-review.md",
-            "tier": 1
-          },
-          {
-            "entity": "Redis",
-            "notePath": "meetings/2026-01-28-data-sync.md",
-            "tier": 1
-          },
-          {
-            "entity": "TypeScript",
-            "notePath": "projects/atlas-status-q1.md",
-            "tier": 1
-          },
-          {
-            "entity": "GraphQL",
-            "notePath": "projects/beacon-api-roadmap.md",
-            "tier": 1
-          },
-          {
-            "entity": "Redis",
-            "notePath": "technologies/kubernetes-operations.md",
-            "tier": 2
-          }
-        ],
+        "falseNegativeDetails": [],
         "mrr": 1,
         "hitsAt3": 1,
-        "precisionAtK": 0.83
+        "precisionAtK": 0.919
       },
       "layers": [
         {
           "layer": "length_filter",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.839,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.763,
           "f1Delta": 0,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.783,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.617,
           "precisionDelta": 0,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.903,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "article_filter",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.839,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.763,
           "f1Delta": 0,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.783,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.617,
           "precisionDelta": 0,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.903,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "exact_match",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.839,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.763,
           "f1Delta": 0,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.783,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.617,
           "precisionDelta": 0,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.903,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "stem_match",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.839,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.763,
           "f1Delta": 0,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.783,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.617,
           "precisionDelta": 0,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.903,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "cooccurrence",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.839,
-          "f1Delta": 0,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.783,
-          "precisionDelta": 0,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.903,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.758,
+          "f1Delta": 0.0050000000000000044,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.611,
+          "precisionDelta": 0.006000000000000005,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "type_boost",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.839,
-          "f1Delta": 0,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.783,
-          "precisionDelta": 0,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.903,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.758,
+          "f1Delta": 0.0050000000000000044,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.611,
+          "precisionDelta": 0.006000000000000005,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "context_boost",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.809,
-          "f1Delta": 0.029999999999999916,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.755,
-          "precisionDelta": 0.028000000000000025,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.871,
-          "recallDelta": 0.03200000000000003,
-          "classification": "USEFUL"
+          "baselineF1": 0.763,
+          "ablatedF1": 0.758,
+          "f1Delta": 0.0050000000000000044,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.611,
+          "precisionDelta": 0.006000000000000005,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
         },
         {
           "layer": "recency",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.706,
-          "f1Delta": 0.133,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.655,
-          "precisionDelta": 0.128,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.766,
-          "recallDelta": 0.137,
-          "classification": "CORE"
-        },
-        {
-          "layer": "cross_folder",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.82,
-          "f1Delta": 0.019000000000000017,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.768,
-          "precisionDelta": 0.015000000000000013,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.879,
-          "recallDelta": 0.02400000000000002,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.726,
+          "f1Delta": 0.03700000000000003,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.583,
+          "precisionDelta": 0.03400000000000003,
+          "baselineRecall": 1,
+          "ablatedRecall": 0.96,
+          "recallDelta": 0.040000000000000036,
           "classification": "USEFUL"
         },
         {
+          "layer": "cross_folder",
+          "baselineF1": 0.763,
+          "ablatedF1": 0.77,
+          "f1Delta": -0.007000000000000006,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.626,
+          "precisionDelta": -0.009000000000000008,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
+          "recallDelta": 0,
+          "classification": "HARMFUL"
+        },
+        {
           "layer": "hub_boost",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.839,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.763,
           "f1Delta": 0,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.783,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.617,
           "precisionDelta": 0,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.903,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "feedback",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.839,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.763,
           "f1Delta": 0,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.783,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.617,
           "precisionDelta": 0,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.903,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "semantic",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.839,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.763,
           "f1Delta": 0,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.783,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.617,
           "precisionDelta": 0,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.903,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "edge_weight",
-          "baselineF1": 0.839,
-          "ablatedF1": 0.839,
+          "baselineF1": 0.763,
+          "ablatedF1": 0.763,
           "f1Delta": 0,
-          "baselinePrecision": 0.783,
-          "ablatedPrecision": 0.783,
+          "baselinePrecision": 0.617,
+          "ablatedPrecision": 0.617,
           "precisionDelta": 0,
-          "baselineRecall": 0.903,
-          "ablatedRecall": 0.903,
+          "baselineRecall": 1,
+          "ablatedRecall": 1,
           "recallDelta": 0,
           "classification": "MARGINAL"
         }
       ]
     }
   ],
-  "tuning_recommendations": []
+  "tuning_recommendations": [
+    {
+      "parameter": "layer.cross_folder",
+      "current_value": 1,
+      "suggested_value": 1,
+      "evidence": "Layer \"cross_folder\" is HARMFUL on one vault but not both. Investigate weight tuning rather than disabling.",
+      "confidence": "medium"
+    }
+  ]
 }

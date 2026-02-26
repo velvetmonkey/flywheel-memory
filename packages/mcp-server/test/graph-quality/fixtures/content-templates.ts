@@ -117,18 +117,40 @@ export function entityNoteBody(entity: EntityDef, related: EntityDef[]): string 
   const lines = [`# ${entity.name}`, ''];
 
   if (entity.category === 'people') {
-    lines.push(`${entity.name} is a team member at ${related.find(e => e.category === 'organizations')?.name || 'Meridian Labs'}.`);
-    lines.push(`Works on ${related.find(e => e.category === 'projects')?.name || 'various projects'} using ${related.find(e => e.category === 'technologies')?.name || 'modern tech'}.`);
+    const org = related.find(e => e.category === 'organizations');
+    const proj = related.find(e => e.category === 'projects');
+    const tech = related.find(e => e.category === 'technologies');
+    lines.push(`${entity.name} is a team member at [[${org?.name || 'Meridian Labs'}]].`);
+    lines.push(`Works on [[${proj?.name || 'various projects'}]] using [[${tech?.name || 'modern tech'}]].`);
   } else if (entity.category === 'projects') {
+    const techs = related.filter(e => e.category === 'technologies').slice(0, 2);
     lines.push(`${entity.name} is an internal project.`);
-    lines.push(`Built with ${related.filter(e => e.category === 'technologies').map(e => e.name).join(', ') || 'various technologies'}.`);
+    lines.push(`Built with ${techs.map(e => `[[${e.name}]]`).join(', ') || 'various technologies'}.`);
+  } else if (entity.category === 'animals') {
+    const owner = related.find(e => e.category === 'people');
+    const activity = related.find(e => e.category === 'health');
+    lines.push(`${entity.name} is ${owner ? `[[${owner.name}]]'s` : 'a'} pet.`);
+    if (activity) lines.push(`Often accompanies during [[${activity.name}]] sessions.`);
   } else if (entity.category === 'health') {
+    const person = related.find(e => e.category === 'people');
+    const animal = related.find(e => e.category === 'animals');
     lines.push(`Daily habit: ${entity.name}.`);
-    if (entity.aliases.length > 0) {
-      lines.push(`Also known as: ${entity.aliases.join(', ')}.`);
-    }
+    if (person) lines.push(`Usually done with [[${person.name}]].`);
+    if (animal) lines.push(`[[${animal.name}]] joins for ${entity.name.toLowerCase()} sessions.`);
+  } else if (entity.category === 'food') {
+    const place = related.find(e => e.category === 'places' || e.category === 'locations');
+    lines.push(`${entity.name} — food spot.`);
+    if (place) lines.push(`Located in [[${place.name}]].`);
   } else {
     lines.push(`${entity.name} — ${entity.category}.`);
+    const links = related.slice(0, 2);
+    if (links.length > 0) {
+      lines.push(`Related to ${links.map(e => `[[${e.name}]]`).join(' and ')}.`);
+    }
+  }
+
+  if (entity.aliases.length > 0) {
+    lines.push(`Also known as: ${entity.aliases.join(', ')}.`);
   }
 
   return lines.join('\n');

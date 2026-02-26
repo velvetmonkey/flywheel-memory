@@ -90,6 +90,13 @@ describe('Regression Gate', () => {
     });
   }
 
+  it('should maintain T3 recall above floor', () => {
+    if (!baselines) return;
+    const report = reports['balanced'];
+    expect(report).toBeDefined();
+    expect(report.byTier[3].recall).toBeGreaterThanOrEqual(0.13);
+  });
+
   it('no metric regresses more than 5%', () => {
     if (!baselines) return; // skip if baselines missing
 

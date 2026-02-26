@@ -22,6 +22,10 @@ import {
   extractLinkedEntities,
 } from '../../src/core/write/wikilinks.js';
 import { setRecencyStateDb } from '../../src/core/shared/recency.js';
+import {
+  recordFeedback,
+  updateSuppressionList,
+} from '../../src/core/write/wikilinkFeedback.js';
 import type { ScoringLayer, StrictnessMode, ScoreBreakdown } from '../../src/core/write/types.js';
 
 // =============================================================================
@@ -99,6 +103,7 @@ export interface PrecisionRecallReport {
   byTier: Record<1 | 2 | 3, { precision: number; recall: number; f1: number; count: number }>;
   byCategory: Record<string, { precision: number; recall: number; f1: number; count: number }>;
   byStrictness?: Record<string, { precision: number; recall: number; f1: number }>;
+  falseNegativeDetails: Array<{entity: string, notePath: string, tier: 1|2|3}>;
   mrr: number;
   hitsAt3: number;
   precisionAtK: number;
@@ -259,7 +264,7 @@ export async function runSuggestionsOnVault(
     }
 
     const result = await suggestRelatedLinks(content, {
-      maxSuggestions: options?.maxSuggestions ?? 5,
+      maxSuggestions: options?.maxSuggestions ?? 8,
       strictness: options?.strictness ?? 'balanced',
       notePath: note.path,
       disabledLayers: options?.disabledLayers,
@@ -419,7 +424,8 @@ export function evaluateSuggestions(
   // Count false negatives (ground truth not recovered)
   const falseNegatives = groundTruth.length - recoveredGt.size;
 
-  // Count per-tier FNs
+  // Count per-tier FNs and collect false negative details
+  const falseNegativeDetails: Array<{entity: string, notePath: string, tier: 1|2|3}> = [];
   for (const gt of groundTruth) {
     const key = `${gt.notePath}::${normalize(gt.entity)}`;
     if (!recoveredGt.has(key)) {
@@ -427,6 +433,11 @@ export function evaluateSuggestions(
       const cat = entityCategoryMap.get(normalize(gt.entity)) || 'unknown';
       if (!catStats.has(cat)) catStats.set(cat, { tp: 0, fp: 0, fn: 0, total: 0 });
       catStats.get(cat)!.fn++;
+      falseNegativeDetails.push({
+        entity: gt.entity,
+        notePath: gt.notePath,
+        tier: gt.tier,
+      });
     }
   }
 
@@ -470,6 +481,7 @@ export function evaluateSuggestions(
     totalGroundTruth: groundTruth.length,
     byTier,
     byCategory,
+    falseNegativeDetails,
     mrr: round(mrr),
     hitsAt3: round(hitsAt3),
     precisionAtK: round(precisionAtK),
@@ -921,6 +933,121 @@ export async function loadTemporalStar(): Promise<GroundTruthSpec> {
 export async function loadChaosVault(): Promise<GroundTruthSpec> {
   const fixturePath = path.join(getFixtureDir(), 'fixtures', 'chaos-vault.json');
   return loadFixture(fixturePath);
+}
+
+// =============================================================================
+// Learning Curve Runner
+// =============================================================================
+
+/** Result of a multi-round learning curve run */
+export interface LearningCurveResult {
+  rounds: Array<{
+    round: number;
+    f1: number;
+    precision: number;
+    recall: number;
+    suppressionCount: number;
+    byTier: Record<1|2|3, {precision: number; recall: number; f1: number; count: number}>;
+  }>;
+}
+
+/** Seeded PRNG (mulberry32) for deterministic noise */
+function mulberry32(seed: number): () => number {
+  let s = seed | 0;
+  return () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Normalize entity name for comparison */
+function normalizeEntity(name: string): string {
+  return name.toLowerCase().replace(/-/g, ' ');
+}
+
+/**
+ * Run a multi-round learning curve on a prepared vault.
+ *
+ * Expects a vault that has already been built and had its ground truth links stripped.
+ * Runs N rounds of suggest -> evaluate -> feedback -> re-suggest with realistic noise.
+ */
+export async function runLearningCurve(
+  vault: TempVault,
+  spec: GroundTruthSpec,
+  options?: {
+    totalRounds?: number;
+    tpCorrectRate?: number;
+    fpCorrectRate?: number;
+    seed?: number;
+  },
+): Promise<LearningCurveResult> {
+  const totalRounds = options?.totalRounds ?? 20;
+  const tpCorrectRate = options?.tpCorrectRate ?? 0.85;
+  const fpCorrectRate = options?.fpCorrectRate ?? 0.15;
+  const seed = options?.seed ?? 42;
+
+  const rng = mulberry32(seed);
+  const rounds: LearningCurveResult['rounds'] = [];
+
+  // Ensure stateDb is set for this vault
+  setWriteStateDb(vault.stateDb);
+  setRecencyStateDb(vault.stateDb);
+
+  for (let roundNum = 0; roundNum < totalRounds; roundNum++) {
+    // Step 1: Run suggestions on all notes
+    const runs = await runSuggestionsOnVault(vault, { strictness: 'balanced' });
+
+    // Step 2: Evaluate against ground truth
+    const report = evaluateSuggestions(runs, spec.groundTruth, spec.entities);
+
+    // Step 3: Classify suggestions as TP or FP
+    const gtByNote = new Map<string, Set<string>>();
+    for (const gt of spec.groundTruth) {
+      const set = gtByNote.get(gt.notePath) || new Set();
+      set.add(normalizeEntity(gt.entity));
+      gtByNote.set(gt.notePath, set);
+    }
+
+    // Step 4: Simulate user feedback with realistic noise
+    for (const run of runs) {
+      const noteGt = gtByNote.get(run.notePath);
+      if (!noteGt) continue;
+
+      for (const suggestion of run.suggestions) {
+        const normalizedSuggestion = normalizeEntity(suggestion);
+        const isTP = noteGt.has(normalizedSuggestion);
+
+        if (isTP) {
+          const isCorrect = rng() < tpCorrectRate;
+          recordFeedback(vault.stateDb, suggestion, 'learning-curve', run.notePath, isCorrect);
+        } else {
+          const isCorrect = rng() < fpCorrectRate;
+          recordFeedback(vault.stateDb, suggestion, 'learning-curve', run.notePath, isCorrect);
+        }
+      }
+    }
+
+    // Update suppressions once per round
+    updateSuppressionList(vault.stateDb);
+
+    // Step 5: Record round metrics
+    const suppressionCount = (vault.stateDb.db.prepare(
+      'SELECT COUNT(*) as cnt FROM wikilink_suppressions',
+    ).get() as { cnt: number }).cnt;
+
+    rounds.push({
+      round: roundNum,
+      f1: report.f1,
+      precision: report.precision,
+      recall: report.recall,
+      suppressionCount,
+      byTier: report.byTier,
+    });
+  }
+
+  return { rounds };
 }
 
 // =============================================================================

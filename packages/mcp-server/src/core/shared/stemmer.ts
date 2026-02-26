@@ -502,8 +502,9 @@ export function tokenize(text: string): string[] {
     .replace(/[*_`#\[\]()]/g, ' ') // Remove markdown chars
     .toLowerCase();
 
-  // Extract words (3+ chars, not stopwords)
-  const words = cleanText.match(/\b[a-z]{3,}\b/g) || [];
+  // Extract words (3+ chars starting with a letter, not stopwords)
+  // Includes alphanumeric tokens like "k8s", "o11y", "p99" for tech alias matching
+  const words = cleanText.match(/\b[a-z][a-z0-9]{2,}\b/g) || [];
   return words.filter(word => !STOPWORDS.has(word));
 }
 

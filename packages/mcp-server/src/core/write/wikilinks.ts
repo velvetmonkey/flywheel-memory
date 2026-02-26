@@ -776,7 +776,7 @@ export function isLikelyArticleTitle(name: string): boolean {
 const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
   conservative: {
     minWordLength: 3,
-    minSuggestionScore: 15,    // Requires exact match (10) + at least one stem (5)
+    minSuggestionScore: 18,    // Requires exact match (10) + stem (5) + at least one boost
     minMatchRatio: 0.6,        // 60% of multi-word entity must match
     requireMultipleMatches: true, // Single-word entities need multiple content matches
     stemMatchBonus: 3,         // Lower bonus for stem-only matches
@@ -784,7 +784,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
   },
   balanced: {
     minWordLength: 3,
-    minSuggestionScore: 8,     // At least one exact match or two stem matches
+    minSuggestionScore: 10,    // Exact match (10) or two stem matches
     minMatchRatio: 0.4,        // 40% of multi-word entity must match
     requireMultipleMatches: false,
     stemMatchBonus: 5,         // Standard bonus for stem matches
@@ -1106,7 +1106,7 @@ function scoreEntity(
   for (const alias of aliases) {
     const aliasLower = alias.toLowerCase();
     // Single-word alias (4+ chars) that matches a content token exactly
-    if (aliasLower.length >= 4 &&
+    if (aliasLower.length >= 3 &&
         !/\s/.test(aliasLower) &&
         contentTokens.has(aliasLower)) {
       score += FULL_ALIAS_MATCH_BONUS;
@@ -1174,7 +1174,7 @@ export async function suggestRelatedLinks(
   options: SuggestOptions = {}
 ): Promise<SuggestResult> {
   const {
-    maxSuggestions = 5,
+    maxSuggestions = 8,
     excludeLinked = true,
     strictness = getEffectiveStrictness(options.notePath),
     notePath,
@@ -1381,20 +1381,26 @@ export async function suggestRelatedLinks(
           existing.score += boost;
           existing.breakdown.cooccurrenceBoost += boost;
         } else {
-          // NEW: Require minimal content overlap for co-occurrence suggestions
-          // Prevents suggesting completely unrelated entities just because they're
-          // popular (high hub score) or recent. At least one word must overlap.
+          // Require minimal content overlap for co-occurrence suggestions,
+          // UNLESS the entity has strong co-occurrence with multiple content-matched entities.
+          // This allows graph-only T3 entities through when they have ≥2 associations.
           const entityTokens = tokenize(entityName);
           const hasContentOverlap = entityTokens.some(token =>
             contentTokens.has(token) || contentStems.has(stem(token))
           );
 
-          if (!hasContentOverlap) {
-            continue;  // Skip entities with zero content relevance
+          // Strong co-occurrence: boost ≥ 4 means at least 2 distinct co-occurring
+          // partners in the current note (each partner capped at ~3 boost)
+          const strongCooccurrence = boost >= 4;
+
+          if (!hasContentOverlap && !strongCooccurrence) {
+            continue;  // Skip entities with zero content relevance and weak co-occurrence
           }
 
-          // Entity passed content overlap check - mark as having content match
-          entitiesWithContentMatch.add(entityName);
+          // Entity passed content overlap or strong co-occurrence check
+          if (hasContentOverlap) {
+            entitiesWithContentMatch.add(entityName);
+          }
 
           // For purely co-occurrence-based suggestions, also add type, context, recency, cross-folder, hub, feedback, and edge weight boosts
           const typeBoost = disabled.has('type_boost') ? 0 : (TYPE_BOOST[category] || 0);
@@ -1406,7 +1412,13 @@ export async function suggestRelatedLinks(
           const edgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
           const suppPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(entityName) ?? 0);
           const totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj + edgeWeightBoost + suppPenalty;
-          if (totalBoost >= adaptiveMinScore) {
+
+          // Graph-only suggestions (no content overlap) need a higher score floor
+          const effectiveMinScore = !hasContentOverlap
+            ? Math.max(adaptiveMinScore, 12)
+            : adaptiveMinScore;
+
+          if (totalBoost >= effectiveMinScore) {
             // Add entity if boost meets threshold
             scoredEntities.push({
               name: entityName,

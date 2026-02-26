@@ -66,7 +66,10 @@ interface RoundMetrics {
   falsePositives: number;
   falseNegatives: number;
   suppressionCount: number;
+  suppressedEntities: string[];
   byCategory: Record<string, { precision: number; recall: number; f1: number; count: number }>;
+  byTier: Record<1 | 2 | 3, { precision: number; recall: number; f1: number; count: number }>;
+  unresolvedLinks: Array<{entity: string, notePath: string, tier: 1|2|3}>;
   feedbackLayerAvgContribution: number;
 }
 
@@ -130,9 +133,10 @@ describe('Suite 2: Learning Curve', () => {
       updateSuppressionList(vault.stateDb);
 
       // Step 5: Record round metrics
-      const suppressionCount = (vault.stateDb.db.prepare(
-        'SELECT COUNT(*) as cnt FROM wikilink_suppressions',
-      ).get() as { cnt: number }).cnt;
+      const suppressedEntities = (vault.stateDb.db.prepare(
+        'SELECT entity FROM wikilink_suppressions',
+      ).all() as Array<{entity: string}>).map(r => r.entity);
+      const suppressionCount = suppressedEntities.length;
 
       // Compute average feedback layer contribution from detailed breakdowns
       let feedbackSum = 0;
@@ -158,7 +162,10 @@ describe('Suite 2: Learning Curve', () => {
         falsePositives: report.falsePositives,
         falseNegatives: report.falseNegatives,
         suppressionCount,
+        suppressedEntities,
         byCategory: report.byCategory,
+        byTier: report.byTier,
+        unresolvedLinks: report.falseNegativeDetails,
         feedbackLayerAvgContribution,
       });
     }
@@ -205,6 +212,9 @@ describe('Suite 2: Learning Curve', () => {
           suppressionCount: m.suppressionCount,
           feedbackLayerAvgContribution: Math.round(m.feedbackLayerAvgContribution * 10000) / 10000,
           byCategory: m.byCategory,
+          byTier: m.byTier,
+          suppressedEntities: m.suppressedEntities,
+          unresolvedLinks: m.unresolvedLinks.slice(0, 20), // Cap at 20 for readability
         })),
         tuning_recommendations,
       };
@@ -281,5 +291,13 @@ describe('Suite 2: Learning Curve', () => {
     // suppressed (F1 keeps improving, confirming suppressions are helping).
     // Guard against runaway suppression; 60% ceiling assertion handles the rest.
     expect(finalRound.suppressionCount).toBeLessThan(20);
+  });
+
+  it('T1 recall >= 0.8 at final round', () => {
+    const finalRound = roundMetrics[TOTAL_ROUNDS - 1];
+    // Direct mentions should almost always be found
+    if (finalRound.byTier[1].count > 0) {
+      expect(finalRound.byTier[1].recall).toBeGreaterThanOrEqual(0.8);
+    }
   });
 });

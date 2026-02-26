@@ -1,77 +1,59 @@
 {
   "suite": "layer-ablation-report",
-  "timestamp": "2026-02-26T08:54:56.191Z",
-  "duration_ms": 18127,
+  "timestamp": "2026-02-26T11:34:51.537Z",
+  "duration_ms": 8112,
   "summary": {
-    "primary_baseline_f1": 0.72,
-    "primary_baseline_precision": 0.9,
-    "primary_baseline_recall": 0.6,
+    "primary_baseline_f1": 0.723,
+    "primary_baseline_precision": 1,
+    "primary_baseline_recall": 0.567,
     "generated_baseline_f1": 0.839,
     "generated_baseline_precision": 0.783,
     "generated_baseline_recall": 0.903,
     "total_ablation_runs": 28,
     "core_layers": 1,
     "useful_layers": 2,
-    "marginal_layers": 21,
-    "harmful_layers": 2
+    "marginal_layers": 23,
+    "harmful_layers": 0
   },
   "details": [
     {
       "vault": "primary",
       "baseline": {
-        "precision": 0.9,
-        "recall": 0.6,
-        "f1": 0.72,
-        "fpRate": 0.1,
-        "truePositives": 36,
-        "falsePositives": 4,
-        "falseNegatives": 24,
-        "totalSuggestions": 40,
+        "precision": 1,
+        "recall": 0.567,
+        "f1": 0.723,
+        "fpRate": 0,
+        "truePositives": 34,
+        "falsePositives": 0,
+        "falseNegatives": 26,
+        "totalSuggestions": 34,
         "totalGroundTruth": 60,
         "byTier": {
           "1": {
             "precision": 1,
-            "recall": 0.75,
-            "f1": 0.8571428571428571,
+            "recall": 0.8333333333333334,
+            "f1": 0.9090909090909091,
             "count": 24
           },
           "2": {
             "precision": 1,
-            "recall": 0.47619047619047616,
-            "f1": 0.6451612903225806,
+            "recall": 0.6190476190476191,
+            "f1": 0.7647058823529412,
             "count": 21
           },
           "3": {
             "precision": 1,
-            "recall": 0.5333333333333333,
-            "f1": 0.6956521739130436,
+            "recall": 0.06666666666666667,
+            "f1": 0.125,
             "count": 15
           }
         },
         "byCategory": {
-          "projects": {
-            "precision": 1,
-            "recall": 0.75,
-            "f1": 0.8571428571428571,
-            "count": 8
-          },
           "people": {
             "precision": 1,
             "recall": 1,
             "f1": 1,
-            "count": 5
-          },
-          "technologies": {
-            "precision": 1,
-            "recall": 0.7142857142857143,
-            "f1": 0.8333333333333333,
-            "count": 7
-          },
-          "concepts": {
-            "precision": 1,
-            "recall": 0.6363636363636364,
-            "f1": 0.7777777777777778,
-            "count": 11
+            "count": 9
           },
           "organizations": {
             "precision": 1,
@@ -79,214 +61,388 @@
             "f1": 1,
             "count": 2
           },
-          "acronyms": {
-            "precision": 0,
-            "recall": 0,
-            "f1": 0,
-            "count": 6
-          },
-          "health": {
-            "precision": 1,
-            "recall": 0.4444444444444444,
-            "f1": 0.6153846153846153,
-            "count": 9
-          },
-          "media": {
+          "hobbies": {
             "precision": 1,
             "recall": 1,
             "f1": 1,
             "count": 2
           },
-          "animals": {
+          "media": {
             "precision": 1,
-            "recall": 0.5714285714285714,
-            "f1": 0.7272727272727273,
-            "count": 7
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
+            "count": 2
           },
-          "locations": {
+          "concepts": {
+            "precision": 1,
+            "recall": 0.8333333333333334,
+            "f1": 0.9090909090909091,
+            "count": 12
+          },
+          "documents": {
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "count": 1
+          },
+          "projects": {
+            "precision": 1,
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
+            "count": 6
+          },
+          "events": {
             "precision": 1,
             "recall": 0.5,
             "f1": 0.6666666666666666,
             "count": 2
           },
           "food": {
+            "precision": 1,
+            "recall": 0.3333333333333333,
+            "f1": 0.5,
+            "count": 3
+          },
+          "acronyms": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count": 3
+          },
+          "health": {
+            "precision": 1,
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
+            "count": 4
+          },
+          "locations": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count": 4
+          },
+          "finance": {
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "count": 1
+          },
+          "technologies": {
             "precision": 0,
             "recall": 0,
             "f1": 0,
             "count": 1
+          },
+          "animals": {
+            "precision": 1,
+            "recall": 0.125,
+            "f1": 0.2222222222222222,
+            "count": 8
           }
         },
-        "mrr": 0.41,
-        "hitsAt3": 0.619,
-        "precisionAtK": 0.9
+        "falseNegativeDetails": [
+          {
+            "entity": "Microservices",
+            "notePath": "daily-notes/2026-01-15.md",
+            "tier": 1
+          },
+          {
+            "entity": "DataForge",
+            "notePath": "inbox/tech-guides/graphql-patterns.md",
+            "tier": 1
+          },
+          {
+            "entity": "NovaSpark",
+            "notePath": "inbox/tech-guides/graphql-patterns.md",
+            "tier": 1
+          },
+          {
+            "entity": "DataForge",
+            "notePath": "inbox/weekly-review-w2.md",
+            "tier": 1
+          },
+          {
+            "entity": "UAT",
+            "notePath": "daily-notes/2026-01-05.md",
+            "tier": 2
+          },
+          {
+            "entity": "Observability",
+            "notePath": "daily-notes/2026-01-06.md",
+            "tier": 2
+          },
+          {
+            "entity": "Production",
+            "notePath": "daily-notes/2026-01-08.md",
+            "tier": 2
+          },
+          {
+            "entity": "Portland",
+            "notePath": "daily-notes/2026-01-10.md",
+            "tier": 2
+          },
+          {
+            "entity": "Zurich",
+            "notePath": "daily-notes/2026-01-11.md",
+            "tier": 2
+          },
+          {
+            "entity": "Kubernetes",
+            "notePath": "daily-notes/2026-01-12.md",
+            "tier": 2
+          },
+          {
+            "entity": "Pho Bowl",
+            "notePath": "daily-notes/2026-01-13.md",
+            "tier": 2
+          },
+          {
+            "entity": "Staging",
+            "notePath": "inbox/project-docs/dataforge-runbook.md",
+            "tier": 2
+          },
+          {
+            "entity": "Luna",
+            "notePath": "daily-notes/2026-01-01.md",
+            "tier": 3
+          },
+          {
+            "entity": "Code Breakers",
+            "notePath": "daily-notes/2026-01-03.md",
+            "tier": 3
+          },
+          {
+            "entity": "Rex",
+            "notePath": "daily-notes/2026-01-03.md",
+            "tier": 3
+          },
+          {
+            "entity": "Rex",
+            "notePath": "daily-notes/2026-01-04.md",
+            "tier": 3
+          },
+          {
+            "entity": "Luna",
+            "notePath": "daily-notes/2026-01-08.md",
+            "tier": 3
+          },
+          {
+            "entity": "Yoga",
+            "notePath": "daily-notes/2026-01-08.md",
+            "tier": 3
+          },
+          {
+            "entity": "Luna",
+            "notePath": "daily-notes/2026-01-09.md",
+            "tier": 3
+          },
+          {
+            "entity": "Luna",
+            "notePath": "daily-notes/2026-01-10.md",
+            "tier": 3
+          },
+          {
+            "entity": "Swim",
+            "notePath": "daily-notes/2026-01-10.md",
+            "tier": 3
+          },
+          {
+            "entity": "Luna",
+            "notePath": "daily-notes/2026-01-12.md",
+            "tier": 3
+          },
+          {
+            "entity": "Melbourne",
+            "notePath": "daily-notes/2026-01-13.md",
+            "tier": 3
+          },
+          {
+            "entity": "Pho Bowl",
+            "notePath": "daily-notes/2026-01-14.md",
+            "tier": 3
+          },
+          {
+            "entity": "Hackathon Spring",
+            "notePath": "daily-notes/2026-01-15.md",
+            "tier": 3
+          },
+          {
+            "entity": "Melbourne",
+            "notePath": "daily-notes/2026-01-15.md",
+            "tier": 3
+          }
+        ],
+        "mrr": 0.591,
+        "hitsAt3": 0.636,
+        "precisionAtK": 1
       },
       "layers": [
         {
           "layer": "length_filter",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "article_filter",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "exact_match",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "stem_match",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "cooccurrence",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "type_boost",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.733,
-          "f1Delta": -0.013000000000000012,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.902,
-          "precisionDelta": -0.0020000000000000018,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.617,
-          "recallDelta": -0.017000000000000015,
-          "classification": "HARMFUL"
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
+          "f1Delta": 0,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
+          "precisionDelta": 0,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
         },
         {
           "layer": "context_boost",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.733,
-          "f1Delta": -0.013000000000000012,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.902,
-          "precisionDelta": -0.0020000000000000018,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.617,
-          "recallDelta": -0.017000000000000015,
-          "classification": "HARMFUL"
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
+          "f1Delta": 0,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
+          "precisionDelta": 0,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
         },
         {
           "layer": "recency",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "cross_folder",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "hub_boost",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "feedback",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "semantic",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         },
         {
           "layer": "edge_weight",
-          "baselineF1": 0.72,
-          "ablatedF1": 0.72,
+          "baselineF1": 0.723,
+          "ablatedF1": 0.723,
           "f1Delta": 0,
-          "baselinePrecision": 0.9,
-          "ablatedPrecision": 0.9,
+          "baselinePrecision": 1,
+          "ablatedPrecision": 1,
           "precisionDelta": 0,
-          "baselineRecall": 0.6,
-          "ablatedRecall": 0.6,
+          "baselineRecall": 0.567,
+          "ablatedRecall": 0.567,
           "recallDelta": 0,
           "classification": "MARGINAL"
         }
@@ -344,6 +500,68 @@
             "count": 36
           }
         },
+        "falseNegativeDetails": [
+          {
+            "entity": "PostgreSQL",
+            "notePath": "docs/architecture-overview.md",
+            "tier": 1
+          },
+          {
+            "entity": "TypeScript",
+            "notePath": "docs/architecture-overview.md",
+            "tier": 1
+          },
+          {
+            "entity": "PostgreSQL",
+            "notePath": "docs/onboarding-guide.md",
+            "tier": 1
+          },
+          {
+            "entity": "Redis",
+            "notePath": "docs/onboarding-guide.md",
+            "tier": 1
+          },
+          {
+            "entity": "Redis",
+            "notePath": "docs/deployment-runbook.md",
+            "tier": 2
+          },
+          {
+            "entity": "Atlas Platform",
+            "notePath": "meetings/2026-01-20-sprint-planning.md",
+            "tier": 1
+          },
+          {
+            "entity": "Kubernetes",
+            "notePath": "meetings/2026-01-22-infra-review.md",
+            "tier": 1
+          },
+          {
+            "entity": "GraphQL",
+            "notePath": "meetings/2026-01-25-architecture-review.md",
+            "tier": 1
+          },
+          {
+            "entity": "Redis",
+            "notePath": "meetings/2026-01-28-data-sync.md",
+            "tier": 1
+          },
+          {
+            "entity": "TypeScript",
+            "notePath": "projects/atlas-status-q1.md",
+            "tier": 1
+          },
+          {
+            "entity": "GraphQL",
+            "notePath": "projects/beacon-api-roadmap.md",
+            "tier": 1
+          },
+          {
+            "entity": "Redis",
+            "notePath": "technologies/kubernetes-operations.md",
+            "tier": 2
+          }
+        ],
         "mrr": 1,
         "hitsAt3": 1,
         "precisionAtK": 0.83
@@ -521,20 +739,5 @@
       ]
     }
   ],
-  "tuning_recommendations": [
-    {
-      "parameter": "layer.type_boost",
-      "current_value": 1,
-      "suggested_value": 1,
-      "evidence": "Layer \"type_boost\" is HARMFUL on one vault but not both. Investigate weight tuning rather than disabling.",
-      "confidence": "medium"
-    },
-    {
-      "parameter": "layer.context_boost",
-      "current_value": 1,
-      "suggested_value": 1,
-      "evidence": "Layer \"context_boost\" is HARMFUL on one vault but not both. Investigate weight tuning rather than disabling.",
-      "confidence": "medium"
-    }
-  ]
+  "tuning_recommendations": []
 }

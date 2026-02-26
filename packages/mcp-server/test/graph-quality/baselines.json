@@ -1,23 +1,23 @@
 {
-  "generated": "2026-02-21",
+  "generated": "2026-02-26",
   "primary": {
     "conservative": {
-      "f1": 0.827,
-      "precision": 0.977,
+      "f1": 0.835,
+      "precision": 1,
       "recall": 0.717,
-      "mrr": 0.48
+      "mrr": 0.572
     },
     "balanced": {
-      "f1": 0.769,
-      "precision": 0.909,
-      "recall": 0.667,
-      "mrr": 0.424
+      "f1": 0.857,
+      "precision": 1,
+      "recall": 0.75,
+      "mrr": 0.572
     },
     "aggressive": {
-      "f1": 0.769,
-      "precision": 0.909,
-      "recall": 0.667,
-      "mrr": 0.424
+      "f1": 0.857,
+      "precision": 1,
+      "recall": 0.75,
+      "mrr": 0.572
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "suite": "topology-resilience",
-  "timestamp": "2026-02-26T08:55:02.396Z",
-  "duration_ms": 12859,
+  "timestamp": "2026-02-26T11:34:52.741Z",
+  "duration_ms": 9312,
   "summary": {
     "archetypes_tested": 6,
     "archetypes_recovered": 6,
@@ -15,9 +15,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 71,
       "postMutationNoteCount": 78,
-      "baselineF1": 0.118,
-      "postOrphanRate": 0.179,
-      "duration_ms": 2449
+      "baselineF1": 0.634,
+      "postOrphanRate": 0.295,
+      "duration_ms": 1126
     },
     {
       "archetype": "hierarchical",
@@ -26,9 +26,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 97,
       "postMutationNoteCount": 107,
-      "baselineF1": 0.447,
-      "postOrphanRate": 0.85,
-      "duration_ms": 2937
+      "baselineF1": 0.667,
+      "postOrphanRate": 0.505,
+      "duration_ms": 1765
     },
     {
       "archetype": "dense-mesh",
@@ -37,9 +37,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 63,
       "postMutationNoteCount": 69,
-      "baselineF1": 0.118,
-      "postOrphanRate": 0.362,
-      "duration_ms": 1472
+      "baselineF1": 0.696,
+      "postOrphanRate": 0.174,
+      "duration_ms": 1293
     },
     {
       "archetype": "sparse-orphan",
@@ -48,9 +48,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 99,
       "postMutationNoteCount": 109,
-      "baselineF1": 0.222,
-      "postOrphanRate": 0.624,
-      "duration_ms": 1976
+      "baselineF1": 0.76,
+      "postOrphanRate": 0.917,
+      "duration_ms": 1693
     },
     {
       "archetype": "bridge-network",
@@ -59,9 +59,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 86,
       "postMutationNoteCount": 95,
-      "baselineF1": 0.286,
-      "postOrphanRate": 0.474,
-      "duration_ms": 1904
+      "baselineF1": 0.556,
+      "postOrphanRate": 0.516,
+      "duration_ms": 1724
     },
     {
       "archetype": "small-world",
@@ -70,9 +70,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 100,
       "postMutationNoteCount": 110,
-      "baselineF1": 0.71,
-      "postOrphanRate": 0.273,
-      "duration_ms": 2121
+      "baselineF1": 0.512,
+      "postOrphanRate": 0.182,
+      "duration_ms": 1711
     }
   ],
   "tuning_recommendations": []

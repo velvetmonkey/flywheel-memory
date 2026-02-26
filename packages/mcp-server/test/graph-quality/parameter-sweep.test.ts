@@ -88,13 +88,13 @@ describe('Parameter Sweep', () => {
     }
   });
 
-  test('default maxSuggestions=5 F1 is competitive', () => {
+  test('default maxSuggestions=8 F1 is competitive', () => {
     // With low maxSuggestions (1-2) precision is very high, boosting F1.
-    // The default of 5 optimizes for recall+precision balance.
+    // The default of 8 captures most recall while keeping lists practical.
     // Assert default is within 20% of optimal (which may be at low N).
     const best = maxSuggestionsResults.reduce((a, b) => (a.f1 > b.f1 ? a : b));
-    const default5 = maxSuggestionsResults.find(r => r.value === 5)!;
-    expect(default5.f1).toBeGreaterThanOrEqual(best.f1 - 0.20);
+    const default8 = maxSuggestionsResults.find(r => r.value === 8)!;
+    expect(default8.f1).toBeGreaterThanOrEqual(best.f1 - 0.20);
   });
 
   // ===========================================================================

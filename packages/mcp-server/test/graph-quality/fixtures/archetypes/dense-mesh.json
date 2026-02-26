@@ -1,1742 +1,1707 @@
 {
   "archetype": "dense-mesh",
   "seed": 103,
-  "description": "5 clusters of 10 notes each, internally fully connected (45 links per cluster = 225 total internal links), zero inter-cluster links. Tests over-connection detection, suggestion restraint, and precision under high density.",
+  "description": "5 clusters of 10 notes each, internally heavily cross-linked. Tests over-connection detection, suggestion restraint, and precision under high density.",
   "entities": [
     {
-      "name": "API Design Principles",
+      "name": "Machine Learning",
       "category": "concepts",
-      "path": "backend/api-design-principles.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/machine-learning.md",
+      "aliases": [
+        "ML",
+        "machine learning"
+      ],
+      "hubScore": 70
     },
     {
-      "name": "API Documentation Generator",
+      "name": "Zero Trust",
       "category": "concepts",
-      "path": "backend/api-docs-generator.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/zero-trust.md",
+      "aliases": [
+        "zero-trust"
+      ],
+      "hubScore": 15
     },
     {
-      "name": "API Rate Limiting",
+      "name": "Observability",
       "category": "concepts",
-      "path": "backend/rate-limiting.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/observability.md",
+      "aliases": [
+        "o11y"
+      ],
+      "hubScore": 55
     },
     {
-      "name": "Accessibility Standards",
+      "name": "API-First",
       "category": "concepts",
-      "path": "frontend/accessibility.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/api-first.md",
+      "aliases": [
+        "API First",
+        "api-first design"
+      ],
+      "hubScore": 25
     },
     {
-      "name": "Analytics Query Patterns",
+      "name": "Microservices",
       "category": "concepts",
-      "path": "data/analytics-queries.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/microservices.md",
+      "aliases": [
+        "microservice",
+        "micro-services"
+      ],
+      "hubScore": 50
     },
     {
-      "name": "Auth Middleware Configuration",
+      "name": "Technical Debt",
       "category": "concepts",
-      "path": "backend/auth-middleware.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/technical-debt.md",
+      "aliases": [
+        "tech debt"
+      ],
+      "hubScore": 35
     },
     {
-      "name": "Backend Performance Budgets",
+      "name": "Event Sourcing",
       "category": "concepts",
-      "path": "backend/backend-perf.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/event-sourcing.md",
+      "aliases": [
+        "event-sourcing"
+      ],
+      "hubScore": 30
     },
     {
-      "name": "Backend TypeScript Standards",
+      "name": "Agile",
       "category": "concepts",
-      "path": "backend/backend-typescript.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/agile.md",
+      "aliases": [
+        "agile methodology"
+      ],
+      "hubScore": 45
     },
     {
-      "name": "Budget Allocation Framework",
+      "name": "Continuous Integration",
       "category": "concepts",
-      "path": "leadership/budget-allocation.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/continuous-integration.md",
+      "aliases": [
+        "CI",
+        "continuous integration"
+      ],
+      "hubScore": 40
     },
     {
-      "name": "CSS Module Standards",
+      "name": "DevOps",
       "category": "concepts",
-      "path": "frontend/css-modules.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/devops.md",
+      "aliases": [
+        "devops"
+      ],
+      "hubScore": 70
     },
     {
-      "name": "Certificate Automation",
+      "name": "Domain Driven Design",
       "category": "concepts",
-      "path": "devops/certificate-automation.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/domain-driven-design.md",
+      "aliases": [
+        "DDD"
+      ],
+      "hubScore": 20
     },
     {
-      "name": "Cloud Cost Tracking",
+      "name": "Clean Architecture",
       "category": "concepts",
-      "path": "devops/cloud-cost-tracking.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/clean-architecture.md",
+      "aliases": [
+        "clean arch"
+      ],
+      "hubScore": 20
     },
     {
-      "name": "Container Registry Management",
+      "name": "Design Patterns",
       "category": "concepts",
-      "path": "devops/container-registry.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/design-patterns.md",
+      "aliases": [
+        "design-patterns"
+      ],
+      "hubScore": 10
     },
     {
-      "name": "DNS Management System",
+      "name": "SOLID Principles",
       "category": "concepts",
-      "path": "devops/dns-management.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/solid-principles.md",
+      "aliases": [
+        "solid-principles"
+      ],
+      "hubScore": 17
     },
     {
-      "name": "Data Partitioning Strategy",
+      "name": "Code Reviews",
       "category": "concepts",
-      "path": "data/data-partitioning.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/code-reviews.md",
+      "aliases": [
+        "code-reviews"
+      ],
+      "hubScore": 24
     },
     {
-      "name": "Data Quality Scoring",
+      "name": "Pair Programming",
       "category": "concepts",
-      "path": "data/data-quality.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/pair-programming.md",
+      "aliases": [
+        "pair-programming"
+      ],
+      "hubScore": 31
     },
     {
-      "name": "Data Recovery Procedures",
+      "name": "TDD",
       "category": "concepts",
-      "path": "data/data-recovery.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/tdd.md",
+      "aliases": [
+        "tdd"
+      ],
+      "hubScore": 38
     },
     {
-      "name": "Data Transformation Standards",
+      "name": "BDD",
       "category": "concepts",
-      "path": "data/data-transformation.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/bdd.md",
+      "aliases": [
+        "bdd"
+      ],
+      "hubScore": 15
     },
     {
-      "name": "Data Validation Rules",
+      "name": "CI/CD Pipeline",
       "category": "concepts",
-      "path": "data/data-validation.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/ci-cd-pipeline.md",
+      "aliases": [
+        "ci-cd-pipeline"
+      ],
+      "hubScore": 22
     },
     {
-      "name": "Database Query Patterns",
+      "name": "Load Balancing",
       "category": "concepts",
-      "path": "backend/database-patterns.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/load-balancing.md",
+      "aliases": [
+        "load-balancing"
+      ],
+      "hubScore": 29
     },
     {
-      "name": "Decision Log Process",
+      "name": "Caching Strategy",
       "category": "concepts",
-      "path": "leadership/decision-log.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/caching-strategy.md",
+      "aliases": [
+        "caching-strategy"
+      ],
+      "hubScore": 36
     },
     {
-      "name": "Dependency Mapping",
+      "name": "Database Sharding",
       "category": "concepts",
-      "path": "leadership/dependency-mapping.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/database-sharding.md",
+      "aliases": [
+        "database-sharding"
+      ],
+      "hubScore": 13
     },
     {
-      "name": "Disaster Recovery Plan",
+      "name": "Message Queue",
       "category": "concepts",
-      "path": "devops/disaster-recovery.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/message-queue.md",
+      "aliases": [
+        "message-queue"
+      ],
+      "hubScore": 20
     },
     {
-      "name": "ETL Pipeline Design",
+      "name": "Service Discovery",
       "category": "concepts",
-      "path": "data/etl-pipeline-design.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/service-discovery.md",
+      "aliases": [
+        "service-discovery"
+      ],
+      "hubScore": 27
     },
     {
-      "name": "Error Handling Framework",
+      "name": "Circuit Breaker",
       "category": "concepts",
-      "path": "backend/error-handling.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/circuit-breaker.md",
+      "aliases": [
+        "circuit-breaker"
+      ],
+      "hubScore": 34
     },
     {
-      "name": "Executive Dashboard Metrics",
+      "name": "Rate Limiting",
       "category": "concepts",
-      "path": "leadership/executive-dashboard.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/rate-limiting.md",
+      "aliases": [
+        "rate-limiting"
+      ],
+      "hubScore": 11
     },
     {
-      "name": "Frontend Linting Rules",
+      "name": "Blue-Green Deploy",
       "category": "concepts",
-      "path": "frontend/frontend-linting.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/blue-green-deploy.md",
+      "aliases": [
+        "blue-green-deploy"
+      ],
+      "hubScore": 18
     },
     {
-      "name": "Frontend Performance Metrics",
+      "name": "A/B Testing",
       "category": "concepts",
-      "path": "frontend/frontend-perf.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/a-b-testing.md",
+      "aliases": [
+        "a-b-testing"
+      ],
+      "hubScore": 25
     },
     {
-      "name": "Frontend Testing Strategy",
+      "name": "Feature Flags",
       "category": "concepts",
-      "path": "frontend/frontend-testing.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/feature-flags.md",
+      "aliases": [
+        "feature-flags"
+      ],
+      "hubScore": 32
     },
     {
-      "name": "GitOps Workflow",
+      "name": "Canary Deploy",
       "category": "concepts",
-      "path": "devops/gitops-workflow.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/canary-deploy.md",
+      "aliases": [
+        "canary-deploy"
+      ],
+      "hubScore": 39
     },
     {
-      "name": "GraphQL Schema Convention",
+      "name": "Rollback Strategy",
       "category": "concepts",
-      "path": "backend/graphql-schema.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/rollback-strategy.md",
+      "aliases": [
+        "rollback-strategy"
+      ],
+      "hubScore": 16
     },
     {
-      "name": "Job Queue Architecture",
+      "name": "Health Checks",
       "category": "concepts",
-      "path": "data/job-queue.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/health-checks.md",
+      "aliases": [
+        "health-checks"
+      ],
+      "hubScore": 23
     },
     {
-      "name": "Kubernetes Namespace Config",
+      "name": "Log Aggregation",
       "category": "concepts",
-      "path": "devops/k8s-namespace.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/log-aggregation.md",
+      "aliases": [
+        "log-aggregation"
+      ],
+      "hubScore": 30
     },
     {
-      "name": "Leadership Communication Cadence",
+      "name": "Distributed Tracing",
       "category": "concepts",
-      "path": "leadership/communication-cadence.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/distributed-tracing.md",
+      "aliases": [
+        "distributed-tracing"
+      ],
+      "hubScore": 37
     },
     {
-      "name": "Network Policy Framework",
+      "name": "API Versioning",
       "category": "concepts",
-      "path": "devops/network-policy.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/api-versioning.md",
+      "aliases": [
+        "api-versioning"
+      ],
+      "hubScore": 14
     },
     {
-      "name": "Pipeline Monitoring Dashboard",
+      "name": "Schema Migration",
       "category": "concepts",
-      "path": "data/pipeline-monitoring.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/schema-migration.md",
+      "aliases": [
+        "schema-migration"
+      ],
+      "hubScore": 21
     },
     {
-      "name": "Quarterly Planning Process",
+      "name": "Data Lake",
       "category": "concepts",
-      "path": "leadership/quarterly-planning.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/data-lake.md",
+      "aliases": [
+        "data-lake"
+      ],
+      "hubScore": 28
     },
     {
-      "name": "React Component Architecture",
+      "name": "ETL Pipeline",
       "category": "concepts",
-      "path": "frontend/react-component-architecture.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/etl-pipeline.md",
+      "aliases": [
+        "etl-pipeline"
+      ],
+      "hubScore": 35
     },
     {
-      "name": "React State Management",
+      "name": "Stream Processing",
       "category": "concepts",
-      "path": "frontend/react-state-mgmt.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/stream-processing.md",
+      "aliases": [
+        "stream-processing"
+      ],
+      "hubScore": 12
     },
     {
-      "name": "Resource Allocation Model",
+      "name": "Batch Processing",
       "category": "concepts",
-      "path": "leadership/resource-allocation.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/batch-processing.md",
+      "aliases": [
+        "batch-processing"
+      ],
+      "hubScore": 19
     },
     {
-      "name": "Risk Management Framework",
+      "name": "Edge Computing",
       "category": "concepts",
-      "path": "leadership/risk-management.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/edge-computing.md",
+      "aliases": [
+        "edge-computing"
+      ],
+      "hubScore": 26
     },
     {
-      "name": "Schema Evolution Policy",
+      "name": "Serverless",
       "category": "concepts",
-      "path": "data/schema-evolution.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/serverless.md",
+      "aliases": [
+        "serverless"
+      ],
+      "hubScore": 33
     },
     {
-      "name": "Secret Management Strategy",
+      "name": "Container Orchestration",
       "category": "concepts",
-      "path": "devops/secret-management.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/container-orchestration.md",
+      "aliases": [
+        "container-orchestration"
+      ],
+      "hubScore": 10
     },
     {
-      "name": "Storybook Configuration",
+      "name": "Infrastructure as Code",
       "category": "concepts",
-      "path": "frontend/storybook-config.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/infrastructure-as-code.md",
+      "aliases": [
+        "infrastructure-as-code"
+      ],
+      "hubScore": 17
     },
     {
-      "name": "Strategic Goal Setting",
+      "name": "GitOps",
       "category": "concepts",
-      "path": "leadership/strategic-goals.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/gitops.md",
+      "aliases": [
+        "gitops"
+      ],
+      "hubScore": 24
     },
     {
-      "name": "Structured Logging Standards",
+      "name": "ChatOps",
       "category": "concepts",
-      "path": "backend/structured-logging.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/chatops.md",
+      "aliases": [
+        "chatops"
+      ],
+      "hubScore": 31
     },
     {
-      "name": "Talent Pipeline Strategy",
+      "name": "Platform Engineering",
       "category": "concepts",
-      "path": "leadership/talent-pipeline.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/platform-engineering.md",
+      "aliases": [
+        "platform-engineering"
+      ],
+      "hubScore": 38
     },
     {
-      "name": "Terraform Module Library",
+      "name": "Site Reliability",
       "category": "concepts",
-      "path": "devops/terraform-modules.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/site-reliability.md",
+      "aliases": [
+        "site-reliability"
+      ],
+      "hubScore": 15
     },
     {
-      "name": "TypeScript Component Patterns",
+      "name": "Chaos Engineering",
       "category": "concepts",
-      "path": "frontend/typescript-component-patterns.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/chaos-engineering.md",
+      "aliases": [
+        "chaos-engineering"
+      ],
+      "hubScore": 22
     },
     {
-      "name": "Vite Build Configuration",
+      "name": "Performance Tuning",
       "category": "concepts",
-      "path": "frontend/vite-config.md",
-      "aliases": [],
-      "hubScore": 9
+      "path": "concepts/performance-tuning.md",
+      "aliases": [
+        "performance-tuning"
+      ],
+      "hubScore": 29
     },
     {
-      "name": "David Chen",
+      "name": "Memory Management",
+      "category": "concepts",
+      "path": "concepts/memory-management.md",
+      "aliases": [
+        "memory-management"
+      ],
+      "hubScore": 36
+    },
+    {
+      "name": "Garbage Collection",
+      "category": "concepts",
+      "path": "concepts/garbage-collection.md",
+      "aliases": [
+        "garbage-collection"
+      ],
+      "hubScore": 13
+    },
+    {
+      "name": "SkyForge",
+      "category": "organizations",
+      "path": "organizations/skyforge.md",
+      "aliases": [
+        "Sky Forge"
+      ],
+      "hubScore": 15
+    },
+    {
+      "name": "Neptune Insurance",
+      "category": "organizations",
+      "path": "organizations/neptune-insurance.md",
+      "aliases": [
+        "Neptune Ins"
+      ],
+      "hubScore": 75
+    },
+    {
+      "name": "Soren Eriksson",
       "category": "people",
-      "path": "people/david-chen.md",
-      "aliases": [],
-      "hubScore": 2
+      "path": "people/soren-eriksson.md",
+      "aliases": [
+        "Soren"
+      ],
+      "hubScore": 35
     },
     {
-      "name": "ESGHub",
+      "name": "Ines Dufresne",
+      "category": "people",
+      "path": "people/ines-dufresne.md",
+      "aliases": [
+        "Ines"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "Leo Vasquez",
+      "category": "people",
+      "path": "people/leo-vasquez.md",
+      "aliases": [
+        "Leo"
+      ],
+      "hubScore": 60
+    },
+    {
+      "name": "Project Meridian",
       "category": "projects",
-      "path": "projects/esghub.md",
-      "aliases": [],
-      "hubScore": 1
+      "path": "projects/project-meridian.md",
+      "aliases": [
+        "Meridian"
+      ],
+      "hubScore": 60
     },
     {
-      "name": "PostgreSQL",
-      "category": "technologies",
-      "path": "technologies/postgresql.md",
-      "aliases": [],
-      "hubScore": 2
+      "name": "PayStream",
+      "category": "projects",
+      "path": "projects/paystream.md",
+      "aliases": [
+        "Pay Stream"
+      ],
+      "hubScore": 40
     },
     {
       "name": "Redis",
       "category": "technologies",
       "path": "technologies/redis.md",
-      "aliases": [],
-      "hubScore": 2
+      "aliases": [
+        "redis"
+      ],
+      "hubScore": 40
     },
     {
-      "name": "DataPipeline",
-      "category": "projects",
-      "path": "projects/datapipeline.md",
-      "aliases": [],
-      "hubScore": 1
-    },
-    {
-      "name": "Sarah O'Brien",
-      "category": "people",
-      "path": "people/sarah-obrien.md",
-      "aliases": [],
-      "hubScore": 1
-    },
-    {
-      "name": "Marcus Johnson",
-      "category": "people",
-      "path": "people/marcus-johnson.md",
-      "aliases": [],
-      "hubScore": 1
-    },
-    {
-      "name": "Kubernetes",
+      "name": "PostgreSQL",
       "category": "technologies",
-      "path": "technologies/kubernetes.md",
-      "aliases": [],
-      "hubScore": 1
+      "path": "technologies/postgresql.md",
+      "aliases": [
+        "Postgres",
+        "psql"
+      ],
+      "hubScore": 55
     },
     {
-      "name": "Docker",
+      "name": "Python",
       "category": "technologies",
-      "path": "technologies/docker.md",
-      "aliases": [],
-      "hubScore": 1
+      "path": "technologies/python.md",
+      "aliases": [
+        "python3",
+        "py"
+      ],
+      "hubScore": 80
     },
     {
-      "name": "CI/CD",
-      "category": "concepts",
-      "path": "concepts/cicd.md",
-      "aliases": [],
-      "hubScore": 1
-    },
-    {
-      "name": "Acme Corp",
-      "category": "organizations",
-      "path": "organizations/acme-corp.md",
-      "aliases": [],
-      "hubScore": 1
-    },
-    {
-      "name": "Agile Methodology",
-      "category": "concepts",
-      "path": "concepts/agile-methodology.md",
-      "aliases": [],
-      "hubScore": 1
-    },
-    {
-      "name": "Board of Directors",
-      "category": "organizations",
-      "path": "organizations/board-of-directors.md",
-      "aliases": [],
-      "hubScore": 1
+      "name": "Kafka",
+      "category": "technologies",
+      "path": "technologies/kafka.md",
+      "aliases": [
+        "Apache Kafka",
+        "kafka"
+      ],
+      "hubScore": 45
     }
   ],
-  "noteCount": 63,
-  "topology": {
-    "clusterCount": 5,
-    "notesPerCluster": 10,
-    "internalLinksPerCluster": 45,
-    "interClusterLinks": 0
-  },
   "notes": [
     {
-      "path": "frontend/react-component-architecture.md",
-      "title": "React Component Architecture",
+      "path": "frontend/data-lake.md",
+      "title": "Data Lake",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Our React component architecture follows atomic design principles. Components are organized into atoms, molecules, organisms, and templates. Each component is built with [[TypeScript Component Patterns]] and tested using [[Frontend Testing Strategy]]. The design system is documented in [[Storybook Configuration]] and integrates with [[CSS Module Standards]]. State management follows patterns defined in [[React State Management]]. Performance is monitored through [[Frontend Performance Metrics]]. The architecture supports [[Accessibility Standards]] compliance. Build tooling is configured in [[Vite Build Configuration]]. Code quality is maintained through [[Frontend Linting Rules]].",
+      "content": "# Data Lake\n\nData Lake is a key frontend practice.\nIt integrates with [[Stream Processing]], [[Performance Tuning]], [[Zero Trust]].\n\n## Details\nWorks alongside [[Blue-Green Deploy]].\n\nThe agile methodology team follows this pattern closely.\nSee also: SOLID Principles.",
       "links": [
-        "TypeScript Component Patterns",
-        "Frontend Testing Strategy",
-        "Storybook Configuration",
-        "CSS Module Standards",
-        "React State Management",
-        "Frontend Performance Metrics",
-        "Accessibility Standards",
-        "Vite Build Configuration",
-        "Frontend Linting Rules"
+        "Stream Processing",
+        "Performance Tuning",
+        "Zero Trust",
+        "Blue-Green Deploy"
       ],
       "folder": "frontend"
     },
     {
-      "path": "frontend/typescript-component-patterns.md",
-      "title": "TypeScript Component Patterns",
+      "path": "frontend/zero-trust.md",
+      "title": "Zero Trust",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "TypeScript Component Patterns define how we write type-safe React components. Generic component patterns allow reusable data display components. Discriminated unions model complex component states. The patterns are showcased in [[Storybook Configuration]] and enforce [[Accessibility Standards]] compliance. They integrate with [[React Component Architecture]] principles and [[CSS Module Standards]] for styling. Testing approaches are covered in [[Frontend Testing Strategy]]. Performance implications are tracked in [[Frontend Performance Metrics]]. Build compatibility is ensured via [[Vite Build Configuration]]. Code quality checks use [[Frontend Linting Rules]] and [[React State Management]] patterns.",
+      "content": "# Zero Trust\n\nZero Trust is a key frontend practice.\nIt integrates with [[DevOps]], [[Performance Tuning]], [[Stream Processing]].\n\n## Details\nWorks alongside [[API-First]], [[Machine Learning]].\n\nThe microservice team follows this pattern closely.\nSee also: Circuit Breaker.",
       "links": [
-        "Storybook Configuration",
-        "Accessibility Standards",
-        "React Component Architecture",
-        "CSS Module Standards",
-        "Frontend Testing Strategy",
-        "Frontend Performance Metrics",
-        "Vite Build Configuration",
-        "Frontend Linting Rules",
-        "React State Management"
+        "DevOps",
+        "Performance Tuning",
+        "Stream Processing",
+        "API-First",
+        "Machine Learning"
       ],
       "folder": "frontend"
     },
     {
-      "path": "frontend/frontend-testing.md",
-      "title": "Frontend Testing Strategy",
+      "path": "frontend/performance-tuning.md",
+      "title": "Performance Tuning",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Our frontend testing strategy uses Vitest for unit tests and Playwright for end-to-end testing. Component tests render with [[React Component Architecture]] patterns and verify [[TypeScript Component Patterns]] type safety. Visual regression tests use [[Storybook Configuration]] snapshots. Tests validate [[CSS Module Standards]] rendering and [[Accessibility Standards]] compliance via axe-core. Performance tests check [[Frontend Performance Metrics]] budgets. The test pipeline integrates with [[Vite Build Configuration]] for fast execution. [[Frontend Linting Rules]] catch issues before tests run. [[React State Management]] logic has dedicated test suites.",
+      "content": "# Performance Tuning\n\nPerformance Tuning is a key frontend practice.\nIt integrates with [[Data Lake]], [[Blue-Green Deploy]], [[Machine Learning]].\n\n## Details\nWorks alongside [[DevOps]].\n\nThe python3 team follows this pattern closely.\nSee also: Domain Driven Design.",
       "links": [
-        "React Component Architecture",
-        "TypeScript Component Patterns",
-        "Storybook Configuration",
-        "CSS Module Standards",
-        "Accessibility Standards",
-        "Frontend Performance Metrics",
-        "Vite Build Configuration",
-        "Frontend Linting Rules",
-        "React State Management"
+        "Data Lake",
+        "Blue-Green Deploy",
+        "Machine Learning",
+        "DevOps"
       ],
       "folder": "frontend"
     },
     {
-      "path": "frontend/storybook-config.md",
-      "title": "Storybook Configuration",
+      "path": "frontend/api-first.md",
+      "title": "API-First",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Storybook serves as our component documentation and development environment. Every component from [[React Component Architecture]] has stories demonstrating different states. [[TypeScript Component Patterns]] are documented with interactive controls. Stories validate [[CSS Module Standards]] visually and check [[Accessibility Standards]] using the a11y addon. [[Frontend Testing Strategy]] uses Storybook for snapshot testing. Performance stories track [[Frontend Performance Metrics]]. The Storybook build uses [[Vite Build Configuration]]. Addons enforce [[Frontend Linting Rules]]. State examples demonstrate [[React State Management]] patterns.",
+      "content": "# API-First\n\nAPI-First is a key frontend practice.\nIt integrates with [[Zero Trust]], [[Performance Tuning]], [[Garbage Collection]].\n\n## Details\nWorks alongside [[DevOps]].\n\nThe Neptune Ins team follows this pattern closely.\nSee also: API Versioning.",
       "links": [
-        "React Component Architecture",
-        "TypeScript Component Patterns",
-        "CSS Module Standards",
-        "Accessibility Standards",
-        "Frontend Testing Strategy",
-        "Frontend Performance Metrics",
-        "Vite Build Configuration",
-        "Frontend Linting Rules",
-        "React State Management"
+        "Zero Trust",
+        "Performance Tuning",
+        "Garbage Collection",
+        "DevOps"
       ],
       "folder": "frontend"
     },
     {
-      "path": "frontend/css-modules.md",
-      "title": "CSS Module Standards",
+      "path": "frontend/blue-green-deploy.md",
+      "title": "Blue-Green Deploy",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "CSS Module Standards define our approach to component styling. Each component from [[React Component Architecture]] has a co-located CSS module. Design tokens ensure consistency with the [[Storybook Configuration]] design system. Styles follow [[TypeScript Component Patterns]] for conditional class application. [[Accessibility Standards]] require sufficient contrast ratios and focus indicators. [[Frontend Testing Strategy]] includes visual regression for style changes. Performance impact is measured in [[Frontend Performance Metrics]]. The build pipeline via [[Vite Build Configuration]] handles module compilation. [[Frontend Linting Rules]] include stylelint for CSS. [[React State Management]] drives dynamic styling decisions.",
+      "content": "# Blue-Green Deploy\n\nBlue-Green Deploy is a key frontend practice.\nIt integrates with [[Clean Architecture]], [[Performance Tuning]], [[Garbage Collection]].\n\n## Details\nWorks alongside [[Zero Trust]], [[API-First]], [[Data Lake]], [[DevOps]].\n\nThe rate-limiting team follows this pattern closely.\nSee also: Design Patterns.",
       "links": [
-        "React Component Architecture",
-        "Storybook Configuration",
-        "TypeScript Component Patterns",
-        "Accessibility Standards",
-        "Frontend Testing Strategy",
-        "Frontend Performance Metrics",
-        "Vite Build Configuration",
-        "Frontend Linting Rules",
-        "React State Management"
+        "Clean Architecture",
+        "Performance Tuning",
+        "Garbage Collection",
+        "Zero Trust",
+        "API-First",
+        "Data Lake",
+        "DevOps"
       ],
       "folder": "frontend"
     },
     {
-      "path": "frontend/react-state-mgmt.md",
-      "title": "React State Management",
+      "path": "frontend/garbage-collection.md",
+      "title": "Garbage Collection",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "React State Management uses a combination of local state, context, and Zustand for global state. Patterns align with [[React Component Architecture]] principles and use [[TypeScript Component Patterns]] for type-safe stores. State changes are tested in [[Frontend Testing Strategy]] suites. [[Storybook Configuration]] demonstrates state transitions interactively. State affects [[CSS Module Standards]] through conditional styling. Performance of state updates is tracked in [[Frontend Performance Metrics]]. Build configuration in [[Vite Build Configuration]] supports tree-shaking unused state code. [[Frontend Linting Rules]] enforce state management best practices. [[Accessibility Standards]] require state changes to be announced to screen readers.",
+      "content": "# Garbage Collection\n\nGarbage Collection is a key frontend practice.\nIt integrates with [[Zero Trust]], [[Blue-Green Deploy]], [[API-First]].\n\n## Details\nWorks alongside [[Performance Tuning]], [[Machine Learning]], [[Data Lake]], [[Clean Architecture]], [[Stream Processing]].\n\nThe Pay Stream team follows this pattern closely.\nSee also: Load Balancing.",
       "links": [
-        "React Component Architecture",
-        "TypeScript Component Patterns",
-        "Frontend Testing Strategy",
-        "Storybook Configuration",
-        "CSS Module Standards",
-        "Frontend Performance Metrics",
-        "Vite Build Configuration",
-        "Frontend Linting Rules",
-        "Accessibility Standards"
+        "Zero Trust",
+        "Blue-Green Deploy",
+        "API-First",
+        "Performance Tuning",
+        "Machine Learning",
+        "Data Lake",
+        "Clean Architecture",
+        "Stream Processing"
       ],
       "folder": "frontend"
     },
     {
-      "path": "frontend/frontend-perf.md",
-      "title": "Frontend Performance Metrics",
+      "path": "frontend/stream-processing.md",
+      "title": "Stream Processing",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Frontend Performance Metrics track Core Web Vitals and custom application metrics. Each component from [[React Component Architecture]] has a render budget. [[TypeScript Component Patterns]] include memoization strategies. [[Frontend Testing Strategy]] includes performance regression tests. [[Storybook Configuration]] displays render time badges. [[CSS Module Standards]] optimization reduces paint time. [[React State Management]] performance is measured for update frequency. [[Vite Build Configuration]] chunk splitting targets fast initial load. [[Frontend Linting Rules]] flag performance anti-patterns. [[Accessibility Standards]] consider performance impact on assistive technology rendering.",
+      "content": "# Stream Processing\n\nStream Processing is a key frontend practice.\nIt integrates with [[DevOps]], [[Clean Architecture]], [[Data Lake]].\n\n## Details\nWorks alongside [[Machine Learning]], [[Zero Trust]], [[Performance Tuning]].\n\nThe message-queue team follows this pattern closely.\nSee also: Observability.",
       "links": [
-        "React Component Architecture",
-        "TypeScript Component Patterns",
-        "Frontend Testing Strategy",
-        "Storybook Configuration",
-        "CSS Module Standards",
-        "React State Management",
-        "Vite Build Configuration",
-        "Frontend Linting Rules",
-        "Accessibility Standards"
+        "DevOps",
+        "Clean Architecture",
+        "Data Lake",
+        "Machine Learning",
+        "Zero Trust",
+        "Performance Tuning"
       ],
       "folder": "frontend"
     },
     {
-      "path": "frontend/accessibility.md",
-      "title": "Accessibility Standards",
+      "path": "frontend/clean-architecture.md",
+      "title": "Clean Architecture",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Accessibility Standards ensure WCAG 2.1 AA compliance across all frontend applications. Every component in [[React Component Architecture]] must pass accessibility audits. [[TypeScript Component Patterns]] include ARIA attribute types. [[Frontend Testing Strategy]] runs axe-core checks on all components. [[Storybook Configuration]] has the a11y addon enabled. [[CSS Module Standards]] enforce contrast ratios and focus styles. [[React State Management]] handles focus management during state transitions. [[Frontend Performance Metrics]] ensure assistive tech responsiveness. [[Vite Build Configuration]] preserves semantic HTML. [[Frontend Linting Rules]] include jsx-a11y plugin rules.",
+      "content": "# Clean Architecture\n\nClean Architecture is a key frontend practice.\nIt integrates with [[Zero Trust]], [[Stream Processing]], [[Performance Tuning]].\n\n## Details\nWorks alongside [[Machine Learning]], [[API-First]], [[Data Lake]], [[Garbage Collection]], [[Blue-Green Deploy]].\n\nThe solid-principles team follows this pattern closely.\nSee also: Project Meridian.",
       "links": [
-        "React Component Architecture",
-        "TypeScript Component Patterns",
-        "Frontend Testing Strategy",
-        "Storybook Configuration",
-        "CSS Module Standards",
-        "React State Management",
-        "Frontend Performance Metrics",
-        "Vite Build Configuration",
-        "Frontend Linting Rules"
+        "Zero Trust",
+        "Stream Processing",
+        "Performance Tuning",
+        "Machine Learning",
+        "API-First",
+        "Data Lake",
+        "Garbage Collection",
+        "Blue-Green Deploy"
       ],
       "folder": "frontend"
     },
     {
-      "path": "frontend/vite-config.md",
-      "title": "Vite Build Configuration",
+      "path": "frontend/machine-learning.md",
+      "title": "Machine Learning",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Vite Build Configuration manages the frontend build pipeline. It compiles [[React Component Architecture]] code with optimal chunk splitting. [[TypeScript Component Patterns]] are transpiled with SWC for speed. [[Frontend Testing Strategy]] runs in Vitest which shares the Vite config. [[Storybook Configuration]] uses a Vite builder for consistency. [[CSS Module Standards]] compilation uses PostCSS plugins. [[React State Management]] code is tree-shaken to minimize bundle size. [[Frontend Performance Metrics]] are baked into production builds. [[Accessibility Standards]] tests run during the build. [[Frontend Linting Rules]] are checked pre-build.",
+      "content": "# Machine Learning\n\nMachine Learning is a key frontend practice.\nIt integrates with [[API-First]], [[Performance Tuning]], [[Zero Trust]].\n\n## Details\nWorks alongside [[Garbage Collection]].\n\nThe health-checks team follows this pattern closely.\nSee also: PostgreSQL.",
       "links": [
-        "React Component Architecture",
-        "TypeScript Component Patterns",
-        "Frontend Testing Strategy",
-        "Storybook Configuration",
-        "CSS Module Standards",
-        "React State Management",
-        "Frontend Performance Metrics",
-        "Accessibility Standards",
-        "Frontend Linting Rules"
+        "API-First",
+        "Performance Tuning",
+        "Zero Trust",
+        "Garbage Collection"
       ],
       "folder": "frontend"
     },
     {
-      "path": "frontend/frontend-linting.md",
-      "title": "Frontend Linting Rules",
+      "path": "frontend/devops.md",
+      "title": "DevOps",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Frontend Linting Rules enforce code quality across all frontend code. ESLint rules validate [[React Component Architecture]] patterns. [[TypeScript Component Patterns]] are checked with typescript-eslint. [[Frontend Testing Strategy]] has its own lint rules for test files. [[Storybook Configuration]] stories follow naming conventions. [[CSS Module Standards]] use stylelint with custom rules. [[React State Management]] has rules against direct mutation. [[Frontend Performance Metrics]] anti-patterns are flagged. [[Accessibility Standards]] are checked via jsx-a11y. [[Vite Build Configuration]] ensures linting runs before builds.",
+      "content": "# DevOps\n\nDevOps is a key frontend practice.\nIt integrates with [[Stream Processing]], [[Performance Tuning]], [[Clean Architecture]].\n\n## Details\nWorks alongside [[Garbage Collection]], [[Zero Trust]], [[Data Lake]], [[Machine Learning]].\n\nThe redis team follows this pattern closely.\nSee also: Soren Eriksson.",
       "links": [
-        "React Component Architecture",
-        "TypeScript Component Patterns",
-        "Frontend Testing Strategy",
-        "Storybook Configuration",
-        "CSS Module Standards",
-        "React State Management",
-        "Frontend Performance Metrics",
-        "Accessibility Standards",
-        "Vite Build Configuration"
+        "Stream Processing",
+        "Performance Tuning",
+        "Clean Architecture",
+        "Garbage Collection",
+        "Zero Trust",
+        "Data Lake",
+        "Machine Learning"
       ],
       "folder": "frontend"
     },
     {
-      "path": "backend/api-design-principles.md",
-      "title": "API Design Principles",
+      "path": "backend/gitops.md",
+      "title": "GitOps",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "backend"
+        "type": "concepts"
       },
-      "content": "API Design Principles define how we build and evolve our service interfaces. All APIs follow the patterns in [[GraphQL Schema Convention]] with type safety from [[Backend TypeScript Standards]]. Error handling follows [[Error Handling Framework]] patterns. Authentication is validated per [[Auth Middleware Configuration]]. Rate limiting is configured through [[API Rate Limiting]]. Logging follows [[Structured Logging Standards]]. APIs are documented via [[API Documentation Generator]]. Performance targets align with [[Backend Performance Budgets]]. Database access follows [[Database Query Patterns]].",
+      "content": "# GitOps\n\nGitOps is a key backend practice.\nIt integrates with [[Continuous Integration]], [[Code Reviews]], [[Distributed Tracing]].\n\n## Details\nWorks alongside [[Agile]], [[Event Sourcing]], [[Container Orchestration]], [[ETL Pipeline]].\n\nThe schema-migration team follows this pattern closely.\nSee also: Infrastructure as Code.",
       "links": [
-        "GraphQL Schema Convention",
-        "Backend TypeScript Standards",
-        "Error Handling Framework",
-        "Auth Middleware Configuration",
-        "API Rate Limiting",
-        "Structured Logging Standards",
-        "API Documentation Generator",
-        "Backend Performance Budgets",
-        "Database Query Patterns"
+        "Continuous Integration",
+        "Code Reviews",
+        "Distributed Tracing",
+        "Agile",
+        "Event Sourcing",
+        "Container Orchestration",
+        "ETL Pipeline"
       ],
       "folder": "backend"
     },
     {
-      "path": "backend/graphql-schema.md",
-      "title": "GraphQL Schema Convention",
+      "path": "backend/distributed-tracing.md",
+      "title": "Distributed Tracing",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "backend"
+        "type": "concepts"
       },
-      "content": "GraphQL Schema Convention standardizes how we define and evolve our API schemas. Schema-first design drives [[API Design Principles]] with generated [[Backend TypeScript Standards]] types. Resolvers follow [[Error Handling Framework]] for consistent error responses. [[Auth Middleware Configuration]] decorates resolver fields with permission checks. Complex queries respect [[API Rate Limiting]] budgets. Schema changes are logged via [[Structured Logging Standards]]. [[API Documentation Generator]] extracts descriptions from schema comments. Query complexity affects [[Backend Performance Budgets]]. Data fetching uses [[Database Query Patterns]] via DataLoader.",
+      "content": "# Distributed Tracing\n\nDistributed Tracing is a key backend practice.\nIt integrates with [[Event Sourcing]], [[Site Reliability]], [[ETL Pipeline]].\n\n## Details\nWorks alongside [[Code Reviews]], [[Continuous Integration]], [[GitOps]], [[Microservices]], [[Container Orchestration]].\n\nThe caching-strategy team follows this pattern closely.\nSee also: Python.",
       "links": [
-        "API Design Principles",
-        "Backend TypeScript Standards",
-        "Error Handling Framework",
-        "Auth Middleware Configuration",
-        "API Rate Limiting",
-        "Structured Logging Standards",
-        "API Documentation Generator",
-        "Backend Performance Budgets",
-        "Database Query Patterns"
+        "Event Sourcing",
+        "Site Reliability",
+        "ETL Pipeline",
+        "Code Reviews",
+        "Continuous Integration",
+        "GitOps",
+        "Microservices",
+        "Container Orchestration"
       ],
       "folder": "backend"
     },
     {
-      "path": "backend/backend-typescript.md",
-      "title": "Backend TypeScript Standards",
+      "path": "backend/event-sourcing.md",
+      "title": "Event Sourcing",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "backend"
+        "type": "concepts"
       },
-      "content": "Backend TypeScript Standards govern all server-side TypeScript code. Type strictness aligns with [[API Design Principles]] requirements. Generated types from [[GraphQL Schema Convention]] are used throughout. Error types follow [[Error Handling Framework]] hierarchies. Middleware types support [[Auth Middleware Configuration]]. Rate limiter types are defined in [[API Rate Limiting]]. Logger types comply with [[Structured Logging Standards]]. Documentation types serve [[API Documentation Generator]]. Performance types track [[Backend Performance Budgets]]. Query builder types enforce [[Database Query Patterns]] safety.",
+      "content": "# Event Sourcing\n\nEvent Sourcing is a key backend practice.\nIt integrates with [[Site Reliability]], [[Microservices]], [[Continuous Integration]].\n\n## Details\nWorks alongside [[Container Orchestration]], [[GitOps]], [[Agile]].\n\nThe redis team follows this pattern closely.\nSee also: Kafka.",
       "links": [
-        "API Design Principles",
-        "GraphQL Schema Convention",
-        "Error Handling Framework",
-        "Auth Middleware Configuration",
-        "API Rate Limiting",
-        "Structured Logging Standards",
-        "API Documentation Generator",
-        "Backend Performance Budgets",
-        "Database Query Patterns"
+        "Site Reliability",
+        "Microservices",
+        "Continuous Integration",
+        "Container Orchestration",
+        "GitOps",
+        "Agile"
       ],
       "folder": "backend"
     },
     {
-      "path": "backend/error-handling.md",
-      "title": "Error Handling Framework",
+      "path": "backend/container-orchestration.md",
+      "title": "Container Orchestration",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "backend"
+        "type": "concepts"
       },
-      "content": "The Error Handling Framework provides structured error management across all backend services. Custom error classes align with [[API Design Principles]] response codes. [[GraphQL Schema Convention]] errors map to typed error unions. [[Backend TypeScript Standards]] define the error hierarchy. [[Auth Middleware Configuration]] throws specific authentication errors. [[API Rate Limiting]] uses throttle errors. [[Structured Logging Standards]] capture error context. [[API Documentation Generator]] documents error responses. [[Backend Performance Budgets]] track error rates. [[Database Query Patterns]] handle connection and query failures.",
+      "content": "# Container Orchestration\n\nContainer Orchestration is a key backend practice.\nIt integrates with [[Agile]], [[Microservices]], [[Code Reviews]].\n\n## Details\nWorks alongside [[Event Sourcing]], [[ETL Pipeline]], [[Site Reliability]], [[Continuous Integration]], [[Distributed Tracing]].\n\nThe data-lake team follows this pattern closely.\nSee also: Circuit Breaker.",
       "links": [
-        "API Design Principles",
-        "GraphQL Schema Convention",
-        "Backend TypeScript Standards",
-        "Auth Middleware Configuration",
-        "API Rate Limiting",
-        "Structured Logging Standards",
-        "API Documentation Generator",
-        "Backend Performance Budgets",
-        "Database Query Patterns"
+        "Agile",
+        "Microservices",
+        "Code Reviews",
+        "Event Sourcing",
+        "ETL Pipeline",
+        "Site Reliability",
+        "Continuous Integration",
+        "Distributed Tracing"
       ],
       "folder": "backend"
     },
     {
-      "path": "backend/auth-middleware.md",
-      "title": "Auth Middleware Configuration",
+      "path": "backend/code-reviews.md",
+      "title": "Code Reviews",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "backend"
+        "type": "concepts"
       },
-      "content": "Auth Middleware Configuration manages request authentication and authorization. It integrates with [[API Design Principles]] for consistent security posture. [[GraphQL Schema Convention]] field-level permissions use directive-based authorization. Types follow [[Backend TypeScript Standards]]. Authentication failures use [[Error Handling Framework]] error classes. Authenticated requests bypass [[API Rate Limiting]] anonymous tiers. Auth events are recorded via [[Structured Logging Standards]]. [[API Documentation Generator]] marks protected endpoints. Auth overhead is tracked in [[Backend Performance Budgets]]. Token validation queries use [[Database Query Patterns]].",
+      "content": "# Code Reviews\n\nCode Reviews is a key backend practice.\nIt integrates with [[GitOps]], [[ETL Pipeline]], [[Distributed Tracing]].\n\n## Details\nWorks alongside [[Continuous Integration]].\n\nThe garbage-collection team follows this pattern closely.\nSee also: Health Checks.",
       "links": [
-        "API Design Principles",
-        "GraphQL Schema Convention",
-        "Backend TypeScript Standards",
-        "Error Handling Framework",
-        "API Rate Limiting",
-        "Structured Logging Standards",
-        "API Documentation Generator",
-        "Backend Performance Budgets",
-        "Database Query Patterns"
+        "GitOps",
+        "ETL Pipeline",
+        "Distributed Tracing",
+        "Continuous Integration"
       ],
       "folder": "backend"
     },
     {
-      "path": "backend/rate-limiting.md",
-      "title": "API Rate Limiting",
+      "path": "backend/continuous-integration.md",
+      "title": "Continuous Integration",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "backend"
+        "type": "concepts"
       },
-      "content": "API Rate Limiting protects backend services from abuse and overload. Rate limits follow [[API Design Principles]] for fair usage. [[GraphQL Schema Convention]] query complexity scoring feeds into rate calculations. Implementation uses [[Backend TypeScript Standards]] types. Limit exceeded responses follow [[Error Handling Framework]] patterns. [[Auth Middleware Configuration]] provides tiered rate limits. Rate limit events are logged via [[Structured Logging Standards]]. Limits are documented in [[API Documentation Generator]] output. Impact on [[Backend Performance Budgets]] is monitored. Rate limit counters use [[Database Query Patterns]] with Redis.",
+      "content": "# Continuous Integration\n\nContinuous Integration is a key backend practice.\nIt integrates with [[GitOps]], [[Distributed Tracing]], [[Agile]].\n\n## Details\nWorks alongside [[ETL Pipeline]], [[Microservices]].\n\nThe API First team follows this pattern closely.\nSee also: Leo Vasquez.",
       "links": [
-        "API Design Principles",
-        "GraphQL Schema Convention",
-        "Backend TypeScript Standards",
-        "Error Handling Framework",
-        "Auth Middleware Configuration",
-        "Structured Logging Standards",
-        "API Documentation Generator",
-        "Backend Performance Budgets",
-        "Database Query Patterns"
+        "GitOps",
+        "Distributed Tracing",
+        "Agile",
+        "ETL Pipeline",
+        "Microservices"
       ],
       "folder": "backend"
     },
     {
-      "path": "backend/structured-logging.md",
-      "title": "Structured Logging Standards",
+      "path": "backend/site-reliability.md",
+      "title": "Site Reliability",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "backend"
+        "type": "concepts"
       },
-      "content": "Structured Logging Standards define how all backend services produce log output. Every log follows [[API Design Principles]] for consistent metadata. [[GraphQL Schema Convention]] resolver tracing adds query context. Log types use [[Backend TypeScript Standards]]. [[Error Handling Framework]] errors include full context. [[Auth Middleware Configuration]] logs authentication decisions. [[API Rate Limiting]] events include client identifiers. [[API Documentation Generator]] includes log format documentation. Performance logs feed [[Backend Performance Budgets]]. [[Database Query Patterns]] include slow query logging.",
+      "content": "# Site Reliability\n\nSite Reliability is a key backend practice.\nIt integrates with [[Event Sourcing]], [[Microservices]], [[GitOps]].\n\n## Details\nWorks alongside [[Continuous Integration]], [[Agile]].\n\nThe pair-programming team follows this pattern closely.\nSee also: Python.",
       "links": [
-        "API Design Principles",
-        "GraphQL Schema Convention",
-        "Backend TypeScript Standards",
-        "Error Handling Framework",
-        "Auth Middleware Configuration",
-        "API Rate Limiting",
-        "API Documentation Generator",
-        "Backend Performance Budgets",
-        "Database Query Patterns"
+        "Event Sourcing",
+        "Microservices",
+        "GitOps",
+        "Continuous Integration",
+        "Agile"
       ],
       "folder": "backend"
     },
     {
-      "path": "backend/api-docs-generator.md",
-      "title": "API Documentation Generator",
+      "path": "backend/etl-pipeline.md",
+      "title": "ETL Pipeline",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "backend"
+        "type": "concepts"
       },
-      "content": "The API Documentation Generator automatically produces developer documentation from code. It reads [[API Design Principles]] annotations and [[GraphQL Schema Convention]] descriptions. Type documentation comes from [[Backend TypeScript Standards]]. Error documentation follows [[Error Handling Framework]] definitions. Security sections reference [[Auth Middleware Configuration]]. Usage limits from [[API Rate Limiting]] are included. Log format from [[Structured Logging Standards]] helps debugging. Performance notes reference [[Backend Performance Budgets]]. Query examples demonstrate [[Database Query Patterns]].",
+      "content": "# ETL Pipeline\n\nETL Pipeline is a key backend practice.\nIt integrates with [[Continuous Integration]], [[Event Sourcing]], [[GitOps]].\n\n## Details\nWorks alongside [[Code Reviews]], [[Microservices]], [[Agile]], [[Distributed Tracing]], [[Site Reliability]].\n\nThe DDD team follows this pattern closely.\nSee also: A/B Testing.",
       "links": [
-        "API Design Principles",
-        "GraphQL Schema Convention",
-        "Backend TypeScript Standards",
-        "Error Handling Framework",
-        "Auth Middleware Configuration",
-        "API Rate Limiting",
-        "Structured Logging Standards",
-        "Backend Performance Budgets",
-        "Database Query Patterns"
+        "Continuous Integration",
+        "Event Sourcing",
+        "GitOps",
+        "Code Reviews",
+        "Microservices",
+        "Agile",
+        "Distributed Tracing",
+        "Site Reliability"
       ],
       "folder": "backend"
     },
     {
-      "path": "backend/backend-perf.md",
-      "title": "Backend Performance Budgets",
+      "path": "backend/agile.md",
+      "title": "Agile",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "backend"
+        "type": "concepts"
       },
-      "content": "Backend Performance Budgets set latency and throughput targets for all services. Budgets align with [[API Design Principles]] SLA commitments. [[GraphQL Schema Convention]] query complexity maps to response time budgets. Monitoring uses [[Backend TypeScript Standards]] typed metrics. Error rate budgets follow [[Error Handling Framework]] categorization. [[Auth Middleware Configuration]] overhead is budgeted separately. [[API Rate Limiting]] prevents budget exhaustion. Performance logs follow [[Structured Logging Standards]]. [[API Documentation Generator]] publishes performance expectations. [[Database Query Patterns]] have dedicated query time budgets.",
+      "content": "# Agile\n\nAgile is a key backend practice.\nIt integrates with [[Microservices]], [[Container Orchestration]], [[Continuous Integration]].\n\n## Details\nWorks alongside [[Code Reviews]].\n\nThe python3 team follows this pattern closely.\nSee also: SOLID Principles.",
       "links": [
-        "API Design Principles",
-        "GraphQL Schema Convention",
-        "Backend TypeScript Standards",
-        "Error Handling Framework",
-        "Auth Middleware Configuration",
-        "API Rate Limiting",
-        "Structured Logging Standards",
-        "API Documentation Generator",
-        "Database Query Patterns"
+        "Microservices",
+        "Container Orchestration",
+        "Continuous Integration",
+        "Code Reviews"
       ],
       "folder": "backend"
     },
     {
-      "path": "backend/database-patterns.md",
-      "title": "Database Query Patterns",
+      "path": "backend/microservices.md",
+      "title": "Microservices",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "backend"
+        "type": "concepts"
       },
-      "content": "Database Query Patterns standardize how services interact with PostgreSQL and Redis. Patterns support [[API Design Principles]] data access requirements. [[GraphQL Schema Convention]] DataLoader batching reduces N+1 queries. Types follow [[Backend TypeScript Standards]] with Prisma generated types. [[Error Handling Framework]] wraps database errors. [[Auth Middleware Configuration]] queries use connection pooling. [[API Rate Limiting]] counters use Redis patterns. Query logs follow [[Structured Logging Standards]]. [[API Documentation Generator]] documents available queries. Query performance feeds into [[Backend Performance Budgets]].",
+      "content": "# Microservices\n\nMicroservices is a key backend practice.\nIt integrates with [[Container Orchestration]], [[Code Reviews]], [[Event Sourcing]].\n\n## Details\nWorks alongside [[GitOps]], [[Site Reliability]].\n\nThe API First team follows this pattern closely.\nSee also: Performance Tuning.",
       "links": [
-        "API Design Principles",
-        "GraphQL Schema Convention",
-        "Backend TypeScript Standards",
-        "Error Handling Framework",
-        "Auth Middleware Configuration",
-        "API Rate Limiting",
-        "Structured Logging Standards",
-        "API Documentation Generator",
-        "Backend Performance Budgets"
+        "Container Orchestration",
+        "Code Reviews",
+        "Event Sourcing",
+        "GitOps",
+        "Site Reliability"
       ],
       "folder": "backend"
     },
     {
-      "path": "data/etl-pipeline-design.md",
-      "title": "ETL Pipeline Design",
+      "path": "devops/message-queue.md",
+      "title": "Message Queue",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "concepts"
       },
-      "content": "ETL Pipeline Design defines how data flows from external sources to our analytics warehouse. Pipelines use [[Data Validation Rules]] at every stage. Transformation logic follows [[Data Transformation Standards]]. [[Job Queue Architecture]] manages pipeline execution. [[Data Partitioning Strategy]] optimizes storage and query performance. [[Schema Evolution Policy]] handles source changes. Quality is measured by [[Data Quality Scoring]]. Processing is monitored via [[Pipeline Monitoring Dashboard]]. Failure handling uses [[Data Recovery Procedures]]. Output feeds [[Analytics Query Patterns]].",
+      "content": "# Message Queue\n\nMessage Queue is a key devops practice.\nIt integrates with [[Chaos Engineering]], [[Log Aggregation]], [[Design Patterns]].\n\n## Details\nWorks alongside [[Database Sharding]].\n\nThe microservice team follows this pattern closely.\nSee also: Continuous Integration.",
       "links": [
-        "Data Validation Rules",
-        "Data Transformation Standards",
-        "Job Queue Architecture",
-        "Data Partitioning Strategy",
-        "Schema Evolution Policy",
-        "Data Quality Scoring",
-        "Pipeline Monitoring Dashboard",
-        "Data Recovery Procedures",
-        "Analytics Query Patterns"
-      ],
-      "folder": "data"
-    },
-    {
-      "path": "data/data-validation.md",
-      "title": "Data Validation Rules",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
-      },
-      "content": "Data Validation Rules ensure data integrity at every pipeline stage. Rules are applied during [[ETL Pipeline Design]] ingestion. [[Data Transformation Standards]] include pre and post-transformation validation. Validation runs as [[Job Queue Architecture]] tasks. Partitioned data validated per [[Data Partitioning Strategy]] boundaries. Schema changes trigger validation updates via [[Schema Evolution Policy]]. Validation scores feed [[Data Quality Scoring]]. Failures appear on [[Pipeline Monitoring Dashboard]]. Recovery from validation failures follows [[Data Recovery Procedures]]. Validated data serves [[Analytics Query Patterns]].",
-      "links": [
-        "ETL Pipeline Design",
-        "Data Transformation Standards",
-        "Job Queue Architecture",
-        "Data Partitioning Strategy",
-        "Schema Evolution Policy",
-        "Data Quality Scoring",
-        "Pipeline Monitoring Dashboard",
-        "Data Recovery Procedures",
-        "Analytics Query Patterns"
-      ],
-      "folder": "data"
-    },
-    {
-      "path": "data/data-transformation.md",
-      "title": "Data Transformation Standards",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
-      },
-      "content": "Data Transformation Standards govern how raw data is cleaned and structured. Transformations are pipeline stages in [[ETL Pipeline Design]]. Input quality is ensured by [[Data Validation Rules]]. Transformation jobs run on [[Job Queue Architecture]]. Output is organized per [[Data Partitioning Strategy]]. Schema changes are handled via [[Schema Evolution Policy]]. Quality impact is measured by [[Data Quality Scoring]]. Transformation metrics appear on [[Pipeline Monitoring Dashboard]]. Failed transforms follow [[Data Recovery Procedures]]. Transformed data supports [[Analytics Query Patterns]].",
-      "links": [
-        "ETL Pipeline Design",
-        "Data Validation Rules",
-        "Job Queue Architecture",
-        "Data Partitioning Strategy",
-        "Schema Evolution Policy",
-        "Data Quality Scoring",
-        "Pipeline Monitoring Dashboard",
-        "Data Recovery Procedures",
-        "Analytics Query Patterns"
-      ],
-      "folder": "data"
-    },
-    {
-      "path": "data/job-queue.md",
-      "title": "Job Queue Architecture",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
-      },
-      "content": "Job Queue Architecture manages asynchronous data processing using Redis-backed queues. Queues execute [[ETL Pipeline Design]] workflows. [[Data Validation Rules]] run as queue tasks. [[Data Transformation Standards]] jobs are queued with dependencies. Partitioning tasks follow [[Data Partitioning Strategy]]. Schema migration jobs are triggered by [[Schema Evolution Policy]]. Job success rates feed [[Data Quality Scoring]]. Queue health shows on [[Pipeline Monitoring Dashboard]]. Failed jobs trigger [[Data Recovery Procedures]]. Query cache warming uses [[Analytics Query Patterns]].",
-      "links": [
-        "ETL Pipeline Design",
-        "Data Validation Rules",
-        "Data Transformation Standards",
-        "Data Partitioning Strategy",
-        "Schema Evolution Policy",
-        "Data Quality Scoring",
-        "Pipeline Monitoring Dashboard",
-        "Data Recovery Procedures",
-        "Analytics Query Patterns"
-      ],
-      "folder": "data"
-    },
-    {
-      "path": "data/data-partitioning.md",
-      "title": "Data Partitioning Strategy",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
-      },
-      "content": "Data Partitioning Strategy defines how data is physically organized for performance. Partitions align with [[ETL Pipeline Design]] output stages. [[Data Validation Rules]] run within partition boundaries. [[Data Transformation Standards]] produce partition-compatible output. Partition jobs run on [[Job Queue Architecture]]. Schema changes via [[Schema Evolution Policy]] may trigger repartitioning. Partition health feeds [[Data Quality Scoring]]. Partition status shows on [[Pipeline Monitoring Dashboard]]. Partition recovery follows [[Data Recovery Procedures]]. [[Analytics Query Patterns]] leverage partition pruning.",
-      "links": [
-        "ETL Pipeline Design",
-        "Data Validation Rules",
-        "Data Transformation Standards",
-        "Job Queue Architecture",
-        "Schema Evolution Policy",
-        "Data Quality Scoring",
-        "Pipeline Monitoring Dashboard",
-        "Data Recovery Procedures",
-        "Analytics Query Patterns"
-      ],
-      "folder": "data"
-    },
-    {
-      "path": "data/schema-evolution.md",
-      "title": "Schema Evolution Policy",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
-      },
-      "content": "Schema Evolution Policy manages how data schemas change over time without breaking pipelines. Migrations are coordinated with [[ETL Pipeline Design]] updates. [[Data Validation Rules]] are updated for new schemas. [[Data Transformation Standards]] adapt to schema changes. Migration jobs run on [[Job Queue Architecture]]. [[Data Partitioning Strategy]] may need adjustment. Schema quality tracked via [[Data Quality Scoring]]. Changes appear on [[Pipeline Monitoring Dashboard]]. Rollback follows [[Data Recovery Procedures]]. [[Analytics Query Patterns]] are updated for new schemas.",
-      "links": [
-        "ETL Pipeline Design",
-        "Data Validation Rules",
-        "Data Transformation Standards",
-        "Job Queue Architecture",
-        "Data Partitioning Strategy",
-        "Data Quality Scoring",
-        "Pipeline Monitoring Dashboard",
-        "Data Recovery Procedures",
-        "Analytics Query Patterns"
-      ],
-      "folder": "data"
-    },
-    {
-      "path": "data/data-quality.md",
-      "title": "Data Quality Scoring",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
-      },
-      "content": "Data Quality Scoring assigns quality ratings to every dataset in the warehouse. Scores reflect [[ETL Pipeline Design]] processing completeness. [[Data Validation Rules]] pass rates are a primary input. [[Data Transformation Standards]] compliance is measured. [[Job Queue Architecture]] reliability affects scores. [[Data Partitioning Strategy]] consistency is checked. [[Schema Evolution Policy]] adherence is verified. Scores display on [[Pipeline Monitoring Dashboard]]. Low scores may trigger [[Data Recovery Procedures]]. [[Analytics Query Patterns]] include quality score filters.",
-      "links": [
-        "ETL Pipeline Design",
-        "Data Validation Rules",
-        "Data Transformation Standards",
-        "Job Queue Architecture",
-        "Data Partitioning Strategy",
-        "Schema Evolution Policy",
-        "Pipeline Monitoring Dashboard",
-        "Data Recovery Procedures",
-        "Analytics Query Patterns"
-      ],
-      "folder": "data"
-    },
-    {
-      "path": "data/pipeline-monitoring.md",
-      "title": "Pipeline Monitoring Dashboard",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
-      },
-      "content": "The Pipeline Monitoring Dashboard provides real-time visibility into data processing health. It displays [[ETL Pipeline Design]] stage progress. [[Data Validation Rules]] failure rates are highlighted. [[Data Transformation Standards]] throughput is tracked. [[Job Queue Architecture]] depth and latency are monitored. [[Data Partitioning Strategy]] balance is visualized. [[Schema Evolution Policy]] migration status is shown. [[Data Quality Scoring]] trends are graphed. Alerts trigger [[Data Recovery Procedures]]. [[Analytics Query Patterns]] performance is displayed.",
-      "links": [
-        "ETL Pipeline Design",
-        "Data Validation Rules",
-        "Data Transformation Standards",
-        "Job Queue Architecture",
-        "Data Partitioning Strategy",
-        "Schema Evolution Policy",
-        "Data Quality Scoring",
-        "Data Recovery Procedures",
-        "Analytics Query Patterns"
-      ],
-      "folder": "data"
-    },
-    {
-      "path": "data/data-recovery.md",
-      "title": "Data Recovery Procedures",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
-      },
-      "content": "Data Recovery Procedures handle failures in data processing and storage. Recovery restores [[ETL Pipeline Design]] pipeline state. [[Data Validation Rules]] are re-run after recovery. [[Data Transformation Standards]] are reapplied to recovered data. Recovery jobs use [[Job Queue Architecture]] priority queues. [[Data Partitioning Strategy]] consistency is verified post-recovery. [[Schema Evolution Policy]] rollback procedures are included. [[Data Quality Scoring]] is recalculated. Recovery status shows on [[Pipeline Monitoring Dashboard]]. [[Analytics Query Patterns]] are validated after recovery.",
-      "links": [
-        "ETL Pipeline Design",
-        "Data Validation Rules",
-        "Data Transformation Standards",
-        "Job Queue Architecture",
-        "Data Partitioning Strategy",
-        "Schema Evolution Policy",
-        "Data Quality Scoring",
-        "Pipeline Monitoring Dashboard",
-        "Analytics Query Patterns"
-      ],
-      "folder": "data"
-    },
-    {
-      "path": "data/analytics-queries.md",
-      "title": "Analytics Query Patterns",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
-      },
-      "content": "Analytics Query Patterns define how consumers access the data warehouse efficiently. Patterns depend on [[ETL Pipeline Design]] output format. [[Data Validation Rules]] ensure query input quality. [[Data Transformation Standards]] produce query-optimized schemas. Query jobs may use [[Job Queue Architecture]] for heavy reports. [[Data Partitioning Strategy]] enables partition pruning. Queries adapt to [[Schema Evolution Policy]] changes. [[Data Quality Scoring]] filters exclude low-quality data. Query performance shows on [[Pipeline Monitoring Dashboard]]. Failed queries follow [[Data Recovery Procedures]].",
-      "links": [
-        "ETL Pipeline Design",
-        "Data Validation Rules",
-        "Data Transformation Standards",
-        "Job Queue Architecture",
-        "Data Partitioning Strategy",
-        "Schema Evolution Policy",
-        "Data Quality Scoring",
-        "Pipeline Monitoring Dashboard",
-        "Data Recovery Procedures"
-      ],
-      "folder": "data"
-    },
-    {
-      "path": "devops/terraform-modules.md",
-      "title": "Terraform Module Library",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "devops"
-      },
-      "content": "The Terraform Module Library provides reusable infrastructure building blocks. Modules provision resources for [[Kubernetes Namespace Config]] and [[Container Registry Management]]. Secrets are managed through [[Secret Management Strategy]]. Network configuration uses [[Network Policy Framework]]. Deployment pipelines leverage [[GitOps Workflow]]. Resources are tagged for [[Cloud Cost Tracking]]. DNS is managed via [[DNS Management System]]. Certificates are handled by [[Certificate Automation]]. Backups follow [[Disaster Recovery Plan]].",
-      "links": [
-        "Kubernetes Namespace Config",
-        "Container Registry Management",
-        "Secret Management Strategy",
-        "Network Policy Framework",
-        "GitOps Workflow",
-        "Cloud Cost Tracking",
-        "DNS Management System",
-        "Certificate Automation",
-        "Disaster Recovery Plan"
+        "Chaos Engineering",
+        "Log Aggregation",
+        "Design Patterns",
+        "Database Sharding"
       ],
       "folder": "devops"
     },
     {
-      "path": "devops/k8s-namespace.md",
-      "title": "Kubernetes Namespace Config",
+      "path": "devops/database-sharding.md",
+      "title": "Database Sharding",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "devops"
+        "type": "concepts"
       },
-      "content": "Kubernetes Namespace Configuration defines how workloads are isolated in our clusters. Namespaces are provisioned by [[Terraform Module Library]]. Container images come from [[Container Registry Management]]. Secrets are injected via [[Secret Management Strategy]]. Network boundaries follow [[Network Policy Framework]]. Deployments use [[GitOps Workflow]] patterns. Namespace costs are tracked in [[Cloud Cost Tracking]]. Service DNS uses [[DNS Management System]]. TLS termination uses [[Certificate Automation]]. Namespace recovery follows [[Disaster Recovery Plan]].",
+      "content": "# Database Sharding\n\nDatabase Sharding is a key devops practice.\nIt integrates with [[Caching Strategy]], [[Log Aggregation]], [[Message Queue]].\n\n## Details\nWorks alongside [[Domain Driven Design]].\n\nThe pair-programming team follows this pattern closely.\nSee also: Batch Processing.",
       "links": [
-        "Terraform Module Library",
-        "Container Registry Management",
-        "Secret Management Strategy",
-        "Network Policy Framework",
-        "GitOps Workflow",
-        "Cloud Cost Tracking",
-        "DNS Management System",
-        "Certificate Automation",
-        "Disaster Recovery Plan"
+        "Caching Strategy",
+        "Log Aggregation",
+        "Message Queue",
+        "Domain Driven Design"
       ],
       "folder": "devops"
     },
     {
-      "path": "devops/container-registry.md",
-      "title": "Container Registry Management",
+      "path": "devops/log-aggregation.md",
+      "title": "Log Aggregation",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "devops"
+        "type": "concepts"
       },
-      "content": "Container Registry Management handles Docker image storage and distribution. Registry infrastructure is provisioned by [[Terraform Module Library]]. Images are deployed to [[Kubernetes Namespace Config]]. Image secrets use [[Secret Management Strategy]]. Registry network access follows [[Network Policy Framework]]. Image builds are triggered by [[GitOps Workflow]]. Registry storage costs tracked in [[Cloud Cost Tracking]]. Registry DNS managed by [[DNS Management System]]. Registry TLS handled by [[Certificate Automation]]. Image recovery follows [[Disaster Recovery Plan]].",
+      "content": "# Log Aggregation\n\nLog Aggregation is a key devops practice.\nIt integrates with [[Load Balancing]], [[Database Sharding]], [[Caching Strategy]].\n\n## Details\nWorks alongside [[Health Checks]], [[Chaos Engineering]].\n\nThe continuous integration team follows this pattern closely.\nSee also: Neptune Insurance.",
       "links": [
-        "Terraform Module Library",
-        "Kubernetes Namespace Config",
-        "Secret Management Strategy",
-        "Network Policy Framework",
-        "GitOps Workflow",
-        "Cloud Cost Tracking",
-        "DNS Management System",
-        "Certificate Automation",
-        "Disaster Recovery Plan"
+        "Load Balancing",
+        "Database Sharding",
+        "Caching Strategy",
+        "Health Checks",
+        "Chaos Engineering"
       ],
       "folder": "devops"
     },
     {
-      "path": "devops/secret-management.md",
-      "title": "Secret Management Strategy",
+      "path": "devops/load-balancing.md",
+      "title": "Load Balancing",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "devops"
+        "type": "concepts"
       },
-      "content": "Secret Management Strategy governs how sensitive data is stored and accessed. Secrets infrastructure uses [[Terraform Module Library]] modules. Kubernetes secrets integrate with [[Kubernetes Namespace Config]]. Registry credentials are managed for [[Container Registry Management]]. Network access to vaults follows [[Network Policy Framework]]. Secret rotation is part of [[GitOps Workflow]]. Secret storage costs in [[Cloud Cost Tracking]]. Secret DNS for vault endpoints via [[DNS Management System]]. Vault TLS via [[Certificate Automation]]. Secret recovery in [[Disaster Recovery Plan]].",
+      "content": "# Load Balancing\n\nLoad Balancing is a key devops practice.\nIt integrates with [[Message Queue]], [[SOLID Principles]], [[Design Patterns]].\n\n## Details\nWorks alongside [[Caching Strategy]], [[Log Aggregation]], [[Health Checks]], [[Domain Driven Design]], [[Chaos Engineering]].\n\nThe Ines team follows this pattern closely.\nSee also: Technical Debt.",
       "links": [
-        "Terraform Module Library",
-        "Kubernetes Namespace Config",
-        "Container Registry Management",
-        "Network Policy Framework",
-        "GitOps Workflow",
-        "Cloud Cost Tracking",
-        "DNS Management System",
-        "Certificate Automation",
-        "Disaster Recovery Plan"
+        "Message Queue",
+        "SOLID Principles",
+        "Design Patterns",
+        "Caching Strategy",
+        "Log Aggregation",
+        "Health Checks",
+        "Domain Driven Design",
+        "Chaos Engineering"
       ],
       "folder": "devops"
     },
     {
-      "path": "devops/network-policy.md",
-      "title": "Network Policy Framework",
+      "path": "devops/domain-driven-design.md",
+      "title": "Domain Driven Design",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "devops"
+        "type": "concepts"
       },
-      "content": "The Network Policy Framework defines inter-service communication rules. Policies are provisioned via [[Terraform Module Library]]. [[Kubernetes Namespace Config]] boundaries enforce isolation. [[Container Registry Management]] access is controlled. [[Secret Management Strategy]] vault access is restricted. [[GitOps Workflow]] applies policy changes. Policy costs minimal but tracked in [[Cloud Cost Tracking]]. [[DNS Management System]] resolves service endpoints. [[Certificate Automation]] provides mTLS between services. Network recovery follows [[Disaster Recovery Plan]].",
+      "content": "# Domain Driven Design\n\nDomain Driven Design is a key devops practice.\nIt integrates with [[Chaos Engineering]], [[Design Patterns]], [[Message Queue]].\n\n## Details\nWorks alongside [[SOLID Principles]], [[Log Aggregation]].\n\nThe garbage-collection team follows this pattern closely.\nSee also: Continuous Integration.",
       "links": [
-        "Terraform Module Library",
-        "Kubernetes Namespace Config",
-        "Container Registry Management",
-        "Secret Management Strategy",
-        "GitOps Workflow",
-        "Cloud Cost Tracking",
-        "DNS Management System",
-        "Certificate Automation",
-        "Disaster Recovery Plan"
+        "Chaos Engineering",
+        "Design Patterns",
+        "Message Queue",
+        "SOLID Principles",
+        "Log Aggregation"
       ],
       "folder": "devops"
     },
     {
-      "path": "devops/gitops-workflow.md",
-      "title": "GitOps Workflow",
+      "path": "devops/chaos-engineering.md",
+      "title": "Chaos Engineering",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "devops"
+        "type": "concepts"
       },
-      "content": "GitOps Workflow manages all infrastructure and application deployments through Git. Infrastructure changes use [[Terraform Module Library]] modules. Deployments target [[Kubernetes Namespace Config]] environments. Container images from [[Container Registry Management]] are referenced. Secrets synced via [[Secret Management Strategy]]. Network changes follow [[Network Policy Framework]]. Deployment costs tracked in [[Cloud Cost Tracking]]. DNS updates via [[DNS Management System]]. Certificates managed by [[Certificate Automation]]. Rollback procedures align with [[Disaster Recovery Plan]].",
+      "content": "# Chaos Engineering\n\nChaos Engineering is a key devops practice.\nIt integrates with [[Health Checks]], [[SOLID Principles]], [[Domain Driven Design]].\n\n## Details\nWorks alongside [[Design Patterns]], [[Message Queue]], [[Caching Strategy]], [[Load Balancing]].\n\nThe a-b-testing team follows this pattern closely.\nSee also: DevOps.",
       "links": [
-        "Terraform Module Library",
-        "Kubernetes Namespace Config",
-        "Container Registry Management",
-        "Secret Management Strategy",
-        "Network Policy Framework",
-        "Cloud Cost Tracking",
-        "DNS Management System",
-        "Certificate Automation",
-        "Disaster Recovery Plan"
+        "Health Checks",
+        "SOLID Principles",
+        "Domain Driven Design",
+        "Design Patterns",
+        "Message Queue",
+        "Caching Strategy",
+        "Load Balancing"
       ],
       "folder": "devops"
     },
     {
-      "path": "devops/cloud-cost-tracking.md",
-      "title": "Cloud Cost Tracking",
+      "path": "devops/design-patterns.md",
+      "title": "Design Patterns",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "devops"
+        "type": "concepts"
       },
-      "content": "Cloud Cost Tracking monitors and optimizes infrastructure spending. Costs are attributed to resources from [[Terraform Module Library]]. [[Kubernetes Namespace Config]] resource quotas control spending. [[Container Registry Management]] storage costs are tracked. [[Secret Management Strategy]] vault costs are monitored. [[Network Policy Framework]] has minimal cost impact. [[GitOps Workflow]] deployment frequency affects costs. [[DNS Management System]] query costs are tracked. [[Certificate Automation]] costs from certificate authorities. [[Disaster Recovery Plan]] backup storage costs included.",
+      "content": "# Design Patterns\n\nDesign Patterns is a key devops practice.\nIt integrates with [[Load Balancing]], [[Domain Driven Design]], [[Chaos Engineering]].\n\n## Details\nWorks alongside [[Caching Strategy]], [[Log Aggregation]], [[Message Queue]], [[SOLID Principles]].\n\nThe circuit-breaker team follows this pattern closely.\nSee also: Schema Migration.",
       "links": [
-        "Terraform Module Library",
-        "Kubernetes Namespace Config",
-        "Container Registry Management",
-        "Secret Management Strategy",
-        "Network Policy Framework",
-        "GitOps Workflow",
-        "DNS Management System",
-        "Certificate Automation",
-        "Disaster Recovery Plan"
+        "Load Balancing",
+        "Domain Driven Design",
+        "Chaos Engineering",
+        "Caching Strategy",
+        "Log Aggregation",
+        "Message Queue",
+        "SOLID Principles"
       ],
       "folder": "devops"
     },
     {
-      "path": "devops/dns-management.md",
-      "title": "DNS Management System",
+      "path": "devops/caching-strategy.md",
+      "title": "Caching Strategy",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "devops"
+        "type": "concepts"
       },
-      "content": "The DNS Management System handles domain registration and service discovery. DNS zones are provisioned via [[Terraform Module Library]]. Service discovery integrates with [[Kubernetes Namespace Config]]. Registry endpoints managed for [[Container Registry Management]]. Vault endpoints for [[Secret Management Strategy]]. Service mesh DNS via [[Network Policy Framework]]. DNS changes deployed via [[GitOps Workflow]]. DNS costs tracked in [[Cloud Cost Tracking]]. DNS linked to [[Certificate Automation]] for domain validation. DNS recovery in [[Disaster Recovery Plan]].",
+      "content": "# Caching Strategy\n\nCaching Strategy is a key devops practice.\nIt integrates with [[Log Aggregation]], [[Chaos Engineering]], [[Message Queue]].\n\n## Details\nWorks alongside [[Domain Driven Design]], [[SOLID Principles]], [[Load Balancing]], [[Design Patterns]].\n\nThe Leo team follows this pattern closely.\nSee also: Garbage Collection.",
       "links": [
-        "Terraform Module Library",
-        "Kubernetes Namespace Config",
-        "Container Registry Management",
-        "Secret Management Strategy",
-        "Network Policy Framework",
-        "GitOps Workflow",
-        "Cloud Cost Tracking",
-        "Certificate Automation",
-        "Disaster Recovery Plan"
+        "Log Aggregation",
+        "Chaos Engineering",
+        "Message Queue",
+        "Domain Driven Design",
+        "SOLID Principles",
+        "Load Balancing",
+        "Design Patterns"
       ],
       "folder": "devops"
     },
     {
-      "path": "devops/certificate-automation.md",
-      "title": "Certificate Automation",
+      "path": "devops/health-checks.md",
+      "title": "Health Checks",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "devops"
+        "type": "concepts"
       },
-      "content": "Certificate Automation manages TLS certificates across all services. cert-manager is configured via [[Terraform Module Library]]. Certificates are scoped to [[Kubernetes Namespace Config]] workloads. Registry TLS for [[Container Registry Management]]. Vault TLS via [[Secret Management Strategy]]. mTLS between services per [[Network Policy Framework]]. Certificate deployments via [[GitOps Workflow]]. Certificate costs in [[Cloud Cost Tracking]]. DNS validation through [[DNS Management System]]. Certificate recovery in [[Disaster Recovery Plan]].",
+      "content": "# Health Checks\n\nHealth Checks is a key devops practice.\nIt integrates with [[Log Aggregation]], [[Message Queue]], [[Caching Strategy]].\n\n## Details\nWorks alongside [[Database Sharding]], [[SOLID Principles]], [[Domain Driven Design]].\n\nThe batch-processing team follows this pattern closely.\nSee also: Clean Architecture.",
       "links": [
-        "Terraform Module Library",
-        "Kubernetes Namespace Config",
-        "Container Registry Management",
-        "Secret Management Strategy",
-        "Network Policy Framework",
-        "GitOps Workflow",
-        "Cloud Cost Tracking",
-        "DNS Management System",
-        "Disaster Recovery Plan"
+        "Log Aggregation",
+        "Message Queue",
+        "Caching Strategy",
+        "Database Sharding",
+        "SOLID Principles",
+        "Domain Driven Design"
       ],
       "folder": "devops"
     },
     {
-      "path": "devops/disaster-recovery.md",
-      "title": "Disaster Recovery Plan",
+      "path": "devops/solid-principles.md",
+      "title": "SOLID Principles",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "devops"
+        "type": "concepts"
       },
-      "content": "The Disaster Recovery Plan ensures business continuity in case of infrastructure failures. Backup infrastructure uses [[Terraform Module Library]] modules. Cluster recovery targets [[Kubernetes Namespace Config]] restoration. Image recovery from [[Container Registry Management]] backups. Secret recovery via [[Secret Management Strategy]] vault replication. Network restoration follows [[Network Policy Framework]]. Recovery deployments use [[GitOps Workflow]]. Recovery costs tracked in [[Cloud Cost Tracking]]. DNS failover via [[DNS Management System]]. Certificate reissuance by [[Certificate Automation]].",
+      "content": "# SOLID Principles\n\nSOLID Principles is a key devops practice.\nIt integrates with [[Caching Strategy]], [[Design Patterns]], [[Message Queue]].\n\n## Details\nWorks alongside [[Load Balancing]].\n\nThe Neptune Ins team follows this pattern closely.\nSee also: Circuit Breaker.",
       "links": [
-        "Terraform Module Library",
-        "Kubernetes Namespace Config",
-        "Container Registry Management",
-        "Secret Management Strategy",
-        "Network Policy Framework",
-        "GitOps Workflow",
-        "Cloud Cost Tracking",
-        "DNS Management System",
-        "Certificate Automation"
+        "Caching Strategy",
+        "Design Patterns",
+        "Message Queue",
+        "Load Balancing"
       ],
       "folder": "devops"
     },
     {
-      "path": "leadership/quarterly-planning.md",
-      "title": "Quarterly Planning Process",
+      "path": "data/observability.md",
+      "title": "Observability",
       "frontmatter": {
-        "type": "management",
-        "cluster": "leadership"
+        "type": "concepts"
       },
-      "content": "The Quarterly Planning Process aligns company priorities with team capacity. OKRs are set through [[Strategic Goal Setting]] and informed by [[Budget Allocation Framework]]. Progress is tracked in [[Executive Dashboard Metrics]]. Team capacity is managed via [[Resource Allocation Model]]. Cross-team dependencies are surfaced in [[Dependency Mapping]]. Risk assessment follows [[Risk Management Framework]]. Communication uses [[Leadership Communication Cadence]]. Decisions are documented in [[Decision Log Process]]. Hiring needs feed into [[Talent Pipeline Strategy]].",
+      "content": "# Observability\n\nObservability is a key data practice.\nIt integrates with [[Memory Management]], [[Canary Deploy]], [[Infrastructure as Code]].\n\n## Details\nWorks alongside [[Rate Limiting]], [[Edge Computing]], [[Serverless]], [[CI/CD Pipeline]].\n\nThe machine learning team follows this pattern closely.\nSee also: API-First.",
       "links": [
-        "Strategic Goal Setting",
-        "Budget Allocation Framework",
-        "Executive Dashboard Metrics",
-        "Resource Allocation Model",
-        "Dependency Mapping",
-        "Risk Management Framework",
-        "Leadership Communication Cadence",
-        "Decision Log Process",
-        "Talent Pipeline Strategy"
+        "Memory Management",
+        "Canary Deploy",
+        "Infrastructure as Code",
+        "Rate Limiting",
+        "Edge Computing",
+        "Serverless",
+        "CI/CD Pipeline"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/rollback-strategy.md",
+      "title": "Rollback Strategy",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Rollback Strategy\n\nRollback Strategy is a key data practice.\nIt integrates with [[Serverless]], [[Schema Migration]], [[Memory Management]].\n\n## Details\nWorks alongside [[CI/CD Pipeline]], [[Canary Deploy]].\n\nThe redis team follows this pattern closely.\nSee also: Chaos Engineering.",
+      "links": [
+        "Serverless",
+        "Schema Migration",
+        "Memory Management",
+        "CI/CD Pipeline",
+        "Canary Deploy"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/ci-cd-pipeline.md",
+      "title": "CI/CD Pipeline",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# CI/CD Pipeline\n\nCI/CD Pipeline is a key data practice.\nIt integrates with [[Edge Computing]], [[Rollback Strategy]], [[Schema Migration]].\n\n## Details\nWorks alongside [[Memory Management]], [[Infrastructure as Code]].\n\nThe chaos-engineering team follows this pattern closely.\nSee also: Database Sharding.",
+      "links": [
+        "Edge Computing",
+        "Rollback Strategy",
+        "Schema Migration",
+        "Memory Management",
+        "Infrastructure as Code"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/infrastructure-as-code.md",
+      "title": "Infrastructure as Code",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Infrastructure as Code\n\nInfrastructure as Code is a key data practice.\nIt integrates with [[Serverless]], [[Rate Limiting]], [[Rollback Strategy]].\n\n## Details\nWorks alongside [[Edge Computing]], [[CI/CD Pipeline]], [[Canary Deploy]], [[Memory Management]], [[Schema Migration]].\n\nThe feature-flags team follows this pattern closely.\nSee also: Domain Driven Design.",
+      "links": [
+        "Serverless",
+        "Rate Limiting",
+        "Rollback Strategy",
+        "Edge Computing",
+        "CI/CD Pipeline",
+        "Canary Deploy",
+        "Memory Management",
+        "Schema Migration"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/canary-deploy.md",
+      "title": "Canary Deploy",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Canary Deploy\n\nCanary Deploy is a key data practice.\nIt integrates with [[Edge Computing]], [[Rollback Strategy]], [[CI/CD Pipeline]].\n\n## Details\nWorks alongside [[Serverless]], [[Schema Migration]].\n\nThe api-versioning team follows this pattern closely.\nSee also: Circuit Breaker.",
+      "links": [
+        "Edge Computing",
+        "Rollback Strategy",
+        "CI/CD Pipeline",
+        "Serverless",
+        "Schema Migration"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/memory-management.md",
+      "title": "Memory Management",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Memory Management\n\nMemory Management is a key data practice.\nIt integrates with [[CI/CD Pipeline]], [[Rate Limiting]], [[Rollback Strategy]].\n\n## Details\nWorks alongside [[Infrastructure as Code]], [[Observability]], [[Canary Deploy]], [[Schema Migration]].\n\nThe feature-flags team follows this pattern closely.\nSee also: Site Reliability.",
+      "links": [
+        "CI/CD Pipeline",
+        "Rate Limiting",
+        "Rollback Strategy",
+        "Infrastructure as Code",
+        "Observability",
+        "Canary Deploy",
+        "Schema Migration"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/schema-migration.md",
+      "title": "Schema Migration",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Schema Migration\n\nSchema Migration is a key data practice.\nIt integrates with [[Edge Computing]], [[Memory Management]], [[Rate Limiting]].\n\n## Details\nWorks alongside [[Serverless]], [[Canary Deploy]], [[Rollback Strategy]], [[Observability]], [[Infrastructure as Code]].\n\nThe zero-trust team follows this pattern closely.\nSee also: Agile.",
+      "links": [
+        "Edge Computing",
+        "Memory Management",
+        "Rate Limiting",
+        "Serverless",
+        "Canary Deploy",
+        "Rollback Strategy",
+        "Observability",
+        "Infrastructure as Code"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/serverless.md",
+      "title": "Serverless",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Serverless\n\nServerless is a key data practice.\nIt integrates with [[Schema Migration]], [[CI/CD Pipeline]], [[Rate Limiting]].\n\n## Details\nWorks alongside [[Infrastructure as Code]].\n\nThe solid-principles team follows this pattern closely.\nSee also: GitOps.",
+      "links": [
+        "Schema Migration",
+        "CI/CD Pipeline",
+        "Rate Limiting",
+        "Infrastructure as Code"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/edge-computing.md",
+      "title": "Edge Computing",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Edge Computing\n\nEdge Computing is a key data practice.\nIt integrates with [[Memory Management]], [[Observability]], [[Rate Limiting]].\n\n## Details\nWorks alongside [[Rollback Strategy]], [[CI/CD Pipeline]], [[Serverless]], [[Canary Deploy]].\n\nThe tech debt team follows this pattern closely.\nSee also: Health Checks.",
+      "links": [
+        "Memory Management",
+        "Observability",
+        "Rate Limiting",
+        "Rollback Strategy",
+        "CI/CD Pipeline",
+        "Serverless",
+        "Canary Deploy"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "data/rate-limiting.md",
+      "title": "Rate Limiting",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Rate Limiting\n\nRate Limiting is a key data practice.\nIt integrates with [[Observability]], [[CI/CD Pipeline]], [[Schema Migration]].\n\n## Details\nWorks alongside [[Edge Computing]].\n\nThe event-sourcing team follows this pattern closely.\nSee also: Feature Flags.",
+      "links": [
+        "Observability",
+        "CI/CD Pipeline",
+        "Schema Migration",
+        "Edge Computing"
+      ],
+      "folder": "data"
+    },
+    {
+      "path": "leadership/tdd.md",
+      "title": "TDD",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# TDD\n\nTDD is a key leadership practice.\nIt integrates with [[A/B Testing]], [[Technical Debt]], [[Platform Engineering]].\n\n## Details\nWorks alongside [[Feature Flags]], [[ChatOps]], [[BDD]], [[API Versioning]], [[Service Discovery]].\n\nThe chaos-engineering team follows this pattern closely.\nSee also: Health Checks.",
+      "links": [
+        "A/B Testing",
+        "Technical Debt",
+        "Platform Engineering",
+        "Feature Flags",
+        "ChatOps",
+        "BDD",
+        "API Versioning",
+        "Service Discovery"
       ],
       "folder": "leadership"
     },
     {
-      "path": "leadership/strategic-goals.md",
-      "title": "Strategic Goal Setting",
+      "path": "leadership/bdd.md",
+      "title": "BDD",
       "frontmatter": {
-        "type": "management",
-        "cluster": "leadership"
+        "type": "concepts"
       },
-      "content": "Strategic Goal Setting defines company-level objectives and key results. Goals feed into [[Quarterly Planning Process]] cycles. [[Budget Allocation Framework]] funds strategic initiatives. Progress is visible on [[Executive Dashboard Metrics]]. [[Resource Allocation Model]] assigns teams to goals. [[Dependency Mapping]] identifies cross-goal blockers. [[Risk Management Framework]] assesses goal feasibility. Goals are communicated via [[Leadership Communication Cadence]]. Strategic decisions logged in [[Decision Log Process]]. Talent needs from [[Talent Pipeline Strategy]] support goal execution.",
+      "content": "# BDD\n\nBDD is a key leadership practice.\nIt integrates with [[ChatOps]], [[Technical Debt]], [[Platform Engineering]].\n\n## Details\nWorks alongside [[Pair Programming]], [[A/B Testing]], [[TDD]], [[API Versioning]], [[Feature Flags]].\n\nThe distributed-tracing team follows this pattern closely.\nSee also: Code Reviews.",
       "links": [
-        "Quarterly Planning Process",
-        "Budget Allocation Framework",
-        "Executive Dashboard Metrics",
-        "Resource Allocation Model",
-        "Dependency Mapping",
-        "Risk Management Framework",
-        "Leadership Communication Cadence",
-        "Decision Log Process",
-        "Talent Pipeline Strategy"
+        "ChatOps",
+        "Technical Debt",
+        "Platform Engineering",
+        "Pair Programming",
+        "A/B Testing",
+        "TDD",
+        "API Versioning",
+        "Feature Flags"
       ],
       "folder": "leadership"
     },
     {
-      "path": "leadership/budget-allocation.md",
-      "title": "Budget Allocation Framework",
+      "path": "leadership/a-b-testing.md",
+      "title": "A/B Testing",
       "frontmatter": {
-        "type": "management",
-        "cluster": "leadership"
+        "type": "concepts"
       },
-      "content": "The Budget Allocation Framework distributes financial resources across initiatives. Budgets support [[Quarterly Planning Process]] priorities. Funding aligns with [[Strategic Goal Setting]] objectives. Spending is tracked on [[Executive Dashboard Metrics]]. [[Resource Allocation Model]] translates budget to headcount. [[Dependency Mapping]] identifies shared cost centers. [[Risk Management Framework]] includes budget risk. Budget updates via [[Leadership Communication Cadence]]. Allocation decisions in [[Decision Log Process]]. Hiring budget feeds [[Talent Pipeline Strategy]].",
+      "content": "# A/B Testing\n\nA/B Testing is a key leadership practice.\nIt integrates with [[TDD]], [[Platform Engineering]], [[Pair Programming]].\n\n## Details\nWorks alongside [[Feature Flags]], [[Technical Debt]], [[API Versioning]].\n\nThe o11y team follows this pattern closely.\nSee also: Agile.",
       "links": [
-        "Quarterly Planning Process",
-        "Strategic Goal Setting",
-        "Executive Dashboard Metrics",
-        "Resource Allocation Model",
-        "Dependency Mapping",
-        "Risk Management Framework",
-        "Leadership Communication Cadence",
-        "Decision Log Process",
-        "Talent Pipeline Strategy"
+        "TDD",
+        "Platform Engineering",
+        "Pair Programming",
+        "Feature Flags",
+        "Technical Debt",
+        "API Versioning"
       ],
       "folder": "leadership"
     },
     {
-      "path": "leadership/executive-dashboard.md",
-      "title": "Executive Dashboard Metrics",
+      "path": "leadership/chatops.md",
+      "title": "ChatOps",
       "frontmatter": {
-        "type": "management",
-        "cluster": "leadership"
+        "type": "concepts"
       },
-      "content": "Executive Dashboard Metrics provide real-time visibility into company performance. Dashboards track [[Quarterly Planning Process]] progress. KPIs align with [[Strategic Goal Setting]] objectives. Financial metrics from [[Budget Allocation Framework]]. Team metrics from [[Resource Allocation Model]]. Dependency status from [[Dependency Mapping]]. Risk indicators from [[Risk Management Framework]]. Dashboard reviews in [[Leadership Communication Cadence]]. Metric-driven decisions in [[Decision Log Process]]. Hiring metrics from [[Talent Pipeline Strategy]].",
+      "content": "# ChatOps\n\nChatOps is a key leadership practice.\nIt integrates with [[Service Discovery]], [[TDD]], [[A/B Testing]].\n\n## Details\nWorks alongside [[BDD]], [[API Versioning]].\n\nThe Postgres team follows this pattern closely.\nSee also: Clean Architecture.",
       "links": [
-        "Quarterly Planning Process",
-        "Strategic Goal Setting",
-        "Budget Allocation Framework",
-        "Resource Allocation Model",
-        "Dependency Mapping",
-        "Risk Management Framework",
-        "Leadership Communication Cadence",
-        "Decision Log Process",
-        "Talent Pipeline Strategy"
+        "Service Discovery",
+        "TDD",
+        "A/B Testing",
+        "BDD",
+        "API Versioning"
       ],
       "folder": "leadership"
     },
     {
-      "path": "leadership/resource-allocation.md",
-      "title": "Resource Allocation Model",
+      "path": "leadership/pair-programming.md",
+      "title": "Pair Programming",
       "frontmatter": {
-        "type": "management",
-        "cluster": "leadership"
+        "type": "concepts"
       },
-      "content": "The Resource Allocation Model assigns people and capacity to initiatives. Allocations support [[Quarterly Planning Process]] plans. Teams align with [[Strategic Goal Setting]] priorities. [[Budget Allocation Framework]] funds team capacity. Utilization tracked on [[Executive Dashboard Metrics]]. [[Dependency Mapping]] reveals allocation conflicts. [[Risk Management Framework]] identifies under-staffed risks. Changes communicated via [[Leadership Communication Cadence]]. Allocation decisions in [[Decision Log Process]]. Gaps trigger [[Talent Pipeline Strategy]] hiring.",
+      "content": "# Pair Programming\n\nPair Programming is a key leadership practice.\nIt integrates with [[BDD]], [[ChatOps]], [[A/B Testing]].\n\n## Details\nWorks alongside [[Service Discovery]], [[Feature Flags]], [[API Versioning]].\n\nThe log-aggregation team follows this pattern closely.\nSee also: Agile.",
       "links": [
-        "Quarterly Planning Process",
-        "Strategic Goal Setting",
-        "Budget Allocation Framework",
-        "Executive Dashboard Metrics",
-        "Dependency Mapping",
-        "Risk Management Framework",
-        "Leadership Communication Cadence",
-        "Decision Log Process",
-        "Talent Pipeline Strategy"
+        "BDD",
+        "ChatOps",
+        "A/B Testing",
+        "Service Discovery",
+        "Feature Flags",
+        "API Versioning"
       ],
       "folder": "leadership"
     },
     {
-      "path": "leadership/dependency-mapping.md",
-      "title": "Dependency Mapping",
+      "path": "leadership/platform-engineering.md",
+      "title": "Platform Engineering",
       "frontmatter": {
-        "type": "management",
-        "cluster": "leadership"
+        "type": "concepts"
       },
-      "content": "Dependency Mapping identifies and tracks cross-team and cross-project dependencies. Dependencies are surfaced during [[Quarterly Planning Process]]. [[Strategic Goal Setting]] drives dependency identification. [[Budget Allocation Framework]] funds dependency resolution. Dependency status on [[Executive Dashboard Metrics]]. [[Resource Allocation Model]] assigns owners. [[Risk Management Framework]] escalates blocked dependencies. Dependencies communicated via [[Leadership Communication Cadence]]. Resolution decisions in [[Decision Log Process]]. External dependencies may need [[Talent Pipeline Strategy]] hires.",
+      "content": "# Platform Engineering\n\nPlatform Engineering is a key leadership practice.\nIt integrates with [[API Versioning]], [[Service Discovery]], [[BDD]].\n\n## Details\nWorks alongside [[Pair Programming]], [[TDD]], [[A/B Testing]].\n\nThe machine learning team follows this pattern closely.\nSee also: Domain Driven Design.",
       "links": [
-        "Quarterly Planning Process",
-        "Strategic Goal Setting",
-        "Budget Allocation Framework",
-        "Executive Dashboard Metrics",
-        "Resource Allocation Model",
-        "Risk Management Framework",
-        "Leadership Communication Cadence",
-        "Decision Log Process",
-        "Talent Pipeline Strategy"
+        "API Versioning",
+        "Service Discovery",
+        "BDD",
+        "Pair Programming",
+        "TDD",
+        "A/B Testing"
       ],
       "folder": "leadership"
     },
     {
-      "path": "leadership/risk-management.md",
-      "title": "Risk Management Framework",
+      "path": "leadership/technical-debt.md",
+      "title": "Technical Debt",
       "frontmatter": {
-        "type": "management",
-        "cluster": "leadership"
+        "type": "concepts"
       },
-      "content": "The Risk Management Framework identifies, assesses, and mitigates organizational risks. Risks are reviewed each [[Quarterly Planning Process]]. [[Strategic Goal Setting]] includes risk appetite. [[Budget Allocation Framework]] reserves for risk mitigation. Risk metrics on [[Executive Dashboard Metrics]]. [[Resource Allocation Model]] includes risk buffer. Dependencies from [[Dependency Mapping]] are risk inputs. Risks communicated via [[Leadership Communication Cadence]]. Risk decisions in [[Decision Log Process]]. Talent risks feed [[Talent Pipeline Strategy]].",
+      "content": "# Technical Debt\n\nTechnical Debt is a key leadership practice.\nIt integrates with [[TDD]], [[Service Discovery]], [[Feature Flags]].\n\n## Details\nWorks alongside [[Platform Engineering]], [[Pair Programming]], [[BDD]].\n\nThe gitops team follows this pattern closely.\nSee also: Edge Computing.",
       "links": [
-        "Quarterly Planning Process",
-        "Strategic Goal Setting",
-        "Budget Allocation Framework",
-        "Executive Dashboard Metrics",
-        "Resource Allocation Model",
-        "Dependency Mapping",
-        "Leadership Communication Cadence",
-        "Decision Log Process",
-        "Talent Pipeline Strategy"
+        "TDD",
+        "Service Discovery",
+        "Feature Flags",
+        "Platform Engineering",
+        "Pair Programming",
+        "BDD"
       ],
       "folder": "leadership"
     },
     {
-      "path": "leadership/communication-cadence.md",
-      "title": "Leadership Communication Cadence",
+      "path": "leadership/api-versioning.md",
+      "title": "API Versioning",
       "frontmatter": {
-        "type": "management",
-        "cluster": "leadership"
+        "type": "concepts"
       },
-      "content": "Leadership Communication Cadence defines how executives share information with the organization. Cadence supports [[Quarterly Planning Process]] transparency. [[Strategic Goal Setting]] updates are shared monthly. [[Budget Allocation Framework]] summaries go to managers. [[Executive Dashboard Metrics]] are reviewed weekly. [[Resource Allocation Model]] changes are announced. [[Dependency Mapping]] blockers are escalated. [[Risk Management Framework]] alerts use the cadence. Communications reference [[Decision Log Process]] entries. [[Talent Pipeline Strategy]] updates are shared quarterly.",
+      "content": "# API Versioning\n\nAPI Versioning is a key leadership practice.\nIt integrates with [[ChatOps]], [[Service Discovery]], [[A/B Testing]].\n\n## Details\nWorks alongside [[TDD]], [[Technical Debt]], [[BDD]], [[Platform Engineering]], [[Feature Flags]].\n\nThe Neptune Ins team follows this pattern closely.\nSee also: DevOps.",
       "links": [
-        "Quarterly Planning Process",
-        "Strategic Goal Setting",
-        "Budget Allocation Framework",
-        "Executive Dashboard Metrics",
-        "Resource Allocation Model",
-        "Dependency Mapping",
-        "Risk Management Framework",
-        "Decision Log Process",
-        "Talent Pipeline Strategy"
+        "ChatOps",
+        "Service Discovery",
+        "A/B Testing",
+        "TDD",
+        "Technical Debt",
+        "BDD",
+        "Platform Engineering",
+        "Feature Flags"
       ],
       "folder": "leadership"
     },
     {
-      "path": "leadership/decision-log.md",
-      "title": "Decision Log Process",
+      "path": "leadership/service-discovery.md",
+      "title": "Service Discovery",
       "frontmatter": {
-        "type": "management",
-        "cluster": "leadership"
+        "type": "concepts"
       },
-      "content": "The Decision Log Process records significant organizational decisions with context and rationale. Decisions emerge from [[Quarterly Planning Process]] reviews. [[Strategic Goal Setting]] decisions are logged first. [[Budget Allocation Framework]] decisions include financial justification. Decisions reference [[Executive Dashboard Metrics]]. [[Resource Allocation Model]] changes are documented. [[Dependency Mapping]] resolutions are recorded. [[Risk Management Framework]] mitigations are logged. Decisions shared per [[Leadership Communication Cadence]]. Hiring decisions reference [[Talent Pipeline Strategy]].",
+      "content": "# Service Discovery\n\nService Discovery is a key leadership practice.\nIt integrates with [[Technical Debt]], [[TDD]], [[Platform Engineering]].\n\n## Details\nWorks alongside [[BDD]], [[Feature Flags]].\n\nThe Sky Forge team follows this pattern closely.\nSee also: Database Sharding.",
       "links": [
-        "Quarterly Planning Process",
-        "Strategic Goal Setting",
-        "Budget Allocation Framework",
-        "Executive Dashboard Metrics",
-        "Resource Allocation Model",
-        "Dependency Mapping",
-        "Risk Management Framework",
-        "Leadership Communication Cadence",
-        "Talent Pipeline Strategy"
+        "Technical Debt",
+        "TDD",
+        "Platform Engineering",
+        "BDD",
+        "Feature Flags"
       ],
       "folder": "leadership"
     },
     {
-      "path": "leadership/talent-pipeline.md",
-      "title": "Talent Pipeline Strategy",
+      "path": "leadership/feature-flags.md",
+      "title": "Feature Flags",
       "frontmatter": {
-        "type": "management",
-        "cluster": "leadership"
+        "type": "concepts"
       },
-      "content": "Talent Pipeline Strategy manages hiring, retention, and growth of the engineering organization. Hiring plans support [[Quarterly Planning Process]] staffing needs. Roles align with [[Strategic Goal Setting]] priorities. [[Budget Allocation Framework]] funds headcount. Hiring metrics on [[Executive Dashboard Metrics]]. Allocation gaps from [[Resource Allocation Model]] trigger recruiting. [[Dependency Mapping]] may reveal skill gaps. [[Risk Management Framework]] includes talent risk. Updates shared via [[Leadership Communication Cadence]]. Hiring decisions in [[Decision Log Process]].",
+      "content": "# Feature Flags\n\nFeature Flags is a key leadership practice.\nIt integrates with [[ChatOps]], [[Pair Programming]], [[API Versioning]].\n\n## Details\nWorks alongside [[BDD]], [[Technical Debt]], [[A/B Testing]], [[Platform Engineering]], [[Service Discovery]].\n\nThe database-sharding team follows this pattern closely.\nSee also: Memory Management.",
       "links": [
-        "Quarterly Planning Process",
-        "Strategic Goal Setting",
-        "Budget Allocation Framework",
-        "Executive Dashboard Metrics",
-        "Resource Allocation Model",
-        "Dependency Mapping",
-        "Risk Management Framework",
-        "Leadership Communication Cadence",
-        "Decision Log Process"
+        "ChatOps",
+        "Pair Programming",
+        "API Versioning",
+        "BDD",
+        "Technical Debt",
+        "A/B Testing",
+        "Platform Engineering",
+        "Service Discovery"
       ],
       "folder": "leadership"
     },
     {
-      "path": "people/david-chen.md",
-      "title": "David Chen",
+      "path": "concepts/batch-processing.md",
+      "title": "Batch Processing",
       "frontmatter": {
-        "type": "person",
-        "cluster": "people"
+        "type": "concepts"
       },
-      "content": "David Chen is a senior staff engineer who established the frontend component architecture and API design guidelines. He has been with the company for over six years and mentors junior engineers across multiple teams. David specializes in TypeScript patterns and scalable system design.",
-      "links": [],
+      "content": "# Batch Processing\n\nBatch Processing spans multiple areas: [[Site Reliability]], [[Service Discovery]], [[Canary Deploy]].\n\nAs a concepts, it connects different parts of the organization.\nFollows zero-trust conventions.",
+      "links": [
+        "Site Reliability",
+        "Service Discovery",
+        "Canary Deploy"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/circuit-breaker.md",
+      "title": "Circuit Breaker",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Circuit Breaker\n\nCircuit Breaker spans multiple areas: [[Site Reliability]], [[Design Patterns]], [[Garbage Collection]].\n\nAs a concepts, it connects different parts of the organization.\nFollows zero-trust conventions.",
+      "links": [
+        "Site Reliability",
+        "Design Patterns",
+        "Garbage Collection"
+      ],
+      "folder": "concepts"
+    },
+    {
+      "path": "organizations/skyforge.md",
+      "title": "SkyForge",
+      "frontmatter": {
+        "type": "organizations"
+      },
+      "content": "# SkyForge\n\nSkyForge spans multiple areas: [[Message Queue]], [[Agile]], [[ChatOps]].\n\nAs a organizations, it connects different parts of the organization.\nFollows Sky Forge conventions.",
+      "links": [
+        "Message Queue",
+        "Agile",
+        "ChatOps"
+      ],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/neptune-insurance.md",
+      "title": "Neptune Insurance",
+      "frontmatter": {
+        "type": "organizations"
+      },
+      "content": "# Neptune Insurance\n\nNeptune Insurance spans multiple areas: [[Database Sharding]], [[Canary Deploy]], [[GitOps]].\n\nAs a organizations, it connects different parts of the organization.\nFollows platform-engineering conventions.",
+      "links": [
+        "Database Sharding",
+        "Canary Deploy",
+        "GitOps"
+      ],
+      "folder": "organizations"
+    },
+    {
+      "path": "people/soren-eriksson.md",
+      "title": "Soren Eriksson",
+      "frontmatter": {
+        "type": "people"
+      },
+      "content": "# Soren Eriksson\n\nSoren Eriksson spans multiple areas: [[Serverless]], [[API Versioning]], [[Log Aggregation]].\n\nAs a people, it connects different parts of the organization.\nFollows Pay Stream conventions.",
+      "links": [
+        "Serverless",
+        "API Versioning",
+        "Log Aggregation"
+      ],
       "folder": "people"
     },
     {
-      "path": "projects/esghub.md",
-      "title": "ESGHub",
+      "path": "people/ines-dufresne.md",
+      "title": "Ines Dufresne",
       "frontmatter": {
-        "type": "project",
-        "cluster": "projects"
+        "type": "people"
       },
-      "content": "ESGHub is the company's primary environmental, social, and governance reporting platform. It serves as the main consumer of the backend API services and drives many of the API design decisions. The platform handles regulatory compliance data for enterprise clients.",
-      "links": [],
+      "content": "# Ines Dufresne\n\nInes Dufresne spans multiple areas: [[Data Lake]], [[Container Orchestration]], [[Database Sharding]].\n\nAs a people, it connects different parts of the organization.\nFollows event-sourcing conventions.",
+      "links": [
+        "Data Lake",
+        "Container Orchestration",
+        "Database Sharding"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "people/leo-vasquez.md",
+      "title": "Leo Vasquez",
+      "frontmatter": {
+        "type": "people"
+      },
+      "content": "# Leo Vasquez\n\nLeo Vasquez spans multiple areas: [[Schema Migration]], [[Database Sharding]], [[API-First]].\n\nAs a people, it connects different parts of the organization.\nFollows zero-trust conventions.",
+      "links": [
+        "Schema Migration",
+        "Database Sharding",
+        "API-First"
+      ],
+      "folder": "people"
+    },
+    {
+      "path": "projects/project-meridian.md",
+      "title": "Project Meridian",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# Project Meridian\n\nProject Meridian spans multiple areas: [[GitOps]], [[ChatOps]], [[Clean Architecture]].\n\nAs a projects, it connects different parts of the organization.\nFollows serverless conventions.",
+      "links": [
+        "GitOps",
+        "ChatOps",
+        "Clean Architecture"
+      ],
       "folder": "projects"
     },
     {
-      "path": "technologies/postgresql.md",
-      "title": "PostgreSQL",
+      "path": "projects/paystream.md",
+      "title": "PayStream",
       "frontmatter": {
-        "type": "technology",
-        "cluster": "technologies"
+        "type": "projects"
       },
-      "content": "PostgreSQL is the primary relational database used across backend services. It handles transactional data storage, complex queries, and supports the Prisma ORM layer. The database runs in high-availability configuration with read replicas for analytics workloads.",
-      "links": [],
-      "folder": "technologies"
+      "content": "# PayStream\n\nPayStream spans multiple areas: [[Machine Learning]], [[GitOps]], [[Pair Programming]].\n\nAs a projects, it connects different parts of the organization.\nFollows Meridian conventions.",
+      "links": [
+        "Machine Learning",
+        "GitOps",
+        "Pair Programming"
+      ],
+      "folder": "projects"
     },
     {
       "path": "technologies/redis.md",
       "title": "Redis",
       "frontmatter": {
-        "type": "technology",
-        "cluster": "technologies"
+        "type": "technologies"
       },
-      "content": "Redis serves as the in-memory data store for caching, rate limiting counters, and job queue backends. It is deployed in a clustered configuration for high availability. Redis is used extensively by both the backend API layer and the data processing pipeline.",
-      "links": [],
+      "content": "# Redis\n\nRedis spans multiple areas: [[Event Sourcing]], [[BDD]], [[Stream Processing]].\n\nAs a technologies, it connects different parts of the organization.\nFollows o11y conventions.",
+      "links": [
+        "Event Sourcing",
+        "BDD",
+        "Stream Processing"
+      ],
       "folder": "technologies"
     },
     {
-      "path": "projects/datapipeline.md",
-      "title": "DataPipeline",
+      "path": "technologies/postgresql.md",
+      "title": "PostgreSQL",
       "frontmatter": {
-        "type": "project",
-        "cluster": "projects"
+        "type": "technologies"
       },
-      "content": "DataPipeline is the internal project name for the ETL system that moves data from external sources into the analytics warehouse. It processes millions of records daily and supports both batch and streaming ingestion modes. The system is maintained by the data engineering team.",
-      "links": [],
-      "folder": "projects"
-    },
-    {
-      "path": "people/sarah-obrien.md",
-      "title": "Sarah O'Brien",
-      "frontmatter": {
-        "type": "person",
-        "cluster": "people"
-      },
-      "content": "Sarah O'Brien is the data engineering team lead responsible for the ETL pipeline infrastructure. She has deep expertise in distributed data processing and warehouse architecture. Sarah drives the data quality and pipeline reliability initiatives across the organization.",
-      "links": [],
-      "folder": "people"
-    },
-    {
-      "path": "people/marcus-johnson.md",
-      "title": "Marcus Johnson",
-      "frontmatter": {
-        "type": "person",
-        "cluster": "people"
-      },
-      "content": "Marcus Johnson leads the DevOps team and is responsible for the Terraform module library and infrastructure automation. He has extensive experience with cloud infrastructure and infrastructure-as-code practices. Marcus champions the GitOps workflow adopted by the engineering organization.",
-      "links": [],
-      "folder": "people"
-    },
-    {
-      "path": "technologies/kubernetes.md",
-      "title": "Kubernetes",
-      "frontmatter": {
-        "type": "technology",
-        "cluster": "technologies"
-      },
-      "content": "Kubernetes is the container orchestration platform used for all production workloads. It provides namespace isolation, resource management, and service discovery across the infrastructure. The cluster is managed through Terraform modules and GitOps deployment workflows.",
-      "links": [],
+      "content": "# PostgreSQL\n\nPostgreSQL spans multiple areas: [[Domain Driven Design]], [[Agile]], [[Serverless]].\n\nAs a technologies, it connects different parts of the organization.\nFollows redis conventions.",
+      "links": [
+        "Domain Driven Design",
+        "Agile",
+        "Serverless"
+      ],
       "folder": "technologies"
     },
     {
-      "path": "technologies/docker.md",
-      "title": "Docker",
+      "path": "technologies/python.md",
+      "title": "Python",
       "frontmatter": {
-        "type": "technology",
-        "cluster": "technologies"
+        "type": "technologies"
       },
-      "content": "Docker is used for containerizing all application services and managing image lifecycles. Container images are stored in the internal registry and deployed to Kubernetes clusters. Docker builds are automated through the CI pipeline and follow standardized base image conventions.",
-      "links": [],
+      "content": "# Python\n\nPython spans multiple areas: [[ETL Pipeline]], [[Clean Architecture]], [[API Versioning]].\n\nAs a technologies, it connects different parts of the organization.\nFollows infrastructure-as-code conventions.",
+      "links": [
+        "ETL Pipeline",
+        "Clean Architecture",
+        "API Versioning"
+      ],
       "folder": "technologies"
     },
     {
-      "path": "concepts/cicd.md",
-      "title": "CI/CD",
+      "path": "technologies/kafka.md",
+      "title": "Kafka",
       "frontmatter": {
-        "type": "concept",
-        "cluster": "concepts"
+        "type": "technologies"
       },
-      "content": "CI/CD encompasses the continuous integration and continuous deployment practices used across all engineering teams. The pipeline automates testing, building, and deploying applications through the GitOps workflow. It ensures code quality and rapid, reliable delivery of changes to production.",
-      "links": [],
-      "folder": "concepts"
-    },
-    {
-      "path": "organizations/acme-corp.md",
-      "title": "Acme Corp",
-      "frontmatter": {
-        "type": "organization",
-        "cluster": "organizations"
-      },
-      "content": "Acme Corp is the parent organization that encompasses all engineering teams and business units. Company-level processes such as quarterly planning, budget allocation, and strategic goal setting are coordinated at the Acme Corp level. The organization employs over 500 people across multiple offices.",
-      "links": [],
-      "folder": "organizations"
-    },
-    {
-      "path": "concepts/agile-methodology.md",
-      "title": "Agile Methodology",
-      "frontmatter": {
-        "type": "concept",
-        "cluster": "concepts"
-      },
-      "content": "Agile Methodology underpins the planning and execution processes used by engineering and leadership teams. It emphasizes iterative delivery, continuous feedback, and adaptive planning. The quarterly planning process and sprint cadences are structured around agile principles.",
-      "links": [],
-      "folder": "concepts"
-    },
-    {
-      "path": "organizations/board-of-directors.md",
-      "title": "Board of Directors",
-      "frontmatter": {
-        "type": "organization",
-        "cluster": "organizations"
-      },
-      "content": "The Board of Directors provides governance and strategic oversight for the organization. They review executive dashboard metrics and quarterly performance reports. The board meets regularly to evaluate company direction, financial performance, and risk management posture.",
-      "links": [],
-      "folder": "organizations"
+      "content": "# Kafka\n\nKafka spans multiple areas: [[Rate Limiting]], [[Container Orchestration]], [[Caching Strategy]].\n\nAs a technologies, it connects different parts of the organization.\nFollows API First conventions.",
+      "links": [
+        "Rate Limiting",
+        "Container Orchestration",
+        "Caching Strategy"
+      ],
+      "folder": "technologies"
     }
   ],
   "groundTruth": [
     {
-      "notePath": "frontend/react-component-architecture.md",
-      "entity": "David Chen",
-      "tier": 2,
-      "reason": "David Chen established the component architecture patterns used by the frontend team"
-    },
-    {
-      "notePath": "backend/api-design-principles.md",
-      "entity": "David Chen",
-      "tier": 2,
-      "reason": "David Chen authored the API design guidelines referenced in the principles"
-    },
-    {
-      "notePath": "backend/api-design-principles.md",
-      "entity": "ESGHub",
-      "tier": 2,
-      "reason": "API design principles primarily serve the ESGHub platform"
-    },
-    {
-      "notePath": "backend/database-patterns.md",
-      "entity": "PostgreSQL",
+      "notePath": "frontend/data-lake.md",
+      "entity": "SOLID Principles",
       "tier": 1,
-      "reason": "Content explicitly mentions 'PostgreSQL and Redis' as database targets"
+      "reason": "Content directly mentions 'SOLID Principles' as plain text without wikilink"
     },
     {
-      "notePath": "backend/database-patterns.md",
-      "entity": "Redis",
+      "notePath": "frontend/data-lake.md",
+      "entity": "Data Lake",
       "tier": 1,
-      "reason": "Content mentions 'Redis patterns' for rate limiting counters"
+      "reason": "Content directly mentions 'Data Lake' as plain text without wikilink"
     },
     {
-      "notePath": "data/etl-pipeline-design.md",
-      "entity": "DataPipeline",
+      "notePath": "frontend/zero-trust.md",
+      "entity": "Zero Trust",
       "tier": 1,
-      "reason": "ETL pipeline design describes the DataPipeline system"
+      "reason": "Content directly mentions 'Zero Trust' as plain text without wikilink"
     },
     {
-      "notePath": "data/etl-pipeline-design.md",
-      "entity": "Sarah O'Brien",
+      "notePath": "frontend/zero-trust.md",
+      "entity": "Circuit Breaker",
+      "tier": 1,
+      "reason": "Content directly mentions 'Circuit Breaker' as plain text without wikilink"
+    },
+    {
+      "notePath": "frontend/performance-tuning.md",
+      "entity": "Domain Driven Design",
+      "tier": 1,
+      "reason": "Content directly mentions 'Domain Driven Design' as plain text without wikilink"
+    },
+    {
+      "notePath": "frontend/performance-tuning.md",
+      "entity": "Performance Tuning",
+      "tier": 1,
+      "reason": "Content directly mentions 'Performance Tuning' as plain text without wikilink"
+    },
+    {
+      "notePath": "frontend/api-first.md",
+      "entity": "API-First",
+      "tier": 1,
+      "reason": "Content directly mentions 'API-First' as plain text without wikilink"
+    },
+    {
+      "notePath": "frontend/data-lake.md",
+      "entity": "Agile",
       "tier": 2,
-      "reason": "Sarah O'Brien leads the data engineering team that owns ETL"
+      "reason": "Alias \"agile methodology\" matches entity Agile"
     },
     {
-      "notePath": "data/job-queue.md",
-      "entity": "Redis",
-      "tier": 1,
-      "reason": "Content describes 'Redis-backed queues' for job processing"
-    },
-    {
-      "notePath": "devops/terraform-modules.md",
-      "entity": "Marcus Johnson",
+      "notePath": "frontend/zero-trust.md",
+      "entity": "Microservices",
       "tier": 2,
-      "reason": "Marcus Johnson leads the DevOps team that maintains Terraform modules"
+      "reason": "Alias \"microservice\" matches entity Microservices"
     },
     {
-      "notePath": "devops/k8s-namespace.md",
-      "entity": "Kubernetes",
-      "tier": 1,
-      "reason": "Content directly describes Kubernetes namespace configuration"
-    },
-    {
-      "notePath": "devops/container-registry.md",
-      "entity": "Docker",
-      "tier": 1,
-      "reason": "Content describes 'Docker image storage and distribution'"
-    },
-    {
-      "notePath": "devops/gitops-workflow.md",
-      "entity": "CI/CD",
+      "notePath": "frontend/performance-tuning.md",
+      "entity": "Python",
       "tier": 2,
-      "reason": "GitOps workflow is the deployment component of CI/CD"
+      "reason": "Alias \"python3\" matches entity Python"
     },
     {
-      "notePath": "leadership/quarterly-planning.md",
-      "entity": "Acme Corp",
-      "tier": 1,
-      "reason": "Quarterly planning is a company-level Acme Corp process"
-    },
-    {
-      "notePath": "leadership/quarterly-planning.md",
-      "entity": "Agile Methodology",
+      "notePath": "frontend/api-first.md",
+      "entity": "Neptune Insurance",
       "tier": 2,
-      "reason": "Planning process follows agile principles"
+      "reason": "Alias \"Neptune Ins\" matches entity Neptune Insurance"
     },
     {
-      "notePath": "leadership/executive-dashboard.md",
-      "entity": "Board of Directors",
+      "notePath": "frontend/blue-green-deploy.md",
+      "entity": "Rate Limiting",
       "tier": 2,
-      "reason": "Executive dashboard serves the Board of Directors"
+      "reason": "Alias \"rate-limiting\" matches entity Rate Limiting"
+    },
+    {
+      "notePath": "frontend/garbage-collection.md",
+      "entity": "PayStream",
+      "tier": 2,
+      "reason": "Alias \"Pay Stream\" matches entity PayStream"
+    },
+    {
+      "notePath": "frontend/stream-processing.md",
+      "entity": "Message Queue",
+      "tier": 2,
+      "reason": "Alias \"message-queue\" matches entity Message Queue"
+    },
+    {
+      "notePath": "frontend/clean-architecture.md",
+      "entity": "SOLID Principles",
+      "tier": 2,
+      "reason": "Alias \"solid-principles\" matches entity SOLID Principles"
     }
   ]
 }

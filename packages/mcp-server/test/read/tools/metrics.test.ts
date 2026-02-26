@@ -261,8 +261,9 @@ describe('vault_growth', () => {
     it('should count suppressed entities', () => {
       const index = buildIndex([makeNote('note.md')]);
 
-      // Create a suppressed entity (10+ entries, >=30% FP)
-      for (let i = 0; i < 10; i++) {
+      // Create a suppressed entity (25 negatives)
+      // Posterior: Beta(8, 26) = 8/34 = 0.235 < 0.35, totalObs=34 >= 20
+      for (let i = 0; i < 25; i++) {
         recordFeedback(stateDb, 'Go', `fp ${i}`, `note${i}.md`, false);
       }
       updateSuppressionList(stateDb);

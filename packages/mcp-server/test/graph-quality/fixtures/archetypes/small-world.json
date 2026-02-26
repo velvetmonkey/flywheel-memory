@@ -1,2504 +1,2521 @@
 {
   "archetype": "small-world",
   "seed": 106,
-  "description": "100 notes with small-world topology: high clustering (0.3+) with low avg path length (<3.0). Notes form a ring lattice with random rewiring. Tests path length maintenance, clustering preservation, and realistic PKM structure.",
+  "description": "Small-world network with 10 clusters of 10 notes. High clustering within clusters, random shortcut links between clusters. Tests path length maintenance and clustering.",
   "entities": [
     {
-      "name": "A/B Testing Framework",
+      "name": "Zero Trust",
       "category": "concepts",
-      "path": "ml-research/ab-testing.md",
-      "aliases": [],
-      "hubScore": 3
+      "path": "concepts/zero-trust.md",
+      "aliases": [
+        "zero-trust"
+      ],
+      "hubScore": 15
     },
     {
-      "name": "API Gateway",
-      "category": "projects",
-      "path": "platform/api-gateway.md",
-      "aliases": [],
-      "hubScore": 7
-    },
-    {
-      "name": "Accessibility Standards",
+      "name": "Technical Debt",
       "category": "concepts",
-      "path": "frontend/a11y-standards.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "concepts/technical-debt.md",
+      "aliases": [
+        "tech debt"
+      ],
+      "hubScore": 35
     },
     {
-      "name": "Alex Okafor",
-      "category": "people",
-      "path": "people/alex-okafor.md",
-      "aliases": [],
-      "hubScore": 5
-    },
-    {
-      "name": "Anomaly Detector",
-      "category": "projects",
-      "path": "ml-research/anomaly-detector.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "Austin",
-      "category": "locations",
-      "path": "entities/austin.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "Auth System",
-      "category": "projects",
-      "path": "platform/auth-system.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "Ava Kim",
-      "category": "people",
-      "path": "people/ava-kim.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "Backup Strategy",
+      "name": "Machine Learning",
       "category": "concepts",
-      "path": "operations/backup-strategy.md",
-      "aliases": [],
-      "hubScore": 6
+      "path": "concepts/machine-learning.md",
+      "aliases": [
+        "ML",
+        "machine learning"
+      ],
+      "hubScore": 70
     },
     {
-      "name": "Batch Scheduler",
+      "name": "Microservices",
       "category": "concepts",
-      "path": "data-eng/batch-scheduler.md",
-      "aliases": [],
-      "hubScore": 3
+      "path": "concepts/microservices.md",
+      "aliases": [
+        "microservice",
+        "micro-services"
+      ],
+      "hubScore": 50
     },
     {
-      "name": "Berlin",
-      "category": "locations",
-      "path": "entities/berlin.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "Build System",
+      "name": "API-First",
       "category": "concepts",
-      "path": "frontend/build-system.md",
-      "aliases": [],
-      "hubScore": 3
+      "path": "concepts/api-first.md",
+      "aliases": [
+        "API First",
+        "api-first design"
+      ],
+      "hubScore": 25
     },
     {
-      "name": "CI/CD System",
-      "category": "projects",
-      "path": "operations/cicd-system.md",
-      "aliases": [],
-      "hubScore": 8
-    },
-    {
-      "name": "Caching Layer",
+      "name": "Observability",
       "category": "concepts",
-      "path": "platform/caching-layer.md",
-      "aliases": [],
-      "hubScore": 5
+      "path": "concepts/observability.md",
+      "aliases": [
+        "o11y"
+      ],
+      "hubScore": 55
     },
     {
-      "name": "Capacity Planning",
+      "name": "Clean Architecture",
       "category": "concepts",
-      "path": "operations/capacity-planning.md",
-      "aliases": [],
-      "hubScore": 3
+      "path": "concepts/clean-architecture.md",
+      "aliases": [
+        "clean arch"
+      ],
+      "hubScore": 20
     },
     {
-      "name": "Carlos Rivera",
-      "category": "people",
-      "path": "people/carlos-rivera.md",
-      "aliases": [],
-      "hubScore": 2
-    },
-    {
-      "name": "Chart Library",
+      "name": "Event Sourcing",
       "category": "concepts",
-      "path": "frontend/chart-library.md",
-      "aliases": [],
-      "hubScore": 3
+      "path": "concepts/event-sourcing.md",
+      "aliases": [
+        "event-sourcing"
+      ],
+      "hubScore": 30
     },
     {
-      "name": "Component System",
-      "category": "projects",
-      "path": "frontend/component-system.md",
-      "aliases": [],
-      "hubScore": 5
-    },
-    {
-      "name": "Config Service",
-      "category": "projects",
-      "path": "platform/config-service.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "Container Registry",
+      "name": "Domain Driven Design",
       "category": "concepts",
-      "path": "operations/container-registry.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "concepts/domain-driven-design.md",
+      "aliases": [
+        "DDD"
+      ],
+      "hubScore": 20
     },
     {
-      "name": "Cost Tracking",
+      "name": "DevOps",
       "category": "concepts",
-      "path": "operations/cost-tracking.md",
-      "aliases": [],
-      "hubScore": 3
+      "path": "concepts/devops.md",
+      "aliases": [
+        "devops"
+      ],
+      "hubScore": 70
     },
     {
-      "name": "Data Catalog",
-      "category": "projects",
-      "path": "data-eng/data-catalog.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "Data Governance Policy",
+      "name": "Continuous Integration",
       "category": "concepts",
-      "path": "data-eng/data-governance.md",
-      "aliases": [],
-      "hubScore": 5
+      "path": "concepts/continuous-integration.md",
+      "aliases": [
+        "CI",
+        "continuous integration"
+      ],
+      "hubScore": 40
     },
     {
-      "name": "Data Lineage Tracker",
+      "name": "Agile",
       "category": "concepts",
-      "path": "data-eng/data-lineage.md",
-      "aliases": [],
-      "hubScore": 7
+      "path": "concepts/agile.md",
+      "aliases": [
+        "agile methodology"
+      ],
+      "hubScore": 45
     },
     {
-      "name": "Data Platform Overview",
+      "name": "Design Patterns",
       "category": "concepts",
-      "path": "data-eng/data-platform.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "Data Quality Framework",
-      "category": "concepts",
-      "path": "data-eng/data-quality.md",
-      "aliases": [],
-      "hubScore": 7
-    },
-    {
-      "name": "Data Team",
-      "category": "organizations",
-      "path": "entities/data-team.md",
-      "aliases": [],
-      "hubScore": 5
-    },
-    {
-      "name": "Data Testing Patterns",
-      "category": "concepts",
-      "path": "data-eng/data-testing.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "Data Warehouse",
-      "category": "projects",
-      "path": "data-eng/data-warehouse.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "Database Migrations",
-      "category": "concepts",
-      "path": "platform/db-migrations.md",
-      "aliases": [],
-      "hubScore": 8
-    },
-    {
-      "name": "Deployment Pipeline",
-      "category": "concepts",
-      "path": "operations/deploy-pipeline.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "Design System",
-      "category": "concepts",
-      "path": "frontend/design-system.md",
-      "aliases": [],
-      "hubScore": 5
-    },
-    {
-      "name": "Docker",
-      "category": "technologies",
-      "path": "entities/docker.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "ETL Monitoring",
-      "category": "concepts",
-      "path": "data-eng/etl-monitoring.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "Embedding Service",
-      "category": "projects",
-      "path": "ml-research/embedding-service.md",
-      "aliases": [],
-      "hubScore": 2
-    },
-    {
-      "name": "Error Boundary Strategy",
-      "category": "concepts",
-      "path": "frontend/error-boundary.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "Error Taxonomy",
-      "category": "concepts",
-      "path": "platform/error-taxonomy.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "Evaluation Framework",
-      "category": "concepts",
-      "path": "ml-research/eval-framework.md",
-      "aliases": [],
-      "hubScore": 5
-    },
-    {
-      "name": "Event Bus",
-      "category": "concepts",
-      "path": "platform/event-bus.md",
-      "aliases": [],
-      "hubScore": 2
-    },
-    {
-      "name": "Experiment Tracker",
-      "category": "concepts",
-      "path": "ml-research/experiment-tracker.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "Feature Engineering",
-      "category": "concepts",
-      "path": "ml-research/feature-eng.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "Feature Store",
-      "category": "concepts",
-      "path": "data-eng/feature-store.md",
-      "aliases": [],
-      "hubScore": 2
-    },
-    {
-      "name": "Form Framework",
-      "category": "concepts",
-      "path": "frontend/form-framework.md",
-      "aliases": [],
-      "hubScore": 2
-    },
-    {
-      "name": "Frontend Architecture",
-      "category": "concepts",
-      "path": "frontend/frontend-arch.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "Frontend Team",
-      "category": "organizations",
-      "path": "entities/frontend-team.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "Frontend Testing",
-      "category": "concepts",
-      "path": "frontend/frontend-testing.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "GraphQL",
-      "category": "technologies",
-      "path": "entities/graphql.md",
-      "aliases": [],
-      "hubScore": 1
-    },
-    {
-      "name": "Health Check Framework",
-      "category": "concepts",
-      "path": "platform/health-checks.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "I18N Framework",
-      "category": "concepts",
-      "path": "frontend/i18n-framework.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "Incident Management",
-      "category": "concepts",
-      "path": "operations/incident-mgmt.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "Ingestion Engine",
-      "category": "projects",
-      "path": "data-eng/ingestion-engine.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "Jake Morrison",
-      "category": "people",
-      "path": "people/jake-morrison.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "Kafka",
-      "category": "technologies",
-      "path": "entities/kafka.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "Kubernetes",
-      "category": "technologies",
-      "path": "entities/kubernetes.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "Kubernetes Management",
-      "category": "concepts",
-      "path": "operations/k8s-management.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "ML Ethics Guidelines",
-      "category": "concepts",
-      "path": "ml-research/ml-ethics.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "ML Monitoring",
-      "category": "concepts",
-      "path": "ml-research/ml-monitoring.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "ML Platform",
-      "category": "concepts",
-      "path": "ml-research/ml-platform.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "ML Team",
-      "category": "organizations",
-      "path": "entities/ml-team.md",
-      "aliases": [],
-      "hubScore": 5
-    },
-    {
-      "name": "Mei Lin",
-      "category": "people",
-      "path": "people/mei-lin.md",
-      "aliases": [],
+      "path": "concepts/design-patterns.md",
+      "aliases": [
+        "design-patterns"
+      ],
       "hubScore": 10
     },
     {
-      "name": "Model Registry",
+      "name": "SOLID Principles",
       "category": "concepts",
-      "path": "ml-research/model-registry.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "concepts/solid-principles.md",
+      "aliases": [
+        "solid-principles"
+      ],
+      "hubScore": 17
     },
     {
-      "name": "Monitoring Stack",
+      "name": "Code Reviews",
       "category": "concepts",
-      "path": "operations/monitoring-stack.md",
-      "aliases": [],
-      "hubScore": 8
+      "path": "concepts/code-reviews.md",
+      "aliases": [
+        "code-reviews"
+      ],
+      "hubScore": 24
     },
     {
-      "name": "NLP Classifier",
-      "category": "projects",
-      "path": "ml-research/nlp-classifier.md",
-      "aliases": [],
-      "hubScore": 2
-    },
-    {
-      "name": "Network Policies",
+      "name": "Pair Programming",
       "category": "concepts",
-      "path": "operations/network-policies.md",
-      "aliases": [],
-      "hubScore": 5
+      "path": "concepts/pair-programming.md",
+      "aliases": [
+        "pair-programming"
+      ],
+      "hubScore": 31
     },
     {
-      "name": "Nina Petrov",
-      "category": "people",
-      "path": "people/nina-petrov.md",
-      "aliases": [],
-      "hubScore": 2
-    },
-    {
-      "name": "Nova Analytics",
-      "category": "projects",
-      "path": "projects/nova-analytics.md",
-      "aliases": [],
-      "hubScore": 2
-    },
-    {
-      "name": "Nova Dashboard",
-      "category": "projects",
-      "path": "frontend/nova-dashboard.md",
-      "aliases": [],
-      "hubScore": 7
-    },
-    {
-      "name": "Nova Mobile App",
-      "category": "projects",
-      "path": "frontend/mobile-app.md",
-      "aliases": [],
-      "hubScore": 2
-    },
-    {
-      "name": "NovaTech",
-      "category": "organizations",
-      "path": "organizations/novatech.md",
-      "aliases": [],
-      "hubScore": 9
-    },
-    {
-      "name": "On-Call Rotation",
+      "name": "TDD",
       "category": "concepts",
-      "path": "operations/on-call-rotation.md",
-      "aliases": [],
-      "hubScore": 8
+      "path": "concepts/tdd.md",
+      "aliases": [
+        "tdd"
+      ],
+      "hubScore": 38
     },
     {
-      "name": "Operations Overview",
+      "name": "BDD",
       "category": "concepts",
-      "path": "operations/ops-overview.md",
-      "aliases": [],
-      "hubScore": 2
+      "path": "concepts/bdd.md",
+      "aliases": [
+        "bdd"
+      ],
+      "hubScore": 15
     },
     {
-      "name": "Ops Team",
-      "category": "organizations",
-      "path": "entities/ops-team.md",
-      "aliases": [],
-      "hubScore": 7
-    },
-    {
-      "name": "Performance Budget",
+      "name": "CI/CD Pipeline",
       "category": "concepts",
-      "path": "frontend/perf-budget.md",
-      "aliases": [],
-      "hubScore": 6
+      "path": "concepts/ci-cd-pipeline.md",
+      "aliases": [
+        "ci-cd-pipeline"
+      ],
+      "hubScore": 22
     },
     {
-      "name": "Platform Architecture",
+      "name": "Load Balancing",
       "category": "concepts",
-      "path": "platform/platform-architecture.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "concepts/load-balancing.md",
+      "aliases": [
+        "load-balancing"
+      ],
+      "hubScore": 29
     },
     {
-      "name": "Platform Logging",
+      "name": "Caching Strategy",
       "category": "concepts",
-      "path": "platform/platform-logging.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "concepts/caching-strategy.md",
+      "aliases": [
+        "caching-strategy"
+      ],
+      "hubScore": 36
     },
     {
-      "name": "Platform SDK",
-      "category": "projects",
-      "path": "platform/platform-sdk.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "Platform Team",
-      "category": "organizations",
-      "path": "entities/platform-team.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "Platform Testing Strategy",
+      "name": "Database Sharding",
       "category": "concepts",
-      "path": "platform/platform-testing.md",
-      "aliases": [],
-      "hubScore": 3
+      "path": "concepts/database-sharding.md",
+      "aliases": [
+        "database-sharding"
+      ],
+      "hubScore": 13
     },
     {
-      "name": "Python",
-      "category": "technologies",
-      "path": "entities/python.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "Query Optimizer Notes",
+      "name": "Message Queue",
       "category": "concepts",
-      "path": "data-eng/query-optimizer.md",
-      "aliases": [],
-      "hubScore": 1
+      "path": "concepts/message-queue.md",
+      "aliases": [
+        "message-queue"
+      ],
+      "hubScore": 20
     },
     {
-      "name": "React",
-      "category": "technologies",
-      "path": "entities/react.md",
-      "aliases": [],
-      "hubScore": 2
-    },
-    {
-      "name": "Recommendation Engine",
-      "category": "projects",
-      "path": "ml-research/recommendation-engine.md",
-      "aliases": [],
-      "hubScore": 4
-    },
-    {
-      "name": "Redis",
-      "category": "technologies",
-      "path": "entities/redis.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "Ryan Nakamura",
-      "category": "people",
-      "path": "people/ryan-nakamura.md",
-      "aliases": [],
-      "hubScore": 6
-    },
-    {
-      "name": "SRE Runbooks",
+      "name": "Service Discovery",
       "category": "concepts",
-      "path": "operations/sre-runbooks.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "concepts/service-discovery.md",
+      "aliases": [
+        "service-discovery"
+      ],
+      "hubScore": 27
     },
     {
-      "name": "Schema Evolution Strategy",
+      "name": "Circuit Breaker",
       "category": "concepts",
-      "path": "data-eng/schema-evolution.md",
-      "aliases": [],
-      "hubScore": 2
+      "path": "concepts/circuit-breaker.md",
+      "aliases": [
+        "circuit-breaker"
+      ],
+      "hubScore": 34
     },
     {
-      "name": "Schema Registry",
+      "name": "Rate Limiting",
       "category": "concepts",
-      "path": "platform/schema-registry.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "concepts/rate-limiting.md",
+      "aliases": [
+        "rate-limiting"
+      ],
+      "hubScore": 11
     },
     {
-      "name": "Scoring Model",
-      "category": "projects",
-      "path": "ml-research/scoring-model.md",
-      "aliases": [],
-      "hubScore": 3
-    },
-    {
-      "name": "Secret Management",
+      "name": "Blue-Green Deploy",
       "category": "concepts",
-      "path": "operations/secret-mgmt.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "concepts/blue-green-deploy.md",
+      "aliases": [
+        "blue-green-deploy"
+      ],
+      "hubScore": 18
     },
     {
-      "name": "Service Mesh",
+      "name": "A/B Testing",
       "category": "concepts",
-      "path": "platform/service-mesh.md",
-      "aliases": [],
-      "hubScore": 5
+      "path": "concepts/a-b-testing.md",
+      "aliases": [
+        "a-b-testing"
+      ],
+      "hubScore": 25
     },
     {
-      "name": "Serving Layer",
+      "name": "Feature Flags",
       "category": "concepts",
-      "path": "ml-research/serving-layer.md",
-      "aliases": [],
-      "hubScore": 3
+      "path": "concepts/feature-flags.md",
+      "aliases": [
+        "feature-flags"
+      ],
+      "hubScore": 32
     },
     {
-      "name": "Sophie Chen",
-      "category": "people",
-      "path": "people/sophie-chen.md",
-      "aliases": [],
-      "hubScore": 5
-    },
-    {
-      "name": "State Management",
+      "name": "Canary Deploy",
       "category": "concepts",
-      "path": "frontend/state-mgmt.md",
-      "aliases": [],
-      "hubScore": 2
+      "path": "concepts/canary-deploy.md",
+      "aliases": [
+        "canary-deploy"
+      ],
+      "hubScore": 39
+    },
+    {
+      "name": "Rollback Strategy",
+      "category": "concepts",
+      "path": "concepts/rollback-strategy.md",
+      "aliases": [
+        "rollback-strategy"
+      ],
+      "hubScore": 16
+    },
+    {
+      "name": "Health Checks",
+      "category": "concepts",
+      "path": "concepts/health-checks.md",
+      "aliases": [
+        "health-checks"
+      ],
+      "hubScore": 23
+    },
+    {
+      "name": "Log Aggregation",
+      "category": "concepts",
+      "path": "concepts/log-aggregation.md",
+      "aliases": [
+        "log-aggregation"
+      ],
+      "hubScore": 30
+    },
+    {
+      "name": "Distributed Tracing",
+      "category": "concepts",
+      "path": "concepts/distributed-tracing.md",
+      "aliases": [
+        "distributed-tracing"
+      ],
+      "hubScore": 37
+    },
+    {
+      "name": "API Versioning",
+      "category": "concepts",
+      "path": "concepts/api-versioning.md",
+      "aliases": [
+        "api-versioning"
+      ],
+      "hubScore": 14
+    },
+    {
+      "name": "Schema Migration",
+      "category": "concepts",
+      "path": "concepts/schema-migration.md",
+      "aliases": [
+        "schema-migration"
+      ],
+      "hubScore": 21
+    },
+    {
+      "name": "Data Lake",
+      "category": "concepts",
+      "path": "concepts/data-lake.md",
+      "aliases": [
+        "data-lake"
+      ],
+      "hubScore": 28
+    },
+    {
+      "name": "ETL Pipeline",
+      "category": "concepts",
+      "path": "concepts/etl-pipeline.md",
+      "aliases": [
+        "etl-pipeline"
+      ],
+      "hubScore": 35
     },
     {
       "name": "Stream Processing",
       "category": "concepts",
-      "path": "data-eng/stream-processing.md",
-      "aliases": [],
+      "path": "concepts/stream-processing.md",
+      "aliases": [
+        "stream-processing"
+      ],
+      "hubScore": 12
+    },
+    {
+      "name": "Batch Processing",
+      "category": "concepts",
+      "path": "concepts/batch-processing.md",
+      "aliases": [
+        "batch-processing"
+      ],
+      "hubScore": 19
+    },
+    {
+      "name": "Edge Computing",
+      "category": "concepts",
+      "path": "concepts/edge-computing.md",
+      "aliases": [
+        "edge-computing"
+      ],
+      "hubScore": 26
+    },
+    {
+      "name": "Serverless",
+      "category": "concepts",
+      "path": "concepts/serverless.md",
+      "aliases": [
+        "serverless"
+      ],
+      "hubScore": 33
+    },
+    {
+      "name": "Container Orchestration",
+      "category": "concepts",
+      "path": "concepts/container-orchestration.md",
+      "aliases": [
+        "container-orchestration"
+      ],
       "hubScore": 10
     },
     {
-      "name": "Terraform Modules",
+      "name": "Infrastructure as Code",
       "category": "concepts",
-      "path": "operations/terraform-modules.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "concepts/infrastructure-as-code.md",
+      "aliases": [
+        "infrastructure-as-code"
+      ],
+      "hubScore": 17
     },
     {
-      "name": "Theme Engine",
+      "name": "GitOps",
       "category": "concepts",
-      "path": "frontend/theme-engine.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "concepts/gitops.md",
+      "aliases": [
+        "gitops"
+      ],
+      "hubScore": 24
     },
     {
-      "name": "Tokyo",
-      "category": "locations",
-      "path": "entities/tokyo.md",
-      "aliases": [],
-      "hubScore": 1
-    },
-    {
-      "name": "Training Infrastructure",
+      "name": "ChatOps",
       "category": "concepts",
-      "path": "ml-research/training-infra.md",
-      "aliases": [],
-      "hubScore": 7
+      "path": "concepts/chatops.md",
+      "aliases": [
+        "chatops"
+      ],
+      "hubScore": 31
     },
     {
-      "name": "Transform Pipeline",
+      "name": "Platform Engineering",
+      "category": "concepts",
+      "path": "concepts/platform-engineering.md",
+      "aliases": [
+        "platform-engineering"
+      ],
+      "hubScore": 38
+    },
+    {
+      "name": "Site Reliability",
+      "category": "concepts",
+      "path": "concepts/site-reliability.md",
+      "aliases": [
+        "site-reliability"
+      ],
+      "hubScore": 15
+    },
+    {
+      "name": "Chaos Engineering",
+      "category": "concepts",
+      "path": "concepts/chaos-engineering.md",
+      "aliases": [
+        "chaos-engineering"
+      ],
+      "hubScore": 22
+    },
+    {
+      "name": "Performance Tuning",
+      "category": "concepts",
+      "path": "concepts/performance-tuning.md",
+      "aliases": [
+        "performance-tuning"
+      ],
+      "hubScore": 29
+    },
+    {
+      "name": "Memory Management",
+      "category": "concepts",
+      "path": "concepts/memory-management.md",
+      "aliases": [
+        "memory-management"
+      ],
+      "hubScore": 36
+    },
+    {
+      "name": "Garbage Collection",
+      "category": "concepts",
+      "path": "concepts/garbage-collection.md",
+      "aliases": [
+        "garbage-collection"
+      ],
+      "hubScore": 13
+    },
+    {
+      "name": "Thread Safety",
+      "category": "concepts",
+      "path": "concepts/thread-safety.md",
+      "aliases": [
+        "thread-safety"
+      ],
+      "hubScore": 20
+    },
+    {
+      "name": "Async Patterns",
+      "category": "concepts",
+      "path": "concepts/async-patterns.md",
+      "aliases": [
+        "async-patterns"
+      ],
+      "hubScore": 27
+    },
+    {
+      "name": "Event Loop",
+      "category": "concepts",
+      "path": "concepts/event-loop.md",
+      "aliases": [
+        "event-loop"
+      ],
+      "hubScore": 34
+    },
+    {
+      "name": "Pub/Sub",
+      "category": "concepts",
+      "path": "concepts/pub-sub.md",
+      "aliases": [
+        "pub-sub"
+      ],
+      "hubScore": 11
+    },
+    {
+      "name": "CQRS",
+      "category": "concepts",
+      "path": "concepts/cqrs.md",
+      "aliases": [
+        "cqrs"
+      ],
+      "hubScore": 18
+    },
+    {
+      "name": "Kai Lindgren",
+      "category": "people",
+      "path": "people/kai-lindgren.md",
+      "aliases": [
+        "Kai"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "Ines Dufresne",
+      "category": "people",
+      "path": "people/ines-dufresne.md",
+      "aliases": [
+        "Ines"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "Rosa Vega",
+      "category": "people",
+      "path": "people/rosa-vega.md",
+      "aliases": [
+        "Rosa",
+        "RV"
+      ],
+      "hubScore": 40
+    },
+    {
+      "name": "Soren Eriksson",
+      "category": "people",
+      "path": "people/soren-eriksson.md",
+      "aliases": [
+        "Soren"
+      ],
+      "hubScore": 35
+    },
+    {
+      "name": "Owen Park",
+      "category": "people",
+      "path": "people/owen-park.md",
+      "aliases": [
+        "Owen",
+        "OP"
+      ],
+      "hubScore": 95
+    },
+    {
+      "name": "Mira Okonkwo",
+      "category": "people",
+      "path": "people/mira-okonkwo.md",
+      "aliases": [
+        "Mira"
+      ],
+      "hubScore": 45
+    },
+    {
+      "name": "Nadia Reyes",
+      "category": "people",
+      "path": "people/nadia-reyes.md",
+      "aliases": [
+        "Nadia",
+        "NR"
+      ],
+      "hubScore": 120
+    },
+    {
+      "name": "Tessa Liu",
+      "category": "people",
+      "path": "people/tessa-liu.md",
+      "aliases": [
+        "Tessa"
+      ],
+      "hubScore": 180
+    },
+    {
+      "name": "FlowStart",
       "category": "projects",
-      "path": "data-eng/transform-pipeline.md",
-      "aliases": [],
-      "hubScore": 4
+      "path": "projects/flowstart.md",
+      "aliases": [
+        "Flow Start"
+      ],
+      "hubScore": 35
+    },
+    {
+      "name": "DataForge",
+      "category": "projects",
+      "path": "projects/dataforge.md",
+      "aliases": [
+        "Data Forge",
+        "data-forge"
+      ],
+      "hubScore": 150
+    },
+    {
+      "name": "AuthVault",
+      "category": "projects",
+      "path": "projects/authvault.md",
+      "aliases": [
+        "Auth Vault",
+        "authentication"
+      ],
+      "hubScore": 70
+    },
+    {
+      "name": "WatchTower",
+      "category": "projects",
+      "path": "projects/watchtower.md",
+      "aliases": [
+        "Watch Tower"
+      ],
+      "hubScore": 55
+    },
+    {
+      "name": "FinderX",
+      "category": "projects",
+      "path": "projects/finderx.md",
+      "aliases": [
+        "Finder X"
+      ],
+      "hubScore": 30
+    },
+    {
+      "name": "ShipIt",
+      "category": "projects",
+      "path": "projects/shipit.md",
+      "aliases": [
+        "Ship It"
+      ],
+      "hubScore": 10
+    },
+    {
+      "name": "GateKeeper",
+      "category": "projects",
+      "path": "projects/gatekeeper.md",
+      "aliases": [
+        "Gate Keeper",
+        "GKPR"
+      ],
+      "hubScore": 90
+    },
+    {
+      "name": "NovaSpark",
+      "category": "projects",
+      "path": "projects/novaspark.md",
+      "aliases": [
+        "Nova Spark",
+        "nova-spark"
+      ],
+      "hubScore": 200
+    },
+    {
+      "name": "Bluebird",
+      "category": "projects",
+      "path": "projects/bluebird.md",
+      "aliases": [
+        "Project Bluebird",
+        "BB"
+      ],
+      "hubScore": 60
+    },
+    {
+      "name": "PulseBoard",
+      "category": "projects",
+      "path": "projects/pulseboard.md",
+      "aliases": [
+        "Pulse Board"
+      ],
+      "hubScore": 15
+    },
+    {
+      "name": "Prism Core",
+      "category": "projects",
+      "path": "projects/prism-core.md",
+      "aliases": [
+        "prism-core",
+        "PrismCore"
+      ],
+      "hubScore": 80
+    },
+    {
+      "name": "CloudShift",
+      "category": "projects",
+      "path": "projects/cloudshift.md",
+      "aliases": [
+        "Cloud Shift"
+      ],
+      "hubScore": 80
+    },
+    {
+      "name": "PipeFlow",
+      "category": "projects",
+      "path": "projects/pipeflow.md",
+      "aliases": [
+        "Pipe Flow"
+      ],
+      "hubScore": 20
+    },
+    {
+      "name": "PayStream",
+      "category": "projects",
+      "path": "projects/paystream.md",
+      "aliases": [
+        "Pay Stream"
+      ],
+      "hubScore": 40
+    },
+    {
+      "name": "MobileNexus",
+      "category": "projects",
+      "path": "projects/mobilenexus.md",
+      "aliases": [
+        "Mobile Nexus"
+      ],
+      "hubScore": 45
+    },
+    {
+      "name": "Saturn Platform",
+      "category": "projects",
+      "path": "projects/saturn-platform.md",
+      "aliases": [
+        "Saturn"
+      ],
+      "hubScore": 45
+    },
+    {
+      "name": "Project Meridian",
+      "category": "projects",
+      "path": "projects/project-meridian.md",
+      "aliases": [
+        "Meridian"
+      ],
+      "hubScore": 60
+    },
+    {
+      "name": "ConfigForge",
+      "category": "projects",
+      "path": "projects/configforge.md",
+      "aliases": [
+        "Config Forge"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "Kafka",
+      "category": "technologies",
+      "path": "technologies/kafka.md",
+      "aliases": [
+        "Apache Kafka",
+        "kafka"
+      ],
+      "hubScore": 45
+    },
+    {
+      "name": "AWS",
+      "category": "technologies",
+      "path": "technologies/aws.md",
+      "aliases": [
+        "Amazon Web Services"
+      ],
+      "hubScore": 110
     },
     {
       "name": "TypeScript",
       "category": "technologies",
-      "path": "entities/typescript.md",
-      "aliases": [],
-      "hubScore": 3
+      "path": "technologies/typescript.md",
+      "aliases": [
+        "TS"
+      ],
+      "hubScore": 130
+    },
+    {
+      "name": "Redis",
+      "category": "technologies",
+      "path": "technologies/redis.md",
+      "aliases": [
+        "redis"
+      ],
+      "hubScore": 40
+    },
+    {
+      "name": "Python",
+      "category": "technologies",
+      "path": "technologies/python.md",
+      "aliases": [
+        "python3",
+        "py"
+      ],
+      "hubScore": 80
+    },
+    {
+      "name": "Node.js",
+      "category": "technologies",
+      "path": "technologies/node-js.md",
+      "aliases": [
+        "NodeJS",
+        "node"
+      ],
+      "hubScore": 90
+    },
+    {
+      "name": "Kubernetes",
+      "category": "technologies",
+      "path": "technologies/kubernetes.md",
+      "aliases": [
+        "k8s",
+        "K8s"
+      ],
+      "hubScore": 65
+    },
+    {
+      "name": "React",
+      "category": "technologies",
+      "path": "technologies/react.md",
+      "aliases": [
+        "ReactJS",
+        "React.js"
+      ],
+      "hubScore": 100
+    },
+    {
+      "name": "Seoul",
+      "category": "locations",
+      "path": "locations/seoul.md",
+      "aliases": [
+        "SEL"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "Portland",
+      "category": "locations",
+      "path": "locations/portland.md",
+      "aliases": [
+        "PDX",
+        "Rose City"
+      ],
+      "hubScore": 60
+    },
+    {
+      "name": "Kanto Prefecture",
+      "category": "locations",
+      "path": "locations/kanto-prefecture.md",
+      "aliases": [
+        "Kanto"
+      ],
+      "hubScore": 20
+    },
+    {
+      "name": "GridPoint Inc",
+      "category": "organizations",
+      "path": "organizations/gridpoint-inc.md",
+      "aliases": [
+        "GridPoint"
+      ],
+      "hubScore": 10
+    },
+    {
+      "name": "Neptune Insurance",
+      "category": "organizations",
+      "path": "organizations/neptune-insurance.md",
+      "aliases": [
+        "Neptune Ins"
+      ],
+      "hubScore": 75
+    },
+    {
+      "name": "Apex Systems",
+      "category": "organizations",
+      "path": "organizations/apex-systems.md",
+      "aliases": [
+        "Apex",
+        "Apex Sys"
+      ],
+      "hubScore": 40
+    },
+    {
+      "name": "Meridian Labs",
+      "category": "organizations",
+      "path": "organizations/meridian-labs.md",
+      "aliases": [
+        "Meridian",
+        "Meridian Corp"
+      ],
+      "hubScore": 160
+    },
+    {
+      "name": "Quantum Data",
+      "category": "organizations",
+      "path": "organizations/quantum-data.md",
+      "aliases": [
+        "QD",
+        "quantumdata"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "SkyForge",
+      "category": "organizations",
+      "path": "organizations/skyforge.md",
+      "aliases": [
+        "Sky Forge"
+      ],
+      "hubScore": 15
     }
   ],
-  "noteCount": 100,
-  "topology": {
-    "clusterCount": 5,
-    "notesPerCluster": 15,
-    "rewiringLinks": 10,
-    "looseNotes": 15,
-    "entityNotes": 10
-  },
   "notes": [
     {
-      "path": "platform/platform-architecture.md",
-      "title": "Platform Architecture",
+      "path": "platform/kai-lindgren.md",
+      "title": "Kai Lindgren",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
+        "type": "people"
       },
-      "content": "Platform Architecture handles overall platform architecture at NovaTech. It integrates with [[Database Migrations]], [[Error Taxonomy]], [[Config Service]], [[Schema Registry]], [[Ryan Nakamura]]. Also related to NovaTech, Nova Analytics, Alex Okafor. Connects to [[Data Platform Overview]] for cross-team integration. The system is designed for scalability and maintainability.",
+      "content": "# Kai Lindgren\n\nKai Lindgren handles people at the organization.\nIntegrates with [[Distributed Tracing]], [[ETL Pipeline]], [[PulseBoard]].\n\n\n\nsolid-principles has related documentation.\nSee also: Rollback Strategy.",
       "links": [
-        "Database Migrations",
-        "Error Taxonomy",
-        "Config Service",
-        "Schema Registry",
-        "Ryan Nakamura",
-        "Data Platform Overview"
+        "Distributed Tracing",
+        "ETL Pipeline",
+        "PulseBoard"
       ],
       "folder": "platform"
     },
     {
-      "path": "platform/auth-system.md",
-      "title": "Auth System",
+      "path": "platform/clean-architecture.md",
+      "title": "Clean Architecture",
       "frontmatter": {
-        "type": "project",
-        "cluster": "platform"
+        "type": "concepts"
       },
-      "content": "The Auth System is responsible for authentication and authorization service at NovaTech. Key dependencies include [[Platform Logging]], [[Service Mesh]], [[Caching Layer]]. Also related to NovaTech. Regular reviews ensure quality.",
+      "content": "# Clean Architecture\n\nClean Architecture handles concepts at the organization.\nIntegrates with [[Domain Driven Design]], [[Kai Lindgren]].\n\n\n\nMeridian has related documentation.\nSee also: SkyForge.",
       "links": [
-        "Platform Logging",
-        "Service Mesh",
-        "Caching Layer"
+        "Domain Driven Design",
+        "Kai Lindgren"
       ],
       "folder": "platform"
     },
     {
-      "path": "platform/api-gateway.md",
-      "title": "API Gateway",
+      "path": "platform/distributed-tracing.md",
+      "title": "Distributed Tracing",
       "frontmatter": {
-        "type": "project",
-        "cluster": "platform"
+        "type": "concepts"
       },
-      "content": "API Gateway provides API gateway handling routing and rate limiting. Connected to [[Platform Logging]], [[Auth System]], [[Schema Registry]], [[Database Migrations]]. Also related to NovaTech, Nova Analytics, Ryan Nakamura. This component follows our engineering standards.",
+      "content": "# Distributed Tracing\n\nDistributed Tracing handles concepts at the organization.\nIntegrates with [[Rosa Vega]], [[Kai Lindgren]], [[Node.js]].\n\n\n\nGridPoint has related documentation.\nSee also: CQRS.",
       "links": [
-        "Platform Logging",
-        "Auth System",
-        "Schema Registry",
-        "Database Migrations"
+        "Rosa Vega",
+        "Kai Lindgren",
+        "Node.js"
       ],
       "folder": "platform"
     },
     {
-      "path": "platform/event-bus.md",
-      "title": "Event Bus",
+      "path": "platform/etl-pipeline.md",
+      "title": "ETL Pipeline",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
+        "type": "concepts"
       },
-      "content": "Overview of Event Bus covering event-driven messaging infrastructure. Works with [[API Gateway]], [[Caching Layer]], [[Database Migrations]], [[Redis]]. Also related to Ryan Nakamura. Connects to [[Stream Processing]] for cross-team integration. Documentation is kept current.",
+      "content": "# ETL Pipeline\n\nETL Pipeline handles concepts at the organization.\nIntegrates with [[Kai Lindgren]], [[Domain Driven Design]].\n\n\n\nPay Stream has related documentation.\nSee also: Pub/Sub.",
       "links": [
-        "API Gateway",
-        "Caching Layer",
-        "Database Migrations",
+        "Kai Lindgren",
+        "Domain Driven Design"
+      ],
+      "folder": "platform"
+    },
+    {
+      "path": "platform/authvault.md",
+      "title": "AuthVault",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# AuthVault\n\nAuthVault handles projects at the organization.\nIntegrates with [[Clean Architecture]], [[Rosa Vega]].\n\n\n\npub-sub has related documentation.\nSee also: ConfigForge.",
+      "links": [
+        "Clean Architecture",
+        "Rosa Vega"
+      ],
+      "folder": "platform"
+    },
+    {
+      "path": "platform/tessa-liu.md",
+      "title": "Tessa Liu",
+      "frontmatter": {
+        "type": "people"
+      },
+      "content": "# Tessa Liu\n\nTessa Liu handles people at the organization.\nIntegrates with [[PulseBoard]], [[ETL Pipeline]], [[Rosa Vega]].\n\nAlso connected to [[AuthVault]], [[Nadia Reyes]].\n\ninfrastructure-as-code has related documentation.\nSee also: Machine Learning.",
+      "links": [
+        "PulseBoard",
+        "ETL Pipeline",
+        "Rosa Vega",
+        "AuthVault",
+        "Nadia Reyes"
+      ],
+      "folder": "platform"
+    },
+    {
+      "path": "platform/domain-driven-design.md",
+      "title": "Domain Driven Design",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Domain Driven Design\n\nDomain Driven Design handles concepts at the organization.\nIntegrates with [[Distributed Tracing]], [[Kai Lindgren]], [[AuthVault]].\n\n\n\nShip It has related documentation.\nSee also: Log Aggregation.",
+      "links": [
+        "Distributed Tracing",
+        "Kai Lindgren",
+        "AuthVault"
+      ],
+      "folder": "platform"
+    },
+    {
+      "path": "platform/pulseboard.md",
+      "title": "PulseBoard",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# PulseBoard\n\nPulseBoard handles projects at the organization.\nIntegrates with [[Node.js]], [[Rosa Vega]].\n\n\n\nCloud Shift has related documentation.\nSee also: Quantum Data.",
+      "links": [
+        "Node.js",
+        "Rosa Vega"
+      ],
+      "folder": "platform"
+    },
+    {
+      "path": "platform/rosa-vega.md",
+      "title": "Rosa Vega",
+      "frontmatter": {
+        "type": "people"
+      },
+      "content": "# Rosa Vega\n\nRosa Vega handles people at the organization.\nIntegrates with [[PulseBoard]], [[Clean Architecture]], [[Domain Driven Design]].\n\nAlso connected to [[Distributed Tracing]], [[Zero Trust]].\n\nhealth-checks has related documentation.\nSee also: Agile.",
+      "links": [
+        "PulseBoard",
+        "Clean Architecture",
+        "Domain Driven Design",
+        "Distributed Tracing",
+        "Zero Trust"
+      ],
+      "folder": "platform"
+    },
+    {
+      "path": "platform/node-js.md",
+      "title": "Node.js",
+      "frontmatter": {
+        "type": "technologies"
+      },
+      "content": "# Node.js\n\nNode.js handles technologies at the organization.\nIntegrates with [[AuthVault]], [[ETL Pipeline]], [[Clean Architecture]].\n\nAlso connected to [[Tessa Liu]].\n\nrollback-strategy has related documentation.\nSee also: Soren Eriksson.",
+      "links": [
+        "AuthVault",
+        "ETL Pipeline",
+        "Clean Architecture",
+        "Tessa Liu"
+      ],
+      "folder": "platform"
+    },
+    {
+      "path": "frontend/health-checks.md",
+      "title": "Health Checks",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Health Checks\n\nHealth Checks handles concepts at the organization.\nIntegrates with [[Feature Flags]], [[DataForge]], [[Microservices]].\n\nAlso connected to [[SkyForge]], [[CloudShift]].\n\nlog-aggregation has related documentation.\nSee also: PulseBoard.",
+      "links": [
+        "Feature Flags",
+        "DataForge",
+        "Microservices",
+        "SkyForge",
+        "CloudShift"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/skyforge.md",
+      "title": "SkyForge",
+      "frontmatter": {
+        "type": "organizations"
+      },
+      "content": "# SkyForge\n\nSkyForge handles organizations at the organization.\nIntegrates with [[Message Queue]], [[Health Checks]], [[Seoul]].\n\nAlso connected to [[Event Loop]].\n\nfeature-flags has related documentation.\nSee also: Owen Park.",
+      "links": [
+        "Message Queue",
+        "Health Checks",
+        "Seoul",
+        "Event Loop"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/message-queue.md",
+      "title": "Message Queue",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Message Queue\n\nMessage Queue handles concepts at the organization.\nIntegrates with [[PayStream]], [[Microservices]].\n\n\n\nSEL has related documentation.\nSee also: Kubernetes.",
+      "links": [
+        "PayStream",
+        "Microservices"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/event-loop.md",
+      "title": "Event Loop",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Event Loop\n\nEvent Loop handles concepts at the organization.\nIntegrates with [[Project Meridian]], [[Health Checks]], [[PayStream]].\n\nAlso connected to [[FinderX]].\n\nAmazon Web Services has related documentation.\nSee also: WatchTower.",
+      "links": [
+        "Project Meridian",
+        "Health Checks",
+        "PayStream",
+        "FinderX"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/project-meridian.md",
+      "title": "Project Meridian",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# Project Meridian\n\nProject Meridian handles projects at the organization.\nIntegrates with [[SkyForge]], [[PayStream]], [[Message Queue]].\n\n\n\nquantumdata has related documentation.\nSee also: Technical Debt.",
+      "links": [
+        "SkyForge",
+        "PayStream",
+        "Message Queue"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/microservices.md",
+      "title": "Microservices",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Microservices\n\nMicroservices handles concepts at the organization.\nIntegrates with [[Event Loop]], [[PayStream]], [[Health Checks]].\n\n\n\nMobile Nexus has related documentation.\nSee also: SOLID Principles.",
+      "links": [
+        "Event Loop",
+        "PayStream",
+        "Health Checks"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/seoul.md",
+      "title": "Seoul",
+      "frontmatter": {
+        "type": "locations"
+      },
+      "content": "# Seoul\n\nSeoul handles locations at the organization.\nIntegrates with [[Microservices]], [[Feature Flags]].\n\n\n\nchatops has related documentation.\nSee also: Memory Management.",
+      "links": [
+        "Microservices",
+        "Feature Flags"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/paystream.md",
+      "title": "PayStream",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# PayStream\n\nPayStream handles projects at the organization.\nIntegrates with [[Message Queue]], [[DataForge]].\n\n\n\nevent-sourcing has related documentation.\nSee also: Prism Core.",
+      "links": [
+        "Message Queue",
+        "DataForge"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/feature-flags.md",
+      "title": "Feature Flags",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Feature Flags\n\nFeature Flags handles concepts at the organization.\nIntegrates with [[Event Loop]], [[Message Queue]], [[Project Meridian]].\n\n\n\ncircuit-breaker has related documentation.\nSee also: Rate Limiting.",
+      "links": [
+        "Event Loop",
+        "Message Queue",
+        "Project Meridian"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "frontend/dataforge.md",
+      "title": "DataForge",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# DataForge\n\nDataForge handles projects at the organization.\nIntegrates with [[Feature Flags]], [[Project Meridian]], [[Microservices]].\n\n\n\netl-pipeline has related documentation.\nSee also: ShipIt.",
+      "links": [
+        "Feature Flags",
+        "Project Meridian",
+        "Microservices"
+      ],
+      "folder": "frontend"
+    },
+    {
+      "path": "backend/gatekeeper.md",
+      "title": "GateKeeper",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# GateKeeper\n\nGateKeeper handles projects at the organization.\nIntegrates with [[Redis]], [[Kubernetes]].\n\n\n\ncircuit-breaker has related documentation.\nSee also: CQRS.",
+      "links": [
         "Redis",
-        "Stream Processing"
+        "Kubernetes"
       ],
-      "folder": "platform"
+      "folder": "backend"
     },
     {
-      "path": "platform/service-mesh.md",
-      "title": "Service Mesh",
+      "path": "backend/gridpoint-inc.md",
+      "title": "GridPoint Inc",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
+        "type": "organizations"
       },
-      "content": "Service Mesh handles service-to-service communication layer. It integrates with [[Caching Layer]], [[Platform Logging]], [[Auth System]], [[Ryan Nakamura]]. Also related to NovaTech, Nova Analytics, Sophie Chen, TypeScript, Docker, Kafka. The system is designed for scalability and maintainability.",
+      "content": "# GridPoint Inc\n\nGridPoint Inc handles organizations at the organization.\nIntegrates with [[GateKeeper]], [[FinderX]], [[Kanto Prefecture]].\n\nAlso connected to [[Garbage Collection]].\n\ndevops has related documentation.\nSee also: PayStream.",
       "links": [
-        "Caching Layer",
-        "Platform Logging",
-        "Auth System",
-        "Ryan Nakamura"
+        "GateKeeper",
+        "FinderX",
+        "Kanto Prefecture",
+        "Garbage Collection"
       ],
-      "folder": "platform"
+      "folder": "backend"
     },
     {
-      "path": "platform/config-service.md",
-      "title": "Config Service",
+      "path": "backend/kanto-prefecture.md",
+      "title": "Kanto Prefecture",
       "frontmatter": {
-        "type": "project",
-        "cluster": "platform"
+        "type": "locations"
       },
-      "content": "The Config Service is responsible for centralized configuration management at NovaTech. Key dependencies include [[API Gateway]], [[Service Mesh]], [[Health Check Framework]], [[Database Migrations]], [[Ryan Nakamura]]. Also related to Nova Analytics, Mei Lin, Carlos Rivera, Python. Regular reviews ensure quality.",
+      "content": "# Kanto Prefecture\n\nKanto Prefecture handles locations at the organization.\nIntegrates with [[Kubernetes]], [[Design Patterns]].\n\n\n\nData Forge has related documentation.\nSee also: PulseBoard.",
       "links": [
-        "API Gateway",
-        "Service Mesh",
-        "Health Check Framework",
-        "Database Migrations",
-        "Ryan Nakamura"
+        "Kubernetes",
+        "Design Patterns"
       ],
-      "folder": "platform"
+      "folder": "backend"
     },
     {
-      "path": "platform/platform-sdk.md",
-      "title": "Platform SDK",
+      "path": "backend/kubernetes.md",
+      "title": "Kubernetes",
       "frontmatter": {
-        "type": "project",
-        "cluster": "platform"
+        "type": "technologies"
       },
-      "content": "Platform SDK provides SDK for building services on the platform. Connected to [[Platform Testing Strategy]], [[Database Migrations]], [[Config Service]], [[Event Bus]]. Also related to NovaTech, Redis. This component follows our engineering standards.",
+      "content": "# Kubernetes\n\nKubernetes handles technologies at the organization.\nIntegrates with [[Infrastructure as Code]], [[MobileNexus]], [[Bluebird]].\n\nAlso connected to [[FinderX]].\n\nlog-aggregation has related documentation.\nSee also: API Versioning.",
       "links": [
-        "Platform Testing Strategy",
-        "Database Migrations",
-        "Config Service",
-        "Event Bus"
+        "Infrastructure as Code",
+        "MobileNexus",
+        "Bluebird",
+        "FinderX"
       ],
-      "folder": "platform"
+      "folder": "backend"
     },
     {
-      "path": "platform/rate-limiter.md",
-      "title": "Rate Limiter",
+      "path": "backend/finderx.md",
+      "title": "FinderX",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
+        "type": "projects"
       },
-      "content": "Overview of Rate Limiter covering request rate limiting module. Works with [[Error Taxonomy]], [[Platform Logging]], [[Platform SDK]], [[Schema Registry]]. Also related to NovaTech, Nova Analytics, Carlos Rivera, Sophie Chen. Documentation is kept current.",
+      "content": "# FinderX\n\nFinderX handles projects at the organization.\nIntegrates with [[Kanto Prefecture]], [[Redis]].\n\n\n\nPulse Board has related documentation.\nSee also: Kai Lindgren.",
       "links": [
-        "Error Taxonomy",
-        "Platform Logging",
-        "Platform SDK",
-        "Schema Registry"
-      ],
-      "folder": "platform"
-    },
-    {
-      "path": "platform/health-checks.md",
-      "title": "Health Check Framework",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
-      },
-      "content": "Health Check Framework handles health check endpoints for all services. It integrates with [[Platform Architecture]], [[Service Mesh]], [[Platform SDK]]. Also related to NovaTech, Carlos Rivera, Alex Okafor, React. Connects to [[Monitoring Stack]] for cross-team integration. The system is designed for scalability and maintainability.",
-      "links": [
-        "Platform Architecture",
-        "Service Mesh",
-        "Platform SDK",
-        "Monitoring Stack"
-      ],
-      "folder": "platform"
-    },
-    {
-      "path": "platform/schema-registry.md",
-      "title": "Schema Registry",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
-      },
-      "content": "The Schema Registry is responsible for schema management for event and API contracts at NovaTech. Key dependencies include [[Caching Layer]], [[API Gateway]], [[Platform SDK]], [[Error Taxonomy]], [[Platform Testing Strategy]], [[GraphQL]]. Also related to Ava Kim. Regular reviews ensure quality.",
-      "links": [
-        "Caching Layer",
-        "API Gateway",
-        "Platform SDK",
-        "Error Taxonomy",
-        "Platform Testing Strategy",
-        "GraphQL"
-      ],
-      "folder": "platform"
-    },
-    {
-      "path": "platform/platform-testing.md",
-      "title": "Platform Testing Strategy",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
-      },
-      "content": "Platform Testing Strategy provides testing approach for platform services. Connected to [[Auth System]], [[API Gateway]], [[Database Migrations]], [[Error Taxonomy]], [[Ava Kim]]. This component follows our engineering standards.",
-      "links": [
-        "Auth System",
-        "API Gateway",
-        "Database Migrations",
-        "Error Taxonomy",
-        "Ava Kim"
-      ],
-      "folder": "platform"
-    },
-    {
-      "path": "platform/platform-logging.md",
-      "title": "Platform Logging",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
-      },
-      "content": "Overview of Platform Logging covering structured logging across platform services. Works with [[API Gateway]], [[Health Check Framework]], [[Platform Architecture]], [[Platform SDK]], [[Database Migrations]], [[Ava Kim]], [[Platform Team]]. Also related to NovaTech, Sophie Chen, React. Connects to [[SRE Runbooks]] for cross-team integration. Documentation is kept current.",
-      "links": [
-        "API Gateway",
-        "Health Check Framework",
-        "Platform Architecture",
-        "Platform SDK",
-        "Database Migrations",
-        "Ava Kim",
-        "Platform Team",
-        "SRE Runbooks"
-      ],
-      "folder": "platform"
-    },
-    {
-      "path": "platform/caching-layer.md",
-      "title": "Caching Layer",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
-      },
-      "content": "Caching Layer handles multi-tier caching strategy. It integrates with [[Platform SDK]], [[Platform Architecture]], [[Platform Testing Strategy]], [[Auth System]], [[Ava Kim]]. Also related to Nova Analytics, Ryan Nakamura, Carlos Rivera, Sophie Chen. The system is designed for scalability and maintainability.",
-      "links": [
-        "Platform SDK",
-        "Platform Architecture",
-        "Platform Testing Strategy",
-        "Auth System",
-        "Ava Kim"
-      ],
-      "folder": "platform"
-    },
-    {
-      "path": "platform/db-migrations.md",
-      "title": "Database Migrations",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
-      },
-      "content": "The Database Migrations is responsible for schema migration tooling and conventions at NovaTech. Key dependencies include [[Config Service]], [[Health Check Framework]], [[Service Mesh]], [[Redis]]. Also related to NovaTech, Ryan Nakamura, Mei Lin, Sophie Chen. Regular reviews ensure quality.",
-      "links": [
-        "Config Service",
-        "Health Check Framework",
-        "Service Mesh",
+        "Kanto Prefecture",
         "Redis"
       ],
-      "folder": "platform"
+      "folder": "backend"
     },
     {
-      "path": "platform/error-taxonomy.md",
-      "title": "Error Taxonomy",
+      "path": "backend/mobilenexus.md",
+      "title": "MobileNexus",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "platform"
+        "type": "projects"
       },
-      "content": "Error Taxonomy provides standardized error classification system. Connected to [[Event Bus]], [[Database Migrations]], [[Service Mesh]], [[Ava Kim]]. Also related to Jake Morrison. This component follows our engineering standards.",
+      "content": "# MobileNexus\n\nMobileNexus handles projects at the organization.\nIntegrates with [[Kanto Prefecture]], [[Design Patterns]].\n\n\n\nci-cd-pipeline has related documentation.\nSee also: Pub/Sub.",
       "links": [
-        "Event Bus",
-        "Database Migrations",
-        "Service Mesh",
-        "Ava Kim"
+        "Kanto Prefecture",
+        "Design Patterns"
       ],
-      "folder": "platform"
+      "folder": "backend"
     },
     {
-      "path": "data-eng/data-platform.md",
-      "title": "Data Platform Overview",
+      "path": "backend/design-patterns.md",
+      "title": "Design Patterns",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "concepts"
       },
-      "content": "Data Platform Overview handles overall data platform at NovaTech. It integrates with [[Ingestion Engine]], [[ETL Monitoring]], [[Data Quality Framework]], [[Data Lineage Tracker]], [[Data Governance Policy]], [[Ryan Nakamura]], [[Kafka]]. Also related to NovaTech. The system is designed for scalability and maintainability.",
+      "content": "# Design Patterns\n\nDesign Patterns handles concepts at the organization.\nIntegrates with [[GridPoint Inc]], [[Kanto Prefecture]], [[Infrastructure as Code]].\n\nAlso connected to [[Bluebird]], [[Batch Processing]].\n\nPipe Flow has related documentation.\nSee also: Blue-Green Deploy.",
       "links": [
-        "Ingestion Engine",
-        "ETL Monitoring",
-        "Data Quality Framework",
-        "Data Lineage Tracker",
-        "Data Governance Policy",
-        "Ryan Nakamura",
-        "Kafka"
+        "GridPoint Inc",
+        "Kanto Prefecture",
+        "Infrastructure as Code",
+        "Bluebird",
+        "Batch Processing"
       ],
-      "folder": "data-eng"
+      "folder": "backend"
     },
     {
-      "path": "data-eng/ingestion-engine.md",
-      "title": "Ingestion Engine",
+      "path": "backend/infrastructure-as-code.md",
+      "title": "Infrastructure as Code",
       "frontmatter": {
-        "type": "project",
-        "cluster": "data"
+        "type": "concepts"
       },
-      "content": "The Ingestion Engine is responsible for data ingestion from external sources at NovaTech. Key dependencies include [[Stream Processing]], [[Data Lineage Tracker]], [[Data Quality Framework]], [[Query Optimizer Notes]], [[Mei Lin]]. Also related to Nova Analytics, Kubernetes. Regular reviews ensure quality.",
+      "content": "# Infrastructure as Code\n\nInfrastructure as Code handles concepts at the organization.\nIntegrates with [[Kubernetes]], [[Kanto Prefecture]], [[Redis]].\n\n\n\nAPI First has related documentation.\nSee also: Technical Debt.",
       "links": [
-        "Stream Processing",
-        "Data Lineage Tracker",
-        "Data Quality Framework",
-        "Query Optimizer Notes",
-        "Mei Lin"
+        "Kubernetes",
+        "Kanto Prefecture",
+        "Redis"
       ],
-      "folder": "data-eng"
+      "folder": "backend"
     },
     {
-      "path": "data-eng/transform-pipeline.md",
-      "title": "Transform Pipeline",
+      "path": "backend/redis.md",
+      "title": "Redis",
       "frontmatter": {
-        "type": "project",
-        "cluster": "data"
+        "type": "technologies"
       },
-      "content": "Transform Pipeline provides data transformation and enrichment. Connected to [[Data Quality Framework]], [[Data Warehouse]], [[ETL Monitoring]], [[Data Catalog]], [[Data Governance Policy]], [[Mei Lin]]. Also related to Ryan Nakamura. This component follows our engineering standards.",
+      "content": "# Redis\n\nRedis handles technologies at the organization.\nIntegrates with [[Infrastructure as Code]], [[GridPoint Inc]].\n\n\n\nMeridian has related documentation.\nSee also: Caching Strategy.",
       "links": [
-        "Data Quality Framework",
-        "Data Warehouse",
-        "ETL Monitoring",
-        "Data Catalog",
-        "Data Governance Policy",
-        "Mei Lin"
+        "Infrastructure as Code",
+        "GridPoint Inc"
       ],
-      "folder": "data-eng"
+      "folder": "backend"
     },
     {
-      "path": "data-eng/data-warehouse.md",
-      "title": "Data Warehouse",
+      "path": "backend/bluebird.md",
+      "title": "Bluebird",
       "frontmatter": {
-        "type": "project",
-        "cluster": "data"
+        "type": "projects"
       },
-      "content": "Overview of Data Warehouse covering analytical data warehouse. Works with [[Stream Processing]], [[Batch Scheduler]], [[Transform Pipeline]], [[Data Lineage Tracker]], [[Data Quality Framework]], [[Redis]], [[Data Team]]. Also related to GraphQL. Connects to [[Scoring Model]] for cross-team integration. Documentation is kept current.",
+      "content": "# Bluebird\n\nBluebird handles projects at the organization.\nIntegrates with [[MobileNexus]], [[Infrastructure as Code]], [[Code Reviews]].\n\n\n\nredis has related documentation.\nSee also: Node.js.",
       "links": [
-        "Stream Processing",
-        "Batch Scheduler",
-        "Transform Pipeline",
-        "Data Lineage Tracker",
-        "Data Quality Framework",
-        "Redis",
-        "Data Team",
-        "Scoring Model"
+        "MobileNexus",
+        "Infrastructure as Code",
+        "Code Reviews"
+      ],
+      "folder": "backend"
+    },
+    {
+      "path": "data-eng/caching-strategy.md",
+      "title": "Caching Strategy",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Caching Strategy\n\nCaching Strategy handles concepts at the organization.\nIntegrates with [[Meridian Labs]], [[Edge Computing]], [[WatchTower]].\n\n\n\nbatch-processing has related documentation.\nSee also: Feature Flags.",
+      "links": [
+        "Meridian Labs",
+        "Edge Computing",
+        "WatchTower"
       ],
       "folder": "data-eng"
     },
     {
-      "path": "data-eng/data-quality.md",
-      "title": "Data Quality Framework",
+      "path": "data-eng/ines-dufresne.md",
+      "title": "Ines Dufresne",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "people"
       },
-      "content": "Data Quality Framework handles automated data quality scoring. It integrates with [[ETL Monitoring]], [[Data Platform Overview]], [[Stream Processing]], [[Data Catalog]]. Also related to Nova Analytics, React. The system is designed for scalability and maintainability.",
+      "content": "# Ines Dufresne\n\nInes Dufresne handles people at the organization.\nIntegrates with [[Meridian Labs]], [[Neptune Insurance]], [[Code Reviews]].\n\n\n\nci-cd-pipeline has related documentation.\nSee also: Blue-Green Deploy.",
       "links": [
-        "ETL Monitoring",
-        "Data Platform Overview",
-        "Stream Processing",
-        "Data Catalog"
+        "Meridian Labs",
+        "Neptune Insurance",
+        "Code Reviews"
       ],
       "folder": "data-eng"
     },
     {
-      "path": "data-eng/stream-processing.md",
-      "title": "Stream Processing",
+      "path": "data-eng/meridian-labs.md",
+      "title": "Meridian Labs",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "organizations"
       },
-      "content": "The Stream Processing is responsible for real-time event stream processing at NovaTech. Key dependencies include [[Data Testing Patterns]], [[Batch Scheduler]], [[Data Catalog]], [[Data Platform Overview]], [[Data Lineage Tracker]], [[Ryan Nakamura]], [[Kafka]]. Also related to Redis. Regular reviews ensure quality.",
+      "content": "# Meridian Labs\n\nMeridian Labs handles organizations at the organization.\nIntegrates with [[Event Sourcing]], [[Canary Deploy]], [[WatchTower]].\n\n\n\nblue-green-deploy has related documentation.\nSee also: Batch Processing.",
       "links": [
-        "Data Testing Patterns",
-        "Batch Scheduler",
-        "Data Catalog",
-        "Data Platform Overview",
-        "Data Lineage Tracker",
-        "Ryan Nakamura",
-        "Kafka"
+        "Event Sourcing",
+        "Canary Deploy",
+        "WatchTower"
       ],
       "folder": "data-eng"
     },
     {
-      "path": "data-eng/batch-scheduler.md",
-      "title": "Batch Scheduler",
+      "path": "data-eng/code-reviews.md",
+      "title": "Code Reviews",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "concepts"
       },
-      "content": "Batch Scheduler provides batch job scheduling and orchestration. Connected to [[Data Warehouse]], [[Stream Processing]], [[Feature Store]], [[Data Catalog]]. Also related to Nova Analytics, Docker. This component follows our engineering standards.",
+      "content": "# Code Reviews\n\nCode Reviews handles concepts at the organization.\nIntegrates with [[Event Sourcing]], [[Chaos Engineering]].\n\n\n\ngitops has related documentation.\nSee also: A/B Testing.",
       "links": [
-        "Data Warehouse",
-        "Stream Processing",
-        "Feature Store",
-        "Data Catalog"
+        "Event Sourcing",
+        "Chaos Engineering"
       ],
       "folder": "data-eng"
     },
     {
-      "path": "data-eng/data-catalog.md",
-      "title": "Data Catalog",
+      "path": "data-eng/watchtower.md",
+      "title": "WatchTower",
       "frontmatter": {
-        "type": "project",
-        "cluster": "data"
+        "type": "projects"
       },
-      "content": "Overview of Data Catalog covering metadata catalog for datasets. Works with [[Stream Processing]], [[Data Governance Policy]], [[Ingestion Engine]], [[Mei Lin]], [[Kafka]]. Also related to NovaTech. Documentation is kept current.",
+      "content": "# WatchTower\n\nWatchTower handles projects at the organization.\nIntegrates with [[Edge Computing]], [[Code Reviews]], [[Caching Strategy]].\n\nAlso connected to [[Ines Dufresne]], [[Quantum Data]].\n\ndata-lake has related documentation.\nSee also: DevOps.",
       "links": [
-        "Stream Processing",
-        "Data Governance Policy",
-        "Ingestion Engine",
-        "Mei Lin",
-        "Kafka"
+        "Edge Computing",
+        "Code Reviews",
+        "Caching Strategy",
+        "Ines Dufresne",
+        "Quantum Data"
       ],
       "folder": "data-eng"
     },
     {
-      "path": "data-eng/feature-store.md",
-      "title": "Feature Store",
+      "path": "data-eng/edge-computing.md",
+      "title": "Edge Computing",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "concepts"
       },
-      "content": "Feature Store handles ML feature storage and serving. It integrates with [[Data Testing Patterns]], [[Schema Evolution Strategy]], [[Ingestion Engine]], [[Data Team]]. Also related to Alex Okafor. Connects to [[Feature Engineering]] for cross-team integration. The system is designed for scalability and maintainability.",
+      "content": "# Edge Computing\n\nEdge Computing handles concepts at the organization.\nIntegrates with [[Meridian Labs]], [[Neptune Insurance]], [[Event Sourcing]].\n\n\n\ndistributed-tracing has related documentation.\nSee also: Batch Processing.",
       "links": [
-        "Data Testing Patterns",
-        "Schema Evolution Strategy",
-        "Ingestion Engine",
-        "Data Team",
-        "Feature Engineering"
+        "Meridian Labs",
+        "Neptune Insurance",
+        "Event Sourcing"
       ],
       "folder": "data-eng"
     },
     {
-      "path": "data-eng/data-lineage.md",
-      "title": "Data Lineage Tracker",
+      "path": "data-eng/neptune-insurance.md",
+      "title": "Neptune Insurance",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "organizations"
       },
-      "content": "The Data Lineage Tracker is responsible for tracking data provenance and transformations at NovaTech. Key dependencies include [[Stream Processing]], [[Schema Evolution Strategy]], [[Data Governance Policy]], [[Data Warehouse]], [[Ryan Nakamura]]. Also related to Sophie Chen. Regular reviews ensure quality.",
+      "content": "# Neptune Insurance\n\nNeptune Insurance handles organizations at the organization.\nIntegrates with [[WatchTower]], [[Chaos Engineering]], [[Caching Strategy]].\n\n\n\nload-balancing has related documentation.\nSee also: Quantum Data.",
       "links": [
-        "Stream Processing",
-        "Schema Evolution Strategy",
-        "Data Governance Policy",
-        "Data Warehouse",
-        "Ryan Nakamura"
+        "WatchTower",
+        "Chaos Engineering",
+        "Caching Strategy"
       ],
       "folder": "data-eng"
     },
     {
-      "path": "data-eng/data-governance.md",
-      "title": "Data Governance Policy",
+      "path": "data-eng/chaos-engineering.md",
+      "title": "Chaos Engineering",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "concepts"
       },
-      "content": "Data Governance Policy provides data access and retention policies. Connected to [[Stream Processing]], [[Data Testing Patterns]], [[Transform Pipeline]], [[Mei Lin]], [[Kafka]]. Also related to Kubernetes. This component follows our engineering standards.",
+      "content": "# Chaos Engineering\n\nChaos Engineering handles concepts at the organization.\nIntegrates with [[Code Reviews]], [[Event Sourcing]], [[Ines Dufresne]].\n\n\n\nredis has related documentation.\nSee also: Data Lake.",
       "links": [
-        "Stream Processing",
-        "Data Testing Patterns",
-        "Transform Pipeline",
-        "Mei Lin",
-        "Kafka"
+        "Code Reviews",
+        "Event Sourcing",
+        "Ines Dufresne"
       ],
       "folder": "data-eng"
     },
     {
-      "path": "data-eng/etl-monitoring.md",
-      "title": "ETL Monitoring",
+      "path": "data-eng/canary-deploy.md",
+      "title": "Canary Deploy",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "concepts"
       },
-      "content": "Overview of ETL Monitoring covering monitoring and alerting for ETL jobs. Works with [[Data Warehouse]], [[Feature Store]], [[Data Lineage Tracker]], [[Data Governance Policy]], [[Mei Lin]], [[Python]]. Also related to Nova Analytics. Connects to [[Monitoring Stack]] for cross-team integration. Documentation is kept current.",
+      "content": "# Canary Deploy\n\nCanary Deploy handles concepts at the organization.\nIntegrates with [[Meridian Labs]], [[Event Sourcing]].\n\n\n\na-b-testing has related documentation.\nSee also: Rate Limiting.",
       "links": [
-        "Data Warehouse",
-        "Feature Store",
-        "Data Lineage Tracker",
-        "Data Governance Policy",
-        "Mei Lin",
-        "Python",
-        "Monitoring Stack"
+        "Meridian Labs",
+        "Event Sourcing"
       ],
       "folder": "data-eng"
     },
     {
-      "path": "data-eng/schema-evolution.md",
-      "title": "Schema Evolution Strategy",
+      "path": "data-eng/event-sourcing.md",
+      "title": "Event Sourcing",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "concepts"
       },
-      "content": "Schema Evolution Strategy handles handling schema changes across pipelines. It integrates with [[Stream Processing]], [[Data Warehouse]], [[Transform Pipeline]], [[Data Quality Framework]], [[Data Lineage Tracker]], [[Mei Lin]]. Also related to NovaTech, Node.js, Docker. The system is designed for scalability and maintainability.",
+      "content": "# Event Sourcing\n\nEvent Sourcing handles concepts at the organization.\nIntegrates with [[Code Reviews]], [[Caching Strategy]].\n\n\n\nApache Kafka has related documentation.\nSee also: MobileNexus.",
       "links": [
-        "Stream Processing",
-        "Data Warehouse",
-        "Transform Pipeline",
-        "Data Quality Framework",
-        "Data Lineage Tracker",
-        "Mei Lin"
+        "Code Reviews",
+        "Caching Strategy"
       ],
       "folder": "data-eng"
     },
     {
-      "path": "data-eng/data-testing.md",
-      "title": "Data Testing Patterns",
+      "path": "ml-research/database-sharding.md",
+      "title": "Database Sharding",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "concepts"
       },
-      "content": "The Data Testing Patterns is responsible for testing approaches for data pipelines at NovaTech. Key dependencies include [[Transform Pipeline]], [[Data Catalog]], [[Ingestion Engine]]. Also related to Sophie Chen, Redis. Regular reviews ensure quality.",
+      "content": "# Database Sharding\n\nDatabase Sharding handles concepts at the organization.\nIntegrates with [[API-First]], [[CI/CD Pipeline]].\n\n\n\nmicroservice has related documentation.\nSee also: Pair Programming.",
       "links": [
-        "Transform Pipeline",
-        "Data Catalog",
-        "Ingestion Engine"
+        "API-First",
+        "CI/CD Pipeline"
       ],
-      "folder": "data-eng"
+      "folder": "ml-research"
     },
     {
-      "path": "data-eng/query-optimizer.md",
-      "title": "Query Optimizer Notes",
+      "path": "ml-research/owen-park.md",
+      "title": "Owen Park",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "data"
+        "type": "people"
       },
-      "content": "Query Optimizer Notes provides PostgreSQL query optimization techniques. Connected to [[Data Testing Patterns]], [[Stream Processing]], [[Batch Scheduler]], [[Data Lineage Tracker]]. Also related to NovaTech, Nina Petrov, Sophie Chen, Node.js, Redis. This component follows our engineering standards.",
+      "content": "# Owen Park\n\nOwen Park handles people at the organization.\nIntegrates with [[CI/CD Pipeline]], [[Garbage Collection]], [[Agile]].\n\nAlso connected to [[Thread Safety]].\n\ncode-reviews has related documentation.\nSee also: Async Patterns.",
       "links": [
-        "Data Testing Patterns",
-        "Stream Processing",
-        "Batch Scheduler",
-        "Data Lineage Tracker"
+        "CI/CD Pipeline",
+        "Garbage Collection",
+        "Agile",
+        "Thread Safety"
       ],
-      "folder": "data-eng"
+      "folder": "ml-research"
     },
     {
-      "path": "frontend/frontend-arch.md",
-      "title": "Frontend Architecture",
+      "path": "ml-research/observability.md",
+      "title": "Observability",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Frontend Architecture handles frontend architecture at NovaTech. It integrates with [[Theme Engine]], [[State Management]], [[Performance Budget]], [[Sophie Chen]]. Also related to NovaTech. The system is designed for scalability and maintainability.",
+      "content": "# Observability\n\nObservability handles concepts at the organization.\nIntegrates with [[Owen Park]], [[Saturn Platform]], [[FlowStart]].\n\n\n\nzero-trust has related documentation.\nSee also: Pair Programming.",
       "links": [
-        "Theme Engine",
-        "State Management",
-        "Performance Budget",
-        "Sophie Chen"
+        "Owen Park",
+        "Saturn Platform",
+        "FlowStart"
       ],
-      "folder": "frontend"
+      "folder": "ml-research"
     },
     {
-      "path": "frontend/component-system.md",
-      "title": "Component System",
+      "path": "ml-research/api-first.md",
+      "title": "API-First",
       "frontmatter": {
-        "type": "project",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "The Component System is responsible for shared UI component library at NovaTech. Key dependencies include [[Form Framework]], [[Performance Budget]], [[Frontend Architecture]], [[Design System]], [[Nova Dashboard]]. Also related to Alex Okafor, Kafka. Regular reviews ensure quality.",
+      "content": "# API-First\n\nAPI-First handles concepts at the organization.\nIntegrates with [[Thread Safety]], [[CI/CD Pipeline]], [[Database Sharding]].\n\n\n\ndevops has related documentation.\nSee also: Rollback Strategy.",
       "links": [
-        "Form Framework",
-        "Performance Budget",
-        "Frontend Architecture",
-        "Design System",
-        "Nova Dashboard"
+        "Thread Safety",
+        "CI/CD Pipeline",
+        "Database Sharding"
       ],
-      "folder": "frontend"
+      "folder": "ml-research"
     },
     {
-      "path": "frontend/nova-dashboard.md",
-      "title": "Nova Dashboard",
+      "path": "ml-research/agile.md",
+      "title": "Agile",
       "frontmatter": {
-        "type": "project",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Nova Dashboard provides main analytics dashboard application. Connected to [[Error Boundary Strategy]], [[Accessibility Standards]], [[Frontend Testing]], [[Frontend Architecture]], [[Performance Budget]]. Also related to Mei Lin. Connects to [[Recommendation Engine]] for cross-team integration. This component follows our engineering standards.",
+      "content": "# Agile\n\nAgile handles concepts at the organization.\nIntegrates with [[FlowStart]], [[Owen Park]], [[Thread Safety]].\n\nAlso connected to [[CI/CD Pipeline]].\n\ndesign-patterns has related documentation.\nSee also: Async Patterns.",
       "links": [
-        "Error Boundary Strategy",
-        "Accessibility Standards",
-        "Frontend Testing",
-        "Frontend Architecture",
-        "Performance Budget",
-        "Recommendation Engine"
+        "FlowStart",
+        "Owen Park",
+        "Thread Safety",
+        "CI/CD Pipeline"
       ],
-      "folder": "frontend"
+      "folder": "ml-research"
     },
     {
-      "path": "frontend/design-system.md",
-      "title": "Design System",
+      "path": "ml-research/saturn-platform.md",
+      "title": "Saturn Platform",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "projects"
       },
-      "content": "Overview of Design System covering design tokens and visual language. Works with [[Nova Dashboard]], [[I18N Framework]], [[Error Boundary Strategy]], [[Chart Library]]. Also related to Nova Analytics. Documentation is kept current.",
+      "content": "# Saturn Platform\n\nSaturn Platform handles projects at the organization.\nIntegrates with [[Thread Safety]], [[API-First]].\n\n\n\nApache Kafka has related documentation.\nSee also: Prism Core.",
       "links": [
-        "Nova Dashboard",
-        "I18N Framework",
-        "Error Boundary Strategy",
-        "Chart Library"
+        "Thread Safety",
+        "API-First"
       ],
-      "folder": "frontend"
+      "folder": "ml-research"
     },
     {
-      "path": "frontend/a11y-standards.md",
-      "title": "Accessibility Standards",
+      "path": "ml-research/ci-cd-pipeline.md",
+      "title": "CI/CD Pipeline",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Accessibility Standards handles WCAG compliance standards. It integrates with [[Nova Dashboard]], [[Component System]], [[Frontend Architecture]], [[I18N Framework]], [[Sophie Chen]]. Also related to NovaTech, Ava Kim, Jake Morrison, React, Node.js. The system is designed for scalability and maintainability.",
+      "content": "# CI/CD Pipeline\n\nCI/CD Pipeline handles concepts at the organization.\nIntegrates with [[Observability]], [[Agile]], [[FlowStart]].\n\nAlso connected to [[Database Sharding]].\n\nTypeScript has related documentation.\nSee also: ShipIt.",
       "links": [
-        "Nova Dashboard",
-        "Component System",
-        "Frontend Architecture",
-        "I18N Framework",
-        "Sophie Chen"
+        "Observability",
+        "Agile",
+        "FlowStart",
+        "Database Sharding"
       ],
-      "folder": "frontend"
+      "folder": "ml-research"
     },
     {
-      "path": "frontend/perf-budget.md",
-      "title": "Performance Budget",
+      "path": "ml-research/garbage-collection.md",
+      "title": "Garbage Collection",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "The Performance Budget is responsible for frontend performance budgets and metrics at NovaTech. Key dependencies include [[Chart Library]], [[Nova Dashboard]], [[Theme Engine]], [[Frontend Testing]], [[Build System]], [[Frontend Team]]. Also related to NovaTech, Ava Kim, Ryan Nakamura, TypeScript, Redis. Regular reviews ensure quality.",
+      "content": "# Garbage Collection\n\nGarbage Collection handles concepts at the organization.\nIntegrates with [[Owen Park]], [[Agile]], [[Observability]].\n\nAlso connected to [[FlowStart]].\n\nhealth-checks has related documentation.\nSee also: API Versioning.",
       "links": [
-        "Chart Library",
-        "Nova Dashboard",
-        "Theme Engine",
-        "Frontend Testing",
-        "Build System",
-        "Frontend Team"
+        "Owen Park",
+        "Agile",
+        "Observability",
+        "FlowStart"
       ],
-      "folder": "frontend"
+      "folder": "ml-research"
     },
     {
-      "path": "frontend/state-mgmt.md",
-      "title": "State Management",
+      "path": "ml-research/thread-safety.md",
+      "title": "Thread Safety",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "State Management provides client-side state management patterns. Connected to [[Form Framework]], [[Accessibility Standards]], [[Build System]], [[Design System]], [[Frontend Testing]]. Also related to NovaTech, Sophie Chen. This component follows our engineering standards.",
+      "content": "# Thread Safety\n\nThread Safety handles concepts at the organization.\nIntegrates with [[CI/CD Pipeline]], [[Garbage Collection]], [[Saturn Platform]].\n\n\n\nProject Bluebird has related documentation.\nSee also: Redis.",
       "links": [
-        "Form Framework",
-        "Accessibility Standards",
-        "Build System",
-        "Design System",
-        "Frontend Testing"
+        "CI/CD Pipeline",
+        "Garbage Collection",
+        "Saturn Platform"
       ],
-      "folder": "frontend"
+      "folder": "ml-research"
     },
     {
-      "path": "frontend/frontend-testing.md",
-      "title": "Frontend Testing",
+      "path": "ml-research/flowstart.md",
+      "title": "FlowStart",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "projects"
       },
-      "content": "Overview of Frontend Testing covering component and E2E testing strategy. Works with [[Frontend Architecture]], [[Performance Budget]], [[Chart Library]], [[TypeScript]], [[Frontend Team]]. Documentation is kept current.",
+      "content": "# FlowStart\n\nFlowStart handles projects at the organization.\nIntegrates with [[API-First]], [[Database Sharding]], [[CI/CD Pipeline]].\n\nAlso connected to [[Thread Safety]].\n\nquantumdata has related documentation.\nSee also: Rate Limiting.",
       "links": [
-        "Frontend Architecture",
-        "Performance Budget",
-        "Chart Library",
-        "TypeScript",
-        "Frontend Team"
+        "API-First",
+        "Database Sharding",
+        "CI/CD Pipeline",
+        "Thread Safety"
       ],
-      "folder": "frontend"
+      "folder": "ml-research"
     },
     {
-      "path": "frontend/build-system.md",
-      "title": "Build System",
+      "path": "operations/async-patterns.md",
+      "title": "Async Patterns",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
+        "type": "concepts"
       },
-      "content": "Build System handles Vite-based build pipeline. It integrates with [[Nova Mobile App]], [[Error Boundary Strategy]], [[Theme Engine]], [[Frontend Testing]], [[React]]. Also related to NovaTech, PostgreSQL. Connects to [[CI/CD System]] for cross-team integration. The system is designed for scalability and maintainability.",
+      "content": "# Async Patterns\n\nAsync Patterns handles concepts at the organization.\nIntegrates with [[Serverless]], [[Python]].\n\n\n\nmicroservice has related documentation.\nSee also: Kai Lindgren.",
       "links": [
-        "Nova Mobile App",
-        "Error Boundary Strategy",
-        "Theme Engine",
-        "Frontend Testing",
-        "React",
-        "CI/CD System"
-      ],
-      "folder": "frontend"
-    },
-    {
-      "path": "frontend/i18n-framework.md",
-      "title": "I18N Framework",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
-      },
-      "content": "The I18N Framework is responsible for internationalization support at NovaTech. Key dependencies include [[Theme Engine]], [[Frontend Testing]], [[Performance Budget]], [[Design System]], [[Error Boundary Strategy]], [[Frontend Team]]. Also related to NovaTech, Nova Analytics, Redis. Regular reviews ensure quality.",
-      "links": [
-        "Theme Engine",
-        "Frontend Testing",
-        "Performance Budget",
-        "Design System",
-        "Error Boundary Strategy",
-        "Frontend Team"
-      ],
-      "folder": "frontend"
-    },
-    {
-      "path": "frontend/mobile-app.md",
-      "title": "Nova Mobile App",
-      "frontmatter": {
-        "type": "project",
-        "cluster": "frontend"
-      },
-      "content": "Nova Mobile App provides React Native mobile application. Connected to [[State Management]], [[Frontend Architecture]], [[Accessibility Standards]], [[Sophie Chen]]. Also related to Carlos Rivera. This component follows our engineering standards.",
-      "links": [
-        "State Management",
-        "Frontend Architecture",
-        "Accessibility Standards",
-        "Sophie Chen"
-      ],
-      "folder": "frontend"
-    },
-    {
-      "path": "frontend/form-framework.md",
-      "title": "Form Framework",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
-      },
-      "content": "Overview of Form Framework covering form validation and submission. Works with [[Nova Dashboard]], [[Component System]], [[Frontend Testing]], [[Sophie Chen]], [[React]]. Also related to NovaTech. Documentation is kept current.",
-      "links": [
-        "Nova Dashboard",
-        "Component System",
-        "Frontend Testing",
-        "Sophie Chen",
-        "React"
-      ],
-      "folder": "frontend"
-    },
-    {
-      "path": "frontend/chart-library.md",
-      "title": "Chart Library",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
-      },
-      "content": "Chart Library handles data visualization components. It integrates with [[Design System]], [[Nova Mobile App]], [[Nova Dashboard]], [[I18N Framework]]. Also related to Nova Analytics, Ava Kim, Mei Lin, Nina Petrov. Connects to [[A/B Testing Framework]] for cross-team integration. The system is designed for scalability and maintainability.",
-      "links": [
-        "Design System",
-        "Nova Mobile App",
-        "Nova Dashboard",
-        "I18N Framework",
-        "A/B Testing Framework"
-      ],
-      "folder": "frontend"
-    },
-    {
-      "path": "frontend/error-boundary.md",
-      "title": "Error Boundary Strategy",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
-      },
-      "content": "The Error Boundary Strategy is responsible for React error boundary patterns at NovaTech. Key dependencies include [[Accessibility Standards]], [[Build System]], [[I18N Framework]]. Also related to Python. Regular reviews ensure quality.",
-      "links": [
-        "Accessibility Standards",
-        "Build System",
-        "I18N Framework"
-      ],
-      "folder": "frontend"
-    },
-    {
-      "path": "frontend/theme-engine.md",
-      "title": "Theme Engine",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "frontend"
-      },
-      "content": "Theme Engine provides runtime theming and dark mode. Connected to [[Component System]], [[Performance Budget]], [[Frontend Architecture]], [[Carlos Rivera]]. This component follows our engineering standards.",
-      "links": [
-        "Component System",
-        "Performance Budget",
-        "Frontend Architecture",
-        "Carlos Rivera"
-      ],
-      "folder": "frontend"
-    },
-    {
-      "path": "ml-research/ml-platform.md",
-      "title": "ML Platform",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ml"
-      },
-      "content": "ML Platform handles machine learning platform at NovaTech. It integrates with [[Feature Engineering]], [[NLP Classifier]], [[Anomaly Detector]], [[Mei Lin]], [[Python]]. Also related to Ryan Nakamura. The system is designed for scalability and maintainability.",
-      "links": [
-        "Feature Engineering",
-        "NLP Classifier",
-        "Anomaly Detector",
-        "Mei Lin",
+        "Serverless",
         "Python"
       ],
-      "folder": "ml-research"
+      "folder": "operations"
     },
     {
-      "path": "ml-research/scoring-model.md",
-      "title": "Scoring Model",
+      "path": "operations/kafka.md",
+      "title": "Kafka",
       "frontmatter": {
-        "type": "project",
-        "cluster": "ml"
+        "type": "technologies"
       },
-      "content": "The Scoring Model is responsible for sustainability scoring ML model at NovaTech. Key dependencies include [[Evaluation Framework]], [[Experiment Tracker]], [[Training Infrastructure]], [[ML Ethics Guidelines]]. Also related to NovaTech, Nova Analytics, Docker. Regular reviews ensure quality.",
+      "content": "# Kafka\n\nKafka handles technologies at the organization.\nIntegrates with [[Site Reliability]], [[Serverless]], [[PipeFlow]].\n\n\n\nci-cd-pipeline has related documentation.\nSee also: Data Lake.",
       "links": [
-        "Evaluation Framework",
-        "Experiment Tracker",
-        "Training Infrastructure",
-        "ML Ethics Guidelines"
+        "Site Reliability",
+        "Serverless",
+        "PipeFlow"
       ],
-      "folder": "ml-research"
+      "folder": "operations"
     },
     {
-      "path": "ml-research/anomaly-detector.md",
-      "title": "Anomaly Detector",
+      "path": "operations/soren-eriksson.md",
+      "title": "Soren Eriksson",
       "frontmatter": {
-        "type": "project",
-        "cluster": "ml"
+        "type": "people"
       },
-      "content": "Anomaly Detector provides anomaly detection system. Connected to [[A/B Testing Framework]], [[Model Registry]], [[Experiment Tracker]], [[Training Infrastructure]], [[Serving Layer]], [[Docker]]. Also related to Nova Analytics, Jake Morrison. This component follows our engineering standards.",
+      "content": "# Soren Eriksson\n\nSoren Eriksson handles people at the organization.\nIntegrates with [[Async Patterns]], [[Python]], [[Rosa Vega]].\n\n\n\npub-sub has related documentation.\nSee also: Kafka.",
       "links": [
-        "A/B Testing Framework",
-        "Model Registry",
-        "Experiment Tracker",
-        "Training Infrastructure",
-        "Serving Layer",
-        "Docker"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/nlp-classifier.md",
-      "title": "NLP Classifier",
-      "frontmatter": {
-        "type": "project",
-        "cluster": "ml"
-      },
-      "content": "Overview of NLP Classifier covering document classification model. Works with [[Feature Engineering]], [[ML Ethics Guidelines]], [[ML Platform]], [[Training Infrastructure]], [[ML Monitoring]]. Also related to Ryan Nakamura, Python, Kafka. Documentation is kept current.",
-      "links": [
-        "Feature Engineering",
-        "ML Ethics Guidelines",
-        "ML Platform",
-        "Training Infrastructure",
-        "ML Monitoring"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/recommendation-engine.md",
-      "title": "Recommendation Engine",
-      "frontmatter": {
-        "type": "project",
-        "cluster": "ml"
-      },
-      "content": "Recommendation Engine handles content recommendation system. It integrates with [[Feature Engineering]], [[Anomaly Detector]], [[Serving Layer]], [[Evaluation Framework]], [[Mei Lin]], [[Python]], [[ML Team]]. The system is designed for scalability and maintainability.",
-      "links": [
-        "Feature Engineering",
-        "Anomaly Detector",
-        "Serving Layer",
-        "Evaluation Framework",
-        "Mei Lin",
+        "Async Patterns",
         "Python",
-        "ML Team"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/model-registry.md",
-      "title": "Model Registry",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ml"
-      },
-      "content": "The Model Registry is responsible for ML model versioning and deployment at NovaTech. Key dependencies include [[Evaluation Framework]], [[ML Monitoring]], [[Training Infrastructure]], [[Mei Lin]]. Also related to NovaTech, Nova Analytics, Docker. Regular reviews ensure quality.",
-      "links": [
-        "Evaluation Framework",
-        "ML Monitoring",
-        "Training Infrastructure",
-        "Mei Lin"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/experiment-tracker.md",
-      "title": "Experiment Tracker",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ml"
-      },
-      "content": "Experiment Tracker provides MLflow-based experiment tracking. Connected to [[Evaluation Framework]], [[Anomaly Detector]], [[ML Ethics Guidelines]], [[Nina Petrov]], [[Kubernetes]]. Also related to NovaTech. This component follows our engineering standards.",
-      "links": [
-        "Evaluation Framework",
-        "Anomaly Detector",
-        "ML Ethics Guidelines",
-        "Nina Petrov",
-        "Kubernetes"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/training-infra.md",
-      "title": "Training Infrastructure",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ml"
-      },
-      "content": "Overview of Training Infrastructure covering GPU cluster for model training. Works with [[Experiment Tracker]], [[ML Platform]], [[Anomaly Detector]], [[Mei Lin]]. Also related to Nova Analytics, GraphQL. Documentation is kept current.",
-      "links": [
-        "Experiment Tracker",
-        "ML Platform",
-        "Anomaly Detector",
-        "Mei Lin"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/serving-layer.md",
-      "title": "Serving Layer",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ml"
-      },
-      "content": "Serving Layer handles model serving and inference. It integrates with [[ML Platform]], [[Embedding Service]], [[A/B Testing Framework]], [[Nina Petrov]]. The system is designed for scalability and maintainability.",
-      "links": [
-        "ML Platform",
-        "Embedding Service",
-        "A/B Testing Framework",
-        "Nina Petrov"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/feature-eng.md",
-      "title": "Feature Engineering",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ml"
-      },
-      "content": "The Feature Engineering is responsible for feature extraction and preprocessing at NovaTech. Key dependencies include [[Scoring Model]], [[Anomaly Detector]], [[Training Infrastructure]], [[Recommendation Engine]], [[Model Registry]], [[Docker]]. Also related to NovaTech, Nina Petrov. Regular reviews ensure quality.",
-      "links": [
-        "Scoring Model",
-        "Anomaly Detector",
-        "Training Infrastructure",
-        "Recommendation Engine",
-        "Model Registry",
-        "Docker"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/eval-framework.md",
-      "title": "Evaluation Framework",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ml"
-      },
-      "content": "Evaluation Framework provides model evaluation and benchmarking. Connected to [[ML Monitoring]], [[Embedding Service]], [[ML Platform]], [[Training Infrastructure]], [[Recommendation Engine]], [[ML Team]]. Also related to NovaTech. This component follows our engineering standards.",
-      "links": [
-        "ML Monitoring",
-        "Embedding Service",
-        "ML Platform",
-        "Training Infrastructure",
-        "Recommendation Engine",
-        "ML Team"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/ml-monitoring.md",
-      "title": "ML Monitoring",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ml"
-      },
-      "content": "Overview of ML Monitoring covering monitoring model drift and performance. Works with [[Model Registry]], [[NLP Classifier]], [[Experiment Tracker]]. Also related to NovaTech, Nova Analytics, Redis. Documentation is kept current.",
-      "links": [
-        "Model Registry",
-        "NLP Classifier",
-        "Experiment Tracker"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/ab-testing.md",
-      "title": "A/B Testing Framework",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ml"
-      },
-      "content": "A/B Testing Framework handles experimentation and A/B testing. It integrates with [[Feature Engineering]], [[Experiment Tracker]], [[Recommendation Engine]]. The system is designed for scalability and maintainability.",
-      "links": [
-        "Feature Engineering",
-        "Experiment Tracker",
-        "Recommendation Engine"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/embedding-service.md",
-      "title": "Embedding Service",
-      "frontmatter": {
-        "type": "project",
-        "cluster": "ml"
-      },
-      "content": "The Embedding Service is responsible for text embedding generation service at NovaTech. Key dependencies include [[Feature Engineering]], [[Experiment Tracker]], [[Evaluation Framework]], [[Model Registry]], [[ML Ethics Guidelines]]. Also related to Jake Morrison, Node.js. Regular reviews ensure quality.",
-      "links": [
-        "Feature Engineering",
-        "Experiment Tracker",
-        "Evaluation Framework",
-        "Model Registry",
-        "ML Ethics Guidelines"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "ml-research/ml-ethics.md",
-      "title": "ML Ethics Guidelines",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ml"
-      },
-      "content": "ML Ethics Guidelines provides responsible AI principles and guidelines. Connected to [[ML Monitoring]], [[Serving Layer]], [[Training Infrastructure]]. Also related to Carlos Rivera. This component follows our engineering standards.",
-      "links": [
-        "ML Monitoring",
-        "Serving Layer",
-        "Training Infrastructure"
-      ],
-      "folder": "ml-research"
-    },
-    {
-      "path": "operations/ops-overview.md",
-      "title": "Operations Overview",
-      "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
-      },
-      "content": "Operations Overview handles operations and SRE practices at NovaTech. It integrates with [[Secret Management]], [[Container Registry]], [[CI/CD System]], [[Kubernetes]]. Also related to NovaTech, Kafka. The system is designed for scalability and maintainability.",
-      "links": [
-        "Secret Management",
-        "Container Registry",
-        "CI/CD System",
-        "Kubernetes"
+        "Rosa Vega"
       ],
       "folder": "operations"
     },
     {
-      "path": "operations/k8s-management.md",
-      "title": "Kubernetes Management",
+      "path": "operations/site-reliability.md",
+      "title": "Site Reliability",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "concepts"
       },
-      "content": "The Kubernetes Management is responsible for Kubernetes cluster operations at NovaTech. Key dependencies include [[On-Call Rotation]], [[Secret Management]], [[CI/CD System]], [[Terraform Modules]], [[Jake Morrison]], [[Docker]]. Also related to NovaTech, Ava Kim. Regular reviews ensure quality.",
+      "content": "# Site Reliability\n\nSite Reliability handles concepts at the organization.\nIntegrates with [[PipeFlow]], [[Container Orchestration]], [[TDD]].\n\nAlso connected to [[Async Patterns]].\n\nOwen has related documentation.\nSee also: BDD.",
       "links": [
-        "On-Call Rotation",
-        "Secret Management",
-        "CI/CD System",
-        "Terraform Modules",
-        "Jake Morrison",
-        "Docker"
+        "PipeFlow",
+        "Container Orchestration",
+        "TDD",
+        "Async Patterns"
       ],
       "folder": "operations"
     },
     {
-      "path": "operations/cicd-system.md",
-      "title": "CI/CD System",
+      "path": "operations/container-orchestration.md",
+      "title": "Container Orchestration",
       "frontmatter": {
-        "type": "project",
-        "cluster": "ops"
+        "type": "concepts"
       },
-      "content": "CI/CD System provides continuous integration and delivery. Connected to [[Container Registry]], [[Network Policies]], [[Monitoring Stack]], [[Kubernetes Management]], [[Jake Morrison]], [[Ops Team]]. Also related to NovaTech, Sophie Chen. This component follows our engineering standards.",
+      "content": "# Container Orchestration\n\nContainer Orchestration handles concepts at the organization.\nIntegrates with [[PipeFlow]], [[Site Reliability]].\n\n\n\ncqrs has related documentation.\nSee also: Serverless.",
       "links": [
-        "Container Registry",
-        "Network Policies",
-        "Monitoring Stack",
-        "Kubernetes Management",
-        "Jake Morrison",
-        "Ops Team"
+        "PipeFlow",
+        "Site Reliability"
       ],
       "folder": "operations"
     },
     {
-      "path": "operations/monitoring-stack.md",
-      "title": "Monitoring Stack",
+      "path": "operations/python.md",
+      "title": "Python",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "technologies"
       },
-      "content": "Overview of Monitoring Stack covering Prometheus/Grafana monitoring. Works with [[On-Call Rotation]], [[Backup Strategy]], [[SRE Runbooks]], [[Incident Management]], [[Alex Okafor]], [[TypeScript]]. Also related to Mei Lin, Node.js, Docker. Documentation is kept current.",
+      "content": "# Python\n\nPython handles technologies at the organization.\nIntegrates with [[Soren Eriksson]], [[Async Patterns]].\n\n\n\nPipe Flow has related documentation.\nSee also: Redis.",
       "links": [
-        "On-Call Rotation",
-        "Backup Strategy",
-        "SRE Runbooks",
-        "Incident Management",
-        "Alex Okafor",
+        "Soren Eriksson",
+        "Async Patterns"
+      ],
+      "folder": "operations"
+    },
+    {
+      "path": "operations/tdd.md",
+      "title": "TDD",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# TDD\n\nTDD handles concepts at the organization.\nIntegrates with [[Async Patterns]], [[Mira Okonkwo]], [[Container Orchestration]].\n\nAlso connected to [[Site Reliability]].\n\ncontinuous integration has related documentation.\nSee also: WatchTower.",
+      "links": [
+        "Async Patterns",
+        "Mira Okonkwo",
+        "Container Orchestration",
+        "Site Reliability"
+      ],
+      "folder": "operations"
+    },
+    {
+      "path": "operations/pipeflow.md",
+      "title": "PipeFlow",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# PipeFlow\n\nPipeFlow handles projects at the organization.\nIntegrates with [[Python]], [[Site Reliability]].\n\n\n\nSky Forge has related documentation.\nSee also: Quantum Data.",
+      "links": [
+        "Python",
+        "Site Reliability"
+      ],
+      "folder": "operations"
+    },
+    {
+      "path": "operations/mira-okonkwo.md",
+      "title": "Mira Okonkwo",
+      "frontmatter": {
+        "type": "people"
+      },
+      "content": "# Mira Okonkwo\n\nMira Okonkwo handles people at the organization.\nIntegrates with [[Soren Eriksson]], [[Async Patterns]], [[Container Orchestration]].\n\n\n\nGate Keeper has related documentation.\nSee also: Thread Safety.",
+      "links": [
+        "Soren Eriksson",
+        "Async Patterns",
+        "Container Orchestration"
+      ],
+      "folder": "operations"
+    },
+    {
+      "path": "operations/serverless.md",
+      "title": "Serverless",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Serverless\n\nServerless handles concepts at the organization.\nIntegrates with [[Soren Eriksson]], [[Container Orchestration]], [[Python]].\n\n\n\nApache Kafka has related documentation.\nSee also: NovaSpark.",
+      "links": [
+        "Soren Eriksson",
+        "Container Orchestration",
+        "Python"
+      ],
+      "folder": "operations"
+    },
+    {
+      "path": "security/chatops.md",
+      "title": "ChatOps",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# ChatOps\n\nChatOps handles concepts at the organization.\nIntegrates with [[ShipIt]], [[Load Balancing]].\n\n\n\nSaturn has related documentation.\nSee also: GitOps.",
+      "links": [
+        "ShipIt",
+        "Load Balancing"
+      ],
+      "folder": "security"
+    },
+    {
+      "path": "security/memory-management.md",
+      "title": "Memory Management",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Memory Management\n\nMemory Management handles concepts at the organization.\nIntegrates with [[ShipIt]], [[Stream Processing]], [[CloudShift]].\n\n\n\nschema-migration has related documentation.\nSee also: Soren Eriksson.",
+      "links": [
+        "ShipIt",
+        "Stream Processing",
+        "CloudShift"
+      ],
+      "folder": "security"
+    },
+    {
+      "path": "security/data-lake.md",
+      "title": "Data Lake",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Data Lake\n\nData Lake handles concepts at the organization.\nIntegrates with [[Load Balancing]], [[Blue-Green Deploy]], [[Database Sharding]].\n\n\n\nPipe Flow has related documentation.\nSee also: Seoul.",
+      "links": [
+        "Load Balancing",
+        "Blue-Green Deploy",
+        "Database Sharding"
+      ],
+      "folder": "security"
+    },
+    {
+      "path": "security/shipit.md",
+      "title": "ShipIt",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# ShipIt\n\nShipIt handles projects at the organization.\nIntegrates with [[Data Lake]], [[CloudShift]], [[Memory Management]].\n\nAlso connected to [[Platform Engineering]], [[Serverless]].\n\nlog-aggregation has related documentation.\nSee also: Message Queue.",
+      "links": [
+        "Data Lake",
+        "CloudShift",
+        "Memory Management",
+        "Platform Engineering",
+        "Serverless"
+      ],
+      "folder": "security"
+    },
+    {
+      "path": "security/pub-sub.md",
+      "title": "Pub/Sub",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Pub/Sub\n\nPub/Sub handles concepts at the organization.\nIntegrates with [[Data Lake]], [[ShipIt]].\n\n\n\nApache Kafka has related documentation.\nSee also: Bluebird.",
+      "links": [
+        "Data Lake",
+        "ShipIt"
+      ],
+      "folder": "security"
+    },
+    {
+      "path": "security/platform-engineering.md",
+      "title": "Platform Engineering",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Platform Engineering\n\nPlatform Engineering handles concepts at the organization.\nIntegrates with [[Data Lake]], [[Pub/Sub]], [[Memory Management]].\n\n\n\nquantumdata has related documentation.\nSee also: Kai Lindgren.",
+      "links": [
+        "Data Lake",
+        "Pub/Sub",
+        "Memory Management"
+      ],
+      "folder": "security"
+    },
+    {
+      "path": "security/stream-processing.md",
+      "title": "Stream Processing",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Stream Processing\n\nStream Processing handles concepts at the organization.\nIntegrates with [[Pub/Sub]], [[Blue-Green Deploy]], [[Data Lake]].\n\nAlso connected to [[Memory Management]].\n\ncaching-strategy has related documentation.\nSee also: Infrastructure as Code.",
+      "links": [
+        "Pub/Sub",
+        "Blue-Green Deploy",
+        "Data Lake",
+        "Memory Management"
+      ],
+      "folder": "security"
+    },
+    {
+      "path": "security/blue-green-deploy.md",
+      "title": "Blue-Green Deploy",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Blue-Green Deploy\n\nBlue-Green Deploy handles concepts at the organization.\nIntegrates with [[ChatOps]], [[Stream Processing]], [[React]].\n\n\n\ncqrs has related documentation.\nSee also: Distributed Tracing.",
+      "links": [
+        "ChatOps",
+        "Stream Processing",
+        "React"
+      ],
+      "folder": "security"
+    },
+    {
+      "path": "security/load-balancing.md",
+      "title": "Load Balancing",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Load Balancing\n\nLoad Balancing handles concepts at the organization.\nIntegrates with [[ShipIt]], [[Pub/Sub]], [[Blue-Green Deploy]].\n\nAlso connected to [[Platform Engineering]], [[React]].\n\nSaturn has related documentation.\nSee also: Python.",
+      "links": [
+        "ShipIt",
+        "Pub/Sub",
+        "Blue-Green Deploy",
+        "Platform Engineering",
+        "React"
+      ],
+      "folder": "security"
+    },
+    {
+      "path": "security/cloudshift.md",
+      "title": "CloudShift",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# CloudShift\n\nCloudShift handles projects at the organization.\nIntegrates with [[Stream Processing]], [[ChatOps]], [[Pub/Sub]].\n\nAlso connected to [[Memory Management]].\n\nWatch Tower has related documentation.\nSee also: Feature Flags.",
+      "links": [
+        "Stream Processing",
+        "ChatOps",
+        "Pub/Sub",
+        "Memory Management"
+      ],
+      "folder": "security"
+    },
+    {
+      "path": "mobile/a-b-testing.md",
+      "title": "A/B Testing",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# A/B Testing\n\nA/B Testing handles concepts at the organization.\nIntegrates with [[Pair Programming]], [[ConfigForge]].\n\n\n\nWatch Tower has related documentation.\nSee also: GridPoint Inc.",
+      "links": [
+        "Pair Programming",
+        "ConfigForge"
+      ],
+      "folder": "mobile"
+    },
+    {
+      "path": "mobile/aws.md",
+      "title": "AWS",
+      "frontmatter": {
+        "type": "technologies"
+      },
+      "content": "# AWS\n\nAWS handles technologies at the organization.\nIntegrates with [[Prism Core]], [[SOLID Principles]], [[Technical Debt]].\n\nAlso connected to [[Event Loop]].\n\nsite-reliability has related documentation.\nSee also: Kanto Prefecture.",
+      "links": [
+        "Prism Core",
+        "SOLID Principles",
+        "Technical Debt",
+        "Event Loop"
+      ],
+      "folder": "mobile"
+    },
+    {
+      "path": "mobile/rate-limiting.md",
+      "title": "Rate Limiting",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Rate Limiting\n\nRate Limiting handles concepts at the organization.\nIntegrates with [[Prism Core]], [[AWS]], [[CQRS]].\n\nAlso connected to [[Pair Programming]].\n\nPipe Flow has related documentation.\nSee also: Message Queue.",
+      "links": [
+        "Prism Core",
+        "AWS",
+        "CQRS",
+        "Pair Programming"
+      ],
+      "folder": "mobile"
+    },
+    {
+      "path": "mobile/configforge.md",
+      "title": "ConfigForge",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# ConfigForge\n\nConfigForge handles projects at the organization.\nIntegrates with [[Rate Limiting]], [[Apex Systems]].\n\n\n\netl-pipeline has related documentation.\nSee also: NovaSpark.",
+      "links": [
+        "Rate Limiting",
+        "Apex Systems"
+      ],
+      "folder": "mobile"
+    },
+    {
+      "path": "mobile/apex-systems.md",
+      "title": "Apex Systems",
+      "frontmatter": {
+        "type": "organizations"
+      },
+      "content": "# Apex Systems\n\nApex Systems handles organizations at the organization.\nIntegrates with [[Rate Limiting]], [[Prism Core]], [[CQRS]].\n\n\n\na-b-testing has related documentation.\nSee also: Caching Strategy.",
+      "links": [
+        "Rate Limiting",
+        "Prism Core",
+        "CQRS"
+      ],
+      "folder": "mobile"
+    },
+    {
+      "path": "mobile/pair-programming.md",
+      "title": "Pair Programming",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Pair Programming\n\nPair Programming handles concepts at the organization.\nIntegrates with [[ConfigForge]], [[Rate Limiting]], [[Technical Debt]].\n\nAlso connected to [[SOLID Principles]].\n\nSoren has related documentation.\nSee also: DevOps.",
+      "links": [
+        "ConfigForge",
+        "Rate Limiting",
+        "Technical Debt",
+        "SOLID Principles"
+      ],
+      "folder": "mobile"
+    },
+    {
+      "path": "mobile/cqrs.md",
+      "title": "CQRS",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# CQRS\n\nCQRS handles concepts at the organization.\nIntegrates with [[SOLID Principles]], [[A/B Testing]], [[Technical Debt]].\n\n\n\ndata-lake has related documentation.\nSee also: Database Sharding.",
+      "links": [
+        "SOLID Principles",
+        "A/B Testing",
+        "Technical Debt"
+      ],
+      "folder": "mobile"
+    },
+    {
+      "path": "mobile/solid-principles.md",
+      "title": "SOLID Principles",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# SOLID Principles\n\nSOLID Principles handles concepts at the organization.\nIntegrates with [[CQRS]], [[Technical Debt]].\n\n\n\nSky Forge has related documentation.\nSee also: CloudShift.",
+      "links": [
+        "CQRS",
+        "Technical Debt"
+      ],
+      "folder": "mobile"
+    },
+    {
+      "path": "mobile/prism-core.md",
+      "title": "Prism Core",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# Prism Core\n\nPrism Core handles projects at the organization.\nIntegrates with [[Apex Systems]], [[Technical Debt]], [[AWS]].\n\n\n\nstream-processing has related documentation.\nSee also: Microservices.",
+      "links": [
+        "Apex Systems",
+        "Technical Debt",
+        "AWS"
+      ],
+      "folder": "mobile"
+    },
+    {
+      "path": "mobile/technical-debt.md",
+      "title": "Technical Debt",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Technical Debt\n\nTechnical Debt handles concepts at the organization.\nIntegrates with [[ConfigForge]], [[A/B Testing]], [[SOLID Principles]].\n\nAlso connected to [[Pair Programming]].\n\napi-versioning has related documentation.\nSee also: Observability.",
+      "links": [
+        "ConfigForge",
+        "A/B Testing",
+        "SOLID Principles",
+        "Pair Programming"
+      ],
+      "folder": "mobile"
+    },
+    {
+      "path": "testing/nadia-reyes.md",
+      "title": "Nadia Reyes",
+      "frontmatter": {
+        "type": "people"
+      },
+      "content": "# Nadia Reyes\n\nNadia Reyes handles people at the organization.\nIntegrates with [[React]], [[GitOps]].\n\n\n\nasync-patterns has related documentation.\nSee also: Microservices.",
+      "links": [
+        "React",
+        "GitOps"
+      ],
+      "folder": "testing"
+    },
+    {
+      "path": "testing/react.md",
+      "title": "React",
+      "frontmatter": {
+        "type": "technologies"
+      },
+      "content": "# React\n\nReact handles technologies at the organization.\nIntegrates with [[Quantum Data]], [[Nadia Reyes]], [[Portland]].\n\nAlso connected to [[Continuous Integration]].\n\nstream-processing has related documentation.\nSee also: Batch Processing.",
+      "links": [
+        "Quantum Data",
+        "Nadia Reyes",
+        "Portland",
+        "Continuous Integration"
+      ],
+      "folder": "testing"
+    },
+    {
+      "path": "testing/rollback-strategy.md",
+      "title": "Rollback Strategy",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Rollback Strategy\n\nRollback Strategy handles concepts at the organization.\nIntegrates with [[TypeScript]], [[Quantum Data]], [[Message Queue]].\n\n\n\ncode-reviews has related documentation.\nSee also: Batch Processing.",
+      "links": [
+        "TypeScript",
+        "Quantum Data",
+        "Message Queue"
+      ],
+      "folder": "testing"
+    },
+    {
+      "path": "testing/gitops.md",
+      "title": "GitOps",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# GitOps\n\nGitOps handles concepts at the organization.\nIntegrates with [[Machine Learning]], [[Nadia Reyes]], [[TypeScript]].\n\n\n\nOwen has related documentation.\nSee also: Event Sourcing.",
+      "links": [
+        "Machine Learning",
+        "Nadia Reyes",
         "TypeScript"
       ],
-      "folder": "operations"
+      "folder": "testing"
     },
     {
-      "path": "operations/incident-mgmt.md",
-      "title": "Incident Management",
+      "path": "testing/portland.md",
+      "title": "Portland",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "locations"
       },
-      "content": "Incident Management handles incident response procedures. It integrates with [[On-Call Rotation]], [[SRE Runbooks]], [[Cost Tracking]], [[Backup Strategy]], [[Alex Okafor]], [[TypeScript]]. Also related to NovaTech, React, Kafka. The system is designed for scalability and maintainability.",
+      "content": "# Portland\n\nPortland handles locations at the organization.\nIntegrates with [[Quantum Data]], [[Zero Trust]], [[TypeScript]].\n\n\n\nschema-migration has related documentation.\nSee also: Chaos Engineering.",
       "links": [
-        "On-Call Rotation",
-        "SRE Runbooks",
-        "Cost Tracking",
-        "Backup Strategy",
-        "Alex Okafor",
+        "Quantum Data",
+        "Zero Trust",
         "TypeScript"
       ],
-      "folder": "operations"
+      "folder": "testing"
     },
     {
-      "path": "operations/terraform-modules.md",
-      "title": "Terraform Modules",
+      "path": "testing/continuous-integration.md",
+      "title": "Continuous Integration",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "concepts"
       },
-      "content": "The Terraform Modules is responsible for infrastructure as code modules at NovaTech. Key dependencies include [[Secret Management]], [[On-Call Rotation]], [[Kubernetes Management]], [[Backup Strategy]], [[Deployment Pipeline]], [[Docker]]. Also related to NovaTech. Regular reviews ensure quality.",
+      "content": "# Continuous Integration\n\nContinuous Integration handles concepts at the organization.\nIntegrates with [[Nadia Reyes]], [[Portland]].\n\n\n\nrate-limiting has related documentation.\nSee also: Apex Systems.",
       "links": [
-        "Secret Management",
-        "On-Call Rotation",
-        "Kubernetes Management",
-        "Backup Strategy",
-        "Deployment Pipeline",
-        "Docker"
+        "Nadia Reyes",
+        "Portland"
       ],
-      "folder": "operations"
+      "folder": "testing"
     },
     {
-      "path": "operations/container-registry.md",
-      "title": "Container Registry",
+      "path": "testing/quantum-data.md",
+      "title": "Quantum Data",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "organizations"
       },
-      "content": "Container Registry provides Docker image storage and scanning. Connected to [[On-Call Rotation]], [[SRE Runbooks]], [[Deployment Pipeline]]. Also related to Nova Analytics, Sophie Chen. This component follows our engineering standards.",
+      "content": "# Quantum Data\n\nQuantum Data handles organizations at the organization.\nIntegrates with [[Machine Learning]], [[TypeScript]].\n\n\n\nNodeJS has related documentation.\nSee also: Event Loop.",
       "links": [
-        "On-Call Rotation",
-        "SRE Runbooks",
-        "Deployment Pipeline"
+        "Machine Learning",
+        "TypeScript"
       ],
-      "folder": "operations"
+      "folder": "testing"
     },
     {
-      "path": "operations/secret-mgmt.md",
-      "title": "Secret Management",
+      "path": "testing/typescript.md",
+      "title": "TypeScript",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "technologies"
       },
-      "content": "Overview of Secret Management covering secrets and credential management. Works with [[Cost Tracking]], [[Network Policies]], [[Terraform Modules]]. Also related to NovaTech, Mei Lin, Nina Petrov. Documentation is kept current.",
+      "content": "# TypeScript\n\nTypeScript handles technologies at the organization.\nIntegrates with [[Continuous Integration]], [[Nadia Reyes]], [[Portland]].\n\nAlso connected to [[Thread Safety]].\n\nload-balancing has related documentation.\nSee also: FlowStart.",
       "links": [
-        "Cost Tracking",
-        "Network Policies",
-        "Terraform Modules"
+        "Continuous Integration",
+        "Nadia Reyes",
+        "Portland",
+        "Thread Safety"
       ],
-      "folder": "operations"
+      "folder": "testing"
     },
     {
-      "path": "operations/cost-tracking.md",
-      "title": "Cost Tracking",
+      "path": "testing/zero-trust.md",
+      "title": "Zero Trust",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "concepts"
       },
-      "content": "Cost Tracking handles cloud cost monitoring and optimization. It integrates with [[Secret Management]], [[Deployment Pipeline]], [[Network Policies]], [[Container Registry]], [[CI/CD System]], [[Ops Team]]. Also related to NovaTech, Nova Analytics, Carlos Rivera. The system is designed for scalability and maintainability.",
+      "content": "# Zero Trust\n\nZero Trust handles concepts at the organization.\nIntegrates with [[Machine Learning]], [[Rollback Strategy]], [[Continuous Integration]].\n\nAlso connected to [[Nadia Reyes]].\n\nmessage-queue has related documentation.\nSee also: Kai Lindgren.",
       "links": [
-        "Secret Management",
-        "Deployment Pipeline",
-        "Network Policies",
-        "Container Registry",
-        "CI/CD System",
-        "Ops Team"
+        "Machine Learning",
+        "Rollback Strategy",
+        "Continuous Integration",
+        "Nadia Reyes"
       ],
-      "folder": "operations"
+      "folder": "testing"
     },
     {
-      "path": "operations/backup-strategy.md",
-      "title": "Backup Strategy",
+      "path": "testing/machine-learning.md",
+      "title": "Machine Learning",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "concepts"
       },
-      "content": "The Backup Strategy is responsible for backup and disaster recovery at NovaTech. Key dependencies include [[Monitoring Stack]], [[Container Registry]], [[Cost Tracking]], [[Capacity Planning]], [[Jake Morrison]], [[Kubernetes]]. Also related to Carlos Rivera, Nina Petrov, React. Regular reviews ensure quality.",
+      "content": "# Machine Learning\n\nMachine Learning handles concepts at the organization.\nIntegrates with [[Zero Trust]], [[Portland]], [[Continuous Integration]].\n\nAlso connected to [[Saturn Platform]].\n\ncode-reviews has related documentation.\nSee also: Rollback Strategy.",
       "links": [
-        "Monitoring Stack",
-        "Container Registry",
-        "Cost Tracking",
-        "Capacity Planning",
-        "Jake Morrison",
+        "Zero Trust",
+        "Portland",
+        "Continuous Integration",
+        "Saturn Platform"
+      ],
+      "folder": "testing"
+    },
+    {
+      "path": "devrel/log-aggregation.md",
+      "title": "Log Aggregation",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Log Aggregation\n\nLog Aggregation handles concepts at the organization.\nIntegrates with [[Batch Processing]], [[BDD]], [[Event Sourcing]].\n\n\n\ndevops has related documentation.\nSee also: Code Reviews.",
+      "links": [
+        "Batch Processing",
+        "BDD",
+        "Event Sourcing"
+      ],
+      "folder": "devrel"
+    },
+    {
+      "path": "devrel/circuit-breaker.md",
+      "title": "Circuit Breaker",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# Circuit Breaker\n\nCircuit Breaker handles concepts at the organization.\nIntegrates with [[Service Discovery]], [[BDD]], [[Schema Migration]].\n\n\n\nperformance-tuning has related documentation.\nSee also: Soren Eriksson.",
+      "links": [
+        "Service Discovery",
+        "BDD",
+        "Schema Migration"
+      ],
+      "folder": "devrel"
+    },
+    {
+      "path": "devrel/novaspark.md",
+      "title": "NovaSpark",
+      "frontmatter": {
+        "type": "projects"
+      },
+      "content": "# NovaSpark\n\nNovaSpark handles projects at the organization.\nIntegrates with [[DevOps]], [[API Versioning]].\n\n\n\nredis has related documentation.\nSee also: Batch Processing.",
+      "links": [
+        "DevOps",
+        "API Versioning"
+      ],
+      "folder": "devrel"
+    },
+    {
+      "path": "devrel/api-versioning.md",
+      "title": "API Versioning",
+      "frontmatter": {
+        "type": "concepts"
+      },
+      "content": "# API Versioning\n\nAPI Versioning handles concepts at the organization.\nIntegrates with [[Batch Processing]], [[Performance Tuning]], [[DevOps]].\n\nAlso connected to [[Kubernetes]].\n\nasync-patterns has related documentation.\nSee also: NovaSpark.",
+      "links": [
+        "Batch Processing",
+        "Performance Tuning",
+        "DevOps",
         "Kubernetes"
       ],
-      "folder": "operations"
+      "folder": "devrel"
     },
     {
-      "path": "operations/on-call-rotation.md",
-      "title": "On-Call Rotation",
+      "path": "devrel/devops.md",
+      "title": "DevOps",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "concepts"
       },
-      "content": "On-Call Rotation provides on-call schedule and escalation. Connected to [[Kubernetes Management]], [[Terraform Modules]], [[Backup Strategy]], [[Operations Overview]], [[Jake Morrison]], [[Ops Team]]. Also related to NovaTech, Carlos Rivera, Kafka. This component follows our engineering standards.",
+      "content": "# DevOps\n\nDevOps handles concepts at the organization.\nIntegrates with [[Service Discovery]], [[Schema Migration]].\n\n\n\nbdd has related documentation.\nSee also: Stream Processing.",
       "links": [
-        "Kubernetes Management",
-        "Terraform Modules",
-        "Backup Strategy",
-        "Operations Overview",
-        "Jake Morrison",
-        "Ops Team"
+        "Service Discovery",
+        "Schema Migration"
       ],
-      "folder": "operations"
+      "folder": "devrel"
     },
     {
-      "path": "operations/capacity-planning.md",
-      "title": "Capacity Planning",
+      "path": "devrel/schema-migration.md",
+      "title": "Schema Migration",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "concepts"
       },
-      "content": "Overview of Capacity Planning covering resource capacity forecasting. Works with [[Terraform Modules]], [[Monitoring Stack]], [[Network Policies]], [[CI/CD System]], [[Alex Okafor]], [[Docker]]. Also related to NovaTech, Nova Analytics, Ryan Nakamura, Python. Documentation is kept current.",
+      "content": "# Schema Migration\n\nSchema Migration handles concepts at the organization.\nIntegrates with [[Service Discovery]], [[Performance Tuning]].\n\n\n\nprism-core has related documentation.\nSee also: Stream Processing.",
       "links": [
-        "Terraform Modules",
-        "Monitoring Stack",
-        "Network Policies",
-        "CI/CD System",
-        "Alex Okafor",
-        "Docker"
+        "Service Discovery",
+        "Performance Tuning"
       ],
-      "folder": "operations"
+      "folder": "devrel"
     },
     {
-      "path": "operations/sre-runbooks.md",
-      "title": "SRE Runbooks",
+      "path": "devrel/service-discovery.md",
+      "title": "Service Discovery",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "concepts"
       },
-      "content": "SRE Runbooks handles operational runbooks for incidents. It integrates with [[On-Call Rotation]], [[Network Policies]], [[Capacity Planning]], [[Alex Okafor]]. Also related to Ava Kim, Ryan Nakamura, GraphQL. The system is designed for scalability and maintainability.",
+      "content": "# Service Discovery\n\nService Discovery handles concepts at the organization.\nIntegrates with [[Schema Migration]], [[NovaSpark]], [[Batch Processing]].\n\nAlso connected to [[Circuit Breaker]].\n\nchaos-engineering has related documentation.\nSee also: DataForge.",
       "links": [
-        "On-Call Rotation",
-        "Network Policies",
-        "Capacity Planning",
-        "Alex Okafor"
+        "Schema Migration",
+        "NovaSpark",
+        "Batch Processing",
+        "Circuit Breaker"
       ],
-      "folder": "operations"
+      "folder": "devrel"
     },
     {
-      "path": "operations/deploy-pipeline.md",
-      "title": "Deployment Pipeline",
+      "path": "devrel/batch-processing.md",
+      "title": "Batch Processing",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "concepts"
       },
-      "content": "The Deployment Pipeline is responsible for GitOps deployment workflow at NovaTech. Key dependencies include [[Incident Management]], [[Monitoring Stack]], [[On-Call Rotation]], [[Operations Overview]], [[Backup Strategy]], [[Alex Okafor]], [[Docker]]. Also related to Jake Morrison, Python. Regular reviews ensure quality.",
+      "content": "# Batch Processing\n\nBatch Processing handles concepts at the organization.\nIntegrates with [[NovaSpark]], [[Log Aggregation]], [[API Versioning]].\n\nAlso connected to [[Schema Migration]], [[Garbage Collection]].\n\ndevops has related documentation.\nSee also: GitOps.",
       "links": [
-        "Incident Management",
-        "Monitoring Stack",
-        "On-Call Rotation",
-        "Operations Overview",
-        "Backup Strategy",
-        "Alex Okafor",
-        "Docker"
+        "NovaSpark",
+        "Log Aggregation",
+        "API Versioning",
+        "Schema Migration",
+        "Garbage Collection"
       ],
-      "folder": "operations"
+      "folder": "devrel"
     },
     {
-      "path": "operations/network-policies.md",
-      "title": "Network Policies",
+      "path": "devrel/performance-tuning.md",
+      "title": "Performance Tuning",
       "frontmatter": {
-        "type": "engineering",
-        "cluster": "ops"
+        "type": "concepts"
       },
-      "content": "Network Policies provides service-to-service network rules. Connected to [[On-Call Rotation]], [[CI/CD System]], [[Backup Strategy]], [[Capacity Planning]]. Also related to Nova Analytics, React, PostgreSQL, Kubernetes. This component follows our engineering standards.",
+      "content": "# Performance Tuning\n\nPerformance Tuning handles concepts at the organization.\nIntegrates with [[Batch Processing]], [[Service Discovery]].\n\n\n\nagile methodology has related documentation.\nSee also: CQRS.",
       "links": [
-        "On-Call Rotation",
-        "CI/CD System",
-        "Backup Strategy",
-        "Capacity Planning"
+        "Batch Processing",
+        "Service Discovery"
       ],
-      "folder": "operations"
+      "folder": "devrel"
     },
     {
-      "path": "daily/daily-2025-01-06.md",
-      "title": "Daily Note - Jan 6, 2025",
+      "path": "devrel/bdd.md",
+      "title": "BDD",
       "frontmatter": {
-        "type": "daily"
+        "type": "concepts"
       },
-      "content": "Worked on the Platform SDK integration with the API Gateway. Had a good pairing session with Ryan Nakamura on TypeScript generics. The Data Team is testing their new ingestion pipeline. Sophie Chen presented the Nova Analytics roadmap at the all-hands. Need to review the Kubernetes upgrade plan from Jake Morrison.",
+      "content": "# BDD\n\nBDD handles concepts at the organization.\nIntegrates with [[NovaSpark]], [[Circuit Breaker]], [[Service Discovery]].\n\nAlso connected to [[Batch Processing]].\n\nGate Keeper has related documentation.\nSee also: Saturn Platform.",
       "links": [
-        "Platform SDK",
-        "API Gateway"
+        "NovaSpark",
+        "Circuit Breaker",
+        "Service Discovery",
+        "Batch Processing"
       ],
-      "folder": "daily"
-    },
-    {
-      "path": "daily/daily-2025-01-07.md",
-      "title": "Daily Note - Jan 7, 2025",
-      "frontmatter": {
-        "type": "daily"
-      },
-      "content": "Deep dive into the Schema Registry implementation. Ava Kim reviewed the design doc and suggested improvements to the event versioning strategy. Carlos Rivera demoed the new Chart Library components. The ML Team is preparing for the Scoring Model v2 release. PostgreSQL connection pooling needs attention.",
-      "links": [
-        "Schema Registry"
-      ],
-      "folder": "daily"
-    },
-    {
-      "path": "daily/daily-2025-01-08.md",
-      "title": "Daily Note - Jan 8, 2025",
-      "frontmatter": {
-        "type": "daily"
-      },
-      "content": "Sprint planning day. Mei Lin presented the Data Quality Framework roadmap. The Frontend Team is prioritizing accessibility standards compliance. Nina Petrov showed impressive results from the Anomaly Detector. Reviewed Docker image sizes with Jake Morrison. The NovaTech quarterly review is next week.",
-      "links": [
-        "Data Quality Framework"
-      ],
-      "folder": "daily"
-    },
-    {
-      "path": "daily/daily-2025-01-09.md",
-      "title": "Daily Note - Jan 9, 2025",
-      "frontmatter": {
-        "type": "daily"
-      },
-      "content": "Finished the Caching Layer Redis integration. Alex Okafor helped with the Monitoring Stack configuration for cache metrics. The Berlin office had network issues overnight. Sophie Chen is gathering feedback on the Nova Dashboard UX. Need to update the GraphQL schema for the new endpoints.",
-      "links": [
-        "Caching Layer",
-        "Monitoring Stack"
-      ],
-      "folder": "daily"
-    },
-    {
-      "path": "daily/daily-2025-01-10.md",
-      "title": "Daily Note - Jan 10, 2025",
-      "frontmatter": {
-        "type": "daily"
-      },
-      "content": "Friday wrap-up. The CI/CD System deployment went smoothly thanks to the Ops Team. Carlos Rivera merged the Design System dark mode PR. Mei Lin and Nina Petrov are collaborating on the Feature Store integration. Good progress across all teams this sprint.",
-      "links": [
-        "CI/CD System"
-      ],
-      "folder": "daily"
-    },
-    {
-      "path": "meetings/meeting-arch-review.md",
-      "title": "Architecture Review - Jan 2025",
-      "frontmatter": {
-        "type": "meeting"
-      },
-      "content": "Monthly architecture review led by Ava Kim. Topics: Platform Architecture evolution, Data Warehouse scaling challenges, Frontend Architecture modernization plan. Ryan Nakamura proposed adopting Kafka for inter-service messaging. Jake Morrison presented the Kubernetes multi-region expansion. Nina Petrov discussed ML Monitoring improvements.",
-      "links": [
-        "Platform Architecture"
-      ],
-      "folder": "meetings"
-    },
-    {
-      "path": "meetings/meeting-sprint-retro.md",
-      "title": "Sprint Retrospective - Jan 2025",
-      "frontmatter": {
-        "type": "meeting"
-      },
-      "content": "Retrospective for Sprint 23. Went well: Stream Processing latency improvements, Component System new components shipped, Model Registry automation. To improve: cross-team communication on schema changes, test flakiness in the CI/CD System, documentation gaps in the Platform SDK.",
-      "links": [
-        "Component System"
-      ],
-      "folder": "meetings"
-    },
-    {
-      "path": "meetings/meeting-data-sync.md",
-      "title": "Data Team Sync - Jan 2025",
-      "frontmatter": {
-        "type": "meeting"
-      },
-      "content": "Weekly data team sync. Mei Lin reported the Ingestion Engine handles 15M records daily now. Schema Evolution Strategy is working well with the new versioning approach. The Data Catalog adoption is increasing. Query Optimizer Notes were useful for the team. Alex Okafor joined to discuss ETL Monitoring alerts.",
-      "links": [
-        "Ingestion Engine",
-        "Data Catalog"
-      ],
-      "folder": "meetings"
-    },
-    {
-      "path": "notes/reading-system-design.md",
-      "title": "System Design Reading Notes",
-      "frontmatter": {
-        "type": "reading"
-      },
-      "content": "Notes from reading about distributed system design patterns. Relevant to the Event Bus architecture and Stream Processing at NovaTech. The saga pattern could improve the Transform Pipeline reliability. Also read about feature store implementations relevant to the ML Platform.",
-      "links": [],
-      "folder": "notes"
-    },
-    {
-      "path": "notes/reading-ml-papers.md",
-      "title": "ML Paper Reviews",
-      "frontmatter": {
-        "type": "reading"
-      },
-      "content": "Reviewed recent papers on anomaly detection and recommendation systems. The attention mechanism paper is relevant to the NLP Classifier improvements. Nina Petrov recommended the survey on evaluation metrics for ML systems. The Embedding Service could benefit from the new contrastive learning approach.",
-      "links": [],
-      "folder": "notes"
-    },
-    {
-      "path": "notes/onboarding-guide.md",
-      "title": "Engineering Onboarding Guide",
-      "frontmatter": {
-        "type": "reference"
-      },
-      "content": "Onboarding guide for new engineers at NovaTech. Day 1: Set up development environment with Docker and Node.js. Day 2: Clone Nova Analytics and explore the Platform SDK. Week 1: Complete TypeScript coding exercise and shadow code reviews. Ryan Nakamura coordinates mentor assignments.",
-      "links": [],
-      "folder": "notes"
-    },
-    {
-      "path": "notes/tech-radar.md",
-      "title": "Tech Radar Q1 2025",
-      "frontmatter": {
-        "type": "reference"
-      },
-      "content": "Technology radar assessment. Adopt: TypeScript strict mode, Kafka for event streaming. Trial: Bun runtime, effect-ts. Assess: Deno, WebAssembly components. Hold: REST-only APIs. The NovaTech stack centers on TypeScript, React, PostgreSQL, and Kubernetes.",
-      "links": [],
-      "folder": "notes"
-    },
-    {
-      "path": "notes/personal-goals.md",
-      "title": "Q1 2025 Personal Goals",
-      "frontmatter": {
-        "type": "personal"
-      },
-      "content": "Goals: deepen Kubernetes expertise, contribute to the Recommendation Engine, mentor junior engineers on TypeScript patterns. Maintain daily walks and reading habit. Present at the next architecture review. Learn more about the ML Platform internals from Nina Petrov.",
-      "links": [],
-      "folder": "notes"
-    },
-    {
-      "path": "notes/incident-jan-8.md",
-      "title": "Incident Report - Jan 8 Redis Outage",
-      "frontmatter": {
-        "type": "incident"
-      },
-      "content": "Redis cluster experienced failover at 03:14 UTC. Impact: Caching Layer degraded, Rate Limiter fell back to in-memory mode, Batch Scheduler jobs delayed. Root cause: memory pressure from large sorted sets. Jake Morrison led incident response. Resolution: increased memory limits and added eviction policies. The Monitoring Stack caught it quickly.",
-      "links": [],
-      "folder": "notes"
-    },
-    {
-      "path": "notes/coffee-spots.md",
-      "title": "Coffee Spots Near Offices",
-      "frontmatter": {
-        "type": "personal"
-      },
-      "content": "Favorite coffee spots. Austin: Houndstooth, Fleet Coffee. Berlin: The Barn, Five Elephant. Tokyo: Fuglen, Bear Pond. Walking to coffee doubles as the daily break. NovaTech offices all have good coffee machines but the local shops are better for walking meetings.",
-      "links": [],
-      "folder": "notes"
-    },
-    {
-      "path": "people/ava-kim.md",
-      "title": "Ava Kim",
-      "frontmatter": {
-        "type": "person"
-      },
-      "content": "[[Ava Kim]] is the CTO of [[NovaTech]]. She sets technical strategy and oversees [[Platform Team]], [[Data Team]], [[Frontend Team]], [[ML Team]], and [[Ops Team]]. Expert in distributed systems and TypeScript. Based in [[Austin]].",
-      "links": [
-        "NovaTech",
-        "Platform Team",
-        "Data Team",
-        "Frontend Team",
-        "ML Team",
-        "Ops Team",
-        "Austin"
-      ],
-      "folder": "people"
-    },
-    {
-      "path": "people/ryan-nakamura.md",
-      "title": "Ryan Nakamura",
-      "frontmatter": {
-        "type": "person"
-      },
-      "content": "[[Ryan Nakamura]] is VP Engineering at [[NovaTech]]. He manages the [[Platform Team]] and coordinates cross-team architecture. Works closely with [[Ava Kim]] on technical direction. Expert in Node.js and Kubernetes.",
-      "links": [
-        "NovaTech",
-        "Platform Team",
-        "Ava Kim"
-      ],
-      "folder": "people"
-    },
-    {
-      "path": "people/mei-lin.md",
-      "title": "Mei Lin",
-      "frontmatter": {
-        "type": "person"
-      },
-      "content": "[[Mei Lin]] leads the [[Data Team]] at [[NovaTech]]. She built the [[Ingestion Engine]] and [[Data Quality Framework]]. Expert in PostgreSQL and data pipeline architecture. Based in [[Berlin]].",
-      "links": [
-        "Data Team",
-        "NovaTech",
-        "Ingestion Engine",
-        "Data Quality Framework",
-        "Berlin"
-      ],
-      "folder": "people"
-    },
-    {
-      "path": "people/carlos-rivera.md",
-      "title": "Carlos Rivera",
-      "frontmatter": {
-        "type": "person"
-      },
-      "content": "[[Carlos Rivera]] leads the [[Frontend Team]] at [[NovaTech]]. He maintains the [[Component System]] and [[Design System]]. Expert in React and TypeScript. Based in [[Austin]].",
-      "links": [
-        "Frontend Team",
-        "NovaTech",
-        "Component System",
-        "Design System",
-        "Austin"
-      ],
-      "folder": "people"
-    },
-    {
-      "path": "people/nina-petrov.md",
-      "title": "Nina Petrov",
-      "frontmatter": {
-        "type": "person"
-      },
-      "content": "[[Nina Petrov]] leads the [[ML Team]] at [[NovaTech]]. She developed the [[Scoring Model]] and [[Anomaly Detector]]. Expert in Python and deep learning. Based in [[Berlin]].",
-      "links": [
-        "ML Team",
-        "NovaTech",
-        "Scoring Model",
-        "Anomaly Detector",
-        "Berlin"
-      ],
-      "folder": "people"
-    },
-    {
-      "path": "people/jake-morrison.md",
-      "title": "Jake Morrison",
-      "frontmatter": {
-        "type": "person"
-      },
-      "content": "[[Jake Morrison]] leads the [[Ops Team]] at [[NovaTech]]. He manages [[Kubernetes Management]] and the [[CI/CD System]]. Expert in Docker and Terraform. Based in [[Austin]].",
-      "links": [
-        "Ops Team",
-        "NovaTech",
-        "Kubernetes Management",
-        "CI/CD System",
-        "Austin"
-      ],
-      "folder": "people"
-    },
-    {
-      "path": "people/sophie-chen.md",
-      "title": "Sophie Chen",
-      "frontmatter": {
-        "type": "person"
-      },
-      "content": "[[Sophie Chen]] is the Product Manager for [[Nova Analytics]] at [[NovaTech]]. She defines the product roadmap and works with [[Carlos Rivera]] on UX priorities and [[Ava Kim]] on strategy.",
-      "links": [
-        "Nova Analytics",
-        "NovaTech",
-        "Carlos Rivera",
-        "Ava Kim"
-      ],
-      "folder": "people"
-    },
-    {
-      "path": "people/alex-okafor.md",
-      "title": "Alex Okafor",
-      "frontmatter": {
-        "type": "person"
-      },
-      "content": "[[Alex Okafor]] is a Senior SRE on the [[Ops Team]] at [[NovaTech]]. He maintains the [[Monitoring Stack]] and [[Incident Management]] procedures. Expert in Kubernetes and Prometheus.",
-      "links": [
-        "Ops Team",
-        "NovaTech",
-        "Monitoring Stack",
-        "Incident Management"
-      ],
-      "folder": "people"
-    },
-    {
-      "path": "organizations/novatech.md",
-      "title": "NovaTech",
-      "frontmatter": {
-        "type": "organization"
-      },
-      "content": "[[NovaTech]] is a technology company building sustainability analytics. Offices in [[Austin]], [[Berlin]], and [[Tokyo]]. Key teams: [[Platform Team]], [[Data Team]], [[Frontend Team]], [[ML Team]], [[Ops Team]]. Flagship product: [[Nova Analytics]].",
-      "links": [
-        "Austin",
-        "Berlin",
-        "Tokyo",
-        "Platform Team",
-        "Data Team",
-        "Frontend Team",
-        "ML Team",
-        "Ops Team",
-        "Nova Analytics"
-      ],
-      "folder": "organizations"
-    },
-    {
-      "path": "projects/nova-analytics.md",
-      "title": "Nova Analytics",
-      "frontmatter": {
-        "type": "project"
-      },
-      "content": "[[Nova Analytics]] is the flagship product at [[NovaTech]]. The [[Nova Dashboard]] serves as the primary interface. Data flows from the [[Data Warehouse]] through the [[API Gateway]] to the frontend. [[Sophie Chen]] manages the product.",
-      "links": [
-        "NovaTech",
-        "Nova Dashboard",
-        "Data Warehouse",
-        "API Gateway",
-        "Sophie Chen"
-      ],
-      "folder": "projects"
+      "folder": "devrel"
     }
   ],
   "groundTruth": [
     {
-      "notePath": "daily/daily-2025-01-06.md",
-      "entity": "Nova Analytics",
+      "notePath": "platform/kai-lindgren.md",
+      "entity": "Rollback Strategy",
       "tier": 1,
-      "reason": "Content directly mentions 'Nova Analytics' as plain text without wikilink"
+      "reason": "Content directly mentions 'Rollback Strategy' as plain text without wikilink"
     },
     {
-      "notePath": "daily/daily-2025-01-09.md",
-      "entity": "Berlin",
-      "tier": 2,
-      "reason": "Entity 'Berlin' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "data-eng/feature-store.md",
-      "entity": "Alex Okafor",
-      "tier": 2,
-      "reason": "Entity 'Alex Okafor' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "data-eng/ingestion-engine.md",
-      "entity": "Kubernetes",
-      "tier": 2,
-      "reason": "Entity 'Kubernetes' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "data-eng/query-optimizer.md",
-      "entity": "Nina Petrov",
-      "tier": 2,
-      "reason": "Entity 'Nina Petrov' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "data-eng/schema-evolution.md",
-      "entity": "NovaTech",
+      "notePath": "platform/kai-lindgren.md",
+      "entity": "Kai Lindgren",
       "tier": 1,
-      "reason": "Content directly mentions 'NovaTech' as plain text without wikilink"
+      "reason": "Content directly mentions 'Kai Lindgren' as plain text without wikilink"
     },
     {
-      "notePath": "frontend/a11y-standards.md",
-      "entity": "React",
+      "notePath": "platform/clean-architecture.md",
+      "entity": "Clean Architecture",
+      "tier": 1,
+      "reason": "Content directly mentions 'Clean Architecture' as plain text without wikilink"
+    },
+    {
+      "notePath": "platform/clean-architecture.md",
+      "entity": "SkyForge",
+      "tier": 1,
+      "reason": "Content directly mentions 'SkyForge' as plain text without wikilink"
+    },
+    {
+      "notePath": "platform/distributed-tracing.md",
+      "entity": "Distributed Tracing",
+      "tier": 1,
+      "reason": "Content directly mentions 'Distributed Tracing' as plain text without wikilink"
+    },
+    {
+      "notePath": "platform/distributed-tracing.md",
+      "entity": "CQRS",
+      "tier": 1,
+      "reason": "Content directly mentions 'CQRS' as plain text without wikilink"
+    },
+    {
+      "notePath": "platform/etl-pipeline.md",
+      "entity": "ETL Pipeline",
+      "tier": 1,
+      "reason": "Content directly mentions 'ETL Pipeline' as plain text without wikilink"
+    },
+    {
+      "notePath": "platform/etl-pipeline.md",
+      "entity": "Pub/Sub",
+      "tier": 1,
+      "reason": "Content directly mentions 'Pub/Sub' as plain text without wikilink"
+    },
+    {
+      "notePath": "platform/authvault.md",
+      "entity": "AuthVault",
+      "tier": 1,
+      "reason": "Content directly mentions 'AuthVault' as plain text without wikilink"
+    },
+    {
+      "notePath": "platform/authvault.md",
+      "entity": "ConfigForge",
+      "tier": 1,
+      "reason": "Content directly mentions 'ConfigForge' as plain text without wikilink"
+    },
+    {
+      "notePath": "platform/tessa-liu.md",
+      "entity": "Machine Learning",
+      "tier": 1,
+      "reason": "Content directly mentions 'Machine Learning' as plain text without wikilink"
+    },
+    {
+      "notePath": "platform/tessa-liu.md",
+      "entity": "Tessa Liu",
+      "tier": 1,
+      "reason": "Content directly mentions 'Tessa Liu' as plain text without wikilink"
+    },
+    {
+      "notePath": "platform/kai-lindgren.md",
+      "entity": "SOLID Principles",
+      "tier": 2,
+      "reason": "Alias \"solid-principles\" matches entity SOLID Principles"
+    },
+    {
+      "notePath": "platform/clean-architecture.md",
+      "entity": "Project Meridian",
+      "tier": 2,
+      "reason": "Alias \"Meridian\" matches entity Project Meridian"
+    },
+    {
+      "notePath": "platform/clean-architecture.md",
+      "entity": "Meridian Labs",
+      "tier": 2,
+      "reason": "Alias \"Meridian\" matches entity Meridian Labs"
+    },
+    {
+      "notePath": "platform/distributed-tracing.md",
+      "entity": "GridPoint Inc",
+      "tier": 2,
+      "reason": "Alias \"GridPoint\" matches entity GridPoint Inc"
+    },
+    {
+      "notePath": "platform/etl-pipeline.md",
+      "entity": "PayStream",
+      "tier": 2,
+      "reason": "Alias \"Pay Stream\" matches entity PayStream"
+    },
+    {
+      "notePath": "platform/authvault.md",
+      "entity": "Pub/Sub",
+      "tier": 2,
+      "reason": "Alias \"pub-sub\" matches entity Pub/Sub"
+    },
+    {
+      "notePath": "platform/tessa-liu.md",
+      "entity": "Infrastructure as Code",
+      "tier": 2,
+      "reason": "Alias \"infrastructure-as-code\" matches entity Infrastructure as Code"
+    },
+    {
+      "notePath": "platform/domain-driven-design.md",
+      "entity": "ShipIt",
+      "tier": 2,
+      "reason": "Alias \"Ship It\" matches entity ShipIt"
+    },
+    {
+      "notePath": "platform/pulseboard.md",
+      "entity": "CloudShift",
+      "tier": 2,
+      "reason": "Alias \"Cloud Shift\" matches entity CloudShift"
+    },
+    {
+      "notePath": "platform/rosa-vega.md",
+      "entity": "Health Checks",
+      "tier": 2,
+      "reason": "Alias \"health-checks\" matches entity Health Checks"
+    },
+    {
+      "notePath": "platform/node-js.md",
+      "entity": "Rollback Strategy",
+      "tier": 2,
+      "reason": "Alias \"rollback-strategy\" matches entity Rollback Strategy"
+    },
+    {
+      "notePath": "platform/kai-lindgren.md",
+      "entity": "Database Sharding",
       "tier": 3,
-      "reason": "Indirect relationship to 'React' through shared context"
+      "reason": "Database Sharding is contextually related to Kai Lindgren through shared domain"
     },
     {
-      "notePath": "frontend/component-system.md",
-      "entity": "Alex Okafor",
-      "tier": 2,
-      "reason": "Entity 'Alex Okafor' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "frontend/design-system.md",
-      "entity": "Nova Analytics",
-      "tier": 1,
-      "reason": "Content directly mentions 'Nova Analytics' as plain text without wikilink"
-    },
-    {
-      "notePath": "frontend/perf-budget.md",
-      "entity": "NovaTech",
-      "tier": 1,
-      "reason": "Content directly mentions 'NovaTech' as plain text without wikilink"
-    },
-    {
-      "notePath": "frontend/perf-budget.md",
-      "entity": "Redis",
-      "tier": 2,
-      "reason": "Entity 'Redis' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "meetings/meeting-arch-review.md",
-      "entity": "Ava Kim",
-      "tier": 1,
-      "reason": "Content directly mentions 'Ava Kim' as plain text without wikilink"
-    },
-    {
-      "notePath": "meetings/meeting-sprint-retro.md",
-      "entity": "Platform SDK",
-      "tier": 3,
-      "reason": "Indirect relationship to 'Platform SDK' through shared context"
-    },
-    {
-      "notePath": "ml-research/embedding-service.md",
-      "entity": "Jake Morrison",
-      "tier": 1,
-      "reason": "Content directly mentions 'Jake Morrison' as plain text without wikilink"
-    },
-    {
-      "notePath": "ml-research/feature-eng.md",
-      "entity": "Nina Petrov",
-      "tier": 1,
-      "reason": "Content directly mentions 'Nina Petrov' as plain text without wikilink"
-    },
-    {
-      "notePath": "ml-research/model-registry.md",
-      "entity": "Nova Analytics",
-      "tier": 2,
-      "reason": "Entity 'Nova Analytics' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "notes/incident-jan-8.md",
-      "entity": "Jake Morrison",
-      "tier": 2,
-      "reason": "Entity 'Jake Morrison' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "notes/incident-jan-8.md",
-      "entity": "Monitoring Stack",
-      "tier": 3,
-      "reason": "Indirect relationship to 'Monitoring Stack' through shared context"
-    },
-    {
-      "notePath": "operations/backup-strategy.md",
-      "entity": "React",
-      "tier": 1,
-      "reason": "Content directly mentions 'React' as plain text without wikilink"
-    },
-    {
-      "notePath": "operations/capacity-planning.md",
-      "entity": "Nova Analytics",
-      "tier": 3,
-      "reason": "Indirect relationship to 'Nova Analytics' through shared context"
-    },
-    {
-      "notePath": "operations/capacity-planning.md",
-      "entity": "Ryan Nakamura",
-      "tier": 3,
-      "reason": "Indirect relationship to 'Ryan Nakamura' through shared context"
-    },
-    {
-      "notePath": "operations/deploy-pipeline.md",
+      "notePath": "platform/kai-lindgren.md",
       "entity": "Python",
-      "tier": 1,
-      "reason": "Content directly mentions 'Python' as plain text without wikilink"
-    },
-    {
-      "notePath": "operations/incident-mgmt.md",
-      "entity": "NovaTech",
-      "tier": 2,
-      "reason": "Entity 'NovaTech' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "operations/k8s-management.md",
-      "entity": "Ava Kim",
-      "tier": 1,
-      "reason": "Content directly mentions 'Ava Kim' as plain text without wikilink"
-    },
-    {
-      "notePath": "operations/network-policies.md",
-      "entity": "Kubernetes",
-      "tier": 2,
-      "reason": "Entity 'Kubernetes' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "operations/secret-mgmt.md",
-      "entity": "Nina Petrov",
-      "tier": 1,
-      "reason": "Content directly mentions 'Nina Petrov' as plain text without wikilink"
-    },
-    {
-      "notePath": "operations/sre-runbooks.md",
-      "entity": "Ryan Nakamura",
       "tier": 3,
-      "reason": "Indirect relationship to 'Ryan Nakamura' through shared context"
+      "reason": "Python is contextually related to Kai Lindgren through shared domain"
     },
     {
-      "notePath": "platform/api-gateway.md",
-      "entity": "Ryan Nakamura",
-      "tier": 1,
-      "reason": "Content directly mentions 'Ryan Nakamura' as plain text without wikilink"
-    },
-    {
-      "notePath": "platform/platform-architecture.md",
-      "entity": "Alex Okafor",
-      "tier": 2,
-      "reason": "Entity 'Alex Okafor' is referenced in the note's context but not wikilinked"
-    },
-    {
-      "notePath": "platform/service-mesh.md",
-      "entity": "Docker",
+      "notePath": "platform/clean-architecture.md",
+      "entity": "Distributed Tracing",
       "tier": 3,
-      "reason": "Indirect relationship to 'Docker' through shared context"
+      "reason": "Distributed Tracing is contextually related to Clean Architecture through shared domain"
+    },
+    {
+      "notePath": "platform/kai-lindgren.md",
+      "entity": "Continuous Integration",
+      "tier": 3,
+      "reason": "Continuous Integration is contextually related to Kai Lindgren through shared domain"
+    },
+    {
+      "notePath": "platform/kai-lindgren.md",
+      "entity": "Chaos Engineering",
+      "tier": 3,
+      "reason": "Chaos Engineering is contextually related to Kai Lindgren through shared domain"
+    },
+    {
+      "notePath": "platform/kai-lindgren.md",
+      "entity": "Seoul",
+      "tier": 3,
+      "reason": "Seoul is contextually related to Kai Lindgren through shared domain"
+    },
+    {
+      "notePath": "platform/kai-lindgren.md",
+      "entity": "CQRS",
+      "tier": 3,
+      "reason": "CQRS is contextually related to Kai Lindgren through shared domain"
     }
   ]
 }

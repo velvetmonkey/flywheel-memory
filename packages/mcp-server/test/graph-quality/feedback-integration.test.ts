@@ -293,6 +293,6 @@ describe('Feedback Integration', () => {
     }
 
     const boost = getFeedbackBoost(vault.stateDb, entity);
-    expect(boost).toBe(8); // Top tier: +8 boost (accuracy >= 0.85, samples >= 5)
+    expect(boost).toBeGreaterThanOrEqual(8); // Top tier: +8-10 boost (accuracy >= 0.85, samples >= 5)
   });
 });

@@ -68,15 +68,15 @@ export interface DashboardData {
 // CONSTANTS
 // =============================================================================
 
-/** Beta-Binomial prior parameters (benefit of doubt: Beta(3,1) → 75% prior mean) */
-export const PRIOR_ALPHA = 3;   // Prior "correct" observations
+/** Beta-Binomial prior parameters (benefit of doubt: Beta(8,1) → 89% prior mean) */
+export const PRIOR_ALPHA = 8;   // Prior "correct" observations (strong noise resistance)
 export const PRIOR_BETA = 1;    // Prior "incorrect" observations
 
 /** Posterior mean threshold for suppression (suppress when posteriorMean < this) */
 export const SUPPRESSION_POSTERIOR_THRESHOLD = 0.35;
 
 /** Minimum total posterior observations (alpha + beta) before considering suppression */
-export const SUPPRESSION_MIN_OBSERVATIONS = 10;
+export const SUPPRESSION_MIN_OBSERVATIONS = 20;
 
 /** Maximum suppression penalty (strongly demotes but allows excellent content matches to survive) */
 const MAX_SUPPRESSION_PENALTY = -15;

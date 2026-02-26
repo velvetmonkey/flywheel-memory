@@ -8,7 +8,7 @@
  * - "RAG" → Retrieval Augmented Generation vs Databricks
  * - "ML"  → Machine Learning vs ML Pipeline
  * - "TS"  → TypeScript vs Test Suite
- * - "Chen" → David Chen vs Chen Province
+ * - "Park" → Owen Park vs Park District
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -92,7 +92,7 @@ describe('Suite: Alias Collision Stress Test', () => {
       ['api management', 'api gateway'],
       ['retrieval augmented generation', 'databricks'],
       ['machine learning', 'ml pipeline'],
-      ['david chen', 'chen province'],
+      ['owen park', 'park district'],
     ];
 
     let pairsWithSuggestion = 0;

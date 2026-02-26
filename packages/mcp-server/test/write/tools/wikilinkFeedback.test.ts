@@ -142,13 +142,13 @@ describe('wikilink_feedback', () => {
     });
 
     it('should suppress entity with low Beta-Binomial posterior mean', () => {
-      // 12 entries: 2 correct, 10 incorrect
-      // Posterior: Beta(3+2, 1+10) = Beta(5, 11), mean = 5/16 = 0.3125 < 0.35
-      // totalObs = 3+2+1+10 = 16 >= 8
+      // 22 entries: 2 correct, 20 incorrect
+      // Posterior: Beta(8+2, 1+20) = Beta(10, 21), mean = 10/31 = 0.323 < 0.35
+      // totalObs = 8+2+1+20 = 31 >= 20
       for (let i = 0; i < 2; i++) {
         recordFeedback(stateDb, 'Java', `correct ${i}`, `note${i}.md`, true);
       }
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 20; i++) {
         recordFeedback(stateDb, 'Java', `incorrect ${i}`, `note${i + 2}.md`, false);
       }
 
@@ -171,20 +171,20 @@ describe('wikilink_feedback', () => {
     });
 
     it('should remove suppression when posterior rises above threshold', () => {
-      // First: 12 entries with high FP → suppressed
-      // 2 correct + 10 incorrect → posterior = Beta(5,11) = 5/16 = 0.3125 < 0.35
+      // First: 22 entries with high FP → suppressed
+      // 2 correct + 20 incorrect → posterior = Beta(10,21) = 10/31 = 0.323 < 0.35
       for (let i = 0; i < 2; i++) {
         recordFeedback(stateDb, 'Spring', `correct ${i}`, `note${i}.md`, true);
       }
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 20; i++) {
         recordFeedback(stateDb, 'Spring', `incorrect ${i}`, `note${i + 2}.md`, false);
       }
       updateSuppressionList(stateDb);
       expect(isSuppressed(stateDb, 'Spring')).toBe(true);
 
-      // Add 15 more correct entries → posterior = Beta(5+15, 11) = Beta(20, 11) = 20/31 = 0.645 > 0.35
+      // Add 15 more correct entries → posterior = Beta(10+15, 21) = Beta(25, 21) = 25/46 = 0.543 > 0.35
       for (let i = 0; i < 15; i++) {
-        recordFeedback(stateDb, 'Spring', `correct extra ${i}`, `note${i + 12}.md`, true);
+        recordFeedback(stateDb, 'Spring', `correct extra ${i}`, `note${i + 22}.md`, true);
       }
       updateSuppressionList(stateDb);
       expect(isSuppressed(stateDb, 'Spring')).toBe(false);
@@ -192,15 +192,15 @@ describe('wikilink_feedback', () => {
 
     it('should return suppressed entities list', () => {
       // Create two entities that should be suppressed
-      // Go: 10 negatives → posterior = Beta(3, 11) = 3/14 = 0.214 < 0.35, totalObs=14 >= 8
-      for (let i = 0; i < 10; i++) {
+      // Go: 20 negatives → posterior = Beta(8, 21) = 8/29 = 0.276 < 0.35, totalObs=29 >= 20
+      for (let i = 0; i < 20; i++) {
         recordFeedback(stateDb, 'Go', `fp ${i}`, `note${i}.md`, false);
       }
-      // Rust: 2 correct, 10 negative → posterior = Beta(5, 11) = 5/16 = 0.3125 < 0.35
+      // Rust: 2 correct, 20 negative → posterior = Beta(10, 21) = 10/31 = 0.323 < 0.35
       for (let i = 0; i < 2; i++) {
         recordFeedback(stateDb, 'Rust', `correct ${i}`, `note${i}.md`, true);
       }
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 20; i++) {
         recordFeedback(stateDb, 'Rust', `fp ${i}`, `note${i + 2}.md`, false);
       }
 
@@ -359,19 +359,20 @@ describe('wikilink_feedback', () => {
 
     it('should suppress entity only in specific folder', () => {
       // Entity: all correct in tech/, all wrong in daily/
-      // 12 correct in tech + 7 incorrect in daily = 36.8% FP globally
-      // Global posteriorMean = (3+12)/(3+12+1+7) = 15/23 = 0.65 → not suppressed
+      // 12 correct in tech + 15 incorrect in daily
+      // Global posteriorMean = (8+12)/(8+12+1+15) = 20/36 = 0.556 → not suppressed
       for (let i = 0; i < 12; i++) {
         recordFeedback(stateDb, 'Spring', `correct ${i}`, `tech/note${i}.md`, true);
       }
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 15; i++) {
         recordFeedback(stateDb, 'Spring', `wrong ${i}`, `daily/note${i}.md`, false);
       }
 
-      // Not globally suppressed (posteriorMean 0.65 > 0.35)
+      // Not globally suppressed (posteriorMean 0.556 > 0.35)
       expect(isSuppressed(stateDb, 'Spring')).toBe(false);
 
-      // Suppressed in daily/ folder (7 entries, 100% FP, totalObs=3+0+1+7=11 >= 10)
+      // Suppressed in daily/ folder (15 entries, 100% FP, totalObs=8+0+1+15=24 >= 20)
+      // posteriorMean = 8/24 = 0.333 < 0.35
       expect(isSuppressed(stateDb, 'Spring', 'daily')).toBe(true);
 
       // Not suppressed in tech/ folder (12 entries, 0% FP)
@@ -704,13 +705,14 @@ describe('wikilink_feedback', () => {
         insertFeedbackAt('BadEntity', `note${i}.md`, true, '2026-02-01 12:00:00');
       }
 
-      // 10 recent FP entries (today) — weight ≈ 1.0 each
-      for (let i = 0; i < 10; i++) {
+      // 18 recent FP entries (today) — weight ≈ 1.0 each
+      for (let i = 0; i < 18; i++) {
         insertFeedbackAt('BadEntity', `note${i + 5}.md`, false, '2026-04-01 00:00:00');
       }
 
-      // Weighted: 5*0.25 + 10*1.0 = 11.25 total, 10*1.0 = 10.0 FP → 88.9% FP rate
-      // rawTotal=15 >= 10 ✓, weightedTotal=11.25 >= 3.0 ✓
+      // Weighted correct: 5*0.25 = 1.25, weighted FP: 18*1.0 = 18.0
+      // Posterior: alpha = 8+1.25 = 9.25, beta = 1+18 = 19, mean = 9.25/28.25 = 0.327 < 0.35
+      // totalObs = 28.25 >= 20 ✓
       updateSuppressionList(stateDb, now);
       expect(isSuppressed(stateDb, 'BadEntity')).toBe(true);
     });
@@ -735,28 +737,28 @@ describe('wikilink_feedback', () => {
     });
 
     it('old negative feedback fades → entity unsuppresses over time', () => {
-      // Record 12 negative entries at "old" time
-      for (let i = 0; i < 12; i++) {
+      // Record 25 negative entries at "old" time
+      for (let i = 0; i < 25; i++) {
         insertFeedbackAt('FadingEntity', `note${i}.md`, false, '2026-01-01 12:00:00');
       }
 
       // At first (shortly after), it's suppressed
+      // Posterior: alpha=8, beta=1+25=26, mean=8/34=0.235<0.35, totalObs=34>=20
       const earlyNow = new Date('2026-01-02T00:00:00Z');
       updateSuppressionList(stateDb, earlyNow);
       expect(isSuppressed(stateDb, 'FadingEntity')).toBe(true);
 
-      // Add 5 recent correct entries
-      for (let i = 0; i < 5; i++) {
-        insertFeedbackAt('FadingEntity', `note${i + 12}.md`, true, '2026-04-01 00:00:00');
+      // Add 8 recent correct entries (enough to push totalObs above 20 after decay)
+      for (let i = 0; i < 8; i++) {
+        insertFeedbackAt('FadingEntity', `note${i + 25}.md`, true, '2026-04-01 00:00:00');
       }
 
       // 90 days later: old FPs have weight ≈ 0.125 each
-      // Weighted FP = 12*0.125 = 1.5, correct = 5*1.0 = 5.0
-      // Total = 6.5, FP rate = 1.5/6.5 ≈ 23% < 30%
+      // Weighted FP = 25*0.125 = 3.125, weighted correct = 8*1.0 = 8.0
+      // totalObs = 8+8+1+3.125 = 20.125 >= 20 ✓
+      // Posterior: alpha=8+8=16, beta=1+3.125=4.125, mean=16/20.125=0.795>0.35 → unsuppressed
       const lateNow = new Date('2026-04-01T00:00:00Z');
       updateSuppressionList(stateDb, lateNow);
-      // The suppression record from earlyNow should be removed or updated
-      // since the weighted FP rate is now below threshold
       expect(isSuppressed(stateDb, 'FadingEntity')).toBe(false);
     });
 

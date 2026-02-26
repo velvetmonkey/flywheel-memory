@@ -13,144 +13,83 @@
  * Usage: npx tsx generate-temporal-star.ts > temporal-star.json
  */
 
-// Seeded PRNG (mulberry32)
-function mulberry32(seed: number): () => number {
-  let s = seed | 0;
-  return () => {
-    s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function pick<T>(rng: () => number, arr: T[]): T {
-  return arr[Math.floor(rng() * arr.length)];
-}
-
-function shuffle<T>(rng: () => number, arr: T[]): T[] {
-  const result = [...arr];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
+import {
+  type EntityDef,
+  PEOPLE,
+  PROJECTS,
+  TECHNOLOGIES,
+  ORGANIZATIONS,
+  LOCATIONS,
+  CONCEPTS,
+  HEALTH,
+  ACRONYMS,
+  OTHER,
+  slugify,
+  mulberry32,
+  pick,
+  shuffle,
+} from './entity-pools.js';
 
 // =============================================================================
 // Entity definitions (production-like distribution)
+// Built from shared entity pools with fixture-specific hubScore overrides.
 // =============================================================================
-
-interface EntityDef {
-  name: string;
-  category: string;
-  aliases: string[];
-  hubScore: number;
-  folder: string;
-}
 
 const entities: EntityDef[] = [
   // --- People (8) ---
-  { name: 'Sarah Kim', category: 'people', aliases: ['Sarah'], hubScore: 120, folder: 'people' },
-  { name: 'David Chen', category: 'people', aliases: ['David', 'DC'], hubScore: 95, folder: 'people' },
-  { name: 'Marcus Johnson', category: 'people', aliases: ['Marcus', 'MJ'], hubScore: 60, folder: 'people' },
-  { name: 'Elena Torres', category: 'people', aliases: ['Elena'], hubScore: 45, folder: 'people' },
-  { name: 'James Franklin', category: 'people', aliases: ['James'], hubScore: 180, folder: 'people' },
-  { name: 'Aisha Patel', category: 'people', aliases: ['Aisha'], hubScore: 30, folder: 'people' },
-  { name: 'Carlos Rivera', category: 'people', aliases: ['Carlos'], hubScore: 15, folder: 'people' },
-  { name: 'Lisa Wong', category: 'people', aliases: ['Lisa'], hubScore: 8, folder: 'people' },
+  { ...PEOPLE[0], hubScore: 120 },   // Nadia Reyes
+  { ...PEOPLE[1], hubScore: 95 },    // Owen Park
+  { ...PEOPLE[2], hubScore: 60 },    // Leo Vasquez
+  { ...PEOPLE[3], hubScore: 45 },    // Mira Okonkwo
+  { ...PEOPLE[4], hubScore: 180 },   // Tessa Liu
+  { ...PEOPLE[5], hubScore: 30 },    // Freya Nakamura
+  { ...PEOPLE[6], hubScore: 15 },    // Dmitri Sokolov
+  { ...PEOPLE[7], hubScore: 8 },     // Amara Diallo
 
   // --- Projects (15) ---
-  { name: 'ESGHub', category: 'projects', aliases: ['ESG Hub'], hubScore: 200, folder: 'projects' },
-  { name: 'DataPipeline', category: 'projects', aliases: ['Data Pipeline', 'data-pipeline'], hubScore: 150, folder: 'projects' },
-  { name: 'CloudMigration', category: 'projects', aliases: ['Cloud Migration'], hubScore: 80, folder: 'projects' },
-  { name: 'DevPortal', category: 'projects', aliases: ['Dev Portal', 'Developer Portal'], hubScore: 60, folder: 'projects' },
-  { name: 'MobileApp', category: 'projects', aliases: ['Mobile App'], hubScore: 45, folder: 'projects' },
-  { name: 'AuthService', category: 'projects', aliases: ['Auth Service', 'authentication'], hubScore: 70, folder: 'projects' },
-  { name: 'APIGateway', category: 'projects', aliases: ['API Gateway', 'APIG'], hubScore: 90, folder: 'projects' },
-  { name: 'MonitoringStack', category: 'projects', aliases: ['Monitoring Stack'], hubScore: 55, folder: 'projects' },
-  { name: 'ConfigManager', category: 'projects', aliases: ['Config Manager'], hubScore: 25, folder: 'projects' },
-  { name: 'UserOnboarding', category: 'projects', aliases: ['User Onboarding'], hubScore: 35, folder: 'projects' },
-  { name: 'PaymentProcessor', category: 'projects', aliases: ['Payment Processor'], hubScore: 40, folder: 'projects' },
-  { name: 'SearchEngine', category: 'projects', aliases: ['Search Engine'], hubScore: 30, folder: 'projects' },
-  { name: 'WorkflowEngine', category: 'projects', aliases: ['Workflow Engine'], hubScore: 20, folder: 'projects' },
-  { name: 'TeamDashboard', category: 'projects', aliases: ['Team Dashboard'], hubScore: 15, folder: 'projects' },
-  { name: 'ReleaseManager', category: 'projects', aliases: ['Release Manager'], hubScore: 10, folder: 'projects' },
+  { ...PROJECTS[0], hubScore: 200 },  // NovaSpark
+  { ...PROJECTS[1], hubScore: 150 },  // DataForge
+  { ...PROJECTS[4], hubScore: 80 },   // CloudShift
+  { ...PROJECTS[5], hubScore: 60 },   // DevHub
+  { ...PROJECTS[6], hubScore: 45 },   // MobileNexus
+  { ...PROJECTS[7], hubScore: 70 },   // AuthVault
+  { ...PROJECTS[8], hubScore: 90 },   // GateKeeper
+  { ...PROJECTS[9], hubScore: 55 },   // WatchTower
+  { ...PROJECTS[10], hubScore: 25 },  // ConfigForge
+  { ...PROJECTS[11], hubScore: 35 },  // FlowStart
+  { ...PROJECTS[12], hubScore: 40 },  // PayStream
+  { ...PROJECTS[13], hubScore: 30 },  // FinderX
+  { ...PROJECTS[14], hubScore: 20 },  // PipeFlow
+  { ...PROJECTS[15], hubScore: 15 },  // PulseBoard
+  { ...PROJECTS[16], hubScore: 10 },  // ShipIt
 
   // --- Technologies (12) ---
-  { name: 'React', category: 'technologies', aliases: ['ReactJS', 'React.js'], hubScore: 100, folder: 'technologies' },
-  { name: 'TypeScript', category: 'technologies', aliases: ['TS'], hubScore: 130, folder: 'technologies' },
-  { name: 'Python', category: 'technologies', aliases: ['python3', 'py'], hubScore: 80, folder: 'technologies' },
-  { name: 'Docker', category: 'technologies', aliases: ['docker', 'container'], hubScore: 70, folder: 'technologies' },
-  { name: 'Kubernetes', category: 'technologies', aliases: ['k8s', 'K8s'], hubScore: 65, folder: 'technologies' },
-  { name: 'PostgreSQL', category: 'technologies', aliases: ['Postgres', 'psql'], hubScore: 55, folder: 'technologies' },
-  { name: 'Redis', category: 'technologies', aliases: ['redis'], hubScore: 40, folder: 'technologies' },
-  { name: 'GraphQL', category: 'technologies', aliases: ['graphql', 'GQL'], hubScore: 35, folder: 'technologies' },
-  { name: 'Node.js', category: 'technologies', aliases: ['NodeJS', 'node'], hubScore: 90, folder: 'technologies' },
-  { name: 'Terraform', category: 'technologies', aliases: ['TF', 'terraform'], hubScore: 50, folder: 'technologies' },
-  { name: 'AWS', category: 'technologies', aliases: ['Amazon Web Services'], hubScore: 110, folder: 'technologies' },
-  { name: 'Kafka', category: 'technologies', aliases: ['Apache Kafka', 'kafka'], hubScore: 45, folder: 'technologies' },
+  ...TECHNOLOGIES,
 
   // --- Organizations (5) ---
-  { name: 'Acme Corp', category: 'organizations', aliases: ['Acme', 'Acme Corporation'], hubScore: 160, folder: 'organizations' },
-  { name: 'TechVentures', category: 'organizations', aliases: ['Tech Ventures', 'TV'], hubScore: 40, folder: 'organizations' },
-  { name: 'DataCo', category: 'organizations', aliases: ['Data Co', 'dataco'], hubScore: 25, folder: 'organizations' },
-  { name: 'CloudFirst', category: 'organizations', aliases: ['Cloud First'], hubScore: 15, folder: 'organizations' },
-  { name: 'NetOps Inc', category: 'organizations', aliases: ['NetOps'], hubScore: 10, folder: 'organizations' },
+  { ...ORGANIZATIONS[0], hubScore: 160 },  // Meridian Labs
+  { ...ORGANIZATIONS[1], hubScore: 40 },   // Apex Systems
+  { ...ORGANIZATIONS[2], hubScore: 25 },   // Quantum Data
+  { ...ORGANIZATIONS[3], hubScore: 15 },   // SkyForge
+  { ...ORGANIZATIONS[4], hubScore: 10 },   // GridPoint Inc
 
   // --- Locations (4) ---
-  { name: 'San Francisco', category: 'locations', aliases: ['SF', 'Bay Area'], hubScore: 60, folder: 'locations' },
-  { name: 'London', category: 'locations', aliases: ['LDN'], hubScore: 35, folder: 'locations' },
-  { name: 'Berlin', category: 'locations', aliases: [], hubScore: 20, folder: 'locations' },
-  { name: 'Singapore', category: 'locations', aliases: ['SG'], hubScore: 15, folder: 'locations' },
+  { ...LOCATIONS[0], hubScore: 60 },   // Portland
+  { ...LOCATIONS[1], hubScore: 35 },   // Zurich
+  { ...LOCATIONS[2], hubScore: 20 },   // Melbourne
+  { ...LOCATIONS[3], hubScore: 15 },   // Toronto
 
   // --- Concepts (6) ---
-  { name: 'Microservices', category: 'concepts', aliases: ['microservice', 'micro-services'], hubScore: 50, folder: 'concepts' },
-  { name: 'DevOps', category: 'concepts', aliases: ['devops'], hubScore: 70, folder: 'concepts' },
-  { name: 'Agile', category: 'concepts', aliases: ['agile methodology'], hubScore: 45, folder: 'concepts' },
-  { name: 'Clean Architecture', category: 'concepts', aliases: ['clean arch'], hubScore: 20, folder: 'concepts' },
-  { name: 'Observability', category: 'concepts', aliases: ['o11y'], hubScore: 55, folder: 'concepts' },
-  { name: 'API-First', category: 'concepts', aliases: ['API First', 'api-first design'], hubScore: 25, folder: 'concepts' },
+  ...CONCEPTS.slice(0, 6),
 
   // --- Health/Habits (6) — daily-note hub entities ---
-  { name: 'Stretch', category: 'health', aliases: ['stretching', 'morning stretch'], hubScore: 520, folder: 'health' },
-  { name: 'Walk', category: 'health', aliases: ['walking', 'daily walk'], hubScore: 480, folder: 'health' },
-  { name: 'Water', category: 'health', aliases: ['hydration', 'water intake'], hubScore: 450, folder: 'health' },
-  { name: 'Meditation', category: 'health', aliases: ['meditate', 'mindfulness'], hubScore: 300, folder: 'health' },
-  { name: 'Exercise', category: 'health', aliases: ['workout', 'gym'], hubScore: 350, folder: 'health' },
-  { name: 'Journaling', category: 'health', aliases: ['journal', 'morning pages'], hubScore: 200, folder: 'health' },
+  ...HEALTH,
 
   // --- Acronyms / Short codes (8) — high FP collision pressure ---
-  { name: 'Staging', category: 'acronyms', aliases: ['stg', 'STG'], hubScore: 30, folder: 'acronyms' },
-  { name: 'Production', category: 'acronyms', aliases: ['prd', 'PRD', 'prod'], hubScore: 35, folder: 'acronyms' },
-  { name: 'UAT', category: 'acronyms', aliases: ['uat', 'User Acceptance Testing'], hubScore: 20, folder: 'acronyms' },
-  { name: 'MCP', category: 'acronyms', aliases: ['mcp', 'Model Context Protocol'], hubScore: 40, folder: 'acronyms' },
-  { name: 'SDK', category: 'acronyms', aliases: ['sdk', 'software development kit'], hubScore: 15, folder: 'acronyms' },
-  { name: 'SLA', category: 'acronyms', aliases: ['sla', 'Service Level Agreement'], hubScore: 25, folder: 'acronyms' },
-  { name: 'JWT', category: 'acronyms', aliases: ['jwt', 'JSON Web Token'], hubScore: 10, folder: 'acronyms' },
-  { name: 'RAG', category: 'acronyms', aliases: ['rag', 'Retrieval Augmented Generation'], hubScore: 30, folder: 'acronyms' },
+  ...ACRONYMS,
 
   // --- Other (20) — largest uncategorizable bucket ---
-  { name: 'standup', category: 'other', aliases: ['daily standup', 'stand-up'], hubScore: 400, folder: 'other' },
-  { name: 'retro', category: 'other', aliases: ['retrospective', 'sprint retro'], hubScore: 180, folder: 'other' },
-  { name: 'one-on-one', category: 'other', aliases: ['1:1', '1-on-1'], hubScore: 150, folder: 'other' },
-  { name: 'code review', category: 'other', aliases: ['CR', 'code-review', 'PR review'], hubScore: 250, folder: 'other' },
-  { name: 'architecture decision', category: 'other', aliases: ['ADR', 'arch decision'], hubScore: 40, folder: 'other' },
-  { name: 'tech debt', category: 'other', aliases: ['technical debt', 'tech-debt'], hubScore: 60, folder: 'other' },
-  { name: 'on-call', category: 'other', aliases: ['oncall', 'on call'], hubScore: 80, folder: 'other' },
-  { name: 'incident', category: 'other', aliases: ['outage', 'SEV'], hubScore: 70, folder: 'other' },
-  { name: 'deployment', category: 'other', aliases: ['deploy', 'release deploy'], hubScore: 120, folder: 'other' },
-  { name: 'sprint', category: 'other', aliases: ['sprint cycle', 'iteration'], hubScore: 200, folder: 'other' },
-  { name: 'backlog', category: 'other', aliases: ['product backlog', 'backlog grooming'], hubScore: 90, folder: 'other' },
-  { name: 'demo', category: 'other', aliases: ['sprint demo', 'showcase'], hubScore: 100, folder: 'other' },
-  { name: 'planning', category: 'other', aliases: ['sprint planning', 'capacity planning'], hubScore: 130, folder: 'other' },
-  { name: 'documentation', category: 'other', aliases: ['docs', 'technical docs'], hubScore: 50, folder: 'other' },
-  { name: 'onboarding', category: 'other', aliases: ['new hire', 'ramp-up'], hubScore: 30, folder: 'other' },
-  { name: 'postmortem', category: 'other', aliases: ['post-mortem', 'incident review'], hubScore: 35, folder: 'other' },
-  { name: 'feature flag', category: 'other', aliases: ['feature toggle', 'FF'], hubScore: 20, folder: 'other' },
-  { name: 'canary release', category: 'other', aliases: ['canary deploy', 'canary'], hubScore: 15, folder: 'other' },
-  { name: 'load test', category: 'other', aliases: ['load testing', 'perf test'], hubScore: 25, folder: 'other' },
-  { name: 'chaos engineering', category: 'other', aliases: ['chaos monkey', 'chaos test'], hubScore: 10, folder: 'other' },
+  ...OTHER,
 ];
 
 // =============================================================================
@@ -179,12 +118,12 @@ const rng = mulberry32(2026);
 // that get filled with specific entity names. Only some entities get
 // wikilink brackets — modeling the 97% orphan pattern.
 const dailyHabitLines = [
-  'Did my morning {Stretch} routine',
-  'Went for a {Walk} around the block',
-  'Drank plenty of {Water} today',
-  '{Meditation} session before work',
-  '{Exercise} at the gym this evening',
-  'Wrote in my {Journaling} notebook',
+  'Did my morning {Yoga} session',
+  'Went for a {Swim} at the pool',
+  'Took my {Supplements} with breakfast',
+  '{Breathwork} session before work',
+  '{Running} around the neighborhood this evening',
+  'Quick {Sketching} practice in my notebook',
 ];
 
 const dailyWorkSnippets = [
@@ -283,8 +222,6 @@ function generateContentNote(
   relevantEntities: EntityDef[],
   linkedEntities: Set<string>,
 ): { note: NoteDef; groundTruth: GroundTruthEntry[] } {
-  const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
   const templates: Record<string, { folder: string; titlePrefix: string; bodyTemplate: (ents: EntityDef[]) => string }> = {
     meeting: {
       folder: 'meetings',
@@ -410,7 +347,6 @@ function generateContentNote(
 }
 
 function generateEntityNote(entity: EntityDef, relatedEntities: EntityDef[]): NoteDef {
-  const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const related = shuffle(rng, relatedEntities).slice(0, 3);
 
   const lines = [
@@ -419,7 +355,7 @@ function generateEntityNote(entity: EntityDef, relatedEntities: EntityDef[]): No
   ];
 
   if (entity.category === 'people') {
-    lines.push(`${entity.name} is a team member at ${related.find(e => e.category === 'organizations')?.name || 'Acme Corp'}.`);
+    lines.push(`${entity.name} is a team member at ${related.find(e => e.category === 'organizations')?.name || 'Meridian Labs'}.`);
     lines.push(`Works on ${related.find(e => e.category === 'projects')?.name || 'various projects'} using ${related.find(e => e.category === 'technologies')?.name || 'modern tech'}.`);
   } else if (entity.category === 'projects') {
     lines.push(`${entity.name} is an internal project.`);
@@ -460,10 +396,10 @@ function generate() {
   // We make 3 "well-linked" daily notes and 2 "well-linked" content notes
   const linkedEntityNames = new Set<string>();
   // A few habit entities get links in 2-3 daily notes
-  linkedEntityNames.add('Stretch');
-  linkedEntityNames.add('Walk');
+  linkedEntityNames.add('Yoga');
+  linkedEntityNames.add('Swim');
   // A couple of project/tech entities get links in content notes
-  linkedEntityNames.add('ESGHub');
+  linkedEntityNames.add('NovaSpark');
   linkedEntityNames.add('TypeScript');
 
   // Entity pools for content generation
@@ -542,7 +478,7 @@ function generate() {
     entities: entities.map(e => ({
       name: e.name,
       category: e.category,
-      path: `${e.folder}/${e.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}.md`,
+      path: `${e.folder}/${slugify(e.name)}.md`,
       aliases: e.aliases,
       hubScore: e.hubScore,
     })),

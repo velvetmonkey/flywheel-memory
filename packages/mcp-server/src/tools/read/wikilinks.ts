@@ -205,10 +205,11 @@ export function registerWikilinkTools(
         limit: z.coerce.number().default(50).describe('Maximum number of suggestions to return'),
         offset: z.coerce.number().default(0).describe('Number of suggestions to skip (for pagination)'),
         detail: z.boolean().default(false).describe('Include per-layer score breakdown for each suggestion'),
+        note_path: z.string().optional().describe('Path of the note being analyzed (enables strictness override for daily notes)'),
       },
       outputSchema: SuggestWikilinksOutputSchema,
     },
-    async ({ text, limit: requestedLimit, offset, detail }): Promise<{
+    async ({ text, limit: requestedLimit, offset, detail, note_path }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
       structuredContent: SuggestWikilinksOutput;
     }> => {
@@ -230,6 +231,7 @@ export function registerWikilinkTools(
           detail: true,
           maxSuggestions: limit,
           strictness: 'balanced',
+          ...(note_path ? { notePath: note_path } : {}),
         });
         if (scored.detailed) {
           output.scored_suggestions = scored.detailed;

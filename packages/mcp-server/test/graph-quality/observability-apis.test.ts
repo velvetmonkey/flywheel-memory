@@ -317,7 +317,7 @@ describe('Phase 4: Deep Observability APIs', () => {
 
     it('suppressionChanges lists suppressed entities', () => {
       // Record enough negative feedback to trigger suppression
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 14; i++) {
         recordFeedback(vault.stateDb, 'BadEntity', 'test', `test/note${i}.md`, false);
       }
       updateSuppressionList(vault.stateDb);

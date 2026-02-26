@@ -142,9 +142,10 @@ describe('Feedback Integration', () => {
       if (suppressedEntities.length >= 3) break;
     }
 
-    // Record 12 negative feedbacks each (crosses MIN_FEEDBACK_COUNT=10 for suppression)
+    // Record 14 negative feedbacks each (Beta-Binomial: PRIOR_ALPHA=8 needs 14 negatives
+    // to push posteriorMean = 8/(8+1+14) = 0.348 below SUPPRESSION_POSTERIOR_THRESHOLD=0.35)
     for (const { entity, notePath } of suppressedEntities) {
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 14; i++) {
         recordFeedback(vault.stateDb, entity, 'feedback-test', notePath, false);
       }
     }

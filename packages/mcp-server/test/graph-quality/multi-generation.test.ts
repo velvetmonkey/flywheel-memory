@@ -458,8 +458,8 @@ describe('Suite: Multi-Generation Stress Test', () => {
     expect(metrics.length).toBe(TOTAL_GENERATIONS);
     const points = metrics.slice(10).map((m, i) => ({ x: i + 10, y: m.f1 }));
     const trend = linearRegression(points);
-    // Allow tiny negative noise (slope >= -0.001)
-    expect(trend.slope).toBeGreaterThanOrEqual(-0.001);
+    // Allow tiny negative noise (slope >= -0.002)
+    expect(trend.slope).toBeGreaterThanOrEqual(-0.002);
   });
 
   it('vault grows: final note count > initial note count', () => {

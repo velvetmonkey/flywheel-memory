@@ -70,8 +70,7 @@ interface RoundMetrics {
   feedbackLayerAvgContribution: number;
 }
 
-/** Cumulative negative feedback tracker for suppression triggers */
-const negativeFeedbackCounts = new Map<string, number>();
+// (negativeFeedbackCounts removed — suppression computed once per round)
 
 // =============================================================================
 // Test Suite
@@ -119,25 +118,16 @@ describe('Suite 2: Learning Curve', () => {
             // True positive: 85% correct, 15% noise (incorrect)
             const isCorrect = rng() < TP_CORRECT_RATE;
             recordFeedback(vault.stateDb, suggestion, 'learning-curve', run.notePath, isCorrect);
-            if (!isCorrect) {
-              const count = (negativeFeedbackCounts.get(normalizedSuggestion) || 0) + 1;
-              negativeFeedbackCounts.set(normalizedSuggestion, count);
-            }
           } else {
             // False positive: 85% incorrect, 15% noise (correct)
             const isCorrect = rng() < FP_CORRECT_RATE;
             recordFeedback(vault.stateDb, suggestion, 'learning-curve', run.notePath, isCorrect);
-            if (!isCorrect) {
-              const count = (negativeFeedbackCounts.get(normalizedSuggestion) || 0) + 1;
-              negativeFeedbackCounts.set(normalizedSuggestion, count);
-              // FPs with cumulative >= 2 negative feedback events -> update suppression list
-              if (count >= 2) {
-                updateSuppressionList(vault.stateDb);
-              }
-            }
           }
         }
       }
+
+      // Update suppressions once per round with all feedback accumulated
+      updateSuppressionList(vault.stateDb);
 
       // Step 5: Record round metrics
       const suppressionCount = (vault.stateDb.db.prepare(
@@ -263,12 +253,13 @@ describe('Suite 2: Learning Curve', () => {
     }
   });
 
-  it('suppression count increases monotonically', () => {
+  it('suppression count does not exceed 60% of entities', () => {
     expect(roundMetrics.length).toBe(TOTAL_ROUNDS);
-    for (let i = 1; i < TOTAL_ROUNDS; i++) {
-      const prev = roundMetrics[i - 1];
-      const curr = roundMetrics[i];
-      expect(curr.suppressionCount).toBeGreaterThanOrEqual(prev.suppressionCount);
+    // With recency-weighted decay, suppressions can decrease as old negative
+    // feedback fades. Guard against runaway suppression instead.
+    const entityCount = roundMetrics[0].truePositives + roundMetrics[0].falsePositives + roundMetrics[0].falseNegatives;
+    for (let i = 0; i < TOTAL_ROUNDS; i++) {
+      expect(roundMetrics[i].suppressionCount).toBeLessThanOrEqual(Math.ceil(entityCount * 0.6));
     }
   });
 

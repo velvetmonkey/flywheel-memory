@@ -1174,7 +1174,7 @@ export async function suggestRelatedLinks(
   options: SuggestOptions = {}
 ): Promise<SuggestResult> {
   const {
-    maxSuggestions = 3,
+    maxSuggestions = 5,
     excludeLinked = true,
     strictness = getEffectiveStrictness(options.notePath),
     notePath,

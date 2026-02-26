@@ -283,7 +283,7 @@ describe('Feedback Integration', () => {
 
   it('getFeedbackBoost returns expected tier', () => {
     // Pick one boosted entity and add more positive feedback to reach Champion tier
-    // Champion: accuracy >= 0.95, samples >= 20, boost = +5
+    // Champion: accuracy >= 0.95, samples >= 20, boost = +10
     expect(boostedEntities.length).toBeGreaterThan(0);
     const { entity, notePath } = boostedEntities[0];
 
@@ -293,6 +293,6 @@ describe('Feedback Integration', () => {
     }
 
     const boost = getFeedbackBoost(vault.stateDb, entity);
-    expect(boost).toBe(5); // Champion tier: +5 boost
+    expect(boost).toBe(10); // Champion tier: +10 boost
   });
 });

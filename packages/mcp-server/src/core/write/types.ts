@@ -137,7 +137,7 @@ export interface SuggestionConfig {
 }
 
 export interface SuggestOptions {
-  maxSuggestions?: number;    // default: 3
+  maxSuggestions?: number;    // default: 5
   excludeLinked?: boolean;    // exclude entities already in content (default: true)
   strictness?: StrictnessMode; // default: 'conservative'
   notePath?: string;          // path to note for context-aware boosting

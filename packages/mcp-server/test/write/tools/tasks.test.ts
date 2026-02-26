@@ -781,6 +781,6 @@ describe('vault_add_task suggestOutgoingLinks parameter', () => {
     const result = await suggestRelatedLinks('Update TypeScript and JavaScript for MCP Server');
 
     // Should return multiple suggestions (up to maxSuggestions)
-    expect(result.suggestions.length).toBeLessThanOrEqual(3);
+    expect(result.suggestions.length).toBeLessThanOrEqual(5);
   });
 });

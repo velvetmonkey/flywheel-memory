@@ -75,18 +75,28 @@ const MIN_FEEDBACK_COUNT = 10;
 const SUPPRESSION_THRESHOLD = 0.30;
 
 /** Minimum feedback entries before applying feedback boost */
-export const FEEDBACK_BOOST_MIN_SAMPLES = 5;
+export const FEEDBACK_BOOST_MIN_SAMPLES = 3;
 
 /** Minimum feedback entries in a folder before folder-specific suppression */
 export const FOLDER_SUPPRESSION_MIN_COUNT = 5;
 
+/** Days before a suppression expires and entity gets re-evaluated */
+const SUPPRESSION_TTL_DAYS = 30;
+
+/** Half-life for feedback decay in days */
+export const FEEDBACK_DECAY_HALF_LIFE_DAYS = 30;
+const FEEDBACK_DECAY_LAMBDA = Math.LN2 / FEEDBACK_DECAY_HALF_LIFE_DAYS; // ≈ 0.0231
+
+/** Minimum weighted total for suppression (equivalent of 3 recent entries) */
+const WEIGHTED_MIN_TOTAL = 3.0;
+
 /** Feedback boost tiers: accuracy threshold → score adjustment */
 export const FEEDBACK_BOOST_TIERS: ReadonlyArray<{ minAccuracy: number; minSamples: number; boost: number }> = [
-  { minAccuracy: 0.95, minSamples: 20, boost: 5 },
-  { minAccuracy: 0.80, minSamples: 5, boost: 2 },
-  { minAccuracy: 0.60, minSamples: 5, boost: 0 },
-  { minAccuracy: 0.40, minSamples: 5, boost: -2 },
-  { minAccuracy: 0,    minSamples: 5, boost: -4 },
+  { minAccuracy: 0.95, minSamples: 20, boost: 10 },
+  { minAccuracy: 0.80, minSamples: 3, boost: 4 },
+  { minAccuracy: 0.60, minSamples: 3, boost: 0 },
+  { minAccuracy: 0.40, minSamples: 3, boost: -4 },
+  { minAccuracy: 0,    minSamples: 3, boost: -8 },
 ];
 
 // =============================================================================
@@ -187,27 +197,147 @@ export function getEntityStats(stateDb: StateDb): EntityStats[] {
 }
 
 // =============================================================================
+// RECENCY-WEIGHTED FEEDBACK DECAY
+// =============================================================================
+
+export interface WeightedEntityStats {
+  entity: string;
+  weightedTotal: number;
+  weightedCorrect: number;
+  weightedFp: number;
+  rawTotal: number;
+  weightedAccuracy: number;
+  weightedFpRate: number;
+}
+
+/**
+ * Compute decay weight for a feedback entry.
+ * weight = exp(-lambda * age_days)
+ * Age 0: 1.0, Age 30d: 0.5, Age 60d: 0.25, Age 90d: 0.125
+ * @param createdAt - ISO date string of when the feedback was created
+ * @param now - Optional reference date for testability
+ */
+export function computeFeedbackWeight(createdAt: string, now?: Date): number {
+  const ref = now ?? new Date();
+  // SQLite datetime('now') returns 'YYYY-MM-DD HH:MM:SS' in UTC — normalize for reliable JS parsing
+  const normalized = createdAt.includes('T') ? createdAt : createdAt.replace(' ', 'T') + 'Z';
+  const ageDays = (ref.getTime() - new Date(normalized).getTime()) / (24 * 60 * 60 * 1000);
+  // Entries less than 1 minute old get weight 1.0 exactly (avoids float boundary issues)
+  if (ageDays < 1 / 1440) return 1.0;
+  return Math.exp(-FEEDBACK_DECAY_LAMBDA * ageDays);
+}
+
+/**
+ * Get weighted entity stats applying recency decay to all feedback rows.
+ * Groups by entity (COLLATE NOCASE), applies computeFeedbackWeight() per row.
+ * JS-side computation because SQLite has no exp() function.
+ */
+export function getWeightedEntityStats(stateDb: StateDb, now?: Date): WeightedEntityStats[] {
+  const rows = stateDb.db.prepare(`
+    SELECT entity, correct, created_at
+    FROM wikilink_feedback
+    ORDER BY entity COLLATE NOCASE
+  `).all() as Array<{ entity: string; correct: number; created_at: string }>;
+
+  const acc = new Map<string, { weightedTotal: number; weightedCorrect: number; weightedFp: number; rawTotal: number }>();
+
+  for (const row of rows) {
+    const key = row.entity.toLowerCase();
+    if (!acc.has(key)) {
+      acc.set(key, { weightedTotal: 0, weightedCorrect: 0, weightedFp: 0, rawTotal: 0 });
+    }
+    const stats = acc.get(key)!;
+    const weight = computeFeedbackWeight(row.created_at, now);
+    stats.weightedTotal += weight;
+    stats.rawTotal++;
+    if (row.correct === 1) {
+      stats.weightedCorrect += weight;
+    } else {
+      stats.weightedFp += weight;
+    }
+    // Keep original entity casing from first occurrence
+    if (stats.rawTotal === 1 || !acc.has(row.entity)) {
+      // Store original name on first encounter — we'll map back below
+    }
+  }
+
+  // We need entity names with original casing. Fetch from first row per group.
+  const entityNames = new Map<string, string>();
+  for (const row of rows) {
+    const key = row.entity.toLowerCase();
+    if (!entityNames.has(key)) entityNames.set(key, row.entity);
+  }
+
+  const result: WeightedEntityStats[] = [];
+  for (const [key, stats] of acc) {
+    const entity = entityNames.get(key) ?? key;
+    result.push({
+      entity,
+      weightedTotal: stats.weightedTotal,
+      weightedCorrect: stats.weightedCorrect,
+      weightedFp: stats.weightedFp,
+      rawTotal: stats.rawTotal,
+      weightedAccuracy: stats.weightedTotal > 0 ? stats.weightedCorrect / stats.weightedTotal : 0,
+      weightedFpRate: stats.weightedTotal > 0 ? stats.weightedFp / stats.weightedTotal : 0,
+    });
+  }
+
+  return result;
+}
+
+/**
+ * Get weighted stats for a specific entity within a folder.
+ * Used for folder-specific suppression and boost checks.
+ */
+function getWeightedFolderStats(
+  stateDb: StateDb,
+  entity: string,
+  folder: string,
+  now?: Date,
+): { weightedTotal: number; weightedFp: number; weightedAccuracy: number; weightedFpRate: number; rawTotal: number } {
+  const rows = stateDb.db.prepare(`
+    SELECT correct, created_at
+    FROM wikilink_feedback
+    WHERE entity = ? COLLATE NOCASE AND (
+      CASE WHEN ? = '' THEN note_path NOT LIKE '%/%'
+      ELSE note_path LIKE ? || '/%'
+      END
+    )
+  `).all(entity, folder, folder) as Array<{ correct: number; created_at: string }>;
+
+  let weightedTotal = 0;
+  let weightedCorrect = 0;
+  let weightedFp = 0;
+
+  for (const row of rows) {
+    const weight = computeFeedbackWeight(row.created_at, now);
+    weightedTotal += weight;
+    if (row.correct === 1) {
+      weightedCorrect += weight;
+    } else {
+      weightedFp += weight;
+    }
+  }
+
+  return {
+    weightedTotal,
+    weightedFp,
+    weightedAccuracy: weightedTotal > 0 ? weightedCorrect / weightedTotal : 0,
+    weightedFpRate: weightedTotal > 0 ? weightedFp / weightedTotal : 0,
+    rawTotal: rows.length,
+  };
+}
+
+// =============================================================================
 // SUPPRESSION
 // =============================================================================
 
 /**
- * Update suppression list based on feedback data
+ * Update suppression list based on feedback data with recency-weighted decay.
  * Call after recording new feedback or on startup.
  */
-export function updateSuppressionList(stateDb: StateDb): number {
-  const stats = stateDb.db.prepare(`
-    SELECT
-      entity,
-      COUNT(*) as total,
-      SUM(CASE WHEN correct = 0 THEN 1 ELSE 0 END) as false_positives
-    FROM wikilink_feedback
-    GROUP BY entity COLLATE NOCASE
-    HAVING total >= ?
-  `).all(MIN_FEEDBACK_COUNT) as Array<{
-    entity: string;
-    total: number;
-    false_positives: number;
-  }>;
+export function updateSuppressionList(stateDb: StateDb, now?: Date): number {
+  const weightedStats = getWeightedEntityStats(stateDb, now);
 
   let updated = 0;
 
@@ -224,14 +354,23 @@ export function updateSuppressionList(stateDb: StateDb): number {
   );
 
   const transaction = stateDb.db.transaction(() => {
-    for (const stat of stats) {
-      const fpRate = stat.false_positives / stat.total;
+    // Remove expired suppressions so entities get re-evaluated
+    stateDb.db.prepare(
+      `DELETE FROM wikilink_suppressions
+       WHERE datetime(updated_at, '+' || ? || ' days') <= datetime('now')`
+    ).run(SUPPRESSION_TTL_DAYS);
 
-      if (fpRate >= SUPPRESSION_THRESHOLD) {
-        upsert.run(stat.entity, fpRate);
+    for (const stat of weightedStats) {
+      // Gate on raw count AND weighted total
+      if (stat.rawTotal < MIN_FEEDBACK_COUNT || stat.weightedTotal < WEIGHTED_MIN_TOTAL) {
+        continue;
+      }
+
+      if (stat.weightedFpRate >= SUPPRESSION_THRESHOLD) {
+        upsert.run(stat.entity, stat.weightedFpRate);
         updated++;
       } else {
-        // Remove from suppression if rate dropped below threshold
+        // Remove from suppression if weighted rate dropped below threshold
         remove.run(stat.entity);
       }
     }
@@ -267,31 +406,22 @@ export function unsuppressEntity(stateDb: StateDb, entity: string): boolean {
 /**
  * Check if an entity is currently suppressed
  * @param folder - Optional folder for context-stratified suppression
+ * @param now - Optional reference date for testability (decay computation)
  */
-export function isSuppressed(stateDb: StateDb, entity: string, folder?: string): boolean {
-  // Global suppression check first
+export function isSuppressed(stateDb: StateDb, entity: string, folder?: string, now?: Date): boolean {
+  // Global suppression check first (with TTL)
   const row = stateDb.db.prepare(
-    'SELECT entity FROM wikilink_suppressions WHERE entity = ? COLLATE NOCASE'
-  ).get(entity);
+    `SELECT entity, updated_at FROM wikilink_suppressions
+     WHERE entity = ? COLLATE NOCASE
+     AND datetime(updated_at, '+' || ? || ' days') > datetime('now')`
+  ).get(entity, SUPPRESSION_TTL_DAYS) as { entity: string; updated_at: string } | undefined;
   if (row) return true;
 
-  // Folder-specific suppression: check if entity has high FP rate in this folder
+  // Folder-specific suppression: use weighted decay
   if (folder !== undefined) {
-    const folderStats = stateDb.db.prepare(`
-      SELECT
-        COUNT(*) as total,
-        SUM(CASE WHEN correct = 0 THEN 1 ELSE 0 END) as false_positives
-      FROM wikilink_feedback
-      WHERE entity = ? COLLATE NOCASE AND (
-        CASE WHEN ? = '' THEN note_path NOT LIKE '%/%'
-        ELSE note_path LIKE ? || '/%'
-        END
-      )
-    `).get(entity, folder, folder) as { total: number; false_positives: number } | undefined;
-
-    if (folderStats && folderStats.total >= FOLDER_SUPPRESSION_MIN_COUNT) {
-      const fpRate = folderStats.false_positives / folderStats.total;
-      if (fpRate >= SUPPRESSION_THRESHOLD) {
+    const stats = getWeightedFolderStats(stateDb, entity, folder, now);
+    if (stats.rawTotal >= FOLDER_SUPPRESSION_MIN_COUNT && stats.weightedTotal >= WEIGHTED_MIN_TOTAL) {
+      if (stats.weightedFpRate >= SUPPRESSION_THRESHOLD) {
         return true;
       }
     }
@@ -396,92 +526,76 @@ export function computeBoostFromAccuracy(accuracy: number, sampleCount: number):
 }
 
 /**
- * Get feedback boost for a single entity
+ * Get feedback boost for a single entity using recency-weighted accuracy.
+ * @param now - Optional reference date for testability
  */
-export function getFeedbackBoost(stateDb: StateDb, entity: string): number {
-  const row = stateDb.db.prepare(`
-    SELECT
-      COUNT(*) as total,
-      SUM(CASE WHEN correct = 1 THEN 1 ELSE 0 END) as correct_count
+export function getFeedbackBoost(stateDb: StateDb, entity: string, now?: Date): number {
+  const rows = stateDb.db.prepare(`
+    SELECT correct, created_at
     FROM wikilink_feedback
     WHERE entity = ?
-  `).get(entity) as { total: number; correct_count: number } | undefined;
+  `).all(entity) as Array<{ correct: number; created_at: string }>;
 
-  if (!row || row.total < FEEDBACK_BOOST_MIN_SAMPLES) return 0;
+  if (rows.length < FEEDBACK_BOOST_MIN_SAMPLES) return 0;
 
-  const accuracy = row.correct_count / row.total;
-  return computeBoostFromAccuracy(accuracy, row.total);
+  let weightedTotal = 0;
+  let weightedCorrect = 0;
+  for (const row of rows) {
+    const weight = computeFeedbackWeight(row.created_at, now);
+    weightedTotal += weight;
+    if (row.correct === 1) weightedCorrect += weight;
+  }
+
+  const accuracy = weightedTotal > 0 ? weightedCorrect / weightedTotal : 0;
+  return computeBoostFromAccuracy(accuracy, rows.length);
 }
 
 /**
- * Get feedback boosts for all entities with sufficient feedback (batch query)
+ * Get feedback boosts for all entities with sufficient feedback (batch query).
+ * Uses recency-weighted accuracy for boost computation.
  * @param folder - Optional folder for context-stratified boosts. When provided,
- *   prefers folder-specific accuracy (if ≥5 entries in that folder) over global.
+ *   prefers folder-specific weighted accuracy (if ≥5 entries in that folder) over global.
+ * @param now - Optional reference date for testability
  */
-export function getAllFeedbackBoosts(stateDb: StateDb, folder?: string): Map<string, number> {
-  // Get global stats
-  const globalRows = stateDb.db.prepare(`
-    SELECT
-      entity,
-      COUNT(*) as total,
-      SUM(CASE WHEN correct = 1 THEN 1 ELSE 0 END) as correct_count
-    FROM wikilink_feedback
-    GROUP BY entity
-    HAVING total >= ?
-  `).all(FEEDBACK_BOOST_MIN_SAMPLES) as Array<{
-    entity: string;
-    total: number;
-    correct_count: number;
-  }>;
+export function getAllFeedbackBoosts(stateDb: StateDb, folder?: string, now?: Date): Map<string, number> {
+  // Get global weighted stats
+  const globalStats = getWeightedEntityStats(stateDb, now);
 
-  // Get folder-specific stats if folder provided
-  let folderStats: Map<string, { accuracy: number; count: number }> | null = null;
+  // Build folder-specific weighted stats if folder provided
+  let folderStatsMap: Map<string, { weightedAccuracy: number; rawCount: number }> | null = null;
   if (folder !== undefined) {
-    const folderRows = stateDb.db.prepare(`
-      SELECT
-        entity,
-        COUNT(*) as total,
-        SUM(CASE WHEN correct = 1 THEN 1 ELSE 0 END) as correct_count
-      FROM wikilink_feedback
-      WHERE (
-        CASE WHEN ? = '' THEN note_path NOT LIKE '%/%'
-        ELSE note_path LIKE ? || '/%'
-        END
-      )
-      GROUP BY entity
-      HAVING total >= ?
-    `).all(folder, folder, FEEDBACK_BOOST_MIN_SAMPLES) as Array<{
-      entity: string;
-      total: number;
-      correct_count: number;
-    }>;
-
-    folderStats = new Map();
-    for (const row of folderRows) {
-      folderStats.set(row.entity, {
-        accuracy: row.correct_count / row.total,
-        count: row.total,
-      });
+    folderStatsMap = new Map();
+    // Only compute folder stats for entities that have global data
+    for (const gs of globalStats) {
+      const fs = getWeightedFolderStats(stateDb, gs.entity, folder, now);
+      if (fs.rawTotal >= FEEDBACK_BOOST_MIN_SAMPLES) {
+        folderStatsMap.set(gs.entity, {
+          weightedAccuracy: fs.weightedAccuracy,
+          rawCount: fs.rawTotal,
+        });
+      }
     }
   }
 
   const boosts = new Map<string, number>();
-  for (const row of globalRows) {
-    // Prefer folder-specific accuracy when available
+  for (const stat of globalStats) {
+    if (stat.rawTotal < FEEDBACK_BOOST_MIN_SAMPLES) continue;
+
+    // Prefer folder-specific weighted accuracy when available
     let accuracy: number;
     let sampleCount: number;
-    const fs = folderStats?.get(row.entity);
-    if (fs && fs.count >= FEEDBACK_BOOST_MIN_SAMPLES) {
-      accuracy = fs.accuracy;
-      sampleCount = fs.count;
+    const fs = folderStatsMap?.get(stat.entity);
+    if (fs && fs.rawCount >= FEEDBACK_BOOST_MIN_SAMPLES) {
+      accuracy = fs.weightedAccuracy;
+      sampleCount = fs.rawCount;
     } else {
-      accuracy = row.correct_count / row.total;
-      sampleCount = row.total;
+      accuracy = stat.weightedAccuracy;
+      sampleCount = stat.rawTotal;
     }
 
     const boost = computeBoostFromAccuracy(accuracy, sampleCount);
     if (boost !== 0) {
-      boosts.set(row.entity, boost);
+      boosts.set(stat.entity, boost);
     }
   }
   return boosts;

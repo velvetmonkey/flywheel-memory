@@ -6,7 +6,8 @@
  * actionable tuning recommendations.
  */
 
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, appendFile, mkdir } from 'fs/promises';
+import { execSync } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -35,7 +36,7 @@ export interface TestReport {
 // Report Directory
 // =============================================================================
 
-function getReportsDir(): string {
+export function getReportsDir(): string {
   if (typeof __dirname !== 'undefined') {
     return path.join(__dirname, 'reports');
   }
@@ -58,7 +59,35 @@ export async function writeReport(report: TestReport): Promise<string> {
 
   const filePath = path.join(dir, `${report.suite}.json`);
   await writeFile(filePath, JSON.stringify(report, null, 2), 'utf-8');
+
+  await appendToHistory(report);
+
   return filePath;
+}
+
+/**
+ * Append a benchmark entry to history.jsonl for trend tracking.
+ */
+export async function appendToHistory(report: TestReport): Promise<void> {
+  const dir = path.join(path.dirname(getReportsDir()), 'benchmarks');
+  await mkdir(dir, { recursive: true });
+
+  let gitSha = 'unknown';
+  try {
+    gitSha = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).trim();
+  } catch {
+    // Not in a git repo or git not available
+  }
+
+  const entry = {
+    timestamp: report.timestamp,
+    git_sha: gitSha,
+    suite: report.suite,
+    summary: report.summary,
+    duration_ms: report.duration_ms,
+  };
+
+  await appendFile(path.join(dir, 'history.jsonl'), JSON.stringify(entry) + '\n');
 }
 
 // =============================================================================
@@ -114,6 +143,47 @@ export function classifyLayer(f1Delta: number): LayerClassification {
   if (f1Delta >= 0.05) return 'CORE';
   if (f1Delta >= 0.01) return 'USEFUL';
   return 'MARGINAL';
+}
+
+// =============================================================================
+// Linear Regression
+// =============================================================================
+
+/** Simple linear regression on (x, y) points */
+export function linearRegression(points: Array<{ x: number; y: number }>): {
+  slope: number;
+  intercept: number;
+  r2: number;
+} {
+  const n = points.length;
+  if (n < 2) return { slope: 0, intercept: 0, r2: 0 };
+
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+  for (const p of points) {
+    sumX += p.x;
+    sumY += p.y;
+    sumXY += p.x * p.y;
+    sumX2 += p.x * p.x;
+    sumY2 += p.y * p.y;
+  }
+
+  const denom = n * sumX2 - sumX * sumX;
+  if (denom === 0) return { slope: 0, intercept: sumY / n, r2: 0 };
+
+  const slope = (n * sumXY - sumX * sumY) / denom;
+  const intercept = (sumY - slope * sumX) / n;
+
+  // R² calculation
+  const meanY = sumY / n;
+  let ssTot = 0, ssRes = 0;
+  for (const p of points) {
+    const pred = slope * p.x + intercept;
+    ssTot += (p.y - meanY) ** 2;
+    ssRes += (p.y - pred) ** 2;
+  }
+  const r2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+
+  return { slope, intercept, r2 };
 }
 
 // =============================================================================

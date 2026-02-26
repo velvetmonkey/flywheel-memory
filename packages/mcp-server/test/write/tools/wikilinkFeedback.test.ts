@@ -27,6 +27,9 @@ import {
   getTrackedApplications,
   processImplicitFeedback,
   updateStoredNoteLinks,
+  computeFeedbackWeight,
+  getWeightedEntityStats,
+  FEEDBACK_DECAY_HALF_LIFE_DAYS,
 } from '../../../src/core/write/wikilinkFeedback.js';
 
 describe('wikilink_feedback', () => {
@@ -216,15 +219,15 @@ describe('wikilink_feedback', () => {
       expect(boosts.size).toBe(0);
     });
 
-    it('should not include entity with <5 entries', () => {
-      for (let i = 0; i < 4; i++) {
+    it('should not include entity with <3 entries', () => {
+      for (let i = 0; i < 2; i++) {
         recordFeedback(stateDb, 'NewEntity', `context ${i}`, `note${i}.md`, true);
       }
       const boosts = getAllFeedbackBoosts(stateDb);
       expect(boosts.has('NewEntity')).toBe(false);
     });
 
-    it('should give +5 for 95% accuracy with 20 samples', () => {
+    it('should give +10 for 95% accuracy with 20 samples', () => {
       // 19 correct, 1 incorrect = 95% accuracy
       for (let i = 0; i < 19; i++) {
         recordFeedback(stateDb, 'HighAccuracy', `context ${i}`, `note${i}.md`, true);
@@ -232,11 +235,11 @@ describe('wikilink_feedback', () => {
       recordFeedback(stateDb, 'HighAccuracy', 'wrong', 'note19.md', false);
 
       const boosts = getAllFeedbackBoosts(stateDb);
-      expect(boosts.get('HighAccuracy')).toBe(5);
-      expect(getFeedbackBoost(stateDb, 'HighAccuracy')).toBe(5);
+      expect(boosts.get('HighAccuracy')).toBe(10);
+      expect(getFeedbackBoost(stateDb, 'HighAccuracy')).toBe(10);
     });
 
-    it('should give +2 for 80% accuracy', () => {
+    it('should give +4 for 80% accuracy', () => {
       // 8 correct, 2 incorrect = 80%
       for (let i = 0; i < 8; i++) {
         recordFeedback(stateDb, 'GoodEntity', `context ${i}`, `note${i}.md`, true);
@@ -246,10 +249,10 @@ describe('wikilink_feedback', () => {
       }
 
       const boosts = getAllFeedbackBoosts(stateDb);
-      expect(boosts.get('GoodEntity')).toBe(2);
+      expect(boosts.get('GoodEntity')).toBe(4);
     });
 
-    it('should give -2 for 50% accuracy', () => {
+    it('should give -4 for 50% accuracy', () => {
       // 5 correct, 5 incorrect = 50%
       for (let i = 0; i < 5; i++) {
         recordFeedback(stateDb, 'MediumEntity', `context ${i}`, `note${i}.md`, true);
@@ -259,10 +262,10 @@ describe('wikilink_feedback', () => {
       }
 
       const boosts = getAllFeedbackBoosts(stateDb);
-      expect(boosts.get('MediumEntity')).toBe(-2);
+      expect(boosts.get('MediumEntity')).toBe(-4);
     });
 
-    it('should give -4 for 30% accuracy', () => {
+    it('should give -8 for 30% accuracy', () => {
       // 3 correct, 7 incorrect = 30%
       for (let i = 0; i < 3; i++) {
         recordFeedback(stateDb, 'LowEntity', `context ${i}`, `note${i}.md`, true);
@@ -272,7 +275,7 @@ describe('wikilink_feedback', () => {
       }
 
       const boosts = getAllFeedbackBoosts(stateDb);
-      expect(boosts.get('LowEntity')).toBe(-4);
+      expect(boosts.get('LowEntity')).toBe(-8);
     });
 
     it('should match getFeedbackBoost with batch output', () => {
@@ -293,17 +296,17 @@ describe('wikilink_feedback', () => {
     });
 
     it('computeBoostFromAccuracy: tier boundaries', () => {
-      expect(computeBoostFromAccuracy(0.95, 20)).toBe(5);
-      expect(computeBoostFromAccuracy(0.94, 20)).toBe(2);  // below 95% tier
-      expect(computeBoostFromAccuracy(0.95, 5)).toBe(2);   // not enough samples for +5 tier
-      expect(computeBoostFromAccuracy(0.80, 5)).toBe(2);
+      expect(computeBoostFromAccuracy(0.95, 20)).toBe(10);
+      expect(computeBoostFromAccuracy(0.94, 20)).toBe(4);  // below 95% tier
+      expect(computeBoostFromAccuracy(0.95, 5)).toBe(4);   // not enough samples for +10 tier
+      expect(computeBoostFromAccuracy(0.80, 5)).toBe(4);
       expect(computeBoostFromAccuracy(0.79, 5)).toBe(0);   // below 80% but above 60%
       expect(computeBoostFromAccuracy(0.60, 5)).toBe(0);
-      expect(computeBoostFromAccuracy(0.59, 5)).toBe(-2);  // below 60% but above 40%
-      expect(computeBoostFromAccuracy(0.40, 5)).toBe(-2);
-      expect(computeBoostFromAccuracy(0.39, 5)).toBe(-4);
-      expect(computeBoostFromAccuracy(0.10, 5)).toBe(-4);
-      expect(computeBoostFromAccuracy(1.0, 3)).toBe(0);    // below min samples
+      expect(computeBoostFromAccuracy(0.59, 5)).toBe(-4);  // below 60% but above 40%
+      expect(computeBoostFromAccuracy(0.40, 5)).toBe(-4);
+      expect(computeBoostFromAccuracy(0.39, 5)).toBe(-8);
+      expect(computeBoostFromAccuracy(0.10, 5)).toBe(-8);
+      expect(computeBoostFromAccuracy(1.0, 3)).toBe(4);    // meets min samples (3), Strong tier
     });
   });
 
@@ -389,13 +392,13 @@ describe('wikilink_feedback', () => {
       const globalBoosts = getAllFeedbackBoosts(stateDb);
       expect(globalBoosts.has('Redis')).toBe(false);
 
-      // Tech folder: 5/5 = 100% with 5 samples → +2 (needs 20 for +5)
+      // Tech folder: 5/5 = 100% with 5 samples → +4 (needs 20 for +10)
       const techBoosts = getAllFeedbackBoosts(stateDb, 'tech');
-      expect(techBoosts.get('Redis')).toBe(2);
+      expect(techBoosts.get('Redis')).toBe(4);
 
-      // Daily folder: 2/5 = 40% → -2
+      // Daily folder: 2/5 = 40% → -4
       const dailyBoosts = getAllFeedbackBoosts(stateDb, 'daily');
-      expect(dailyBoosts.get('Redis')).toBe(-2);
+      expect(dailyBoosts.get('Redis')).toBe(-4);
     });
   });
 
@@ -610,6 +613,164 @@ describe('wikilink_feedback', () => {
         'SELECT COUNT(*) as cnt FROM note_links WHERE note_path = ?'
       ).get('note.md') as { cnt: number };
       expect(count.cnt).toBe(0);
+    });
+  });
+
+  // --------------------------------------------------------
+  // Recency-weighted feedback decay
+  // --------------------------------------------------------
+  describe('recency-weighted feedback decay', () => {
+    /** Helper: insert feedback with explicit created_at via raw SQL */
+    function insertFeedbackAt(
+      entity: string,
+      notePath: string,
+      correct: boolean,
+      createdAt: string,
+    ): void {
+      stateDb.db.prepare(
+        'INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES (?, ?, ?, ?, ?)'
+      ).run(entity, 'decay-test', notePath, correct ? 1 : 0, createdAt);
+    }
+
+    it('computeFeedbackWeight returns 1.0 for very recent entries', () => {
+      const now = new Date('2026-03-01T00:00:30Z'); // 30 seconds after entry (< 1 min threshold)
+      const weight = computeFeedbackWeight('2026-03-01 00:00:00', now);
+      expect(weight).toBe(1.0);
+    });
+
+    it('computeFeedbackWeight returns ~0.5 at half-life (30 days)', () => {
+      const now = new Date('2026-03-31T00:00:00Z');
+      const weight = computeFeedbackWeight('2026-03-01 00:00:00', now);
+      expect(weight).toBeCloseTo(0.5, 2);
+    });
+
+    it('computeFeedbackWeight returns ~0.25 at 60 days', () => {
+      const now = new Date('2026-04-30T00:00:00Z');
+      const weight = computeFeedbackWeight('2026-03-01 00:00:00', now);
+      expect(weight).toBeCloseTo(0.25, 2);
+    });
+
+    it('computeFeedbackWeight returns 1.0 for future dates', () => {
+      const now = new Date('2026-02-28T00:00:00Z');
+      const weight = computeFeedbackWeight('2026-03-01 00:00:00', now);
+      expect(weight).toBe(1.0);
+    });
+
+    it('entity with old FPs + recent correct entries → NOT suppressed', () => {
+      const now = new Date('2026-04-01T00:00:00Z');
+
+      // 10 old FP entries (60 days ago) — weight ≈ 0.25 each
+      for (let i = 0; i < 10; i++) {
+        insertFeedbackAt('DecayEntity', `note${i}.md`, false, '2026-02-01 12:00:00');
+      }
+
+      // 5 recent correct entries (today) — weight ≈ 1.0 each
+      for (let i = 0; i < 5; i++) {
+        insertFeedbackAt('DecayEntity', `note${i + 10}.md`, true, '2026-04-01 00:00:00');
+      }
+
+      // Raw stats: 15 total, 10 FP = 66.7% FP rate → would suppress without decay
+      // Weighted: 10*0.25 + 5*1.0 = 7.5 total, 10*0.25 = 2.5 FP → 33.3% FP rate
+      // Actually with weighted total < 10 raw threshold met, let's check:
+      // rawTotal=15 >= 10 ✓, weightedTotal=7.5 >= 3.0 ✓
+      // weightedFpRate = 2.5/7.5 ≈ 0.333 → just above 0.30 threshold
+      // Let's add a few more recent correct entries to push it under
+      for (let i = 0; i < 3; i++) {
+        insertFeedbackAt('DecayEntity', `note${i + 15}.md`, true, '2026-04-01 00:00:00');
+      }
+
+      // Weighted: 10*0.25 + 8*1.0 = 10.5 total, 2.5 FP → 23.8% FP rate < 30%
+      updateSuppressionList(stateDb, now);
+      expect(isSuppressed(stateDb, 'DecayEntity')).toBe(false);
+    });
+
+    it('entity with recent FPs + old correct entries → IS suppressed', () => {
+      const now = new Date('2026-04-01T00:00:00Z');
+
+      // 5 old correct entries (60 days ago) — weight ≈ 0.25 each
+      for (let i = 0; i < 5; i++) {
+        insertFeedbackAt('BadEntity', `note${i}.md`, true, '2026-02-01 12:00:00');
+      }
+
+      // 10 recent FP entries (today) — weight ≈ 1.0 each
+      for (let i = 0; i < 10; i++) {
+        insertFeedbackAt('BadEntity', `note${i + 5}.md`, false, '2026-04-01 00:00:00');
+      }
+
+      // Weighted: 5*0.25 + 10*1.0 = 11.25 total, 10*1.0 = 10.0 FP → 88.9% FP rate
+      // rawTotal=15 >= 10 ✓, weightedTotal=11.25 >= 3.0 ✓
+      updateSuppressionList(stateDb, now);
+      expect(isSuppressed(stateDb, 'BadEntity')).toBe(true);
+    });
+
+    it('getAllFeedbackBoosts reflects weighted accuracy', () => {
+      const now = new Date('2026-04-01T00:00:00Z');
+
+      // 3 old incorrect entries (60 days ago) — weight ≈ 0.25 each
+      for (let i = 0; i < 3; i++) {
+        insertFeedbackAt('BoostEntity', `note${i}.md`, false, '2026-02-01 12:00:00');
+      }
+
+      // 7 recent correct entries (today) — weight ≈ 1.0 each
+      for (let i = 0; i < 7; i++) {
+        insertFeedbackAt('BoostEntity', `note${i + 3}.md`, true, '2026-04-01 00:00:00');
+      }
+
+      // Raw: 7/10 = 70% → boost 0 (neutral tier)
+      // Weighted: 7*1.0 / (3*0.25 + 7*1.0) = 7.0/7.75 ≈ 90.3% → boost +4 (strong tier)
+      const boosts = getAllFeedbackBoosts(stateDb, undefined, now);
+      expect(boosts.get('BoostEntity')).toBe(4);
+    });
+
+    it('old negative feedback fades → entity unsuppresses over time', () => {
+      // Record 12 negative entries at "old" time
+      for (let i = 0; i < 12; i++) {
+        insertFeedbackAt('FadingEntity', `note${i}.md`, false, '2026-01-01 12:00:00');
+      }
+
+      // At first (shortly after), it's suppressed
+      const earlyNow = new Date('2026-01-02T00:00:00Z');
+      updateSuppressionList(stateDb, earlyNow);
+      expect(isSuppressed(stateDb, 'FadingEntity')).toBe(true);
+
+      // Add 5 recent correct entries
+      for (let i = 0; i < 5; i++) {
+        insertFeedbackAt('FadingEntity', `note${i + 12}.md`, true, '2026-04-01 00:00:00');
+      }
+
+      // 90 days later: old FPs have weight ≈ 0.125 each
+      // Weighted FP = 12*0.125 = 1.5, correct = 5*1.0 = 5.0
+      // Total = 6.5, FP rate = 1.5/6.5 ≈ 23% < 30%
+      const lateNow = new Date('2026-04-01T00:00:00Z');
+      updateSuppressionList(stateDb, lateNow);
+      // The suppression record from earlyNow should be removed or updated
+      // since the weighted FP rate is now below threshold
+      expect(isSuppressed(stateDb, 'FadingEntity')).toBe(false);
+    });
+
+    it('getWeightedEntityStats returns correct weighted values', () => {
+      const now = new Date('2026-04-01T00:00:00Z');
+
+      // 4 entries: 2 old correct, 2 recent incorrect
+      insertFeedbackAt('StatsEntity', 'note0.md', true, '2026-02-01 00:00:00');
+      insertFeedbackAt('StatsEntity', 'note1.md', true, '2026-02-01 00:00:00');
+      insertFeedbackAt('StatsEntity', 'note2.md', false, '2026-04-01 00:00:00');
+      insertFeedbackAt('StatsEntity', 'note3.md', false, '2026-04-01 00:00:00');
+
+      const stats = getWeightedEntityStats(stateDb, now);
+      const entry = stats.find(s => s.entity === 'StatsEntity');
+      expect(entry).toBeDefined();
+      expect(entry!.rawTotal).toBe(4);
+
+      // Old entries (59 days): weight ≈ 0.25
+      // Recent entries (0 days): weight ≈ 1.0
+      // weightedCorrect ≈ 2*0.25 = 0.5
+      // weightedFp ≈ 2*1.0 = 2.0
+      // weightedTotal ≈ 2.5
+      expect(entry!.weightedTotal).toBeGreaterThan(2.0);
+      expect(entry!.weightedTotal).toBeLessThan(3.0);
+      expect(entry!.weightedFp).toBeGreaterThan(entry!.weightedCorrect);
+      expect(entry!.weightedFpRate).toBeGreaterThan(0.7); // mostly recent FPs
     });
   });
 });

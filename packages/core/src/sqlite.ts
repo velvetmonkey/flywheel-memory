@@ -109,7 +109,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 24;
+export const SCHEMA_VERSION = 25;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -257,6 +257,7 @@ CREATE TABLE IF NOT EXISTS wikilink_feedback (
   context TEXT NOT NULL,
   note_path TEXT NOT NULL,
   correct INTEGER NOT NULL,
+  confidence REAL NOT NULL DEFAULT 1.0,
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_wl_feedback_entity ON wikilink_feedback(entity);
@@ -614,6 +615,16 @@ function initSchema(db: Database.Database): void {
 
     // v24: corrections table (persistent correction records)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v25: confidence column on wikilink_feedback (signal quality weighting)
+    if (currentVersion < 25) {
+      const hasConfidence = db.prepare(
+        `SELECT COUNT(*) as cnt FROM pragma_table_info('wikilink_feedback') WHERE name = 'confidence'`
+      ).get() as { cnt: number };
+      if (hasConfidence.cnt === 0) {
+        db.exec('ALTER TABLE wikilink_feedback ADD COLUMN confidence REAL NOT NULL DEFAULT 1.0');
+      }
+    }
 
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'

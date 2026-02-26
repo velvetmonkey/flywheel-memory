@@ -154,6 +154,7 @@ export interface ScoreBreakdown {
   crossFolderBoost: number;   // Layer 8
   hubBoost: number;           // Layer 9
   feedbackAdjustment: number; // Layer 10
+  suppressionPenalty?: number; // Layer 0 (soft, proportional to Beta-Binomial posterior)
   semanticBoost?: number;     // Layer 11
   edgeWeightBoost?: number;   // Layer 12
 }

@@ -282,17 +282,17 @@ describe('Feedback Integration', () => {
   // =========================================================================
 
   it('getFeedbackBoost returns expected tier', () => {
-    // Pick one boosted entity and add more positive feedback to reach Champion tier
-    // Champion: accuracy >= 0.95, samples >= 20, boost = +10
+    // Pick one boosted entity and add more positive feedback to reach top tier
+    // Top tier: accuracy >= 0.85, samples >= 5, boost = +8
     expect(boostedEntities.length).toBeGreaterThan(0);
     const { entity, notePath } = boostedEntities[0];
 
-    // Already have 6 positive feedbacks from beforeAll. Add 14 more for 20 total.
-    for (let i = 0; i < 14; i++) {
+    // Already have 6 positive feedbacks from beforeAll. Add a few more for confidence.
+    for (let i = 0; i < 4; i++) {
       recordFeedback(vault.stateDb, entity, 'champion-test', notePath, true);
     }
 
     const boost = getFeedbackBoost(vault.stateDb, entity);
-    expect(boost).toBe(10); // Champion tier: +10 boost
+    expect(boost).toBe(8); // Top tier: +8 boost (accuracy >= 0.85, samples >= 5)
   });
 });

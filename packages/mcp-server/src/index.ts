@@ -1337,7 +1337,7 @@ async function runPostIndexWork(index: VaultIndex) {
                          (e.aliases ?? []).some((a: string) => a.toLowerCase() === link)
                   );
                   if (entity) {
-                    recordFeedback(stateDb, entity.name, 'implicit:kept', entry.file, true);
+                    recordFeedback(stateDb, entity.name, 'implicit:kept', entry.file, true, 0.8);
                     markPositive.run(entry.file, link);
                   }
                 }

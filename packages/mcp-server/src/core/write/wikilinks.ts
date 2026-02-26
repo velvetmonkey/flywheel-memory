@@ -41,7 +41,7 @@ import {
   type StateDb,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
-import { isSuppressed, getAllFeedbackBoosts, getEntityStats, trackWikilinkApplications } from './wikilinkFeedback.js';
+import { isSuppressed, getAllFeedbackBoosts, getAllSuppressionPenalties, getEntityStats, trackWikilinkApplications } from './wikilinkFeedback.js';
 import { setGitStateDb } from './git.js';
 import { setHintsStateDb } from './hints.js';
 import { setRecencyStateDb } from '../shared/recency.js';
@@ -1247,6 +1247,9 @@ export async function suggestRelatedLinks(
   const noteFolder = notePath ? notePath.split('/')[0] : undefined;
   const feedbackBoosts = moduleStateDb ? getAllFeedbackBoosts(moduleStateDb, noteFolder) : new Map<string, number>();
 
+  // Load suppression penalties once (Layer 0, soft proportional penalty)
+  const suppressionPenalties = moduleStateDb ? getAllSuppressionPenalties(moduleStateDb) : new Map<string, number>();
+
   // Load edge weight map once (Layer 12)
   const edgeWeightMap = moduleStateDb ? getEntityEdgeWeightMap(moduleStateDb) : new Map<string, number>();
 
@@ -1281,14 +1284,6 @@ export async function suggestRelatedLinks(
     // Skip if already linked
     if (linkedEntities.has(entityName.toLowerCase())) {
       continue;
-    }
-
-    // Layer 0: Suppression filter — hard block suppressed entities
-    if (moduleStateDb && !disabled.has('feedback')) {
-      const noteFolder = notePath ? notePath.split('/').slice(0, -1).join('/') : undefined;
-      if (isSuppressed(moduleStateDb, entityName, noteFolder)) {
-        continue;
-      }
     }
 
     // Layers 2+3: Exact match, stem match, and alias matching (bonuses depend on strictness)
@@ -1330,9 +1325,15 @@ export async function suggestRelatedLinks(
     const layerEdgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
     score += layerEdgeWeightBoost;
 
+    // Add to directlyMatchedEntities BEFORE suppression penalty
+    // (suppressed entities still contribute to co-occurrence graph)
     if (score > 0) {
       directlyMatchedEntities.add(entityName);
     }
+
+    // Layer 0: Soft suppression penalty (proportional to Beta-Binomial posterior)
+    const layerSuppressionPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(entityName) ?? 0);
+    score += layerSuppressionPenalty;
 
     // Minimum threshold (adaptive based on content length)
     if (score >= adaptiveMinScore) {
@@ -1350,6 +1351,7 @@ export async function suggestRelatedLinks(
           crossFolderBoost: layerCrossFolderBoost,
           hubBoost: layerHubBoost,
           feedbackAdjustment: layerFeedbackAdj,
+          suppressionPenalty: layerSuppressionPenalty,
           edgeWeightBoost: layerEdgeWeightBoost,
         },
       });
@@ -1368,12 +1370,6 @@ export async function suggestRelatedLinks(
       if (!disabled.has('length_filter') && entityName.length > MAX_ENTITY_LENGTH) continue;
       if (!disabled.has('article_filter') && isLikelyArticleTitle(entityName)) continue;
       if (linkedEntities.has(entityName.toLowerCase())) continue;
-
-      // Layer 0: Suppression filter — hard block suppressed entities
-      if (moduleStateDb && !disabled.has('feedback')) {
-        const noteFolder = notePath ? notePath.split('/').slice(0, -1).join('/') : undefined;
-        if (isSuppressed(moduleStateDb, entityName, noteFolder)) continue;
-      }
 
       // Get co-occurrence boost (with recency weighting)
       const boost = getCooccurrenceBoost(entityName, directlyMatchedEntities, cooccurrenceIndex, recencyIndex);
@@ -1408,7 +1404,8 @@ export async function suggestRelatedLinks(
           const hubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
           const feedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
           const edgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
-          const totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj + edgeWeightBoost;
+          const suppPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(entityName) ?? 0);
+          const totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj + edgeWeightBoost + suppPenalty;
           if (totalBoost >= adaptiveMinScore) {
             // Add entity if boost meets threshold
             scoredEntities.push({
@@ -1425,6 +1422,7 @@ export async function suggestRelatedLinks(
                 crossFolderBoost,
                 hubBoost,
                 feedbackAdjustment: feedbackAdj,
+                suppressionPenalty: suppPenalty,
                 edgeWeightBoost,
               },
             });
@@ -1468,12 +1466,6 @@ export async function suggestRelatedLinks(
         } else if (!linkedEntities.has(match.entityName.toLowerCase())) {
           // NEW entity not in scored list and not already linked
 
-          // Layer 0: Suppression filter — hard block suppressed entities
-          if (moduleStateDb && !disabled.has('feedback')) {
-            const noteFolder = notePath ? notePath.split('/').slice(0, -1).join('/') : undefined;
-            if (isSuppressed(moduleStateDb, match.entityName, noteFolder)) continue;
-          }
-
           // Look up the entity in the entity index
           const entityWithType = entitiesWithTypes.find(
             et => et.entity.name === match.entityName
@@ -1493,8 +1485,9 @@ export async function suggestRelatedLinks(
           const layerCrossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
           const layerFeedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(match.entityName) ?? 0);
           const layerEdgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(match.entityName, edgeWeightMap);
+          const layerSuppPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(match.entityName) ?? 0);
 
-          const totalScore = boost + layerTypeBoost + layerContextBoost + layerHubBoost + layerCrossFolderBoost + layerFeedbackAdj + layerEdgeWeightBoost;
+          const totalScore = boost + layerTypeBoost + layerContextBoost + layerHubBoost + layerCrossFolderBoost + layerFeedbackAdj + layerEdgeWeightBoost + layerSuppPenalty;
 
           if (totalScore >= adaptiveMinScore) {
             scoredEntities.push({
@@ -1511,6 +1504,7 @@ export async function suggestRelatedLinks(
                 crossFolderBoost: layerCrossFolderBoost,
                 hubBoost: layerHubBoost,
                 feedbackAdjustment: layerFeedbackAdj,
+                suppressionPenalty: layerSuppPenalty,
                 semanticBoost: boost,
                 edgeWeightBoost: layerEdgeWeightBoost,
               },

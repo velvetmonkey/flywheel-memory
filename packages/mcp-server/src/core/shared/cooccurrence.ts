@@ -47,9 +47,13 @@ export interface CooccurrenceIndex {
 }
 
 /**
- * Default minimum co-occurrence count for an association to be considered
+ * Default minimum co-occurrence score for an association to be considered.
+ * With Adamic-Adar weighting, typical values:
+ *   - 2 co-occurrences in 4-entity notes: 2 * 1/log2(4) = 1.0
+ *   - 3 co-occurrences in 8-entity notes: 3 * 1/log2(8) = 1.0
+ *   - 2 co-occurrences in 3-entity notes: 2 * 1/log2(3) = 1.26
  */
-const DEFAULT_MIN_COOCCURRENCE = 2;
+const DEFAULT_MIN_COOCCURRENCE = 1;
 
 /**
  * Folders to exclude from co-occurrence mining (templates, etc.)
@@ -90,21 +94,27 @@ function noteContainsEntity(content: string, entityName: string): boolean {
 }
 
 /**
- * Increment co-occurrence count between two entities
+ * Increment co-occurrence score between two entities.
+ * Uses Adamic-Adar weighting: contribution = 1 / log(degree)
+ * where degree = number of entities in the note.
+ *
+ * Notes with few entity mentions provide strong co-occurrence evidence.
+ * Daily notes with 50+ mentions provide weak evidence.
  */
 function incrementCooccurrence(
   associations: EntityAssociations,
   entityA: string,
-  entityB: string
+  entityB: string,
+  weight: number = 1.0,
 ): void {
   // Initialize map for entityA if needed
   if (!associations[entityA]) {
     associations[entityA] = new Map();
   }
 
-  // Increment count
+  // Increment by Adamic-Adar weight
   const current = associations[entityA].get(entityB) || 0;
-  associations[entityA].set(entityB, current + 1);
+  associations[entityA].set(entityB, current + weight);
 }
 
 /**
@@ -176,10 +186,17 @@ export async function mineCooccurrences(
       }
 
       // Track co-occurrences between all pairs of entities
+      // Adamic-Adar weight: 1/ln(degree), where degree = mentioned entity count.
+      // Notes with few mentions → high weight (focused context).
+      // Notes with many mentions → low weight (diffuse context like daily notes).
+      // Uses natural log per standard Adamic-Adar index formulation.
+      const degree = mentionedEntities.length;
+      const adamicAdarWeight = degree >= 3 ? 1 / Math.log(degree) : 1.0;
+
       for (const entityA of mentionedEntities) {
         for (const entityB of mentionedEntities) {
           if (entityA !== entityB) {
-            incrementCooccurrence(associations, entityA, entityB);
+            incrementCooccurrence(associations, entityA, entityB, adamicAdarWeight);
           }
         }
       }

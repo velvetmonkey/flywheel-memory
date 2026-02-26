@@ -1,0 +1,6151 @@
+{
+  "seed": 2026,
+  "description": "Production-representative temporal-star vault. 50% daily notes, skewed entity distribution, short codes, habit hubs, high orphan rate.",
+  "archetype": "temporal-star",
+  "entities": [
+    {
+      "name": "Sarah Kim",
+      "category": "people",
+      "path": "people/sarah-kim.md",
+      "aliases": [
+        "Sarah"
+      ],
+      "hubScore": 120
+    },
+    {
+      "name": "David Chen",
+      "category": "people",
+      "path": "people/david-chen.md",
+      "aliases": [
+        "David",
+        "DC"
+      ],
+      "hubScore": 95
+    },
+    {
+      "name": "Marcus Johnson",
+      "category": "people",
+      "path": "people/marcus-johnson.md",
+      "aliases": [
+        "Marcus",
+        "MJ"
+      ],
+      "hubScore": 60
+    },
+    {
+      "name": "Elena Torres",
+      "category": "people",
+      "path": "people/elena-torres.md",
+      "aliases": [
+        "Elena"
+      ],
+      "hubScore": 45
+    },
+    {
+      "name": "James Franklin",
+      "category": "people",
+      "path": "people/james-franklin.md",
+      "aliases": [
+        "James"
+      ],
+      "hubScore": 180
+    },
+    {
+      "name": "Aisha Patel",
+      "category": "people",
+      "path": "people/aisha-patel.md",
+      "aliases": [
+        "Aisha"
+      ],
+      "hubScore": 30
+    },
+    {
+      "name": "Carlos Rivera",
+      "category": "people",
+      "path": "people/carlos-rivera.md",
+      "aliases": [
+        "Carlos"
+      ],
+      "hubScore": 15
+    },
+    {
+      "name": "Lisa Wong",
+      "category": "people",
+      "path": "people/lisa-wong.md",
+      "aliases": [
+        "Lisa"
+      ],
+      "hubScore": 8
+    },
+    {
+      "name": "ESGHub",
+      "category": "projects",
+      "path": "projects/esghub.md",
+      "aliases": [
+        "ESG Hub"
+      ],
+      "hubScore": 200
+    },
+    {
+      "name": "DataPipeline",
+      "category": "projects",
+      "path": "projects/datapipeline.md",
+      "aliases": [
+        "Data Pipeline",
+        "data-pipeline"
+      ],
+      "hubScore": 150
+    },
+    {
+      "name": "CloudMigration",
+      "category": "projects",
+      "path": "projects/cloudmigration.md",
+      "aliases": [
+        "Cloud Migration"
+      ],
+      "hubScore": 80
+    },
+    {
+      "name": "DevPortal",
+      "category": "projects",
+      "path": "projects/devportal.md",
+      "aliases": [
+        "Dev Portal",
+        "Developer Portal"
+      ],
+      "hubScore": 60
+    },
+    {
+      "name": "MobileApp",
+      "category": "projects",
+      "path": "projects/mobileapp.md",
+      "aliases": [
+        "Mobile App"
+      ],
+      "hubScore": 45
+    },
+    {
+      "name": "AuthService",
+      "category": "projects",
+      "path": "projects/authservice.md",
+      "aliases": [
+        "Auth Service",
+        "authentication"
+      ],
+      "hubScore": 70
+    },
+    {
+      "name": "APIGateway",
+      "category": "projects",
+      "path": "projects/apigateway.md",
+      "aliases": [
+        "API Gateway",
+        "APIG"
+      ],
+      "hubScore": 90
+    },
+    {
+      "name": "MonitoringStack",
+      "category": "projects",
+      "path": "projects/monitoringstack.md",
+      "aliases": [
+        "Monitoring Stack"
+      ],
+      "hubScore": 55
+    },
+    {
+      "name": "ConfigManager",
+      "category": "projects",
+      "path": "projects/configmanager.md",
+      "aliases": [
+        "Config Manager"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "UserOnboarding",
+      "category": "projects",
+      "path": "projects/useronboarding.md",
+      "aliases": [
+        "User Onboarding"
+      ],
+      "hubScore": 35
+    },
+    {
+      "name": "PaymentProcessor",
+      "category": "projects",
+      "path": "projects/paymentprocessor.md",
+      "aliases": [
+        "Payment Processor"
+      ],
+      "hubScore": 40
+    },
+    {
+      "name": "SearchEngine",
+      "category": "projects",
+      "path": "projects/searchengine.md",
+      "aliases": [
+        "Search Engine"
+      ],
+      "hubScore": 30
+    },
+    {
+      "name": "WorkflowEngine",
+      "category": "projects",
+      "path": "projects/workflowengine.md",
+      "aliases": [
+        "Workflow Engine"
+      ],
+      "hubScore": 20
+    },
+    {
+      "name": "TeamDashboard",
+      "category": "projects",
+      "path": "projects/teamdashboard.md",
+      "aliases": [
+        "Team Dashboard"
+      ],
+      "hubScore": 15
+    },
+    {
+      "name": "ReleaseManager",
+      "category": "projects",
+      "path": "projects/releasemanager.md",
+      "aliases": [
+        "Release Manager"
+      ],
+      "hubScore": 10
+    },
+    {
+      "name": "React",
+      "category": "technologies",
+      "path": "technologies/react.md",
+      "aliases": [
+        "ReactJS",
+        "React.js"
+      ],
+      "hubScore": 100
+    },
+    {
+      "name": "TypeScript",
+      "category": "technologies",
+      "path": "technologies/typescript.md",
+      "aliases": [
+        "TS"
+      ],
+      "hubScore": 130
+    },
+    {
+      "name": "Python",
+      "category": "technologies",
+      "path": "technologies/python.md",
+      "aliases": [
+        "python3",
+        "py"
+      ],
+      "hubScore": 80
+    },
+    {
+      "name": "Docker",
+      "category": "technologies",
+      "path": "technologies/docker.md",
+      "aliases": [
+        "docker",
+        "container"
+      ],
+      "hubScore": 70
+    },
+    {
+      "name": "Kubernetes",
+      "category": "technologies",
+      "path": "technologies/kubernetes.md",
+      "aliases": [
+        "k8s",
+        "K8s"
+      ],
+      "hubScore": 65
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "technologies",
+      "path": "technologies/postgresql.md",
+      "aliases": [
+        "Postgres",
+        "psql"
+      ],
+      "hubScore": 55
+    },
+    {
+      "name": "Redis",
+      "category": "technologies",
+      "path": "technologies/redis.md",
+      "aliases": [
+        "redis"
+      ],
+      "hubScore": 40
+    },
+    {
+      "name": "GraphQL",
+      "category": "technologies",
+      "path": "technologies/graphql.md",
+      "aliases": [
+        "graphql",
+        "GQL"
+      ],
+      "hubScore": 35
+    },
+    {
+      "name": "Node.js",
+      "category": "technologies",
+      "path": "technologies/node-js.md",
+      "aliases": [
+        "NodeJS",
+        "node"
+      ],
+      "hubScore": 90
+    },
+    {
+      "name": "Terraform",
+      "category": "technologies",
+      "path": "technologies/terraform.md",
+      "aliases": [
+        "TF",
+        "terraform"
+      ],
+      "hubScore": 50
+    },
+    {
+      "name": "AWS",
+      "category": "technologies",
+      "path": "technologies/aws.md",
+      "aliases": [
+        "Amazon Web Services"
+      ],
+      "hubScore": 110
+    },
+    {
+      "name": "Kafka",
+      "category": "technologies",
+      "path": "technologies/kafka.md",
+      "aliases": [
+        "Apache Kafka",
+        "kafka"
+      ],
+      "hubScore": 45
+    },
+    {
+      "name": "Acme Corp",
+      "category": "organizations",
+      "path": "organizations/acme-corp.md",
+      "aliases": [
+        "Acme",
+        "Acme Corporation"
+      ],
+      "hubScore": 160
+    },
+    {
+      "name": "TechVentures",
+      "category": "organizations",
+      "path": "organizations/techventures.md",
+      "aliases": [
+        "Tech Ventures",
+        "TV"
+      ],
+      "hubScore": 40
+    },
+    {
+      "name": "DataCo",
+      "category": "organizations",
+      "path": "organizations/dataco.md",
+      "aliases": [
+        "Data Co",
+        "dataco"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "CloudFirst",
+      "category": "organizations",
+      "path": "organizations/cloudfirst.md",
+      "aliases": [
+        "Cloud First"
+      ],
+      "hubScore": 15
+    },
+    {
+      "name": "NetOps Inc",
+      "category": "organizations",
+      "path": "organizations/netops-inc.md",
+      "aliases": [
+        "NetOps"
+      ],
+      "hubScore": 10
+    },
+    {
+      "name": "San Francisco",
+      "category": "locations",
+      "path": "locations/san-francisco.md",
+      "aliases": [
+        "SF",
+        "Bay Area"
+      ],
+      "hubScore": 60
+    },
+    {
+      "name": "London",
+      "category": "locations",
+      "path": "locations/london.md",
+      "aliases": [
+        "LDN"
+      ],
+      "hubScore": 35
+    },
+    {
+      "name": "Berlin",
+      "category": "locations",
+      "path": "locations/berlin.md",
+      "aliases": [],
+      "hubScore": 20
+    },
+    {
+      "name": "Singapore",
+      "category": "locations",
+      "path": "locations/singapore.md",
+      "aliases": [
+        "SG"
+      ],
+      "hubScore": 15
+    },
+    {
+      "name": "Microservices",
+      "category": "concepts",
+      "path": "concepts/microservices.md",
+      "aliases": [
+        "microservice",
+        "micro-services"
+      ],
+      "hubScore": 50
+    },
+    {
+      "name": "DevOps",
+      "category": "concepts",
+      "path": "concepts/devops.md",
+      "aliases": [
+        "devops"
+      ],
+      "hubScore": 70
+    },
+    {
+      "name": "Agile",
+      "category": "concepts",
+      "path": "concepts/agile.md",
+      "aliases": [
+        "agile methodology"
+      ],
+      "hubScore": 45
+    },
+    {
+      "name": "Clean Architecture",
+      "category": "concepts",
+      "path": "concepts/clean-architecture.md",
+      "aliases": [
+        "clean arch"
+      ],
+      "hubScore": 20
+    },
+    {
+      "name": "Observability",
+      "category": "concepts",
+      "path": "concepts/observability.md",
+      "aliases": [
+        "o11y"
+      ],
+      "hubScore": 55
+    },
+    {
+      "name": "API-First",
+      "category": "concepts",
+      "path": "concepts/api-first.md",
+      "aliases": [
+        "API First",
+        "api-first design"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "Stretch",
+      "category": "health",
+      "path": "health/stretch.md",
+      "aliases": [
+        "stretching",
+        "morning stretch"
+      ],
+      "hubScore": 520
+    },
+    {
+      "name": "Walk",
+      "category": "health",
+      "path": "health/walk.md",
+      "aliases": [
+        "walking",
+        "daily walk"
+      ],
+      "hubScore": 480
+    },
+    {
+      "name": "Water",
+      "category": "health",
+      "path": "health/water.md",
+      "aliases": [
+        "hydration",
+        "water intake"
+      ],
+      "hubScore": 450
+    },
+    {
+      "name": "Meditation",
+      "category": "health",
+      "path": "health/meditation.md",
+      "aliases": [
+        "meditate",
+        "mindfulness"
+      ],
+      "hubScore": 300
+    },
+    {
+      "name": "Exercise",
+      "category": "health",
+      "path": "health/exercise.md",
+      "aliases": [
+        "workout",
+        "gym"
+      ],
+      "hubScore": 350
+    },
+    {
+      "name": "Journaling",
+      "category": "health",
+      "path": "health/journaling.md",
+      "aliases": [
+        "journal",
+        "morning pages"
+      ],
+      "hubScore": 200
+    },
+    {
+      "name": "Staging",
+      "category": "acronyms",
+      "path": "acronyms/staging.md",
+      "aliases": [
+        "stg",
+        "STG"
+      ],
+      "hubScore": 30
+    },
+    {
+      "name": "Production",
+      "category": "acronyms",
+      "path": "acronyms/production.md",
+      "aliases": [
+        "prd",
+        "PRD",
+        "prod"
+      ],
+      "hubScore": 35
+    },
+    {
+      "name": "UAT",
+      "category": "acronyms",
+      "path": "acronyms/uat.md",
+      "aliases": [
+        "uat",
+        "User Acceptance Testing"
+      ],
+      "hubScore": 20
+    },
+    {
+      "name": "MCP",
+      "category": "acronyms",
+      "path": "acronyms/mcp.md",
+      "aliases": [
+        "mcp",
+        "Model Context Protocol"
+      ],
+      "hubScore": 40
+    },
+    {
+      "name": "SDK",
+      "category": "acronyms",
+      "path": "acronyms/sdk.md",
+      "aliases": [
+        "sdk",
+        "software development kit"
+      ],
+      "hubScore": 15
+    },
+    {
+      "name": "SLA",
+      "category": "acronyms",
+      "path": "acronyms/sla.md",
+      "aliases": [
+        "sla",
+        "Service Level Agreement"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "JWT",
+      "category": "acronyms",
+      "path": "acronyms/jwt.md",
+      "aliases": [
+        "jwt",
+        "JSON Web Token"
+      ],
+      "hubScore": 10
+    },
+    {
+      "name": "RAG",
+      "category": "acronyms",
+      "path": "acronyms/rag.md",
+      "aliases": [
+        "rag",
+        "Retrieval Augmented Generation"
+      ],
+      "hubScore": 30
+    },
+    {
+      "name": "standup",
+      "category": "other",
+      "path": "other/standup.md",
+      "aliases": [
+        "daily standup",
+        "stand-up"
+      ],
+      "hubScore": 400
+    },
+    {
+      "name": "retro",
+      "category": "other",
+      "path": "other/retro.md",
+      "aliases": [
+        "retrospective",
+        "sprint retro"
+      ],
+      "hubScore": 180
+    },
+    {
+      "name": "one-on-one",
+      "category": "other",
+      "path": "other/one-on-one.md",
+      "aliases": [
+        "1:1",
+        "1-on-1"
+      ],
+      "hubScore": 150
+    },
+    {
+      "name": "code review",
+      "category": "other",
+      "path": "other/code-review.md",
+      "aliases": [
+        "CR",
+        "code-review",
+        "PR review"
+      ],
+      "hubScore": 250
+    },
+    {
+      "name": "architecture decision",
+      "category": "other",
+      "path": "other/architecture-decision.md",
+      "aliases": [
+        "ADR",
+        "arch decision"
+      ],
+      "hubScore": 40
+    },
+    {
+      "name": "tech debt",
+      "category": "other",
+      "path": "other/tech-debt.md",
+      "aliases": [
+        "technical debt",
+        "tech-debt"
+      ],
+      "hubScore": 60
+    },
+    {
+      "name": "on-call",
+      "category": "other",
+      "path": "other/on-call.md",
+      "aliases": [
+        "oncall",
+        "on call"
+      ],
+      "hubScore": 80
+    },
+    {
+      "name": "incident",
+      "category": "other",
+      "path": "other/incident.md",
+      "aliases": [
+        "outage",
+        "SEV"
+      ],
+      "hubScore": 70
+    },
+    {
+      "name": "deployment",
+      "category": "other",
+      "path": "other/deployment.md",
+      "aliases": [
+        "deploy",
+        "release deploy"
+      ],
+      "hubScore": 120
+    },
+    {
+      "name": "sprint",
+      "category": "other",
+      "path": "other/sprint.md",
+      "aliases": [
+        "sprint cycle",
+        "iteration"
+      ],
+      "hubScore": 200
+    },
+    {
+      "name": "backlog",
+      "category": "other",
+      "path": "other/backlog.md",
+      "aliases": [
+        "product backlog",
+        "backlog grooming"
+      ],
+      "hubScore": 90
+    },
+    {
+      "name": "demo",
+      "category": "other",
+      "path": "other/demo.md",
+      "aliases": [
+        "sprint demo",
+        "showcase"
+      ],
+      "hubScore": 100
+    },
+    {
+      "name": "planning",
+      "category": "other",
+      "path": "other/planning.md",
+      "aliases": [
+        "sprint planning",
+        "capacity planning"
+      ],
+      "hubScore": 130
+    },
+    {
+      "name": "documentation",
+      "category": "other",
+      "path": "other/documentation.md",
+      "aliases": [
+        "docs",
+        "technical docs"
+      ],
+      "hubScore": 50
+    },
+    {
+      "name": "onboarding",
+      "category": "other",
+      "path": "other/onboarding.md",
+      "aliases": [
+        "new hire",
+        "ramp-up"
+      ],
+      "hubScore": 30
+    },
+    {
+      "name": "postmortem",
+      "category": "other",
+      "path": "other/postmortem.md",
+      "aliases": [
+        "post-mortem",
+        "incident review"
+      ],
+      "hubScore": 35
+    },
+    {
+      "name": "feature flag",
+      "category": "other",
+      "path": "other/feature-flag.md",
+      "aliases": [
+        "feature toggle",
+        "FF"
+      ],
+      "hubScore": 20
+    },
+    {
+      "name": "canary release",
+      "category": "other",
+      "path": "other/canary-release.md",
+      "aliases": [
+        "canary deploy",
+        "canary"
+      ],
+      "hubScore": 15
+    },
+    {
+      "name": "load test",
+      "category": "other",
+      "path": "other/load-test.md",
+      "aliases": [
+        "load testing",
+        "perf test"
+      ],
+      "hubScore": 25
+    },
+    {
+      "name": "chaos engineering",
+      "category": "other",
+      "path": "other/chaos-engineering.md",
+      "aliases": [
+        "chaos monkey",
+        "chaos test"
+      ],
+      "hubScore": 10
+    }
+  ],
+  "notes": [
+    {
+      "path": "daily-notes/2026-01-01.md",
+      "title": "2026-01-01",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Wrote in my Journaling notebook\n- Exercise at the gym this evening\n- Did my morning [[Stretch]] routine\n- Drank plenty of Water today\n\n## Work\nSarah Kim flagged an incident in MobileApp. Quick React fix applied.\nPaired with David Chen on ESGHub Docker refactoring.\nCarlos Rivera and I discussed the Microservices approach for UserOnboarding.\nRan chaos engineering on PaymentProcessor before the stg deployment.",
+      "links": [
+        "Stretch"
+      ],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-02.md",
+      "title": "2026-01-02",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Did my morning [[Stretch]] routine\n- Went for a [[Walk]] around the block\n- Drank plenty of Water today\n\n## Work\nPaired with Carlos Rivera on SearchEngine Redis refactoring.\nRan load test on CloudMigration before the prod deployment.\nJames Franklin flagged an incident in DevPortal. Quick Redis fix applied.",
+      "links": [
+        "Stretch",
+        "Walk"
+      ],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-03.md",
+      "title": "2026-01-03",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Exercise at the gym this evening\n- Went for a Walk around the block\n- Meditation session before work\n- Did my morning Stretch routine\n- Wrote in my Journaling notebook\n\n## Work\nPaired with Sarah Kim on CloudMigration PostgreSQL refactoring.\nAttended demo with the team. Sarah Kim presented ReleaseManager roadmap.\nRan chaos engineering on AuthService before the PRD deployment.\nFixed a bug in DevPortal related to TypeScript connection pooling.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-04.md",
+      "title": "2026-01-04",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Drank plenty of Water today\n- Meditation session before work\n- Exercise at the gym this evening\n\n## Work\nRan chaos engineering on AuthService before the User Acceptance Testing deployment.\nSprint retro went well. Prioritized APIGateway tickets for next week.\nAisha Patel and I discussed the API-First approach for PaymentProcessor.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-05.md",
+      "title": "2026-01-05",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Went for a Walk around the block\n- Did my morning Stretch routine\n\n## Work\nFixed a bug in MonitoringStack related to Terraform connection pooling.\nReviewed PR for MobileApp. Sarah Kim had some good feedback on the Node.js migration.\nSprint sprint retro went well. Prioritized MonitoringStack tickets for next week.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-06.md",
+      "title": "2026-01-06",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Exercise at the gym this evening\n- Wrote in my Journaling notebook\n- Did my morning Stretch routine\n- Drank plenty of Water today\n\n## Work\nPaired with Lisa Wong on DataPipeline Redis refactoring.\nUpdated postmortem for TeamDashboard deployment process.\nRan load test on TeamDashboard before the User Acceptance Testing deployment.\nDeployed PaymentProcessor to STG. Carlos Rivera confirmed it looks good in {env}.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-07.md",
+      "title": "2026-01-07",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Did my morning Stretch routine\n- Drank plenty of Water today\n- Wrote in my Journaling notebook\n- Went for a Walk around the block\n\n## Work\nCarlos Rivera flagged an incident in MonitoringStack. Quick Kafka fix applied.\nDeployed ConfigManager to PRD. Sarah Kim confirmed it looks good in {env}.\nElena Torres flagged an incident in WorkflowEngine. Quick Kubernetes fix applied.\nSprint retro went well. Prioritized ESGHub tickets for next week.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-08.md",
+      "title": "2026-01-08",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Wrote in my Journaling notebook\n- Drank plenty of Water today\n- Went for a Walk around the block\n- Exercise at the gym this evening\n\n## Work\nFixed a bug in DataPipeline related to Node.js connection pooling.\nDeployed PaymentProcessor to PRD. Lisa Wong confirmed it looks good in {env}.\nFixed a bug in AuthService related to Redis connection pooling.\nDeployed ReleaseManager to prod. Lisa Wong confirmed it looks good in {env}.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-09.md",
+      "title": "2026-01-09",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Drank plenty of Water today\n- Did my morning Stretch routine\n\n## Work\nFixed a bug in WorkflowEngine related to Node.js connection pooling.\nReviewed PR for MonitoringStack. Marcus Johnson had some good feedback on the AWS migration.\nLisa Wong flagged an incident in DataPipeline. Quick Kafka fix applied.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-10.md",
+      "title": "2026-01-10",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Drank plenty of Water today\n- Exercise at the gym this evening\n\n## Work\nPaired with Carlos Rivera on APIGateway PostgreSQL refactoring.\nJames Franklin flagged an incident in AuthService. Quick AWS fix applied.\nReviewed PR for PaymentProcessor. David Chen had some good feedback on the AWS migration.\nUpdated postmortem for MobileApp deployment process.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-11.md",
+      "title": "2026-01-11",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Drank plenty of Water today\n- Did my morning Stretch routine\n\n## Work\nFixed a bug in AuthService related to PostgreSQL connection pooling.\nUpdated documentation for ConfigManager deployment process.\nFixed a bug in CloudMigration related to TypeScript connection pooling.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-12.md",
+      "title": "2026-01-12",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Did my morning Stretch routine\n- Drank plenty of Water today\n- Wrote in my Journaling notebook\n- Went for a Walk around the block\n\n## Work\nFixed a bug in UserOnboarding related to Node.js connection pooling.\nPaired with Aisha Patel on DevPortal AWS refactoring.\nAisha Patel flagged an incident in ConfigManager. Quick PostgreSQL fix applied.\nFixed a bug in DataPipeline related to PostgreSQL connection pooling.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-13.md",
+      "title": "2026-01-13",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Drank plenty of Water today\n- Meditation session before work\n- Did my morning Stretch routine\n- Exercise at the gym this evening\n\n## Work\nRan chaos engineering on MonitoringStack before the stg deployment.\nAttended retro with the team. David Chen presented AuthService roadmap.\nAisha Patel and I discussed the Observability approach for MobileApp.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-14.md",
+      "title": "2026-01-14",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Wrote in my Journaling notebook\n- Meditation session before work\n- Did my morning Stretch routine\n\n## Work\nAisha Patel and I discussed the Microservices approach for ConfigManager.\nAisha Patel and I discussed the API-First approach for AuthService.\nRan chaos engineering on MonitoringStack before the uat deployment.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-15.md",
+      "title": "2026-01-15",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Did my morning Stretch routine\n- Drank plenty of Water today\n- Went for a Walk around the block\n- Wrote in my Journaling notebook\n\n## Work\nPaired with Carlos Rivera on AuthService Redis refactoring.\nFixed a bug in TeamDashboard related to GraphQL connection pooling.\nUpdated documentation for MobileApp deployment process.\nReviewed PR for AuthService. Carlos Rivera had some good feedback on the Python migration.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-16.md",
+      "title": "2026-01-16",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Wrote in my Journaling notebook\n- Did my morning Stretch routine\n\n## Work\nDeployed UserOnboarding to uat. Carlos Rivera confirmed it looks good in {env}.\nSprint retro went well. Prioritized MonitoringStack tickets for next week.\nPaired with Sarah Kim on DevPortal Kafka refactoring.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-17.md",
+      "title": "2026-01-17",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Drank plenty of Water today\n- Meditation session before work\n- Did my morning Stretch routine\n\n## Work\nFixed a bug in MobileApp related to Docker connection pooling.\nDavid Chen flagged an incident in ESGHub. Quick Python fix applied.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-18.md",
+      "title": "2026-01-18",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Went for a Walk around the block\n- Exercise at the gym this evening\n- Wrote in my Journaling notebook\n- Drank plenty of Water today\n\n## Work\nUpdated postmortem for TeamDashboard deployment process.\nLisa Wong and I discussed the API-First approach for PaymentProcessor.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-19.md",
+      "title": "2026-01-19",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Exercise at the gym this evening\n- Did my morning Stretch routine\n- Meditation session before work\n- Went for a Walk around the block\n\n## Work\nFixed a bug in UserOnboarding related to Redis connection pooling.\nUpdated documentation for UserOnboarding deployment process.\nReviewed PR for UserOnboarding. Elena Torres had some good feedback on the Redis migration.\nPaired with James Franklin on APIGateway PostgreSQL refactoring.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-20.md",
+      "title": "2026-01-20",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Went for a Walk around the block\n- Meditation session before work\n- Did my morning Stretch routine\n\n## Work\nRan chaos engineering on UserOnboarding before the prod deployment.\nSprint daily standup went well. Prioritized MonitoringStack tickets for next week.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-21.md",
+      "title": "2026-01-21",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Wrote in my Journaling notebook\n- Went for a Walk around the block\n- Meditation session before work\n- Did my morning Stretch routine\n\n## Work\nDeployed MonitoringStack to User Acceptance Testing. Elena Torres confirmed it looks good in {env}.\nPaired with Marcus Johnson on MobileApp Terraform refactoring.\nPaired with Sarah Kim on TeamDashboard Docker refactoring.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-22.md",
+      "title": "2026-01-22",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Drank plenty of Water today\n- Wrote in my Journaling notebook\n- Did my morning Stretch routine\n- Went for a Walk around the block\n\n## Work\nRan load test on WorkflowEngine before the User Acceptance Testing deployment.\nSarah Kim and I discussed the Observability approach for DevPortal.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-23.md",
+      "title": "2026-01-23",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Did my morning Stretch routine\n- Exercise at the gym this evening\n- Went for a Walk around the block\n\n## Work\nReviewed PR for DataPipeline. James Franklin had some good feedback on the Redis migration.\nUpdated documentation for MobileApp deployment process.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-24.md",
+      "title": "2026-01-24",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Did my morning Stretch routine\n- Exercise at the gym this evening\n- Drank plenty of Water today\n- Went for a Walk around the block\n\n## Work\nCarlos Rivera and I discussed the Clean Architecture approach for ReleaseManager.\nReviewed PR for DataPipeline. Lisa Wong had some good feedback on the AWS migration.\nAttended sprint retro with the team. Aisha Patel presented ReleaseManager roadmap.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-25.md",
+      "title": "2026-01-25",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Exercise at the gym this evening\n- Drank plenty of Water today\n- Meditation session before work\n- Wrote in my Journaling notebook\n- Did my morning Stretch routine\n\n## Work\nReviewed PR for PaymentProcessor. Lisa Wong had some good feedback on the Docker migration.\nSprint planning went well. Prioritized ConfigManager tickets for next week.\nReviewed PR for ESGHub. Aisha Patel had some good feedback on the Terraform migration.\nLisa Wong and I discussed the DevOps approach for TeamDashboard.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-26.md",
+      "title": "2026-01-26",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Went for a Walk around the block\n- Exercise at the gym this evening\n- Meditation session before work\n- Drank plenty of Water today\n\n## Work\nAisha Patel flagged an incident in PaymentProcessor. Quick Kubernetes fix applied.\nReviewed PR for UserOnboarding. David Chen had some good feedback on the Redis migration.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-27.md",
+      "title": "2026-01-27",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Wrote in my Journaling notebook\n- Exercise at the gym this evening\n- Drank plenty of Water today\n- Meditation session before work\n- Did my morning Stretch routine\n\n## Work\nDeployed CloudMigration to prd. Aisha Patel confirmed it looks good in {env}.\nFixed a bug in UserOnboarding related to React connection pooling.\nDeployed DataPipeline to prd. James Franklin confirmed it looks good in {env}.\nRan load test on PaymentProcessor before the User Acceptance Testing deployment.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-28.md",
+      "title": "2026-01-28",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Wrote in my Journaling notebook\n- Exercise at the gym this evening\n- Meditation session before work\n\n## Work\nUpdated postmortem for DevPortal deployment process.\nUpdated documentation for PaymentProcessor deployment process.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-29.md",
+      "title": "2026-01-29",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Wrote in my Journaling notebook\n- Went for a Walk around the block\n- Did my morning Stretch routine\n\n## Work\nDeployed MobileApp to User Acceptance Testing. Sarah Kim confirmed it looks good in {env}.\nUpdated postmortem for AuthService deployment process.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-30.md",
+      "title": "2026-01-30",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Did my morning Stretch routine\n- Exercise at the gym this evening\n- Went for a Walk around the block\n\n## Work\nRan load test on SearchEngine before the PRD deployment.\nPaired with Sarah Kim on TeamDashboard Terraform refactoring.\nAttended retrospective with the team. Carlos Rivera presented DevPortal roadmap.\nDeployed AuthService to User Acceptance Testing. Lisa Wong confirmed it looks good in {env}.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-31.md",
+      "title": "2026-01-31",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Did my morning Stretch routine\n- Went for a Walk around the block\n- Wrote in my Journaling notebook\n- Drank plenty of Water today\n\n## Work\nAttended retro with the team. James Franklin presented MobileApp roadmap.\nAttended retro with the team. Aisha Patel presented PaymentProcessor roadmap.\nReviewed PR for APIGateway. James Franklin had some good feedback on the Python migration.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-01.md",
+      "title": "2026-02-01",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Drank plenty of Water today\n- Exercise at the gym this evening\n- Did my morning Stretch routine\n\n## Work\nElena Torres flagged an incident in MonitoringStack. Quick Terraform fix applied.\nSprint planning went well. Prioritized MonitoringStack tickets for next week.\nPaired with Lisa Wong on ConfigManager Redis refactoring.\nPaired with Elena Torres on APIGateway Kafka refactoring.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-02.md",
+      "title": "2026-02-02",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Went for a Walk around the block\n- Drank plenty of Water today\n- Exercise at the gym this evening\n- Meditation session before work\n\n## Work\nLisa Wong and I discussed the Clean Architecture approach for ESGHub.\nFixed a bug in APIGateway related to TypeScript connection pooling.\nPaired with Elena Torres on PaymentProcessor PostgreSQL refactoring.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-03.md",
+      "title": "2026-02-03",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Exercise at the gym this evening\n- Did my morning Stretch routine\n- Meditation session before work\n- Drank plenty of Water today\n\n## Work\nJames Franklin flagged an incident in ReleaseManager. Quick GraphQL fix applied.\nAttended demo with the team. Elena Torres presented APIGateway roadmap.\nReviewed PR for MobileApp. James Franklin had some good feedback on the GraphQL migration.\nUpdated documentation for CloudMigration deployment process.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-04.md",
+      "title": "2026-02-04",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Went for a Walk around the block\n- Did my morning Stretch routine\n- Meditation session before work\n\n## Work\nDeployed AuthService to prd. Carlos Rivera confirmed it looks good in {env}.\nUpdated documentation for MonitoringStack deployment process.\nDavid Chen flagged an incident in AuthService. Quick Kubernetes fix applied.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-05.md",
+      "title": "2026-02-05",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Went for a Walk around the block\n- Meditation session before work\n- Did my morning Stretch routine\n- Exercise at the gym this evening\n- Drank plenty of Water today\n\n## Work\nUpdated documentation for SearchEngine deployment process.\nPaired with David Chen on CloudMigration GraphQL refactoring.\nAttended sprint planning with the team. Sarah Kim presented CloudMigration roadmap.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-06.md",
+      "title": "2026-02-06",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Exercise at the gym this evening\n- Meditation session before work\n- Drank plenty of Water today\n- Wrote in my Journaling notebook\n- Did my morning Stretch routine\n\n## Work\nDeployed MonitoringStack to stg. Aisha Patel confirmed it looks good in {env}.\nCarlos Rivera and I discussed the Microservices approach for MonitoringStack.\nLisa Wong flagged an incident in APIGateway. Quick React fix applied.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-07.md",
+      "title": "2026-02-07",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Drank plenty of Water today\n- Wrote in my Journaling notebook\n- Did my morning Stretch routine\n- Exercise at the gym this evening\n- Meditation session before work\n\n## Work\nUpdated postmortem for MobileApp deployment process.\nDeployed ConfigManager to stg. Marcus Johnson confirmed it looks good in {env}.\nAttended demo with the team. James Franklin presented MobileApp roadmap.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-08.md",
+      "title": "2026-02-08",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Did my morning Stretch routine\n- Exercise at the gym this evening\n- Wrote in my Journaling notebook\n\n## Work\nAttended iteration with the team. Carlos Rivera presented SearchEngine roadmap.\nSprint retro went well. Prioritized SearchEngine tickets for next week.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-09.md",
+      "title": "2026-02-09",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Went for a Walk around the block\n- Did my morning Stretch routine\n- Drank plenty of Water today\n\n## Work\nUpdated documentation for SearchEngine deployment process.\nLisa Wong and I discussed the API-First approach for MobileApp.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-10.md",
+      "title": "2026-02-10",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Went for a Walk around the block\n- Exercise at the gym this evening\n- Drank plenty of Water today\n\n## Work\nAisha Patel and I discussed the Observability approach for SearchEngine.\nRan load test on DevPortal before the STG deployment.\nDeployed ESGHub to stg. Aisha Patel confirmed it looks good in {env}.\nJames Franklin flagged an incident in DevPortal. Quick Kafka fix applied.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-11.md",
+      "title": "2026-02-11",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Exercise at the gym this evening\n- Meditation session before work\n- Drank plenty of Water today\n- Did my morning Stretch routine\n\n## Work\nDeployed MonitoringStack to STG. David Chen confirmed it looks good in {env}.\nJames Franklin and I discussed the Observability approach for ConfigManager.\nCarlos Rivera and I discussed the DevOps approach for WorkflowEngine.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-12.md",
+      "title": "2026-02-12",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Went for a Walk around the block\n- Wrote in my Journaling notebook\n\n## Work\nUpdated postmortem for WorkflowEngine deployment process.\nPaired with James Franklin on DataPipeline Kubernetes refactoring.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-13.md",
+      "title": "2026-02-13",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Did my morning Stretch routine\n- Drank plenty of Water today\n\n## Work\nJames Franklin flagged an incident in UserOnboarding. Quick PostgreSQL fix applied.\nAttended iteration with the team. Lisa Wong presented SearchEngine roadmap.\nFixed a bug in WorkflowEngine related to Docker connection pooling.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-14.md",
+      "title": "2026-02-14",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Wrote in my Journaling notebook\n- Meditation session before work\n- Exercise at the gym this evening\n- Drank plenty of Water today\n- Went for a Walk around the block\n\n## Work\nReviewed PR for SearchEngine. James Franklin had some good feedback on the React migration.\nRan chaos engineering on DevPortal before the stg deployment.\nUpdated documentation for AuthService deployment process.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-15.md",
+      "title": "2026-02-15",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Exercise at the gym this evening\n- Wrote in my Journaling notebook\n- Drank plenty of Water today\n- Did my morning Stretch routine\n- Meditation session before work\n\n## Work\nDeployed TeamDashboard to prd. Marcus Johnson confirmed it looks good in {env}.\nUpdated postmortem for ESGHub deployment process.\nReviewed PR for SearchEngine. Aisha Patel had some good feedback on the Kafka migration.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-16.md",
+      "title": "2026-02-16",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Meditation session before work\n- Wrote in my Journaling notebook\n- Went for a Walk around the block\n- Exercise at the gym this evening\n- Did my morning Stretch routine\n\n## Work\nUpdated documentation for DevPortal deployment process.\nRan chaos engineering on AuthService before the STG deployment.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-17.md",
+      "title": "2026-02-17",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Drank plenty of Water today\n- Did my morning Stretch routine\n- Meditation session before work\n\n## Work\nJames Franklin flagged an incident in TeamDashboard. Quick TypeScript fix applied.\nPaired with Aisha Patel on DevPortal Terraform refactoring.\nPaired with Elena Torres on MobileApp React refactoring.\nRan chaos engineering on PaymentProcessor before the STG deployment.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-18.md",
+      "title": "2026-02-18",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Drank plenty of Water today\n- Meditation session before work\n- Wrote in my Journaling notebook\n\n## Work\nSprint sprint cycle went well. Prioritized ReleaseManager tickets for next week.\nAttended retrospective with the team. Carlos Rivera presented CloudMigration roadmap.\nPaired with Elena Torres on AuthService PostgreSQL refactoring.\nElena Torres and I discussed the Microservices approach for APIGateway.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-02-19.md",
+      "title": "2026-02-19",
+      "frontmatter": {
+        "type": "daily"
+      },
+      "content": "## Habits\n- Drank plenty of Water today\n- Exercise at the gym this evening\n- Went for a Walk around the block\n- Wrote in my Journaling notebook\n\n## Work\nDeployed ESGHub to uat. Carlos Rivera confirmed it looks good in {env}.\nMarcus Johnson and I discussed the Clean Architecture approach for DataPipeline.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "meetings/meeting-notes-1.md",
+      "title": "Meeting Notes 1",
+      "content": "# Meeting: DevPortal\n\nAttendees: Sarah Kim, David Chen\n\n## Discussion\nDiscussed progress on DevPortal. The team is evaluating GraphQL for the backend migration.\n\nSarah Kim raised concerns about the Clean Architecture approach.\nDavid Chen confirmed the timeline aligns with the sprint goals.\n\n## Action Items\n- Sarah Kim to prototype GraphQL integration\n- Review Staging requirements",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/meeting-notes-2.md",
+      "title": "Meeting Notes 2",
+      "content": "# Meeting: MobileApp\n\nAttendees: David Chen, Sarah Kim\n\n## Discussion\nDiscussed progress on MobileApp. The team is evaluating Node.js for the backend migration.\n\nDavid Chen raised concerns about the DevOps approach.\nSarah Kim confirmed the timeline aligns with the on-call goals.\n\n## Action Items\n- David Chen to prototype Node.js integration\n- Review UAT requirements",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/meeting-notes-3.md",
+      "title": "Meeting Notes 3",
+      "content": "# Meeting: MobileApp\n\nAttendees: Elena Torres, Marcus Johnson\n\n## Discussion\nDiscussed progress on MobileApp. The team is evaluating Python for the backend migration.\n\nElena Torres raised concerns about the API-First approach.\nMarcus Johnson confirmed the timeline aligns with the canary release goals.\n\n## Action Items\n- Elena Torres to prototype Python integration\n- Review JWT requirements",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/meeting-notes-4.md",
+      "title": "Meeting Notes 4",
+      "content": "# Meeting: DevPortal\n\nAttendees: Aisha Patel, David Chen\n\n## Discussion\nDiscussed progress on DevPortal. The team is evaluating Node.js for the backend migration.\n\nAisha Patel raised concerns about the Clean Architecture approach.\nDavid Chen confirmed the timeline aligns with the backlog goals.\n\n## Action Items\n- Aisha Patel to prototype Node.js integration\n- Review JWT requirements",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/meeting-notes-5.md",
+      "title": "Meeting Notes 5",
+      "content": "# Meeting: TeamDashboard\n\nAttendees: Lisa Wong, David Chen\n\n## Discussion\nDiscussed progress on TeamDashboard. The team is evaluating React for the backend migration.\n\nLisa Wong raised concerns about the API-First approach.\nDavid Chen confirmed the timeline aligns with the planning goals.\n\n## Action Items\n- Lisa Wong to prototype React integration\n- Review RAG requirements",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/meeting-notes-6.md",
+      "title": "Meeting Notes 6",
+      "content": "# Meeting: UserOnboarding\n\nAttendees: Marcus Johnson, Carlos Rivera\n\n## Discussion\nDiscussed progress on UserOnboarding. The team is evaluating Redis for the backend migration.\n\nMarcus Johnson raised concerns about the Clean Architecture approach.\nCarlos Rivera confirmed the timeline aligns with the feature flag goals.\n\n## Action Items\n- Marcus Johnson to prototype Redis integration\n- Review UAT requirements",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/meeting-notes-7.md",
+      "title": "Meeting Notes 7",
+      "content": "# Meeting: CloudMigration\n\nAttendees: Lisa Wong, Carlos Rivera\n\n## Discussion\nDiscussed progress on CloudMigration. The team is evaluating TypeScript for the backend migration.\n\nLisa Wong raised concerns about the API-First approach.\nCarlos Rivera confirmed the timeline aligns with the architecture decision goals.\n\n## Action Items\n- Lisa Wong to prototype TypeScript integration\n- Review SDK requirements",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/meeting-notes-8.md",
+      "title": "Meeting Notes 8",
+      "content": "# Meeting: SearchEngine\n\nAttendees: Marcus Johnson, David Chen\n\n## Discussion\nDiscussed progress on SearchEngine. The team is evaluating Kubernetes for the backend migration.\n\nMarcus Johnson raised concerns about the Microservices approach.\nDavid Chen confirmed the timeline aligns with the chaos engineering goals.\n\n## Action Items\n- Marcus Johnson to prototype Kubernetes integration\n- Review Production requirements",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/meeting-notes-9.md",
+      "title": "Meeting Notes 9",
+      "content": "# Meeting: ESGHub\n\nAttendees: David Chen, Lisa Wong\n\n## Discussion\nDiscussed progress on ESGHub. The team is evaluating Kubernetes for the backend migration.\n\nDavid Chen raised concerns about the Microservices approach.\nLisa Wong confirmed the timeline aligns with the one-on-one goals.\n\n## Action Items\n- David Chen to prototype Kubernetes integration\n- Review RAG requirements",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/meeting-notes-10.md",
+      "title": "Meeting Notes 10",
+      "content": "# Meeting: ESGHub\n\nAttendees: James Franklin, Elena Torres\n\n## Discussion\nDiscussed progress on ESGHub. The team is evaluating Node.js for the backend migration.\n\nJames Franklin raised concerns about the DevOps approach.\nElena Torres confirmed the timeline aligns with the documentation goals.\n\n## Action Items\n- James Franklin to prototype Node.js integration\n- Review SLA requirements",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "projects/project-doc-11.md",
+      "title": "Project Doc 11",
+      "content": "# PaymentProcessor Technical Overview\n\n## Stack\nBuilt on Redis, React, Kafka. Deployed to rag.\n\n## Architecture\nUses Observability pattern. Sarah Kim designed the initial code review pipeline.\n\nIntegrates with NetOps Inc APIs via UserOnboarding.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/project-doc-12.md",
+      "title": "Project Doc 12",
+      "content": "# ESGHub Technical Overview\n\n## Stack\nBuilt on TypeScript, AWS, Docker. Deployed to rag.\n\n## Architecture\nUses DevOps pattern. Lisa Wong designed the initial architecture decision pipeline.\n\nIntegrates with DataCo APIs via ConfigManager.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/project-doc-13.md",
+      "title": "Project Doc 13",
+      "content": "# WorkflowEngine Technical Overview\n\n## Stack\nBuilt on React, AWS, GraphQL. Deployed to mcp.\n\n## Architecture\nUses DevOps pattern. James Franklin designed the initial chaos engineering pipeline.\n\nIntegrates with Acme Corp APIs via SearchEngine.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/project-doc-14.md",
+      "title": "Project Doc 14",
+      "content": "# CloudMigration Technical Overview\n\n## Stack\nBuilt on Kubernetes, React, AWS. Deployed to mcp.\n\n## Architecture\nUses Clean Architecture pattern. Lisa Wong designed the initial backlog pipeline.\n\nIntegrates with Acme Corp APIs via ESGHub.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/project-doc-15.md",
+      "title": "Project Doc 15",
+      "content": "# SearchEngine Technical Overview\n\n## Stack\nBuilt on Docker, TypeScript, Terraform. Deployed to uat.\n\n## Architecture\nUses Agile pattern. James Franklin designed the initial code review pipeline.\n\nIntegrates with Acme Corp APIs via DataPipeline.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/project-doc-16.md",
+      "title": "Project Doc 16",
+      "content": "# DataPipeline Technical Overview\n\n## Stack\nBuilt on React, Node.js, Redis. Deployed to prd.\n\n## Architecture\nUses Clean Architecture pattern. Lisa Wong designed the initial sprint pipeline.\n\nIntegrates with TechVentures APIs via ReleaseManager.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/project-doc-17.md",
+      "title": "Project Doc 17",
+      "content": "# CloudMigration Technical Overview\n\n## Stack\nBuilt on GraphQL, PostgreSQL, Redis. Deployed to rag.\n\n## Architecture\nUses Observability pattern. Marcus Johnson designed the initial backlog pipeline.\n\nIntegrates with TechVentures APIs via MonitoringStack.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/project-doc-18.md",
+      "title": "Project Doc 18",
+      "content": "# ESGHub Technical Overview\n\n## Stack\nBuilt on Terraform, Kubernetes, Node.js. Deployed to mcp.\n\n## Architecture\nUses Clean Architecture pattern. Elena Torres designed the initial demo pipeline.\n\nIntegrates with CloudFirst APIs via ConfigManager.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "tech-guides/guide-19.md",
+      "title": "Guide 19",
+      "content": "# Terraform Best Practices\n\n## Overview\nTerraform is used across several projects including WorkflowEngine.\n\n## Integration with Node.js\nWhen combining Terraform with Node.js, follow the Clean Architecture patterns.\n\nElena Torres documented the documentation process.",
+      "links": [],
+      "folder": "tech-guides"
+    },
+    {
+      "path": "tech-guides/guide-20.md",
+      "title": "Guide 20",
+      "content": "# Docker Best Practices\n\n## Overview\nDocker is used across several projects including SearchEngine.\n\n## Integration with Kubernetes\nWhen combining Docker with Kubernetes, follow the Clean Architecture patterns.\n\nCarlos Rivera documented the code review process.",
+      "links": [],
+      "folder": "tech-guides"
+    },
+    {
+      "path": "tech-guides/guide-21.md",
+      "title": "Guide 21",
+      "content": "# Kubernetes Best Practices\n\n## Overview\nKubernetes is used across several projects including CloudMigration.\n\n## Integration with PostgreSQL\nWhen combining Kubernetes with PostgreSQL, follow the DevOps patterns.\n\nElena Torres documented the load test process.",
+      "links": [],
+      "folder": "tech-guides"
+    },
+    {
+      "path": "tech-guides/guide-22.md",
+      "title": "Guide 22",
+      "content": "# Node.js Best Practices\n\n## Overview\nNode.js is used across several projects including TeamDashboard.\n\n## Integration with GraphQL\nWhen combining Node.js with GraphQL, follow the API-First patterns.\n\nJames Franklin documented the deployment process.",
+      "links": [],
+      "folder": "tech-guides"
+    },
+    {
+      "path": "tech-guides/guide-23.md",
+      "title": "Guide 23",
+      "content": "# Redis Best Practices\n\n## Overview\nRedis is used across several projects including ConfigManager.\n\n## Integration with Python\nWhen combining Redis with Python, follow the API-First patterns.\n\nElena Torres documented the incident process.",
+      "links": [],
+      "folder": "tech-guides"
+    },
+    {
+      "path": "tech-guides/guide-24.md",
+      "title": "Guide 24",
+      "content": "# React Best Practices\n\n## Overview\nReact is used across several projects including DataPipeline.\n\n## Integration with TypeScript\nWhen combining React with TypeScript, follow the Microservices patterns.\n\nLisa Wong documented the documentation process.",
+      "links": [],
+      "folder": "tech-guides"
+    },
+    {
+      "path": "runbooks/runbook-25.md",
+      "title": "Runbook 25",
+      "content": "# TeamDashboard Runbook\n\n## Deployment\nDeploy to stg first, then promote to rag.\n\n## Monitoring\nCheck Kafka for Clean Architecture.\nContact Elena Torres for escalations.\n\n## Recovery\nIf demo occurs, follow demo process.",
+      "links": [],
+      "folder": "runbooks"
+    },
+    {
+      "path": "runbooks/runbook-26.md",
+      "title": "Runbook 26",
+      "content": "# ConfigManager Runbook\n\n## Deployment\nDeploy to sdk first, then promote to sla.\n\n## Monitoring\nCheck Python for Observability.\nContact James Franklin for escalations.\n\n## Recovery\nIf code review occurs, follow code review process.",
+      "links": [],
+      "folder": "runbooks"
+    },
+    {
+      "path": "runbooks/runbook-27.md",
+      "title": "Runbook 27",
+      "content": "# DataPipeline Runbook\n\n## Deployment\nDeploy to sla first, then promote to mcp.\n\n## Monitoring\nCheck TypeScript for Observability.\nContact Marcus Johnson for escalations.\n\n## Recovery\nIf on-call occurs, follow on-call process.",
+      "links": [],
+      "folder": "runbooks"
+    },
+    {
+      "path": "runbooks/runbook-28.md",
+      "title": "Runbook 28",
+      "content": "# UserOnboarding Runbook\n\n## Deployment\nDeploy to uat first, then promote to stg.\n\n## Monitoring\nCheck Docker for Agile.\nContact Sarah Kim for escalations.\n\n## Recovery\nIf backlog occurs, follow backlog process.",
+      "links": [],
+      "folder": "runbooks"
+    },
+    {
+      "path": "runbooks/runbook-29.md",
+      "title": "Runbook 29",
+      "content": "# TeamDashboard Runbook\n\n## Deployment\nDeploy to sdk first, then promote to sla.\n\n## Monitoring\nCheck Redis for API-First.\nContact Elena Torres for escalations.\n\n## Recovery\nIf chaos engineering occurs, follow chaos engineering process.",
+      "links": [],
+      "folder": "runbooks"
+    },
+    {
+      "path": "runbooks/runbook-30.md",
+      "title": "Runbook 30",
+      "content": "# UserOnboarding Runbook\n\n## Deployment\nDeploy to rag first, then promote to jwt.\n\n## Monitoring\nCheck Redis for Microservices.\nContact Carlos Rivera for escalations.\n\n## Recovery\nIf canary release occurs, follow canary release process.",
+      "links": [],
+      "folder": "runbooks"
+    },
+    {
+      "path": "people/sarah-kim.md",
+      "title": "Sarah Kim",
+      "frontmatter": {
+        "type": "people",
+        "aliases": [
+          "Sarah"
+        ]
+      },
+      "content": "# Sarah Kim\n\nSarah Kim is a team member at Acme Corp.\nWorks on various projects using modern tech.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/david-chen.md",
+      "title": "David Chen",
+      "frontmatter": {
+        "type": "people",
+        "aliases": [
+          "David",
+          "DC"
+        ]
+      },
+      "content": "# David Chen\n\nDavid Chen is a team member at TechVentures.\nWorks on various projects using modern tech.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/marcus-johnson.md",
+      "title": "Marcus Johnson",
+      "frontmatter": {
+        "type": "people",
+        "aliases": [
+          "Marcus",
+          "MJ"
+        ]
+      },
+      "content": "# Marcus Johnson\n\nMarcus Johnson is a team member at Acme Corp.\nWorks on SearchEngine using GraphQL.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/elena-torres.md",
+      "title": "Elena Torres",
+      "frontmatter": {
+        "type": "people",
+        "aliases": [
+          "Elena"
+        ]
+      },
+      "content": "# Elena Torres\n\nElena Torres is a team member at Acme Corp.\nWorks on various projects using modern tech.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/james-franklin.md",
+      "title": "James Franklin",
+      "frontmatter": {
+        "type": "people",
+        "aliases": [
+          "James"
+        ]
+      },
+      "content": "# James Franklin\n\nJames Franklin is a team member at Acme Corp.\nWorks on MobileApp using Kafka.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/aisha-patel.md",
+      "title": "Aisha Patel",
+      "frontmatter": {
+        "type": "people",
+        "aliases": [
+          "Aisha"
+        ]
+      },
+      "content": "# Aisha Patel\n\nAisha Patel is a team member at Acme Corp.\nWorks on various projects using modern tech.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/carlos-rivera.md",
+      "title": "Carlos Rivera",
+      "frontmatter": {
+        "type": "people",
+        "aliases": [
+          "Carlos"
+        ]
+      },
+      "content": "# Carlos Rivera\n\nCarlos Rivera is a team member at Acme Corp.\nWorks on TeamDashboard using modern tech.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/lisa-wong.md",
+      "title": "Lisa Wong",
+      "frontmatter": {
+        "type": "people",
+        "aliases": [
+          "Lisa"
+        ]
+      },
+      "content": "# Lisa Wong\n\nLisa Wong is a team member at NetOps Inc.\nWorks on various projects using modern tech.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "projects/esghub.md",
+      "title": "ESGHub",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "ESG Hub"
+        ]
+      },
+      "content": "# ESGHub\n\nESGHub is an internal project.\nBuilt with Node.js.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/datapipeline.md",
+      "title": "DataPipeline",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Data Pipeline",
+          "data-pipeline"
+        ]
+      },
+      "content": "# DataPipeline\n\nDataPipeline is an internal project.\nBuilt with various technologies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/cloudmigration.md",
+      "title": "CloudMigration",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Cloud Migration"
+        ]
+      },
+      "content": "# CloudMigration\n\nCloudMigration is an internal project.\nBuilt with various technologies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/devportal.md",
+      "title": "DevPortal",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Dev Portal",
+          "Developer Portal"
+        ]
+      },
+      "content": "# DevPortal\n\nDevPortal is an internal project.\nBuilt with various technologies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/mobileapp.md",
+      "title": "MobileApp",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Mobile App"
+        ]
+      },
+      "content": "# MobileApp\n\nMobileApp is an internal project.\nBuilt with various technologies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/authservice.md",
+      "title": "AuthService",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Auth Service",
+          "authentication"
+        ]
+      },
+      "content": "# AuthService\n\nAuthService is an internal project.\nBuilt with Redis.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/apigateway.md",
+      "title": "APIGateway",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "API Gateway",
+          "APIG"
+        ]
+      },
+      "content": "# APIGateway\n\nAPIGateway is an internal project.\nBuilt with various technologies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/monitoringstack.md",
+      "title": "MonitoringStack",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Monitoring Stack"
+        ]
+      },
+      "content": "# MonitoringStack\n\nMonitoringStack is an internal project.\nBuilt with various technologies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/configmanager.md",
+      "title": "ConfigManager",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Config Manager"
+        ]
+      },
+      "content": "# ConfigManager\n\nConfigManager is an internal project.\nBuilt with various technologies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/useronboarding.md",
+      "title": "UserOnboarding",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "User Onboarding"
+        ]
+      },
+      "content": "# UserOnboarding\n\nUserOnboarding is an internal project.\nBuilt with various technologies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/paymentprocessor.md",
+      "title": "PaymentProcessor",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Payment Processor"
+        ]
+      },
+      "content": "# PaymentProcessor\n\nPaymentProcessor is an internal project.\nBuilt with PostgreSQL.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/searchengine.md",
+      "title": "SearchEngine",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Search Engine"
+        ]
+      },
+      "content": "# SearchEngine\n\nSearchEngine is an internal project.\nBuilt with Docker.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/workflowengine.md",
+      "title": "WorkflowEngine",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Workflow Engine"
+        ]
+      },
+      "content": "# WorkflowEngine\n\nWorkflowEngine is an internal project.\nBuilt with various technologies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/teamdashboard.md",
+      "title": "TeamDashboard",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Team Dashboard"
+        ]
+      },
+      "content": "# TeamDashboard\n\nTeamDashboard is an internal project.\nBuilt with various technologies.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "projects/releasemanager.md",
+      "title": "ReleaseManager",
+      "frontmatter": {
+        "type": "projects",
+        "aliases": [
+          "Release Manager"
+        ]
+      },
+      "content": "# ReleaseManager\n\nReleaseManager is an internal project.\nBuilt with Node.js.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "technologies/react.md",
+      "title": "React",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "ReactJS",
+          "React.js"
+        ]
+      },
+      "content": "# React\n\nReact — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/typescript.md",
+      "title": "TypeScript",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "TS"
+        ]
+      },
+      "content": "# TypeScript\n\nTypeScript — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/python.md",
+      "title": "Python",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "python3",
+          "py"
+        ]
+      },
+      "content": "# Python\n\nPython — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/docker.md",
+      "title": "Docker",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "docker",
+          "container"
+        ]
+      },
+      "content": "# Docker\n\nDocker — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/kubernetes.md",
+      "title": "Kubernetes",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "k8s",
+          "K8s"
+        ]
+      },
+      "content": "# Kubernetes\n\nKubernetes — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/postgresql.md",
+      "title": "PostgreSQL",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "Postgres",
+          "psql"
+        ]
+      },
+      "content": "# PostgreSQL\n\nPostgreSQL — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/redis.md",
+      "title": "Redis",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "redis"
+        ]
+      },
+      "content": "# Redis\n\nRedis — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/graphql.md",
+      "title": "GraphQL",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "graphql",
+          "GQL"
+        ]
+      },
+      "content": "# GraphQL\n\nGraphQL — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/node-js.md",
+      "title": "Node.js",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "NodeJS",
+          "node"
+        ]
+      },
+      "content": "# Node.js\n\nNode.js — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/terraform.md",
+      "title": "Terraform",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "TF",
+          "terraform"
+        ]
+      },
+      "content": "# Terraform\n\nTerraform — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/aws.md",
+      "title": "AWS",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "Amazon Web Services"
+        ]
+      },
+      "content": "# AWS\n\nAWS — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "technologies/kafka.md",
+      "title": "Kafka",
+      "frontmatter": {
+        "type": "technologies",
+        "aliases": [
+          "Apache Kafka",
+          "kafka"
+        ]
+      },
+      "content": "# Kafka\n\nKafka — technologies.",
+      "links": [],
+      "folder": "technologies"
+    },
+    {
+      "path": "organizations/acme-corp.md",
+      "title": "Acme Corp",
+      "frontmatter": {
+        "type": "organizations",
+        "aliases": [
+          "Acme",
+          "Acme Corporation"
+        ]
+      },
+      "content": "# Acme Corp\n\nAcme Corp — organizations.",
+      "links": [],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/techventures.md",
+      "title": "TechVentures",
+      "frontmatter": {
+        "type": "organizations",
+        "aliases": [
+          "Tech Ventures",
+          "TV"
+        ]
+      },
+      "content": "# TechVentures\n\nTechVentures — organizations.",
+      "links": [],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/dataco.md",
+      "title": "DataCo",
+      "frontmatter": {
+        "type": "organizations",
+        "aliases": [
+          "Data Co",
+          "dataco"
+        ]
+      },
+      "content": "# DataCo\n\nDataCo — organizations.",
+      "links": [],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/cloudfirst.md",
+      "title": "CloudFirst",
+      "frontmatter": {
+        "type": "organizations",
+        "aliases": [
+          "Cloud First"
+        ]
+      },
+      "content": "# CloudFirst\n\nCloudFirst — organizations.",
+      "links": [],
+      "folder": "organizations"
+    },
+    {
+      "path": "organizations/netops-inc.md",
+      "title": "NetOps Inc",
+      "frontmatter": {
+        "type": "organizations",
+        "aliases": [
+          "NetOps"
+        ]
+      },
+      "content": "# NetOps Inc\n\nNetOps Inc — organizations.",
+      "links": [],
+      "folder": "organizations"
+    },
+    {
+      "path": "locations/san-francisco.md",
+      "title": "San Francisco",
+      "frontmatter": {
+        "type": "locations",
+        "aliases": [
+          "SF",
+          "Bay Area"
+        ]
+      },
+      "content": "# San Francisco\n\nSan Francisco — locations.",
+      "links": [],
+      "folder": "locations"
+    },
+    {
+      "path": "locations/london.md",
+      "title": "London",
+      "frontmatter": {
+        "type": "locations",
+        "aliases": [
+          "LDN"
+        ]
+      },
+      "content": "# London\n\nLondon — locations.",
+      "links": [],
+      "folder": "locations"
+    },
+    {
+      "path": "locations/berlin.md",
+      "title": "Berlin",
+      "frontmatter": {
+        "type": "locations"
+      },
+      "content": "# Berlin\n\nBerlin — locations.",
+      "links": [],
+      "folder": "locations"
+    },
+    {
+      "path": "locations/singapore.md",
+      "title": "Singapore",
+      "frontmatter": {
+        "type": "locations",
+        "aliases": [
+          "SG"
+        ]
+      },
+      "content": "# Singapore\n\nSingapore — locations.",
+      "links": [],
+      "folder": "locations"
+    },
+    {
+      "path": "concepts/microservices.md",
+      "title": "Microservices",
+      "frontmatter": {
+        "type": "concepts",
+        "aliases": [
+          "microservice",
+          "micro-services"
+        ]
+      },
+      "content": "# Microservices\n\nMicroservices — concepts.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/devops.md",
+      "title": "DevOps",
+      "frontmatter": {
+        "type": "concepts",
+        "aliases": [
+          "devops"
+        ]
+      },
+      "content": "# DevOps\n\nDevOps — concepts.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/agile.md",
+      "title": "Agile",
+      "frontmatter": {
+        "type": "concepts",
+        "aliases": [
+          "agile methodology"
+        ]
+      },
+      "content": "# Agile\n\nAgile — concepts.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/clean-architecture.md",
+      "title": "Clean Architecture",
+      "frontmatter": {
+        "type": "concepts",
+        "aliases": [
+          "clean arch"
+        ]
+      },
+      "content": "# Clean Architecture\n\nClean Architecture — concepts.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/observability.md",
+      "title": "Observability",
+      "frontmatter": {
+        "type": "concepts",
+        "aliases": [
+          "o11y"
+        ]
+      },
+      "content": "# Observability\n\nObservability — concepts.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "concepts/api-first.md",
+      "title": "API-First",
+      "frontmatter": {
+        "type": "concepts",
+        "aliases": [
+          "API First",
+          "api-first design"
+        ]
+      },
+      "content": "# API-First\n\nAPI-First — concepts.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "health/stretch.md",
+      "title": "Stretch",
+      "frontmatter": {
+        "type": "health",
+        "aliases": [
+          "stretching",
+          "morning stretch"
+        ]
+      },
+      "content": "# Stretch\n\nDaily habit: Stretch.\nAlso known as: stretching, morning stretch.",
+      "links": [],
+      "folder": "health"
+    },
+    {
+      "path": "health/walk.md",
+      "title": "Walk",
+      "frontmatter": {
+        "type": "health",
+        "aliases": [
+          "walking",
+          "daily walk"
+        ]
+      },
+      "content": "# Walk\n\nDaily habit: Walk.\nAlso known as: walking, daily walk.",
+      "links": [],
+      "folder": "health"
+    },
+    {
+      "path": "health/water.md",
+      "title": "Water",
+      "frontmatter": {
+        "type": "health",
+        "aliases": [
+          "hydration",
+          "water intake"
+        ]
+      },
+      "content": "# Water\n\nDaily habit: Water.\nAlso known as: hydration, water intake.",
+      "links": [],
+      "folder": "health"
+    },
+    {
+      "path": "health/meditation.md",
+      "title": "Meditation",
+      "frontmatter": {
+        "type": "health",
+        "aliases": [
+          "meditate",
+          "mindfulness"
+        ]
+      },
+      "content": "# Meditation\n\nDaily habit: Meditation.\nAlso known as: meditate, mindfulness.",
+      "links": [],
+      "folder": "health"
+    },
+    {
+      "path": "health/exercise.md",
+      "title": "Exercise",
+      "frontmatter": {
+        "type": "health",
+        "aliases": [
+          "workout",
+          "gym"
+        ]
+      },
+      "content": "# Exercise\n\nDaily habit: Exercise.\nAlso known as: workout, gym.",
+      "links": [],
+      "folder": "health"
+    },
+    {
+      "path": "health/journaling.md",
+      "title": "Journaling",
+      "frontmatter": {
+        "type": "health",
+        "aliases": [
+          "journal",
+          "morning pages"
+        ]
+      },
+      "content": "# Journaling\n\nDaily habit: Journaling.\nAlso known as: journal, morning pages.",
+      "links": [],
+      "folder": "health"
+    },
+    {
+      "path": "acronyms/staging.md",
+      "title": "Staging",
+      "frontmatter": {
+        "type": "acronyms",
+        "aliases": [
+          "stg",
+          "STG"
+        ]
+      },
+      "content": "# Staging\n\nStaging — acronyms.",
+      "links": [],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/production.md",
+      "title": "Production",
+      "frontmatter": {
+        "type": "acronyms",
+        "aliases": [
+          "prd",
+          "PRD",
+          "prod"
+        ]
+      },
+      "content": "# Production\n\nProduction — acronyms.",
+      "links": [],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/uat.md",
+      "title": "UAT",
+      "frontmatter": {
+        "type": "acronyms",
+        "aliases": [
+          "uat",
+          "User Acceptance Testing"
+        ]
+      },
+      "content": "# UAT\n\nUAT — acronyms.",
+      "links": [],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/mcp.md",
+      "title": "MCP",
+      "frontmatter": {
+        "type": "acronyms",
+        "aliases": [
+          "mcp",
+          "Model Context Protocol"
+        ]
+      },
+      "content": "# MCP\n\nMCP — acronyms.",
+      "links": [],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/sdk.md",
+      "title": "SDK",
+      "frontmatter": {
+        "type": "acronyms",
+        "aliases": [
+          "sdk",
+          "software development kit"
+        ]
+      },
+      "content": "# SDK\n\nSDK — acronyms.",
+      "links": [],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/sla.md",
+      "title": "SLA",
+      "frontmatter": {
+        "type": "acronyms",
+        "aliases": [
+          "sla",
+          "Service Level Agreement"
+        ]
+      },
+      "content": "# SLA\n\nSLA — acronyms.",
+      "links": [],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/jwt.md",
+      "title": "JWT",
+      "frontmatter": {
+        "type": "acronyms",
+        "aliases": [
+          "jwt",
+          "JSON Web Token"
+        ]
+      },
+      "content": "# JWT\n\nJWT — acronyms.",
+      "links": [],
+      "folder": "acronyms"
+    },
+    {
+      "path": "acronyms/rag.md",
+      "title": "RAG",
+      "frontmatter": {
+        "type": "acronyms",
+        "aliases": [
+          "rag",
+          "Retrieval Augmented Generation"
+        ]
+      },
+      "content": "# RAG\n\nRAG — acronyms.",
+      "links": [],
+      "folder": "acronyms"
+    },
+    {
+      "path": "other/standup.md",
+      "title": "standup",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "daily standup",
+          "stand-up"
+        ]
+      },
+      "content": "# standup\n\nstandup — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/retro.md",
+      "title": "retro",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "retrospective",
+          "sprint retro"
+        ]
+      },
+      "content": "# retro\n\nretro — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/one-on-one.md",
+      "title": "one-on-one",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "1:1",
+          "1-on-1"
+        ]
+      },
+      "content": "# one-on-one\n\none-on-one — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/code-review.md",
+      "title": "code review",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "CR",
+          "code-review",
+          "PR review"
+        ]
+      },
+      "content": "# code review\n\ncode review — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/architecture-decision.md",
+      "title": "architecture decision",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "ADR",
+          "arch decision"
+        ]
+      },
+      "content": "# architecture decision\n\narchitecture decision — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/tech-debt.md",
+      "title": "tech debt",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "technical debt",
+          "tech-debt"
+        ]
+      },
+      "content": "# tech debt\n\ntech debt — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/on-call.md",
+      "title": "on-call",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "oncall",
+          "on call"
+        ]
+      },
+      "content": "# on-call\n\non-call — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/incident.md",
+      "title": "incident",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "outage",
+          "SEV"
+        ]
+      },
+      "content": "# incident\n\nincident — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/deployment.md",
+      "title": "deployment",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "deploy",
+          "release deploy"
+        ]
+      },
+      "content": "# deployment\n\ndeployment — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/sprint.md",
+      "title": "sprint",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "sprint cycle",
+          "iteration"
+        ]
+      },
+      "content": "# sprint\n\nsprint — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/backlog.md",
+      "title": "backlog",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "product backlog",
+          "backlog grooming"
+        ]
+      },
+      "content": "# backlog\n\nbacklog — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/demo.md",
+      "title": "demo",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "sprint demo",
+          "showcase"
+        ]
+      },
+      "content": "# demo\n\ndemo — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/planning.md",
+      "title": "planning",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "sprint planning",
+          "capacity planning"
+        ]
+      },
+      "content": "# planning\n\nplanning — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/documentation.md",
+      "title": "documentation",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "docs",
+          "technical docs"
+        ]
+      },
+      "content": "# documentation\n\ndocumentation — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/onboarding.md",
+      "title": "onboarding",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "new hire",
+          "ramp-up"
+        ]
+      },
+      "content": "# onboarding\n\nonboarding — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/postmortem.md",
+      "title": "postmortem",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "post-mortem",
+          "incident review"
+        ]
+      },
+      "content": "# postmortem\n\npostmortem — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/feature-flag.md",
+      "title": "feature flag",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "feature toggle",
+          "FF"
+        ]
+      },
+      "content": "# feature flag\n\nfeature flag — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/canary-release.md",
+      "title": "canary release",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "canary deploy",
+          "canary"
+        ]
+      },
+      "content": "# canary release\n\ncanary release — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/load-test.md",
+      "title": "load test",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "load testing",
+          "perf test"
+        ]
+      },
+      "content": "# load test\n\nload test — other.",
+      "links": [],
+      "folder": "other"
+    },
+    {
+      "path": "other/chaos-engineering.md",
+      "title": "chaos engineering",
+      "frontmatter": {
+        "type": "other",
+        "aliases": [
+          "chaos monkey",
+          "chaos test"
+        ]
+      },
+      "content": "# chaos engineering\n\nchaos engineering — other.",
+      "links": [],
+      "folder": "other"
+    }
+  ],
+  "groundTruth": [
+    {
+      "notePath": "daily-notes/2026-01-01.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-01.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-01.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-01.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-01.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-01.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-01.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity David Chen appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-01.md",
+      "entity": "UserOnboarding",
+      "tier": 1,
+      "reason": "Entity UserOnboarding appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-01.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-01.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-02.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-02.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-02.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-02.md",
+      "entity": "CloudMigration",
+      "tier": 1,
+      "reason": "Entity CloudMigration appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-02.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-02.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-03.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-03.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-03.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-03.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-03.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-03.md",
+      "entity": "CloudMigration",
+      "tier": 1,
+      "reason": "Entity CloudMigration appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-03.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-03.md",
+      "entity": "ReleaseManager",
+      "tier": 1,
+      "reason": "Entity ReleaseManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-03.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-03.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-04.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-04.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-04.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-04.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-04.md",
+      "entity": "APIGateway",
+      "tier": 1,
+      "reason": "Entity APIGateway appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-04.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-04.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-05.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-05.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-05.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-05.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-05.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-05.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-06.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-06.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-06.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-06.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-06.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-06.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-06.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-06.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-06.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "ConfigManager",
+      "tier": 1,
+      "reason": "Entity ConfigManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "WorkflowEngine",
+      "tier": 1,
+      "reason": "Entity WorkflowEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-07.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-08.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-08.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-08.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-08.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-08.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-08.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-08.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-08.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-08.md",
+      "entity": "ReleaseManager",
+      "tier": 1,
+      "reason": "Entity ReleaseManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-09.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-09.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-09.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-09.md",
+      "entity": "WorkflowEngine",
+      "tier": 1,
+      "reason": "Entity WorkflowEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-09.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-09.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Entity Marcus Johnson appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-09.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-09.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-10.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-10.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-10.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-10.md",
+      "entity": "APIGateway",
+      "tier": 1,
+      "reason": "Entity APIGateway appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-10.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-10.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-10.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-10.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-10.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity David Chen appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-10.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-11.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-11.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-11.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-11.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-11.md",
+      "entity": "ConfigManager",
+      "tier": 1,
+      "reason": "Entity ConfigManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-11.md",
+      "entity": "CloudMigration",
+      "tier": 1,
+      "reason": "Entity CloudMigration appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-12.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-12.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-12.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-12.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-12.md",
+      "entity": "UserOnboarding",
+      "tier": 1,
+      "reason": "Entity UserOnboarding appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-12.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-12.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-12.md",
+      "entity": "ConfigManager",
+      "tier": 1,
+      "reason": "Entity ConfigManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-12.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-13.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-13.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-13.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-13.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-13.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-13.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-13.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity David Chen appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-13.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-13.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-14.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-14.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-14.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-14.md",
+      "entity": "ConfigManager",
+      "tier": 1,
+      "reason": "Entity ConfigManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-14.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-14.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-14.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "UserOnboarding",
+      "tier": 1,
+      "reason": "Entity UserOnboarding appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity David Chen appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-18.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-18.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-18.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-18.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-18.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-18.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-18.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-19.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-19.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-19.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-19.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-19.md",
+      "entity": "UserOnboarding",
+      "tier": 1,
+      "reason": "Entity UserOnboarding appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-19.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-19.md",
+      "entity": "APIGateway",
+      "tier": 1,
+      "reason": "Entity APIGateway appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-19.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-20.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-20.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-20.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-20.md",
+      "entity": "UserOnboarding",
+      "tier": 1,
+      "reason": "Entity UserOnboarding appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-20.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-21.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-21.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-21.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-21.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-21.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-21.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-21.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-21.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Entity Marcus Johnson appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-21.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-21.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-22.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-22.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-22.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-22.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-22.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-22.md",
+      "entity": "WorkflowEngine",
+      "tier": 1,
+      "reason": "Entity WorkflowEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-22.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-22.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-23.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-23.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-23.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-23.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-23.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-23.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-24.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-24.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-24.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-24.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-24.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-24.md",
+      "entity": "ReleaseManager",
+      "tier": 1,
+      "reason": "Entity ReleaseManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-24.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-24.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-24.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-24.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "ConfigManager",
+      "tier": 1,
+      "reason": "Entity ConfigManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-25.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-26.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-26.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-26.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-26.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-26.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-26.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-26.md",
+      "entity": "UserOnboarding",
+      "tier": 1,
+      "reason": "Entity UserOnboarding appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-26.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity David Chen appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "CloudMigration",
+      "tier": 1,
+      "reason": "Entity CloudMigration appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "UserOnboarding",
+      "tier": 1,
+      "reason": "Entity UserOnboarding appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-27.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-28.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-28.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-28.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-28.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-28.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-29.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-29.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-29.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-29.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-29.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-29.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-30.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-31.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-31.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-31.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-31.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-01-31.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-31.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-31.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-31.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-01-31.md",
+      "entity": "APIGateway",
+      "tier": 1,
+      "reason": "Entity APIGateway appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-01.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-01.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-01.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-01.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-01.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-01.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-01.md",
+      "entity": "ConfigManager",
+      "tier": 1,
+      "reason": "Entity ConfigManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-01.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-01.md",
+      "entity": "APIGateway",
+      "tier": 1,
+      "reason": "Entity APIGateway appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-02.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-02.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-02.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-02.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-02.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-02.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-02.md",
+      "entity": "APIGateway",
+      "tier": 1,
+      "reason": "Entity APIGateway appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-02.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-02.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-03.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-03.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-03.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-03.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-03.md",
+      "entity": "ReleaseManager",
+      "tier": 1,
+      "reason": "Entity ReleaseManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-03.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-03.md",
+      "entity": "APIGateway",
+      "tier": 1,
+      "reason": "Entity APIGateway appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-03.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-03.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-03.md",
+      "entity": "CloudMigration",
+      "tier": 1,
+      "reason": "Entity CloudMigration appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-04.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-04.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-04.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-04.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-04.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-04.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-04.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity David Chen appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-05.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-05.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-05.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-05.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-05.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-05.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-05.md",
+      "entity": "CloudMigration",
+      "tier": 1,
+      "reason": "Entity CloudMigration appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-05.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity David Chen appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-05.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-06.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-06.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-06.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-06.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-06.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-06.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-06.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-06.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-06.md",
+      "entity": "APIGateway",
+      "tier": 1,
+      "reason": "Entity APIGateway appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-06.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-07.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-07.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-07.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-07.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-07.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-07.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-07.md",
+      "entity": "ConfigManager",
+      "tier": 1,
+      "reason": "Entity ConfigManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-07.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Entity Marcus Johnson appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-07.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-08.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-08.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-08.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-08.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-08.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-09.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-09.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-09.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-09.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-09.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-09.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-10.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-10.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-10.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-10.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-10.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-10.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-10.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-10.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-11.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-11.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-11.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-11.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-11.md",
+      "entity": "MonitoringStack",
+      "tier": 1,
+      "reason": "Entity MonitoringStack appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-11.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity David Chen appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-11.md",
+      "entity": "ConfigManager",
+      "tier": 1,
+      "reason": "Entity ConfigManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-11.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-11.md",
+      "entity": "WorkflowEngine",
+      "tier": 1,
+      "reason": "Entity WorkflowEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-11.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-12.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-12.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-12.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-12.md",
+      "entity": "WorkflowEngine",
+      "tier": 1,
+      "reason": "Entity WorkflowEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-12.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-12.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-13.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-13.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-13.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-13.md",
+      "entity": "UserOnboarding",
+      "tier": 1,
+      "reason": "Entity UserOnboarding appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-13.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-13.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-13.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-13.md",
+      "entity": "WorkflowEngine",
+      "tier": 1,
+      "reason": "Entity WorkflowEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-14.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-14.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-14.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-14.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-14.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-14.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-14.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-14.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-14.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-15.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-15.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-15.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-15.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-15.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-15.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-15.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Entity Marcus Johnson appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-15.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-15.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-15.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-16.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-16.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-16.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-16.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-16.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-16.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-16.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-17.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-17.md",
+      "entity": "Stretch",
+      "tier": 1,
+      "reason": "Entity name Stretch appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-17.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-17.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-17.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-17.md",
+      "entity": "DevPortal",
+      "tier": 1,
+      "reason": "Entity DevPortal appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-17.md",
+      "entity": "Aisha Patel",
+      "tier": 1,
+      "reason": "Entity Aisha Patel appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-17.md",
+      "entity": "MobileApp",
+      "tier": 1,
+      "reason": "Entity MobileApp appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-17.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-17.md",
+      "entity": "PaymentProcessor",
+      "tier": 1,
+      "reason": "Entity PaymentProcessor appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-18.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-18.md",
+      "entity": "Meditation",
+      "tier": 1,
+      "reason": "Entity name Meditation appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-18.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-18.md",
+      "entity": "ReleaseManager",
+      "tier": 1,
+      "reason": "Entity ReleaseManager appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-18.md",
+      "entity": "CloudMigration",
+      "tier": 1,
+      "reason": "Entity CloudMigration appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-18.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-18.md",
+      "entity": "AuthService",
+      "tier": 1,
+      "reason": "Entity AuthService appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-18.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-18.md",
+      "entity": "APIGateway",
+      "tier": 1,
+      "reason": "Entity APIGateway appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-19.md",
+      "entity": "Water",
+      "tier": 1,
+      "reason": "Entity name Water appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-19.md",
+      "entity": "Exercise",
+      "tier": 1,
+      "reason": "Entity name Exercise appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-19.md",
+      "entity": "Walk",
+      "tier": 1,
+      "reason": "Entity name Walk appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-19.md",
+      "entity": "Journaling",
+      "tier": 1,
+      "reason": "Entity name Journaling appears verbatim in daily habit"
+    },
+    {
+      "notePath": "daily-notes/2026-02-19.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-19.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-19.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline appears verbatim in work section"
+    },
+    {
+      "notePath": "daily-notes/2026-02-19.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Entity Marcus Johnson appears verbatim in work section"
+    },
+    {
+      "notePath": "meetings/meeting-notes-1.md",
+      "entity": "sprint",
+      "tier": 1,
+      "reason": "Entity sprint mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-1.md",
+      "entity": "Staging",
+      "tier": 1,
+      "reason": "Entity Staging mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-1.md",
+      "entity": "GraphQL",
+      "tier": 1,
+      "reason": "Entity GraphQL mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-1.md",
+      "entity": "Sarah Kim",
+      "tier": 2,
+      "reason": "Alias \"Sarah\" matches entity Sarah Kim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-1.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "Alias \"David\" matches entity David Chen"
+    },
+    {
+      "notePath": "meetings/meeting-notes-1.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "meetings/meeting-notes-2.md",
+      "entity": "Node.js",
+      "tier": 1,
+      "reason": "Entity Node.js mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-2.md",
+      "entity": "on-call",
+      "tier": 1,
+      "reason": "Entity on-call mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-2.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "meetings/meeting-notes-2.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "Alias \"David\" matches entity David Chen"
+    },
+    {
+      "notePath": "meetings/meeting-notes-2.md",
+      "entity": "Sarah Kim",
+      "tier": 2,
+      "reason": "Alias \"Sarah\" matches entity Sarah Kim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-3.md",
+      "entity": "Python",
+      "tier": 1,
+      "reason": "Entity Python mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-3.md",
+      "entity": "canary release",
+      "tier": 1,
+      "reason": "Entity canary release mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-3.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-3.md",
+      "entity": "JWT",
+      "tier": 1,
+      "reason": "Entity JWT mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-3.md",
+      "entity": "Marcus Johnson",
+      "tier": 2,
+      "reason": "Alias \"Marcus\" matches entity Marcus Johnson"
+    },
+    {
+      "notePath": "meetings/meeting-notes-3.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "meetings/meeting-notes-4.md",
+      "entity": "Node.js",
+      "tier": 1,
+      "reason": "Entity Node.js mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-4.md",
+      "entity": "backlog",
+      "tier": 1,
+      "reason": "Entity backlog mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-4.md",
+      "entity": "Clean Architecture",
+      "tier": 1,
+      "reason": "Entity Clean Architecture mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-4.md",
+      "entity": "Aisha Patel",
+      "tier": 2,
+      "reason": "Alias \"Aisha\" matches entity Aisha Patel"
+    },
+    {
+      "notePath": "meetings/meeting-notes-4.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "Alias \"David\" matches entity David Chen"
+    },
+    {
+      "notePath": "meetings/meeting-notes-4.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "meetings/meeting-notes-5.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-5.md",
+      "entity": "RAG",
+      "tier": 1,
+      "reason": "Entity RAG mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-5.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Entity React mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-5.md",
+      "entity": "API-First",
+      "tier": 1,
+      "reason": "Entity API-First mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-5.md",
+      "entity": "Lisa Wong",
+      "tier": 2,
+      "reason": "Alias \"Lisa\" matches entity Lisa Wong"
+    },
+    {
+      "notePath": "meetings/meeting-notes-5.md",
+      "entity": "David Chen",
+      "tier": 2,
+      "reason": "Alias \"David\" matches entity David Chen"
+    },
+    {
+      "notePath": "meetings/meeting-notes-5.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "meetings/meeting-notes-6.md",
+      "entity": "UserOnboarding",
+      "tier": 1,
+      "reason": "Entity UserOnboarding mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-6.md",
+      "entity": "Redis",
+      "tier": 1,
+      "reason": "Entity Redis mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-6.md",
+      "entity": "UAT",
+      "tier": 1,
+      "reason": "Entity UAT mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-6.md",
+      "entity": "feature flag",
+      "tier": 1,
+      "reason": "Entity feature flag mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-6.md",
+      "entity": "Marcus Johnson",
+      "tier": 2,
+      "reason": "Alias \"Marcus\" matches entity Marcus Johnson"
+    },
+    {
+      "notePath": "meetings/meeting-notes-6.md",
+      "entity": "Carlos Rivera",
+      "tier": 2,
+      "reason": "Alias \"Carlos\" matches entity Carlos Rivera"
+    },
+    {
+      "notePath": "meetings/meeting-notes-7.md",
+      "entity": "SDK",
+      "tier": 1,
+      "reason": "Entity SDK mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-7.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Entity TypeScript mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-7.md",
+      "entity": "CloudMigration",
+      "tier": 1,
+      "reason": "Entity CloudMigration mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-7.md",
+      "entity": "API-First",
+      "tier": 1,
+      "reason": "Entity API-First mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-7.md",
+      "entity": "Lisa Wong",
+      "tier": 2,
+      "reason": "Alias \"Lisa\" matches entity Lisa Wong"
+    },
+    {
+      "notePath": "meetings/meeting-notes-7.md",
+      "entity": "Carlos Rivera",
+      "tier": 2,
+      "reason": "Alias \"Carlos\" matches entity Carlos Rivera"
+    },
+    {
+      "notePath": "meetings/meeting-notes-7.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "meetings/meeting-notes-8.md",
+      "entity": "chaos engineering",
+      "tier": 1,
+      "reason": "Entity chaos engineering mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-8.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Entity Marcus Johnson mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-8.md",
+      "entity": "Microservices",
+      "tier": 1,
+      "reason": "Entity Microservices mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-8.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity David Chen mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-8.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-8.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "meetings/meeting-notes-9.md",
+      "entity": "one-on-one",
+      "tier": 1,
+      "reason": "Entity one-on-one mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-9.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-9.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity David Chen mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-9.md",
+      "entity": "Singapore",
+      "tier": 2,
+      "reason": "Alias \"SG\" matches entity Singapore"
+    },
+    {
+      "notePath": "meetings/meeting-notes-9.md",
+      "entity": "Lisa Wong",
+      "tier": 2,
+      "reason": "Alias \"Lisa\" matches entity Lisa Wong"
+    },
+    {
+      "notePath": "meetings/meeting-notes-9.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "meetings/meeting-notes-10.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-10.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-10.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres mentioned verbatim"
+    },
+    {
+      "notePath": "meetings/meeting-notes-10.md",
+      "entity": "Singapore",
+      "tier": 2,
+      "reason": "Alias \"SG\" matches entity Singapore"
+    },
+    {
+      "notePath": "meetings/meeting-notes-10.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "projects/project-doc-11.md",
+      "entity": "Redis",
+      "tier": 1,
+      "reason": "Entity Redis mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-11.md",
+      "entity": "code review",
+      "tier": 1,
+      "reason": "Entity code review mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-11.md",
+      "entity": "NetOps Inc",
+      "tier": 1,
+      "reason": "Entity NetOps Inc mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-11.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Entity React mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-11.md",
+      "entity": "RAG",
+      "tier": 2,
+      "reason": "Alias \"rag\" matches entity RAG"
+    },
+    {
+      "notePath": "projects/project-doc-11.md",
+      "entity": "Sarah Kim",
+      "tier": 2,
+      "reason": "Alias \"Sarah\" matches entity Sarah Kim"
+    },
+    {
+      "notePath": "projects/project-doc-12.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Entity TypeScript mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-12.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-12.md",
+      "entity": "architecture decision",
+      "tier": 1,
+      "reason": "Entity architecture decision mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-12.md",
+      "entity": "DataCo",
+      "tier": 1,
+      "reason": "Entity DataCo mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-12.md",
+      "entity": "RAG",
+      "tier": 2,
+      "reason": "Alias \"rag\" matches entity RAG"
+    },
+    {
+      "notePath": "projects/project-doc-12.md",
+      "entity": "Singapore",
+      "tier": 2,
+      "reason": "Alias \"SG\" matches entity Singapore"
+    },
+    {
+      "notePath": "projects/project-doc-13.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Entity React mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-13.md",
+      "entity": "AWS",
+      "tier": 1,
+      "reason": "Entity AWS mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-13.md",
+      "entity": "Acme Corp",
+      "tier": 1,
+      "reason": "Entity Acme Corp mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-13.md",
+      "entity": "WorkflowEngine",
+      "tier": 1,
+      "reason": "Entity WorkflowEngine mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-13.md",
+      "entity": "James Franklin",
+      "tier": 2,
+      "reason": "Alias \"James\" matches entity James Franklin"
+    },
+    {
+      "notePath": "projects/project-doc-13.md",
+      "entity": "MCP",
+      "tier": 2,
+      "reason": "Alias \"mcp\" matches entity MCP"
+    },
+    {
+      "notePath": "projects/project-doc-14.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-14.md",
+      "entity": "backlog",
+      "tier": 1,
+      "reason": "Entity backlog mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-14.md",
+      "entity": "CloudMigration",
+      "tier": 1,
+      "reason": "Entity CloudMigration mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-14.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-14.md",
+      "entity": "Kubernetes",
+      "tier": 1,
+      "reason": "Entity Kubernetes mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-14.md",
+      "entity": "Acme Corp",
+      "tier": 2,
+      "reason": "Alias \"Acme\" matches entity Acme Corp"
+    },
+    {
+      "notePath": "projects/project-doc-14.md",
+      "entity": "MCP",
+      "tier": 2,
+      "reason": "Alias \"mcp\" matches entity MCP"
+    },
+    {
+      "notePath": "projects/project-doc-14.md",
+      "entity": "Singapore",
+      "tier": 2,
+      "reason": "Alias \"SG\" matches entity Singapore"
+    },
+    {
+      "notePath": "projects/project-doc-15.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-15.md",
+      "entity": "Docker",
+      "tier": 1,
+      "reason": "Entity Docker mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-15.md",
+      "entity": "code review",
+      "tier": 1,
+      "reason": "Entity code review mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-15.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-15.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "projects/project-doc-15.md",
+      "entity": "James Franklin",
+      "tier": 2,
+      "reason": "Alias \"James\" matches entity James Franklin"
+    },
+    {
+      "notePath": "projects/project-doc-15.md",
+      "entity": "Acme Corp",
+      "tier": 2,
+      "reason": "Alias \"Acme\" matches entity Acme Corp"
+    },
+    {
+      "notePath": "projects/project-doc-16.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Entity React mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-16.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-16.md",
+      "entity": "Lisa Wong",
+      "tier": 1,
+      "reason": "Entity Lisa Wong mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-16.md",
+      "entity": "ReleaseManager",
+      "tier": 1,
+      "reason": "Entity ReleaseManager mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-16.md",
+      "entity": "sprint",
+      "tier": 1,
+      "reason": "Entity sprint mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-16.md",
+      "entity": "Production",
+      "tier": 2,
+      "reason": "Alias \"prd\" matches entity Production"
+    },
+    {
+      "notePath": "projects/project-doc-17.md",
+      "entity": "GraphQL",
+      "tier": 1,
+      "reason": "Entity GraphQL mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-17.md",
+      "entity": "backlog",
+      "tier": 1,
+      "reason": "Entity backlog mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-17.md",
+      "entity": "Marcus Johnson",
+      "tier": 1,
+      "reason": "Entity Marcus Johnson mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-17.md",
+      "entity": "RAG",
+      "tier": 2,
+      "reason": "Alias \"rag\" matches entity RAG"
+    },
+    {
+      "notePath": "projects/project-doc-17.md",
+      "entity": "Staging",
+      "tier": 2,
+      "reason": "Alias \"stg\" matches entity Staging"
+    },
+    {
+      "notePath": "projects/project-doc-18.md",
+      "entity": "demo",
+      "tier": 1,
+      "reason": "Entity demo mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-18.md",
+      "entity": "CloudFirst",
+      "tier": 1,
+      "reason": "Entity CloudFirst mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-18.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity ESGHub mentioned verbatim"
+    },
+    {
+      "notePath": "projects/project-doc-18.md",
+      "entity": "MCP",
+      "tier": 2,
+      "reason": "Alias \"mcp\" matches entity MCP"
+    },
+    {
+      "notePath": "projects/project-doc-18.md",
+      "entity": "Elena Torres",
+      "tier": 2,
+      "reason": "Alias \"Elena\" matches entity Elena Torres"
+    },
+    {
+      "notePath": "projects/project-doc-18.md",
+      "entity": "Singapore",
+      "tier": 2,
+      "reason": "Alias \"SG\" matches entity Singapore"
+    },
+    {
+      "notePath": "tech-guides/guide-19.md",
+      "entity": "WorkflowEngine",
+      "tier": 1,
+      "reason": "Entity WorkflowEngine mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-19.md",
+      "entity": "documentation",
+      "tier": 1,
+      "reason": "Entity documentation mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-19.md",
+      "entity": "Terraform",
+      "tier": 1,
+      "reason": "Entity Terraform mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-19.md",
+      "entity": "Elena Torres",
+      "tier": 2,
+      "reason": "Alias \"Elena\" matches entity Elena Torres"
+    },
+    {
+      "notePath": "tech-guides/guide-20.md",
+      "entity": "SearchEngine",
+      "tier": 1,
+      "reason": "Entity SearchEngine mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-20.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-20.md",
+      "entity": "code review",
+      "tier": 1,
+      "reason": "Entity code review mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-21.md",
+      "entity": "CloudMigration",
+      "tier": 1,
+      "reason": "Entity CloudMigration mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-21.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-21.md",
+      "entity": "load test",
+      "tier": 1,
+      "reason": "Entity load test mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-21.md",
+      "entity": "DevOps",
+      "tier": 1,
+      "reason": "Entity DevOps mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-21.md",
+      "entity": "Staging",
+      "tier": 2,
+      "reason": "Alias \"stg\" matches entity Staging"
+    },
+    {
+      "notePath": "tech-guides/guide-22.md",
+      "entity": "deployment",
+      "tier": 1,
+      "reason": "Entity deployment mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-22.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-22.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-22.md",
+      "entity": "API-First",
+      "tier": 1,
+      "reason": "Entity API-First mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-23.md",
+      "entity": "incident",
+      "tier": 1,
+      "reason": "Entity incident mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-23.md",
+      "entity": "Redis",
+      "tier": 1,
+      "reason": "Entity Redis mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-23.md",
+      "entity": "Python",
+      "tier": 1,
+      "reason": "Entity Python mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-23.md",
+      "entity": "Elena Torres",
+      "tier": 1,
+      "reason": "Entity Elena Torres mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-24.md",
+      "entity": "Microservices",
+      "tier": 1,
+      "reason": "Entity Microservices mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-24.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Entity React mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-24.md",
+      "entity": "DataPipeline",
+      "tier": 1,
+      "reason": "Entity DataPipeline mentioned verbatim"
+    },
+    {
+      "notePath": "tech-guides/guide-24.md",
+      "entity": "Lisa Wong",
+      "tier": 2,
+      "reason": "Alias \"Lisa\" matches entity Lisa Wong"
+    },
+    {
+      "notePath": "runbooks/runbook-25.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-25.md",
+      "entity": "demo",
+      "tier": 1,
+      "reason": "Entity demo mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-25.md",
+      "entity": "Clean Architecture",
+      "tier": 1,
+      "reason": "Entity Clean Architecture mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-25.md",
+      "entity": "Staging",
+      "tier": 2,
+      "reason": "Alias \"stg\" matches entity Staging"
+    },
+    {
+      "notePath": "runbooks/runbook-25.md",
+      "entity": "Elena Torres",
+      "tier": 2,
+      "reason": "Alias \"Elena\" matches entity Elena Torres"
+    },
+    {
+      "notePath": "runbooks/runbook-25.md",
+      "entity": "RAG",
+      "tier": 2,
+      "reason": "Alias \"rag\" matches entity RAG"
+    },
+    {
+      "notePath": "runbooks/runbook-26.md",
+      "entity": "ConfigManager",
+      "tier": 1,
+      "reason": "Entity ConfigManager mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-26.md",
+      "entity": "code review",
+      "tier": 1,
+      "reason": "Entity code review mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-26.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity James Franklin mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-26.md",
+      "entity": "SDK",
+      "tier": 2,
+      "reason": "Alias \"sdk\" matches entity SDK"
+    },
+    {
+      "notePath": "runbooks/runbook-26.md",
+      "entity": "SLA",
+      "tier": 2,
+      "reason": "Alias \"sla\" matches entity SLA"
+    },
+    {
+      "notePath": "runbooks/runbook-27.md",
+      "entity": "Observability",
+      "tier": 1,
+      "reason": "Entity Observability mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-27.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Entity TypeScript mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-27.md",
+      "entity": "on-call",
+      "tier": 1,
+      "reason": "Entity on-call mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-27.md",
+      "entity": "SLA",
+      "tier": 2,
+      "reason": "Alias \"sla\" matches entity SLA"
+    },
+    {
+      "notePath": "runbooks/runbook-27.md",
+      "entity": "MCP",
+      "tier": 2,
+      "reason": "Alias \"mcp\" matches entity MCP"
+    },
+    {
+      "notePath": "runbooks/runbook-27.md",
+      "entity": "Marcus Johnson",
+      "tier": 2,
+      "reason": "Alias \"Marcus\" matches entity Marcus Johnson"
+    },
+    {
+      "notePath": "runbooks/runbook-28.md",
+      "entity": "Sarah Kim",
+      "tier": 1,
+      "reason": "Entity Sarah Kim mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-28.md",
+      "entity": "Agile",
+      "tier": 1,
+      "reason": "Entity Agile mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-28.md",
+      "entity": "UAT",
+      "tier": 2,
+      "reason": "Alias \"uat\" matches entity UAT"
+    },
+    {
+      "notePath": "runbooks/runbook-28.md",
+      "entity": "Staging",
+      "tier": 2,
+      "reason": "Alias \"stg\" matches entity Staging"
+    },
+    {
+      "notePath": "runbooks/runbook-29.md",
+      "entity": "chaos engineering",
+      "tier": 1,
+      "reason": "Entity chaos engineering mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-29.md",
+      "entity": "TeamDashboard",
+      "tier": 1,
+      "reason": "Entity TeamDashboard mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-29.md",
+      "entity": "SDK",
+      "tier": 2,
+      "reason": "Alias \"sdk\" matches entity SDK"
+    },
+    {
+      "notePath": "runbooks/runbook-29.md",
+      "entity": "SLA",
+      "tier": 2,
+      "reason": "Alias \"sla\" matches entity SLA"
+    },
+    {
+      "notePath": "runbooks/runbook-29.md",
+      "entity": "Elena Torres",
+      "tier": 2,
+      "reason": "Alias \"Elena\" matches entity Elena Torres"
+    },
+    {
+      "notePath": "runbooks/runbook-30.md",
+      "entity": "Carlos Rivera",
+      "tier": 1,
+      "reason": "Entity Carlos Rivera mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-30.md",
+      "entity": "UserOnboarding",
+      "tier": 1,
+      "reason": "Entity UserOnboarding mentioned verbatim"
+    },
+    {
+      "notePath": "runbooks/runbook-30.md",
+      "entity": "RAG",
+      "tier": 2,
+      "reason": "Alias \"rag\" matches entity RAG"
+    },
+    {
+      "notePath": "runbooks/runbook-30.md",
+      "entity": "JWT",
+      "tier": 2,
+      "reason": "Alias \"jwt\" matches entity JWT"
+    },
+    {
+      "notePath": "runbooks/runbook-30.md",
+      "entity": "canary release",
+      "tier": 2,
+      "reason": "Alias \"canary\" matches entity canary release"
+    }
+  ]
+}

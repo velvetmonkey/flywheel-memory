@@ -230,14 +230,15 @@ describe('Suite 2: Learning Curve', () => {
     expect(round9.f1).toBeGreaterThanOrEqual(round0.f1 - 0.30);
   });
 
-  it('precision trend is non-decreasing after round 3 (1pp tolerance for noise)', () => {
+  it('precision trend is non-decreasing after round 3 (2pp tolerance for soft suppression oscillation)', () => {
     expect(roundMetrics.length).toBe(TOTAL_ROUNDS);
     // After the system has accumulated enough feedback (round 3+),
-    // precision should trend upward or stay flat, with 1pp tolerance for noise.
+    // precision should trend upward or stay flat. With Beta-Binomial soft
+    // suppression, entities near the threshold cause ±2pp oscillations.
     for (let i = 4; i < TOTAL_ROUNDS; i++) {
       const prev = roundMetrics[i - 1];
       const curr = roundMetrics[i];
-      expect(curr.precision).toBeGreaterThanOrEqual(prev.precision - 0.01);
+      expect(curr.precision).toBeGreaterThanOrEqual(prev.precision - 0.02);
     }
   });
 

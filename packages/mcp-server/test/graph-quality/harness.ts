@@ -908,6 +908,14 @@ export async function loadArchetype(name: string): Promise<GroundTruthSpec> {
 }
 
 /**
+ * Load the temporal-star fixture (production-representative vault).
+ */
+export async function loadTemporalStar(): Promise<GroundTruthSpec> {
+  const fixturePath = path.join(getFixtureDir(), 'fixtures', 'temporal-star.json');
+  return loadFixture(fixturePath);
+}
+
+/**
  * Load the chaos vault fixture.
  */
 export async function loadChaosVault(): Promise<GroundTruthSpec> {

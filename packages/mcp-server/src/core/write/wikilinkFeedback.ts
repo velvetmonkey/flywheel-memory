@@ -68,11 +68,18 @@ export interface DashboardData {
 // CONSTANTS
 // =============================================================================
 
-/** Minimum feedback entries before considering suppression */
-const MIN_FEEDBACK_COUNT = 10;
+/** Beta-Binomial prior parameters (benefit of doubt: Beta(2,1) → 67% prior mean) */
+export const PRIOR_ALPHA = 2;   // Prior "correct" observations
+export const PRIOR_BETA = 1;    // Prior "incorrect" observations
 
-/** False positive rate threshold for suppression (30%) */
-const SUPPRESSION_THRESHOLD = 0.30;
+/** Posterior mean threshold for suppression (suppress when posteriorMean < this) */
+export const SUPPRESSION_POSTERIOR_THRESHOLD = 0.35;
+
+/** Minimum total posterior observations (alpha + beta) before considering suppression */
+export const SUPPRESSION_MIN_OBSERVATIONS = 8;
+
+/** Maximum suppression penalty (must exceed typical max score: content=10 + recency=8 + type=5 + hub=8) */
+const MAX_SUPPRESSION_PENALTY = -25;
 
 /** Minimum feedback entries before applying feedback boost */
 export const FEEDBACK_BOOST_MIN_SAMPLES = 3;
@@ -87,16 +94,29 @@ const SUPPRESSION_TTL_DAYS = 30;
 export const FEEDBACK_DECAY_HALF_LIFE_DAYS = 30;
 const FEEDBACK_DECAY_LAMBDA = Math.LN2 / FEEDBACK_DECAY_HALF_LIFE_DAYS; // ≈ 0.0231
 
-/** Minimum weighted total for suppression (equivalent of 3 recent entries) */
+/** Minimum weighted total for folder-specific checks */
 const WEIGHTED_MIN_TOTAL = 3.0;
+
+/**
+ * Compute Beta-Binomial posterior mean.
+ * posteriorMean = alpha / (alpha + beta) where:
+ *   alpha = PRIOR_ALPHA + weightedCorrect
+ *   beta = PRIOR_BETA + weightedFp
+ * Returns the probability that the entity is correct (higher = better).
+ */
+export function computePosteriorMean(weightedCorrect: number, weightedFp: number): number {
+  const alpha = PRIOR_ALPHA + weightedCorrect;
+  const beta_ = PRIOR_BETA + weightedFp;
+  return alpha / (alpha + beta_);
+}
 
 /** Feedback boost tiers: accuracy threshold → score adjustment */
 export const FEEDBACK_BOOST_TIERS: ReadonlyArray<{ minAccuracy: number; minSamples: number; boost: number }> = [
-  { minAccuracy: 0.95, minSamples: 20, boost: 10 },
-  { minAccuracy: 0.80, minSamples: 3, boost: 4 },
-  { minAccuracy: 0.60, minSamples: 3, boost: 0 },
-  { minAccuracy: 0.40, minSamples: 3, boost: -4 },
-  { minAccuracy: 0,    minSamples: 3, boost: -8 },
+  { minAccuracy: 0.85, minSamples: 5, boost: 8 },   // Achievable with 15% noise
+  { minAccuracy: 0.70, minSamples: 3, boost: 4 },   // Most TPs land here
+  { minAccuracy: 0.50, minSamples: 3, boost: 0 },   // Wider neutral zone
+  { minAccuracy: 0.30, minSamples: 5, boost: -4 },  // Require more evidence for penalty
+  { minAccuracy: 0,    minSamples: 5, boost: -8 },
 ];
 
 // =============================================================================
@@ -105,6 +125,12 @@ export const FEEDBACK_BOOST_TIERS: ReadonlyArray<{ minAccuracy: number; minSampl
 
 /**
  * Record feedback for a wikilink entity
+ * @param confidence - Signal quality weight (0-1). Defaults to 1.0.
+ *   - Implicit removal within 1h: 1.0 (strong negative)
+ *   - Implicit removal after 24h: 0.7 (may be context change)
+ *   - Survival after note edit: 0.8
+ *   - Unedited note: 0.3 (weak signal)
+ *   - Explicit user feedback: 1.0
  */
 export function recordFeedback(
   stateDb: StateDb,
@@ -112,12 +138,13 @@ export function recordFeedback(
   context: string,
   notePath: string,
   correct: boolean,
+  confidence: number = 1.0,
 ): void {
   try {
     console.error(`[Flywheel] recordFeedback: entity="${entity}" context="${context}" notePath="${notePath}" correct=${correct}`);
     const result = stateDb.db.prepare(
-      'INSERT INTO wikilink_feedback (entity, context, note_path, correct) VALUES (?, ?, ?, ?)'
-    ).run(entity, context, notePath, correct ? 1 : 0);
+      'INSERT INTO wikilink_feedback (entity, context, note_path, correct, confidence) VALUES (?, ?, ?, ?, ?)'
+    ).run(entity, context, notePath, correct ? 1 : 0, confidence);
     console.error(`[Flywheel] recordFeedback: inserted id=${result.lastInsertRowid}`);
   } catch (e) {
     console.error(`[Flywheel] recordFeedback failed for entity="${entity}": ${e}`);
@@ -234,10 +261,10 @@ export function computeFeedbackWeight(createdAt: string, now?: Date): number {
  */
 export function getWeightedEntityStats(stateDb: StateDb, now?: Date): WeightedEntityStats[] {
   const rows = stateDb.db.prepare(`
-    SELECT entity, correct, created_at
+    SELECT entity, correct, confidence, created_at
     FROM wikilink_feedback
     ORDER BY entity COLLATE NOCASE
-  `).all() as Array<{ entity: string; correct: number; created_at: string }>;
+  `).all() as Array<{ entity: string; correct: number; confidence: number; created_at: string }>;
 
   const acc = new Map<string, { weightedTotal: number; weightedCorrect: number; weightedFp: number; rawTotal: number }>();
 
@@ -247,7 +274,8 @@ export function getWeightedEntityStats(stateDb: StateDb, now?: Date): WeightedEn
       acc.set(key, { weightedTotal: 0, weightedCorrect: 0, weightedFp: 0, rawTotal: 0 });
     }
     const stats = acc.get(key)!;
-    const weight = computeFeedbackWeight(row.created_at, now);
+    const recencyWeight = computeFeedbackWeight(row.created_at, now);
+    const weight = recencyWeight * (row.confidence ?? 1.0);
     stats.weightedTotal += weight;
     stats.rawTotal++;
     if (row.correct === 1) {
@@ -296,21 +324,22 @@ function getWeightedFolderStats(
   now?: Date,
 ): { weightedTotal: number; weightedFp: number; weightedAccuracy: number; weightedFpRate: number; rawTotal: number } {
   const rows = stateDb.db.prepare(`
-    SELECT correct, created_at
+    SELECT correct, confidence, created_at
     FROM wikilink_feedback
     WHERE entity = ? COLLATE NOCASE AND (
       CASE WHEN ? = '' THEN note_path NOT LIKE '%/%'
       ELSE note_path LIKE ? || '/%'
       END
     )
-  `).all(entity, folder, folder) as Array<{ correct: number; created_at: string }>;
+  `).all(entity, folder, folder) as Array<{ correct: number; confidence: number; created_at: string }>;
 
   let weightedTotal = 0;
   let weightedCorrect = 0;
   let weightedFp = 0;
 
   for (const row of rows) {
-    const weight = computeFeedbackWeight(row.created_at, now);
+    const recencyWeight = computeFeedbackWeight(row.created_at, now);
+    const weight = recencyWeight * (row.confidence ?? 1.0);
     weightedTotal += weight;
     if (row.correct === 1) {
       weightedCorrect += weight;
@@ -361,16 +390,20 @@ export function updateSuppressionList(stateDb: StateDb, now?: Date): number {
     ).run(SUPPRESSION_TTL_DAYS);
 
     for (const stat of weightedStats) {
-      // Gate on raw count AND weighted total
-      if (stat.rawTotal < MIN_FEEDBACK_COUNT || stat.weightedTotal < WEIGHTED_MIN_TOTAL) {
+      const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp);
+      const totalObs = PRIOR_ALPHA + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
+
+      // Don't touch entities without enough observations
+      if (totalObs < SUPPRESSION_MIN_OBSERVATIONS) {
         continue;
       }
 
-      if (stat.weightedFpRate >= SUPPRESSION_THRESHOLD) {
-        upsert.run(stat.entity, stat.weightedFpRate);
+      if (posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD) {
+        // Store 1 - posteriorMean for backward compat (higher = worse)
+        upsert.run(stat.entity, 1 - posteriorMean);
         updated++;
       } else {
-        // Remove from suppression if weighted rate dropped below threshold
+        // Remove from suppression if posterior recovered above threshold
         remove.run(stat.entity);
       }
     }
@@ -417,11 +450,14 @@ export function isSuppressed(stateDb: StateDb, entity: string, folder?: string, 
   ).get(entity, SUPPRESSION_TTL_DAYS) as { entity: string; updated_at: string } | undefined;
   if (row) return true;
 
-  // Folder-specific suppression: use weighted decay
+  // Folder-specific suppression: use Beta-Binomial posterior
   if (folder !== undefined) {
     const stats = getWeightedFolderStats(stateDb, entity, folder, now);
-    if (stats.rawTotal >= FOLDER_SUPPRESSION_MIN_COUNT && stats.weightedTotal >= WEIGHTED_MIN_TOTAL) {
-      if (stats.weightedFpRate >= SUPPRESSION_THRESHOLD) {
+    if (stats.rawTotal >= FOLDER_SUPPRESSION_MIN_COUNT) {
+      const folderCorrect = stats.weightedTotal - stats.weightedFp;
+      const posteriorMean = computePosteriorMean(folderCorrect, stats.weightedFp);
+      const totalObs = PRIOR_ALPHA + folderCorrect + PRIOR_BETA + stats.weightedFp;
+      if (totalObs >= SUPPRESSION_MIN_OBSERVATIONS && posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD) {
         return true;
       }
     }
@@ -602,6 +638,51 @@ export function getAllFeedbackBoosts(stateDb: StateDb, folder?: string, now?: Da
 }
 
 // =============================================================================
+// SUPPRESSION PENALTIES (Soft, Proportional)
+// =============================================================================
+
+/**
+ * Get proportional suppression penalties for all entities with sufficient feedback.
+ * Penalties are proportional to posterior confidence — barely suppressed entities
+ * get minimal penalty, clearly bad entities get near-maximum.
+ *
+ * Used by suggestRelatedLinks() for soft suppression (replaces hard block).
+ * @param now - Optional reference date for testability
+ */
+export function getAllSuppressionPenalties(stateDb: StateDb, now?: Date): Map<string, number> {
+  const penalties = new Map<string, number>();
+  const weightedStats = getWeightedEntityStats(stateDb, now);
+
+  for (const stat of weightedStats) {
+    const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp);
+    const totalObs = PRIOR_ALPHA + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
+
+    if (totalObs >= SUPPRESSION_MIN_OBSERVATIONS && posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD) {
+      // Proportional: barely suppressed (0.35) → ~0, fully bad (0.0) → MAX_SUPPRESSION_PENALTY
+      const penalty = Math.round(MAX_SUPPRESSION_PENALTY * (1 - posteriorMean / SUPPRESSION_POSTERIOR_THRESHOLD));
+      if (penalty < 0) {
+        penalties.set(stat.entity, penalty);
+      }
+    }
+  }
+
+  // Also include explicitly suppressed entities from the table
+  // (may not have feedback data, e.g., user manually suppressed via suppressEntity())
+  const rows = stateDb.db.prepare(
+    `SELECT entity, updated_at FROM wikilink_suppressions
+     WHERE datetime(updated_at, '+' || ? || ' days') > datetime('now')`
+  ).all(SUPPRESSION_TTL_DAYS) as Array<{ entity: string; updated_at: string }>;
+
+  for (const row of rows) {
+    if (!penalties.has(row.entity)) {
+      penalties.set(row.entity, MAX_SUPPRESSION_PENALTY);
+    }
+  }
+
+  return penalties;
+}
+
+// =============================================================================
 // IMPLICIT FEEDBACK (Application Tracking & Removal Detection)
 // =============================================================================
 
@@ -643,6 +724,32 @@ export function getTrackedApplications(
   ).all(notePath) as Array<{ entity: string }>;
 
   return rows.map(r => r.entity);
+}
+
+/**
+ * Get tracked applications with applied_at timestamp for confidence computation.
+ */
+function getTrackedApplicationsWithTime(
+  stateDb: StateDb,
+  notePath: string,
+): Array<{ entity: string; applied_at: string }> {
+  return stateDb.db.prepare(
+    `SELECT entity, applied_at FROM wikilink_applications WHERE note_path = ? AND status = 'applied'`
+  ).all(notePath) as Array<{ entity: string; applied_at: string }>;
+}
+
+/**
+ * Compute implicit feedback confidence based on how long the link survived.
+ * - Removed within 1h: 1.0 (strong negative — user immediately rejected it)
+ * - Removed within 24h: 0.85 (likely intentional removal)
+ * - Removed after 24h: 0.7 (may be context change, not necessarily wrong)
+ */
+function computeImplicitRemovalConfidence(appliedAt: string): number {
+  const normalized = appliedAt.includes('T') ? appliedAt : appliedAt.replace(' ', 'T') + 'Z';
+  const ageHours = (Date.now() - new Date(normalized).getTime()) / (60 * 60 * 1000);
+  if (ageHours <= 1) return 1.0;
+  if (ageHours <= 24) return 0.85;
+  return 0.7;
 }
 
 /** Get previously stored forward links for a note */
@@ -734,8 +841,8 @@ export function processImplicitFeedback(
   notePath: string,
   currentContent: string,
 ): string[] {
-  const tracked = getTrackedApplications(stateDb, notePath);
-  if (tracked.length === 0) return [];
+  const trackedWithTime = getTrackedApplicationsWithTime(stateDb, notePath);
+  if (trackedWithTime.length === 0) return [];
 
   const currentLinks = extractLinkedEntities(currentContent);
   const removed: string[] = [];
@@ -745,9 +852,10 @@ export function processImplicitFeedback(
   );
 
   const transaction = stateDb.db.transaction(() => {
-    for (const entity of tracked) {
+    for (const { entity, applied_at } of trackedWithTime) {
       if (!currentLinks.has(entity.toLowerCase())) {
-        recordFeedback(stateDb, entity, 'implicit:removed', notePath, false);
+        const confidence = computeImplicitRemovalConfidence(applied_at);
+        recordFeedback(stateDb, entity, 'implicit:removed', notePath, false, confidence);
         markRemoved.run(entity, notePath);
         removed.push(entity);
       }
@@ -1442,7 +1550,7 @@ export function formatActionReason(
     case 'boosted':
       return `Entity accuracy ${((details.accuracy ?? 0) * 100).toFixed(0)}% over ${details.sampleCount} samples → ${details.tier} tier → ${details.breakdown?.feedbackAdjustment ?? 0 > 0 ? '+' : ''}${details.breakdown?.feedbackAdjustment ?? 0} boost`;
     case 'suppressed':
-      return `Entity accuracy ${((details.accuracy ?? 0) * 100).toFixed(0)}% → suppressed (false_positive_rate ${((details.falsePositiveRate ?? 0) * 100).toFixed(0)}% > ${(SUPPRESSION_THRESHOLD * 100).toFixed(0)}%)`;
+      return `Entity accuracy ${((details.accuracy ?? 0) * 100).toFixed(0)}% (FP ${((details.falsePositiveRate ?? 0) * 100).toFixed(0)}%) → suppressed (posterior < ${(SUPPRESSION_POSTERIOR_THRESHOLD * 100).toFixed(0)}%)`;
     default:
       return `Unknown action: ${action}`;
   }

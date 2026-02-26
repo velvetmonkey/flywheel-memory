@@ -250,6 +250,7 @@ describe('Pillar 6: Pipeline Observability', () => {
       expect(reason).toContain('25%');
       expect(reason).toContain('75%');
       expect(reason).toContain('suppressed');
+      expect(reason).toContain('posterior');
     });
   });
 

@@ -1,0 +1,488 @@
+{
+  "seed": 99,
+  "description": "Alias collision stress test. Entities share overlapping aliases to test disambiguation.",
+  "entities": [
+    {
+      "name": "API Management",
+      "category": "concepts",
+      "path": "concepts/api-management.md",
+      "aliases": ["api", "APIM", "API-M"],
+      "hubScore": 80
+    },
+    {
+      "name": "API Gateway",
+      "category": "projects",
+      "path": "projects/api-gateway.md",
+      "aliases": ["api", "gateway", "APIG"],
+      "hubScore": 90
+    },
+    {
+      "name": "Databricks",
+      "category": "technologies",
+      "path": "technologies/databricks.md",
+      "aliases": ["RAG", "DBR"],
+      "hubScore": 60
+    },
+    {
+      "name": "Retrieval Augmented Generation",
+      "category": "concepts",
+      "path": "concepts/retrieval-augmented-generation.md",
+      "aliases": ["RAG", "retrieval"],
+      "hubScore": 50
+    },
+    {
+      "name": "David Chen",
+      "category": "people",
+      "path": "people/david-chen.md",
+      "aliases": ["David", "Chen"],
+      "hubScore": 100
+    },
+    {
+      "name": "Chen Province",
+      "category": "locations",
+      "path": "locations/chen-province.md",
+      "aliases": ["Chen"],
+      "hubScore": 20
+    },
+    {
+      "name": "Machine Learning",
+      "category": "concepts",
+      "path": "concepts/machine-learning.md",
+      "aliases": ["ML", "machine learning"],
+      "hubScore": 70
+    },
+    {
+      "name": "ML Pipeline",
+      "category": "projects",
+      "path": "projects/ml-pipeline.md",
+      "aliases": ["ML", "ml-pipeline", "MLPipeline"],
+      "hubScore": 45
+    },
+    {
+      "name": "TypeScript",
+      "category": "technologies",
+      "path": "technologies/typescript.md",
+      "aliases": ["TS", "typescript"],
+      "hubScore": 120
+    },
+    {
+      "name": "Test Suite",
+      "category": "concepts",
+      "path": "concepts/test-suite.md",
+      "aliases": ["TS", "test suite"],
+      "hubScore": 30
+    },
+    {
+      "name": "React",
+      "category": "technologies",
+      "path": "technologies/react.md",
+      "aliases": ["ReactJS", "React.js"],
+      "hubScore": 100
+    },
+    {
+      "name": "Reactive Programming",
+      "category": "concepts",
+      "path": "concepts/reactive-programming.md",
+      "aliases": ["reactive", "RxJS"],
+      "hubScore": 25
+    },
+    {
+      "name": "Docker",
+      "category": "technologies",
+      "path": "technologies/docker.md",
+      "aliases": ["docker", "container"],
+      "hubScore": 85
+    },
+    {
+      "name": "Kubernetes",
+      "category": "technologies",
+      "path": "technologies/kubernetes.md",
+      "aliases": ["k8s", "K8s"],
+      "hubScore": 75
+    },
+    {
+      "name": "ESGHub",
+      "category": "projects",
+      "path": "projects/esghub.md",
+      "aliases": ["ESG Hub"],
+      "hubScore": 150
+    },
+    {
+      "name": "James Franklin",
+      "category": "people",
+      "path": "people/james-franklin.md",
+      "aliases": ["James"],
+      "hubScore": 80
+    }
+  ],
+  "notes": [
+    {
+      "path": "projects/api-gateway.md",
+      "title": "API Gateway",
+      "frontmatter": { "type": "project", "aliases": ["api", "gateway", "APIG"] },
+      "content": "# API Gateway\n\nThe API Gateway handles all incoming requests for our microservices architecture. It integrates with our API Management platform for rate limiting and authentication.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "concepts/api-management.md",
+      "title": "API Management",
+      "frontmatter": { "type": "concept", "aliases": ["api", "APIM", "API-M"] },
+      "content": "# API Management\n\nAPI Management encompasses the processes of designing, publishing, documenting, and analyzing APIs. Our API Gateway uses APIM policies for throttling.",
+      "links": [],
+      "folder": "concepts"
+    },
+    {
+      "path": "daily-notes/2026-01-15.md",
+      "title": "2026-01-15",
+      "frontmatter": { "type": "daily" },
+      "content": "Spent the morning debugging the API Gateway deployment. David Chen helped identify the root cause in the api layer. The RAG pipeline is also having issues with retrieval latency. Need to check the ML Pipeline logs.\n\nAfterward, reviewed the TypeScript migration plan. The TS config needs updating for the new test suite. React components are being refactored to use reactive patterns.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-16.md",
+      "title": "2026-01-16",
+      "frontmatter": { "type": "daily" },
+      "content": "Met with James Franklin to discuss the ESGHub roadmap. The API Gateway team wants to integrate Retrieval Augmented Generation for smarter caching. David Chen raised concerns about the ML Pipeline resource usage.\n\nAlso explored Chen Province travel options for the team offsite. Docker containers for the staging environment need rebuilding.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "daily-notes/2026-01-17.md",
+      "title": "2026-01-17",
+      "frontmatter": { "type": "daily" },
+      "content": "Deep dive into Machine Learning model training. The RAG system needs better embeddings. Reviewed API Management policies with the platform team. Kubernetes cluster scaling issues in production.\n\nPaired with David Chen on TypeScript type safety improvements. The test suite revealed several regressions in the reactive event handlers.",
+      "links": [],
+      "folder": "daily-notes"
+    },
+    {
+      "path": "meetings/api-review.md",
+      "title": "API Architecture Review",
+      "frontmatter": {},
+      "content": "# API Architecture Review\n\nAttendees: David Chen, James Franklin\n\nDiscussed the relationship between API Management and API Gateway. The gateway handles routing while management handles lifecycle. Both share the api namespace which causes confusion.\n\nAction: David Chen to document disambiguation guide. RAG integration timeline confirmed for Q2.",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "meetings/ml-review.md",
+      "title": "ML Strategy Review",
+      "frontmatter": {},
+      "content": "# ML Strategy Review\n\nAttendees: James Franklin\n\nReviewed the Machine Learning roadmap. ML Pipeline throughput is 3x higher than last quarter. Discussed Retrieval Augmented Generation integration with ESGHub. The RAG system needs better retrieval from our Databricks warehouse.\n\nTypeScript SDK for the ML models is ready for testing.",
+      "links": [],
+      "folder": "meetings"
+    },
+    {
+      "path": "tech-guides/disambiguation.md",
+      "title": "Entity Disambiguation Guide",
+      "frontmatter": {},
+      "content": "# Entity Disambiguation Guide\n\nCommon alias collisions in our codebase:\n\n- api: Could mean API Management (concept) or API Gateway (project)\n- RAG: Could mean Retrieval Augmented Generation or Databricks data tooling\n- ML: Could mean Machine Learning (concept) or ML Pipeline (project)\n- TS: Could mean TypeScript or Test Suite\n- Chen: Could mean David Chen (person) or Chen Province (location)\n\nContext is key for disambiguation. In code reviews, api usually means API Gateway. In architecture discussions, it means API Management.",
+      "links": [],
+      "folder": "tech-guides"
+    },
+    {
+      "path": "projects/esghub.md",
+      "title": "ESGHub",
+      "frontmatter": { "type": "project", "aliases": ["ESG Hub"] },
+      "content": "# ESGHub\n\nEnvironmental Social Governance Hub. Built with React and TypeScript. Uses the API Gateway for external integrations. Kubernetes deployment managed by the platform team.",
+      "links": [],
+      "folder": "projects"
+    },
+    {
+      "path": "people/david-chen.md",
+      "title": "David Chen",
+      "frontmatter": { "type": "person", "aliases": ["David", "Chen"] },
+      "content": "# David Chen\n\nSenior architect at the company. Leads the API Gateway and API Management teams. Expert in Docker and Kubernetes deployments.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "people/james-franklin.md",
+      "title": "James Franklin",
+      "frontmatter": { "type": "person", "aliases": ["James"] },
+      "content": "# James Franklin\n\nEngineering manager. Oversees ESGHub, ML Pipeline, and the Machine Learning research initiatives.",
+      "links": [],
+      "folder": "people"
+    },
+    {
+      "path": "inbox/research-notes.md",
+      "title": "Research Notes",
+      "frontmatter": {},
+      "content": "Looking into Retrieval Augmented Generation patterns. The RAG approach uses embeddings to find relevant context before generating responses. Our Databricks cluster (DBR) could serve as the vector store.\n\nAlso reading about reactive programming patterns in React. The reactive event system pairs well with TypeScript for type-safe event handling.",
+      "links": [],
+      "folder": "inbox"
+    }
+  ],
+  "groundTruth": [
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "API Gateway",
+      "tier": 1,
+      "reason": "Entity name API Gateway appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity name David Chen appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "ML Pipeline",
+      "tier": 1,
+      "reason": "Entity name ML Pipeline appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Entity name TypeScript appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Entity name React appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-15.md",
+      "entity": "Retrieval Augmented Generation",
+      "tier": 2,
+      "reason": "Alias RAG matches entity"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity name James Franklin appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity name ESGHub appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "API Gateway",
+      "tier": 1,
+      "reason": "Entity name API Gateway appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "Retrieval Augmented Generation",
+      "tier": 1,
+      "reason": "Entity name Retrieval Augmented Generation appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity name David Chen appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "ML Pipeline",
+      "tier": 1,
+      "reason": "Entity name ML Pipeline appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "Chen Province",
+      "tier": 1,
+      "reason": "Entity name Chen Province appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-16.md",
+      "entity": "Docker",
+      "tier": 1,
+      "reason": "Entity name Docker appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "Machine Learning",
+      "tier": 1,
+      "reason": "Entity name Machine Learning appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "API Management",
+      "tier": 1,
+      "reason": "Entity name API Management appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "Kubernetes",
+      "tier": 1,
+      "reason": "Entity name Kubernetes appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity name David Chen appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Entity name TypeScript appears verbatim"
+    },
+    {
+      "notePath": "daily-notes/2026-01-17.md",
+      "entity": "Retrieval Augmented Generation",
+      "tier": 2,
+      "reason": "Alias RAG matches entity"
+    },
+    {
+      "notePath": "meetings/api-review.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity name David Chen appears verbatim"
+    },
+    {
+      "notePath": "meetings/api-review.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity name James Franklin appears verbatim"
+    },
+    {
+      "notePath": "meetings/api-review.md",
+      "entity": "API Management",
+      "tier": 1,
+      "reason": "Entity name API Management appears verbatim"
+    },
+    {
+      "notePath": "meetings/api-review.md",
+      "entity": "API Gateway",
+      "tier": 1,
+      "reason": "Entity name API Gateway appears verbatim"
+    },
+    {
+      "notePath": "meetings/ml-review.md",
+      "entity": "James Franklin",
+      "tier": 1,
+      "reason": "Entity name James Franklin appears verbatim"
+    },
+    {
+      "notePath": "meetings/ml-review.md",
+      "entity": "Machine Learning",
+      "tier": 1,
+      "reason": "Entity name Machine Learning appears verbatim"
+    },
+    {
+      "notePath": "meetings/ml-review.md",
+      "entity": "ML Pipeline",
+      "tier": 1,
+      "reason": "Entity name ML Pipeline appears verbatim"
+    },
+    {
+      "notePath": "meetings/ml-review.md",
+      "entity": "Retrieval Augmented Generation",
+      "tier": 1,
+      "reason": "Entity name Retrieval Augmented Generation appears verbatim"
+    },
+    {
+      "notePath": "meetings/ml-review.md",
+      "entity": "ESGHub",
+      "tier": 1,
+      "reason": "Entity name ESGHub appears verbatim"
+    },
+    {
+      "notePath": "meetings/ml-review.md",
+      "entity": "Databricks",
+      "tier": 1,
+      "reason": "Entity name Databricks appears verbatim"
+    },
+    {
+      "notePath": "meetings/ml-review.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Entity name TypeScript appears verbatim"
+    },
+    {
+      "notePath": "tech-guides/disambiguation.md",
+      "entity": "API Management",
+      "tier": 1,
+      "reason": "Entity name API Management appears verbatim"
+    },
+    {
+      "notePath": "tech-guides/disambiguation.md",
+      "entity": "API Gateway",
+      "tier": 1,
+      "reason": "Entity name API Gateway appears verbatim"
+    },
+    {
+      "notePath": "tech-guides/disambiguation.md",
+      "entity": "Retrieval Augmented Generation",
+      "tier": 1,
+      "reason": "Entity name Retrieval Augmented Generation appears verbatim"
+    },
+    {
+      "notePath": "tech-guides/disambiguation.md",
+      "entity": "Databricks",
+      "tier": 1,
+      "reason": "Entity name Databricks appears verbatim"
+    },
+    {
+      "notePath": "tech-guides/disambiguation.md",
+      "entity": "Machine Learning",
+      "tier": 1,
+      "reason": "Entity name Machine Learning appears verbatim"
+    },
+    {
+      "notePath": "tech-guides/disambiguation.md",
+      "entity": "ML Pipeline",
+      "tier": 1,
+      "reason": "Entity name ML Pipeline appears verbatim"
+    },
+    {
+      "notePath": "tech-guides/disambiguation.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Entity name TypeScript appears verbatim"
+    },
+    {
+      "notePath": "tech-guides/disambiguation.md",
+      "entity": "Test Suite",
+      "tier": 1,
+      "reason": "Entity name Test Suite appears verbatim"
+    },
+    {
+      "notePath": "tech-guides/disambiguation.md",
+      "entity": "David Chen",
+      "tier": 1,
+      "reason": "Entity name David Chen appears verbatim"
+    },
+    {
+      "notePath": "tech-guides/disambiguation.md",
+      "entity": "Chen Province",
+      "tier": 1,
+      "reason": "Entity name Chen Province appears verbatim"
+    },
+    {
+      "notePath": "inbox/research-notes.md",
+      "entity": "Retrieval Augmented Generation",
+      "tier": 1,
+      "reason": "Entity name Retrieval Augmented Generation appears verbatim"
+    },
+    {
+      "notePath": "inbox/research-notes.md",
+      "entity": "Databricks",
+      "tier": 1,
+      "reason": "Entity name Databricks appears verbatim"
+    },
+    {
+      "notePath": "inbox/research-notes.md",
+      "entity": "React",
+      "tier": 1,
+      "reason": "Entity name React appears verbatim"
+    },
+    {
+      "notePath": "inbox/research-notes.md",
+      "entity": "TypeScript",
+      "tier": 1,
+      "reason": "Entity name TypeScript appears verbatim"
+    }
+  ]
+}

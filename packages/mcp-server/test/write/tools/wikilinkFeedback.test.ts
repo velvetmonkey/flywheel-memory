@@ -141,13 +141,15 @@ describe('wikilink_feedback', () => {
       expect(isSuppressed(stateDb, 'Java')).toBe(false);
     });
 
-    it('should suppress entity with >= 10 entries and >= 30% false positive rate', () => {
-      // 10 entries: 6 correct, 4 incorrect (40% FP rate)
-      for (let i = 0; i < 6; i++) {
+    it('should suppress entity with low Beta-Binomial posterior mean', () => {
+      // 12 entries: 2 correct, 10 incorrect
+      // Posterior: Beta(2+2, 1+10) = Beta(4, 11), mean = 4/15 = 0.267 < 0.35
+      // totalObs = 2+2+1+10 = 15 >= 8
+      for (let i = 0; i < 2; i++) {
         recordFeedback(stateDb, 'Java', `correct ${i}`, `note${i}.md`, true);
       }
-      for (let i = 0; i < 4; i++) {
-        recordFeedback(stateDb, 'Java', `incorrect ${i}`, `note${i + 6}.md`, false);
+      for (let i = 0; i < 10; i++) {
+        recordFeedback(stateDb, 'Java', `incorrect ${i}`, `note${i + 2}.md`, false);
       }
 
       updateSuppressionList(stateDb);
@@ -168,35 +170,38 @@ describe('wikilink_feedback', () => {
       expect(isSuppressed(stateDb, 'TypeScript')).toBe(false);
     });
 
-    it('should remove suppression when rate drops below threshold', () => {
-      // First: 10 entries with 40% FP rate → suppressed
-      for (let i = 0; i < 6; i++) {
+    it('should remove suppression when posterior rises above threshold', () => {
+      // First: 12 entries with high FP → suppressed
+      // 2 correct + 10 incorrect → posterior = Beta(4,11) = 0.267 < 0.35
+      for (let i = 0; i < 2; i++) {
         recordFeedback(stateDb, 'Spring', `correct ${i}`, `note${i}.md`, true);
       }
-      for (let i = 0; i < 4; i++) {
-        recordFeedback(stateDb, 'Spring', `incorrect ${i}`, `note${i + 6}.md`, false);
+      for (let i = 0; i < 10; i++) {
+        recordFeedback(stateDb, 'Spring', `incorrect ${i}`, `note${i + 2}.md`, false);
       }
       updateSuppressionList(stateDb);
       expect(isSuppressed(stateDb, 'Spring')).toBe(true);
 
-      // Add 10 more correct entries → FP rate drops to 4/20 = 20%
-      for (let i = 0; i < 10; i++) {
-        recordFeedback(stateDb, 'Spring', `correct extra ${i}`, `note${i + 10}.md`, true);
+      // Add 15 more correct entries → posterior = Beta(4+15, 11) = Beta(19, 11) = 19/30 = 0.633 > 0.35
+      for (let i = 0; i < 15; i++) {
+        recordFeedback(stateDb, 'Spring', `correct extra ${i}`, `note${i + 12}.md`, true);
       }
       updateSuppressionList(stateDb);
       expect(isSuppressed(stateDb, 'Spring')).toBe(false);
     });
 
     it('should return suppressed entities list', () => {
-      // Create two entities that should be suppressed (need >= 10 entries each)
+      // Create two entities that should be suppressed
+      // Go: 10 negatives → posterior = Beta(2, 11) = 2/13 = 0.154 < 0.35, totalObs=13 >= 8
       for (let i = 0; i < 10; i++) {
         recordFeedback(stateDb, 'Go', `fp ${i}`, `note${i}.md`, false);
       }
-      for (let i = 0; i < 6; i++) {
+      // Rust: 2 correct, 10 negative → posterior = Beta(4, 11) = 4/15 = 0.267 < 0.35
+      for (let i = 0; i < 2; i++) {
         recordFeedback(stateDb, 'Rust', `correct ${i}`, `note${i}.md`, true);
       }
-      for (let i = 0; i < 6; i++) {
-        recordFeedback(stateDb, 'Rust', `fp ${i}`, `note${i + 6}.md`, false);
+      for (let i = 0; i < 10; i++) {
+        recordFeedback(stateDb, 'Rust', `fp ${i}`, `note${i + 2}.md`, false);
       }
 
       updateSuppressionList(stateDb);
@@ -206,7 +211,6 @@ describe('wikilink_feedback', () => {
 
       const goEntry = suppressed.find(s => s.entity === 'Go');
       expect(goEntry).toBeDefined();
-      expect(goEntry!.false_positive_rate).toBe(1.0);
     });
   });
 
@@ -227,16 +231,17 @@ describe('wikilink_feedback', () => {
       expect(boosts.has('NewEntity')).toBe(false);
     });
 
-    it('should give +10 for 95% accuracy with 20 samples', () => {
-      // 19 correct, 1 incorrect = 95% accuracy
-      for (let i = 0; i < 19; i++) {
+    it('should give +8 for 90% accuracy with 10 samples', () => {
+      // 9 correct, 1 incorrect = 90% accuracy, 10 samples >= 5
+      // New top tier: {0.85, 5, 8}
+      for (let i = 0; i < 9; i++) {
         recordFeedback(stateDb, 'HighAccuracy', `context ${i}`, `note${i}.md`, true);
       }
-      recordFeedback(stateDb, 'HighAccuracy', 'wrong', 'note19.md', false);
+      recordFeedback(stateDb, 'HighAccuracy', 'wrong', 'note9.md', false);
 
       const boosts = getAllFeedbackBoosts(stateDb);
-      expect(boosts.get('HighAccuracy')).toBe(10);
-      expect(getFeedbackBoost(stateDb, 'HighAccuracy')).toBe(10);
+      expect(boosts.get('HighAccuracy')).toBe(8);
+      expect(getFeedbackBoost(stateDb, 'HighAccuracy')).toBe(8);
     });
 
     it('should give +4 for 80% accuracy', () => {
@@ -252,8 +257,9 @@ describe('wikilink_feedback', () => {
       expect(boosts.get('GoodEntity')).toBe(4);
     });
 
-    it('should give -4 for 50% accuracy', () => {
+    it('should give 0 for 50% accuracy (neutral zone)', () => {
       // 5 correct, 5 incorrect = 50%
+      // New neutral tier: {0.50, 3, 0}
       for (let i = 0; i < 5; i++) {
         recordFeedback(stateDb, 'MediumEntity', `context ${i}`, `note${i}.md`, true);
       }
@@ -262,11 +268,13 @@ describe('wikilink_feedback', () => {
       }
 
       const boosts = getAllFeedbackBoosts(stateDb);
-      expect(boosts.get('MediumEntity')).toBe(-4);
+      // 50% accuracy falls in neutral zone (0.50-0.70), boost = 0 → not in map
+      expect(boosts.has('MediumEntity')).toBe(false);
     });
 
-    it('should give -8 for 30% accuracy', () => {
-      // 3 correct, 7 incorrect = 30%
+    it('should give -4 for 30% accuracy with 5+ samples', () => {
+      // 3 correct, 7 incorrect = 30% accuracy, 10 samples >= 5
+      // New penalty tier: {0.30, 5, -4}
       for (let i = 0; i < 3; i++) {
         recordFeedback(stateDb, 'LowEntity', `context ${i}`, `note${i}.md`, true);
       }
@@ -275,7 +283,7 @@ describe('wikilink_feedback', () => {
       }
 
       const boosts = getAllFeedbackBoosts(stateDb);
-      expect(boosts.get('LowEntity')).toBe(-8);
+      expect(boosts.get('LowEntity')).toBe(-4);
     });
 
     it('should match getFeedbackBoost with batch output', () => {
@@ -296,17 +304,18 @@ describe('wikilink_feedback', () => {
     });
 
     it('computeBoostFromAccuracy: tier boundaries', () => {
-      expect(computeBoostFromAccuracy(0.95, 20)).toBe(10);
-      expect(computeBoostFromAccuracy(0.94, 20)).toBe(4);  // below 95% tier
-      expect(computeBoostFromAccuracy(0.95, 5)).toBe(4);   // not enough samples for +10 tier
-      expect(computeBoostFromAccuracy(0.80, 5)).toBe(4);
-      expect(computeBoostFromAccuracy(0.79, 5)).toBe(0);   // below 80% but above 60%
-      expect(computeBoostFromAccuracy(0.60, 5)).toBe(0);
-      expect(computeBoostFromAccuracy(0.59, 5)).toBe(-4);  // below 60% but above 40%
-      expect(computeBoostFromAccuracy(0.40, 5)).toBe(-4);
-      expect(computeBoostFromAccuracy(0.39, 5)).toBe(-8);
+      // New tiers: {0.85/5/+8, 0.70/3/+4, 0.50/3/0, 0.30/5/-4, 0/5/-8}
+      expect(computeBoostFromAccuracy(0.90, 5)).toBe(8);   // >= 0.85, >= 5 samples → +8
+      expect(computeBoostFromAccuracy(0.85, 5)).toBe(8);   // exactly 0.85 → +8
+      expect(computeBoostFromAccuracy(0.84, 5)).toBe(4);   // below 0.85 but >= 0.70 → +4
+      expect(computeBoostFromAccuracy(0.70, 3)).toBe(4);   // exactly 0.70, 3 samples → +4
+      expect(computeBoostFromAccuracy(0.69, 3)).toBe(0);   // below 0.70 but >= 0.50 → 0
+      expect(computeBoostFromAccuracy(0.50, 3)).toBe(0);   // exactly 0.50 → 0
+      expect(computeBoostFromAccuracy(0.49, 5)).toBe(-4);  // below 0.50 but >= 0.30, 5 samples → -4
+      expect(computeBoostFromAccuracy(0.30, 5)).toBe(-4);  // exactly 0.30, 5 samples → -4
+      expect(computeBoostFromAccuracy(0.29, 5)).toBe(-8);  // below 0.30, 5 samples → -8
       expect(computeBoostFromAccuracy(0.10, 5)).toBe(-8);
-      expect(computeBoostFromAccuracy(1.0, 3)).toBe(4);    // meets min samples (3), Strong tier
+      expect(computeBoostFromAccuracy(1.0, 3)).toBe(4);    // 100% but only 3 samples → +4 (needs 5 for +8)
     });
   });
 
@@ -388,15 +397,15 @@ describe('wikilink_feedback', () => {
         recordFeedback(stateDb, 'Redis', `wrong ${i}`, `daily/note${i + 2}.md`, false);
       }
 
-      // Global: 7/10 = 70% → boost 0 (60-80% tier), not in map since boost is 0
+      // Global: 7/10 = 70% → boost +4 (0.70 tier with 10 samples >= 3)
       const globalBoosts = getAllFeedbackBoosts(stateDb);
-      expect(globalBoosts.has('Redis')).toBe(false);
+      expect(globalBoosts.get('Redis')).toBe(4);
 
-      // Tech folder: 5/5 = 100% with 5 samples → +4 (needs 20 for +10)
+      // Tech folder: 5/5 = 100% with 5 samples → +8 (top tier: >= 0.85, >= 5)
       const techBoosts = getAllFeedbackBoosts(stateDb, 'tech');
-      expect(techBoosts.get('Redis')).toBe(4);
+      expect(techBoosts.get('Redis')).toBe(8);
 
-      // Daily folder: 2/5 = 40% → -4
+      // Daily folder: 2/5 = 40% → -4 (penalty tier: < 0.50, >= 5 samples)
       const dailyBoosts = getAllFeedbackBoosts(stateDb, 'daily');
       expect(dailyBoosts.get('Redis')).toBe(-4);
     });
@@ -716,10 +725,10 @@ describe('wikilink_feedback', () => {
         insertFeedbackAt('BoostEntity', `note${i + 3}.md`, true, '2026-04-01 00:00:00');
       }
 
-      // Raw: 7/10 = 70% → boost 0 (neutral tier)
-      // Weighted: 7*1.0 / (3*0.25 + 7*1.0) = 7.0/7.75 ≈ 90.3% → boost +4 (strong tier)
+      // Raw: 7/10 = 70% → boost +4
+      // Weighted: 7*1.0 / (3*0.25 + 7*1.0) = 7.0/7.75 ≈ 90.3% → boost +8 (top tier)
       const boosts = getAllFeedbackBoosts(stateDb, undefined, now);
-      expect(boosts.get('BoostEntity')).toBe(4);
+      expect(boosts.get('BoostEntity')).toBe(8);
     });
 
     it('old negative feedback fades → entity unsuppresses over time', () => {

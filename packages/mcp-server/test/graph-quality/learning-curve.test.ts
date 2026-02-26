@@ -1,7 +1,7 @@
 /**
  * Suite 2: Learning Curve Test
  *
- * The crown jewel. Proves the flywheel learns from feedback over 10 rounds
+ * The crown jewel. Proves the flywheel learns from feedback over 20 rounds
  * of suggest -> evaluate -> feedback -> re-suggest. Tracks F1, precision,
  * recall, MRR, suppression count, and per-category breakdowns across rounds.
  *
@@ -34,7 +34,7 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 // Constants
 // =============================================================================
 
-const TOTAL_ROUNDS = 10;
+const TOTAL_ROUNDS = 20;
 const TP_CORRECT_RATE = 0.85;  // 85% of TPs recorded as correct
 const FP_CORRECT_RATE = 0.15;  // 15% of FPs recorded as correct (noise)
 
@@ -88,7 +88,7 @@ describe('Suite 2: Learning Curve', () => {
     vault = await buildGroundTruthVault(spec);
     await stripLinks(vault, spec.groundTruth);
 
-    // 2. Run 10 rounds of suggest -> evaluate -> feedback -> re-suggest
+    // 2. Run 20 rounds of suggest -> evaluate -> feedback -> re-suggest
     const rng = mulberry32(42); // deterministic seed
     for (let round = 0; round < TOTAL_ROUNDS; round++) {
       // Step 1: Run suggestions on all notes
@@ -162,14 +162,14 @@ describe('Suite 2: Learning Curve', () => {
         feedbackLayerAvgContribution,
       });
     }
-  }, 300000); // 5 min timeout for 10 rounds
+  }, 600000); // 10 min timeout for 20 rounds
 
   afterAll(async () => {
     // Write diagnostic report
     if (roundMetrics.length > 0) {
       const round0 = roundMetrics[0];
-      const round9 = roundMetrics[roundMetrics.length - 1];
-      const f1Improvement = round9.f1 - round0.f1;
+      const roundN = roundMetrics[roundMetrics.length - 1];
+      const f1Improvement = roundN.f1 - round0.f1;
 
       const tuning_recommendations: TuningRecommendation[] = [];
       if (f1Improvement < 0.05) {
@@ -177,7 +177,7 @@ describe('Suite 2: Learning Curve', () => {
           parameter: 'FEEDBACK_BOOST_MIN_SAMPLES',
           current_value: 5,
           suggested_value: 3,
-          evidence: `F1 improvement over 10 rounds was only ${(f1Improvement * 100).toFixed(1)}% (< 5%). ` +
+          evidence: `F1 improvement over ${TOTAL_ROUNDS} rounds was only ${(f1Improvement * 100).toFixed(1)}% (< 5%). ` +
             'Tightening feedback thresholds may help the system learn faster.',
           confidence: 'medium',
         });
@@ -189,9 +189,9 @@ describe('Suite 2: Learning Curve', () => {
         duration_ms: timer.elapsed(),
         summary: {
           round0_f1: round0.f1,
-          round9_f1: round9.f1,
+          roundN_f1: roundN.f1,
           f1_improvement: Math.round(f1Improvement * 10000) / 10000,
-          total_suppressions: round9.suppressionCount,
+          total_suppressions: roundN.suppressionCount,
         },
         details: roundMetrics.map(m => ({
           round: m.round,
@@ -219,15 +219,13 @@ describe('Suite 2: Learning Curve', () => {
   // Assertions
   // ===========================================================================
 
-  it('F1 at round 9 does not catastrophically regress from round 0', () => {
+  it('F1 at final round does not regress from round 0', () => {
     expect(roundMetrics.length).toBe(TOTAL_ROUNDS);
     const round0 = roundMetrics[0];
-    const round9 = roundMetrics[TOTAL_ROUNDS - 1];
-    // With 15% feedback noise on a small fixture, suppressions accumulate
-    // and can incorrectly suppress TPs. On this fixture, F1 drops ~25pp over
-    // 10 rounds — this is a real algorithm signal captured in the report.
-    // Guard against catastrophic regression (> 30pp drop).
-    expect(round9.f1).toBeGreaterThanOrEqual(round0.f1 - 0.30);
+    const roundN = roundMetrics[TOTAL_ROUNDS - 1];
+    // After eliminating the double-penalty (Layer 10 negative boosts + Layer 0
+    // suppression), F1 should be non-negative relative to round 0.
+    expect(roundN.f1).toBeGreaterThanOrEqual(round0.f1);
   });
 
   it('precision trend is non-decreasing after round 3 (2pp tolerance for soft suppression oscillation)', () => {
@@ -264,11 +262,24 @@ describe('Suite 2: Learning Curve', () => {
     }
   });
 
-  it('at least 1 category reaches F1 > 0 by round 9', () => {
+  it('at least 1 category reaches F1 > 0 by final round', () => {
     expect(roundMetrics.length).toBe(TOTAL_ROUNDS);
-    const round9 = roundMetrics[TOTAL_ROUNDS - 1];
-    const categoryF1s = Object.values(round9.byCategory).map(c => c.f1);
+    const roundN = roundMetrics[TOTAL_ROUNDS - 1];
+    const categoryF1s = Object.values(roundN.byCategory).map(c => c.f1);
     const hasPositiveF1 = categoryF1s.some(f1 => f1 > 0);
     expect(hasPositiveF1).toBe(true);
+  });
+
+  it('feedback layer average contribution is non-negative at final round', () => {
+    const finalRound = roundMetrics[TOTAL_ROUNDS - 1];
+    expect(finalRound.feedbackLayerAvgContribution).toBeGreaterThanOrEqual(0);
+  });
+
+  it('suppression count at final round is below 20', () => {
+    const finalRound = roundMetrics[TOTAL_ROUNDS - 1];
+    // With 15% feedback noise over 20 rounds, ~15 genuine FPs get correctly
+    // suppressed (F1 keeps improving, confirming suppressions are helping).
+    // Guard against runaway suppression; 60% ceiling assertion handles the rest.
+    expect(finalRound.suppressionCount).toBeLessThan(20);
   });
 });

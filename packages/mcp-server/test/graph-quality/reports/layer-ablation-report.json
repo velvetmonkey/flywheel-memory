@@ -1,0 +1,540 @@
+{
+  "suite": "layer-ablation-report",
+  "timestamp": "2026-02-26T08:54:56.191Z",
+  "duration_ms": 18127,
+  "summary": {
+    "primary_baseline_f1": 0.72,
+    "primary_baseline_precision": 0.9,
+    "primary_baseline_recall": 0.6,
+    "generated_baseline_f1": 0.839,
+    "generated_baseline_precision": 0.783,
+    "generated_baseline_recall": 0.903,
+    "total_ablation_runs": 28,
+    "core_layers": 1,
+    "useful_layers": 2,
+    "marginal_layers": 21,
+    "harmful_layers": 2
+  },
+  "details": [
+    {
+      "vault": "primary",
+      "baseline": {
+        "precision": 0.9,
+        "recall": 0.6,
+        "f1": 0.72,
+        "fpRate": 0.1,
+        "truePositives": 36,
+        "falsePositives": 4,
+        "falseNegatives": 24,
+        "totalSuggestions": 40,
+        "totalGroundTruth": 60,
+        "byTier": {
+          "1": {
+            "precision": 1,
+            "recall": 0.75,
+            "f1": 0.8571428571428571,
+            "count": 24
+          },
+          "2": {
+            "precision": 1,
+            "recall": 0.47619047619047616,
+            "f1": 0.6451612903225806,
+            "count": 21
+          },
+          "3": {
+            "precision": 1,
+            "recall": 0.5333333333333333,
+            "f1": 0.6956521739130436,
+            "count": 15
+          }
+        },
+        "byCategory": {
+          "projects": {
+            "precision": 1,
+            "recall": 0.75,
+            "f1": 0.8571428571428571,
+            "count": 8
+          },
+          "people": {
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "count": 5
+          },
+          "technologies": {
+            "precision": 1,
+            "recall": 0.7142857142857143,
+            "f1": 0.8333333333333333,
+            "count": 7
+          },
+          "concepts": {
+            "precision": 1,
+            "recall": 0.6363636363636364,
+            "f1": 0.7777777777777778,
+            "count": 11
+          },
+          "organizations": {
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "count": 2
+          },
+          "acronyms": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count": 6
+          },
+          "health": {
+            "precision": 1,
+            "recall": 0.4444444444444444,
+            "f1": 0.6153846153846153,
+            "count": 9
+          },
+          "media": {
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "count": 2
+          },
+          "animals": {
+            "precision": 1,
+            "recall": 0.5714285714285714,
+            "f1": 0.7272727272727273,
+            "count": 7
+          },
+          "locations": {
+            "precision": 1,
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
+            "count": 2
+          },
+          "food": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count": 1
+          }
+        },
+        "mrr": 0.41,
+        "hitsAt3": 0.619,
+        "precisionAtK": 0.9
+      },
+      "layers": [
+        {
+          "layer": "length_filter",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "article_filter",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "exact_match",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "stem_match",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "cooccurrence",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "type_boost",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.733,
+          "f1Delta": -0.013000000000000012,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.902,
+          "precisionDelta": -0.0020000000000000018,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.617,
+          "recallDelta": -0.017000000000000015,
+          "classification": "HARMFUL"
+        },
+        {
+          "layer": "context_boost",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.733,
+          "f1Delta": -0.013000000000000012,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.902,
+          "precisionDelta": -0.0020000000000000018,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.617,
+          "recallDelta": -0.017000000000000015,
+          "classification": "HARMFUL"
+        },
+        {
+          "layer": "recency",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "cross_folder",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "hub_boost",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "feedback",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "semantic",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "edge_weight",
+          "baselineF1": 0.72,
+          "ablatedF1": 0.72,
+          "f1Delta": 0,
+          "baselinePrecision": 0.9,
+          "ablatedPrecision": 0.9,
+          "precisionDelta": 0,
+          "baselineRecall": 0.6,
+          "ablatedRecall": 0.6,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        }
+      ]
+    },
+    {
+      "vault": "generated",
+      "baseline": {
+        "precision": 0.783,
+        "recall": 0.903,
+        "f1": 0.839,
+        "fpRate": 0.217,
+        "truePositives": 112,
+        "falsePositives": 31,
+        "falseNegatives": 12,
+        "totalSuggestions": 143,
+        "totalGroundTruth": 124,
+        "byTier": {
+          "1": {
+            "precision": 1,
+            "recall": 0.8969072164948454,
+            "f1": 0.9456521739130436,
+            "count": 97
+          },
+          "2": {
+            "precision": 1,
+            "recall": 0.9259259259259259,
+            "f1": 0.9615384615384615,
+            "count": 27
+          },
+          "3": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "count": 0
+          }
+        },
+        "byCategory": {
+          "people": {
+            "precision": 1,
+            "recall": 1,
+            "f1": 1,
+            "count": 39
+          },
+          "projects": {
+            "precision": 1,
+            "recall": 0.9795918367346939,
+            "f1": 0.9896907216494846,
+            "count": 49
+          },
+          "technologies": {
+            "precision": 1,
+            "recall": 0.6944444444444444,
+            "f1": 0.819672131147541,
+            "count": 36
+          }
+        },
+        "mrr": 1,
+        "hitsAt3": 1,
+        "precisionAtK": 0.83
+      },
+      "layers": [
+        {
+          "layer": "length_filter",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.839,
+          "f1Delta": 0,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.783,
+          "precisionDelta": 0,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.903,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "article_filter",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.839,
+          "f1Delta": 0,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.783,
+          "precisionDelta": 0,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.903,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "exact_match",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.839,
+          "f1Delta": 0,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.783,
+          "precisionDelta": 0,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.903,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "stem_match",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.839,
+          "f1Delta": 0,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.783,
+          "precisionDelta": 0,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.903,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "cooccurrence",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.839,
+          "f1Delta": 0,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.783,
+          "precisionDelta": 0,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.903,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "type_boost",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.839,
+          "f1Delta": 0,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.783,
+          "precisionDelta": 0,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.903,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "context_boost",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.809,
+          "f1Delta": 0.029999999999999916,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.755,
+          "precisionDelta": 0.028000000000000025,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.871,
+          "recallDelta": 0.03200000000000003,
+          "classification": "USEFUL"
+        },
+        {
+          "layer": "recency",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.706,
+          "f1Delta": 0.133,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.655,
+          "precisionDelta": 0.128,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.766,
+          "recallDelta": 0.137,
+          "classification": "CORE"
+        },
+        {
+          "layer": "cross_folder",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.82,
+          "f1Delta": 0.019000000000000017,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.768,
+          "precisionDelta": 0.015000000000000013,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.879,
+          "recallDelta": 0.02400000000000002,
+          "classification": "USEFUL"
+        },
+        {
+          "layer": "hub_boost",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.839,
+          "f1Delta": 0,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.783,
+          "precisionDelta": 0,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.903,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "feedback",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.839,
+          "f1Delta": 0,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.783,
+          "precisionDelta": 0,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.903,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "semantic",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.839,
+          "f1Delta": 0,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.783,
+          "precisionDelta": 0,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.903,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        },
+        {
+          "layer": "edge_weight",
+          "baselineF1": 0.839,
+          "ablatedF1": 0.839,
+          "f1Delta": 0,
+          "baselinePrecision": 0.783,
+          "ablatedPrecision": 0.783,
+          "precisionDelta": 0,
+          "baselineRecall": 0.903,
+          "ablatedRecall": 0.903,
+          "recallDelta": 0,
+          "classification": "MARGINAL"
+        }
+      ]
+    }
+  ],
+  "tuning_recommendations": [
+    {
+      "parameter": "layer.type_boost",
+      "current_value": 1,
+      "suggested_value": 1,
+      "evidence": "Layer \"type_boost\" is HARMFUL on one vault but not both. Investigate weight tuning rather than disabling.",
+      "confidence": "medium"
+    },
+    {
+      "parameter": "layer.context_boost",
+      "current_value": 1,
+      "suggested_value": 1,
+      "evidence": "Layer \"context_boost\" is HARMFUL on one vault but not both. Investigate weight tuning rather than disabling.",
+      "confidence": "medium"
+    }
+  ]
+}

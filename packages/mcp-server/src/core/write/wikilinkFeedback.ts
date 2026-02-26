@@ -68,18 +68,18 @@ export interface DashboardData {
 // CONSTANTS
 // =============================================================================
 
-/** Beta-Binomial prior parameters (benefit of doubt: Beta(2,1) → 67% prior mean) */
-export const PRIOR_ALPHA = 2;   // Prior "correct" observations
+/** Beta-Binomial prior parameters (benefit of doubt: Beta(3,1) → 75% prior mean) */
+export const PRIOR_ALPHA = 3;   // Prior "correct" observations
 export const PRIOR_BETA = 1;    // Prior "incorrect" observations
 
 /** Posterior mean threshold for suppression (suppress when posteriorMean < this) */
 export const SUPPRESSION_POSTERIOR_THRESHOLD = 0.35;
 
 /** Minimum total posterior observations (alpha + beta) before considering suppression */
-export const SUPPRESSION_MIN_OBSERVATIONS = 8;
+export const SUPPRESSION_MIN_OBSERVATIONS = 10;
 
-/** Maximum suppression penalty (must exceed typical max score: content=10 + recency=8 + type=5 + hub=8) */
-const MAX_SUPPRESSION_PENALTY = -25;
+/** Maximum suppression penalty (strongly demotes but allows excellent content matches to survive) */
+const MAX_SUPPRESSION_PENALTY = -15;
 
 /** Minimum feedback entries before applying feedback boost */
 export const FEEDBACK_BOOST_MIN_SAMPLES = 3;
@@ -112,11 +112,11 @@ export function computePosteriorMean(weightedCorrect: number, weightedFp: number
 
 /** Feedback boost tiers: accuracy threshold → score adjustment */
 export const FEEDBACK_BOOST_TIERS: ReadonlyArray<{ minAccuracy: number; minSamples: number; boost: number }> = [
-  { minAccuracy: 0.85, minSamples: 5, boost: 8 },   // Achievable with 15% noise
-  { minAccuracy: 0.70, minSamples: 3, boost: 4 },   // Most TPs land here
-  { minAccuracy: 0.50, minSamples: 3, boost: 0 },   // Wider neutral zone
-  { minAccuracy: 0.30, minSamples: 5, boost: -4 },  // Require more evidence for penalty
-  { minAccuracy: 0,    minSamples: 5, boost: -8 },
+  { minAccuracy: 0.85, minSamples: 5, boost: 10 },  // Strong reward for high accuracy
+  { minAccuracy: 0.70, minSamples: 3, boost: 6 },   // Most TPs land here
+  { minAccuracy: 0.50, minSamples: 3, boost: 0 },   // Neutral — Layer 0 suppression handles demotion
+  { minAccuracy: 0.30, minSamples: 3, boost: 0 },   // Neutral — no double-penalty with Layer 0
+  { minAccuracy: 0,    minSamples: 3, boost: 0 },    // Neutral — no double-penalty with Layer 0
 ];
 
 // =============================================================================
@@ -876,11 +876,11 @@ export function processImplicitFeedback(
 // =============================================================================
 
 const TIER_LABELS: ReadonlyArray<{ label: string; boost: number; minAccuracy: number; minSamples: number }> = [
-  { label: 'Champion (+5)', boost: 5, minAccuracy: 0.95, minSamples: 20 },
-  { label: 'Strong (+2)', boost: 2, minAccuracy: 0.80, minSamples: 5 },
-  { label: 'Neutral (0)', boost: 0, minAccuracy: 0.60, minSamples: 5 },
-  { label: 'Weak (-2)', boost: -2, minAccuracy: 0.40, minSamples: 5 },
-  { label: 'Poor (-4)', boost: -4, minAccuracy: 0, minSamples: 5 },
+  { label: 'Champion (+10)', boost: 10, minAccuracy: 0.85, minSamples: 5 },
+  { label: 'Strong (+6)', boost: 6, minAccuracy: 0.70, minSamples: 3 },
+  { label: 'Neutral (0)', boost: 0, minAccuracy: 0.50, minSamples: 3 },
+  { label: 'Neutral (0)', boost: 0, minAccuracy: 0.30, minSamples: 3 },
+  { label: 'Neutral (0)', boost: 0, minAccuracy: 0, minSamples: 3 },
 ];
 
 /**

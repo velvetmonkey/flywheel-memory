@@ -1,0 +1,79 @@
+{
+  "suite": "topology-resilience",
+  "timestamp": "2026-02-26T08:55:02.396Z",
+  "duration_ms": 12859,
+  "summary": {
+    "archetypes_tested": 6,
+    "archetypes_recovered": 6,
+    "archetypes_suggestions_work": 6
+  },
+  "details": [
+    {
+      "archetype": "hub-and-spoke",
+      "loaded": true,
+      "entityIndexRecovered": true,
+      "suggestionsWork": true,
+      "baselineNoteCount": 71,
+      "postMutationNoteCount": 78,
+      "baselineF1": 0.118,
+      "postOrphanRate": 0.179,
+      "duration_ms": 2449
+    },
+    {
+      "archetype": "hierarchical",
+      "loaded": true,
+      "entityIndexRecovered": true,
+      "suggestionsWork": true,
+      "baselineNoteCount": 97,
+      "postMutationNoteCount": 107,
+      "baselineF1": 0.447,
+      "postOrphanRate": 0.85,
+      "duration_ms": 2937
+    },
+    {
+      "archetype": "dense-mesh",
+      "loaded": true,
+      "entityIndexRecovered": true,
+      "suggestionsWork": true,
+      "baselineNoteCount": 63,
+      "postMutationNoteCount": 69,
+      "baselineF1": 0.118,
+      "postOrphanRate": 0.362,
+      "duration_ms": 1472
+    },
+    {
+      "archetype": "sparse-orphan",
+      "loaded": true,
+      "entityIndexRecovered": true,
+      "suggestionsWork": true,
+      "baselineNoteCount": 99,
+      "postMutationNoteCount": 109,
+      "baselineF1": 0.222,
+      "postOrphanRate": 0.624,
+      "duration_ms": 1976
+    },
+    {
+      "archetype": "bridge-network",
+      "loaded": true,
+      "entityIndexRecovered": true,
+      "suggestionsWork": true,
+      "baselineNoteCount": 86,
+      "postMutationNoteCount": 95,
+      "baselineF1": 0.286,
+      "postOrphanRate": 0.474,
+      "duration_ms": 1904
+    },
+    {
+      "archetype": "small-world",
+      "loaded": true,
+      "entityIndexRecovered": true,
+      "suggestionsWork": true,
+      "baselineNoteCount": 100,
+      "postMutationNoteCount": 110,
+      "baselineF1": 0.71,
+      "postOrphanRate": 0.273,
+      "duration_ms": 2121
+    }
+  ],
+  "tuning_recommendations": []
+}

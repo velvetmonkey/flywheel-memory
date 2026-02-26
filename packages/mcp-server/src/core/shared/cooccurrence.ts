@@ -37,6 +37,17 @@ export interface CooccurrenceIndex {
   minCount: number;
 
   /**
+   * Document frequency: how many notes each entity appears in.
+   * Used for PMI/IDF scoring.
+   */
+  documentFrequency: Map<string, number>;
+
+  /**
+   * Total notes scanned (denominator for PMI/IDF).
+   */
+  totalNotesScanned: number;
+
+  /**
    * Metadata
    */
   _metadata: {
@@ -166,6 +177,7 @@ export async function mineCooccurrences(
 ): Promise<CooccurrenceIndex> {
   const { minCount = DEFAULT_MIN_COOCCURRENCE } = options;
   const associations: EntityAssociations = {};
+  const documentFrequency = new Map<string, number>();
   let notesScanned = 0;
 
   // Filter out very long entity names (article titles, etc.)
@@ -183,6 +195,11 @@ export async function mineCooccurrences(
         if (noteContainsEntity(content, entity)) {
           mentionedEntities.push(entity);
         }
+      }
+
+      // Track document frequency for each entity found in this note
+      for (const entity of mentionedEntities) {
+        documentFrequency.set(entity, (documentFrequency.get(entity) || 0) + 1);
       }
 
       // Track co-occurrences between all pairs of entities
@@ -218,6 +235,8 @@ export async function mineCooccurrences(
   return {
     associations,
     minCount,
+    documentFrequency,
+    totalNotesScanned: notesScanned,
     _metadata: {
       generated_at: new Date().toISOString(),
       total_associations: totalAssociations,
@@ -227,24 +246,66 @@ export async function mineCooccurrences(
 }
 
 /**
- * Maximum co-occurrence boost to prevent high-connectivity entities
- * from dominating suggestions through accumulated relationships.
- * Cap at 6 = 2 relationships max effect (prevents AD/AG/AI problem)
+ * Maximum co-occurrence boost (PMI-scaled).
+ * NPMI ranges [0,1] for positive associations; scale to ~12 max points.
  */
-const MAX_COOCCURRENCE_BOOST = 6;
+const MAX_COOCCURRENCE_BOOST = 12;
 
 /**
- * Get co-occurrence score boost for an entity based on matched entities
+ * Scale factor for converting NPMI [0,1] to score points.
+ */
+const PMI_SCALE = 12;
+
+/**
+ * Compute Normalized Pointwise Mutual Information (NPMI) between two entities.
  *
- * If the content matches entityA, and entityB has a co-occurrence with entityA,
- * entityB gets a score boost based on the co-occurrence count.
+ * NPMI = PMI / -log(P(x,y))
+ * PMI  = log(P(x,y) / (P(x) * P(y)))
  *
- * Boost is capped to prevent high-connectivity entities (like Azure services)
- * from dominating suggestions through accumulated co-occurrence relationships.
+ * NPMI ∈ [-1, 1]:
+ *   +1 = perfect co-occurrence (always together)
+ *    0 = independent (co-occur by chance)
+ *   -1 = never co-occur
  *
- * When recencyIndex is provided, applies a multiplier based on entity recency:
- * - Recent entities (recency boost > 0): 1.5x multiplier
- * - Stale entities (no recency boost): 0.5x multiplier
+ * This naturally penalizes popular entities: React appears in many notes
+ * so P(React) is high, making PMI low even with high co-occurrence counts.
+ *
+ * @returns NPMI value, clamped to [0, 1] (we only care about positive association)
+ */
+export function computeNpmi(
+  coocCount: number,
+  dfEntity: number,
+  dfSeed: number,
+  totalNotes: number,
+): number {
+  if (coocCount === 0 || dfEntity === 0 || dfSeed === 0 || totalNotes === 0) return 0;
+
+  const pxy = coocCount / totalNotes;
+  const px = dfEntity / totalNotes;
+  const py = dfSeed / totalNotes;
+
+  const pmi = Math.log(pxy / (px * py));
+  const negLogPxy = -Math.log(pxy);
+
+  // Avoid division by zero when pxy = 1 (all notes have both)
+  if (negLogPxy === 0) return 1;
+
+  const npmi = pmi / negLogPxy;
+
+  // Clamp to [0, 1] — we only boost positive associations
+  return Math.max(0, Math.min(1, npmi));
+}
+
+/**
+ * Get co-occurrence score boost for an entity based on matched entities.
+ *
+ * Uses NPMI (Normalized Pointwise Mutual Information) instead of flat counting.
+ * NPMI naturally penalizes ubiquitous entities — if React appears in 80% of notes,
+ * co-occurring with it provides little information. If Bella appears in 5% of notes,
+ * co-occurring with it is highly informative.
+ *
+ * Takes the best (highest NPMI) association across all matched entities,
+ * scaled to score points via PMI_SCALE.
  *
  * @param entityName - Entity to get boost for
  * @param matchedEntities - Entities that directly matched the content
@@ -260,31 +321,67 @@ export function getCooccurrenceBoost(
 ): number {
   if (!cooccurrenceIndex) return 0;
 
-  let boost = 0;
-  const { associations, minCount } = cooccurrenceIndex;
+  const { associations, minCount, documentFrequency, totalNotesScanned } = cooccurrenceIndex;
+  const dfEntity = documentFrequency.get(entityName) || 0;
+  if (dfEntity === 0 || totalNotesScanned === 0) return 0;
 
-  // Check each matched entity for co-occurrences with this entity
+  let bestNpmi = 0;
+
+  // Find the best NPMI across all seed entities
   for (const matched of matchedEntities) {
     const entityAssocs = associations[matched];
-    if (entityAssocs) {
-      const count = entityAssocs.get(entityName) || 0;
-      if (count >= minCount) {
-        // Score boost: 3 points per qualifying co-occurrence
-        boost += 3;
-      }
-    }
+    if (!entityAssocs) continue;
+
+    const coocCount = entityAssocs.get(entityName) || 0;
+    if (coocCount < minCount) continue;
+
+    const dfSeed = documentFrequency.get(matched) || 0;
+    const npmi = computeNpmi(coocCount, dfEntity, dfSeed, totalNotesScanned);
+    bestNpmi = Math.max(bestNpmi, npmi);
   }
+
+  if (bestNpmi === 0) return 0;
+
+  let boost = bestNpmi * PMI_SCALE;
 
   // Apply recency multiplier if recencyIndex is available
   // Recent entities get 1.5x boost, stale entities get 0.5x
-  if (boost > 0 && recencyIndex) {
+  if (recencyIndex) {
     const recencyBoostVal = getRecencyBoost(entityName, recencyIndex);
     const recencyMultiplier = recencyBoostVal > 0 ? 1.5 : 0.5;
-    boost = Math.round(boost * recencyMultiplier);
+    boost = boost * recencyMultiplier;
   }
 
-  // Cap to prevent high-connectivity entities from dominating
-  return Math.min(boost, MAX_COOCCURRENCE_BOOST);
+  // Cap and round
+  return Math.min(Math.round(boost), MAX_COOCCURRENCE_BOOST);
+}
+
+/**
+ * Compute normalized IDF for a token.
+ *
+ * IDF(t) = log(N / df(t)), normalized to [0, ~2] range.
+ * Uses add-1 smoothing to avoid division by zero and log(0).
+ * Returns 1.0 when document frequency data is unavailable.
+ *
+ * @param token - Lowercased token to look up
+ * @param coocIndex - Co-occurrence index with document frequency data
+ * @returns Normalized IDF weight (higher = more informative)
+ */
+export function tokenIdf(
+  token: string,
+  coocIndex: CooccurrenceIndex | null,
+): number {
+  if (!coocIndex || coocIndex.totalNotesScanned === 0) return 1.0;
+
+  // Look up document frequency — entity names in the DF map may not match
+  // individual tokens, so we use a baseline IDF of 1.0 for unknown tokens
+  const df = coocIndex.documentFrequency.get(token);
+  if (df === undefined) return 1.0;
+
+  const N = coocIndex.totalNotesScanned;
+  // IDF with add-1 smoothing, capped at [0.5, 2.5]
+  const rawIdf = Math.log((N + 1) / (df + 1));
+  return Math.max(0.5, Math.min(2.5, rawIdf));
 }
 
 /**
@@ -302,6 +399,8 @@ export function serializeCooccurrenceIndex(
   return {
     associations: serialized,
     minCount: index.minCount,
+    documentFrequency: Object.fromEntries(index.documentFrequency),
+    totalNotesScanned: index.totalNotesScanned,
     _metadata: index._metadata,
   };
 }
@@ -322,9 +421,18 @@ export function deserializeCooccurrenceIndex(
       associations[entity] = new Map(Object.entries(assocs));
     }
 
+    // Deserialize document frequency (may be absent in old indexes)
+    const dfData = data.documentFrequency as Record<string, number> | undefined;
+    const documentFrequency = dfData
+      ? new Map(Object.entries(dfData).map(([k, v]) => [k, v]))
+      : new Map<string, number>();
+    const totalNotesScanned = (data.totalNotesScanned as number) || 0;
+
     return {
       associations,
       minCount: (data.minCount as number) || DEFAULT_MIN_COOCCURRENCE,
+      documentFrequency,
+      totalNotesScanned,
       _metadata: data._metadata as CooccurrenceIndex['_metadata'],
     };
   } catch {

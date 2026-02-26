@@ -52,6 +52,7 @@ import { stem, tokenize } from '../shared/stemmer.js';
 import {
   mineCooccurrences,
   getCooccurrenceBoost,
+  tokenIdf,
   serializeCooccurrenceIndex,
   deserializeCooccurrenceIndex,
   type CooccurrenceIndex,
@@ -1016,17 +1017,24 @@ const FULL_ALIAS_MATCH_BONUS = 8;
 /**
  * Score a name (entity name or alias) against content
  *
+ * When coocIndex is provided, weights each token's contribution by its IDF
+ * (Inverse Document Frequency). Informative tokens like "hackathon" contribute
+ * more than common tokens like "spring". Without coocIndex, all tokens contribute
+ * equally (IDF weight = 1.0).
+ *
  * @param name - Entity name or alias to score
  * @param contentTokens - Set of tokenized content words
  * @param contentStems - Set of stemmed content words
  * @param config - Scoring configuration from strictness mode
+ * @param coocIndex - Optional co-occurrence index for IDF weighting
  * @returns Object with score, matchedWords, and exactMatches
  */
 function scoreNameAgainstContent(
   name: string,
   contentTokens: Set<string>,
   contentStems: Set<string>,
-  config: SuggestionConfig
+  config: SuggestionConfig,
+  coocIndex?: CooccurrenceIndex | null,
 ): { score: number; matchedWords: number; exactMatches: number; totalTokens: number } {
   const nameTokens = tokenize(name);
   if (nameTokens.length === 0) {
@@ -1043,17 +1051,23 @@ function scoreNameAgainstContent(
     const token = nameTokens[i];
     const nameStem = nameStems[i];
 
+    // IDF weight: informative tokens contribute more than common ones
+    const idfWeight = coocIndex ? tokenIdf(token, coocIndex) : 1.0;
+
     if (contentTokens.has(token)) {
-      // Exact word match - highest confidence
-      score += config.exactMatchBonus;
+      // Exact word match - highest confidence, IDF-weighted
+      score += config.exactMatchBonus * idfWeight;
       matchedWords++;
       exactMatches++;
     } else if (contentStems.has(nameStem)) {
-      // Stem match only - medium confidence
-      score += config.stemMatchBonus;
+      // Stem match only - medium confidence, IDF-weighted
+      score += config.stemMatchBonus * idfWeight;
       matchedWords++;
     }
   }
+
+  // Round to avoid floating point noise in comparisons
+  score = Math.round(score * 10) / 10;
 
   return { score, matchedWords, exactMatches, totalTokens: nameTokens.length };
 }
@@ -1078,18 +1092,19 @@ function scoreEntity(
   entity: Entity,
   contentTokens: Set<string>,
   contentStems: Set<string>,
-  config: SuggestionConfig
+  config: SuggestionConfig,
+  coocIndex?: CooccurrenceIndex | null,
 ): number {
   const entityName = getEntityName(entity);
   const aliases = getEntityAliases(entity);
 
   // Score the primary name
-  const nameResult = scoreNameAgainstContent(entityName, contentTokens, contentStems, config);
+  const nameResult = scoreNameAgainstContent(entityName, contentTokens, contentStems, config, coocIndex);
 
   // Score each alias and take the best match
   let bestAliasResult = { score: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0 };
   for (const alias of aliases) {
-    const aliasResult = scoreNameAgainstContent(alias, contentTokens, contentStems, config);
+    const aliasResult = scoreNameAgainstContent(alias, contentTokens, contentStems, config, coocIndex);
     if (aliasResult.score > bestAliasResult.score) {
       bestAliasResult = aliasResult;
     }
@@ -1289,7 +1304,7 @@ export async function suggestRelatedLinks(
     // Layers 2+3: Exact match, stem match, and alias matching (bonuses depend on strictness)
     const contentScore = (disabled.has('exact_match') && disabled.has('stem_match'))
       ? 0
-      : scoreEntity(entity, contentTokens, contentStems, config);
+      : scoreEntity(entity, contentTokens, contentStems, config, cooccurrenceIndex);
     let score = contentScore;
 
     // Track entities with actual content matches

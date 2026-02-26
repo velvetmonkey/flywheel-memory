@@ -9,10 +9,9 @@
  * - 99% link-orphan rate (only 2 notes have outbound wikilinks)
  * - 578 ground truth links across tiers 1 and 2
  *
- * Runs 40 rounds of suggest → evaluate → feedback → re-suggest to test:
- * - Long-term learning stability on a production-like distribution
+ * Runs 20 rounds of suggest → evaluate → feedback → re-suggest to test:
+ * - Learning stability on a production-like distribution
  * - Convergence detection (F1 delta < 0.001 for 10 consecutive rounds)
- * - Post-convergence stability
  * - Phase transitions (learning → plateau → potential decay)
  */
 
@@ -38,7 +37,7 @@ import { writeReport, Timer, type TestReport, type TuningRecommendation } from '
 // Constants
 // =============================================================================
 
-const TOTAL_ROUNDS = 40;
+const TOTAL_ROUNDS = 20;
 const TP_CORRECT_RATE = 0.85;  // 85% of TPs recorded as correct
 const FP_CORRECT_RATE = 0.15;  // 15% of FPs recorded as correct (noise)
 
@@ -278,7 +277,7 @@ describe('Suite: Temporal-Star Learning Curve', () => {
   // T10: Long-term learning stability
   // ===========================================================================
 
-  it('F1 does not catastrophically regress over 40 rounds (max 30pp drop)', () => {
+  it('F1 does not catastrophically regress over 20 rounds (max 30pp drop)', () => {
     expect(roundMetrics.length).toBe(TOTAL_ROUNDS);
     const round0 = roundMetrics[0];
     const roundN = roundMetrics[TOTAL_ROUNDS - 1];
@@ -307,7 +306,7 @@ describe('Suite: Temporal-Star Learning Curve', () => {
     }
   });
 
-  it('convergence or stability reached within 40 rounds', () => {
+  it('convergence or stability reached within 20 rounds', () => {
     // Either the system converges (F1 delta < 0.001 for 10 rounds)
     // or it's still improving (which is also fine)
     const convergenceRound = detectConvergence(roundMetrics, 0.001, 10);

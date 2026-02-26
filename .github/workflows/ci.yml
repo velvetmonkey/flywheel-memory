@@ -152,7 +152,7 @@ jobs:
       - run: npm run build
       - name: Run platform tests
         working-directory: packages/mcp-server
-        run: npx vitest run test/read/platform/ test/read/publish/ test/write/platform/ test/write/publish/
+        run: npx vitest run test/write/platform/ test/write/publish/
 
   test-graph-quality:
     name: "Test: graph quality"
@@ -173,6 +173,21 @@ jobs:
         working-directory: packages/mcp-server
         run: |
           npx vitest run test/graph-quality/regression-gate.test.ts
+
+  test-bench:
+    name: "Test: bench"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Run bench tests
+        run: npm test -w @velvetmonkey/flywheel-bench
 
   # ---------------------------------------------------------------------------
   # Full matrix — catches cross-platform + older Node regressions

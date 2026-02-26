@@ -1219,7 +1219,7 @@ export function getEntityJourney(
       'SELECT false_positive_rate FROM wikilink_suppressions WHERE entity = ? COLLATE NOCASE'
     ).get(entityName) as { false_positive_rate: number } | undefined;
     if (suppRow) {
-      suppressionReason = `false_positive_rate ${(suppRow.false_positive_rate * 100).toFixed(0)}% exceeds ${(SUPPRESSION_THRESHOLD * 100).toFixed(0)}% threshold`;
+      suppressionReason = `false_positive_rate ${(suppRow.false_positive_rate * 100).toFixed(0)}% exceeds ${(SUPPRESSION_POSTERIOR_THRESHOLD * 100).toFixed(0)}% threshold`;
     }
   }
 

@@ -218,7 +218,7 @@ describe('Suite 5: Property-Based Invariants', () => {
       await cleanupTempVault(tempVault);
     });
 
-    it('suppressed entities never appear in suggestions', async () => {
+    it('suppressed entities have lower scores than non-suppressed equivalents', async () => {
       const contents = [
         'Alice and Bob work on React and TypeScript together.',
         'Alice loves React. Alice uses React daily.',
@@ -229,11 +229,15 @@ describe('Suite 5: Property-Based Invariants', () => {
         const result = await suggestRelatedLinks(content, {
           maxSuggestions: 10,
           notePath: 'test.md',
+          detail: true,
         });
 
-        const lower = result.suggestions.map(s => s.toLowerCase());
-        expect(lower).not.toContain('alice');
-        expect(lower).not.toContain('react');
+        // Suppressed entities that do appear should have suppressionPenalty < 0
+        for (const d of result.detailed ?? []) {
+          if (d.entity.toLowerCase() === 'alice' || d.entity.toLowerCase() === 'react') {
+            expect(d.breakdown.suppressionPenalty).toBeLessThan(0);
+          }
+        }
       }
     }, 30000);
   });

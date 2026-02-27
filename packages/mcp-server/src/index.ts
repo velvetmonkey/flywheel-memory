@@ -96,6 +96,9 @@ import { registerPolicyTools } from './tools/write/policy.js';
 import { registerTagTools } from './tools/write/tags.js';
 import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
 import { registerCorrectionTools } from './tools/write/corrections.js';
+import { registerMemoryTools } from './tools/write/memory.js';
+import { registerRecallTools } from './tools/read/recall.js';
+import { registerBriefTools } from './tools/read/brief.js';
 import { registerConfigTools } from './tools/write/config.js';
 import { registerInitTools } from './tools/write/enrich.js';
 
@@ -206,7 +209,9 @@ type ToolCategory =
   | 'health' | 'wikilinks'
   // Write
   | 'append' | 'frontmatter' | 'notes'
-  | 'git' | 'policy';
+  | 'git' | 'policy'
+  // Agent memory
+  | 'memory';
 
 const PRESETS: Record<string, ToolCategory[]> = {
   // Presets
@@ -217,7 +222,9 @@ const PRESETS: Record<string, ToolCategory[]> = {
     'health', 'wikilinks',
     'append', 'frontmatter', 'notes',
     'git', 'policy',
+    'memory',
   ],
+  agent: ['search', 'structure', 'append', 'frontmatter', 'notes', 'memory'],
 
   // Composable bundles
   graph: ['backlinks', 'orphans', 'hubs', 'paths'],
@@ -234,6 +241,7 @@ const ALL_CATEGORIES: ToolCategory[] = [
   'health', 'wikilinks',
   'append', 'frontmatter', 'notes',
   'git', 'policy',
+  'memory',
 ];
 
 const DEFAULT_PRESET = 'full';
@@ -377,6 +385,11 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
   // notes (entity merge)
   merge_entities: 'notes',
+
+  // memory (agent working memory)
+  memory: 'memory',
+  recall: 'memory',
+  brief: 'memory',
 };
 
 // ============================================================================
@@ -524,6 +537,11 @@ registerActivityTools(server, () => stateDb, () => { try { return getSessionId()
 registerSimilarityTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerSemanticTools(server, () => vaultPath, () => stateDb);
 registerReadMergeTools(server, () => stateDb);
+
+// Memory tools
+registerMemoryTools(server, () => stateDb);
+registerRecallTools(server, () => stateDb);
+registerBriefTools(server, () => stateDb);
 
 // Resources (always registered, not gated by tool presets)
 registerVaultResources(server, () => vaultIndex ?? null);

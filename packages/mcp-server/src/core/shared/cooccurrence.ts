@@ -13,6 +13,7 @@ import { readdir, readFile } from 'fs/promises';
 import path from 'path';
 import { tokenize } from './stemmer.js';
 import { getRecencyBoost, type RecencyIndex } from './recency.js';
+import type { StateDb } from '@velvetmonkey/vault-core';
 
 /**
  * Entity associations - maps entity to related entities with co-occurrence counts
@@ -435,6 +436,57 @@ export function deserializeCooccurrenceIndex(
       totalNotesScanned,
       _metadata: data._metadata as CooccurrenceIndex['_metadata'],
     };
+  } catch {
+    return null;
+  }
+}
+
+// =============================================================================
+// Persistence (StateDb)
+// =============================================================================
+
+/** Max staleness for cached co-occurrence data (1 hour) */
+const COOCCURRENCE_CACHE_MAX_AGE_MS = 60 * 60 * 1000;
+
+/**
+ * Save co-occurrence index to StateDb for fast startup.
+ */
+export function saveCooccurrenceToStateDb(
+  stateDb: StateDb,
+  index: CooccurrenceIndex,
+): void {
+  const serialized = serializeCooccurrenceIndex(index);
+  const data = JSON.stringify(serialized);
+  const entityCount = Object.keys(index.associations).length;
+  const associationCount = index._metadata.total_associations;
+
+  stateDb.db.prepare(`
+    INSERT OR REPLACE INTO cooccurrence_cache (id, data, built_at, entity_count, association_count)
+    VALUES (1, ?, ?, ?, ?)
+  `).run(data, Date.now(), entityCount, associationCount);
+}
+
+/**
+ * Load co-occurrence index from StateDb cache.
+ * Returns null if cache is empty or stale (>1h).
+ */
+export function loadCooccurrenceFromStateDb(
+  stateDb: StateDb,
+): { index: CooccurrenceIndex; builtAt: number } | null {
+  const row = stateDb.db.prepare(
+    'SELECT data, built_at FROM cooccurrence_cache WHERE id = 1'
+  ).get() as { data: string; built_at: number } | undefined;
+
+  if (!row) return null;
+
+  const ageMs = Date.now() - row.built_at;
+  if (ageMs > COOCCURRENCE_CACHE_MAX_AGE_MS) return null;
+
+  try {
+    const parsed = JSON.parse(row.data) as Record<string, unknown>;
+    const index = deserializeCooccurrenceIndex(parsed);
+    if (!index) return null;
+    return { index, builtAt: row.built_at };
   } catch {
     return null;
   }

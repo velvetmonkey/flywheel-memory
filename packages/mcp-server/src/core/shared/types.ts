@@ -78,6 +78,8 @@ export interface MutationResult {
   staleLockDetected?: boolean;
   /** Age of the lock file in milliseconds (if detected) */
   lockAgeMs?: number;
+  /** Structured diagnostic information for debugging failed mutations */
+  diagnostic?: Record<string, unknown>;
 }
 
 /** Warning from input validation */
@@ -107,6 +109,7 @@ export type Position = 'append' | 'prepend';
 
 export interface InsertionOptions {
   preserveListNesting?: boolean;
+  bumpHeadings?: boolean;
 }
 
 // ========================================
@@ -156,16 +159,72 @@ export interface SuggestionConfig {
   exactMatchBonus: number;
 }
 
+/**
+ * Scoring layers that can be individually disabled for ablation testing.
+ *
+ * Maps to the 11-layer scoring architecture in suggestRelatedLinks():
+ * - 1a: length_filter (>25 chars)
+ * - 1b: article_filter (article-like titles)
+ * - 2: exact_match (verbatim token match)
+ * - 3: stem_match (porter stemmer match)
+ * - 4: cooccurrence (co-appearing entities)
+ * - 5: type_boost (entity category priority)
+ * - 6: context_boost (note context relevance)
+ * - 7: recency (recently-mentioned entities)
+ * - 8: cross_folder (cross-cutting connections)
+ * - 9: hub_boost (well-connected entities)
+ * - 10: feedback (historical accuracy adjustment)
+ * - 11: semantic (embedding similarity)
+ * - 12: edge_weight (high-quality incoming link boost)
+ */
+export type ScoringLayer =
+  | 'length_filter' | 'article_filter'
+  | 'exact_match' | 'stem_match'
+  | 'cooccurrence'
+  | 'type_boost' | 'context_boost'
+  | 'recency' | 'cross_folder'
+  | 'hub_boost' | 'feedback' | 'semantic'
+  | 'edge_weight';
+
 export interface SuggestOptions {
   maxSuggestions?: number;    // default: 5
   excludeLinked?: boolean;    // exclude entities already in content (default: true)
   strictness?: StrictnessMode; // default: 'conservative'
   notePath?: string;          // path to note for context-aware boosting
+  detail?: boolean;           // return per-layer score breakdown (default: false)
+  disabledLayers?: ScoringLayer[];  // layers to skip for ablation testing (default: [])
+}
+
+export interface ScoreBreakdown {
+  contentMatch: number;       // Layers 2+3
+  cooccurrenceBoost: number;  // Layer 4
+  typeBoost: number;          // Layer 5
+  contextBoost: number;       // Layer 6
+  recencyBoost: number;       // Layer 7
+  crossFolderBoost: number;   // Layer 8
+  hubBoost: number;           // Layer 9
+  feedbackAdjustment: number; // Layer 10
+  suppressionPenalty?: number; // Layer 0 (soft, proportional to Beta-Binomial posterior)
+  semanticBoost?: number;     // Layer 11
+  edgeWeightBoost?: number;   // Layer 12
+}
+
+export type ConfidenceLevel = 'high' | 'medium' | 'low';
+
+export interface ScoredSuggestion {
+  entity: string;
+  path: string;
+  totalScore: number;
+  breakdown: ScoreBreakdown;
+  confidence: ConfidenceLevel;
+  feedbackCount: number;
+  accuracy?: number;
 }
 
 export interface SuggestResult {
   suggestions: string[];      // entity names suggested
-  suffix: string;             // formatted suffix: "→ [[X]], [[Y]]"
+  suffix: string;             // formatted suffix: "→ [[X]], [[Y]]" (empty when all scores < MIN_SUFFIX_SCORE)
+  detailed?: ScoredSuggestion[];  // per-layer breakdown when detail=true
 }
 
 // ========================================
@@ -198,6 +257,8 @@ export interface ScopingFrontmatter {
   _last_modified_at?: string;
   /** Count of modifications to this note */
   _modification_count?: number;
+  /** Content source attribution ("ai" when modified by an AI agent) */
+  _source?: string;
 }
 
 /**

@@ -43,6 +43,7 @@ export {
   suggestWikilinks,
   detectImplicitEntities,
   findEntityMatches,
+  IMPLICIT_EXCLUDE_WORDS,
 } from './wikilinks.js';
 
 // Protected zones

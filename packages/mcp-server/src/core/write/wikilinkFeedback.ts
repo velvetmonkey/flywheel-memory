@@ -868,6 +868,23 @@ export function processImplicitFeedback(
     updateSuppressionList(stateDb);
   }
 
+  // Survival tracking: entities still present get positive signal (24h cooldown)
+  const SURVIVAL_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+  const getLastSurvival = stateDb.db.prepare(
+    `SELECT MAX(created_at) as last FROM wikilink_feedback
+     WHERE entity = ? COLLATE NOCASE AND context = 'implicit:survived' AND note_path = ?`
+  );
+
+  for (const { entity } of trackedWithTime) {
+    if (currentLinks.has(entity.toLowerCase())) {
+      const lastSurvival = getLastSurvival.get(entity, notePath) as { last: string | null } | undefined;
+      const lastAt = lastSurvival?.last ? new Date(lastSurvival.last).getTime() : 0;
+      if (Date.now() - lastAt > SURVIVAL_COOLDOWN_MS) {
+        recordFeedback(stateDb, entity, 'implicit:survived', notePath, true, 0.8);
+      }
+    }
+  }
+
   return removed;
 }
 

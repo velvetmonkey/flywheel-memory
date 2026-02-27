@@ -109,7 +109,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 26;
+export const SCHEMA_VERSION = 27;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -493,6 +493,15 @@ CREATE TRIGGER IF NOT EXISTS memories_au AFTER UPDATE ON memories BEGIN
   VALUES (new.id, new.key, new.value);
 END;
 
+-- Co-occurrence cache (v27): persist co-occurrence index to avoid full vault scan on restart
+CREATE TABLE IF NOT EXISTS cooccurrence_cache (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  data TEXT NOT NULL,
+  built_at INTEGER NOT NULL,
+  entity_count INTEGER NOT NULL,
+  association_count INTEGER NOT NULL
+);
+
 -- Session summaries (v26): agent session tracking
 CREATE TABLE IF NOT EXISTS session_summaries (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -686,6 +695,9 @@ function initSchema(db: Database.Database): void {
     }
 
     // v26: memories table, memories_fts, session_summaries table
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v27: cooccurrence_cache table (persist co-occurrence index)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(

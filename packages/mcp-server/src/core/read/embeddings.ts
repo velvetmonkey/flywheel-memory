@@ -85,6 +85,22 @@ const EMBEDDING_CACHE_MAX = 500;
 const entityEmbeddingsMap = new Map<string, Float32Array>();
 
 // =============================================================================
+// Build State Tracking
+// =============================================================================
+
+function getEmbeddingsBuildState(): string {
+  if (!db) return 'none';
+  const row = db.prepare(`SELECT value FROM fts_metadata WHERE key = 'embeddings_state'`).get() as { value: string } | undefined;
+  return row?.value || 'none';
+}
+
+export function setEmbeddingsBuildState(state: 'none' | 'building_notes' | 'building_entities' | 'complete'): void {
+  if (!db) return;
+  db.prepare(`INSERT OR REPLACE INTO fts_metadata (key, value) VALUES ('embeddings_state', ?)`)
+    .run(state);
+}
+
+// =============================================================================
 // Database Injection
 // =============================================================================
 
@@ -215,6 +231,7 @@ export async function buildEmbeddingsIndex(
   }
 
   embeddingsBuilding = true;
+  setEmbeddingsBuildState('building_notes');
   await initEmbeddings();
 
   const files = await scanVault(vaultPath);
@@ -462,8 +479,14 @@ export function setEmbeddingsBuilding(value: boolean): void {
 export function hasEmbeddingsIndex(): boolean {
   if (!db) return false;
   try {
-    const row = db.prepare('SELECT COUNT(*) as count FROM note_embeddings').get() as { count: number };
-    return row.count > 0;
+    const state = getEmbeddingsBuildState();
+    if (state === 'complete') return true;
+    // Backward compat: if no state recorded but embeddings exist, consider it built
+    if (state === 'none') {
+      const row = db.prepare('SELECT COUNT(*) as count FROM note_embeddings').get() as { count: number };
+      return row.count > 0;
+    }
+    return false;
   } catch {
     return false;
   }
@@ -561,6 +584,7 @@ export async function buildEntityEmbeddingsIndex(
   }
 
   await initEmbeddings();
+  setEmbeddingsBuildState('building_entities');
 
   // Load existing hashes for change detection
   const existingHashes = new Map<string, string>();

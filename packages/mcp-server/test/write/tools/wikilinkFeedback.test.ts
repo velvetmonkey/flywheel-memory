@@ -447,18 +447,23 @@ describe('wikilink_feedback', () => {
       expect(feedback[0].note_path).toBe('projects/web.md');
     });
 
-    it('processImplicitFeedback ignores kept wikilinks', () => {
+    it('processImplicitFeedback records survival for kept wikilinks', () => {
       trackWikilinkApplications(stateDb, 'tech/stack.md', ['react', 'node']);
 
       // Both wikilinks still present
       const content = 'Using [[React]] with [[Node]] for the stack';
       const removed = processImplicitFeedback(stateDb, 'tech/stack.md', content);
 
+      // No removals
       expect(removed).toHaveLength(0);
 
-      // No feedback should be recorded
+      // Survival feedback should be recorded (positive signal)
       const feedback = getFeedback(stateDb);
-      expect(feedback).toHaveLength(0);
+      expect(feedback).toHaveLength(2);
+      for (const f of feedback) {
+        expect(f.correct).toBe(true);
+        expect(f.context).toBe('implicit:survived');
+      }
     });
 
     it('processImplicitFeedback marks removed as status=removed', () => {

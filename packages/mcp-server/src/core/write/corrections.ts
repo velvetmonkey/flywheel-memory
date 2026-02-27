@@ -6,6 +6,7 @@
  */
 
 import type { StateDb } from '@velvetmonkey/vault-core';
+import { recordFeedback } from './wikilinkFeedback.js';
 
 // =============================================================================
 // TYPES
@@ -104,4 +105,33 @@ export function getPendingCorrectionsForEntity(
   return stateDb.db.prepare(
     `SELECT * FROM corrections WHERE entity = ? COLLATE NOCASE AND status = 'pending' ORDER BY created_at DESC`
   ).all(entity) as Correction[];
+}
+
+/**
+ * Process all pending corrections, recording feedback and resolving each.
+ * Called by the watcher pipeline after implicit_feedback.
+ *
+ * @returns Number of corrections processed
+ */
+export function processPendingCorrections(stateDb: StateDb): number {
+  const pending = listCorrections(stateDb, 'pending');
+  let processed = 0;
+
+  for (const correction of pending) {
+    if (!correction.entity) {
+      resolveCorrection(stateDb, correction.id, 'dismissed');
+      continue;
+    }
+
+    if (correction.correction_type === 'wrong_link') {
+      recordFeedback(stateDb, correction.entity, 'correction:wrong_link', correction.note_path || '', false, 1.0);
+    } else if (correction.correction_type === 'wrong_category') {
+      recordFeedback(stateDb, correction.entity, 'correction:wrong_category', '', false, 0.5);
+    }
+
+    resolveCorrection(stateDb, correction.id, 'applied');
+    processed++;
+  }
+
+  return processed;
 }

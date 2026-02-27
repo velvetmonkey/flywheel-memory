@@ -56,6 +56,7 @@ import {
   buildEntityEmbeddingsIndex,
   hasEmbeddingsIndex,
   setEmbeddingsBuilding,
+  setEmbeddingsBuildState,
   loadEntityEmbeddingsToMemory,
   updateEntityEmbedding,
   hasEntityEmbeddingsIndex,
@@ -140,7 +141,10 @@ import { updateSuppressionList, getTrackedApplications, processImplicitFeedback,
 import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from './core/shared/recency.js';
 
 // Core imports - Co-occurrence
-import { mineCooccurrences } from './core/shared/cooccurrence.js';
+import { mineCooccurrences, saveCooccurrenceToStateDb, loadCooccurrenceFromStateDb } from './core/shared/cooccurrence.js';
+
+// Core imports - Corrections
+import { processPendingCorrections } from './core/write/corrections.js';
 
 // Core imports - Edge Weights
 import { setEdgeWeightStateDb, recomputeEdgeWeights } from './core/write/edgeWeights.js';
@@ -586,6 +590,14 @@ async function main() {
     // Set StateDb for edge weight computation
     setEdgeWeightStateDb(stateDb);
 
+    // Load cached co-occurrence index (avoids full vault scan on restart)
+    const cachedCooc = loadCooccurrenceFromStateDb(stateDb);
+    if (cachedCooc) {
+      setCooccurrenceIndex(cachedCooc.index);
+      lastCooccurrenceRebuildAt = cachedCooc.builtAt;
+      serverLog('index', `Co-occurrence: loaded from cache (${Object.keys(cachedCooc.index.associations).length} entities, ${cachedCooc.index._metadata.total_associations} associations)`);
+    }
+
     // Nudge if vault_init has never been run
     const vaultInitRow = stateDb.getMetadataValue.get('vault_init_last_run_at') as { value: string } | undefined;
     if (!vaultInitRow) {
@@ -878,6 +890,7 @@ async function runPostIndexWork(index: VaultIndex) {
           }
         }
         loadEntityEmbeddingsToMemory();
+        setEmbeddingsBuildState('complete');
         serverLog('semantic', 'Embeddings ready');
       }).catch(err => {
         serverLog('semantic', `Embeddings build failed: ${err instanceof Error ? err.message : err}`, 'error');
@@ -1095,19 +1108,24 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.end({ entity_count: entitiesAfter.length, ...entityDiff, category_changes: categoryChanges, description_changes: descriptionChanges });
           serverLog('watcher', `Entity scan: ${entitiesAfter.length} entities`);
 
-          // Step 3: Hub scores (with before/after diffs)
+          // Step 3: Hub scores (with before/after diffs) [non-critical]
           tracker.start('hub_scores', { entity_count: entitiesAfter.length });
-          const hubUpdated = await exportHubScores(vaultIndex, stateDb);
-          const hubDiffs: Array<{ entity: string; before: number; after: number }> = [];
-          if (stateDb) {
-            const rows = stateDb.db.prepare('SELECT name, hub_score FROM entities').all() as Array<{ name: string; hub_score: number }>;
-            for (const r of rows) {
-              const prev = hubBefore.get(r.name) ?? 0;
-              if (prev !== r.hub_score) hubDiffs.push({ entity: r.name, before: prev, after: r.hub_score });
+          try {
+            const hubUpdated = await exportHubScores(vaultIndex, stateDb);
+            const hubDiffs: Array<{ entity: string; before: number; after: number }> = [];
+            if (stateDb) {
+              const rows = stateDb.db.prepare('SELECT name, hub_score FROM entities').all() as Array<{ name: string; hub_score: number }>;
+              for (const r of rows) {
+                const prev = hubBefore.get(r.name) ?? 0;
+                if (prev !== r.hub_score) hubDiffs.push({ entity: r.name, before: prev, after: r.hub_score });
+              }
             }
+            tracker.end({ updated: hubUpdated ?? 0, diffs: hubDiffs.slice(0, 10) });
+            serverLog('watcher', `Hub scores: ${hubUpdated ?? 0} updated`);
+          } catch (e) {
+            tracker.end({ error: String(e) });
+            serverLog('watcher', `Hub scores: failed: ${e}`, 'error');
           }
-          tracker.end({ updated: hubUpdated ?? 0, diffs: hubDiffs.slice(0, 10) });
-          serverLog('watcher', `Hub scores: ${hubUpdated ?? 0} updated`);
 
           // Step 3.5: Recency index — rebuild if stale (> 1 hour)
           tracker.start('recency', { entity_count: entitiesAfter.length });
@@ -1140,6 +1158,9 @@ async function runPostIndexWork(index: VaultIndex) {
               const cooccurrenceIdx = await mineCooccurrences(vaultPath, entityNames);
               setCooccurrenceIndex(cooccurrenceIdx);
               lastCooccurrenceRebuildAt = Date.now();
+              if (stateDb) {
+                saveCooccurrenceToStateDb(stateDb, cooccurrenceIdx);
+              }
               tracker.end({ rebuilt: true, associations: cooccurrenceIdx._metadata.total_associations });
               serverLog('watcher', `Co-occurrence: rebuilt ${cooccurrenceIdx._metadata.total_associations} associations`);
             } else {
@@ -1271,12 +1292,15 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.end({ updated: taskUpdated, removed: taskRemoved });
           serverLog('watcher', `Task cache: ${taskUpdated} updated, ${taskRemoved} removed`);
 
-          // Step 8: Forward link scan — all wikilinks in changed files
-          tracker.start('forward_links', { files: filteredEvents.length });
-          const eventTypeMap = new Map(filteredEvents.map(e => [e.path, e.type]));
+          // Step 8: Forward link scan — all wikilinks in changed files [non-critical]
           const forwardLinkResults: Array<{ file: string; resolved: string[]; dead: string[] }> = [];
           let totalResolved = 0;
           let totalDead = 0;
+          const linkDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
+          const survivedLinks: Array<{ entity: string; file: string; count: number }> = [];
+          tracker.start('forward_links', { files: filteredEvents.length });
+          try {
+          const eventTypeMap = new Map(filteredEvents.map(e => [e.path, e.type]));
           for (const event of filteredEvents) {
             if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
             try {
@@ -1300,8 +1324,6 @@ async function runPostIndexWork(index: VaultIndex) {
           }
 
           // Diff against stored links to detect additions/removals
-          const linkDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
-          const survivedLinks: Array<{ entity: string; file: string; count: number }> = [];
           if (stateDb) {
             // Prepared statements for link survival tracking (T2)
             const upsertHistory = stateDb.db.prepare(`
@@ -1406,6 +1428,10 @@ async function runPostIndexWork(index: VaultIndex) {
             new_dead_links: newDeadLinks,
           });
           serverLog('watcher', `Forward links: ${totalResolved} resolved, ${totalDead} dead${newDeadLinks.length > 0 ? `, ${newDeadLinks.reduce((s, d) => s + d.targets.length, 0)} new dead` : ''}`);
+          } catch (e) {
+            tracker.end({ error: String(e) });
+            serverLog('watcher', `Forward links: failed: ${e}`, 'error');
+          }
 
           // Step 9: Wikilink check — which tracked links exist in changed files
           tracker.start('wikilink_check', { files: filteredEvents.length });
@@ -1557,6 +1583,26 @@ async function runPostIndexWork(index: VaultIndex) {
             serverLog('watcher', `Suppression: ${newlySuppressed.length} entities newly suppressed: ${newlySuppressed.join(', ')}`);
           }
 
+          // Step 10.5: Process pending corrections [non-critical]
+          tracker.start('corrections', {});
+          try {
+            if (stateDb) {
+              const corrProcessed = processPendingCorrections(stateDb);
+              if (corrProcessed > 0) {
+                updateSuppressionList(stateDb);
+              }
+              tracker.end({ processed: corrProcessed });
+              if (corrProcessed > 0) {
+                serverLog('watcher', `Corrections: ${corrProcessed} processed`);
+              }
+            } else {
+              tracker.end({ skipped: true });
+            }
+          } catch (e) {
+            tracker.end({ error: String(e) });
+            serverLog('watcher', `Corrections: failed: ${e}`, 'error');
+          }
+
           // Step 11: Prospect scan — detect implicit entities and dead link target mentions
           tracker.start('prospect_scan', { files: filteredEvents.length });
           const prospectResults: Array<{
@@ -1635,52 +1681,57 @@ async function runPostIndexWork(index: VaultIndex) {
             serverLog('watcher', `Suggestion scoring: ${suggestionResults.length} files scored`);
           }
 
-          // Step 13: Tag scan — detect tag additions/removals per changed note
+          // Step 13: Tag scan — detect tag additions/removals per changed note [non-critical]
           tracker.start('tag_scan', { files: filteredEvents.length });
-          const tagDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
-          if (stateDb) {
-            // Build forward lookup: note path → tags (from VaultIndex inverted index)
-            const noteTagsForward = new Map<string, Set<string>>();
-            for (const [tag, paths] of vaultIndex.tags) {
-              for (const notePath of paths) {
-                if (!noteTagsForward.has(notePath)) noteTagsForward.set(notePath, new Set());
-                noteTagsForward.get(notePath)!.add(tag);
+          try {
+            const tagDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
+            if (stateDb) {
+              // Build forward lookup: note path → tags (from VaultIndex inverted index)
+              const noteTagsForward = new Map<string, Set<string>>();
+              for (const [tag, paths] of vaultIndex.tags) {
+                for (const notePath of paths) {
+                  if (!noteTagsForward.has(notePath)) noteTagsForward.set(notePath, new Set());
+                  noteTagsForward.get(notePath)!.add(tag);
+                }
               }
-            }
 
-            for (const event of filteredEvents) {
-              if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
-              const currentSet = noteTagsForward.get(event.path) ?? new Set<string>();
-              const previousSet = getStoredNoteTags(stateDb, event.path);
-              // First-run mitigation: seed without reporting additions
-              if (previousSet.size === 0 && currentSet.size > 0) {
-                updateStoredNoteTags(stateDb, event.path, currentSet);
-                continue;
-              }
-              const added = [...currentSet].filter(t => !previousSet.has(t));
-              const removed = [...previousSet].filter(t => !currentSet.has(t));
-              if (added.length > 0 || removed.length > 0) {
-                tagDiffs.push({ file: event.path, added, removed });
-              }
-              updateStoredNoteTags(stateDb, event.path, currentSet);
-            }
-
-            // Handle deleted files — clear stored tags and report removals
-            for (const event of filteredEvents) {
-              if (event.type === 'delete') {
+              for (const event of filteredEvents) {
+                if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+                const currentSet = noteTagsForward.get(event.path) ?? new Set<string>();
                 const previousSet = getStoredNoteTags(stateDb, event.path);
-                if (previousSet.size > 0) {
-                  tagDiffs.push({ file: event.path, added: [], removed: [...previousSet] });
-                  updateStoredNoteTags(stateDb, event.path, new Set());
+                // First-run mitigation: seed without reporting additions
+                if (previousSet.size === 0 && currentSet.size > 0) {
+                  updateStoredNoteTags(stateDb, event.path, currentSet);
+                  continue;
+                }
+                const added = [...currentSet].filter(t => !previousSet.has(t));
+                const removed = [...previousSet].filter(t => !currentSet.has(t));
+                if (added.length > 0 || removed.length > 0) {
+                  tagDiffs.push({ file: event.path, added, removed });
+                }
+                updateStoredNoteTags(stateDb, event.path, currentSet);
+              }
+
+              // Handle deleted files — clear stored tags and report removals
+              for (const event of filteredEvents) {
+                if (event.type === 'delete') {
+                  const previousSet = getStoredNoteTags(stateDb, event.path);
+                  if (previousSet.size > 0) {
+                    tagDiffs.push({ file: event.path, added: [], removed: [...previousSet] });
+                    updateStoredNoteTags(stateDb, event.path, new Set());
+                  }
                 }
               }
             }
-          }
-          const totalTagsAdded = tagDiffs.reduce((s, d) => s + d.added.length, 0);
-          const totalTagsRemoved = tagDiffs.reduce((s, d) => s + d.removed.length, 0);
-          tracker.end({ total_added: totalTagsAdded, total_removed: totalTagsRemoved, tag_diffs: tagDiffs });
-          if (tagDiffs.length > 0) {
-            serverLog('watcher', `Tag scan: ${totalTagsAdded} added, ${totalTagsRemoved} removed across ${tagDiffs.length} files`);
+            const totalTagsAdded = tagDiffs.reduce((s, d) => s + d.added.length, 0);
+            const totalTagsRemoved = tagDiffs.reduce((s, d) => s + d.removed.length, 0);
+            tracker.end({ total_added: totalTagsAdded, total_removed: totalTagsRemoved, tag_diffs: tagDiffs });
+            if (tagDiffs.length > 0) {
+              serverLog('watcher', `Tag scan: ${totalTagsAdded} added, ${totalTagsRemoved} removed across ${tagDiffs.length} files`);
+            }
+          } catch (e) {
+            tracker.end({ error: String(e) });
+            serverLog('watcher', `Tag scan: failed: ${e}`, 'error');
           }
 
           // Record event with all steps

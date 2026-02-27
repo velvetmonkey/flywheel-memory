@@ -147,6 +147,46 @@ describe('edgeWeights', () => {
       expect(result.edges_updated).toBe(5);
       expect(result.duration_ms).toBeGreaterThanOrEqual(0);
     });
+
+    it('weights increase monotonically over multiple generations', () => {
+      // Round 1: create link with no history
+      stateDb.db.prepare(
+        "INSERT INTO note_links (note_path, target) VALUES (?, ?)"
+      ).run('project.md', 'react');
+      stateDb.db.prepare(
+        "INSERT INTO note_link_history (note_path, target, edits_survived) VALUES (?, ?, ?)"
+      ).run('project.md', 'react', 0);
+
+      recomputeEdgeWeights(stateDb);
+      const w1 = (stateDb.db.prepare(
+        'SELECT weight FROM note_links WHERE note_path = ? AND target = ?'
+      ).get('project.md', 'react') as { weight: number }).weight;
+
+      // Round 2: simulate edits survived
+      stateDb.db.prepare(
+        'UPDATE note_link_history SET edits_survived = 3 WHERE note_path = ? AND target = ?'
+      ).run('project.md', 'react');
+
+      recomputeEdgeWeights(stateDb);
+      const w2 = (stateDb.db.prepare(
+        'SELECT weight FROM note_links WHERE note_path = ? AND target = ?'
+      ).get('project.md', 'react') as { weight: number }).weight;
+
+      // Round 3: more edits survived
+      stateDb.db.prepare(
+        'UPDATE note_link_history SET edits_survived = 10 WHERE note_path = ? AND target = ?'
+      ).run('project.md', 'react');
+
+      recomputeEdgeWeights(stateDb);
+      const w3 = (stateDb.db.prepare(
+        'SELECT weight FROM note_links WHERE note_path = ? AND target = ?'
+      ).get('project.md', 'react') as { weight: number }).weight;
+
+      // Weights should increase monotonically
+      expect(w2).toBeGreaterThan(w1);
+      expect(w3).toBeGreaterThan(w2);
+      expect(w3).toBeGreaterThan(1.0); // Should be above base weight
+    });
   });
 
   describe('buildPathToTargetsMap', () => {

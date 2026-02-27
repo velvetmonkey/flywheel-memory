@@ -1,57 +1,57 @@
 {
   "suite": "temporal-star-learning-curve",
-  "timestamp": "2026-02-26T15:17:47.427Z",
-  "duration_ms": 179074,
+  "timestamp": "2026-02-27T08:46:37.203Z",
+  "duration_ms": 174753,
   "summary": {
-    "round0_f1": 0.796,
-    "roundN_f1": 0.907,
-    "f1_improvement": 0.111,
+    "round0_f1": 0.778,
+    "roundN_f1": 0.867,
+    "f1_improvement": 0.089,
     "total_rounds": 20,
-    "total_suppressions": 15,
+    "total_suppressions": 19,
     "convergence_round": -1,
-    "num_phases": 4
+    "num_phases": 8
   },
   "details": [
     {
       "round": 0,
-      "f1": 0.796,
+      "f1": 0.778,
       "precision": 0.992,
-      "recall": 0.664,
-      "mrr": 0.818,
-      "truePositives": 382,
+      "recall": 0.64,
+      "mrr": 0.645,
+      "truePositives": 368,
       "falsePositives": 3,
-      "falseNegatives": 193,
-      "suppressionCount": 1,
+      "falseNegatives": 207,
+      "suppressionCount": 0,
       "feedbackLayerAvgContribution": 0,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
+          "recall": 0.6844919786096256,
+          "f1": 0.8126984126984126,
           "count": 187
         },
         "projects": {
           "precision": 1,
-          "recall": 0.20121951219512196,
-          "f1": 0.3350253807106599,
+          "recall": 0.7987804878048781,
+          "f1": 0.888135593220339,
           "count": 164
         },
         "people": {
           "precision": 1,
-          "recall": 0.944,
-          "f1": 0.9711934156378601,
+          "recall": 0.312,
+          "f1": 0.47560975609756095,
           "count": 125
         },
         "other": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 24
         },
         "acronyms": {
           "precision": 1,
-          "recall": 0.5555555555555556,
-          "f1": 0.7142857142857143,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
           "count": 36
         },
         "technologies": {
@@ -62,194 +62,8 @@
         },
         "concepts": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 1,
-      "f1": 0.837,
-      "precision": 1,
-      "recall": 0.72,
-      "mrr": 0.981,
-      "truePositives": 414,
-      "falsePositives": 0,
-      "falseNegatives": 161,
-      "suppressionCount": 5,
-      "feedbackLayerAvgContribution": 5.2055,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.3780487804878049,
-          "f1": 0.5486725663716815,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 0.976,
-          "f1": 0.9878542510121457,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.7083333333333334,
-          "f1": 0.8292682926829268,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5555555555555556,
-          "f1": 0.7142857142857143,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.9047619047619048,
-          "f1": 0.9500000000000001,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 2,
-      "f1": 0.853,
-      "precision": 0.986,
-      "recall": 0.751,
-      "mrr": 0.975,
-      "truePositives": 432,
-      "falsePositives": 6,
-      "falseNegatives": 143,
-      "suppressionCount": 5,
-      "feedbackLayerAvgContribution": 4.0768,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.4878048780487805,
-          "f1": 0.6557377049180327,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 0.968,
-          "f1": 0.983739837398374,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5555555555555556,
-          "f1": 0.7142857142857143,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.9047619047619048,
-          "f1": 0.9500000000000001,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 3,
-      "f1": 0.879,
-      "precision": 0.989,
-      "recall": 0.791,
-      "mrr": 0.981,
-      "truePositives": 455,
-      "falsePositives": 5,
-      "falseNegatives": 120,
-      "suppressionCount": 6,
-      "feedbackLayerAvgContribution": 4.8737,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.6036585365853658,
-          "f1": 0.752851711026616,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.7916666666666666,
-          "f1": 0.8837209302325582,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5555555555555556,
-          "f1": 0.7142857142857143,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.9047619047619048,
-          "f1": 0.9500000000000001,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.9,
+          "f1": 0.9473684210526316,
           "count": 10
         },
         "organizations": {
@@ -261,45 +75,45 @@
       }
     },
     {
-      "round": 4,
-      "f1": 0.885,
-      "precision": 0.989,
-      "recall": 0.8,
-      "mrr": 0.994,
-      "truePositives": 460,
-      "falsePositives": 5,
-      "falseNegatives": 115,
-      "suppressionCount": 6,
-      "feedbackLayerAvgContribution": 5.2304,
+      "round": 1,
+      "f1": 0.829,
+      "precision": 0.993,
+      "recall": 0.711,
+      "mrr": 0.86,
+      "truePositives": 409,
+      "falsePositives": 3,
+      "falseNegatives": 166,
+      "suppressionCount": 2,
+      "feedbackLayerAvgContribution": 3.5518,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
+          "recall": 0.8021390374331551,
+          "f1": 0.8902077151335311,
           "count": 187
         },
         "projects": {
           "precision": 1,
-          "recall": 0.6402439024390244,
-          "f1": 0.7806691449814127,
+          "recall": 0.8719512195121951,
+          "f1": 0.9315960912052117,
           "count": 164
         },
         "people": {
           "precision": 1,
-          "recall": 0.984,
-          "f1": 0.9919354838709677,
+          "recall": 0.368,
+          "f1": 0.5380116959064328,
           "count": 125
         },
         "other": {
           "precision": 1,
-          "recall": 0.7916666666666666,
-          "f1": 0.8837209302325582,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 24
         },
         "acronyms": {
           "precision": 1,
-          "recall": 0.5555555555555556,
-          "f1": 0.7142857142857143,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
           "count": 36
         },
         "technologies": {
@@ -310,120 +124,58 @@
         },
         "concepts": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.9,
+          "f1": 0.9473684210526316,
           "count": 10
         },
         "organizations": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
           "count": 8
         }
       }
     },
     {
-      "round": 5,
-      "f1": 0.891,
-      "precision": 0.991,
-      "recall": 0.809,
-      "mrr": 0.994,
-      "truePositives": 465,
-      "falsePositives": 4,
-      "falseNegatives": 110,
-      "suppressionCount": 7,
-      "feedbackLayerAvgContribution": 5.4454,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.6707317073170732,
-          "f1": 0.8029197080291971,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 0.984,
-          "f1": 0.9919354838709677,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.7916666666666666,
-          "f1": 0.8837209302325582,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5555555555555556,
-          "f1": 0.7142857142857143,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.9047619047619048,
-          "f1": 0.9500000000000001,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 6,
-      "f1": 0.891,
-      "precision": 0.989,
-      "recall": 0.81,
-      "mrr": 0.994,
-      "truePositives": 466,
-      "falsePositives": 5,
-      "falseNegatives": 109,
+      "round": 2,
+      "f1": 0.841,
+      "precision": 0.993,
+      "recall": 0.729,
+      "mrr": 0.854,
+      "truePositives": 419,
+      "falsePositives": 3,
+      "falseNegatives": 156,
       "suppressionCount": 8,
-      "feedbackLayerAvgContribution": 5.2692,
+      "feedbackLayerAvgContribution": 3.6574,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
+          "recall": 0.7754010695187166,
+          "f1": 0.8734939759036144,
           "count": 187
         },
         "projects": {
           "precision": 1,
-          "recall": 0.6890243902439024,
-          "f1": 0.815884476534296,
+          "recall": 0.9573170731707317,
+          "f1": 0.9781931464174455,
           "count": 164
         },
         "people": {
           "precision": 1,
-          "recall": 0.976,
-          "f1": 0.9878542510121457,
+          "recall": 0.384,
+          "f1": 0.5549132947976879,
           "count": 125
         },
         "other": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 24
         },
         "acronyms": {
           "precision": 1,
-          "recall": 0.5555555555555556,
-          "f1": 0.7142857142857143,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
           "count": 36
         },
         "technologies": {
@@ -434,790 +186,46 @@
         },
         "concepts": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.9,
+          "f1": 0.9473684210526316,
           "count": 10
         },
         "organizations": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
           "count": 8
         }
       }
     },
     {
-      "round": 7,
-      "f1": 0.891,
-      "precision": 0.991,
-      "recall": 0.809,
-      "mrr": 1,
-      "truePositives": 465,
-      "falsePositives": 4,
-      "falseNegatives": 110,
-      "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 5.2747,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.6829268292682927,
-          "f1": 0.8115942028985507,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 0.984,
-          "f1": 0.9919354838709677,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5555555555555556,
-          "f1": 0.7142857142857143,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 8,
-      "f1": 0.892,
-      "precision": 0.987,
-      "recall": 0.814,
-      "mrr": 0.994,
-      "truePositives": 468,
-      "falsePositives": 6,
-      "falseNegatives": 107,
+      "round": 3,
+      "f1": 0.843,
+      "precision": 0.993,
+      "recall": 0.732,
+      "mrr": 0.879,
+      "truePositives": 421,
+      "falsePositives": 3,
+      "falseNegatives": 154,
       "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 5.0853,
+      "feedbackLayerAvgContribution": 3.7298,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
+          "recall": 0.7593582887700535,
+          "f1": 0.8632218844984804,
           "count": 187
         },
         "projects": {
           "precision": 1,
-          "recall": 0.6951219512195121,
-          "f1": 0.8201438848920863,
+          "recall": 0.975609756097561,
+          "f1": 0.9876543209876543,
           "count": 164
         },
         "people": {
           "precision": 1,
-          "recall": 0.984,
-          "f1": 0.9919354838709677,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 9,
-      "f1": 0.901,
-      "precision": 1,
-      "recall": 0.819,
-      "mrr": 0.994,
-      "truePositives": 471,
-      "falsePositives": 0,
-      "falseNegatives": 104,
-      "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 4.9625,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.7134146341463414,
-          "f1": 0.8327402135231317,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 0.984,
-          "f1": 0.9919354838709677,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 10,
-      "f1": 0.902,
-      "precision": 1,
-      "recall": 0.821,
-      "mrr": 1,
-      "truePositives": 472,
-      "falsePositives": 0,
-      "falseNegatives": 103,
-      "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 5.0743,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.7378048780487805,
-          "f1": 0.8491228070175438,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 0.984,
-          "f1": 0.9919354838709677,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 0.7,
-          "f1": 0.8235294117647058,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 11,
-      "f1": 0.903,
-      "precision": 1,
-      "recall": 0.823,
-      "mrr": 1,
-      "truePositives": 473,
-      "falsePositives": 0,
-      "falseNegatives": 102,
-      "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 5.0639,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.7439024390243902,
-          "f1": 0.8531468531468531,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 0.984,
-          "f1": 0.9919354838709677,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 0.7,
-          "f1": 0.8235294117647058,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 12,
-      "f1": 0.9,
-      "precision": 1,
-      "recall": 0.817,
-      "mrr": 1,
-      "truePositives": 470,
-      "falsePositives": 0,
-      "falseNegatives": 105,
-      "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 5.006,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.725609756097561,
-          "f1": 0.8409893992932862,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 0.984,
-          "f1": 0.9919354838709677,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 0.7,
-          "f1": 0.8235294117647058,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 13,
-      "f1": 0.902,
-      "precision": 1,
-      "recall": 0.821,
-      "mrr": 1,
-      "truePositives": 472,
-      "falsePositives": 0,
-      "falseNegatives": 103,
-      "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 4.9395,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.725609756097561,
-          "f1": 0.8409893992932862,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 0.7,
-          "f1": 0.8235294117647058,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 14,
-      "f1": 0.904,
-      "precision": 1,
-      "recall": 0.824,
-      "mrr": 1,
-      "truePositives": 474,
-      "falsePositives": 0,
-      "falseNegatives": 101,
-      "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 5.0247,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.7378048780487805,
-          "f1": 0.8491228070175438,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 0.7,
-          "f1": 0.8235294117647058,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 15,
-      "f1": 0.904,
-      "precision": 1,
-      "recall": 0.824,
-      "mrr": 0.994,
-      "truePositives": 474,
-      "falsePositives": 0,
-      "falseNegatives": 101,
-      "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 4.9582,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.7378048780487805,
-          "f1": 0.8491228070175438,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 0.7,
-          "f1": 0.8235294117647058,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 16,
-      "f1": 0.906,
-      "precision": 1,
-      "recall": 0.828,
-      "mrr": 0.994,
-      "truePositives": 476,
-      "falsePositives": 0,
-      "falseNegatives": 99,
-      "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 4.9411,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.7560975609756098,
-          "f1": 0.8611111111111112,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 0.7,
-          "f1": 0.8235294117647058,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 17,
-      "f1": 0.906,
-      "precision": 1,
-      "recall": 0.828,
-      "mrr": 1,
-      "truePositives": 476,
-      "falsePositives": 0,
-      "falseNegatives": 99,
-      "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 5.0436,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.7682926829268293,
-          "f1": 0.8689655172413793,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 0.7,
-          "f1": 0.8235294117647058,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 18,
-      "f1": 0.906,
-      "precision": 1,
-      "recall": 0.828,
-      "mrr": 0.994,
-      "truePositives": 476,
-      "falsePositives": 0,
-      "falseNegatives": 99,
-      "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 4.9906,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.7682926829268293,
-          "f1": 0.8689655172413793,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 125
-        },
-        "other": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
-          "count": 24
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 0.5833333333333334,
-          "f1": 0.7368421052631579,
-          "count": 36
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
-          "count": 21
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 0.7,
-          "f1": 0.8235294117647058,
-          "count": 10
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 8
-        }
-      }
-    },
-    {
-      "round": 19,
-      "f1": 0.907,
-      "precision": 1,
-      "recall": 0.83,
-      "mrr": 0.994,
-      "truePositives": 477,
-      "falsePositives": 0,
-      "falseNegatives": 98,
-      "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 5.1321,
-      "byCategory": {
-        "health": {
-          "precision": 1,
-          "recall": 0.8449197860962567,
-          "f1": 0.9159420289855073,
-          "count": 187
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 0.7560975609756098,
-          "f1": 0.8611111111111112,
-          "count": 164
-        },
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.384,
+          "f1": 0.5549132947976879,
           "count": 125
         },
         "other": {
@@ -1228,8 +236,318 @@
         },
         "acronyms": {
           "precision": 1,
-          "recall": 0.6111111111111112,
-          "f1": 0.7586206896551725,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 4,
+      "f1": 0.852,
+      "precision": 0.993,
+      "recall": 0.746,
+      "mrr": 0.881,
+      "truePositives": 429,
+      "falsePositives": 3,
+      "falseNegatives": 146,
+      "suppressionCount": 11,
+      "feedbackLayerAvgContribution": 3.8142,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.7754010695187166,
+          "f1": 0.8734939759036144,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9817073170731707,
+          "f1": 0.9907692307692307,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.4,
+          "f1": 0.5714285714285715,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 5,
+      "f1": 0.849,
+      "precision": 0.993,
+      "recall": 0.741,
+      "mrr": 0.89,
+      "truePositives": 426,
+      "falsePositives": 3,
+      "falseNegatives": 149,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 3.8386,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.7754010695187166,
+          "f1": 0.8734939759036144,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9817073170731707,
+          "f1": 0.9907692307692307,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.376,
+          "f1": 0.5465116279069768,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 6,
+      "f1": 0.854,
+      "precision": 0.993,
+      "recall": 0.75,
+      "mrr": 0.898,
+      "truePositives": 431,
+      "falsePositives": 3,
+      "falseNegatives": 144,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 3.8145,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.7807486631016043,
+          "f1": 0.8768768768768769,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9817073170731707,
+          "f1": 0.9907692307692307,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.408,
+          "f1": 0.5795454545454546,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 7,
+      "f1": 0.858,
+      "precision": 0.993,
+      "recall": 0.755,
+      "mrr": 0.908,
+      "truePositives": 434,
+      "falsePositives": 3,
+      "falseNegatives": 141,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 4.0579,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.786096256684492,
+          "f1": 0.8802395209580839,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9878048780487805,
+          "f1": 0.9938650306748467,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.416,
+          "f1": 0.5875706214689266,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 8,
+      "f1": 0.858,
+      "precision": 0.993,
+      "recall": 0.755,
+      "mrr": 0.908,
+      "truePositives": 434,
+      "falsePositives": 3,
+      "falseNegatives": 141,
+      "suppressionCount": 16,
+      "feedbackLayerAvgContribution": 3.889,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.7914438502673797,
+          "f1": 0.8835820895522388,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.975609756097561,
+          "f1": 0.9876543209876543,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.432,
+          "f1": 0.6033519553072626,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
           "count": 36
         },
         "technologies": {
@@ -1240,14 +558,696 @@
         },
         "concepts": {
           "precision": 1,
-          "recall": 0.7,
-          "f1": 0.8235294117647058,
+          "recall": 1,
+          "f1": 1,
           "count": 10
         },
         "organizations": {
           "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 9,
+      "f1": 0.859,
+      "precision": 0.989,
+      "recall": 0.76,
+      "mrr": 0.89,
+      "truePositives": 437,
+      "falsePositives": 5,
+      "falseNegatives": 138,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 4.0217,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.8021390374331551,
+          "f1": 0.8902077151335311,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.975609756097561,
+          "f1": 0.9876543209876543,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.44,
+          "f1": 0.6111111111111112,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
           "recall": 0.75,
           "f1": 0.8571428571428571,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 10,
+      "f1": 0.867,
+      "precision": 0.993,
+      "recall": 0.769,
+      "mrr": 0.898,
+      "truePositives": 442,
+      "falsePositives": 3,
+      "falseNegatives": 133,
+      "suppressionCount": 17,
+      "feedbackLayerAvgContribution": 4.1494,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.7967914438502673,
+          "f1": 0.8869047619047619,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9695121951219512,
+          "f1": 0.9845201238390092,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.496,
+          "f1": 0.6631016042780749,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.8571428571428571,
+          "f1": 0.923076923076923,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 11,
+      "f1": 0.87,
+      "precision": 0.993,
+      "recall": 0.774,
+      "mrr": 0.91,
+      "truePositives": 445,
+      "falsePositives": 3,
+      "falseNegatives": 130,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 4.111,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.8074866310160428,
+          "f1": 0.8934911242603549,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.975609756097561,
+          "f1": 0.9876543209876543,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.488,
+          "f1": 0.6559139784946236,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 12,
+      "f1": 0.872,
+      "precision": 0.993,
+      "recall": 0.777,
+      "mrr": 0.91,
+      "truePositives": 447,
+      "falsePositives": 3,
+      "falseNegatives": 128,
+      "suppressionCount": 17,
+      "feedbackLayerAvgContribution": 4.1643,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.8128342245989305,
+          "f1": 0.8967551622418879,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9817073170731707,
+          "f1": 0.9907692307692307,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.496,
+          "f1": 0.6631016042780749,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.8571428571428571,
+          "f1": 0.923076923076923,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 13,
+      "f1": 0.871,
+      "precision": 0.993,
+      "recall": 0.776,
+      "mrr": 0.919,
+      "truePositives": 446,
+      "falsePositives": 3,
+      "falseNegatives": 129,
+      "suppressionCount": 17,
+      "feedbackLayerAvgContribution": 4.1279,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.8181818181818182,
+          "f1": 0.9,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.975609756097561,
+          "f1": 0.9876543209876543,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.488,
+          "f1": 0.6559139784946236,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.8571428571428571,
+          "f1": 0.923076923076923,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 14,
+      "f1": 0.87,
+      "precision": 0.993,
+      "recall": 0.774,
+      "mrr": 0.91,
+      "truePositives": 445,
+      "falsePositives": 3,
+      "falseNegatives": 130,
+      "suppressionCount": 16,
+      "feedbackLayerAvgContribution": 4.306,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.8342245989304813,
+          "f1": 0.9096209912536443,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9451219512195121,
+          "f1": 0.9717868338557993,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.488,
+          "f1": 0.6559139784946236,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 15,
+      "f1": 0.869,
+      "precision": 0.993,
+      "recall": 0.772,
+      "mrr": 0.91,
+      "truePositives": 444,
+      "falsePositives": 3,
+      "falseNegatives": 131,
+      "suppressionCount": 17,
+      "feedbackLayerAvgContribution": 4.0893,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.8181818181818182,
+          "f1": 0.9,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9573170731707317,
+          "f1": 0.9781931464174455,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.488,
+          "f1": 0.6559139784946236,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 16,
+      "f1": 0.866,
+      "precision": 0.993,
+      "recall": 0.767,
+      "mrr": 0.91,
+      "truePositives": 441,
+      "falsePositives": 3,
+      "falseNegatives": 134,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 4.0386,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.8181818181818182,
+          "f1": 0.9,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9634146341463414,
+          "f1": 0.9813664596273292,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.456,
+          "f1": 0.6263736263736264,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 17,
+      "f1": 0.87,
+      "precision": 0.993,
+      "recall": 0.774,
+      "mrr": 0.908,
+      "truePositives": 445,
+      "falsePositives": 3,
+      "falseNegatives": 130,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 4.0723,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.8235294117647058,
+          "f1": 0.9032258064516129,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9695121951219512,
+          "f1": 0.9845201238390092,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.472,
+          "f1": 0.6413043478260869,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 18,
+      "f1": 0.869,
+      "precision": 0.993,
+      "recall": 0.772,
+      "mrr": 0.908,
+      "truePositives": 444,
+      "falsePositives": 3,
+      "falseNegatives": 131,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 3.8504,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.8128342245989305,
+          "f1": 0.8967551622418879,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9695121951219512,
+          "f1": 0.9845201238390092,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.48,
+          "f1": 0.6486486486486487,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 8
+        }
+      }
+    },
+    {
+      "round": 19,
+      "f1": 0.867,
+      "precision": 0.993,
+      "recall": 0.769,
+      "mrr": 0.904,
+      "truePositives": 442,
+      "falsePositives": 3,
+      "falseNegatives": 133,
+      "suppressionCount": 19,
+      "feedbackLayerAvgContribution": 4.041,
+      "byCategory": {
+        "health": {
+          "precision": 1,
+          "recall": 0.8181818181818182,
+          "f1": 0.9,
+          "count": 187
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 0.9634146341463414,
+          "f1": 0.9813664596273292,
+          "count": 164
+        },
+        "people": {
+          "precision": 1,
+          "recall": 0.464,
+          "f1": 0.6338797814207651,
+          "count": 125
+        },
+        "other": {
+          "precision": 1,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
+          "count": 24
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 0.5833333333333334,
+          "f1": 0.7368421052631579,
+          "count": 36
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 0.9047619047619048,
+          "f1": 0.9500000000000001,
+          "count": 21
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 10
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
           "count": 8
         }
       }

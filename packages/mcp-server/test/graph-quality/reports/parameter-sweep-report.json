@@ -1,16 +1,16 @@
 {
   "suite": "parameter-sweep-report",
-  "timestamp": "2026-02-26T15:14:30.404Z",
-  "duration_ms": 4037,
+  "timestamp": "2026-02-27T08:43:21.426Z",
+  "duration_ms": 3576,
   "summary": {
-    "best_f1": 0.889,
+    "best_f1": 0.909,
     "best_maxSuggestions": 10,
     "current_default_f1": 0.824,
-    "delta": 0.06500000000000006,
-    "score_distribution_mean": 20.1749,
-    "score_distribution_p50": 18,
-    "score_distribution_p90": 36,
-    "threshold_best_f1": 0.929,
+    "delta": 0.08500000000000008,
+    "score_distribution_mean": 22.7151,
+    "score_distribution_p50": 20,
+    "score_distribution_p90": 34,
+    "threshold_best_f1": 0.919,
     "threshold_best_value": 12
   },
   "details": [
@@ -20,9 +20,9 @@
         {
           "maxSuggestions": 1,
           "strictness": "conservative",
-          "f1": 0.286,
+          "f1": 0.378,
           "precision": 1,
-          "recall": 0.167
+          "recall": 0.233
         },
         {
           "maxSuggestions": 3,
@@ -41,30 +41,30 @@
         {
           "maxSuggestions": 7,
           "strictness": "conservative",
-          "f1": 0.846,
+          "f1": 0.835,
           "precision": 1,
-          "recall": 0.733
+          "recall": 0.717
         },
         {
           "maxSuggestions": 10,
           "strictness": "conservative",
-          "f1": 0.846,
+          "f1": 0.835,
           "precision": 1,
-          "recall": 0.733
+          "recall": 0.717
         },
         {
           "maxSuggestions": 1,
           "strictness": "balanced",
-          "f1": 0.286,
+          "f1": 0.356,
           "precision": 1,
-          "recall": 0.167
+          "recall": 0.217
         },
         {
           "maxSuggestions": 3,
           "strictness": "balanced",
-          "f1": 0.667,
+          "f1": 0.696,
           "precision": 1,
-          "recall": 0.5
+          "recall": 0.533
         },
         {
           "maxSuggestions": 5,
@@ -90,16 +90,16 @@
         {
           "maxSuggestions": 1,
           "strictness": "aggressive",
-          "f1": 0.286,
+          "f1": 0.356,
           "precision": 1,
-          "recall": 0.167
+          "recall": 0.217
         },
         {
           "maxSuggestions": 3,
           "strictness": "aggressive",
-          "f1": 0.667,
+          "f1": 0.696,
           "precision": 1,
-          "recall": 0.5
+          "recall": 0.533
         },
         {
           "maxSuggestions": 5,
@@ -111,48 +111,48 @@
         {
           "maxSuggestions": 7,
           "strictness": "aggressive",
-          "f1": 0.879,
+          "f1": 0.889,
           "precision": 1,
-          "recall": 0.783
+          "recall": 0.8
         },
         {
           "maxSuggestions": 10,
           "strictness": "aggressive",
-          "f1": 0.889,
+          "f1": 0.909,
           "precision": 1,
-          "recall": 0.8
+          "recall": 0.833
         }
       ]
     },
     {
       "sweep": "score_distribution",
       "stats": {
-        "mean": 20.1749,
-        "p50": 18,
-        "p90": 36,
+        "mean": 22.7151,
+        "p50": 20,
+        "p90": 34,
         "min": 10,
-        "max": 49
+        "max": 62.7
       },
       "layer_contributions": [
         {
           "layer": "contentMatch",
-          "mean": 5.9689,
-          "p50": 0,
+          "mean": 12.0104,
+          "p50": 10,
           "p90": 28,
           "min": 0,
-          "max": 30
+          "max": 35
         },
         {
           "layer": "cooccurrenceBoost",
-          "mean": 5.471,
-          "p50": 6,
-          "p90": 6,
+          "mean": 3.4582,
+          "p50": 3,
+          "p90": 7,
           "min": 0,
-          "max": 6
+          "max": 11
         },
         {
           "layer": "typeBoost",
-          "mean": 0.3616,
+          "mean": 0.2322,
           "p50": 0,
           "p90": 2,
           "min": 0,
@@ -160,23 +160,23 @@
         },
         {
           "layer": "contextBoost",
-          "mean": 0.3712,
+          "mean": 0.2057,
           "p50": 0,
-          "p90": 2,
+          "p90": 0,
           "min": 0,
           "max": 5
         },
         {
           "layer": "recencyBoost",
-          "mean": 0.7639,
+          "mean": 1.4501,
           "p50": 0,
-          "p90": 0,
+          "p90": 8,
           "min": 0,
           "max": 8
         },
         {
           "layer": "crossFolderBoost",
-          "mean": 2.9131,
+          "mean": 2.9022,
           "p50": 3,
           "p90": 3,
           "min": 0,
@@ -184,8 +184,8 @@
         },
         {
           "layer": "hubBoost",
-          "mean": 4.3251,
-          "p50": 5,
+          "mean": 2.4562,
+          "p50": 3,
           "p90": 8,
           "min": 0,
           "max": 8
@@ -213,45 +213,45 @@
       "results": [
         {
           "threshold": 5,
-          "f1": 0.929,
+          "f1": 0.919,
           "precision": 1,
-          "recall": 0.867,
-          "candidateCount": 1619
+          "recall": 0.85,
+          "candidateCount": 546
         },
         {
           "threshold": 8,
-          "f1": 0.929,
+          "f1": 0.919,
           "precision": 1,
-          "recall": 0.867,
-          "candidateCount": 1619
+          "recall": 0.85,
+          "candidateCount": 546
         },
         {
           "threshold": 10,
-          "f1": 0.929,
+          "f1": 0.919,
           "precision": 1,
-          "recall": 0.867,
-          "candidateCount": 1619
+          "recall": 0.85,
+          "candidateCount": 546
         },
         {
           "threshold": 12,
-          "f1": 0.929,
+          "f1": 0.919,
           "precision": 1,
-          "recall": 0.867,
-          "candidateCount": 1428
+          "recall": 0.85,
+          "candidateCount": 519
         },
         {
           "threshold": 15,
-          "f1": 0.899,
+          "f1": 0.909,
           "precision": 1,
-          "recall": 0.817,
-          "candidateCount": 660
+          "recall": 0.833,
+          "candidateCount": 362
         },
         {
           "threshold": 20,
-          "f1": 0.889,
+          "f1": 0.868,
           "precision": 1,
-          "recall": 0.8,
-          "candidateCount": 275
+          "recall": 0.767,
+          "candidateCount": 251
         }
       ]
     }

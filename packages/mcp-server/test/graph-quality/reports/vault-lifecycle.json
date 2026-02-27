@@ -1,14 +1,14 @@
 {
   "suite": "vault-lifecycle",
-  "timestamp": "2026-02-26T15:10:03.566Z",
-  "duration_ms": 20841,
+  "timestamp": "2026-02-27T08:39:14.226Z",
+  "duration_ms": 11869,
   "summary": {
     "total_epochs": 5,
     "genesis_entities": 216,
     "recovery_entities": 216,
-    "genesis_coverage": 0.978,
-    "min_coverage": 0.745,
-    "max_coverage": 0.978
+    "genesis_coverage": 0.965,
+    "min_coverage": 0.74,
+    "max_coverage": 0.965
   },
   "details": [
     {
@@ -30,13 +30,13 @@
         },
         "degreeCentralityStdDev": 1.492
       },
-      "suggestionCoverage": 0.978,
+      "suggestionCoverage": 0.965,
       "scoreDistribution": {
-        "mean": 34.3934,
-        "p50": 38,
-        "p90": 40,
-        "min": 11,
-        "max": 50
+        "mean": 33.2975,
+        "p50": 33,
+        "p90": 39.44,
+        "min": 13,
+        "max": 55
       },
       "entityStats": {
         "totalEntities": 216,
@@ -60,7 +60,7 @@
           "other": 9
         }
       },
-      "duration_ms": 2827
+      "duration_ms": 2084
     },
     {
       "epoch": "growth",
@@ -81,13 +81,13 @@
         },
         "degreeCentralityStdDev": 3.586
       },
-      "suggestionCoverage": 0.774,
+      "suggestionCoverage": 0.764,
       "scoreDistribution": {
-        "mean": 33.9931,
-        "p50": 37,
-        "p90": 40,
-        "min": 11,
-        "max": 50
+        "mean": 32.6118,
+        "p50": 33,
+        "p90": 39.2,
+        "min": 13,
+        "max": 55
       },
       "entityStats": {
         "totalEntities": 216,
@@ -111,7 +111,7 @@
           "other": 9
         }
       },
-      "duration_ms": 5895
+      "duration_ms": 2456
     },
     {
       "epoch": "reorganization",
@@ -132,13 +132,13 @@
         },
         "degreeCentralityStdDev": 3.543
       },
-      "suggestionCoverage": 0.774,
+      "suggestionCoverage": 0.769,
       "scoreDistribution": {
-        "mean": 34.0354,
-        "p50": 37,
-        "p90": 40,
-        "min": 11,
-        "max": 50
+        "mean": 32.6408,
+        "p50": 33,
+        "p90": 39.2,
+        "min": 13,
+        "max": 55
       },
       "entityStats": {
         "totalEntities": 216,
@@ -162,7 +162,7 @@
           "other": 9
         }
       },
-      "duration_ms": 4265
+      "duration_ms": 2579
     },
     {
       "epoch": "pruning",
@@ -183,13 +183,13 @@
         },
         "degreeCentralityStdDev": 3.403
       },
-      "suggestionCoverage": 0.745,
+      "suggestionCoverage": 0.74,
       "scoreDistribution": {
-        "mean": 33.2877,
-        "p50": 37,
-        "p90": 40,
-        "min": 11,
-        "max": 50
+        "mean": 32.0021,
+        "p50": 33,
+        "p90": 39.2,
+        "min": 13,
+        "max": 55
       },
       "entityStats": {
         "totalEntities": 216,
@@ -213,7 +213,7 @@
           "other": 9
         }
       },
-      "duration_ms": 3678
+      "duration_ms": 2244
     },
     {
       "epoch": "recovery",
@@ -234,13 +234,13 @@
         },
         "degreeCentralityStdDev": 3.187
       },
-      "suggestionCoverage": 0.781,
+      "suggestionCoverage": 0.777,
       "scoreDistribution": {
-        "mean": 29.9398,
-        "p50": 30,
-        "p90": 40,
-        "min": 11,
-        "max": 50
+        "mean": 31.3485,
+        "p50": 33,
+        "p90": 38.7,
+        "min": 13,
+        "max": 55
       },
       "entityStats": {
         "totalEntities": 216,
@@ -264,14 +264,14 @@
           "other": 9
         }
       },
-      "duration_ms": 4176
+      "duration_ms": 2506
     }
   ],
   "tuning_recommendations": [
     {
       "parameter": "suggestion_coverage",
-      "current_value": 77,
-      "suggested_value": 98,
+      "current_value": 76,
+      "suggested_value": 97,
       "evidence": "growth epoch dropped coverage by 20% from genesis",
       "confidence": "high"
     }

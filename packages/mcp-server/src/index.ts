@@ -112,7 +112,7 @@ import { registerSemanticTools } from './tools/read/semantic.js';
 import { registerMergeTools as registerReadMergeTools } from './tools/read/merges.js';
 
 // Core imports - Sweep
-import { startSweepTimer } from './core/read/sweep.js';
+import { startSweepTimer, stopSweepTimer } from './core/read/sweep.js';
 
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
@@ -786,6 +786,38 @@ async function buildStartupCatchupBatch(
 
   await scanDir(vaultPath);
   return events;
+}
+
+// ============================================================================
+// Periodic Maintenance (runs on sweep timer — every 5 min)
+// ============================================================================
+
+/** Track when purges last ran (startup purges count as the first run) */
+let lastPurgeAt = Date.now();
+
+/**
+ * Periodic maintenance callback for the sweep timer.
+ * Memory lifecycle runs every call (cheap SQL on small tables).
+ * Purges run once per day (not urgent, just prevent unbounded growth).
+ */
+function runPeriodicMaintenance(db: StateDb): void {
+  // Memory lifecycle — cheap, run every sweep (5 min)
+  sweepExpiredMemories(db);
+  decayMemoryConfidence(db);
+  pruneSupersededMemories(db, 90);
+
+  // Purges — run once per day
+  const now = Date.now();
+  if (now - lastPurgeAt > 24 * 60 * 60 * 1000) {
+    purgeOldMetrics(db, 90);
+    purgeOldIndexEvents(db, 90);
+    purgeOldInvocations(db, 90);
+    purgeOldSuggestionEvents(db, 30);
+    purgeOldNoteLinkHistory(db, 90);
+    purgeOldSnapshots(db, 90);
+    lastPurgeAt = now;
+    serverLog('server', 'Daily purge complete');
+  }
 }
 
 /**
@@ -1814,9 +1846,13 @@ async function runPostIndexWork(index: VaultIndex) {
     serverLog('watcher', 'File watcher started');
   }
 
-  // Start periodic sweep for graph hygiene metrics
-  startSweepTimer(() => vaultIndex);
-  serverLog('server', 'Sweep timer started (5 min interval)');
+  // Start periodic sweep for graph hygiene metrics (only when watcher is active)
+  if (process.env.FLYWHEEL_WATCH !== 'false') {
+    startSweepTimer(() => vaultIndex, undefined, () => {
+      if (stateDb) runPeriodicMaintenance(stateDb);
+    });
+    serverLog('server', 'Sweep timer started (5 min interval)');
+  }
 
   const postDuration = Date.now() - postStart;
   serverLog('server', `Post-index work complete in ${postDuration}ms`);
@@ -1856,7 +1892,8 @@ if (process.argv.includes('--init-semantic')) {
   });
 }
 
-// Flush logs on exit
+// Cleanup on exit
 process.on('beforeExit', async () => {
+  stopSweepTimer();
   await flushLogs();
 });

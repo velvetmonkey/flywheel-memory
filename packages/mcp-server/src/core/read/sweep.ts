@@ -124,10 +124,13 @@ export function runSweep(index: VaultIndex): SweepResults {
 /**
  * Start the periodic sweep timer.
  * Runs an initial sweep immediately, then repeats on interval.
+ * Optional maintenanceCallback runs after each sweep for periodic housekeeping
+ * (memory lifecycle, purges, etc.).
  */
 export function startSweepTimer(
   getIndex: () => VaultIndex,
   intervalMs?: number,
+  maintenanceCallback?: () => void,
 ): void {
   const interval = Math.max(intervalMs ?? DEFAULT_SWEEP_INTERVAL_MS, MIN_SWEEP_INTERVAL_MS);
 
@@ -138,6 +141,13 @@ export function startSweepTimer(
 
   sweepTimer = setInterval(() => {
     doSweep(getIndex);
+    if (maintenanceCallback) {
+      try {
+        maintenanceCallback();
+      } catch (err) {
+        console.error('[Flywheel] Maintenance error:', err);
+      }
+    }
   }, interval);
 
   // Don't prevent process exit

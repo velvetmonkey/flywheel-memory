@@ -595,7 +595,7 @@ const DEFAULT_IMPLICIT_CONFIG: Required<ImplicitEntityConfig> = {
 /**
  * Common words that should not be detected as implicit entities
  */
-const IMPLICIT_EXCLUDE_WORDS = new Set([
+export const IMPLICIT_EXCLUDE_WORDS = new Set([
   // Days and months (already in EXCLUDE_WORDS but duplicated for safety)
   'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
   'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august',
@@ -608,6 +608,9 @@ const IMPLICIT_EXCLUDE_WORDS = new Set([
   'note', 'notes', 'example', 'chapter', 'section', 'part', 'item', 'figure',
   'table', 'list', 'step', 'task', 'todo', 'idea', 'thought', 'question',
   'answer', 'summary', 'overview', 'introduction', 'conclusion',
+  'project', 'projects', 'top', 'bottom', 'page', 'pages', 'link', 'links',
+  'file', 'files', 'folder', 'draft', 'type', 'title', 'tag', 'tags',
+  'status', 'priority', 'release', 'ticket', 'essential', 'review',
   // Technical terms that look like proper nouns
   'true', 'false', 'null', 'undefined', 'none', 'class', 'function', 'method',
   // Common short words that appear as ALL-CAPS but aren't entities

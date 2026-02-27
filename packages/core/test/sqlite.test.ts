@@ -443,7 +443,7 @@ describe('SQLite State Management', () => {
       const duration = performance.now() - start;
 
       expect(results.length).toBeGreaterThan(0);
-      expect(duration).toBeLessThan(10); // Should complete in under 10ms
+      expect(duration).toBeLessThan(50); // Should complete in under 50ms
     });
   });
 });

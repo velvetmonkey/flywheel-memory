@@ -96,6 +96,27 @@ export function resolveCorrection(
 }
 
 /**
+ * Get all entity+note pairs with wrong_link corrections (pending or applied).
+ * Used to exclude corrected entities from auto-linking and suggestions per-note.
+ */
+export function getCorrectedEntityNotePairs(stateDb: StateDb): Map<string, Set<string>> {
+  const rows = stateDb.db.prepare(`
+    SELECT entity, note_path FROM corrections
+    WHERE correction_type = 'wrong_link'
+      AND entity IS NOT NULL AND note_path IS NOT NULL
+      AND status IN ('pending', 'applied')
+  `).all() as Array<{ entity: string; note_path: string }>;
+
+  const map = new Map<string, Set<string>>();
+  for (const row of rows) {
+    const key = row.entity.toLowerCase();
+    if (!map.has(key)) map.set(key, new Set());
+    map.get(key)!.add(row.note_path);
+  }
+  return map;
+}
+
+/**
  * Get pending corrections for a specific entity.
  */
 export function getPendingCorrectionsForEntity(

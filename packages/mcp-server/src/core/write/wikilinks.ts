@@ -42,6 +42,7 @@ import {
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
 import { isSuppressed, getAllFeedbackBoosts, getAllSuppressionPenalties, getEntityStats, trackWikilinkApplications } from './wikilinkFeedback.js';
+import { getCorrectedEntityNotePairs } from './corrections.js';
 import { setGitStateDb } from './git.js';
 import { setHintsStateDb } from './hints.js';
 import { setRecencyStateDb } from '../shared/recency.js';
@@ -412,6 +413,16 @@ export function processWikilinks(content: string, notePath?: string, existingCon
     entities = entities.filter(e => {
       const name = getEntityName(e);
       return !isSuppressed(moduleStateDb!, name, folder);
+    });
+  }
+
+  // Filter out entities with wrong_link corrections for this specific note
+  if (moduleStateDb && notePath) {
+    const correctedPairs = getCorrectedEntityNotePairs(moduleStateDb);
+    entities = entities.filter(e => {
+      const name = getEntityName(e).toLowerCase();
+      const paths = correctedPairs.get(name);
+      return !paths || !paths.has(notePath);
     });
   }
 
@@ -1265,6 +1276,9 @@ export async function suggestRelatedLinks(
   // Load suppression penalties once (Layer 0, soft proportional penalty)
   const suppressionPenalties = moduleStateDb ? getAllSuppressionPenalties(moduleStateDb) : new Map<string, number>();
 
+  // Load correction exclusions (entity+note pairs with wrong_link corrections)
+  const correctedPairs = moduleStateDb ? getCorrectedEntityNotePairs(moduleStateDb) : new Map();
+
   // Load edge weight map once (Layer 12)
   const edgeWeightMap = moduleStateDb ? getEntityEdgeWeightMap(moduleStateDb) : new Map<string, number>();
 
@@ -1299,6 +1313,12 @@ export async function suggestRelatedLinks(
     // Skip if already linked
     if (linkedEntities.has(entityName.toLowerCase())) {
       continue;
+    }
+
+    // Skip entities with wrong_link corrections for this note
+    if (notePath && correctedPairs.has(entityName.toLowerCase())) {
+      const paths = correctedPairs.get(entityName.toLowerCase())!;
+      if (paths.has(notePath)) continue;
     }
 
     // Layers 2+3: Exact match, stem match, and alias matching (bonuses depend on strictness)

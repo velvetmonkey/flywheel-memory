@@ -98,6 +98,7 @@ import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js
 import { registerCorrectionTools } from './tools/write/corrections.js';
 import { registerConfigTools } from './tools/write/config.js';
 import { registerInitTools } from './tools/write/enrich.js';
+import { registerMemoryTools } from './tools/write/memory.js';
 
 // Read tool registrations (additional)
 import { registerMetricsTools } from './tools/read/metrics.js';
@@ -105,9 +106,12 @@ import { registerActivityTools } from './tools/read/activity.js';
 import { registerSimilarityTools } from './tools/read/similarity.js';
 import { registerSemanticTools } from './tools/read/semantic.js';
 import { registerMergeTools as registerReadMergeTools } from './tools/read/merges.js';
+import { registerRecallTools } from './tools/read/recall.js';
+import { registerBriefTools } from './tools/read/brief.js';
 
 // Core imports - Sweep
 import { startSweepTimer } from './core/read/sweep.js';
+import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } from './core/write/memory.js';
 
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
@@ -205,7 +209,9 @@ type ToolCategory =
   | 'health' | 'wikilinks'
   // Write
   | 'append' | 'frontmatter' | 'notes'
-  | 'git' | 'policy';
+  | 'git' | 'policy'
+  // Agent memory
+  | 'memory';
 
 const PRESETS: Record<string, ToolCategory[]> = {
   // Presets
@@ -216,6 +222,7 @@ const PRESETS: Record<string, ToolCategory[]> = {
     'health', 'wikilinks',
     'append', 'frontmatter', 'notes',
     'git', 'policy',
+    'memory',
   ],
 
   // Composable bundles
@@ -224,6 +231,7 @@ const PRESETS: Record<string, ToolCategory[]> = {
   tasks: ['tasks'],
   health: ['health'],
   ops: ['git', 'policy'],
+  agent: ['search', 'structure', 'append', 'frontmatter', 'notes', 'memory'],
 };
 
 const ALL_CATEGORIES: ToolCategory[] = [
@@ -233,6 +241,7 @@ const ALL_CATEGORIES: ToolCategory[] = [
   'health', 'wikilinks',
   'append', 'frontmatter', 'notes',
   'git', 'policy',
+  'memory',
 ];
 
 const DEFAULT_PRESET = 'full';
@@ -376,6 +385,11 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
   // notes (entity merge)
   merge_entities: 'notes',
+
+  // memory (agent working memory)
+  memory: 'memory',
+  recall: 'memory',
+  brief: 'memory',
 };
 
 // ============================================================================
@@ -509,6 +523,7 @@ registerPolicyTools(server, vaultPath);
 registerTagTools(server, () => vaultIndex, () => vaultPath);
 registerWikilinkFeedbackTools(server, () => stateDb);
 registerCorrectionTools(server, () => stateDb);
+registerMemoryTools(server, () => stateDb);
 registerInitTools(server, vaultPath, () => stateDb);
 registerConfigTools(
   server,
@@ -523,6 +538,8 @@ registerActivityTools(server, () => stateDb, () => { try { return getSessionId()
 registerSimilarityTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerSemanticTools(server, () => vaultPath, () => stateDb);
 registerReadMergeTools(server, () => stateDb);
+registerRecallTools(server, () => stateDb);
+registerBriefTools(server, () => stateDb);
 
 // Resources (always registered, not gated by tool presets)
 registerVaultResources(server, () => vaultIndex ?? null);
@@ -1627,6 +1644,20 @@ async function runPostIndexWork(index: VaultIndex) {
   // Start periodic sweep for graph hygiene metrics
   startSweepTimer(() => vaultIndex);
   serverLog('server', 'Sweep timer started (5 min interval)');
+
+  // Run memory lifecycle sweep on startup (TTL expiry, confidence decay, pruning)
+  if (stateDb) {
+    try {
+      const expired = sweepExpiredMemories(stateDb);
+      const decayed = decayMemoryConfidence(stateDb);
+      const pruned = pruneSupersededMemories(stateDb);
+      if (expired + decayed + pruned > 0) {
+        serverLog('memory', `Lifecycle sweep: ${expired} expired, ${decayed} decayed, ${pruned} pruned`);
+      }
+    } catch (err) {
+      serverLog('memory', `Lifecycle sweep failed: ${err instanceof Error ? err.message : err}`, 'warn');
+    }
+  }
 
   const postDuration = Date.now() - postStart;
   serverLog('server', `Post-index work complete in ${postDuration}ms`);

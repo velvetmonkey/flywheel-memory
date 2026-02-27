@@ -109,7 +109,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 25;
+export const SCHEMA_VERSION = 26;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -446,6 +446,65 @@ CREATE TABLE IF NOT EXISTS corrections (
 );
 CREATE INDEX IF NOT EXISTS idx_corrections_status ON corrections(status);
 CREATE INDEX IF NOT EXISTS idx_corrections_entity ON corrections(entity);
+
+-- Memories (v26): lightweight key-value working memory for agents
+CREATE TABLE IF NOT EXISTS memories (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  key TEXT NOT NULL,
+  value TEXT NOT NULL,
+  memory_type TEXT NOT NULL,
+  entity TEXT,
+  entities_json TEXT,
+  source_agent_id TEXT,
+  source_session_id TEXT,
+  confidence REAL NOT NULL DEFAULT 1.0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  accessed_at INTEGER NOT NULL,
+  ttl_days INTEGER,
+  superseded_by INTEGER REFERENCES memories(id),
+  visibility TEXT NOT NULL DEFAULT 'shared'
+);
+CREATE INDEX IF NOT EXISTS idx_memories_key ON memories(key);
+CREATE INDEX IF NOT EXISTS idx_memories_entity ON memories(entity);
+CREATE INDEX IF NOT EXISTS idx_memories_type ON memories(memory_type);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS memories_fts USING fts5(
+  key, value,
+  content=memories, content_rowid=id,
+  tokenize='porter unicode61'
+);
+
+-- Auto-sync triggers for memories_fts
+CREATE TRIGGER IF NOT EXISTS memories_ai AFTER INSERT ON memories BEGIN
+  INSERT INTO memories_fts(rowid, key, value)
+  VALUES (new.id, new.key, new.value);
+END;
+
+CREATE TRIGGER IF NOT EXISTS memories_ad AFTER DELETE ON memories BEGIN
+  INSERT INTO memories_fts(memories_fts, rowid, key, value)
+  VALUES ('delete', old.id, old.key, old.value);
+END;
+
+CREATE TRIGGER IF NOT EXISTS memories_au AFTER UPDATE ON memories BEGIN
+  INSERT INTO memories_fts(memories_fts, rowid, key, value)
+  VALUES ('delete', old.id, old.key, old.value);
+  INSERT INTO memories_fts(rowid, key, value)
+  VALUES (new.id, new.key, new.value);
+END;
+
+-- Session summaries (v26): agent session tracking
+CREATE TABLE IF NOT EXISTS session_summaries (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT NOT NULL UNIQUE,
+  summary TEXT NOT NULL,
+  topics_json TEXT,
+  notes_modified_json TEXT,
+  agent_id TEXT,
+  started_at INTEGER,
+  ended_at INTEGER NOT NULL,
+  tool_count INTEGER
+);
 `;
 
 // =============================================================================
@@ -625,6 +684,9 @@ function initSchema(db: Database.Database): void {
         db.exec('ALTER TABLE wikilink_feedback ADD COLUMN confidence REAL NOT NULL DEFAULT 1.0');
       }
     }
+
+    // v26: memories table, memories_fts, session_summaries table
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
@@ -1384,6 +1446,7 @@ export interface VaultIndexCacheData {
   }>;
   backlinks: Array<[string, Array<{ source: string; line: number; context?: string }>]>;
   entities: Array<[string, string]>;
+  prospects?: Array<[string, { displayName: string; backlinkCount: number }]>;
   tags: Array<[string, string[]]>;
   builtAt: number;
 }

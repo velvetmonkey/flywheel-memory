@@ -702,10 +702,15 @@ export function trackWikilinkApplications(
       applied_at = datetime('now'),
       status = 'applied'
   `);
+  const lookupCanonical = stateDb.db.prepare(
+    `SELECT name FROM entities WHERE LOWER(name) = LOWER(?) LIMIT 1`
+  );
 
   const transaction = stateDb.db.transaction(() => {
     for (const entity of entities) {
-      upsert.run(entity, notePath);
+      const row = lookupCanonical.get(entity) as { name: string } | undefined;
+      const canonicalName = row?.name ?? entity;
+      upsert.run(canonicalName, notePath);
     }
   });
 

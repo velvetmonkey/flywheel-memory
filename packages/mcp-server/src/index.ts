@@ -98,6 +98,7 @@ import { registerTagTools } from './tools/write/tags.js';
 import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
 import { registerCorrectionTools } from './tools/write/corrections.js';
 import { registerMemoryTools } from './tools/write/memory.js';
+import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } from './core/write/memory.js';
 import { registerRecallTools } from './tools/read/recall.js';
 import { registerBriefTools } from './tools/read/brief.js';
 import { registerConfigTools } from './tools/write/config.js';
@@ -117,7 +118,7 @@ import { startSweepTimer } from './core/read/sweep.js';
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
 
 // Core imports - Index Activity
-import { recordIndexEvent, purgeOldIndexEvents, createStepTracker, computeEntityDiff, getRecentPipelineEvent } from './core/shared/indexActivity.js';
+import { recordIndexEvent, purgeOldIndexEvents, purgeOldSuggestionEvents, purgeOldNoteLinkHistory, createStepTracker, computeEntityDiff, getRecentPipelineEvent } from './core/shared/indexActivity.js';
 
 // Core imports - Tool Tracking
 import { recordToolInvocation, purgeOldInvocations } from './core/shared/toolTracking.js';
@@ -813,6 +814,12 @@ async function runPostIndexWork(index: VaultIndex) {
       purgeOldMetrics(stateDb, 90);
       purgeOldIndexEvents(stateDb, 90);
       purgeOldInvocations(stateDb, 90);
+      purgeOldSuggestionEvents(stateDb, 30);
+      purgeOldNoteLinkHistory(stateDb, 90);
+      // Memory lifecycle maintenance
+      sweepExpiredMemories(stateDb);
+      decayMemoryConfidence(stateDb);
+      pruneSupersededMemories(stateDb, 90);
       serverLog('server', 'Growth metrics recorded');
     } catch (err) {
       serverLog('server', `Failed to record metrics: ${err instanceof Error ? err.message : err}`, 'error');
@@ -1507,6 +1514,11 @@ async function runPostIndexWork(index: VaultIndex) {
           // Step 10: Implicit feedback — which entities had links removed
           tracker.start('implicit_feedback', { files: filteredEvents.length });
 
+          // Build set of deleted file paths to skip their link diffs from feedback
+          const deletedFiles = new Set(
+            filteredEvents.filter(e => e.type === 'delete').map(e => e.path)
+          );
+
           // T6: Capture pre-feedback suppression state for threshold crossing detection
           const preSuppressed = stateDb ? new Set(getAllSuppressionPenalties(stateDb).keys()) : new Set<string>();
 
@@ -1525,6 +1537,7 @@ async function runPostIndexWork(index: VaultIndex) {
           // Also detect manual wikilink removals via forward_links diff
           if (stateDb && linkDiffs.length > 0) {
             for (const diff of linkDiffs) {
+              if (deletedFiles.has(diff.file)) continue; // Skip deleted files — not deliberate removals
               for (const target of diff.removed) {
                 // Avoid duplicates with processImplicitFeedback results
                 if (feedbackResults.some(r => r.entity === target && r.file === diff.file)) continue;
@@ -1548,6 +1561,7 @@ async function runPostIndexWork(index: VaultIndex) {
               `SELECT 1 FROM wikilink_applications WHERE LOWER(entity) = LOWER(?) AND note_path = ? AND status = 'applied'`
             );
             for (const diff of linkDiffs) {
+              if (deletedFiles.has(diff.file)) continue; // Skip deleted files
               for (const target of diff.added) {
                 // Skip engine-applied links (they get feedback via survival mechanism)
                 if (checkApplication.get(target, diff.file)) continue;

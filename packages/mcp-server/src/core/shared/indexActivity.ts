@@ -250,3 +250,25 @@ export function purgeOldIndexEvents(stateDb: StateDb, retentionDays: number = 90
   ).run(cutoff);
   return result.changes;
 }
+
+/**
+ * Purge suggestion events older than retention period
+ */
+export function purgeOldSuggestionEvents(stateDb: StateDb, retentionDays: number = 30): number {
+  const cutoff = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+  const result = stateDb.db.prepare(
+    'DELETE FROM suggestion_events WHERE timestamp < ?'
+  ).run(cutoff);
+  return result.changes;
+}
+
+/**
+ * Purge note_link_history entries with no recent positive feedback
+ */
+export function purgeOldNoteLinkHistory(stateDb: StateDb, retentionDays: number = 90): number {
+  const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000).toISOString();
+  const result = stateDb.db.prepare(
+    'DELETE FROM note_link_history WHERE last_positive_at < ?'
+  ).run(cutoff);
+  return result.changes;
+}

@@ -80,19 +80,19 @@ const EXCLUDED_FOLDERS = new Set([
 /**
  * Check if a note contains an entity (case-insensitive word boundary match)
  */
-function noteContainsEntity(content: string, entityName: string): boolean {
+function noteContainsEntity(content: string, entityName: string, contentTokens?: Set<string>): boolean {
   // Tokenize entity name
   const entityTokens = tokenize(entityName);
   if (entityTokens.length === 0) return false;
 
-  // Tokenize content
-  const contentTokens = new Set(tokenize(content));
+  // Tokenize content (use pre-computed set if provided)
+  const tokens = contentTokens ?? new Set(tokenize(content));
 
   // Check if all entity tokens appear in content
   // For multi-word entities, require all words to be present
   let matchCount = 0;
   for (const token of entityTokens) {
-    if (contentTokens.has(token)) {
+    if (tokens.has(token)) {
       matchCount++;
     }
   }
@@ -190,10 +190,13 @@ export async function mineCooccurrences(
       const content = await readFile(file.path, 'utf-8');
       notesScanned++;
 
+      // Tokenize content once per file (avoids redundant tokenization per entity)
+      const contentTokens = new Set(tokenize(content));
+
       // Find all entities mentioned in this note
       const mentionedEntities: string[] = [];
       for (const entity of validEntities) {
-        if (noteContainsEntity(content, entity)) {
+        if (noteContainsEntity(content, entity, contentTokens)) {
           mentionedEntities.push(entity);
         }
       }

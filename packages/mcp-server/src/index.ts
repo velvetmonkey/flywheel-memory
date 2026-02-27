@@ -45,7 +45,7 @@ import { exportHubScores } from './core/shared/hubExport.js';
 import { initializeLogger as initializeReadLogger, getLogger } from './core/read/logging.js';
 
 // Core imports - Write
-import { initializeEntityIndex, setWriteStateDb, setWikilinkConfig, setCooccurrenceIndex } from './core/write/wikilinks.js';
+import { initializeEntityIndex, setWriteStateDb, setWikilinkConfig, setCooccurrenceIndex, suggestRelatedLinks } from './core/write/wikilinks.js';
 import { initializeLogger as initializeWriteLogger, flushLogs } from './core/write/logging.js';
 import { setFTS5Database, buildFTS5Index, isIndexStale } from './core/read/fts5.js';
 import {
@@ -70,7 +70,7 @@ import {
 } from './core/read/taskCache.js';
 
 // Vault-core shared imports
-import { openStateDb, scanVaultEntities, getSessionId, getAllEntitiesFromDb, findEntityMatches, getProtectedZones, rangeOverlapsProtectedZone, type StateDb } from '@velvetmonkey/vault-core';
+import { openStateDb, scanVaultEntities, getSessionId, getAllEntitiesFromDb, findEntityMatches, getProtectedZones, rangeOverlapsProtectedZone, detectImplicitEntities, type StateDb } from '@velvetmonkey/vault-core';
 
 // Read tool registrations
 import { registerGraphTools } from './tools/read/graph.js';
@@ -98,7 +98,6 @@ import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js
 import { registerCorrectionTools } from './tools/write/corrections.js';
 import { registerConfigTools } from './tools/write/config.js';
 import { registerInitTools } from './tools/write/enrich.js';
-import { registerMemoryTools } from './tools/write/memory.js';
 
 // Read tool registrations (additional)
 import { registerMetricsTools } from './tools/read/metrics.js';
@@ -106,12 +105,9 @@ import { registerActivityTools } from './tools/read/activity.js';
 import { registerSimilarityTools } from './tools/read/similarity.js';
 import { registerSemanticTools } from './tools/read/semantic.js';
 import { registerMergeTools as registerReadMergeTools } from './tools/read/merges.js';
-import { registerRecallTools } from './tools/read/recall.js';
-import { registerBriefTools } from './tools/read/brief.js';
 
 // Core imports - Sweep
 import { startSweepTimer } from './core/read/sweep.js';
-import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } from './core/write/memory.js';
 
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
@@ -134,7 +130,8 @@ import { getForwardLinksForNote } from './core/read/graph.js';
 // Core imports - Wikilink Feedback
 import { updateSuppressionList, getTrackedApplications, processImplicitFeedback,
          getStoredNoteLinks, updateStoredNoteLinks, diffNoteLinks, recordFeedback,
-         getStoredNoteTags, updateStoredNoteTags, isSuppressed } from './core/write/wikilinkFeedback.js';
+         getStoredNoteTags, updateStoredNoteTags, isSuppressed,
+         getAllSuppressionPenalties } from './core/write/wikilinkFeedback.js';
 
 // Core imports - Recency
 import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from './core/shared/recency.js';
@@ -209,9 +206,7 @@ type ToolCategory =
   | 'health' | 'wikilinks'
   // Write
   | 'append' | 'frontmatter' | 'notes'
-  | 'git' | 'policy'
-  // Agent memory
-  | 'memory';
+  | 'git' | 'policy';
 
 const PRESETS: Record<string, ToolCategory[]> = {
   // Presets
@@ -222,7 +217,6 @@ const PRESETS: Record<string, ToolCategory[]> = {
     'health', 'wikilinks',
     'append', 'frontmatter', 'notes',
     'git', 'policy',
-    'memory',
   ],
 
   // Composable bundles
@@ -231,7 +225,6 @@ const PRESETS: Record<string, ToolCategory[]> = {
   tasks: ['tasks'],
   health: ['health'],
   ops: ['git', 'policy'],
-  agent: ['search', 'structure', 'append', 'frontmatter', 'notes', 'memory'],
 };
 
 const ALL_CATEGORIES: ToolCategory[] = [
@@ -241,7 +234,6 @@ const ALL_CATEGORIES: ToolCategory[] = [
   'health', 'wikilinks',
   'append', 'frontmatter', 'notes',
   'git', 'policy',
-  'memory',
 ];
 
 const DEFAULT_PRESET = 'full';
@@ -385,11 +377,6 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
   // notes (entity merge)
   merge_entities: 'notes',
-
-  // memory (agent working memory)
-  memory: 'memory',
-  recall: 'memory',
-  brief: 'memory',
 };
 
 // ============================================================================
@@ -523,7 +510,6 @@ registerPolicyTools(server, vaultPath);
 registerTagTools(server, () => vaultIndex, () => vaultPath);
 registerWikilinkFeedbackTools(server, () => stateDb);
 registerCorrectionTools(server, () => stateDb);
-registerMemoryTools(server, () => stateDb);
 registerInitTools(server, vaultPath, () => stateDb);
 registerConfigTools(
   server,
@@ -538,8 +524,6 @@ registerActivityTools(server, () => stateDb, () => { try { return getSessionId()
 registerSimilarityTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerSemanticTools(server, () => vaultPath, () => stateDb);
 registerReadMergeTools(server, () => stateDb);
-registerRecallTools(server, () => stateDb);
-registerBriefTools(server, () => stateDb);
 
 // Resources (always registered, not gated by tool presets)
 registerVaultResources(server, () => vaultIndex ?? null);
@@ -1386,14 +1370,24 @@ async function runPostIndexWork(index: VaultIndex) {
             }
           }
 
+          // T7: Highlight new dead links from link diffs
+          const newDeadLinks: Array<{ file: string; targets: string[] }> = [];
+          for (const diff of linkDiffs) {
+            const newDead = diff.added.filter(target => !vaultIndex.entities.has(target.toLowerCase()));
+            if (newDead.length > 0) {
+              newDeadLinks.push({ file: diff.file, targets: newDead });
+            }
+          }
+
           tracker.end({
             total_resolved: totalResolved,
             total_dead: totalDead,
             links: forwardLinkResults,
             link_diffs: linkDiffs,
             survived: survivedLinks,
+            new_dead_links: newDeadLinks,
           });
-          serverLog('watcher', `Forward links: ${totalResolved} resolved, ${totalDead} dead`);
+          serverLog('watcher', `Forward links: ${totalResolved} resolved, ${totalDead} dead${newDeadLinks.length > 0 ? `, ${newDeadLinks.reduce((s, d) => s + d.targets.length, 0)} new dead` : ''}`);
 
           // Step 9: Wikilink check — which tracked links exist in changed files
           tracker.start('wikilink_check', { files: filteredEvents.length });
@@ -1468,6 +1462,10 @@ async function runPostIndexWork(index: VaultIndex) {
 
           // Step 10: Implicit feedback — which entities had links removed
           tracker.start('implicit_feedback', { files: filteredEvents.length });
+
+          // T6: Capture pre-feedback suppression state for threshold crossing detection
+          const preSuppressed = stateDb ? new Set(getAllSuppressionPenalties(stateDb).keys()) : new Set<string>();
+
           const feedbackResults: Array<{ entity: string; file: string }> = [];
           if (stateDb) {
             for (const event of filteredEvents) {
@@ -1522,12 +1520,104 @@ async function runPostIndexWork(index: VaultIndex) {
             }
           }
 
-          tracker.end({ removals: feedbackResults, additions: additionResults });
+          // T6: Detect newly suppressed entities (crossed threshold this pipeline)
+          const newlySuppressed: string[] = [];
+          if (stateDb) {
+            const postSuppressed = getAllSuppressionPenalties(stateDb);
+            for (const entity of postSuppressed.keys()) {
+              if (!preSuppressed.has(entity)) {
+                newlySuppressed.push(entity);
+              }
+            }
+          }
+
+          tracker.end({ removals: feedbackResults, additions: additionResults, newly_suppressed: newlySuppressed });
           if (feedbackResults.length > 0 || additionResults.length > 0) {
             serverLog('watcher', `Implicit feedback: ${feedbackResults.length} removals, ${additionResults.length} manual additions detected`);
           }
+          if (newlySuppressed.length > 0) {
+            serverLog('watcher', `Suppression: ${newlySuppressed.length} entities newly suppressed: ${newlySuppressed.join(', ')}`);
+          }
 
-          // Step 11: Tag scan — detect tag additions/removals per changed note
+          // Step 11: Prospect scan — detect implicit entities and dead link target mentions
+          tracker.start('prospect_scan', { files: filteredEvents.length });
+          const prospectResults: Array<{
+            file: string;
+            implicit: string[];       // pattern-detected entities
+            deadLinkMatches: string[]; // dead link targets found as plain text
+          }> = [];
+
+          for (const event of filteredEvents) {
+            if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+            try {
+              const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+              const zones = getProtectedZones(content);
+              const linkedSet = new Set(
+                (forwardLinkResults.find(r => r.file === event.path)?.resolved ?? [])
+                  .concat(forwardLinkResults.find(r => r.file === event.path)?.dead ?? [])
+                  .map(n => n.toLowerCase())
+              );
+              const knownEntitySet = new Set(entitiesAfter.map(e => e.nameLower));
+
+              // 1. Implicit entity detection
+              const implicitMatches = detectImplicitEntities(content);
+              const implicitNames = implicitMatches
+                .filter(imp => !linkedSet.has(imp.text.toLowerCase()) && !knownEntitySet.has(imp.text.toLowerCase()))
+                .map(imp => imp.text);
+
+              // 2. Dead link target mentions (plain text matches for targets with >= 2 backlinks)
+              const deadLinkMatches: string[] = [];
+              for (const [key, links] of vaultIndex.backlinks) {
+                if (links.length < 2 || vaultIndex.entities.has(key) || linkedSet.has(key)) continue;
+                const matches = findEntityMatches(content, key, true);
+                if (matches.some(m => !rangeOverlapsProtectedZone(m.start, m.end, zones))) {
+                  deadLinkMatches.push(key);
+                }
+              }
+
+              if (implicitNames.length > 0 || deadLinkMatches.length > 0) {
+                prospectResults.push({ file: event.path, implicit: implicitNames, deadLinkMatches });
+              }
+            } catch { /* ignore */ }
+          }
+          tracker.end({ prospects: prospectResults });
+          if (prospectResults.length > 0) {
+            const implicitCount = prospectResults.reduce((s, p) => s + p.implicit.length, 0);
+            const deadCount = prospectResults.reduce((s, p) => s + p.deadLinkMatches.length, 0);
+            serverLog('watcher', `Prospect scan: ${implicitCount} implicit entities, ${deadCount} dead link matches across ${prospectResults.length} files`);
+          }
+
+          // Step 12: Suggestion scoring — proactive per-file scoring
+          tracker.start('suggestion_scoring', { files: filteredEvents.length });
+          const suggestionResults: Array<{ file: string; top: Array<{ entity: string; score: number; confidence: string }> }> = [];
+          for (const event of filteredEvents) {
+            if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+            try {
+              const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+              const result = await suggestRelatedLinks(content, {
+                maxSuggestions: 5,
+                strictness: 'balanced',
+                notePath: event.path,
+                detail: true,
+              });
+              if (result.detailed && result.detailed.length > 0) {
+                suggestionResults.push({
+                  file: event.path,
+                  top: result.detailed.slice(0, 5).map(s => ({
+                    entity: s.entity,
+                    score: s.totalScore,
+                    confidence: s.confidence,
+                  })),
+                });
+              }
+            } catch { /* ignore */ }
+          }
+          tracker.end({ scored_files: suggestionResults.length, suggestions: suggestionResults });
+          if (suggestionResults.length > 0) {
+            serverLog('watcher', `Suggestion scoring: ${suggestionResults.length} files scored`);
+          }
+
+          // Step 13: Tag scan — detect tag additions/removals per changed note
           tracker.start('tag_scan', { files: filteredEvents.length });
           const tagDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
           if (stateDb) {
@@ -1644,20 +1734,6 @@ async function runPostIndexWork(index: VaultIndex) {
   // Start periodic sweep for graph hygiene metrics
   startSweepTimer(() => vaultIndex);
   serverLog('server', 'Sweep timer started (5 min interval)');
-
-  // Run memory lifecycle sweep on startup (TTL expiry, confidence decay, pruning)
-  if (stateDb) {
-    try {
-      const expired = sweepExpiredMemories(stateDb);
-      const decayed = decayMemoryConfidence(stateDb);
-      const pruned = pruneSupersededMemories(stateDb);
-      if (expired + decayed + pruned > 0) {
-        serverLog('memory', `Lifecycle sweep: ${expired} expired, ${decayed} decayed, ${pruned} pruned`);
-      }
-    } catch (err) {
-      serverLog('memory', `Lifecycle sweep failed: ${err instanceof Error ? err.message : err}`, 'warn');
-    }
-  }
 
   const postDuration = Date.now() - postStart;
   serverLog('server', `Post-index work complete in ${postDuration}ms`);

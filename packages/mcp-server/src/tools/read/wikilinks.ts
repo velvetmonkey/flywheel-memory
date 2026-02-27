@@ -11,6 +11,7 @@ import { resolveTarget } from '../../core/read/graph.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { suggestRelatedLinks, getCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { countFTS5Mentions } from '../../core/read/fts5.js';
+import { detectImplicitEntities } from '@velvetmonkey/vault-core';
 
 /**
  * Match entity in text, avoiding existing wikilinks and code blocks
@@ -20,6 +21,18 @@ interface EntityMatch {
   start: number;        // Start position in text
   end: number;          // End position in text
   target: string;       // Path to the target note
+}
+
+/**
+ * A prospect entity — not yet a known entity but detected via patterns or dead link analysis
+ */
+interface ProspectMatch {
+  entity: string;       // The detected text
+  start: number;        // Start position in text
+  end: number;          // End position in text
+  source: 'dead_link' | 'implicit' | 'both';  // How it was detected
+  confidence: 'high' | 'medium' | 'low';      // Confidence level
+  backlink_count?: number;  // Number of backlinks (for dead link targets)
 }
 
 /**
@@ -191,6 +204,7 @@ export function registerWikilinkTools(
     suggestion_count: number;
     returned_count: number;
     suggestions: EntityMatch[];
+    prospects?: ProspectMatch[];
     scored_suggestions?: ScoredSuggestion[];
   };
 
@@ -205,11 +219,10 @@ export function registerWikilinkTools(
         limit: z.coerce.number().default(50).describe('Maximum number of suggestions to return'),
         offset: z.coerce.number().default(0).describe('Number of suggestions to skip (for pagination)'),
         detail: z.boolean().default(false).describe('Include per-layer score breakdown for each suggestion'),
-        note_path: z.string().optional().describe('Path of the note being analyzed (enables strictness override for daily notes)'),
       },
       outputSchema: SuggestWikilinksOutputSchema,
     },
-    async ({ text, limit: requestedLimit, offset, detail, note_path }): Promise<{
+    async ({ text, limit: requestedLimit, offset, detail }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
       structuredContent: SuggestWikilinksOutput;
     }> => {
@@ -218,6 +231,73 @@ export function registerWikilinkTools(
       const allMatches = findEntityMatches(text, index.entities);
       const matches = allMatches.slice(offset, offset + limit);
 
+      // Build set of already-linked entities for exclusion
+      const linkedSet = new Set(allMatches.map(m => m.entity.toLowerCase()));
+
+      // --- Prospect detection ---
+      const prospects: ProspectMatch[] = [];
+      const prospectSeen = new Set<string>();
+
+      // T2: Dead link target matching — find backlink targets that aren't entities
+      // but appear as plain text in the input
+      for (const [target, links] of index.backlinks) {
+        if (links.length < 2) continue;                        // need >= 2 backlinks
+        if (index.entities.has(target.toLowerCase())) continue; // already a known entity
+        if (linkedSet.has(target.toLowerCase())) continue;      // already matched
+
+        // Search for the dead link target as plain text
+        const targetLower = target.toLowerCase();
+        const textLower = text.toLowerCase();
+        let searchPos = 0;
+        while (searchPos < textLower.length) {
+          const pos = textLower.indexOf(targetLower, searchPos);
+          if (pos === -1) break;
+          const end = pos + target.length;
+          // Word boundary check
+          const before = pos > 0 ? text[pos - 1] : ' ';
+          const after = end < text.length ? text[end] : ' ';
+          if (/[\s\n\r.,;:!?()[\]{}'"<>-]/.test(before) && /[\s\n\r.,;:!?()[\]{}'"<>-]/.test(after)) {
+            if (!prospectSeen.has(targetLower)) {
+              prospectSeen.add(targetLower);
+              prospects.push({
+                entity: text.substring(pos, end),
+                start: pos,
+                end,
+                source: 'dead_link',
+                confidence: links.length >= 3 ? 'high' : 'medium',
+                backlink_count: links.length,
+              });
+            }
+            break; // first occurrence only
+          }
+          searchPos = pos + 1;
+        }
+      }
+
+      // T3: Implicit entity detection — proper nouns, CamelCase, etc.
+      const implicit = detectImplicitEntities(text);
+      for (const imp of implicit) {
+        const impLower = imp.text.toLowerCase();
+        if (linkedSet.has(impLower)) continue;       // already a known entity match
+        if (prospectSeen.has(impLower)) {
+          // Cross-reference: implicit entity matches a dead link target — boost to high
+          const existing = prospects.find(p => p.entity.toLowerCase() === impLower);
+          if (existing) {
+            existing.source = 'both';
+            existing.confidence = 'high';
+          }
+          continue;
+        }
+        prospectSeen.add(impLower);
+        prospects.push({
+          entity: imp.text,
+          start: imp.start,
+          end: imp.end,
+          source: 'implicit',
+          confidence: 'low',
+        });
+      }
+
       const output: SuggestWikilinksOutput = {
         input_length: text.length,
         suggestion_count: allMatches.length,
@@ -225,13 +305,16 @@ export function registerWikilinkTools(
         suggestions: matches,
       };
 
+      if (prospects.length > 0) {
+        output.prospects = prospects;
+      }
+
       // When detail=true, also call the scoring engine for per-layer breakdown
       if (detail) {
         const scored = await suggestRelatedLinks(text, {
           detail: true,
           maxSuggestions: limit,
           strictness: 'balanced',
-          ...(note_path ? { notePath: note_path } : {}),
         });
         if (scored.detailed) {
           output.scored_suggestions = scored.detailed;

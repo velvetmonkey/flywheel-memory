@@ -249,6 +249,9 @@ const FRONTMATTER_TYPE_MAP: Record<string, EntityCategory> = {
   // hobbies
   hobby: 'hobbies', sport: 'hobbies', craft: 'hobbies',
   activity: 'hobbies', collection: 'hobbies',
+  // periodical notes (daily, weekly, monthly, etc.)
+  periodical: 'periodical', daily: 'periodical', weekly: 'periodical',
+  monthly: 'periodical', quarterly: 'periodical',
   // identity categories (for reverse-mapping)
   acronym: 'acronyms',
   media: 'media',
@@ -503,6 +506,7 @@ export async function scanVaultEntities(
     finance: [],
     food: [],
     hobbies: [],
+    periodical: [],
     other: [],
     _metadata: {
       total_entities: 0,
@@ -556,7 +560,7 @@ export async function scanVaultEntities(
 const ALL_ENTITY_CATEGORIES: EntityCategory[] = [
   'technologies', 'acronyms', 'people', 'projects', 'organizations',
   'locations', 'concepts', 'animals', 'media', 'events', 'documents',
-  'vehicles', 'health', 'finance', 'food', 'hobbies', 'other',
+  'vehicles', 'health', 'finance', 'food', 'hobbies', 'periodical', 'other',
 ];
 
 export function getAllEntities(index: EntityIndex): Entity[] {

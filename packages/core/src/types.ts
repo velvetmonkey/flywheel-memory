@@ -22,6 +22,7 @@ export type EntityCategory =
   | 'finance'
   | 'food'
   | 'hobbies'
+  | 'periodical'
   | 'other';
 
 /**
@@ -75,6 +76,7 @@ export interface EntityIndex {
   finance: Entity[];
   food: Entity[];
   hobbies: Entity[];
+  periodical: Entity[];
   other: Entity[];
   _metadata: {
     total_entities: number;

@@ -541,6 +541,11 @@ function initSchema(db: Database.Database): void {
   // Enable foreign keys
   db.pragma('foreign_keys = ON');
 
+  // Performance tuning
+  db.pragma('synchronous = NORMAL');    // Safe with WAL — fsync only on checkpoint, not every commit
+  db.pragma('cache_size = -64000');     // 64 MB page cache (default is ~2 MB)
+  db.pragma('temp_store = MEMORY');     // Temp tables/indices in RAM instead of disk
+
   // Run schema creation
   db.exec(SCHEMA_SQL);
 
@@ -1084,6 +1089,7 @@ export function getEntityIndexFromDb(stateDb: StateDb): EntityIndex {
     finance: [],
     food: [],
     hobbies: [],
+    periodical: [],
     other: [],
     _metadata: {
       total_entities: entities.length,

@@ -10,7 +10,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Scale](https://img.shields.io/badge/scale-100k%20notes-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![Tests](https://img.shields.io/badge/tests-1,824%20passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-2,456%20passed-brightgreen.svg)](docs/TESTING.md)
 
 | | Without Flywheel | With Flywheel |
 |---|---|---|
@@ -112,7 +112,7 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
 When you write a note, entities are auto-linked — creating edges. When you keep a `[[link]]` through 10 edits, that edge gains weight. When two entities appear together in 20 notes, they build a co-occurrence bond. When you read frequently, recent entities surface in suggestions.
 
-The 10-layer score tracks this: hub boost measures structural centrality, recency measures recent relevance, co-occurrence measures associative relationships, feedback adjusts for historical accuracy. Each number traces to vault usage, not configuration.
+The 11-layer score tracks this: hub boost measures structural centrality, recency measures recent relevance, co-occurrence measures associative relationships, feedback adjusts for historical accuracy. Each number traces to vault usage, not configuration.
 
 Result: a queryable graph. "What's the shortest path between AlphaFold and my docking experiment?" Backlinks, forward links, hubs, orphans, shortest paths — every query leverages hundreds of accumulated connections. Denser graphs make every query more precise.
 
@@ -169,7 +169,7 @@ No manual linking. No broken references. Use compounds into structure, structure
 
 ## Battle-Tested
 
-**1,824 tests. 78 test files. 33,000+ lines of test code.**
+**2,456 tests. 122 test files. 33,000+ lines of test code.**
 
 ### Performance
 
@@ -204,8 +204,8 @@ See [docs/PROVE-IT.md](docs/PROVE-IT.md) and [docs/TESTING.md](docs/TESTING.md).
 | Hybrid search | Local (keyword + semantic) | No | Cloud only | Cloud |
 | Auto-wikilinks | Yes (alias resolution) | No | No | No |
 | Schema intelligence | 6 analysis modes | No | No | No |
-| Entity extraction | Auto (8 categories) | No | No | No |
-| Test coverage | 1,824 tests | Unknown | Unknown | Unknown |
+| Entity extraction | Auto (17 categories) | No | No | No |
+| Test coverage | 2,456 tests | Unknown | Unknown | Unknown |
 | Tool count | 42 | ~10 | 0 (plugin) | ~5 |
 
 ---

@@ -192,11 +192,46 @@ export function registerWikilinkTools(
     target: z.string().describe('Path to the target note'),
   });
 
+  const ProspectSchema = z.object({
+    entity: z.string().describe('The detected text'),
+    start: z.coerce.number().describe('Start position in text (0-indexed)'),
+    end: z.coerce.number().describe('End position in text (0-indexed)'),
+    source: z.enum(['dead_link', 'implicit', 'both']).describe('How the prospect was detected'),
+    confidence: z.enum(['high', 'medium', 'low']).describe('Confidence level'),
+    backlink_count: z.coerce.number().optional().describe('Number of backlinks (for dead link targets)'),
+  });
+
+  const ScoreBreakdownSchema = z.object({
+    contentMatch: z.coerce.number(),
+    cooccurrenceBoost: z.coerce.number(),
+    typeBoost: z.coerce.number(),
+    contextBoost: z.coerce.number(),
+    recencyBoost: z.coerce.number(),
+    crossFolderBoost: z.coerce.number(),
+    hubBoost: z.coerce.number(),
+    feedbackAdjustment: z.coerce.number(),
+    suppressionPenalty: z.coerce.number().optional(),
+    semanticBoost: z.coerce.number().optional(),
+    edgeWeightBoost: z.coerce.number().optional(),
+  });
+
+  const ScoredSuggestionSchema = z.object({
+    entity: z.string(),
+    path: z.string(),
+    totalScore: z.coerce.number(),
+    breakdown: ScoreBreakdownSchema,
+    confidence: z.enum(['high', 'medium', 'low']),
+    feedbackCount: z.coerce.number(),
+    accuracy: z.coerce.number().optional(),
+  });
+
   const SuggestWikilinksOutputSchema = {
     input_length: z.coerce.number().describe('Length of the input text'),
     suggestion_count: z.coerce.number().describe('Total number of suggestions found'),
     returned_count: z.coerce.number().describe('Number of suggestions returned (may be limited)'),
     suggestions: z.array(SuggestionSchema).describe('List of wikilink suggestions'),
+    prospects: z.array(ProspectSchema).optional().describe('Prospect entities detected (dead link targets, implicit entities)'),
+    scored_suggestions: z.array(ScoredSuggestionSchema).optional().describe('Scored suggestions with per-layer breakdown (when detail=true)'),
   };
 
   type SuggestWikilinksOutput = {

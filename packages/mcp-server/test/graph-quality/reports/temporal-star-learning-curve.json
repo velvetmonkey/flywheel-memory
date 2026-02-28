@@ -1,7 +1,7 @@
 {
   "suite": "temporal-star-learning-curve",
-  "timestamp": "2026-02-27T08:46:37.203Z",
-  "duration_ms": 174753,
+  "timestamp": "2026-02-27T18:56:22.788Z",
+  "duration_ms": 169761,
   "summary": {
     "round0_f1": 0.778,
     "roundN_f1": 0.867,
@@ -704,7 +704,7 @@
       "falsePositives": 3,
       "falseNegatives": 130,
       "suppressionCount": 18,
-      "feedbackLayerAvgContribution": 4.111,
+      "feedbackLayerAvgContribution": 4.1182,
       "byCategory": {
         "health": {
           "precision": 1,

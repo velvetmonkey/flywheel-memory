@@ -80,6 +80,8 @@ export interface MutationResult {
   lockAgeMs?: number;
   /** Structured diagnostic information for debugging failed mutations */
   diagnostic?: Record<string, unknown>;
+  /** True when result is from a dry-run (no writes performed) */
+  dryRun?: boolean;
 }
 
 /** Warning from input validation */

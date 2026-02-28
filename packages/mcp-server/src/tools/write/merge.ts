@@ -36,8 +36,9 @@ export function registerMergeTools(
     {
       source_path: z.string().describe('Vault-relative path of the note to merge FROM (will be deleted)'),
       target_path: z.string().describe('Vault-relative path of the note to merge INTO (receives alias + content)'),
+      dry_run: z.boolean().optional().default(false).describe('Preview merge plan without modifying any files'),
     },
-    async ({ source_path, target_path }) => {
+    async ({ source_path, target_path, dry_run }) => {
       try {
         // 1. Validate paths
         if (!validatePath(vaultPath, source_path)) {
@@ -113,27 +114,59 @@ export function registerMergeTools(
           targetContent = targetContent.trimEnd() + mergedSection;
         }
 
-        // 6. Replace wikilinks across the vault: [[SourceTitle]] → [[TargetTitle]]
+        // 6. Compute backlink update plan
         const allSourceTitles = [sourceTitle, ...sourceAliases];
         const backlinks = await findBacklinks(vaultPath, sourceTitle, sourceAliases);
         let totalBacklinksUpdated = 0;
         const modifiedFiles: string[] = [];
 
-        for (const backlink of backlinks) {
-          // Skip the source (will be deleted) and target (we're writing it separately)
-          if (backlink.path === source_path || backlink.path === target_path) continue;
-
-          const updateResult = await updateBacklinksInFile(
-            vaultPath,
-            backlink.path,
-            allSourceTitles,
-            targetTitle
-          );
-
-          if (updateResult.updated) {
-            totalBacklinksUpdated += updateResult.linksUpdated;
+        if (dry_run) {
+          // Just count what would change
+          for (const backlink of backlinks) {
+            if (backlink.path === source_path || backlink.path === target_path) continue;
+            totalBacklinksUpdated += backlink.links.length;
             modifiedFiles.push(backlink.path);
           }
+        } else {
+          for (const backlink of backlinks) {
+            if (backlink.path === source_path || backlink.path === target_path) continue;
+
+            const updateResult = await updateBacklinksInFile(
+              vaultPath,
+              backlink.path,
+              allSourceTitles,
+              targetTitle
+            );
+
+            if (updateResult.updated) {
+              totalBacklinksUpdated += updateResult.linksUpdated;
+              modifiedFiles.push(backlink.path);
+            }
+          }
+        }
+
+        // Build preview
+        const previewLines = [
+          `${dry_run ? 'Would merge' : 'Merged'}: "${sourceTitle}" → "${targetTitle}"`,
+          `Aliases ${dry_run ? 'to add' : 'added'}: ${allNewAliases.join(', ')}`,
+          `Source content ${dry_run ? 'to append' : 'appended'}: ${trimmedSource.length > 10 ? 'yes' : 'no'}`,
+          `Backlinks ${dry_run ? 'to update' : 'updated'}: ${totalBacklinksUpdated}`,
+        ];
+        if (modifiedFiles.length > 0) {
+          previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${modifiedFiles.join(', ')}`);
+        }
+
+        // Dry run: return preview without writing anything
+        if (dry_run) {
+          const result: MutationResult & { backlinks_updated?: number } = {
+            success: true,
+            message: `[dry run] Would merge "${sourceTitle}" into "${targetTitle}"`,
+            path: target_path,
+            preview: previewLines.join('\n'),
+            backlinks_updated: totalBacklinksUpdated,
+            dryRun: true,
+          };
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
         }
 
         // 7. Write updated target
@@ -147,17 +180,6 @@ export function registerMergeTools(
         initializeEntityIndex(vaultPath).catch(err => {
           console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
         });
-
-        // Build result
-        const previewLines = [
-          `Merged: "${sourceTitle}" → "${targetTitle}"`,
-          `Aliases added: ${allNewAliases.join(', ')}`,
-          `Source content appended: ${trimmedSource.length > 10 ? 'yes' : 'no'}`,
-          `Backlinks updated: ${totalBacklinksUpdated}`,
-        ];
-        if (modifiedFiles.length > 0) {
-          previewLines.push(`Files modified: ${modifiedFiles.join(', ')}`);
-        }
 
         const result: MutationResult & { backlinks_updated?: number } = {
           success: true,
@@ -188,8 +210,9 @@ export function registerMergeTools(
     {
       source_name: z.string().describe('The entity name to absorb (e.g. "Foo")'),
       target_path: z.string().describe('Vault-relative path of the target entity note (e.g. "entities/Bar.md")'),
+      dry_run: z.boolean().optional().default(false).describe('Preview what would change without modifying any files'),
     },
-    async ({ source_name, target_path }) => {
+    async ({ source_name, target_path, dry_run }) => {
       try {
         // 1. Validate target path
         if (!validatePath(vaultPath, target_path)) {
@@ -227,76 +250,85 @@ export function registerMergeTools(
         }
         targetFrontmatter.aliases = Array.from(deduped);
 
-        // 4. Write updated target frontmatter
-        await writeVaultFile(vaultPath, target_path, targetContent, targetFrontmatter);
-
-        // 5. Find all backlinks to source_name
+        // 4. Find all backlinks to source_name
         const backlinks = await findBacklinks(vaultPath, source_name, []);
         let totalBacklinksUpdated = 0;
         const modifiedFiles: string[] = [];
 
-        // 6. For each file, replace [[source_name]] → [[target|source_name]]
-        for (const backlink of backlinks) {
-          // Skip the target (we already wrote it)
-          if (backlink.path === target_path) continue;
-
-          let fileData: { content: string; frontmatter: Record<string, unknown> };
-          try {
-            fileData = await readVaultFile(vaultPath, backlink.path);
-          } catch {
-            continue; // skip unreadable files
-          }
-
-          let content = fileData.content;
-          let linksUpdated = 0;
-
-          const pattern = new RegExp(
-            `\\[\\[${escapeRegex(source_name)}(\\|[^\\]]+)?\\]\\]`,
-            'gi'
-          );
-
-          content = content.replace(pattern, (_match, displayPart) => {
-            linksUpdated++;
-            if (displayPart) {
-              // Preserve existing display text: [[Foo|X]] → [[Bar|X]]
-              return `[[${targetTitle}${displayPart}]]`;
-            }
-            // Bare link: [[Foo]] → [[Bar|Foo]]
-            if (source_name.toLowerCase() === targetTitle.toLowerCase()) {
-              return `[[${targetTitle}]]`;
-            }
-            return `[[${targetTitle}|${source_name}]]`;
-          });
-
-          if (linksUpdated > 0) {
-            await writeVaultFile(vaultPath, backlink.path, content, fileData.frontmatter);
-            totalBacklinksUpdated += linksUpdated;
+        if (dry_run) {
+          // Just count what would change
+          for (const backlink of backlinks) {
+            if (backlink.path === target_path) continue;
+            totalBacklinksUpdated += backlink.links.length;
             modifiedFiles.push(backlink.path);
           }
+        } else {
+          // 4b. Write updated target frontmatter
+          await writeVaultFile(vaultPath, target_path, targetContent, targetFrontmatter);
+
+          // 5. For each file, replace [[source_name]] → [[target|source_name]]
+          for (const backlink of backlinks) {
+            if (backlink.path === target_path) continue;
+
+            let fileData: { content: string; frontmatter: Record<string, unknown> };
+            try {
+              fileData = await readVaultFile(vaultPath, backlink.path);
+            } catch {
+              continue; // skip unreadable files
+            }
+
+            let content = fileData.content;
+            let linksUpdated = 0;
+
+            const pattern = new RegExp(
+              `\\[\\[${escapeRegex(source_name)}(\\|[^\\]]+)?\\]\\]`,
+              'gi'
+            );
+
+            content = content.replace(pattern, (_match, displayPart) => {
+              linksUpdated++;
+              if (displayPart) {
+                return `[[${targetTitle}${displayPart}]]`;
+              }
+              if (source_name.toLowerCase() === targetTitle.toLowerCase()) {
+                return `[[${targetTitle}]]`;
+              }
+              return `[[${targetTitle}|${source_name}]]`;
+            });
+
+            if (linksUpdated > 0) {
+              await writeVaultFile(vaultPath, backlink.path, content, fileData.frontmatter);
+              totalBacklinksUpdated += linksUpdated;
+              modifiedFiles.push(backlink.path);
+            }
+          }
+
+          // 6. Rebuild entity index in background
+          initializeEntityIndex(vaultPath).catch(err => {
+            console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
+          });
         }
 
-        // 7. Rebuild entity index in background
-        initializeEntityIndex(vaultPath).catch(err => {
-          console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
-        });
-
-        // 8. Build result
+        // 7. Build result
         const aliasAdded = source_name.toLowerCase() !== targetTitle.toLowerCase();
         const previewLines = [
-          `Absorbed: "${source_name}" → "${targetTitle}"`,
-          `Alias added: ${aliasAdded ? source_name : 'no (matches target title)'}`,
-          `Backlinks updated: ${totalBacklinksUpdated}`,
+          `${dry_run ? 'Would absorb' : 'Absorbed'}: "${source_name}" → "${targetTitle}"`,
+          `Alias ${dry_run ? 'to add' : 'added'}: ${aliasAdded ? source_name : 'no (matches target title)'}`,
+          `Backlinks ${dry_run ? 'to update' : 'updated'}: ${totalBacklinksUpdated}`,
         ];
         if (modifiedFiles.length > 0) {
-          previewLines.push(`Files modified: ${modifiedFiles.join(', ')}`);
+          previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${modifiedFiles.join(', ')}`);
         }
 
         const result: MutationResult & { backlinks_updated?: number } = {
           success: true,
-          message: `Absorbed "${source_name}" as alias of "${targetTitle}"`,
+          message: dry_run
+            ? `[dry run] Would absorb "${source_name}" as alias of "${targetTitle}"`
+            : `Absorbed "${source_name}" as alias of "${targetTitle}"`,
           path: target_path,
           preview: previewLines.join('\n'),
           backlinks_updated: totalBacklinksUpdated,
+          ...(dry_run ? { dryRun: true } : {}),
         };
 
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };

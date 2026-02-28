@@ -76,6 +76,8 @@ export interface WithVaultFileOptions {
   actionDescription: string;
   /** Optional: agent/session scoping for multi-agent deployments */
   scoping?: ScopingMetadata;
+  /** If true, compute the mutation but skip all writes and git commits */
+  dryRun?: boolean;
 }
 
 /**
@@ -245,7 +247,7 @@ export async function withVaultFile(
   options: WithVaultFileOptions,
   operation: (ctx: VaultFileContext) => Promise<MutationOperation>
 ): Promise<McpResponse> {
-  const { vaultPath, notePath, commit, commitPrefix, section, actionDescription, scoping } = options;
+  const { vaultPath, notePath, commit, commitPrefix, section, actionDescription, scoping, dryRun } = options;
 
   try {
     // 1. Check file exists
@@ -293,6 +295,20 @@ export async function withVaultFile(
       return formatMcpResult(result.error!);
     }
 
+    const { opResult, frontmatter, lineEnding } = result;
+
+    // Dry run: return preview without writing or committing
+    if (dryRun) {
+      const dryResult = successResult(notePath, `[dry run] ${opResult.message}`, {}, {
+        preview: opResult.preview,
+        warnings: opResult.warnings,
+        outputIssues: opResult.outputIssues,
+        normalizationChanges: opResult.normalizationChanges,
+        dryRun: true,
+      });
+      return formatMcpResult(dryResult);
+    }
+
     // 3. Check for external modification before writing
     const fullPath = path.join(vaultPath, notePath);
     const statBefore = await fs.stat(fullPath);
@@ -304,8 +320,6 @@ export async function withVaultFile(
         return formatMcpResult(result.error!);
       }
     }
-
-    const { opResult, frontmatter, lineEnding } = result;
 
     // 4. Prepare frontmatter (inject metadata if scoping provided)
     let finalFrontmatter = opResult.updatedFrontmatter ?? frontmatter;
@@ -354,7 +368,7 @@ export async function withVaultFrontmatter(
     preview?: string;
   }>
 ): Promise<McpResponse> {
-  const { vaultPath, notePath, commit, commitPrefix, actionDescription } = options;
+  const { vaultPath, notePath, commit, commitPrefix, actionDescription, dryRun } = options;
 
   try {
     // 1. Check file exists
@@ -369,6 +383,15 @@ export async function withVaultFrontmatter(
     // 3. Execute operation
     const ctx = { content, frontmatter, lineEnding, vaultPath, notePath };
     const opResult = await operation(ctx);
+
+    // Dry run: return preview without writing or committing
+    if (dryRun) {
+      const result = successResult(notePath, `[dry run] ${opResult.message}`, {}, {
+        preview: opResult.preview,
+        dryRun: true,
+      });
+      return formatMcpResult(result);
+    }
 
     // 4. Write file back (content unchanged, only frontmatter updated)
     await writeVaultFile(vaultPath, notePath, content, opResult.updatedFrontmatter, lineEnding);

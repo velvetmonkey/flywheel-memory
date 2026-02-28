@@ -185,8 +185,9 @@ export function registerMoveNoteTools(
       newPath: z.string().describe('Vault-relative path to move to (e.g., "projects/note.md")'),
       updateBacklinks: z.boolean().default(true).describe('If true (default), updates all backlinks pointing to this note'),
       commit: z.boolean().default(false).describe('If true, commit all changes to git'),
+      dry_run: z.boolean().optional().default(false).describe('Preview what would change without moving any files'),
     },
-    async ({ oldPath, newPath, updateBacklinks, commit }) => {
+    async ({ oldPath, newPath, updateBacklinks, commit, dry_run }) => {
       try {
         // 1. Validate paths
         if (!validatePath(vaultPath, oldPath)) {
@@ -243,35 +244,72 @@ export function registerMoveNoteTools(
         const oldTitle = getTitleFromPath(oldPath);
         const newTitle = getTitleFromPath(newPath);
 
-        // 5. Update backlinks if requested and title is changing
+        // 5. Compute backlink update plan
         let backlinkCount = 0;
-        let updatedBacklinks = 0;
         const backlinkUpdates: Array<{ path: string; linksUpdated: number }> = [];
 
         if (updateBacklinks && oldTitle.toLowerCase() !== newTitle.toLowerCase()) {
-          const allOldTitles = [oldTitle, ...aliases];
           const backlinks = await findBacklinks(vaultPath, oldTitle, aliases);
           backlinkCount = backlinks.reduce((sum, b) => sum + b.links.length, 0);
 
-          for (const backlink of backlinks) {
-            // Skip the file being moved
-            if (backlink.path === oldPath) continue;
-
-            const updateResult = await updateBacklinksInFile(
-              vaultPath,
-              backlink.path,
-              allOldTitles,
-              newTitle
-            );
-
-            if (updateResult.updated) {
-              updatedBacklinks += updateResult.linksUpdated;
+          // For dry run, compute which files would be modified without writing
+          if (dry_run) {
+            for (const backlink of backlinks) {
+              if (backlink.path === oldPath) continue;
               backlinkUpdates.push({
                 path: backlink.path,
-                linksUpdated: updateResult.linksUpdated,
+                linksUpdated: backlink.links.length,
               });
             }
+          } else {
+            const allOldTitles = [oldTitle, ...aliases];
+            for (const backlink of backlinks) {
+              if (backlink.path === oldPath) continue;
+
+              const updateResult = await updateBacklinksInFile(
+                vaultPath,
+                backlink.path,
+                allOldTitles,
+                newTitle
+              );
+
+              if (updateResult.updated) {
+                backlinkUpdates.push({
+                  path: backlink.path,
+                  linksUpdated: updateResult.linksUpdated,
+                });
+              }
+            }
           }
+        }
+
+        const updatedBacklinks = backlinkUpdates.reduce((sum, b) => sum + b.linksUpdated, 0);
+
+        // Build preview
+        const previewLines = [
+          `${dry_run ? 'Would move' : 'Moved'}: ${oldPath} → ${newPath}`,
+        ];
+
+        if (backlinkCount > 0) {
+          previewLines.push(`Backlinks found: ${backlinkCount}`);
+          previewLines.push(`Backlinks ${dry_run ? 'to update' : 'updated'}: ${updatedBacklinks}`);
+          if (backlinkUpdates.length > 0) {
+            previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${backlinkUpdates.map(b => b.path).join(', ')}`);
+          }
+        } else {
+          previewLines.push('No backlinks found');
+        }
+
+        // Dry run: return preview without moving or committing
+        if (dry_run) {
+          const result: MutationResult = {
+            success: true,
+            message: `[dry run] Would move note: ${oldPath} → ${newPath}`,
+            path: newPath,
+            preview: previewLines.join('\n'),
+            dryRun: true,
+          };
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
         }
 
         // 6. Create destination directory
@@ -307,21 +345,6 @@ export function registerMoveNoteTools(
           console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
         });
 
-        // Build result
-        const previewLines = [
-          `Moved: ${oldPath} → ${newPath}`,
-        ];
-
-        if (backlinkCount > 0) {
-          previewLines.push(`Backlinks found: ${backlinkCount}`);
-          previewLines.push(`Backlinks updated: ${updatedBacklinks}`);
-          if (backlinkUpdates.length > 0) {
-            previewLines.push(`Files modified: ${backlinkUpdates.map(b => b.path).join(', ')}`);
-          }
-        } else {
-          previewLines.push('No backlinks found');
-        }
-
         const result: MutationResult = {
           success: true,
           message: `Moved note: ${oldPath} → ${newPath}`,
@@ -356,8 +379,9 @@ export function registerMoveNoteTools(
       newTitle: z.string().describe('New title for the note (without .md extension)'),
       updateBacklinks: z.boolean().default(true).describe('If true (default), updates all backlinks pointing to this note'),
       commit: z.boolean().default(false).describe('If true, commit all changes to git'),
+      dry_run: z.boolean().optional().default(false).describe('Preview what would change without renaming any files'),
     },
-    async ({ path: notePath, newTitle, updateBacklinks, commit }) => {
+    async ({ path: notePath, newTitle, updateBacklinks, commit, dry_run }) => {
       try {
         // 1. Validate path
         if (!validatePath(vaultPath, notePath)) {
@@ -424,35 +448,71 @@ export function registerMoveNoteTools(
 
         const oldTitle = getTitleFromPath(notePath);
 
-        // 6. Update backlinks if requested
+        // 6. Compute backlink update plan
         let backlinkCount = 0;
-        let updatedBacklinks = 0;
         const backlinkUpdates: Array<{ path: string; linksUpdated: number }> = [];
 
         if (updateBacklinks && oldTitle.toLowerCase() !== sanitizedTitle.toLowerCase()) {
-          const allOldTitles = [oldTitle, ...aliases];
           const backlinks = await findBacklinks(vaultPath, oldTitle, aliases);
           backlinkCount = backlinks.reduce((sum, b) => sum + b.links.length, 0);
 
-          for (const backlink of backlinks) {
-            // Skip the file being renamed
-            if (backlink.path === notePath) continue;
-
-            const updateResult = await updateBacklinksInFile(
-              vaultPath,
-              backlink.path,
-              allOldTitles,
-              sanitizedTitle
-            );
-
-            if (updateResult.updated) {
-              updatedBacklinks += updateResult.linksUpdated;
+          if (dry_run) {
+            for (const backlink of backlinks) {
+              if (backlink.path === notePath) continue;
               backlinkUpdates.push({
                 path: backlink.path,
-                linksUpdated: updateResult.linksUpdated,
+                linksUpdated: backlink.links.length,
               });
             }
+          } else {
+            const allOldTitles = [oldTitle, ...aliases];
+            for (const backlink of backlinks) {
+              if (backlink.path === notePath) continue;
+
+              const updateResult = await updateBacklinksInFile(
+                vaultPath,
+                backlink.path,
+                allOldTitles,
+                sanitizedTitle
+              );
+
+              if (updateResult.updated) {
+                backlinkUpdates.push({
+                  path: backlink.path,
+                  linksUpdated: updateResult.linksUpdated,
+                });
+              }
+            }
           }
+        }
+
+        const updatedBacklinks = backlinkUpdates.reduce((sum, b) => sum + b.linksUpdated, 0);
+
+        // Build preview
+        const previewLines = [
+          `${dry_run ? 'Would rename' : 'Renamed'}: "${oldTitle}" → "${sanitizedTitle}"`,
+        ];
+
+        if (backlinkCount > 0) {
+          previewLines.push(`Backlinks found: ${backlinkCount}`);
+          previewLines.push(`Backlinks ${dry_run ? 'to update' : 'updated'}: ${updatedBacklinks}`);
+          if (backlinkUpdates.length > 0) {
+            previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${backlinkUpdates.map(b => b.path).join(', ')}`);
+          }
+        } else {
+          previewLines.push('No backlinks found');
+        }
+
+        // Dry run: return preview without renaming or committing
+        if (dry_run) {
+          const result: MutationResult = {
+            success: true,
+            message: `[dry run] Would rename note: ${oldTitle} → ${sanitizedTitle}`,
+            path: newPath,
+            preview: previewLines.join('\n'),
+            dryRun: true,
+          };
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
         }
 
         // 7. Rename the file
@@ -484,21 +544,6 @@ export function registerMoveNoteTools(
         initializeEntityIndex(vaultPath).catch(err => {
           console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
         });
-
-        // Build result
-        const previewLines = [
-          `Renamed: "${oldTitle}" → "${sanitizedTitle}"`,
-        ];
-
-        if (backlinkCount > 0) {
-          previewLines.push(`Backlinks found: ${backlinkCount}`);
-          previewLines.push(`Backlinks updated: ${updatedBacklinks}`);
-          if (backlinkUpdates.length > 0) {
-            previewLines.push(`Files modified: ${backlinkUpdates.map(b => b.path).join(', ')}`);
-          }
-        } else {
-          previewLines.push('No backlinks found');
-        }
 
         const result: MutationResult = {
           success: true,

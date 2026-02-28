@@ -118,10 +118,11 @@ export function registerTaskTools(
       task: z.string().describe('Task text to find (partial match supported)'),
       section: z.string().optional().describe('Optional: limit search to this section'),
       commit: z.boolean().default(false).describe('If true, commit this change to git (creates undo point)'),
+      dry_run: z.boolean().optional().default(false).describe('Preview changes without writing to disk'),
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),
     },
-    async ({ path: notePath, task, section, commit, agent_id, session_id }) => {
+    async ({ path: notePath, task, section, commit, dry_run, agent_id, session_id }) => {
       try {
         // 1. Check if file exists
         const existsError = await ensureFileExists(vaultPath, notePath);
@@ -163,6 +164,19 @@ export function registerTaskTools(
           return formatMcpResult(errorResult(notePath, 'Failed to toggle task'));
         }
 
+        const newStatus = toggleResult.newState ? 'completed' : 'incomplete';
+        const checkbox = toggleResult.newState ? '[x]' : '[ ]';
+
+        // Dry run: return preview without writing or committing
+        if (dry_run) {
+          return formatMcpResult(
+            successResult(notePath, `[dry run] Toggled task to ${newStatus} in ${notePath}`, {}, {
+              preview: `${checkbox} ${matchingTask.text}`,
+              dryRun: true,
+            })
+          );
+        }
+
         // 7. Inject scoping metadata if provided
         let finalFrontmatter = frontmatter;
         if (agent_id || session_id) {
@@ -177,9 +191,6 @@ export function registerTaskTools(
 
         // 9. Handle git commit
         const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Flywheel:Task]');
-
-        const newStatus = toggleResult.newState ? 'completed' : 'incomplete';
-        const checkbox = toggleResult.newState ? '[x]' : '[ ]';
 
         return formatMcpResult(
           successResult(notePath, `Toggled task to ${newStatus} in ${notePath}`, gitInfo, {
@@ -214,10 +225,11 @@ export function registerTaskTools(
       validate: z.boolean().default(true).describe('Check input for common issues'),
       normalize: z.boolean().default(true).describe('Auto-fix common issues before formatting'),
       guardrails: z.enum(['warn', 'strict', 'off']).default('warn').describe('Output validation mode'),
+      dry_run: z.boolean().optional().default(false).describe('Preview changes without writing to disk'),
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),
     },
-    async ({ path: notePath, section, task, position, completed, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, preserveListNesting, validate, normalize, guardrails, agent_id, session_id }) => {
+    async ({ path: notePath, section, task, position, completed, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, preserveListNesting, validate, normalize, guardrails, dry_run, agent_id, session_id }) => {
       return withVaultFile(
         {
           vaultPath,
@@ -227,6 +239,7 @@ export function registerTaskTools(
           section,
           actionDescription: 'add task',
           scoping: agent_id || session_id ? { agent_id, session_id } : undefined,
+          dryRun: dry_run,
         },
         async (ctx) => {
           // 1. Run validation pipeline on task text

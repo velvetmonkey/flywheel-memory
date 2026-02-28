@@ -142,10 +142,11 @@ export function registerMutationTools(
       normalize: z.boolean().default(true).describe('Auto-fix common issues before formatting (replace • with -, trim excessive whitespace, etc.)'),
       guardrails: z.enum(['warn', 'strict', 'off']).default('warn').describe('Output validation mode: "warn" returns issues but proceeds, "strict" blocks on errors, "off" disables'),
       linkedEntities: z.array(z.string()).optional().describe('Entity names already linked in the content. When skipWikilinks=true, these are tracked for feedback without re-processing the content.'),
+      dry_run: z.boolean().optional().default(false).describe('Preview changes without writing to disk'),
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping (e.g., "claude-opus", "planning-agent")'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping (e.g., "sess-abc123")'),
     },
-    async ({ path: notePath, section, content, create_if_missing, position, format, commit, skipWikilinks, preserveListNesting, bumpHeadings, suggestOutgoingLinks, maxSuggestions, validate, normalize, guardrails, linkedEntities, agent_id, session_id }) => {
+    async ({ path: notePath, section, content, create_if_missing, position, format, commit, skipWikilinks, preserveListNesting, bumpHeadings, suggestOutgoingLinks, maxSuggestions, validate, normalize, guardrails, linkedEntities, dry_run, agent_id, session_id }) => {
       // Handle create_if_missing: create note from template before proceeding
       let noteCreated = false;
       let templateUsed: string | undefined;
@@ -171,6 +172,7 @@ export function registerMutationTools(
           section,
           actionDescription: 'add content',
           scoping: agent_id || session_id ? { agent_id, session_id } : undefined,
+          dryRun: dry_run,
         },
         async (ctx) => {
           // 1. Run validation pipeline on input
@@ -266,10 +268,11 @@ export function registerMutationTools(
       mode: z.enum(['first', 'last', 'all']).default('first').describe('Which matches to remove'),
       useRegex: z.boolean().default(false).describe('Treat pattern as regex'),
       commit: z.boolean().default(false).describe('If true, commit this change to git (creates undo point)'),
+      dry_run: z.boolean().optional().default(false).describe('Preview changes without writing to disk'),
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),
     },
-    async ({ path: notePath, section, pattern, mode, useRegex, commit, agent_id, session_id }) => {
+    async ({ path: notePath, section, pattern, mode, useRegex, commit, dry_run, agent_id, session_id }) => {
       return withVaultFile(
         {
           vaultPath,
@@ -279,6 +282,7 @@ export function registerMutationTools(
           section,
           actionDescription: 'remove content',
           scoping: agent_id || session_id ? { agent_id, session_id } : undefined,
+          dryRun: dry_run,
         },
         async (ctx) => {
           // Remove matching content
@@ -325,10 +329,11 @@ export function registerMutationTools(
       validate: z.boolean().default(true).describe('Check input for common issues (double timestamps, non-markdown bullets, etc.)'),
       normalize: z.boolean().default(true).describe('Auto-fix common issues before formatting (replace • with -, trim excessive whitespace, etc.)'),
       guardrails: z.enum(['warn', 'strict', 'off']).default('warn').describe('Output validation mode: "warn" returns issues but proceeds, "strict" blocks on errors, "off" disables'),
+      dry_run: z.boolean().optional().default(false).describe('Preview changes without writing to disk'),
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),
     },
-    async ({ path: notePath, section, search, replacement, mode, useRegex, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, validate, normalize, guardrails, agent_id, session_id }) => {
+    async ({ path: notePath, section, search, replacement, mode, useRegex, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, validate, normalize, guardrails, dry_run, agent_id, session_id }) => {
       return withVaultFile(
         {
           vaultPath,
@@ -338,6 +343,7 @@ export function registerMutationTools(
           section,
           actionDescription: 'replace content',
           scoping: agent_id || session_id ? { agent_id, session_id } : undefined,
+          dryRun: dry_run,
         },
         async (ctx) => {
           // 1. Run validation pipeline on replacement text

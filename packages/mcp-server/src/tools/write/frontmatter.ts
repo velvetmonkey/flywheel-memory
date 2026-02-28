@@ -29,8 +29,9 @@ export function registerFrontmatterTools(
       frontmatter: z.record(z.any()).describe('Frontmatter fields to update (JSON object)'),
       only_if_missing: z.boolean().default(false).describe('If true, only add fields that don\'t already exist in the frontmatter (skip existing keys)'),
       commit: z.boolean().default(false).describe('If true, commit this change to git (creates undo point)'),
+      dry_run: z.boolean().optional().default(false).describe('Preview changes without writing to disk'),
     },
-    async ({ path: notePath, frontmatter: updates, only_if_missing, commit }) => {
+    async ({ path: notePath, frontmatter: updates, only_if_missing, commit, dry_run }) => {
       return withVaultFrontmatter(
         {
           vaultPath,
@@ -38,6 +39,7 @@ export function registerFrontmatterTools(
           commit,
           commitPrefix: '[Flywheel:FM]',
           actionDescription: 'update frontmatter',
+          dryRun: dry_run,
         },
         async (ctx) => {
           let effectiveUpdates: Record<string, unknown>;

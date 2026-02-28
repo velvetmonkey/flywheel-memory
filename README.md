@@ -22,6 +22,15 @@
 
 Select from 42 tools. 6-line config. Zero cloud dependencies.
 
+**Try in 60 seconds:**
+
+```bash
+git clone https://github.com/velvetmonkey/flywheel-memory.git
+cd flywheel-memory/demos/carter-strategy && claude
+```
+
+Then ask: *"How much have I billed Acme Corp?"*
+
 ---
 
 ## See It Work

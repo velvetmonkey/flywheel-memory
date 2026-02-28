@@ -27,6 +27,7 @@ import {
   escapeFts5Query,
   FLYWHEEL_DIR,
   STATE_DB_FILENAME,
+  SCHEMA_VERSION,
 } from '../src/sqlite.js';
 import type { StateDb } from '../src/sqlite.js';
 import type { EntityIndex, EntityWithAliases } from '../src/types.js';
@@ -75,7 +76,7 @@ describe('SQLite State Management', () => {
     it('should have correct schema version', () => {
       stateDb = openStateDb(testVaultPath);
       const metadata = getStateDbMetadata(stateDb);
-      expect(metadata.schemaVersion).toBe(26);
+      expect(metadata.schemaVersion).toBe(SCHEMA_VERSION);
     });
 
     it('note_links has weight column with default 1.0', () => {

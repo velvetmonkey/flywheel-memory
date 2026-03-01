@@ -1,12 +1,12 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-02-27T18:56:56.354Z",
-  "duration_ms": 28184,
+  "timestamp": "2026-03-01T00:48:02.393Z",
+  "duration_ms": 42614,
   "summary": {
     "round0_f1": 0.889,
     "roundN_f1": 0.889,
     "f1_improvement": 0,
-    "total_suppressions": 18
+    "total_suppressions": 14
   },
   "details": [
     {
@@ -2557,8 +2557,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 0.4927,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 0.4488,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2672,6 +2672,7 @@
         }
       },
       "suppressedEntities": [
+        "architecture-rfc",
         "clean-architecture",
         "melbourne",
         "meridian-labs",
@@ -2758,8 +2759,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 0.6068,
+      "suppressionCount": 13,
+      "feedbackLayerAvgContribution": 0.57,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2873,7 +2874,6 @@
         }
       },
       "suppressedEntities": [
-        "architecture-rfc",
         "clean-architecture",
         "melbourne",
         "meridian-labs",
@@ -2960,8 +2960,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 0.5848,
+      "suppressionCount": 13,
+      "feedbackLayerAvgContribution": 0.6553,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3075,9 +3075,7 @@
         }
       },
       "suppressedEntities": [
-        "architecture-rfc",
         "clean-architecture",
-        "devops",
         "melbourne",
         "meridian-labs",
         "nadia-reyes",
@@ -3088,7 +3086,6 @@
         "signal-patterns",
         "staging",
         "supplements",
-        "tessa-liu",
         "uat",
         "yoga"
       ],
@@ -3165,7 +3162,7 @@
       "falsePositives": 0,
       "falseNegatives": 12,
       "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 0.5686,
+      "feedbackLayerAvgContribution": 0.6083,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3281,9 +3278,9 @@
       "suppressedEntities": [
         "architecture-rfc",
         "clean-architecture",
-        "devops",
         "melbourne",
         "meridian-labs",
+        "nadia-reyes",
         "prism-core",
         "production",
         "project-meridian",
@@ -3367,8 +3364,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 0.5678,
+      "suppressionCount": 13,
+      "feedbackLayerAvgContribution": 0.5271,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3483,7 +3480,6 @@
       },
       "suppressedEntities": [
         "clean-architecture",
-        "devops",
         "melbourne",
         "meridian-labs",
         "prism-core",
@@ -3494,7 +3490,6 @@
         "staging",
         "supplements",
         "tessa-liu",
-        "typescript",
         "uat",
         "yoga"
       ],
@@ -3570,8 +3565,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 0.6915,
+      "suppressionCount": 13,
+      "feedbackLayerAvgContribution": 0.5539,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3685,9 +3680,7 @@
         }
       },
       "suppressedEntities": [
-        "architecture-rfc",
         "clean-architecture",
-        "devops",
         "melbourne",
         "meridian-labs",
         "prism-core",
@@ -3698,7 +3691,6 @@
         "staging",
         "supplements",
         "tessa-liu",
-        "typescript",
         "uat",
         "yoga"
       ],
@@ -3774,8 +3766,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 18,
-      "feedbackLayerAvgContribution": 0.5303,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 0.5485,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3891,20 +3883,16 @@
       "suppressedEntities": [
         "architecture-rfc",
         "clean-architecture",
-        "devops",
-        "dmitri-sokolov",
         "melbourne",
         "meridian-labs",
         "prism-core",
         "production",
         "project-meridian",
-        "python",
         "q1-review",
         "signal-patterns",
         "staging",
         "supplements",
         "tessa-liu",
-        "typescript",
         "uat",
         "yoga"
       ],

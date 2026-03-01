@@ -1,8 +1,29 @@
 /**
  * Semantic Search Embeddings Module
  *
- * Local embedding-based semantic search using @huggingface/transformers
- * with all-MiniLM-L6-v2. Automatic when embeddings have been built via init_semantic.
+ * Local embedding-based semantic search using @huggingface/transformers.
+ * Automatic when embeddings have been built via init_semantic.
+ *
+ * ## Model Configuration
+ *
+ * Set `EMBEDDING_MODEL` env var to use a different HuggingFace model:
+ *   EMBEDDING_MODEL=Xenova/bge-small-en-v1.5
+ *
+ * Known models (dimensions auto-detected):
+ *   - Xenova/all-MiniLM-L6-v2      (384 dims, default)
+ *   - Xenova/bge-small-en-v1.5     (384 dims)
+ *   - Xenova/all-MiniLM-L12-v2     (384 dims)
+ *   - nomic-ai/nomic-embed-text-v1 (768 dims)
+ *
+ * Unknown model IDs are accepted — dimensions are probed from the first
+ * embedding output. Changing models triggers an automatic rebuild.
+ *
+ * ## Future: Ollama / LM Studio
+ *
+ * This module currently uses HuggingFace transformers for local inference.
+ * To add Ollama or LM Studio support, implement an EmbeddingProvider interface
+ * with `embed(text: string): Promise<Float32Array>` and `dims: number`, then
+ * select provider based on a `EMBEDDING_PROVIDER` env var (default: "huggingface").
  *
  * Follows the fts5.ts pattern:
  * - Module-level db handle via setEmbeddingsDatabase()
@@ -48,11 +69,41 @@ export interface EntitySimilarityResult {
 }
 
 // =============================================================================
-// Constants
+// Model Configuration
 // =============================================================================
 
-const MODEL_ID = 'Xenova/all-MiniLM-L6-v2';
-const EMBEDDING_DIMS = 384;
+interface ModelConfig {
+  id: string;
+  dims: number;
+}
+
+const MODEL_REGISTRY: Record<string, ModelConfig> = {
+  'Xenova/all-MiniLM-L6-v2':      { id: 'Xenova/all-MiniLM-L6-v2',      dims: 384 },
+  'Xenova/bge-small-en-v1.5':     { id: 'Xenova/bge-small-en-v1.5',     dims: 384 },
+  'Xenova/all-MiniLM-L12-v2':     { id: 'Xenova/all-MiniLM-L12-v2',     dims: 384 },
+  'nomic-ai/nomic-embed-text-v1': { id: 'nomic-ai/nomic-embed-text-v1', dims: 768 },
+};
+
+const DEFAULT_MODEL = 'Xenova/all-MiniLM-L6-v2';
+
+function getModelConfig(): ModelConfig {
+  const envModel = process.env.EMBEDDING_MODEL?.trim();
+  if (!envModel) return MODEL_REGISTRY[DEFAULT_MODEL];
+  if (MODEL_REGISTRY[envModel]) return MODEL_REGISTRY[envModel];
+  // Unknown model — dims will be probed from first embedding output
+  return { id: envModel, dims: 0 };
+}
+
+const activeModelConfig = getModelConfig();
+
+/** Get the active embedding model ID. */
+export function getActiveModelId(): string {
+  return activeModelConfig.id;
+}
+
+// =============================================================================
+// Constants
+// =============================================================================
 
 /** Directories to exclude from embedding */
 const EXCLUDED_DIRS = new Set([
@@ -129,9 +180,16 @@ export async function initEmbeddings(): Promise<void> {
       // Dynamic import — @huggingface/transformers is an optional dependency
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const transformers: any = await (Function('specifier', 'return import(specifier)')('@huggingface/transformers'));
-      pipeline = await transformers.pipeline('feature-extraction', MODEL_ID, {
+      pipeline = await transformers.pipeline('feature-extraction', activeModelConfig.id, {
         dtype: 'fp32',
       });
+
+      // Probe dimensions for unknown models
+      if (activeModelConfig.dims === 0) {
+        const probe = await pipeline('test', { pooling: 'mean', normalize: true });
+        activeModelConfig.dims = probe.data.length;
+        console.error(`[Semantic] Probed model ${activeModelConfig.id}: ${activeModelConfig.dims} dims`);
+      }
     } catch (err: unknown) {
       initPromise = null;
       if (err instanceof Error && (
@@ -273,7 +331,7 @@ export async function buildEmbeddingsIndex(
 
       const embedding = await embedText(content);
       const buf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
-      upsert.run(file.path, buf, hash, MODEL_ID, Date.now());
+      upsert.run(file.path, buf, hash, activeModelConfig.id, Date.now());
     } catch {
       progress.skipped++;
     }
@@ -315,7 +373,7 @@ export async function updateEmbedding(notePath: string, absolutePath: string): P
     db.prepare(`
       INSERT OR REPLACE INTO note_embeddings (path, embedding, content_hash, model, updated_at)
       VALUES (?, ?, ?, ?, ?)
-    `).run(notePath, buf, hash, MODEL_ID, Date.now());
+    `).run(notePath, buf, hash, activeModelConfig.id, Date.now());
   } catch {
     // Skip files we can't process
   }
@@ -493,6 +551,29 @@ export function hasEmbeddingsIndex(): boolean {
 }
 
 /**
+ * Get the model ID stored in existing embeddings (first row of note_embeddings).
+ * Returns null if no embeddings exist.
+ */
+export function getStoredEmbeddingModel(): string | null {
+  if (!db) return null;
+  try {
+    const row = db.prepare('SELECT model FROM note_embeddings LIMIT 1').get() as { model: string } | undefined;
+    return row?.model ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if embeddings need rebuilding due to a model change.
+ */
+export function needsEmbeddingRebuild(): boolean {
+  const stored = getStoredEmbeddingModel();
+  if (stored === null) return false; // No embeddings yet — not a "rebuild"
+  return stored !== activeModelConfig.id;
+}
+
+/**
  * Get the number of embedded notes.
  */
 export function getEmbeddingsCount(): number {
@@ -617,7 +698,7 @@ export async function buildEntityEmbeddingsIndex(
 
       const embedding = await embedTextCached(text);
       const buf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
-      upsert.run(name, buf, hash, MODEL_ID, Date.now());
+      upsert.run(name, buf, hash, activeModelConfig.id, Date.now());
       updated++;
     } catch {
       // Skip entities we can't process
@@ -662,7 +743,7 @@ export async function updateEntityEmbedding(
     db.prepare(`
       INSERT OR REPLACE INTO entity_embeddings (entity_name, embedding, source_hash, model, updated_at)
       VALUES (?, ?, ?, ?, ?)
-    `).run(entityName, buf, hash, MODEL_ID, Date.now());
+    `).run(entityName, buf, hash, activeModelConfig.id, Date.now());
 
     // Update in-memory map
     entityEmbeddingsMap.set(entityName, embedding);

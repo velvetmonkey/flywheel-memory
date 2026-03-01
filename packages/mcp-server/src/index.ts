@@ -60,6 +60,9 @@ import {
   loadEntityEmbeddingsToMemory,
   updateEntityEmbedding,
   hasEntityEmbeddingsIndex,
+  needsEmbeddingRebuild,
+  getStoredEmbeddingModel,
+  getActiveModelId,
 } from './core/read/embeddings.js';
 import {
   setTaskCacheDatabase,
@@ -907,7 +910,20 @@ async function runPostIndexWork(index: VaultIndex) {
   // Auto-build embeddings in background (fire-and-forget)
   // Skip if embeddings already populated (file watcher handles incremental updates)
   if (process.env.FLYWHEEL_SKIP_EMBEDDINGS !== 'true') {
-    if (hasEmbeddingsIndex()) {
+    // Check for model change — clear and rebuild if model switched
+    let modelChanged = false;
+    if (hasEmbeddingsIndex() && needsEmbeddingRebuild()) {
+      const oldModel = getStoredEmbeddingModel();
+      serverLog('semantic', `Embedding model changed from ${oldModel} to ${getActiveModelId()}, rebuilding`);
+      if (stateDb) {
+        stateDb.db.exec('DELETE FROM note_embeddings');
+        stateDb.db.exec('DELETE FROM entity_embeddings');
+      }
+      setEmbeddingsBuildState('none');
+      modelChanged = true;
+    }
+
+    if (hasEmbeddingsIndex() && !modelChanged) {
       serverLog('semantic', 'Embeddings already built, skipping full scan');
     } else {
       setEmbeddingsBuilding(true);

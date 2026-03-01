@@ -13,7 +13,7 @@ import type { FlywheelConfig } from '../../core/read/config.js';
 import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
 import { getRecentIndexEvents, getRecentPipelineEvent, type PipelineStep } from '../../core/shared/indexActivity.js';
 import { getFTS5State } from '../../core/read/fts5.js';
-import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount } from '../../core/read/embeddings.js';
+import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount, getActiveModelId } from '../../core/read/embeddings.js';
 import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache.js';
 import { getServerLog, type LogEntry } from '../../core/shared/serverLog.js';
 import { getSweepResults, type SweepResults } from '../../core/read/sweep.js';
@@ -106,6 +106,7 @@ export function registerHealthTools(
     embeddings_building: z.boolean().describe('Whether semantic embeddings are currently building'),
     embeddings_ready: z.boolean().describe('Whether semantic embeddings have been built (enables hybrid keyword+semantic search)'),
     embeddings_count: z.coerce.number().describe('Number of notes with semantic embeddings'),
+    embedding_model: z.string().optional().describe('Active embedding model ID (when embeddings are built)'),
     tasks_ready: z.boolean().describe('Whether the task cache is ready to serve queries'),
     tasks_building: z.boolean().describe('Whether the task cache is currently rebuilding'),
     watcher_state: z.enum(['starting', 'ready', 'rebuilding', 'dirty', 'error']).optional()
@@ -188,6 +189,7 @@ export function registerHealthTools(
     embeddings_building: boolean;
     embeddings_ready: boolean;
     embeddings_count: number;
+    embedding_model?: string;
     tasks_ready: boolean;
     tasks_building: boolean;
     watcher_state?: 'starting' | 'ready' | 'rebuilding' | 'dirty' | 'error';
@@ -400,6 +402,7 @@ export function registerHealthTools(
         embeddings_building: isEmbeddingsBuilding(),
         embeddings_ready: hasEmbeddingsIndex(),
         embeddings_count: getEmbeddingsCount(),
+        embedding_model: hasEmbeddingsIndex() ? getActiveModelId() : undefined,
         tasks_ready: isTaskCacheReady(),
         tasks_building: isTaskCacheBuilding(),
         watcher_state: getWatcherStatus()?.state,

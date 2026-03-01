@@ -55,20 +55,24 @@ packages/mcp-server/src/
 
 ## Tool Presets
 
-Controlled by `FLYWHEEL_TOOLS` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
+Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`full`** (default) — All 15 categories, 42 tools (~12,400 tokens)
-- **`minimal`** — 5 categories, 13 tools (~3,800 tokens): search, structure, append, frontmatter, notes
+- **`minimal`** — 11 tools: search, structure, append, frontmatter, notes
+- **`writer`** — 14 tools: minimal + tasks
+- **`agent`** — 14 tools: minimal + memory
+- **`researcher`** — 12 tools: search, structure, backlinks, hubs, paths
+- **`full`** (default) — All 16 categories, all tools
 
-**Composable bundles** (add to minimal or each other):
-- **`graph`** — 6 tools: backlinks, orphans, hubs, paths
-- **`analysis`** — 9 tools: schema, wikilinks
-- **`tasks`** — 3 tools: tasks
-- **`health`** — 8 tools: health
-- **`ops`** — 2 tools: git, policy
+**Composable bundles** (add to presets or each other):
+- **`graph`** — backlinks, orphans, hubs, paths (5 tools)
+- **`analysis`** — schema, wikilinks (9 tools)
+- **`tasks`** — tasks (3 tools)
+- **`health`** — health (11+ tools)
+- **`ops`** — git, policy (2 tools)
+- **`note-ops`** — delete, move, rename, merge (4 tools)
 
-**Categories (15):** `search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `git`, `policy`
+**Categories (16):** `search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `note-ops`, `git`, `policy`, `memory`
 
 ---
 

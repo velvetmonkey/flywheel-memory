@@ -184,29 +184,34 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherStatus;
 // ============================================================================
 // Tool Presets & Composable Bundles
 // ============================================================================
-// FLYWHEEL_TOOLS env var controls which tools are loaded.
+// FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
 // Presets:
-//   minimal  - Note-taking essentials: search, read, create, edit (13 tools)
-//   full     - All tools (42 tools) [DEFAULT]
+//   minimal    - Bare essentials: search, read, create, edit (11 tools)
+//   writer     - minimal + tasks (14 tools)
+//   agent      - minimal + memory (14 tools)
+//   researcher - Graph explorer: search, structure, backlinks, hubs, paths (12 tools)
+//   full       - All tools (42 tools) [DEFAULT]
 //
-// Composable bundles (combine with minimal or each other):
-//   graph    - Backlinks, orphans, hubs, paths (6 tools)
-//   analysis - Schema intelligence, wikilink validation (8 tools)
+// Composable bundles (combine with presets or each other):
+//   graph    - Backlinks, orphans, hubs, paths (5 tools)
+//   analysis - Schema intelligence, wikilink validation (9 tools)
 //   tasks    - Task queries and mutations (3 tools)
-//   health   - Vault diagnostics and index management (7 tools)
+//   health   - Vault diagnostics and index management (11 tools)
 //   ops      - Git undo, policy automation (2 tools)
+//   note-ops - File management: delete, move, rename, merge (4 tools)
 //
 // Examples:
-//   FLYWHEEL_TOOLS=minimal                    # 13 tools
-//   FLYWHEEL_TOOLS=minimal,graph,tasks        # 22 tools
-//   FLYWHEEL_TOOLS=minimal,graph,analysis     # 25 tools
+//   FLYWHEEL_TOOLS=minimal                    # 11 tools
+//   FLYWHEEL_TOOLS=writer,note-ops            # 18 tools
+//   FLYWHEEL_TOOLS=agent,tasks                # 17 tools
 //   FLYWHEEL_TOOLS=search,backlinks,append    # fine-grained categories
 //
-// Categories (15):
+// Categories (16):
 //   READ:  search, backlinks, orphans, hubs, paths,
 //          schema, structure, tasks, health, wikilinks
-//   WRITE: append, frontmatter, notes, git, policy
+//   WRITE: append, frontmatter, notes, note-ops, git, policy
+//   AGENT: memory
 // ============================================================================
 
 type ToolCategory =
@@ -216,7 +221,7 @@ type ToolCategory =
   | 'schema' | 'structure' | 'tasks'
   | 'health' | 'wikilinks'
   // Write
-  | 'append' | 'frontmatter' | 'notes'
+  | 'append' | 'frontmatter' | 'notes' | 'note-ops'
   | 'git' | 'policy'
   // Agent memory
   | 'memory';
@@ -224,15 +229,17 @@ type ToolCategory =
 const PRESETS: Record<string, ToolCategory[]> = {
   // Presets
   minimal: ['search', 'structure', 'append', 'frontmatter', 'notes'],
+  writer: ['search', 'structure', 'append', 'frontmatter', 'notes', 'tasks'],
+  agent: ['search', 'structure', 'append', 'frontmatter', 'notes', 'memory'],
+  researcher: ['search', 'structure', 'backlinks', 'hubs', 'paths'],
   full: [
     'search', 'backlinks', 'orphans', 'hubs', 'paths',
     'schema', 'structure', 'tasks',
     'health', 'wikilinks',
-    'append', 'frontmatter', 'notes',
+    'append', 'frontmatter', 'notes', 'note-ops',
     'git', 'policy',
     'memory',
   ],
-  agent: ['search', 'structure', 'append', 'frontmatter', 'notes', 'memory'],
 
   // Composable bundles
   graph: ['backlinks', 'orphans', 'hubs', 'paths'],
@@ -240,6 +247,7 @@ const PRESETS: Record<string, ToolCategory[]> = {
   tasks: ['tasks'],
   health: ['health'],
   ops: ['git', 'policy'],
+  'note-ops': ['note-ops'],
 };
 
 const ALL_CATEGORIES: ToolCategory[] = [
@@ -247,7 +255,7 @@ const ALL_CATEGORIES: ToolCategory[] = [
   'search',
   'schema', 'structure', 'tasks',
   'health', 'wikilinks',
-  'append', 'frontmatter', 'notes',
+  'append', 'frontmatter', 'notes', 'note-ops',
   'git', 'policy',
   'memory',
 ];
@@ -258,7 +266,7 @@ const DEFAULT_PRESET = 'full';
  * Parse FLYWHEEL_TOOLS env var into enabled categories
  */
 function parseEnabledCategories(): Set<ToolCategory> {
-  const envValue = process.env.FLYWHEEL_TOOLS?.trim();
+  const envValue = (process.env.FLYWHEEL_TOOLS ?? process.env.FLYWHEEL_PRESET)?.trim();
 
   // No env var = use default preset
   if (!envValue) {
@@ -352,11 +360,13 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   // frontmatter (absorbed vault_add_frontmatter_field via only_if_missing)
   vault_update_frontmatter: 'frontmatter',
 
-  // notes (CRUD)
+  // notes (create only)
   vault_create_note: 'notes',
-  vault_delete_note: 'notes',
-  vault_move_note: 'notes',
-  vault_rename_note: 'notes',
+
+  // note-ops (file management)
+  vault_delete_note: 'note-ops',
+  vault_move_note: 'note-ops',
+  vault_rename_note: 'note-ops',
 
   // git
   vault_undo_last_mutation: 'git',
@@ -391,8 +401,8 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   suggest_entity_merges: 'health',
   dismiss_merge_suggestion: 'health',
 
-  // notes (entity merge)
-  merge_entities: 'notes',
+  // note-ops (entity merge)
+  merge_entities: 'note-ops',
 
   // memory (agent working memory)
   memory: 'memory',

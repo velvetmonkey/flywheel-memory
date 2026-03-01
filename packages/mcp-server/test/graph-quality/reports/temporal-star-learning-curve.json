@@ -1,15 +1,15 @@
 {
   "suite": "temporal-star-learning-curve",
-  "timestamp": "2026-03-01T04:30:14.782Z",
-  "duration_ms": 200556,
+  "timestamp": "2026-03-01T17:24:12.147Z",
+  "duration_ms": 203976,
   "summary": {
     "round0_f1": 0.778,
-    "roundN_f1": 0.867,
-    "f1_improvement": 0.089,
+    "roundN_f1": 0.869,
+    "f1_improvement": 0.091,
     "total_rounds": 20,
     "total_suppressions": 18,
     "convergence_round": -1,
-    "num_phases": 10
+    "num_phases": 8
   },
   "details": [
     {
@@ -208,7 +208,7 @@
       "falsePositives": 3,
       "falseNegatives": 154,
       "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 3.7298,
+      "feedbackLayerAvgContribution": 3.7226,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -327,12 +327,12 @@
       "f1": 0.849,
       "precision": 0.993,
       "recall": 0.741,
-      "mrr": 0.89,
+      "mrr": 0.892,
       "truePositives": 426,
       "falsePositives": 3,
       "falseNegatives": 149,
       "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 3.8386,
+      "feedbackLayerAvgContribution": 3.8819,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -448,20 +448,20 @@
     },
     {
       "round": 7,
-      "f1": 0.858,
+      "f1": 0.859,
       "precision": 0.993,
-      "recall": 0.755,
+      "recall": 0.757,
       "mrr": 0.908,
-      "truePositives": 434,
+      "truePositives": 435,
       "falsePositives": 3,
-      "falseNegatives": 141,
+      "falseNegatives": 140,
       "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 4.0579,
+      "feedbackLayerAvgContribution": 4.1086,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.786096256684492,
-          "f1": 0.8802395209580839,
+          "recall": 0.7914438502673797,
+          "f1": 0.8835820895522388,
           "count": 187
         },
         "projects": {
@@ -513,12 +513,12 @@
       "f1": 0.858,
       "precision": 0.993,
       "recall": 0.755,
-      "mrr": 0.908,
+      "mrr": 0.915,
       "truePositives": 434,
       "falsePositives": 3,
       "falseNegatives": 141,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 3.889,
+      "feedbackLayerAvgContribution": 3.9469,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -579,8 +579,8 @@
       "truePositives": 437,
       "falsePositives": 5,
       "falseNegatives": 138,
-      "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 4.0217,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 4.0266,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -634,15 +634,15 @@
     },
     {
       "round": 10,
-      "f1": 0.867,
+      "f1": 0.864,
       "precision": 0.993,
-      "recall": 0.769,
-      "mrr": 0.91,
-      "truePositives": 442,
+      "recall": 0.765,
+      "mrr": 0.904,
+      "truePositives": 440,
       "falsePositives": 3,
-      "falseNegatives": 133,
-      "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 4.106,
+      "falseNegatives": 135,
+      "suppressionCount": 16,
+      "feedbackLayerAvgContribution": 4.0361,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -652,14 +652,14 @@
         },
         "projects": {
           "precision": 1,
-          "recall": 0.9695121951219512,
-          "f1": 0.9845201238390092,
+          "recall": 0.9634146341463414,
+          "f1": 0.9813664596273292,
           "count": 164
         },
         "people": {
           "precision": 1,
-          "recall": 0.496,
-          "f1": 0.6631016042780749,
+          "recall": 0.488,
+          "f1": 0.6559139784946236,
           "count": 125
         },
         "other": {
@@ -699,17 +699,17 @@
       "f1": 0.87,
       "precision": 0.993,
       "recall": 0.774,
-      "mrr": 0.904,
+      "mrr": 0.896,
       "truePositives": 445,
       "falsePositives": 3,
       "falseNegatives": 130,
-      "suppressionCount": 18,
-      "feedbackLayerAvgContribution": 4.1472,
+      "suppressionCount": 17,
+      "feedbackLayerAvgContribution": 4.1084,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8074866310160428,
-          "f1": 0.8934911242603549,
+          "recall": 0.8021390374331551,
+          "f1": 0.8902077151335311,
           "count": 187
         },
         "projects": {
@@ -720,8 +720,8 @@
         },
         "people": {
           "precision": 1,
-          "recall": 0.488,
-          "f1": 0.6559139784946236,
+          "recall": 0.496,
+          "f1": 0.6631016042780749,
           "count": 125
         },
         "other": {
@@ -758,26 +758,26 @@
     },
     {
       "round": 12,
-      "f1": 0.872,
+      "f1": 0.869,
       "precision": 0.993,
-      "recall": 0.777,
-      "mrr": 0.91,
-      "truePositives": 447,
+      "recall": 0.772,
+      "mrr": 0.904,
+      "truePositives": 444,
       "falsePositives": 3,
-      "falseNegatives": 128,
+      "falseNegatives": 131,
       "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 4.1643,
+      "feedbackLayerAvgContribution": 4.1158,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8128342245989305,
-          "f1": 0.8967551622418879,
+          "recall": 0.8074866310160428,
+          "f1": 0.8934911242603549,
           "count": 187
         },
         "projects": {
           "precision": 1,
-          "recall": 0.9817073170731707,
-          "f1": 0.9907692307692307,
+          "recall": 0.9695121951219512,
+          "f1": 0.9845201238390092,
           "count": 164
         },
         "people": {
@@ -823,12 +823,12 @@
       "f1": 0.871,
       "precision": 0.993,
       "recall": 0.776,
-      "mrr": 0.913,
+      "mrr": 0.904,
       "truePositives": 446,
       "falsePositives": 3,
       "falseNegatives": 129,
       "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 4.1134,
+      "feedbackLayerAvgContribution": 4.159,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -838,14 +838,14 @@
         },
         "projects": {
           "precision": 1,
-          "recall": 0.975609756097561,
-          "f1": 0.9876543209876543,
+          "recall": 0.9695121951219512,
+          "f1": 0.9845201238390092,
           "count": 164
         },
         "people": {
           "precision": 1,
-          "recall": 0.488,
-          "f1": 0.6559139784946236,
+          "recall": 0.496,
+          "f1": 0.6631016042780749,
           "count": 125
         },
         "other": {
@@ -882,38 +882,38 @@
     },
     {
       "round": 14,
-      "f1": 0.868,
+      "f1": 0.874,
       "precision": 0.991,
-      "recall": 0.772,
+      "recall": 0.781,
       "mrr": 0.904,
-      "truePositives": 444,
+      "truePositives": 449,
       "falsePositives": 4,
-      "falseNegatives": 131,
-      "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.3185,
+      "falseNegatives": 126,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 4.415,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8342245989304813,
-          "f1": 0.9096209912536443,
+          "recall": 0.8288770053475936,
+          "f1": 0.9064327485380117,
           "count": 187
         },
         "projects": {
           "precision": 1,
-          "recall": 0.9451219512195121,
-          "f1": 0.9717868338557993,
+          "recall": 0.9634146341463414,
+          "f1": 0.9813664596273292,
           "count": 164
         },
         "people": {
           "precision": 1,
-          "recall": 0.488,
-          "f1": 0.6559139784946236,
+          "recall": 0.504,
+          "f1": 0.6702127659574468,
           "count": 125
         },
         "other": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
           "count": 24
         },
         "acronyms": {
@@ -944,15 +944,15 @@
     },
     {
       "round": 15,
-      "f1": 0.866,
-      "precision": 0.989,
-      "recall": 0.77,
+      "f1": 0.87,
+      "precision": 0.993,
+      "recall": 0.774,
       "mrr": 0.91,
-      "truePositives": 443,
-      "falsePositives": 5,
-      "falseNegatives": 132,
-      "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 4.1087,
+      "truePositives": 445,
+      "falsePositives": 3,
+      "falseNegatives": 130,
+      "suppressionCount": 16,
+      "feedbackLayerAvgContribution": 4.3764,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -962,8 +962,8 @@
         },
         "projects": {
           "precision": 1,
-          "recall": 0.9573170731707317,
-          "f1": 0.9781931464174455,
+          "recall": 0.9634146341463414,
+          "f1": 0.9813664596273292,
           "count": 164
         },
         "people": {
@@ -974,8 +974,8 @@
         },
         "other": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
           "count": 24
         },
         "acronyms": {
@@ -1006,20 +1006,20 @@
     },
     {
       "round": 16,
-      "f1": 0.864,
-      "precision": 0.991,
-      "recall": 0.765,
+      "f1": 0.869,
+      "precision": 0.993,
+      "recall": 0.772,
       "mrr": 0.904,
-      "truePositives": 440,
-      "falsePositives": 4,
-      "falseNegatives": 135,
-      "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 4.0579,
+      "truePositives": 444,
+      "falsePositives": 3,
+      "falseNegatives": 131,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 4.3277,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8181818181818182,
-          "f1": 0.9,
+          "recall": 0.8288770053475936,
+          "f1": 0.9064327485380117,
           "count": 187
         },
         "projects": {
@@ -1030,14 +1030,14 @@
         },
         "people": {
           "precision": 1,
-          "recall": 0.456,
-          "f1": 0.6263736263736264,
+          "recall": 0.464,
+          "f1": 0.6338797814207651,
           "count": 125
         },
         "other": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 0.7916666666666666,
+          "f1": 0.8837209302325582,
           "count": 24
         },
         "acronyms": {
@@ -1068,32 +1068,32 @@
     },
     {
       "round": 17,
-      "f1": 0.87,
-      "precision": 0.993,
-      "recall": 0.774,
+      "f1": 0.872,
+      "precision": 0.991,
+      "recall": 0.779,
       "mrr": 0.902,
-      "truePositives": 445,
-      "falsePositives": 3,
-      "falseNegatives": 130,
-      "suppressionCount": 18,
-      "feedbackLayerAvgContribution": 4.0795,
+      "truePositives": 448,
+      "falsePositives": 4,
+      "falseNegatives": 127,
+      "suppressionCount": 19,
+      "feedbackLayerAvgContribution": 4.2726,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8235294117647058,
-          "f1": 0.9032258064516129,
+          "recall": 0.8288770053475936,
+          "f1": 0.9064327485380117,
           "count": 187
         },
         "projects": {
           "precision": 1,
-          "recall": 0.9695121951219512,
-          "f1": 0.9845201238390092,
+          "recall": 0.975609756097561,
+          "f1": 0.9876543209876543,
           "count": 164
         },
         "people": {
           "precision": 1,
-          "recall": 0.472,
-          "f1": 0.6413043478260869,
+          "recall": 0.48,
+          "f1": 0.6486486486486487,
           "count": 125
         },
         "other": {
@@ -1130,26 +1130,26 @@
     },
     {
       "round": 18,
-      "f1": 0.868,
+      "f1": 0.87,
       "precision": 0.991,
-      "recall": 0.772,
-      "mrr": 0.902,
-      "truePositives": 444,
+      "recall": 0.776,
+      "mrr": 0.908,
+      "truePositives": 446,
       "falsePositives": 4,
-      "falseNegatives": 131,
-      "suppressionCount": 18,
-      "feedbackLayerAvgContribution": 3.8696,
+      "falseNegatives": 129,
+      "suppressionCount": 17,
+      "feedbackLayerAvgContribution": 4.0555,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8128342245989305,
-          "f1": 0.8967551622418879,
+          "recall": 0.8074866310160428,
+          "f1": 0.8934911242603549,
           "count": 187
         },
         "projects": {
           "precision": 1,
-          "recall": 0.9695121951219512,
-          "f1": 0.9845201238390092,
+          "recall": 0.9878048780487805,
+          "f1": 0.9938650306748467,
           "count": 164
         },
         "people": {
@@ -1192,32 +1192,32 @@
     },
     {
       "round": 19,
-      "f1": 0.867,
+      "f1": 0.869,
       "precision": 0.993,
-      "recall": 0.769,
-      "mrr": 0.904,
-      "truePositives": 442,
+      "recall": 0.772,
+      "mrr": 0.91,
+      "truePositives": 444,
       "falsePositives": 3,
-      "falseNegatives": 133,
+      "falseNegatives": 131,
       "suppressionCount": 18,
-      "feedbackLayerAvgContribution": 4.0483,
+      "feedbackLayerAvgContribution": 4.1518,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.8181818181818182,
-          "f1": 0.9,
+          "recall": 0.8074866310160428,
+          "f1": 0.8934911242603549,
           "count": 187
         },
         "projects": {
           "precision": 1,
-          "recall": 0.9634146341463414,
-          "f1": 0.9813664596273292,
+          "recall": 0.9817073170731707,
+          "f1": 0.9907692307692307,
           "count": 164
         },
         "people": {
           "precision": 1,
-          "recall": 0.464,
-          "f1": 0.6338797814207651,
+          "recall": 0.472,
+          "f1": 0.6413043478260869,
           "count": 125
         },
         "other": {

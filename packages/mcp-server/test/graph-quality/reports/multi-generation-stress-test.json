@@ -1,14 +1,14 @@
 {
   "suite": "multi-generation-stress-test",
-  "timestamp": "2026-03-01T04:31:23.704Z",
-  "duration_ms": 277990,
+  "timestamp": "2026-03-01T17:25:25.093Z",
+  "duration_ms": 286854,
   "summary": {
     "gen0_f1": 0.889,
-    "genLast_f1": 0.889,
-    "f1_delta": 0,
+    "genLast_f1": 0.929,
+    "f1_delta": 0.04,
     "total_generations": 50,
-    "final_suppressions": 18,
-    "final_note_count": 190
+    "final_suppressions": 21,
+    "final_note_count": 192
   },
   "details": [
     {
@@ -3407,7 +3407,7 @@
       "truePositives": 51,
       "falsePositives": 0,
       "falseNegatives": 9,
-      "suppressionCount": 19,
+      "suppressionCount": 20,
       "totalNotes": 161,
       "mutations": [
         "created: generated/gen31-note0.md, generated/gen31-note1.md, generated/gen31-note2.md",
@@ -3516,13 +3516,13 @@
       "truePositives": 51,
       "falsePositives": 0,
       "falseNegatives": 9,
-      "suppressionCount": 20,
+      "suppressionCount": 19,
       "totalNotes": 162,
       "mutations": [
-        "created: generated/gen32-note0.md, generated/gen32-note1.md, generated/gen32-note2.md",
-        "deleted: generated/gen25-note1.md",
-        "edited: 5 notes",
-        "moved: reorganized/gen4-note1.md → reorganized/gen4-note1.md"
+        "created: generated/gen32-note0.md, generated/gen32-note1.md",
+        "deleted: reorganized/gen11-note2.md",
+        "edited: 3 notes",
+        "moved: reorganized/gen20-note1.md → reorganized/gen20-note1.md, reorganized/gen15-note1.md → reorganized/gen15-note1.md"
       ],
       "byCategory": {
         "people": {
@@ -3619,19 +3619,20 @@
     },
     {
       "generation": 33,
-      "f1": 0.929,
+      "f1": 0.909,
       "precision": 1,
-      "recall": 0.867,
-      "mrr": 0.72,
-      "truePositives": 52,
+      "recall": 0.833,
+      "mrr": 0.714,
+      "truePositives": 50,
       "falsePositives": 0,
-      "falseNegatives": 8,
-      "suppressionCount": 20,
-      "totalNotes": 165,
+      "falseNegatives": 10,
+      "suppressionCount": 19,
+      "totalNotes": 164,
       "mutations": [
         "created: generated/gen33-note0.md, generated/gen33-note1.md, generated/gen33-note2.md",
-        "edited: 3 notes",
-        "moved: reorganized/gen6-note1.md → reorganized/gen6-note1.md"
+        "deleted: generated/gen23-note1.md",
+        "edited: 4 notes",
+        "moved: reorganized/gen33-note2.md → reorganized/gen33-note2.md"
       ],
       "byCategory": {
         "people": {
@@ -3720,8 +3721,8 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.625,
-          "f1": 0.7692307692307693,
+          "recall": 0.375,
+          "f1": 0.5454545454545454,
           "count": 8
         }
       }
@@ -3736,12 +3737,11 @@
       "falsePositives": 0,
       "falseNegatives": 10,
       "suppressionCount": 21,
-      "totalNotes": 166,
+      "totalNotes": 167,
       "mutations": [
-        "created: generated/gen34-note0.md, generated/gen34-note1.md",
-        "deleted: generated/gen26-note1.md",
+        "created: generated/gen34-note0.md, generated/gen34-note1.md, generated/gen34-note2.md",
         "edited: 3 notes",
-        "moved: reorganized/gen5-note1.md → reorganized/gen5-note1.md, reorganized/gen31-note1.md → reorganized/gen31-note1.md"
+        "moved: reorganized/gen34-note2.md → reorganized/gen34-note2.md, reorganized/gen8-note1.md → reorganized/gen8-note1.md"
       ],
       "byCategory": {
         "people": {
@@ -3845,13 +3845,12 @@
       "truePositives": 52,
       "falsePositives": 0,
       "falseNegatives": 8,
-      "suppressionCount": 20,
-      "totalNotes": 167,
+      "suppressionCount": 19,
+      "totalNotes": 168,
       "mutations": [
-        "created: generated/gen35-note0.md, generated/gen35-note1.md, generated/gen35-note2.md",
-        "deleted: generated/gen4-note0.md",
+        "created: generated/gen35-note0.md, generated/gen35-note1.md",
         "edited: 3 notes",
-        "moved: reorganized/gen17-note0.md → reorganized/gen17-note0.md, reorganized/gen20-note0.md → reorganized/gen20-note0.md"
+        "moved: reorganized/gen34-note2.md → reorganized/gen34-note2.md"
       ],
       "byCategory": {
         "people": {
@@ -3948,129 +3947,20 @@
     },
     {
       "generation": 36,
-      "f1": 0.929,
-      "precision": 1,
-      "recall": 0.867,
-      "mrr": 0.72,
-      "truePositives": 52,
-      "falsePositives": 0,
-      "falseNegatives": 8,
-      "suppressionCount": 18,
-      "totalNotes": 168,
-      "mutations": [
-        "created: generated/gen36-note0.md, generated/gen36-note1.md",
-        "deleted: reorganized/gen18-note1.md",
-        "edited: 3 notes",
-        "moved: reorganized/gen24-note1.md → reorganized/gen24-note1.md"
-      ],
-      "byCategory": {
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 9
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "hobbies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "media": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 12
-        },
-        "documents": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 6
-        },
-        "events": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
-          "count": 3
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 3
-        },
-        "health": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 4
-        },
-        "locations": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "finance": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "animals": {
-          "precision": 1,
-          "recall": 0.625,
-          "f1": 0.7692307692307693,
-          "count": 8
-        }
-      }
-    },
-    {
-      "generation": 37,
       "f1": 0.899,
       "precision": 1,
       "recall": 0.817,
-      "mrr": 0.712,
+      "mrr": 0.716,
       "truePositives": 49,
       "falsePositives": 0,
       "falseNegatives": 11,
-      "suppressionCount": 20,
+      "suppressionCount": 18,
       "totalNotes": 169,
       "mutations": [
-        "created: generated/gen37-note0.md, generated/gen37-note1.md",
-        "edited: 5 notes",
-        "moved: reorganized/gen5-note2.md → reorganized/gen5-note2.md, reorganized/gen31-note0.md → reorganized/gen31-note0.md"
+        "created: generated/gen36-note0.md, generated/gen36-note1.md",
+        "deleted: generated/gen24-note1.md",
+        "edited: 4 notes",
+        "moved: reorganized/gen6-note1.md → reorganized/gen6-note1.md"
       ],
       "byCategory": {
         "people": {
@@ -4166,20 +4056,20 @@
       }
     },
     {
-      "generation": 38,
+      "generation": 37,
       "f1": 0.919,
       "precision": 1,
       "recall": 0.85,
-      "mrr": 0.716,
+      "mrr": 0.72,
       "truePositives": 51,
       "falsePositives": 0,
       "falseNegatives": 9,
-      "suppressionCount": 20,
-      "totalNotes": 171,
+      "suppressionCount": 21,
+      "totalNotes": 170,
       "mutations": [
-        "created: generated/gen38-note0.md, generated/gen38-note1.md",
-        "edited: 5 notes",
-        "moved: reorganized/gen21-note2.md → reorganized/gen21-note2.md"
+        "created: generated/gen37-note0.md, generated/gen37-note1.md",
+        "edited: 3 notes",
+        "moved: reorganized/gen10-note0.md → reorganized/gen10-note0.md, reorganized/gen28-note0.md → reorganized/gen28-note0.md"
       ],
       "byCategory": {
         "people": {
@@ -4246,6 +4136,114 @@
           "precision": 1,
           "recall": 0.75,
           "f1": 0.8571428571428571,
+          "count": 4
+        },
+        "locations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 4
+        },
+        "finance": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "animals": {
+          "precision": 1,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
+          "count": 8
+        }
+      }
+    },
+    {
+      "generation": 38,
+      "f1": 0.929,
+      "precision": 1,
+      "recall": 0.867,
+      "mrr": 0.72,
+      "truePositives": 52,
+      "falsePositives": 0,
+      "falseNegatives": 8,
+      "suppressionCount": 18,
+      "totalNotes": 172,
+      "mutations": [
+        "created: generated/gen38-note0.md, generated/gen38-note1.md",
+        "edited: 4 notes"
+      ],
+      "byCategory": {
+        "people": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 9
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "hobbies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "media": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 12
+        },
+        "documents": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 6
+        },
+        "events": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "food": {
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "count": 3
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 3
+        },
+        "health": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
           "count": 4
         },
         "locations": {
@@ -4276,19 +4274,128 @@
     },
     {
       "generation": 39,
+      "f1": 0.899,
+      "precision": 1,
+      "recall": 0.817,
+      "mrr": 0.736,
+      "truePositives": 49,
+      "falsePositives": 0,
+      "falseNegatives": 11,
+      "suppressionCount": 18,
+      "totalNotes": 175,
+      "mutations": [
+        "created: generated/gen39-note0.md, generated/gen39-note1.md, generated/gen39-note2.md",
+        "edited: 5 notes"
+      ],
+      "byCategory": {
+        "people": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 9
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "hobbies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "media": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 12
+        },
+        "documents": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 6
+        },
+        "events": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "food": {
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "count": 3
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 3
+        },
+        "health": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 4
+        },
+        "locations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 4
+        },
+        "finance": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "animals": {
+          "precision": 1,
+          "recall": 0.25,
+          "f1": 0.4,
+          "count": 8
+        }
+      }
+    },
+    {
+      "generation": 40,
       "f1": 0.919,
       "precision": 1,
       "recall": 0.85,
-      "mrr": 0.716,
+      "mrr": 0.72,
       "truePositives": 51,
       "falsePositives": 0,
       "falseNegatives": 9,
       "suppressionCount": 19,
-      "totalNotes": 173,
+      "totalNotes": 175,
       "mutations": [
-        "created: generated/gen39-note0.md, generated/gen39-note1.md, generated/gen39-note2.md",
-        "edited: 4 notes",
-        "moved: reorganized/gen21-note1.md → reorganized/gen21-note1.md, reorganized/gen22-note2.md → reorganized/gen22-note2.md"
+        "created: generated/gen40-note0.md, generated/gen40-note1.md, generated/gen40-note2.md",
+        "deleted: generated/gen39-note2.md",
+        "edited: 5 notes",
+        "moved: reorganized/gen7-note0.md → reorganized/gen7-note0.md, reorganized/gen3-note0.md → reorganized/gen3-note0.md"
       ],
       "byCategory": {
         "people": {
@@ -4384,130 +4491,20 @@
       }
     },
     {
-      "generation": 40,
-      "f1": 0.899,
-      "precision": 1,
-      "recall": 0.817,
-      "mrr": 0.708,
-      "truePositives": 49,
-      "falsePositives": 0,
-      "falseNegatives": 11,
-      "suppressionCount": 20,
-      "totalNotes": 175,
-      "mutations": [
-        "created: generated/gen40-note0.md, generated/gen40-note1.md",
-        "edited: 5 notes",
-        "moved: reorganized/gen34-note1.md → reorganized/gen34-note1.md"
-      ],
-      "byCategory": {
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 9
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "hobbies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "media": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 12
-        },
-        "documents": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 6
-        },
-        "events": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
-          "count": 3
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 3
-        },
-        "health": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 4
-        },
-        "locations": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "finance": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "animals": {
-          "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
-          "count": 8
-        }
-      }
-    },
-    {
       "generation": 41,
-      "f1": 0.889,
+      "f1": 0.929,
       "precision": 1,
-      "recall": 0.8,
-      "mrr": 0.708,
-      "truePositives": 48,
+      "recall": 0.867,
+      "mrr": 0.72,
+      "truePositives": 52,
       "falsePositives": 0,
-      "falseNegatives": 12,
-      "suppressionCount": 20,
-      "totalNotes": 176,
+      "falseNegatives": 8,
+      "suppressionCount": 19,
+      "totalNotes": 177,
       "mutations": [
         "created: generated/gen41-note0.md, generated/gen41-note1.md, generated/gen41-note2.md",
-        "deleted: reorganized/gen11-note0.md",
         "edited: 4 notes",
-        "moved: reorganized/gen10-note1.md → reorganized/gen10-note1.md, reorganized/gen26-note0.md → reorganized/gen26-note0.md"
+        "moved: reorganized/gen19-note2.md → reorganized/gen19-note2.md"
       ],
       "byCategory": {
         "people": {
@@ -4572,8 +4569,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 1,
+          "f1": 1,
           "count": 4
         },
         "locations": {
@@ -4596,27 +4593,28 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
           "count": 8
         }
       }
     },
     {
       "generation": 42,
-      "f1": 0.889,
+      "f1": 0.919,
       "precision": 1,
-      "recall": 0.8,
-      "mrr": 0.71,
-      "truePositives": 48,
+      "recall": 0.85,
+      "mrr": 0.72,
+      "truePositives": 51,
       "falsePositives": 0,
-      "falseNegatives": 12,
-      "suppressionCount": 20,
-      "totalNotes": 179,
+      "falseNegatives": 9,
+      "suppressionCount": 21,
+      "totalNotes": 178,
       "mutations": [
-        "created: generated/gen42-note0.md, generated/gen42-note1.md, generated/gen42-note2.md",
-        "edited: 4 notes",
-        "moved: reorganized/gen32-note1.md → reorganized/gen32-note1.md"
+        "created: generated/gen42-note0.md, generated/gen42-note1.md",
+        "deleted: reorganized/gen31-note2.md",
+        "edited: 5 notes",
+        "moved: reorganized/gen23-note0.md → reorganized/gen23-note0.md"
       ],
       "byCategory": {
         "people": {
@@ -4705,27 +4703,27 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
           "count": 8
         }
       }
     },
     {
       "generation": 43,
-      "f1": 0.889,
+      "f1": 0.929,
       "precision": 1,
-      "recall": 0.8,
-      "mrr": 0.708,
-      "truePositives": 48,
+      "recall": 0.867,
+      "mrr": 0.72,
+      "truePositives": 52,
       "falsePositives": 0,
-      "falseNegatives": 12,
-      "suppressionCount": 20,
-      "totalNotes": 181,
+      "falseNegatives": 8,
+      "suppressionCount": 19,
+      "totalNotes": 180,
       "mutations": [
-        "created: generated/gen43-note0.md, generated/gen43-note1.md",
-        "edited: 5 notes",
-        "moved: reorganized/gen33-note1.md → reorganized/gen33-note1.md"
+        "created: generated/gen43-note0.md, generated/gen43-note1.md, generated/gen43-note2.md",
+        "edited: 3 notes",
+        "moved: reorganized/gen24-note2.md → reorganized/gen24-note2.md, reorganized/gen16-note1.md → reorganized/gen16-note1.md"
       ],
       "byCategory": {
         "people": {
@@ -4790,8 +4788,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 1,
+          "f1": 1,
           "count": 4
         },
         "locations": {
@@ -4814,27 +4812,28 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
           "count": 8
         }
       }
     },
     {
       "generation": 44,
-      "f1": 0.889,
+      "f1": 0.919,
       "precision": 1,
-      "recall": 0.8,
-      "mrr": 0.71,
-      "truePositives": 48,
+      "recall": 0.85,
+      "mrr": 0.693,
+      "truePositives": 51,
       "falsePositives": 0,
-      "falseNegatives": 12,
-      "suppressionCount": 20,
-      "totalNotes": 183,
+      "falseNegatives": 9,
+      "suppressionCount": 21,
+      "totalNotes": 181,
       "mutations": [
-        "created: generated/gen44-note0.md, generated/gen44-note1.md, generated/gen44-note2.md",
-        "edited: 5 notes",
-        "moved: reorganized/gen21-note1.md → reorganized/gen21-note1.md"
+        "created: generated/gen44-note0.md, generated/gen44-note1.md",
+        "deleted: generated/gen41-note2.md",
+        "edited: 3 notes",
+        "moved: reorganized/gen37-note0.md → reorganized/gen37-note0.md"
       ],
       "byCategory": {
         "people": {
@@ -4923,28 +4922,28 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
           "count": 8
         }
       }
     },
     {
       "generation": 45,
-      "f1": 0.889,
+      "f1": 0.929,
       "precision": 1,
-      "recall": 0.8,
-      "mrr": 0.708,
-      "truePositives": 48,
+      "recall": 0.867,
+      "mrr": 0.739,
+      "truePositives": 52,
       "falsePositives": 0,
-      "falseNegatives": 12,
-      "suppressionCount": 19,
-      "totalNotes": 184,
+      "falseNegatives": 8,
+      "suppressionCount": 21,
+      "totalNotes": 183,
       "mutations": [
-        "created: generated/gen45-note0.md, generated/gen45-note1.md",
-        "deleted: reorganized/gen3-note2.md",
+        "created: generated/gen45-note0.md, generated/gen45-note1.md, generated/gen45-note2.md",
+        "deleted: generated/gen35-note1.md",
         "edited: 5 notes",
-        "moved: reorganized/gen23-note1.md → reorganized/gen23-note1.md"
+        "moved: reorganized/gen25-note1.md → reorganized/gen25-note1.md"
       ],
       "byCategory": {
         "people": {
@@ -5009,8 +5008,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 1,
+          "f1": 1,
           "count": 4
         },
         "locations": {
@@ -5033,27 +5032,27 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
           "count": 8
         }
       }
     },
     {
       "generation": 46,
-      "f1": 0.889,
+      "f1": 0.919,
       "precision": 1,
-      "recall": 0.8,
-      "mrr": 0.71,
-      "truePositives": 48,
+      "recall": 0.85,
+      "mrr": 0.693,
+      "truePositives": 51,
       "falsePositives": 0,
-      "falseNegatives": 12,
-      "suppressionCount": 19,
+      "falseNegatives": 9,
+      "suppressionCount": 21,
       "totalNotes": 185,
       "mutations": [
-        "created: generated/gen46-note0.md, generated/gen46-note1.md",
-        "edited: 4 notes",
-        "moved: reorganized/gen31-note2.md → reorganized/gen31-note2.md, reorganized/gen8-note0.md → reorganized/gen8-note0.md"
+        "created: generated/gen46-note0.md, generated/gen46-note1.md, generated/gen46-note2.md",
+        "edited: 3 notes",
+        "moved: reorganized/gen23-note0.md → reorganized/gen23-note0.md"
       ],
       "byCategory": {
         "people": {
@@ -5142,27 +5141,27 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
           "count": 8
         }
       }
     },
     {
       "generation": 47,
-      "f1": 0.899,
+      "f1": 0.919,
       "precision": 1,
-      "recall": 0.817,
-      "mrr": 0.708,
-      "truePositives": 49,
+      "recall": 0.85,
+      "mrr": 0.739,
+      "truePositives": 51,
       "falsePositives": 0,
-      "falseNegatives": 11,
-      "suppressionCount": 19,
+      "falseNegatives": 9,
+      "suppressionCount": 22,
       "totalNotes": 187,
       "mutations": [
         "created: generated/gen47-note0.md, generated/gen47-note1.md",
         "edited: 4 notes",
-        "moved: reorganized/gen29-note1.md → reorganized/gen29-note1.md"
+        "moved: reorganized/gen46-note0.md → reorganized/gen46-note0.md"
       ],
       "byCategory": {
         "people": {
@@ -5227,8 +5226,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
           "count": 4
         },
         "locations": {
@@ -5251,28 +5250,27 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
           "count": 8
         }
       }
     },
     {
       "generation": 48,
-      "f1": 0.889,
+      "f1": 0.929,
       "precision": 1,
-      "recall": 0.8,
-      "mrr": 0.71,
-      "truePositives": 48,
+      "recall": 0.867,
+      "mrr": 0.739,
+      "truePositives": 52,
       "falsePositives": 0,
-      "falseNegatives": 12,
-      "suppressionCount": 19,
-      "totalNotes": 187,
+      "falseNegatives": 8,
+      "suppressionCount": 21,
+      "totalNotes": 189,
       "mutations": [
         "created: generated/gen48-note0.md, generated/gen48-note1.md",
-        "deleted: generated/gen19-note0.md",
         "edited: 3 notes",
-        "moved: reorganized/gen17-note1.md → reorganized/gen17-note1.md, reorganized/gen12-note1.md → reorganized/gen12-note1.md"
+        "moved: reorganized/gen7-note1.md → reorganized/gen7-note1.md, reorganized/gen43-note2.md → reorganized/gen43-note2.md"
       ],
       "byCategory": {
         "people": {
@@ -5319,8 +5317,8 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
@@ -5361,27 +5359,27 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
           "count": 8
         }
       }
     },
     {
       "generation": 49,
-      "f1": 0.889,
+      "f1": 0.929,
       "precision": 1,
-      "recall": 0.8,
-      "mrr": 0.71,
-      "truePositives": 48,
+      "recall": 0.867,
+      "mrr": 0.693,
+      "truePositives": 52,
       "falsePositives": 0,
-      "falseNegatives": 12,
-      "suppressionCount": 18,
-      "totalNotes": 190,
+      "falseNegatives": 8,
+      "suppressionCount": 21,
+      "totalNotes": 192,
       "mutations": [
         "created: generated/gen49-note0.md, generated/gen49-note1.md, generated/gen49-note2.md",
         "edited: 5 notes",
-        "moved: reorganized/gen43-note1.md → reorganized/gen43-note1.md, reorganized/gen32-note0.md → reorganized/gen32-note0.md"
+        "moved: reorganized/gen25-note0.md → reorganized/gen25-note0.md, reorganized/gen34-note0.md → reorganized/gen34-note0.md"
       ],
       "byCategory": {
         "people": {
@@ -5428,8 +5426,8 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
@@ -5470,8 +5468,8 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
           "count": 8
         }
       }

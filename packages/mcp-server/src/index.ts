@@ -74,7 +74,7 @@ import {
 } from './core/read/taskCache.js';
 
 // Vault-core shared imports
-import { openStateDb, scanVaultEntities, getSessionId, getAllEntitiesFromDb, findEntityMatches, getProtectedZones, rangeOverlapsProtectedZone, detectImplicitEntities, type StateDb } from '@velvetmonkey/vault-core';
+import { openStateDb, scanVaultEntities, getSessionId, getAllEntitiesFromDb, findEntityMatches, getProtectedZones, rangeOverlapsProtectedZone, detectImplicitEntities, loadContentHashes, saveContentHashBatch, renameContentHash, type StateDb } from '@velvetmonkey/vault-core';
 
 // Read tool registrations
 import { registerGraphTools } from './tools/read/graph.js';
@@ -969,6 +969,13 @@ async function runPostIndexWork(index: VaultIndex) {
   if (process.env.FLYWHEEL_WATCH !== 'false') {
     const config = parseWatcherConfig();
     const lastContentHashes = new Map<string, string>();
+    if (stateDb) {
+      const persisted = loadContentHashes(stateDb);
+      for (const [p, h] of persisted) lastContentHashes.set(p, h);
+      if (persisted.size > 0) {
+        serverLog('watcher', `Loaded ${persisted.size} persisted content hashes`);
+      }
+    }
     serverLog('watcher', `File watcher enabled (debounce: ${config.debounceMs}ms)`);
 
     // Define before createVaultWatcher so we can call it directly for catch-up
@@ -1024,24 +1031,31 @@ async function runPostIndexWork(index: VaultIndex) {
 
         // Content hash gate: skip files that haven't changed since last batch
         const filteredEvents: CoalescedEvent[] = [];
+        const hashUpserts: Array<{ path: string; hash: string }> = [];
+        const hashDeletes: string[] = [];
         for (const event of batch.events) {
           if (event.type === 'delete') {
             filteredEvents.push(event);
             lastContentHashes.delete(event.path);
+            hashDeletes.push(event.path);
             continue;
           }
           try {
             const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
-            const hash = createHash('md5').update(content).digest('hex');
+            const hash = createHash('sha256').update(content).digest('hex').slice(0, 16);
             if (lastContentHashes.get(event.path) === hash) {
               serverLog('watcher', `Hash unchanged, skipping: ${event.path}`);
               continue;
             }
             lastContentHashes.set(event.path, hash);
+            hashUpserts.push({ path: event.path, hash });
             filteredEvents.push(event);
           } catch {
             filteredEvents.push(event); // File may have been deleted mid-batch
           }
+        }
+        if (stateDb && (hashUpserts.length || hashDeletes.length)) {
+          saveContentHashBatch(stateDb, hashUpserts, hashDeletes);
         }
 
         // Process rename events: record moves and update path references in DB
@@ -1071,11 +1085,12 @@ async function runPostIndexWork(index: VaultIndex) {
               renameNoteTags.run(rename.newPath, rename.oldPath);
               renameNoteLinkHistory.run(rename.newPath, rename.oldPath);
               renameWikilinkApplications.run(rename.newPath, rename.oldPath);
-              // Also update the content hash map
+              // Also update the content hash map (in-memory + persisted)
               const oldHash = lastContentHashes.get(rename.oldPath);
               if (oldHash !== undefined) {
                 lastContentHashes.set(rename.newPath, oldHash);
                 lastContentHashes.delete(rename.oldPath);
+                renameContentHash(stateDb, rename.oldPath, rename.newPath);
               }
             }
             serverLog('watcher', `Renames: recorded ${batchRenames.length} move(s) in note_moves`);

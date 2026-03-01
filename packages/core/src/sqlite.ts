@@ -109,7 +109,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 27;
+export const SCHEMA_VERSION = 28;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -502,6 +502,13 @@ CREATE TABLE IF NOT EXISTS cooccurrence_cache (
   association_count INTEGER NOT NULL
 );
 
+-- Content hashes (v28): persist watcher content hashes across restarts
+CREATE TABLE IF NOT EXISTS content_hashes (
+  path TEXT PRIMARY KEY,
+  hash TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
 -- Session summaries (v26): agent session tracking
 CREATE TABLE IF NOT EXISTS session_summaries (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -703,6 +710,9 @@ function initSchema(db: Database.Database): void {
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     // v27: cooccurrence_cache table (persist co-occurrence index)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
+
+    // v28: content_hashes table (persist watcher content hashes across restarts)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(
@@ -1565,5 +1575,52 @@ export function isVaultIndexCacheValid(
   if (age > maxAgeMs) return false;
 
   return true;
+}
+
+// =============================================================================
+// Content Hash Operations
+// =============================================================================
+
+/** Load all persisted content hashes */
+export function loadContentHashes(stateDb: StateDb): Map<string, string> {
+  const rows = stateDb.db.prepare(
+    'SELECT path, hash FROM content_hashes'
+  ).all() as Array<{ path: string; hash: string }>;
+  const map = new Map<string, string>();
+  for (const row of rows) {
+    map.set(row.path, row.hash);
+  }
+  return map;
+}
+
+/** Persist hash changes from a watcher batch (upserts + deletes in one transaction) */
+export function saveContentHashBatch(
+  stateDb: StateDb,
+  upserts: Array<{ path: string; hash: string }>,
+  deletes: string[]
+): void {
+  const upsertStmt = stateDb.db.prepare(
+    'INSERT OR REPLACE INTO content_hashes (path, hash, updated_at) VALUES (?, ?, ?)'
+  );
+  const deleteStmt = stateDb.db.prepare(
+    'DELETE FROM content_hashes WHERE path = ?'
+  );
+  const now = Date.now();
+  const runBatch = stateDb.db.transaction(() => {
+    for (const { path, hash } of upserts) {
+      upsertStmt.run(path, hash, now);
+    }
+    for (const p of deletes) {
+      deleteStmt.run(p);
+    }
+  });
+  runBatch();
+}
+
+/** Rename a hash entry (for file renames) */
+export function renameContentHash(stateDb: StateDb, oldPath: string, newPath: string): void {
+  stateDb.db.prepare(
+    'UPDATE content_hashes SET path = ?, updated_at = ? WHERE path = ?'
+  ).run(newPath, Date.now(), oldPath);
 }
 

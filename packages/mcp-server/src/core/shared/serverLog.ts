@@ -39,8 +39,10 @@ export function serverLog(component: LogComponent, message: string, level: LogLe
   }
 
   // Mirror to stderr (preserving existing behaviour)
+  const now = new Date();
+  const hms = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
   const prefix = level === 'error' ? '[Memory] ERROR' : level === 'warn' ? '[Memory] WARN' : '[Memory]';
-  console.error(`${prefix} [${component}] ${message}`);
+  console.error(`${prefix} [${hms}] [${component}] ${message}`);
 }
 
 /**

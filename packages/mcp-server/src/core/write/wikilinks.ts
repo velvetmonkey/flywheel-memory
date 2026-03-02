@@ -838,6 +838,7 @@ const TYPE_BOOST: Record<EntityCategory, number> = {
   food: 1,           // Recipes, restaurants
   hobbies: 1,        // Crafts, sports
   finance: 1,        // Accounts, budgets
+  periodical: 1,     // Daily/weekly/monthly notes — low boost
   technologies: 0,   // Common, avoid over-suggesting
   acronyms: 0,       // Acronyms may be ambiguous
   other: 0,          // Unknown category

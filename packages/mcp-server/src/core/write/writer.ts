@@ -5,6 +5,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
+import { createHash } from 'node:crypto';
 import { HEADING_REGEX } from './constants.js';
 import type { FormatType, Position, InsertionOptions, ScopingMetadata, ScopingFrontmatter } from './types.js';
 import { levenshteinDistance } from '../shared/levenshtein.js';
@@ -917,6 +918,17 @@ export async function validatePathSecure(
  * - rawContent: The original raw content
  * - lineEnding: The detected line ending style (LF or CRLF)
  */
+export function computeContentHash(rawContent: string): string {
+  return createHash('sha256').update(rawContent).digest('hex').slice(0, 16);
+}
+
+export class WriteConflictError extends Error {
+  constructor(public readonly notePath: string) {
+    super(`Write conflict on ${notePath}: file was modified externally since it was read. Re-read and retry.`);
+    this.name = 'WriteConflictError';
+  }
+}
+
 export async function readVaultFile(
   vaultPath: string,
   notePath: string
@@ -926,6 +938,7 @@ export async function readVaultFile(
   rawContent: string;
   lineEnding: LineEnding;
   mtimeMs: number;
+  contentHash: string;
 }> {
   if (!validatePath(vaultPath, notePath)) {
     throw new Error('Invalid path: path traversal not allowed');
@@ -936,6 +949,8 @@ export async function readVaultFile(
     fs.readFile(fullPath, 'utf-8'),
     fs.stat(fullPath),
   ]);
+
+  const contentHash = computeContentHash(rawContent);
 
   // Detect line ending before parsing
   const lineEnding = detectLineEnding(rawContent);
@@ -956,6 +971,7 @@ export async function readVaultFile(
     rawContent,
     lineEnding,
     mtimeMs: stat.mtimeMs,
+    contentHash,
   };
 }
 
@@ -1012,7 +1028,8 @@ export async function writeVaultFile(
   notePath: string,
   content: string,
   frontmatter: Record<string, unknown>,
-  lineEnding: LineEnding = 'LF'
+  lineEnding: LineEnding = 'LF',
+  expectedHash?: string
 ): Promise<void> {
   // Use secure validation for writes (follows symlinks, checks sensitive paths)
   const validation = await validatePathSecure(vaultPath, notePath);
@@ -1021,6 +1038,15 @@ export async function writeVaultFile(
   }
 
   const fullPath = path.join(vaultPath, notePath);
+
+  // Pre-write conflict check
+  if (expectedHash) {
+    const currentRaw = await fs.readFile(fullPath, 'utf-8');
+    const currentHash = computeContentHash(currentRaw);
+    if (currentHash !== expectedHash) {
+      throw new WriteConflictError(notePath);
+    }
+  }
 
   // Stringify with gray-matter
   let output = matter.stringify(content, frontmatter);

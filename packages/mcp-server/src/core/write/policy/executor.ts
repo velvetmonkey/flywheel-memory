@@ -23,6 +23,7 @@ import { resolveVariables } from './schema.js';
 import {
   readVaultFile,
   writeVaultFile,
+  WriteConflictError,
   findSection,
   formatContent,
   insertInSection,
@@ -171,7 +172,7 @@ async function executeAddToSection(
   }
 
   // Read file
-  const { content: fileContent, frontmatter, lineEnding } = await readVaultFile(vaultPath, notePath);
+  const { content: fileContent, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
 
   // Find section
   const sectionBoundary = findSection(fileContent, section);
@@ -202,7 +203,7 @@ async function executeAddToSection(
   );
 
   // Write file (no commit - done at policy level)
-  await writeVaultFile(vaultPath, notePath, updatedContent, frontmatter, lineEnding);
+  await writeVaultFile(vaultPath, notePath, updatedContent, frontmatter, lineEnding, contentHash);
 
   return {
     success: true,
@@ -233,7 +234,7 @@ async function executeRemoveFromSection(
     return { success: false, message: `File not found: ${notePath}`, path: notePath };
   }
 
-  const { content: fileContent, frontmatter, lineEnding } = await readVaultFile(vaultPath, notePath);
+  const { content: fileContent, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
 
   const sectionBoundary = findSection(fileContent, section);
   if (!sectionBoundary) {
@@ -246,7 +247,7 @@ async function executeRemoveFromSection(
     return { success: false, message: `No content matching "${pattern}" found`, path: notePath };
   }
 
-  await writeVaultFile(vaultPath, notePath, removeResult.content, frontmatter, lineEnding);
+  await writeVaultFile(vaultPath, notePath, removeResult.content, frontmatter, lineEnding, contentHash);
 
   return {
     success: true,
@@ -280,7 +281,7 @@ async function executeReplaceInSection(
     return { success: false, message: `File not found: ${notePath}`, path: notePath };
   }
 
-  const { content: fileContent, frontmatter, lineEnding } = await readVaultFile(vaultPath, notePath);
+  const { content: fileContent, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
 
   const sectionBoundary = findSection(fileContent, section);
   if (!sectionBoundary) {
@@ -302,7 +303,7 @@ async function executeReplaceInSection(
     return { success: false, message: `No content matching "${search}" found`, path: notePath };
   }
 
-  await writeVaultFile(vaultPath, notePath, replaceResult.content, frontmatter, lineEnding);
+  await writeVaultFile(vaultPath, notePath, replaceResult.content, frontmatter, lineEnding, contentHash);
 
   return {
     success: true,
@@ -416,7 +417,7 @@ async function executeToggleTask(
     return { success: false, message: `File not found: ${notePath}`, path: notePath };
   }
 
-  const { content: fileContent, frontmatter } = await readVaultFile(vaultPath, notePath);
+  const { content: fileContent, frontmatter, contentHash } = await readVaultFile(vaultPath, notePath);
 
   // Find section if specified
   let sectionBoundary;
@@ -443,7 +444,7 @@ async function executeToggleTask(
     return { success: false, message: 'Failed to toggle task', path: notePath };
   }
 
-  await writeVaultFile(vaultPath, notePath, toggleResult.content, frontmatter);
+  await writeVaultFile(vaultPath, notePath, toggleResult.content, frontmatter, 'LF', contentHash);
 
   const newStatus = toggleResult.newState ? 'completed' : 'incomplete';
   const checkbox = toggleResult.newState ? '[x]' : '[ ]';
@@ -480,7 +481,7 @@ async function executeAddTask(
     return { success: false, message: `File not found: ${notePath}`, path: notePath };
   }
 
-  const { content: fileContent, frontmatter } = await readVaultFile(vaultPath, notePath);
+  const { content: fileContent, frontmatter, contentHash } = await readVaultFile(vaultPath, notePath);
 
   const sectionBoundary = findSection(fileContent, section);
   if (!sectionBoundary) {
@@ -507,7 +508,7 @@ async function executeAddTask(
     { preserveListNesting }
   );
 
-  await writeVaultFile(vaultPath, notePath, updatedContent, frontmatter);
+  await writeVaultFile(vaultPath, notePath, updatedContent, frontmatter, 'LF', contentHash);
 
   return {
     success: true,
@@ -535,11 +536,11 @@ async function executeUpdateFrontmatter(
     return { success: false, message: `File not found: ${notePath}`, path: notePath };
   }
 
-  const { content, frontmatter } = await readVaultFile(vaultPath, notePath);
+  const { content, frontmatter, contentHash } = await readVaultFile(vaultPath, notePath);
 
   const updatedFrontmatter = { ...frontmatter, ...updates };
 
-  await writeVaultFile(vaultPath, notePath, content, updatedFrontmatter);
+  await writeVaultFile(vaultPath, notePath, content, updatedFrontmatter, 'LF', contentHash);
 
   const updatedKeys = Object.keys(updates);
   const preview = updatedKeys.map(k => `${k}: ${JSON.stringify(updates[k])}`).join('\n');
@@ -571,7 +572,7 @@ async function executeAddFrontmatterField(
     return { success: false, message: `File not found: ${notePath}`, path: notePath };
   }
 
-  const { content, frontmatter } = await readVaultFile(vaultPath, notePath);
+  const { content, frontmatter, contentHash } = await readVaultFile(vaultPath, notePath);
 
   if (key in frontmatter) {
     return { success: false, message: `Field "${key}" already exists`, path: notePath };
@@ -579,7 +580,7 @@ async function executeAddFrontmatterField(
 
   const updatedFrontmatter = { ...frontmatter, [key]: value };
 
-  await writeVaultFile(vaultPath, notePath, content, updatedFrontmatter);
+  await writeVaultFile(vaultPath, notePath, content, updatedFrontmatter, 'LF', contentHash);
 
   return {
     success: true,

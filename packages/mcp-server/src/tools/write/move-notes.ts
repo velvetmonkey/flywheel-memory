@@ -7,7 +7,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { validatePath, readVaultFile, writeVaultFile } from '../../core/write/writer.js';
+import { validatePath, readVaultFile, writeVaultFile, computeContentHash } from '../../core/write/writer.js';
 import type { MutationResult } from '../../core/write/types.js';
 import { commitChange } from '../../core/write/git.js';
 import { initializeEntityIndex } from '../../core/write/wikilinks.js';
@@ -114,11 +114,9 @@ export async function updateBacklinksInFile(
   oldTitles: string[],
   newTitle: string
 ): Promise<{ updated: boolean; linksUpdated: number }> {
-  const fullPath = path.join(vaultPath, filePath);
-  const raw = await fs.readFile(fullPath, 'utf-8');
-  const parsed = matter(raw);
+  const { content: fileContent, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, filePath);
 
-  let content = parsed.content;
+  let content = fileContent;
   let totalUpdated = 0;
 
   for (const oldTitle of oldTitles) {
@@ -135,7 +133,7 @@ export async function updateBacklinksInFile(
   }
 
   if (totalUpdated > 0) {
-    await writeVaultFile(vaultPath, filePath, content, parsed.data);
+    await writeVaultFile(vaultPath, filePath, content, frontmatter, lineEnding, contentHash);
     return { updated: true, linksUpdated: totalUpdated };
   }
 

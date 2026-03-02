@@ -11,6 +11,7 @@ import {
   findSection,
   extractHeadings,
   DiagnosticError,
+  WriteConflictError,
   type SectionBoundary,
 } from './writer.js';
 import { commitChange } from './git.js';
@@ -258,7 +259,7 @@ export async function withVaultFile(
 
     // Helper: read file, find section, build context, run operation
     const runMutation = async () => {
-      const { content, frontmatter, lineEnding, mtimeMs } = await readVaultFile(vaultPath, notePath);
+      const { content, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
 
       // Implicit feedback — detect removed auto-applied wikilinks
       const writeStateDb = getWriteStateDb();
@@ -286,7 +287,7 @@ export async function withVaultFile(
       };
 
       const opResult = await operation(ctx);
-      return { opResult, frontmatter, lineEnding, mtimeMs };
+      return { opResult, frontmatter, lineEnding, contentHash };
     };
 
     // 2. First attempt
@@ -309,31 +310,19 @@ export async function withVaultFile(
       return formatMcpResult(dryResult);
     }
 
-    // 3. Check for external modification before writing
-    const fullPath = path.join(vaultPath, notePath);
-    const statBefore = await fs.stat(fullPath);
-    if (statBefore.mtimeMs !== result.mtimeMs) {
-      // File was modified externally between our read and now — retry once
-      console.warn(`[withVaultFile] External modification detected on ${notePath}, re-reading and retrying`);
-      result = await runMutation();
-      if ('error' in result) {
-        return formatMcpResult(result.error!);
-      }
-    }
-
-    // 4. Prepare frontmatter (inject metadata if scoping provided)
+    // 3. Prepare frontmatter (inject metadata if scoping provided)
     let finalFrontmatter = opResult.updatedFrontmatter ?? frontmatter;
     if (scoping && (scoping.agent_id || scoping.session_id)) {
       finalFrontmatter = injectMutationMetadata(finalFrontmatter, scoping);
     }
 
-    // 5. Write file back
-    await writeVaultFile(vaultPath, notePath, opResult.updatedContent, finalFrontmatter, lineEnding);
+    // 4. Write file back (hash guard detects external modifications)
+    await writeVaultFile(vaultPath, notePath, opResult.updatedContent, finalFrontmatter, lineEnding, result.contentHash);
 
-    // 6. Handle git commit
+    // 5. Handle git commit
     const gitInfo = await handleGitCommit(vaultPath, notePath, commit, commitPrefix);
 
-    // 7. Build result
+    // 6. Build result
     const successRes = successResult(notePath, opResult.message, gitInfo, {
       preview: opResult.preview,
       warnings: opResult.warnings,
@@ -344,6 +333,13 @@ export async function withVaultFile(
     return formatMcpResult(successRes);
   } catch (error) {
     const extras: Partial<MutationResult> = {};
+    if (error instanceof WriteConflictError) {
+      extras.warnings = [{
+        type: 'write_conflict',
+        message: error.message,
+        suggestion: 'The file was modified while processing. Re-read and retry.',
+      }];
+    }
     if (error instanceof DiagnosticError) {
       extras.diagnostic = error.diagnostic;
     }
@@ -378,7 +374,7 @@ export async function withVaultFrontmatter(
     }
 
     // 2. Read file
-    const { content, frontmatter, lineEnding } = await readVaultFile(vaultPath, notePath);
+    const { content, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
 
     // 3. Execute operation
     const ctx = { content, frontmatter, lineEnding, vaultPath, notePath };
@@ -393,8 +389,8 @@ export async function withVaultFrontmatter(
       return formatMcpResult(result);
     }
 
-    // 4. Write file back (content unchanged, only frontmatter updated)
-    await writeVaultFile(vaultPath, notePath, content, opResult.updatedFrontmatter, lineEnding);
+    // 4. Write file back (content unchanged, only frontmatter updated; hash guard detects external modifications)
+    await writeVaultFile(vaultPath, notePath, content, opResult.updatedFrontmatter, lineEnding, contentHash);
 
     // 5. Handle git commit
     const gitInfo = await handleGitCommit(vaultPath, notePath, commit, commitPrefix);
@@ -406,9 +402,18 @@ export async function withVaultFrontmatter(
 
     return formatMcpResult(result);
   } catch (error) {
+    const extras: Partial<MutationResult> = {};
+    if (error instanceof WriteConflictError) {
+      extras.warnings = [{
+        type: 'write_conflict',
+        message: error.message,
+        suggestion: 'The file was modified while processing. Re-read and retry.',
+      }];
+    }
     const result = errorResult(
       notePath,
-      `Failed to ${actionDescription}: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to ${actionDescription}: ${error instanceof Error ? error.message : String(error)}`,
+      extras
     );
     return formatMcpResult(result);
   }

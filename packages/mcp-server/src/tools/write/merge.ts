@@ -11,7 +11,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { validatePath, readVaultFile, writeVaultFile } from '../../core/write/writer.js';
+import { validatePath, readVaultFile, writeVaultFile, WriteConflictError, type LineEnding } from '../../core/write/writer.js';
 import type { MutationResult } from '../../core/write/types.js';
 import { initializeEntityIndex } from '../../core/write/wikilinks.js';
 import {
@@ -62,6 +62,7 @@ export function registerMergeTools(
         // 2. Read source note
         let sourceContent: string;
         let sourceFrontmatter: Record<string, unknown>;
+        // source hash not needed — source note gets deleted, not written back
         try {
           const source = await readVaultFile(vaultPath, source_path);
           sourceContent = source.content;
@@ -78,10 +79,12 @@ export function registerMergeTools(
         // 3. Read target note
         let targetContent: string;
         let targetFrontmatter: Record<string, unknown>;
+        let targetContentHash: string;
         try {
           const target = await readVaultFile(vaultPath, target_path);
           targetContent = target.content;
           targetFrontmatter = target.frontmatter;
+          targetContentHash = target.contentHash;
         } catch {
           const result: MutationResult = {
             success: false,
@@ -170,7 +173,7 @@ export function registerMergeTools(
         }
 
         // 7. Write updated target
-        await writeVaultFile(vaultPath, target_path, targetContent, targetFrontmatter);
+        await writeVaultFile(vaultPath, target_path, targetContent, targetFrontmatter, 'LF', targetContentHash);
 
         // 8. Delete source note
         const fullSourcePath = `${vaultPath}/${source_path}`;
@@ -195,6 +198,13 @@ export function registerMergeTools(
           success: false,
           message: `Failed to merge entities: ${error instanceof Error ? error.message : String(error)}`,
           path: source_path,
+          ...(error instanceof WriteConflictError ? {
+            warnings: [{
+              type: 'write_conflict',
+              message: error.message,
+              suggestion: 'The file was modified while processing. Re-read and retry.',
+            }],
+          } : {}),
         };
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
       }
@@ -227,10 +237,12 @@ export function registerMergeTools(
         // 2. Read target note
         let targetContent: string;
         let targetFrontmatter: Record<string, unknown>;
+        let absorbTargetHash: string;
         try {
           const target = await readVaultFile(vaultPath, target_path);
           targetContent = target.content;
           targetFrontmatter = target.frontmatter;
+          absorbTargetHash = target.contentHash;
         } catch {
           const result: MutationResult = {
             success: false,
@@ -264,13 +276,13 @@ export function registerMergeTools(
           }
         } else {
           // 4b. Write updated target frontmatter
-          await writeVaultFile(vaultPath, target_path, targetContent, targetFrontmatter);
+          await writeVaultFile(vaultPath, target_path, targetContent, targetFrontmatter, 'LF', absorbTargetHash);
 
           // 5. For each file, replace [[source_name]] → [[target|source_name]]
           for (const backlink of backlinks) {
             if (backlink.path === target_path) continue;
 
-            let fileData: { content: string; frontmatter: Record<string, unknown> };
+            let fileData: { content: string; frontmatter: Record<string, unknown>; lineEnding: string; contentHash: string };
             try {
               fileData = await readVaultFile(vaultPath, backlink.path);
             } catch {
@@ -297,7 +309,7 @@ export function registerMergeTools(
             });
 
             if (linksUpdated > 0) {
-              await writeVaultFile(vaultPath, backlink.path, content, fileData.frontmatter);
+              await writeVaultFile(vaultPath, backlink.path, content, fileData.frontmatter, fileData.lineEnding as LineEnding, fileData.contentHash);
               totalBacklinksUpdated += linksUpdated;
               modifiedFiles.push(backlink.path);
             }
@@ -337,6 +349,13 @@ export function registerMergeTools(
           success: false,
           message: `Failed to absorb as alias: ${error instanceof Error ? error.message : String(error)}`,
           path: target_path,
+          ...(error instanceof WriteConflictError ? {
+            warnings: [{
+              type: 'write_conflict',
+              message: error.message,
+              suggestion: 'The file was modified while processing. Re-read and retry.',
+            }],
+          } : {}),
         };
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
       }

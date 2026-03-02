@@ -8,6 +8,7 @@ import { z } from 'zod';
 import {
   readVaultFile,
   writeVaultFile,
+  WriteConflictError,
   findSection,
   insertInSection,
   injectMutationMetadata,
@@ -131,7 +132,7 @@ export function registerTaskTools(
         }
 
         // 2. Read file
-        const { content: fileContent, frontmatter } = await readVaultFile(vaultPath, notePath);
+        const { content: fileContent, frontmatter, contentHash } = await readVaultFile(vaultPath, notePath);
 
         // 3. Find section if specified
         let sectionBoundary: SectionBoundary | undefined;
@@ -184,7 +185,7 @@ export function registerTaskTools(
         }
 
         // 8. Write file
-        await writeVaultFile(vaultPath, notePath, toggleResult.content, finalFrontmatter);
+        await writeVaultFile(vaultPath, notePath, toggleResult.content, finalFrontmatter, 'LF', contentHash);
 
         // 8b. Update task cache immediately
         await updateTaskCacheForFile(vaultPath, notePath).catch(() => {});
@@ -198,8 +199,16 @@ export function registerTaskTools(
           })
         );
       } catch (error) {
+        const extras: Partial<import('../../core/write/types.js').MutationResult> = {};
+        if (error instanceof WriteConflictError) {
+          extras.warnings = [{
+            type: 'write_conflict',
+            message: error.message,
+            suggestion: 'The file was modified while processing. Re-read and retry.',
+          }];
+        }
         return formatMcpResult(
-          errorResult(notePath, `Failed to toggle task: ${error instanceof Error ? error.message : String(error)}`)
+          errorResult(notePath, `Failed to toggle task: ${error instanceof Error ? error.message : String(error)}`, extras)
         );
       }
     }

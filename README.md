@@ -9,7 +9,7 @@
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![Scale](https://img.shields.io/badge/scale-100k%20notes-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory)
+[![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](docs/TESTING.md#performance-benchmarks)
 [![Tests](https://img.shields.io/badge/tests-2,198%20passed-brightgreen.svg)](docs/TESTING.md)
 
 | | Without Flywheel | With Flywheel |
@@ -119,11 +119,11 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
 **Every interaction is a graph-building operation — and a learning signal.**
 
-When you write a note, entities are auto-linked — creating edges. When you keep a `[[link]]` through 10 edits, that edge gains weight. When two entities appear together in 20 notes, they build a co-occurrence bond scored by NPMI. When you read frequently, recent entities surface in suggestions. When you remove a bad link, Beta-Binomial suppression learns what to stop suggesting.
+When you write a note, entities are auto-linked — creating edges. When you keep a `[[link]]` through 10 edits, that edge gains weight. When two entities appear together in 20 notes, they build a co-occurrence bond (NPMI — a measure of how strongly two things associate beyond chance). When you read frequently, recent entities surface in suggestions. When you remove a bad link, the system learns what to stop suggesting (it tracks accept/reject ratios per entity and gradually suppresses low-quality matches).
 
 This is the uncontested gap — no competitor has a feedback loop that learns from knowledge management actions.
 
-We prove it: 100% precision across all modes, F1 stable over 50 generations of noisy feedback. See [Graph Quality](#graph-quality) below.
+We prove it: every auto-linked entity is correct (100% precision), and the system finds 72–82% of links it should (recall) — stable over 50 generations of noisy feedback. See [Graph Quality](#graph-quality) below.
 
 Result: a queryable graph. "What's the shortest path between AlphaFold and my docking experiment?" Backlinks, forward links, hubs, orphans, shortest paths — every query leverages hundreds of accumulated connections. Denser graphs make every query more precise.
 
@@ -222,7 +222,7 @@ See [docs/PROVE-IT.md](docs/PROVE-IT.md) and [docs/TESTING.md](docs/TESTING.md).
 
 ### Graph Quality
 
-The feedback loop claim isn't asserted — it's measured. CI locks baselines and fails if quality regresses.
+The feedback loop claim isn't asserted — it's measured. We build a test vault with known-correct links, strip them out, and measure how well the engine rediscovers them. CI locks these baselines and fails if quality regresses.
 
 | Mode | Precision | Recall | F1 |
 |---|---|---|---|
@@ -230,9 +230,11 @@ The feedback loop claim isn't asserted — it's measured. CI locks baselines and
 | Balanced | 100% | 80.0% | 88.9% |
 | Aggressive | 100% | 81.7% | 89.9% |
 
-Measured against a 96-note/61-entity ground truth vault. Links stripped, engine must rediscover them.
+**Precision** = "of the links suggested, how many were correct?" (100% = never suggests a wrong link). **Recall** = "of the links that should exist, how many were found?" **F1** = the balance of both — higher is better.
 
-- **50-generation stress test** — suggest → feedback (85/15 noise) → mutate vault → rebuild index. F1 holds within 20pp. Trend slope non-negative after generation 10.
+Measured against a 96-note/61-entity ground truth vault.
+
+- **50-generation stress test** — suggest → accept/reject (85% correct, 15% noise) → mutate vault → rebuild index → repeat. F1 holds steady — the feedback loop doesn't degrade under realistic noise.
 - **7 vault archetypes** — hub-and-spoke, hierarchical, dense-mesh, sparse-orphan, bridge-network, small-world, chaos
 - **13 scoring layers** individually ablated, contribution measured
 - **Regression gate** — CI fails if any mode's F1/precision/recall drops >5pp from baseline

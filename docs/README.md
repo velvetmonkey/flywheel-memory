@@ -71,7 +71,7 @@ For architecture details and code organization, see [ARCHITECTURE.md](ARCHITECTU
 No. Flywheel runs entirely on your machine. No cloud services, no API keys (beyond Claude itself), no data leaves your disk. The SQLite indexes live inside your vault directory.
 
 **How many notes can it handle?**
-Tested to 100,000 notes. The in-memory index builds at startup (a few seconds cold, ~100ms cached) and queries return in under 10ms.
+CI benchmarks test 100,000-line file mutations and 2,500-entity indexes. The bench package can generate vaults up to 100k notes. The in-memory index builds at startup (a few seconds cold, ~100ms cached) and queries return in under 10ms.
 
 **Will it corrupt my vault?**
 2,198 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).

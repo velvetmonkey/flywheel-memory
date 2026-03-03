@@ -1,14 +1,14 @@
 {
   "suite": "multi-generation-stress-test",
-  "timestamp": "2026-03-02T10:25:51.170Z",
-  "duration_ms": 282031,
+  "timestamp": "2026-03-03T16:28:13.801Z",
+  "duration_ms": 254030,
   "summary": {
     "gen0_f1": 0.889,
     "genLast_f1": 0.909,
     "f1_delta": 0.02,
     "total_generations": 50,
-    "final_suppressions": 22,
-    "final_note_count": 185
+    "final_suppressions": 23,
+    "final_note_count": 188
   },
   "details": [
     {
@@ -4830,7 +4830,7 @@
       "truePositives": 51,
       "falsePositives": 0,
       "falseNegatives": 9,
-      "suppressionCount": 20,
+      "suppressionCount": 21,
       "totalNotes": 177,
       "mutations": [
         "created: generated/gen44-note0.md, generated/gen44-note1.md, generated/gen44-note2.md",
@@ -4933,20 +4933,20 @@
     },
     {
       "generation": 45,
-      "f1": 0.889,
+      "f1": 0.879,
       "precision": 1,
-      "recall": 0.8,
+      "recall": 0.783,
       "mrr": 0.712,
-      "truePositives": 48,
+      "truePositives": 47,
       "falsePositives": 0,
-      "falseNegatives": 12,
-      "suppressionCount": 21,
-      "totalNotes": 177,
+      "falseNegatives": 13,
+      "suppressionCount": 23,
+      "totalNotes": 179,
       "mutations": [
-        "created: generated/gen45-note0.md, generated/gen45-note1.md",
-        "deleted: reorganized/gen18-note2.md",
+        "created: generated/gen45-note0.md, generated/gen45-note1.md, generated/gen45-note2.md",
+        "deleted: reorganized/gen19-note1.md",
         "edited: 3 notes",
-        "moved: reorganized/gen16-note1.md → reorganized/gen16-note1.md"
+        "moved: reorganized/gen16-note2.md → reorganized/gen16-note2.md"
       ],
       "byCategory": {
         "people": {
@@ -5035,27 +5035,27 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.125,
+          "f1": 0.2222222222222222,
           "count": 8
         }
       }
     },
     {
       "generation": 46,
-      "f1": 0.919,
+      "f1": 0.909,
       "precision": 1,
-      "recall": 0.85,
+      "recall": 0.833,
       "mrr": 0.716,
-      "truePositives": 51,
+      "truePositives": 50,
       "falsePositives": 0,
-      "falseNegatives": 9,
-      "suppressionCount": 20,
-      "totalNotes": 180,
+      "falseNegatives": 10,
+      "suppressionCount": 22,
+      "totalNotes": 182,
       "mutations": [
         "created: generated/gen46-note0.md, generated/gen46-note1.md, generated/gen46-note2.md",
         "edited: 3 notes",
-        "moved: reorganized/gen44-note0.md → reorganized/gen44-note0.md"
+        "moved: reorganized/gen44-note1.md → reorganized/gen44-note1.md"
       ],
       "byCategory": {
         "people": {
@@ -5144,28 +5144,28 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.625,
-          "f1": 0.7692307692307693,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
           "count": 8
         }
       }
     },
     {
       "generation": 47,
-      "f1": 0.889,
+      "f1": 0.909,
       "precision": 1,
-      "recall": 0.8,
-      "mrr": 0.711,
-      "truePositives": 48,
+      "recall": 0.833,
+      "mrr": 0.716,
+      "truePositives": 50,
       "falsePositives": 0,
-      "falseNegatives": 12,
-      "suppressionCount": 21,
-      "totalNotes": 181,
+      "falseNegatives": 10,
+      "suppressionCount": 22,
+      "totalNotes": 183,
       "mutations": [
-        "created: generated/gen47-note0.md, generated/gen47-note1.md, generated/gen47-note2.md",
-        "deleted: reorganized/gen11-note2.md",
-        "edited: 4 notes",
-        "moved: reorganized/gen47-note2.md → reorganized/gen47-note2.md, reorganized/gen22-note2.md → reorganized/gen22-note2.md"
+        "created: generated/gen47-note0.md, generated/gen47-note1.md",
+        "deleted: generated/gen17-note1.md",
+        "edited: 3 notes",
+        "moved: reorganized/gen28-note2.md → reorganized/gen28-note2.md"
       ],
       "byCategory": {
         "people": {
@@ -5254,8 +5254,8 @@
         },
         "animals": {
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
           "count": 8
         }
       }
@@ -5269,12 +5269,11 @@
       "truePositives": 50,
       "falsePositives": 0,
       "falseNegatives": 10,
-      "suppressionCount": 22,
-      "totalNotes": 183,
+      "suppressionCount": 23,
+      "totalNotes": 185,
       "mutations": [
-        "created: generated/gen48-note0.md, generated/gen48-note1.md, generated/gen48-note2.md",
-        "edited: 4 notes",
-        "moved: reorganized/gen42-note1.md → reorganized/gen42-note1.md, reorganized/gen30-note0.md → reorganized/gen30-note0.md"
+        "created: generated/gen48-note0.md, generated/gen48-note1.md",
+        "edited: 3 notes"
       ],
       "byCategory": {
         "people": {
@@ -5378,13 +5377,12 @@
       "truePositives": 50,
       "falsePositives": 0,
       "falseNegatives": 10,
-      "suppressionCount": 22,
-      "totalNotes": 185,
+      "suppressionCount": 23,
+      "totalNotes": 188,
       "mutations": [
         "created: generated/gen49-note0.md, generated/gen49-note1.md, generated/gen49-note2.md",
-        "deleted: reorganized/gen14-note2.md",
-        "edited: 4 notes",
-        "moved: reorganized/gen42-note0.md → reorganized/gen42-note0.md"
+        "edited: 5 notes",
+        "moved: reorganized/gen15-note1.md → reorganized/gen15-note1.md"
       ],
       "byCategory": {
         "people": {

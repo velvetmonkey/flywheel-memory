@@ -17,7 +17,7 @@
 | Document | Description | Key Question |
 |----------|-------------|--------------|
 | [SETUP.md](SETUP.md) | Set up your own vault — prerequisites, config, first commands | "How do I get started with my own vault?" |
-| [TOOLS.md](TOOLS.md) | Full tool reference — 42 tools across 15 categories | "What tools are available and what do they do?" |
+| [TOOLS.md](TOOLS.md) | Full tool reference — 51 tools across 17 categories | "What tools are available and what do they do?" |
 | [COOKBOOK.md](COOKBOOK.md) | Example prompts organized by use case | "What can I ask Claude to do with my vault?" |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Index strategy, FTS5 search, graph model, auto-wikilinks | "How does Flywheel work under the hood?" |
 | [CONFIGURATION.md](CONFIGURATION.md) | Environment variables, tool presets, platform setup | "How do I customize my setup?" |
@@ -56,7 +56,7 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 ```bash
 npm run build    # Build both packages
-npm test         # Run full test suite (1,812 tests)
+npm test         # Run full test suite (2,198 tests)
 npm run dev      # Watch mode
 npm run lint     # Type check
 ```
@@ -74,7 +74,7 @@ No. Flywheel runs entirely on your machine. No cloud services, no API keys (beyo
 Tested to 100,000 notes. The in-memory index builds at startup (a few seconds cold, ~100ms cached) and queries return in under 10ms.
 
 **Will it corrupt my vault?**
-1,812 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
+2,198 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
 
 **How much does it cost in tokens?**
 A typical query uses 50-200 tokens of context. Compare that to reading files directly, which can consume 2,000-250,000 tokens for the same answer.

@@ -1,8 +1,8 @@
 /**
- * PROVE-IT.md Generator
+ * QUALITY_REPORT.md Generator
  *
  * Standalone script that runs all graph quality tests programmatically
- * and generates a comprehensive PROVE-IT.md report at the repo root.
+ * and generates a comprehensive QUALITY_REPORT.md in docs/.
  *
  * Usage: npx tsx packages/mcp-server/test/graph-quality/generate-proof.ts
  *    or: npm run test:quality:report
@@ -115,7 +115,7 @@ async function main() {
   const version = await getEngineVersion();
   const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC');
 
-  console.log(`PROVE-IT.md generator v${version}`);
+  console.log(`QUALITY_REPORT.md generator v${version}`);
   console.log('='.repeat(50));
 
   // =========================================================================
@@ -548,7 +548,7 @@ async function main() {
   }
 
   const repoRoot = path.resolve(__dirname, '..', '..', '..', '..');
-  const outPath = path.join(repoRoot, 'PROVE-IT.md');
+  const outPath = path.join(repoRoot, 'docs', 'QUALITY_REPORT.md');
   await writeFile(outPath, output.join('\n'), 'utf-8');
 
   console.log('\n' + '='.repeat(50));

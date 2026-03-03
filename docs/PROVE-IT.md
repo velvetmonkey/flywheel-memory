@@ -26,13 +26,13 @@ npm test
 Wait for it:
 
 ```
-Test Suites: 42 passed, 42 total
-Tests:       1,812 passed, 1,812 total
+Test Suites: 111 passed, 111 total
+Tests:       2,198 passed, 2,198 total
 Snapshots:   0 total
 Time:        ~18s
 ```
 
-1,812 tests. All passing. No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults. If something is broken, you know in 18 seconds.
+2,198 tests. All passing. No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults. If something is broken, you know in 18 seconds.
 
 ---
 
@@ -181,7 +181,7 @@ See [SETUP.md](SETUP.md) for the complete walkthrough.
 
 ## What You Just Proved
 
-1. **Tests pass** -- 1,812 of them, against real data
+1. **Tests pass** -- 2,198 of them, against real data
 2. **Graph queries work** -- backlinks + metadata, no file reads
 3. **Auto-wikilinks work** -- plain text in, linked text out
 4. **The algorithm is transparent** -- scores with explanations, not black boxes
@@ -193,6 +193,6 @@ See [SETUP.md](SETUP.md) for the complete walkthrough.
 ## Next Steps
 
 - **[SETUP.md](SETUP.md)** -- Full setup guide for your own vault
-- **[TOOLS.md](TOOLS.md)** -- Reference for all 42 tools
+- **[TOOLS.md](TOOLS.md)** -- Reference for all 51 tools
 - **[ALGORITHM.md](ALGORITHM.md)** -- How scoring, ranking, and wikilink suggestion work
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts by use case

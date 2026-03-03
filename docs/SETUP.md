@@ -109,7 +109,7 @@ Flywheel auto-links any mentions of existing notes. If "Sarah Mitchell" has a no
 
 ## Step 4: Choose a Tool Preset
 
-Flywheel ships 42 tools. Loading all of them works, but fewer tools means Claude picks the right one faster.
+Flywheel ships 51 tools. Loading all of them works, but fewer tools means Claude picks the right one faster.
 
 | Preset | Tools | ~Tokens | Best for |
 |--------|-------|---------|----------|
@@ -358,6 +358,6 @@ All vault operations work without git. You just won't have undo or commit histor
 ## Next Steps
 
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full reference for all 42 tools
+- **[TOOLS.md](TOOLS.md)** -- Full reference for all 51 tools
 - **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics

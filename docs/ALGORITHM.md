@@ -232,7 +232,7 @@ Three modes control the precision/recall trade-off:
 
 | Setting | Conservative | Balanced | Aggressive |
 |---|---|---|---|
-| `minSuggestionScore` | 15 | 8 | 5 |
+| `minSuggestionScore` | 18 | 10 | 5 |
 | `minMatchRatio` | 0.6 | 0.4 | 0.3 |
 | `requireMultipleMatches` | true | false | false |
 | `stemMatchBonus` | 3 | 5 | 6 |
@@ -264,7 +264,7 @@ Short content (a quick note, a task) gets a lower bar because there are fewer wo
 
 Content: **"Turbopump delivery delayed. Marcus tracking with Acme."**
 
-This is a daily note at `daily-notes/2025-06-15.md`. Strictness is `conservative` (default). Content is 54 characters, so we use the base `minSuggestionScore` of 15.
+This is a daily note at `daily-notes/2025-06-15.md`. Adaptive strictness escalates daily notes to `aggressive` (minSuggestionScore of 5). Content is 54 characters (short), so the adaptive threshold applies: `max(5, floor(5 * 0.6))` = 5.
 
 ### Candidates after filtering
 

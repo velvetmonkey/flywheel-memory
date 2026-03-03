@@ -1,6 +1,6 @@
 # Configuration
 
-All configuration is through environment variables in your MCP config. No config files to manage.
+Two layers of configuration: **environment variables** set in your MCP config (startup-time), and **runtime config** adjustable via the `flywheel_config` tool (persisted in StateDb). No config files to manage.
 
 ---
 
@@ -149,7 +149,25 @@ Note: `memory` spans read+write. `tasks` also spans read+write.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `EMBEDDING_MODEL` | `Xenova/all-MiniLM-L6-v2` | HuggingFace model for semantic embeddings. Model registry includes 4 known models; unknown models auto-probe dimensions. Model change triggers rebuild. |
+| `EMBEDDING_MODEL` | `Xenova/all-MiniLM-L6-v2` | HuggingFace model for semantic embeddings. Model change triggers rebuild. |
+
+Known models (pre-configured dimensions):
+
+| Model | Dimensions | Notes |
+|-------|-----------|-------|
+| `Xenova/all-MiniLM-L6-v2` | 384 | Default. Good quality/speed balance. 23 MB. |
+| `Xenova/all-MiniLM-L12-v2` | 384 | Slightly better quality, 2x slower. |
+| `Xenova/bge-small-en-v1.5` | 384 | BGE family, strong on retrieval benchmarks. |
+| `nomic-ai/nomic-embed-text-v1` | 768 | Higher dimensional, better for large vaults. |
+
+Any HuggingFace Transformers-compatible model can be used — unknown models auto-probe their output dimensions on first run.
+
+### Advanced
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FLYWHEEL_SKIP_FTS5` | `false` | Skip FTS5 full-text search index build at startup. Useful for testing. |
+| `FLYWHEEL_AGENT_ID` | — | Agent identifier for multi-agent memory provenance. When set, memories stored via the `memory` tool are tagged with this ID. |
 
 ### File Watcher
 
@@ -159,7 +177,8 @@ Note: `memory` spans read+write. `tasks` also spans read+write.
 | `FLYWHEEL_WATCH_POLL` | `false` | Set to `true` for polling mode. Use on network drives, Docker volumes, or WSL. |
 | `FLYWHEEL_DEBOUNCE_MS` | `200` | Milliseconds to wait after last file change before rebuilding index |
 | `FLYWHEEL_FLUSH_MS` | `1000` | Maximum wait time before flushing event batch |
-| `FLYWHEEL_POLL_INTERVAL` | `30000` | Polling interval in ms (when `FLYWHEEL_WATCH_POLL=true`) |
+| `FLYWHEEL_BATCH_SIZE` | `50` | Maximum events per batch before forcing flush |
+| `FLYWHEEL_POLL_INTERVAL` | `10000` | Polling interval in ms (when `FLYWHEEL_WATCH_POLL=true`) |
 
 The file watcher uses per-path debouncing, event coalescing, backpressure handling, and error recovery. Any `.md` file change triggers an index rebuild after the debounce period.
 
@@ -241,6 +260,83 @@ Tags matching these patterns are auto-detected for task filtering:
 ### Vault Name
 
 Inferred from the vault root folder name.
+
+---
+
+## Runtime Configuration
+
+Runtime config is persisted in StateDb and survives server restarts. Read or update via the `flywheel_config` tool (requires `health` category).
+
+### Reading Config
+
+```
+flywheel_config({ mode: "get" })
+```
+
+Returns the full config object with all current values.
+
+### Setting Config
+
+```
+flywheel_config({ mode: "set", key: "wikilink_strictness", value: "conservative" })
+```
+
+Sets a single key and returns the updated config.
+
+### Available Keys
+
+#### Wikilink Behavior
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `wikilink_strictness` | `"conservative"` \| `"balanced"` \| `"aggressive"` | `"balanced"` | Controls the minimum score threshold for auto-wikilink suggestions. Conservative (18) reduces noise. Aggressive (5) maximizes discovery. |
+| `adaptive_strictness` | boolean | `true` | When enabled, daily notes automatically use aggressive strictness regardless of the global setting. Disable if daily notes are getting too many links. |
+| `implicit_detection` | boolean | `true` | Detect potential entities from patterns like proper nouns, CamelCase, quoted terms — even when no backing note exists. Creates dead wikilinks that signal "this could be a note." |
+| `implicit_patterns` | string[] | all 5 | Which implicit detection patterns to use. Options: `"proper-nouns"`, `"single-caps"`, `"quoted-terms"`, `"camel-case"`, `"acronyms"`. |
+
+#### Exclusions
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `exclude_entities` | string[] | `[]` | Entity names to never auto-link. Use when a valid entity name collides with a common word in your vault. |
+| `exclude_entity_folders` | string[] | `[]` | Folders to exclude from entity scanning. Notes in these folders won't be indexed as entities. Useful for `templates/`, `archive/`, etc. |
+| `exclude_task_tags` | string[] | `[]` | Tags to exclude from task queries. Tasks with these tags are filtered out of `tasks` tool results. |
+| `exclude_analysis_tags` | string[] | `[]` | Tags to exclude from schema analysis. Notes with these tags are skipped by `vault_schema` and `note_intelligence`. |
+
+#### Vault Structure (auto-inferred, overridable)
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `vault_name` | string | (inferred from folder name) | Display name for the vault. |
+| `paths` | object | (auto-detected) | Periodic note folder paths. Sub-keys: `daily_notes`, `weekly_notes`, `monthly_notes`, `quarterly_notes`, `yearly_notes`, `templates`. Override if auto-detection picks the wrong folder. |
+| `templates` | object | (auto-detected) | Template file paths. Sub-keys: `daily`, `weekly`, `monthly`, `quarterly`, `yearly`. |
+
+### Examples
+
+**Reduce link noise** — switch to conservative and disable implicit detection:
+
+```
+flywheel_config({ mode: "set", key: "wikilink_strictness", value: "conservative" })
+flywheel_config({ mode: "set", key: "implicit_detection", value: false })
+```
+
+**Exclude archive from entity scanning:**
+
+```
+flywheel_config({ mode: "set", key: "exclude_entity_folders", value: ["archive", "templates"] })
+```
+
+**Stop a specific entity from being auto-linked:**
+
+```
+flywheel_config({ mode: "set", key: "exclude_entities", value: ["MCP", "API"] })
+```
+
+**Only detect proper nouns (disable CamelCase, acronyms, etc.):**
+
+```
+flywheel_config({ mode: "set", key: "implicit_patterns", value: ["proper-nouns"] })
+```
 
 ---
 

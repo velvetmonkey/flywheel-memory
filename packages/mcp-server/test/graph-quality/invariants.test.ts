@@ -35,15 +35,16 @@ import {
 // Custom Arbitraries
 // =============================================================================
 
-/** Entity name: 2-20 alphanumeric chars with optional internal spaces */
+/** Entity name: 3-20 alphanumeric chars with optional internal spaces.
+ *  Minimum 3 chars avoids collisions with common English words (on, in, at, to, is). */
 const entityNameArb = fc.stringOf(
   fc.oneof(
     fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz'.split('')),
     fc.constantFrom(...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')),
     fc.constant(' '),
   ),
-  { minLength: 2, maxLength: 20 },
-).filter(s => s.trim().length >= 2 && !s.startsWith(' ') && !s.endsWith(' ') && !s.includes('  '));
+  { minLength: 3, maxLength: 20 },
+).filter(s => s.trim().length >= 3 && !s.startsWith(' ') && !s.endsWith(' ') && !s.includes('  '));
 
 /** EntityWithAliases object */
 const entityArb: fc.Arbitrary<EntityWithAliases> = entityNameArb.map(name => ({

@@ -1,6 +1,6 @@
 # Tool Reference
 
-42 tools across 15 categories. All enabled by default (`full` preset).
+51 tools across 17 categories. All enabled by default (`full` preset).
 
 ---
 
@@ -60,6 +60,7 @@ Analyze vault link graph structure. The `analysis` parameter selects the mode.
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
 | `get_connection_strength` | Calculate connection strength between two notes based on various factors | `note_a`, `note_b` |
+| `list_entities` | Browse entities with filtering and pagination. | `category`, `folder`, `search`, `limit`, `offset` |
 | `get_link_path` | Find the shortest path of links between two notes | `from`, `to`, `max_depth` |
 | `get_common_neighbors` | Find notes that both specified notes link to | `note_a`, `note_b` |
 
@@ -167,18 +168,26 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 
 ---
 
-## Note Management (4 tools)
+## Note Creation (1 tool)
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
 | `vault_create_note` | Create a new note with optional frontmatter and content. Includes preflight checks for similar notes and alias collisions. When embeddings are available, also checks for semantically similar existing notes and warns about potential duplicates. | `path`, `content`, `frontmatter`, `overwrite`, `commit` |
-| `vault_delete_note` | Delete a note. Shows backlink warnings before deletion. | `path`, `confirm` (required), `commit` |
-| `vault_move_note` | Move a note to a new location. Updates all backlinks across the vault. | `oldPath`, `newPath`, `updateBacklinks`, `commit` |
-| `vault_rename_note` | Rename a note in place. Updates all backlinks across the vault. | `path`, `newTitle`, `updateBacklinks`, `commit` |
 
 ---
 
-## Vault Health (8 tools)
+## Note Operations (4 tools)
+
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `vault_delete_note` | Delete a note. Shows backlink warnings before deletion. | `path`, `confirm` (required), `commit` |
+| `vault_move_note` | Move a note to a new location. Updates all backlinks across the vault. | `oldPath`, `newPath`, `updateBacklinks`, `commit` |
+| `vault_rename_note` | Rename a note in place. Updates all backlinks across the vault. | `path`, `newTitle`, `updateBacklinks`, `commit` |
+| `merge_entities` | Merge two entities: moves/renames the source note into the target, updates all backlinks, and merges aliases. | `source`, `target`, `commit` |
+
+---
+
+## Vault Health (12 tools)
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
@@ -190,6 +199,10 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 | `get_unlinked_mentions` | Find places where an entity is mentioned but not linked. | `entity`, `limit` |
 | `vault_growth` | Track vault growth over time. Modes: current (live snapshot), history (time series), trends (deltas), index_activity (rebuild history). | `mode` (current/history/trends/index_activity), `metric`, `days_back`, `limit` |
 | `vault_activity` | Track tool usage patterns and session activity. Modes: session (current session), sessions (recent list), note_access (most-queried notes), tool_usage (tool patterns). | `mode` (session/sessions/note_access/tool_usage), `session_id`, `days_back`, `limit` |
+| `flywheel_config` | Read or update Flywheel configuration. Modes: get (return current config), set (update a single key). | `mode` (get/set), `key`, `value` |
+| `server_log` | View recent server activity log entries. | `limit` |
+| `suggest_entity_merges` | Find entities that may be duplicates based on name similarity, shared backlinks, and aliases. | `limit`, `min_similarity` |
+| `dismiss_merge_suggestion` | Dismiss a merge suggestion so it won't be shown again. | `entity_a`, `entity_b` |
 
 ---
 
@@ -220,6 +233,35 @@ Undo the last git commit (typically the last Flywheel mutation). Performs a soft
 
 ---
 
+## Agent Memory (3 tools)
+
+### `memory`
+
+Store, retrieve, search, and manage agent working memory. Six actions via the `action` parameter.
+
+| Action | Description | Key Parameters |
+|--------|-------------|----------------|
+| `store` | Store a fact, preference, or observation with optional TTL and confidence | `key`, `value`, `type` (fact/preference/observation/summary), `entity`, `confidence`, `ttl_days` |
+| `get` | Retrieve a specific memory by key | `key` |
+| `search` | Full-text search across stored memories | `query`, `limit` |
+| `list` | List all memories, optionally filtered | `limit` |
+| `forget` | Delete a memory by key | `key` |
+| `summarize_session` | Store a session summary with topics and metadata | `session_id`, `summary`, `topics`, `notes_modified`, `tool_count` |
+
+### `recall`
+
+Unified knowledge retrieval across entities, notes, and memories. Queries all knowledge channels and ranks results using the same scoring signals as the wikilink engine: text relevance, recency, co-occurrence, feedback, edge weights, and semantic similarity.
+
+**Key parameters:** `query` (required), `limit`
+
+### `brief`
+
+Startup context assembly. Builds a token-budgeted summary of: recent session summaries, active entities, stored memories, pending corrections, and vault pulse. Designed for agent cold-start — gives Claude context about what happened recently without reading the full vault.
+
+**Key parameters:** `token_budget`, `sections`
+
+---
+
 ## Content Discovery (1 tool)
 
 ### `find_similar`
@@ -232,21 +274,23 @@ Find notes similar to a given note using content similarity. Extracts key terms 
 
 ## Category-to-Preset Mapping
 
-| Category | Tools | Included in `full` | Included in `minimal` |
-|----------|------:|:-------------------:|:---------------------:|
-| search | 2 | Yes | Yes |
-| backlinks | 2 | Yes | |
-| orphans | 1 | Yes | |
-| hubs | 1 | Yes | |
-| paths | 2 | Yes | |
-| schema | 6 | Yes | |
-| structure | 4 | Yes | Yes |
-| tasks | 3 | Yes | |
-| health | 8 | Yes | |
-| wikilinks | 3 | Yes | |
-| append | 3 | Yes | Yes |
-| frontmatter | 1 | Yes | Yes |
-| notes | 4 | Yes | Yes |
-| git | 1 | Yes | |
-| policy | 1 | Yes | |
-| **Total** | **42** | **42** | **13** |
+| Category | Tools | `minimal` | `writer` | `agent` | `researcher` | `full` |
+|----------|------:|:---------:|:--------:|:-------:|:------------:|:------:|
+| search | 2 | Yes | Yes | Yes | Yes | Yes |
+| structure | 4 | Yes | Yes | Yes | Yes | Yes |
+| append | 3 | Yes | Yes | Yes | | Yes |
+| frontmatter | 1 | Yes | Yes | Yes | | Yes |
+| notes | 1 | Yes | Yes | Yes | | Yes |
+| backlinks | 2 | | | | Yes | Yes |
+| orphans | 1 | | | | | Yes |
+| hubs | 2 | | | | Yes | Yes |
+| paths | 2 | | | | Yes | Yes |
+| schema | 6 | | | | | Yes |
+| tasks | 3 | | Yes | | | Yes |
+| wikilinks | 3 | | | | | Yes |
+| health | 12 | | | | | Yes |
+| note-ops | 4 | | | | | Yes |
+| git | 1 | | | | | Yes |
+| policy | 1 | | | | | Yes |
+| memory | 3 | | | Yes | | Yes |
+| **Total** | **51** | **11** | **14** | **14** | **12** | **51** |

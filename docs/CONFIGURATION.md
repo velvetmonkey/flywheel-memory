@@ -62,13 +62,17 @@ Vault root detection order:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `FLYWHEEL_TOOLS` | `full` | Preset, bundle, or comma-separated category list |
+| `FLYWHEEL_PRESET` | — | Alias for `FLYWHEEL_TOOLS` (either works) |
 
 #### Quick Start
 
-| Preset | Tools | ~Tokens | Use case |
-|--------|-------|---------|----------|
-| `full` (default) | 42 | ~12,400 | Everything — graph, schema, tasks, policy |
-| `minimal` | 13 | ~3,800 | Note-taking essentials — search, read, create, edit |
+| Preset | Tools | Use case |
+|--------|-------|----------|
+| `full` (default) | 51 | Everything — graph, schema, tasks, policy, memory |
+| `minimal` | 11 | Note-taking essentials — search, read, create, edit |
+| `writer` | 14 | minimal + task management |
+| `agent` | 14 | minimal + agent memory (brief, recall, memory) |
+| `researcher` | 12 | Search + graph navigation — read-heavy exploration |
 
 The fewer tools you load, the less context Claude needs to pick the right one.
 
@@ -76,23 +80,25 @@ The fewer tools you load, the less context Claude needs to pick the right one.
 
 Start with `minimal`, then add what you need:
 
-| Bundle | Tools | ~Tokens | What it adds |
-|--------|-------|---------|--------------|
-| `graph` | 6 | ~1,850 | Backlinks, orphans, hubs, shortest paths |
-| `analysis` | 9 | ~2,775 | Schema intelligence, wikilink validation, content similarity |
-| `tasks` | 3 | ~925 | Task queries and mutations |
-| `health` | 8 | ~2,475 | Vault diagnostics, index management, growth, activity |
-| `ops` | 2 | ~625 | Git undo, policy automation |
+| Bundle | Tools | What it adds |
+|--------|-------|--------------|
+| `graph` | 7 | Backlinks, orphans, hubs, shortest paths |
+| `analysis` | 9 | Schema intelligence, wikilink validation, content similarity |
+| `tasks` | 3 | Task queries and mutations |
+| `health` | 12 | Vault diagnostics, index management, growth, activity, config, merges |
+| `ops` | 2 | Git undo, policy automation |
+| `note-ops` | 4 | Delete, move, rename notes, merge entities |
 
 #### Recipes
 
-| Config | Tools | ~Tokens | Categories |
-|--------|-------|---------|------------|
-| `minimal` | 13 | ~3,800 | search, structure, append, frontmatter, notes |
-| `minimal,graph,tasks` | 22 | ~6,575 | + backlinks, orphans, hubs, paths, tasks |
-| `minimal,graph,analysis` | 28 | ~8,575 | + backlinks, orphans, hubs, paths, schema, wikilinks |
-| `minimal,graph,tasks,health` | 30 | ~9,275 | + backlinks, orphans, hubs, paths, tasks, health |
-| `full` | 42 | ~12,400 | All 15 categories |
+| Config | Tools | Categories |
+|--------|-------|------------|
+| `minimal` | 11 | search, structure, append, frontmatter, notes |
+| `writer` | 14 | minimal + tasks |
+| `agent` | 14 | minimal + memory |
+| `minimal,graph,tasks` | 21 | minimal + backlinks, orphans, hubs, paths, tasks |
+| `minimal,graph,analysis` | 27 | minimal + backlinks, orphans, hubs, paths, schema, wikilinks |
+| `full` | 51 | All 17 categories |
 
 #### How It Works
 
@@ -110,30 +116,40 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 
 #### Category Reference
 
-**Read categories (10):**
+**Read categories (12):**
 
 | Category | Tools | Description |
 |----------|-------|-------------|
 | `search` | 2 | Unified search (metadata, content, entities), semantic index initialization |
 | `backlinks` | 2 | Backlinks (+ bidirectional), forward links |
-| `orphans` | 1 | Graph analysis (orphans, dead ends, sources, hubs, stale) |
-| `hubs` | 1 | Connection strength |
+| `orphans` | 1 | Graph analysis (orphans, dead ends, sources, hubs, stale, immature, evolution, emerging hubs) |
+| `hubs` | 2 | Connection strength, entity listing |
 | `paths` | 2 | Shortest path, common neighbors |
 | `schema` | 6 | Vault schema, note intelligence, field migrations, content similarity |
 | `structure` | 4 | Note structure, section content, find sections, metadata |
 | `tasks` | 3 | Task queries and mutations (read + write) |
-| `health` | 8 | Vault stats, diagnostics, index management, growth metrics, activity tracking |
+| `health` | 12 | Vault stats, diagnostics, index management, growth metrics, activity tracking, config, merge suggestions |
 | `wikilinks` | 3 | Link suggestions, link validation, feedback |
+| `memory` | 3 | Agent working memory (store/recall/brief) |
 
-**Write categories (5):**
+Note: `memory` spans read+write. `tasks` also spans read+write.
+
+**Write categories (6):**
 
 | Category | Tools | Description |
 |----------|-------|-------------|
 | `append` | 3 | Add, remove, replace content in sections |
 | `frontmatter` | 1 | Update frontmatter fields |
-| `notes` | 4 | Create, delete, move, rename notes |
+| `notes` | 1 | Create notes |
+| `note-ops` | 4 | Delete, move, rename notes, merge entities |
 | `git` | 1 | Undo last mutation |
 | `policy` | 1 | Policy workflow automation |
+
+### Semantic Embeddings
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EMBEDDING_MODEL` | `Xenova/all-MiniLM-L6-v2` | HuggingFace model for semantic embeddings. Model registry includes 4 known models; unknown models auto-probe dimensions. Model change triggers rebuild. |
 
 ### File Watcher
 
@@ -188,6 +204,8 @@ This also applies to Docker volumes mounted from Windows and network drives (SMB
 The `init_semantic` tool builds a semantic search index by generating embeddings for all vault notes using the `all-MiniLM-L6-v2` model. This is a one-time build step — once the index exists, `search` and `find_similar` automatically upgrade to hybrid mode.
 
 **How hybrid search works:** Queries run through both BM25 (keyword matching via FTS5) and semantic similarity (cosine distance on embeddings). Results are merged using Reciprocal Rank Fusion (RRF), which combines the two ranked lists into a single ranking that benefits from both keyword precision and semantic recall.
+
+**Model selection:** The embedding model defaults to `Xenova/all-MiniLM-L6-v2` but can be changed via the `EMBEDDING_MODEL` environment variable. A model registry includes 4 known models with pre-configured dimensions; unknown models auto-probe their output dimensions. Changing models triggers a full embedding rebuild.
 
 **Model download:** The model is downloaded automatically on first run to `~/.cache/huggingface/`. No environment variables are needed — just run `init_semantic` and the index builds from your existing vault content.
 
@@ -260,6 +278,18 @@ Daily notes, task management, basic editing:
 {
   "env": {
     "FLYWHEEL_TOOLS": "minimal,tasks"
+  }
+}
+```
+
+### Autonomous Agent
+
+Memory-enabled preset for agents (e.g., flywheel-engine):
+
+```json
+{
+  "env": {
+    "FLYWHEEL_TOOLS": "agent"
   }
 }
 ```

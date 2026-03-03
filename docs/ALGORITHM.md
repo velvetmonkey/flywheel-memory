@@ -42,9 +42,9 @@ Before scoring begins, candidates are pruned. This keeps the hot path fast and p
 
 ---
 
-## Phase 2: Scoring (9 Dimensions)
+## Phase 2: Scoring (10 Dimensions)
 
-Every candidate that survives filtering gets scored across 9 independent dimensions. Each dimension adds (or subtracts) points. The total determines rank.
+Every candidate that survives filtering gets scored across 10 independent dimensions. Each dimension adds (or subtracts) points. The total determines rank.
 
 ### Layer 1: Content Match
 
@@ -81,6 +81,8 @@ A **recency multiplier** adjusts the co-occurrence boost based on how recently t
 - Entity is stale (no recent activity): **0.5x** multiplier
 
 Co-occurrence candidates must also have at least 1 word overlapping with the content. This prevents popular but irrelevant entities from being suggested purely on graph connectivity.
+
+Co-occurrence strength uses **NPMI (Normalized Pointwise Mutual Information)** scoring to penalize ubiquitous entities. An entity that co-occurs with everything gets a lower boost than one with a focused co-occurrence pattern. The `computeNpmi()` function scales by PMI_SCALE=12, capped at 12.
 
 ### Layer 3: Type Boost
 
@@ -351,17 +353,19 @@ This creates a feedback loop without requiring the user to do anything explicit:
 
 ### Suppression
 
-Entities that accumulate too many false positives get suppressed entirely:
+Entities that accumulate too many false positives get suppressed. Flywheel uses a **Beta-Binomial posterior model** — each entity starts with a Beta(8, 1) prior giving 89% benefit of the doubt. As feedback accumulates, the posterior mean shifts. When posteriorMean drops below 0.35 with at least 20 observations, the entity is hard-gated from auto-linking. A soft proportional penalty also applies in the suggestion scoring path.
 
 | Parameter | Value |
 |---|---|
-| `MIN_FEEDBACK_COUNT` | 10 (minimum samples before suppression kicks in) |
-| `SUPPRESSION_THRESHOLD` | 0.30 (30% false positive rate triggers suppression) |
+| Prior | Beta(α=8, β=1) — 89% benefit of the doubt |
+| Suppression threshold | posteriorMean < 0.35 AND totalObs ≥ 20 |
+| Soft penalty | Proportional: `MAX_SUPPRESSION_PENALTY × (1 − posteriorMean / threshold)` |
+| `MAX_SUPPRESSION_PENALTY` | −15 |
 | `FOLDER_SUPPRESSION_MIN_COUNT` | 5 (minimum samples for folder-specific suppression) |
 
-Suppression is also **folder-aware**. An entity might be useful in `projects/` but consistently wrong in `daily-notes/`. Folder-specific suppression handles this: if an entity has >= 5 feedback entries in a specific folder and its false positive rate exceeds 30% within that folder, it's suppressed for notes in that folder -- even if its global accuracy is fine.
+Suppression is also **folder-aware**. An entity might be useful in `projects/` but consistently wrong in `daily-notes/`. Folder-specific suppression handles this: if an entity has >= 5 feedback entries in a specific folder and its posterior mean drops below the threshold within that folder, it's suppressed for notes in that folder -- even if its global accuracy is fine.
 
-Suppression is reversible. If new positive feedback brings the false positive rate below 30%, the entity is un-suppressed automatically.
+Suppression is reversible. If new positive feedback raises the posterior mean above 0.35, the entity is un-suppressed automatically.
 
 ---
 

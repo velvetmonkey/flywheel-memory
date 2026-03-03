@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 42 tools across 15 categories
+ * 51 tools across 17 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -191,13 +191,13 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherStatus;
 //   writer     - minimal + tasks (14 tools)
 //   agent      - minimal + memory (14 tools)
 //   researcher - Graph explorer: search, structure, backlinks, hubs, paths (12 tools)
-//   full       - All tools (42 tools) [DEFAULT]
+//   full       - All tools (51 tools) [DEFAULT]
 //
 // Composable bundles (combine with presets or each other):
-//   graph    - Backlinks, orphans, hubs, paths (5 tools)
+//   graph    - Backlinks, orphans, hubs, paths (7 tools)
 //   analysis - Schema intelligence, wikilink validation (9 tools)
 //   tasks    - Task queries and mutations (3 tools)
-//   health   - Vault diagnostics and index management (11 tools)
+//   health   - Vault diagnostics and index management (12 tools)
 //   ops      - Git undo, policy automation (2 tools)
 //   note-ops - File management: delete, move, rename, merge (4 tools)
 //

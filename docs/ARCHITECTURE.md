@@ -1,6 +1,6 @@
 # Architecture
 
-Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 42 tools for search, graph queries, and mutations.
+Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 51 tools for search, graph queries, and mutations.
 
 ---
 
@@ -23,7 +23,9 @@ packages/
 │       │   │   ├── health.ts    # health_check, get_vault_stats (+ recent_activity), get_folder_structure
 │       │   │   ├── system.ts    # refresh_index, get_all_entities, get_note_metadata, get_unlinked_mentions
 │       │   │   ├── wikilinks.ts # suggest_wikilinks, validate_links (+ typo detection)
-│       │   │   └── migrations.ts # rename_field, migrate_field_values
+│       │   │   ├── migrations.ts # rename_field, migrate_field_values
+│       │   │   ├── brief.ts         # brief (startup context assembly)
+│       │   │   └── recall.ts        # recall (unified knowledge retrieval)
 │       │   └── write/           # Write tool registrations
 │       │       ├── mutations.ts # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
 │       │       ├── tasks.ts     # vault_toggle_task, vault_add_task
@@ -31,7 +33,9 @@ packages/
 │       │       ├── move-notes.ts # vault_move_note, vault_rename_note (with backlink updates)
 │       │       ├── frontmatter.ts # vault_update_frontmatter (+ only_if_missing)
 │       │       ├── system.ts    # vault_undo_last_mutation
-│       │       └── policy.ts    # policy (unified: list, validate, preview, execute, author, revise)
+│       │       ├── policy.ts    # policy (unified: list, validate, preview, execute, author, revise)
+│       │       ├── memory.ts    # memory (agent working memory)
+│       │       └── config.ts    # flywheel_config (runtime configuration)
 │       └── core/
 │           ├── read/            # Read-side core logic
 │           │   ├── graph.ts     # Index building, backlinks, hubs, orphans, path finding
@@ -67,11 +71,21 @@ packages/
 │           │       ├── template.ts  # Variable templating
 │           │       ├── storage.ts   # Policy file storage
 │           │       └── types.ts     # Policy types
+│           │   ├── memory.ts    # Agent memory lifecycle (store, recall, brief)
+│           │   ├── corrections.ts # Pending correction processing
+│           │   ├── edgeWeights.ts # Edge weight computation
+│           │   └── wikilinkFeedback.ts # Wikilink feedback tracking
 │           └── shared/          # Shared between read/write
 │               ├── recency.ts   # Entity recency tracking
 │               ├── cooccurrence.ts # Co-occurrence analysis
 │               ├── hubExport.ts # Hub score export to StateDb
-│               └── stemmer.ts   # Porter stemming
+│               ├── stemmer.ts   # Porter stemming
+│               ├── edgeWeights.ts # Edge weight scoring and persistence
+│               ├── taskCache.ts # Task cache for fast queries
+│               ├── toolTracking.ts # Tool invocation tracking
+│               ├── indexActivity.ts # Index rebuild activity logging
+│               ├── graphSnapshots.ts # Graph topology snapshots
+│               └── metrics.ts    # Vault growth metrics
 ├── core/                        # Shared library (@velvetmonkey/vault-core)
 │   └── src/
 │       ├── sqlite.ts            # SQLite StateDb (consolidated state)
@@ -283,6 +297,20 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 | `graph_snapshots` | Graph topology evolution |
 | `note_embeddings` | Semantic search embeddings (path, vector, content hash) |
 | `entity_embeddings` | Entity-level embeddings for semantic scoring (path, name, vector, content hash) |
+| `suggestion_events` | Wikilink suggestion event log |
+| `note_links` | Persisted note-to-note links (with weights) |
+| `note_link_history` | Note link change history |
+| `note_moves` | Note rename/move tracking |
+| `note_tags` | Extracted tags per note |
+| `entity_changes` | Entity change tracking |
+| `tasks` | Task cache |
+| `merge_dismissals` | Dismissed merge suggestions |
+| `corrections` | Pending entity corrections |
+| `cooccurrence_cache` | Serialized co-occurrence index (BLOB) |
+| `content_hashes` | Content hash conflict detection (SHA-256, 16 hex chars) |
+| `memories` | Agent memory storage |
+| `memories_fts` | FTS5 index for memory search |
+| `session_summaries` | Agent session summary storage |
 
 **Database settings:** WAL journal mode for concurrent read performance. Foreign keys enabled. Schema version tracking with migration support.
 
@@ -312,6 +340,24 @@ New tables are added directly to `SCHEMA_SQL` with `CREATE TABLE IF NOT EXISTS`,
 | v8 | Added `graph_snapshots` table (structural evolution) |
 | v9 | Added `note_embeddings` table (semantic search) |
 | v10 | Added `entity_embeddings` table (semantic entity scoring) |
+| v11 | Added `frontmatter` column to `notes_fts` |
+| v12 | Added `tasks` table |
+| v13 | Added `merge_dismissals` table |
+| v14 | Added `steps` column to `index_events` |
+| v15 | Added `suggestion_events` table |
+| v16 | Added `note_links` table |
+| v17 | Added `entity_changes` table |
+| v18 | Added `note_tags` table |
+| v19 | Added `note_link_history` table |
+| v20 | Added `note_moves` table |
+| v21 | Added `description` column to `entities` |
+| v22 | Added `weight`/`weight_updated_at` to `note_links` |
+| v23 | Recreated `idx_wl_apps_unique` with `COLLATE NOCASE` |
+| v24 | Added `corrections` table |
+| v25 | Added `confidence` column to `wikilink_feedback` |
+| v26 | Added `memories` + `memories_fts` + `session_summaries` tables (agentic memory) |
+| v27 | Added `cooccurrence_cache` table (serialized co-occurrence BLOB) |
+| v28 | Added `content_hashes` table (write conflict detection) |
 
 ---
 
@@ -320,6 +366,7 @@ New tables are added directly to `SCHEMA_SQL` with `CREATE TABLE IF NOT EXISTS`,
 Every write tool follows the same pipeline:
 
 1. **Path validation** -- Prevents path traversal attacks
+1a. **Content hash check** -- Compares stored content hash against current file content. If a concurrent edit modified the file since last read, returns a `write_conflict` warning.
 2. **File read** -- Reads current content and frontmatter with `gray-matter`
 3. **Section finding** -- Locates target section by heading text
 4. **Input validation** -- Checks for common issues (double timestamps, non-markdown bullets)
@@ -332,6 +379,10 @@ Every write tool follows the same pipeline:
 10. **Guardrails** -- Output validation (warn/strict/off modes). Write errors use `DiagnosticError` for structured diagnostics — includes closest match to target section, per-line analysis of the content, and actionable fix suggestions on `MutationResult.diagnostic`
 11. **File write** -- Writes back with frontmatter via `gray-matter`
 12. **Git commit** -- Optional auto-commit with `[Flywheel:*]` prefix
+
+### Content Hash Conflict Detection
+
+Every write path checks for concurrent edits using SHA-256 content hashes (truncated to 16 hex chars). The `content_hashes` table stores the last-known hash for each file. Before writing, the system compares the stored hash against the current file content. If they differ — indicating another process modified the file — the write succeeds but returns a `write_conflict` warning via `ValidationWarning[]` on `MutationResult.warnings`.
 
 ### Move and Rename
 

@@ -1,7 +1,7 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Claude reads files. Flywheel reads your knowledge graph.</strong><br/>Select from 42 tools. Zero cloud. Your Obsidian vault becomes a queryable second brain.</p>
+  <p><strong>A knowledge graph engine that reads, writes, and learns.</strong><br/>Graph intelligence. Safe writes. A feedback loop that learns from every interaction.<br/>Zero cloud. Your Obsidian vault becomes a queryable second brain.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
@@ -20,7 +20,7 @@
 | "What should I link?" | Manual or grep | Smart scoring + semantic understanding |
 | Token cost | 2,000-250,000 | 50-200 |
 
-Select from 42 tools. 6-line config. Zero cloud dependencies.
+51 tools across 17 categories. 6-line config. Zero cloud dependencies.
 
 **Try in 60 seconds:**
 
@@ -106,22 +106,22 @@ Keyword search finds what you said. Semantic search finds what you meant. Flywhe
 Ask why Flywheel suggested `[[Marcus Johnson]]`:
 
 ```
-Entity              Score  Match  Co-oc  Type  Recency  Cross  Hub
-─────────────────────────────────────────────────────────────────────
-Marcus Johnson        32    +10     +6    +5     +8      +3    +0
+Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Feedback  Semantic  Edge
+──────────────────────────────────────────────────────────────────────────────────────────────────────
+Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
 ```
 
-Every number traces to vault usage, not configuration. Recency came from what you last wrote. Co-occurrence came from notes you've written before. Hub came from how many other notes link there. The score learns as you use it.
+10 scoring dimensions, every number traceable to vault usage. Recency came from what you last wrote. Co-occurrence came from notes you've written before. Hub came from how many other notes link there. The score learns as you use it.
 
 See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
-### 3. Read and Write Build the Graph
+### 3. The Self-Improving Loop
 
-**Every interaction is a graph-building operation.**
+**Every interaction is a graph-building operation — and a learning signal.**
 
-When you write a note, entities are auto-linked — creating edges. When you keep a `[[link]]` through 10 edits, that edge gains weight. When two entities appear together in 20 notes, they build a co-occurrence bond. When you read frequently, recent entities surface in suggestions.
+When you write a note, entities are auto-linked — creating edges. When you keep a `[[link]]` through 10 edits, that edge gains weight. When two entities appear together in 20 notes, they build a co-occurrence bond scored by NPMI. When you read frequently, recent entities surface in suggestions. When you remove a bad link, Beta-Binomial suppression learns what to stop suggesting.
 
-The 11-layer score tracks this: hub boost measures structural centrality, recency measures recent relevance, co-occurrence measures associative relationships, feedback adjusts for historical accuracy. Each number traces to vault usage, not configuration.
+This is the uncontested gap — no competitor has a feedback loop that learns from knowledge management actions.
 
 Result: a queryable graph. "What's the shortest path between AlphaFold and my docking experiment?" Backlinks, forward links, hubs, orphans, shortest paths — every query leverages hundreds of accumulated connections. Denser graphs make every query more precise.
 
@@ -133,25 +133,40 @@ Content about "deployment automation" suggests `[[CI/CD]]` — no keyword match 
 - **Semantic clusters**: Groups notes by meaning instead of folder structure
 - **Semantic wikilinks**: Suggestions based on what you *mean*, not just what you typed
 
-Build once with `init_semantic`. Everything upgrades automatically.
+Build once with `init_semantic`. Everything upgrades automatically. Configurable model via `EMBEDDING_MODEL` env var.
+
+### 5. Agentic Memory
+
+The system remembers context across sessions. No more starting from scratch.
+
+- **`brief`** assembles startup context: recent sessions, active entities, stored memories, corrections, vault pulse — token-budgeted
+- **`recall`** retrieves across all knowledge channels: entities, notes, memories, and semantic search — ranked by the same scoring signals as the wikilink engine
+- **`memory`** stores observations with confidence decay, TTL, and lifecycle management
+
+Claude picks up where it left off.
 
 ### How It Compares to Other Approaches
 
 | | Pure Vector Search | Pure Keyword Search | Flywheel |
 |---|---|---|---|
-| "Why was this suggested?" | "Embeddings are close" | "Term frequency" | "10 + 6 + 5 + 8 + 3 = 32" |
+| "Why was this suggested?" | "Embeddings are close" | "Term frequency" | "10 + 3 + 5 + 5 + 3 + 1 = 34" |
 | Semantic wikilinks | No | No | Yes (semantic) |
 | Finds synonyms/concepts? | Yes | No | Yes (semantic search) |
 | Exact phrase matching? | Weak | Yes | Yes |
 | Same input → same output? | Not guaranteed | Always | Always |
 | Runs offline? | Often not | Yes | Yes (local embeddings) |
-| Learns your preferences? | Retraining | No | Implicit feedback loop |
+| Learns from usage? | Retraining | No | Implicit feedback loop |
+| Agent memory | No | No | Yes (brief + recall + memory) |
 
 ---
 
 ## The Flywheel Effect
 
 The name is literal. A flywheel is hard to start but once spinning, each push adds to the momentum.
+
+### Day 1: Instant Value
+
+You point Flywheel at your vault. It indexes every note, extracts entities, builds a backlink graph. First query returns in <10ms. First write auto-links three entities you would have missed. No training period. No configuration.
 
 ### Week 1: Connections Appear
 
@@ -203,6 +218,15 @@ cd flywheel-memory && npm install && npm test
 
 See [docs/PROVE-IT.md](docs/PROVE-IT.md) and [docs/TESTING.md](docs/TESTING.md).
 
+### Safe Writes
+
+Every mutation is:
+
+- **Git-committed** — one `vault_undo_last_mutation` away from reverting any change
+- **Conflict-detected** — content hash check prevents clobbering concurrent edits (SHA-256)
+- **Policy-governed** — configurable guardrails with warn/strict/off modes
+- **Precise** — auto-wikilinks have 1.0 precision in production (never inserts a wrong link)
+
 ---
 
 ## How It Compares
@@ -214,8 +238,11 @@ See [docs/PROVE-IT.md](docs/PROVE-IT.md) and [docs/TESTING.md](docs/TESTING.md).
 | Auto-wikilinks | Yes (alias resolution) | No | No | No |
 | Schema intelligence | 6 analysis modes | No | No | No |
 | Entity extraction | Auto (17 categories) | No | No | No |
+| Learns from usage | Feedback loop + suppression | No | No | No |
+| Agent memory | brief + recall + memory | No | No | No |
+| Safe writes | Git + conflict detection | No | N/A | N/A |
 | Test coverage | 2,456 tests | Unknown | Unknown | Unknown |
-| Tool count | 42 | ~10 | 0 (plugin) | ~5 |
+| Tool count | 51 | ~10 | 0 (plugin) | ~5 |
 
 ---
 
@@ -249,7 +276,7 @@ Add `.mcp.json` to your vault root:
       "command": "npx",
       "args": ["-y", "@velvetmonkey/flywheel-memory"],
       "env": {
-        "FLYWHEEL_TOOLS": "minimal"
+        "FLYWHEEL_PRESET": "minimal"
       }
     }
   }
@@ -260,26 +287,30 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Start with the `minimal` preset (13 tools, ~3,800 tokens). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
+Start with the `minimal` preset (11 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
 
 ---
 
 ## Tools Overview
 
-| Preset | Tools | ~Tokens | What you get |
-|--------|-------|---------|--------------|
-| `full` (default) | 42 | ~12,400 | Everything |
-| `minimal` | 13 | ~3,800 | Search, read, create, edit |
+| Preset | Tools | What you get |
+|--------|-------|--------------|
+| `full` (default) | 51 | Everything — graph, schema, tasks, policy, memory |
+| `minimal` | 11 | Note-taking essentials — search, read, create, edit |
+| `writer` | 14 | minimal + task management |
+| `agent` | 14 | minimal + agent memory (brief, recall, memory) |
+| `researcher` | 12 | Search + graph navigation — read-heavy exploration |
 
-Composable bundles (add to minimal or each other):
+Composable bundles (add to presets or each other):
 
-| Bundle | Tools | ~Tokens | What it adds |
-|--------|-------|---------|--------------|
-| `graph` | 6 | ~1,850 | Backlinks, orphans, hubs, shortest paths |
-| `analysis` | 8 | ~2,500 | Schema intelligence, wikilink validation |
-| `tasks` | 3 | ~925 | Task queries and mutations |
-| `health` | 7 | ~2,150 | Vault diagnostics, index management |
-| `ops` | 2 | ~625 | Git undo, policy automation |
+| Bundle | Tools | What it adds |
+|--------|-------|--------------|
+| `graph` | 7 | Backlinks, orphans, hubs, shortest paths |
+| `analysis` | 9 | Schema intelligence, wikilink validation, content similarity |
+| `tasks` | 3 | Task queries and mutations |
+| `health` | 12 | Vault diagnostics, index management, growth, config, merges |
+| `ops` | 2 | Git undo, policy automation |
+| `note-ops` | 4 | Delete, move, rename notes, merge entities |
 
 The fewer tools you load, the less context Claude needs to pick the right one. See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
 
@@ -290,7 +321,7 @@ The fewer tools you load, the less context Claude needs to pick the right one. S
 | Doc | Why read this |
 |---|---|
 | [PROVE-IT.md](docs/PROVE-IT.md) | See it working in 5 minutes |
-| [TOOLS.md](docs/TOOLS.md) | All 42 tools documented |
+| [TOOLS.md](docs/TOOLS.md) | All 51 tools documented |
 | [ALGORITHM.md](docs/ALGORITHM.md) | How the scoring works |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](docs/SETUP.md) | Full setup guide for your vault |

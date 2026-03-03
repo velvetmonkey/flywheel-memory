@@ -247,7 +247,11 @@ async function moveNotes(
 // Test Suite
 // =============================================================================
 
-describe('Suite: Multi-Generation Stress Test', () => {
+// Skip on Windows CI — this test is purely algorithmic (feedback loop stability)
+// and takes >10 min on Windows due to slow file I/O. Ubuntu run validates the same logic.
+const isWindows = process.platform === 'win32';
+
+describe.skipIf(isWindows)('Suite: Multi-Generation Stress Test', () => {
   let vault: TempVault;
   let spec: GroundTruthSpec;
   const metrics: GenerationMetrics[] = [];

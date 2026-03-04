@@ -2,7 +2,7 @@
 
 Your vault is your second brain. You don't hand it to software you can't trust.
 
-**2,198 tests | 121 test files | 47,000+ lines of test code**
+**2,456 tests | 122 test files | 47,000+ lines of test code**
 
 ---
 

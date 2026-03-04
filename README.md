@@ -10,7 +10,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](docs/TESTING.md#performance-benchmarks)
-[![Tests](https://img.shields.io/badge/tests-2,198%20passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-2,456%20passed-brightgreen.svg)](docs/TESTING.md)
 
 | | Without Flywheel | With Flywheel |
 |---|---|---|
@@ -195,7 +195,7 @@ No manual linking. No broken references. Use compounds into structure, structure
 
 ## Battle-Tested
 
-**2,198 tests. 121 test files. 47,000+ lines of test code.**
+**2,456 tests. 122 test files. 47,000+ lines of test code.**
 
 ### Performance
 
@@ -264,7 +264,7 @@ Every mutation is:
 | Learns from usage | Feedback loop + suppression | No | No | No |
 | Agent memory | brief + recall + memory | No | No | No |
 | Safe writes | Git + conflict detection | No | N/A | N/A |
-| Test coverage | 2,198 tests | Unknown | Unknown | Unknown |
+| Test coverage | 2,456 tests | Unknown | Unknown | Unknown |
 | Tool count | 51 | ~10 | 0 (plugin) | ~5 |
 
 ---
@@ -311,6 +311,8 @@ cd /path/to/your/vault && claude
 ```
 
 Start with the `minimal` preset (11 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
+
+> **Note:** Developed and tested with Claude Code. Other MCP clients may work but are untested.
 
 ---
 

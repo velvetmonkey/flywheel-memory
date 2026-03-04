@@ -113,7 +113,7 @@ Flywheel ships 51 tools. Loading all of them works, but fewer tools means Claude
 
 | Preset | Tools | ~Tokens | Best for |
 |--------|-------|---------|----------|
-| `minimal` | 13 | ~3,800 | Daily note-taking, simple queries |
+| `minimal` | 11 | ~3,800 | Daily note-taking, simple queries |
 | `minimal,graph` | 19 | ~5,650 | + backlinks, orphans, hubs, paths |
 | `minimal,graph,tasks` | 22 | ~6,575 | + task queries and mutations |
 | `minimal,graph,analysis` | 25 | ~7,500 | + schema intelligence, wikilink validation |

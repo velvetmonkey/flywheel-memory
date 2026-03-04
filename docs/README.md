@@ -56,7 +56,7 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 ```bash
 npm run build    # Build both packages
-npm test         # Run full test suite (2,198 tests)
+npm test         # Run full test suite (2,456 tests)
 npm run dev      # Watch mode
 npm run lint     # Type check
 ```
@@ -74,7 +74,7 @@ No. Flywheel runs entirely on your machine. No cloud services, no API keys (beyo
 CI benchmarks test 100,000-line file mutations and 2,500-entity indexes. The bench package can generate vaults up to 100k notes. The in-memory index builds at startup (a few seconds cold, ~100ms cached) and queries return in under 10ms.
 
 **Will it corrupt my vault?**
-2,198 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
+2,456 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
 
 **How much does it cost in tokens?**
 A typical query uses 50-200 tokens of context. Compare that to reading files directly, which can consume 2,000-250,000 tokens for the same answer.

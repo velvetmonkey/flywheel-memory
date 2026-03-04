@@ -72,7 +72,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`ops`** — git, policy (2 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
 
-**Categories (16):** `search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `note-ops`, `git`, `policy`, `memory`
+**Categories (17):** `search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `note-ops`, `git`, `policy`, `memory`
 
 ---
 

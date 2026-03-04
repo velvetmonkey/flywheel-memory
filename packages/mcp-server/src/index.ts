@@ -207,7 +207,7 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherStatus;
 //   FLYWHEEL_TOOLS=agent,tasks                # 17 tools
 //   FLYWHEEL_TOOLS=search,backlinks,append    # fine-grained categories
 //
-// Categories (16):
+// Categories (17):
 //   READ:  search, backlinks, orphans, hubs, paths,
 //          schema, structure, tasks, health, wikilinks
 //   WRITE: append, frontmatter, notes, note-ops, git, policy

@@ -164,7 +164,7 @@ export interface SuggestionConfig {
 /**
  * Scoring layers that can be individually disabled for ablation testing.
  *
- * Maps to the 11-layer scoring architecture in suggestRelatedLinks():
+ * Maps to the 13-layer scoring architecture in suggestRelatedLinks():
  * - 1a: length_filter (>25 chars)
  * - 1b: article_filter (article-like titles)
  * - 2: exact_match (verbatim token match)

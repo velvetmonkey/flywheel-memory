@@ -1,7 +1,7 @@
 /**
  * Pillar 2: Scoring Layer Isolation (Ablation Testing)
  *
- * For each of the 11 scoring layers, measures the F1 impact of disabling
+ * For each of the 13 scoring layers, measures the F1 impact of disabling
  * that layer. A layer that contributes real signal shows a measurable
  * F1 drop when removed.
  */

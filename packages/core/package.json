@@ -50,6 +50,8 @@
   "license": "Apache-2.0",
   "files": [
     "dist",
+    "!dist/**/*.js.map",
+    "!dist/**/*.d.ts.map",
     "README.md"
   ],
   "publishConfig": {

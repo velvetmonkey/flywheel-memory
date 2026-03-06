@@ -1,0 +1,363 @@
+<div align="center">
+  <img src="https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/header.png" alt="Flywheel" width="256"/>
+  <h1>Flywheel</h1>
+  <p><strong>A knowledge graph engine that reads, writes, and learns.</strong><br/>Graph intelligence. Safe writes. A feedback loop that learns from every interaction.<br/>Zero cloud. Your Obsidian vault becomes a queryable second brain.</p>
+</div>
+
+[![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
+[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
+[![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
+[![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md#performance-benchmarks)
+[![Tests](https://img.shields.io/badge/tests-2,456%20passed-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md)
+
+| | Without Flywheel | With Flywheel |
+|---|---|---|
+| "What's overdue?" | Read every file | Indexed query, <10ms |
+| "What links here?" | grep every file | Pre-indexed backlink graph |
+| "Add a meeting note" | Raw write, no linking | Write + auto-wikilink |
+| "What should I link?" | Manual or grep | Smart scoring + semantic understanding |
+| Token cost | 2,000-250,000 | 50-200 |
+
+51 tools across 17 categories. 6-line config. Zero cloud dependencies.
+
+**Try in 60 seconds:**
+
+```bash
+git clone https://github.com/velvetmonkey/flywheel-memory.git
+cd flywheel-memory/demos/carter-strategy && claude
+```
+
+Then ask: *"How much have I billed Acme Corp?"*
+
+---
+
+## See It Work
+
+![Flywheel demo](https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/demos/flywheel-demo.gif)
+
+### Read: "How much have I billed Acme Corp?"
+
+From the [carter-strategy](https://github.com/velvetmonkey/flywheel-memory/tree/main/demos/carter-strategy/) demo -- a solo consultant with 3 clients, 5 projects, and $27K in invoices.
+
+```
+❯ How much have I billed Acme Corp?
+
+● flywheel › get_backlinks
+  path: "clients/Acme Corp.md"
+  ← invoices/INV-2025-047.md
+    invoices/INV-2025-048.md
+    projects/Acme Data Migration.md
+    proposals/Acme Analytics Add-on.md
+
+● flywheel › get_note_metadata
+  path: "invoices/INV-2025-047.md"
+  ← amount: 15000, status: paid, period: November 2025
+
+● flywheel › get_note_metadata
+  path: "invoices/INV-2025-048.md"
+  ← amount: 12000, status: pending, period: December 2025
+
+┌─ RESULT ──────────────────────────────────────────────┐
+│ Acme Corp Billing: $27,000                            │
+│                                                       │
+│   Paid:    $15,000 — Acme Data Migration (Nov 2025)   │
+│   Pending: $12,000 — Acme Data Migration (Dec 2025)   │
+│                                                       │
+│ 4 tool calls · ~160 tokens · 0 files read             │
+└───────────────────────────────────────────────────────┘
+```
+
+Claude didn't read any files. It navigated the graph: backlinks to find related notes, metadata to extract the numbers.
+
+```
+Same 3 queries without Flywheel: 11,150 tokens (reading files repeatedly)
+Same 3 queries with Flywheel:       300 tokens (querying the index)
+                                     37x savings
+```
+
+### Write: Auto-wikilinks on every mutation
+
+```
+❯ Log that I finished the Acme strategy deck
+
+● flywheel › vault_add_to_section
+  path: "daily-notes/2026-01-04.md"
+  section: "Log"
+  content: "finished the [[Acme Corp]] strategy deck"
+                       ↑ auto-linked because Acme Corp.md exists
+```
+
+Try it yourself: `cd demos/carter-strategy && claude`
+
+---
+
+## What Makes Flywheel Different
+
+### 1. Hybrid Search
+
+Search "authentication" -- exact matches. Search "login security" -- same notes, plus every note about auth that never uses the word.
+
+Keyword search finds what you said. Semantic search finds what you meant. Flywheel runs both and fuses the results. Runs locally on a 23 MB model. Nothing leaves your machine.
+
+### 2. Every Suggestion Has a Receipt
+
+Ask why Flywheel suggested `[[Marcus Johnson]]`:
+
+```
+Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Feedback  Semantic  Edge
+──────────────────────────────────────────────────────────────────────────────────────────────────────
+Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
+```
+
+10 scoring dimensions, every number traceable to vault usage. Recency came from what you last wrote. Co-occurrence came from notes you've written before. Hub came from how many other notes link there. The score learns as you use it.
+
+See [docs/ALGORITHM.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/ALGORITHM.md) for how scoring works.
+
+### 3. The Self-Improving Loop
+
+**Every interaction is a graph-building operation — and a learning signal.**
+
+When you write a note, entities are auto-linked — creating edges. When you keep a `[[link]]` through 10 edits, that edge gains weight. When two entities appear together in 20 notes, they build a co-occurrence bond (NPMI — a measure of how strongly two things associate beyond chance). When you read frequently, recent entities surface in suggestions. When you remove a bad link, the system learns what to stop suggesting (it tracks accept/reject ratios per entity and gradually suppresses low-quality matches).
+
+This is the uncontested gap — no competitor has a feedback loop that learns from knowledge management actions.
+
+We prove it: every auto-linked entity is correct (100% precision), and the system finds 72–82% of links it should (recall) — stable over 50 generations of noisy feedback. See [Graph Quality](#graph-quality) below.
+
+Result: a queryable graph. "What's the shortest path between AlphaFold and my docking experiment?" Backlinks, forward links, hubs, orphans, shortest paths — every query leverages hundreds of accumulated connections. Denser graphs make every query more precise.
+
+### 4. Semantic Understanding
+
+Content about "deployment automation" suggests `[[CI/CD]]` — no keyword match needed. Entity-level embeddings mean your knowledge graph understands meaning, not just words.
+
+- **Semantic bridges**: Discovers high-value missing links between conceptually related but unlinked notes
+- **Semantic clusters**: Groups notes by meaning instead of folder structure
+- **Semantic wikilinks**: Suggestions based on what you *mean*, not just what you typed
+
+Build once with `init_semantic`. Everything upgrades automatically. Configurable model via `EMBEDDING_MODEL` env var.
+
+### 5. Agentic Memory
+
+The system remembers context across sessions. No more starting from scratch.
+
+- **`brief`** assembles startup context: recent sessions, active entities, stored memories, corrections, vault pulse — token-budgeted
+- **`recall`** retrieves across all knowledge channels: entities, notes, memories, and semantic search — ranked by the same scoring signals as the wikilink engine
+- **`memory`** stores observations with confidence decay, TTL, and lifecycle management
+
+Claude picks up where it left off.
+
+### How It Compares to Other Approaches
+
+| | Pure Vector Search | Pure Keyword Search | Flywheel |
+|---|---|---|---|
+| "Why was this suggested?" | "Embeddings are close" | "Term frequency" | "10 + 3 + 5 + 5 + 3 + 1 = 34" |
+| Semantic wikilinks | No | No | Yes (semantic) |
+| Finds synonyms/concepts? | Yes | No | Yes (semantic search) |
+| Exact phrase matching? | Weak | Yes | Yes |
+| Same input → same output? | Not guaranteed | Always | Always |
+| Runs offline? | Often not | Yes | Yes (local embeddings) |
+| Learns from usage? | Retraining | No | Implicit feedback loop |
+| Agent memory | No | No | Yes (brief + recall + memory) |
+
+---
+
+## The Flywheel Effect
+
+The name is literal. A flywheel is hard to start but once spinning, each push adds to the momentum.
+
+### Day 1: Instant Value
+
+You point Flywheel at your vault. It indexes every note, extracts entities, builds a backlink graph. First query returns in <10ms. First write auto-links three entities you would have missed. No training period. No configuration.
+
+### Week 1: Connections Appear
+
+You have 30 disconnected notes. Auto-wikilinks create 47 connections on your first day of writing through Flywheel. You stop reading files and start querying a graph.
+
+### Month 1: Intelligence Emerges
+
+Hub notes surface. "Sarah Mitchell" has 23 backlinks -- she's clearly important. When you write about a project, her name appears in suggestions because co-occurrence tracking knows she's relevant. You didn't configure this. The vault structure revealed it.
+
+### Month 3: The Graph Is Self-Sustaining
+
+Every query leverages hundreds of accumulated connections. New content auto-links to the right places. You stop thinking about organization.
+
+### What This Looks Like
+
+```
+Input:  "Met with Sarah about the data migration"
+Output: "Met with [[Sarah Mitchell]] about the [[Acme Data Migration]]"
+```
+
+No manual linking. No broken references. Use compounds into structure, structure compounds into intelligence.
+
+---
+
+## Battle-Tested
+
+**2,456 tests. 122 test files. 47,000+ lines of test code.**
+
+### Performance
+
+| Operation | Threshold | Typical |
+|---|---|---|
+| 1k-line mutation | <100ms | ~15ms |
+| 10k-line mutation | <500ms | -- |
+| 100k-line mutation | <2s | -- |
+
+- **100 parallel writes, zero corruption** -- concurrent mutations verified under stress
+- **Property-based fuzzing** -- fast-check with 700+ randomized scenarios
+- **SQL injection prevention** -- parameterized queries throughout
+- **Path traversal blocking** -- all file paths validated against vault root
+- **Deterministic output** -- every tool produces the same result given the same input
+
+Every demo vault is a real test fixture. If it works in the README, it passes in CI.
+
+```bash
+git clone https://github.com/velvetmonkey/flywheel-memory.git
+cd flywheel-memory && npm install && npm test
+```
+
+See [docs/PROVE-IT.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/PROVE-IT.md) and [docs/TESTING.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md).
+
+### Graph Quality
+
+The feedback loop claim isn't asserted — it's measured. We build a test vault with known-correct links, strip them out, and measure how well the engine rediscovers them. CI locks these baselines and fails if quality regresses.
+
+| Mode | Precision | Recall | F1 |
+|---|---|---|---|
+| Conservative | 100% | 71.7% | 83.5% |
+| Balanced | 100% | 80.0% | 88.9% |
+| Aggressive | 100% | 81.7% | 89.9% |
+
+**Precision** = "of the links suggested, how many were correct?" (100% = never suggests a wrong link). **Recall** = "of the links that should exist, how many were found?" **F1** = the balance of both — higher is better.
+
+Measured against a 96-note/61-entity ground truth vault.
+
+- **50-generation stress test** — suggest → accept/reject (85% correct, 15% noise) → mutate vault → rebuild index → repeat. F1 holds steady — the feedback loop doesn't degrade under realistic noise.
+- **7 vault archetypes** — hub-and-spoke, hierarchical, dense-mesh, sparse-orphan, bridge-network, small-world, chaos
+- **13 scoring layers** individually ablated, contribution measured
+- **Regression gate** — CI fails if any mode's F1/precision/recall drops >5pp from baseline
+
+See [docs/TESTING.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md) for full methodology. Auto-generated report: [docs/QUALITY_REPORT.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/QUALITY_REPORT.md).
+
+### Safe Writes
+
+Every mutation is:
+
+- **Git-committed** — one `vault_undo_last_mutation` away from reverting any change
+- **Conflict-detected** — content hash check prevents clobbering concurrent edits (SHA-256)
+- **Policy-governed** — configurable guardrails with warn/strict/off modes
+- **Precise** — auto-wikilinks have 1.0 precision in production (never inserts a wrong link)
+
+---
+
+## How It Compares
+
+| Feature | Flywheel Memory | Obsidian CLI (MCP) | Smart Connections | Khoj |
+|---------|----------------|-------------------|-------------------|------|
+| Backlink graph | Bidirectional | No | No | No |
+| Hybrid search | Local (keyword + semantic) | No | Cloud only | Cloud |
+| Auto-wikilinks | Yes (alias resolution) | No | No | No |
+| Schema intelligence | 6 analysis modes | No | No | No |
+| Entity extraction | Auto (18 categories) | No | No | No |
+| Learns from usage | Feedback loop + suppression | No | No | No |
+| Agent memory | brief + recall + memory | No | No | No |
+| Safe writes | Git + conflict detection | No | N/A | N/A |
+| Test coverage | 2,456 tests | Unknown | Unknown | Unknown |
+| Tool count | 51 | ~10 | 0 (plugin) | ~5 |
+
+---
+
+## Try It
+
+### Step 1: Try a demo
+
+```bash
+git clone https://github.com/velvetmonkey/flywheel-memory.git
+cd flywheel-memory/demos/carter-strategy && claude
+```
+
+| Demo | You are | Ask this |
+|------|---------|----------|
+| [carter-strategy](https://github.com/velvetmonkey/flywheel-memory/tree/main/demos/carter-strategy/) | Solo consultant | "How much have I billed Acme Corp?" |
+| [artemis-rocket](https://github.com/velvetmonkey/flywheel-memory/tree/main/demos/artemis-rocket/) | Rocket engineer | "What's blocking propulsion?" |
+| [startup-ops](https://github.com/velvetmonkey/flywheel-memory/tree/main/demos/startup-ops/) | SaaS co-founder | "What's our MRR?" |
+| [nexus-lab](https://github.com/velvetmonkey/flywheel-memory/tree/main/demos/nexus-lab/) | PhD researcher | "How does AlphaFold connect to my experiment?" |
+| [solo-operator](https://github.com/velvetmonkey/flywheel-memory/tree/main/demos/solo-operator/) | Content creator | "How's revenue this month?" |
+| [support-desk](https://github.com/velvetmonkey/flywheel-memory/tree/main/demos/support-desk/) | Support agent | "What's Sarah Chen's situation?" |
+| [zettelkasten](https://github.com/velvetmonkey/flywheel-memory/tree/main/demos/zettelkasten/) | Zettelkasten student | "How does spaced repetition connect to active recall?" |
+
+### Step 2: Your own vault
+
+Add `.mcp.json` to your vault root:
+
+```json
+{
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "env": {
+        "FLYWHEEL_PRESET": "minimal"
+      }
+    }
+  }
+}
+```
+
+```bash
+cd /path/to/your/vault && claude
+```
+
+Start with the `minimal` preset (11 tools). Add bundles as needed. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all options.
+
+> **Note:** Developed and tested with Claude Code. Other MCP clients may work but are untested.
+
+---
+
+## Tools Overview
+
+| Preset | Tools | What you get |
+|--------|-------|--------------|
+| `full` (default) | 51 | Everything — graph, schema, tasks, policy, memory |
+| `minimal` | 11 | Note-taking essentials — search, read, create, edit |
+| `writer` | 14 | minimal + task management |
+| `agent` | 14 | minimal + agent memory (brief, recall, memory) |
+| `researcher` | 12 | Search + graph navigation — read-heavy exploration |
+
+Composable bundles (add to presets or each other):
+
+| Bundle | Tools | What it adds |
+|--------|-------|--------------|
+| `graph` | 7 | Backlinks, orphans, hubs, shortest paths |
+| `analysis` | 9 | Schema intelligence, wikilink validation, content similarity |
+| `tasks` | 3 | Task queries and mutations |
+| `health` | 12 | Vault diagnostics, index management, growth, config, merges |
+| `ops` | 2 | Git undo, policy automation |
+| `note-ops` | 4 | Delete, move, rename notes, merge entities |
+
+The fewer tools you load, the less context Claude needs to pick the right one. See [docs/TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) for the full reference.
+
+---
+
+## Documentation
+
+| Doc | Why read this |
+|---|---|
+| [PROVE-IT.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/PROVE-IT.md) | See it working in 5 minutes |
+| [TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) | All 51 tools documented |
+| [ALGORITHM.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/ALGORITHM.md) | How the scoring works |
+| [COOKBOOK.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/COOKBOOK.md) | Example prompts by use case |
+| [SETUP.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/SETUP.md) | Full setup guide for your vault |
+| [CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) | Env vars, presets, custom tool sets |
+| [ARCHITECTURE.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/ARCHITECTURE.md) | Index strategy, graph, auto-wikilinks |
+| [TESTING.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md) | Test methodology and benchmarks |
+| [TROUBLESHOOTING.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TROUBLESHOOTING.md) | Error recovery and diagnostics |
+| [VISION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/VISION.md) | Where this is going |
+
+---
+
+## License
+
+Apache 2.0 — see [LICENSE](https://github.com/velvetmonkey/flywheel-memory/blob/main/LICENSE) for details.

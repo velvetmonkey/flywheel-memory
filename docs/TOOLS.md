@@ -141,8 +141,21 @@ Unified task query tool. Use `path` to scope to a single note, `has_due_date` to
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `vault_toggle_task` | Toggle a task checkbox between checked and unchecked | `path`, `task` (text to match), `section`, `commit` |
-| `vault_add_task` | Add a new task to a section. Supports auto-wikilinks, validation, and guardrails. | `path`, `section`, `task`, `position`, `completed`, `commit` |
+| `vault_toggle_task` | Toggle a task checkbox between checked and unchecked | `path`, `task` (text to match), `section`, `dry_run`, `commit` |
+| `vault_add_task` | Add a new task to a section. Supports auto-wikilinks, validation, and guardrails. | `path`, `section`, `task`, `position`, `completed`, `dry_run`, `commit` |
+
+---
+
+## Shared Write Parameters
+
+These parameters are available on all write/mutation tools unless noted otherwise.
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `dry_run` | `false` | Preview changes without writing to disk. Returns what would change. |
+| `commit` | `true` | Auto-commit the change to git after writing. |
+| `agent_id` | — | Agent identifier for multi-agent tracking. (Content mutations + tasks only) |
+| `session_id` | — | Session identifier for activity tracking. (Content mutations + tasks only) |
 
 ---
 
@@ -150,11 +163,11 @@ Unified task query tool. Use `path` to scope to a single note, `has_due_date` to
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `vault_add_to_section` | Add content to a specific section. Set `create_if_missing=true` to auto-create the note from template. Set `bumpHeadings=false` to disable automatic heading level adjustment in inserted content. | `path`, `section`, `content`, `create_if_missing`, `position`, `format` (plain/bullet/task/numbered/timestamp-bullet), `bumpHeadings` (default: true), `commit` |
-| `vault_remove_from_section` | Remove content matching a pattern from a section | `path`, `section`, `pattern`, `mode` (first/last/all), `useRegex`, `commit` |
-| `vault_replace_in_section` | Replace content matching a pattern in a section. Error responses include a structured `diagnostic` field with closest matches, per-line analysis, and actionable suggestions when the replacement target isn't found. | `path`, `section`, `search`, `replacement`, `mode` (first/last/all), `useRegex`, `commit` |
+| `vault_add_to_section` | Add content to a specific section. Set `create_if_missing=true` to auto-create the note from template. Set `bumpHeadings=false` to disable automatic heading level adjustment in inserted content. | `path`, `section`, `content`, `create_if_missing`, `position`, `format` (plain/bullet/task/numbered/timestamp-bullet), `bumpHeadings` (default: true), `dry_run`, `commit` |
+| `vault_remove_from_section` | Remove content matching a pattern from a section | `path`, `section`, `pattern`, `mode` (first/last/all), `useRegex`, `dry_run`, `commit` |
+| `vault_replace_in_section` | Replace content matching a pattern in a section. Error responses include a structured `diagnostic` field with closest matches, per-line analysis, and actionable suggestions when the replacement target isn't found. | `path`, `section`, `search`, `replacement`, `mode` (first/last/all), `useRegex`, `dry_run`, `commit` |
 
-**Shared features:** Auto-wikilinks on every write, content validation and normalization, guardrail modes (warn/strict/off), list nesting preservation, outgoing link suggestions.
+**Shared features:** Auto-wikilinks on every write, content validation and normalization, guardrail modes (warn/strict/off), list nesting preservation, outgoing link suggestions, `skipWikilinks`, `suggestOutgoingLinks`.
 
 ---
 
@@ -164,7 +177,7 @@ Unified task query tool. Use `path` to scope to a single note, `has_due_date` to
 
 Update frontmatter fields in a note (merge with existing). Set `only_if_missing=true` to only add fields that don't already exist.
 
-**Key parameters:** `path`, `frontmatter` (JSON object), `only_if_missing`, `commit`
+**Key parameters:** `path`, `frontmatter` (JSON object), `only_if_missing`, `dry_run`, `commit`
 
 ---
 
@@ -172,7 +185,7 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `vault_create_note` | Create a new note with optional frontmatter and content. Includes preflight checks for similar notes and alias collisions. When embeddings are available, also checks for semantically similar existing notes and warns about potential duplicates. | `path`, `content`, `frontmatter`, `overwrite`, `commit` |
+| `vault_create_note` | Create a new note with optional frontmatter and content. Includes preflight checks for similar notes and alias collisions. When embeddings are available, also checks for semantically similar existing notes and warns about potential duplicates. | `path`, `content`, `frontmatter`, `template`, `overwrite`, `dry_run`, `commit` |
 
 ---
 
@@ -180,10 +193,10 @@ Update frontmatter fields in a note (merge with existing). Set `only_if_missing=
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `vault_delete_note` | Delete a note. Shows backlink warnings before deletion. | `path`, `confirm` (required), `commit` |
-| `vault_move_note` | Move a note to a new location. Updates all backlinks across the vault. | `oldPath`, `newPath`, `updateBacklinks`, `commit` |
-| `vault_rename_note` | Rename a note in place. Updates all backlinks across the vault. | `path`, `newTitle`, `updateBacklinks`, `commit` |
-| `merge_entities` | Merge two entities: moves/renames the source note into the target, updates all backlinks, and merges aliases. | `source`, `target`, `commit` |
+| `vault_delete_note` | Delete a note. Shows backlink warnings before deletion. | `path`, `confirm` (required), `dry_run`, `commit` |
+| `vault_move_note` | Move a note to a new location. Updates all backlinks across the vault. | `oldPath`, `newPath`, `updateBacklinks`, `dry_run`, `commit` |
+| `vault_rename_note` | Rename a note in place. Updates all backlinks across the vault. | `path`, `newTitle`, `updateBacklinks`, `dry_run`, `commit` |
+| `merge_entities` | Merge two entities: moves/renames the source note into the target, updates all backlinks, and merges aliases. | `source`, `target`, `dry_run`, `commit` |
 
 ---
 

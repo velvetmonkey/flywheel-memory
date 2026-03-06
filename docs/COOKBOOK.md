@@ -270,5 +270,5 @@ Manage vault-wide changes.
 - **Use sections.** Flywheel works best when notes have clear heading structure. `vault_add_to_section` targets specific sections, avoiding accidental overwrites.
 - **Let auto-wikilinks work.** When writing through Flywheel, entity mentions are linked automatically. Write naturally -- don't add `[[brackets]]` yourself.
 - **Check before deleting.** `vault_delete_note` shows backlink warnings before deletion. If a note has backlinks, consider moving or renaming instead.
-- **Dry-run bulk changes.** `rename_field` and `migrate_field_values` default to dry-run mode. Always preview before committing.
+- **Dry-run any write.** All write tools accept `dry_run: true` to preview changes without modifying files. Bulk tools (`rename_field`, `migrate_field_values`) default to dry-run mode.
 - **Build the semantic index once** — `init_semantic` now builds both note embeddings (for hybrid search) and entity embeddings (for semantic wikilink scoring). Takes ~2-3 minutes for 500 entities. After that, wikilink suggestions gain semantic understanding, and new analyses unlock: `semantic_clusters`, `semantic_bridges`, `semantic_links`.

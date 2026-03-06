@@ -248,6 +248,7 @@ Every mutation is:
 - **Git-committed** — one `vault_undo_last_mutation` away from reverting any change
 - **Conflict-detected** — content hash check prevents clobbering concurrent edits (SHA-256)
 - **Policy-governed** — configurable guardrails with warn/strict/off modes
+- **Dry-run preview** — every write tool supports `dry_run: true` to see exactly what would change before touching disk
 - **Precise** — auto-wikilinks have 1.0 precision in production (never inserts a wrong link)
 
 ---

@@ -332,8 +332,11 @@ export async function buildEmbeddingsIndex(
       const embedding = await embedText(content);
       const buf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
       upsert.run(file.path, buf, hash, activeModelConfig.id, Date.now());
-    } catch {
+    } catch (err) {
       progress.skipped++;
+      if (progress.skipped <= 3) {
+        console.error(`[Semantic] Failed to embed ${file.path}: ${err instanceof Error ? err.message : err}`);
+      }
     }
 
     if (onProgress) onProgress(progress);

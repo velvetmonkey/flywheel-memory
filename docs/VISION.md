@@ -42,6 +42,14 @@ The name is literal. Every interaction makes the next one better.
 
 A vault that has been worked with Flywheel for a month has a fundamentally different character than one that hasn't -- more connected, more navigable, more useful with every query.
 
+### Density Drives Quality
+
+The relationship between graph density and suggestion quality isn't linear — it's a virtuous cycle. More auto-wikilinks create more edges. More edges generate more co-occurrence data (NPMI scores). More co-occurrence data sharpens suggestions. Sharper suggestions mean higher acceptance rates. Higher acceptance rates build more edges.
+
+The feedback loop is also temporal. Early suggestions may seem noisy — Flywheel links entities you don't think are relevant. But each one, kept or rejected, trains the next round. Kept links accumulate co-occurrence signal. Rejected links shift the Beta-Binomial posterior toward suppression. Six months in, the noisy suggestions have either proven their worth (they're now part of answer paths you traverse daily) or they've been suppressed (the system learned to stop suggesting them).
+
+This is why we measure F1 over 50 generations of simulated use: to prove the loop converges rather than degrades. It does. Precision holds at 100%. Recall climbs as density increases.
+
 See the main [README](../README.md) for the expanded flywheel diagram.
 
 ---

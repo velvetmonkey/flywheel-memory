@@ -221,6 +221,21 @@ A link that survives 10 edits (weight ~4.0) earns the maximum +4 boost. This cre
 
 ---
 
+## Why Marginal Suggestions Matter
+
+A suggestion scoring 11 (just above the balanced threshold of 10) looks marginal. But if accepted, it:
+
+1. Creates an edge that future co-occurrence calculations traverse
+2. Adds a backlink that hub detection considers
+3. Generates implicit feedback data when the link survives future edits
+4. Becomes part of answer paths for queries that don't exist yet
+
+The scoring engine optimizes for *current* relevance. The graph benefits from *accumulated* structure. A link that barely clears the threshold today may become a high-traffic edge tomorrow — not because the score was wrong, but because the context around it grew.
+
+This is why precision matters more than aggressive recall. A wrong link pollutes the graph. A marginal-but-correct link compounds silently.
+
+---
+
 ## Strictness Modes
 
 Three modes control the precision/recall trade-off:

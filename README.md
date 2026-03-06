@@ -115,17 +115,22 @@ Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +
 
 See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
-### 3. The Self-Improving Loop
+### 3. The Contextual Cloud
 
-**Every interaction is a graph-building operation — and a learning signal.**
+**Every auto-wikilink is a bet on future relevance — and the house edge is 100% precision.**
 
-When you write a note, entities are auto-linked — creating edges. When you keep a `[[link]]` through 10 edits, that edge gains weight. When two entities appear together in 20 notes, they build a co-occurrence bond (NPMI — a measure of how strongly two things associate beyond chance). When you read frequently, recent entities surface in suggestions. When you remove a bad link, the system learns what to stop suggesting (it tracks accept/reject ratios per entity and gradually suppresses low-quality matches).
+When Flywheel links `[[Sarah Mitchell]]` in your meeting note, it's not just tagging a name. It's adding an edge to a graph that every future query traverses. Three months from now, when you ask "what happened with the Mitchell account?", that link — which seemed obvious at the time — is part of the answer path.
 
-This is the uncontested gap — no competitor has a feedback loop that learns from knowledge management actions.
+This is the contextual cloud: a web of connections that builds around your content, one write at a time. Each link adds context that isn't visible now but becomes navigational structure later. The note you write today about a deployment problem links to `[[CI/CD]]` and `[[staging environment]]`. Next quarter, when you're debugging a similar issue, those links surface the history you'd forgotten existed.
 
-We prove it: every auto-linked entity is correct (100% precision), and the system finds 72–82% of links it should (recall) — stable over 50 generations of noisy feedback. See [Graph Quality](#graph-quality) below.
+The loop compounds:
+- **Write** → entities are auto-linked, creating edges
+- **Keep** a link through 10 edits → that edge gains weight
+- **Co-occurrence** → two entities in 20 notes build a statistical bond (NPMI)
+- **Remove** a bad link → the system learns what to suppress (Beta-Binomial posterior, threshold at 35%)
+- **Query** → denser graphs return more precise answers, which drives more use
 
-Result: a queryable graph. "What's the shortest path between AlphaFold and my docking experiment?" Backlinks, forward links, hubs, orphans, shortest paths — every query leverages hundreds of accumulated connections. Denser graphs make every query more precise.
+We prove the loop holds: 100% precision (never suggests a wrong link) and 72–82% recall, stable over 50 generations of noisy feedback. Denser graphs don't just store more — they score better. More edges mean more co-occurrence signal, more feedback data, and tighter suppression thresholds. The F1 score is a direct function of graph density. See [Graph Quality](#graph-quality) below.
 
 ### 4. Semantic Understanding
 
@@ -181,6 +186,12 @@ Hub notes surface. "Sarah Mitchell" has 23 backlinks -- she's clearly important.
 ### Month 3: The Graph Is Self-Sustaining
 
 Every query leverages hundreds of accumulated connections. New content auto-links to the right places. You stop thinking about organization.
+
+### Looking Backwards
+
+The real test isn't "did the right link appear today?" It's: "six months from now, can I trace how a decision was made?" Every auto-wikilink is a breadcrumb. The contextual cloud around a project grows silently — meeting notes link to people, people link to decisions, decisions link to outcomes. You never planned this structure. It emerged from use.
+
+Suggestions that seemed marginal at the time — linking a throwaway standup note to `[[Q3 Roadmap]]` — become the connective tissue that makes "show me everything related to Q3 planning" actually work.
 
 ### What This Looks Like
 

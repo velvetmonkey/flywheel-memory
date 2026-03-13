@@ -30,6 +30,11 @@ function isPeriodicNote(notePath: string): boolean {
   const folder = notePath.split('/')[0]?.toLowerCase() || '';
   return patterns.some(p => p.test(nameWithoutExt)) || periodicFolders.includes(folder);
 }
+function isTemplatePath(notePath: string): boolean {
+  const folder = notePath.split('/')[0]?.toLowerCase() || '';
+  return folder === 'templates' || folder === 'template';
+}
+
 /** Build a set of note paths that should be excluded from analysis based on config. */
 function getExcludedPaths(index: VaultIndex, config: FlywheelConfig): Set<string> {
   const excluded = new Set<string>();
@@ -202,7 +207,9 @@ export function registerGraphAnalysisTools(
             };
           }
 
-          const result = getStaleNotes(index, days, min_backlinks).filter(n => !excludedPaths.has(n.path)).slice(0, limit);
+          const result = getStaleNotes(index, days, min_backlinks).filter(n =>
+            !excludedPaths.has(n.path) && !isPeriodicNote(n.path) && !isTemplatePath(n.path)
+          ).slice(0, limit);
 
           return {
             content: [{ type: 'text' as const, text: JSON.stringify({

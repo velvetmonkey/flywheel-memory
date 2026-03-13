@@ -262,6 +262,7 @@ export function registerWikilinkTools(
       structuredContent: SuggestWikilinksOutput;
     }> => {
       const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
+      requireIndex();
       const index = getIndex();
       const allMatches = findEntityMatches(text, index.entities);
       const matches = allMatches.slice(offset, offset + limit);
@@ -380,11 +381,19 @@ export function registerWikilinkTools(
 
   const ValidateLinksOutputSchema = {
     scope: z.string().describe('What was validated (note path or "all")'),
-    total_links: z.coerce.number().describe('Total number of links checked'),
-    valid_links: z.coerce.number().describe('Number of valid links'),
-    broken_links: z.coerce.number().describe('Total number of broken links'),
+    total_links: z.coerce.number().optional().describe('Total number of links checked'),
+    valid_links: z.coerce.number().optional().describe('Number of valid links'),
+    broken_links: z.coerce.number().optional().describe('Total number of broken links'),
     returned_count: z.coerce.number().describe('Number of broken links returned (may be limited)'),
-    broken: z.array(BrokenLinkSchema).describe('List of broken links'),
+    broken: z.array(BrokenLinkSchema).optional().describe('List of broken links'),
+    total_dead_targets: z.coerce.number().optional().describe('Number of unique dead link targets (group_by_target mode)'),
+    total_broken_links: z.coerce.number().optional().describe('Total broken links across all targets (group_by_target mode)'),
+    targets: z.array(z.object({
+      target: z.string(),
+      mention_count: z.coerce.number(),
+      sources: z.array(z.string()),
+      suggestion: z.string().optional(),
+    })).optional().describe('Dead link targets grouped by frequency (group_by_target mode)'),
   };
 
   type BrokenLink = {
@@ -449,6 +458,7 @@ export function registerWikilinkTools(
       structuredContent: ValidateLinksOutput | Record<string, unknown>;
     }> => {
       const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
+      requireIndex();
       const index = getIndex();
       const allBroken: BrokenLink[] = [];
       let totalLinks = 0;
@@ -581,6 +591,7 @@ export function registerWikilinkTools(
     async ({ min_frequency, limit: requestedLimit }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
     }> => {
+      requireIndex();
       const index = getIndex();
       const limit = Math.min(requestedLimit ?? 20, 100);
       const minFreq = min_frequency ?? 2;
@@ -644,6 +655,7 @@ export function registerWikilinkTools(
     async ({ min_cooccurrence, limit: requestedLimit }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
     }> => {
+      requireIndex();
       const index = getIndex();
       const coocIndex = getCooccurrenceIndex();
       const limit = Math.min(requestedLimit ?? 20, 100);

@@ -512,7 +512,7 @@ export function registerWikilinkTools(
 
       // Group by target mode: aggregate and rank by frequency
       if (group_by_target) {
-        const targetMap = new Map<string, { count: number; sources: Set<string>; suggestion?: string }>();
+        const targetMap = new Map<string, { count: number; sources: Set<string>; suggestion?: string; displayTarget: string }>();
         for (const broken of allBroken) {
           const key = broken.target.toLowerCase();
           const existing = targetMap.get(key);
@@ -525,13 +525,14 @@ export function registerWikilinkTools(
               count: 1,
               sources: new Set([broken.source]),
               suggestion: broken.suggestion,
+              displayTarget: broken.target,
             });
           }
         }
 
-        const targets = Array.from(targetMap.entries())
-          .map(([target, data]) => ({
-            target,
+        const targets = Array.from(targetMap.values())
+          .map((data) => ({
+            target: data.displayTarget,
             mention_count: data.count,
             sources: Array.from(data.sources),
             ...(data.suggestion ? { suggestion: data.suggestion } : {}),

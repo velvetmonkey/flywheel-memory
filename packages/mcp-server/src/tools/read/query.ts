@@ -359,24 +359,26 @@ export function registerQueryTools(
           try {
             const semanticResults = await semanticSearch(query, limit);
 
-            // RRF merge of FTS5, semantic, entity, and edge-weight results
-            const fts5Ranked = fts5Results.map(r => ({ path: r.path, title: r.title, snippet: r.snippet }));
-            const semanticRanked = semanticResults.map(r => ({ path: r.path, title: r.title }));
-            const entityRankedList = entityResults.map(r => ({ path: r.path, title: r.name }));
-            const rrfLists: Array<Array<{ path: string; title?: string }>> = [fts5Ranked, semanticRanked, entityRankedList];
-            if (edgeRanked.length > 0) rrfLists.push(edgeRanked);
-            const rrfScores = reciprocalRankFusion(...rrfLists);
+            // Normalize paths to deduplicate across sources
+            const normalizePath = (p: string) => p.replace(/\\/g, '/').replace(/\/+/g, '/');
 
-            // Build merged result set
+            // RRF merge of FTS5, semantic, entity, and edge-weight results
+            const fts5Ranked = fts5Results.map(r => ({ path: normalizePath(r.path), title: r.title, snippet: r.snippet }));
+            const semanticRanked = semanticResults.map(r => ({ path: normalizePath(r.path), title: r.title }));
+            const entityRankedList = entityResults.map(r => ({ path: normalizePath(r.path), title: r.name }));
+            const edgeRankedNorm = edgeRanked.map(r => ({ path: normalizePath(r.path), title: r.title }));
+            const rrfLists: Array<Array<{ path: string; title?: string }>> = [fts5Ranked, semanticRanked, entityRankedList];
+            if (edgeRankedNorm.length > 0) rrfLists.push(edgeRankedNorm);
+            const rrfScores = reciprocalRankFusion(...rrfLists);
             const allPaths = new Set([
-              ...fts5Results.map(r => r.path),
-              ...semanticResults.map(r => r.path),
-              ...entityResults.map(r => r.path),
-              ...edgeRanked.map(r => r.path),
+              ...fts5Results.map(r => normalizePath(r.path)),
+              ...semanticResults.map(r => normalizePath(r.path)),
+              ...entityResults.map(r => normalizePath(r.path)),
+              ...edgeRanked.map(r => normalizePath(r.path)),
             ]);
-            const fts5Map = new Map(fts5Results.map(r => [r.path, r]));
-            const semanticMap = new Map(semanticResults.map(r => [r.path, r]));
-            const entityMap = new Map(entityResults.map(r => [r.path, r]));
+            const fts5Map = new Map(fts5Results.map(r => [normalizePath(r.path), r]));
+            const semanticMap = new Map(semanticResults.map(r => [normalizePath(r.path), r]));
+            const entityMap = new Map(entityResults.map(r => [normalizePath(r.path), r]));
 
             const merged = Array.from(allPaths).map(p => ({
               path: p,
@@ -405,10 +407,12 @@ export function registerQueryTools(
 
         // Non-hybrid: merge FTS5 + entity results
         if (entityResults.length > 0) {
-          const fts5Map = new Map(fts5Results.map(r => [r.path, r]));
-          const entityRanked = entityResults.filter(r => !fts5Map.has(r.path));
+          const normalizePath = (p: string) => p.replace(/\\/g, '/').replace(/\/+/g, '/');
+          const fts5Map = new Map(fts5Results.map(r => [normalizePath(r.path), r]));
+          const entityNormMap = new Map(entityResults.map(r => [normalizePath(r.path), r]));
+          const entityRanked = entityResults.filter(r => !fts5Map.has(normalizePath(r.path)));
           const merged = [
-            ...fts5Results.map(r => ({ path: r.path, title: r.title, snippet: r.snippet, in_entity: fts5Map.has(r.path) && entityResults.some(e => e.path === r.path) })),
+            ...fts5Results.map(r => ({ path: r.path, title: r.title, snippet: r.snippet, in_entity: entityNormMap.has(normalizePath(r.path)) })),
             ...entityRanked.map(r => ({ path: r.path, title: r.name, snippet: undefined as string | undefined, in_entity: true })),
           ];
           return { content: [{ type: 'text' as const, text: JSON.stringify({

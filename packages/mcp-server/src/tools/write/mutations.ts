@@ -22,7 +22,7 @@ import {
   runValidationPipeline,
   type GuardrailMode,
 } from '../../core/write/validator.js';
-import { maybeApplyWikilinks, suggestRelatedLinks, getEntityIndexStats, getWriteStateDb } from '../../core/write/wikilinks.js';
+import { maybeApplyWikilinks, suggestRelatedLinks, getWriteStateDb } from '../../core/write/wikilinks.js';
 import { trackWikilinkApplications } from '../../core/write/wikilinkFeedback.js';
 import {
   withVaultFile,
@@ -203,14 +203,6 @@ export function registerMutationTools(
             }
           }
 
-          // DEBUG: Capture entity index state for troubleshooting
-          const _debug = {
-            entityCount: getEntityIndexStats().totalEntities,
-            indexReady: getEntityIndexStats().ready,
-            skipWikilinks,
-            wikilinkInfo: wikilinkInfo || 'none',
-          };
-
           // 3. Suggest outgoing links (enabled by default)
           let suggestInfo: string | undefined;
           if (suggestOutgoingLinks && !skipWikilinks && processedContent.length >= 100) {
@@ -245,7 +237,6 @@ export function registerMutationTools(
             updatedContent,
             message: `Added content to section "${ctx.sectionBoundary!.name}" in ${notePath}${createdInfo}`,
             preview,
-            _debug,  // Temporary debug field for production troubleshooting
             warnings: validationResult.inputWarnings.length > 0 ? validationResult.inputWarnings : undefined,
             outputIssues: validationResult.outputIssues.length > 0 ? validationResult.outputIssues : undefined,
             normalizationChanges: validationResult.normalizationChanges.length > 0 ? validationResult.normalizationChanges : undefined,

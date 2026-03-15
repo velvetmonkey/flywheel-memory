@@ -184,6 +184,15 @@ Every query leverages hundreds of accumulated connections. New content auto-link
 
 ### What This Looks Like
 
+```mermaid
+graph LR
+    W[Write] --> A[Auto-link]
+    A --> D[Denser Graph]
+    D --> B[Better Queries]
+    B --> M[More Use]
+    M --> W
+```
+
 ```
 Input:  "Met with Sarah about the data migration"
 Output: "Met with [[Sarah Mitchell]] about the [[Acme Data Migration]]"
@@ -236,7 +245,7 @@ Measured against a 96-note/61-entity ground truth vault.
 
 - **50-generation stress test** — suggest → accept/reject (85% correct, 15% noise) → mutate vault → rebuild index → repeat. F1 holds steady — the feedback loop doesn't degrade under realistic noise.
 - **7 vault archetypes** — hub-and-spoke, hierarchical, dense-mesh, sparse-orphan, bridge-network, small-world, chaos
-- **13 scoring layers** individually ablated, contribution measured
+- **13 pipeline stages** (10 scoring dimensions + filters + suppression) individually ablated, contribution measured
 - **Regression gate** — CI fails if any mode's F1/precision/recall drops >5pp from baseline
 
 See [docs/TESTING.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md) for full methodology. Auto-generated report: [docs/QUALITY_REPORT.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/QUALITY_REPORT.md).

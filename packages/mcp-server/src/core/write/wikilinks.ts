@@ -394,8 +394,6 @@ function sortEntitiesByPriority(entities: Entity[], notePath?: string): Entity[]
  */
 export function processWikilinks(content: string, notePath?: string, existingContent?: string): WikilinkResult {
   if (!isEntityIndexReady() || !entityIndex) {
-    // eslint-disable-next-line no-console
-    console.error('[Flywheel:DEBUG] Entity index not ready, entities:', entityIndex?._metadata?.total_entities ?? 0);
     return {
       content,
       linksAdded: 0,
@@ -404,8 +402,6 @@ export function processWikilinks(content: string, notePath?: string, existingCon
   }
 
   let entities = getAllEntities(entityIndex);
-  // eslint-disable-next-line no-console
-  console.error(`[Flywheel:DEBUG] Processing wikilinks with ${entities.length} entities`);
 
   // Filter out suppressed entities (from wikilink feedback, with folder context)
   if (moduleStateDb) {

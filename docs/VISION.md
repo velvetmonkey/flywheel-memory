@@ -50,7 +50,7 @@ The feedback loop is also temporal. Early suggestions may seem noisy — Flywhee
 
 This is why we measure F1 over 50 generations of simulated use: to prove the loop converges rather than degrades. It does. Precision holds at 100%. Recall climbs as density increases.
 
-See the main [README](../README.md) for the expanded flywheel diagram.
+See the main [README](../packages/mcp-server/README.md#the-flywheel-effect) for the flywheel cycle diagram.
 
 ---
 

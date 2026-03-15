@@ -1,9 +1,9 @@
 {
   "suite": "cross-vault-learning-report",
-  "timestamp": "2026-03-15T11:04:05.803Z",
-  "duration_ms": 237928,
+  "timestamp": "2026-03-15T13:55:02.161Z",
+  "duration_ms": 229257,
   "summary": {
-    "primary_final_f1": 0.889,
+    "primary_final_f1": 0.879,
     "small-world_final_f1": 0.571,
     "hub-and-spoke_final_f1": 0.703,
     "temporal-star_final_f1": 0.866
@@ -316,7 +316,7 @@
           "f1": 0.889,
           "precision": 1,
           "recall": 0.8,
-          "suppressionCount": 13,
+          "suppressionCount": 11,
           "byTier": {
             "1": {
               "precision": 1,
@@ -343,7 +343,7 @@
           "f1": 0.889,
           "precision": 1,
           "recall": 0.8,
-          "suppressionCount": 12,
+          "suppressionCount": 11,
           "byTier": {
             "1": {
               "precision": 1,
@@ -370,7 +370,7 @@
           "f1": 0.889,
           "precision": 1,
           "recall": 0.8,
-          "suppressionCount": 14,
+          "suppressionCount": 11,
           "byTier": {
             "1": {
               "precision": 1,
@@ -397,7 +397,7 @@
           "f1": 0.889,
           "precision": 1,
           "recall": 0.8,
-          "suppressionCount": 13,
+          "suppressionCount": 11,
           "byTier": {
             "1": {
               "precision": 1,
@@ -424,7 +424,7 @@
           "f1": 0.889,
           "precision": 1,
           "recall": 0.8,
-          "suppressionCount": 13,
+          "suppressionCount": 12,
           "byTier": {
             "1": {
               "precision": 1,
@@ -451,7 +451,7 @@
           "f1": 0.889,
           "precision": 1,
           "recall": 0.8,
-          "suppressionCount": 15,
+          "suppressionCount": 13,
           "byTier": {
             "1": {
               "precision": 1,
@@ -478,7 +478,7 @@
           "f1": 0.889,
           "precision": 1,
           "recall": 0.8,
-          "suppressionCount": 13,
+          "suppressionCount": 15,
           "byTier": {
             "1": {
               "precision": 1,
@@ -502,9 +502,9 @@
         },
         {
           "round": 18,
-          "f1": 0.889,
+          "f1": 0.879,
           "precision": 1,
-          "recall": 0.8,
+          "recall": 0.783,
           "suppressionCount": 13,
           "byTier": {
             "1": {
@@ -521,17 +521,17 @@
             },
             "3": {
               "precision": 1,
-              "recall": 0.2,
-              "f1": 0.33333333333333337,
+              "recall": 0.13333333333333333,
+              "f1": 0.23529411764705882,
               "count": 15
             }
           }
         },
         {
           "round": 19,
-          "f1": 0.889,
+          "f1": 0.879,
           "precision": 1,
-          "recall": 0.8,
+          "recall": 0.783,
           "suppressionCount": 14,
           "byTier": {
             "1": {
@@ -548,8 +548,8 @@
             },
             "3": {
               "precision": 1,
-              "recall": 0.2,
-              "f1": 0.33333333333333337,
+              "recall": 0.13333333333333333,
+              "f1": 0.23529411764705882,
               "count": 15
             }
           }

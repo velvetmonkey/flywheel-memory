@@ -812,6 +812,42 @@ export function loadEntityEmbeddingsToMemory(): void {
 }
 
 /**
+ * Batch-load note embeddings for a set of paths (for MMR diversity).
+ * Returns only embeddings that exist in the database.
+ */
+export function loadNoteEmbeddingsForPaths(paths: string[]): Map<string, Float32Array> {
+  const result = new Map<string, Float32Array>();
+  if (!db || paths.length === 0) return result;
+
+  try {
+    const stmt = db.prepare('SELECT path, embedding FROM note_embeddings WHERE path = ?');
+    for (const p of paths) {
+      const row = stmt.get(p) as EmbeddingRow | undefined;
+      if (row) {
+        const embedding = new Float32Array(
+          row.embedding.buffer,
+          row.embedding.byteOffset,
+          row.embedding.byteLength / Float32Array.BYTES_PER_ELEMENT
+        );
+        result.set(p, embedding);
+      }
+    }
+  } catch {
+    // Table might not exist
+  }
+
+  return result;
+}
+
+/**
+ * Get a preloaded entity embedding from the in-memory map (for MMR diversity).
+ * Returns null if not loaded.
+ */
+export function getEntityEmbedding(entityName: string): Float32Array | null {
+  return entityEmbeddingsMap.get(entityName) ?? null;
+}
+
+/**
  * Get the number of entity embeddings in the database.
  */
 export function getEntityEmbeddingsCount(): number {

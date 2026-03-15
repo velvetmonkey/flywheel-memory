@@ -15,8 +15,10 @@ import {
   buildEmbeddingsIndex,
   hasEmbeddingsIndex,
   reciprocalRankFusion,
+  loadNoteEmbeddingsForPaths,
   type ScoredNote,
 } from './embeddings.js';
+import { selectByMmr, type MmrCandidate } from './mmr.js';
 
 export interface SimilarNote {
   path: string;
@@ -223,9 +225,11 @@ export async function findHybridSimilarNotes(
   options: {
     limit?: number;
     excludeLinked?: boolean;
+    diversity?: number;
   } = {}
 ): Promise<SimilarNote[]> {
   const limit = options.limit ?? 10;
+  const diversity = options.diversity ?? 0.7;
 
   // Get BM25 results
   const bm25Results = findSimilarNotes(db, vaultPath, index, sourcePath, {
@@ -268,5 +272,25 @@ export async function findHybridSimilarNotes(
   });
 
   merged.sort((a, b) => b.score - a.score);
-  return merged.slice(0, limit);
+
+  // Apply MMR diversity filtering instead of simple truncation
+  if (merged.length > limit) {
+    const noteEmbeddings = loadNoteEmbeddingsForPaths(merged.map(m => m.path));
+    const mmrCandidates: MmrCandidate[] = merged.map(m => ({
+      id: m.path,
+      score: m.score,
+      embedding: noteEmbeddings.get(m.path) ?? null,
+    }));
+
+    const mmrSelected = selectByMmr(mmrCandidates, limit, diversity);
+    const selectedPaths = new Set(mmrSelected.map(m => m.id));
+    const mergedMap = new Map(merged.map(m => [m.path, m]));
+
+    // Preserve MMR ordering
+    return mmrSelected
+      .map(m => mergedMap.get(m.id)!)
+      .filter(Boolean);
+  }
+
+  return merged;
 }

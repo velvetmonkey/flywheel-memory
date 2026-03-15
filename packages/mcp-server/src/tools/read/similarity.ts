@@ -31,9 +31,10 @@ export function registerSimilarityTools(
         path: z.string().describe('Path to the source note (relative to vault root, e.g. "projects/alpha.md")'),
         limit: z.number().optional().describe('Maximum number of similar notes to return (default: 10)'),
         exclude_linked: z.boolean().optional().describe('Exclude notes already linked to/from the source note (default: true)'),
+        diversity: z.number().min(0).max(1).optional().describe('Relevance vs diversity tradeoff (0=max diversity, 1=pure relevance, default: 0.7)'),
       },
     },
-    async ({ path, limit, exclude_linked }) => {
+    async ({ path, limit, exclude_linked, diversity }) => {
       const index = getIndex();
       const vaultPath = getVaultPath();
       const stateDb = getStateDb();
@@ -57,6 +58,7 @@ export function registerSimilarityTools(
       const opts = {
         limit: limit ?? 10,
         excludeLinked: exclude_linked ?? true,
+        diversity: diversity ?? 0.7,
       };
 
       const useHybrid = hasEmbeddingsIndex();

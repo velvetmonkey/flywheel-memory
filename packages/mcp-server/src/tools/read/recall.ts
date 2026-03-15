@@ -18,8 +18,10 @@ import { getRecencyBoost, loadRecencyFromStateDb, type RecencyIndex } from '../.
 import { getCooccurrenceBoost, type CooccurrenceIndex } from '../../core/shared/cooccurrence.js';
 import { getEntityEdgeWeightMap } from '../../core/write/edgeWeights.js';
 import { getAllFeedbackBoosts } from '../../core/write/wikilinkFeedback.js';
-import { findSemanticallySimilarEntities, hasEntityEmbeddingsIndex, embedTextCached } from '../../core/read/embeddings.js';
+import { findSemanticallySimilarEntities, hasEntityEmbeddingsIndex, hasEmbeddingsIndex, embedTextCached, getEntityEmbedding, loadNoteEmbeddingsForPaths } from '../../core/read/embeddings.js';
 import { tokenize, stem } from '../../core/shared/stemmer.js';
+import { selectByMmr, type MmrCandidate } from '../../core/read/mmr.js';
+import { extractBestSnippets } from '../../core/read/snippets.js';
 
 // =============================================================================
 // Types
@@ -95,6 +97,8 @@ async function performRecall(
     focus?: 'entities' | 'notes' | 'memories' | 'all';
     entity?: string;
     max_tokens?: number;
+    diversity?: number;
+    vaultPath?: string;
   } = {},
 ): Promise<RecallResult[]> {
   const {
@@ -102,6 +106,8 @@ async function performRecall(
     focus = 'all',
     entity,
     max_tokens,
+    diversity = 0.7,
+    vaultPath,
   } = options;
 
   const results: RecallResult[] = [];
@@ -241,14 +247,68 @@ async function performRecall(
     return true;
   });
 
-  // Truncate to max_results
-  const truncated = deduped.slice(0, max_results);
+  // ─── MMR diversity filtering ───
+  let selected: RecallResult[];
+  if (hasEmbeddingsIndex() && deduped.length > max_results) {
+    // Build MMR candidates with embeddings
+    const notePaths = deduped.filter(r => r.type === 'note').map(r => r.id);
+    const noteEmbeddings = loadNoteEmbeddingsForPaths(notePaths);
+
+    // Pre-compute query embedding for memory results
+    let queryEmbedding: Float32Array | null = null;
+
+    const mmrCandidates: MmrCandidate[] = [];
+    for (const r of deduped) {
+      let embedding: Float32Array | null = null;
+      if (r.type === 'entity') {
+        embedding = getEntityEmbedding(r.id);
+      } else if (r.type === 'note') {
+        embedding = noteEmbeddings.get(r.id) ?? null;
+      } else if (r.type === 'memory') {
+        try {
+          if (!queryEmbedding) queryEmbedding = await embedTextCached(query);
+          embedding = await embedTextCached(r.content);
+        } catch { /* embedding failure is non-fatal */ }
+      }
+      mmrCandidates.push({ id: `${r.type}:${r.id}`, score: r.score, embedding });
+    }
+
+    const mmrSelected = selectByMmr(mmrCandidates, max_results, diversity);
+    const selectedIds = new Set(mmrSelected.map(m => m.id));
+    selected = deduped.filter(r => selectedIds.has(`${r.type}:${r.id}`));
+
+    // Preserve MMR ordering
+    const orderMap = new Map(mmrSelected.map((m, i) => [m.id, i]));
+    selected.sort((a, b) => (orderMap.get(`${a.type}:${a.id}`) ?? 0) - (orderMap.get(`${b.type}:${b.id}`) ?? 0));
+  } else {
+    selected = deduped.slice(0, max_results);
+  }
+
+  // ─── Snippet extraction for note results ───
+  if (vaultPath) {
+    const queryTokens = tokenize(query).map(t => t.toLowerCase());
+    let queryEmb: Float32Array | null = null;
+    if (hasEmbeddingsIndex()) {
+      try { queryEmb = await embedTextCached(query); } catch { /* non-fatal */ }
+    }
+
+    for (const r of selected) {
+      if (r.type !== 'note') continue;
+      try {
+        const absPath = vaultPath + '/' + r.id;
+        const snippets = await extractBestSnippets(absPath, queryEmb, queryTokens);
+        if (snippets.length > 0 && snippets[0].text.length > 0) {
+          r.content = snippets[0].text;
+        }
+      } catch { /* snippet failure is non-fatal */ }
+    }
+  }
 
   // Token budgeting: if max_tokens specified, truncate content
   if (max_tokens) {
     let tokenBudget = max_tokens;
     const budgeted: RecallResult[] = [];
-    for (const r of truncated) {
+    for (const r of selected) {
       const estimatedTokens = Math.ceil(r.content.length / 4);
       if (tokenBudget - estimatedTokens < 0 && budgeted.length > 0) break;
       tokenBudget -= estimatedTokens;
@@ -257,7 +317,7 @@ async function performRecall(
     return budgeted;
   }
 
-  return truncated;
+  return selected;
 }
 
 // =============================================================================
@@ -267,6 +327,7 @@ async function performRecall(
 export function registerRecallTools(
   server: McpServer,
   getStateDb: () => StateDb | null,
+  getVaultPath?: () => string,
 ): void {
   server.tool(
     'recall',
@@ -277,6 +338,7 @@ export function registerRecallTools(
       focus: z.enum(['entities', 'notes', 'memories', 'all']).optional().describe('Limit search to specific type (default: all)'),
       entity: z.string().optional().describe('Filter memories by entity association'),
       max_tokens: z.number().optional().describe('Token budget for response (truncates lower-ranked results)'),
+      diversity: z.number().min(0).max(1).optional().describe('Relevance vs diversity tradeoff (0=max diversity, 1=pure relevance, default: 0.7)'),
     },
     async (args) => {
       const stateDb = getStateDb();
@@ -292,6 +354,8 @@ export function registerRecallTools(
         focus: args.focus,
         entity: args.entity,
         max_tokens: args.max_tokens,
+        diversity: args.diversity,
+        vaultPath: getVaultPath?.(),
       });
 
       // Group by type for structured output

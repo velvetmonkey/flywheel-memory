@@ -26,7 +26,7 @@ The flywheel effect: **use → structure → intelligence → more use**. Each i
 |---|---|---|
 | "What's overdue?" | Read every file | Indexed query, <10ms |
 | "What links here?" | grep every file | Pre-indexed backlink graph |
-| "Add a meeting note" | Raw write, no linking | Write + auto-wikilink |
+| "Add a meeting note" | Raw write, no linking | Structured write + auto-wikilink |
 | "What should I link?" | Manual or grep | Smart scoring + semantic understanding |
 | Token cost | 2,000-250,000 | 50-200 |
 

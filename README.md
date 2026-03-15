@@ -87,13 +87,13 @@ Same query via Flywheel:       ~160 tokens (backlinks + metadata, 0 files read)
 ### Write: Auto-wikilinks on every mutation
 
 ```
-❯ Log that Stacy Thompson is starting on the Beta Corp Dashboard and reviewed the API Security Checklist
+❯ Log that Stacy Thompson reviewed the API Security Checklist for Acme before the Beta Corp Dashboard kickoff
 
 ● flywheel › vault_add_to_section
   path: "daily-notes/2026-01-04.md"
   section: "Log"
-  content: "[[Stacy Thompson]] is starting on the [[Beta Corp Dashboard]] and reviewed the [[API Security Checklist]]"
-            ↑ 3 entities auto-linked across team/, projects/, and knowledge/
+  content: "[[Stacy Thompson]] reviewed the [[API Security Checklist]] for [[Acme Corp|Acme]] before the [[Beta Corp Dashboard]] kickoff"
+            ↑ 4 entities auto-linked — "Acme" resolved to Acme Corp via alias
 ```
 
 Try it yourself: `cd demos/carter-strategy && claude`

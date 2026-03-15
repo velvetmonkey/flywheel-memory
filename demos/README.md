@@ -42,7 +42,7 @@ Then start asking questions about the business.
 Ask a follow-up question? Claude reads the files again. Run an agentic workflow with 50 queries? That's 50 file reads.
 
 ```
-Without Flywheel (3 related queries):
+Grep approach (3 related queries):
 ┌──────────────────────────────────────────────────────────┐
 │ Query 1: "What's blocking propulsion?"                   │
 │   Read: propulsion.md (2,500 tokens)                     │
@@ -64,7 +64,7 @@ Without Flywheel (3 related queries):
 │ Session total: 11,150 tokens                             │
 └──────────────────────────────────────────────────────────┘
 
-With Flywheel (same 3 queries):
+Flywheel (same 3 queries):
 ┌──────────────────────────────────────────────────────────┐
 │ Query 1: mcp__flywheel__get_note_metadata (×3)           │
 │   → frontmatter only: ~120 tokens                        │
@@ -75,7 +75,7 @@ With Flywheel (same 3 queries):
 │ Query 3: mcp__flywheel__search_notes + metadata          │
 │   → index results: ~100 tokens                           │
 │                                                          │
-│ Session total: ~300 tokens (37x savings)                 │
+│ Session total: ~300 tokens (5-10x vs grep)               │
 └──────────────────────────────────────────────────────────┘
 ```
 

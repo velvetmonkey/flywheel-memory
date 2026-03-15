@@ -12,13 +12,13 @@
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md#performance-benchmarks)
 [![Tests](https://img.shields.io/badge/tests-2,456%20passed-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md)
 
-| | Without Flywheel | With Flywheel |
+| | Grep approach | Flywheel |
 |---|---|---|
-| "What's overdue?" | Grep + read matching files | Indexed query, <10ms |
-| "What links here?" | Not possible without manual grep | Pre-indexed backlink graph |
+| "What's overdue?" | Grep + read matches (~500-2,000 tokens) | Indexed metadata query (~50-200 tokens) |
+| "What links here?" | Grep for note name (flat list, no graph) | Pre-indexed backlink graph (<10ms) |
 | "Add a meeting note" | Raw write, no linking | Structured write + auto-wikilink |
-| "What should I link?" | Not possible | Smart scoring + semantic understanding |
-| Token cost per query | 500-5,000+ (grep + reads) | 50-200 |
+| "What should I link?" | Not possible | 10-dimension scoring + semantic search |
+| Hubs, orphans, paths? | Not possible | Pre-indexed graph analysis |
 
 51 tools across 17 categories. 6-line config. Zero cloud dependencies.
 
@@ -70,8 +70,8 @@ From the [carter-strategy](https://github.com/velvetmonkey/flywheel-memory/tree/
 Claude didn't read any files. It navigated the graph: backlinks to find related notes, metadata to extract the numbers.
 
 ```
-Same 3 queries without Flywheel: ~2,500 tokens (grep + read matching files)
-Same 3 queries with Flywheel:       300 tokens (querying the index)
+Same query via grep:     ~800-2,000 tokens (search for "Acme", read matching files)
+Same query via Flywheel:       ~160 tokens (backlinks + metadata, 0 files read)
 ```
 
 The bigger difference isn't just tokens — it's that Flywheel answers structural questions (backlinks, hubs, shortest paths, schema analysis) that file-level access can't answer at all.

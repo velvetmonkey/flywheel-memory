@@ -77,7 +77,7 @@ CI benchmarks test 100,000-line file mutations and 2,500-entity indexes. The ben
 2,456 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
 
 **How much does it cost in tokens?**
-A typical query uses 50-200 tokens of context. Compare that to reading files directly, which can consume 2,000-250,000 tokens for the same answer.
+A typical query uses 50-200 tokens of context. Compare that to grep-and-read, which typically costs ~800-2,000 tokens for text-searchable questions. The bigger win is structural queries (backlinks, hubs, paths) that grep can't answer at all.
 
 **Does it work with Claude Desktop?**
 Yes. See [CONFIGURATION.md](CONFIGURATION.md) for Claude Desktop setup instructions.

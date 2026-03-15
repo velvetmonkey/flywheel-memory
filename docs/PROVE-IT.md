@@ -70,7 +70,7 @@ Watch the tool trace:
 
 **What happened:** Claude didn't read any files. It navigated the knowledge graph -- backlinks to find related notes, metadata to extract the numbers. 4 tool calls. ~160 tokens. 0 files opened.
 
-The same question without Flywheel would require reading every markdown file in the vault to find two invoice amounts.
+Without Flywheel, Claude would grep for "Acme" and read matching files — slower and more expensive, but workable for text queries. The real win shows in structural queries like "what are the hub notes?" or "what's the shortest path between X and Y?" — those need a graph, not file reads.
 
 ---
 

@@ -35,8 +35,6 @@ Then ask: *"How much have I billed Acme Corp?"*
 
 ## See It Work
 
-![Flywheel demo](https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/demos/flywheel-demo.gif)
-
 ### Read: "How much have I billed Acme Corp?"
 
 From the [carter-strategy](https://github.com/velvetmonkey/flywheel-memory/tree/main/demos/carter-strategy/) demo -- a solo consultant with 3 clients, 5 projects, and $27K in invoices.

@@ -42,37 +42,42 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
 ```
 ❯ How much have I billed Acme Corp?
 
-● flywheel › get_backlinks
-  path: "clients/Acme Corp.md"
-  ← invoices/INV-2025-047.md
-    invoices/INV-2025-048.md
-    projects/Acme Data Migration.md
-    proposals/Acme Analytics Add-on.md
+● flywheel › search
+  query: "Acme Corp"
+  → clients/Acme Corp.md, invoices/INV-2025-047.md,
+    invoices/INV-2025-048.md, projects/Acme Data Migration.md
 
-● flywheel › get_note_metadata
-  path: "invoices/INV-2025-047.md"
+● flywheel › search
+  query: "Acme Corp", scope: "entities"
+  → Acme Corp (organization, 4 backlinks)
+
+● read_file("clients/Acme Corp.md")
+  ← total_billed: 156000, rate: $300/hr, status: active
+
+● read_file("invoices/INV-2025-047.md")
   ← amount: 15000, status: paid, period: November 2025
 
-● flywheel › get_note_metadata
-  path: "invoices/INV-2025-048.md"
+● read_file("invoices/INV-2025-048.md")
   ← amount: 12000, status: pending, period: December 2025
 
 ┌─ RESULT ──────────────────────────────────────────────┐
-│ Acme Corp Billing: $27,000                            │
+│ Acme Corp: $156K total billed                         │
 │                                                       │
 │   Paid:    $15,000 — Acme Data Migration (Nov 2025)   │
 │   Pending: $12,000 — Acme Data Migration (Dec 2025)   │
 │                                                       │
-│ 4 tool calls · ~160 tokens · 0 files read             │
+│ Also: $35K pending proposal (Analytics Add-on)        │
 └───────────────────────────────────────────────────────┘
 ```
 
-Claude didn't read any files. It navigated the graph: backlinks to find related notes, metadata to extract the numbers.
+Flywheel's search found all related notes in one call -- client file, invoices, projects, proposals. Claude read the files it needed to extract the numbers. No grepping, no guessing paths.
 
 ```
-Same query via grep:     ~800-2,000 tokens (search for "Acme", read matching files)
-Same query via Flywheel:       ~160 tokens (backlinks + metadata, 0 files read)
+Same query via grep:     ~800-2,000 tokens (grep "Acme", scan matching files)
+Same query via Flywheel:      ~500 tokens (indexed search + targeted reads)
 ```
+
+> Claude's exact tool path varies between runs. Sometimes it uses graph tools (`get_backlinks`, `get_note_metadata`) instead of file reads -- the answer is the same either way.
 
 ### Write: Auto-wikilinks on every mutation
 

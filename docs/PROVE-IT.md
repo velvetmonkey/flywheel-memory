@@ -49,28 +49,27 @@ Ask Claude:
 
 > How much have I billed Acme Corp?
 
-Watch the tool trace:
+Watch the tool trace (Claude's exact path varies between runs):
 
 ```
-● flywheel › get_backlinks
-  path: "clients/Acme Corp.md"
-  ← invoices/INV-2025-047.md
-    invoices/INV-2025-048.md
-    projects/Acme Data Migration.md
-    proposals/Acme Analytics Add-on.md
+● flywheel › search
+  query: "Acme Corp"
+  → clients/Acme Corp.md, invoices/INV-2025-047.md,
+    invoices/INV-2025-048.md, projects/Acme Data Migration.md
 
-● flywheel › get_note_metadata
-  path: "invoices/INV-2025-047.md"
+● read_file("clients/Acme Corp.md")
+  ← total_billed: 156000, rate: $300/hr, status: active
+
+● read_file("invoices/INV-2025-047.md")
   ← amount: 15000, status: paid
 
-● flywheel › get_note_metadata
-  path: "invoices/INV-2025-048.md"
+● read_file("invoices/INV-2025-048.md")
   ← amount: 12000, status: pending
 ```
 
-**What happened:** Claude didn't read any files. It navigated the knowledge graph -- backlinks to find related notes, metadata to extract the numbers. 4 tool calls. ~160 tokens. 0 files opened.
+**What happened:** Flywheel's indexed search found all Acme-related notes in one call -- no grepping through files. Claude read the ones it needed for billing details. Some runs use graph tools (`get_backlinks`, `get_note_metadata`) instead of file reads -- the answer is the same either way.
 
-Without Flywheel, Claude would grep for "Acme" and read matching files — slower and more expensive, but workable for text queries. The real win shows in structural queries like "what are the hub notes?" or "what's the shortest path between X and Y?" — those need a graph, not file reads.
+Without Flywheel, Claude would grep for "Acme" and scan matching files. The real win shows in structural queries like "what are the hub notes?" or "what's the shortest path between X and Y?" — those need a graph, not file reads.
 
 ---
 
@@ -139,18 +138,25 @@ Ask Claude:
 > How does the AlphaFold paper connect to my docking experiment?
 
 ```
+● flywheel › search
+  query: "AlphaFold"
+  → literature/Jumper2021-AlphaFold.md, experiments/Experiment-2024-10-28.md
+
+● flywheel › search
+  query: "docking experiment"
+  → experiments/Experiment-2024-11-22.md
+
 ● flywheel › get_forward_links
   path: "literature/Jumper2021-AlphaFold.md"
   → [[Transformer Architecture]], [[Structure-Based Drug Design]]
 
-● flywheel › get_backlinks
-  path: "literature/Jumper2021-AlphaFold.md"
-  → experiments/Experiment-2024-10-28.md (AlphaFold EGFR)
-  → experiments/Experiment-2024-11-22.md (docking)
+● flywheel › get_forward_links
+  path: "experiments/Experiment-2024-11-22.md"
+  → [[Experiment-2024-10-28]], [[AMBER Force Field]], [[Drug-Target Prediction]]
 
-● flywheel › get_note_metadata
-  path: "experiments/Experiment-2024-10-28.md"
-  → status: completed, pLDDT: 94.2, RMSD: 0.8A
+● flywheel › get_section_content
+  path: "experiments/Experiment-2024-10-28.md", section: "Results"
+  → pLDDT 94.2, RMSD 0.8A vs PDB 1M17
 ```
 
 **Connection path (3 hops):**
@@ -166,7 +172,6 @@ Ready to point Flywheel at your own vault? See the [full setup guide](SETUP.md) 
 
 - MCP config for Claude Code and Claude Desktop
 - Tool preset recommendations
-- CLAUDE.md persona file setup
 - Semantic search enablement
 
 Quick version:

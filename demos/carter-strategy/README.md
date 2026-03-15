@@ -56,37 +56,41 @@ Ask Claude:
 
 ## How it works
 
-### Client revenue -- backlink traversal + frontmatter aggregation
+> Claude's exact tool path varies between runs. These traces show representative sessions.
+
+### Client revenue -- search + targeted reads
 
 ```
 You: "How much have I billed Acme Corp?"
 
-● flywheel › get_backlinks
-  path: "clients/Acme Corp.md"
-  ← invoices/INV-2025-047.md
-    invoices/INV-2025-048.md
-    projects/Acme Data Migration.md
-    proposals/Acme Analytics Add-on.md
+● flywheel › search
+  query: "Acme Corp"
+  → clients/Acme Corp.md, invoices/INV-2025-047.md,
+    invoices/INV-2025-048.md, projects/Acme Data Migration.md
+
+● flywheel › search
+  query: "Acme Corp", scope: "entities"
+  → Acme Corp (organization, clients/Acme Corp.md)
 
 ┌─ CLAUDE THINKS ───────────────────────────────────────┐
-│ Backlinks found 2 invoices. Pull frontmatter from     │
-│ each to get amounts and payment status.                │
+│ Found the client file and 2 invoices. Read them to    │
+│ get billing totals and payment status.                 │
 └───────────────────────────────────────────────────────┘
 
-● flywheel › get_note_metadata
-  path: "invoices/INV-2025-047.md"
-  ← { amount: 15000, status: "paid", client: "Acme Corp" }
+● read_file("clients/Acme Corp.md")
+  ← total_billed: 156000, rate: $300/hr, status: active
 
-● flywheel › get_note_metadata
-  path: "invoices/INV-2025-048.md"
-  ← { amount: 12000, status: "pending", client: "Acme Corp" }
+● read_file("invoices/INV-2025-047.md")
+  ← { amount: 15000, status: "paid", period: "November 2025" }
+
+● read_file("invoices/INV-2025-048.md")
+  ← { amount: 12000, status: "pending", period: "December 2025" }
 
 ┌─ RESULT ──────────────────────────────────────────────┐
-│ Acme Corp billing: $27,000 total                      │
-│   Paid:    $15,000  (INV-2025-047, Nov 2025)          │
-│   Pending: $12,000  (INV-2025-048, due Jan 15 2026)   │
-│                                                        │
-│ 4 tool calls, ~160 tokens read                         │
+│ Acme Corp: $156K total billed                          │
+│   Paid:    $15,000  (INV-2025-047, Nov 2025)           │
+│   Pending: $12,000  (INV-2025-048, due Jan 15 2026)    │
+│   Also: $35K pending proposal (Analytics Add-on)       │
 └───────────────────────────────────────────────────────┘
 ```
 
@@ -117,31 +121,31 @@ You: "Log that Stacy Thompson is starting on the Beta Corp Dashboard and reviewe
 └───────────────────────────────────────────────────────┘
 ```
 
-### Staffing gap -- graph query across team and projects
+### Staffing gap -- search across team and projects
 
 ```
 You: "Who could help with the Beta Corp Dashboard?"
 
-● flywheel › get_note_metadata
-  path: "projects/Beta Corp Dashboard.md"
-  ← { skills_needed: ["React", "Dashboard", "Data Visualization"],
-      staffing: "understaffed" }
+● flywheel › search
+  query: "Beta Corp Dashboard"
+  → projects/Beta Corp Dashboard.md
 
-● flywheel › search_notes
-  query: { type: "person" }
-  ← team/Stacy Thompson.md
+● read_file("projects/Beta Corp Dashboard.md")
+  ← skills_needed: React, Dashboard, Data Visualization
+     staffing: understaffed
 
-● flywheel › get_note_metadata
-  path: "team/Stacy Thompson.md"
-  ← { skills: ["React", "TypeScript", "UX Design"], utilization: 40 }
+● flywheel › search
+  query: "skills React", scope: "content"
+  → team/Stacy Thompson.md
+
+● read_file("team/Stacy Thompson.md")
+  ← skills: React, TypeScript, UX Design; utilization: 40%
 
 ┌─ RESULT ──────────────────────────────────────────────┐
 │ Stacy Thompson is a strong fit:                        │
 │   Skills match: React, UX Design                       │
 │   Current utilization: 40% (24 hrs/week available)     │
 │   Previous work: TechStart MVP Build, GlobalBank       │
-│                                                        │
-│ 3 tool calls, ~120 tokens read                         │
 └───────────────────────────────────────────────────────┘
 ```
 

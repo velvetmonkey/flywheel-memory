@@ -128,23 +128,25 @@ Flywheel checks forward links from each `literature/` note into `permanent/`. Bo
 
 ## How It Works
 
-### Worked Example 1: Concept connection -- graph traversal
+> Claude's exact tool path varies between runs. These traces show representative sessions.
+
+### Worked Example 1: Concept connection -- search + read
 
 ```
 You: "How does Spaced Repetition relate to Active Recall?"
 
-● flywheel › get_backlinks
-  path: "permanent/Spaced Repetition.md"
-  ← permanent/Active Recall.md
-    permanent/Testing Effect.md
-    permanent/Spacing Effect.md
-    literature/Make It Stick.md
-    projects/Learning System Design.md
+● flywheel › search
+  query: "Spaced Repetition Active Recall"
+  → permanent/Spaced Repetition.md, permanent/Active Recall.md,
+    permanent/Testing Effect.md, permanent/Desirable Difficulties.md
 
-● flywheel › get_forward_links
-  path: "permanent/Spaced Repetition.md"
-  → [[Spacing Effect]], [[Active Recall]], [[Memory Consolidation]],
-    [[Desirable Difficulties]], [[Metacognition]]
+● read_file("permanent/Spaced Repetition.md")
+  ← links to: Active Recall, Spacing Effect, Memory Consolidation,
+     Desirable Difficulties, Metacognition
+
+● read_file("permanent/Active Recall.md")
+  ← links to: Spaced Repetition, Testing Effect, Metacognition,
+     Elaborative Interrogation
 
 ┌─ RESULT ──────────────────────────────────────────────┐
 │ Bidirectional relationship:                            │
@@ -159,8 +161,6 @@ You: "How does Spaced Repetition relate to Active Recall?"
 │                                                        │
 │ Shared connections: Testing Effect, Desirable          │
 │ Difficulties, Make It Stick, Learning System Design    │
-│                                                        │
-│ 2 tool calls, ~80 tokens read                          │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -186,7 +186,6 @@ You: "Find the hub concepts"
 │ 4. Metacognition          10 links (5 in, 5 out)      │
 │ 5. Schema Theory           9 links (4 in, 5 out)      │
 │                                                        │
-│ 1 tool call, ~60 tokens                                │
 └────────────────────────────────────────────────────────┘
 ```
 

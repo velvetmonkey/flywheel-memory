@@ -66,31 +66,37 @@ Ask Claude:
 
 When you ask Claude questions or request changes, here's the flow:
 
-### Trace a citation chain (graph traversal)
+> Claude's exact tool path varies between runs. These traces show representative sessions.
+
+### Trace a citation chain (search + graph traversal)
 
 ```
 You: "How does AlphaFold connect to my docking experiment?"
+
+  ● flywheel › search
+    query: "AlphaFold"
+    → literature/Jumper2021-AlphaFold.md,
+      experiments/Experiment-2024-10-28.md
+
+  ● flywheel › search
+    query: "docking experiment"
+    → experiments/Experiment-2024-11-22.md
 
   ● flywheel › get_forward_links
     path: "literature/Jumper2021-AlphaFold.md"
     → [[Transformer Architecture]], [[Structure-Based Drug Design]]
 
-  ● flywheel › get_backlinks
-    path: "literature/Jumper2021-AlphaFold.md"
-    → experiments/Experiment-2024-10-28.md (AlphaFold EGFR)
-    → experiments/Experiment-2024-11-22.md (docking)
+  ● flywheel › get_forward_links
+    path: "experiments/Experiment-2024-11-22.md"
+    → [[Experiment-2024-10-28]], [[AMBER Force Field]], [[Drug-Target Prediction]]
 
-  ● flywheel › get_note_metadata
-    path: "experiments/Experiment-2024-10-28.md"
-    → status: completed, title: AlphaFold EGFR prediction
-    → related_experiments: [Experiment-2024-11-22]
+  ● flywheel › get_section_content
+    path: "experiments/Experiment-2024-10-28.md", section: "Results"
+    → pLDDT 94.2, RMSD 0.8A vs PDB 1M17
 
-  ┌─ CLAUDE THINKS ─────────────────────────────────────┐
-  │ Chain: Jumper2021 (AlphaFold paper) informs         │
-  │ Experiment-2024-10-28 (EGFR structure, pLDDT 94.2), │
-  │ which feeds into Experiment-2024-11-22 (docking).    │
-  │ ML predictions from Exp-11-20 also feed docking.    │
-  └─────────────────────────────────────────────────────┘
+  ● flywheel › get_section_content
+    path: "experiments/Experiment-2024-11-22.md", section: "Results"
+    → Compound_472: -11.2 kcal/mol
 
   ┌─ RESULT ────────────────────────────────────────────┐
   │ Connection path (3 hops):                           │
@@ -105,20 +111,18 @@ You: "How does AlphaFold connect to my docking experiment?"
   │ against crystal structure, then used as the          │
   │ receptor for virtual screening of 10 candidates.    │
   └─────────────────────────────────────────────────────┘
-
-  ~120 tokens (vs ~9,600 reading 4 full files)
 ```
 
-### Find experiments using a method (backlinks only)
+### Find experiments using a method (search + metadata)
 
 ```
 You: "Which experiments used Centrality Measures?"
 
-  ● flywheel › get_backlinks
-    path: "methods/Centrality Measures.md"
-    → experiments/Experiment-2024-11-18.md (PPI network)
-    → experiments/Experiment-2024-11-12.md (gene regulatory network)
-    → literature/Barabasi2004-Network-Biology.md
+  ● flywheel › search
+    query: "Centrality Measures"
+    → methods/Centrality Measures.md,
+      experiments/Experiment-2024-11-18.md,
+      experiments/Experiment-2024-11-12.md
 
   ● flywheel › get_note_metadata (x2)
     Experiment-2024-11-18: status completed, PPI Network Analysis
@@ -137,18 +141,16 @@ You: "Which experiments used Centrality Measures?"
   │                                                     │
   │ Source paper: Barabasi2004-Network-Biology           │
   └─────────────────────────────────────────────────────┘
-
-  ~100 tokens (backlinks + metadata only)
 ```
 
-### Summarize a project (metadata + selective read)
+### Summarize a project (search + read)
 
 ```
 You: "What are the key results from drug-target prediction?"
 
-  ● flywheel › get_note_metadata
-    path: "projects/Drug-Target Prediction.md"
-    → status: active, PI: Dr. Sarah Chen, funding: NIH R01
+  ● flywheel › search
+    query: "drug-target prediction project"
+    → projects/Drug-Target Prediction.md
 
   ● read_file
     path: "projects/Drug-Target Prediction.md"
@@ -167,8 +169,6 @@ You: "What are the key results from drug-target prediction?"
   │                                                     │
   │ Next: IC50 experimental validation, manuscript      │
   └─────────────────────────────────────────────────────┘
-
-  ~400 tokens (1 project file)
 ```
 
 ---

@@ -196,11 +196,6 @@ Here's what to include and why:
 - `people/Team.md` -- links to all team members
 ```
 
-The demo vaults show fully fleshed-out examples with quick commands and workflows:
-- [carter-strategy/CLAUDE.md](../demos/carter-strategy/CLAUDE.md) -- consulting practice with invoicing
-- [artemis-rocket/CLAUDE.md](../demos/artemis-rocket/CLAUDE.md) -- engineering project with dependency tracking
-- [nexus-lab/CLAUDE.md](../demos/nexus-lab/CLAUDE.md) -- research lab with experiment protocols
-
 ### `.claude/rules/`: Format Rules for Note Types
 
 Claude Code supports [rules files](https://docs.anthropic.com/en/docs/claude-code/memory#project-level-memory) in `.claude/rules/` with `paths:` frontmatter for folder-scoped activation. These are ideal for format constraints that only apply to certain note types.
@@ -236,13 +231,6 @@ Format log entries as continuous bullets:
 - Use 24-hour time: `09:00`, `14:30`
 - Include client wikilink when billable
 ```
-
-Every demo vault ships an `obsidian-syntax.md` rule that prevents common Obsidian rendering issues (broken wikilinks, angle brackets). Copy it from any demo or create your own.
-
-See the [demo vaults](../demos/) for more rule examples:
-- `carter-strategy/.claude/rules/` -- invoice format, client notes, daily notes
-- `artemis-rocket/.claude/rules/` -- decision records, system notes, daily notes
-- `nexus-lab/.claude/rules/` -- experiment format, literature notes, daily notes
 
 ### Iteration
 

@@ -42,36 +42,35 @@ From the [carter-strategy](https://github.com/velvetmonkey/flywheel-memory/tree/
 ```
 ❯ How much have I billed Acme Corp?
 
-● flywheel › get_backlinks
-  path: "clients/Acme Corp.md"
-  ← invoices/INV-2025-047.md
-    invoices/INV-2025-048.md
-    projects/Acme Data Migration.md
-    proposals/Acme Analytics Add-on.md
+● flywheel › search
+  query: "Acme Corp"
+  → clients/Acme Corp.md, invoices/INV-2025-047.md,
+    invoices/INV-2025-048.md, projects/Acme Data Migration.md
 
-● flywheel › get_note_metadata
-  path: "invoices/INV-2025-047.md"
+● read_file("clients/Acme Corp.md")
+  ← total_billed: 156000, rate: $300/hr, status: active
+
+● read_file("invoices/INV-2025-047.md")
   ← amount: 15000, status: paid, period: November 2025
 
-● flywheel › get_note_metadata
-  path: "invoices/INV-2025-048.md"
+● read_file("invoices/INV-2025-048.md")
   ← amount: 12000, status: pending, period: December 2025
 
 ┌─ RESULT ──────────────────────────────────────────────┐
-│ Acme Corp Billing: $27,000                            │
+│ Acme Corp: $156K total billed                         │
 │                                                       │
 │   Paid:    $15,000 — Acme Data Migration (Nov 2025)   │
 │   Pending: $12,000 — Acme Data Migration (Dec 2025)   │
 │                                                       │
-│ 4 tool calls · ~160 tokens · 0 files read             │
+│ Also: $35K pending proposal (Analytics Add-on)        │
 └───────────────────────────────────────────────────────┘
 ```
 
-Claude didn't read any files. It navigated the graph: backlinks to find related notes, metadata to extract the numbers.
+Flywheel's indexed search found all Acme-related notes in one call. Claude read the files it needed for billing details. No grepping, no guessing paths.
 
 ```
-Same query via grep:     ~800-2,000 tokens (search for "Acme", read matching files)
-Same query via Flywheel:       ~160 tokens (backlinks + metadata, 0 files read)
+Same query via grep:     ~800-2,000 tokens (grep "Acme", scan matching files)
+Same query via Flywheel:      ~500 tokens (indexed search + targeted reads)
 ```
 
 The bigger difference isn't just tokens — it's that Flywheel answers structural questions (backlinks, hubs, shortest paths, schema analysis) that file-level access can't answer at all.

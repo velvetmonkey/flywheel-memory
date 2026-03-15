@@ -66,16 +66,16 @@ Grep approach (3 related queries):
 
 Flywheel (same 3 queries):
 ┌──────────────────────────────────────────────────────────┐
-│ Query 1: mcp__flywheel__get_note_metadata (×3)           │
-│   → frontmatter only: ~120 tokens                        │
+│ Query 1: mcp__flywheel__search + targeted reads          │
+│   → indexed search + 2 file reads: ~500 tokens           │
 │                                                          │
-│ Query 2: mcp__flywheel__get_backlinks + metadata         │
+│ Query 2: mcp__flywheel__search + get_backlinks           │
 │   → link data only: ~80 tokens                           │
 │                                                          │
-│ Query 3: mcp__flywheel__search_notes + metadata          │
-│   → index results: ~100 tokens                           │
+│ Query 3: mcp__flywheel__search + get_section_content     │
+│   → index results + 1 section: ~200 tokens               │
 │                                                          │
-│ Session total: ~300 tokens (5-10x vs grep)               │
+│ Session total: ~780 tokens (3-5x vs grep)                │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -84,3 +84,9 @@ Flywheel (same 3 queries):
 When Claude *does* need full content (explaining "why" or reading detailed notes), it does a **selective file read** of just that one file, not the entire vault.
 
 For a guided 5-minute walkthrough, see [Prove It Yourself](../docs/PROVE-IT.md).
+
+---
+
+## No CLAUDE.md Needed
+
+Every demo works with just `.mcp.json` — no CLAUDE.md, no `.claude/rules/`, no pre-taught workflows. Claude discovers vault structure through Flywheel's tools (search, backlinks, metadata) on its own.

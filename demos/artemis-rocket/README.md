@@ -83,95 +83,74 @@ Ask Claude:
 
 When you ask questions, Claude calls Flywheel tools to read your vault's graph -- metadata, backlinks, sections -- instead of reading entire files.
 
-### Trace a blocker
+> Claude's exact tool path varies between runs. These traces show representative sessions.
+
+### Trace a blocker -- search + targeted reads
 
 ```
 You: "What's blocking the propulsion milestone?"
 
-  ● get_note_metadata("systems/propulsion/Propulsion System.md")
+  ● flywheel › search
+    query: "propulsion blocking"
+    → systems/propulsion/Propulsion System.md, systems/propulsion/Turbopump.md,
+      project/Risk Register.md
 
-┌─ CLAUDE THINKS ────────────────────────────────────────────┐
-│ Propulsion status is "testing", owner Marcus Johnson.      │
-│ Active issues mention Turbopump delivery delay.            │
-│ Let me check the Turbopump note.                           │
-└────────────────────────────────────────────────────────────┘
+  ● read_file("systems/propulsion/Propulsion System.md")
+    ← status: testing, owner: Marcus Johnson, active_issues: turbopump delay
 
-  ● get_note_metadata("systems/propulsion/Turbopump.md")
+  ● read_file("systems/propulsion/Turbopump.md")
+    ← status: delayed, supplier: Acme Aerospace
 
-┌─ CLAUDE THINKS ────────────────────────────────────────────┐
-│ Turbopump status is "delayed", supplier is Acme Aerospace. │
-│ I need the delivery delay details.                         │
-└────────────────────────────────────────────────────────────┘
-
-  ● get_section_content("systems/propulsion/Turbopump.md", "Delivery Delay")
+  ● read_file("project/Risk Register.md")
+    ← R-003: Turbopump Delivery Delay, score: 15
 
 ┌─ RESULT ───────────────────────────────────────────────────┐
-│ Root cause: CNC mill failure at Acme Aerospace             │
-│ Original delivery: January 5                               │
-│ Revised ETA: January 20                                    │
-│ Impact: Hot Fire Test 4 postponed, prototype in use        │
-│ Backup: Precision Components Inc (12-week lead, $680K)     │
-└────────────────────────────────────────────────────────────┘
-
-Claude: "Propulsion is in testing but the Turbopump is delayed.
-Acme Aerospace had a CNC mill failure -- delivery slipped from
-Jan 5 to Jan 20. Hot Fire Test 4 is postponed until the flight
-unit arrives. Backup option is Precision Components Inc at
-$680K with a 12-week lead time."
+│ Root cause: CNC mill failure at Acme Aerospace              │
+│ Original delivery: January 5                                │
+│ Revised ETA: January 20                                     │
+│ Impact: Hot Fire Test 4 postponed, prototype in use         │
+│ Backup: Precision Components Inc (12-week lead, $680K)      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Explain a decision
+### Explain a decision -- search + section read
 
 ```
 You: "Why did we choose LOX/RP-1?"
 
-  ● search_notes({folder: "decisions", query: "propellant"})
+  ● flywheel › search
+    query: "propellant selection LOX"
+    → decisions/ADR-001 Propellant Selection.md
 
 ┌─ CLAUDE THINKS ────────────────────────────────────────────┐
-│ Found ADR-001 Propellant Selection.md (status: accepted,   │
-│ date: 2025-08-15, owner: Sarah Chen). I need the full      │
-│ rationale -- metadata alone won't explain "why".            │
+│ Found ADR-001. "Why" needs the full rationale -- reading   │
+│ the Decision section.                                      │
 └────────────────────────────────────────────────────────────┘
 
-  ● get_section_content("decisions/ADR-001 Propellant Selection.md", "Decision")
-
-┌─ RESULT ───────────────────────────────────────────────────┐
-│ Selected LOX/RP-1 bipropellant for Artemis-1.              │
-│ Evaluated against hypergolics and solid propellants.       │
-│ Key factors: specific impulse, handling safety,            │
-│ supplier availability, and cost per flight.                │
-└────────────────────────────────────────────────────────────┘
-
-Claude: "ADR-001 (accepted Aug 2025, owner Sarah Chen) chose
-LOX/RP-1 over hypergolics and solids. Main reasons: higher
-specific impulse for better performance, non-toxic handling
-for safer ground ops, and better supplier availability.
-The tradeoff was added complexity from cryogenic systems."
+  ● flywheel › get_section_content
+    path: "decisions/ADR-001 Propellant Selection.md"
+    section: "Decision"
+    ← Selected LOX/RP-1. Evaluated against hypergolics and solids.
+       Key factors: ISP, handling safety, supplier availability, cost.
 ```
 
-### Find who owns what
+### Find who owns what -- metadata query
 
 ```
 You: "Who's responsible for each subsystem?"
 
-  ● get_note_metadata("systems/propulsion/Propulsion System.md")
-  ● get_note_metadata("systems/avionics/Avionics System.md")
-  ● get_note_metadata("systems/gnc/GNC System.md")
-  ● get_note_metadata("systems/structures/Structures System.md")
+  ● flywheel › search
+    query: "subsystem owner status", scope: "metadata"
+    → systems/propulsion/Propulsion System.md,
+      systems/avionics/Avionics System.md,
+      systems/gnc/GNC System.md,
+      systems/structures/Structures System.md
 
-┌─ RESULT ───────────────────────────────────────────────────┐
-│ Propulsion — Marcus Johnson (status: testing)              │
-│ Avionics   — Elena Rodriguez (status: on-track)            │
-│ GNC        — Elena Rodriguez (status: at-risk)             │
-│ Structures — James Park (status: on-track)                 │
-│                                                            │
-│ 4 metadata reads, ~200 tokens total                        │
-└────────────────────────────────────────────────────────────┘
-
-Claude: "Marcus Johnson owns Propulsion (currently in testing).
-Elena Rodriguez owns both Avionics (on-track) and GNC (at-risk
--- landing algorithm is 60% complete). James Park owns
-Structures (on-track)."
+  ● flywheel › get_note_metadata (×4)
+    Propulsion — Marcus Johnson (status: testing)
+    Avionics   — Elena Rodriguez (status: on-track)
+    GNC        — Elena Rodriguez (status: at-risk)
+    Structures — James Park (status: on-track)
 ```
 
 ---

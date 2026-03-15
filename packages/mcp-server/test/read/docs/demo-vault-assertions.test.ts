@@ -23,8 +23,8 @@ describe('Demo Vault: Artemis Rocket', () => {
         ignore: ['**/node_modules/**'],
       });
 
-      // Allow some flexibility (65-75 files)
-      expect(files.length).toBeGreaterThanOrEqual(65);
+      // Allow some flexibility (60-80 files)
+      expect(files.length).toBeGreaterThanOrEqual(60);
       expect(files.length).toBeLessThanOrEqual(80);
     });
 
@@ -67,9 +67,9 @@ describe('Demo Vault: Artemis Rocket', () => {
     // Note: .flywheel directory contains SQLite databases generated at runtime
     // and won't exist in CI since it's not committed to git
 
-    it('should have CLAUDE.md configuration file', () => {
-      const claudeMd = path.join(ARTEMIS_VAULT, 'CLAUDE.md');
-      expect(fs.existsSync(claudeMd)).toBe(true);
+    it('should have .mcp.json configuration file', () => {
+      const mcpJson = path.join(ARTEMIS_VAULT, '.mcp.json');
+      expect(fs.existsSync(mcpJson)).toBe(true);
     });
   });
 
@@ -119,9 +119,9 @@ describe('Demo Vault: Carter Strategy', () => {
         ignore: ['**/node_modules/**'],
       });
 
-      // Allow some flexibility (35-45 files)
-      expect(files.length).toBeGreaterThanOrEqual(35);
-      expect(files.length).toBeLessThanOrEqual(50);
+      // Allow some flexibility (30-45 files)
+      expect(files.length).toBeGreaterThanOrEqual(30);
+      expect(files.length).toBeLessThanOrEqual(45);
     });
   });
 
@@ -148,9 +148,8 @@ describe('Demo Vault Consistency', () => {
     const vaults = [ARTEMIS_VAULT, CARTER_VAULT];
 
     for (const vault of vaults) {
-      // Each vault should have CLAUDE.md for configuration
-      // Note: .flywheel directories are generated at runtime and won't exist in CI
-      expect(fs.existsSync(path.join(vault, 'CLAUDE.md'))).toBe(true);
+      // Each vault should have .mcp.json for MCP server configuration
+      expect(fs.existsSync(path.join(vault, '.mcp.json'))).toBe(true);
     }
   });
 

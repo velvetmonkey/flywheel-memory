@@ -73,28 +73,33 @@ Ask Claude:
 
 When you ask Claude questions or request changes, here's the flow:
 
-### Check MRR (metadata only)
+> Claude's exact tool path varies between runs. These traces show representative sessions.
+
+### Check MRR (search + structure)
 
 ```
 You: "What's our current MRR?"
 
-  ● flywheel › get_note_metadata
-    path: "ops/customers/DataDriven Co.md"
+  ● flywheel › search
+    query: "MRR revenue customers", scope: "content"
+    → finance/MRR Tracker.md, ops/customers/DataDriven Co.md,
+      ops/customers/GrowthStack.md, ops/customers/InsightHub.md
+
+  ● flywheel › search
+    query: "customer", scope: "entities"
+    → DataDriven Co, GrowthStack, InsightHub
+
+  ● flywheel › get_note_structure
+    path: "finance/MRR Tracker.md" (include_content: true)
+    → MRR: $499, 1 active customer
+
+  ● flywheel › get_note_structure
+    path: "ops/customers/DataDriven Co.md" (include_content: true)
     → Status: Active, MRR: $499, Plan: Professional
 
-  ● flywheel › get_note_metadata
-    path: "ops/customers/GrowthStack.md"
+  ● flywheel › get_note_structure
+    path: "ops/customers/GrowthStack.md" (include_content: true)
     → status: trial, trial_end: 2026-01-20
-
-  ● flywheel › get_note_metadata
-    path: "ops/customers/InsightHub.md"
-    → status: churned, original_mrr: 499
-
-  ┌─ CLAUDE THINKS ─────────────────────────────────────┐
-  │ Filter by active status, sum MRR values.            │
-  │ Only DataDriven Co is paying. GrowthStack is trial. │
-  │ InsightHub churned Dec 28.                          │
-  └─────────────────────────────────────────────────────┘
 
   ┌─ RESULT ────────────────────────────────────────────┐
   │ MRR: $499/mo (1 active customer)                    │
@@ -103,23 +108,16 @@ You: "What's our current MRR?"
   │   converted to Enterprise)                          │
   │ Churned: InsightHub ($499, Dec 28 - performance)    │
   └─────────────────────────────────────────────────────┘
-
-  ~80 tokens (vs ~4,600 reading all 3 customer files)
 ```
 
-### Trace a churn reason (metadata + selective read)
+### Trace a churn reason (search + read)
 
 ```
 You: "What caused InsightHub to churn?"
 
-  ● flywheel › get_note_metadata
-    path: "ops/customers/InsightHub.md"
-    → status: churned, churned_date: 2025-12-28, original_mrr: 499
-
-  ┌─ CLAUDE THINKS ─────────────────────────────────────┐
-  │ Metadata confirms churn but "what caused" needs     │
-  │ the full churn analysis from the file.              │
-  └─────────────────────────────────────────────────────┘
+  ● flywheel › search
+    query: "InsightHub churn"
+    → ops/customers/InsightHub.md
 
   ● read_file
     path: "ops/customers/InsightHub.md"
@@ -137,16 +135,14 @@ You: "What caused InsightHub to churn?"
   │   - Caching added to Q1 2026 Roadmap                │
   │   - DEC-002 Target Market narrowed to <1M rows      │
   └─────────────────────────────────────────────────────┘
-
-  ~350 tokens (1 targeted file read)
 ```
 
-### Run the onboarding playbook (file read)
+### Run the onboarding playbook (search + read)
 
 ```
 You: "Walk me through onboarding a new customer"
 
-  ● flywheel › search_notes
+  ● flywheel › search
     query: "onboarding playbook"
     → ops/playbooks/Customer Onboarding.md
 
@@ -177,8 +173,6 @@ You: "Walk me through onboarding a new customer"
   │ Day 30: Month Review                                │
   │   - Usage summary, upsell, request testimonial      │
   └─────────────────────────────────────────────────────┘
-
-  ~300 tokens (1 playbook file)
 ```
 
 ---

@@ -52,24 +52,33 @@ Ask Claude:
 
 When you ask Claude questions or request changes, here's the flow:
 
-### Customer context (backlinks + metadata)
+> Claude's exact tool path varies between runs. These traces show representative sessions.
+
+### Customer context (search + backlinks)
 
 ```
 You: "What's Sarah Chen's situation?"
 
-● flywheel › get_note_metadata
-  path: "users/sarah-chen.md"
+● flywheel › search
+  query: "Sarah Chen", scope: "entities"
+  → Sarah Chen (person, users/sarah-chen.md)
+
+● flywheel › get_note_structure
+  path: "users/sarah-chen.md" (include_content: true)
   → tier: premium, sentiment: frustrated, last_contact: 2026-02-11
 
 ● flywheel › get_backlinks
   path: "users/sarah-chen.md"
   ← tickets/TKT-2024-001.md (payment failed, resolved)
     tickets/TKT-2024-003.md (double charged, escalated)
-    knowledge/billing.md
 
-● flywheel › get_note_metadata (x2)
-  TKT-2024-001: status: resolved, priority: high
-  TKT-2024-003: status: escalated, priority: urgent
+● flywheel › get_note_structure
+  path: "tickets/TKT-2024-001.md" (include_content: true)
+  ← status: resolved, priority: high, payment failure
+
+● flywheel › get_note_structure
+  path: "tickets/TKT-2024-003.md" (include_content: true)
+  ← status: escalated, priority: urgent, double charge $99
 
 ┌─ RESULT ──────────────────────────────────────────┐
 │ Sarah Chen - Premium ($99/mo)                      │
@@ -85,30 +94,21 @@ You: "What's Sarah Chen's situation?"
 │                                                    │
 │ Risk: HIGH churn -- 2 billing issues in 2 weeks    │
 └────────────────────────────────────────────────────┘
-
-~120 tokens (backlinks + metadata, no file reads)
 ```
 
-### Ticket + knowledge base (cross-reference)
+### Ticket + knowledge base (search + read)
 
 ```
 You: "What tier does Bob need for 100 users?"
 
-● flywheel › get_note_metadata
-  path: "users/bob-wilson.md"
-  → tier: developer, sentiment: neutral
-
-● flywheel › get_note_metadata
-  path: "tickets/TKT-2024-004.md"
-  → status: open, category: api
+● flywheel › search
+  query: "Bob Wilson rate limit"
+  → users/bob-wilson.md, tickets/TKT-2024-004.md,
+    knowledge/api-rate-limits.md
 
 ● flywheel › get_forward_links
   path: "tickets/TKT-2024-004.md"
   → [[API Rate Limits]], [[Bob Wilson]]
-
-● flywheel › get_note_metadata
-  path: "knowledge/api-rate-limits.md"
-  → category: api
 
 ┌─ CLAUDE THINKS ───────────────────────────────────┐
 │ Bob's on Developer (1000 req/min). 100 users at    │
@@ -132,8 +132,6 @@ You: "What tier does Bob need for 100 users?"
 │ Recommendation: Enterprise tier or client-side     │
 │ caching to reduce API calls.                        │
 └────────────────────────────────────────────────────┘
-
-~300 tokens (metadata + 1 knowledge article)
 ```
 
 ### Log an interaction (write with auto-wikilinks)

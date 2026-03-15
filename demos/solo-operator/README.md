@@ -54,17 +54,24 @@ Ask Claude:
 
 When you ask Claude questions or request changes, here's the flow:
 
-### Check revenue (metadata only)
+> Claude's exact tool path varies between runs. These traces show representative sessions.
+
+### Check revenue (search + structure)
 
 ```
 You: "How's revenue this month?"
 
-● flywheel › get_note_metadata
-  path: "ops/Revenue Tracker.md"
-  → type: tracker, updated: 2026-01-07
+● flywheel › search
+  query: "revenue", scope: "content"
+  → ops/Revenue Tracker.md, products/AI Automation Course.md,
+    products/Consulting Services.md
 
-● read_file
-  path: "ops/Revenue Tracker.md"
+● flywheel › search
+  query: "revenue", scope: "metadata"
+  → ops/Revenue Tracker.md (type: tracker, updated: 2026-01-07)
+
+● flywheel › get_note_structure
+  path: "ops/Revenue Tracker.md" (include_content: true)
   → Course: $1,188 | Consulting: $1,200 | Sponsors: $0
   → Total MTD: $2,388 / $5,000 target (48%)
 
@@ -79,18 +86,17 @@ You: "How's revenue this month?"
 │                                                    │
 │ Pipeline: TechCorp 4-session expansion ($2,400)    │
 └────────────────────────────────────────────────────┘
-
-~400 tokens (1 tracker file)
 ```
 
-### Morning briefing (multi-source aggregation)
+### Morning briefing (search + multi-source)
 
 ```
 You: "Run my morning briefing"
 
-● flywheel › get_note_metadata
-  path: "ops/Revenue Tracker.md"
-  → revenue_mtd data for alerts
+● flywheel › search
+  query: "morning briefing revenue subscribers"
+  → ops/Morning Briefing.md, ops/Revenue Tracker.md,
+    ops/Subscriber Metrics.md
 
 ● flywheel › get_note_metadata
   path: "ops/Subscriber Metrics.md"
@@ -126,16 +132,15 @@ You: "Run my morning briefing"
 │   [yellow] Subscriber growth below target (-28%)   │
 └────────────────────────────────────────────────────┘
 
-~200 tokens (metadata + 1 section read)
 ```
 
-### Analyze newsletter performance (metadata + selective read)
+### Analyze newsletter performance (search + read)
 
 ```
 You: "Why did Tuesday's newsletter perform so well?"
 
-● flywheel › search_notes
-  query: "AI Tools Weekly"
+● flywheel › search
+  query: "AI Tools Weekly newsletter"
   → content/2026-01-07 AI Tools Weekly.md
 
 ● flywheel › get_note_metadata
@@ -167,7 +172,6 @@ You: "Why did Tuesday's newsletter perform so well?"
 │ lead magnet idea for subscriber growth.             │
 └────────────────────────────────────────────────────┘
 
-~450 tokens (metadata + 1 file read)
 ```
 
 ---

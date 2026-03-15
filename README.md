@@ -203,8 +203,8 @@ Suggestions that seemed marginal at the time — linking a throwaway standup not
 ### What This Looks Like
 
 ```
-Input:  "Acme Data Migration testing done. Stacy Thompson starting Beta Corp Dashboard."
-Output: "[[Acme Data Migration]] testing done. [[Stacy Thompson]] starting [[Beta Corp Dashboard]]."
+Input:  "Stacy Thompson finished reviewing the API Security Checklist for the Beta Corp Dashboard"
+Output: "[[Stacy Thompson]] finished reviewing the [[API Security Checklist]] for the [[Beta Corp Dashboard]]"
 ```
 
 No manual linking. No broken references. Use compounds into structure, structure compounds into intelligence.

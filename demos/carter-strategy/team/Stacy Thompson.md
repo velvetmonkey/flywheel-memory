@@ -1,5 +1,7 @@
 ---
 type: person
+aliases:
+  - Stacy
 role: consultant
 skills:
   - React

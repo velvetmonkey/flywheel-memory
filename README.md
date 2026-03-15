@@ -24,11 +24,11 @@ The flywheel effect: **use → structure → intelligence → more use**. Each i
 
 | | Without Flywheel | With Flywheel |
 |---|---|---|
-| "What's overdue?" | Read every file | Indexed query, <10ms |
-| "What links here?" | grep every file | Pre-indexed backlink graph |
+| "What's overdue?" | Grep + read matching files | Indexed query, <10ms |
+| "What links here?" | Not possible without manual grep | Pre-indexed backlink graph |
 | "Add a meeting note" | Raw write, no linking | Structured write + auto-wikilink |
-| "What should I link?" | Manual or grep | Smart scoring + semantic understanding |
-| Token cost | 2,000-250,000 | 50-200 |
+| "What should I link?" | Not possible | Smart scoring + semantic understanding |
+| Token cost per query | 500-5,000+ (grep + reads) | 50-200 |
 
 51 tools across 17 categories. 6-line config. Zero cloud dependencies.
 
@@ -80,9 +80,8 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
 Claude didn't read any files. It navigated the graph: backlinks to find related notes, metadata to extract the numbers.
 
 ```
-Same 3 queries without Flywheel: 11,150 tokens (reading files repeatedly)
+Same 3 queries without Flywheel: ~2,500 tokens (grep + read matching files)
 Same 3 queries with Flywheel:       300 tokens (querying the index)
-                                     37x savings
 ```
 
 ### Write: Auto-wikilinks on every mutation

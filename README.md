@@ -12,6 +12,16 @@
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](docs/TESTING.md#performance-benchmarks)
 [![Tests](https://img.shields.io/badge/tests-2,456%20passed-brightgreen.svg)](docs/TESTING.md)
 
+## What is Flywheel?
+
+Flywheel is a knowledge graph engine for Obsidian vaults. It scans your notes, extracts entities across 18 categories (people, projects, organisations, locations, technologies, and more), and builds a queryable graph.
+
+- **Graph building** — Auto-wikilinks on every write create edges. Co-occurrence mining discovers implicit relationships. Entity embeddings capture semantic similarity.
+- **Graph querying** — Backlinks, shortest paths, hub detection, orphan analysis — all from an in-memory index, <10ms.
+- **Graph learning** — 13-layer scoring with a feedback loop. Link survival builds edge weight, removal trains suppression (Beta-Binomial posterior), co-occurrence accumulates NPMI signal.
+
+The flywheel effect: **use → structure → intelligence → more use**. Each interaction makes the graph denser and the suggestions sharper.
+
 | | Without Flywheel | With Flywheel |
 |---|---|---|
 | "What's overdue?" | Read every file | Indexed query, <10ms |

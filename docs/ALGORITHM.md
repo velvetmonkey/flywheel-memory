@@ -38,7 +38,7 @@ Before scoring begins, candidates are pruned. This keeps the hot path fast and p
 
 **Generic word filter** -- Tokens too common to be meaningful are excluded from matching: message, file, info, item, list, name, type, value, result, issue, example, option, and others.
 
-**Suppression filter** -- Entities with a historically high false positive rate (>30% over 10+ feedback samples) are excluded entirely. See [The Self-Correcting Loop](#the-self-correcting-loop) below.
+**Suppression filter** -- Entities use a Beta-Binomial posterior model (Beta(8, 1) prior). When posteriorMean drops below 0.35 with at least 20 observations, the entity is hard-gated from auto-linking. A soft proportional penalty also applies in the suggestion scoring path. See [The Self-Correcting Loop](#the-self-correcting-loop) below.
 
 ---
 
@@ -104,6 +104,7 @@ Different entity categories have different baseline value for linking. People ar
 | Food | +1 | Recipes, restaurants |
 | Hobbies | +1 | Crafts, sports |
 | Finance | +1 | Accounts, budgets |
+| Periodical | +1 | Daily/weekly/monthly notes |
 | Technologies | 0 | Common — avoid over-suggesting |
 | Acronyms | 0 | May be ambiguous |
 | Other | 0 | Unknown category |

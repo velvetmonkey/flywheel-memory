@@ -1,6 +1,8 @@
 ---
 type: client
 status: active
+aliases:
+  - TechStart
 contact: Mike Chen
 email: mike@techstart.io
 phone: "+1 555-0187"

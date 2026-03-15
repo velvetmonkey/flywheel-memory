@@ -16,7 +16,7 @@ Quick logging and task management for daily notes.
 
 > "Add to today's daily note under ## Log: Finished the quarterly review with Sarah"
 
-Flywheel appends to the section and auto-links any entities it recognizes (e.g., `Sarah` becomes `[[Sarah Mitchell]]` if that note exists).
+Flywheel appends to the section and auto-links any entities it recognizes -- full entity names like `Stacy Thompson` become `[[Stacy Thompson]]` if a matching note exists.
 
 ### Add a task
 
@@ -198,7 +198,7 @@ Understand your vault's structure and consistency.
 
 ### Wikilink suggestions
 
-> "Analyze this text and suggest where I should add wikilinks: 'Met with Sarah about the data migration project and discussed the React codebase'"
+> "Analyze this text and suggest where I should add wikilinks: 'Acme Data Migration testing done, Stacy Thompson starting Beta Corp Dashboard'"
 
 ### Find immature notes
 

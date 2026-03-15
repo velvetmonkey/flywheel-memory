@@ -103,7 +103,7 @@ Returns the heading hierarchy, word count, and sections without reading the full
 
 > "Add a note to today's daily note under ## Log: Met with [person name] about [topic]"
 
-Flywheel auto-links any mentions of existing notes. If "Sarah Mitchell" has a note, the output becomes `Met with [[Sarah Mitchell]] about [[Project Alpha]]`.
+Flywheel auto-links any mentions of existing notes. If your vault has `Stacy Thompson.md`, the output becomes `[[Stacy Thompson]] reviewed the [[API Security Checklist]]`.
 
 ---
 

@@ -79,13 +79,13 @@ The bigger difference isn't just tokens — it's that Flywheel answers structura
 ### Write: Auto-wikilinks on every mutation
 
 ```
-❯ Log that I finished the Acme strategy deck
+❯ Log that Stacy Thompson is starting on the Beta Corp Dashboard and reviewed the API Security Checklist
 
 ● flywheel › vault_add_to_section
   path: "daily-notes/2026-01-04.md"
   section: "Log"
-  content: "finished the [[Acme Corp]] strategy deck"
-                       ↑ auto-linked because Acme Corp.md exists
+  content: "[[Stacy Thompson]] is starting on the [[Beta Corp Dashboard]] and reviewed the [[API Security Checklist]]"
+            ↑ 3 entities auto-linked across team/, projects/, and knowledge/
 ```
 
 Try it yourself: `cd demos/carter-strategy && claude`
@@ -193,8 +193,8 @@ graph LR
 ```
 
 ```
-Input:  "Met with Sarah about the data migration"
-Output: "Met with [[Sarah Mitchell]] about the [[Acme Data Migration]]"
+Input:  "Acme Data Migration testing done. Stacy Thompson starting Beta Corp Dashboard."
+Output: "[[Acme Data Migration]] testing done. [[Stacy Thompson]] starting [[Beta Corp Dashboard]]."
 ```
 
 No manual linking. No broken references. Use compounds into structure, structure compounds into intelligence.

@@ -78,7 +78,7 @@ Without Flywheel, Claude would grep for "Acme" and read matching files — slowe
 
 Still in carter-strategy, tell Claude:
 
-> Log that I finished the Acme strategy deck and prepped the TechStart proposal
+> Log that Stacy Thompson is starting on the Beta Corp Dashboard and reviewed the API Security Checklist
 
 Watch the output:
 
@@ -86,10 +86,10 @@ Watch the output:
 ● flywheel › vault_add_to_section
   path: "daily-notes/2026-01-04.md"
   section: "Log"
-  content: "finished the [[Acme Corp]] strategy deck and prepped the [[TechStart Phase 2]] proposal"
+  content: "[[Stacy Thompson]] is starting on the [[Beta Corp Dashboard]] and reviewed the [[API Security Checklist]]"
 ```
 
-"Acme Corp" and "TechStart Phase 2" were auto-linked to existing notes. You typed plain text -- Flywheel scanned every note title and alias in the vault, found matches, and wrapped them in `[[wikilinks]]`.
+"Stacy Thompson", "Beta Corp Dashboard", and "API Security Checklist" were auto-linked to existing notes across team/, projects/, and knowledge/. You typed plain text -- Flywheel scanned every note title and alias in the vault, found matches, and wrapped them in `[[wikilinks]]`.
 
 Every write makes the graph denser. Denser graphs make reads more precise. That's the flywheel.
 

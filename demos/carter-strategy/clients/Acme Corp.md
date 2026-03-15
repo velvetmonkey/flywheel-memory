@@ -1,6 +1,8 @@
 ---
 type: client
 status: active
+aliases:
+  - Acme
 contact: Sarah Mitchell
 email: sarah.mitchell@acmecorp.com
 phone: "+1 555-0142"

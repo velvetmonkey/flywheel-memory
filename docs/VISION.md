@@ -24,7 +24,7 @@ The complete picture looks like this:
 Voice → Transcription → AI Agent → Flywheel → Queryable Knowledge
 ```
 
-You're walking to lunch after a meeting. You pull out your phone and say: "Log that we agreed to push the launch to March. Sarah owns the migration, and Alex is handling the API contract with Acme." Your voice becomes a transcript. The AI agent sends it to Flywheel. Flywheel recognizes `[[Sarah Mitchell]]`, `[[Alex Chen]]`, `[[Acme Corp]]`, and `[[API Contract]]` from your existing vault. It writes the note, links it to the right entities, and the knowledge graph grows -- all before you've sat down.
+You're walking to lunch after a meeting. You pull out your phone and say: "Log that we agreed to push the launch to March. Sarah Mitchell owns the Acme Data Migration, and Stacy Thompson is starting the Beta Corp Dashboard." Your voice becomes a transcript. The AI agent sends it to Flywheel. Flywheel recognizes `[[Sarah Mitchell]]`, `[[Acme Data Migration]]`, `[[Stacy Thompson]]`, and `[[Beta Corp Dashboard]]` from your existing vault. It writes the note, links it to the right entities, and the knowledge graph grows -- all before you've sat down.
 
 The next time you ask "What's the latest on the Acme deal?", the answer is already indexed, linked, and ready in under 10ms.
 

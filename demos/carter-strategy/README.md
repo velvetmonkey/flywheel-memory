@@ -93,7 +93,7 @@ You: "How much have I billed Acme Corp?"
 ### Daily log -- write with auto-wikilinks
 
 ```
-You: "Log that I finished the Acme strategy deck and prepped the TechStart proposal"
+You: "Log that Stacy Thompson is starting on the Beta Corp Dashboard and reviewed the API Security Checklist"
 
 ┌─ CLAUDE THINKS ───────────────────────────────────────┐
 │ Write to today's daily note. Input mentions known      │
@@ -103,16 +103,17 @@ You: "Log that I finished the Acme strategy deck and prepped the TechStart propo
 ● flywheel › vault_add_to_section
   path: "daily-notes/2026-01-04.md"
   section: "Log"
-  content: "finished the [[Acme Corp]] strategy deck and prepped the [[TechStart Phase 2]] proposal"
+  content: "[[Stacy Thompson]] is starting on the [[Beta Corp Dashboard]] and reviewed the [[API Security Checklist]]"
 
 ┌─ RESULT ──────────────────────────────────────────────┐
 │ ## Log                                                 │
 │ - 09:00 - Morning standup                              │
-│ - 14:32 - finished the [[Acme Corp]] strategy deck     │
-│   and prepped the [[TechStart Phase 2]] proposal  NEW  │
+│ - 14:32 - [[Stacy Thompson]] is starting on the        │
+│   [[Beta Corp Dashboard]] and reviewed the              │
+│   [[API Security Checklist]]                    NEW     │
 │                                                        │
-│ "Acme Corp" and "TechStart Phase 2" auto-linked to     │
-│ existing notes -- no manual wikilinks needed.           │
+│ 3 entities auto-linked across team/, projects/, and    │
+│ knowledge/ -- no manual wikilinks needed.               │
 └───────────────────────────────────────────────────────┘
 ```
 

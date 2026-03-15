@@ -114,9 +114,9 @@ Graph analysis returns the hub nodes by connection count. Active Recall, Spaced 
 
 ### 4. Add a fleeting note with auto-wikilinks
 
-> "Capture a fleeting note: I think elaborative interrogation works because it forces active recall of related schemas, which is a desirable difficulty"
+> "Capture a fleeting note: I think Spaced Repetition leverages the Testing Effect as a form of Desirable Difficulties"
 
-Flywheel creates a fleeting note and auto-links the existing concepts: `[[Elaborative Interrogation]]`, `[[Active Recall]]`, `[[Schema Theory]]`, `[[Desirable Difficulties]]`. Four wikilinks you didn't have to type.
+Flywheel creates a fleeting note and auto-links the existing concepts: `[[Spaced Repetition]]`, `[[Testing Effect]]`, `[[Desirable Difficulties]]`. Three wikilinks you didn't have to type.
 
 ### 5. Find underconnected literature
 
@@ -193,20 +193,20 @@ You: "Find the hub concepts"
 ### Worked Example 3: Auto-wikilinks on write
 
 ```
-You: "Capture: elaboration forces retrieval of schemas, which is a desirable difficulty"
+You: "Capture: Spaced Repetition leverages the Testing Effect as a form of Desirable Difficulties"
 
 ● flywheel › vault_create_note
   folder: "fleeting/"
-  content: "[[Elaborative Interrogation]] forces retrieval of [[Schema Theory|schemas]],
-            which is a [[Desirable Difficulties|desirable difficulty]]"
+  content: "[[Spaced Repetition]] leverages the [[Testing Effect]] as a form of
+            [[Desirable Difficulties]]"
 
   Auto-linked:
-    "Elaborative Interrogation" → permanent/Elaborative Interrogation.md
-    "schemas"                   → permanent/Schema Theory.md
-    "desirable difficulty"      → permanent/Desirable Difficulties.md
+    "Spaced Repetition"      → permanent/Spaced Repetition.md
+    "Testing Effect"         → permanent/Testing Effect.md
+    "Desirable Difficulties" → permanent/Desirable Difficulties.md
 
 ┌─ RESULT ──────────────────────────────────────────────┐
-│ Created fleeting/capture-elaboration-retrieval.md      │
+│ Created fleeting/capture-spaced-repetition-testing.md  │
 │ 3 entities auto-linked to existing permanent notes     │
 │                                                        │
 │ The graph just got 3 new edges.                        │

@@ -12,25 +12,15 @@
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](docs/TESTING.md#performance-benchmarks)
 [![Tests](https://img.shields.io/badge/tests-2,456%20passed-brightgreen.svg)](docs/TESTING.md)
 
-## What is Flywheel?
-
-Flywheel is a knowledge graph engine for Obsidian vaults. It scans your notes, extracts entities across 18 categories (people, projects, organisations, locations, technologies, and more), and builds a queryable graph.
-
-- **Graph building** — Auto-wikilinks on every write create edges. Co-occurrence mining discovers implicit relationships. Entity embeddings capture semantic similarity.
-- **Graph querying** — Backlinks, shortest paths, hub detection, orphan analysis — all from an in-memory index, <10ms.
-- **Graph learning** — 13-layer scoring with a feedback loop. Link survival builds edge weight, removal trains suppression (Beta-Binomial posterior), co-occurrence accumulates NPMI signal.
-
-The flywheel effect: **use → structure → intelligence → more use**. Each interaction makes the graph denser and the suggestions sharper.
-
-| | Grep approach | Flywheel |
+| | Without Flywheel | With Flywheel |
 |---|---|---|
-| "What's overdue?" | Grep + read matches (~500-2,000 tokens) | Indexed metadata query (~50-200 tokens) |
-| "What links here?" | Grep for note name (flat list, no graph) | Pre-indexed backlink graph (<10ms) |
-| "Add a meeting note" | Raw write, no linking | Structured write + auto-wikilink |
+| "What's overdue?" | Read every file | Indexed query, <10ms |
+| "What links here?" | Grep for name, flat list | Backlink graph, pre-indexed |
+| "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
-| Hubs, orphans, paths? | Not possible | Pre-indexed graph analysis |
+| Token cost | ~800-2,000 per query | ~50-200 per query |
 
-51 tools across 17 categories. 6-line config. Zero cloud dependencies.
+51 tools. 6-line config. Zero cloud.
 
 **Try in 60 seconds:**
 
@@ -87,14 +77,31 @@ Same query via Flywheel:       ~160 tokens (backlinks + metadata, 0 files read)
 ### Write: Auto-wikilinks on every mutation
 
 ```
-❯ Log that Stacy Thompson reviewed the API Security Checklist for Acme before the Beta Corp Dashboard kickoff
+❯ Log that I finished the Acme strategy deck
 
 ● flywheel › vault_add_to_section
   path: "daily-notes/2026-01-04.md"
   section: "Log"
-  content: "[[Stacy Thompson]] reviewed the [[API Security Checklist]] for [[Acme Corp|Acme]] before the [[Beta Corp Dashboard]] kickoff → [[GlobalBank API Audit]], [[Acme Analytics Add-on]], [[Acme Data Migration]]"
-            ↑ 4 entities auto-linked — "Acme" resolved to Acme Corp via alias
-            → 3 contextual suggestions appended (scored ≥12 via co-occurrence with linked entities)
+  content: "finished the [[Acme Corp|Acme]] strategy deck"
+            ↑ "Acme" auto-linked to [[Acme Corp]] (alias match, no brackets typed)
+```
+
+You typed a plain sentence. Flywheel recognized "Acme" as an alias for `Acme Corp.md` and linked it — no brackets, no lookup, no manual work. That link is now a graph edge. It's why the read example above works.
+
+But the link is also a learning signal. Keep it through 10 edits and it gains weight. Remove it and the system learns what to stop suggesting. Two entities that co-appear across 20 notes build a statistical bond that surfaces in future suggestions. Every write makes the graph denser and the suggestions sharper. This is the flywheel effect — use compounds into structure, structure compounds into intelligence.
+
+After the flywheel has been spinning, a single sentence lights up the whole graph:
+
+```
+❯ Log that Stacy reviewed the security checklist before the Beta Corp kickoff
+
+● flywheel › vault_add_to_section
+  path: "daily-notes/2026-01-04.md"
+  section: "Log"
+  content: "[[Stacy Thompson]] reviewed the [[API Security Checklist]] before the [[Beta Corp Dashboard]] kickoff
+            → [[GlobalBank API Audit]], [[Acme Data Migration]]"
+            ↑ 3 entities auto-linked, "Stacy" resolved via alias
+            → 2 suggestions: entities that co-occur with Stacy + security work across past notes
 ```
 
 Try it yourself: `cd demos/carter-strategy && claude`
@@ -127,18 +134,16 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
 **Every auto-wikilink is a bet on future relevance — and the house edge is 100% precision.**
 
-When Flywheel links `[[Sarah Mitchell]]` in your meeting note, it's not just tagging a name. It's adding an edge to a graph that every future query traverses. Three months from now, when you ask "what happened with the Mitchell account?", that link — which seemed obvious at the time — is part of the answer path.
-
-This is the contextual cloud: a web of connections that builds around your content, one write at a time. Each link adds context that isn't visible now but becomes navigational structure later. The note you write today about a deployment problem links to `[[CI/CD]]` and `[[staging environment]]`. Next quarter, when you're debugging a similar issue, those links surface the history you'd forgotten existed.
-
 The loop compounds:
 - **Write** → entities are auto-linked, creating edges
 - **Keep** a link through 10 edits → that edge gains weight
-- **Co-occurrence** → two entities in 20 notes build a statistical bond (NPMI)
-- **Remove** a bad link → the system learns what to suppress (Beta-Binomial posterior, threshold at 35%)
+- **Co-occurrence** → two entities in 20 notes build a statistical bond
+- **Remove** a bad link → the system learns what to suppress
 - **Query** → denser graphs return more precise answers, which drives more use
 
-We prove the loop holds: 100% precision (never suggests a wrong link) and 72–82% recall, stable over 50 generations of noisy feedback. Denser graphs don't just store more — they score better. More edges mean more co-occurrence signal, more feedback data, and tighter suppression thresholds. The F1 score is a direct function of graph density. See [Graph Quality](#graph-quality) below.
+This is the uncontested gap. Competing tools are static — they find what's there today. Flywheel's graph gets better the more you use it. A static search tool gives you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. Usage turns into data, data turns into better suggestions, compounding over time. No retraining, no configuration, no manual curation.
+
+See [Graph Quality](#graph-quality) for the numbers: 100% precision, 72-82% recall, stable over 50 generations of noisy feedback.
 
 ### 4. Semantic Understanding
 

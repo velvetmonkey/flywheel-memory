@@ -66,16 +66,17 @@ Grep approach (3 related queries):
 
 Flywheel (same 3 queries):
 ┌──────────────────────────────────────────────────────────┐
-│ Query 1: mcp__flywheel__search + targeted reads          │
-│   → indexed search + 2 file reads: ~500 tokens           │
+│ Query 1: flywheel search + targeted reads                │
+│   → indexed search finds files, read only what's needed  │
 │                                                          │
-│ Query 2: mcp__flywheel__search + get_backlinks           │
-│   → link data only: ~80 tokens                           │
+│ Query 2: flywheel search + get_backlinks                 │
+│   → link data only, no file reads                        │
 │                                                          │
-│ Query 3: mcp__flywheel__search + get_section_content     │
-│   → index results + 1 section: ~200 tokens               │
+│ Query 3: flywheel search + get_section_content           │
+│   → index results + 1 section, not entire files          │
 │                                                          │
-│ Session total: ~780 tokens (3-5x vs grep)                │
+│ Key: Flywheel never re-reads files it already indexed.   │
+│ Repeated queries hit the index, not the filesystem.      │
 └──────────────────────────────────────────────────────────┘
 ```
 

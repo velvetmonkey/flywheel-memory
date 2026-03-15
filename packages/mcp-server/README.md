@@ -68,10 +68,7 @@ From the [carter-strategy](https://github.com/velvetmonkey/flywheel-memory/tree/
 
 Flywheel's indexed search found all Acme-related notes in one call. Claude read the files it needed for billing details. No grepping, no guessing paths.
 
-```
-Same query via grep:     ~800-2,000 tokens (grep "Acme", scan matching files)
-Same query via Flywheel:      ~500 tokens (indexed search + targeted reads)
-```
+Flywheel's search found all related notes in one call. Without it, Claude would grep for "Acme" and scan every matching file.
 
 The bigger difference isn't just tokens — it's that Flywheel answers structural questions (backlinks, hubs, shortest paths, schema analysis) that file-level access can't answer at all.
 

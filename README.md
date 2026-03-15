@@ -72,10 +72,7 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
 
 Flywheel's search found all related notes in one call -- client file, invoices, projects, proposals. Claude read the files it needed to extract the numbers. No grepping, no guessing paths.
 
-```
-Same query via grep:     ~800-2,000 tokens (grep "Acme", scan matching files)
-Same query via Flywheel:      ~500 tokens (indexed search + targeted reads)
-```
+Flywheel's search found all related notes in one call. Without it, Claude would grep for "Acme" and scan every matching file.
 
 > Claude's exact tool path varies between runs. Sometimes it uses graph tools (`get_backlinks`, `get_note_metadata`) instead of file reads -- the answer is the same either way.
 

@@ -84,9 +84,9 @@ The bigger difference isn't just tokens — it's that Flywheel answers structura
 ● flywheel › vault_add_to_section
   path: "daily-notes/2026-01-04.md"
   section: "Log"
-  content: "[[Stacy Thompson]] reviewed the [[API Security Checklist]] for [[Acme Corp|Acme]] before the [[Beta Corp Dashboard]] kickoff → [[Sarah Mitchell]], [[Acme Data Migration]]"
+  content: "[[Stacy Thompson]] reviewed the [[API Security Checklist]] for [[Acme Corp|Acme]] before the [[Beta Corp Dashboard]] kickoff → [[GlobalBank API Audit]], [[Acme Analytics Add-on]], [[Acme Data Migration]]"
             ↑ 4 entities auto-linked — "Acme" resolved to Acme Corp via alias
-            → 2 contextual suggestions appended (scored ≥12 but not in text)
+            → 3 contextual suggestions appended (scored ≥12 via co-occurrence with linked entities)
 ```
 
 Try it yourself: `cd demos/carter-strategy && claude`

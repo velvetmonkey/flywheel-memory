@@ -936,30 +936,47 @@ async function runPostIndexWork(index: VaultIndex) {
     if (hasEmbeddingsIndex() && !modelChanged) {
       serverLog('semantic', 'Embeddings already built, skipping full scan');
     } else {
-      setEmbeddingsBuilding(true);
-      buildEmbeddingsIndex(vaultPath, (p) => {
-        if (p.current % 100 === 0 || p.current === p.total) {
-          serverLog('semantic', `Embedding ${p.current}/${p.total} notes...`);
-        }
-      }).then(async () => {
-        if (stateDb) {
-          const entities = getAllEntitiesFromDb(stateDb);
-          if (entities.length > 0) {
-            const entityMap = new Map(entities.map(e => [e.name, {
-              name: e.name,
-              path: e.path,
-              category: e.category,
-              aliases: e.aliases,
-            }]));
-            await buildEntityEmbeddingsIndex(vaultPath, entityMap);
+      const MAX_BUILD_RETRIES = 2;
+
+      const attemptBuild = async (attempt: number): Promise<void> => {
+        setEmbeddingsBuilding(true);
+        try {
+          await buildEmbeddingsIndex(vaultPath, (p) => {
+            if (p.current % 100 === 0 || p.current === p.total) {
+              serverLog('semantic', `Embedding ${p.current}/${p.total} notes...`);
+            }
+          });
+          if (stateDb) {
+            const entities = getAllEntitiesFromDb(stateDb);
+            if (entities.length > 0) {
+              const entityMap = new Map(entities.map(e => [e.name, {
+                name: e.name,
+                path: e.path,
+                category: e.category,
+                aliases: e.aliases,
+              }]));
+              await buildEntityEmbeddingsIndex(vaultPath, entityMap);
+            }
           }
+          loadEntityEmbeddingsToMemory();
+          setEmbeddingsBuildState('complete');
+          serverLog('semantic', 'Embeddings ready — searches now use hybrid ranking');
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (attempt < MAX_BUILD_RETRIES) {
+            const delay = 10_000;
+            serverLog('semantic', `Build failed (attempt ${attempt}/${MAX_BUILD_RETRIES}): ${msg}. Retrying in ${delay / 1000}s...`, 'error');
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return attemptBuild(attempt + 1);
+          }
+          serverLog('semantic', `Embeddings build failed after ${MAX_BUILD_RETRIES} attempts: ${msg}`, 'error');
+          serverLog('semantic', 'Keyword search (BM25) remains fully available', 'error');
+        } finally {
+          setEmbeddingsBuilding(false);
         }
-        loadEntityEmbeddingsToMemory();
-        setEmbeddingsBuildState('complete');
-        serverLog('semantic', 'Embeddings ready');
-      }).catch(err => {
-        serverLog('semantic', `Embeddings build failed: ${err instanceof Error ? err.message : err}`, 'error');
-      });
+      };
+
+      attemptBuild(1);
     }
   } else {
     serverLog('semantic', 'Skipping — FLYWHEEL_SKIP_EMBEDDINGS');

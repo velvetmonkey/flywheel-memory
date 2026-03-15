@@ -170,40 +170,64 @@ export function setEmbeddingsDatabase(database: Database.Database): void {
 /**
  * Load the transformer model. Cached after first call.
  * Downloads ~23MB model on first use to ~/.cache/huggingface/
+ * Retries up to 3 times on network/download failures.
  */
 export async function initEmbeddings(): Promise<void> {
   if (pipeline) return;
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
-    try {
-      // Dynamic import — @huggingface/transformers is an optional dependency
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const transformers: any = await (Function('specifier', 'return import(specifier)')('@huggingface/transformers'));
-      pipeline = await transformers.pipeline('feature-extraction', activeModelConfig.id, {
-        dtype: 'fp32',
-      });
+    const MAX_RETRIES = 3;
+    const RETRY_DELAYS = [2000, 5000, 10000]; // 2s, 5s, 10s
 
-      // Probe dimensions for unknown models
-      if (activeModelConfig.dims === 0) {
-        const probe = await pipeline('test', { pooling: 'mean', normalize: true });
-        activeModelConfig.dims = probe.data.length;
-        console.error(`[Semantic] Probed model ${activeModelConfig.id}: ${activeModelConfig.dims} dims`);
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        // Dynamic import — @huggingface/transformers is an optional dependency
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const transformers: any = await (Function('specifier', 'return import(specifier)')('@huggingface/transformers'));
+
+        console.error(`[Semantic] Loading model ${activeModelConfig.id} (~23MB, cached after first download)...`);
+        pipeline = await transformers.pipeline('feature-extraction', activeModelConfig.id, {
+          dtype: 'fp32',
+        });
+        console.error(`[Semantic] Model loaded successfully`);
+
+        // Probe dimensions for unknown models
+        if (activeModelConfig.dims === 0) {
+          const probe = await pipeline('test', { pooling: 'mean', normalize: true });
+          activeModelConfig.dims = probe.data.length;
+          console.error(`[Semantic] Probed model ${activeModelConfig.id}: ${activeModelConfig.dims} dims`);
+        }
+        return; // Success — exit retry loop
+      } catch (err: unknown) {
+        // Missing dependency — no point retrying
+        if (err instanceof Error && (
+          err.message.includes('Cannot find package') ||
+          err.message.includes('MODULE_NOT_FOUND') ||
+          err.message.includes("Cannot find module") ||
+          err.message.includes('ERR_MODULE_NOT_FOUND')
+        )) {
+          initPromise = null;
+          throw new Error(
+            'Semantic search requires @huggingface/transformers. ' +
+            'Install it with: npm install @huggingface/transformers'
+          );
+        }
+
+        // Retryable failure (network, download, ONNX load)
+        if (attempt < MAX_RETRIES) {
+          const delay = RETRY_DELAYS[attempt - 1];
+          console.error(`[Semantic] Model load failed (attempt ${attempt}/${MAX_RETRIES}): ${err instanceof Error ? err.message : err}`);
+          console.error(`[Semantic] Retrying in ${delay / 1000}s...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          pipeline = null; // Reset for retry
+        } else {
+          console.error(`[Semantic] Model load failed after ${MAX_RETRIES} attempts: ${err instanceof Error ? err.message : err}`);
+          console.error(`[Semantic] Semantic search disabled. Keyword search (BM25) remains available.`);
+          initPromise = null;
+          throw err;
+        }
       }
-    } catch (err: unknown) {
-      initPromise = null;
-      if (err instanceof Error && (
-        err.message.includes('Cannot find package') ||
-        err.message.includes('MODULE_NOT_FOUND') ||
-        err.message.includes("Cannot find module") ||
-        err.message.includes('ERR_MODULE_NOT_FOUND')
-      )) {
-        throw new Error(
-          'Semantic search requires @huggingface/transformers. ' +
-          'Install it with: npm install @huggingface/transformers'
-        );
-      }
-      throw err;
     }
   })();
 

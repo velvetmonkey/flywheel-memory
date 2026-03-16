@@ -664,7 +664,9 @@ async function main() {
       const files = await scanVault(vaultPath);
       const noteCount = files.length;
       serverLog('index', `Found ${noteCount} markdown files`);
-      cachedIndex = loadVaultIndexFromCache(stateDb, noteCount);
+      // Find newest file mtime to invalidate cache if files changed since last build
+      const newestMtime = files.reduce((max, f) => f.modified > max ? f.modified : max, new Date(0));
+      cachedIndex = loadVaultIndexFromCache(stateDb, noteCount, undefined, undefined, newestMtime);
     } catch (err) {
       serverLog('index', `Cache check failed: ${err instanceof Error ? err.message : err}`, 'warn');
     }

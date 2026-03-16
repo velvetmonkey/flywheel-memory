@@ -557,12 +557,14 @@ export function deserializeVaultIndex(data: VaultIndexCacheData): VaultIndex {
  * @param scannedFileCount - Number of files found by scanVault (may be higher than parsed notes)
  * @param maxAgeMs - Maximum cache age in milliseconds (default: 24 hours)
  * @param tolerancePercent - Allowed mismatch between cached notes and scanned files (default: 5%)
+ * @param newestFileMtime - Newest file modification time from scanVault (invalidates cache if files changed since build)
  */
 export function loadVaultIndexFromCache(
   stateDb: StateDb,
   scannedFileCount: number,
   maxAgeMs: number = 24 * 60 * 60 * 1000,
-  tolerancePercent: number = 5
+  tolerancePercent: number = 5,
+  newestFileMtime?: Date
 ): VaultIndex | null {
   const info = getVaultIndexCacheInfo(stateDb);
   if (!info) {
@@ -582,6 +584,12 @@ export function loadVaultIndexFromCache(
   const age = Date.now() - info.builtAt.getTime();
   if (age > maxAgeMs) {
     console.error(`[Flywheel] Cache invalid: too old (${Math.round(age / 1000 / 60)} minutes)`);
+    return null;
+  }
+
+  // Reject cache if any file was modified after the cache was built
+  if (newestFileMtime && newestFileMtime.getTime() > info.builtAt.getTime()) {
+    console.error(`[Flywheel] Cache invalid: files modified since cache was built (newest file: ${newestFileMtime.toISOString()}, cache built: ${info.builtAt.toISOString()})`);
     return null;
   }
 

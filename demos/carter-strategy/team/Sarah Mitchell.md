@@ -1,5 +1,7 @@
 ---
 type: person
+aliases:
+  - Sarah
 role: VP Technology
 company: "[[Acme Corp]]"
 email: sarah.mitchell@acmecorp.com

@@ -1,5 +1,7 @@
 ---
 type: contact
+aliases:
+  - Marcus
 company: "[[Velocity Labs]]"
 role: Research Director
 email: marcus@velocity.com

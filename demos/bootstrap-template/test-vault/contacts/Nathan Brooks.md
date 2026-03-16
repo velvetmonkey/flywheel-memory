@@ -1,5 +1,7 @@
 ---
 type: contact
+aliases:
+  - Nathan
 company: "[[Sterling Insurance]]"
 role: CTO
 email: nathan@sterling.com

@@ -1,5 +1,8 @@
 ---
 type: contact
+aliases:
+  - Michael
+  - Dr. Michael
 company: "[[Meridian Health]]"
 role: Chief Medical Officer
 email: michael@meridian.com

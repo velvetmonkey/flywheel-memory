@@ -1,5 +1,7 @@
 ---
 type: contact
+aliases:
+  - Lisa
 company: "[[TechStart Inc]]"
 role: Engineering Lead
 email: lisa@techstart.com

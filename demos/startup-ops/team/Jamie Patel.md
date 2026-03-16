@@ -1,5 +1,7 @@
 ---
 type: person
+aliases:
+  - Jamie
 role: Co-Founder & COO
 focus: Sales, Operations, Finance
 email: jamie@metricflow.com

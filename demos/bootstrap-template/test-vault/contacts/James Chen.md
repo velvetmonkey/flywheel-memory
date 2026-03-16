@@ -1,5 +1,7 @@
 ---
 type: contact
+aliases:
+  - James
 company: "[[Acme Corp]]"
 role: CTO
 email: james@acme.com

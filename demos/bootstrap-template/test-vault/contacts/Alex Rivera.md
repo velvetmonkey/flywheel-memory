@@ -1,5 +1,7 @@
 ---
 type: contact
+aliases:
+  - Alex
 company: "[[Nexus Systems]]"
 role: CEO
 email: alex@nexus.com

@@ -1,5 +1,7 @@
 ---
 type: contact
+aliases:
+  - Victoria
 company: "[[Summit Analytics]]"
 role: CEO
 email: victoria@summit.com

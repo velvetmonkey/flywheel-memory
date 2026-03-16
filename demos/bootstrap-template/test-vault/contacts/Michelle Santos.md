@@ -1,5 +1,7 @@
 ---
 type: contact
+aliases:
+  - Michelle
 company: "[[Atlas Logistics]]"
 role: Operations Manager
 email: michelle@atlas.com

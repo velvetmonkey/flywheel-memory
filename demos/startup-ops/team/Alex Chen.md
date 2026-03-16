@@ -1,5 +1,7 @@
 ---
 type: person
+aliases:
+  - Alex
 role: Co-Founder & CEO
 focus: Product, Engineering
 email: alex@metricflow.com

@@ -488,11 +488,15 @@ Use "vault_schema" before bulk operations to understand field conventions, incon
 // Server Setup
 // ============================================================================
 
-const server = new McpServer({
-  name: 'flywheel-memory',
-  version: pkg.version,
-  instructions: generateInstructions(enabledCategories),
-});
+const server = new McpServer(
+  {
+    name: 'flywheel-memory',
+    version: pkg.version,
+  },
+  {
+    instructions: generateInstructions(enabledCategories),
+  },
+);
 
 // Monkey-patch server.tool() and server.registerTool() to gate by per-tool category
 let _registeredCount = 0;

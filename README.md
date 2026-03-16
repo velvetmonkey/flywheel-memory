@@ -101,11 +101,15 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ## What Makes Flywheel Different
 
-### 1. Hybrid Search
+### 1. Enriched Search
 
-Search "authentication" -- exact matches. Search "login security" -- same notes, plus every note about auth that never uses the word.
+Most tools return file paths. Flywheel returns the answer.
 
-Keyword search finds what you said. Semantic search finds what you meant. Flywheel runs both and fuses the results. Runs locally on a 23 MB model. Nothing leaves your machine.
+Every search result includes the note's frontmatter, every note that links to it, every note it links to, its heading outline, and the matching text snippet — all from an in-memory index, zero file reads. That's why the example above answers a billing question from a single call: the client's frontmatter has the totals, the backlinks surface every invoice, and the outlinks show related projects.
+
+Matching combines three channels: title/entity name matching, full-text search (BM25 with stemming), and entity database lookup (aliases, categories). With semantic embeddings (via `init_semantic`), results are fused via Reciprocal Rank Fusion — "login security" finds notes about authentication even without that keyword. Everything runs locally. Nothing leaves your machine.
+
+This is what makes `search` the only tool most questions need. You don't search, then read backlinks, then read metadata — it's all in the first result.
 
 ### 2. Every Suggestion Has a Receipt
 
@@ -121,32 +125,20 @@ Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +
 
 See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
-### 3. The Contextual Cloud
+### 3. Use It and It Gets Smarter
 
-**Every auto-wikilink is a bet on future relevance — and the house edge is 100% precision.**
+Every auto-wikilink is a graph edge — and every edge makes future queries better.
 
-The loop compounds:
 - **Write** → entities are auto-linked, creating edges
 - **Keep** a link through 10 edits → that edge gains weight
-- **Co-occurrence** → two entities in 20 notes build a statistical bond
 - **Remove** a bad link → the system learns what to suppress
-- **Query** → denser graphs return more precise answers, which drives more use
+- **Co-occurrence** → two entities in 20 notes build a statistical bond that surfaces in suggestions
 
-This is the uncontested gap. Competing tools are static — they find what's there today. Flywheel's graph gets better the more you use it. A static search tool gives you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. Usage turns into data, data turns into better suggestions, compounding over time. No retraining, no configuration, no manual curation.
+Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. Usage compounds into structure, structure compounds into intelligence. No retraining, no configuration, no manual curation.
 
-See [Graph Quality](#graph-quality) for the numbers: 100% precision, 72-82% recall, stable over 50 generations of noisy feedback.
+This isn't aspirational — the F1 scores below are measured under realistic noise, and they hold steady after 50 generations of accumulated feedback. See [Graph Quality](#graph-quality) for the numbers.
 
-### 4. Semantic Understanding
-
-Content about "deployment automation" suggests `[[CI/CD]]` — no keyword match needed. Entity-level embeddings mean your knowledge graph understands meaning, not just words.
-
-- **Semantic bridges**: Discovers high-value missing links between conceptually related but unlinked notes
-- **Semantic clusters**: Groups notes by meaning instead of folder structure
-- **Semantic wikilinks**: Suggestions based on what you *mean*, not just what you typed
-
-Build once with `init_semantic`. Everything upgrades automatically. Configurable model via `EMBEDDING_MODEL` env var.
-
-### 5. Agentic Memory
+### 4. Agentic Memory
 
 The system remembers context across sessions. No more starting from scratch.
 
@@ -177,34 +169,19 @@ The name is literal. A flywheel is hard to start but once spinning, each push ad
 
 ### Day 1: Instant Value
 
-You point Flywheel at your vault. It indexes every note, extracts entities, builds a backlink graph. First query returns in <10ms. First write auto-links three entities you would have missed. No training period. No configuration.
+Index, extract entities, build graph. First query returns in <10ms. First write auto-links three entities you would have missed.
 
 ### Week 1: Connections Appear
 
-You have 30 disconnected notes. Auto-wikilinks create 47 connections on your first day of writing through Flywheel. You stop reading files and start querying a graph.
+Auto-wikilinks create dozens of connections on your first day of writing. You stop reading files and start querying a graph.
 
 ### Month 1: Intelligence Emerges
 
-Hub notes surface. "Sarah Mitchell" has 23 backlinks -- she's clearly important. When you write about a project, her name appears in suggestions because co-occurrence tracking knows she's relevant. You didn't configure this. The vault structure revealed it.
+Hub notes surface — "Sarah Mitchell" has 23 backlinks. Co-occurrence tracking knows she's relevant to security projects. You didn't configure this. The vault structure revealed it.
 
 ### Month 3: The Graph Is Self-Sustaining
 
 Every query leverages hundreds of accumulated connections. New content auto-links to the right places. You stop thinking about organization.
-
-### Looking Backwards
-
-The real test isn't "did the right link appear today?" It's: "six months from now, can I trace how a decision was made?" Every auto-wikilink is a breadcrumb. The contextual cloud around a project grows silently — meeting notes link to people, people link to decisions, decisions link to outcomes. You never planned this structure. It emerged from use.
-
-Suggestions that seemed marginal at the time — linking a throwaway standup note to `[[Q3 Roadmap]]` — become the connective tissue that makes "show me everything related to Q3 planning" actually work.
-
-### What This Looks Like
-
-```
-Input:  "Stacy Thompson finished reviewing the API Security Checklist for the Beta Corp Dashboard"
-Output: "[[Stacy Thompson]] finished reviewing the [[API Security Checklist]] for the [[Beta Corp Dashboard]]"
-```
-
-No manual linking. No broken references. Use compounds into structure, structure compounds into intelligence.
 
 ---
 
@@ -300,7 +277,7 @@ cd flywheel-memory/demos/carter-strategy && claude
 | [artemis-rocket](demos/artemis-rocket/) | Rocket engineer | "What's blocking propulsion?" |
 | [startup-ops](demos/startup-ops/) | SaaS co-founder | "What's our MRR?" |
 | [nexus-lab](demos/nexus-lab/) | PhD researcher | "How does AlphaFold connect to my experiment?" |
-| [solo-operator](demos/solo-operator/) | Content creator | "How's revenue this month?" |
+| [solo-operator](demos/solo-operator/) | Content creator | "How's revenue looking?" |
 | [support-desk](demos/support-desk/) | Support agent | "What's Sarah Chen's situation?" |
 | [zettelkasten](demos/zettelkasten/) | Zettelkasten student | "How does spaced repetition connect to active recall?" |
 

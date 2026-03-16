@@ -25,15 +25,40 @@
 
 ## Find Anything
 
-Start here. `search` is the main tool — it returns frontmatter, backlinks, outlinks, headings, and snippets for every hit. Most questions are answered without reading a single file.
+Start here. `search` is the only tool most questions need.
 
 ### `search`
 
-The default scope (`all`) searches metadata first, then falls back to content. You can also target a specific scope:
+**How it works:** You give it a query. It finds matching notes, then *enriches* every result with the note's full graph context — all from an in-memory index, with zero file reads.
+
+Every search result includes:
+
+| Field | What it is | Why it matters |
+|-------|-----------|----------------|
+| **frontmatter** | All YAML metadata (status, owner, amount, dates, etc.) | Answer "how much?" or "what status?" questions without opening the file. |
+| **backlinks** | Every note that links TO this one | See what references this note — invoices pointing to a client, tickets pointing to a user. |
+| **outlinks** | Every note this one links TO | See what this note references — a project's team members, dependencies, related decisions. |
+| **headings** | The note's heading outline | Know what sections exist before deciding whether to read the full content. |
+| **snippet** | The passage that matched your query (content search) | See the relevant paragraph in context without reading the whole file. |
+| **tags, aliases** | Tags and alternative names | Understand categorization and find notes by alternate names. |
+| **category, hub_score** | Entity type and graph importance | Know if this is a person, project, or concept — and how central it is in the vault. |
+
+This is the key design: **one search call returns not just file paths, but the full neighborhood of each result.** That's why Claude can answer "How much have I billed Acme Corp?" from a single search — the client's frontmatter has the totals, and the backlinks show every invoice.
+
+**How matching works** (scope `all`, the default):
+
+1. **Title/entity match** — If your query matches a note title or entity name (e.g., "Acme Corp" matches `clients/Acme Corp.md`), that note ranks highest.
+2. **Full-text search (FTS5)** — BM25 ranking over note content. Handles stemming ("billing" matches "billed"), phrases, and boolean operators.
+3. **Entity search** — Matches against the entity database (names, aliases, categories). If "Sarah Chen" is an alias for `users/sarah-chen.md`, it finds it.
+4. **Hybrid ranking** — When semantic embeddings are built (via `init_semantic`), results from all three channels are merged using Reciprocal Rank Fusion. Notes can surface by meaning even without keyword overlap.
+
+The enrichment step is the same regardless of how a note matched — every result gets its full frontmatter, backlinks, outlinks, and headings attached.
+
+**Scopes** let you target a specific search channel:
 
 | Scope | When to use it |
 |-------|---------------|
-| `all` | Default. Start here for any question. |
+| `all` | Default. Start here for any question. Tries metadata first, falls back to content + entities. |
 | `metadata` | Filter by frontmatter fields, tags, folders, or titles. Combine with `where`, `has_tag`, `folder`, etc. |
 | `content` | Full-text search. Supports phrases (`"exact match"`), booleans (`term1 AND term2`), and prefix (`prefix*`). |
 | `entities` | Browse people, projects, technologies. Supports `prefix` mode for autocomplete. |

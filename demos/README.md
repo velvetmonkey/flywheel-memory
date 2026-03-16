@@ -31,60 +31,44 @@ Then start asking questions about the business.
 
 ---
 
-## Why Flywheel Saves Tokens
+## What Search Actually Returns
 
-**The problem:** LLMs like Claude have no persistent memory between queries. Every time you ask "What's blocking propulsion?", Claude must:
+When you ask "How much have I billed Acme Corp?", Claude calls `search` with that query. Here's what happens:
 
-1. **Read the relevant files** into its context window
-2. **Process the content** to find the answer
-3. **Discard everything** when the response is complete
+**Step 1 — Find matching notes.** Flywheel checks three channels:
+- **Title/entity match** — "Acme Corp" matches `clients/Acme Corp.md` by name
+- **Full-text search** — "billed" matches invoice notes that contain billing details
+- **Entity database** — aliases and alternate names are also checked
 
-Ask a follow-up question? Claude reads the files again. Run an agentic workflow with 50 queries? That's 50 file reads.
+**Step 2 — Enrich every result.** For each matching note, Flywheel attaches its full graph context from an in-memory index (no file reads):
 
 ```
-Grep approach (3 related queries):
-┌──────────────────────────────────────────────────────────┐
-│ Query 1: "What's blocking propulsion?"                   │
-│   Read: propulsion.md (2,500 tokens)                     │
-│   Read: turbopump.md (1,800 tokens)                      │
-│   Read: supplier.md (1,200 tokens)                       │
-│   Total: 5,500 tokens                                    │
-│                                                          │
-│ Query 2: "Who owns the turbopump work?"                  │
-│   Read: turbopump.md (1,800 tokens) ← AGAIN              │
-│   Read: team-roster.md (900 tokens)                      │
-│   Total: 2,700 tokens                                    │
-│                                                          │
-│ Query 3: "What decisions affect turbopump?"              │
-│   Read: turbopump.md (1,800 tokens) ← AGAIN              │
-│   Read: decisions/DR-003.md (600 tokens)                 │
-│   Read: decisions/DR-007.md (550 tokens)                 │
-│   Total: 2,950 tokens                                    │
-│                                                          │
-│ Session total: 11,150 tokens                             │
-└──────────────────────────────────────────────────────────┘
+search("Acme Corp billing")
+  → clients/Acme Corp.md
+      frontmatter: { total_billed: 156000, rate: 300, status: "active" }
+      backlinks:   [INV-2025-047.md, INV-2025-048.md, Acme Data Migration.md]
+      outlinks:    [Sarah Mitchell, INV-2025-047, Acme Data Migration]
+      headings:    ["Contact", "Projects", "Invoices", "Notes"]
+      tags:        ["client"]
 
-Flywheel (same 3 queries):
-┌──────────────────────────────────────────────────────────┐
-│ Query 1: flywheel search                                 │
-│   → enriched results: frontmatter, backlinks, outlinks,  │
-│     headings, snippets. Often zero file reads needed.    │
-│                                                          │
-│ Query 2: flywheel search                                 │
-│   → backlinks + outlinks already in search results       │
-│                                                          │
-│ Query 3: flywheel search                                 │
-│   → headings show what sections exist; snippet has       │
-│     the answer. One read_file only if "why" needed.      │
-│                                                          │
-│ Key: Enriched search returns the graph, not just paths.  │
-│ Most questions answered without reading any files.        │
-└──────────────────────────────────────────────────────────┘
+  → invoices/INV-2025-048.md
+      frontmatter: { amount: 12000, status: "pending", client: "Acme Corp" }
+      backlinks:   [Acme Corp.md, Acme Data Migration.md]
+      snippet:     "...December 2025 — 40 hours consulting at $300/hr..."
 ```
 
-**The key insight:** Most queries don't need full file content. Flywheel returns just the metadata, links, and structure—letting Claude answer from the index instead of re-reading files.
+That single result tells Claude: Acme Corp has been billed $156K total, there are two invoices ($15K paid, $12K pending), and they're connected to the Acme Data Migration project. All from one call, zero files read.
 
-When Claude *does* need full content (explaining "why" or reading detailed notes), it does a **selective file read** of just that one file, not the entire vault.
+**Why this matters:**
+- **Frontmatter** answers "how much?" and "what status?" questions directly
+- **Backlinks** show what *references* this note — invoices, tickets, meeting notes
+- **Outlinks** show what this note *talks about* — people, projects, decisions
+- **Headings** reveal what sections exist before committing to a full read
+- **Snippets** show the matching paragraph in context
+
+The result is that Claude gets the answer *and* the surrounding context in a single call. No need to read the file, then follow links, then read those files too. The quality of these results improves over time — every write adds edges to the graph, and the feedback loop ensures suggestions sharpen with use. See [Graph Quality](../README.md#graph-quality) for the measured F1 scores.
+
+When Claude *does* need full content (explaining "why" or reading detailed prose), it does a **selective read** of just that one section — not the entire vault.
 
 For a guided 5-minute walkthrough, see [Prove It Yourself](../docs/PROVE-IT.md).
 

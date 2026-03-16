@@ -54,46 +54,45 @@ When you ask Claude questions or request changes, here's the flow:
 
 > Claude's exact tool path varies between runs. These traces show representative sessions.
 
-### Customer context (search + backlinks)
+### Customer context (search + one read)
 
 ```
 You: "What's Sarah Chen's situation?"
 
 ● flywheel › search
-  query: "Sarah Chen", scope: "entities"
-  → Sarah Chen (person, users/sarah-chen.md)
+  query: "Sarah Chen"
+  → users/sarah-chen.md
+      frontmatter: { tier: "premium", sentiment: "frustrated", churn_risk: "high",
+                     open_tickets: 1, total_spent: 594,
+                     last_issue: "Double-charged $99 (TKT-2024-003, escalated)" }
+      backlinks: TKT-2024-001.md, TKT-2024-003.md, 2026-02-12.md
+      outlinks: Billing, TKT-2024-003, TKT-2024-001
+      headings: ["Preferences", "Account Context", "Issue History", "Notes", "Open Items"]
+    tickets/TKT-2024-003.md
+      frontmatter: { status: "escalated", priority: "urgent", category: "billing",
+                     resolution: "Refund initiated, awaiting processing",
+                     root_cause: "Stripe retry logic during partial outage" }
+      backlinks: sarah-chen.md, TKT-2024-001.md
+    tickets/TKT-2024-001.md
+      frontmatter: { status: "resolved", resolution: "Card updated, 1-week credit applied",
+                     resolution_time_hours: 18 }
 
-● flywheel › get_note_structure
-  path: "users/sarah-chen.md" (include_content: true)
-  → tier: premium, sentiment: frustrated, last_contact: 2026-02-11
+┌─ RESULT ──────────────────────────────────────────────┐
+│ Sarah Chen — Premium ($99/mo)                          │
+│ Sentiment: frustrated | Churn risk: HIGH               │
+│                                                        │
+│ Open issues:                                           │
+│   TKT-2024-003: Double charged $99 (ESCALATED)        │
+│   - Root cause: Stripe retry logic during outage       │
+│   - Refund initiated, awaiting processing              │
+│   - "If this happens again, I'm switching providers"   │
+│                                                        │
+│ History:                                               │
+│   TKT-2024-001: Payment failed (resolved in 18 hrs)   │
+└────────────────────────────────────────────────────────┘
 
-● flywheel › get_backlinks
-  path: "users/sarah-chen.md"
-  ← tickets/TKT-2024-001.md (payment failed, resolved)
-    tickets/TKT-2024-003.md (double charged, escalated)
-
-● flywheel › get_note_structure
-  path: "tickets/TKT-2024-001.md" (include_content: true)
-  ← status: resolved, priority: high, payment failure
-
-● flywheel › get_note_structure
-  path: "tickets/TKT-2024-003.md" (include_content: true)
-  ← status: escalated, priority: urgent, double charge $99
-
-┌─ RESULT ──────────────────────────────────────────┐
-│ Sarah Chen - Premium ($99/mo)                      │
-│ Sentiment: frustrated | Last contact: Feb 11       │
-│                                                    │
-│ Open issues:                                       │
-│   TKT-2024-003: Double charged $99 (ESCALATED)    │
-│   - Refund initiated, 3-5 days to process          │
-│   - Said "if this happens again, I'm switching"    │
-│                                                    │
-│ History:                                           │
-│   TKT-2024-001: Payment failed (resolved Jan 29)  │
-│                                                    │
-│ Risk: HIGH churn -- 2 billing issues in 2 weeks    │
-└────────────────────────────────────────────────────┘
+Frontmatter now includes churn_risk, resolution, and root_cause.
+One search returned everything — zero file reads needed.
 ```
 
 ### Ticket + knowledge base (search + read)
@@ -102,36 +101,36 @@ You: "What's Sarah Chen's situation?"
 You: "What tier does Bob need for 100 users?"
 
 ● flywheel › search
-  query: "Bob Wilson rate limit"
-  → users/bob-wilson.md, tickets/TKT-2024-004.md,
+  query: "Bob Wilson rate limit tier"
+  → users/bob-wilson.md
+      frontmatter: { tier: "developer", churn_risk: "low", open_tickets: 1,
+                     last_issue: "API rate limit questions (TKT-2024-004, open)" }
+      outlinks: API Rate Limits, TKT-2024-004, TKT-2024-002
+    tickets/TKT-2024-004.md
+      frontmatter: { status: "open", category: "technical" }
     knowledge/api-rate-limits.md
+      headings: ["Rate Limits by Tier", "Handling 429 Errors", "Best Practices"]
 
-● flywheel › get_forward_links
-  path: "tickets/TKT-2024-004.md"
-  → [[API Rate Limits]], [[Bob Wilson]]
+┌─ CLAUDE THINKS ───────────────────────────────────────┐
+│ Bob's on Developer (1000 req/min). 100 users at        │
+│ 1 req/sec = 6000 req/min. Need the tier table.         │
+└────────────────────────────────────────────────────────┘
 
-┌─ CLAUDE THINKS ───────────────────────────────────┐
-│ Bob's on Developer (1000 req/min). 100 users at    │
-│ 1 req/sec = 6000 req/min. Need the rate limit      │
-│ tier table from the knowledge base.                 │
-└────────────────────────────────────────────────────┘
-
-● read_file
-  path: "knowledge/api-rate-limits.md"
+● read_file("knowledge/api-rate-limits.md")
   → Developer: 1000 req/min, Premium: 5000, Enterprise: 10000+
 
-┌─ RESULT ──────────────────────────────────────────┐
-│ Bob Wilson (Developer tier, $29/mo)                │
-│                                                    │
-│ For 100 concurrent users at 1 req/sec:             │
-│   Needed: 6,000 req/min                            │
-│   Developer (1,000): not enough                    │
-│   Premium (5,000): not enough                      │
-│   Enterprise (10,000+): sufficient                  │
-│                                                    │
-│ Recommendation: Enterprise tier or client-side     │
-│ caching to reduce API calls.                        │
-└────────────────────────────────────────────────────┘
+┌─ RESULT ──────────────────────────────────────────────┐
+│ Bob Wilson (Developer tier, $29/mo)                    │
+│                                                        │
+│ For 100 concurrent users at 1 req/sec:                 │
+│   Needed: 6,000 req/min                                │
+│   Developer (1,000): not enough                        │
+│   Premium (5,000): not enough                          │
+│   Enterprise (10,000+): sufficient                      │
+│                                                        │
+│ Recommendation: Enterprise tier or client-side         │
+│ caching to reduce API calls.                            │
+└────────────────────────────────────────────────────────┘
 ```
 
 ### Log an interaction (write with auto-wikilinks)
@@ -165,6 +164,4 @@ You: "Log that I called Sarah about the refund status"
 
 ---
 
-**Token savings:** Each note in this vault averages ~50 lines (~750 tokens).
-With Flywheel, graph queries cost ~50-100 tokens instead of reading full files.
-That's **8-15x savings** per query--enabling hundreds of queries in agentic workflows.
+**Token savings:** Enriched search returns frontmatter (including churn_risk, resolution), backlinks, outlinks, and headings — customer context in a single call.

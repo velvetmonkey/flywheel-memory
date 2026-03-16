@@ -56,24 +56,23 @@ When you ask Claude questions or request changes, here's the flow:
 
 > Claude's exact tool path varies between runs. These traces show representative sessions.
 
-### Check revenue (search + structure)
+### Check revenue (one search)
 
 ```
 You: "How's revenue this month?"
 
 ● flywheel › search
   query: "revenue", scope: "content"
-  → ops/Revenue Tracker.md, products/AI Automation Course.md,
+  → ops/Revenue Tracker.md
+      frontmatter: { type: "tracker", mtd_total: 2388, target: 5000 }
+      outlinks: AI Automation Course, Consulting Services, TechCorp
+      headings: ["Revenue by Stream", "Pipeline", "Monthly Target"]
+      snippet: "...Course: $1,188 (4 sales) | Consulting: $1,200 (4 hours) |
+                Sponsors: $0. Total MTD: $2,388 / $5,000 target (48%)..."
+    products/AI Automation Course.md
+      frontmatter: { price: 297, total_sales: 51, total_revenue: 15147 }
     products/Consulting Services.md
-
-● flywheel › search
-  query: "revenue", scope: "metadata"
-  → ops/Revenue Tracker.md (type: tracker, updated: 2026-01-07)
-
-● flywheel › get_note_structure
-  path: "ops/Revenue Tracker.md" (include_content: true)
-  → Course: $1,188 | Consulting: $1,200 | Sponsors: $0
-  → Total MTD: $2,388 / $5,000 target (48%)
+      frontmatter: { rate: 300, hours_delivered: 22 }
 
 ┌─ RESULT ──────────────────────────────────────────┐
 │ Revenue Dashboard (January 2026)                   │
@@ -86,35 +85,27 @@ You: "How's revenue this month?"
 │                                                    │
 │ Pipeline: TechCorp 4-session expansion ($2,400)    │
 └────────────────────────────────────────────────────┘
+
+Revenue breakdown visible in search snippets and frontmatter.
 ```
 
-### Morning briefing (search + multi-source)
+### Morning briefing (search + structure)
 
 ```
 You: "Run my morning briefing"
 
 ● flywheel › search
   query: "morning briefing revenue subscribers"
-  → ops/Morning Briefing.md, ops/Revenue Tracker.md,
+  → ops/Morning Briefing.md
+      headings: ["Revenue Check", "Subscribers", "Content Due", "Tasks"]
+    ops/Revenue Tracker.md
+      frontmatter: { mtd_total: 2388, target: 5000 }
     ops/Subscriber Metrics.md
+      frontmatter: { subscribers: 2847, weekly_growth: 36 }
 
-● flywheel › get_note_metadata
-  path: "ops/Subscriber Metrics.md"
-  → subscribers: 2847, weekly_growth: +36
-
-● flywheel › get_section_content
-  path: "daily-notes/2026-01-06.md"
-  section: "Log"
-  → Yesterday's activities
-
-● flywheel › get_note_metadata
-  path: "content/Content Calendar.md"
-  → Today's scheduled content
-
-┌─ CLAUDE THINKS ───────────────────────────────────┐
-│ Combine yesterday's log + tracker metrics +        │
-│ content calendar into structured briefing.          │
-└────────────────────────────────────────────────────┘
+● flywheel › get_note_structure
+  path: "ops/Morning Briefing.md" (include_content: true)
+  → Briefing template with revenue, subscriber, content sections
 
 ┌─ RESULT ──────────────────────────────────────────┐
 │ Morning Briefing                                   │
@@ -131,7 +122,6 @@ You: "Run my morning briefing"
 │   [green] Course sales on track                    │
 │   [yellow] Subscriber growth below target (-28%)   │
 └────────────────────────────────────────────────────┘
-
 ```
 
 ### Analyze newsletter performance (search + read)
@@ -140,23 +130,20 @@ You: "Run my morning briefing"
 You: "Why did Tuesday's newsletter perform so well?"
 
 ● flywheel › search
-  query: "AI Tools Weekly newsletter"
+  query: "AI Tools Weekly newsletter performance"
   → content/2026-01-07 AI Tools Weekly.md
-
-● flywheel › get_note_metadata
-  path: "content/2026-01-07 AI Tools Weekly.md"
-  → open_rate: 0.42, click_rate: 0.091, issue: 48
+      frontmatter: { open_rate: 0.42, click_rate: 0.091, issue: 48 }
+      headings: ["Content", "Performance", "Notes"]
+      snippet: "...Subject: '5 Claude Code workflows that save me 10 hours/week'.
+                Open rate: 42%, click rate: 9.1%. 47 replies for 'SYSTEM' CTA..."
 
 ┌─ CLAUDE THINKS ───────────────────────────────────┐
-│ Metrics show high performance, but "why" needs     │
-│ the subject line, content structure, and notes.     │
+│ Metrics and subject line visible in search result.  │
+│ Read the file for the "why" — notes and analysis.   │
 └────────────────────────────────────────────────────┘
 
-● read_file
-  path: "content/2026-01-07 AI Tools Weekly.md"
-  → Subject: "5 Claude Code workflows that save me 10 hours/week"
-  → 47 replies for "SYSTEM" CTA
-  → Best performing issue in Q4
+● read_file("content/2026-01-07 AI Tools Weekly.md")
+  → 47 replies for "SYSTEM" CTA, best performing issue in Q4
 
 ┌─ RESULT ──────────────────────────────────────────┐
 │ Issue #48: 42% open rate (best in Q4)              │
@@ -171,7 +158,6 @@ You: "Why did Tuesday's newsletter perform so well?"
 │ Insight: 47 "SYSTEM" replies validate the          │
 │ lead magnet idea for subscriber growth.             │
 └────────────────────────────────────────────────────┘
-
 ```
 
 ---
@@ -180,6 +166,4 @@ You: "Why did Tuesday's newsletter perform so well?"
 
 ---
 
-**Token savings:** Each note in this vault averages ~100 lines (~1,500 tokens).
-With Flywheel, graph queries cost ~50-100 tokens instead of reading full files.
-That's **15-30x savings** per query--enabling hundreds of queries in agentic workflows.
+**Token savings:** Enriched search returns revenue figures, subscriber counts, and performance metrics from frontmatter and snippets — often answering operational questions in a single call.

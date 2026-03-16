@@ -130,23 +130,26 @@ Flywheel checks forward links from each `literature/` note into `permanent/`. Bo
 
 > Claude's exact tool path varies between runs. These traces show representative sessions.
 
-### Worked Example 1: Concept connection -- search + read
+### Worked Example 1: Concept connection -- enriched search
 
 ```
 You: "How does Spaced Repetition relate to Active Recall?"
 
 ● flywheel › search
   query: "Spaced Repetition Active Recall"
-  → permanent/Spaced Repetition.md, permanent/Active Recall.md,
-    permanent/Testing Effect.md, permanent/Desirable Difficulties.md
-
-● read_file("permanent/Spaced Repetition.md")
-  ← links to: Active Recall, Spacing Effect, Memory Consolidation,
-     Desirable Difficulties, Metacognition
-
-● read_file("permanent/Active Recall.md")
-  ← links to: Spaced Repetition, Testing Effect, Metacognition,
-     Elaborative Interrogation
+  → permanent/Spaced Repetition.md
+      frontmatter: { type: "permanent", status: "mature" }
+      description: "Distributing review over increasing intervals exploits the spacing effect for long-term retention"
+      outlinks: Spacing Effect, Active Recall, Memory Consolidation, Desirable Difficulties, Metacognition, Anki
+      backlinks: Active Recall.md, Testing Effect.md, Desirable Difficulties.md, +8
+      headings: ["Core Mechanism", "How It Works", "Relationship to Other Concepts", "Evidence"]
+    permanent/Active Recall.md
+      description: "Retrieving information from memory strengthens neural pathways more than passive re-reading"
+      outlinks: Testing Effect, Spaced Repetition, Elaborative Interrogation, Metacognition, Dunning-Kruger Effect, Schema Theory
+      backlinks: Spaced Repetition.md, Elaborative Interrogation.md, Testing Effect.md, +9
+      headings: ["Why It Works", "Methods", "Common Misconceptions", "Connections"]
+    permanent/Testing Effect.md
+      description: "Being tested on material strengthens memory more than additional study time — retrieval is learning"
 
 ┌─ RESULT ──────────────────────────────────────────────┐
 │ Bidirectional relationship:                            │
@@ -160,32 +163,39 @@ You: "How does Spaced Repetition relate to Active Recall?"
 │   an act of recall                                     │
 │                                                        │
 │ Shared connections: Testing Effect, Desirable          │
-│ Difficulties, Make It Stick, Learning System Design    │
+│ Difficulties, Metacognition                            │
 └────────────────────────────────────────────────────────┘
+
+Descriptions and outlinks in search results reveal the relationship.
+Zero file reads needed.
 ```
 
-### Worked Example 2: Hub detection -- graph analysis
+### Worked Example 2: Hub detection -- search reveals structure
 
 ```
-You: "Find the hub concepts"
+You: "What are the most connected notes in this vault?"
 
-● flywheel › graph_analysis
-  mode: "hubs"
-  ← Active Recall         (14 connections)
-     Spaced Repetition     (12 connections)
-     Desirable Difficulties (11 connections)
-     Metacognition          (10 connections)
-     Schema Theory          (9 connections)
+● flywheel › search
+  query: "learning", scope: "content", limit: 20
+  → permanent/Active Recall.md
+      backlink_count: 12, outlink_count: 10
+    permanent/Spaced Repetition.md
+      backlink_count: 11, outlink_count: 8
+    permanent/Desirable Difficulties.md
+      backlink_count: 10, outlink_count: 7
+    permanent/Metacognition.md
+      backlink_count: 9, outlink_count: 8
+    permanent/Schema Theory.md
+      backlink_count: 8, outlink_count: 7
 
 ┌─ RESULT ──────────────────────────────────────────────┐
-│ Top 5 hub notes by connection count:                   │
+│ Most connected notes (by backlink + outlink count):    │
 │                                                        │
-│ 1. Active Recall          14 links (7 in, 7 out)      │
-│ 2. Spaced Repetition      12 links (6 in, 6 out)      │
-│ 3. Desirable Difficulties 11 links (7 in, 4 out)      │
-│ 4. Metacognition          10 links (5 in, 5 out)      │
-│ 5. Schema Theory           9 links (4 in, 5 out)      │
-│                                                        │
+│ 1. Active Recall           22 links (12 in, 10 out)   │
+│ 2. Spaced Repetition       19 links (11 in, 8 out)    │
+│ 3. Desirable Difficulties  17 links (10 in, 7 out)    │
+│ 4. Metacognition           17 links (9 in, 8 out)     │
+│ 5. Schema Theory           15 links (8 in, 7 out)     │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -248,4 +258,4 @@ claude
 
 ---
 
-**Token savings**: Notes in this vault average ~35 lines (~500 tokens each). Flywheel graph queries return ~50-80 tokens of targeted metadata instead of reading full files -- **6-10x savings** per query, compounding across agentic workflows that chain dozens of tool calls.
+**Token savings**: Enriched search returns descriptions, outlinks, backlinks, and headings for every hit — concept connections visible without reading files.

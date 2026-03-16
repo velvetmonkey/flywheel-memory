@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-14"
+description: "Grouping information into meaningful units expands effective working memory capacity"
 tags:
   - memory
   - information-processing

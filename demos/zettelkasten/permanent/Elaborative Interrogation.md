@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-20"
+description: "Asking 'why' and 'how' during study forces deeper processing — 72% better retention than re-reading"
 tags:
   - study-techniques
   - comprehension

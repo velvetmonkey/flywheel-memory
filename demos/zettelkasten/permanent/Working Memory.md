@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-13"
+description: "Limited-capacity system holding 3-5 items temporarily — the primary bottleneck for learning"
 tags:
   - cognitive-psychology
   - memory

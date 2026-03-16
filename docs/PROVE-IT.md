@@ -54,20 +54,17 @@ Watch the tool trace (Claude's exact path varies between runs):
 ```
 ● flywheel › search
   query: "Acme Corp"
-  → clients/Acme Corp.md, invoices/INV-2025-047.md,
-    invoices/INV-2025-048.md, projects/Acme Data Migration.md
-
-● read_file("clients/Acme Corp.md")
-  ← total_billed: 156000, rate: $300/hr, status: active
-
-● read_file("invoices/INV-2025-047.md")
-  ← amount: 15000, status: paid
-
-● read_file("invoices/INV-2025-048.md")
-  ← amount: 12000, status: pending
+  → clients/Acme Corp.md
+      frontmatter: { total_billed: 156000, rate: 300, status: "active" }
+      backlinks: INV-2025-047.md, INV-2025-048.md, Acme Data Migration.md, +28
+      outlinks: Sarah Mitchell, INV-2025-047, INV-2025-048, +25
+    invoices/INV-2025-047.md
+      frontmatter: { amount: 15000, status: "paid" }
+    invoices/INV-2025-048.md
+      frontmatter: { amount: 12000, status: "pending" }
 ```
 
-**What happened:** Flywheel's indexed search found all Acme-related notes in one call -- no grepping through files. Claude read the ones it needed for billing details. Some runs use graph tools (`get_backlinks`, `get_note_metadata`) instead of file reads -- the answer is the same either way.
+**What happened:** Flywheel's enriched search returned frontmatter (amounts, status), backlinks, and outlinks for every hit -- all in one call. Zero file reads needed. The answer was in the search result itself.
 
 Without Flywheel, Claude would grep for "Acme" and scan matching files. The real win shows in structural queries like "what are the hub notes?" or "what's the shortest path between X and Y?" — those need a graph, not file reads.
 
@@ -139,30 +136,22 @@ Ask Claude:
 
 ```
 ● flywheel › search
-  query: "AlphaFold"
-  → literature/Jumper2021-AlphaFold.md, experiments/Experiment-2024-10-28.md
-
-● flywheel › search
-  query: "docking experiment"
-  → experiments/Experiment-2024-11-22.md
-
-● flywheel › get_forward_links
-  path: "literature/Jumper2021-AlphaFold.md"
-  → [[Transformer Architecture]], [[Structure-Based Drug Design]]
-
-● flywheel › get_forward_links
-  path: "experiments/Experiment-2024-11-22.md"
-  → [[Experiment-2024-10-28]], [[AMBER Force Field]], [[Drug-Target Prediction]]
-
-● flywheel › get_section_content
-  path: "experiments/Experiment-2024-10-28.md", section: "Results"
-  → pLDDT 94.2, RMSD 0.8A vs PDB 1M17
+  query: "AlphaFold docking experiment"
+  → literature/Jumper2021-AlphaFold.md
+      outlinks: Transformer Architecture, Structure-Based Drug Design
+      snippet: "...predicts protein structures with atomic accuracy..."
+    experiments/Experiment-2024-10-28.md
+      outlinks: Jumper2021-AlphaFold, EGFR, Drug-Target Prediction
+      snippet: "...pLDDT 94.2, RMSD 0.8Å vs PDB 1M17..."
+    experiments/Experiment-2024-11-22.md
+      outlinks: Experiment-2024-10-28, AMBER Force Field
+      snippet: "...Compound_472: -11.2 kcal/mol..."
 ```
 
 **Connection path (3 hops):**
 Jumper2021 (AlphaFold) -> Experiment-2024-10-28 (EGFR structure) -> Experiment-2024-11-22 (docking screen, Compound_472: -11.2 kcal/mol)
 
-Same tools, completely different domain. Flywheel doesn't know anything about biology or consulting or Zettelkasten. It knows graph structure, and graph structure is universal.
+Same tools, completely different domain. Outlinks in search results trace the citation chain -- AlphaFold paper → structure prediction experiment → docking screen. Flywheel doesn't know biology. It knows graph structure, and graph structure is universal.
 
 ---
 
@@ -192,6 +181,19 @@ See [SETUP.md](SETUP.md) for the complete walkthrough.
 4. **The algorithm is transparent** -- scores with explanations, not black boxes
 5. **Domain-independent** -- consulting, cognitive science, computational biology, your vault
 6. **Zero cloud dependencies** -- everything ran on your machine
+
+---
+
+## Typical Cost Per Query
+
+| Prompt type | Cost | Duration |
+|-------------|------|----------|
+| Single search query | ~$0.03 | ~10-20s |
+| Search + one read | ~$0.06 | ~15-25s |
+| Multi-step (2-3 tools) | ~$0.10 | ~20-30s |
+| Write + auto-wikilinks | ~$0.15 | ~30-40s |
+
+Measured with Claude Sonnet on the demo vaults. Enriched search results (frontmatter, backlinks, outlinks, headings, 64-token snippets) mean most queries need fewer tool calls than before.
 
 ---
 

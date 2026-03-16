@@ -68,79 +68,76 @@ When you ask Claude questions or request changes, here's the flow:
 
 > Claude's exact tool path varies between runs. These traces show representative sessions.
 
-### Trace a citation chain (search + graph traversal)
+### Trace a citation chain (enriched search)
 
 ```
 You: "How does AlphaFold connect to my docking experiment?"
 
   ● flywheel › search
-    query: "AlphaFold"
-    → literature/Jumper2021-AlphaFold.md,
+    query: "AlphaFold docking experiment"
+    → literature/Jumper2021-AlphaFold.md
+        frontmatter: { type: "literature", year: 2021 }
+        outlinks: Transformer Architecture, Structure-Based Drug Design, Protein Folding
+        headings: ["Key Contribution", "Method", "Impact", "Connections"]
+        snippet: "...AlphaFold predicts protein structures with atomic accuracy using a novel
+                  transformer architecture..."
       experiments/Experiment-2024-10-28.md
-
-  ● flywheel › search
-    query: "docking experiment"
-    → experiments/Experiment-2024-11-22.md
-
-  ● flywheel › get_forward_links
-    path: "literature/Jumper2021-AlphaFold.md"
-    → [[Transformer Architecture]], [[Structure-Based Drug Design]]
-
-  ● flywheel › get_forward_links
-    path: "experiments/Experiment-2024-11-22.md"
-    → [[Experiment-2024-10-28]], [[AMBER Force Field]], [[Drug-Target Prediction]]
-
-  ● flywheel › get_section_content
-    path: "experiments/Experiment-2024-10-28.md", section: "Results"
-    → pLDDT 94.2, RMSD 0.8A vs PDB 1M17
-
-  ● flywheel › get_section_content
-    path: "experiments/Experiment-2024-11-22.md", section: "Results"
-    → Compound_472: -11.2 kcal/mol
+        frontmatter: { status: "completed", method: "AlphaFold" }
+        outlinks: Jumper2021-AlphaFold, EGFR, Drug-Target Prediction
+        snippet: "...pLDDT 94.2, RMSD 0.8Å vs crystal structure PDB 1M17..."
+      experiments/Experiment-2024-11-22.md
+        frontmatter: { status: "completed", method: "Molecular Docking" }
+        outlinks: Experiment-2024-10-28, AMBER Force Field, Drug-Target Prediction
+        snippet: "...Compound_472: binding energy -11.2 kcal/mol..."
 
   ┌─ RESULT ────────────────────────────────────────────┐
   │ Connection path (3 hops):                           │
   │                                                     │
   │ Jumper2021-AlphaFold                                │
   │   → Experiment-2024-10-28 (EGFR structure,          │
-  │     pLDDT 94.2, RMSD 0.8A vs PDB 1M17)             │
+  │     pLDDT 94.2, RMSD 0.8Å)                         │
   │   → Experiment-2024-11-22 (docking screen,          │
   │     Compound_472: -11.2 kcal/mol)                   │
   │                                                     │
-  │ The AlphaFold-predicted structure was validated      │
-  │ against crystal structure, then used as the          │
-  │ receptor for virtual screening of 10 candidates.    │
+  │ The predicted structure was validated against        │
+  │ crystal structure, then used as receptor for         │
+  │ virtual screening of 10 candidates.                  │
   └─────────────────────────────────────────────────────┘
+
+Outlinks in search results trace the chain without
+graph traversal tools. Zero file reads needed.
 ```
 
-### Find experiments using a method (search + metadata)
+### Find experiments using a method (enriched search)
 
 ```
 You: "Which experiments used Centrality Measures?"
 
   ● flywheel › search
     query: "Centrality Measures"
-    → methods/Centrality Measures.md,
-      experiments/Experiment-2024-11-18.md,
+    → methods/Centrality Measures.md
+        outlinks: Barabasi2004-Network-Biology, Degree Centrality, Betweenness Centrality
+        headings: ["Types of Centrality", "Applications", "Implementation"]
+      experiments/Experiment-2024-11-18.md
+        frontmatter: { status: "completed", title: "PPI Network Analysis" }
+        snippet: "...324 proteins, EGFR top hub (degree=47)..."
       experiments/Experiment-2024-11-12.md
-
-  ● flywheel › get_note_metadata (x2)
-    Experiment-2024-11-18: status completed, PPI Network Analysis
-    Experiment-2024-11-12: status completed, Gene Regulatory Network
+        frontmatter: { status: "completed", title: "Gene Regulatory Network" }
+        snippet: "...2500 genes, Oct4 top transcription factor (degree=247)..."
 
   ┌─ RESULT ────────────────────────────────────────────┐
   │ 2 experiments used Centrality Measures:             │
   │                                                     │
   │ 1. Experiment-2024-11-18 (PPI Network Analysis)     │
   │    324 proteins, EGFR top hub (degree=47)           │
-  │    Status: completed                                │
   │                                                     │
   │ 2. Experiment-2024-11-12 (Gene Regulatory Network)  │
   │    2,500 genes, Oct4 top TF (degree=247)            │
-  │    Status: completed                                │
   │                                                     │
   │ Source paper: Barabasi2004-Network-Biology           │
   └─────────────────────────────────────────────────────┘
+
+Snippets contain the key results. Zero file reads.
 ```
 
 ### Summarize a project (search + read)
@@ -177,6 +174,4 @@ You: "What are the key results from drug-target prediction?"
 
 ---
 
-**Token savings:** Each note in this vault averages ~160 lines (~2,400 tokens).
-With Flywheel, graph queries cost ~50-100 tokens instead of reading full files.
-That's **24-48x savings** per query--enabling hundreds of queries in agentic workflows.
+**Token savings:** Enriched search returns outlinks (citation chains), snippets with key metrics, and method metadata — tracing connections without graph traversal tools.

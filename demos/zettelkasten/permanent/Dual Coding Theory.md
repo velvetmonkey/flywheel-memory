@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-17"
+description: "Combining verbal and visual representations creates two retrieval pathways, strengthening memory"
 tags:
   - visual-learning
   - instructional-design

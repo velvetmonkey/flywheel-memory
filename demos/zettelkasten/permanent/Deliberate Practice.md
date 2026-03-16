@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-22"
+description: "Structured, goal-directed practice with feedback builds expertise beyond comfort zones"
 tags:
   - expertise
   - practice

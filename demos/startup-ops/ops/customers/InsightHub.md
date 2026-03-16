@@ -6,6 +6,8 @@ mrr: "$0"
 priority: "high"
 churned_date: 2025-12-28
 original_mrr: 499
+health_score: 0
+churn_reason: "Performance issues — 30s query timeouts on 10M+ rows"
 tags:
   - customer
   - churned

@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-26"
+description: "Complete absorption in a task when challenge matches skill level — optimal for deep learning"
 tags:
   - motivation
   - focus

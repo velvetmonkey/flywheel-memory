@@ -6,6 +6,10 @@ updated: 2025-08-15
 decision_makers:
   - "[[Sarah Chen]]"
   - "[[Marcus Johnson]]"
+chosen_option: "LOX/RP-1"
+primary_driver: "budget"
+alternatives_evaluated: 4
+key_trade_off: "Cost vs ISP — LOX/LH2 has 30% higher ISP but exceeds budget by $3M"
 tags:
   - adr
   - propulsion

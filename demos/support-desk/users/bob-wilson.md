@@ -7,6 +7,10 @@ aliases:
   - Bob Wilson
 sentiment: neutral
 last_contact: 2026-02-12
+churn_risk: low
+open_tickets: 1
+total_spent: 0
+last_issue: "API rate limit questions (TKT-2024-004, open)"
 ---
 # Bob Wilson
 

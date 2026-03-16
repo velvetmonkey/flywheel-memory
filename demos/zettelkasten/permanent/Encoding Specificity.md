@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-27"
+description: "Memory retrieval is most effective when the retrieval context matches the original encoding context"
 tags:
   - memory
   - retrieval

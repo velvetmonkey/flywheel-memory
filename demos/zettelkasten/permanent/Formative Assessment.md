@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-28"
+description: "Ongoing low-stakes feedback during learning guides both teaching and studying, not just grading"
 tags:
   - assessment
   - education

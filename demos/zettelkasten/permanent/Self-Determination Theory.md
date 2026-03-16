@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-25"
+description: "Intrinsic motivation requires three needs: autonomy, competence, and relatedness"
 tags:
   - motivation
   - psychology

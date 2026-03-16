@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-14"
+description: "Awareness and regulation of one's own thinking processes — knowing what you know and don't know"
 tags:
   - metacognition
   - self-regulation

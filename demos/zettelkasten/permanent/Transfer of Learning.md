@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-21"
+description: "Applying knowledge learned in one context to new situations — the ultimate goal of education"
 tags:
   - learning-principles
   - application

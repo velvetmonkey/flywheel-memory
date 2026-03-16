@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-19"
+description: "Mental frameworks organize knowledge into patterns, enabling rapid processing with minimal cognitive load"
 tags:
   - cognitive-psychology
   - knowledge-representation

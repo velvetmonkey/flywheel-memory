@@ -43,16 +43,15 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
 ❯ How much have I billed Acme Corp?
 
 ● flywheel › search
-  query: "Acme Corp"
+  query: "Acme Corp billing invoice"
   → clients/Acme Corp.md
-      frontmatter: { total_billed: 156000, rate: "$300/hr", status: "active" }
-      category: "organization", backlink_count: 4
-    invoices/INV-2025-047.md
-      frontmatter: { amount: 15000, status: "paid", period: "November 2025" }
+      frontmatter: { total_billed: 156000, rate: 300, status: "active" }
+      backlinks: INV-2025-047.md, INV-2025-048.md, Acme Data Migration.md, +28
+      outlinks: Sarah Mitchell, INV-2025-047, INV-2025-048, Acme Analytics Add-on, +25
     invoices/INV-2025-048.md
       frontmatter: { amount: 12000, status: "pending", period: "December 2025" }
-    projects/Acme Data Migration.md
-      frontmatter: { client: "Acme Corp", status: "active" }
+    invoices/INV-2025-047.md
+      frontmatter: { amount: 15000, status: "paid", period: "November 2025" }
 
 ┌─ RESULT ──────────────────────────────────────────────┐
 │ Acme Corp: $156K total billed                         │
@@ -64,7 +63,7 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
 └───────────────────────────────────────────────────────┘
 ```
 
-One search call returned everything -- frontmatter with amounts and status, entity category, backlink counts. No file reads needed. Without Flywheel, Claude would grep for "Acme" and scan every matching file.
+One search call returned everything -- frontmatter with amounts and status, backlink lists, outlink lists. Zero file reads needed. Without Flywheel, Claude would grep for "Acme" and scan every matching file.
 
 ### Write: Auto-wikilinks on every mutation
 

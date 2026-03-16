@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-16"
+description: "Being tested on material strengthens memory more than additional study time — retrieval is learning"
 tags:
   - memory
   - assessment

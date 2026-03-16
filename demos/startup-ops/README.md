@@ -75,39 +75,35 @@ When you ask Claude questions or request changes, here's the flow:
 
 > Claude's exact tool path varies between runs. These traces show representative sessions.
 
-### Check MRR (search + structure)
+### Check MRR (search + one read)
 
 ```
 You: "What's our current MRR?"
 
   ● flywheel › search
-    query: "MRR revenue customers", scope: "content"
-    → finance/MRR Tracker.md, ops/customers/DataDriven Co.md,
-      ops/customers/GrowthStack.md, ops/customers/InsightHub.md
-
-  ● flywheel › search
-    query: "customer", scope: "entities"
-    → DataDriven Co, GrowthStack, InsightHub
-
-  ● flywheel › get_note_structure
-    path: "finance/MRR Tracker.md" (include_content: true)
-    → MRR: $499, 1 active customer
-
-  ● flywheel › get_note_structure
-    path: "ops/customers/DataDriven Co.md" (include_content: true)
-    → Status: Active, MRR: $499, Plan: Professional
-
-  ● flywheel › get_note_structure
-    path: "ops/customers/GrowthStack.md" (include_content: true)
-    → status: trial, trial_end: 2026-01-20
+    query: "MRR revenue customers"
+    → finance/MRR Tracker.md
+        frontmatter: { type: "tracker", current_mrr: 499, active_customers: 1,
+                       trial_customers: 1, churned_this_month: 0 }
+        outlinks: DataDriven Co, GrowthStack, InsightHub, Hiring Plan, +12
+        headings: ["Current MRR: $499", "MRR History", "Forecast", "Goal: $10K MRR by Q2",
+                   "Key Metrics", "Actions"]
+      ops/customers/DataDriven Co.md
+        frontmatter: { health_score: 9, next_renewal: "2026-04-01" }
+        headings: ["Company Info", "Account Details", "Health Score: 9/10", "Expansion Opportunity"]
+      ops/customers/InsightHub.md
+        frontmatter: { status: "churned", churned_date: "2025-12-28",
+                       churn_reason: "Performance issues — 30s query timeouts on 10M+ rows" }
 
   ┌─ RESULT ────────────────────────────────────────────┐
   │ MRR: $499/mo (1 active customer)                    │
-  │   DataDriven Co: $499/mo (Professional)             │
-  │ Pipeline: GrowthStack trial ends Jan 20 ($999 if    │
-  │   converted to Enterprise)                          │
-  │ Churned: InsightHub ($499, Dec 28 - performance)    │
+  │   DataDriven Co: $499/mo (health 9/10, renews Apr)  │
+  │ Pipeline: GrowthStack trial (1 trial customer)      │
+  │ Churned: InsightHub (performance issues on 10M+ rows)│
   └─────────────────────────────────────────────────────┘
+
+Enriched frontmatter shows MRR, health scores, and churn reasons
+in a single search call.
 ```
 
 ### Trace a churn reason (search + read)
@@ -118,13 +114,15 @@ You: "What caused InsightHub to churn?"
   ● flywheel › search
     query: "InsightHub churn"
     → ops/customers/InsightHub.md
+        frontmatter: { status: "churned", health_score: 0,
+                       churn_reason: "Performance issues — 30s query timeouts on 10M+ rows",
+                       churned_date: "2025-12-28", original_mrr: 499 }
+        outlinks: Alex Chen, DEC-001 Pricing Model, DEC-002 Target Market, Q1 2026 Roadmap
+        headings: ["Company Info", "Timeline", "Churn Reason", "What We Learned", "Win-Back Potential"]
 
-  ● read_file
-    path: "ops/customers/InsightHub.md"
-    → Churn Reason: Performance issues with 10M+ rows
-    → David: "query timeouts on 30+ second loads"
-    → Lessons: DEC-001 should tier by data volume,
-    →   add caching to Q1 roadmap
+  ● read_file("ops/customers/InsightHub.md")
+    → David Kim: "30+ second loads, need sub-second response times"
+    → Actions: tier pricing by data volume, add caching to Q1 roadmap
 
   ┌─ RESULT ────────────────────────────────────────────┐
   │ InsightHub churned Dec 28 after 29 days paid.       │
@@ -135,6 +133,9 @@ You: "What caused InsightHub to churn?"
   │   - Caching added to Q1 2026 Roadmap                │
   │   - DEC-002 Target Market narrowed to <1M rows      │
   └─────────────────────────────────────────────────────┘
+
+churn_reason in frontmatter gives the headline;
+read provides David's quote and action items.
 ```
 
 ### Run the onboarding playbook (search + read)
@@ -181,6 +182,4 @@ You: "Walk me through onboarding a new customer"
 
 ---
 
-**Token savings:** Each note in this vault averages ~150 lines (~2,200 tokens).
-With Flywheel, graph queries cost ~50-100 tokens instead of reading full files.
-That's **22-44x savings** per query--enabling hundreds of queries in agentic workflows.
+**Token savings:** Enriched search returns MRR, health scores, churn reasons, and renewal dates from frontmatter — operational metrics without file reads.

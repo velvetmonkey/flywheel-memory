@@ -103,6 +103,18 @@ function extractWikilinks(content: string): OutLink[] {
 }
 
 /**
+ * Extract section headings from markdown content
+ */
+function extractHeadings(markdown: string): string[] {
+  const headings: string[] = [];
+  for (const line of markdown.split('\n')) {
+    const match = line.match(/^(#{1,6})\s+(.+)/);
+    if (match) headings.push(match[2].trim());
+  }
+  return headings;
+}
+
+/**
  * Extract tags from markdown content and frontmatter
  */
 function extractTags(content: string, frontmatter: Record<string, unknown>): string[] {
@@ -258,6 +270,7 @@ export async function parseNoteWithWarnings(file: VaultFile): Promise<ParseResul
       frontmatter,
       outlinks: extractWikilinks(markdown),
       tags: extractTags(markdown, frontmatter),
+      headings: extractHeadings(markdown),
       modified: file.modified,
       created,
     },

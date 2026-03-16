@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-16"
+description: "Mixing different topics or problem types during practice improves discrimination and transfer"
 tags:
   - study-techniques
   - practice

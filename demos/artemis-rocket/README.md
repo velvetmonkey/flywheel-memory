@@ -85,21 +85,24 @@ When you ask questions, Claude calls Flywheel tools to read your vault's graph -
 
 > Claude's exact tool path varies between runs. These traces show representative sessions.
 
-### Trace a blocker -- search + targeted reads
+### Trace a blocker -- search returns the chain
 
 ```
 You: "What's blocking the propulsion milestone?"
 
   ● flywheel › search
-    query: "propulsion blocking"
-    → systems/propulsion/Propulsion System.md, systems/propulsion/Turbopump.md,
+    query: "propulsion blocking milestone"
+    → systems/propulsion/Propulsion System.md
+        frontmatter: { status: "testing", owner: "Marcus Johnson" }
+        outlinks: Engine Design, Turbopump, Cooling System, Fuel Tanks, +12
+        headings: ["Status", "Components", "Active Issues", "Test Results"]
+      systems/propulsion/Turbopump.md
+        frontmatter: { status: "delayed", supplier: "Acme Aerospace" }
+        headings: ["Status", "Supplier Issue", "Mitigation"]
       project/Risk Register.md
-
-  ● read_file("systems/propulsion/Propulsion System.md")
-    ← status: testing, owner: Marcus Johnson, active_issues: turbopump delay
-
-  ● read_file("systems/propulsion/Turbopump.md")
-    ← status: delayed, supplier: Acme Aerospace
+        headings: ["Critical Risks", "Medium Risks", "Low Risks"]
+        snippet: "...R-003: <mark>Turbopump</mark> Delivery Delay — CNC mill failure at Acme Aerospace.
+                  Original: Jan 5. Revised: Jan 20. Score: 15..."
 
   ● read_file("project/Risk Register.md")
     ← R-003: Turbopump Delivery Delay, score: 15
@@ -113,25 +116,33 @@ You: "What's blocking the propulsion milestone?"
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Explain a decision -- search + section read
+### Explain a decision -- enriched search
 
 ```
 You: "Why did we choose LOX/RP-1?"
 
   ● flywheel › search
-    query: "propellant selection LOX"
+    query: "propellant selection LOX RP-1"
     → decisions/ADR-001 Propellant Selection.md
+        frontmatter: { status: "accepted", chosen_option: "LOX/RP-1",
+                       primary_driver: "budget", alternatives_evaluated: 4,
+                       key_trade_off: "Cost vs ISP — LOX/LH2 has 30% higher ISP but exceeds budget by $3M" }
+        headings: ["Status", "Context", "Decision", "Alternatives Considered",
+                   "Rationale", "Implications", "Risk Assessment"]
+        snippet: "...Selected: LOX/RP-1 (Liquid Oxygen / Rocket-grade Kerosene).
+                  The main engine will use liquid oxygen as the oxidizer and RP-1 as the fuel,
+                  in a gas generator cycle configuration..."
 
-┌─ CLAUDE THINKS ────────────────────────────────────────────┐
-│ Found ADR-001. "Why" needs the full rationale -- reading   │
-│ the Decision section.                                      │
-└────────────────────────────────────────────────────────────┘
-
-  ● flywheel › get_section_content
-    path: "decisions/ADR-001 Propellant Selection.md"
-    section: "Decision"
-    ← Selected LOX/RP-1. Evaluated against hypergolics and solids.
-       Key factors: ISP, handling safety, supplier availability, cost.
+┌─ RESULT ───────────────────────────────────────────────────┐
+│ ADR-001: LOX/RP-1 selected (2025-08-15)                    │
+│                                                             │
+│ Primary driver: Budget ($14M constraint)                    │
+│ Key trade-off: LOX/LH2 has 30% higher ISP but +$3M         │
+│ 4 alternatives evaluated, LOX/RP-1 best balance of          │
+│ cost, schedule risk, and team experience                    │
+│                                                             │
+│ Zero file reads needed — frontmatter has the decision.      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Find who owns what -- metadata query
@@ -140,17 +151,24 @@ You: "Why did we choose LOX/RP-1?"
 You: "Who's responsible for each subsystem?"
 
   ● flywheel › search
-    query: "subsystem owner status", scope: "metadata"
-    → systems/propulsion/Propulsion System.md,
-      systems/avionics/Avionics System.md,
-      systems/gnc/GNC System.md,
+    where: { type: "subsystem" }, scope: "metadata"
+    → systems/propulsion/Propulsion System.md
+        frontmatter: { owner: "Marcus Johnson", status: "testing" }
+      systems/avionics/Avionics System.md
+        frontmatter: { owner: "Elena Rodriguez", status: "on-track" }
+      systems/gnc/GNC System.md
+        frontmatter: { owner: "Elena Rodriguez", status: "at-risk" }
       systems/structures/Structures System.md
+        frontmatter: { owner: "James Park", status: "on-track" }
 
-  ● flywheel › get_note_metadata (×4)
-    Propulsion — Marcus Johnson (status: testing)
-    Avionics   — Elena Rodriguez (status: on-track)
-    GNC        — Elena Rodriguez (status: at-risk)
-    Structures — James Park (status: on-track)
+┌─ RESULT ───────────────────────────────────────────────────┐
+│ Propulsion — Marcus Johnson (testing)                       │
+│ Avionics   — Elena Rodriguez (on-track)                     │
+│ GNC        — Elena Rodriguez (at-risk)                      │
+│ Structures — James Park (on-track)                          │
+└─────────────────────────────────────────────────────────────┘
+
+One metadata query returned all owners and statuses.
 ```
 
 ---

@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-12"
+description: "Distributing study sessions over time produces stronger memories than cramming — Ebbinghaus's key finding"
 tags:
   - memory
   - learning-principles

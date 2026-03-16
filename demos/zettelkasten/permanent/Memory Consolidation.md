@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-18"
+description: "Fragile new memories transform into stable long-term representations over hours to days, especially during sleep"
 tags:
   - neuroscience
   - memory

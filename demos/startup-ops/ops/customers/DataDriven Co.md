@@ -1,3 +1,7 @@
+---
+health_score: 9
+next_renewal: "2026-04-01"
+---
 # [[DataDriven Co]]
 
 Our [[First]] paying customer!

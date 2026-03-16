@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-15"
+description: "Conditions that make learning harder initially — spacing, interleaving, testing — improve long-term retention"
 tags:
   - learning-principles
   - study-techniques

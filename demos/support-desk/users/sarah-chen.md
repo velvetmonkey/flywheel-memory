@@ -7,6 +7,10 @@ aliases:
   - Sarah Chen
 sentiment: frustrated
 last_contact: 2026-02-11
+churn_risk: high
+open_tickets: 1
+total_spent: 594
+last_issue: "Double-charged $99 (TKT-2024-003, escalated)"
 ---
 # Sarah Chen
 

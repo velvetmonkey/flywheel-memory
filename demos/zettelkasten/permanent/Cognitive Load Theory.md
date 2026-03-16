@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-12"
+description: "Learning fails when instructional design exceeds working memory's limited capacity"
 tags:
   - cognitive-psychology
   - instructional-design

@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-23"
+description: "Believing abilities develop through effort increases persistence and resilience in learning"
 tags:
   - psychology
   - motivation

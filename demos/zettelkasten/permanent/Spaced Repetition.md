@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-11"
+description: "Distributing review over increasing intervals exploits the spacing effect for long-term retention"
 tags:
   - memory
   - study-techniques

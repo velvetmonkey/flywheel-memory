@@ -66,17 +66,19 @@ Grep approach (3 related queries):
 
 Flywheel (same 3 queries):
 ┌──────────────────────────────────────────────────────────┐
-│ Query 1: flywheel search + targeted reads                │
-│   → indexed search finds files, read only what's needed  │
+│ Query 1: flywheel search                                 │
+│   → enriched results: frontmatter, backlinks, outlinks,  │
+│     headings, snippets. Often zero file reads needed.    │
 │                                                          │
-│ Query 2: flywheel search + get_backlinks                 │
-│   → link data only, no file reads                        │
+│ Query 2: flywheel search                                 │
+│   → backlinks + outlinks already in search results       │
 │                                                          │
-│ Query 3: flywheel search + get_section_content           │
-│   → index results + 1 section, not entire files          │
+│ Query 3: flywheel search                                 │
+│   → headings show what sections exist; snippet has       │
+│     the answer. One read_file only if "why" needed.      │
 │                                                          │
-│ Key: Flywheel never re-reads files it already indexed.   │
-│ Repeated queries hit the index, not the filesystem.      │
+│ Key: Enriched search returns the graph, not just paths.  │
+│ Most questions answered without reading any files.        │
 └──────────────────────────────────────────────────────────┘
 ```
 

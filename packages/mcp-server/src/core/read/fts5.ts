@@ -241,7 +241,7 @@ export function searchFTS5(
       SELECT
         path,
         title,
-        snippet(notes_fts, 3, '<mark>', '</mark>', '...', 20) as snippet
+        snippet(notes_fts, 3, '<mark>', '</mark>', '...', 64) as snippet
       FROM notes_fts
       WHERE notes_fts MATCH ?
       ORDER BY bm25(notes_fts, 0.0, 5.0, 10.0, 1.0)

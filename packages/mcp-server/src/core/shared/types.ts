@@ -22,6 +22,7 @@ export interface VaultNote {
   frontmatter: Record<string, unknown>;   // All frontmatter data
   outlinks: OutLink[];                    // [[wikilinks]] this note contains
   tags: string[];                         // #tags from content + frontmatter
+  headings?: string[];                    // Section headings extracted from markdown
   modified: Date;                         // File modification time
   created?: Date;                         // File creation time (if available)
 }

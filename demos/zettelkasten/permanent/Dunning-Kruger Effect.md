@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-24"
+description: "Low competence breeds overconfidence; high competence breeds underconfidence — metacognition gap"
 tags:
   - cognitive-bias
   - metacognition

@@ -3,6 +3,10 @@ type: tracker
 automation: ai-managed
 update_frequency: daily
 owner: system
+current_mrr: 499
+active_customers: 1
+trial_customers: 1
+churned_this_month: 0
 tags:
   - finance
   - mrr

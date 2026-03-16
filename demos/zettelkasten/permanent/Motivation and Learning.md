@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-25"
+description: "Even the best study techniques fail without motivation — intrinsic motivation produces deeper learning"
 tags:
   - motivation
   - psychology

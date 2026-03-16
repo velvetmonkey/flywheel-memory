@@ -2,6 +2,7 @@
 type: permanent
 status: mature
 created: "2026-01-11"
+description: "Retrieving information from memory strengthens neural pathways more than passive re-reading"
 tags:
   - memory
   - study-techniques

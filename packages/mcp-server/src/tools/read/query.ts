@@ -133,7 +133,10 @@ function enrichResult(
     enriched.tags = note.tags;
     enriched.aliases = note.aliases;
     enriched.backlink_count = backlinks.length;
+    enriched.backlinks = backlinks.map(bl => bl.source);
     enriched.outlink_count = note.outlinks.length;
+    enriched.outlinks = note.outlinks.map(l => l.target);
+    enriched.headings = note.headings || [];
     enriched.modified = note.modified.toISOString();
     if (note.created) enriched.created = note.created.toISOString();
   }

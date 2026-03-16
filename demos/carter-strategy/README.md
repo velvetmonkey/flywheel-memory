@@ -58,40 +58,35 @@ Ask Claude:
 
 > Claude's exact tool path varies between runs. These traces show representative sessions.
 
-### Client revenue -- search + targeted reads
+### Client revenue -- one search, zero reads
 
 ```
 You: "How much have I billed Acme Corp?"
 
 ● flywheel › search
-  query: "Acme Corp"
-  → clients/Acme Corp.md, invoices/INV-2025-047.md,
-    invoices/INV-2025-048.md, projects/Acme Data Migration.md
-
-● flywheel › search
-  query: "Acme Corp", scope: "entities"
-  → Acme Corp (organization, clients/Acme Corp.md)
-
-┌─ CLAUDE THINKS ───────────────────────────────────────┐
-│ Found the client file and 2 invoices. Read them to    │
-│ get billing totals and payment status.                 │
-└───────────────────────────────────────────────────────┘
-
-● read_file("clients/Acme Corp.md")
-  ← total_billed: 156000, rate: $300/hr, status: active
-
-● read_file("invoices/INV-2025-047.md")
-  ← { amount: 15000, status: "paid", period: "November 2025" }
-
-● read_file("invoices/INV-2025-048.md")
-  ← { amount: 12000, status: "pending", period: "December 2025" }
+  query: "Acme Corp billing invoice"
+  → clients/Acme Corp.md
+      frontmatter: { total_billed: 156000, rate: 300, status: "active" }
+      backlinks: INV-2025-047.md, INV-2025-048.md, Acme Data Migration.md, +28
+      outlinks: Sarah Mitchell, INV-2025-047, INV-2025-048, Acme Data Migration, +25
+    invoices/INV-2025-048.md
+      frontmatter: { amount: 12000, status: "pending", period: "December 2025" }
+      backlinks: Acme Corp.md, Acme Data Migration.md, +10
+    invoices/INV-2025-047.md
+      frontmatter: { amount: 15000, status: "paid", period: "November 2025" }
+      backlinks: Acme Corp.md, INV-2025-048.md, +8
 
 ┌─ RESULT ──────────────────────────────────────────────┐
-│ Acme Corp: $156K total billed                          │
-│   Paid:    $15,000  (INV-2025-047, Nov 2025)           │
-│   Pending: $12,000  (INV-2025-048, due Jan 15 2026)    │
-│   Also: $35K pending proposal (Analytics Add-on)       │
+│ Acme Corp: $156K total billed                         │
+│                                                       │
+│   Paid:    $15,000 — Acme Data Migration (Nov 2025)   │
+│   Pending: $12,000 — Acme Data Migration (Dec 2025)   │
+│                                                       │
+│ Also: $35K pending proposal (Analytics Add-on)        │
 └───────────────────────────────────────────────────────┘
+
+One search returned everything — frontmatter, backlinks, outlinks.
+Zero file reads needed. ~$0.03 / 19s
 ```
 
 ### Daily log -- write with auto-wikilinks
@@ -121,7 +116,7 @@ You: "Log that Stacy Thompson is starting on the Beta Corp Dashboard and reviewe
 └───────────────────────────────────────────────────────┘
 ```
 
-### Staffing gap -- search across team and projects
+### Staffing gap -- search finds the match
 
 ```
 You: "Who could help with the Beta Corp Dashboard?"
@@ -129,17 +124,13 @@ You: "Who could help with the Beta Corp Dashboard?"
 ● flywheel › search
   query: "Beta Corp Dashboard"
   → projects/Beta Corp Dashboard.md
-
-● read_file("projects/Beta Corp Dashboard.md")
-  ← skills_needed: React, Dashboard, Data Visualization
-     staffing: understaffed
-
-● flywheel › search
-  query: "skills React", scope: "content"
-  → team/Stacy Thompson.md
-
-● read_file("team/Stacy Thompson.md")
-  ← skills: React, TypeScript, UX Design; utilization: 40%
+      frontmatter: { status: "active", skills_needed: ["React", "Dashboard", "Data Visualization"],
+                     staffing: "understaffed" }
+      outlinks: Beta Corp, Stacy Thompson, TechStart Inc, React, +8
+      headings: ["Overview", "Requirements", "Team", "Timeline"]
+    team/Stacy Thompson.md
+      frontmatter: { skills: ["React", "TypeScript", "UX Design"], utilization: 0.4 }
+      headings: ["Skills", "Current Projects", "Availability"]
 
 ┌─ RESULT ──────────────────────────────────────────────┐
 │ Stacy Thompson is a strong fit:                        │
@@ -147,6 +138,9 @@ You: "Who could help with the Beta Corp Dashboard?"
 │   Current utilization: 40% (24 hrs/week available)     │
 │   Previous work: TechStart MVP Build, GlobalBank       │
 └───────────────────────────────────────────────────────┘
+
+Search returned team skills and project requirements together.
+Zero file reads needed.
 ```
 
 ---
@@ -155,4 +149,4 @@ You: "Who could help with the Beta Corp Dashboard?"
 
 ---
 
-**Token savings**: Notes in this vault average ~120 lines (~1,800 tokens each). Flywheel graph queries return ~50-100 tokens of targeted metadata instead of reading full files -- **18-36x savings** per query, enabling hundreds of lookups in a single agentic workflow.
+**Token savings**: Enriched search returns frontmatter, backlinks, outlinks, and headings — often answering the question in a single call with zero file reads.

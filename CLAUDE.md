@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 62 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 61 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -18,7 +18,7 @@ packages/mcp-server/src/
 │   │   ├── graph.ts            # get_backlinks, get_forward_links
 │   │   ├── graphAnalysis.ts    # graph_analysis, list_entities, get_connection_strength,
 │   │   │                       #   get_link_path, get_common_neighbors, get_weighted_links, get_strong_connections
-│   │   ├── system.ts           # refresh_index, get_all_entities, get_note_metadata, get_unlinked_mentions
+│   │   ├── system.ts           # refresh_index, get_all_entities, get_unlinked_mentions
 │   │   ├── health.ts           # health_check, get_vault_stats, get_folder_structure, server_log
 │   │   ├── vaultSchema.ts      # vault_schema
 │   │   ├── noteIntelligence.ts # note_intelligence
@@ -70,9 +70,9 @@ packages/mcp-server/src/
 Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`default`** — 17 tools: search, read, write, tasks
-- **`agent`** — 17 tools: search, read, write, memory
-- **`full`** — All 12 categories, all 62 tools
+- **`default`** — 14 tools: search, read, write, tasks
+- **`agent`** — 14 tools: search, read, write, memory
+- **`full`** — All 12 categories, all 61 tools
 
 **Composable bundles** (add to presets or each other):
 - **`graph`** — structural analysis, paths, hubs, connections (7 tools)

@@ -12,6 +12,7 @@ import {
   buildFTS5Index,
   isIndexStale,
   getFTS5State,
+  getContentPreview,
   type FTS5Result,
 } from '../../core/read/fts5.js';
 import {
@@ -133,9 +134,15 @@ function enrichResult(
     enriched.tags = note.tags;
     enriched.aliases = note.aliases;
     enriched.backlink_count = backlinks.length;
-    enriched.backlinks = backlinks.map(bl => bl.source);
+    enriched.backlinks = backlinks.map(bl => ({ source: bl.source, line: bl.line }));
     enriched.outlink_count = note.outlinks.length;
-    enriched.outlinks = note.outlinks.map(l => l.target);
+    enriched.outlinks = note.outlinks.map(l => {
+      const targetLower = l.target.toLowerCase();
+      const exists = index.entities.has(targetLower);
+      const out: Record<string, unknown> = { target: l.target, line: l.line, exists };
+      if (l.alias) out.alias = l.alias;
+      return out;
+    });
     enriched.headings = note.headings || [];
     enriched.modified = note.modified.toISOString();
     if (note.created) enriched.created = note.created.toISOString();
@@ -151,6 +158,12 @@ function enrichResult(
         if (entity.description) enriched.description = entity.description;
       }
     } catch { /* entity lookup is best-effort */ }
+  }
+
+  // Content preview fallback for non-FTS results (entity/metadata matches)
+  if (!result.snippet) {
+    const preview = getContentPreview(result.path);
+    if (preview) enriched.content_preview = preview;
   }
 
   return enriched;
@@ -203,7 +216,7 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Search the vault — always try this before reading files. Returns frontmatter, backlinks, outlinks, headings, and snippets for every hit.\n\nSearch the vault across metadata, content, and entities. Scope controls what to search: "metadata" for frontmatter/tags/folders, "content" for full-text search (FTS5), "entities" for people/projects/technologies, "all" (default) tries metadata then falls back to content search. When embeddings have been built (via init_semantic), content and all scopes automatically include embedding-based results via hybrid ranking.\n\nExample: search({ query: "quarterly review", scope: "content", limit: 5 })\nExample: search({ where: { type: "project", status: "active" }, scope: "metadata" })',
+    'Search the vault — always try this before reading files. Returns frontmatter, backlinks (with lines), outlinks (with lines + exists), headings, content snippet or preview, entity metadata, and timestamps for every hit.\n\nSearch the vault across metadata, content, and entities. Scope controls what to search: "metadata" for frontmatter/tags/folders, "content" for full-text search (FTS5), "entities" for people/projects/technologies, "all" (default) tries metadata then falls back to content search. When embeddings have been built (via init_semantic), content and all scopes automatically include embedding-based results via hybrid ranking.\n\nExample: search({ query: "quarterly review", scope: "content", limit: 5 })\nExample: search({ where: { type: "project", status: "active" }, scope: "metadata" })',
     {
       query: z.string().optional().describe('Search query text. Required for scope "content", "entities", "all". For "metadata" scope, use filters instead.'),
       scope: z.enum(['metadata', 'content', 'entities', 'all']).default('all').describe('What to search: metadata (frontmatter/tags/folders), content (FTS5 full-text), entities (people/projects), all (metadata then content). Semantic results are automatically included when embeddings have been built (via init_semantic).'),
@@ -312,14 +325,10 @@ export function registerQueryTools(
         const totalMatches = matchingNotes.length;
         const limitedNotes = matchingNotes.slice(0, limit);
 
-        const notes = limitedNotes.map((note) => ({
-          path: note.path,
-          title: note.title,
-          modified: note.modified.toISOString(),
-          created: note.created?.toISOString(),
-          tags: note.tags,
-          frontmatter: note.frontmatter,
-        }));
+        const stateDb = getStateDb();
+        const notes = limitedNotes.map((note) =>
+          enrichResult({ path: note.path, title: note.title }, index, stateDb)
+        );
 
         // If explicit metadata filters were used, always return the metadata result
         // (even if empty). Only fall through to content if scope=all with just a query.

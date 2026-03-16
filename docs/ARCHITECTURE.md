@@ -21,7 +21,7 @@ packages/
 │       │   │   ├── noteIntelligence.ts # note_intelligence (unified: prose_patterns, suggest_frontmatter, suggest_wikilinks, cross_layer, compute)
 │       │   │   ├── primitives.ts     # get_note_structure, get_section_content, find_sections, tasks
 │       │   │   ├── health.ts    # health_check, get_vault_stats (+ recent_activity), get_folder_structure
-│       │   │   ├── system.ts    # refresh_index, get_all_entities, get_note_metadata, get_unlinked_mentions
+│       │   │   ├── system.ts    # refresh_index, get_all_entities, get_unlinked_mentions
 │       │   │   ├── wikilinks.ts # suggest_wikilinks, validate_links (+ typo detection)
 │       │   │   ├── migrations.ts # rename_field, migrate_field_values
 │       │   │   ├── brief.ts         # brief (startup context assembly)

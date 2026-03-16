@@ -1,6 +1,6 @@
 # Tools
 
-62 tools. Most questions only need one: **search**.
+61 tools. Most questions only need one: **search**.
 
 ---
 
@@ -9,10 +9,10 @@
 | I want to... | Start here | Tools |
 |---|---|--:|
 | [Ask my vault a question](#find-anything) | `search` | 3 |
-| [Read a specific note](#read-deeper) | `get_note_structure` | 6 |
+| [Read a specific note](#read-deeper) | `get_note_structure` | 3 |
 | [Write or edit content](#write--edit) | `vault_add_to_section` | 5 |
 | [Work with tasks](#tasks) | `tasks` | 3 |
-| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis` | 9 |
+| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis` | 11 |
 | [Improve my wikilinks](#wikilinks--linking) | `suggest_wikilinks` | 7 |
 | [Clean up my schema](#schema--consistency) | `vault_schema` | 5 |
 | [Record corrections](#corrections) | `vault_record_correction` | 4 |
@@ -36,10 +36,11 @@ Every search result includes:
 | Field | What it is | Why it matters |
 |-------|-----------|----------------|
 | **frontmatter** | All YAML metadata (status, owner, amount, dates, etc.) | Answer "how much?" or "what status?" questions without opening the file. |
-| **backlinks** | Every note that links TO this one | See what references this note — invoices pointing to a client, tickets pointing to a user. |
-| **outlinks** | Every note this one links TO | See what this note references — a project's team members, dependencies, related decisions. |
+| **backlinks** | Every note that links TO this one, with line numbers | See what references this note — invoices pointing to a client, tickets pointing to a user. Line numbers let you jump to context. |
+| **outlinks** | Every note this one links TO, with line numbers and existence check | See what this note references — and whether targets exist. |
 | **headings** | The note's heading outline | Know what sections exist before deciding whether to read the full content. |
 | **snippet** | The passage that matched your query (content search) | See the relevant paragraph in context without reading the whole file. |
+| **content_preview** | First ~300 chars of the note body (non-FTS matches) | When there's no snippet (entity/metadata match), you still get body text. |
 | **tags, aliases** | Tags and alternative names | Understand categorization and find notes by alternate names. |
 | **category, hub_score** | Entity type and graph importance | Know if this is a person, project, or concept — and how central it is in the vault. |
 
@@ -81,16 +82,13 @@ No parameters — just run it once. Takes a few minutes on large vaults.
 
 ## Read Deeper
 
-When search gives you the right note but you need more detail.
+When search gives you the right note but you need more detail. Search already returns enriched metadata and content previews — escalate here only when you need full markdown content or word count.
 
 | Tool | When to use it |
 |------|---------------|
 | `get_note_structure` | See a note's heading outline, word count, and optionally its full content. Good after search identifies something interesting. |
 | `get_section_content` | Read just one section of a note by heading name. |
 | `find_sections` | Find every section across your vault matching a heading pattern (regex). "Where are all my ## Status sections?" |
-| `get_note_metadata` | Frontmatter, tags, link counts — without loading the full note. |
-| `get_backlinks` | Every note that links TO this one — with optional line-level context. |
-| `get_forward_links` | Every note this one links TO — and whether those targets exist. |
 
 ---
 
@@ -152,6 +150,13 @@ Run different analyses on your vault's link graph:
 | `emerging_hubs` | Entities gaining connections fastest. |
 | `semantic_clusters` | Groups of notes that are about similar topics (requires `init_semantic`). |
 | `semantic_bridges` | Notes that are semantically similar but have no link path between them. |
+
+### Link detail tools
+
+| Tool | When to use it |
+|------|---------------|
+| `get_backlinks` | Every note that links TO this one — with per-backlink surrounding text (reads source files). |
+| `get_forward_links` | Every note this one links TO — with resolved file paths and alias text. |
 
 ### Other graph tools
 

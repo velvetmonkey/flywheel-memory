@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 62 tools across 12 categories
+ * 61 tools across 12 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -187,12 +187,12 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherStatus;
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
 // Presets:
-//   default    - Note-taking essentials: search, read, write, tasks (17 tools)
-//   agent      - Autonomous AI agents: search, read, write, memory (17 tools)
-//   full       - All tools (62 tools)
+//   default    - Note-taking essentials: search, read, write, tasks (14 tools)
+//   agent      - Autonomous AI agents: search, read, write, memory (14 tools)
+//   full       - All tools (61 tools)
 //
 // Composable bundles (combine with presets or each other):
-//   graph       - Structural analysis: graph_analysis, paths, hubs, connections (7 tools)
+//   graph       - Structural analysis + link detail: backlinks, forward links, graph_analysis, paths, hubs, connections (9 tools)
 //   schema      - Schema intelligence + migrations (5 tools)
 //   wikilinks   - Wikilink suggestions, validation, discovery (7 tools)
 //   corrections - Correction recording + resolution (4 tools)
@@ -252,7 +252,7 @@ const DEPRECATED_ALIASES: Record<string, string> = {
   minimal: 'default',
   writer: 'default',     // writer was default+tasks, now default includes tasks
   researcher: 'default', // use default,graph for graph exploration
-  backlinks: 'read',     // get_backlinks moved to read
+  backlinks: 'graph',     // get_backlinks moved to graph
   structure: 'read',
   append: 'write',
   frontmatter: 'write',
@@ -336,13 +336,10 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   init_semantic: 'search',
   find_similar: 'search',
 
-  // read (6 tools) — note reading + backlinks/forward links
+  // read (3 tools) — note reading
   get_note_structure: 'read',
   get_section_content: 'read',
   find_sections: 'read',
-  get_note_metadata: 'read',
-  get_backlinks: 'read',
-  get_forward_links: 'read',
 
   // write (5 tools) — content mutations + frontmatter + note creation
   vault_add_to_section: 'write',
@@ -351,8 +348,10 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_update_frontmatter: 'write',
   vault_create_note: 'write',
 
-  // graph (7 tools) — structural analysis
+  // graph (9 tools) — structural analysis + link detail
   graph_analysis: 'graph',
+  get_backlinks: 'graph',
+  get_forward_links: 'graph',
   get_connection_strength: 'graph',
   list_entities: 'graph',
   get_link_path: 'graph',
@@ -429,16 +428,23 @@ function generateInstructions(categories: Set<ToolCategory>): string {
   parts.push(`Flywheel provides tools to search, read, and write an Obsidian vault's knowledge graph.
 
 Tool selection:
-  1. Use "search" before reading files — returns frontmatter, backlinks, outlinks, headings, and snippets. Often sufficient without file reads.
-  2. Use "get_note_structure" for a full note outline or content. Use "get_section_content" for one section.
-  3. Use vault write tools instead of raw file writes — they auto-link entities and commit changes.`);
+  1. "search" is the primary tool. Each result includes: frontmatter, tags, aliases,
+     backlinks (with line numbers), outlinks (with line numbers and existence check),
+     headings, content snippet or preview, entity category, hub score, and timestamps.
+     This is usually enough to answer without reading any files.
+  2. Escalate to "get_note_structure" only when you need the full markdown content
+     or word count. Use "get_section_content" to read one section by heading name.
+  3. Use vault write tools instead of raw file writes — they auto-link entities
+     and commit changes.`);
 
   // Read category instructions
   if (categories.has('read')) {
     parts.push(`
 ## Read
 
-Read escalation: "search" → "get_note_structure" (outline + optional content) → "get_section_content" (single section). Use "get_backlinks" to find what links to a note. Use "get_forward_links" to see what a note links to.`);
+Escalation: "search" (enriched metadata + content preview) → "get_note_structure"
+(full content + word count) → "get_section_content" (single section).
+"find_sections" finds headings across the vault by pattern.`);
   }
 
   // Write category instructions
@@ -462,7 +468,11 @@ Session workflow: call "brief" at conversation start for vault context (recent s
     parts.push(`
 ## Graph
 
-Use "graph_analysis" for structural queries (hubs, orphans, dead ends, emerging connections). Use "get_connection_strength" to measure how strongly two notes are linked. Use "get_link_path" to find shortest paths between notes.`);
+Use "get_backlinks" for per-backlink surrounding text (reads source files).
+Use "get_forward_links" for resolved file paths and alias text.
+Use "graph_analysis" for structural queries (hubs, orphans, dead ends).
+Use "get_connection_strength" to measure link strength between notes.
+Use "get_link_path" to find shortest paths.`);
   }
 
   // Tasks category instructions

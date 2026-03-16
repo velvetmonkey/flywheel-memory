@@ -267,6 +267,24 @@ export function getFTS5State(): FTS5State {
 }
 
 /**
+ * Get a content preview for a note from the FTS5 index (zero filesystem I/O).
+ * Returns the first ~maxChars of the note body, truncated at a word boundary.
+ */
+export function getContentPreview(notePath: string, maxChars: number = 300): string | null {
+  if (!db) return null;
+  try {
+    const row = db.prepare(
+      'SELECT substr(content, 1, ?) as preview FROM notes_fts WHERE path = ?'
+    ).get(maxChars + 50, notePath) as { preview: string } | undefined;
+    if (!row?.preview) return null;
+    const truncated = row.preview.length > maxChars
+      ? row.preview.slice(0, maxChars).replace(/\s\S*$/, '') + '...'
+      : row.preview;
+    return truncated;
+  } catch { return null; }
+}
+
+/**
  * Count how many notes mention a term (exact phrase match via FTS5).
  * Returns 0 if FTS5 is not ready or query fails.
  */

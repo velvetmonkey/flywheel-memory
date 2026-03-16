@@ -131,7 +131,7 @@ describe('MCP Server Integration', () => {
     });
 
     test('handles invalid path gracefully', async () => {
-      const result = await client.callTool('get_note_metadata', {
+      const result = await client.callTool('get_note_structure', {
         path: '../../../etc/passwd',
       });
 

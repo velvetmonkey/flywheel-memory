@@ -58,18 +58,20 @@ describe('Graph Query Performance Benchmarks', () => {
       console.log(`get_backlinks latency: ${elapsed.toFixed(2)}ms`);
     });
 
-    it('get_note_metadata completes in <500ms', async () => {
+    it('search metadata completes in <500ms', async () => {
 
       const start = performance.now();
-      const result = await client.callTool('get_note_metadata', {
-        path: 'projects/Propulsion System.md',
+      const result = await client.callTool('search', {
+        scope: 'metadata',
+        title_contains: 'Propulsion System',
+        limit: 1,
       });
       const elapsed = performance.now() - start;
 
       expect(result.content[0].text).toBeDefined();
       expect(elapsed).toBeLessThan(500);
 
-      console.log(`get_note_metadata latency: ${elapsed.toFixed(2)}ms`);
+      console.log(`search metadata latency: ${elapsed.toFixed(2)}ms`);
     });
 
     it('combined meeting prep query completes in <2 seconds', async () => {
@@ -90,9 +92,11 @@ describe('Graph Query Performance Benchmarks', () => {
         path: 'people/Marcus Johnson.md',
       });
 
-      // Step 3: Get metadata
-      await client.callTool('get_note_metadata', {
-        path: 'people/Marcus Johnson.md',
+      // Step 3: Search metadata
+      await client.callTool('search', {
+        scope: 'metadata',
+        title_contains: 'Marcus Johnson',
+        limit: 1,
       });
 
       const elapsed = performance.now() - start;
@@ -119,19 +123,21 @@ describe('Graph Query Performance Benchmarks', () => {
       console.log(`get_backlinks response: ${responseText.length} chars (~${estimatedTokens} tokens)`);
     });
 
-    it('get_note_metadata response is efficient (<200 tokens)', async () => {
+    it('search metadata response is efficient (<500 tokens)', async () => {
 
-      const result = await client.callTool('get_note_metadata', {
-        path: 'projects/Propulsion System.md',
+      const result = await client.callTool('search', {
+        scope: 'metadata',
+        title_contains: 'Propulsion System',
+        limit: 1,
       });
 
       const responseText = result.content[0].text;
       const estimatedTokens = Math.ceil(responseText.length / 4);
 
-      // Metadata is frontmatter only, not full content
-      expect(estimatedTokens).toBeLessThan(200);
+      // Enriched metadata includes backlinks/outlinks/headings — larger than old metadata-only
+      expect(estimatedTokens).toBeLessThan(500);
 
-      console.log(`get_note_metadata response: ${responseText.length} chars (~${estimatedTokens} tokens)`);
+      console.log(`search metadata response: ${responseText.length} chars (~${estimatedTokens} tokens)`);
     });
 
     it('documents token efficiency vs file reading', async () => {
@@ -149,15 +155,17 @@ describe('Graph Query Performance Benchmarks', () => {
       const backlinks = await client.callTool('get_backlinks', {
         path: 'people/Marcus Johnson.md',
       });
-      const metadata = await client.callTool('get_note_metadata', {
-        path: 'people/Marcus Johnson.md',
+      const metadata = await client.callTool('search', {
+        scope: 'metadata',
+        title_contains: 'Marcus Johnson',
+        limit: 1,
       });
 
       const graphTokens =
         Math.ceil(backlinks.content[0].text.length / 4) +
         Math.ceil(metadata.content[0].text.length / 4);
 
-      console.log(`Graph query tokens (backlinks + metadata): ~${graphTokens}`);
+      console.log(`Graph query tokens (backlinks + search metadata): ~${graphTokens}`);
       console.log(`README claim: ~200 tokens for essential data`);
       console.log(`Traditional approach: ~6,000 tokens (reading 12 full files)`);
       console.log(`Efficiency ratio: ${Math.round(6000 / graphTokens)}x savings`);

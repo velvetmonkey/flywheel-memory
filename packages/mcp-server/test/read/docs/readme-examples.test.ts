@@ -170,17 +170,17 @@ describe('README Examples: Artemis Rocket Vault', () => {
       expect(structure.folders.length).toBeGreaterThan(0);
     });
 
-    it('should get note metadata', async () => {
+    it('should get note structure', async () => {
       const result = await client.callTool({
-        name: 'get_note_metadata',
+        name: 'get_note_structure',
         arguments: { path: 'project/Artemis Rocket.md' },
       });
 
       // May succeed or fail depending on exact file path
       if (!result.isError) {
         const content = result.content as Array<{ type: string; text: string }>;
-        const metadata = JSON.parse(content[0].text);
-        expect(metadata.path).toBeDefined();
+        const structure = JSON.parse(content[0].text);
+        expect(structure.path).toBeDefined();
       }
     });
   });
@@ -283,7 +283,7 @@ describe('Tool Registration Consistency', () => {
       'get_forward_links',
       'graph_analysis',
       'search',
-      'get_note_metadata',
+      'get_note_structure',
       'get_folder_structure',
     ];
 

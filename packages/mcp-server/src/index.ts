@@ -203,10 +203,10 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherStatus;
 //   automation  - Git undo, policy engine (2 tools)
 //
 // Examples:
-//   FLYWHEEL_TOOLS=default                    # 17 tools
-//   FLYWHEEL_TOOLS=agent                      # 17 tools
-//   FLYWHEEL_TOOLS=default,graph              # 24 tools
-//   FLYWHEEL_TOOLS=agent,tasks                # 20 tools
+//   FLYWHEEL_TOOLS=default                    # 14 tools
+//   FLYWHEEL_TOOLS=agent                      # 14 tools
+//   FLYWHEEL_TOOLS=default,graph              # 23 tools
+//   FLYWHEEL_TOOLS=agent,tasks                # 17 tools
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
 // Categories (12):

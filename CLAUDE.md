@@ -75,7 +75,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`full`** — All 12 categories, all 61 tools
 
 **Composable bundles** (add to presets or each other):
-- **`graph`** — structural analysis, paths, hubs, connections (7 tools)
+- **`graph`** — structural analysis, paths, hubs, connections (9 tools)
 - **`schema`** — schema intelligence + migrations (5 tools)
 - **`wikilinks`** — suggestions, validation, discovery (7 tools)
 - **`corrections`** — correction recording + resolution (4 tools)

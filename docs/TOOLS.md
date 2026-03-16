@@ -12,7 +12,7 @@
 | [Read a specific note](#read-deeper) | `get_note_structure` | 3 |
 | [Write or edit content](#write--edit) | `vault_add_to_section` | 5 |
 | [Work with tasks](#tasks) | `tasks` | 3 |
-| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis` | 11 |
+| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis` | 9 |
 | [Improve my wikilinks](#wikilinks--linking) | `suggest_wikilinks` | 7 |
 | [Clean up my schema](#schema--consistency) | `vault_schema` | 5 |
 | [Record corrections](#corrections) | `vault_record_correction` | 4 |
@@ -377,9 +377,9 @@ Most users only need the `default` preset. Add bundles when you need specific ca
 
 | Preset | Tools | What you get |
 |--------|------:|-------------|
-| `default` | 17 | Search, read notes, write content, manage tasks |
-| `agent` | 17 | Search, read, write, plus persistent memory for autonomous agents |
-| `full` | 62 | Everything — all 12 categories |
+| `default` | 14 | Search, read notes, write content, manage tasks |
+| `agent` | 14 | Search, read, write, plus persistent memory for autonomous agents |
+| `full` | 61 | Everything — all 12 categories |
 
 ### Composable bundles
 
@@ -387,7 +387,7 @@ Add these to any preset: `FLYWHEEL_TOOLS=default+graph+schema`
 
 | Bundle | Tools | What it adds |
 |--------|------:|-------------|
-| `graph` | 7 | Connection analysis, shortest paths, hubs, weighted links |
+| `graph` | 9 | Connection analysis, shortest paths, hubs, weighted links |
 | `schema` | 5 | Schema intelligence, frontmatter migrations, tag rename |
 | `wikilinks` | 7 | Link suggestions, validation, feedback, discovery |
 | `corrections` | 4 | Persistent correction recording and resolution |
@@ -402,15 +402,15 @@ Add these to any preset: `FLYWHEEL_TOOLS=default+graph+schema`
 | Category | Tools | `default` | `agent` | `full` |
 |----------|------:|:---------:|:-------:|:------:|
 | search | 3 | Yes | Yes | Yes |
-| read | 6 | Yes | Yes | Yes |
+| read | 3 | Yes | Yes | Yes |
 | write | 5 | Yes | Yes | Yes |
 | tasks | 3 | Yes | | Yes |
 | memory | 3 | | Yes | Yes |
-| graph | 7 | | | Yes |
+| graph | 9 | | | Yes |
 | schema | 5 | | | Yes |
 | wikilinks | 7 | | | Yes |
 | corrections | 4 | | | Yes |
 | note-ops | 4 | | | Yes |
 | diagnostics | 13 | | | Yes |
 | automation | 2 | | | Yes |
-| **Total** | **62** | **17** | **17** | **62** |
+| **Total** | **61** | **14** | **14** | **61** |

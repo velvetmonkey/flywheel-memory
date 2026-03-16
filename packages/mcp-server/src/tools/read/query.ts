@@ -17,6 +17,7 @@ import {
 import {
   searchEntities,
   searchEntitiesPrefix,
+  getEntityByName,
   type StateDb,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
@@ -104,6 +105,52 @@ function hasAllTags(note: VaultNote, tags: string[], includeChildren: boolean = 
 function inFolder(note: VaultNote, folder: string): boolean {
   const normalizedFolder = folder.endsWith('/') ? folder : folder + '/';
   return note.path.startsWith(normalizedFolder) || note.path.split('/')[0] === folder.replace('/', '');
+}
+
+/**
+ * Enrich a search result with indexed metadata (zero extra I/O).
+ * Looks up VaultNote from index and entity metadata from StateDb.
+ */
+function enrichResult(
+  result: { path: string; title: string; snippet?: string },
+  index: VaultIndex,
+  stateDb: StateDb | null
+): Record<string, unknown> {
+  const note = index.notes.get(result.path);
+  const normalizedPath = result.path.toLowerCase().replace(/\.md$/, '');
+  const backlinks = index.backlinks.get(normalizedPath) || [];
+
+  const enriched: Record<string, unknown> = {
+    path: result.path,
+    title: result.title,
+  };
+
+  if (result.snippet) enriched.snippet = result.snippet;
+
+  // From VaultIndex (in-memory)
+  if (note) {
+    enriched.frontmatter = note.frontmatter;
+    enriched.tags = note.tags;
+    enriched.aliases = note.aliases;
+    enriched.backlink_count = backlinks.length;
+    enriched.outlink_count = note.outlinks.length;
+    enriched.modified = note.modified.toISOString();
+    if (note.created) enriched.created = note.created.toISOString();
+  }
+
+  // From StateDb entity table (single row lookup)
+  if (stateDb) {
+    try {
+      const entity = getEntityByName(stateDb, result.title);
+      if (entity) {
+        enriched.category = entity.category;
+        enriched.hub_score = entity.hubScore;
+        if (entity.description) enriched.description = entity.description;
+      }
+    } catch { /* entity lookup is best-effort */ }
+  }
+
+  return enriched;
 }
 
 /**
@@ -380,24 +427,24 @@ export function registerQueryTools(
             const semanticMap = new Map(semanticResults.map(r => [normalizePath(r.path), r]));
             const entityMap = new Map(entityResults.map(r => [normalizePath(r.path), r]));
 
-            const merged = Array.from(allPaths).map(p => ({
-              path: p,
-              title: fts5Map.get(p)?.title || semanticMap.get(p)?.title || entityMap.get(p)?.name || p.replace(/\.md$/, '').split('/').pop() || p,
-              snippet: fts5Map.get(p)?.snippet,
-              rrf_score: Math.round((rrfScores.get(p) || 0) * 10000) / 10000,
-              in_fts5: fts5Map.has(p),
-              in_semantic: semanticMap.has(p),
-              in_entity: entityMap.has(p),
-            }));
+            const merged = Array.from(allPaths).map(p => {
+              const title = fts5Map.get(p)?.title || semanticMap.get(p)?.title || entityMap.get(p)?.name || p.replace(/\.md$/, '').split('/').pop() || p;
+              const snippet = fts5Map.get(p)?.snippet;
+              const rrfScore = rrfScores.get(p) || 0;
+              return { rrfScore, ...enrichResult({ path: p, title, snippet }, index, getStateDb()) };
+            });
 
-            merged.sort((a, b) => b.rrf_score - a.rrf_score);
+            merged.sort((a, b) => (b.rrfScore as number) - (a.rrfScore as number));
+
+            // Drop internal rrfScore from output
+            const results = merged.slice(0, limit).map(({ rrfScore, ...rest }) => rest);
 
             return { content: [{ type: 'text' as const, text: JSON.stringify({
               scope,
               method: 'hybrid',
               query,
               total_results: Math.min(merged.length, limit),
-              results: merged.slice(0, limit),
+              results,
             }, null, 2) }] };
           } catch (err) {
             // Semantic failed, fall back to FTS5 + entity only
@@ -409,11 +456,10 @@ export function registerQueryTools(
         if (entityResults.length > 0) {
           const normalizePath = (p: string) => p.replace(/\\/g, '/').replace(/\/+/g, '/');
           const fts5Map = new Map(fts5Results.map(r => [normalizePath(r.path), r]));
-          const entityNormMap = new Map(entityResults.map(r => [normalizePath(r.path), r]));
           const entityRanked = entityResults.filter(r => !fts5Map.has(normalizePath(r.path)));
           const merged = [
-            ...fts5Results.map(r => ({ path: r.path, title: r.title, snippet: r.snippet, in_entity: entityNormMap.has(normalizePath(r.path)) })),
-            ...entityRanked.map(r => ({ path: r.path, title: r.name, snippet: undefined as string | undefined, in_entity: true })),
+            ...fts5Results.map(r => enrichResult({ path: r.path, title: r.title, snippet: r.snippet }, index, getStateDb())),
+            ...entityRanked.map(r => enrichResult({ path: r.path, title: r.name }, index, getStateDb())),
           ];
           return { content: [{ type: 'text' as const, text: JSON.stringify({
             scope: 'content',
@@ -424,12 +470,13 @@ export function registerQueryTools(
           }, null, 2) }] };
         }
 
+        const enrichedFts5 = fts5Results.map(r => enrichResult({ path: r.path, title: r.title, snippet: r.snippet }, index, getStateDb()));
         return { content: [{ type: 'text' as const, text: JSON.stringify({
           scope: 'content',
           method: 'fts5',
           query,
-          total_results: fts5Results.length,
-          results: fts5Results,
+          total_results: enrichedFts5.length,
+          results: enrichedFts5,
         }, null, 2) }] };
       }
 

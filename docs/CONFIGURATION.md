@@ -13,14 +13,13 @@ Two layers of configuration: **environment variables** set in your MCP config (s
   "mcpServers": {
     "flywheel": {
       "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
-      "env": {
-        "FLYWHEEL_TOOLS": "full"
-      }
+      "args": ["-y", "@velvetmonkey/flywheel-memory"]
     }
   }
 }
 ```
+
+No `FLYWHEEL_TOOLS` needed — defaults to `minimal` (11 tools). Add it only to override.
 
 ### Claude Desktop (`claude_desktop_config.json`)
 
@@ -31,8 +30,7 @@ Two layers of configuration: **environment variables** set in your MCP config (s
       "command": "npx",
       "args": ["-y", "@velvetmonkey/flywheel-memory"],
       "env": {
-        "VAULT_PATH": "/path/to/your/vault",
-        "FLYWHEEL_TOOLS": "full"
+        "VAULT_PATH": "/path/to/your/vault"
       }
     }
   }
@@ -61,15 +59,15 @@ Vault root detection order:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `FLYWHEEL_TOOLS` | `full` | Preset, bundle, or comma-separated category list |
+| `FLYWHEEL_TOOLS` | `minimal` | Preset, bundle, or comma-separated category list |
 | `FLYWHEEL_PRESET` | — | Alias for `FLYWHEEL_TOOLS` (either works) |
 
 #### Quick Start
 
 | Preset | Tools | Use case |
 |--------|-------|----------|
-| `full` (default) | 51 | Everything — graph, schema, tasks, policy, memory |
-| `minimal` | 11 | Note-taking essentials — search, read, create, edit |
+| `minimal` (default) | 11 | Note-taking essentials — search, read, create, edit |
+| `full` | 51 | Everything — graph, schema, tasks, policy, memory |
 | `writer` | 14 | minimal + task management |
 | `agent` | 14 | minimal + agent memory (brief, recall, memory) |
 | `researcher` | 12 | Search + graph navigation — read-heavy exploration |

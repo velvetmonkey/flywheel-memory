@@ -32,6 +32,7 @@ import {
 
 import type { FlywheelConfig } from '../../core/read/config.js';
 import { isTaskCacheReady, queryTasksFromCache, refreshIfStale } from '../../core/read/taskCache.js';
+import { getEntityByName, type StateDb } from '@velvetmonkey/vault-core';
 
 /**
  * Register all Phase 5 primitive tools
@@ -40,7 +41,8 @@ export function registerPrimitiveTools(
   server: McpServer,
   getIndex: () => VaultIndex,
   getVaultPath: () => string,
-  getConfig: () => FlywheelConfig = () => ({})
+  getConfig: () => FlywheelConfig = () => ({}),
+  getStateDb: () => StateDb | null = () => null
 ) {
   // ============================================
   // STRUCTURE PRIMITIVES
@@ -78,8 +80,34 @@ export function registerPrimitiveTools(
         }
       }
 
+      // Enrich with indexed metadata
+      const note = index.notes.get(path);
+      const enriched: Record<string, unknown> = { ...result };
+
+      if (note) {
+        enriched.frontmatter = note.frontmatter;
+        enriched.tags = note.tags;
+        enriched.aliases = note.aliases;
+        const normalizedPath = path.toLowerCase().replace(/\.md$/, '');
+        const backlinks = index.backlinks.get(normalizedPath) || [];
+        enriched.backlink_count = backlinks.length;
+        enriched.outlink_count = note.outlinks.length;
+      }
+
+      const stateDb = getStateDb();
+      if (stateDb && note) {
+        try {
+          const entity = getEntityByName(stateDb, note.title);
+          if (entity) {
+            enriched.category = entity.category;
+            enriched.hub_score = entity.hubScore;
+            if (entity.description) enriched.description = entity.description;
+          }
+        } catch { /* entity lookup is best-effort */ }
+      }
+
       return {
-        content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        content: [{ type: 'text' as const, text: JSON.stringify(enriched, null, 2) }],
       };
     }
   );

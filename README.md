@@ -44,21 +44,15 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
 
 ● flywheel › search
   query: "Acme Corp"
-  → clients/Acme Corp.md, invoices/INV-2025-047.md,
-    invoices/INV-2025-048.md, projects/Acme Data Migration.md
-
-● flywheel › search
-  query: "Acme Corp", scope: "entities"
-  → Acme Corp (organization, 4 backlinks)
-
-● read_file("clients/Acme Corp.md")
-  ← total_billed: 156000, rate: $300/hr, status: active
-
-● read_file("invoices/INV-2025-047.md")
-  ← amount: 15000, status: paid, period: November 2025
-
-● read_file("invoices/INV-2025-048.md")
-  ← amount: 12000, status: pending, period: December 2025
+  → clients/Acme Corp.md
+      frontmatter: { total_billed: 156000, rate: "$300/hr", status: "active" }
+      category: "organization", backlink_count: 4
+    invoices/INV-2025-047.md
+      frontmatter: { amount: 15000, status: "paid", period: "November 2025" }
+    invoices/INV-2025-048.md
+      frontmatter: { amount: 12000, status: "pending", period: "December 2025" }
+    projects/Acme Data Migration.md
+      frontmatter: { client: "Acme Corp", status: "active" }
 
 ┌─ RESULT ──────────────────────────────────────────────┐
 │ Acme Corp: $156K total billed                         │
@@ -70,11 +64,7 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
 └───────────────────────────────────────────────────────┘
 ```
 
-Flywheel's search found all related notes in one call -- client file, invoices, projects, proposals. Claude read the files it needed to extract the numbers. No grepping, no guessing paths.
-
-Flywheel's search found all related notes in one call. Without it, Claude would grep for "Acme" and scan every matching file.
-
-> Claude's exact tool path varies between runs. Sometimes it uses graph tools (`get_backlinks`, `get_note_metadata`) instead of file reads -- the answer is the same either way.
+One search call returned everything -- frontmatter with amounts and status, entity category, backlink counts. No file reads needed. Without Flywheel, Claude would grep for "Acme" and scan every matching file.
 
 ### Write: Auto-wikilinks on every mutation
 
@@ -324,10 +314,7 @@ Add `.mcp.json` to your vault root:
   "mcpServers": {
     "flywheel": {
       "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
-      "env": {
-        "FLYWHEEL_PRESET": "minimal"
-      }
+      "args": ["-y", "@velvetmonkey/flywheel-memory"]
     }
   }
 }
@@ -337,7 +324,7 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Start with the `minimal` preset (11 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
+Defaults to the `minimal` preset (11 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
 
 > **Note:** Developed and tested with Claude Code. Other MCP clients may work but are untested.
 
@@ -347,8 +334,8 @@ Start with the `minimal` preset (11 tools). Add bundles as needed. See [docs/CON
 
 | Preset | Tools | What you get |
 |--------|-------|--------------|
-| `full` (default) | 51 | Everything — graph, schema, tasks, policy, memory |
-| `minimal` | 11 | Note-taking essentials — search, read, create, edit |
+| `minimal` (default) | 11 | Note-taking essentials — search, read, create, edit |
+| `full` | 51 | Everything — graph, schema, tasks, policy, memory |
 | `writer` | 14 | minimal + task management |
 | `agent` | 14 | minimal + agent memory (brief, recall, memory) |
 | `researcher` | 12 | Search + graph navigation — read-heavy exploration |

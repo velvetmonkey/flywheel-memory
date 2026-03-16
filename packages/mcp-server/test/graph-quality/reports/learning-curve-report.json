@@ -1,12 +1,12 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-03-15T14:04:04.012Z",
-  "duration_ms": 34290,
+  "timestamp": "2026-03-16T02:58:33.509Z",
+  "duration_ms": 27430,
   "summary": {
     "round0_f1": 0.889,
-    "roundN_f1": 0.879,
-    "f1_improvement": -0.01,
-    "total_suppressions": 14
+    "roundN_f1": 0.889,
+    "f1_improvement": 0,
+    "total_suppressions": 18
   },
   "details": [
     {
@@ -1958,7 +1958,7 @@
       "falsePositives": 0,
       "falseNegatives": 12,
       "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 0.7251,
+      "feedbackLayerAvgContribution": 0.7181,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2156,8 +2156,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 0.7246,
+      "suppressionCount": 13,
+      "feedbackLayerAvgContribution": 0.7264,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2271,6 +2271,7 @@
         }
       },
       "suppressedEntities": [
+        "architecture-rfc",
         "clean-architecture",
         "melbourne",
         "meridian-labs",
@@ -2280,6 +2281,7 @@
         "q1-review",
         "signal-patterns",
         "staging",
+        "supplements",
         "uat",
         "yoga"
       ],
@@ -2351,12 +2353,12 @@
       "f1": 0.889,
       "precision": 1,
       "recall": 0.8,
-      "mrr": 0.742,
+      "mrr": 0.75,
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 0.5468,
+      "suppressionCount": 12,
+      "feedbackLayerAvgContribution": 0.5337,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2473,6 +2475,7 @@
         "clean-architecture",
         "melbourne",
         "meridian-labs",
+        "nadia-reyes",
         "prism-core",
         "production",
         "project-meridian",
@@ -2554,8 +2557,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 0.5268,
+      "suppressionCount": 13,
+      "feedbackLayerAvgContribution": 0.4927,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2672,12 +2675,14 @@
         "clean-architecture",
         "melbourne",
         "meridian-labs",
+        "nadia-reyes",
         "prism-core",
         "production",
         "project-meridian",
         "q1-review",
         "signal-patterns",
         "staging",
+        "supplements",
         "uat",
         "yoga"
       ],
@@ -2753,8 +2758,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 0.5908,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 0.6068,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2868,15 +2873,18 @@
         }
       },
       "suppressedEntities": [
+        "architecture-rfc",
         "clean-architecture",
         "melbourne",
         "meridian-labs",
+        "nadia-reyes",
         "prism-core",
         "production",
         "project-meridian",
         "q1-review",
         "signal-patterns",
         "staging",
+        "supplements",
         "uat",
         "yoga"
       ],
@@ -2952,8 +2960,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 12,
-      "feedbackLayerAvgContribution": 0.5851,
+      "suppressionCount": 16,
+      "feedbackLayerAvgContribution": 0.5848,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3067,15 +3075,19 @@
         }
       },
       "suppressedEntities": [
+        "architecture-rfc",
         "clean-architecture",
+        "devops",
         "melbourne",
         "meridian-labs",
+        "nadia-reyes",
         "prism-core",
         "production",
         "project-meridian",
         "q1-review",
         "signal-patterns",
         "staging",
+        "supplements",
         "tessa-liu",
         "uat",
         "yoga"
@@ -3152,8 +3164,8 @@
       "truePositives": 48,
       "falsePositives": 0,
       "falseNegatives": 12,
-      "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 0.5472,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 0.5686,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3267,7 +3279,9 @@
         }
       },
       "suppressedEntities": [
+        "architecture-rfc",
         "clean-architecture",
+        "devops",
         "melbourne",
         "meridian-labs",
         "prism-core",
@@ -3276,8 +3290,8 @@
         "q1-review",
         "signal-patterns",
         "staging",
+        "supplements",
         "tessa-liu",
-        "typescript",
         "uat",
         "yoga"
       ],
@@ -3354,7 +3368,7 @@
       "falsePositives": 0,
       "falseNegatives": 12,
       "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 0.57,
+      "feedbackLayerAvgContribution": 0.5678,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3468,9 +3482,8 @@
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
         "clean-architecture",
+        "devops",
         "melbourne",
         "meridian-labs",
         "prism-core",
@@ -3479,6 +3492,7 @@
         "q1-review",
         "signal-patterns",
         "staging",
+        "supplements",
         "tessa-liu",
         "typescript",
         "uat",
@@ -3549,15 +3563,15 @@
     },
     {
       "round": 18,
-      "f1": 0.879,
+      "f1": 0.889,
       "precision": 1,
-      "recall": 0.783,
+      "recall": 0.8,
       "mrr": 0.742,
-      "truePositives": 47,
+      "truePositives": 48,
       "falsePositives": 0,
-      "falseNegatives": 13,
-      "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 0.4774,
+      "falseNegatives": 12,
+      "suppressionCount": 16,
+      "feedbackLayerAvgContribution": 0.6915,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3621,8 +3635,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 1,
+          "f1": 1,
           "count": 4
         },
         "locations": {
@@ -3665,13 +3679,15 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.2,
+          "f1": 0.33333333333333337,
           "count": 15
         }
       },
       "suppressedEntities": [
+        "architecture-rfc",
         "clean-architecture",
+        "devops",
         "melbourne",
         "meridian-labs",
         "prism-core",
@@ -3680,6 +3696,7 @@
         "q1-review",
         "signal-patterns",
         "staging",
+        "supplements",
         "tessa-liu",
         "typescript",
         "uat",
@@ -3708,11 +3725,6 @@
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Yoga",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 3
         },
@@ -3755,15 +3767,15 @@
     },
     {
       "round": 19,
-      "f1": 0.879,
+      "f1": 0.889,
       "precision": 1,
-      "recall": 0.783,
+      "recall": 0.8,
       "mrr": 0.742,
-      "truePositives": 47,
+      "truePositives": 48,
       "falsePositives": 0,
-      "falseNegatives": 13,
-      "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 0.5459,
+      "falseNegatives": 12,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.5303,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3827,8 +3839,8 @@
         },
         "health": {
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
+          "recall": 1,
+          "f1": 1,
           "count": 4
         },
         "locations": {
@@ -3871,22 +3883,26 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.2,
+          "f1": 0.33333333333333337,
           "count": 15
         }
       },
       "suppressedEntities": [
+        "architecture-rfc",
         "clean-architecture",
+        "devops",
         "dmitri-sokolov",
         "melbourne",
         "meridian-labs",
         "prism-core",
         "production",
         "project-meridian",
+        "python",
         "q1-review",
         "signal-patterns",
         "staging",
+        "supplements",
         "tessa-liu",
         "typescript",
         "uat",
@@ -3915,11 +3931,6 @@
         },
         {
           "entity": "Luna",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Yoga",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 3
         },
@@ -3966,7 +3977,7 @@
       "parameter": "FEEDBACK_BOOST_MIN_SAMPLES",
       "current_value": 5,
       "suggested_value": 3,
-      "evidence": "F1 improvement over 20 rounds was only -1.0% (< 5%). Tightening feedback thresholds may help the system learn faster.",
+      "evidence": "F1 improvement over 20 rounds was only 0.0% (< 5%). Tightening feedback thresholds may help the system learn faster.",
       "confidence": "medium"
     }
   ]

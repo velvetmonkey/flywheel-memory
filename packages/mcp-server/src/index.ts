@@ -260,7 +260,7 @@ const ALL_CATEGORIES: ToolCategory[] = [
   'memory',
 ];
 
-const DEFAULT_PRESET = 'full';
+const DEFAULT_PRESET = 'minimal';
 
 /**
  * Parse FLYWHEEL_TOOLS env var into enabled categories
@@ -523,7 +523,7 @@ registerReadSystemTools(
 registerGraphTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerWikilinkTools(server, () => vaultIndex, () => vaultPath);
 registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
-registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
+registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb);
 registerGraphAnalysisTools(server, () => vaultIndex, () => vaultPath, () => stateDb, () => flywheelConfig);
 registerVaultSchemaTools(server, () => vaultIndex, () => vaultPath);
 registerNoteIntelligenceTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);

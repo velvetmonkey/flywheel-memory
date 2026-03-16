@@ -66,6 +66,46 @@ The enrichment step is the same regardless of how a note matched — every resul
 
 **Common parameters:** `query`, `scope`, `where` (frontmatter filters), `has_tag`, `folder`, `modified_after`, `sort_by`, `limit`
 
+**How ranking works**
+
+FTS5 uses BM25 (Best Match 25) to rank results. Column weights control what matters most:
+
+| Column | Weight | Effect |
+|--------|--------|--------|
+| frontmatter | 10x | A match in YAML values (status, type, owner) ranks highest |
+| title | 5x | Matching the note title is a strong signal |
+| content | 1x | Body text matches are the baseline |
+
+This means `search({ query: "active" })` ranks a note with `status: active` in frontmatter 10x higher than a note that merely mentions "active" in body text. Frontmatter values are indexed as searchable text (keys are stripped — only values are searchable).
+
+When semantic embeddings are built, ranking switches to **Reciprocal Rank Fusion** (RRF), which merges four ranked lists — FTS5, semantic similarity, entity matches, and edge-weight context — into a single ordering. A note that ranks well in multiple channels surfaces higher than one that ranks well in only one.
+
+**Snippets vs content previews**
+
+Search results include body text in one of two forms:
+
+| Field | When it appears | What it shows |
+|-------|----------------|---------------|
+| `snippet` | Content search (FTS5 match) | ~64 tokens around matching terms, with `<mark>` tags wrapping matches |
+| `content_preview` | Entity or metadata match (no FTS5 hit) | First ~300 characters of the note body |
+
+**Snippets** are contextual — FTS5 finds the passage where your query terms appear and extracts a window around them. A 10,000-word note produces a snippet of ~50–80 words focused on the match. Multiple disjoint matches are separated by `...`.
+
+**Content previews** are positional — always the opening of the note body (after frontmatter — YAML is excluded). They appear when a note matched by entity name, metadata filter, or semantic similarity rather than keyword. Both are read from SQLite with zero filesystem I/O.
+
+Neither field shows the full document. To read the complete note, escalate to `get_note_structure`.
+
+**What gets indexed**
+
+The full-text index stores every markdown file in the vault, excluding internal directories (`.obsidian`, `.trash`, `.git`, `node_modules`, `templates`, `.claude`, `.flywheel`) and files over 5 MB. Each note is split into four searchable columns:
+
+- **path** — file path (not used for ranking)
+- **title** — filename without `.md`
+- **frontmatter** — YAML values only (keys are stripped)
+- **content** — the entire markdown body after the frontmatter block
+
+The index uses Porter stemming, so "running" matches "run", "runs", and "ran". Rebuild happens automatically when the index is stale (>1 hour), or manually via `refresh_index`.
+
 ### `find_similar`
 
 "Show me notes like this one." Give it a note path, and it finds related notes by content overlap. Filters out notes already linked to it, so you only see new connections.

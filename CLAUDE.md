@@ -10,36 +10,48 @@
 
 ```
 packages/mcp-server/src/
-├── index.ts                 # MCP server entry point + tool preset gating
+├── index.ts                    # MCP server entry point + tool preset gating
 ├── tools/
-│   ├── read/                # Read tool registrations
-│   │   ├── query.ts         # search (unified: metadata + content + entities)
-│   │   ├── graph.ts         # get_backlinks (+ bidirectional), get_forward_links
-│   │   ├── graphAdvanced.ts # (helper) get_connection_strength, get_link_path, get_common_neighbors — imported by graph.ts, primitives.ts, graphAnalysis.ts
-│   │   ├── graphAnalysis.ts # graph_analysis (orphans, dead_ends, sources, hubs, stale, immature, evolution, emerging_hubs)
-│   │   ├── vaultSchema.ts   # vault_schema (overview, field_values, inconsistencies, validate, conventions, incomplete, contradictions)
-│   │   ├── noteIntelligence.ts # note_intelligence (prose_patterns, suggest_frontmatter, wikilinks, cross_layer, compute)
-│   │   ├── primitives.ts    # get_note_structure, get_section_content, find_sections, tasks
-│   │   ├── health.ts        # health_check, get_vault_stats, get_folder_structure
-│   │   ├── system.ts        # refresh_index, get_all_entities, get_note_metadata, get_unlinked_mentions
-│   │   ├── wikilinks.ts     # suggest_wikilinks, validate_links
-│   │   ├── migrations.ts    # rename_field, migrate_field_values
-│   │   ├── activity.ts      # vault_activity (session, sessions, note_access, tool_usage)
-│   │   ├── similarity.ts    # find_similar (FTS5 BM25 content similarity)
-│   │   └── semantic.ts      # init_semantic (on-demand semantic embedding build)
-│   └── write/               # Write tool registrations
-│       ├── mutations.ts     # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
-│       ├── tasks.ts         # vault_toggle_task, vault_add_task
-│       ├── notes.ts         # vault_create_note, vault_delete_note
-│       ├── move-notes.ts    # vault_move_note, vault_rename_note
-│       ├── frontmatter.ts   # vault_update_frontmatter (+ only_if_missing)
-│       ├── system.ts        # vault_undo_last_mutation
-│       └── policy.ts        # policy (list, validate, preview, execute, author, revise)
+│   ├── read/                   # Read-side tool registrations (20 files, helpers omitted)
+│   │   ├── query.ts            # search
+│   │   ├── primitives.ts       # get_note_structure, get_section_content, find_sections, tasks
+│   │   ├── graph.ts            # get_backlinks, get_forward_links
+│   │   ├── graphAnalysis.ts    # graph_analysis, list_entities, get_connection_strength,
+│   │   │                       #   get_link_path, get_common_neighbors, get_weighted_links, get_strong_connections
+│   │   ├── system.ts           # refresh_index, get_all_entities, get_note_metadata, get_unlinked_mentions
+│   │   ├── health.ts           # health_check, get_vault_stats, get_folder_structure, server_log
+│   │   ├── vaultSchema.ts      # vault_schema
+│   │   ├── noteIntelligence.ts # note_intelligence
+│   │   ├── wikilinks.ts        # suggest_wikilinks, validate_links, discover_stub_candidates,
+│   │   │                       #   discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report
+│   │   ├── migrations.ts       # rename_field, migrate_field_values
+│   │   ├── activity.ts         # vault_activity
+│   │   ├── metrics.ts          # vault_growth
+│   │   ├── merges.ts           # suggest_entity_merges, dismiss_merge_suggestion
+│   │   ├── similarity.ts       # find_similar
+│   │   ├── semantic.ts         # init_semantic
+│   │   ├── recall.ts           # recall
+│   │   └── brief.ts            # brief
+│   └── write/                  # Write-side tool registrations
+│       ├── mutations.ts        # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
+│       ├── tasks.ts            # vault_toggle_task, vault_add_task
+│       ├── notes.ts            # vault_create_note, vault_delete_note
+│       ├── move-notes.ts       # vault_move_note, vault_rename_note
+│       ├── frontmatter.ts      # vault_update_frontmatter
+│       ├── merge.ts            # merge_entities, absorb_as_alias
+│       ├── corrections.ts      # vault_record_correction, vault_list_corrections, vault_resolve_correction
+│       ├── wikilinkFeedback.ts # wikilink_feedback
+│       ├── tags.ts             # rename_tag
+│       ├── memory.ts           # memory
+│       ├── config.ts           # flywheel_config
+│       ├── enrich.ts           # vault_init
+│       ├── system.ts           # vault_undo_last_mutation
+│       └── policy.ts           # policy
 └── core/
-    ├── read/                # Read-side core logic (graph, vault, parser, fts5, config, watcher)
-    ├── write/               # Write-side core logic (writer, wikilinks, git, validator, policy engine)
-    ├── shared/              # Shared utilities (recency, cooccurrence, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots)
-    └── semantic/            # Semantic search (embeddings.ts — embedding generation, similarity.ts — hybrid ranking)
+    ├── read/                   # Read-side core logic (graph, vault, parser, fts5, config, watcher)
+    ├── write/                  # Write-side core logic (writer, wikilinks, git, validator, policy engine)
+    ├── shared/                 # Shared utilities (recency, cooccurrence, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots)
+    └── semantic/               # Semantic search (embeddings.ts — embedding generation, similarity.ts — hybrid ranking)
 ```
 
 ### Dependencies

@@ -53,7 +53,7 @@ export function registerPrimitiveTools(
     'get_note_structure',
     {
       title: 'Get Note Structure',
-      description: 'Get the heading structure and sections of a note. Returns headings, sections hierarchy, word count, and line count.',
+      description: 'Read the structure of a specific note. Use after search identifies a note you need more detail on. Returns headings, frontmatter, tags, word count. Set include_content: true to get the full markdown.',
       inputSchema: {
         path: z.string().describe('Path to the note'),
         include_content: z.boolean().default(false).describe('Include the text content under each top-level section'),

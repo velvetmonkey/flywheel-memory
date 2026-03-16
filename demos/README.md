@@ -8,7 +8,7 @@
 
 | Demo | You Are | Ask Claude |
 |------|---------|------------|
-| [**Solo Operator**](./solo-operator/) | One-person newsletter business | "What's my revenue this month?" |
+| [**Solo Operator**](./solo-operator/) | One-person newsletter business | "How's revenue looking?" |
 | [**Carter Strategy**](./carter-strategy/) | Solo strategy consultant | "What's overdue this week?" |
 | [**Support Desk**](./support-desk/) | SaaS support team | "What tickets are escalated?" |
 | [**Artemis Rocket**](./artemis-rocket/) | Chief Engineer at a rocket startup | "What's the propulsion system status?" |
@@ -93,3 +93,29 @@ For a guided 5-minute walkthrough, see [Prove It Yourself](../docs/PROVE-IT.md).
 ## No CLAUDE.md Needed
 
 Every demo works with just `.mcp.json` — no CLAUDE.md, no `.claude/rules/`, no pre-taught workflows. Claude discovers vault structure through Flywheel's tools (search, backlinks, metadata) on its own.
+
+---
+
+## Live Tool-Usage Testing
+
+To measure whether Claude uses Flywheel tools vs built-in file tools:
+
+```bash
+bash demos/run-tool-test.sh
+```
+
+Options:
+- `RUNS=5` — runs per demo (default: 3)
+- `MODEL=opus` — model to test (default: sonnet)
+
+Results are saved to `demos/test-results/<timestamp>/`:
+- `report.md` — aggregate tool-usage metrics
+- `raw/*.jsonl` — full stream-json output per run
+
+### What It Measures
+- Does Claude call `search` before reading files?
+- How many flywheel tools vs built-in file tools per query?
+- Which demos (if any) bypass flywheel entirely?
+
+### Baseline
+Pre-server-instructions (2026-03-16): 9/17 runs (53%) bypassed flywheel.

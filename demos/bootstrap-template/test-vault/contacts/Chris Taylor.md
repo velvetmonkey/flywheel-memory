@@ -1,7 +1,5 @@
 ---
 type: contact
-aliases:
-  - Chris
 company: "[[Nexus Systems]]"
 role: Lead Developer
 email: chris@nexus.com

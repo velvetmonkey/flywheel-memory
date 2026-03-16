@@ -7,8 +7,8 @@ skills:
   - React
   - TypeScript
   - UX Design
-current_project: null
-utilization: 40
+current_project: '[[Beta Corp Dashboard]]'
+utilization: 80
 ---
 # [[Stacy Thompson]]
 

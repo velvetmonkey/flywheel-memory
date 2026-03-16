@@ -1,7 +1,5 @@
 ---
 type: contact
-aliases:
-  - Ryan
 company: "[[Atlas Logistics]]"
 role: VP Technology
 email: ryan@atlas.com

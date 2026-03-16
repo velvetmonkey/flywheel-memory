@@ -1,7 +1,5 @@
 ---
 type: contact
-aliases:
-  - Daniel
 company: "[[Pinnacle Ventures]]"
 role: Managing Partner
 email: daniel@pinnacle.com

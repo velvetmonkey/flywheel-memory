@@ -1,7 +1,5 @@
 ---
 type: contact
-aliases:
-  - Thomas
 company: "[[Quantum Dynamics]]"
 role: VP Operations
 email: thomas@quantum.com

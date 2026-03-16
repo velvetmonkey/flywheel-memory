@@ -36,7 +36,7 @@ solo-operator/
 
 Ask Claude:
 
-- **"How's revenue this month?"** -- pulls MTD by stream from Revenue Tracker frontmatter
+- **"How's revenue looking?"** -- pulls MTD by stream from Revenue Tracker frontmatter
 - **"Run my morning briefing"** -- aggregates yesterday's log, revenue, and content due today
 - **"Show me subscriber growth"** -- current count, weekly trend, and engagement metrics
 - **"Prep the next newsletter"** -- gathers research, past issues, and drafts an outline
@@ -59,10 +59,10 @@ When you ask Claude questions or request changes, here's the flow:
 ### Check revenue (one search)
 
 ```
-You: "How's revenue this month?"
+You: "How's revenue looking?"
 
 ● flywheel › search
-  query: "revenue", scope: "content"
+  query: "revenue"
   → ops/Revenue Tracker.md
       frontmatter: { type: "tracker", mtd_total: 2388, target: 5000 }
       outlinks: AI Automation Course, Consulting Services, TechCorp

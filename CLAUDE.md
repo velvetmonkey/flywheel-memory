@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 51 tools across 17 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 62 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -58,21 +58,22 @@ packages/mcp-server/src/
 Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`minimal`** — 11 tools: search, structure, append, frontmatter, notes
-- **`writer`** — 14 tools: minimal + tasks
-- **`agent`** — 14 tools: minimal + memory
-- **`researcher`** — 12 tools: search, structure, backlinks, hubs, paths
-- **`full`** (default) — All 16 categories, all tools
+- **`default`** — 17 tools: search, read, write, tasks
+- **`agent`** — 17 tools: search, read, write, memory
+- **`full`** — All 12 categories, all 62 tools
 
 **Composable bundles** (add to presets or each other):
-- **`graph`** — backlinks, orphans, hubs, paths (5 tools)
-- **`analysis`** — schema, wikilinks (9 tools)
-- **`tasks`** — tasks (3 tools)
-- **`health`** — health (11+ tools)
-- **`ops`** — git, policy (2 tools)
+- **`graph`** — structural analysis, paths, hubs, connections (7 tools)
+- **`schema`** — schema intelligence + migrations (5 tools)
+- **`wikilinks`** — suggestions, validation, discovery (7 tools)
+- **`corrections`** — correction recording + resolution (4 tools)
+- **`tasks`** — task queries and mutations (3 tools)
+- **`memory`** — agent working memory + recall + brief (3 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
+- **`diagnostics`** — vault health, stats, config, activity (13 tools)
+- **`automation`** — git undo, policy engine (2 tools)
 
-**Categories (17):** `search`, `backlinks`, `orphans`, `hubs`, `paths`, `schema`, `structure`, `tasks`, `health`, `wikilinks`, `append`, `frontmatter`, `notes`, `note-ops`, `git`, `policy`, `memory`
+**Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `diagnostics`, `automation`
 
 ---
 

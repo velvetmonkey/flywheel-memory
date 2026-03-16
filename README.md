@@ -20,7 +20,7 @@
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
 | Token cost | ~800-2,000 per query | ~50-200 per query |
 
-51 tools. 6-line config. Zero cloud.
+62 tools. 6-line config. Zero cloud.
 
 **Try in 60 seconds:**
 
@@ -281,7 +281,7 @@ Every mutation is:
 | Agent memory | brief + recall + memory | No | No | No |
 | Safe writes | Git + conflict detection | No | N/A | N/A |
 | Test coverage | 2,456 tests | Unknown | Unknown | Unknown |
-| Tool count | 51 | ~10 | 0 (plugin) | ~5 |
+| Tool count | 62 | ~10 | 0 (plugin) | ~5 |
 
 ---
 
@@ -323,7 +323,7 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Defaults to the `minimal` preset (11 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
+Defaults to the `default` preset (17 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
 
 > **Note:** Developed and tested with Claude Code. Other MCP clients may work but are untested.
 
@@ -333,22 +333,23 @@ Defaults to the `minimal` preset (11 tools). Add bundles as needed. See [docs/CO
 
 | Preset | Tools | What you get |
 |--------|-------|--------------|
-| `minimal` (default) | 11 | Note-taking essentials — search, read, create, edit |
-| `full` | 51 | Everything — graph, schema, tasks, policy, memory |
-| `writer` | 14 | minimal + task management |
-| `agent` | 14 | minimal + agent memory (brief, recall, memory) |
-| `researcher` | 12 | Search + graph navigation — read-heavy exploration |
+| `default` | 17 | Note-taking essentials — search, read, write, tasks |
+| `agent` | 17 | Autonomous AI agents — search, read, write, memory |
+| `full` | 62 | Everything — all 12 categories |
 
 Composable bundles (add to presets or each other):
 
 | Bundle | Tools | What it adds |
 |--------|-------|--------------|
-| `graph` | 7 | Backlinks, orphans, hubs, shortest paths |
-| `analysis` | 9 | Schema intelligence, wikilink validation, content similarity |
+| `graph` | 7 | Structural analysis, hubs, shortest paths, connections |
+| `schema` | 5 | Schema intelligence, migrations |
+| `wikilinks` | 7 | Wikilink suggestions, validation, discovery |
+| `corrections` | 4 | Correction recording + resolution |
 | `tasks` | 3 | Task queries and mutations |
-| `health` | 12 | Vault diagnostics, index management, growth, config, merges |
-| `ops` | 2 | Git undo, policy automation |
+| `memory` | 3 | Agent working memory + recall + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
+| `diagnostics` | 13 | Vault health, stats, config, activity, merges |
+| `automation` | 2 | Git undo, policy engine |
 
 The fewer tools you load, the less context Claude needs to pick the right one. See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
 
@@ -359,7 +360,7 @@ The fewer tools you load, the less context Claude needs to pick the right one. S
 | Doc | Why read this |
 |---|---|
 | [PROVE-IT.md](docs/PROVE-IT.md) | See it working in 5 minutes |
-| [TOOLS.md](docs/TOOLS.md) | All 51 tools documented |
+| [TOOLS.md](docs/TOOLS.md) | All 62 tools documented |
 | [ALGORITHM.md](docs/ALGORITHM.md) | How the scoring works |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](docs/SETUP.md) | Full setup guide for your vault |

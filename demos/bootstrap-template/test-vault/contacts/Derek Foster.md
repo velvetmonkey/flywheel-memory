@@ -1,7 +1,5 @@
 ---
 type: contact
-aliases:
-  - Derek
 company: "[[Ironclad Security]]"
 role: Security Architect
 email: derek@ironclad.com

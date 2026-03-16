@@ -1,7 +1,5 @@
 ---
 type: contact
-aliases:
-  - Sarah
 company: "[[Acme Corp]]"
 role: VP Engineering
 email: sarah@acme.com

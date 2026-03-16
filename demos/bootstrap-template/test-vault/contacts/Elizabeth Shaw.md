@@ -1,7 +1,5 @@
 ---
 type: contact
-aliases:
-  - Elizabeth
 company: "[[Ironclad Security]]"
 role: CISO
 email: elizabeth@ironclad.com

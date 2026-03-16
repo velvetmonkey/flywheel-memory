@@ -1,7 +1,5 @@
 ---
 type: contact
-aliases:
-  - Jennifer
 company: "[[Meridian Health]]"
 role: IT Director
 email: jennifer@meridian.com

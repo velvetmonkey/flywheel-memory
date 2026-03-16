@@ -1,7 +1,5 @@
 ---
 type: contact
-aliases:
-  - David
 company: "[[GlobalBank]]"
 role: Chief Digital Officer
 email: david@globalbank.com

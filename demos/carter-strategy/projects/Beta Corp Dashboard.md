@@ -1,6 +1,6 @@
 ---
 type: project
-client: "[[Beta Corp]]"
+client: '[[Beta Corp]]'
 status: active
 budget: 28000
 billed: 14000
@@ -35,7 +35,7 @@ Analytics dashboard for Beta Corp's operations team. Currently understaffed and 
 
 ## Staffing Gap
 
-Currently need a React developer with dashboard experience. [[Stacy Thompson]] is a potential fit given her current 40% utilization.
+Currently need a [[React]] developer with dashboard experience. [[Stacy Thompson]] is starting on this project as of 2026-03-16. → [[TechStart Phase 2]], [[Acme Analytics Add-on]]
 
 ## Related
 

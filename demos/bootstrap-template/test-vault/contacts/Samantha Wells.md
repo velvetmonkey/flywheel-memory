@@ -1,7 +1,5 @@
 ---
 type: contact
-aliases:
-  - Samantha
 company: "[[Evergreen Partners]]"
 role: Partner
 email: samantha@evergreen.com

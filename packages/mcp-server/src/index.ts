@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 51 tools across 17 categories
+ * 62 tools across 12 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -187,80 +187,85 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherStatus;
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
 // Presets:
-//   minimal    - Bare essentials: search, read, create, edit (11 tools)
-//   writer     - minimal + tasks (14 tools)
-//   agent      - minimal + memory (14 tools)
-//   researcher - Graph explorer: search, structure, backlinks, hubs, paths (12 tools)
-//   full       - All tools (51 tools) [DEFAULT]
+//   default    - Note-taking essentials: search, read, write, tasks (17 tools)
+//   agent      - Autonomous AI agents: search, read, write, memory (17 tools)
+//   full       - All tools (62 tools)
 //
 // Composable bundles (combine with presets or each other):
-//   graph    - Backlinks, orphans, hubs, paths (7 tools)
-//   analysis - Schema intelligence, wikilink validation (9 tools)
-//   tasks    - Task queries and mutations (3 tools)
-//   health   - Vault diagnostics and index management (12 tools)
-//   ops      - Git undo, policy automation (2 tools)
-//   note-ops - File management: delete, move, rename, merge (4 tools)
+//   graph       - Structural analysis: graph_analysis, paths, hubs, connections (7 tools)
+//   schema      - Schema intelligence + migrations (5 tools)
+//   wikilinks   - Wikilink suggestions, validation, discovery (7 tools)
+//   corrections - Correction recording + resolution (4 tools)
+//   tasks       - Task queries and mutations (3 tools)
+//   memory      - Agent working memory + recall + brief (3 tools)
+//   note-ops    - File management: delete, move, rename, merge (4 tools)
+//   diagnostics - Vault health, stats, config, activity (13 tools)
+//   automation  - Git undo, policy engine (2 tools)
 //
 // Examples:
-//   FLYWHEEL_TOOLS=minimal                    # 11 tools
-//   FLYWHEEL_TOOLS=writer,note-ops            # 18 tools
-//   FLYWHEEL_TOOLS=agent,tasks                # 17 tools
-//   FLYWHEEL_TOOLS=search,backlinks,append    # fine-grained categories
+//   FLYWHEEL_TOOLS=default                    # 17 tools
+//   FLYWHEEL_TOOLS=agent                      # 17 tools
+//   FLYWHEEL_TOOLS=default,graph              # 24 tools
+//   FLYWHEEL_TOOLS=agent,tasks                # 20 tools
+//   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
-// Categories (17):
-//   READ:  search, backlinks, orphans, hubs, paths,
-//          schema, structure, tasks, health, wikilinks
-//   WRITE: append, frontmatter, notes, note-ops, git, policy
-//   AGENT: memory
+// Categories (12):
+//   search, read, write, graph, schema, wikilinks,
+//   corrections, tasks, memory, note-ops, diagnostics, automation
 // ============================================================================
 
 type ToolCategory =
-  // Read
-  | 'backlinks' | 'orphans' | 'hubs' | 'paths'
-  | 'search'
-  | 'schema' | 'structure' | 'tasks'
-  | 'health' | 'wikilinks'
-  // Write
-  | 'append' | 'frontmatter' | 'notes' | 'note-ops'
-  | 'git' | 'policy'
-  // Agent memory
-  | 'memory';
+  | 'search' | 'read' | 'write'
+  | 'graph' | 'schema' | 'wikilinks' | 'corrections'
+  | 'tasks' | 'memory' | 'note-ops'
+  | 'diagnostics' | 'automation';
+
+const ALL_CATEGORIES: ToolCategory[] = [
+  'search', 'read', 'write',
+  'graph', 'schema', 'wikilinks', 'corrections',
+  'tasks', 'memory', 'note-ops',
+  'diagnostics', 'automation',
+];
 
 const PRESETS: Record<string, ToolCategory[]> = {
   // Presets
-  minimal: ['search', 'structure', 'append', 'frontmatter', 'notes'],
-  writer: ['search', 'structure', 'append', 'frontmatter', 'notes', 'tasks'],
-  agent: ['search', 'structure', 'append', 'frontmatter', 'notes', 'memory'],
-  researcher: ['search', 'structure', 'backlinks', 'hubs', 'paths'],
-  full: [
-    'search', 'backlinks', 'orphans', 'hubs', 'paths',
-    'schema', 'structure', 'tasks',
-    'health', 'wikilinks',
-    'append', 'frontmatter', 'notes', 'note-ops',
-    'git', 'policy',
-    'memory',
-  ],
+  default: ['search', 'read', 'write', 'tasks'],
+  agent: ['search', 'read', 'write', 'memory'],
+  full: ALL_CATEGORIES,
 
-  // Composable bundles
-  graph: ['backlinks', 'orphans', 'hubs', 'paths'],
-  analysis: ['schema', 'wikilinks'],
+  // Composable bundles (one per category)
+  graph: ['graph'],
+  schema: ['schema'],
+  wikilinks: ['wikilinks'],
+  corrections: ['corrections'],
   tasks: ['tasks'],
-  health: ['health'],
-  ops: ['git', 'policy'],
+  memory: ['memory'],
   'note-ops': ['note-ops'],
+  diagnostics: ['diagnostics'],
+  automation: ['automation'],
 };
 
-const ALL_CATEGORIES: ToolCategory[] = [
-  'backlinks', 'orphans', 'hubs', 'paths',
-  'search',
-  'schema', 'structure', 'tasks',
-  'health', 'wikilinks',
-  'append', 'frontmatter', 'notes', 'note-ops',
-  'git', 'policy',
-  'memory',
-];
+const DEFAULT_PRESET = 'default';
 
-const DEFAULT_PRESET = 'minimal';
+// Deprecated aliases — old names → new category/preset names
+const DEPRECATED_ALIASES: Record<string, string> = {
+  minimal: 'default',
+  writer: 'default',     // writer was default+tasks, now default includes tasks
+  researcher: 'default', // use default,graph for graph exploration
+  backlinks: 'read',     // get_backlinks moved to read
+  structure: 'read',
+  append: 'write',
+  frontmatter: 'write',
+  notes: 'write',
+  orphans: 'graph',
+  hubs: 'graph',
+  paths: 'graph',
+  health: 'diagnostics',
+  analysis: 'wikilinks',
+  git: 'automation',
+  ops: 'automation',
+  policy: 'automation',
+};
 
 /**
  * Parse FLYWHEEL_TOOLS env var into enabled categories
@@ -273,21 +278,38 @@ function parseEnabledCategories(): Set<ToolCategory> {
     return new Set(PRESETS[DEFAULT_PRESET]);
   }
 
-  // Check if it's a preset name
+  // Check if it's a preset name (direct match)
   const lowerValue = envValue.toLowerCase();
   if (PRESETS[lowerValue]) {
     return new Set(PRESETS[lowerValue]);
   }
 
+  // Check deprecated alias (single value)
+  if (DEPRECATED_ALIASES[lowerValue]) {
+    const resolved = DEPRECATED_ALIASES[lowerValue];
+    serverLog('server', `Preset "${lowerValue}" is deprecated — use "${resolved}" instead`, 'warn');
+    if (PRESETS[resolved]) {
+      return new Set(PRESETS[resolved]);
+    }
+    return new Set([resolved as ToolCategory]);
+  }
+
   // Parse comma-separated categories
   const categories = new Set<ToolCategory>();
   for (const item of envValue.split(',')) {
-    const category = item.trim().toLowerCase() as ToolCategory;
-    if (ALL_CATEGORIES.includes(category)) {
-      categories.add(category);
-    } else if (PRESETS[category]) {
+    const raw = item.trim().toLowerCase();
+
+    // Check deprecated alias
+    const resolved = DEPRECATED_ALIASES[raw] ?? raw;
+    if (resolved !== raw) {
+      serverLog('server', `Category "${raw}" is deprecated — use "${resolved}" instead`, 'warn');
+    }
+
+    if (ALL_CATEGORIES.includes(resolved as ToolCategory)) {
+      categories.add(resolved as ToolCategory);
+    } else if (PRESETS[resolved]) {
       // Allow preset names in comma list
-      for (const c of PRESETS[category]) {
+      for (const c of PRESETS[resolved]) {
         categories.add(c);
       }
     } else {
@@ -307,108 +329,160 @@ function parseEnabledCategories(): Set<ToolCategory> {
 const enabledCategories = parseEnabledCategories();
 
 // Per-tool category mapping (tool name → category)
+// Every tool MUST have an entry — tools without entries bypass gating entirely.
 const TOOL_CATEGORY: Record<string, ToolCategory> = {
-  // health (includes periodic detection in output)
-  health_check: 'health',
-  get_vault_stats: 'health',
-  get_folder_structure: 'health',
-  refresh_index: 'health',   // absorbed rebuild_search_index
-  get_all_entities: 'health',
-  list_entities: 'hubs',
-  get_unlinked_mentions: 'health',
-
-  // search (unified: metadata + content + entities)
+  // search (3 tools)
   search: 'search',
   init_semantic: 'search',
+  find_similar: 'search',
 
-  // backlinks
-  get_backlinks: 'backlinks',
-  get_forward_links: 'backlinks',
+  // read (6 tools) — note reading + backlinks/forward links
+  get_note_structure: 'read',
+  get_section_content: 'read',
+  find_sections: 'read',
+  get_note_metadata: 'read',
+  get_backlinks: 'read',
+  get_forward_links: 'read',
 
-  // orphans (graph_analysis covers orphans, dead_ends, sources, hubs, stale)
-  graph_analysis: 'orphans',
-  get_connection_strength: 'hubs',
+  // write (5 tools) — content mutations + frontmatter + note creation
+  vault_add_to_section: 'write',
+  vault_remove_from_section: 'write',
+  vault_replace_in_section: 'write',
+  vault_update_frontmatter: 'write',
+  vault_create_note: 'write',
 
-  // paths
-  get_link_path: 'paths',
-  get_common_neighbors: 'paths',
+  // graph (7 tools) — structural analysis
+  graph_analysis: 'graph',
+  get_connection_strength: 'graph',
+  list_entities: 'graph',
+  get_link_path: 'graph',
+  get_common_neighbors: 'graph',
+  get_weighted_links: 'graph',
+  get_strong_connections: 'graph',
 
-  // schema (vault_schema + note_intelligence cover all schema tools)
+  // schema (5 tools) — schema intelligence + migrations
   vault_schema: 'schema',
   note_intelligence: 'schema',
-
-  // structure (absorbed get_headings + vault_list_sections)
-  get_note_structure: 'structure',
-  get_section_content: 'structure',
-  find_sections: 'structure',
-  get_note_metadata: 'structure',
-
-  // tasks (unified: all task queries + write)
-  tasks: 'tasks',
-  vault_toggle_task: 'tasks',
-  vault_add_task: 'tasks',
-
-  // wikilinks
-  suggest_wikilinks: 'wikilinks',
-  validate_links: 'wikilinks',
-
-  // append (content mutations)
-  vault_add_to_section: 'append',
-  vault_remove_from_section: 'append',
-  vault_replace_in_section: 'append',
-
-  // frontmatter (absorbed vault_add_frontmatter_field via only_if_missing)
-  vault_update_frontmatter: 'frontmatter',
-
-  // notes (create only)
-  vault_create_note: 'notes',
-
-  // note-ops (file management)
-  vault_delete_note: 'note-ops',
-  vault_move_note: 'note-ops',
-  vault_rename_note: 'note-ops',
-
-  // git
-  vault_undo_last_mutation: 'git',
-
-  // policy
-  policy: 'policy',
-
-  // schema (migrations + tag rename)
   rename_field: 'schema',
   migrate_field_values: 'schema',
   rename_tag: 'schema',
 
-  // health (growth metrics)
-  vault_growth: 'health',
-
-  // wikilinks (feedback)
+  // wikilinks (7 tools) — suggestions, validation, discovery
+  suggest_wikilinks: 'wikilinks',
+  validate_links: 'wikilinks',
   wikilink_feedback: 'wikilinks',
+  discover_stub_candidates: 'wikilinks',
+  discover_cooccurrence_gaps: 'wikilinks',
+  suggest_entity_aliases: 'wikilinks',
+  unlinked_mentions_report: 'wikilinks',
 
-  // health (activity tracking)
-  vault_activity: 'health',
+  // corrections (4 tools)
+  vault_record_correction: 'corrections',
+  vault_list_corrections: 'corrections',
+  vault_resolve_correction: 'corrections',
+  absorb_as_alias: 'corrections',
 
-  // schema (content similarity)
-  find_similar: 'schema',
+  // tasks (3 tools)
+  tasks: 'tasks',
+  vault_toggle_task: 'tasks',
+  vault_add_task: 'tasks',
 
-  // health (config management)
-  flywheel_config: 'health',
-
-  // health (server activity log)
-  server_log: 'health',
-
-  // health (merge suggestions)
-  suggest_entity_merges: 'health',
-  dismiss_merge_suggestion: 'health',
-
-  // note-ops (entity merge)
-  merge_entities: 'note-ops',
-
-  // memory (agent working memory)
+  // memory (3 tools) — agent working memory
   memory: 'memory',
   recall: 'memory',
   brief: 'memory',
+
+  // note-ops (4 tools) — file management
+  vault_delete_note: 'note-ops',
+  vault_move_note: 'note-ops',
+  vault_rename_note: 'note-ops',
+  merge_entities: 'note-ops',
+
+  // diagnostics (13 tools) — vault health, stats, config, activity
+  health_check: 'diagnostics',
+  get_vault_stats: 'diagnostics',
+  get_folder_structure: 'diagnostics',
+  refresh_index: 'diagnostics',
+  get_all_entities: 'diagnostics',
+  get_unlinked_mentions: 'diagnostics',
+  vault_growth: 'diagnostics',
+  vault_activity: 'diagnostics',
+  flywheel_config: 'diagnostics',
+  server_log: 'diagnostics',
+  suggest_entity_merges: 'diagnostics',
+  dismiss_merge_suggestion: 'diagnostics',
+  vault_init: 'diagnostics',
+
+  // automation (2 tools) — git undo + policy engine
+  vault_undo_last_mutation: 'automation',
+  policy: 'automation',
 };
+
+// ============================================================================
+// Server Instructions (dynamic, based on enabled categories)
+// ============================================================================
+
+function generateInstructions(categories: Set<ToolCategory>): string {
+  const parts: string[] = [];
+
+  // Base instruction (always present)
+  parts.push(`Flywheel provides tools to search, read, and write an Obsidian vault's knowledge graph.
+
+Tool selection:
+  1. Use "search" before reading files — returns frontmatter, backlinks, outlinks, headings, and snippets. Often sufficient without file reads.
+  2. Use "get_note_structure" for a full note outline or content. Use "get_section_content" for one section.
+  3. Use vault write tools instead of raw file writes — they auto-link entities and commit changes.`);
+
+  // Read category instructions
+  if (categories.has('read')) {
+    parts.push(`
+## Read
+
+Read escalation: "search" → "get_note_structure" (outline + optional content) → "get_section_content" (single section). Use "get_backlinks" to find what links to a note. Use "get_forward_links" to see what a note links to.`);
+  }
+
+  // Write category instructions
+  if (categories.has('write')) {
+    parts.push(`
+## Write
+
+Write to existing notes with "vault_add_to_section". Create new notes with "vault_create_note". Update metadata with "vault_update_frontmatter". All writes auto-link entities — no manual [[wikilinks]] needed.`);
+  }
+
+  // Memory category instructions (agent workflow)
+  if (categories.has('memory')) {
+    parts.push(`
+## Memory
+
+Session workflow: call "brief" at conversation start for vault context (recent sessions, active entities, stored memories). Use "recall" before answering questions — it searches entities, notes, and memories with graph-boosted ranking. Use "memory" to store observations that should persist across sessions.`);
+  }
+
+  // Graph category instructions
+  if (categories.has('graph')) {
+    parts.push(`
+## Graph
+
+Use "graph_analysis" for structural queries (hubs, orphans, dead ends, emerging connections). Use "get_connection_strength" to measure how strongly two notes are linked. Use "get_link_path" to find shortest paths between notes.`);
+  }
+
+  // Tasks category instructions
+  if (categories.has('tasks')) {
+    parts.push(`
+## Tasks
+
+Use "tasks" to query tasks across the vault (filter by status, due date, path). Use "vault_add_task" to create tasks and "vault_toggle_task" to complete them.`);
+  }
+
+  // Schema category instructions
+  if (categories.has('schema')) {
+    parts.push(`
+## Schema
+
+Use "vault_schema" before bulk operations to understand field conventions, inconsistencies, and note types. Use "note_intelligence" for per-note analysis.`);
+  }
+
+  return parts.join('\n');
+}
 
 // ============================================================================
 // Server Setup
@@ -417,6 +491,7 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 const server = new McpServer({
   name: 'flywheel-memory',
   version: pkg.version,
+  instructions: generateInstructions(enabledCategories),
 });
 
 // Monkey-patch server.tool() and server.registerTool() to gate by per-tool category

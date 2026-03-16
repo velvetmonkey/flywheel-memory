@@ -104,9 +104,6 @@ You: "What's blocking the propulsion milestone?"
         snippet: "...R-003: <mark>Turbopump</mark> Delivery Delay — CNC mill failure at Acme Aerospace.
                   Original: Jan 5. Revised: Jan 20. Score: 15..."
 
-  ● read_file("project/Risk Register.md")
-    ← R-003: Turbopump Delivery Delay, score: 15
-
 ┌─ RESULT ───────────────────────────────────────────────────┐
 │ Root cause: CNC mill failure at Acme Aerospace              │
 │ Original delivery: January 5                                │
@@ -114,6 +111,9 @@ You: "What's blocking the propulsion milestone?"
 │ Impact: Hot Fire Test 4 postponed, prototype in use         │
 │ Backup: Precision Components Inc (12-week lead, $680K)      │
 └─────────────────────────────────────────────────────────────┘
+
+One search returned blockers, risk scores, and mitigations.
+Zero file reads needed.
 ```
 
 ### Explain a decision -- enriched search

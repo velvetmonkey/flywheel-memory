@@ -442,14 +442,18 @@ export function registerQueryTools(
             const merged = Array.from(allPaths).map(p => {
               const title = fts5Map.get(p)?.title || semanticMap.get(p)?.title || entityMap.get(p)?.name || p.replace(/\.md$/, '').split('/').pop() || p;
               const snippet = fts5Map.get(p)?.snippet;
-              const rrfScore = rrfScores.get(p) || 0;
-              return { rrfScore, ...enrichResult({ path: p, title, snippet }, index, getStateDb()) };
+              return {
+                rrf_score: rrfScores.get(p) || 0,
+                in_fts5: fts5Map.has(p),
+                in_semantic: semanticMap.has(p),
+                in_entity: entityMap.has(p),
+                ...enrichResult({ path: p, title, snippet }, index, getStateDb()),
+              };
             });
 
-            merged.sort((a, b) => (b.rrfScore as number) - (a.rrfScore as number));
+            merged.sort((a, b) => (b.rrf_score as number) - (a.rrf_score as number));
 
-            // Drop internal rrfScore from output
-            const results = merged.slice(0, limit).map(({ rrfScore, ...rest }) => rest);
+            const results = merged.slice(0, limit);
 
             return { content: [{ type: 'text' as const, text: JSON.stringify({
               scope,
@@ -470,8 +474,8 @@ export function registerQueryTools(
           const fts5Map = new Map(fts5Results.map(r => [normalizePath(r.path), r]));
           const entityRanked = entityResults.filter(r => !fts5Map.has(normalizePath(r.path)));
           const merged = [
-            ...fts5Results.map(r => enrichResult({ path: r.path, title: r.title, snippet: r.snippet }, index, getStateDb())),
-            ...entityRanked.map(r => enrichResult({ path: r.path, title: r.name }, index, getStateDb())),
+            ...fts5Results.map(r => ({ in_fts5: true, ...enrichResult({ path: r.path, title: r.title, snippet: r.snippet }, index, getStateDb()) })),
+            ...entityRanked.map(r => ({ in_entity: true, ...enrichResult({ path: r.path, title: r.name }, index, getStateDb()) })),
           ];
           return { content: [{ type: 'text' as const, text: JSON.stringify({
             scope: 'content',
@@ -482,7 +486,7 @@ export function registerQueryTools(
           }, null, 2) }] };
         }
 
-        const enrichedFts5 = fts5Results.map(r => enrichResult({ path: r.path, title: r.title, snippet: r.snippet }, index, getStateDb()));
+        const enrichedFts5 = fts5Results.map(r => ({ in_fts5: true, ...enrichResult({ path: r.path, title: r.title, snippet: r.snippet }, index, getStateDb()) }));
         return { content: [{ type: 'text' as const, text: JSON.stringify({
           scope: 'content',
           method: 'fts5',

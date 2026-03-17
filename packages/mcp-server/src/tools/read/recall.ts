@@ -94,7 +94,7 @@ async function performRecall(
   query: string,
   options: {
     max_results?: number;
-    focus?: 'entities' | 'notes' | 'memories' | 'all';
+    focus?: 'entities' | 'notes' | 'memories';
     entity?: string;
     max_tokens?: number;
     diversity?: number;
@@ -103,7 +103,7 @@ async function performRecall(
 ): Promise<RecallResult[]> {
   const {
     max_results = 20,
-    focus = 'all',
+    focus,
     entity,
     max_tokens,
     diversity = 0.7,
@@ -118,7 +118,7 @@ async function performRecall(
   const feedbackBoosts = getAllFeedbackBoosts(stateDb);
 
   // ─── Channel 1: Entity search ───
-  if (focus === 'all' || focus === 'entities') {
+  if (!focus || focus === 'entities') {
     try {
       const entityResults = searchEntitiesDb(stateDb, query, max_results);
       for (const e of entityResults) {
@@ -149,7 +149,7 @@ async function performRecall(
   }
 
   // ─── Channel 2: Note search (FTS5) ───
-  if (focus === 'all' || focus === 'notes') {
+  if (!focus || focus === 'notes') {
     try {
       const noteResults = searchFTS5('', query, max_results);
       for (const n of noteResults) {
@@ -173,7 +173,7 @@ async function performRecall(
   }
 
   // ─── Channel 3: Memory search ───
-  if (focus === 'all' || focus === 'memories') {
+  if (!focus || focus === 'memories') {
     try {
       const memResults = searchMemories(stateDb, {
         query,
@@ -202,7 +202,7 @@ async function performRecall(
   }
 
   // ─── Channel 4: Semantic entity search ───
-  if ((focus === 'all' || focus === 'entities') && query.length >= 20 && hasEntityEmbeddingsIndex()) {
+  if ((!focus || focus === 'entities') && query.length >= 20 && hasEntityEmbeddingsIndex()) {
     try {
       const embedding = await embedTextCached(query);
       const semanticMatches = findSemanticallySimilarEntities(embedding, max_results);
@@ -335,7 +335,7 @@ export function registerRecallTools(
     {
       query: z.string().describe('What to recall (e.g., "Project X", "meetings about auth")'),
       max_results: z.number().min(1).max(100).optional().describe('Max results (default: 20)'),
-      focus: z.enum(['entities', 'notes', 'memories', 'all']).optional().describe('Limit search to specific type (default: all)'),
+      focus: z.enum(['entities', 'notes', 'memories']).optional().describe('Limit to a specific result type. Omit for best results (searches everything).'),
       entity: z.string().optional().describe('Filter memories by entity association'),
       max_tokens: z.number().optional().describe('Token budget for response (truncates lower-ranked results)'),
       diversity: z.number().min(0).max(1).optional().describe('Relevance vs diversity tradeoff (0=max diversity, 1=pure relevance, default: 0.7)'),

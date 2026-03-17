@@ -189,7 +189,7 @@ export function removeTaskCacheForFile(relativePath: string): void {
  * Query tasks from cache
  */
 export function queryTasksFromCache(options: {
-  status?: 'open' | 'completed' | 'cancelled' | 'all';
+  status?: 'open' | 'completed' | 'cancelled';
   folder?: string;
   tag?: string;
   excludeTags?: string[];
@@ -201,13 +201,13 @@ export function queryTasksFromCache(options: {
     throw new Error('Task cache database not initialized.');
   }
 
-  const { status = 'all', folder, tag, excludeTags = [], has_due_date, limit, offset = 0 } = options;
+  const { status, folder, tag, excludeTags = [], has_due_date, limit, offset = 0 } = options;
 
   // Build WHERE clauses
   const conditions: string[] = [];
   const params: unknown[] = [];
 
-  if (status !== 'all') {
+  if (status) {
     conditions.push('status = ?');
     params.push(status);
   }

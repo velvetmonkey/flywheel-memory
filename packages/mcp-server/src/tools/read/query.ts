@@ -216,12 +216,12 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Search the vault — always try this before reading files. Returns frontmatter, backlinks (with lines), outlinks (with lines + exists), headings, content snippet or preview, entity metadata, and timestamps for every hit.\n\nSearch the vault across metadata, content, and entities. Scope controls what to search: "metadata" for frontmatter/tags/folders, "content" for full-text search (FTS5), "entities" for people/projects/technologies, "all" (default) tries metadata then falls back to content search. When embeddings have been built (via init_semantic), content and all scopes automatically include embedding-based results via hybrid ranking.\n\nExample: search({ query: "quarterly review", scope: "content", limit: 5 })\nExample: search({ where: { type: "project", status: "active" }, scope: "metadata" })',
+    'Search the vault — always try this before reading files. Returns frontmatter, backlinks (with lines), outlinks (with lines + exists), headings, content snippet or preview, entity metadata, and timestamps for every hit.\n\nSearches across metadata (frontmatter/tags/folders), content (FTS5 full-text + hybrid semantic), and entities (people/projects/technologies). Uses filters to narrow by frontmatter fields, tags, folders, or dates. Hybrid semantic results are automatically included when embeddings have been built (via init_semantic).\n\nExample: search({ query: "quarterly review", limit: 5 })\nExample: search({ where: { type: "project", status: "active" } })',
     {
-      query: z.string().optional().describe('Search query text. Required for scope "content", "entities", "all". For "metadata" scope, use filters instead.'),
-      scope: z.enum(['metadata', 'content', 'entities', 'all']).default('all').describe('What to search: metadata (frontmatter/tags/folders), content (FTS5 full-text), entities (people/projects), all (metadata then content). Semantic results are automatically included when embeddings have been built (via init_semantic).'),
+      query: z.string().optional().describe('Search query text. Required unless using metadata filters (where, has_tag, folder, etc.)'),
+      scope: z.enum(['metadata', 'content', 'entities', 'all']).optional().describe('Narrow to a specific search type. Omit for best results (searches everything). Use "metadata" for frontmatter-only queries, "entities" for entity lookup.'),
 
-      // Metadata filters (used with scope "metadata" or "all")
+      // Metadata filters
       where: z.record(z.unknown()).optional().describe('Frontmatter filters as key-value pairs. Example: { "type": "project", "status": "active" }'),
       has_tag: z.string().optional().describe('Filter to notes with this tag'),
       has_any_tag: z.array(z.string()).optional().describe('Filter to notes with any of these tags'),
@@ -247,7 +247,8 @@ export function registerQueryTools(
       // Context boost (edge weights)
       context_note: z.string().optional().describe('Path of the note providing context. When set, results connected to this note via weighted edges get an RRF boost.'),
     },
-    async ({ query, scope, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, context_note }) => {
+    async ({ query, scope: rawScope, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, context_note }) => {
+      const scope = rawScope || 'all'; // Treat missing/undefined as 'all'
       const limit = Math.min(requestedLimit ?? 20, MAX_LIMIT);
       const index = getIndex();
       const vaultPath = getVaultPath();

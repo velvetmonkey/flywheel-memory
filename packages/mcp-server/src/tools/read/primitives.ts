@@ -56,7 +56,7 @@ export function registerPrimitiveTools(
       description: 'Read the structure of a specific note. Use after search identifies a note you need more detail on. Returns headings, frontmatter, tags, word count. Set include_content: true to get the full markdown.',
       inputSchema: {
         path: z.string().describe('Path to the note'),
-        include_content: z.boolean().default(false).describe('Include the text content under each top-level section'),
+        include_content: z.boolean().default(true).describe('Include the text content under each top-level section. Set false to get structure only.'),
       },
     },
     async ({ path, include_content }) => {
@@ -188,7 +188,7 @@ export function registerPrimitiveTools(
       description: 'Query tasks from the vault. Use path to scope to a single note. Use status to filter (default: "open"). Use has_due_date to find tasks with due dates.',
       inputSchema: {
         path: z.string().optional().describe('Scope to tasks from this specific note path'),
-        status: z.enum(['open', 'completed', 'cancelled', 'all']).default('open').describe('Filter by task status'),
+        status: z.enum(['open', 'completed', 'cancelled']).default('open').describe('Filter by task status'),
         has_due_date: z.boolean().optional().describe('If true, only return tasks with due dates (sorted by date)'),
         folder: z.string().optional().describe('Limit to tasks in notes within this folder'),
         tag: z.string().optional().describe('Filter to tasks with this tag'),
@@ -214,7 +214,7 @@ export function registerPrimitiveTools(
 
         // Filter by status
         let filtered = result;
-        if (status !== 'all') {
+        if (status) {
           filtered = result.filter(t => t.status === status);
         }
 

@@ -1,9 +1,10 @@
 /**
- * Vault Schema - Unified schema intelligence tool
+ * Vault Schema - Schema intelligence tools
  *
- * Replaces: get_frontmatter_schema, get_field_values, find_frontmatter_inconsistencies,
- *           validate_frontmatter, find_missing_frontmatter, infer_folder_conventions,
- *           find_incomplete_notes, suggest_field_values
+ * Split into 3 focused tools:
+ * - vault_schema: overview, field_values, inconsistencies, contradictions
+ * - schema_conventions: conventions, incomplete, suggest_values
+ * - schema_validate: validate, missing
  */
 
 import { z } from 'zod';
@@ -26,48 +27,30 @@ import {
 } from './schema.js';
 
 /**
- * Register the unified vault_schema tool
+ * Register the vault_schema, schema_conventions, and schema_validate tools
  */
 export function registerVaultSchemaTools(
   server: McpServer,
   getIndex: () => VaultIndex,
   getVaultPath: () => string
 ): void {
+  // -------------------------------------------------------------------------
+  // vault_schema: overview, field_values, inconsistencies, contradictions
+  // -------------------------------------------------------------------------
   server.registerTool(
     'vault_schema',
     {
       title: 'Vault Schema',
       description:
-        'Analyze and validate vault frontmatter schema. Use analysis to pick the mode:\n' +
+        'Inspect vault frontmatter schema.\n' +
         '- "overview": Schema of all frontmatter fields across the vault\n' +
-        '- "field_values": All unique values for a specific field\n' +
+        '- "field_values": All unique values for a specific field (requires field param)\n' +
         '- "inconsistencies": Fields with multiple types across notes\n' +
-        '- "validate": Validate notes against a provided schema\n' +
-        '- "missing": Find notes missing expected fields by folder\n' +
-        '- "conventions": Auto-detect metadata conventions for a folder\n' +
-        '- "incomplete": Find notes missing expected fields (inferred)\n' +
-        '- "suggest_values": Suggest values for a field based on usage\n' +
-        '- "contradictions": Find conflicting frontmatter values across notes referencing the same entity\n\n' +
-        'Example: vault_schema({ analysis: "field_values", field: "status" })\n' +
-        'Example: vault_schema({ analysis: "conventions", folder: "projects" })\n' +
-        'Example: vault_schema({ analysis: "contradictions", entity: "project alpha" })',
+        '- "contradictions": Conflicting frontmatter values across notes referencing the same entity (optional: entity param)',
       inputSchema: {
-        analysis: z.enum([
-          'overview', 'field_values', 'inconsistencies', 'validate',
-          'missing', 'conventions', 'incomplete', 'suggest_values', 'contradictions',
-        ]).describe('Type of schema analysis to perform'),
-        field: z.string().optional().describe('Field name (field_values, suggest_values)'),
-        entity: z.string().optional().describe('Entity name to scope contradiction detection to (contradictions mode)'),
-        folder: z.string().optional().describe('Folder to scope analysis to'),
-        schema: z.record(z.object({
-          required: z.boolean().optional().describe('Whether field is required'),
-          type: z.union([z.string(), z.array(z.string())]).optional().describe('Expected type(s)'),
-          values: z.array(z.unknown()).optional().describe('Allowed values'),
-        })).optional().describe('Schema to validate against (validate mode)'),
-        folder_schemas: z.record(z.array(z.string())).optional().describe('Map of folder paths to required fields (missing mode)'),
-        min_confidence: z.coerce.number().min(0).max(1).optional().describe('Minimum confidence threshold (conventions)'),
-        min_frequency: z.coerce.number().min(0).max(1).optional().describe('Minimum field frequency (incomplete)'),
-        existing_frontmatter: z.record(z.unknown()).optional().describe('Existing frontmatter for context (suggest_values)'),
+        analysis: z.enum(['overview', 'field_values', 'inconsistencies', 'contradictions']).describe('Type of schema inspection'),
+        field: z.string().optional().describe('Field name (required for field_values)'),
+        entity: z.string().optional().describe('Entity name to scope contradiction detection to (contradictions)'),
         limit: z.coerce.number().default(50).describe('Maximum results to return'),
         offset: z.coerce.number().default(0).describe('Number of results to skip'),
       },
@@ -109,47 +92,53 @@ export function registerVaultSchemaTools(
           };
         }
 
-        case 'validate': {
-          if (!params.schema) {
-            return {
-              content: [{ type: 'text' as const, text: JSON.stringify({
-                error: 'schema parameter is required for validate analysis',
-              }, null, 2) }],
-            };
-          }
-          const result = validateFrontmatter(
-            index,
-            params.schema as Record<string, { required?: boolean; type?: string | string[]; values?: unknown[] }>,
-            params.folder
-          );
+        case 'contradictions': {
+          const allContradictions = findContradictions(index, params.entity);
+          const paginated = allContradictions.slice(params.offset ?? 0, (params.offset ?? 0) + limit);
+
           return {
             content: [{ type: 'text' as const, text: JSON.stringify({
-              notes_with_issues: result.length,
-              results: result,
+              analysis: 'contradictions',
+              entity: params.entity || null,
+              total_count: allContradictions.length,
+              returned_count: paginated.length,
+              contradictions: paginated,
             }, null, 2) }],
           };
         }
+      }
+    }
+  );
 
-        case 'missing': {
-          if (!params.folder_schemas) {
-            return {
-              content: [{ type: 'text' as const, text: JSON.stringify({
-                error: 'folder_schemas parameter is required for missing analysis',
-              }, null, 2) }],
-            };
-          }
-          const result = findMissingFrontmatter(
-            index,
-            params.folder_schemas as Record<string, string[]>
-          );
-          return {
-            content: [{ type: 'text' as const, text: JSON.stringify({
-              notes_with_missing_fields: result.length,
-              results: result,
-            }, null, 2) }],
-          };
-        }
+  // -------------------------------------------------------------------------
+  // schema_conventions: conventions, incomplete, suggest_values
+  // -------------------------------------------------------------------------
+  server.registerTool(
+    'schema_conventions',
+    {
+      title: 'Schema Conventions',
+      description:
+        'Infer and analyze frontmatter conventions from vault usage patterns.\n' +
+        '- "conventions": Auto-detect metadata conventions for a folder\n' +
+        '- "incomplete": Find notes missing expected fields (inferred from folder peers)\n' +
+        '- "suggest_values": Suggest values for a field based on usage patterns',
+      inputSchema: {
+        analysis: z.enum(['conventions', 'incomplete', 'suggest_values']).describe('Type of convention analysis'),
+        folder: z.string().optional().describe('Folder to scope analysis to'),
+        field: z.string().optional().describe('Field name (required for suggest_values)'),
+        min_confidence: z.coerce.number().min(0).max(1).optional().describe('Minimum confidence threshold (conventions)'),
+        min_frequency: z.coerce.number().min(0).max(1).optional().describe('Minimum field frequency (incomplete)'),
+        existing_frontmatter: z.record(z.unknown()).optional().describe('Existing frontmatter for context (suggest_values)'),
+        limit: z.coerce.number().default(50).describe('Maximum results to return'),
+        offset: z.coerce.number().default(0).describe('Number of results to skip'),
+      },
+    },
+    async (params) => {
+      requireIndex();
+      const limit = Math.min(params.limit ?? 50, MAX_LIMIT);
+      const index = getIndex();
 
+      switch (params.analysis) {
         case 'conventions': {
           const result = inferFolderConventions(
             index,
@@ -190,18 +179,74 @@ export function registerVaultSchemaTools(
             content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
           };
         }
+      }
+    }
+  );
 
-        case 'contradictions': {
-          const allContradictions = findContradictions(index, params.entity);
-          const paginated = allContradictions.slice(params.offset ?? 0, (params.offset ?? 0) + limit);
+  // -------------------------------------------------------------------------
+  // schema_validate: validate, missing
+  // -------------------------------------------------------------------------
+  server.registerTool(
+    'schema_validate',
+    {
+      title: 'Schema Validate',
+      description:
+        'Validate frontmatter against rules.\n' +
+        '- "validate": Validate notes against a provided schema (requires schema param)\n' +
+        '- "missing": Find notes missing expected fields by folder (requires folder_schemas param)',
+      inputSchema: {
+        analysis: z.enum(['validate', 'missing']).describe('Type of validation'),
+        schema: z.record(z.object({
+          required: z.boolean().optional().describe('Whether field is required'),
+          type: z.union([z.string(), z.array(z.string())]).optional().describe('Expected type(s)'),
+          values: z.array(z.unknown()).optional().describe('Allowed values'),
+        })).optional().describe('Schema to validate against (validate mode)'),
+        folder_schemas: z.record(z.array(z.string())).optional().describe('Map of folder paths to required fields (missing mode)'),
+        folder: z.string().optional().describe('Folder to scope validation to (validate mode)'),
+      },
+    },
+    async (params) => {
+      requireIndex();
+      const index = getIndex();
 
+      switch (params.analysis) {
+        case 'validate': {
+          if (!params.schema) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({
+                error: 'schema parameter is required for validate analysis',
+              }, null, 2) }],
+            };
+          }
+          const result = validateFrontmatter(
+            index,
+            params.schema as Record<string, { required?: boolean; type?: string | string[]; values?: unknown[] }>,
+            params.folder
+          );
           return {
             content: [{ type: 'text' as const, text: JSON.stringify({
-              analysis: 'contradictions',
-              entity: params.entity || null,
-              total_count: allContradictions.length,
-              returned_count: paginated.length,
-              contradictions: paginated,
+              notes_with_issues: result.length,
+              results: result,
+            }, null, 2) }],
+          };
+        }
+
+        case 'missing': {
+          if (!params.folder_schemas) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({
+                error: 'folder_schemas parameter is required for missing analysis',
+              }, null, 2) }],
+            };
+          }
+          const result = findMissingFrontmatter(
+            index,
+            params.folder_schemas as Record<string, string[]>
+          );
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify({
+              notes_with_missing_fields: result.length,
+              results: result,
             }, null, 2) }],
           };
         }

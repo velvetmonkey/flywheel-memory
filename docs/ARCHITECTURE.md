@@ -1,6 +1,6 @@
 # Architecture
 
-Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 61 tools for search, graph queries, and mutations.
+Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 64 tools for search, graph queries, and mutations.
 
 ---
 
@@ -206,8 +206,8 @@ In addition to note-level embeddings, Flywheel builds entity-level embeddings fo
 
 **Integration points:**
 - **Layer 9 scoring** in `suggestRelatedLinks()` — cosine similarity against in-memory entity embeddings
-- **Semantic graph analysis** — `semantic_clusters` and `semantic_bridges` modes
-- **Semantic note intelligence** — `semantic_links` mode
+- **Semantic analysis** — `semantic_analysis` tool (clusters, bridges)
+- **Semantic note intelligence** — `semantic_links` mode in `note_intelligence`
 - **Preflight duplicate detection** — `vault_create_note` checks semantic similarity before creation
 - **Broken link fallback** — `validate_links` uses embedding similarity to suggest corrections
 

@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 61 tools across 11 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 64 tools across 11 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -16,11 +16,12 @@ packages/mcp-server/src/
 │   │   ├── query.ts            # search
 │   │   ├── primitives.ts       # get_note_structure, get_section_content, find_sections, tasks
 │   │   ├── graph.ts            # get_backlinks, get_forward_links
-│   │   ├── graphAnalysis.ts    # graph_analysis, list_entities, get_connection_strength,
+│   │   ├── graphAnalysis.ts    # graph_analysis (7 modes), list_entities, get_connection_strength,
 │   │   │                       #   get_link_path, get_common_neighbors, get_weighted_links, get_strong_connections
+│   │   ├── semanticAnalysis.ts # semantic_analysis (clusters, bridges)
 │   │   ├── system.ts           # refresh_index, get_all_entities, get_unlinked_mentions
 │   │   ├── health.ts           # health_check, get_vault_stats, get_folder_structure, server_log
-│   │   ├── vaultSchema.ts      # vault_schema
+│   │   ├── vaultSchema.ts      # vault_schema, schema_conventions, schema_validate
 │   │   ├── noteIntelligence.ts # note_intelligence
 │   │   ├── wikilinks.ts        # suggest_wikilinks, validate_links, discover_stub_candidates,
 │   │   │                       #   discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report
@@ -72,11 +73,11 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 **Presets:**
 - **`default`** — 16 tools: search, read, write, tasks
 - **`agent`** — 16 tools: search, read, write, memory
-- **`full`** — All 11 categories, all 61 tools
+- **`full`** — All 11 categories, all 64 tools
 
 **Composable bundles** (add to presets or each other):
-- **`graph`** — structural analysis, paths, hubs, connections (9 tools)
-- **`schema`** — schema intelligence + migrations (5 tools)
+- **`graph`** — structural analysis, semantic analysis, paths, hubs, connections (10 tools)
+- **`schema`** — schema intelligence + migrations (7 tools)
 - **`wikilinks`** — suggestions, validation, discovery (7 tools)
 - **`corrections`** — correction recording + resolution (4 tools)
 - **`tasks`** — task queries and mutations (3 tools)

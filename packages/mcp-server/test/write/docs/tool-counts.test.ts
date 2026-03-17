@@ -203,7 +203,8 @@ describe('Tool Count Verification', () => {
 
       // Some consolidated tools use short, non-prefixed names
       const ALLOWED_STANDALONE = new Set([
-        'search', 'tasks', 'graph_analysis', 'vault_schema', 'note_intelligence', 'policy',
+        'search', 'tasks', 'graph_analysis', 'vault_schema', 'schema_conventions', 'schema_validate',
+        'semantic_analysis', 'note_intelligence', 'policy',
         'health_check', 'refresh_index', 'suggest_wikilinks', 'validate_links',
         'rename_field', 'migrate_field_values',
         'rename_tag', 'wikilink_feedback',

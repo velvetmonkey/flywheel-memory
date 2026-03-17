@@ -48,8 +48,10 @@ describe('MCP Server Integration', () => {
       // Query tools (unified search)
       expect(toolNames).toContain('search');
 
-      // Schema tools (unified)
+      // Schema tools (split)
       expect(toolNames).toContain('vault_schema');
+      expect(toolNames).toContain('schema_conventions');
+      expect(toolNames).toContain('schema_validate');
       expect(toolNames).toContain('note_intelligence');
     });
 

@@ -95,7 +95,7 @@ Vault root detection order:
 |--------|-------|----------|
 | `default` (default) | 16 | Note-taking essentials — search, read, write, tasks |
 | `agent` | 16 | Autonomous AI agents — search, read, write, memory |
-| `full` | 61 | Everything — all 11 categories |
+| `full` | 64 | Everything — all 11 categories |
 
 The fewer tools you load, the less context Claude needs to pick the right one.
 
@@ -105,8 +105,8 @@ Start with `default`, then add what you need:
 
 | Bundle | Tools | What it adds |
 |--------|-------|--------------|
-| `graph` | 9 | Structural analysis, backlinks, forward links, hubs, paths, connections |
-| `schema` | 5 | Schema intelligence, note intelligence, migrations, tag rename |
+| `graph` | 10 | Structural analysis, semantic analysis, backlinks, forward links, hubs, paths, connections |
+| `schema` | 7 | Schema inspection, conventions, validation, note intelligence, migrations, tag rename |
 | `wikilinks` | 7 | Link suggestions, validation, feedback, discovery |
 | `corrections` | 4 | Correction recording + resolution |
 | `tasks` | 3 | Task queries and mutations |
@@ -120,9 +120,9 @@ Start with `default`, then add what you need:
 |--------|-------|--------------|
 | `default` | 16 | search, read, write, tasks |
 | `agent` | 16 | search, read, write, memory |
-| `default,graph` | 25 | default + graph analysis, paths, hubs |
-| `default,graph,wikilinks` | 32 | + link suggestions, validation |
-| `full` | 61 | All 11 categories |
+| `default,graph` | 26 | default + graph analysis, semantic analysis, paths, hubs |
+| `default,graph,wikilinks` | 33 | + link suggestions, validation |
+| `full` | 64 | All 11 categories |
 
 #### How It Works
 
@@ -145,8 +145,8 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `search` | 3 | search, init_semantic, find_similar |
 | `read` | 3 | get_note_structure, get_section_content, find_sections |
 | `write` | 7 | vault_add/remove/replace_in_section, vault_update_frontmatter, vault_create_note, vault_undo_last_mutation, policy |
-| `graph` | 9 | graph_analysis, get_backlinks, get_forward_links, connection strength, entities, paths, neighbors, weighted/strong links |
-| `schema` | 5 | vault_schema, note_intelligence, rename_field, migrate_field_values, rename_tag |
+| `graph` | 10 | graph_analysis, semantic_analysis, get_backlinks, get_forward_links, connection strength, entities, paths, neighbors, weighted/strong links |
+| `schema` | 7 | vault_schema, schema_conventions, schema_validate, note_intelligence, rename_field, migrate_field_values, rename_tag |
 | `wikilinks` | 7 | suggest_wikilinks, validate_links, wikilink_feedback, discover_stub_candidates, discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report |
 | `corrections` | 4 | vault_record_correction, vault_list/resolve_correction, absorb_as_alias |
 | `tasks` | 3 | tasks, vault_toggle_task, vault_add_task |
@@ -165,8 +165,8 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 | write | 7 | Yes | Yes | Yes |
 | tasks | 3 | Yes | | Yes |
 | memory | 3 | | Yes | Yes |
-| graph | 9 | | | Yes |
-| schema | 5 | | | Yes |
+| graph | 10 | | | Yes |
+| schema | 7 | | | Yes |
 | wikilinks | 7 | | | Yes |
 | corrections | 4 | | | Yes |
 | note-ops | 4 | | | Yes |

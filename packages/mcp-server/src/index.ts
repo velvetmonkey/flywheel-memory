@@ -2,12 +2,15 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 61 tools across 11 categories
+ * 64 tools across 11 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
- * - graph_analysis (unified: orphans, dead_ends, sources, hubs, stale)
- * - vault_schema (unified: frontmatter schema, conventions, incomplete, suggest_values)
+ * - graph_analysis (7 modes: orphans, dead_ends, sources, hubs, stale, immature, emerging_hubs)
+ * - semantic_analysis (extracted: clusters, bridges)
+ * - vault_schema (4 modes: overview, field_values, inconsistencies, contradictions)
+ * - schema_conventions (extracted: conventions, incomplete, suggest_values)
+ * - schema_validate (extracted: validate, missing)
  * - note_intelligence (unified: prose_patterns, suggest_frontmatter, wikilinks, cross_layer, compute)
  * - get_backlinks (absorbed find_bidirectional_links via include_bidirectional param)
  * - validate_links (absorbed find_broken_links via typos_only param)
@@ -87,6 +90,7 @@ import { registerPrimitiveTools } from './tools/read/primitives.js';
 import { registerMigrationTools } from './tools/read/migrations.js';
 import { registerGraphAnalysisTools } from './tools/read/graphAnalysis.js';
 import { registerVaultSchemaTools } from './tools/read/vaultSchema.js';
+import { registerSemanticAnalysisTools } from './tools/read/semanticAnalysis.js';
 import { registerNoteIntelligenceTools } from './tools/read/noteIntelligence.js';
 
 // Write tool registrations
@@ -190,11 +194,11 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherInstanc
 // Presets:
 //   default    - Note-taking essentials: search, read, write, tasks (16 tools)
 //   agent      - Autonomous AI agents: search, read, write, memory (16 tools)
-//   full       - All tools (61 tools)
+//   full       - All tools (64 tools)
 //
 // Composable bundles (combine with presets or each other):
-//   graph       - Structural analysis + link detail: backlinks, forward links, graph_analysis, paths, hubs, connections (9 tools)
-//   schema      - Schema intelligence + migrations (5 tools)
+//   graph       - Structural analysis + link detail + semantic: backlinks, forward links, graph_analysis, semantic_analysis, paths, hubs, connections (10 tools)
+//   schema      - Schema intelligence + migrations: vault_schema, schema_conventions, schema_validate, note_intelligence, rename_field, migrate_field_values, rename_tag (7 tools)
 //   wikilinks   - Wikilink suggestions, validation, discovery (7 tools)
 //   corrections - Correction recording + resolution (4 tools)
 //   tasks       - Task queries and mutations (3 tools)
@@ -349,8 +353,9 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_undo_last_mutation: 'write',
   policy: 'write',
 
-  // graph (9 tools) — structural analysis + link detail
+  // graph (10 tools) — structural analysis + link detail
   graph_analysis: 'graph',
+  semantic_analysis: 'graph',
   get_backlinks: 'graph',
   get_forward_links: 'graph',
   get_connection_strength: 'graph',
@@ -360,8 +365,10 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   get_weighted_links: 'graph',
   get_strong_connections: 'graph',
 
-  // schema (5 tools) — schema intelligence + migrations
+  // schema (7 tools) — schema intelligence + migrations
   vault_schema: 'schema',
+  schema_conventions: 'schema',
+  schema_validate: 'schema',
   note_intelligence: 'schema',
   rename_field: 'schema',
   migrate_field_values: 'schema',
@@ -642,6 +649,7 @@ registerWikilinkTools(server, () => vaultIndex, () => vaultPath);
 registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
 registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb);
 registerGraphAnalysisTools(server, () => vaultIndex, () => vaultPath, () => stateDb, () => flywheelConfig);
+registerSemanticAnalysisTools(server, () => vaultIndex, () => vaultPath);
 registerVaultSchemaTools(server, () => vaultIndex, () => vaultPath);
 registerNoteIntelligenceTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
 registerMigrationTools(server, () => vaultIndex, () => vaultPath);

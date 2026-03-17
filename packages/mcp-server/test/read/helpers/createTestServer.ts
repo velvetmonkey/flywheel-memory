@@ -16,6 +16,7 @@ import { registerPrimitiveTools } from '../../../src/tools/read/primitives.js';
 import { registerMigrationTools } from '../../../src/tools/read/migrations.js';
 import { registerGraphAnalysisTools } from '../../../src/tools/read/graphAnalysis.js';
 import { registerVaultSchemaTools } from '../../../src/tools/read/vaultSchema.js';
+import { registerSemanticAnalysisTools } from '../../../src/tools/read/semanticAnalysis.js';
 import { registerNoteIntelligenceTools } from '../../../src/tools/read/noteIntelligence.js';
 import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
 import { setFTS5Database } from '../../../src/core/read/fts5.js';
@@ -99,6 +100,12 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
   );
 
   registerGraphAnalysisTools(
+    server,
+    () => currentIndex,
+    () => vaultPath
+  );
+
+  registerSemanticAnalysisTools(
     server,
     () => currentIndex,
     () => vaultPath

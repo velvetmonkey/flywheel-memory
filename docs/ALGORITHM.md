@@ -391,7 +391,7 @@ Flywheel uses embeddings in two complementary ways:
 
 **Inside the scoring pipeline (Layer 9)** -- Entity-level embeddings participate directly in wikilink scoring. When you write about "deployment automation", Layer 9 finds `[[CI/CD]]` at similarity 0.72 even though those words don't appear in the content. This is the same deterministic pipeline -- the semantic boost is just another number in the sum.
 
-**Alongside the scoring pipeline** -- Note-level embeddings power `search` (hybrid mode) and `find_similar` via Reciprocal Rank Fusion. Graph analysis gains `semantic_clusters` and `semantic_bridges` modes. These serve different purposes: discovery and exploration rather than wikilink suggestions.
+**Alongside the scoring pipeline** -- Note-level embeddings power `search` (hybrid mode) and `find_similar` via Reciprocal Rank Fusion. The `semantic_analysis` tool provides `clusters` and `bridges` modes. These serve different purposes: discovery and exploration rather than wikilink suggestions.
 
 Five properties of the scoring pipeline remain unchanged:
 

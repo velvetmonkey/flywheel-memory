@@ -1,7 +1,7 @@
 {
   "suite": "vault-lifecycle",
-  "timestamp": "2026-03-16T15:09:53.551Z",
-  "duration_ms": 30831,
+  "timestamp": "2026-03-17T18:56:36.540Z",
+  "duration_ms": 14248,
   "summary": {
     "total_epochs": 5,
     "genesis_entities": 216,
@@ -60,7 +60,7 @@
           "other": 9
         }
       },
-      "duration_ms": 4826
+      "duration_ms": 2200
     },
     {
       "epoch": "growth",
@@ -111,7 +111,7 @@
           "other": 9
         }
       },
-      "duration_ms": 6445
+      "duration_ms": 4235
     },
     {
       "epoch": "reorganization",
@@ -162,7 +162,7 @@
           "other": 9
         }
       },
-      "duration_ms": 6935
+      "duration_ms": 2806
     },
     {
       "epoch": "pruning",
@@ -213,7 +213,7 @@
           "other": 9
         }
       },
-      "duration_ms": 6896
+      "duration_ms": 2333
     },
     {
       "epoch": "recovery",
@@ -264,7 +264,7 @@
           "other": 9
         }
       },
-      "duration_ms": 5729
+      "duration_ms": 2674
     }
   ],
   "tuning_recommendations": [

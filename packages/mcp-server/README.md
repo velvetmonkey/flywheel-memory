@@ -20,7 +20,7 @@
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
 | Hubs, orphans, paths? | Not possible | Pre-indexed graph analysis |
 
-61 tools across 11 categories. 6-line config. Zero cloud dependencies.
+64 tools across 11 categories. 6-line config. Zero cloud dependencies.
 
 **Try in 60 seconds:**
 
@@ -340,7 +340,7 @@ The fewer tools you load, the less context Claude needs to pick the right one. S
 | Doc | Why read this |
 |---|---|
 | [PROVE-IT.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/PROVE-IT.md) | See it working in 5 minutes |
-| [TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) | All 61 tools documented |
+| [TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) | All 64 tools documented |
 | [ALGORITHM.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/ALGORITHM.md) | How the scoring works |
 | [COOKBOOK.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/SETUP.md) | Full setup guide for your vault |

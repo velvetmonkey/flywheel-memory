@@ -262,7 +262,7 @@ This runs `init_semantic`, which builds **two** indexes:
 ### Entity Embeddings (Semantic Wikilinks + Graph Analysis)
 - Embeds all vault entities (note titles, aliases, categories)
 - After build: wikilink suggestions gain **semantic scoring** — content about "deployment automation" can suggest `[[CI/CD]]` without keyword matches
-- Unlocks new analysis modes: `semantic_clusters`, `semantic_bridges`, `semantic_links`
+- Unlocks `semantic_analysis` tool (clusters, bridges) and `semantic_links` in `note_intelligence`
 
 ### Build Details
 
@@ -279,8 +279,8 @@ This runs `init_semantic`, which builds **two** indexes:
 After building semantic embeddings:
 
 - **Wikilink suggestions**: Semantic scoring finds conceptual links that keyword matching misses
-- **Semantic bridges**: `graph_analysis({ analysis: "semantic_bridges" })` — find notes that should be connected but aren't
-- **Semantic clusters**: `graph_analysis({ analysis: "semantic_clusters" })` — group notes by meaning, not folder
+- **Semantic bridges**: `semantic_analysis({ type: "bridges" })` — find notes that should be connected but aren't
+- **Semantic clusters**: `semantic_analysis({ type: "clusters" })` — group notes by meaning, not folder
 - **Semantic links**: `note_intelligence({ analysis: "semantic_links" })` — find missing entity links for a specific note
 - **Preflight checks**: `vault_create_note` warns when a semantically similar note already exists
 - **Broken link recovery**: `validate_links` suggests fixes via semantic similarity when exact matches fail
@@ -349,6 +349,6 @@ All vault operations work without git. You just won't have undo or commit histor
 ## Next Steps
 
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full reference for all 61 tools
+- **[TOOLS.md](TOOLS.md)** -- Full reference for all 64 tools
 - **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics

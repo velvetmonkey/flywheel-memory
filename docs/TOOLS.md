@@ -1,6 +1,6 @@
 # Tools
 
-61 tools. Most questions only need one: **search**.
+64 tools. Most questions only need one: **search**.
 
 ---
 
@@ -12,9 +12,9 @@
 | [Read a specific note](#read-deeper) | `get_note_structure` | 3 |
 | [Write or edit content](#write--edit) | `vault_add_to_section` | 5 |
 | [Work with tasks](#tasks) | `tasks` | 3 |
-| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis` | 9 |
+| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis`, `semantic_analysis` | 10 |
 | [Improve my wikilinks](#wikilinks--linking) | `suggest_wikilinks` | 7 |
-| [Clean up my schema](#schema--consistency) | `vault_schema` | 5 |
+| [Clean up my schema](#schema--consistency) | `vault_schema`, `schema_conventions`, `schema_validate` | 7 |
 | [Record corrections](#corrections) | `vault_record_correction` | 4 |
 | [Move, rename, or merge notes](#organize-notes) | `vault_move_note` | 4 |
 | [Build an autonomous agent](#agent-memory) | `memory`, `recall`, `brief` | 3 |
@@ -114,7 +114,7 @@ The index uses Porter stemming, so "running" matches "run", "runs", and "ran". R
 
 ### `init_semantic`
 
-Builds a local embedding index for your vault. Once built, `search` and `find_similar` automatically upgrade to hybrid mode (keywords + meaning), and wikilink suggestions gain semantic scoring. Also unlocks `semantic_clusters`, `semantic_bridges`, and `semantic_links` analysis modes.
+Builds a local embedding index for your vault. Once built, `search` and `find_similar` automatically upgrade to hybrid mode (keywords + meaning), and wikilink suggestions gain semantic scoring. Also unlocks `semantic_analysis` (clusters, bridges) and `semantic_links` in `note_intelligence`.
 
 No parameters — just run it once. Takes a few minutes on large vaults.
 
@@ -186,10 +186,16 @@ Run different analyses on your vault's link graph:
 | `hubs` | The most-connected notes in your vault. |
 | `stale` | Important notes (many backlinks) that haven't been updated recently. |
 | `immature` | Thin notes — low word count, few links, sparse frontmatter. |
-| `evolution` | How your graph has grown over time. |
 | `emerging_hubs` | Entities gaining connections fastest. |
-| `semantic_clusters` | Groups of notes that are about similar topics (requires `init_semantic`). |
-| `semantic_bridges` | Notes that are semantically similar but have no link path between them. |
+
+### `semantic_analysis`
+
+Embedding-based vault analysis (requires `init_semantic`).
+
+| Type | What it finds |
+|------|--------------|
+| `clusters` | Groups of notes that are about similar topics. |
+| `bridges` | Notes that are semantically similar but have no link path between them. |
 
 ### Link detail tools
 
@@ -233,17 +239,33 @@ Understand and standardize your vault's frontmatter.
 
 ### `vault_schema`
 
+Inspect vault frontmatter schema:
+
 | Analysis | What it does |
 |----------|-------------|
 | `overview` | Map of every frontmatter field across your vault — types, frequency, examples. |
 | `field_values` | All unique values for a specific field. "What statuses are people using?" |
 | `inconsistencies` | Fields where different notes use different types (string vs number, etc.). |
-| `validate` | Check notes against a schema you provide. |
-| `missing` | Find notes missing expected fields for their folder. |
+| `contradictions` | Conflicting frontmatter across notes referencing the same entity. |
+
+### `schema_conventions`
+
+Infer frontmatter conventions from usage patterns:
+
+| Analysis | What it does |
+|----------|-------------|
 | `conventions` | Auto-detect what frontmatter patterns a folder uses. |
 | `incomplete` | Notes missing fields their peers have. |
 | `suggest_values` | Suggest values for a field based on what's already in use. |
-| `contradictions` | Conflicting frontmatter across notes referencing the same entity. |
+
+### `schema_validate`
+
+Validate frontmatter against rules:
+
+| Analysis | What it does |
+|----------|-------------|
+| `validate` | Check notes against a schema you provide. |
+| `missing` | Find notes missing expected fields for their folder. |
 
 ### `note_intelligence`
 

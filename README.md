@@ -150,28 +150,25 @@ Claude picks up where it left off.
 
 ### 5. Deterministic Policies
 
-Complex vault workflows shouldn't be ad-hoc. Policies are YAML files that chain vault tools into atomic operations — all steps succeed or all roll back, committed as a single git commit.
+Complex vault workflows shouldn't be ad-hoc. Describe what you want in plain language — Claude creates the policy, saves it, and executes it on demand. No YAML knowledge required.
 
-```yaml
-# .claude/policies/weekly-review.yaml
-version: "1"
-name: weekly-review
-variables:
-  week: { type: string, required: true }
-steps:
-  - id: create_note
-    tool: vault_create_note
-    params:
-      path: "weekly-notes/{{variables.week}}.md"
-      content: "# {{variables.week}} Review\n\n## Client Activity\n\n## Open Tasks"
-  - id: stamp
-    tool: vault_update_frontmatter
-    params:
-      path: "weekly-notes/{{variables.week}}.md"
-      fields: { reviewed_at: "{{builtins.now}}" }
+```
+❯ Create a policy that generates a weekly review note, pulls open tasks,
+  and updates project frontmatter with hours logged
+
+● flywheel › policy action=author
+  → Saved .claude/policies/weekly-review.yaml
+
+❯ Run the weekly review for this week
+
+● flywheel › policy action=execute name=weekly-review
+  variables: { week: "2026-W12" }
+  → Created weekly-notes/2026-W12.md
+  → Updated 3 project frontmatter files
+  → All steps committed atomically
 ```
 
-Variables, conditions (branch on file/frontmatter state), template interpolation (`{{today}}`, `{{steps.prev.output}}`), and rollback on failure — all built in. Author a policy from a description, preview it dry, then execute. One policy = one atomic commit.
+Under the hood, policies are YAML files that chain vault tools into atomic operations — all steps succeed or all roll back, committed as a single git commit. Variables, conditions (branch on file/frontmatter state), template interpolation (`{{today}}`, `{{steps.prev.output}}`), and rollback on failure — all built in.
 
 Try it yourself: `cd demos/carter-strategy && claude`
 

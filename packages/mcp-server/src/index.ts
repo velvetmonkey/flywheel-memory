@@ -462,9 +462,11 @@ Good frontmatter is the highest-leverage action for improving suggestions, recal
 
 ### Policies
 
-Use "policy" to build deterministic, repeatable vault workflows. Policies are YAML files that chain
-vault tools (add/remove/replace sections, create notes, update frontmatter, toggle tasks) into
-atomic operations — all steps succeed or all roll back, committed as a single git commit.
+Use "policy" to build deterministic, repeatable vault workflows. Describe what you want in plain
+language — Claude authors the YAML, saves it, and can execute it on demand. No YAML knowledge needed.
+
+Policies chain vault tools (add/remove/replace sections, create notes, update frontmatter, toggle
+tasks) into atomic operations — all steps succeed or all roll back, committed as a single git commit.
 
 Actions: "author" a policy from a description, "validate" the YAML, "preview" (dry-run),
 "execute" with variables, "list" saved policies, "revise" to modify.
@@ -475,8 +477,9 @@ Key capabilities:
   - **Templates** — interpolate variables, builtins ({{today}}, {{now}}), and prior step outputs.
   - **Atomicity** — failure at any step rolls back all changes. One policy = one git commit.
 
-Example: a "weekly-review" policy that creates a weekly note from template, pulls open tasks
-from daily notes, updates project frontmatter with hours logged, and links the review to active clients.`);
+Example: ask "create a policy that generates a weekly review note, pulls open tasks, and updates
+project frontmatter" — Claude authors the YAML, saves it to .claude/policies/, and runs it whenever
+you say "run the weekly review for this week".`);
   }
 
   // Memory category instructions (agent workflow)

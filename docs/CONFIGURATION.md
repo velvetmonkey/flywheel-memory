@@ -43,16 +43,20 @@ Note: Claude Desktop requires `VAULT_PATH` because it doesn't launch from the va
 
 ## Windows
 
-On Windows, two things need attention: the vault path and file watching.
+On Windows, three things differ from macOS/Linux: the command, the vault path, and file watching.
 
-**`VAULT_PATH`** — Set this to your vault's Windows path. Claude Code can auto-detect it if you `cd` into the vault first, but setting it explicitly avoids issues:
+**`cmd /c` wrapper** — Windows installs `npx` as `npx.cmd` (a batch script). MCP clients use `spawn()` which can't execute `.cmd` files directly, so you must wrap it with `cmd /c`. Without this, the server silently fails with "Connection closed."
+
+**`VAULT_PATH`** — Set this to your vault's Windows path. Claude Code can auto-detect it if you `cd` into the vault first, but setting it explicitly avoids issues.
+
+**`FLYWHEEL_WATCH_POLL`** — Required on Windows. Native file system events are unreliable on Windows, so you must enable polling for the file watcher to track changes. Without it, Flywheel starts fine and searches work, but edits you make in Obsidian won't appear in search results until you manually refresh. This is the most common source of "stale index" issues on Windows.
 
 ```json
 {
   "mcpServers": {
     "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@velvetmonkey/flywheel-memory"],
       "env": {
         "VAULT_PATH": "C:\\Users\\you\\obsidian\\MyVault",
         "FLYWHEEL_WATCH_POLL": "true"
@@ -61,8 +65,6 @@ On Windows, two things need attention: the vault path and file watching.
   }
 }
 ```
-
-**`FLYWHEEL_WATCH_POLL`** — Required on Windows. Native file system events are unreliable on Windows, so you must enable polling for the file watcher to track changes. Without it, Flywheel starts fine and searches work, but edits you make in Obsidian won't appear in search results until you manually refresh. This is the most common source of "stale index" issues on Windows.
 
 ---
 

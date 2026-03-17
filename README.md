@@ -285,7 +285,7 @@ cd /path/to/your/vault && claude
 
 Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
 
-> **Windows:** Set `VAULT_PATH` to your vault path and `FLYWHEEL_WATCH_POLL` to `true` — native file events are unreliable on Windows, so polling is required for the file watcher to track changes. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md#windows) for the full config.
+> **Windows:** The MCP config requires `cmd /c npx` instead of `npx` (Windows installs npx as a batch script that can't be spawned directly), `VAULT_PATH` set to your vault, and `FLYWHEEL_WATCH_POLL` set to `true`. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md#windows) for the full config.
 
 > **Note:** Developed and tested with Claude Code. Other MCP clients may work but are untested.
 

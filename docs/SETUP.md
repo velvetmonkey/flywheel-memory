@@ -14,12 +14,13 @@ After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian v
 
 ## Windows
 
-On Windows, you **must** set two environment variables in your MCP config:
+On Windows, the MCP config differs from macOS/Linux in three ways:
 
-- **`VAULT_PATH`** — the path to your vault (e.g. `C:\Users\you\obsidian\MyVault`)
-- **`FLYWHEEL_WATCH_POLL=true`** — native file events are unreliable on Windows
+1. **`cmd /c` wrapper** — use `"command": "cmd"` with `"args": ["/c", "npx", ...]` instead of `"command": "npx"`. Windows installs npx as a batch script (`npx.cmd`) which MCP clients can't execute directly — without this wrapper the server silently fails.
+2. **`VAULT_PATH`** — set to your vault's Windows path (e.g. `C:\Users\you\obsidian\MyVault`)
+3. **`FLYWHEEL_WATCH_POLL=true`** — native file events are unreliable on Windows
 
-Without polling enabled, Flywheel starts fine but the file watcher silently fails — edits you make in Obsidian won't appear in search results. This is the most common setup issue on Windows. See [CONFIGURATION.md](CONFIGURATION.md#windows) for the full config example.
+See [CONFIGURATION.md](CONFIGURATION.md#windows) for the full config example.
 
 ---
 

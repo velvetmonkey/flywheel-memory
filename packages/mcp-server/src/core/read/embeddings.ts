@@ -168,6 +168,47 @@ export function setEmbeddingsDatabase(database: Database.Database): void {
 // =============================================================================
 
 /**
+ * Delete the cached ONNX model files for a given model ID.
+ * Handles the @huggingface/transformers cache which lives inside the package directory.
+ */
+function clearModelCache(modelId: string): void {
+  try {
+    // @huggingface/transformers caches inside its package dir:
+    //   node_modules/@huggingface/transformers/.cache/<org>/<model>/
+    // Walk up from this file to find node_modules, or resolve from require
+    const candidates: string[] = [];
+
+    // Try require.resolve (works in esbuild bundle)
+    try {
+      const transformersDir = path.dirname(require.resolve('@huggingface/transformers/package.json'));
+      candidates.push(path.join(transformersDir, '.cache', ...modelId.split('/')));
+    } catch { /* not resolvable */ }
+
+    // Also check common npx cache locations
+    const home = process.env.HOME || process.env.USERPROFILE || '';
+    if (home) {
+      // npx caches under ~/.npm/_npx/*/node_modules/
+      const npxDir = path.join(home, '.npm', '_npx');
+      if (fs.existsSync(npxDir)) {
+        for (const hash of fs.readdirSync(npxDir)) {
+          const candidate = path.join(npxDir, hash, 'node_modules', '@huggingface', 'transformers', '.cache', ...modelId.split('/'));
+          if (fs.existsSync(candidate)) candidates.push(candidate);
+        }
+      }
+    }
+
+    for (const cacheDir of candidates) {
+      if (fs.existsSync(cacheDir)) {
+        fs.rmSync(cacheDir, { recursive: true, force: true });
+        console.error(`[Semantic] Deleted corrupted model cache: ${cacheDir}`);
+      }
+    }
+  } catch (e) {
+    console.error(`[Semantic] Could not clear model cache: ${e instanceof Error ? e.message : e}`);
+  }
+}
+
+/**
  * Load the transformer model. Cached after first call.
  * Downloads ~23MB model on first use to ~/.cache/huggingface/
  * Retries up to 3 times on network/download failures.
@@ -179,6 +220,7 @@ export async function initEmbeddings(): Promise<void> {
   initPromise = (async () => {
     const MAX_RETRIES = 3;
     const RETRY_DELAYS = [2000, 5000, 10000]; // 2s, 5s, 10s
+    let cacheCleared = false;
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
@@ -214,10 +256,20 @@ export async function initEmbeddings(): Promise<void> {
           );
         }
 
-        // Retryable failure (network, download, ONNX load)
+        // Corrupted model cache — delete and retry once
+        const errMsg = err instanceof Error ? err.message : String(err);
+        if (!cacheCleared && (errMsg.includes('Protobuf parsing failed') || errMsg.includes('onnx'))) {
+          console.error(`[Semantic] Corrupted model cache detected: ${errMsg}`);
+          clearModelCache(activeModelConfig.id);
+          cacheCleared = true;
+          pipeline = null;
+          continue;
+        }
+
+        // Retryable failure (network, download)
         if (attempt < MAX_RETRIES) {
           const delay = RETRY_DELAYS[attempt - 1];
-          console.error(`[Semantic] Model load failed (attempt ${attempt}/${MAX_RETRIES}): ${err instanceof Error ? err.message : err}`);
+          console.error(`[Semantic] Model load failed (attempt ${attempt}/${MAX_RETRIES}): ${errMsg}`);
           console.error(`[Semantic] Retrying in ${delay / 1000}s...`);
           await new Promise(resolve => setTimeout(resolve, delay));
           pipeline = null; // Reset for retry

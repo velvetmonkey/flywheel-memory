@@ -77,7 +77,7 @@ One search call returned everything -- frontmatter with amounts and status, back
             ↑ "Acme" auto-linked to [[Acme Corp]] (alias match, no brackets typed)
 ```
 
-You typed a plain sentence. Flywheel recognized "Acme" as an alias for `Acme Corp.md` and linked it — no brackets, no lookup, no manual work. That link is now a graph edge — it's why the read example above works.
+You typed a plain sentence. Flywheel recognized "Acme" as an alias for `Acme Corp.md` and linked it — no brackets, no lookup, no manual work. That link is now a graph edge — it's why the read example above works. The `section: "Log"` wasn't hardcoded either — "Log" was inferred from the verb. Flywheel prefers structured notes with sections, but works fine with unstructured vaults too — it'll append to the note body if there are no headings to target.
 
 Three layers fire on every write:
 

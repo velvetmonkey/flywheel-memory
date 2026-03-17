@@ -85,7 +85,7 @@ Three layers fire on every write:
 
 **Implicit entity detection** — When `implicit_detection` is enabled (default), Flywheel also detects potential entities that don't have backing notes yet: proper nouns, CamelCase, quoted terms, acronyms. These become dead wikilinks — signals that "this could be a note." They're future graph edges: if you later create `Marcus Johnson.md`, every note that mentioned him is already linked.
 
-**Contextual suggestions** — After linking, Flywheel scores every entity in the vault against the inserted content using a 13-layer algorithm (content match, co-occurrence, type, recency, hub score, feedback, semantic similarity...) and appends the top matches as `→ [[Entity1]], [[Entity2]]`. These surface connections you wouldn't make manually — an audit note gets linked to a related client project because the scoring engine noticed they co-occur across your past notes. Suggestions aren't static: every suggestion left in place is a positive signal that strengthens future scoring, and every one you edit out teaches the system to suppress that connection. Recency decays so stale connections fade, co-occurrence requires ongoing proximity to stay strong. What gets suggested in month 6 reflects how your vault actually looks in month 6, not a snapshot from day one.
+**Contextual suggestions** — After linking, Flywheel appends `→ [[Entity1]], [[Entity2]]` — entities the scoring engine thinks are relevant based on how your vault is structured right now. An audit note gets linked to a related client project because they co-occur across your past notes. Six months later, those `→` links are a snapshot of what was contextually relevant when you wrote that entry — context that would otherwise be lost. Suggestions evolve: links you keep strengthen future scoring, links you edit out get suppressed, and recency decay fades stale connections. What gets suggested reflects your vault as it is, not as it was.
 
 Here's a richer write that triggers all three layers:
 
@@ -110,9 +110,9 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ### 1. Enriched Search
 
-Every search result includes frontmatter, backlinks, outlinks, headings, and content snippets — all from an in-memory index, zero file reads. That's why one `search` call answers a billing question: the client's frontmatter has the totals, and the backlinks surface every invoice.
+Every search result comes back enriched — frontmatter, backlinks, outlinks, headings, and content snippets, all from an in-memory index. That's how one call answers a billing question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project that wikilinks to it — each with its own frontmatter. The graph did the joining, not Claude reading files one by one.
 
-Matching combines title/entity matching, full-text search (BM25), and entity database lookup. With semantic embeddings (via `init_semantic`), results are fused via Reciprocal Rank Fusion — "login security" finds notes about authentication without that keyword. Everything runs locally.
+With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally.
 
 ### 2. Every Suggestion Has a Receipt
 
@@ -132,9 +132,9 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
 The links and suggestions above aren't static — they learn from how you interact with them.
 
-- **Keep** a link through 10 edits → that edge gains weight, boosting future suggestions
-- **Remove** a bad link → the system learns what to suppress
-- **Co-occurrence** → two entities in 20 notes build a statistical bond that surfaces in suggestions
+- **Co-occurrence** builds over time — two entities appearing in 20 notes form a statistical bond
+- **Edge weights** accumulate — links that survive edits gain influence
+- **Suppression** learns — connections you repeatedly break stop being suggested
 
 Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation.
 
@@ -142,13 +142,13 @@ This isn't aspirational — the F1 scores below are measured under realistic noi
 
 ### 4. Agentic Memory
 
-The system remembers context across sessions. No more starting from scratch.
+Claude knows what you were working on yesterday without you re-explaining it.
 
-- **`brief`** assembles startup context: recent sessions, active entities, stored memories, corrections, vault pulse — token-budgeted
-- **`recall`** retrieves across all knowledge channels: entities, notes, memories, and semantic search — ranked by the same scoring signals as the wikilink engine
-- **`memory`** stores observations with confidence decay, TTL, and lifecycle management
+- **`brief`** — startup context: what happened recently, what's active, what needs attention
+- **`recall`** — retrieves across notes, entities, memories, and semantic search in one call
+- **`memory`** — stores observations that persist across sessions, with automatic decay
 
-Claude picks up where it left off.
+No session is a blank slate.
 
 ### 5. Deterministic Policies
 
@@ -170,7 +170,7 @@ Complex vault workflows shouldn't be ad-hoc. Describe what you want in plain lan
   → All steps committed atomically
 ```
 
-Under the hood, policies are YAML files that chain vault tools into atomic operations — all steps succeed or all roll back, committed as a single git commit. Variables, conditions (branch on file/frontmatter state), template interpolation (`{{today}}`, `{{steps.prev.output}}`), and rollback on failure — all built in.
+Policies chain vault tools into atomic operations — all steps succeed or all roll back, committed as a single git commit. Describe the workflow once, run it whenever.
 
 Try it yourself: `cd demos/carter-strategy && claude`
 

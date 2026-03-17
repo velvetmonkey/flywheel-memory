@@ -148,6 +148,33 @@ The system remembers context across sessions. No more starting from scratch.
 
 Claude picks up where it left off.
 
+### 5. Deterministic Policies
+
+Complex vault workflows shouldn't be ad-hoc. Policies are YAML files that chain vault tools into atomic operations — all steps succeed or all roll back, committed as a single git commit.
+
+```yaml
+# .claude/policies/weekly-review.yaml
+version: "1"
+name: weekly-review
+variables:
+  week: { type: string, required: true }
+steps:
+  - id: create_note
+    tool: vault_create_note
+    params:
+      path: "weekly-notes/{{variables.week}}.md"
+      content: "# {{variables.week}} Review\n\n## Client Activity\n\n## Open Tasks"
+  - id: stamp
+    tool: vault_update_frontmatter
+    params:
+      path: "weekly-notes/{{variables.week}}.md"
+      fields: { reviewed_at: "{{builtins.now}}" }
+```
+
+Variables, conditions (branch on file/frontmatter state), template interpolation (`{{today}}`, `{{steps.prev.output}}`), and rollback on failure — all built in. Author a policy from a description, preview it dry, then execute. One policy = one atomic commit.
+
+Try it yourself: `cd demos/carter-strategy && claude`
+
 ### How It Compares to Other Approaches
 
 | | Pure Vector Search | Pure Keyword Search | Flywheel |
@@ -160,6 +187,7 @@ Claude picks up where it left off.
 | Runs offline? | Often not | Yes | Yes (local embeddings) |
 | Learns from usage? | Retraining | No | Implicit feedback loop |
 | Agent memory | No | No | Yes (brief + recall + memory) |
+| Deterministic policies? | No | No | Yes (atomic YAML workflows) |
 
 ---
 
@@ -310,9 +338,9 @@ Defaults to the `default` preset (17 tools). Add bundles as needed. See [docs/CO
 
 | Preset | Tools | What you get |
 |--------|-------|--------------|
-| `default` | 17 | Note-taking essentials — search, read, write, tasks |
-| `agent` | 17 | Autonomous AI agents — search, read, write, memory |
-| `full` | 62 | Everything — all 12 categories |
+| `default` | 19 | Note-taking essentials — search, read, write, tasks, policies |
+| `agent` | 19 | Autonomous AI agents — search, read, write, memory, policies |
+| `full` | 62 | Everything — all 11 categories |
 
 Composable bundles (add to presets or each other):
 
@@ -326,7 +354,6 @@ Composable bundles (add to presets or each other):
 | `memory` | 3 | Agent working memory + recall + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
 | `diagnostics` | 13 | Vault health, stats, config, activity, merges |
-| `automation` | 2 | Git undo, policy engine |
 
 The fewer tools you load, the less context Claude needs to pick the right one. See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
 

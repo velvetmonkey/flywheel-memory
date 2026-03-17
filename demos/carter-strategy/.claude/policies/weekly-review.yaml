@@ -1,0 +1,56 @@
+version: "1"
+name: weekly-review
+description: >
+  Generate a weekly review note that summarises the week's client work,
+  pulls open tasks, and links to active projects.
+
+variables:
+  week:
+    type: string
+    required: true
+    description: "ISO week identifier, e.g. 2026-W03"
+  reviewer:
+    type: string
+    default: "James Carter"
+
+conditions:
+  weekly_note_exists:
+    check: file_exists
+    path: "weekly-notes/{{variables.week}}.md"
+
+steps:
+  - id: create_weekly
+    tool: vault_create_note
+    when: "{{conditions.weekly_note_exists | negate}}"
+    params:
+      path: "weekly-notes/{{variables.week}}.md"
+      content: |
+        ---
+        type: weekly-note
+        week: "{{variables.week}}"
+        reviewer: "{{variables.reviewer}}"
+        created: "{{builtins.today}}"
+        tags:
+          - weekly-review
+        ---
+        # {{variables.week}} Review
+
+        ## Client Activity
+
+        ## Open Tasks
+
+        ## Hours Summary
+
+        ## Notes
+
+  - id: update_frontmatter
+    tool: vault_update_frontmatter
+    when: "{{conditions.weekly_note_exists}}"
+    params:
+      path: "weekly-notes/{{variables.week}}.md"
+      fields:
+        reviewed_at: "{{builtins.now}}"
+        reviewer: "{{variables.reviewer}}"
+
+output:
+  summary: "Weekly review for {{variables.week}} created/updated"

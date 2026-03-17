@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 61 tools across 12 categories
+ * 61 tools across 11 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -200,7 +200,6 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherStatus;
 //   memory      - Agent working memory + recall + brief (3 tools)
 //   note-ops    - File management: delete, move, rename, merge (4 tools)
 //   diagnostics - Vault health, stats, config, activity (13 tools)
-//   automation  - Git undo, policy engine (2 tools)
 //
 // Examples:
 //   FLYWHEEL_TOOLS=default                    # 14 tools
@@ -209,22 +208,22 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherStatus;
 //   FLYWHEEL_TOOLS=agent,tasks                # 17 tools
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
-// Categories (12):
+// Categories (11):
 //   search, read, write, graph, schema, wikilinks,
-//   corrections, tasks, memory, note-ops, diagnostics, automation
+//   corrections, tasks, memory, note-ops, diagnostics
 // ============================================================================
 
 type ToolCategory =
   | 'search' | 'read' | 'write'
   | 'graph' | 'schema' | 'wikilinks' | 'corrections'
   | 'tasks' | 'memory' | 'note-ops'
-  | 'diagnostics' | 'automation';
+  | 'diagnostics';
 
 const ALL_CATEGORIES: ToolCategory[] = [
   'search', 'read', 'write',
   'graph', 'schema', 'wikilinks', 'corrections',
   'tasks', 'memory', 'note-ops',
-  'diagnostics', 'automation',
+  'diagnostics',
 ];
 
 const PRESETS: Record<string, ToolCategory[]> = {
@@ -242,7 +241,6 @@ const PRESETS: Record<string, ToolCategory[]> = {
   memory: ['memory'],
   'note-ops': ['note-ops'],
   diagnostics: ['diagnostics'],
-  automation: ['automation'],
 };
 
 const DEFAULT_PRESET = 'default';
@@ -262,9 +260,9 @@ const DEPRECATED_ALIASES: Record<string, string> = {
   paths: 'graph',
   health: 'diagnostics',
   analysis: 'wikilinks',
-  git: 'automation',
-  ops: 'automation',
-  policy: 'automation',
+  git: 'write',
+  ops: 'write',
+  policy: 'write',
 };
 
 /**
@@ -341,12 +339,14 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   get_section_content: 'read',
   find_sections: 'read',
 
-  // write (5 tools) — content mutations + frontmatter + note creation
+  // write (7 tools) — content mutations + frontmatter + note creation + undo + policy
   vault_add_to_section: 'write',
   vault_remove_from_section: 'write',
   vault_replace_in_section: 'write',
   vault_update_frontmatter: 'write',
   vault_create_note: 'write',
+  vault_undo_last_mutation: 'write',
+  policy: 'write',
 
   // graph (9 tools) — structural analysis + link detail
   graph_analysis: 'graph',
@@ -412,9 +412,6 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   dismiss_merge_suggestion: 'diagnostics',
   vault_init: 'diagnostics',
 
-  // automation (2 tools) — git undo + policy engine
-  vault_undo_last_mutation: 'automation',
-  policy: 'automation',
 };
 
 // ============================================================================
@@ -452,7 +449,34 @@ Escalation: "search" (enriched metadata + content preview) → "get_note_structu
     parts.push(`
 ## Write
 
-Write to existing notes with "vault_add_to_section". Create new notes with "vault_create_note". Update metadata with "vault_update_frontmatter". All writes auto-link entities — no manual [[wikilinks]] needed.`);
+Write to existing notes with "vault_add_to_section". Create new notes with "vault_create_note".
+Update metadata with "vault_update_frontmatter". All writes auto-link entities — no manual [[wikilinks]] needed.
+Use "vault_undo_last_mutation" to reverse the last write.
+
+**Frontmatter matters more than content** for Flywheel's intelligence. When creating or updating notes, always set:
+  - \`type:\` — drives entity categorization (person, project, technology). Without it, the category is guessed from the name alone.
+  - \`aliases:\` — alternative names so the entity is found when referred to differently.
+  - \`description:\` — one-line summary shown in search results and used by recall.
+  - Tags — used for filtering, suggestion scoring, and schema analysis.
+Good frontmatter is the highest-leverage action for improving suggestions, recall, and link quality.
+
+### Policies
+
+Use "policy" to build deterministic, repeatable vault workflows. Policies are YAML files that chain
+vault tools (add/remove/replace sections, create notes, update frontmatter, toggle tasks) into
+atomic operations — all steps succeed or all roll back, committed as a single git commit.
+
+Actions: "author" a policy from a description, "validate" the YAML, "preview" (dry-run),
+"execute" with variables, "list" saved policies, "revise" to modify.
+
+Key capabilities:
+  - **Variables** — parameterize policies (string, number, boolean, array, enum with defaults).
+  - **Conditions** — branch on file/section/frontmatter state (skip steps, don't abort).
+  - **Templates** — interpolate variables, builtins ({{today}}, {{now}}), and prior step outputs.
+  - **Atomicity** — failure at any step rolls back all changes. One policy = one git commit.
+
+Example: a "weekly-review" policy that creates a weekly note from template, pulls open tasks
+from daily notes, updates project frontmatter with hours logged, and links the review to active clients.`);
   }
 
   // Memory category instructions (agent workflow)

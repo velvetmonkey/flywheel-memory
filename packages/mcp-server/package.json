@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "flywheel-memory": "dist/index.js"
+    "flywheel-memory": "bin/flywheel-memory.js"
   },
   "repository": {
     "type": "git",
@@ -76,6 +76,7 @@
   },
   "license": "Apache-2.0",
   "files": [
+    "bin",
     "dist",
     "README.md",
     "LICENSE"

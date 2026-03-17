@@ -585,7 +585,7 @@ export function registerWikilinkTools(
       description:
         'Find terms referenced via dead wikilinks across the vault that have no backing note. These are "invisible concepts" — topics your vault considers important enough to link to but that don\'t have their own notes yet. Ranked by reference frequency.',
       inputSchema: {
-        min_frequency: z.coerce.number().default(2).describe('Minimum number of references to include (default 2)'),
+        min_frequency: z.coerce.number().default(5).describe('Minimum number of references to include (default 5)'),
         limit: z.coerce.number().default(20).describe('Maximum candidates to return (default 20)'),
       },
     },
@@ -595,7 +595,7 @@ export function registerWikilinkTools(
       requireIndex();
       const index = getIndex();
       const limit = Math.min(requestedLimit ?? 20, 100);
-      const minFreq = min_frequency ?? 2;
+      const minFreq = min_frequency ?? 5;
 
       // Collect all dead link targets with their sources
       const targetMap = new Map<string, { count: number; sources: Set<string> }>();
@@ -649,7 +649,7 @@ export function registerWikilinkTools(
       description:
         'Find entity pairs that frequently co-occur across vault notes but where one or both entities lack a backing note. These represent relationship patterns worth making explicit with hub notes or links.',
       inputSchema: {
-        min_cooccurrence: z.coerce.number().default(3).describe('Minimum co-occurrence count to include (default 3)'),
+        min_cooccurrence: z.coerce.number().default(10).describe('Minimum co-occurrence count to include (default 10)'),
         limit: z.coerce.number().default(20).describe('Maximum gaps to return (default 20)'),
       },
     },
@@ -660,7 +660,7 @@ export function registerWikilinkTools(
       const index = getIndex();
       const coocIndex = getCooccurrenceIndex();
       const limit = Math.min(requestedLimit ?? 20, 100);
-      const minCount = min_cooccurrence ?? 3;
+      const minCount = min_cooccurrence ?? 10;
 
       if (!coocIndex) {
         return {

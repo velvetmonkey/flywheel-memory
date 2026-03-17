@@ -38,6 +38,7 @@ import { findVaultRoot } from './core/read/vaultRoot.js';
 import {
   createVaultWatcher,
   parseWatcherConfig,
+  type VaultWatcher,
   type WatcherStatus,
 } from './core/read/watch/index.js';
 import { processBatch } from './core/read/watch/batchProcessor.js';
@@ -176,10 +177,10 @@ try { resolvedVaultPath = realpathSync(vaultPath).replace(/\\/g, '/'); } catch {
 let vaultIndex: VaultIndex;
 let flywheelConfig: FlywheelConfig = {};
 let stateDb: StateDb | null = null;
-let watcherStatus: WatcherStatus | null = null;
+let watcherInstance: VaultWatcher | null = null;
 
-/** Current watcher status (used by health_check to expose watcher state). */
-export function getWatcherStatus(): WatcherStatus | null { return watcherStatus; }
+/** Current watcher status (live — reads state at call time, not a stale snapshot). */
+export function getWatcherStatus(): WatcherStatus | null { return watcherInstance?.status ?? null; }
 
 // ============================================================================
 // Tool Presets & Composable Bundles
@@ -1993,7 +1994,6 @@ async function runPostIndexWork(index: VaultIndex) {
       config,
       onBatch: handleBatch,
       onStateChange: (status) => {
-        watcherStatus = status;
         if (status.state === 'dirty') {
           serverLog('watcher', 'Index may be stale', 'warn');
         }
@@ -2002,6 +2002,7 @@ async function runPostIndexWork(index: VaultIndex) {
         serverLog('watcher', `Watcher error: ${err.message}`, 'error');
       },
     });
+    watcherInstance = watcher;
 
     // Startup catch-up: process files that were modified while the server was offline.
     // getRecentPipelineEvent returns the last event with steps (i.e. last watcher run).

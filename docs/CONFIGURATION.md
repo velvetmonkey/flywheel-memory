@@ -41,6 +41,31 @@ Note: Claude Desktop requires `VAULT_PATH` because it doesn't launch from the va
 
 ---
 
+## Windows
+
+On Windows, two things need attention: the vault path and file watching.
+
+**`VAULT_PATH`** — Set this to your vault's Windows path. Claude Code can auto-detect it if you `cd` into the vault first, but setting it explicitly avoids issues:
+
+```json
+{
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "env": {
+        "VAULT_PATH": "C:\\Users\\you\\obsidian\\MyVault",
+        "FLYWHEEL_WATCH_POLL": "true"
+      }
+    }
+  }
+}
+```
+
+**`FLYWHEEL_WATCH_POLL`** — Required on Windows. Native file system events are unreliable on Windows, so you must enable polling for the file watcher to track changes. Without it, Flywheel starts fine and searches work, but edits you make in Obsidian won't appear in search results until you manually refresh. This is the most common source of "stale index" issues on Windows.
+
+---
+
 ## Environment Variables
 
 ### Vault Path
@@ -178,7 +203,7 @@ Any HuggingFace Transformers-compatible model can be used — unknown models aut
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `FLYWHEEL_WATCH` | `true` | Set to `false` to disable file watching entirely |
-| `FLYWHEEL_WATCH_POLL` | `false` | Set to `true` for polling mode. Use on network drives, Docker volumes, or WSL. |
+| `FLYWHEEL_WATCH_POLL` | `false` | Set to `true` for polling mode. Required on Windows. |
 | `FLYWHEEL_DEBOUNCE_MS` | `200` | Milliseconds to wait after last file change before rebuilding index |
 | `FLYWHEEL_FLUSH_MS` | `1000` | Maximum wait time before flushing event batch |
 | `FLYWHEEL_BATCH_SIZE` | `50` | Maximum events per batch before forcing flush |
@@ -196,7 +221,7 @@ The file watcher uses per-path debouncing, event coalescing, backpressure handli
 
 #### Polling Mode
 
-For network drives, Docker volumes, or file systems where native events are unreliable:
+For file systems where native events are unreliable (required on Windows — see [Windows](#windows) above):
 
 ```json
 {
@@ -206,21 +231,6 @@ For network drives, Docker volumes, or file systems where native events are unre
   }
 }
 ```
-
-#### Windows
-
-Native file system events (`inotify`) don't work across the WSL/Windows boundary. If your vault lives on the Windows side (e.g. `/mnt/c/...`), you must enable polling:
-
-```json
-{
-  "env": {
-    "FLYWHEEL_WATCH_POLL": "true",
-    "VAULT_PATH": "/mnt/c/Users/you/Obsidian/MyVault"
-  }
-}
-```
-
-This also applies to Docker volumes mounted from Windows and network drives (SMB/CIFS). Native Windows (no WSL) works without polling.
 
 ---
 

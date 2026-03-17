@@ -85,7 +85,7 @@ Three layers fire on every write:
 
 **Implicit entity detection** — When `implicit_detection` is enabled (default), Flywheel also detects potential entities that don't have backing notes yet: proper nouns, CamelCase, quoted terms, acronyms. These become dead wikilinks — signals that "this could be a note." They're future graph edges: if you later create `Marcus Johnson.md`, every note that mentioned him is already linked.
 
-**Contextual suggestions** — After linking, Flywheel scores every entity in the vault against the written content using a 13-layer algorithm (content match, co-occurrence, type, recency, hub score, feedback, semantic similarity...) and appends the top matches as `→ [[Entity1]], [[Entity2]]`. These are the contextual cloud — related entities the scoring engine thinks are relevant based on your vault's structure.
+**Contextual suggestions** — After linking, Flywheel scores every entity in the vault against the written content using a 13-layer algorithm (content match, co-occurrence, type, recency, hub score, feedback, semantic similarity...) and appends the top matches as `→ [[Entity1]], [[Entity2]]`. These surface connections you wouldn't make manually — an audit note gets linked to a related client project because the scoring engine noticed they co-occur across your past notes. Every suggestion creates a graph edge, which means future searches and suggestions get better too.
 
 Here's a richer write that triggers all three layers:
 

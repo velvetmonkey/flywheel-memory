@@ -1,6 +1,6 @@
 # Architecture
 
-Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 51 tools for search, graph queries, and mutations.
+Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 61 tools for search, graph queries, and mutations.
 
 ---
 
@@ -101,7 +101,7 @@ packages/
 
 ## Startup Flow
 
-1. **Detect vault root** -- `findVaultRoot()` walks up from cwd looking for `.obsidian/` or `.mcp.json`
+1. **Detect vault root** -- `findVaultRoot()` walks up from cwd looking for `.obsidian/` or `.claude/`
 2. **Open StateDb** -- `openStateDb(vaultPath)` creates/opens `.flywheel/state.db` (SQLite with WAL mode)
 3. **Initialize entity index** -- Loads entities from StateDb for auto-wikilinks
 4. **Connect MCP transport** -- `StdioServerTransport` for Claude Code / Claude Desktop

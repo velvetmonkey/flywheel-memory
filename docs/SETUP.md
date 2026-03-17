@@ -25,7 +25,7 @@ Create `.mcp.json` in your vault root:
       "command": "npx",
       "args": ["-y", "@velvetmonkey/flywheel-memory"],
       "env": {
-        "FLYWHEEL_TOOLS": "minimal"
+        "FLYWHEEL_TOOLS": "default"
       }
     }
   }
@@ -44,7 +44,7 @@ Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
       "args": ["-y", "@velvetmonkey/flywheel-memory"],
       "env": {
         "VAULT_PATH": "/path/to/your/vault",
-        "FLYWHEEL_TOOLS": "minimal"
+        "FLYWHEEL_TOOLS": "default"
       }
     }
   }
@@ -109,27 +109,18 @@ Flywheel auto-links any mentions of existing notes. If your vault has `Stacy Tho
 
 ## Step 4: Choose a Tool Preset
 
-Flywheel ships 51 tools. Loading all of them works, but fewer tools means Claude picks the right one faster.
-
-| Preset | Tools | ~Tokens | Best for |
-|--------|-------|---------|----------|
-| `minimal` | 11 | ~3,800 | Daily note-taking, simple queries |
-| `minimal,graph` | 19 | ~5,650 | + backlinks, orphans, hubs, paths |
-| `minimal,graph,tasks` | 22 | ~6,575 | + task queries and mutations |
-| `minimal,graph,analysis` | 25 | ~7,500 | + schema intelligence, wikilink validation |
-| `full` (default) | 42 | ~12,400 | Everything |
-
-**Recommendation:** Start with `minimal`. If you find yourself needing graph navigation or task management, add those bundles. You can always switch by editing the `FLYWHEEL_TOOLS` value in your `.mcp.json`.
+Flywheel defaults to the `default` preset (16 tools: search, read, write, tasks).
+Add bundles for graph analysis, wikilinks, memory, or other capabilities:
 
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "minimal,graph,tasks"
+    "FLYWHEEL_TOOLS": "default,graph,tasks"
   }
 }
 ```
 
-See [CONFIGURATION.md](CONFIGURATION.md) for all presets, bundles, and individual categories.
+See [CONFIGURATION.md](CONFIGURATION.md) for all presets, composable bundles, and categories.
 
 ---
 
@@ -288,14 +279,14 @@ After building semantic embeddings:
 
 ### "Vault not found"
 
-Flywheel looks for a vault root by walking up from the working directory, checking for `.obsidian/` or `.mcp.json`. If neither exists:
+Flywheel looks for a vault root by walking up from the working directory, checking for `.obsidian/` or `.claude/`. If neither exists:
 
 - **Claude Code:** Make sure you `cd` into your vault before running `claude`
 - **Claude Desktop:** Set `VAULT_PATH` explicitly in the config
 
 ### "Too many tools" / Claude picks the wrong tool
 
-Reduce the tool set. Switch from `full` to `minimal` or a specific bundle combination. Fewer tools = better tool selection by Claude.
+Reduce the tool set. Switch from `full` to `default` or a specific bundle combination. Fewer tools = better tool selection by Claude.
 
 ### "Permission denied" on file writes
 
@@ -346,6 +337,6 @@ All vault operations work without git. You just won't have undo or commit histor
 ## Next Steps
 
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full reference for all 51 tools
+- **[TOOLS.md](TOOLS.md)** -- Full reference for all 61 tools
 - **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics

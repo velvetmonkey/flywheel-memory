@@ -19,7 +19,7 @@ Two layers of configuration: **environment variables** set in your MCP config (s
 }
 ```
 
-No `FLYWHEEL_TOOLS` needed — defaults to `minimal` (11 tools). Add it only to override.
+No `FLYWHEEL_TOOLS` needed — defaults to `default` (16 tools). Add it only to override.
 
 ### Claude Desktop (`claude_desktop_config.json`)
 
@@ -53,50 +53,49 @@ Note: Claude Desktop requires `VAULT_PATH` because it doesn't launch from the va
 Vault root detection order:
 1. `PROJECT_PATH` env var (if set)
 2. `VAULT_PATH` env var (if set)
-3. Auto-detect: walks up from cwd looking for `.obsidian/` or `.mcp.json`
+3. Auto-detect: walks up from cwd looking for `.obsidian/` or `.claude/`
 
 ### Tool Presets
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `FLYWHEEL_TOOLS` | `minimal` | Preset, bundle, or comma-separated category list |
+| `FLYWHEEL_TOOLS` | `default` | Preset, bundle, or comma-separated category list |
 | `FLYWHEEL_PRESET` | — | Alias for `FLYWHEEL_TOOLS` (either works) |
 
 #### Quick Start
 
 | Preset | Tools | Use case |
 |--------|-------|----------|
-| `minimal` (default) | 11 | Note-taking essentials — search, read, create, edit |
-| `full` | 51 | Everything — graph, schema, tasks, policy, memory |
-| `writer` | 14 | minimal + task management |
-| `agent` | 14 | minimal + agent memory (brief, recall, memory) |
-| `researcher` | 12 | Search + graph navigation — read-heavy exploration |
+| `default` (default) | 16 | Note-taking essentials — search, read, write, tasks |
+| `agent` | 16 | Autonomous AI agents — search, read, write, memory |
+| `full` | 61 | Everything — all 11 categories |
 
 The fewer tools you load, the less context Claude needs to pick the right one.
 
 #### Composable Bundles
 
-Start with `minimal`, then add what you need:
+Start with `default`, then add what you need:
 
 | Bundle | Tools | What it adds |
 |--------|-------|--------------|
-| `graph` | 7 | Backlinks, orphans, hubs, shortest paths |
-| `analysis` | 9 | Schema intelligence, wikilink validation, content similarity |
+| `graph` | 9 | Structural analysis, backlinks, forward links, hubs, paths, connections |
+| `schema` | 5 | Schema intelligence, note intelligence, migrations, tag rename |
+| `wikilinks` | 7 | Link suggestions, validation, feedback, discovery |
+| `corrections` | 4 | Correction recording + resolution |
 | `tasks` | 3 | Task queries and mutations |
-| `health` | 12 | Vault diagnostics, index management, growth, activity, config, merges |
-| `ops` | 2 | Git undo, policy automation |
+| `memory` | 3 | Agent working memory + recall + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
+| `diagnostics` | 13 | Vault health, stats, config, activity, merges |
 
 #### Recipes
 
-| Config | Tools | Categories |
-|--------|-------|------------|
-| `minimal` | 11 | search, structure, append, frontmatter, notes |
-| `writer` | 14 | minimal + tasks |
-| `agent` | 14 | minimal + memory |
-| `minimal,graph,tasks` | 21 | minimal + backlinks, orphans, hubs, paths, tasks |
-| `minimal,graph,analysis` | 27 | minimal + backlinks, orphans, hubs, paths, schema, wikilinks |
-| `full` | 51 | All 17 categories |
+| Config | Tools | What you get |
+|--------|-------|--------------|
+| `default` | 16 | search, read, write, tasks |
+| `agent` | 16 | search, read, write, memory |
+| `default,graph` | 25 | default + graph analysis, paths, hubs |
+| `default,graph,wikilinks` | 32 | + link suggestions, validation |
+| `full` | 61 | All 11 categories |
 
 #### How It Works
 
@@ -105,43 +104,47 @@ Set `FLYWHEEL_TOOLS` to a preset, one or more bundles, individual categories, or
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "minimal,graph,tasks"
+    "FLYWHEEL_TOOLS": "default,graph,tasks"
   }
 }
 ```
 
-Unknown names are ignored with a warning. If nothing valid is found, falls back to `full`.
+Unknown names are ignored with a warning. If nothing valid is found, falls back to `default`.
 
 #### Category Reference
 
-**Read categories (12):**
+| Category | Tools | What's included |
+|----------|-------|-----------------|
+| `search` | 3 | search, init_semantic, find_similar |
+| `read` | 3 | get_note_structure, get_section_content, find_sections |
+| `write` | 7 | vault_add/remove/replace_in_section, vault_update_frontmatter, vault_create_note, vault_undo_last_mutation, policy |
+| `graph` | 9 | graph_analysis, get_backlinks, get_forward_links, connection strength, entities, paths, neighbors, weighted/strong links |
+| `schema` | 5 | vault_schema, note_intelligence, rename_field, migrate_field_values, rename_tag |
+| `wikilinks` | 7 | suggest_wikilinks, validate_links, wikilink_feedback, discover_stub_candidates, discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report |
+| `corrections` | 4 | vault_record_correction, vault_list/resolve_correction, absorb_as_alias |
+| `tasks` | 3 | tasks, vault_toggle_task, vault_add_task |
+| `memory` | 3 | memory, recall, brief |
+| `note-ops` | 4 | vault_delete/move/rename_note, merge_entities |
+| `diagnostics` | 13 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init |
 
-| Category | Tools | Description |
-|----------|-------|-------------|
-| `search` | 2 | Unified search (metadata, content, entities), semantic index initialization |
-| `backlinks` | 2 | Backlinks (+ bidirectional), forward links |
-| `orphans` | 1 | Graph analysis (orphans, dead ends, sources, hubs, stale, immature, evolution, emerging hubs) |
-| `hubs` | 2 | Connection strength, entity listing |
-| `paths` | 2 | Shortest path, common neighbors |
-| `schema` | 6 | Vault schema, note intelligence, field migrations, content similarity |
-| `structure` | 4 | Note structure, section content, find sections, metadata |
-| `tasks` | 3 | Task queries and mutations (read + write) |
-| `health` | 12 | Vault stats, diagnostics, index management, growth metrics, activity tracking, config, merge suggestions |
-| `wikilinks` | 3 | Link suggestions, link validation, feedback |
-| `memory` | 3 | Agent working memory (store/recall/brief) |
+Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work with a warning — they resolve to current category names.
 
-Note: `memory` spans read+write. `tasks` also spans read+write.
+#### Preset → Category Mapping
 
-**Write categories (6):**
-
-| Category | Tools | Description |
-|----------|-------|-------------|
-| `append` | 3 | Add, remove, replace content in sections |
-| `frontmatter` | 1 | Update frontmatter fields |
-| `notes` | 1 | Create notes |
-| `note-ops` | 4 | Delete, move, rename notes, merge entities |
-| `git` | 1 | Undo last mutation |
-| `policy` | 1 | Policy workflow automation |
+| Category | Tools | `default` | `agent` | `full` |
+|----------|------:|:---------:|:-------:|:------:|
+| search | 3 | Yes | Yes | Yes |
+| read | 3 | Yes | Yes | Yes |
+| write | 7 | Yes | Yes | Yes |
+| tasks | 3 | Yes | | Yes |
+| memory | 3 | | Yes | Yes |
+| graph | 9 | | | Yes |
+| schema | 5 | | | Yes |
+| wikilinks | 7 | | | Yes |
+| corrections | 4 | | | Yes |
+| note-ops | 4 | | | Yes |
+| diagnostics | 13 | | | Yes |
+| **Total** | **61** | **16** | **16** | **61** |
 
 ### Semantic Embeddings
 
@@ -160,11 +163,14 @@ Known models (pre-configured dimensions):
 
 Any HuggingFace Transformers-compatible model can be used — unknown models auto-probe their output dimensions on first run.
 
+**How hybrid search works:** The `init_semantic` tool builds embeddings for all vault notes. Once built, `search` and `find_similar` automatically upgrade to hybrid mode — queries run through both BM25 (keyword matching via FTS5) and semantic similarity (cosine distance on embeddings), merged via Reciprocal Rank Fusion (RRF). The model is downloaded automatically on first run to `~/.cache/huggingface/`. The file watcher keeps embeddings current as you edit.
+
 ### Advanced
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `FLYWHEEL_SKIP_FTS5` | `false` | Skip FTS5 full-text search index build at startup. Useful for testing. |
+| `FLYWHEEL_SKIP_EMBEDDINGS` | `false` | Skip automatic embedding rebuild at startup |
 | `FLYWHEEL_AGENT_ID` | — | Agent identifier for multi-agent memory provenance. When set, memories stored via the `memory` tool are tagged with this ID. |
 
 ### File Watcher
@@ -216,18 +222,6 @@ Native file system events (`inotify`) don't work across the WSL/Windows boundary
 
 This also applies to Docker volumes mounted from Windows and network drives (SMB/CIFS). Native Windows (no WSL) works without polling.
 
-### Semantic Search
-
-The `init_semantic` tool builds a semantic search index by generating embeddings for all vault notes using the `all-MiniLM-L6-v2` model. This is a one-time build step — once the index exists, `search` and `find_similar` automatically upgrade to hybrid mode.
-
-**How hybrid search works:** Queries run through both BM25 (keyword matching via FTS5) and semantic similarity (cosine distance on embeddings). Results are merged using Reciprocal Rank Fusion (RRF), which combines the two ranked lists into a single ranking that benefits from both keyword precision and semantic recall.
-
-**Model selection:** The embedding model defaults to `Xenova/all-MiniLM-L6-v2` but can be changed via the `EMBEDDING_MODEL` environment variable. A model registry includes 4 known models with pre-configured dimensions; unknown models auto-probe their output dimensions. Changing models triggers a full embedding rebuild.
-
-**Model download:** The model is downloaded automatically on first run to `~/.cache/huggingface/`. No environment variables are needed — just run `init_semantic` and the index builds from your existing vault content.
-
-**Keeping embeddings current:** The file watcher automatically generates embeddings for new and modified notes, so the semantic index stays up to date after the initial build.
-
 ---
 
 ## Auto-Inferred Configuration
@@ -263,7 +257,7 @@ Inferred from the vault root folder name.
 
 ## Runtime Configuration
 
-Runtime config is persisted in StateDb and survives server restarts. Read or update via the `flywheel_config` tool (requires `health` category).
+Runtime config is persisted in StateDb and survives server restarts. Read or update via the `flywheel_config` tool (requires `diagnostics` category).
 
 ### Reading Config
 
@@ -359,7 +353,7 @@ Smallest tool set for voice pipelines or mobile contexts:
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "minimal"
+    "FLYWHEEL_TOOLS": "default"
   }
 }
 ```
@@ -371,7 +365,7 @@ Daily notes, task management, basic editing:
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "minimal,tasks"
+    "FLYWHEEL_TOOLS": "default,tasks"
   }
 }
 ```
@@ -395,19 +389,19 @@ Note-taking + graph navigation for research and consulting:
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "minimal,graph,tasks"
+    "FLYWHEEL_TOOLS": "default,graph,tasks"
   }
 }
 ```
 
 ### Research Vault
 
-Full graph + schema intelligence for deep analysis:
+Full graph + schema + wikilink intelligence for deep analysis:
 
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "minimal,graph,analysis"
+    "FLYWHEEL_TOOLS": "default,graph,wikilinks"
   }
 }
 ```
@@ -419,7 +413,7 @@ All read tools, no mutations:
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "search,backlinks,orphans,hubs,paths,schema,structure,tasks,health,wikilinks"
+    "FLYWHEEL_TOOLS": "search,read,graph,schema,wikilinks,tasks,diagnostics"
   }
 }
 ```

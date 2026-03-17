@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 61 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 61 tools across 11 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -70,9 +70,9 @@ packages/mcp-server/src/
 Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`default`** — 14 tools: search, read, write, tasks
-- **`agent`** — 14 tools: search, read, write, memory
-- **`full`** — All 12 categories, all 61 tools
+- **`default`** — 16 tools: search, read, write, tasks
+- **`agent`** — 16 tools: search, read, write, memory
+- **`full`** — All 11 categories, all 61 tools
 
 **Composable bundles** (add to presets or each other):
 - **`graph`** — structural analysis, paths, hubs, connections (9 tools)
@@ -83,9 +83,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`memory`** — agent working memory + recall + brief (3 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
 - **`diagnostics`** — vault health, stats, config, activity (13 tools)
-- **`automation`** — git undo, policy engine (2 tools)
-
-**Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `diagnostics`, `automation`
+**Categories (11):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `diagnostics`
 
 ---
 

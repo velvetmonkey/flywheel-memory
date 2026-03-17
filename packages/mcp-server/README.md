@@ -20,7 +20,7 @@
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
 | Hubs, orphans, paths? | Not possible | Pre-indexed graph analysis |
 
-51 tools across 17 categories. 6-line config. Zero cloud dependencies.
+61 tools across 11 categories. 6-line config. Zero cloud dependencies.
 
 **Try in 60 seconds:**
 
@@ -304,7 +304,7 @@ Add `.mcp.json` to your vault root:
       "command": "npx",
       "args": ["-y", "@velvetmonkey/flywheel-memory"],
       "env": {
-        "FLYWHEEL_PRESET": "minimal"
+        "FLYWHEEL_PRESET": "default"
       }
     }
   }
@@ -315,7 +315,7 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Start with the `minimal` preset (11 tools). Add bundles as needed. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all options.
+Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all options.
 
 > **Note:** Developed and tested with Claude Code. Other MCP clients may work but are untested.
 
@@ -325,22 +325,11 @@ Start with the `minimal` preset (11 tools). Add bundles as needed. See [docs/CON
 
 | Preset | Tools | What you get |
 |--------|-------|--------------|
-| `full` (default) | 51 | Everything — graph, schema, tasks, policy, memory |
-| `minimal` | 11 | Note-taking essentials — search, read, create, edit |
-| `writer` | 14 | minimal + task management |
-| `agent` | 14 | minimal + agent memory (brief, recall, memory) |
-| `researcher` | 12 | Search + graph navigation — read-heavy exploration |
+| `default` | 16 | Note-taking essentials — search, read, write, tasks |
+| `agent` | 16 | Autonomous AI agents — search, read, write, memory |
+| `full` | 61 | Everything — all 11 categories |
 
-Composable bundles (add to presets or each other):
-
-| Bundle | Tools | What it adds |
-|--------|-------|--------------|
-| `graph` | 7 | Backlinks, orphans, hubs, shortest paths |
-| `analysis` | 9 | Schema intelligence, wikilink validation, content similarity |
-| `tasks` | 3 | Task queries and mutations |
-| `health` | 12 | Vault diagnostics, index management, growth, config, merges |
-| `ops` | 2 | Git undo, policy automation |
-| `note-ops` | 4 | Delete, move, rename notes, merge entities |
+Composable bundles add capabilities to any preset. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all bundles and fine-grained categories.
 
 The fewer tools you load, the less context Claude needs to pick the right one. See [docs/TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) for the full reference.
 
@@ -351,7 +340,7 @@ The fewer tools you load, the less context Claude needs to pick the right one. S
 | Doc | Why read this |
 |---|---|
 | [PROVE-IT.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/PROVE-IT.md) | See it working in 5 minutes |
-| [TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) | All 51 tools documented |
+| [TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) | All 61 tools documented |
 | [ALGORITHM.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/ALGORITHM.md) | How the scoring works |
 | [COOKBOOK.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/SETUP.md) | Full setup guide for your vault |

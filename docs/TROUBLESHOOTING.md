@@ -146,12 +146,12 @@ This forces a complete rebuild from scratch including the StateDb schema.
 
 ### "Vault not found"
 
-Flywheel detects the vault root by walking up from the working directory, looking for `.obsidian/` or `.mcp.json`.
+Flywheel detects the vault root by walking up from the working directory, looking for `.obsidian/` or `.claude/`.
 
 **Fixes:**
 - **Claude Code:** Run `cd /path/to/your/vault && claude`
 - **Claude Desktop:** Set `VAULT_PATH` in `claude_desktop_config.json`
-- Verify the vault directory contains `.obsidian/` or `.mcp.json`
+- Verify the vault directory contains `.obsidian/` or `.claude/`
 
 ### "Path traversal blocked"
 
@@ -196,7 +196,7 @@ You're loading more tools than Claude needs. Switch to a smaller preset:
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "minimal"
+    "FLYWHEEL_TOOLS": "default"
   }
 }
 ```

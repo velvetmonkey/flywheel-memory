@@ -261,7 +261,7 @@ export function registerGraphTools(
     'Get outgoing links from a note ranked by edge weight. Weights reflect link survival, co-session access, and source activity. Time decay is applied at query time.',
     {
       path: z.string().describe('Path to the note (e.g., "daily/2026-02-24.md")'),
-      min_weight: z.number().default(0).describe('Minimum weight threshold (default 0 = all links)'),
+      min_weight: z.number().default(1.0).describe('Minimum weight threshold (default 1.0)'),
       limit: z.number().default(20).describe('Maximum number of results to return'),
     },
     async ({ path: notePath, min_weight, limit: requestedLimit }) => {

@@ -220,9 +220,6 @@ export function registerBriefTools(
     {
       max_tokens: z.number().optional().describe('Token budget (lower-priority sections truncated first)'),
       focus: z.string().optional().describe('Focus entity or topic (filters content)'),
-      sections: z.array(z.enum(['recent_sessions', 'active_entities', 'active_memories', 'pending_corrections', 'vault_pulse']))
-        .optional()
-        .describe('Which sections to include (default: all)'),
     },
     async (args) => {
       const stateDb = getStateDb();
@@ -233,27 +230,13 @@ export function registerBriefTools(
         };
       }
 
-      const requestedSections = args.sections
-        ? new Set(args.sections)
-        : new Set(['recent_sessions', 'active_entities', 'active_memories', 'pending_corrections', 'vault_pulse']);
-
-      const sections: BriefSection[] = [];
-
-      if (requestedSections.has('recent_sessions')) {
-        sections.push(buildSessionSection(stateDb, 5));
-      }
-      if (requestedSections.has('active_entities')) {
-        sections.push(buildActiveEntitiesSection(stateDb, 10));
-      }
-      if (requestedSections.has('active_memories')) {
-        sections.push(buildActiveMemoriesSection(stateDb, 20));
-      }
-      if (requestedSections.has('pending_corrections')) {
-        sections.push(buildCorrectionsSection(stateDb, 10));
-      }
-      if (requestedSections.has('vault_pulse')) {
-        sections.push(buildVaultPulseSection(stateDb));
-      }
+      const sections: BriefSection[] = [
+        buildSessionSection(stateDb, 5),
+        buildActiveEntitiesSection(stateDb, 10),
+        buildActiveMemoriesSection(stateDb, 20),
+        buildCorrectionsSection(stateDb, 10),
+        buildVaultPulseSection(stateDb),
+      ];
 
       // Token budgeting: if max_tokens specified, truncate low-priority sections
       if (args.max_tokens) {

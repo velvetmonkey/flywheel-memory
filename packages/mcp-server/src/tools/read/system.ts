@@ -572,6 +572,23 @@ export function registerSystemTools(
 
       const entityIndex = getEntityIndexFromDb(stateDb);
 
+      // Build suppression set
+      const suppressedSet = new Set<string>(
+        (stateDb.db.prepare('SELECT entity FROM wikilink_suppressions').all() as Array<{ entity: string }>)
+          .map(r => r.entity.toLowerCase())
+      );
+
+      // Annotate entities with suppression status
+      const allCategories = Object.keys(entityIndex).filter(k => k !== '_metadata') as string[];
+      for (const cat of allCategories) {
+        const arr = (entityIndex as any)[cat];
+        if (Array.isArray(arr)) {
+          for (const entity of arr) {
+            entity.isSuppressed = suppressedSet.has(entity.name.toLowerCase());
+          }
+        }
+      }
+
       // If category filter is specified, zero out other categories
       if (category) {
         const allCategories = Object.keys(entityIndex).filter(k => k !== '_metadata') as string[];

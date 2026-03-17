@@ -79,6 +79,29 @@ One search call returned everything -- frontmatter with amounts and status, back
 
 You typed a plain sentence. Flywheel recognized "Acme" as an alias for `Acme Corp.md` and linked it — no brackets, no lookup, no manual work. That link is now a graph edge — it's why the read example above works.
 
+Three layers fire on every write:
+
+**Known entity linking** — Flywheel scans every entity name and alias in the vault index. Matching is deterministic — same input always produces the same links. That's the `[[Acme Corp|Acme]]` above.
+
+**Implicit entity detection** — When `implicit_detection` is enabled (default), Flywheel also detects potential entities that don't have backing notes yet: proper nouns, CamelCase, quoted terms, acronyms. These become dead wikilinks — signals that "this could be a note." They're future graph edges: if you later create `Marcus Johnson.md`, every note that mentioned him is already linked.
+
+**Contextual suggestions** — After linking, Flywheel scores every entity in the vault against the written content using a 13-layer algorithm (content match, co-occurrence, type, recency, hub score, feedback, semantic similarity...) and appends the top matches as `→ [[Entity1]], [[Entity2]]`. These are the contextual cloud — related entities the scoring engine thinks are relevant based on your vault's structure.
+
+Here's a richer write that triggers all three layers:
+
+```
+❯ Log that Stacy reviewed the security checklist before the Beta Corp kickoff
+
+● flywheel › vault_add_to_section
+  path: "daily-notes/2026-01-04.md"
+  section: "Log"
+  content: "[[Stacy Thompson|Stacy]] reviewed the [[API Security Checklist|security checklist]]
+            before the [[Beta Corp Dashboard|Beta Corp]] kickoff
+            → [[GlobalBank API Audit]], [[Acme Data Migration]]"
+            ↑ 3 known entities auto-linked ("Stacy" resolved via alias)
+            → 2 suggested links: entities co-occurring with Stacy + security across past notes
+```
+
 Try it yourself: `cd demos/carter-strategy && claude`
 
 ---
@@ -93,7 +116,7 @@ Matching combines title/entity matching, full-text search (BM25), and entity dat
 
 ### 2. Every Suggestion Has a Receipt
 
-Ask why Flywheel suggested `[[Marcus Johnson]]`:
+Those `→` suggestions aren't random. Ask why Flywheel suggested `[[Marcus Johnson]]`:
 
 ```
 Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Feedback  Semantic  Edge
@@ -107,10 +130,9 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
 ### 3. Use It and It Gets Smarter
 
-Every auto-wikilink is a graph edge — and every edge makes future queries better.
+The links and suggestions above aren't static — they learn from how you interact with them.
 
-- **Write** → entities are auto-linked, creating edges
-- **Keep** a link through 10 edits → that edge gains weight
+- **Keep** a link through 10 edits → that edge gains weight, boosting future suggestions
 - **Remove** a bad link → the system learns what to suppress
 - **Co-occurrence** → two entities in 20 notes build a statistical bond that surfaces in suggestions
 

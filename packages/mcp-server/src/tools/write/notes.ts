@@ -152,7 +152,7 @@ export function registerNoteTools(
 
         // 5. Suggest outgoing links (enabled by default)
         let suggestInfo: string | undefined;
-        if (suggestOutgoingLinks && !skipWikilinks && processedContent.length >= 100) {
+        if (suggestOutgoingLinks && !skipWikilinks) {
           const result = await suggestRelatedLinks(processedContent, { maxSuggestions, notePath });
           if (result.suffix) {
             processedContent = processedContent + ' ' + result.suffix;

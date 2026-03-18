@@ -109,7 +109,7 @@ Start with `default`, then add what you need:
 | `schema` | 7 | Schema inspection, conventions, validation, note intelligence, migrations, tag rename |
 | `wikilinks` | 7 | Link suggestions, validation, feedback, discovery |
 | `corrections` | 4 | Correction recording + resolution |
-| `tasks` | 3 | Task queries and mutations |
+| `tasks` | 3 | Task queries and mutations (already included in `default`) |
 | `memory` | 3 | Agent working memory + recall + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
 | `diagnostics` | 13 | Vault health, stats, config, activity, merges |
@@ -372,12 +372,12 @@ Smallest tool set for voice pipelines or mobile contexts:
 
 ### Note-Taking + Tasks
 
-Daily notes, task management, basic editing:
+Daily notes, task management, basic editing — the `default` preset includes tasks:
 
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "default,tasks"
+    "FLYWHEEL_TOOLS": "default"
   }
 }
 ```

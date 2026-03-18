@@ -12,6 +12,10 @@
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](docs/TESTING.md#performance-benchmarks)
 [![Tests](https://img.shields.io/badge/tests-2,482%20passed-brightgreen.svg)](docs/TESTING.md)
 
+**If you use Claude with an Obsidian vault**, this is for you. By default, Claude reaches for the filesystem — reading files one at a time, writing raw text, losing context between sessions. Flywheel is an MCP server that runs locally alongside your vault, giving Claude a pre-indexed knowledge graph, enriched search, safe writes with auto-wikilinks, and persistent memory — so it can answer questions about your notes in milliseconds instead of reading every file.
+
+Six lines of JSON config. No cloud. Your data never leaves your machine.
+
 | | Without Flywheel | With Flywheel |
 |---|---|---|
 | "What's overdue?" | Read every file | Indexed query, <10ms |
@@ -241,7 +245,7 @@ Every mutation is:
 | Learns from usage | Feedback loop + suppression | No | No | No |
 | Agent memory | brief + recall + memory | No | No | No |
 | Safe writes | Git + conflict detection | No | N/A | N/A |
-| Tool count | 61 | ~10 | 0 (plugin) | ~5 |
+| Tool count | 64 | ~10 | 0 (plugin) | ~5 |
 
 ---
 
@@ -285,7 +289,12 @@ cd /path/to/your/vault && claude
 
 Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
 
-> **Windows:** The MCP config requires `cmd /c npx` instead of `npx` (Windows installs npx as a batch script that can't be spawned directly), `VAULT_PATH` set to your vault, and `FLYWHEEL_WATCH_POLL` set to `true`. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md#windows) for the full config.
+> **Windows users — read this before you start.** Three things differ from macOS/Linux:
+> 1. **`cmd /c npx`** instead of `npx` — Windows installs npx as a `.cmd` batch script that can't be spawned directly
+> 2. **`VAULT_PATH`** — set this to your vault's Windows path
+> 3. **`FLYWHEEL_WATCH_POLL: "true"`** — **required**. Without this, Flywheel won't pick up changes you make in Obsidian. Your search results go stale the moment you edit a note outside Claude. This is the most common source of Windows issues.
+>
+> See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full config example.
 
 > **Note:** Developed and tested with Claude Code. Other MCP clients may work but are untested.
 

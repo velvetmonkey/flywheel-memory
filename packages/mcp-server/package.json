@@ -1,6 +1,6 @@
 {
   "name": "@velvetmonkey/flywheel-memory",
-  "version": "2.0.97",
+  "version": "2.0.98",
   "description": "MCP server that gives Claude full read/write access to your Obsidian vault. Select from 51 tools for search, backlinks, graph queries, mutations, agent memory, and hybrid semantic search.",
   "type": "module",
   "main": "dist/index.js",
@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",
-    "@velvetmonkey/vault-core": "^2.0.97",
+    "@velvetmonkey/vault-core": "^2.0.98",
     "better-sqlite3": "^11.0.0",
     "chokidar": "^4.0.0",
     "gray-matter": "^4.0.3",

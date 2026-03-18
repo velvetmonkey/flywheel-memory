@@ -42,7 +42,11 @@ describe('Package Startup', () => {
 
   afterAll(() => {
     if (tempDir && existsSync(tempDir)) {
-      rmSync(tempDir, { recursive: true, force: true });
+      try {
+        rmSync(tempDir, { recursive: true, force: true });
+      } catch {
+        // Windows: EBUSY/EPERM from file locking — temp dir cleaned up by OS
+      }
     }
   });
 
@@ -60,10 +64,11 @@ describe('Package Startup', () => {
     execSync('npm init -y', { cwd: testProjectDir, stdio: 'pipe' });
 
     // Install from the tarball (simulates installing from npm)
+    // Windows runners are slow (antivirus scanning, .cmd shims) — needs generous timeout
     execSync(`npm install ${tarballPath}`, {
       cwd: testProjectDir,
       stdio: 'pipe',
-      timeout: 120000,
+      timeout: 300000,
     });
 
     // Verify node_modules contains the package
@@ -138,7 +143,7 @@ describe('Package Startup', () => {
 
       throw new Error(`Import failed: ${stderr || stdout}`);
     }
-  }, 180000); // 3 minute timeout for npm install
+  }, 360000); // 6 minute timeout — Windows npm install is slow
 
   it('dist/index.js exists and is executable', () => {
     const distPath = join(packageDir, 'dist', 'index.js');

@@ -10,7 +10,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md#performance-benchmarks)
-[![Tests](https://img.shields.io/badge/tests-2,456%20passed-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-2,482%20passed-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md)
 
 | | Grep approach | Flywheel |
 |---|---|---|
@@ -200,7 +200,7 @@ No manual linking. No broken references. Use compounds into structure, structure
 
 ## Battle-Tested
 
-**2,456 tests. 122 test files. 47,000+ lines of test code.**
+**2,482 tests. 122 test files. 47,000+ lines of test code.**
 
 ### Performance
 
@@ -270,7 +270,7 @@ Every mutation is:
 | Agent memory | brief + recall + memory | No | No | No |
 | Safe writes | Git + conflict detection | No | N/A | N/A |
 | Test coverage | 2,456 tests | Unknown | Unknown | Unknown |
-| Tool count | 51 | ~10 | 0 (plugin) | ~5 |
+| Tool count | 61 | ~10 | 0 (plugin) | ~5 |
 
 ---
 

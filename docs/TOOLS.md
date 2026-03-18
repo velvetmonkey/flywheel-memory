@@ -36,9 +36,8 @@ Every search result includes:
 | Field | What it is | Why it matters |
 |-------|-----------|----------------|
 | **frontmatter** | All YAML metadata (status, owner, amount, dates, etc.) | Answer "how much?" or "what status?" questions without opening the file. |
-| **backlinks** | Every note that links TO this one, with line numbers | See what references this note — invoices pointing to a client, tickets pointing to a user. Line numbers let you jump to context. |
-| **outlinks** | Every note this one links TO, with line numbers and existence check | See what this note references — and whether targets exist. |
-| **headings** | The note's heading outline | Know what sections exist before deciding whether to read the full content. |
+| **backlinks** | Top 10 notes that link TO this one, ranked by edge weight × recency. `backlink_count` gives the total. | See what references this note — invoices pointing to a client, tickets pointing to a user. Use `get_backlinks` for the full list. |
+| **outlinks** | Top 10 notes this one links TO, ranked by edge weight × recency. Includes existence check. `outlink_count` gives the total. | See what this note references — and whether targets exist. |
 | **snippet** | The passage that matched your query (content search) | See the relevant paragraph in context without reading the whole file. |
 | **content_preview** | First ~300 chars of the note body (non-FTS matches) | When there's no snippet (entity/metadata match), you still get body text. |
 | **tags, aliases** | Tags and alternative names | Understand categorization and find notes by alternate names. |
@@ -53,7 +52,7 @@ This is the key design: **one search call returns not just file paths, but the f
 3. **Entity search** — Matches against the entity database (names, aliases, categories). If "Sarah Chen" is an alias for `users/sarah-chen.md`, it finds it.
 4. **Hybrid ranking** — When semantic embeddings are built (via `init_semantic`), results from all three channels are merged using Reciprocal Rank Fusion. Notes can surface by meaning even without keyword overlap.
 
-The enrichment step is the same regardless of how a note matched — every result gets its full frontmatter, backlinks, outlinks, and headings attached.
+The enrichment step is the same regardless of how a note matched — every result gets its full frontmatter, backlinks, and outlinks attached. Top results (controlled by `detail_count`, default 5) get full metadata; remaining results get lightweight summaries (counts only).
 
 **Scopes** let you target a specific search channel:
 
@@ -64,7 +63,7 @@ The enrichment step is the same regardless of how a note matched — every resul
 | `content` | Full-text search. Supports phrases (`"exact match"`), booleans (`term1 AND term2`), and prefix (`prefix*`). |
 | `entities` | Browse people, projects, technologies. Supports `prefix` mode for autocomplete. |
 
-**Common parameters:** `query`, `scope`, `where` (frontmatter filters), `has_tag`, `folder`, `modified_after`, `sort_by`, `limit`
+**Common parameters:** `query`, `scope`, `where` (frontmatter filters), `has_tag`, `folder`, `modified_after`, `sort_by`, `limit`, `detail_count`, `context_note`
 
 **How ranking works**
 

@@ -86,11 +86,10 @@ You: "What's our current MRR?"
         frontmatter: { type: "tracker", current_mrr: 499, active_customers: 1,
                        trial_customers: 1, churned_this_month: 0 }
         outlinks: DataDriven Co, GrowthStack, InsightHub, Hiring Plan, +12
-        headings: ["Current MRR: $499", "MRR History", "Forecast", "Goal: $10K MRR by Q2",
-                   "Key Metrics", "Actions"]
+
       ops/customers/DataDriven Co.md
         frontmatter: { health_score: 9, next_renewal: "2026-04-01" }
-        headings: ["Company Info", "Account Details", "Health Score: 9/10", "Expansion Opportunity"]
+
       ops/customers/InsightHub.md
         frontmatter: { status: "churned", churned_date: "2025-12-28",
                        churn_reason: "Performance issues — 30s query timeouts on 10M+ rows" }
@@ -118,7 +117,7 @@ You: "What caused InsightHub to churn?"
                        churn_reason: "Performance issues — 30s query timeouts on 10M+ rows",
                        churned_date: "2025-12-28", original_mrr: 499 }
         outlinks: Alex Chen, DEC-001 Pricing Model, DEC-002 Target Market, Q1 2026 Roadmap
-        headings: ["Company Info", "Timeline", "Churn Reason", "What We Learned", "Win-Back Potential"]
+
 
   ● read_file("ops/customers/InsightHub.md")
     → David Kim: "30+ second loads, need sub-second response times"

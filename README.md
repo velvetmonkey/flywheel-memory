@@ -10,7 +10,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](docs/TESTING.md#performance-benchmarks)
-[![Tests](https://img.shields.io/badge/tests-2,456%20passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-2,482%20passed-brightgreen.svg)](docs/TESTING.md)
 
 | | Without Flywheel | With Flywheel |
 |---|---|---|
@@ -46,8 +46,8 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
   query: "Acme Corp billing invoice"
   → clients/Acme Corp.md
       frontmatter: { total_billed: 156000, rate: 300, status: "active" }
-      backlinks: INV-2025-047.md, INV-2025-048.md, Acme Data Migration.md, +28
-      outlinks: Sarah Mitchell, INV-2025-047, INV-2025-048, Acme Analytics Add-on, +25
+      backlinks (31): INV-2025-047.md (weight: 2.1), INV-2025-048.md (weight: 1.8), Acme Data Migration.md (weight: 1.5), ...
+      outlinks (28): Sarah Mitchell (weight: 1.9), INV-2025-047 (weight: 1.7), INV-2025-048 (weight: 1.4), ...
     invoices/INV-2025-048.md
       frontmatter: { amount: 12000, status: "pending", period: "December 2025" }
     invoices/INV-2025-047.md
@@ -110,7 +110,7 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ### 1. Enriched Search
 
-Every search result comes back enriched — frontmatter, backlinks, outlinks, headings, and content snippets, all from an in-memory index. That's how one call answers a billing question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project that wikilinks to it — each with its own frontmatter. The graph did the joining, not Claude reading files one by one.
+Every search result comes back enriched — frontmatter, ranked backlinks, ranked outlinks, and content snippets, all from an in-memory index. That's how one call answers a billing question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project that wikilinks to it — each with its own frontmatter. The graph did the joining, not Claude reading files one by one.
 
 With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally.
 
@@ -178,7 +178,7 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ## Battle-Tested
 
-**2,456 tests. 122 test files. 47,000+ lines of test code.** See [docs/TESTING.md](docs/TESTING.md).
+**2,482 tests. 122 test files. 47,000+ lines of test code.** See [docs/TESTING.md](docs/TESTING.md).
 
 ### Performance
 

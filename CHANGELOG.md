@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.93] - 2026-03-18
+
+### Added
+
+- Tiered search enrichment — top N results get full metadata, rest lightweight (`detail_count` param, default 5)
+- Ranked backlinks/outlinks — top 10 per result scored by edge weight × recency decay (~4x context reduction)
+- AST-based protected zone detection (replaces regex)
+- `semantic_analysis` tool (extracted from `graph_analysis`)
+- `vault_init` multi-mode (enrich, health, doctor)
+- `dry_run` on all write tools
+- Provenance flags (`in_fts5`, `in_semantic`, `in_entity`) + `rrf_score` on search results
+- Auto-recovery from corrupted StateDb and ONNX model cache
+- `bin/flywheel-memory.js` wrapper for npx permission fix on WSL
+
+### Changed
+
+- Search default limit 20 → 10
+- `suggestOutgoingLinks` default true → false
+- Hub boost: tiered → log scaling with content relevance gate
+- `graph_analysis` and `vault_schema` split into focused tools
+- Tool parameter surface area reduced
+- Discover thresholds raised (stub 2→5, cooc 3→10)
+- `full` preset now excludes `memory` category (61 tools; add `,memory` for all 64)
+- Headings removed from search results (use `get_note_structure`)
+
+### Fixed
+
+- Windows/WSL: `cmd /c npx`, postinstall chmod, `FLYWHEEL_WATCH_POLL`
+
 ## [2.0.20] - 2026-02-16
 
 ### Added

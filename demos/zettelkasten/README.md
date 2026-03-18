@@ -142,12 +142,12 @@ You: "How does Spaced Repetition relate to Active Recall?"
       description: "Distributing review over increasing intervals exploits the spacing effect for long-term retention"
       outlinks: Spacing Effect, Active Recall, Memory Consolidation, Desirable Difficulties, Metacognition, Anki
       backlinks: Active Recall.md, Testing Effect.md, Desirable Difficulties.md, +8
-      headings: ["Core Mechanism", "How It Works", "Relationship to Other Concepts", "Evidence"]
+
     permanent/Active Recall.md
       description: "Retrieving information from memory strengthens neural pathways more than passive re-reading"
       outlinks: Testing Effect, Spaced Repetition, Elaborative Interrogation, Metacognition, Dunning-Kruger Effect, Schema Theory
       backlinks: Spaced Repetition.md, Elaborative Interrogation.md, Testing Effect.md, +9
-      headings: ["Why It Works", "Methods", "Common Misconceptions", "Connections"]
+
     permanent/Testing Effect.md
       description: "Being tested on material strengthens memory more than additional study time — retrieval is learning"
 

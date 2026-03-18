@@ -48,7 +48,6 @@ search("Acme Corp billing")
       frontmatter: { total_billed: 156000, rate: 300, status: "active" }
       backlinks:   [INV-2025-047.md, INV-2025-048.md, Acme Data Migration.md]
       outlinks:    [Sarah Mitchell, INV-2025-047, Acme Data Migration]
-      headings:    ["Contact", "Projects", "Invoices", "Notes"]
       tags:        ["client"]
 
   → invoices/INV-2025-048.md
@@ -63,7 +62,7 @@ That single result tells Claude: Acme Corp has been billed $156K total, there ar
 - **Frontmatter** answers "how much?" and "what status?" questions directly
 - **Backlinks** show what *references* this note — invoices, tickets, meeting notes
 - **Outlinks** show what this note *talks about* — people, projects, decisions
-- **Headings** reveal what sections exist before committing to a full read
+- Use `get_note_structure` for headings and section outline
 - **Snippets** show the matching paragraph in context
 
 The result is that Claude gets the answer *and* the surrounding context in a single call. No need to read the file, then follow links, then read those files too. The quality of these results improves over time — every write adds edges to the graph, and the feedback loop ensures suggestions sharpen with use. See [Graph Quality](../README.md#graph-quality) for the measured F1 scores.

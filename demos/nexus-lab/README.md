@@ -78,7 +78,7 @@ You: "How does AlphaFold connect to my docking experiment?"
     → literature/Jumper2021-AlphaFold.md
         frontmatter: { type: "literature", year: 2021 }
         outlinks: Transformer Architecture, Structure-Based Drug Design, Protein Folding
-        headings: ["Key Contribution", "Method", "Impact", "Connections"]
+
         snippet: "...AlphaFold predicts protein structures with atomic accuracy using a novel
                   transformer architecture..."
       experiments/Experiment-2024-10-28.md
@@ -117,7 +117,7 @@ You: "Which experiments used Centrality Measures?"
     query: "Centrality Measures"
     → methods/Centrality Measures.md
         outlinks: Barabasi2004-Network-Biology, Degree Centrality, Betweenness Centrality
-        headings: ["Types of Centrality", "Applications", "Implementation"]
+
       experiments/Experiment-2024-11-18.md
         frontmatter: { status: "completed", title: "PPI Network Analysis" }
         snippet: "...324 proteins, EGFR top hub (degree=47)..."

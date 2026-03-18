@@ -95,7 +95,7 @@ Vault root detection order:
 |--------|-------|----------|
 | `default` (default) | 16 | Note-taking essentials — search, read, write, tasks |
 | `agent` | 16 | Autonomous AI agents — search, read, write, memory |
-| `full` | 64 | Everything — all 11 categories |
+| `full` | 61 | Everything except memory — add `,memory` for all 64 |
 
 The fewer tools you load, the less context Claude needs to pick the right one.
 
@@ -122,7 +122,7 @@ Start with `default`, then add what you need:
 | `agent` | 16 | search, read, write, memory |
 | `default,graph` | 26 | default + graph analysis, semantic analysis, paths, hubs |
 | `default,graph,wikilinks` | 33 | + link suggestions, validation |
-| `full` | 64 | All 11 categories |
+| `full` | 61 | All categories except memory |
 
 #### How It Works
 
@@ -164,7 +164,7 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 | read | 3 | Yes | Yes | Yes |
 | write | 7 | Yes | Yes | Yes |
 | tasks | 3 | Yes | | Yes |
-| memory | 3 | | Yes | Yes |
+| memory | 3 | | Yes | |
 | graph | 10 | | | Yes |
 | schema | 7 | | | Yes |
 | wikilinks | 7 | | | Yes |

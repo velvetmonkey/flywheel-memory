@@ -67,7 +67,7 @@ You: "What's Sarah Chen's situation?"
                      last_issue: "Double-charged $99 (TKT-2024-003, escalated)" }
       backlinks: TKT-2024-001.md, TKT-2024-003.md, 2026-02-12.md
       outlinks: Billing, TKT-2024-003, TKT-2024-001
-      headings: ["Preferences", "Account Context", "Issue History", "Notes", "Open Items"]
+
     tickets/TKT-2024-003.md
       frontmatter: { status: "escalated", priority: "urgent", category: "billing",
                      resolution: "Refund initiated, awaiting processing",
@@ -109,7 +109,7 @@ You: "What tier does Bob need for 100 users?"
     tickets/TKT-2024-004.md
       frontmatter: { status: "open", category: "technical" }
     knowledge/api-rate-limits.md
-      headings: ["Rate Limits by Tier", "Handling 429 Errors", "Best Practices"]
+
 
 ┌─ CLAUDE THINKS ───────────────────────────────────────┐
 │ Bob's on Developer (1000 req/min). 100 users at        │

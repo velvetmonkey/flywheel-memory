@@ -95,12 +95,12 @@ You: "What's blocking the propulsion milestone?"
     → systems/propulsion/Propulsion System.md
         frontmatter: { status: "testing", owner: "Marcus Johnson" }
         outlinks: Engine Design, Turbopump, Cooling System, Fuel Tanks, +12
-        headings: ["Status", "Components", "Active Issues", "Test Results"]
+
       systems/propulsion/Turbopump.md
         frontmatter: { status: "delayed", supplier: "Acme Aerospace" }
-        headings: ["Status", "Supplier Issue", "Mitigation"]
+
       project/Risk Register.md
-        headings: ["Critical Risks", "Medium Risks", "Low Risks"]
+
         snippet: "...R-003: <mark>Turbopump</mark> Delivery Delay — CNC mill failure at Acme Aerospace.
                   Original: Jan 5. Revised: Jan 20. Score: 15..."
 
@@ -127,8 +127,7 @@ You: "Why did we choose LOX/RP-1?"
         frontmatter: { status: "accepted", chosen_option: "LOX/RP-1",
                        primary_driver: "budget", alternatives_evaluated: 4,
                        key_trade_off: "Cost vs ISP — LOX/LH2 has 30% higher ISP but exceeds budget by $3M" }
-        headings: ["Status", "Context", "Decision", "Alternatives Considered",
-                   "Rationale", "Implications", "Risk Assessment"]
+
         snippet: "...Selected: LOX/RP-1 (Liquid Oxygen / Rocket-grade Kerosene).
                   The main engine will use liquid oxygen as the oxidizer and RP-1 as the fuel,
                   in a gas generator cycle configuration..."

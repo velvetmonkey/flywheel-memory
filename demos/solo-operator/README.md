@@ -66,7 +66,7 @@ You: "How's revenue looking?"
   → ops/Revenue Tracker.md
       frontmatter: { type: "tracker", mtd_total: 2388, target: 5000 }
       outlinks: AI Automation Course, Consulting Services, TechCorp
-      headings: ["Revenue by Stream", "Pipeline", "Monthly Target"]
+
       snippet: "...Course: $1,188 (4 sales) | Consulting: $1,200 (4 hours) |
                 Sponsors: $0. Total MTD: $2,388 / $5,000 target (48%)..."
     products/AI Automation Course.md
@@ -97,7 +97,7 @@ You: "Run my morning briefing"
 ● flywheel › search
   query: "morning briefing revenue subscribers"
   → ops/Morning Briefing.md
-      headings: ["Revenue Check", "Subscribers", "Content Due", "Tasks"]
+
     ops/Revenue Tracker.md
       frontmatter: { mtd_total: 2388, target: 5000 }
     ops/Subscriber Metrics.md
@@ -133,7 +133,7 @@ You: "Why did Tuesday's newsletter perform so well?"
   query: "AI Tools Weekly newsletter performance"
   → content/2026-01-07 AI Tools Weekly.md
       frontmatter: { open_rate: 0.42, click_rate: 0.091, issue: 48 }
-      headings: ["Content", "Performance", "Notes"]
+
       snippet: "...Subject: '5 Claude Code workflows that save me 10 hours/week'.
                 Open rate: 42%, click rate: 9.1%. 47 replies for 'SYSTEM' CTA..."
 

@@ -127,10 +127,10 @@ You: "Who could help with the Beta Corp Dashboard?"
       frontmatter: { status: "active", skills_needed: ["React", "Dashboard", "Data Visualization"],
                      staffing: "understaffed" }
       outlinks: Beta Corp, Stacy Thompson, TechStart Inc, React, +8
-      headings: ["Overview", "Requirements", "Team", "Timeline"]
+
     team/Stacy Thompson.md
       frontmatter: { skills: ["React", "TypeScript", "UX Design"], utilization: 0.4 }
-      headings: ["Skills", "Current Projects", "Availability"]
+
 
 ┌─ RESULT ──────────────────────────────────────────────┐
 │ Stacy Thompson is a strong fit:                        │

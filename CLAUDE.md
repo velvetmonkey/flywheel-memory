@@ -73,7 +73,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 **Presets:**
 - **`default`** — 16 tools: search, read, write, tasks
 - **`agent`** — 16 tools: search, read, write, memory
-- **`full`** — All 11 categories, all 64 tools
+- **`full`** — All categories except memory (61 tools; add `,memory` for all 64)
 
 **Composable bundles** (add to presets or each other):
 - **`graph`** — structural analysis, semantic analysis, paths, hubs, connections (10 tools)

@@ -193,7 +193,7 @@ See [SETUP.md](SETUP.md) for the complete walkthrough.
 | Multi-step (2-3 tools) | ~$0.10 | ~20-30s |
 | Write + auto-wikilinks | ~$0.15 | ~30-40s |
 
-Measured with Claude Sonnet on the demo vaults. Enriched search results (frontmatter, backlinks, outlinks, headings, 64-token snippets) mean most queries need fewer tool calls than before.
+Measured with Claude Sonnet on the demo vaults. Enriched search results (frontmatter, ranked backlinks, ranked outlinks, 64-token snippets) mean most queries need fewer tool calls than before.
 
 ---
 

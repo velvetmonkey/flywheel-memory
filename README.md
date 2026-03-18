@@ -226,10 +226,14 @@ See [docs/TESTING.md](docs/TESTING.md) for full methodology. Auto-generated repo
 Every mutation is:
 
 - **Git-committed** — one `vault_undo_last_mutation` away from reverting any change
-- **Conflict-detected** — content hash check prevents clobbering concurrent edits (SHA-256)
+- **Conflict-detected** — SHA-256 content hash checked before every write; if the file changed since it was read, the mutation is rejected with a diagnostic showing exactly what changed and how to recover
 - **Policy-governed** — configurable guardrails with warn/strict/off modes
 - **Dry-run preview** — every write tool supports `dry_run: true` to see exactly what would change before touching disk
 - **Precise** — auto-wikilinks have 1.0 precision in production (never inserts a wrong link)
+
+**AST-protected wikilinks.** Before inserting any link, Flywheel parses the Markdown AST to identify protected zones where links must never go — code blocks, inline code, YAML frontmatter, existing `[[wikilinks]]` and `[markdown](links)`, bare URLs, HTML tags and comments, Obsidian callouts (including nested callouts), pipe tables, math expressions, and hashtags. Pure regex can't reliably handle nested callouts or multi-line HTML; the AST parser does, with a transparent regex fallback if parsing fails.
+
+**Correction loop suppression.** If you mark a suggested wikilink as wrong, that correction is checked before any future auto-link attempt on the same entity — the same wrong link is never re-suggested. Deleted notes are also handled cleanly: they don't generate false negative feedback against the entity.
 
 ---
 

@@ -194,7 +194,7 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherInstanc
 // Presets:
 //   default    - Note-taking essentials: search, read, write, tasks (16 tools)
 //   agent      - Autonomous AI agents: search, read, write, memory (16 tools)
-//   full       - All tools (64 tools)
+//   full       - All tools except agent memory (61 tools). Add ",memory" to include.
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic: backlinks, forward links, graph_analysis, semantic_analysis, paths, hubs, connections (10 tools)
@@ -235,7 +235,7 @@ const PRESETS: Record<string, ToolCategory[]> = {
   // Presets
   default: ['search', 'read', 'write', 'tasks'],
   agent: ['search', 'read', 'write', 'memory'],
-  full: ALL_CATEGORIES,
+  full: ALL_CATEGORIES.filter(c => c !== 'memory'),
 
   // Composable bundles (one per category)
   graph: ['graph'],

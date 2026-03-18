@@ -440,8 +440,13 @@ export function processWikilinks(content: string, notePath?: string, existingCon
   // This prevents duplicate wikilinks when vault_add_to_section is called multiple
   // times on the same note — each call independently applies wikilinks, so without
   // this guard the same entity ends up linked in every section it appears in.
-  if (existingContent) {
-    for (const match of existingContent.matchAll(/\[\[([^\]|]+?)(?:\|[^\]]+?)?\]\]/g)) {
+  // Exception: daily/periodic notes — each entry is independent and should have its own links.
+  const noteContext = notePath ? getNoteContext(notePath) : 'general';
+  if (existingContent && noteContext !== 'daily') {
+    // Strip suggestion suffixes (→ [[Entity1]], [[Entity2]]) before scanning
+    // — suggestions are metadata, not body links, and shouldn't prevent future linking
+    const cleanedExisting = existingContent.replace(/ → \[\[.*$/gm, '');
+    for (const match of cleanedExisting.matchAll(/\[\[([^\]|]+?)(?:\|[^\]]+?)?\]\]/g)) {
       step1LinkedEntities.add(match[1].toLowerCase());
     }
   }

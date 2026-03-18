@@ -12,13 +12,11 @@ import {
   buildFTS5Index,
   isIndexStale,
   getFTS5State,
-  getContentPreview,
   type FTS5Result,
 } from '../../core/read/fts5.js';
 import {
   searchEntities,
   searchEntitiesPrefix,
-  getEntityByName,
   type StateDb,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
@@ -28,6 +26,10 @@ import {
   reciprocalRankFusion,
   type ScoredNote,
 } from '../../core/read/embeddings.js';
+import {
+  enrichResult,
+  enrichResultLight,
+} from '../../core/read/enrichment.js';
 
 /**
  * Check if a note matches frontmatter filters
@@ -108,180 +110,6 @@ function inFolder(note: VaultNote, folder: string): boolean {
   return note.path.startsWith(normalizedFolder) || note.path.split('/')[0] === folder.replace('/', '');
 }
 
-const TOP_LINKS = 10;
-
-/** Time decay matching get_weighted_links pattern (graph.ts:288) */
-function recencyDecay(modifiedDate: Date | undefined): number {
-  if (!modifiedDate) return 0.5;  // unknown → neutral
-  const daysSince = (Date.now() - modifiedDate.getTime()) / (1000 * 60 * 60 * 24);
-  return Math.max(0.1, 1.0 - daysSince / 180);
-}
-
-function rankOutlinks(
-  outlinks: Array<{ target: string; line: number; alias?: string }>,
-  notePath: string,
-  index: VaultIndex,
-  stateDb: StateDb | null,
-): Array<Record<string, unknown>> {
-  const weightMap = new Map<string, number>();
-  if (stateDb) {
-    try {
-      const rows = stateDb.db.prepare(
-        'SELECT target, weight, weight_updated_at FROM note_links WHERE note_path = ?'
-      ).all(notePath) as Array<{ target: string; weight: number; weight_updated_at: number | null }>;
-      for (const row of rows) {
-        const daysSince = row.weight_updated_at
-          ? (Date.now() - row.weight_updated_at) / (1000 * 60 * 60 * 24)
-          : 0;
-        const decay = Math.max(0.1, 1.0 - daysSince / 180);
-        weightMap.set(row.target, row.weight * decay);
-      }
-    } catch { /* best-effort */ }
-  }
-
-  return outlinks
-    .map(l => {
-      const targetLower = l.target.toLowerCase();
-      const exists = index.entities.has(targetLower);
-      const weight = weightMap.get(targetLower) ?? 1.0;
-      const out: Record<string, unknown> = { target: l.target, exists };
-      if (weight > 1.0) out.weight = Math.round(weight * 100) / 100;
-      if (l.alias) out.alias = l.alias;
-      return out;
-    })
-    .sort((a, b) => ((b.weight as number) ?? 1) - ((a.weight as number) ?? 1))
-    .slice(0, TOP_LINKS);
-}
-
-function rankBacklinks(
-  backlinks: Array<{ source: string; line: number }>,
-  notePath: string,
-  index: VaultIndex,
-  stateDb: StateDb | null,
-): Array<Record<string, unknown>> {
-  const stem = notePath.replace(/\.md$/, '').split('/').pop()?.toLowerCase() ?? '';
-
-  const weightMap = new Map<string, number>();
-  if (stateDb && stem) {
-    try {
-      const rows = stateDb.db.prepare(
-        'SELECT note_path, weight FROM note_links WHERE target = ?'
-      ).all(stem) as Array<{ note_path: string; weight: number }>;
-      for (const row of rows) weightMap.set(row.note_path, row.weight);
-    } catch { /* best-effort */ }
-  }
-
-  return backlinks
-    .map(bl => {
-      const edgeWeight = weightMap.get(bl.source) ?? 1.0;
-      const sourceNote = index.notes.get(bl.source);
-      const decay = recencyDecay(sourceNote?.modified);
-      const score = edgeWeight * decay;
-      const out: Record<string, unknown> = { source: bl.source };
-      if (score > 1.0) out.weight = Math.round(score * 100) / 100;
-      return out;
-    })
-    .sort((a, b) => ((b.weight as number) ?? 1) - ((a.weight as number) ?? 1))
-    .slice(0, TOP_LINKS);
-}
-
-/**
- * Enrich a search result with indexed metadata (zero extra I/O).
- * Looks up VaultNote from index and entity metadata from StateDb.
- */
-function enrichResult(
-  result: { path: string; title: string; snippet?: string },
-  index: VaultIndex,
-  stateDb: StateDb | null
-): Record<string, unknown> {
-  const note = index.notes.get(result.path);
-  const normalizedPath = result.path.toLowerCase().replace(/\.md$/, '');
-  const backlinks = index.backlinks.get(normalizedPath) || [];
-
-  const enriched: Record<string, unknown> = {
-    path: result.path,
-    title: result.title,
-  };
-
-  if (result.snippet) enriched.snippet = result.snippet;
-
-  // From VaultIndex (in-memory)
-  if (note) {
-    enriched.frontmatter = note.frontmatter;
-    enriched.tags = note.tags;
-    enriched.aliases = note.aliases;
-    enriched.backlink_count = backlinks.length;
-    enriched.backlinks = rankBacklinks(backlinks, result.path, index, stateDb);
-    enriched.outlink_count = note.outlinks.length;
-    enriched.outlinks = rankOutlinks(note.outlinks, result.path, index, stateDb);
-    enriched.modified = note.modified.toISOString();
-    if (note.created) enriched.created = note.created.toISOString();
-  }
-
-  // From StateDb entity table (single row lookup)
-  if (stateDb) {
-    try {
-      const entity = getEntityByName(stateDb, result.title);
-      if (entity) {
-        enriched.category = entity.category;
-        enriched.hub_score = entity.hubScore;
-        if (entity.description) enriched.description = entity.description;
-      }
-    } catch { /* entity lookup is best-effort */ }
-  }
-
-  // Content preview fallback for non-FTS results (entity/metadata matches)
-  if (!result.snippet) {
-    const preview = getContentPreview(result.path);
-    if (preview) enriched.content_preview = preview;
-  }
-
-  return enriched;
-}
-
-/**
- * Lightweight enrichment for lower-ranked results.
- * Returns only: path, title, snippet/content_preview, backlink_count, outlink_count, category, hub_score, modified.
- */
-function enrichResultLight(
-  result: { path: string; title: string; snippet?: string },
-  index: VaultIndex,
-  stateDb: StateDb | null
-): Record<string, unknown> {
-  const note = index.notes.get(result.path);
-  const normalizedPath = result.path.toLowerCase().replace(/\.md$/, '');
-  const backlinks = index.backlinks.get(normalizedPath) || [];
-
-  const enriched: Record<string, unknown> = {
-    path: result.path,
-    title: result.title,
-  };
-
-  if (result.snippet) enriched.snippet = result.snippet;
-
-  if (note) {
-    enriched.backlink_count = backlinks.length;
-    enriched.outlink_count = note.outlinks.length;
-    enriched.modified = note.modified.toISOString();
-  }
-
-  if (stateDb) {
-    try {
-      const entity = getEntityByName(stateDb, result.title);
-      if (entity) {
-        enriched.category = entity.category;
-        enriched.hub_score = entity.hubScore;
-      }
-    } catch { /* entity lookup is best-effort */ }
-  }
-
-  if (!result.snippet) {
-    const preview = getContentPreview(result.path);
-    if (preview) enriched.content_preview = preview;
-  }
-
-  return enriched;
-}
 
 /**
  * Sort notes by a field

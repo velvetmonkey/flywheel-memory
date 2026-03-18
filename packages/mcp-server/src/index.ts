@@ -683,7 +683,7 @@ registerReadMergeTools(server, () => stateDb);
 
 // Memory tools
 registerMemoryTools(server, () => stateDb);
-registerRecallTools(server, () => stateDb, () => vaultPath);
+registerRecallTools(server, () => stateDb, () => vaultPath, () => vaultIndex ?? null);
 registerBriefTools(server, () => stateDb);
 
 // Resources (always registered, not gated by tool presets)

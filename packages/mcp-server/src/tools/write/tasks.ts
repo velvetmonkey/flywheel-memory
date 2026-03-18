@@ -228,7 +228,7 @@ export function registerTaskTools(
       completed: z.boolean().default(false).describe('Whether the task should start as completed'),
       commit: z.boolean().default(false).describe('If true, commit this change to git (creates undo point)'),
       skipWikilinks: z.boolean().default(false).describe('If true, skip auto-wikilink application (wikilinks are applied by default)'),
-      suggestOutgoingLinks: z.boolean().default(false).describe('Append suggested outgoing wikilinks based on content (e.g., "→ [[AI]], [[Philosophy]]"). Set false to disable.'),
+      suggestOutgoingLinks: z.boolean().default(true).describe('Append suggested outgoing wikilinks based on content (e.g., "→ [[AI]], [[Philosophy]]"). Set false to disable.'),
       maxSuggestions: z.number().min(1).max(10).default(5).describe('Maximum number of suggested wikilinks to append (1-10, default: 5)'),
       preserveListNesting: z.boolean().default(true).describe('Preserve indentation when inserting into nested lists. Default: true'),
       validate: z.boolean().default(true).describe('Check input for common issues'),

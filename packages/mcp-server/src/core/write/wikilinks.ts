@@ -851,20 +851,15 @@ const TYPE_BOOST: Record<EntityCategory, number> = {
 const CROSS_FOLDER_BOOST = 3;
 
 /**
- * Hub note boost tiers - prioritize well-connected notes
+ * Hub note boost - logarithmic scaling
  *
- * Notes with many backlinks (hub notes) are typically more central
- * to the knowledge graph and more useful to link to.
+ * Notes with many backlinks (hub notes) are more central to the knowledge graph,
+ * but tiered scoring gave mega-hubs (hubScore 100+) the same +8 as hubScore 700,
+ * letting ~6 entities dominate 60-90% of all suffix lines regardless of content.
  *
- * Tiered scoring ensures major hubs (Stretch, Walk, ESGHub with 100+ backlinks)
- * get significantly higher priority than entities with minimal connections.
+ * Log₂ scaling gives a smooth curve: 5→1.4, 20→2.6, 50→3.4, 100→4.0, 200→4.6, 700→5.7
+ * Capped at 6 (down from 8). The gap between hub=100 and hub=700 is now 1.7 instead of 0.
  */
-const HUB_TIERS = [
-  { threshold: 100, boost: 8 },  // Major hubs (Stretch, Walk, ESGHub)
-  { threshold: 50,  boost: 5 },  // Significant hubs
-  { threshold: 20,  boost: 3 },  // Medium hubs
-  { threshold: 5,   boost: 1 },  // Small hubs
-] as const;
 
 /**
  * Semantic similarity constants for Layer 11
@@ -895,23 +890,18 @@ function getCrossFolderBoost(entityPath: string, notePath: string): number {
 }
 
 /**
- * Get hub score boost for an entity using tiered scoring
+ * Get hub score boost for an entity using logarithmic scaling
  *
  * @param entity - Entity object with optional hubScore
- * @returns Boost value based on backlink count tier (0-8)
+ * @returns Boost value based on log₂(hubScore), capped at 6
  */
 function getHubBoost(entity: { hubScore?: number }): number {
   const hubScore = entity.hubScore ?? 0;
-  if (hubScore === 0) return 0;
+  if (hubScore <= 0) return 0;
 
-  // Find the highest tier that applies
-  for (const tier of HUB_TIERS) {
-    if (hubScore >= tier.threshold) {
-      return tier.boost;
-    }
-  }
-
-  return 0;
+  // Log scaling: 5→1.4, 20→2.6, 50→3.4, 100→4.0, 200→4.6, 700→5.7
+  // Max cap 6 (down from 8)
+  return Math.min(Math.round(Math.log2(hubScore) * 10) / 10, 6);
 }
 
 /**
@@ -1462,8 +1452,12 @@ export async function suggestRelatedLinks(
           const recencyBoostVal = hasContentOverlap && !disabled.has('recency')
             ? (recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0)
             : 0;
-          const crossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
-          const hubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
+          const rawCrossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
+          const rawHubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
+          // Cap hub + crossFolder for co-occurrence-only entities (no content overlap)
+          // to prevent hub entities from dominating suffix lines via graph signals alone
+          const hubBoost = hasContentOverlap ? rawHubBoost : Math.min(rawHubBoost, 2);
+          const crossFolderBoost = hasContentOverlap ? rawCrossFolderBoost : Math.min(rawCrossFolderBoost, 1);
           const feedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
           const edgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
           const suppPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(entityName) ?? 0);
@@ -1673,11 +1667,19 @@ export async function suggestRelatedLinks(
     return emptyResult;
   }
 
-  // Score floor: only append medium+ confidence entities to note content.
+  // Score floor + content relevance gate: only append entities to note content
+  // that meet the score threshold AND have some form of content relevance.
+  // This prevents hub entities from appearing in every suffix via graph signals alone.
   // Lower-scoring entities still appear in suggestions/suggestion_events for
   // dashboard observability — we just don't write them into the suffix.
   const MIN_SUFFIX_SCORE = 12;
-  const suffixEntries = topEntries.filter(e => e.score >= MIN_SUFFIX_SCORE);
+  const MIN_SUFFIX_CONTENT = 3;
+  const suffixEntries = topEntries.filter(e =>
+    e.score >= MIN_SUFFIX_SCORE &&
+    (e.breakdown.contentMatch >= MIN_SUFFIX_CONTENT ||
+     e.breakdown.cooccurrenceBoost >= MIN_SUFFIX_CONTENT ||
+     (e.breakdown.semanticBoost ?? 0) >= MIN_SUFFIX_CONTENT)
+  );
   const suffix = suffixEntries.length > 0
     ? '→ ' + suffixEntries.map(e => `[[${e.name}]]`).join(', ')
     : '';

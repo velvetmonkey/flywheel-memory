@@ -108,6 +108,83 @@ function inFolder(note: VaultNote, folder: string): boolean {
   return note.path.startsWith(normalizedFolder) || note.path.split('/')[0] === folder.replace('/', '');
 }
 
+const TOP_LINKS = 10;
+
+/** Time decay matching get_weighted_links pattern (graph.ts:288) */
+function recencyDecay(modifiedDate: Date | undefined): number {
+  if (!modifiedDate) return 0.5;  // unknown → neutral
+  const daysSince = (Date.now() - modifiedDate.getTime()) / (1000 * 60 * 60 * 24);
+  return Math.max(0.1, 1.0 - daysSince / 180);
+}
+
+function rankOutlinks(
+  outlinks: Array<{ target: string; line: number; alias?: string }>,
+  notePath: string,
+  index: VaultIndex,
+  stateDb: StateDb | null,
+): Array<Record<string, unknown>> {
+  const weightMap = new Map<string, number>();
+  if (stateDb) {
+    try {
+      const rows = stateDb.db.prepare(
+        'SELECT target, weight, weight_updated_at FROM note_links WHERE note_path = ?'
+      ).all(notePath) as Array<{ target: string; weight: number; weight_updated_at: number | null }>;
+      for (const row of rows) {
+        const daysSince = row.weight_updated_at
+          ? (Date.now() - row.weight_updated_at) / (1000 * 60 * 60 * 24)
+          : 0;
+        const decay = Math.max(0.1, 1.0 - daysSince / 180);
+        weightMap.set(row.target, row.weight * decay);
+      }
+    } catch { /* best-effort */ }
+  }
+
+  return outlinks
+    .map(l => {
+      const targetLower = l.target.toLowerCase();
+      const exists = index.entities.has(targetLower);
+      const weight = weightMap.get(targetLower) ?? 1.0;
+      const out: Record<string, unknown> = { target: l.target, exists };
+      if (weight > 1.0) out.weight = Math.round(weight * 100) / 100;
+      if (l.alias) out.alias = l.alias;
+      return out;
+    })
+    .sort((a, b) => ((b.weight as number) ?? 1) - ((a.weight as number) ?? 1))
+    .slice(0, TOP_LINKS);
+}
+
+function rankBacklinks(
+  backlinks: Array<{ source: string; line: number }>,
+  notePath: string,
+  index: VaultIndex,
+  stateDb: StateDb | null,
+): Array<Record<string, unknown>> {
+  const stem = notePath.replace(/\.md$/, '').split('/').pop()?.toLowerCase() ?? '';
+
+  const weightMap = new Map<string, number>();
+  if (stateDb && stem) {
+    try {
+      const rows = stateDb.db.prepare(
+        'SELECT note_path, weight FROM note_links WHERE target = ?'
+      ).all(stem) as Array<{ note_path: string; weight: number }>;
+      for (const row of rows) weightMap.set(row.note_path, row.weight);
+    } catch { /* best-effort */ }
+  }
+
+  return backlinks
+    .map(bl => {
+      const edgeWeight = weightMap.get(bl.source) ?? 1.0;
+      const sourceNote = index.notes.get(bl.source);
+      const decay = recencyDecay(sourceNote?.modified);
+      const score = edgeWeight * decay;
+      const out: Record<string, unknown> = { source: bl.source };
+      if (score > 1.0) out.weight = Math.round(score * 100) / 100;
+      return out;
+    })
+    .sort((a, b) => ((b.weight as number) ?? 1) - ((a.weight as number) ?? 1))
+    .slice(0, TOP_LINKS);
+}
+
 /**
  * Enrich a search result with indexed metadata (zero extra I/O).
  * Looks up VaultNote from index and entity metadata from StateDb.
@@ -134,16 +211,9 @@ function enrichResult(
     enriched.tags = note.tags;
     enriched.aliases = note.aliases;
     enriched.backlink_count = backlinks.length;
-    enriched.backlinks = backlinks.map(bl => ({ source: bl.source, line: bl.line }));
+    enriched.backlinks = rankBacklinks(backlinks, result.path, index, stateDb);
     enriched.outlink_count = note.outlinks.length;
-    enriched.outlinks = note.outlinks.map(l => {
-      const targetLower = l.target.toLowerCase();
-      const exists = index.entities.has(targetLower);
-      const out: Record<string, unknown> = { target: l.target, line: l.line, exists };
-      if (l.alias) out.alias = l.alias;
-      return out;
-    });
-    enriched.headings = note.headings || [];
+    enriched.outlinks = rankOutlinks(note.outlinks, result.path, index, stateDb);
     enriched.modified = note.modified.toISOString();
     if (note.created) enriched.created = note.created.toISOString();
   }
@@ -260,7 +330,7 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Search the vault — always try this before reading files. Top results get full metadata (frontmatter, backlinks, outlinks, headings); remaining results get lightweight summaries (counts only). Use get_note_structure to drill into any light result.\n\nSearches across metadata (frontmatter/tags/folders), content (FTS5 full-text + hybrid semantic), and entities (people/projects/technologies). Uses filters to narrow by frontmatter fields, tags, folders, or dates. Hybrid semantic results are automatically included when embeddings have been built (via init_semantic).\n\nExample: search({ query: "quarterly review", limit: 5 })\nExample: search({ where: { type: "project", status: "active" } })',
+    'Search the vault — always try this before reading files. Top results get full metadata (frontmatter, top backlinks/outlinks ranked by edge weight + recency); remaining results get lightweight summaries (counts only). Use get_note_structure for headings/full structure, get_backlinks for complete backlink lists.\n\nSearches across metadata (frontmatter/tags/folders), content (FTS5 full-text + hybrid semantic), and entities (people/projects/technologies). Uses filters to narrow by frontmatter fields, tags, folders, or dates. Hybrid semantic results are automatically included when embeddings have been built (via init_semantic).\n\nExample: search({ query: "quarterly review", limit: 5 })\nExample: search({ where: { type: "project", status: "active" } })',
     {
       query: z.string().optional().describe('Search query text. Required unless using metadata filters (where, has_tag, folder, etc.)'),
       scope: z.enum(['metadata', 'content', 'entities', 'all']).optional().describe('Narrow to a specific search type. Omit for best results (searches everything). Use "metadata" for frontmatter-only queries, "entities" for entity lookup.'),

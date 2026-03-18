@@ -11,6 +11,7 @@ import {
   detectListIndentation,
   validatePath,
   validatePathSecure,
+  sanitizeNotePath,
   isSensitivePath,
   readVaultFile,
   writeVaultFile,
@@ -1086,6 +1087,37 @@ describe('validatePath', () => {
   it('should handle encoded path characters', () => {
     const result = validatePath('/vault', 'folder%20name/file%20name.md');
     expect(result).toBe(true);
+  });
+});
+
+describe('sanitizeNotePath', () => {
+  it('should replace spaces with hyphens and lowercase', () => {
+    expect(sanitizeNotePath('Flywheel Roadmap v3.md')).toBe('flywheel-roadmap-v3.md');
+  });
+
+  it('should strip problematic characters', () => {
+    expect(sanitizeNotePath('What is "AI"?.md')).toBe('what-is-ai.md');
+  });
+
+  it('should collapse multiple hyphens', () => {
+    expect(sanitizeNotePath('foo - bar -- baz.md')).toBe('foo-bar-baz.md');
+  });
+
+  it('should trim leading/trailing hyphens', () => {
+    expect(sanitizeNotePath('- leading.md')).toBe('leading.md');
+    expect(sanitizeNotePath('trailing -.md')).toBe('trailing.md');
+  });
+
+  it('should preserve directory segments', () => {
+    expect(sanitizeNotePath('Daily Notes/My Note Here.md')).toBe('Daily Notes/my-note-here.md');
+  });
+
+  it('should ensure .md extension', () => {
+    expect(sanitizeNotePath('no-extension')).toBe('no-extension.md');
+  });
+
+  it('should handle already-clean paths', () => {
+    expect(sanitizeNotePath('daily-notes/2026-01-28.md')).toBe('daily-notes/2026-01-28.md');
   });
 });
 

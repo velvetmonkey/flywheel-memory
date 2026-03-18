@@ -784,6 +784,45 @@ export function validatePath(vaultPath: string, notePath: string): boolean {
 }
 
 /**
+ * Sanitize the filename portion of a vault-relative note path.
+ *
+ * - Replaces spaces with hyphens
+ * - Lowercases the filename
+ * - Strips cross-platform problematic characters (? * < > | " :)
+ * - Collapses consecutive hyphens
+ * - Trims leading/trailing hyphens from the stem
+ * - Preserves directory segments as-is
+ * - Ensures .md extension
+ */
+export function sanitizeNotePath(notePath: string): string {
+  const dir = path.dirname(notePath);
+  let filename = path.basename(notePath);
+
+  // Separate extension
+  const ext = filename.endsWith('.md') ? '.md' : '';
+  let stem = ext ? filename.slice(0, -ext.length) : filename;
+
+  // Replace spaces with hyphens
+  stem = stem.replace(/\s+/g, '-');
+
+  // Strip problematic cross-platform characters
+  stem = stem.replace(/[?*<>|":]/g, '');
+
+  // Lowercase
+  stem = stem.toLowerCase();
+
+  // Collapse multiple hyphens
+  stem = stem.replace(/-{2,}/g, '-');
+
+  // Trim leading/trailing hyphens
+  stem = stem.replace(/^-+|-+$/g, '');
+
+  filename = stem + (ext || '.md');
+
+  return dir === '.' ? filename : path.join(dir, filename);
+}
+
+/**
  * Securely validate path for write operations.
  *
  * This async version:

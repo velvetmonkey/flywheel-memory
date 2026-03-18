@@ -5,7 +5,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { writeVaultFile, validatePath, injectMutationMetadata } from '../../core/write/writer.js';
+import { writeVaultFile, validatePath, sanitizeNotePath, injectMutationMetadata } from '../../core/write/writer.js';
 import {
   maybeApplyWikilinks,
   suggestRelatedLinks,
@@ -54,8 +54,11 @@ export function registerNoteTools(
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),
     },
-    async ({ path: notePath, content, template, frontmatter, overwrite, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, dry_run, agent_id, session_id }) => {
+    async ({ path: rawNotePath, content, template, frontmatter, overwrite, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, dry_run, agent_id, session_id }) => {
       try {
+        // 0. Sanitize filename (spaces → hyphens, lowercase, strip bad chars)
+        const notePath = sanitizeNotePath(rawNotePath);
+
         // 1. Validate path
         if (!validatePath(vaultPath, notePath)) {
           return formatMcpResult(errorResult(notePath, 'Invalid path: path traversal not allowed'));

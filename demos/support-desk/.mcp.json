@@ -2,7 +2,7 @@
   "mcpServers": {
     "flywheel": {
       "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "args": ["-y", "@velvetmonkey/flywheel-memory@latest"],
       "env": {
         "PROJECT_PATH": "."
       }

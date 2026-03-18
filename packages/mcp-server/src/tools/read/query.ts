@@ -170,6 +170,50 @@ function enrichResult(
 }
 
 /**
+ * Lightweight enrichment for lower-ranked results.
+ * Returns only: path, title, snippet/content_preview, backlink_count, outlink_count, category, hub_score, modified.
+ */
+function enrichResultLight(
+  result: { path: string; title: string; snippet?: string },
+  index: VaultIndex,
+  stateDb: StateDb | null
+): Record<string, unknown> {
+  const note = index.notes.get(result.path);
+  const normalizedPath = result.path.toLowerCase().replace(/\.md$/, '');
+  const backlinks = index.backlinks.get(normalizedPath) || [];
+
+  const enriched: Record<string, unknown> = {
+    path: result.path,
+    title: result.title,
+  };
+
+  if (result.snippet) enriched.snippet = result.snippet;
+
+  if (note) {
+    enriched.backlink_count = backlinks.length;
+    enriched.outlink_count = note.outlinks.length;
+    enriched.modified = note.modified.toISOString();
+  }
+
+  if (stateDb) {
+    try {
+      const entity = getEntityByName(stateDb, result.title);
+      if (entity) {
+        enriched.category = entity.category;
+        enriched.hub_score = entity.hubScore;
+      }
+    } catch { /* entity lookup is best-effort */ }
+  }
+
+  if (!result.snippet) {
+    const preview = getContentPreview(result.path);
+    if (preview) enriched.content_preview = preview;
+  }
+
+  return enriched;
+}
+
+/**
  * Sort notes by a field
  */
 function sortNotes(
@@ -216,7 +260,7 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Search the vault — always try this before reading files. Returns frontmatter, backlinks (with lines), outlinks (with lines + exists), headings, content snippet or preview, entity metadata, and timestamps for every hit.\n\nSearches across metadata (frontmatter/tags/folders), content (FTS5 full-text + hybrid semantic), and entities (people/projects/technologies). Uses filters to narrow by frontmatter fields, tags, folders, or dates. Hybrid semantic results are automatically included when embeddings have been built (via init_semantic).\n\nExample: search({ query: "quarterly review", limit: 5 })\nExample: search({ where: { type: "project", status: "active" } })',
+    'Search the vault — always try this before reading files. Top results get full metadata (frontmatter, backlinks, outlinks, headings); remaining results get lightweight summaries (counts only). Use get_note_structure to drill into any light result.\n\nSearches across metadata (frontmatter/tags/folders), content (FTS5 full-text + hybrid semantic), and entities (people/projects/technologies). Uses filters to narrow by frontmatter fields, tags, folders, or dates. Hybrid semantic results are automatically included when embeddings have been built (via init_semantic).\n\nExample: search({ query: "quarterly review", limit: 5 })\nExample: search({ where: { type: "project", status: "active" } })',
     {
       query: z.string().optional().describe('Search query text. Required unless using metadata filters (where, has_tag, folder, etc.)'),
       scope: z.enum(['metadata', 'content', 'entities', 'all']).optional().describe('Narrow to a specific search type. Omit for best results (searches everything). Use "metadata" for frontmatter-only queries, "entities" for entity lookup.'),
@@ -242,14 +286,16 @@ export function registerQueryTools(
       prefix: z.boolean().default(false).describe('Enable prefix matching for entity search (autocomplete)'),
 
       // Pagination
-      limit: z.number().default(20).describe('Maximum number of results to return'),
+      limit: z.number().default(10).describe('Maximum number of results to return'),
+      detail_count: z.number().optional().describe('Number of top results to return with full metadata (backlinks, outlinks, headings, frontmatter). Remaining results get lightweight summaries. Default: 5.'),
 
       // Context boost (edge weights)
       context_note: z.string().optional().describe('Path of the note providing context. When set, results connected to this note via weighted edges get an RRF boost.'),
     },
-    async ({ query, scope: rawScope, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, context_note }) => {
+    async ({ query, scope: rawScope, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note }) => {
       const scope = rawScope || 'all'; // Treat missing/undefined as 'all'
-      const limit = Math.min(requestedLimit ?? 20, MAX_LIMIT);
+      const limit = Math.min(requestedLimit ?? 10, MAX_LIMIT);
+      const detailN = requestedDetailCount ?? 5;
       const index = getIndex();
       const vaultPath = getVaultPath();
 
@@ -327,8 +373,8 @@ export function registerQueryTools(
         const limitedNotes = matchingNotes.slice(0, limit);
 
         const stateDb = getStateDb();
-        const notes = limitedNotes.map((note) =>
-          enrichResult({ path: note.path, title: note.title }, index, stateDb)
+        const notes = limitedNotes.map((note, i) =>
+          (i < detailN ? enrichResult : enrichResultLight)({ path: note.path, title: note.title }, index, stateDb)
         );
 
         // If explicit metadata filters were used, always return the metadata result
@@ -440,27 +486,32 @@ export function registerQueryTools(
             const semanticMap = new Map(semanticResults.map(r => [normalizePath(r.path), r]));
             const entityMap = new Map(entityResults.map(r => [normalizePath(r.path), r]));
 
-            const merged = Array.from(allPaths).map(p => {
-              const title = fts5Map.get(p)?.title || semanticMap.get(p)?.title || entityMap.get(p)?.name || p.replace(/\.md$/, '').split('/').pop() || p;
-              const snippet = fts5Map.get(p)?.snippet;
-              return {
-                ...enrichResult({ path: p, title, snippet }, index, getStateDb()),
-                rrf_score: rrfScores.get(p) || 0,
-                in_fts5: fts5Map.has(p),
-                in_semantic: semanticMap.has(p),
-                in_entity: entityMap.has(p),
-              };
-            });
+            const scored = Array.from(allPaths).map(p => ({
+              path: p,
+              title: fts5Map.get(p)?.title || semanticMap.get(p)?.title || entityMap.get(p)?.name || p.replace(/\.md$/, '').split('/').pop() || p,
+              snippet: fts5Map.get(p)?.snippet,
+              rrf_score: rrfScores.get(p) || 0,
+              in_fts5: fts5Map.has(p),
+              in_semantic: semanticMap.has(p),
+              in_entity: entityMap.has(p),
+            }));
 
-            merged.sort((a, b) => (b.rrf_score as number) - (a.rrf_score as number));
+            scored.sort((a, b) => b.rrf_score - a.rrf_score);
 
-            const results = merged.slice(0, limit);
+            const stateDb = getStateDb();
+            const results = scored.slice(0, limit).map((item, i) => ({
+              ...(i < detailN ? enrichResult : enrichResultLight)({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
+              rrf_score: item.rrf_score,
+              in_fts5: item.in_fts5,
+              in_semantic: item.in_semantic,
+              in_entity: item.in_entity,
+            }));
 
             return { content: [{ type: 'text' as const, text: JSON.stringify({
               scope,
               method: 'hybrid',
               query,
-              total_results: Math.min(merged.length, limit),
+              total_results: Math.min(scored.length, limit),
               results,
             }, null, 2) }] };
           } catch (err) {
@@ -474,20 +525,27 @@ export function registerQueryTools(
           const normalizePath = (p: string) => p.replace(/\\/g, '/').replace(/\/+/g, '/');
           const fts5Map = new Map(fts5Results.map(r => [normalizePath(r.path), r]));
           const entityRanked = entityResults.filter(r => !fts5Map.has(normalizePath(r.path)));
-          const merged = [
-            ...fts5Results.map(r => ({ ...enrichResult({ path: r.path, title: r.title, snippet: r.snippet }, index, getStateDb()), in_fts5: true })),
-            ...entityRanked.map(r => ({ ...enrichResult({ path: r.path, title: r.name }, index, getStateDb()), in_entity: true })),
+          const mergedItems = [
+            ...fts5Results.map(r => ({ path: r.path, title: r.title, snippet: r.snippet, in_fts5: true as const })),
+            ...entityRanked.map(r => ({ path: r.path, title: r.name, snippet: undefined as string | undefined, in_entity: true as const })),
           ];
+          const stateDb = getStateDb();
+          const sliced = mergedItems.slice(0, limit);
+          const results = sliced.map((item, i) => ({
+            ...(i < detailN ? enrichResult : enrichResultLight)({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
+            ...('in_fts5' in item ? { in_fts5: true } : { in_entity: true }),
+          }));
           return { content: [{ type: 'text' as const, text: JSON.stringify({
             scope: 'content',
             method: 'fts5',
             query,
-            total_results: merged.length,
-            results: merged.slice(0, limit),
+            total_results: mergedItems.length,
+            results,
           }, null, 2) }] };
         }
 
-        const enrichedFts5 = fts5Results.map(r => ({ ...enrichResult({ path: r.path, title: r.title, snippet: r.snippet }, index, getStateDb()), in_fts5: true }));
+        const stateDbFts = getStateDb();
+        const enrichedFts5 = fts5Results.map((r, i) => ({ ...(i < detailN ? enrichResult : enrichResultLight)({ path: r.path, title: r.title, snippet: r.snippet }, index, stateDbFts), in_fts5: true }));
         return { content: [{ type: 'text' as const, text: JSON.stringify({
           scope: 'content',
           method: 'fts5',

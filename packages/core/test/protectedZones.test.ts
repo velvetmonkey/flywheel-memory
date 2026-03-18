@@ -149,7 +149,8 @@ Content`;
   });
 
   it('should detect various callout types', () => {
-    const content = '> [!note]\n> [!warning]\n> [!tip]\n> [!error]';
+    // Each callout must be separated by a blank line to be a distinct blockquote
+    const content = '> [!note]\n> Note content\n\n> [!warning]\n> Warning content\n\n> [!tip]\n> Tip content\n\n> [!error]\n> Error content';
     const zones = getProtectedZones(content);
     const callouts = zones.filter(z => z.type === 'obsidian_callout');
     expect(callouts.length).toBe(4);

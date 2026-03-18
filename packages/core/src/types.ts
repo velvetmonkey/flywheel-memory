@@ -112,7 +112,8 @@ export type ProtectedZoneType =
   | 'obsidian_comment'
   | 'math'
   | 'header'
-  | 'obsidian_callout';
+  | 'obsidian_callout'
+  | 'table';
 
 /**
  * Options for entity scanning

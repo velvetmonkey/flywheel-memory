@@ -1053,3 +1053,68 @@ describe('P2/T3: Deduplication and format consistency', () => {
     expect(reactLinks).toHaveLength(1);
   });
 });
+
+describe('AST zones: wikilinks integration', () => {
+  it('does not insert links inside nested callouts', () => {
+    const content = `> [!note] Important
+> Machine Learning is used here
+> > [!warning] Caution
+> > Artificial Intelligence warning
+
+Machine Learning is also mentioned outside`;
+
+    const entities = ['Machine Learning', 'Artificial Intelligence'];
+    const result = applyWikilinks(content, entities);
+
+    // Should link entities outside callout
+    expect(result.content).toContain('[[Machine Learning]] is also mentioned outside');
+    // Should NOT link entities inside the callout
+    const calloutPart = result.content.split('\n\n')[0];
+    expect(calloutPart).not.toContain('[[Machine Learning]]');
+    expect(calloutPart).not.toContain('[[Artificial Intelligence]]');
+  });
+
+  it('does not insert links inside GFM tables', () => {
+    const content = `# Overview
+
+| Name | Description |
+|------|-------------|
+| Machine Learning | A subset of AI |
+| TypeScript | A typed language |
+
+Machine Learning is powerful.`;
+
+    const entities = ['Machine Learning', 'TypeScript'];
+    const result = applyWikilinks(content, entities);
+
+    // Should link entities outside table
+    expect(result.content).toContain('[[Machine Learning]] is powerful');
+    // Should NOT link inside table cells
+    const tablePart = result.content.split('\n\n')[1];
+    expect(tablePart).not.toContain('[[Machine Learning]]');
+    expect(tablePart).not.toContain('[[TypeScript]]');
+  });
+
+  it('does not insert links inside multi-line HTML comments', () => {
+    const content = `Text before
+
+<!-- This comment mentions
+Machine Learning and
+Artificial Intelligence -->
+
+Machine Learning is great outside the comment`;
+
+    const entities = ['Machine Learning', 'Artificial Intelligence'];
+    const result = applyWikilinks(content, entities);
+
+    // Should link outside
+    expect(result.content).toContain('[[Machine Learning]] is great outside');
+    // Should NOT link inside HTML comment
+    const commentPart = result.content.slice(
+      result.content.indexOf('<!--'),
+      result.content.indexOf('-->') + 3
+    );
+    expect(commentPart).not.toContain('[[Machine Learning]]');
+    expect(commentPart).not.toContain('[[Artificial Intelligence]]');
+  });
+});

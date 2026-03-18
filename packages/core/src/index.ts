@@ -49,9 +49,14 @@ export {
 // Protected zones
 export {
   getProtectedZones,
+  getProtectedZonesRegex,
   isInProtectedZone,
   rangeOverlapsProtectedZone,
 } from './protectedZones.js';
+
+// AST parsing
+export { parseMarkdown } from './parseMarkdown.js';
+export { getProtectedZonesFromAst } from './astProtectedZones.js';
 
 // Logging (unified cross-product logging)
 export {

@@ -371,6 +371,55 @@ describe('Query Tools', () => {
       });
     });
 
+    describe('Tiered Enrichment', () => {
+      test('light results lack frontmatter/backlinks/outlinks arrays but have counts', async () => {
+        const result = await client.callTool('search', {
+          scope: 'metadata',
+          limit: 10,
+          detail_count: 1,
+        });
+
+        const data = JSON.parse(result.content[0].text);
+        if (data.notes.length > 1) {
+          // First result should be fully enriched
+          const full = data.notes[0];
+          expect(full.frontmatter).toBeDefined();
+          expect(full.tags).toBeDefined();
+          expect(full.backlinks).toBeDefined();
+          expect(full.outlinks).toBeDefined();
+
+          // Second result should be light
+          const light = data.notes[1];
+          expect(light.path).toBeDefined();
+          expect(light.title).toBeDefined();
+          expect(light.backlink_count).toBeDefined();
+          expect(light.outlink_count).toBeDefined();
+          expect(light.modified).toBeDefined();
+          expect(light.frontmatter).toBeUndefined();
+          expect(light.tags).toBeUndefined();
+          expect(light.backlinks).toBeUndefined();
+          expect(light.outlinks).toBeUndefined();
+          expect(light.headings).toBeUndefined();
+        }
+      });
+
+      test('detail_count equal to limit produces full enrichment on all results', async () => {
+        const result = await client.callTool('search', {
+          scope: 'metadata',
+          limit: 5,
+          detail_count: 5,
+        });
+
+        const data = JSON.parse(result.content[0].text);
+        for (const note of data.notes) {
+          expect(note.frontmatter).toBeDefined();
+          expect(note.tags).toBeDefined();
+          expect(note.backlinks).toBeDefined();
+          expect(note.outlinks).toBeDefined();
+        }
+      });
+    });
+
     describe('Edge Cases', () => {
       test('handles empty vault gracefully', async () => {
 

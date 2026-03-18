@@ -17,6 +17,7 @@ import { enrichEntityResult, enrichNoteResult } from '../../core/read/enrichment
 import { searchMemories } from '../../core/write/memory.js';
 import { getRecencyBoost, loadRecencyFromStateDb, type RecencyIndex } from '../../core/shared/recency.js';
 import { getCooccurrenceBoost, type CooccurrenceIndex } from '../../core/shared/cooccurrence.js';
+import { getCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { getEntityEdgeWeightMap } from '../../core/write/edgeWeights.js';
 import { getAllFeedbackBoosts } from '../../core/write/wikilinkFeedback.js';
 import { findSemanticallySimilarEntities, hasEntityEmbeddingsIndex, hasEmbeddingsIndex, embedTextCached, getEntityEmbedding, loadNoteEmbeddingsForPaths } from '../../core/read/embeddings.js';
@@ -117,6 +118,7 @@ async function performRecall(
   const recencyIndex = loadRecencyFromStateDb();
   const edgeWeightMap = getEntityEdgeWeightMap(stateDb);
   const feedbackBoosts = getAllFeedbackBoosts(stateDb);
+  const cooccurrenceIndex = getCooccurrenceIndex();
 
   // ─── Channel 1: Entity search ───
   if (!focus || focus === 'entities') {
@@ -155,17 +157,24 @@ async function performRecall(
       const noteResults = searchFTS5('', query, max_results);
       for (const n of noteResults) {
         const textScore = Math.max(10, scoreTextRelevance(query, `${n.title || ''} ${n.snippet || ''}`));
+        // Derive entity name from note title for graph signal lookup
+        const entityName = n.title || n.path.replace(/\.md$/, '').split('/').pop() || '';
+        const recency = recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0;
+        const feedback = feedbackBoosts.get(entityName) ?? 0;
+        const edgeWeight = getEdgeWeightBoost(entityName, edgeWeightMap);
+
+        const total = textScore + recency + feedback + edgeWeight;
         results.push({
           type: 'note',
           id: n.path,
           content: n.snippet || n.title || n.path,
-          score: textScore,
+          score: total,
           breakdown: {
             textRelevance: textScore,
-            recencyBoost: 0,
-            cooccurrenceBoost: 0,
-            feedbackBoost: 0,
-            edgeWeightBoost: 0,
+            recencyBoost: recency,
+            cooccurrenceBoost: 0, // applied in post-pass below
+            feedbackBoost: feedback,
+            edgeWeightBoost: edgeWeight,
             semanticBoost: 0,
           },
         });
@@ -200,6 +209,30 @@ async function performRecall(
         });
       }
     } catch { /* memory search failure is non-fatal */ }
+  }
+
+  // ─── Cooccurrence post-pass (entities + notes) ───
+  // Uses all result IDs as seed set to avoid chicken-and-egg ordering issues
+  if (cooccurrenceIndex) {
+    const seedEntities = new Set<string>();
+    for (const r of results) {
+      if (r.type === 'entity') {
+        seedEntities.add(r.id);
+      } else if (r.type === 'note') {
+        const name = r.id.replace(/\.md$/, '').split('/').pop() || '';
+        if (name) seedEntities.add(name);
+      }
+    }
+    for (const r of results) {
+      if (r.type === 'entity' || r.type === 'note') {
+        const name = r.type === 'entity' ? r.id : (r.id.replace(/\.md$/, '').split('/').pop() || '');
+        const boost = getCooccurrenceBoost(name, seedEntities, cooccurrenceIndex, recencyIndex);
+        if (boost > 0) {
+          r.breakdown.cooccurrenceBoost = boost;
+          r.score += boost;
+        }
+      }
+    }
   }
 
   // ─── Channel 4: Semantic entity search ───

@@ -51,6 +51,12 @@ function getLinkedItemMeta(
     } catch { /* best-effort */ }
   }
 
+  // Content preview fallback when no entity description available
+  if (!meta.description) {
+    const preview = getContentPreview(notePath, 150);
+    if (preview) meta.preview = preview;
+  }
+
   return Object.keys(meta).length > 0 ? meta : null;
 }
 
@@ -320,6 +326,14 @@ export function enrichNoteResult(
   enriched.backlink_count = backlinks.length;
   enriched.outlink_count = note.outlinks.length;
   enriched.modified = note.modified.toISOString();
+
+  // Top links (capped at RECALL_TOP_LINKS for smaller payloads)
+  if (backlinks.length > 0) {
+    enriched.top_backlinks = rankBacklinks(backlinks, notePath, index, stateDb, RECALL_TOP_LINKS);
+  }
+  if (note.outlinks.length > 0) {
+    enriched.top_outlinks = rankOutlinks(note.outlinks, notePath, index, stateDb, RECALL_TOP_LINKS);
+  }
 
   if (stateDb) {
     try {

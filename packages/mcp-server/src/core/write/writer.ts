@@ -1126,7 +1126,9 @@ export interface ReplaceResult {
 }
 
 /**
- * Replace content in a section matching a pattern
+ * Replace content in a section matching a pattern.
+ * Supports multi-line search strings (containing \n) by operating on the
+ * joined section text instead of line-by-line.
  */
 export function replaceInSection(
   content: string,
@@ -1137,6 +1139,111 @@ export function replaceInSection(
   useRegex: boolean = false
 ): ReplaceResult {
   const lines = content.split('\n');
+
+  // Multi-line path: when the search string contains newlines, we must
+  // match against the joined section text rather than individual lines.
+  if (search.includes('\n')) {
+    const sectionLines = lines.slice(section.contentStartLine, section.endLine + 1);
+    const sectionText = sectionLines.join('\n');
+    const originalLines: string[] = [];
+    const newLines: string[] = [];
+
+    let newSectionText: string;
+    let replacedCount: number;
+
+    if (useRegex) {
+      // Regex mode: use global regex to find all matches, then select by mode
+      const globalRegex = createSafeRegex(search, 'g');
+      const matches: Array<{ index: number; match: string }> = [];
+      let m: RegExpExecArray | null;
+      while ((m = globalRegex.exec(sectionText)) !== null) {
+        matches.push({ index: m.index, match: m[0] });
+        // Prevent infinite loops on zero-length matches
+        if (m[0].length === 0) globalRegex.lastIndex++;
+      }
+
+      if (matches.length === 0) {
+        return { content, replacedCount: 0, originalLines: [], newLines: [] };
+      }
+
+      let selectedMatches: Array<{ index: number; match: string }>;
+      if (mode === 'first') {
+        selectedMatches = [matches[0]];
+      } else if (mode === 'last') {
+        selectedMatches = [matches[matches.length - 1]];
+      } else {
+        selectedMatches = matches;
+      }
+
+      // Build new section text by replacing selected matches (process in reverse to preserve indices)
+      newSectionText = sectionText;
+      for (let i = selectedMatches.length - 1; i >= 0; i--) {
+        const sm = selectedMatches[i];
+        const replacedText = sm.match.replace(createSafeRegex(search), replacement);
+        originalLines.unshift(sm.match);
+        newLines.unshift(replacedText);
+        newSectionText =
+          newSectionText.slice(0, sm.index) +
+          replacedText +
+          newSectionText.slice(sm.index + sm.match.length);
+      }
+      replacedCount = selectedMatches.length;
+    } else {
+      // Literal mode: use indexOf to find all occurrences
+      const occurrences: number[] = [];
+      let startPos = 0;
+      while (true) {
+        const idx = sectionText.indexOf(search, startPos);
+        if (idx === -1) break;
+        occurrences.push(idx);
+        startPos = idx + search.length;
+      }
+
+      if (occurrences.length === 0) {
+        return { content, replacedCount: 0, originalLines: [], newLines: [] };
+      }
+
+      let selectedIndices: number[];
+      if (mode === 'first') {
+        selectedIndices = [occurrences[0]];
+      } else if (mode === 'last') {
+        selectedIndices = [occurrences[occurrences.length - 1]];
+      } else {
+        selectedIndices = occurrences;
+      }
+
+      // Build new section text by replacing selected occurrences (process in reverse to preserve indices)
+      newSectionText = sectionText;
+      for (let i = selectedIndices.length - 1; i >= 0; i--) {
+        const idx = selectedIndices[i];
+        const matched = sectionText.slice(idx, idx + search.length);
+        originalLines.unshift(matched);
+        newLines.unshift(replacement);
+        newSectionText =
+          newSectionText.slice(0, idx) +
+          replacement +
+          newSectionText.slice(idx + search.length);
+      }
+      replacedCount = selectedIndices.length;
+    }
+
+    // Splice the new section lines back into the full document
+    const newSectionLines = newSectionText.split('\n');
+    lines.splice(
+      section.contentStartLine,
+      section.endLine - section.contentStartLine + 1,
+      ...newSectionLines
+    );
+
+    return {
+      content: lines.join('\n'),
+      replacedCount,
+      originalLines,
+      newLines,
+    };
+  }
+
+  // Single-line path: original line-by-line matching (unchanged for backwards compatibility)
   const originalLines: string[] = [];
   const newLines: string[] = [];
   const indicesToReplace: number[] = [];

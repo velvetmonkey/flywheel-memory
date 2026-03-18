@@ -509,39 +509,21 @@ describe('detectImplicitEntities', () => {
     });
   });
 
-  describe('quoted terms pattern', () => {
-    it('should detect quoted terms', () => {
+  describe('quoted terms pattern (removed)', () => {
+    it('should NOT detect quoted terms as implicit entities', () => {
       const content = 'We need to test the "Turbopump" component next week.';
       const matches = detectImplicitEntities(content);
 
-      expect(matches).toHaveLength(1);
-      expect(matches[0].text).toBe('Turbopump');
-      expect(matches[0].pattern).toBe('quoted-terms');
+      // Quoted-terms pattern was removed — quoted text is prose emphasis, not entities
+      expect(matches.map(m => m.text)).not.toContain('Turbopump');
     });
 
-    it('should detect multiple quoted terms', () => {
-      const content = 'The "Propulsion System" uses a "Turbopump" for fuel.';
+    it('should NOT detect prose in quotes as entities', () => {
+      const content = 'He said "I can\'t stop using this." and "related drafts" are fine.';
       const matches = detectImplicitEntities(content);
 
-      expect(matches).toHaveLength(2);
-      expect(matches.map(m => m.text)).toContain('Propulsion System');
-      expect(matches.map(m => m.text)).toContain('Turbopump');
-    });
-
-    it('should not match very short quoted terms', () => {
-      const content = 'The "API" is ready.';
-      const matches = detectImplicitEntities(content, { minEntityLength: 4 });
-
-      // "API" is only 3 chars, should be excluded with minEntityLength: 4
-      expect(matches).toHaveLength(0);
-    });
-
-    it('should not match very long quoted terms', () => {
-      const content = 'Check out "This is a really long title that exceeds thirty characters" for details.';
-      const matches = detectImplicitEntities(content);
-
-      // Quoted regex limits to 30 chars
-      expect(matches).toHaveLength(0);
+      expect(matches.map(m => m.text)).not.toContain("I can't stop using this.");
+      expect(matches.map(m => m.text)).not.toContain('related drafts');
     });
   });
 
@@ -549,7 +531,7 @@ describe('detectImplicitEntities', () => {
     it('should detect single capitalized words after lowercase when enabled', () => {
       const content = 'I spoke with Marcus about the project.';
       const matches = detectImplicitEntities(content, {
-        implicitPatterns: ['proper-nouns', 'quoted-terms', 'single-caps']
+        implicitPatterns: ['proper-nouns', 'single-caps']
       });
 
       expect(matches.map(m => m.text)).toContain('Marcus');
@@ -570,7 +552,7 @@ describe('detectImplicitEntities', () => {
       const content = 'I talked to Marcus yesterday.';
       const matchesDefault = detectImplicitEntities(content);
       const matchesWithSingleCaps = detectImplicitEntities(content, {
-        implicitPatterns: ['proper-nouns', 'quoted-terms', 'single-caps']
+        implicitPatterns: ['proper-nouns', 'single-caps']
       });
 
       // Default should not have Marcus (single word)
@@ -621,7 +603,7 @@ describe('detectImplicitEntities', () => {
     it('should exclude common words like Monday, January', () => {
       const content = 'Meeting with John Smith on Monday January 5th.';
       const matches = detectImplicitEntities(content, {
-        implicitPatterns: ['proper-nouns', 'quoted-terms', 'single-caps']
+        implicitPatterns: ['proper-nouns', 'single-caps']
       });
 
       expect(matches.map(m => m.text)).toContain('John Smith');
@@ -668,6 +650,123 @@ describe('detectImplicitEntities', () => {
       expect(matches.map(m => m.text)).toContain('Specialist Verticals');
     });
   });
+
+  describe('sentence starter filtering', () => {
+    it('should exclude newly added sentence starter words from multi-word proper nouns', () => {
+      const content = 'Target Alpha was the goal. Build Process is important.';
+      const matches = detectImplicitEntities(content);
+
+      // "Target" and "Build" are sentence starters, so "Target Alpha" should
+      // become just "Alpha" (single word, dropped) and "Build Process" → "Process" (dropped)
+      expect(matches.map(m => m.text)).not.toContain('Target Alpha');
+      expect(matches.map(m => m.text)).not.toContain('Build Process');
+    });
+
+    it('should still detect proper nouns that are not sentence starters', () => {
+      const content = 'Working with Marcus Johnson on the Alpha Project launch.';
+      const matches = detectImplicitEntities(content);
+
+      expect(matches.map(m => m.text)).toContain('Marcus Johnson');
+      expect(matches.map(m => m.text)).toContain('Alpha Project');
+    });
+  });
+
+  describe('acronym length filtering', () => {
+    it('should detect short ALL-CAPS acronyms (3-5 chars)', () => {
+      const content = 'The API uses ONNX and LLM for processing.';
+      const matches = detectImplicitEntities(content, {
+        implicitPatterns: ['acronyms']
+      });
+
+      expect(matches.map(m => m.text)).toContain('API');
+      expect(matches.map(m => m.text)).toContain('ONNX');
+      expect(matches.map(m => m.text)).toContain('LLM');
+    });
+
+    it('should NOT detect long ALL-CAPS words (>5 chars) as acronyms', () => {
+      const content = 'See ARCHITECTURE and TESTING and TOOLS and README for details.';
+      const matches = detectImplicitEntities(content, {
+        implicitPatterns: ['acronyms']
+      });
+
+      expect(matches.map(m => m.text)).not.toContain('ARCHITECTURE');
+      expect(matches.map(m => m.text)).not.toContain('TESTING');
+      expect(matches.map(m => m.text)).not.toContain('README');
+    });
+
+    it('should detect exactly 5-char acronyms', () => {
+      const content = 'The ONNX format is popular.';
+      const matches = detectImplicitEntities(content, {
+        implicitPatterns: ['acronyms']
+      });
+
+      expect(matches.map(m => m.text)).toContain('ONNX');
+    });
+  });
+
+  describe('hyphenated descriptor exclusion', () => {
+    it('should exclude lowercase hyphenated descriptors from entity matching', () => {
+      const content = 'This is a local-first and self-improving system.';
+      const entities = ['local-first', 'self-improving'];
+      const result = applyWikilinks(content, entities);
+
+      // Hyphenated lowercase words are descriptors, not entities
+      expect(result.linksAdded).toBe(0);
+      expect(result.content).not.toContain('[[local-first]]');
+      expect(result.content).not.toContain('[[self-improving]]');
+    });
+
+    it('should NOT exclude mixed-case hyphenated entities', () => {
+      // Mixed-case hyphenated entities like company names should still work
+      const content = 'Using Hewlett-Packard equipment.';
+      const entities = ['Hewlett-Packard'];
+      const result = applyWikilinks(content, entities);
+
+      expect(result.linksAdded).toBe(1);
+      expect(result.content).toContain('[[Hewlett-Packard]]');
+    });
+  });
+
+  describe('EXCLUDE_WORDS expansion', () => {
+    it('should exclude common adjectives and verbs from entity linking', () => {
+      const content = 'The target was to create a simple test and avoid a build.';
+      const entities = ['target', 'create', 'simple', 'test', 'avoid', 'build'];
+      const result = applyWikilinks(content, entities);
+
+      expect(result.linksAdded).toBe(0);
+    });
+  });
+
+  describe('regression: real entities still link correctly', () => {
+    it('should still link real multi-word proper nouns', () => {
+      const content = 'Meeting with John Smith about Project Alpha tomorrow.';
+      const matches = detectImplicitEntities(content);
+
+      expect(matches.map(m => m.text)).toContain('John Smith');
+      expect(matches.map(m => m.text)).toContain('Project Alpha');
+    });
+
+    it('should still link real entities via applyWikilinks', () => {
+      const content = 'Working with React and TypeScript on the API.';
+      const entities = ['React', 'TypeScript', 'API'];
+      const result = applyWikilinks(content, entities);
+
+      expect(result.content).toContain('[[React]]');
+      expect(result.content).toContain('[[TypeScript]]');
+      expect(result.content).toContain('[[API]]');
+      expect(result.linksAdded).toBe(3);
+    });
+
+    it('should still detect CamelCase words', () => {
+      const content = 'Using TypeScript and HuggingFace for the project.';
+      const matches = detectImplicitEntities(content, {
+        implicitPatterns: ['camel-case']
+      });
+
+      expect(matches.map(m => m.text)).toContain('TypeScript');
+      expect(matches.map(m => m.text)).toContain('HuggingFace');
+    });
+  });
 });
 
 describe('processWikilinks', () => {
@@ -708,15 +807,15 @@ describe('processWikilinks', () => {
     expect(result.implicitEntities || []).not.toContain('Marcus Johnson');
   });
 
-  it('should handle quoted terms and convert to wikilinks', () => {
+  it('should NOT convert quoted terms to wikilinks (pattern removed)', () => {
     const content = 'Testing the "Turbopump" component today.';
     const entities: string[] = [];
 
     const result = processWikilinks(content, entities, { detectImplicit: true });
 
-    // "Turbopump" should become [[Turbopump]]
-    expect(result.content).toContain('[[Turbopump]]');
-    expect(result.content).not.toContain('"Turbopump"');
+    // Quoted-terms pattern was removed — quoted text should remain as-is
+    expect(result.content).not.toContain('[[Turbopump]]');
+    expect(result.content).toContain('"Turbopump"');
   });
 
   it('should not link entities matching notePath', () => {
@@ -726,7 +825,7 @@ describe('processWikilinks', () => {
     const result = processWikilinks(content, entities, {
       detectImplicit: true,
       notePath: 'notes/Daily Note.md',
-      implicitPatterns: ['proper-nouns', 'quoted-terms', 'single-caps']
+      implicitPatterns: ['proper-nouns', 'single-caps']
     });
 
     // Should not create self-link to Daily Note

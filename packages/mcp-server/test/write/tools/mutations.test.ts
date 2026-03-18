@@ -1080,6 +1080,278 @@ type: test
 });
 
 // ========================================
+// vault_replace_in_section multi-line support
+// ========================================
+
+describe('vault_replace_in_section multi-line support', () => {
+  let tempVault: string;
+
+  beforeEach(async () => {
+    tempVault = await createTempVault();
+  });
+
+  afterEach(async () => {
+    await cleanupTempVault(tempVault);
+  });
+
+  it('should replace a multi-line search string (basic case)', async () => {
+    const note = `---
+type: test
+---
+# Test
+
+## Log
+
+- Item A
+- Item B
+- Item C
+`;
+    await createTestNote(tempVault, 'test.md', note);
+
+    const result = await replaceContent(
+      tempVault,
+      'test.md',
+      'Log',
+      '- Item A\n- Item B',
+      '- Item X\n- Item Y',
+      'first'
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.replacedCount).toBeUndefined; // integration helper doesn't expose count directly
+    expect(result.originalLines).toEqual(['- Item A\n- Item B']);
+    expect(result.newLines).toEqual(['- Item X\n- Item Y']);
+
+    const updated = await readTestNote(tempVault, 'test.md');
+    expect(updated).toContain('- Item X');
+    expect(updated).toContain('- Item Y');
+    expect(updated).toContain('- Item C');
+    expect(updated).not.toContain('- Item A');
+    expect(updated).not.toContain('- Item B');
+  });
+
+  it('should replace all occurrences with mode: all', async () => {
+    const note = `---
+type: test
+---
+# Test
+
+## Log
+
+- Alpha
+- Beta
+- Alpha
+- Beta
+- Gamma
+`;
+    await createTestNote(tempVault, 'test.md', note);
+
+    const result = await replaceContent(
+      tempVault,
+      'test.md',
+      'Log',
+      '- Alpha\n- Beta',
+      '- One\n- Two',
+      'all'
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.originalLines).toHaveLength(2);
+
+    const updated = await readTestNote(tempVault, 'test.md');
+    expect(updated).toContain('- One\n- Two\n- One\n- Two');
+    expect(updated).toContain('- Gamma');
+    expect(updated).not.toContain('- Alpha');
+  });
+
+  it('should replace only last occurrence with mode: last', async () => {
+    const note = `---
+type: test
+---
+# Test
+
+## Log
+
+- Alpha
+- Beta
+- Gamma
+- Alpha
+- Beta
+- Delta
+`;
+    await createTestNote(tempVault, 'test.md', note);
+
+    const result = await replaceContent(
+      tempVault,
+      'test.md',
+      'Log',
+      '- Alpha\n- Beta',
+      '- LAST\n- MATCH',
+      'last'
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.originalLines).toHaveLength(1);
+
+    const updated = await readTestNote(tempVault, 'test.md');
+    // First occurrence should remain
+    expect(updated).toContain('- Alpha\n- Beta\n- Gamma');
+    // Last occurrence should be replaced
+    expect(updated).toContain('- LAST\n- MATCH\n- Delta');
+  });
+
+  it('should handle multi-line regex replacement', async () => {
+    const note = `---
+type: test
+---
+# Test
+
+## Log
+
+- Start
+- Middle
+- End
+`;
+    await createTestNote(tempVault, 'test.md', note);
+
+    const result = await replaceContent(
+      tempVault,
+      'test.md',
+      'Log',
+      '- Start\n- Middle',
+      '- Begin\n- Center',
+      'first',
+      true // useRegex
+    );
+
+    expect(result.success).toBe(true);
+
+    const updated = await readTestNote(tempVault, 'test.md');
+    expect(updated).toContain('- Begin\n- Center\n- End');
+    expect(updated).not.toContain('- Start');
+  });
+
+  it('should handle replacement that changes the number of lines (more to fewer)', async () => {
+    const note = `---
+type: test
+---
+# Test
+
+## Log
+
+- Line 1
+- Line 2
+- Line 3
+- Line 4
+`;
+    await createTestNote(tempVault, 'test.md', note);
+
+    const result = await replaceContent(
+      tempVault,
+      'test.md',
+      'Log',
+      '- Line 1\n- Line 2\n- Line 3',
+      '- Collapsed',
+      'first'
+    );
+
+    expect(result.success).toBe(true);
+
+    const updated = await readTestNote(tempVault, 'test.md');
+    expect(updated).toContain('- Collapsed');
+    expect(updated).toContain('- Line 4');
+    expect(updated).not.toContain('- Line 1');
+    expect(updated).not.toContain('- Line 2');
+    expect(updated).not.toContain('- Line 3');
+  });
+
+  it('should handle replacement that changes the number of lines (fewer to more)', async () => {
+    const note = `---
+type: test
+---
+# Test
+
+## Log
+
+- Single
+- After
+`;
+    await createTestNote(tempVault, 'test.md', note);
+
+    const result = await replaceContent(
+      tempVault,
+      'test.md',
+      'Log',
+      '- Single',
+      '- Expanded 1\n- Expanded 2\n- Expanded 3',
+      'first'
+    );
+
+    expect(result.success).toBe(true);
+
+    const updated = await readTestNote(tempVault, 'test.md');
+    expect(updated).toContain('- Expanded 1');
+    expect(updated).toContain('- Expanded 2');
+    expect(updated).toContain('- Expanded 3');
+    expect(updated).toContain('- After');
+    expect(updated).not.toContain('- Single');
+  });
+
+  it('should still work for single-line search (regression check)', async () => {
+    const note = `---
+type: test
+---
+# Test
+
+## Log
+
+- Hello World
+- Goodbye World
+`;
+    await createTestNote(tempVault, 'test.md', note);
+
+    const result = await replaceContent(
+      tempVault,
+      'test.md',
+      'Log',
+      'Hello',
+      'Hi',
+      'first'
+    );
+
+    expect(result.success).toBe(true);
+
+    const updated = await readTestNote(tempVault, 'test.md');
+    expect(updated).toContain('- Hi World');
+    expect(updated).toContain('- Goodbye World');
+  });
+
+  it('should test replaceInSection directly for multi-line', () => {
+    const content = `# Header\n\n## Section\n\n- A\n- B\n- C\n- D`;
+    const section = findSection(content, 'Section');
+    expect(section).not.toBeNull();
+
+    const result = replaceInSection(content, section!, '- A\n- B', '- X\n- Y', 'first', false);
+
+    expect(result.replacedCount).toBe(1);
+    expect(result.originalLines).toEqual(['- A\n- B']);
+    expect(result.newLines).toEqual(['- X\n- Y']);
+    expect(result.content).toBe(`# Header\n\n## Section\n\n- X\n- Y\n- C\n- D`);
+  });
+
+  it('should return 0 replacements for multi-line search with no match', () => {
+    const content = `# Header\n\n## Section\n\n- A\n- B\n- C`;
+    const section = findSection(content, 'Section');
+    expect(section).not.toBeNull();
+
+    const result = replaceInSection(content, section!, '- X\n- Y', '- Replaced', 'first', false);
+
+    expect(result.replacedCount).toBe(0);
+    expect(result.content).toBe(content);
+  });
+});
+
+// ========================================
 // suggestOutgoingLinks Parameter Tests
 // ========================================
 

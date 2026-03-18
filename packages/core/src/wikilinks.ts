@@ -5,7 +5,7 @@
  * respecting protected zones (code, frontmatter, existing links, etc.)
  *
  * Also supports:
- * - Pattern-based detection for implicit entities (proper nouns, quoted terms)
+ * - Pattern-based detection for implicit entities (proper nouns, acronyms, CamelCase)
  * - Alias resolution for existing wikilinks (resolves [[alias]] to [[Entity|alias]])
  */
 
@@ -59,6 +59,12 @@ const EXCLUDE_WORDS = new Set([
   // Stop words
   'the', 'and', 'for', 'with', 'from', 'this', 'that',
   'christmas', 'holiday', 'break',
+  // Common adjectives that should never be entities
+  'safe', 'new', 'old', 'local', 'native', 'first', 'related', 'similar',
+  'simple', 'basic', 'early', 'real', 'clear', 'fixed',
+  // Common verbs that should never be entities
+  'remember', 'include', 'avoid', 'provide', 'create', 'build', 'target',
+  'define', 'test', 'enable', 'handle', 'focus', 'track',
 ]);
 
 /**
@@ -72,7 +78,10 @@ function escapeRegex(str: string): string {
  * Check if an entity should be excluded from wikilikning
  */
 function shouldExcludeEntity(entity: string): boolean {
-  return EXCLUDE_WORDS.has(entity.toLowerCase());
+  if (EXCLUDE_WORDS.has(entity.toLowerCase())) return true;
+  // Skip lowercase hyphenated descriptors (e.g., self-improving, local-first, Claude-native)
+  if (entity.includes('-') && entity === entity.toLowerCase()) return true;
+  return false;
 }
 
 /**
@@ -587,7 +596,7 @@ export function resolveAliasWikilinks(
  */
 const DEFAULT_IMPLICIT_CONFIG: Required<ImplicitEntityConfig> = {
   detectImplicit: false,
-  implicitPatterns: ['proper-nouns', 'quoted-terms'],
+  implicitPatterns: ['proper-nouns'],
   excludePatterns: ['^The ', '^A ', '^An ', '^This ', '^That ', '^These ', '^Those '],
   minEntityLength: 3,
 };
@@ -633,12 +642,19 @@ const SENTENCE_STARTER_WORDS = new Set([
   'think', 'know', 'feel', 'seem', 'look', 'hear', 'watch', 'wait', 'work',
   'start', 'stop', 'open', 'close', 'move', 'turn', 'bring', 'send', 'leave',
   'meet', 'join', 'follow', 'include', 'consider', 'remember', 'forget',
+  // Additional common verbs/imperative starters
+  'target', 'create', 'build', 'write', 'avoid', 'provide', 'maintain',
+  'define', 'ensure', 'place', 'focus', 'track', 'enable', 'apply', 'test',
+  'handle', 'load', 'link', 'pass', 'save', 'lead', 'frame', 'point',
   // Pronouns, possessives, determiners — capitalized at sentence start but not proper nouns
   'my', 'your', 'his', 'her', 'its', 'our', 'their',
   'some', 'any', 'every', 'each', 'both', 'few', 'many', 'most',
   // Common adjectives that precede proper nouns at sentence start
   'poor', 'old', 'new', 'big', 'little', 'great', 'good', 'bad',
   'first', 'last', 'next', 'other', 'more', 'just', 'very',
+  // Additional adjectives/adverbs that appear capitalized at sentence starts
+  'still', 'clear', 'fixed', 'based', 'using', 'real', 'even',
+  'safe', 'local', 'native', 'early', 'similar', 'simple', 'basic', 'related',
 ]);
 
 /**
@@ -647,7 +663,7 @@ const SENTENCE_STARTER_WORDS = new Set([
  * This finds potential entities that don't have existing files:
  * - Multi-word proper nouns (e.g., "Marcus Johnson", "Project Alpha")
  * - Single capitalized words after lowercase (e.g., "discussed with Marcus")
- * - Quoted terms (e.g., "Turbopump" becomes [[Turbopump]])
+ * - CamelCase words (e.g., TypeScript, HuggingFace)
  *
  * @param content - The markdown content to analyze
  * @param config - Configuration for detection patterns
@@ -754,25 +770,6 @@ export function detectImplicitEntities(
     }
   }
 
-  // Pattern 3: Quoted terms (explicit entity markers)
-  // Matches "Turbopump" -> [[Turbopump]]
-  if (implicitPatterns.includes('quoted-terms')) {
-    const quotedRegex = /"([^"]{3,30})"/g;
-    let match: RegExpExecArray | null;
-
-    while ((match = quotedRegex.exec(content)) !== null) {
-      const text = match[1];
-      // Include the quotes in the position for replacement
-      const start = match.index;
-      const end = start + match[0].length;
-
-      if (!shouldExclude(text) && !isProtected(start, end)) {
-        detected.push({ text, start, end, pattern: 'quoted-terms' });
-        seenTexts.add(text.toLowerCase());
-      }
-    }
-  }
-
   // Pattern 4: CamelCase words (TypeScript, YouTube, HuggingFace)
   if (implicitPatterns.includes('camel-case')) {
     const camelRegex = /\b([A-Z][a-z]+[A-Z][a-zA-Z]*)\b/g;
@@ -794,6 +791,9 @@ export function detectImplicitEntities(
     let match: RegExpExecArray | null;
     while ((match = acronymRegex.exec(content)) !== null) {
       const text = match[1];
+      // Skip long ALL-CAPS words (>5 chars) — likely English words in caps, not acronyms
+      // Real acronyms are typically 2-5 chars (API, SQL, LLM, ONNX)
+      if (text.length > 5) continue;
       const start = match.index;
       const end = start + text.length;
       if (!shouldExclude(text) && !isProtected(start, end)) {
@@ -937,17 +937,10 @@ export function processWikilinks(
     let replaceStart: number;
     let replaceEnd: number;
 
-    if (match.pattern === 'quoted-terms') {
-      // Replace "Term" with [[Term]] (remove quotes)
-      wikilink = `[[${match.text}]]`;
-      replaceStart = match.start;
-      replaceEnd = match.end;
-    } else {
-      // Replace Term with [[Term]]
-      wikilink = `[[${match.text}]]`;
-      replaceStart = match.start;
-      replaceEnd = match.end;
-    }
+    // Replace Term with [[Term]]
+    wikilink = `[[${match.text}]]`;
+    replaceStart = match.start;
+    replaceEnd = match.end;
 
     processedContent =
       processedContent.slice(0, replaceStart) +

@@ -833,7 +833,7 @@ const TYPE_BOOST: Record<EntityCategory, number> = {
   documents: 1,      // Reports, guides
   food: 1,           // Recipes, restaurants
   hobbies: 1,        // Crafts, sports
-  finance: 1,        // Accounts, budgets
+  finance: 2,        // Accounts, budgets
   periodical: 1,     // Daily/weekly/monthly notes — low boost
   technologies: 0,   // Common, avoid over-suggesting
   acronyms: 0,       // Acronyms may be ambiguous
@@ -994,8 +994,8 @@ function getAdaptiveMinScore(contentLength: number, baseScore: number): number {
     // Short content: lower threshold to allow suggestions
     return Math.max(5, Math.floor(baseScore * 0.6));
   }
-  if (contentLength > 200) {
-    // Long content: higher threshold for stronger matches
+  if (contentLength > 200 && baseScore > 5) {
+    // Long content: tighten threshold for conservative/balanced only
     return Math.floor(baseScore * 1.2);
   }
   // Standard threshold for medium-length content
@@ -1432,7 +1432,7 @@ export async function suggestRelatedLinks(
 
           // Strong co-occurrence: boost ≥ 4 means at least 2 distinct co-occurring
           // partners in the current note (each partner capped at ~3 boost)
-          const strongCooccurrence = boost >= 4;
+          const strongCooccurrence = boost >= 3;
 
           if (!hasContentOverlap && !strongCooccurrence) {
             continue;  // Skip entities with zero content relevance and weak co-occurrence
@@ -1456,8 +1456,8 @@ export async function suggestRelatedLinks(
           const rawHubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
           // Cap hub + crossFolder for co-occurrence-only entities (no content overlap)
           // to prevent hub entities from dominating suffix lines via graph signals alone
-          const hubBoost = hasContentOverlap ? rawHubBoost : Math.min(rawHubBoost, 2);
-          const crossFolderBoost = hasContentOverlap ? rawCrossFolderBoost : Math.min(rawCrossFolderBoost, 1);
+          const hubBoost = hasContentOverlap ? rawHubBoost : Math.min(rawHubBoost, 4);
+          const crossFolderBoost = hasContentOverlap ? rawCrossFolderBoost : Math.min(rawCrossFolderBoost, 2);
           const feedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
           const edgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
           const suppPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(entityName) ?? 0);
@@ -1465,7 +1465,7 @@ export async function suggestRelatedLinks(
 
           // Graph-only suggestions (no content overlap) need a higher score floor
           const effectiveMinScore = !hasContentOverlap
-            ? Math.max(adaptiveMinScore, 10)
+            ? Math.max(adaptiveMinScore, 7)
             : adaptiveMinScore;
 
           if (totalBoost >= effectiveMinScore) {

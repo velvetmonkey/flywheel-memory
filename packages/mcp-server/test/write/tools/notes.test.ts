@@ -496,7 +496,7 @@ describe('vault_create_note wikilink integration', () => {
       'test.md',
       'Working on a JavaScript project.',
       { type: 'test' }
-      // No suggestOutgoingLinks parameter = uses default (false)
+      // No suggestOutgoingLinks parameter = uses default (true)
     );
 
     expect(result.success).toBe(true);

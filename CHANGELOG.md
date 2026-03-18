@@ -24,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Search default limit 20 → 10
-- `suggestOutgoingLinks` default true → false
 - Hub boost: tiered → log scaling with content relevance gate
 - `graph_analysis` and `vault_schema` split into focused tools
 - Tool parameter surface area reduced

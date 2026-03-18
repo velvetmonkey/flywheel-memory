@@ -633,6 +633,12 @@ const SENTENCE_STARTER_WORDS = new Set([
   'think', 'know', 'feel', 'seem', 'look', 'hear', 'watch', 'wait', 'work',
   'start', 'stop', 'open', 'close', 'move', 'turn', 'bring', 'send', 'leave',
   'meet', 'join', 'follow', 'include', 'consider', 'remember', 'forget',
+  // Pronouns, possessives, determiners — capitalized at sentence start but not proper nouns
+  'my', 'your', 'his', 'her', 'its', 'our', 'their',
+  'some', 'any', 'every', 'each', 'both', 'few', 'many', 'most',
+  // Common adjectives that precede proper nouns at sentence start
+  'poor', 'old', 'new', 'big', 'little', 'great', 'good', 'bad',
+  'first', 'last', 'next', 'other', 'more', 'just', 'very',
 ]);
 
 /**

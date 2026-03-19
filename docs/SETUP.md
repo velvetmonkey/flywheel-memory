@@ -89,6 +89,22 @@ Verify it's running:
 curl http://localhost:3111/health
 ```
 
+**HTTP server options:**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FLYWHEEL_TRANSPORT` | `stdio` | Set to `http` for HTTP-only, or `both` to run stdio + HTTP simultaneously |
+| `FLYWHEEL_HTTP_PORT` | `3111` | Port the HTTP server listens on |
+| `FLYWHEEL_HTTP_HOST` | `127.0.0.1` | Bind address. Use `0.0.0.0` to accept connections from other machines |
+
+Example with custom port:
+
+```bash
+VAULT_PATH=/path/to/your/vault FLYWHEEL_TRANSPORT=http FLYWHEEL_HTTP_PORT=8080 npx -y @velvetmonkey/flywheel-memory
+```
+
+Update the URLs in your client config to match (e.g. `http://localhost:8080/mcp`).
+
 Keep the server running in a terminal tab, tmux session, or as a systemd service.
 Then configure your client below.
 

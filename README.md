@@ -303,7 +303,7 @@ Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CO
 
 **Using Cursor, Windsurf, VS Code, or another editor?** See [docs/SETUP.md](docs/SETUP.md) for your client's config.
 
-> **Clients:** Works with any MCP-compatible client. Claude Code and Claude Desktop connect via stdio. Cursor, Windsurf, VS Code + Copilot, and Continue connect via HTTP transport. See [docs/SETUP.md](docs/SETUP.md) for setup guides.
+> **Clients:** Works with any MCP-compatible client. Claude Code and Claude Desktop connect via stdio. Cursor, Windsurf, VS Code + Copilot, and Continue connect via HTTP transport (`FLYWHEEL_TRANSPORT=http`, port `3111` by default). See [docs/SETUP.md](docs/SETUP.md) for setup guides.
 
 ---
 

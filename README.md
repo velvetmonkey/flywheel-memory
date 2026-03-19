@@ -44,29 +44,7 @@ Then ask: *"How much have I billed Acme Corp?"*
 
 From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant with 3 clients, 5 projects, and $27K in invoices.
 
-```
-❯ How much have I billed Acme Corp?
-
-● flywheel › search
-  query: "Acme Corp billing invoice"
-  → clients/Acme Corp.md
-      frontmatter: { total_billed: 156000, rate: 300, status: "active" }
-      backlinks (31): INV-2025-047.md (weight: 2.1), INV-2025-048.md (weight: 1.8), Acme Data Migration.md (weight: 1.5), ...
-      outlinks (28): Sarah Mitchell (weight: 1.9), INV-2025-047 (weight: 1.7), INV-2025-048 (weight: 1.4), ...
-    invoices/INV-2025-048.md
-      frontmatter: { amount: 12000, status: "pending", period: "December 2025" }
-    invoices/INV-2025-047.md
-      frontmatter: { amount: 15000, status: "paid", period: "November 2025" }
-
-┌─ RESULT ──────────────────────────────────────────────┐
-│ Acme Corp: $156K total billed                         │
-│                                                       │
-│   Paid:    $15,000 — Acme Data Migration (Nov 2025)   │
-│   Pending: $12,000 — Acme Data Migration (Dec 2025)   │
-│                                                       │
-│ Also: $35K pending proposal (Analytics Add-on)        │
-└───────────────────────────────────────────────────────┘
-```
+<video src="carter-strategy-demo.mp4" controls autoplay loop muted playsinline width="100%"></video>
 
 One search call returned everything -- frontmatter with amounts and status, backlink lists, outlink lists. Zero file reads needed. Without Flywheel, the AI would grep for "Acme" and scan every matching file.
 

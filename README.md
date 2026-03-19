@@ -44,7 +44,7 @@ Then ask: *"How much have I billed Acme Corp?"*
 
 From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant with 3 clients, 5 projects, and $27K in invoices.
 
-https://github.com/user-attachments/assets/ec1b51a7-cb30-4c49-a35f-aa82c31ec976
+<video src="https://github.com/user-attachments/assets/ec1b51a7-cb30-4c49-a35f-aa82c31ec976" autoplay loop muted playsinline width="100%"></video>
 
 One search call returned everything -- frontmatter with amounts and status, backlink lists, outlink lists. Zero file reads needed. Without Flywheel, the AI would grep for "Acme" and scan every matching file.
 

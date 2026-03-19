@@ -55,6 +55,23 @@ packages/mcp-server/src/
     └── semantic/               # Semantic search (embeddings.ts — embedding generation, similarity.ts — hybrid ranking)
 ```
 
+### Multi-Vault & Transport
+
+```
+packages/mcp-server/src/
+├── vault-registry.ts              # VaultContext interface + VaultRegistry class + parseVaultConfig()
+├── index.ts                       # applyToolGating(), registerAllTools(), createConfiguredServer()
+```
+
+- `vault-registry.ts` — `VaultContext` holds per-vault state (name, vaultPath, stateDb, vaultIndex, flywheelConfig, watcher). `VaultRegistry` tracks all contexts with a primary vault name. `parseVaultConfig()` reads `FLYWHEEL_VAULTS` env var.
+- `applyToolGating()` — Monkey-patches `server.tool()` to filter by category. In multi-vault mode, wraps handlers with `activateVault()` and injects optional `vault` parameter on all tools.
+- `registerAllTools()` — Calls all tool registration functions. Write tools use `getVaultPath: () => string` getter (not a captured string) so vault switching works.
+- `createConfiguredServer()` — Creates a stateless per-request McpServer for HTTP transport (fresh server per POST /mcp).
+- `activateVault(ctx)` — Swaps 6 module-level singletons: `setWriteStateDb`, `setFTS5Database`, `setRecencyStateDb`, `setEdgeWeightStateDb`, `setTaskCacheDatabase`, `setEmbeddingsDatabase` + `loadEntityEmbeddingsToMemory`.
+- Transport env vars: `FLYWHEEL_TRANSPORT` (stdio/http/both), `FLYWHEEL_HTTP_PORT` (default 3111), `FLYWHEEL_HTTP_HOST` (default 127.0.0.1).
+- Multi-vault: `FLYWHEEL_VAULTS=name1:/path1,name2:/path2`. First vault is primary. Falls back to `PROJECT_PATH`/`VAULT_PATH` for single-vault mode.
+- Cross-vault search: `wrapWithVaultActivation` detects `search` tool with no `vault` param → calls `crossVaultSearch()` which iterates all contexts, runs search per vault, merges results with `vault` field, sorts by `rrf_score`. Returns `method: 'cross_vault'`.
+
 ### Dependencies
 
 - `@velvetmonkey/vault-core` — Shared utilities (entity scanning, wikilinks, SQLite)

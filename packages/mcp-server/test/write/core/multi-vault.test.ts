@@ -6,11 +6,20 @@
  * - parseVaultConfig parsing
  * - VaultContext initialization
  * - Single-vault backward compatibility
+ * - activateVault singleton swapping (via direct setter calls)
+ * - Two-vault initialization with separate StateDb instances
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { VaultRegistry, parseVaultConfig, type VaultContext } from '../../../src/vault-registry.js';
 import type { VaultIndex } from '../../../src/core/read/types.js';
+import { setWriteStateDb, getWriteStateDb } from '../../../src/core/write/wikilinks.js';
+import { setFTS5Database } from '../../../src/core/read/fts5.js';
+import { setRecencyStateDb } from '../../../src/core/shared/recency.js';
+import { setEdgeWeightStateDb } from '../../../src/core/write/edgeWeights.js';
+import { setTaskCacheDatabase } from '../../../src/core/read/taskCache.js';
+import { setEmbeddingsDatabase } from '../../../src/core/read/embeddings.js';
+import { createTempVault, cleanupTempVault, openStateDb, deleteStateDb, type StateDb } from '../helpers/testUtils.js';
 
 function createMockContext(name: string, vaultPath: string): VaultContext {
   return {
@@ -154,6 +163,153 @@ describe('Multi-Vault', () => {
       expect(registry.getContext()).toBe(ctx);
       expect(registry.getContext('default')).toBe(ctx);
       expect(registry.isMultiVault).toBe(false);
+    });
+  });
+
+  describe('activateVault singleton swapping', () => {
+    let vaultPathA: string;
+    let vaultPathB: string;
+    let stateDbA: StateDb;
+    let stateDbB: StateDb;
+
+    afterEach(async () => {
+      // Clean up module-level singletons
+      setWriteStateDb(null);
+
+      if (stateDbA) { stateDbA.db.close(); deleteStateDb(vaultPathA); }
+      if (stateDbB) { stateDbB.db.close(); deleteStateDb(vaultPathB); }
+      if (vaultPathA) await cleanupTempVault(vaultPathA);
+      if (vaultPathB) await cleanupTempVault(vaultPathB);
+    });
+
+    it('swaps module-level StateDb when switching vaults', async () => {
+      vaultPathA = await createTempVault();
+      vaultPathB = await createTempVault();
+      stateDbA = openStateDb(vaultPathA);
+      stateDbB = openStateDb(vaultPathB);
+
+      // Simulate activateVault(ctxA) — set all singletons to vault A
+      setWriteStateDb(stateDbA);
+      setFTS5Database(stateDbA.db);
+      setRecencyStateDb(stateDbA);
+      setEdgeWeightStateDb(stateDbA);
+      setTaskCacheDatabase(stateDbA.db);
+      setEmbeddingsDatabase(stateDbA.db);
+
+      // Verify vault A is active
+      expect(getWriteStateDb()).toBe(stateDbA);
+
+      // Simulate activateVault(ctxB) — swap all singletons to vault B
+      setWriteStateDb(stateDbB);
+      setFTS5Database(stateDbB.db);
+      setRecencyStateDb(stateDbB);
+      setEdgeWeightStateDb(stateDbB);
+      setTaskCacheDatabase(stateDbB.db);
+      setEmbeddingsDatabase(stateDbB.db);
+
+      // Verify vault B is now active — different identity
+      expect(getWriteStateDb()).toBe(stateDbB);
+      expect(getWriteStateDb()).not.toBe(stateDbA);
+    });
+
+    it('each vault gets an independent StateDb file', async () => {
+      vaultPathA = await createTempVault();
+      vaultPathB = await createTempVault();
+      stateDbA = openStateDb(vaultPathA);
+      stateDbB = openStateDb(vaultPathB);
+
+      // Different vaults = different DB file paths
+      expect(stateDbA.db.name).not.toBe(stateDbB.db.name);
+
+      // Both are functional — can write/read independently
+      stateDbA.db.exec('CREATE TABLE IF NOT EXISTS test_a (id INTEGER PRIMARY KEY)');
+      stateDbB.db.exec('CREATE TABLE IF NOT EXISTS test_b (id INTEGER PRIMARY KEY)');
+
+      // Vault A has test_a but not test_b
+      const tablesA = stateDbA.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'test_%'").all() as Array<{ name: string }>;
+      expect(tablesA.map(t => t.name)).toContain('test_a');
+      expect(tablesA.map(t => t.name)).not.toContain('test_b');
+
+      // Vault B has test_b but not test_a
+      const tablesB = stateDbB.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'test_%'").all() as Array<{ name: string }>;
+      expect(tablesB.map(t => t.name)).toContain('test_b');
+      expect(tablesB.map(t => t.name)).not.toContain('test_a');
+    });
+  });
+
+  describe('two-vault initialization', () => {
+    let vaultPathA: string;
+    let vaultPathB: string;
+    let stateDbA: StateDb;
+    let stateDbB: StateDb;
+
+    afterEach(async () => {
+      setWriteStateDb(null);
+      if (stateDbA) { stateDbA.db.close(); deleteStateDb(vaultPathA); }
+      if (stateDbB) { stateDbB.db.close(); deleteStateDb(vaultPathB); }
+      if (vaultPathA) await cleanupTempVault(vaultPathA);
+      if (vaultPathB) await cleanupTempVault(vaultPathB);
+    });
+
+    it('initializes two vaults with separate StateDb and registry', async () => {
+      vaultPathA = await createTempVault();
+      vaultPathB = await createTempVault();
+      stateDbA = openStateDb(vaultPathA);
+      stateDbB = openStateDb(vaultPathB);
+
+      // Build VaultContexts like initializeVault() does
+      const ctxA: VaultContext = {
+        name: 'personal',
+        vaultPath: vaultPathA,
+        stateDb: stateDbA,
+        vaultIndex: { notes: new Map(), entities: new Map() } as unknown as VaultIndex,
+        flywheelConfig: {},
+        watcher: null,
+      };
+      const ctxB: VaultContext = {
+        name: 'work',
+        vaultPath: vaultPathB,
+        stateDb: stateDbB,
+        vaultIndex: { notes: new Map(), entities: new Map() } as unknown as VaultIndex,
+        flywheelConfig: {},
+        watcher: null,
+      };
+
+      // Register in a VaultRegistry
+      const registry = new VaultRegistry('personal');
+      registry.addContext(ctxA);
+      registry.addContext(ctxB);
+
+      // Verify registry state
+      expect(registry.isMultiVault).toBe(true);
+      expect(registry.size).toBe(2);
+      expect(registry.getVaultNames()).toEqual(['personal', 'work']);
+
+      // Verify each context has correct path and independent StateDb
+      expect(registry.getContext('personal').vaultPath).toBe(vaultPathA);
+      expect(registry.getContext('work').vaultPath).toBe(vaultPathB);
+      expect(registry.getContext('personal').stateDb).not.toBe(registry.getContext('work').stateDb);
+
+      // Primary vault is 'personal'
+      expect(registry.getContext()).toBe(ctxA);
+    });
+  });
+
+  describe('vault param error handling', () => {
+    it('error message includes available vault names', () => {
+      const registry = new VaultRegistry('personal');
+      registry.addContext(createMockContext('personal', '/vault/personal'));
+      registry.addContext(createMockContext('work', '/vault/work'));
+
+      expect(() => registry.getContext('nonexistent')).toThrow('Vault "nonexistent" not found');
+      expect(() => registry.getContext('nonexistent')).toThrow('Available: personal, work');
+    });
+
+    it('error with single vault shows only that name', () => {
+      const registry = new VaultRegistry('main');
+      registry.addContext(createMockContext('main', '/vault/main'));
+
+      expect(() => registry.getContext('other')).toThrow('Vault "other" not found. Available: main');
     });
   });
 });

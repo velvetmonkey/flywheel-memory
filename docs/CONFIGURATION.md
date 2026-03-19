@@ -200,6 +200,50 @@ Any HuggingFace Transformers-compatible model can be used — unknown models aut
 | `FLYWHEEL_SKIP_EMBEDDINGS` | `false` | Skip automatic embedding rebuild at startup |
 | `FLYWHEEL_AGENT_ID` | — | Agent identifier for multi-agent memory provenance. When set, memories stored via the `memory` tool are tagged with this ID. |
 
+### Transport
+
+| Variable | Values | Default | Description |
+|----------|--------|---------|-------------|
+| `FLYWHEEL_TRANSPORT` | `stdio`, `http`, `both` | `stdio` | Transport mode |
+| `FLYWHEEL_HTTP_PORT` | number | `3111` | HTTP server port |
+| `FLYWHEEL_HTTP_HOST` | string | `127.0.0.1` | HTTP bind address |
+
+- **`stdio`** — Standard MCP transport for Claude Code and Claude Desktop
+- **`http`** — HTTP transport for non-Claude clients (Cursor, Windsurf, Aider, LangGraph, Ollama)
+- **`both`** — Runs stdio + HTTP simultaneously (two McpServer instances, shared state)
+
+DNS rebinding protection is automatically enabled when bound to localhost/127.0.0.1/::1.
+
+```json
+{
+  "env": {
+    "FLYWHEEL_TRANSPORT": "http",
+    "FLYWHEEL_HTTP_PORT": "3111"
+  }
+}
+```
+
+### Multi-Vault
+
+| Variable | Format | Default |
+|----------|--------|---------|
+| `FLYWHEEL_VAULTS` | `name1:/path1,name2:/path2` | (single vault) |
+
+Serve multiple Obsidian vaults from a single server instance. The first vault in the list is the primary (used when the `vault` parameter is omitted from tool calls).
+
+When `FLYWHEEL_VAULTS` is set, every tool gains an optional `vault` parameter. Each vault gets its own StateDb, index, and file watcher. Falls back to `VAULT_PATH`/`PROJECT_PATH` for single-vault mode when not set.
+
+**Cross-vault search:** The `search` tool automatically searches all vaults when no `vault` parameter is specified. Results are merged, sorted by relevance, and each result includes a `vault` field indicating its source. To search a specific vault, pass the `vault` parameter.
+
+```json
+{
+  "env": {
+    "FLYWHEEL_VAULTS": "personal:/home/user/obsidian/Personal,work:/home/user/obsidian/Work",
+    "FLYWHEEL_TRANSPORT": "http"
+  }
+}
+```
+
 ### File Watcher
 
 | Variable | Default | Description |

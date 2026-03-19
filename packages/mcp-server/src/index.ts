@@ -617,8 +617,9 @@ function applyToolGating(
   /**
    * Wrap a handler to activate the correct vault before execution (multi-vault).
    * Extracts the `vault` param, calls activateVault(), then forwards to the original handler.
+   * For `search` with no explicit vault, iterates all vaults and merges results.
    */
-  function wrapWithVaultActivation(handler: (...args: any[]) => any): (...args: any[]) => any {
+  function wrapWithVaultActivation(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
     if (!isMultiVault || !registry) return handler;
     return async (...args: any[]) => {
       const params = args[0];
@@ -627,6 +628,10 @@ function applyToolGating(
       if (params && 'vault' in params) {
         delete params.vault;
       }
+      // Cross-vault search: when no vault specified, search all vaults and merge
+      if (toolName === 'search' && !vaultName) {
+        return crossVaultSearch(registry!, handler, args);
+      }
       const ctx = registry.getContext(vaultName);
       activateVault(ctx);
       // Update module-level state references so closures see the right vault
@@ -634,6 +639,71 @@ function applyToolGating(
       vaultIndex = ctx.vaultIndex;
       flywheelConfig = ctx.flywheelConfig;
       return handler(...args);
+    };
+  }
+
+  /**
+   * Cross-vault search: run search handler in each vault context, merge results.
+   * Each vault's results are tagged with a `vault` field.
+   */
+  async function crossVaultSearch(
+    reg: VaultRegistry,
+    handler: (...args: any[]) => any,
+    args: any[]
+  ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
+    const perVault: Array<{ vault: string; data: any }> = [];
+
+    for (const ctx of reg.getAllContexts()) {
+      activateVault(ctx);
+      stateDb = ctx.stateDb;
+      vaultIndex = ctx.vaultIndex;
+      flywheelConfig = ctx.flywheelConfig;
+      try {
+        const result = await handler(...args);
+        const text = result?.content?.[0]?.text;
+        if (text) {
+          perVault.push({ vault: ctx.name, data: JSON.parse(text) });
+        }
+      } catch {
+        // Skip vaults that error during search
+      }
+    }
+
+    // Merge result items across vaults
+    const merged: any[] = [];
+    const vaultsSearched: string[] = [];
+    let query: string | undefined;
+
+    for (const { vault, data } of perVault) {
+      vaultsSearched.push(vault);
+      if (data.query) query = data.query;
+      if (data.error || data.building) continue;
+      const items = data.results || data.notes || data.entities || [];
+      for (const item of items) {
+        merged.push({ vault, ...item });
+      }
+    }
+
+    // Sort by rrf_score when available (hybrid/fts5), otherwise preserve order
+    if (merged.some((r: any) => r.rrf_score != null)) {
+      merged.sort((a: any, b: any) => (b.rrf_score ?? 0) - (a.rrf_score ?? 0));
+    }
+
+    const limit = args[0]?.limit ?? 10;
+    const truncated = merged.slice(0, limit);
+
+    return {
+      content: [{
+        type: 'text' as const,
+        text: JSON.stringify({
+          method: 'cross_vault',
+          query,
+          vaults_searched: vaultsSearched,
+          total_results: merged.length,
+          returned: truncated.length,
+          results: truncated,
+        }, null, 2),
+      }],
     };
   }
 
@@ -663,7 +733,7 @@ function applyToolGating(
     // Wrap handler with tracking + vault activation
     if (args.length > 0 && typeof args[args.length - 1] === 'function') {
       let handler = args[args.length - 1];
-      handler = wrapWithVaultActivation(handler);
+      handler = wrapWithVaultActivation(name, handler);
       args[args.length - 1] = wrapWithTracking(name, handler);
     }
     return origTool(name, ...args);
@@ -676,7 +746,7 @@ function applyToolGating(
       injectVaultParam(args);
       if (args.length > 0 && typeof args[args.length - 1] === 'function') {
         let handler = args[args.length - 1];
-        handler = wrapWithVaultActivation(handler);
+        handler = wrapWithVaultActivation(name, handler);
         args[args.length - 1] = wrapWithTracking(name, handler);
       }
       return origRegisterTool(name, ...args);

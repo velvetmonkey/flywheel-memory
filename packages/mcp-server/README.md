@@ -317,7 +317,7 @@ cd /path/to/your/vault && claude
 
 Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all options.
 
-> **Note:** Developed and tested with Claude Code. Other MCP clients can connect via HTTP transport.
+> **Not using Claude?** Flywheel works with any MCP client. See [Transport Options](#transport-options) for HTTP setup (Cursor, Windsurf, Aider, LangGraph, Ollama, etc.).
 
 ### Transport Options
 
@@ -356,7 +356,7 @@ FLYWHEEL_VAULTS="personal:/path/to/personal,work:/path/to/work" \
   FLYWHEEL_TRANSPORT=http npx @velvetmonkey/flywheel-memory
 ```
 
-When multi-vault is active, every tool gains an optional `vault` parameter. Omit it to use the primary vault (first in list).
+When multi-vault is active, every tool gains an optional `vault` parameter. The `search` tool automatically searches all vaults when `vault` is omitted, merging results across vaults. Other tools default to the primary vault (first in list).
 
 ---
 

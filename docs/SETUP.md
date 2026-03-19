@@ -81,6 +81,58 @@ Restart Claude Desktop after editing the config. Flywheel appears in the MCP ser
 
 On first run, Flywheel creates a `.flywheel/` directory containing its SQLite index. Add `.flywheel/` to your `.gitignore` if your vault is version-controlled.
 
+### Other MCP Clients (HTTP Transport)
+
+For non-Claude clients that support HTTP — Cursor, Windsurf, Aider, LangGraph, Ollama, or any HTTP-capable agent.
+
+**Start the server:**
+
+```bash
+FLYWHEEL_TRANSPORT=http npx @velvetmonkey/flywheel-memory
+```
+
+Set `VAULT_PATH` if you're not launching from inside the vault:
+
+```bash
+VAULT_PATH=/path/to/your/vault FLYWHEEL_TRANSPORT=http npx @velvetmonkey/flywheel-memory
+```
+
+**Health check:**
+
+```bash
+curl http://localhost:3111/health
+# → {"status":"ok","version":"2.0.101","vault":"/path/to/your/vault"}
+```
+
+**MCP endpoint:** `POST /mcp` — accepts `application/json` and `text/event-stream`.
+
+**List available tools:**
+
+```bash
+curl -X POST http://localhost:3111/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+**Search your vault:**
+
+```bash
+curl -X POST http://localhost:3111/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"search","arguments":{"query":"meeting notes"}}}'
+```
+
+**Multi-vault setup:**
+
+```bash
+FLYWHEEL_VAULTS="personal:/home/user/obsidian/Personal,work:/home/user/obsidian/Work" \
+  FLYWHEEL_TRANSPORT=http npx @velvetmonkey/flywheel-memory
+```
+
+When multi-vault is active, every tool gains an optional `vault` parameter. The `search` tool automatically searches all vaults when `vault` is omitted, merging results with a `vault` field on each. Other tools default to the primary vault (first in list). The health endpoint reports all vault names.
+
+See [CONFIGURATION.md](CONFIGURATION.md#transport) for all transport and multi-vault options.
+
 ---
 
 ## Step 3: First 5 Commands to Try

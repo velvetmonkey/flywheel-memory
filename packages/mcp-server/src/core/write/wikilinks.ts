@@ -1677,6 +1677,7 @@ export async function suggestRelatedLinks(
   // This prevents hub entities from appearing in every suffix via graph signals alone.
   // Lower-scoring entities still appear in suggestions/suggestion_events for
   // dashboard observability — we just don't write them into the suffix.
+  const MAX_SUFFIX_ENTRIES = 3;
   const MIN_SUFFIX_SCORE = 12;
   const MIN_SUFFIX_CONTENT = 3;
   const suffixEntries = topEntries.filter(e =>
@@ -1684,7 +1685,7 @@ export async function suggestRelatedLinks(
     (e.breakdown.contentMatch >= MIN_SUFFIX_CONTENT ||
      e.breakdown.cooccurrenceBoost >= MIN_SUFFIX_CONTENT ||
      (e.breakdown.semanticBoost ?? 0) >= MIN_SUFFIX_CONTENT)
-  );
+  ).slice(0, MAX_SUFFIX_ENTRIES);
   const suffix = suffixEntries.length > 0
     ? '→ ' + suffixEntries.map(e => `[[${e.name}]]`).join(', ')
     : '';

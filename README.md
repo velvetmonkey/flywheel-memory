@@ -25,7 +25,7 @@ Six lines of JSON config. No cloud. Your data never leaves your machine.
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
 | Token cost | ~800-2,000 per query | ~50-200 per query |
 
-64 tools. 6-line config. Zero cloud.
+67 tools. 6-line config. Zero cloud.
 
 **Try in 60 seconds:**
 
@@ -292,7 +292,7 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
+Defaults to the `default` preset (19 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
 
 > **Windows users — read this before you start.** Three things differ from macOS/Linux:
 > 1. **`cmd /c npx`** instead of `npx` — Windows installs npx as a `.cmd` batch script that can't be spawned directly
@@ -326,7 +326,7 @@ The fewer tools you load, the less context Claude needs to pick the right one. S
 | Doc | Why read this |
 |---|---|
 | [PROVE-IT.md](docs/PROVE-IT.md) | See it working in 5 minutes |
-| [TOOLS.md](docs/TOOLS.md) | All 64 tools documented |
+| [TOOLS.md](docs/TOOLS.md) | All 67 tools documented |
 | [ALGORITHM.md](docs/ALGORITHM.md) | How the scoring works |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](docs/SETUP.md) | Full setup guide for your vault |

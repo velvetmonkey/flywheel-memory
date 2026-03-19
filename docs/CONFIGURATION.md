@@ -19,7 +19,7 @@ Two layers of configuration: **environment variables** set in your MCP config (s
 }
 ```
 
-No `FLYWHEEL_TOOLS` needed — defaults to `default` (16 tools). Add it only to override.
+No `FLYWHEEL_TOOLS` needed — defaults to `default` (19 tools). Add it only to override.
 
 ### Claude Desktop (`claude_desktop_config.json`)
 

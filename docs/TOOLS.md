@@ -1,6 +1,6 @@
 # Tools
 
-64 tools. Most questions only need one: **search**.
+67 tools. Most questions only need one: **search**.
 
 ---
 

@@ -236,7 +236,7 @@ Flywheel auto-links any mentions of existing notes. If your vault has `Stacy Tho
 
 ## Step 3: Choose a Tool Preset
 
-Flywheel defaults to the `default` preset (16 tools: search, read, write, tasks).
+Flywheel defaults to the `default` preset (19 tools: search, read, write, tasks).
 Add bundles for graph analysis, wikilinks, memory, or other capabilities:
 
 ```json
@@ -464,6 +464,6 @@ All vault operations work without git. You just won't have undo or commit histor
 ## Next Steps
 
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full reference for all 64 tools
+- **[TOOLS.md](TOOLS.md)** -- Full reference for all 67 tools
 - **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics

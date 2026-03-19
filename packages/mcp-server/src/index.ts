@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 64 tools across 11 categories
+ * 67 tools across 11 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -119,6 +119,7 @@ import { registerActivityTools } from './tools/read/activity.js';
 import { registerSimilarityTools } from './tools/read/similarity.js';
 import { registerSemanticTools } from './tools/read/semantic.js';
 import { registerMergeTools as registerReadMergeTools } from './tools/read/merges.js';
+import { registerTemporalAnalysisTools } from './tools/read/temporalAnalysis.js';
 
 // Core imports - Sweep
 import { startSweepTimer, stopSweepTimer } from './core/read/sweep.js';
@@ -199,9 +200,9 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherInstanc
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
 // Presets:
-//   default    - Note-taking essentials: search, read, write, tasks (16 tools)
-//   agent      - Autonomous AI agents: search, read, write, memory (16 tools)
-//   full       - All tools except agent memory (61 tools). Add ",memory" to include.
+//   default    - Note-taking essentials: search, read, write, tasks (19 tools)
+//   agent      - Autonomous AI agents: search, read, write, memory (19 tools)
+//   full       - All tools except agent memory (64 tools). Add ",memory" to include.
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic: backlinks, forward links, graph_analysis, semantic_analysis, paths, hubs, connections (10 tools)
@@ -214,10 +215,10 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherInstanc
 //   diagnostics - Vault health, stats, config, activity (13 tools)
 //
 // Examples:
-//   FLYWHEEL_TOOLS=default                    # 16 tools
-//   FLYWHEEL_TOOLS=agent                      # 16 tools
-//   FLYWHEEL_TOOLS=default,graph              # 25 tools
-//   FLYWHEEL_TOOLS=agent,tasks                # 19 tools
+//   FLYWHEEL_TOOLS=default                    # 19 tools
+//   FLYWHEEL_TOOLS=agent                      # 19 tools
+//   FLYWHEEL_TOOLS=default,graph              # 28 tools
+//   FLYWHEEL_TOOLS=agent,tasks                # 22 tools
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
 // Categories (11):
@@ -341,7 +342,7 @@ const enabledCategories = parseEnabledCategories();
 // Per-tool category mapping (tool name → category)
 // Every tool MUST have an entry — tools without entries bypass gating entirely.
 const TOOL_CATEGORY: Record<string, ToolCategory> = {
-  // search (3 tools)
+  // search (6 tools)
   search: 'search',
   init_semantic: 'search',
   find_similar: 'search',
@@ -411,6 +412,11 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_move_note: 'note-ops',
   vault_rename_note: 'note-ops',
   merge_entities: 'note-ops',
+
+  // temporal (3 tools) — time-based vault intelligence
+  get_context_around_date: 'search',
+  predict_stale_notes: 'search',
+  track_concept_evolution: 'search',
 
   // diagnostics (13 tools) — vault health, stats, config, activity
   health_check: 'diagnostics',
@@ -819,6 +825,7 @@ function registerAllTools(targetServer: McpServer): void {
   registerSimilarityTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
   registerSemanticTools(targetServer, () => vaultPath, () => stateDb);
   registerReadMergeTools(targetServer, () => stateDb);
+  registerTemporalAnalysisTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
 
   // Memory tools
   registerMemoryTools(targetServer, () => stateDb);

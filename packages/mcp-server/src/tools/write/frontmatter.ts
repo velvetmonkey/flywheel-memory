@@ -16,7 +16,7 @@ import {
  */
 export function registerFrontmatterTools(
   server: McpServer,
-  vaultPath: string
+  getVaultPath: () => string
 ): void {
   // ========================================
   // Tool: vault_update_frontmatter
@@ -32,6 +32,7 @@ export function registerFrontmatterTools(
       dry_run: z.boolean().optional().default(false).describe('Preview changes without writing to disk'),
     },
     async ({ path: notePath, frontmatter: updates, only_if_missing, commit, dry_run }) => {
+      const vaultPath = getVaultPath();
       return withVaultFrontmatter(
         {
           vaultPath,

@@ -317,7 +317,46 @@ cd /path/to/your/vault && claude
 
 Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all options.
 
-> **Note:** Developed and tested with Claude Code. Other MCP clients may work but are untested.
+> **Note:** Developed and tested with Claude Code. Other MCP clients can connect via HTTP transport.
+
+### Transport Options
+
+By default, Flywheel uses stdio transport (for Claude Code/Claude Desktop). Set `FLYWHEEL_TRANSPORT` to enable HTTP transport for non-Claude clients (Cursor, Windsurf, Aider, LangGraph, Ollama):
+
+| Env Var | Values | Default |
+|---------|--------|---------|
+| `FLYWHEEL_TRANSPORT` | `stdio`, `http`, `both` | `stdio` |
+| `FLYWHEEL_HTTP_PORT` | Port number | `3111` |
+| `FLYWHEEL_HTTP_HOST` | Bind address | `127.0.0.1` |
+
+```bash
+# HTTP only
+FLYWHEEL_TRANSPORT=http npx @velvetmonkey/flywheel-memory
+
+# Both stdio and HTTP simultaneously
+FLYWHEEL_TRANSPORT=both npx @velvetmonkey/flywheel-memory
+
+# Health check
+curl http://localhost:3111/health
+
+# MCP request (JSON-RPC over HTTP)
+curl -X POST http://localhost:3111/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+DNS rebinding protection is automatically enabled when bound to localhost.
+
+### Multi-Vault
+
+Serve multiple Obsidian vaults from a single server:
+
+```bash
+FLYWHEEL_VAULTS="personal:/path/to/personal,work:/path/to/work" \
+  FLYWHEEL_TRANSPORT=http npx @velvetmonkey/flywheel-memory
+```
+
+When multi-vault is active, every tool gains an optional `vault` parameter. Omit it to use the primary vault (first in list).
 
 ---
 

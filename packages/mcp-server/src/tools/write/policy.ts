@@ -31,7 +31,7 @@ import { estimateTokens } from '../../core/write/constants.js';
  */
 export function registerPolicyTools(
   server: McpServer,
-  vaultPath: string
+  getVaultPath: () => string
 ): void {
   server.tool(
     'policy',
@@ -118,6 +118,7 @@ export function registerPolicyTools(
     },
     async (params) => {
       const { action } = params;
+      const vaultPath = getVaultPath();
 
       try {
         switch (action) {

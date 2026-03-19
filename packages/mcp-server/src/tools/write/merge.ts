@@ -28,7 +28,7 @@ import fs from 'fs/promises';
  */
 export function registerMergeTools(
   server: McpServer,
-  vaultPath: string
+  getVaultPath: () => string
 ): void {
   server.tool(
     'merge_entities',
@@ -40,6 +40,7 @@ export function registerMergeTools(
     },
     async ({ source_path, target_path, dry_run }) => {
       try {
+        const vaultPath = getVaultPath();
         // 1. Validate paths
         if (!validatePath(vaultPath, source_path)) {
           const result: MutationResult = {
@@ -224,6 +225,7 @@ export function registerMergeTools(
     },
     async ({ source_name, target_path, dry_run }) => {
       try {
+        const vaultPath = getVaultPath();
         // 1. Validate target path
         if (!validatePath(vaultPath, target_path)) {
           const result: MutationResult = {

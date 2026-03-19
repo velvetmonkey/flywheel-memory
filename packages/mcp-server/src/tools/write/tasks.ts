@@ -106,7 +106,7 @@ export function toggleTask(content: string, lineNumber: number): { content: stri
 
 export function registerTaskTools(
   server: McpServer,
-  vaultPath: string
+  getVaultPath: () => string
 ): void {
   // ========================================
   // Tool: vault_toggle_task
@@ -124,6 +124,7 @@ export function registerTaskTools(
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),
     },
     async ({ path: notePath, task, section, commit, dry_run, agent_id, session_id }) => {
+      const vaultPath = getVaultPath();
       try {
         // 1. Check if file exists
         const existsError = await ensureFileExists(vaultPath, notePath);
@@ -239,6 +240,7 @@ export function registerTaskTools(
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),
     },
     async ({ path: notePath, section, task, position, completed, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, preserveListNesting, validate, normalize, guardrails, dry_run, agent_id, session_id }) => {
+      const vaultPath = getVaultPath();
       return withVaultFile(
         {
           vaultPath,

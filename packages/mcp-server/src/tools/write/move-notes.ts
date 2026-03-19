@@ -170,7 +170,7 @@ export function extractAliases(frontmatter: Record<string, unknown>): string[] {
  */
 export function registerMoveNoteTools(
   server: McpServer,
-  vaultPath: string
+  getVaultPath: () => string
 ): void {
   // ========================================
   // Tool: vault_move_note
@@ -187,6 +187,7 @@ export function registerMoveNoteTools(
     },
     async ({ oldPath, newPath, updateBacklinks, commit, dry_run }) => {
       try {
+        const vaultPath = getVaultPath();
         // 1. Validate paths
         if (!validatePath(vaultPath, oldPath)) {
           const result: MutationResult = {
@@ -381,6 +382,7 @@ export function registerMoveNoteTools(
     },
     async ({ path: notePath, newTitle, updateBacklinks, commit, dry_run }) => {
       try {
+        const vaultPath = getVaultPath();
         // 1. Validate path
         if (!validatePath(vaultPath, notePath)) {
           const result: MutationResult = {

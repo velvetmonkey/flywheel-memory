@@ -113,7 +113,7 @@ async function createNoteFromTemplate(
  */
 export function registerMutationTools(
   server: McpServer,
-  vaultPath: string,
+  getVaultPath: () => string,
   getConfig: () => FlywheelConfig = () => ({})
 ): void {
   // ========================================
@@ -142,6 +142,7 @@ export function registerMutationTools(
       session_id: z.string().optional().describe('Session identifier for conversation scoping (e.g., "sess-abc123")'),
     },
     async ({ path: notePath, section, content, create_if_missing, position, format, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, linkedEntities, dry_run, agent_id, session_id }) => {
+      const vaultPath = getVaultPath();
       const preserveListNesting = true;
       const bumpHeadings = true;
       const validate = true;
@@ -264,6 +265,7 @@ export function registerMutationTools(
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),
     },
     async ({ path: notePath, section, pattern, mode, useRegex, commit, dry_run, agent_id, session_id }) => {
+      const vaultPath = getVaultPath();
       return withVaultFile(
         {
           vaultPath,
@@ -322,6 +324,7 @@ export function registerMutationTools(
       session_id: z.string().optional().describe('Session identifier for conversation scoping'),
     },
     async ({ path: notePath, section, search, replacement, mode, useRegex, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, dry_run, agent_id, session_id }) => {
+      const vaultPath = getVaultPath();
       const validate = true;
       const normalize = true;
       const guardrails = 'warn' as const;

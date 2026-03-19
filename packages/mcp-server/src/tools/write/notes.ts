@@ -31,7 +31,7 @@ import path from 'path';
  */
 export function registerNoteTools(
   server: McpServer,
-  vaultPath: string,
+  getVaultPath: () => string,
   getIndex?: () => VaultIndex
 ): void {
   // ========================================
@@ -56,6 +56,7 @@ export function registerNoteTools(
     },
     async ({ path: rawNotePath, content, template, frontmatter, overwrite, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, dry_run, agent_id, session_id }) => {
       try {
+        const vaultPath = getVaultPath();
         // 0. Sanitize filename (spaces → hyphens, lowercase, strip bad chars)
         const notePath = sanitizeNotePath(rawNotePath);
 
@@ -240,6 +241,7 @@ export function registerNoteTools(
     },
     async ({ path: notePath, confirm, commit, dry_run }) => {
       try {
+        const vaultPath = getVaultPath();
         // 1. Validate path
         if (!validatePath(vaultPath, notePath)) {
           return formatMcpResult(errorResult(notePath, 'Invalid path: path traversal not allowed'));

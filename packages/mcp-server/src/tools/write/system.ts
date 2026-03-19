@@ -18,7 +18,7 @@ import type { MutationResult } from '../../core/write/types.js';
 
 export function registerSystemTools(
   server: McpServer,
-  vaultPath: string
+  getVaultPath: () => string
 ): void {
   // ========================================
   // Tool: vault_undo_last_mutation
@@ -32,6 +32,7 @@ export function registerSystemTools(
     },
     async ({ confirm, hash }) => {
       try {
+        const vaultPath = getVaultPath();
         // 1. Require confirmation
         if (!confirm) {
           // Show what would be undone

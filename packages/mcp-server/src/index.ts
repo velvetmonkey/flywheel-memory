@@ -22,6 +22,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { z } from 'zod';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -167,6 +168,9 @@ import type { BatchHandler } from './core/read/watch/index.js';
 // Resources
 import { registerVaultResources } from './resources/vault.js';
 
+// Multi-vault
+import { VaultRegistry, parseVaultConfig, type VaultContext } from './vault-registry.js';
+
 
 // ============================================================================
 // Configuration
@@ -177,11 +181,14 @@ const vaultPath: string = process.env.PROJECT_PATH || process.env.VAULT_PATH || 
 let resolvedVaultPath: string;
 try { resolvedVaultPath = realpathSync(vaultPath).replace(/\\/g, '/'); } catch { resolvedVaultPath = vaultPath.replace(/\\/g, '/'); }
 
-// State variables
+// State variables (module-level singletons — swapped by activateVault for multi-vault)
 let vaultIndex: VaultIndex;
 let flywheelConfig: FlywheelConfig = {};
 let stateDb: StateDb | null = null;
 let watcherInstance: VaultWatcher | null = null;
+
+// Multi-vault registry (populated in main())
+let vaultRegistry: VaultRegistry | null = null;
 
 /** Current watcher status (live — reads state at call time, not a stale snapshot). */
 export function getWatcherStatus(): WatcherStatus | null { return watcherInstance?.status ?? null; }
@@ -440,7 +447,9 @@ Tool selection:
   2. Escalate to "get_note_structure" only when you need the full markdown content
      or word count. Use "get_section_content" to read one section by heading name.
   3. Use vault write tools instead of raw file writes — they auto-link entities
-     and commit changes.`);
+     and commit changes.
+  4. Start with a broad search: just query text, no filters. Only add folder, tag,
+     or frontmatter filters to narrow a second search if needed.`);
 
   // Read category instructions
   if (categories.has('read')) {
@@ -530,166 +539,300 @@ Use "vault_schema" before bulk operations to understand field conventions, incon
 }
 
 // ============================================================================
-// Server Setup
+// Tool Registration Helpers (reusable for HTTP transport)
 // ============================================================================
 
-const server = new McpServer(
-  {
-    name: 'flywheel-memory',
-    version: pkg.version,
-  },
-  {
-    instructions: generateInstructions(enabledCategories),
-  },
-);
+/**
+ * Apply tool gating to a McpServer instance.
+ * Monkey-patches server.tool() and server.registerTool() to filter by category,
+ * wrap handlers with invocation tracking, and optionally inject a `vault` parameter
+ * for multi-vault support.
+ *
+ * When registry is multi-vault, every tool gets an optional `vault` parameter.
+ * Before each handler runs, `activateVault(registry.getContext(vault))` is called
+ * to swap module-level singletons to the correct vault.
+ */
+function applyToolGating(
+  targetServer: McpServer,
+  categories: Set<ToolCategory>,
+  getDb: () => StateDb | null,
+  registry?: VaultRegistry | null,
+): { registered: number; skipped: number } {
+  let _registered = 0;
+  let _skipped = 0;
 
-// Monkey-patch server.tool() and server.registerTool() to gate by per-tool category
-let _registeredCount = 0;
-let _skippedCount = 0;
-
-function gateByCategory(name: string): boolean {
-  const category = TOOL_CATEGORY[name];
-  if (category && !enabledCategories.has(category)) {
-    _skippedCount++;
-    return false;
+  function gate(name: string): boolean {
+    const category = TOOL_CATEGORY[name];
+    if (category && !categories.has(category)) {
+      _skipped++;
+      return false;
+    }
+    _registered++;
+    return true;
   }
-  _registeredCount++;
-  return true;
+
+  function wrapWithTracking(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
+    return async (...args: any[]) => {
+      const start = Date.now();
+      let success = true;
+      let notePaths: string[] | undefined;
+      const params = args[0];
+      if (params && typeof params === 'object') {
+        const paths: string[] = [];
+        if (typeof params.path === 'string') paths.push(params.path);
+        if (Array.isArray(params.paths)) paths.push(...params.paths.filter((p: unknown) => typeof p === 'string'));
+        if (typeof params.note_path === 'string') paths.push(params.note_path);
+        if (typeof params.source === 'string') paths.push(params.source);
+        if (typeof params.target === 'string') paths.push(params.target);
+        if (paths.length > 0) notePaths = paths;
+      }
+      try {
+        return await handler(...args);
+      } catch (err) {
+        success = false;
+        throw err;
+      } finally {
+        const db = getDb();
+        if (db) {
+          try {
+            let sessionId: string | undefined;
+            try { sessionId = getSessionId(); } catch { /* no session */ }
+            recordToolInvocation(db, {
+              tool_name: toolName,
+              session_id: sessionId,
+              note_paths: notePaths,
+              duration_ms: Date.now() - start,
+              success,
+            });
+          } catch {
+            // Never let tracking errors affect tool execution
+          }
+        }
+      }
+    };
+  }
+
+  const isMultiVault = registry?.isMultiVault ?? false;
+
+  /**
+   * Wrap a handler to activate the correct vault before execution (multi-vault).
+   * Extracts the `vault` param, calls activateVault(), then forwards to the original handler.
+   */
+  function wrapWithVaultActivation(handler: (...args: any[]) => any): (...args: any[]) => any {
+    if (!isMultiVault || !registry) return handler;
+    return async (...args: any[]) => {
+      const params = args[0];
+      const vaultName = params?.vault;
+      // Remove vault from params before forwarding (tools don't expect it)
+      if (params && 'vault' in params) {
+        delete params.vault;
+      }
+      const ctx = registry.getContext(vaultName);
+      activateVault(ctx);
+      // Update module-level state references so closures see the right vault
+      stateDb = ctx.stateDb;
+      vaultIndex = ctx.vaultIndex;
+      flywheelConfig = ctx.flywheelConfig;
+      return handler(...args);
+    };
+  }
+
+  /**
+   * Inject `vault` parameter into a tool's schema (multi-vault only).
+   * server.tool() is called as: (name, description, schema, handler) or (name, schema, handler)
+   */
+  function injectVaultParam(args: any[]): void {
+    if (!isMultiVault || !registry) return;
+    // Find the schema object (the arg before the handler function)
+    const handlerIdx = args.findIndex((a: any) => typeof a === 'function');
+    if (handlerIdx <= 0) return;
+    const schemaIdx = handlerIdx - 1;
+    const schema = args[schemaIdx];
+    if (schema && typeof schema === 'object' && !Array.isArray(schema)) {
+      schema.vault = z.string().optional().describe(
+        `Vault name for multi-vault mode. Available: ${registry.getVaultNames().join(', ')}. Default: ${registry.primaryName}`
+      );
+    }
+  }
+
+  const origTool = targetServer.tool.bind(targetServer) as (...args: unknown[]) => unknown;
+  (targetServer as any).tool = (name: string, ...args: any[]) => {
+    if (!gate(name)) return;
+    // Inject vault param into schema (multi-vault)
+    injectVaultParam(args);
+    // Wrap handler with tracking + vault activation
+    if (args.length > 0 && typeof args[args.length - 1] === 'function') {
+      let handler = args[args.length - 1];
+      handler = wrapWithVaultActivation(handler);
+      args[args.length - 1] = wrapWithTracking(name, handler);
+    }
+    return origTool(name, ...args);
+  };
+
+  const origRegisterTool = (targetServer as any).registerTool?.bind(targetServer);
+  if (origRegisterTool) {
+    (targetServer as any).registerTool = (name: string, ...args: any[]) => {
+      if (!gate(name)) return;
+      injectVaultParam(args);
+      if (args.length > 0 && typeof args[args.length - 1] === 'function') {
+        let handler = args[args.length - 1];
+        handler = wrapWithVaultActivation(handler);
+        args[args.length - 1] = wrapWithTracking(name, handler);
+      }
+      return origRegisterTool(name, ...args);
+    };
+  }
+
+  return { get registered() { return _registered; }, get skipped() { return _skipped; } };
 }
 
 /**
- * Wrap a tool handler to record invocations in StateDb.
- * Extracts note paths from common parameters (path, paths, note_path).
+ * Register all tools on a McpServer instance.
+ * Closes over module-level state (vaultPath, vaultIndex, flywheelConfig, stateDb).
+ * Safe because JS is single-threaded and state is read-mostly (watcher updates, tools read).
  */
-function wrapHandlerWithTracking(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
-  return async (...args: any[]) => {
-    const start = Date.now();
-    let success = true;
-    let notePaths: string[] | undefined;
+function registerAllTools(targetServer: McpServer): void {
+  // Read tools
+  registerHealthTools(targetServer, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb, getWatcherStatus);
+  registerReadSystemTools(
+    targetServer,
+    () => vaultIndex,
+    (newIndex) => { vaultIndex = newIndex; },
+    () => vaultPath,
+    (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
+    () => stateDb
+  );
+  registerGraphTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
+  registerWikilinkTools(targetServer, () => vaultIndex, () => vaultPath);
+  registerQueryTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
+  registerPrimitiveTools(targetServer, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb);
+  registerGraphAnalysisTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb, () => flywheelConfig);
+  registerSemanticAnalysisTools(targetServer, () => vaultIndex, () => vaultPath);
+  registerVaultSchemaTools(targetServer, () => vaultIndex, () => vaultPath);
+  registerNoteIntelligenceTools(targetServer, () => vaultIndex, () => vaultPath, () => flywheelConfig);
+  registerMigrationTools(targetServer, () => vaultIndex, () => vaultPath);
 
-    // Extract note paths from first arg (params object)
-    const params = args[0];
-    if (params && typeof params === 'object') {
-      const paths: string[] = [];
-      if (typeof params.path === 'string') paths.push(params.path);
-      if (Array.isArray(params.paths)) paths.push(...params.paths.filter((p: unknown) => typeof p === 'string'));
-      if (typeof params.note_path === 'string') paths.push(params.note_path);
-      if (typeof params.source === 'string') paths.push(params.source);
-      if (typeof params.target === 'string') paths.push(params.target);
-      if (paths.length > 0) notePaths = paths;
-    }
+  // Write tools
+  registerMutationTools(targetServer, () => vaultPath, () => flywheelConfig);
+  registerTaskTools(targetServer, () => vaultPath);
+  registerFrontmatterTools(targetServer, () => vaultPath);
+  registerNoteTools(targetServer, () => vaultPath, () => vaultIndex);
+  registerMoveNoteTools(targetServer, () => vaultPath);
+  registerWriteMergeTools(targetServer, () => vaultPath);
+  registerWriteSystemTools(targetServer, () => vaultPath);
+  registerPolicyTools(targetServer, () => vaultPath);
+  registerTagTools(targetServer, () => vaultIndex, () => vaultPath);
+  registerWikilinkFeedbackTools(targetServer, () => stateDb);
+  registerCorrectionTools(targetServer, () => stateDb);
+  registerInitTools(targetServer, () => vaultPath, () => stateDb);
+  registerConfigTools(
+    targetServer,
+    () => flywheelConfig,
+    (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
+    () => stateDb
+  );
 
-    try {
-      return await handler(...args);
-    } catch (err) {
-      success = false;
-      throw err;
-    } finally {
-      if (stateDb) {
-        try {
-          let sessionId: string | undefined;
-          try { sessionId = getSessionId(); } catch { /* no session */ }
-          recordToolInvocation(stateDb, {
-            tool_name: toolName,
-            session_id: sessionId,
-            note_paths: notePaths,
-            duration_ms: Date.now() - start,
-            success,
-          });
-        } catch {
-          // Never let tracking errors affect tool execution
-        }
-      }
-    }
-  };
+  // Additional read tools
+  registerMetricsTools(targetServer, () => vaultIndex, () => stateDb);
+  registerActivityTools(targetServer, () => stateDb, () => { try { return getSessionId(); } catch { return null; } });
+  registerSimilarityTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
+  registerSemanticTools(targetServer, () => vaultPath, () => stateDb);
+  registerReadMergeTools(targetServer, () => stateDb);
+
+  // Memory tools
+  registerMemoryTools(targetServer, () => stateDb);
+  registerRecallTools(targetServer, () => stateDb, () => vaultPath, () => vaultIndex ?? null);
+  registerBriefTools(targetServer, () => stateDb);
+
+  // Resources (always registered, not gated by tool presets)
+  registerVaultResources(targetServer, () => vaultIndex ?? null);
 }
 
-const _originalTool = server.tool.bind(server) as (...args: unknown[]) => unknown;
-(server as any).tool = (name: string, ...args: any[]) => {
-  if (!gateByCategory(name)) return;
-  // Wrap the handler (last arg) with tracking
-  if (args.length > 0 && typeof args[args.length - 1] === 'function') {
-    args[args.length - 1] = wrapHandlerWithTracking(name, args[args.length - 1]);
-  }
-  return _originalTool(name, ...args);
-};
-
-const _originalRegisterTool = (server as any).registerTool?.bind(server);
-if (_originalRegisterTool) {
-  (server as any).registerTool = (name: string, ...args: any[]) => {
-    if (!gateByCategory(name)) return;
-    // Wrap the handler (last arg) with tracking
-    if (args.length > 0 && typeof args[args.length - 1] === 'function') {
-      args[args.length - 1] = wrapHandlerWithTracking(name, args[args.length - 1]);
-    }
-    return _originalRegisterTool(name, ...args);
-  };
+/**
+ * Create a fully configured McpServer with tool gating and all tools registered.
+ * Used by HTTP transport to create per-request servers.
+ */
+function createConfiguredServer(): McpServer {
+  const s = new McpServer(
+    { name: 'flywheel-memory', version: pkg.version },
+    { instructions: generateInstructions(enabledCategories) },
+  );
+  applyToolGating(s, enabledCategories, () => stateDb, vaultRegistry);
+  registerAllTools(s);
+  return s;
 }
 
-// Log enabled categories
+// ============================================================================
+// Primary Server Instance (stdio transport)
+// ============================================================================
+
+const server = new McpServer(
+  { name: 'flywheel-memory', version: pkg.version },
+  { instructions: generateInstructions(enabledCategories) },
+);
+
+const _gatingResult = applyToolGating(server, enabledCategories, () => stateDb, vaultRegistry);
+registerAllTools(server);
+
 const categoryList = Array.from(enabledCategories).sort().join(', ');
 serverLog('server', `Tool categories: ${categoryList}`);
+serverLog('server', `Registered ${_gatingResult.registered} tools, skipped ${_gatingResult.skipped}`);
 
 // ============================================================================
-// Register All Tools (per-tool filtering via patched server.tool())
+// Multi-Vault Initialization (MV.2 + MV.3)
 // ============================================================================
 
-// Read tools
-registerHealthTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb, getWatcherStatus);
-registerReadSystemTools(
-  server,
-  () => vaultIndex,
-  (newIndex) => { vaultIndex = newIndex; },
-  () => vaultPath,
-  (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
-  () => stateDb
-);
-registerGraphTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
-registerWikilinkTools(server, () => vaultIndex, () => vaultPath);
-registerQueryTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
-registerPrimitiveTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb);
-registerGraphAnalysisTools(server, () => vaultIndex, () => vaultPath, () => stateDb, () => flywheelConfig);
-registerSemanticAnalysisTools(server, () => vaultIndex, () => vaultPath);
-registerVaultSchemaTools(server, () => vaultIndex, () => vaultPath);
-registerNoteIntelligenceTools(server, () => vaultIndex, () => vaultPath, () => flywheelConfig);
-registerMigrationTools(server, () => vaultIndex, () => vaultPath);
+/**
+ * Initialize a vault: open StateDb, inject singleton handles, load caches.
+ * Returns a VaultContext with all state initialized.
+ */
+async function initializeVault(name: string, vaultPathArg: string): Promise<VaultContext> {
+  const ctx: VaultContext = {
+    name,
+    vaultPath: vaultPathArg,
+    stateDb: null,
+    vaultIndex: undefined as unknown as VaultIndex,
+    flywheelConfig: {},
+    watcher: null,
+  };
 
-// Write tools
-registerMutationTools(server, vaultPath, () => flywheelConfig);
-registerTaskTools(server, vaultPath);
-registerFrontmatterTools(server, vaultPath);
-registerNoteTools(server, vaultPath, () => vaultIndex);
-registerMoveNoteTools(server, vaultPath);
-registerWriteMergeTools(server, vaultPath);
-registerWriteSystemTools(server, vaultPath);
-registerPolicyTools(server, vaultPath);
-registerTagTools(server, () => vaultIndex, () => vaultPath);
-registerWikilinkFeedbackTools(server, () => stateDb);
-registerCorrectionTools(server, () => stateDb);
-registerInitTools(server, vaultPath, () => stateDb);
-registerConfigTools(
-  server,
-  () => flywheelConfig,
-  (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
-  () => stateDb
-);
+  try {
+    ctx.stateDb = openStateDb(vaultPathArg);
+    serverLog('statedb', `[${name}] StateDb initialized`);
 
-// Additional read tools
-registerMetricsTools(server, () => vaultIndex, () => stateDb);
-registerActivityTools(server, () => stateDb, () => { try { return getSessionId(); } catch { return null; } });
-registerSimilarityTools(server, () => vaultIndex, () => vaultPath, () => stateDb);
-registerSemanticTools(server, () => vaultPath, () => stateDb);
-registerReadMergeTools(server, () => stateDb);
+    // Nudge if vault_init has never been run
+    const vaultInitRow = ctx.stateDb.getMetadataValue.get('vault_init_last_run_at') as { value: string } | undefined;
+    if (!vaultInitRow) {
+      serverLog('server', `[${name}] Vault not initialized — call vault_init to enrich legacy notes`);
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    serverLog('statedb', `[${name}] StateDb initialization failed: ${msg}`, 'error');
+    serverLog('server', `[${name}] Auto-wikilinks will be disabled for this session`, 'warn');
+  }
 
-// Memory tools
-registerMemoryTools(server, () => stateDb);
-registerRecallTools(server, () => stateDb, () => vaultPath, () => vaultIndex ?? null);
-registerBriefTools(server, () => stateDb);
+  return ctx;
+}
 
-// Resources (always registered, not gated by tool presets)
-registerVaultResources(server, () => vaultIndex ?? null);
+/**
+ * Activate a vault context by swapping all module-level singletons.
+ * Safe because MCP processes requests sequentially per transport (JS is single-threaded).
+ * Stateless HTTP runs one request to completion per McpServer instance.
+ */
+function activateVault(ctx: VaultContext): void {
+  // Update module-level state
+  (globalThis as any).__flywheel_active_vault = ctx.name;
 
-serverLog('server', `Registered ${_registeredCount} tools, skipped ${_skippedCount}`);
+  if (ctx.stateDb) {
+    setWriteStateDb(ctx.stateDb);
+    setFTS5Database(ctx.stateDb.db);
+    setRecencyStateDb(ctx.stateDb);
+    setEdgeWeightStateDb(ctx.stateDb);
+    setTaskCacheDatabase(ctx.stateDb.db);
+    setEmbeddingsDatabase(ctx.stateDb.db);
+    loadEntityEmbeddingsToMemory();
+  }
+}
 
 // ============================================================================
 // Main Entry Point
@@ -701,57 +844,82 @@ async function main() {
 
   const startTime = Date.now();
 
-  // Initialize StateDb early
-  try {
-    stateDb = openStateDb(vaultPath);
-    serverLog('statedb', 'StateDb initialized');
+  // Parse multi-vault config
+  const vaultConfigs = parseVaultConfig();
 
-    // Inject StateDb handle for FTS5 content search (notes_fts table)
-    setFTS5Database(stateDb.db);
+  if (vaultConfigs) {
+    // Multi-vault mode
+    vaultRegistry = new VaultRegistry(vaultConfigs[0].name);
+    serverLog('server', `Multi-vault mode: ${vaultConfigs.map(v => v.name).join(', ')}`);
 
-    // Inject StateDb handle for embeddings (note_embeddings table)
-    setEmbeddingsDatabase(stateDb.db);
+    for (const vc of vaultConfigs) {
+      const ctx = await initializeVault(vc.name, vc.path);
+      vaultRegistry.addContext(ctx);
+    }
 
-    // Inject StateDb handle for task cache
-    setTaskCacheDatabase(stateDb.db);
+    // Activate primary vault
+    const primary = vaultRegistry.getContext();
+    stateDb = primary.stateDb;
+    activateVault(primary);
+  } else {
+    // Single-vault mode (backward compatible)
+    vaultRegistry = new VaultRegistry('default');
+    const ctx = await initializeVault('default', vaultPath);
+    vaultRegistry.addContext(ctx);
+    stateDb = ctx.stateDb;
+    activateVault(ctx);
+  }
 
-    serverLog('statedb', 'Injected FTS5, embeddings, task cache handles');
-
-    // Load entity embeddings into memory (if previously built)
-    loadEntityEmbeddingsToMemory();
-
-    // Set StateDb for wikilinks (entity index loads lazily from StateDb on first write)
-    setWriteStateDb(stateDb);
-
-    // Set StateDb for recency tracking
-    setRecencyStateDb(stateDb);
-
-    // Set StateDb for edge weight computation
-    setEdgeWeightStateDb(stateDb);
-
-    // Load cached co-occurrence index (avoids full vault scan on restart)
+  // Load cached co-occurrence index (primary vault)
+  if (stateDb) {
     const cachedCooc = loadCooccurrenceFromStateDb(stateDb);
     if (cachedCooc) {
       setCooccurrenceIndex(cachedCooc.index);
       lastCooccurrenceRebuildAt = cachedCooc.builtAt;
       serverLog('index', `Co-occurrence: loaded from cache (${Object.keys(cachedCooc.index.associations).length} entities, ${cachedCooc.index._metadata.total_associations} associations)`);
     }
-
-    // Nudge if vault_init has never been run
-    const vaultInitRow = stateDb.getMetadataValue.get('vault_init_last_run_at') as { value: string } | undefined;
-    if (!vaultInitRow) {
-      serverLog('server', 'Vault not initialized — call vault_init to enrich legacy notes');
-    }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    serverLog('statedb', `StateDb initialization failed: ${msg}`, 'error');
-    serverLog('server', 'Auto-wikilinks will be disabled for this session', 'warn');
   }
 
-  // Connect MCP immediately so crank can talk to us while we build indexes
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  serverLog('server', 'MCP server connected');
+  // Connect transports
+  const transportMode = (process.env.FLYWHEEL_TRANSPORT ?? 'stdio').toLowerCase();
+
+  if (transportMode === 'stdio' || transportMode === 'both') {
+    // Connect stdio immediately so crank can talk to us while we build indexes
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    serverLog('server', 'MCP server connected (stdio)');
+  }
+
+  if (transportMode === 'http' || transportMode === 'both') {
+    const { createMcpExpressApp } = await import('@modelcontextprotocol/sdk/server/express.js');
+    const { StreamableHTTPServerTransport } = await import('@modelcontextprotocol/sdk/server/streamableHttp.js');
+
+    const httpPort = parseInt(process.env.FLYWHEEL_HTTP_PORT ?? '3111', 10);
+    const httpHost = process.env.FLYWHEEL_HTTP_HOST ?? '127.0.0.1';
+
+    const app = createMcpExpressApp({ host: httpHost });
+
+    // Stateless HTTP — per-request McpServer + StreamableHTTPServerTransport
+    app.post('/mcp', async (req: any, res: any) => {
+      const httpServer = createConfiguredServer();
+      const httpTransport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+      await httpServer.connect(httpTransport);
+      await httpTransport.handleRequest(req, res, req.body);
+      res.on('close', () => { httpTransport.close(); httpServer.close(); });
+    });
+
+    app.get('/health', (_req: any, res: any) => {
+      const health: Record<string, unknown> = { status: 'ok', version: pkg.version, vault: vaultPath };
+      if (vaultRegistry?.isMultiVault) {
+        health.vaults = vaultRegistry.getVaultNames();
+      }
+      res.json(health);
+    });
+
+    app.listen(httpPort, httpHost, () => {
+      serverLog('server', `HTTP transport on ${httpHost}:${httpPort}`);
+    });
+  }
 
   // Initialize logging
   initializeReadLogger(vaultPath).then(() => {

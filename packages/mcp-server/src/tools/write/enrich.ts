@@ -441,7 +441,7 @@ async function executeEnrich(
 
 export function registerInitTools(
   server: McpServer,
-  vaultPath: string,
+  getVaultPath: () => string,
   getStateDb: () => StateDb | null,
 ): void {
   server.tool(
@@ -455,6 +455,7 @@ export function registerInitTools(
     },
     async ({ mode, dry_run, batch_size, offset }) => {
       const stateDb = getStateDb();
+      const vaultPath = getVaultPath();
 
       switch (mode) {
         case 'status': {

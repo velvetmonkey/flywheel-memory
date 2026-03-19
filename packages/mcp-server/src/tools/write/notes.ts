@@ -221,7 +221,7 @@ export function registerNoteTools(
         );
       } catch (error) {
         return formatMcpResult(
-          errorResult(notePath, `Failed to create note: ${error instanceof Error ? error.message : String(error)}`)
+          errorResult(rawNotePath, `Failed to create note: ${error instanceof Error ? error.message : String(error)}`)
         );
       }
     }

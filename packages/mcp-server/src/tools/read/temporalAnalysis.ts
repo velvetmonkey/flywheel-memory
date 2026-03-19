@@ -126,7 +126,7 @@ function handleGetContextAroundDate(
 
     // Active entities from recency table (epoch ms)
     try {
-      const rows = stateDb.prepare(
+      const rows = stateDb.db.prepare(
         `SELECT entity_name_lower, last_mentioned_at, mention_count
          FROM recency
          WHERE last_mentioned_at >= ? AND last_mentioned_at <= ?
@@ -143,7 +143,7 @@ function handleGetContextAroundDate(
 
     // Wikilink applications (datetime text)
     try {
-      const row = stateDb.prepare(
+      const row = stateDb.db.prepare(
         `SELECT COUNT(*) as cnt FROM wikilink_applications
          WHERE applied_at >= ? AND applied_at <= ?`
       ).get(startText, endText) as { cnt: number } | undefined;
@@ -152,7 +152,7 @@ function handleGetContextAroundDate(
 
     // New links from note_link_history (datetime text)
     try {
-      const row = stateDb.prepare(
+      const row = stateDb.db.prepare(
         `SELECT COUNT(*) as cnt FROM note_link_history
          WHERE first_seen_at >= ? AND first_seen_at <= ?`
       ).get(startText, endText) as { cnt: number } | undefined;
@@ -161,7 +161,7 @@ function handleGetContextAroundDate(
 
     // Suggestion events (epoch ms)
     try {
-      const row = stateDb.prepare(
+      const row = stateDb.db.prepare(
         `SELECT COUNT(*) as cnt FROM suggestion_events
          WHERE timestamp >= ? AND timestamp <= ?`
       ).get(startEpoch, endEpoch) as { cnt: number } | undefined;
@@ -170,7 +170,7 @@ function handleGetContextAroundDate(
 
     // File moves (datetime text)
     try {
-      const rows = stateDb.prepare(
+      const rows = stateDb.db.prepare(
         `SELECT old_path, new_path, moved_at FROM note_moves
          WHERE moved_at >= ? AND moved_at <= ?
          ORDER BY moved_at DESC`
@@ -242,7 +242,7 @@ function handlePredictStaleNotes(
   const hubScores = new Map<string, number>();
   if (stateDb) {
     try {
-      const rows = stateDb.prepare(
+      const rows = stateDb.db.prepare(
         'SELECT name_lower, hub_score FROM entities WHERE hub_score > 0'
       ).all() as Array<{ name_lower: string; hub_score: number }>;
       for (const r of rows) hubScores.set(r.name_lower, r.hub_score);
@@ -253,7 +253,7 @@ function handlePredictStaleNotes(
   const openTaskCounts = new Map<string, number>();
   if (stateDb) {
     try {
-      const rows = stateDb.prepare(
+      const rows = stateDb.db.prepare(
         `SELECT path, COUNT(*) as cnt FROM tasks
          WHERE status = 'open'
          GROUP BY path`
@@ -267,7 +267,7 @@ function handlePredictStaleNotes(
   if (stateDb) {
     try {
       const thirtyDaysAgo = Date.now() - 30 * 86400000;
-      const rows = stateDb.prepare(
+      const rows = stateDb.db.prepare(
         'SELECT entity_name_lower FROM recency WHERE last_mentioned_at >= ?'
       ).all(thirtyDaysAgo) as Array<{ entity_name_lower: string }>;
       for (const r of rows) recentlyActiveEntities.add(r.entity_name_lower);
@@ -409,7 +409,7 @@ function handleTrackConceptEvolution(
   let dbDescription = '';
   if (stateDb) {
     try {
-      const row = stateDb.prepare(
+      const row = stateDb.db.prepare(
         'SELECT hub_score, category, description FROM entities WHERE name_lower = ?'
       ).get(entityLower) as { hub_score: number; category: string; description: string | null } | undefined;
       if (row) {
@@ -439,7 +439,7 @@ function handleTrackConceptEvolution(
   let mentionCount = 0;
   if (stateDb) {
     try {
-      const row = stateDb.prepare(
+      const row = stateDb.db.prepare(
         'SELECT last_mentioned_at, mention_count FROM recency WHERE entity_name_lower = ?'
       ).get(entityLower) as { last_mentioned_at: number; mention_count: number } | undefined;
       if (row) {
@@ -469,7 +469,7 @@ function handleTrackConceptEvolution(
   if (stateDb) {
     // entity_changes
     try {
-      const rows = stateDb.prepare(
+      const rows = stateDb.db.prepare(
         `SELECT field, old_value, new_value, changed_at FROM entity_changes
          WHERE entity = ? COLLATE NOCASE AND changed_at >= ?
          ORDER BY changed_at`
@@ -486,7 +486,7 @@ function handleTrackConceptEvolution(
 
     // note_link_history (target = entity)
     try {
-      const rows = stateDb.prepare(
+      const rows = stateDb.db.prepare(
         `SELECT note_path, first_seen_at, edits_survived FROM note_link_history
          WHERE target = ? COLLATE NOCASE AND first_seen_at >= ?
          ORDER BY first_seen_at`
@@ -504,7 +504,7 @@ function handleTrackConceptEvolution(
 
     // wikilink_feedback
     try {
-      const rows = stateDb.prepare(
+      const rows = stateDb.db.prepare(
         `SELECT note_path, correct, context, created_at FROM wikilink_feedback
          WHERE entity = ? COLLATE NOCASE AND created_at >= ?
          ORDER BY created_at`
@@ -521,7 +521,7 @@ function handleTrackConceptEvolution(
 
     // wikilink_applications
     try {
-      const rows = stateDb.prepare(
+      const rows = stateDb.db.prepare(
         `SELECT note_path, applied_at FROM wikilink_applications
          WHERE entity = ? COLLATE NOCASE AND applied_at >= ?
          ORDER BY applied_at`
@@ -539,7 +539,7 @@ function handleTrackConceptEvolution(
     // note_moves (matching entity's note path)
     if (entityPath) {
       try {
-        const rows = stateDb.prepare(
+        const rows = stateDb.db.prepare(
           `SELECT old_path, new_path, moved_at FROM note_moves
            WHERE (old_path = ? OR new_path = ?) AND moved_at >= ?
            ORDER BY moved_at`
@@ -570,7 +570,7 @@ function handleTrackConceptEvolution(
   if (stateDb) {
     try {
       // All links to this entity
-      const allLinks = stateDb.prepare(
+      const allLinks = stateDb.db.prepare(
         `SELECT note_path, first_seen_at, edits_survived FROM note_link_history
          WHERE target = ? COLLATE NOCASE`
       ).all(entity) as Array<{ note_path: string; first_seen_at: string; edits_survived: number }>;
@@ -596,12 +596,12 @@ function handleTrackConceptEvolution(
   if (includeCooccurrence) {
     const coocIndex = getCooccurrenceIndex();
     if (coocIndex) {
-      const assoc = coocIndex.associations.get(entityLower);
+      const assoc = coocIndex.associations[entityLower];
       if (assoc) {
         cooccurrenceNeighbors = Array.from(assoc.entries())
-          .sort((a, b) => b[1] - a[1])
+          .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
           .slice(0, 10)
-          .map(([name, count]) => ({ entity: name, count }));
+          .map(([name, count]: [string, number]) => ({ entity: name, count }));
       } else {
         cooccurrenceNeighbors = [];
       }

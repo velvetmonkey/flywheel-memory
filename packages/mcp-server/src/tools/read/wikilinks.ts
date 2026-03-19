@@ -12,6 +12,8 @@ import { requireIndex } from '../../core/read/indexGuard.js';
 import { suggestRelatedLinks, getCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { countFTS5Mentions } from '../../core/read/fts5.js';
 import { detectImplicitEntities, IMPLICIT_EXCLUDE_WORDS } from '@velvetmonkey/vault-core';
+import type { StateDb } from '@velvetmonkey/vault-core';
+import { getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD } from '../../core/write/wikilinkFeedback.js';
 
 /**
  * Match entity in text, avoiding existing wikilinks and code blocks
@@ -182,7 +184,8 @@ function findEntityMatches(text: string, entities: Map<string, string>): EntityM
 export function registerWikilinkTools(
   server: McpServer,
   getIndex: () => VaultIndex,
-  getVaultPath: () => string
+  getVaultPath: () => string,
+  getStateDb: () => StateDb | null = () => null
 ): void {
   // suggest_wikilinks - Find entities in text that could be linked
   const SuggestionSchema = z.object({
@@ -223,6 +226,12 @@ export function registerWikilinkTools(
     confidence: z.enum(['high', 'medium', 'low']),
     feedbackCount: z.coerce.number(),
     accuracy: z.coerce.number().optional(),
+    suppressionContext: z.object({
+      posteriorMean: z.coerce.number(),
+      totalObservations: z.coerce.number(),
+      isSuppressed: z.boolean(),
+      falsePositiveRate: z.coerce.number(),
+    }).optional(),
   });
 
   const SuggestWikilinksOutputSchema = {
@@ -355,6 +364,27 @@ export function registerWikilinkTools(
           strictness: 'balanced',
         });
         if (scored.detailed) {
+          // Enrich with suppression context
+          const stateDb = getStateDb();
+          if (stateDb) {
+            try {
+              const weightedStats = getWeightedEntityStats(stateDb);
+              const statsMap = new Map(weightedStats.map(s => [s.entity.toLowerCase(), s]));
+              for (const suggestion of scored.detailed) {
+                const stat = statsMap.get(suggestion.entity.toLowerCase());
+                if (stat) {
+                  const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp);
+                  const totalObs = PRIOR_ALPHA + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
+                  suggestion.suppressionContext = {
+                    posteriorMean: Math.round(posteriorMean * 1000) / 1000,
+                    totalObservations: Math.round(totalObs * 10) / 10,
+                    isSuppressed: totalObs >= SUPPRESSION_MIN_OBSERVATIONS && posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD,
+                    falsePositiveRate: Math.round(stat.weightedFpRate * 1000) / 1000,
+                  };
+                }
+              }
+            } catch { /* suppression stats unavailable */ }
+          }
           output.scored_suggestions = scored.detailed;
         }
       }

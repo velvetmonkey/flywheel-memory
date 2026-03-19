@@ -1,7 +1,7 @@
 /**
  * Temporal Analysis tools - time-based vault intelligence
  *
- * Tools: get_context_around_date, predict_stale_notes, track_concept_evolution
+ * Tools: get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary
  */
 
 import { z } from 'zod';
@@ -620,6 +620,101 @@ function handleTrackConceptEvolution(
 }
 
 // ============================================================================
+// Tool 4: temporal_summary
+// ============================================================================
+
+function handleTemporalSummary(
+  index: VaultIndex,
+  stateDb: StateDb | null,
+  startDate: string,
+  endDate: string,
+  focusEntities: string[] | undefined,
+  limit: number,
+) {
+  // 1. Get context for the period (use midpoint as center, half-range as window)
+  const startMs = new Date(startDate).getTime();
+  const endMs = new Date(endDate).getTime();
+  const midpointMs = startMs + (endMs - startMs) / 2;
+  const midpoint = formatDate(new Date(midpointMs));
+  const windowDays = Math.ceil((endMs - startMs) / (2 * 86400000));
+
+  const contextResult = handleGetContextAroundDate(index, stateDb, midpoint, windowDays, limit);
+  const context = JSON.parse(contextResult.content[0].text);
+
+  // 2. Get stale notes that overlap the period
+  const staleResult = handlePredictStaleNotes(
+    index, stateDb, 30, 20, true, undefined, 10, 0,
+  );
+  const stale = JSON.parse(staleResult.content[0].text);
+
+  // 3. Track evolution for top entities (from context or user-specified)
+  const entitiesToTrack = focusEntities && focusEntities.length > 0
+    ? focusEntities
+    : (context.active_entities || []).slice(0, 5).map((e: { name: string }) => e.name);
+
+  const daysBack = Math.ceil((endMs - startMs) / 86400000) + 30; // period + 30d context
+  const evolutions = entitiesToTrack.map((entityName: string) => {
+    const evoResult = handleTrackConceptEvolution(
+      index, stateDb, entityName, daysBack, true,
+    );
+    const evo = JSON.parse(evoResult.content[0].text);
+    if (evo.error) return null;
+
+    // Filter timeline to just the summary period
+    const periodEvents = (evo.timeline || []).filter(
+      (e: { date: string }) => e.date >= startDate && e.date <= endDate
+    );
+
+    return {
+      entity: entityName,
+      current_state: {
+        category: evo.current_state?.category,
+        hub_score: evo.current_state?.hub_score,
+        backlink_count: evo.current_state?.backlink_count,
+        mention_count: evo.current_state?.mention_count,
+      },
+      period_events: periodEvents.length,
+      event_types: periodEvents.reduce((acc: Record<string, number>, e: { type: string }) => {
+        acc[e.type] = (acc[e.type] || 0) + 1;
+        return acc;
+      }, {}),
+      link_durability: evo.link_stats?.avg_edits_survived ?? 0,
+      top_neighbors: (evo.cooccurrence_neighbors || []).slice(0, 5),
+    };
+  }).filter(Boolean);
+
+  const output = {
+    period: { start: startDate, end: endDate },
+    activity_snapshot: {
+      notes_modified: context.summary?.notes_modified ?? 0,
+      notes_created: context.summary?.notes_created ?? 0,
+      most_active_day: context.summary?.most_active_day,
+      wikilinks_applied: context.wikilink_activity?.applied ?? 0,
+      new_links: context.wikilink_activity?.new_links ?? 0,
+      suggestions_evaluated: context.wikilink_activity?.suggestions_evaluated ?? 0,
+      file_moves: (context.file_moves || []).length,
+    },
+    active_entities: (context.active_entities || []).slice(0, 10),
+    entity_evolution: evolutions,
+    maintenance_alerts: (stale.notes || [])
+      .filter((n: { recommendation: string }) => n.recommendation !== 'low_priority')
+      .slice(0, 10)
+      .map((n: { path: string; title: string; days_stale: number; importance: number; recommendation: string }) => ({
+        path: n.path,
+        title: n.title,
+        days_stale: n.days_stale,
+        importance: n.importance,
+        recommendation: n.recommendation,
+      })),
+    stale_notes_total: stale.total_count ?? 0,
+  };
+
+  return {
+    content: [{ type: 'text' as const, text: JSON.stringify(output, null, 2) }],
+  };
+}
+
+// ============================================================================
 // Registration
 // ============================================================================
 
@@ -697,6 +792,31 @@ export function registerTemporalAnalysisTools(
       requireIndex();
       return handleTrackConceptEvolution(
         getIndex(), getStateDb(), entity, days_back ?? 90, include_cooccurrence ?? true,
+      );
+    },
+  );
+
+  // Tool 4: temporal_summary
+  server.registerTool(
+    'temporal_summary',
+    {
+      title: 'Temporal Summary',
+      description:
+        'Generate a vault pulse report for a time period. Composes context, staleness prediction, ' +
+        'and concept evolution into a single summary. Shows activity snapshot, entity momentum, ' +
+        'and maintenance alerts. Use for weekly/monthly/quarterly reviews.',
+      inputSchema: {
+        start_date: z.string().describe('Start of period in YYYY-MM-DD format'),
+        end_date: z.string().describe('End of period in YYYY-MM-DD format'),
+        focus_entities: z.array(z.string()).optional().describe('Specific entities to track evolution for (default: top 5 active entities in period)'),
+        limit: z.coerce.number().default(50).describe('Maximum notes to include in context snapshot'),
+      },
+    },
+    async ({ start_date, end_date, focus_entities, limit: requestedLimit }) => {
+      requireIndex();
+      const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
+      return handleTemporalSummary(
+        getIndex(), getStateDb(), start_date, end_date, focus_entities, limit,
       );
     },
   );

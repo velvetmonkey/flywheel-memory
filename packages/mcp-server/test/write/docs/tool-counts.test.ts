@@ -215,7 +215,8 @@ describe('Tool Count Verification', () => {
         'suggest_entity_aliases', 'merge_entities', 'absorb_as_alias',
         'unlinked_mentions_report', 'discover_stub_candidates', 'discover_cooccurrence_gaps',
         'memory', 'recall', 'brief',
-        'predict_stale_notes', 'track_concept_evolution',
+        'predict_stale_notes', 'track_concept_evolution', 'temporal_summary',
+        'flywheel_doctor',
       ]);
 
       for (const tool of toolNames) {

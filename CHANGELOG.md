@@ -7,6 +7,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.105] - 2026-03-19
+
+### Added
+- Temporal reasoning tools: `get_context_around_date` (vault activity around a date), `predict_stale_notes` (multi-signal staleness prediction), `track_concept_evolution` (entity timeline + link durability)
+
+### Changed
+- Suffix link cap reduced from unlimited to 3 per note
+
+## [2.0.104] - 2026-03-19
+
+### Added
+- Multi-client setup guides (Cursor, Windsurf, VS Code, Continue)
+- Multi-vault documentation overhaul
+- HTTP server env vars (port, host, transport) surfaced in SETUP.md and README
+
+## [2.0.103] - 2026-03-19
+
+### Fixed
+- CI failures: notes.ts type error + flaky AST perf test
+
+## [2.0.102] - 2026-03-19
+
+### Added
+- Cross-vault search: `search` with no `vault` param iterates all vault contexts and merges results
+- HTTP and multi-vault docs
+
+## [2.0.101] - 2026-03-19
+
+### Changed
+- Daily note rotation + graph quality reports
+
+## [2.0.100] - 2026-03-18
+
+### Added
+- HTTP transport (`FLYWHEEL_TRANSPORT=http/both`, `FLYWHEEL_HTTP_PORT`, `FLYWHEEL_HTTP_HOST`)
+- Multi-vault support (`FLYWHEEL_VAULTS` env var, `vault` param on all tools)
+- Quoted-terms in search (exact phrase matching)
+- Windows path fixes
+
+### Changed
+- Removed `scope` param from search (use `vault` instead)
+- Fixed folder filter in search
+
+## [2.0.99] - 2026-03-18
+
+### Added
+- Filename sanitization in `vault_create_note` (strips invalid characters)
+
+## [2.0.98] - 2026-03-18
+
+### Fixed
+- Multi-line `vault_replace_in_section` now works correctly
+- Tightened implicit entity detection (fewer false positives)
+
+## [2.0.97] - 2026-03-18
+
+### Added
+- Graph signals (hub score, backlinks, edge weight) applied to `recall` note scoring
+- Linked items enriched with graph metadata in recall results
+
+## [2.0.96] - 2026-03-18
+
+### Fixed
+- Auto-link entities independently per entry in daily notes (previously treated as one block)
+
+## [2.0.95] - 2026-03-18
+
+### Changed
+- Increased wikilink suggestion recall without increasing noise (improved scoring thresholds)
+
+## [2.0.94] - 2026-03-18
+
+### Changed
+- README improvements: intro rewrite, Windows callout
+- Safe writes documentation expanded with AST protection and correction loop details
+- Reduced Windows CI flakiness in package-startup test
+
 ## [2.0.93] - 2026-03-18
 
 ### Added
@@ -241,7 +318,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI workflows for linting and testing
 - Strategic README with project positioning
 
-[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.20...HEAD
+[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.105...HEAD
+[2.0.105]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.104...flywheel-memory-v2.0.105
+[2.0.104]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.103...flywheel-memory-v2.0.104
+[2.0.103]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.102...flywheel-memory-v2.0.103
+[2.0.102]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.101...flywheel-memory-v2.0.102
+[2.0.101]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.100...flywheel-memory-v2.0.101
+[2.0.100]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.99...flywheel-memory-v2.0.100
+[2.0.99]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.98...flywheel-memory-v2.0.99
+[2.0.98]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.97...flywheel-memory-v2.0.98
+[2.0.97]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.96...flywheel-memory-v2.0.97
+[2.0.96]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.95...flywheel-memory-v2.0.96
+[2.0.95]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.94...flywheel-memory-v2.0.95
+[2.0.94]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.93...flywheel-memory-v2.0.94
+[2.0.93]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.20...flywheel-memory-v2.0.93
 [2.0.20]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.13...flywheel-memory-v2.0.20
 [2.0.13]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.12...flywheel-memory-v2.0.13
 [2.0.12]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.11...flywheel-memory-v2.0.12

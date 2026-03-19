@@ -222,6 +222,12 @@ export interface ScoredSuggestion {
   confidence: ConfidenceLevel;
   feedbackCount: number;
   accuracy?: number;
+  suppressionContext?: {
+    posteriorMean: number;       // Beta-Binomial posterior (0-1)
+    totalObservations: number;   // weighted observation count
+    isSuppressed: boolean;       // posteriorMean < 0.35 && totalObs >= 20
+    falsePositiveRate: number;   // weighted FP / weighted total
+  };
 }
 
 export interface SuggestResult {

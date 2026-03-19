@@ -790,7 +790,7 @@ function registerAllTools(targetServer: McpServer): void {
     () => stateDb
   );
   registerGraphTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
-  registerWikilinkTools(targetServer, () => vaultIndex, () => vaultPath);
+  registerWikilinkTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
   registerQueryTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
   registerPrimitiveTools(targetServer, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb);
   registerGraphAnalysisTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb, () => flywheelConfig);

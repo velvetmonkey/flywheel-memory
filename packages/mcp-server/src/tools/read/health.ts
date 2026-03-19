@@ -17,6 +17,8 @@ import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount, getActive
 import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache.js';
 import { getServerLog, type LogEntry } from '../../core/shared/serverLog.js';
 import { getSweepResults, type SweepResults } from '../../core/read/sweep.js';
+import { getSuppressedCount, getEntityStats, getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD } from '../../core/write/wikilinkFeedback.js';
+import { getEntityEmbeddingsCount } from '../../core/read/embeddings.js';
 import type { WatcherStatus } from '../../core/read/watch/types.js';
 
 /** Staleness threshold in seconds (5 minutes) */
@@ -679,6 +681,216 @@ export function registerHealthTools(
           },
         ],
         structuredContent: result,
+      };
+    }
+  );
+
+  // flywheel_doctor — Comprehensive diagnostic report
+  server.registerTool(
+    'flywheel_doctor',
+    {
+      title: 'Flywheel Doctor',
+      description:
+        'Run comprehensive vault diagnostics and produce a one-page report. ' +
+        'Actively checks for problems (unlike health_check which reports status). ' +
+        'Checks: schema version, index freshness, embedding coverage, suppression health, ' +
+        'cache freshness, FTS5 integrity, watcher state, and disk usage.',
+      inputSchema: {},
+    },
+    async (): Promise<{
+      content: Array<{ type: 'text'; text: string }>;
+    }> => {
+      const checks: Array<{
+        name: string;
+        status: 'ok' | 'warning' | 'error';
+        detail: string;
+        fix?: string;
+      }> = [];
+
+      const index = getIndex();
+      const vaultPath = getVaultPath();
+      const stateDb = getStateDb();
+      const watcherStatus = getWatcherStatus();
+
+      // 1. Schema version
+      checks.push({
+        name: 'schema_version',
+        status: 'ok',
+        detail: `Schema version ${SCHEMA_VERSION}`,
+      });
+
+      // 2. Vault accessibility
+      try {
+        fs.accessSync(vaultPath, fs.constants.R_OK | fs.constants.W_OK);
+        checks.push({ name: 'vault_access', status: 'ok', detail: `Vault readable and writable at ${vaultPath}` });
+      } catch {
+        checks.push({ name: 'vault_access', status: 'error', detail: `Vault not accessible at ${vaultPath}`, fix: 'Check PROJECT_PATH environment variable and directory permissions' });
+      }
+
+      // 3. Index state
+      const indexState = getIndexState();
+      const indexBuilt = indexState === 'ready' && index?.notes !== undefined;
+      if (indexState === 'ready' && indexBuilt) {
+        const age = Math.floor((Date.now() - index.builtAt.getTime()) / 1000);
+        if (age > STALE_THRESHOLD_SECONDS) {
+          checks.push({ name: 'index_freshness', status: 'warning', detail: `Index is ${Math.floor(age / 60)} minutes old`, fix: 'Run refresh_index to rebuild' });
+        } else {
+          checks.push({ name: 'index_freshness', status: 'ok', detail: `Index built ${age}s ago, ${index.notes.size} notes, ${index.entities.size} entities` });
+        }
+      } else if (indexState === 'building') {
+        const progress = getIndexProgress();
+        checks.push({ name: 'index_freshness', status: 'warning', detail: `Index building (${progress.parsed}/${progress.total} files)` });
+      } else {
+        const err = getIndexError();
+        checks.push({ name: 'index_freshness', status: 'error', detail: `Index in ${indexState} state${err ? ': ' + err.message : ''}`, fix: 'Run refresh_index' });
+      }
+
+      // 4. Embedding coverage
+      const embReady = hasEmbeddingsIndex();
+      const embCount = getEmbeddingsCount();
+      const noteCount = indexBuilt ? index.notes.size : 0;
+      if (embReady && noteCount > 0) {
+        const coverage = Math.round((embCount / noteCount) * 100);
+        if (coverage < 50) {
+          checks.push({ name: 'embedding_coverage', status: 'warning', detail: `${embCount}/${noteCount} notes embedded (${coverage}%)`, fix: 'Run init_semantic with force=true to rebuild' });
+        } else {
+          checks.push({ name: 'embedding_coverage', status: 'ok', detail: `${embCount}/${noteCount} notes embedded (${coverage}%), model: ${getActiveModelId() || 'default'}` });
+        }
+        // Entity embeddings
+        const entityEmbCount = getEntityEmbeddingsCount();
+        const entityCount = indexBuilt ? index.entities.size : 0;
+        if (entityCount > 0) {
+          const entityCoverage = Math.round((entityEmbCount / entityCount) * 100);
+          checks.push({ name: 'entity_embedding_coverage', status: entityCoverage < 50 ? 'warning' : 'ok', detail: `${entityEmbCount}/${entityCount} entities embedded (${entityCoverage}%)` });
+        }
+      } else if (!embReady) {
+        checks.push({ name: 'embedding_coverage', status: 'warning', detail: 'Semantic embeddings not built', fix: 'Run init_semantic to enable hybrid search' });
+      } else if (isEmbeddingsBuilding()) {
+        checks.push({ name: 'embedding_coverage', status: 'warning', detail: 'Embedding build in progress' });
+      }
+
+      // 5. FTS5 state
+      const fts = getFTS5State();
+      if (fts.ready) {
+        checks.push({ name: 'fts5', status: 'ok', detail: `FTS5 ready, ${fts.noteCount ?? 0} notes indexed` });
+      } else if (fts.building) {
+        checks.push({ name: 'fts5', status: 'warning', detail: 'FTS5 index building' });
+      } else {
+        checks.push({ name: 'fts5', status: 'error', detail: 'FTS5 not available', fix: 'Will build automatically on next index rebuild' });
+      }
+
+      // 6. Watcher state
+      if (watcherStatus) {
+        if (watcherStatus.state === 'ready') {
+          checks.push({ name: 'watcher', status: 'ok', detail: `Watcher running, ${watcherStatus.pendingEvents ?? 0} pending events` });
+        } else if (watcherStatus.state === 'error') {
+          checks.push({ name: 'watcher', status: 'error', detail: 'Watcher in error state', fix: 'Restart the MCP server' });
+        } else {
+          checks.push({ name: 'watcher', status: 'warning', detail: `Watcher state: ${watcherStatus.state}${watcherStatus.pendingEvents ? `, ${watcherStatus.pendingEvents} pending` : ''}` });
+        }
+      } else {
+        checks.push({ name: 'watcher', status: 'warning', detail: 'No watcher status available' });
+      }
+
+      // 7. Task cache
+      if (isTaskCacheReady()) {
+        checks.push({ name: 'task_cache', status: 'ok', detail: 'Task cache ready' });
+      } else if (isTaskCacheBuilding()) {
+        checks.push({ name: 'task_cache', status: 'warning', detail: 'Task cache building' });
+      } else {
+        checks.push({ name: 'task_cache', status: 'warning', detail: 'Task cache not ready' });
+      }
+
+      // 8. Suppression health
+      if (stateDb) {
+        try {
+          const suppressedCount = getSuppressedCount(stateDb);
+          const stats = getEntityStats(stateDb);
+          const entityCount = indexBuilt ? index.entities.size : 0;
+
+          if (entityCount > 0 && suppressedCount > entityCount * 0.2) {
+            checks.push({ name: 'suppression_health', status: 'warning', detail: `${suppressedCount} entities suppressed (${Math.round(suppressedCount / entityCount * 100)}% of total)`, fix: 'Review suppressed entities — high suppression rate may indicate overly aggressive feedback' });
+          } else {
+            checks.push({ name: 'suppression_health', status: 'ok', detail: `${suppressedCount} entities suppressed, ${stats.length} entities with feedback` });
+          }
+        } catch {
+          checks.push({ name: 'suppression_health', status: 'ok', detail: 'No suppression data yet' });
+        }
+      }
+
+      // 9. StateDb disk usage
+      if (stateDb) {
+        try {
+          const dbPath = stateDb.db.name;
+          if (dbPath && dbPath !== ':memory:') {
+            const dbStat = fs.statSync(dbPath);
+            const dbSizeMb = Math.round(dbStat.size / 1024 / 1024 * 10) / 10;
+            let walSizeMb = 0;
+            try {
+              const walStat = fs.statSync(dbPath + '-wal');
+              walSizeMb = Math.round(walStat.size / 1024 / 1024 * 10) / 10;
+            } catch { /* no WAL file */ }
+
+            if (walSizeMb > 100) {
+              checks.push({ name: 'disk_usage', status: 'warning', detail: `StateDb: ${dbSizeMb}MB, WAL: ${walSizeMb}MB`, fix: 'WAL file is large. Consider running PRAGMA wal_checkpoint(TRUNCATE)' });
+            } else {
+              checks.push({ name: 'disk_usage', status: 'ok', detail: `StateDb: ${dbSizeMb}MB${walSizeMb > 0 ? `, WAL: ${walSizeMb}MB` : ''}` });
+            }
+          }
+        } catch {
+          checks.push({ name: 'disk_usage', status: 'ok', detail: 'Unable to check disk usage' });
+        }
+      }
+
+      // 10. Cache freshness — co-occurrence
+      if (stateDb) {
+        try {
+          const row = stateDb.db.prepare(
+            `SELECT built_at FROM cooccurrence_cache LIMIT 1`
+          ).get() as { built_at: number } | undefined;
+          if (row) {
+            const ageHours = Math.round((Date.now() - row.built_at) / 3600000 * 10) / 10;
+            checks.push({ name: 'cooccurrence_cache', status: ageHours > 24 ? 'warning' : 'ok', detail: `Co-occurrence cache ${ageHours}h old`, ...(ageHours > 24 ? { fix: 'Will rebuild automatically on next watcher batch' } : {}) });
+          } else {
+            checks.push({ name: 'cooccurrence_cache', status: 'warning', detail: 'Co-occurrence cache not built', fix: 'Will build on next index rebuild' });
+          }
+        } catch {
+          checks.push({ name: 'cooccurrence_cache', status: 'ok', detail: 'Co-occurrence cache check skipped' });
+        }
+      }
+
+      // 11. Pipeline health (last pipeline run)
+      if (stateDb) {
+        try {
+          const evt = getRecentPipelineEvent(stateDb);
+          if (evt) {
+            const ageMin = Math.round((Date.now() - evt.timestamp) / 60000);
+            const failedSteps = evt.steps?.filter((s: PipelineStep) => s.skipped && s.skip_reason?.includes('error')) || [];
+            if (failedSteps.length > 0) {
+              checks.push({ name: 'pipeline', status: 'warning', detail: `Last pipeline ${ageMin}min ago (${evt.duration_ms}ms), ${failedSteps.length} failed steps: ${failedSteps.map((s: PipelineStep) => s.name).join(', ')}` });
+            } else {
+              checks.push({ name: 'pipeline', status: 'ok', detail: `Last pipeline ${ageMin}min ago, ${evt.duration_ms}ms, ${evt.steps?.length ?? 0} steps` });
+            }
+          }
+        } catch {
+          checks.push({ name: 'pipeline', status: 'ok', detail: 'No pipeline data' });
+        }
+      }
+
+      // Summary
+      const errorCount = checks.filter(c => c.status === 'error').length;
+      const warningCount = checks.filter(c => c.status === 'warning').length;
+      const overallStatus = errorCount > 0 ? 'unhealthy' : warningCount > 0 ? 'needs_attention' : 'healthy';
+
+      const output = {
+        status: overallStatus,
+        summary: `${checks.length} checks: ${checks.length - errorCount - warningCount} ok, ${warningCount} warnings, ${errorCount} errors`,
+        checks,
+        fixes: checks.filter(c => c.fix).map(c => ({ check: c.name, fix: c.fix })),
+      };
+
+      return {
+        content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
       };
     }
   );

@@ -71,9 +71,20 @@ export function registerSemanticTools(
 
       // Build index with progress logging
       const vaultPath = getVaultPath();
+      const buildStart = Date.now();
+
+      // Estimate build time (~100ms per note for embedding generation)
+      const { scanVault } = await import('../../core/read/vault.js');
+      const files = await scanVault(vaultPath);
+      const estimatedSeconds = Math.ceil(files.length * 0.1);
+      const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
+      console.error(`[Semantic] Starting embedding build for ${files.length} notes (estimated ${estimatedMinutes > 1 ? `~${estimatedMinutes} minutes` : `~${estimatedSeconds} seconds`})...`);
+
       const progress = await buildEmbeddingsIndex(vaultPath, (p) => {
+        const pct = p.total > 0 ? Math.round((p.current / p.total) * 100) : 0;
+        const elapsed = Math.round((Date.now() - buildStart) / 1000);
         if (p.current % 50 === 0 || p.current === p.total) {
-          console.error(`[Semantic] Embedding ${p.current}/${p.total} notes (${p.skipped} skipped)...`);
+          console.error(`[Semantic] Note embeddings: ${p.current}/${p.total} (${pct}%, ${p.skipped} skipped, ${elapsed}s elapsed)...`);
         }
       });
 
@@ -94,9 +105,13 @@ export function registerSemanticTools(
         }
 
         if (entityMap.size > 0) {
+          const entityStart = Date.now();
+          console.error(`[Semantic] Starting entity embeddings for ${entityMap.size} entities...`);
           entityEmbedded = await buildEntityEmbeddingsIndex(vaultPath, entityMap, (done, total) => {
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
             if (done % 50 === 0 || done === total) {
-              console.error(`[Semantic] Entity embedding ${done}/${total}...`);
+              const elapsed = Math.round((Date.now() - entityStart) / 1000);
+              console.error(`[Semantic] Entity embeddings: ${done}/${total} (${pct}%, ${elapsed}s elapsed)...`);
             }
           });
           loadEntityEmbeddingsToMemory();
@@ -104,6 +119,9 @@ export function registerSemanticTools(
       } catch (err) {
         console.error('[Semantic] Entity embeddings failed:', err instanceof Error ? err.message : err);
       }
+
+      const totalElapsed = Math.round((Date.now() - buildStart) / 1000);
+      console.error(`[Semantic] Build complete in ${totalElapsed}s: ${embedded} notes + ${entityEmbedded} entities embedded.`);
 
       return {
         content: [{
@@ -115,6 +133,7 @@ export function registerSemanticTools(
             total: progress.total,
             entity_embeddings: entityEmbedded,
             entity_total: getEntityEmbeddingsCount(),
+            build_time_seconds: totalElapsed,
             hint: 'Embeddings built. All searches now automatically use hybrid ranking.',
           }, null, 2),
         }],

@@ -1,7 +1,7 @@
 {
   "suite": "temporal-star-learning-curve",
-  "timestamp": "2026-03-19T00:14:55.073Z",
-  "duration_ms": 204471,
+  "timestamp": "2026-03-19T04:50:52.774Z",
+  "duration_ms": 174437,
   "summary": {
     "round0_f1": 0.768,
     "roundN_f1": 0.868,
@@ -642,7 +642,7 @@
       "falsePositives": 0,
       "falseNegatives": 132,
       "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 4.2321,
+      "feedbackLayerAvgContribution": 4.272,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -704,7 +704,7 @@
       "falsePositives": 0,
       "falseNegatives": 139,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.0516,
+      "feedbackLayerAvgContribution": 4.0727,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -828,7 +828,7 @@
       "falsePositives": 0,
       "falseNegatives": 133,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.1034,
+      "feedbackLayerAvgContribution": 4.1197,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -890,7 +890,7 @@
       "falsePositives": 0,
       "falseNegatives": 140,
       "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 4.204,
+      "feedbackLayerAvgContribution": 4.2462,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -952,7 +952,7 @@
       "falsePositives": 0,
       "falseNegatives": 139,
       "suppressionCount": 19,
-      "feedbackLayerAvgContribution": 4.1859,
+      "feedbackLayerAvgContribution": 4.2162,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1076,7 +1076,7 @@
       "falsePositives": 0,
       "falseNegatives": 137,
       "suppressionCount": 18,
-      "feedbackLayerAvgContribution": 4.1745,
+      "feedbackLayerAvgContribution": 4.1837,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1200,7 +1200,7 @@
       "falsePositives": 0,
       "falseNegatives": 134,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.2217,
+      "feedbackLayerAvgContribution": 4.2521,
       "byCategory": {
         "health": {
           "precision": 1,

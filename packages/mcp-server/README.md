@@ -66,9 +66,9 @@ From the [carter-strategy](https://github.com/velvetmonkey/flywheel-memory/tree/
 └───────────────────────────────────────────────────────┘
 ```
 
-Flywheel's indexed search found all Acme-related notes in one call. Claude read the files it needed for billing details. No grepping, no guessing paths.
+Flywheel's indexed search found all Acme-related notes in one call. The AI read the files it needed for billing details. No grepping, no guessing paths.
 
-Flywheel's search found all related notes in one call. Without it, Claude would grep for "Acme" and scan every matching file.
+Flywheel's search found all related notes in one call. Without it, the AI would grep for "Acme" and scan every matching file.
 
 The bigger difference isn't just tokens — it's that Flywheel answers structural questions (backlinks, hubs, shortest paths, schema analysis) that file-level access can't answer at all.
 
@@ -141,7 +141,7 @@ The system remembers context across sessions. No more starting from scratch.
 - **`recall`** retrieves across all knowledge channels: entities, notes, memories, and semantic search — ranked by the same scoring signals as the wikilink engine
 - **`memory`** stores observations with confidence decay, TTL, and lifecycle management
 
-Claude picks up where it left off.
+Your AI picks up where it left off.
 
 ### How It Compares to Other Approaches
 
@@ -270,7 +270,7 @@ Every mutation is:
 | Agent memory | brief + recall + memory | No | No | No |
 | Safe writes | Git + conflict detection | No | N/A | N/A |
 | Test coverage | 2,456 tests | Unknown | Unknown | Unknown |
-| Tool count | 61 | ~10 | 0 (plugin) | ~5 |
+| Tool count | 67 | ~10 | 0 (plugin) | ~5 |
 
 ---
 
@@ -317,11 +317,11 @@ cd /path/to/your/vault && claude
 
 Defaults to the `default` preset (19 tools). Add bundles as needed. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all options.
 
-> **Not using Claude?** Flywheel works with any MCP client. See [Transport Options](#transport-options) for HTTP setup (Cursor, Windsurf, Aider, LangGraph, Ollama, etc.).
+> **Works with any MCP client.** Primarily tested with Claude. See [Transport Options](#transport-options) for HTTP setup (Cursor, Windsurf, Aider, LangGraph, Ollama, etc.).
 
 ### Transport Options
 
-By default, Flywheel uses stdio transport (for Claude Code/Claude Desktop). Set `FLYWHEEL_TRANSPORT` to enable HTTP transport for non-Claude clients (Cursor, Windsurf, Aider, LangGraph, Ollama):
+By default, Flywheel uses stdio transport (works with Claude Code and Claude Desktop). Set `FLYWHEEL_TRANSPORT` to enable HTTP transport for other clients (Cursor, Windsurf, Aider, LangGraph, Ollama):
 
 | Env Var | Values | Default |
 |---------|--------|---------|
@@ -364,13 +364,13 @@ When multi-vault is active, every tool gains an optional `vault` parameter. The 
 
 | Preset | Tools | What you get |
 |--------|-------|--------------|
-| `default` | 16 | Note-taking essentials — search, read, write, tasks |
-| `agent` | 16 | Autonomous AI agents — search, read, write, memory |
-| `full` | 61 | Everything — all 11 categories |
+| `default` | 19 | Note-taking essentials — search, read, write, tasks |
+| `agent` | 19 | Autonomous AI agents — search, read, write, memory |
+| `full` | 64 | Everything — all 11 categories |
 
 Composable bundles add capabilities to any preset. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all bundles and fine-grained categories.
 
-The fewer tools you load, the less context Claude needs to pick the right one. See [docs/TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) for the full reference.
+The fewer tools you load, the less context the AI needs to pick the right one. See [docs/TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) for the full reference.
 
 ---
 

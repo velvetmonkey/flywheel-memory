@@ -13,9 +13,9 @@
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](docs/TESTING.md#performance-benchmarks)
 [![Tests](https://img.shields.io/badge/tests-2,482%20passed-brightgreen.svg)](docs/TESTING.md)
 
-**If you use AI with an Obsidian vault**, this is for you. By default, Claude reaches for the filesystem — reading files one at a time, writing raw text, losing context between sessions. Flywheel is an MCP server that runs locally alongside your vault, giving Claude a pre-indexed knowledge graph, enriched search, safe writes with auto-wikilinks, and persistent memory — so it can answer questions about your notes in milliseconds instead of reading every file.
+**If you use AI with an Obsidian vault**, this is for you. By default, AI agents reach for the filesystem — reading files one at a time, writing raw text, losing context between sessions. Flywheel is an MCP server that runs locally alongside your vault, giving any MCP-compatible AI a pre-indexed knowledge graph, enriched search, safe writes with auto-wikilinks, and persistent memory — so it can answer questions about your notes in milliseconds instead of reading every file.
 
-Six lines of JSON config. No cloud. Your data never leaves your machine.
+Six lines of JSON config. No cloud. Your data never leaves your machine. Primarily tested with Claude (Code + Desktop), also works with Cursor, Windsurf, VS Code + Copilot, Continue, and any MCP client.
 
 | | Without Flywheel | With Flywheel |
 |---|---|---|
@@ -68,7 +68,7 @@ From the [carter-strategy](demos/carter-strategy/) demo -- a solo consultant wit
 └───────────────────────────────────────────────────────┘
 ```
 
-One search call returned everything -- frontmatter with amounts and status, backlink lists, outlink lists. Zero file reads needed. Without Flywheel, Claude would grep for "Acme" and scan every matching file.
+One search call returned everything -- frontmatter with amounts and status, backlink lists, outlink lists. Zero file reads needed. Without Flywheel, the AI would grep for "Acme" and scan every matching file.
 
 ### Write: Auto-wikilinks on every mutation
 
@@ -115,7 +115,7 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ### 1. Enriched Search
 
-Every search result comes back enriched — frontmatter, ranked backlinks, ranked outlinks, and content snippets, all from an in-memory index. That's how one call answers a billing question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project that wikilinks to it — each with its own frontmatter. The graph did the joining, not Claude reading files one by one.
+Every search result comes back enriched — frontmatter, ranked backlinks, ranked outlinks, and content snippets, all from an in-memory index. That's how one call answers a billing question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project that wikilinks to it — each with its own frontmatter. The graph did the joining, not the AI reading files one by one.
 
 With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally.
 
@@ -147,7 +147,7 @@ This isn't aspirational — the F1 scores below are measured under realistic noi
 
 ### 4. Agentic Memory
 
-Claude knows what you were working on yesterday without you re-explaining it.
+Your AI knows what you were working on yesterday without you re-explaining it.
 
 - **`brief`** — startup context: what happened recently, what's active, what needs attention
 - **`recall`** — retrieves across notes, entities, memories, and semantic search in one call
@@ -157,7 +157,7 @@ No session is a blank slate.
 
 ### 5. Deterministic Policies
 
-Complex vault workflows shouldn't be ad-hoc. Describe what you want in plain language — Claude creates the policy, saves it, and executes it on demand. No YAML knowledge required.
+Complex vault workflows shouldn't be ad-hoc. Describe what you want in plain language — the AI creates the policy, saves it, and executes it on demand. No YAML knowledge required.
 
 ```
 ❯ Create a policy that generates a weekly review note, pulls open tasks,
@@ -250,7 +250,7 @@ Every mutation is:
 | Learns from usage | Feedback loop + suppression | No | No | No |
 | Agent memory | brief + recall + memory | No | No | No |
 | Safe writes | Git + conflict detection | No | N/A | N/A |
-| Tool count | 64 | ~10 | 0 (plugin) | ~5 |
+| Tool count | 67 | ~10 | 0 (plugin) | ~5 |
 
 ---
 
@@ -303,7 +303,7 @@ Defaults to the `default` preset (19 tools). Add bundles as needed. See [docs/CO
 
 **Using Cursor, Windsurf, VS Code, or another editor?** See [docs/SETUP.md](docs/SETUP.md) for your client's config.
 
-> **Clients:** Works with any MCP-compatible client. Claude Code and Claude Desktop connect via stdio. Cursor, Windsurf, VS Code + Copilot, and Continue connect via HTTP transport (`FLYWHEEL_TRANSPORT=http`, port `3111` by default). See [docs/SETUP.md](docs/SETUP.md) for setup guides.
+> **Clients:** Works with any MCP-compatible client. Primarily tested with Claude (Code + Desktop) via stdio. Cursor, Windsurf, VS Code + Copilot, and Continue connect via HTTP transport (`FLYWHEEL_TRANSPORT=http`, port `3111` by default). See [docs/SETUP.md](docs/SETUP.md) for setup guides.
 
 ---
 
@@ -311,13 +311,13 @@ Defaults to the `default` preset (19 tools). Add bundles as needed. See [docs/CO
 
 | Preset | Tools | What you get |
 |--------|-------|--------------|
-| `default` | 16 | Note-taking essentials — search, read, write, tasks |
-| `agent` | 16 | Autonomous AI agents — search, read, write, memory |
-| `full` | 61 | Everything — all 11 categories |
+| `default` | 19 | Note-taking essentials — search, read, write, tasks |
+| `agent` | 19 | Autonomous AI agents — search, read, write, memory |
+| `full` | 64 | Everything — all 11 categories |
 
 Composable bundles add capabilities to any preset. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all bundles and fine-grained categories.
 
-The fewer tools you load, the less context Claude needs to pick the right one. See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
+The fewer tools you load, the less context the AI needs to pick the right one. See [docs/TOOLS.md](docs/TOOLS.md) for the full reference.
 
 ---
 

@@ -54,13 +54,12 @@ describe('FTS5 Full-Text Search Tools', () => {
     });
   });
 
-  describe('search (content scope)', () => {
+  describe('search (content)', () => {
     describe('Basic Functionality', () => {
       test('finds notes containing a simple term', async () => {
 
-        // search with scope content will auto-build index if needed
+        // search with query will auto-build FTS5 index if needed
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'note',
         });
 
@@ -72,7 +71,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
       test('returns expected result format', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'note',
           limit: 1,
         });
@@ -88,7 +86,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
       test('respects limit parameter', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'note',
           limit: 2,
         });
@@ -99,7 +96,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
       test('returns query in response', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'test search',
         });
 
@@ -112,7 +108,6 @@ describe('FTS5 Full-Text Search Tools', () => {
       test('matches stemmed variations', async () => {
 
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'link',
         });
 
@@ -124,7 +119,6 @@ describe('FTS5 Full-Text Search Tools', () => {
     describe('Phrase Search', () => {
       test('handles phrase queries with quotes', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: '"test note"',
         });
 
@@ -136,7 +130,6 @@ describe('FTS5 Full-Text Search Tools', () => {
     describe('Boolean Operators', () => {
       test('handles AND operator', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'note AND test',
         });
 
@@ -146,7 +139,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
       test('handles OR operator', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'note OR test',
         });
 
@@ -156,7 +148,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
       test('handles NOT operator', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'note NOT test',
         });
 
@@ -168,7 +159,6 @@ describe('FTS5 Full-Text Search Tools', () => {
     describe('Prefix Matching', () => {
       test('handles prefix wildcard', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'not*',
         });
 
@@ -180,7 +170,6 @@ describe('FTS5 Full-Text Search Tools', () => {
     describe('Snippets', () => {
       test('returns highlighted snippets', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'note',
           limit: 5,
         });
@@ -198,7 +187,6 @@ describe('FTS5 Full-Text Search Tools', () => {
     describe('Edge Cases', () => {
       test('handles empty results gracefully', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: 'xyznonexistenttermxyz123456',
         });
 
@@ -210,8 +198,7 @@ describe('FTS5 Full-Text Search Tools', () => {
       test('handles special characters', async () => {
         try {
           const result = await client.callTool('search', {
-            scope: 'content',
-            query: 'test',
+              query: 'test',
           });
           const data = JSON.parse(result.content[0].text);
           expect(data).toBeDefined();
@@ -222,7 +209,6 @@ describe('FTS5 Full-Text Search Tools', () => {
 
       test('handles unicode text', async () => {
         const result = await client.callTool('search', {
-          scope: 'content',
           query: '日本',
         });
 

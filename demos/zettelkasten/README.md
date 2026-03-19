@@ -176,7 +176,7 @@ Zero file reads needed.
 You: "What are the most connected notes in this vault?"
 
 ● flywheel › search
-  query: "learning", scope: "content", limit: 20
+  query: "learning", limit: 20
   → permanent/Active Recall.md
       backlink_count: 12, outlink_count: 10
     permanent/Spaced Repetition.md

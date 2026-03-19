@@ -182,7 +182,7 @@ Embeddings are stored in the `note_embeddings` table in StateDb (`.flywheel/stat
 
 The `semantic.ts` module merges BM25 keyword results (from FTS5) with semantic similarity results (from cosine distance on embeddings) using **Reciprocal Rank Fusion (RRF)**. RRF combines two ranked lists by summing `1 / (k + rank)` for each result across both lists, producing a single ranking that benefits from keyword precision and semantic recall.
 
-When embeddings exist, `search` (content scope) and `find_similar` automatically upgrade to hybrid mode. When embeddings are not available, both tools fall back to FTS5-only mode with no degradation.
+When embeddings exist, `search` and `find_similar` automatically upgrade to hybrid mode. When embeddings are not available, both tools fall back to FTS5-only mode with no degradation.
 
 ### File Watcher Integration
 

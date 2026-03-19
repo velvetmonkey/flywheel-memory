@@ -62,7 +62,6 @@ describe('Graph Query Performance Benchmarks', () => {
 
       const start = performance.now();
       const result = await client.callTool('search', {
-        scope: 'metadata',
         title_contains: 'Propulsion System',
         limit: 1,
       });
@@ -94,7 +93,6 @@ describe('Graph Query Performance Benchmarks', () => {
 
       // Step 3: Search metadata
       await client.callTool('search', {
-        scope: 'metadata',
         title_contains: 'Marcus Johnson',
         limit: 1,
       });
@@ -126,7 +124,6 @@ describe('Graph Query Performance Benchmarks', () => {
     it('search metadata response is efficient (<500 tokens)', async () => {
 
       const result = await client.callTool('search', {
-        scope: 'metadata',
         title_contains: 'Propulsion System',
         limit: 1,
       });
@@ -156,7 +153,6 @@ describe('Graph Query Performance Benchmarks', () => {
         path: 'people/Marcus Johnson.md',
       });
       const metadata = await client.callTool('search', {
-        scope: 'metadata',
         title_contains: 'Marcus Johnson',
         limit: 1,
       });

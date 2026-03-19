@@ -86,7 +86,7 @@ describe('README Examples: Artemis Rocket Vault', () => {
       // Use search to find a note to test backlinks on
       const recentResult = await client.callTool({
         name: 'search',
-        arguments: { scope: 'metadata', sort_by: 'modified', limit: 5 },
+        arguments: { modified_after: '2000-01-01', sort_by: 'modified', limit: 5 },
       });
 
       expect(recentResult.isError).toBeFalsy();
@@ -114,7 +114,7 @@ describe('README Examples: Artemis Rocket Vault', () => {
     it('should search notes by title', async () => {
       const result = await client.callTool({
         name: 'search',
-        arguments: { scope: 'metadata', title_contains: 'project', limit: 10 },
+        arguments: { title_contains: 'project', limit: 10 },
       });
 
       expect(result.isError).toBeFalsy();
@@ -128,7 +128,7 @@ describe('README Examples: Artemis Rocket Vault', () => {
     it('should get recent notes via search', async () => {
       const result = await client.callTool({
         name: 'search',
-        arguments: { scope: 'metadata', sort_by: 'modified', limit: 10 },
+        arguments: { modified_after: '2000-01-01', sort_by: 'modified', limit: 10 },
       });
 
       expect(result.isError).toBeFalsy();
@@ -297,7 +297,7 @@ describe('Tool Registration Consistency', () => {
       { name: 'health_check', arguments: {} },
       { name: 'graph_analysis', arguments: { analysis: 'hubs', limit: 5 } },
       { name: 'graph_analysis', arguments: { analysis: 'orphans', limit: 5 } },
-      { name: 'search', arguments: { scope: 'metadata', sort_by: 'modified', limit: 5 } },
+      { name: 'search', arguments: { modified_after: '2000-01-01', sort_by: 'modified', limit: 5 } },
     ];
 
     for (const call of testCalls) {

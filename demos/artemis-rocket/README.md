@@ -150,7 +150,7 @@ You: "Why did we choose LOX/RP-1?"
 You: "Who's responsible for each subsystem?"
 
   ● flywheel › search
-    where: { type: "subsystem" }, scope: "metadata"
+    where: { type: "subsystem" }
     → systems/propulsion/Propulsion System.md
         frontmatter: { owner: "Marcus Johnson", status: "testing" }
       systems/avionics/Avionics System.md

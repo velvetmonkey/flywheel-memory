@@ -107,7 +107,7 @@ describe('README Blocking Chain Example', () => {
     it('should find blocked/delayed notes via search', async () => {
       const result = await client.callTool({
         name: 'search',
-        arguments: { scope: 'metadata', limit: 50, detail_count: 50 }
+        arguments: { modified_after: '2000-01-01', limit: 50, detail_count: 50 }
       });
 
       expect(result.isError).toBeFalsy();

@@ -92,8 +92,8 @@ describe('MCP Server Integration', () => {
       expect(stats.total_notes).toBeGreaterThan(0);
     });
 
-    test('search with metadata scope returns notes', async () => {
-      const result = await client.callTool('search', { scope: 'metadata', limit: 10 });
+    test('search with metadata filters returns notes', async () => {
+      const result = await client.callTool('search', { modified_after: '2000-01-01', limit: 10 });
 
       expect(result.content).toBeDefined();
       const data = JSON.parse(result.content[0].text);

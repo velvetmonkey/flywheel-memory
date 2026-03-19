@@ -158,10 +158,9 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Search the vault — always try this before reading files. Top results get full metadata (frontmatter, top backlinks/outlinks ranked by edge weight + recency); remaining results get lightweight summaries (counts only). Use get_note_structure for headings/full structure, get_backlinks for complete backlink lists.\n\nSearches across metadata (frontmatter/tags/folders), content (FTS5 full-text + hybrid semantic), and entities (people/projects/technologies). Uses filters to narrow by frontmatter fields, tags, folders, or dates. Hybrid semantic results are automatically included when embeddings have been built (via init_semantic).\n\nExample: search({ query: "quarterly review", limit: 5 })\nExample: search({ where: { type: "project", status: "active" } })',
+    'Search the vault — always start with just a query, no filters. Top results get full metadata (frontmatter, top backlinks/outlinks ranked by edge weight + recency); remaining results get lightweight summaries. Narrow with filters only if the broad search returns too many irrelevant results. Use get_note_structure for headings/full structure, get_backlinks for complete backlink lists.\n\nSearches across content (FTS5 full-text + hybrid semantic), entities (people/projects/technologies), and metadata (frontmatter/tags/folders). Hybrid semantic results are automatically included when embeddings have been built (via init_semantic).\n\nExample: search({ query: "quarterly review", limit: 5 })\nExample: search({ where: { type: "project", status: "active" } })',
     {
       query: z.string().optional().describe('Search query text. Required unless using metadata filters (where, has_tag, folder, etc.)'),
-      scope: z.enum(['metadata', 'content', 'entities', 'all']).optional().describe('Narrow to a specific search type. Omit for best results (searches everything). Use "metadata" for frontmatter-only queries, "entities" for entity lookup.'),
 
       // Metadata filters
       where: z.record(z.unknown()).optional().describe('Frontmatter filters as key-value pairs. Example: { "type": "project", "status": "active" }'),
@@ -169,7 +168,7 @@ export function registerQueryTools(
       has_any_tag: z.array(z.string()).optional().describe('Filter to notes with any of these tags'),
       has_all_tags: z.array(z.string()).optional().describe('Filter to notes with all of these tags'),
       include_children: z.boolean().default(false).describe('When true, tag filters also match child tags (e.g., has_tag: "project" also matches "project/active")'),
-      folder: z.string().optional().describe('Limit to notes in this folder'),
+      folder: z.string().optional().describe('Filter results to a folder. Prefer searching without folder first, then add folder to narrow.'),
       title_contains: z.string().optional().describe('Filter to notes whose title contains this text (case-insensitive)'),
 
       // Date filters (absorbs temporal tools)
@@ -180,7 +179,7 @@ export function registerQueryTools(
       sort_by: z.enum(['modified', 'created', 'title']).default('modified').describe('Field to sort by'),
       order: z.enum(['asc', 'desc']).default('desc').describe('Sort order'),
 
-      // Entity options (used with scope "entities")
+      // Entity options (prefix mode for autocomplete)
       prefix: z.boolean().default(false).describe('Enable prefix matching for entity search (autocomplete)'),
 
       // Pagination
@@ -190,36 +189,30 @@ export function registerQueryTools(
       // Context boost (edge weights)
       context_note: z.string().optional().describe('Path of the note providing context. When set, results connected to this note via weighted edges get an RRF boost.'),
     },
-    async ({ query, scope: rawScope, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note }) => {
-      const scope = rawScope || 'all'; // Treat missing/undefined as 'all'
+    async ({ query, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note }) => {
       const limit = Math.min(requestedLimit ?? 10, MAX_LIMIT);
       const detailN = requestedDetailCount ?? 5;
       const index = getIndex();
       const vaultPath = getVaultPath();
 
-      // ---- ENTITY SEARCH ----
-      if (scope === 'entities') {
-        if (!query) {
-          return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'query is required for entity search' }, null, 2) }] };
-        }
+      // ---- ENTITY AUTOCOMPLETE ----
+      if (prefix && query) {
         const stateDb = getStateDb();
         if (!stateDb) {
-          return { content: [{ type: 'text' as const, text: JSON.stringify({ scope: 'entities', results: [], count: 0, query, error: 'StateDb not initialized' }, null, 2) }] };
+          return { content: [{ type: 'text' as const, text: JSON.stringify({ results: [], count: 0, query, error: 'StateDb not initialized' }, null, 2) }] };
         }
         try {
-          const results = prefix
-            ? searchEntitiesPrefix(stateDb, query, limit)
-            : searchEntities(stateDb, query, limit);
-          return { content: [{ type: 'text' as const, text: JSON.stringify({ scope: 'entities', query, count: results.length, entities: results }, null, 2) }] };
+          const results = searchEntitiesPrefix(stateDb, query, limit);
+          return { content: [{ type: 'text' as const, text: JSON.stringify({ query, count: results.length, entities: results }, null, 2) }] };
         } catch (err) {
-          return { content: [{ type: 'text' as const, text: JSON.stringify({ scope: 'entities', query, count: 0, entities: [], error: err instanceof Error ? err.message : String(err) }, null, 2) }] };
+          return { content: [{ type: 'text' as const, text: JSON.stringify({ query, count: 0, entities: [], error: err instanceof Error ? err.message : String(err) }, null, 2) }] };
         }
       }
 
-      // ---- METADATA SEARCH ----
-      const hasMetadataFilters = where || has_tag || has_any_tag || has_all_tags || folder || title_contains || modified_after || modified_before;
+      // ---- METADATA SEARCH (no query, just filters) ----
+      const hasMetadataFilters = where || has_tag || has_any_tag || has_all_tags || title_contains || modified_after || modified_before;
 
-      if (scope === 'metadata' || (scope === 'all' && hasMetadataFilters)) {
+      if (!query && (hasMetadataFilters || folder)) {
         let matchingNotes: VaultNote[] = Array.from(index.notes.values());
 
         // Apply frontmatter filters
@@ -244,14 +237,6 @@ export function registerQueryTools(
             note.title.toLowerCase().includes(searchTerm)
           );
         }
-        // Also filter by query text in title if provided and scope is metadata
-        if (query && !title_contains) {
-          const searchTerm = query.toLowerCase();
-          matchingNotes = matchingNotes.filter((note) =>
-            note.title.toLowerCase().includes(searchTerm)
-          );
-        }
-
         // Date filters
         if (modified_after) {
           const afterDate = new Date(modified_after);
@@ -275,31 +260,22 @@ export function registerQueryTools(
           (i < detailN ? enrichResult : enrichResultLight)({ path: note.path, title: note.title }, index, stateDb)
         );
 
-        // If explicit metadata filters were used, always return the metadata result
-        // (even if empty). Only fall through to content if scope=all with just a query.
-        if (scope === 'metadata' || hasMetadataFilters || totalMatches > 0) {
-          return { content: [{ type: 'text' as const, text: JSON.stringify({
-            scope: 'metadata',
-            query: query || undefined,
-            total_matches: totalMatches,
-            returned: notes.length,
-            notes,
-          }, null, 2) }] };
-        }
+        return { content: [{ type: 'text' as const, text: JSON.stringify({
+          total_matches: totalMatches,
+          returned: notes.length,
+          notes,
+        }, null, 2) }] };
       }
 
       // ---- CONTENT SEARCH (FTS5, with automatic hybrid when semantic enabled) ----
-      if (scope === 'content' || scope === 'all') {
-        if (!query) {
-          return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'query is required for content search' }, null, 2) }] };
-        }
+      if (query) {
 
         // Ensure FTS5 index is ready
         const ftsState = getFTS5State();
         if (ftsState.building) {
           // FTS5 is building (triggered at startup), return immediately
           return { content: [{ type: 'text' as const, text: JSON.stringify({
-            scope, method: 'fts5', query, building: true,
+            method: 'fts5', query, building: true,
             total_results: 0, results: [],
             message: 'Search index is building, try again shortly',
           }, null, 2) }] };
@@ -311,15 +287,13 @@ export function registerQueryTools(
 
         const fts5Results = searchFTS5(vaultPath, query, limit);
 
-        // Entity search — match entities by name/aliases/category and include their notes
+        // Entity search — always included in content search
         let entityResults: EntitySearchResult[] = [];
-        if (scope === 'all') {
-          const stateDb = getStateDb();
-          if (stateDb) {
-            try {
-              entityResults = searchEntities(stateDb, query, limit);
-            } catch { /* entity search is best-effort */ }
-          }
+        const stateDbEntity = getStateDb();
+        if (stateDbEntity) {
+          try {
+            entityResults = searchEntities(stateDbEntity, query, limit);
+          } catch { /* entity search is best-effort */ }
         }
 
         // Build edge-weight ranked list if context_note is provided
@@ -358,7 +332,16 @@ export function registerQueryTools(
           }
         }
 
-        // Hybrid merge with semantic when embeddings exist (applies to both 'content' and 'all' scopes)
+        // Helper: apply folder post-filter if specified
+        const applyFolderFilter = <T extends { path: string }>(items: T[]): T[] => {
+          if (!folder) return items;
+          return items.filter(item => {
+            const normalizedFolder = folder.endsWith('/') ? folder : folder + '/';
+            return item.path.startsWith(normalizedFolder) || item.path.split('/')[0] === folder.replace('/', '');
+          });
+        };
+
+        // Hybrid merge with semantic when embeddings exist
         if (hasEmbeddingsIndex()) {
           try {
             const semanticResults = await semanticSearch(query, limit);
@@ -395,9 +378,10 @@ export function registerQueryTools(
             }));
 
             scored.sort((a, b) => b.rrf_score - a.rrf_score);
+            const filtered = applyFolderFilter(scored);
 
             const stateDb = getStateDb();
-            const results = scored.slice(0, limit).map((item, i) => ({
+            const results = filtered.slice(0, limit).map((item, i) => ({
               ...(i < detailN ? enrichResult : enrichResultLight)({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
               rrf_score: item.rrf_score,
               in_fts5: item.in_fts5,
@@ -406,10 +390,9 @@ export function registerQueryTools(
             }));
 
             return { content: [{ type: 'text' as const, text: JSON.stringify({
-              scope,
               method: 'hybrid',
               query,
-              total_results: Math.min(scored.length, limit),
+              total_results: Math.min(filtered.length, limit),
               results,
             }, null, 2) }] };
           } catch (err) {
@@ -427,25 +410,25 @@ export function registerQueryTools(
             ...fts5Results.map(r => ({ path: r.path, title: r.title, snippet: r.snippet, in_fts5: true as const })),
             ...entityRanked.map(r => ({ path: r.path, title: r.name, snippet: undefined as string | undefined, in_entity: true as const })),
           ];
+          const filtered = applyFolderFilter(mergedItems);
           const stateDb = getStateDb();
-          const sliced = mergedItems.slice(0, limit);
+          const sliced = filtered.slice(0, limit);
           const results = sliced.map((item, i) => ({
             ...(i < detailN ? enrichResult : enrichResultLight)({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
             ...('in_fts5' in item ? { in_fts5: true } : { in_entity: true }),
           }));
           return { content: [{ type: 'text' as const, text: JSON.stringify({
-            scope: 'content',
             method: 'fts5',
             query,
-            total_results: mergedItems.length,
+            total_results: filtered.length,
             results,
           }, null, 2) }] };
         }
 
         const stateDbFts = getStateDb();
-        const enrichedFts5 = fts5Results.map((r, i) => ({ ...(i < detailN ? enrichResult : enrichResultLight)({ path: r.path, title: r.title, snippet: r.snippet }, index, stateDbFts), in_fts5: true }));
+        const fts5Filtered = applyFolderFilter(fts5Results);
+        const enrichedFts5 = fts5Filtered.map((r, i) => ({ ...(i < detailN ? enrichResult : enrichResultLight)({ path: r.path, title: r.title, snippet: r.snippet }, index, stateDbFts), in_fts5: true }));
         return { content: [{ type: 'text' as const, text: JSON.stringify({
-          scope: 'content',
           method: 'fts5',
           query,
           total_results: enrichedFts5.length,
@@ -453,8 +436,8 @@ export function registerQueryTools(
         }, null, 2) }] };
       }
 
-      // Shouldn't reach here
-      return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'Invalid scope' }, null, 2) }] };
+      // No query and no filters — return error
+      return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'Provide a query or metadata filters (where, has_tag, folder, etc.)' }, null, 2) }] };
     }
   );
 }

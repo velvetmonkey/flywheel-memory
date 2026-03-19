@@ -1,7 +1,7 @@
 /**
- * Tests for Entity Search Tool (search with scope: "entities")
+ * Tests for Entity Search Tool (search with prefix matching)
  *
- * Tests FTS5 full-text search for vault entities with Porter stemming.
+ * Tests entity prefix search for vault entities.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
@@ -14,7 +14,7 @@ import { deleteStateDb } from '@velvetmonkey/vault-core';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 
-describe('Entity Search (scope: entities)', () => {
+describe('Entity Search (prefix mode)', () => {
   let context: TestServerContext;
   let client: TestClient;
 
@@ -71,7 +71,7 @@ describe('Entity Search (scope: entities)', () => {
   describe('Basic Search Functionality', () => {
     test('finds entities by exact name', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
+        prefix: true,
         query: 'TypeScript',
       });
 
@@ -82,7 +82,7 @@ describe('Entity Search (scope: entities)', () => {
 
     test('finds entities by full word match', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
+        prefix: true,
         query: 'TypeScript',
       });
 
@@ -93,7 +93,7 @@ describe('Entity Search (scope: entities)', () => {
 
     test('uses Porter stemming (running matches run)', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
+        prefix: true,
         query: 'run',
       });
 
@@ -104,7 +104,7 @@ describe('Entity Search (scope: entities)', () => {
 
     test('returns correct result structure', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
+        prefix: true,
         query: 'React',
         limit: 1,
       });
@@ -130,9 +130,8 @@ describe('Entity Search (scope: entities)', () => {
   describe('Prefix Search (Autocomplete)', () => {
     test('finds entities with prefix matching enabled', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
-        query: 'Type',
         prefix: true,
+        query: 'Type',
       });
 
       const data = JSON.parse(result.content[0].text);
@@ -142,9 +141,8 @@ describe('Entity Search (scope: entities)', () => {
 
     test('prefix search works for short prefixes', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
-        query: 'Re',
         prefix: true,
+        query: 'Re',
       });
 
       const data = JSON.parse(result.content[0].text);
@@ -156,7 +154,7 @@ describe('Entity Search (scope: entities)', () => {
   describe('Category Filtering', () => {
     test('returns entities from all categories', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
+        prefix: true,
         query: 'John OR React OR Project',
         limit: 10,
       });
@@ -170,7 +168,7 @@ describe('Entity Search (scope: entities)', () => {
   describe('Limit Parameter', () => {
     test('respects limit parameter', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
+        prefix: true,
         query: 'Script OR React OR Project',
         limit: 2,
       });
@@ -181,9 +179,8 @@ describe('Entity Search (scope: entities)', () => {
 
     test('uses default limit when not specified', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
-        query: 'a',
         prefix: true,
+        query: 'a',
       });
 
       const data = JSON.parse(result.content[0].text);
@@ -195,18 +192,19 @@ describe('Entity Search (scope: entities)', () => {
   describe('Edge Cases', () => {
     test('handles empty query gracefully', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
+        prefix: true,
         query: '',
       });
 
       const data = JSON.parse(result.content[0].text);
-      // Empty query returns error message for entity scope
+      // Empty query with no filters returns error
       expect(data).toBeDefined();
+      expect(data.error).toBeDefined();
     });
 
     test('handles special characters in query', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
+        prefix: true,
         query: 'Type-Script',
       });
 
@@ -217,7 +215,7 @@ describe('Entity Search (scope: entities)', () => {
 
     test('handles no matching results', async () => {
       const result = await client.callTool('search', {
-        scope: 'entities',
+        prefix: true,
         query: 'xyznonexistentquery',
       });
 

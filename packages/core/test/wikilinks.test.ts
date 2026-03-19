@@ -509,21 +509,22 @@ describe('detectImplicitEntities', () => {
     });
   });
 
-  describe('quoted terms pattern (removed)', () => {
-    it('should NOT detect quoted terms as implicit entities', () => {
+  describe('quoted terms pattern', () => {
+    it('should detect quoted terms as implicit entities', () => {
       const content = 'We need to test the "Turbopump" component next week.';
       const matches = detectImplicitEntities(content);
 
-      // Quoted-terms pattern was removed — quoted text is prose emphasis, not entities
-      expect(matches.map(m => m.text)).not.toContain('Turbopump');
+      // Quoted-terms pattern detects quoted text as entities
+      expect(matches.map(m => m.text)).toContain('Turbopump');
+      expect(matches.find(m => m.text === 'Turbopump')?.pattern).toBe('quoted-terms');
     });
 
-    it('should NOT detect prose in quotes as entities', () => {
-      const content = 'He said "I can\'t stop using this." and "related drafts" are fine.';
+    it('should not detect very long prose in quotes', () => {
+      // Regex limits to 3-30 chars, so long prose won't match
+      const content = 'He said "This is a very long sentence that exceeds the thirty character limit for quoted terms" today.';
       const matches = detectImplicitEntities(content);
 
-      expect(matches.map(m => m.text)).not.toContain("I can't stop using this.");
-      expect(matches.map(m => m.text)).not.toContain('related drafts');
+      expect(matches.map(m => m.text)).not.toContain('This is a very long sentence that exceeds the thirty character limit for quoted terms');
     });
   });
 
@@ -807,15 +808,15 @@ describe('processWikilinks', () => {
     expect(result.implicitEntities || []).not.toContain('Marcus Johnson');
   });
 
-  it('should NOT convert quoted terms to wikilinks (pattern removed)', () => {
+  it('should convert quoted terms to wikilinks', () => {
     const content = 'Testing the "Turbopump" component today.';
     const entities: string[] = [];
 
     const result = processWikilinks(content, entities, { detectImplicit: true });
 
-    // Quoted-terms pattern was removed — quoted text should remain as-is
-    expect(result.content).not.toContain('[[Turbopump]]');
-    expect(result.content).toContain('"Turbopump"');
+    // Quoted-terms pattern replaces "Term" with [[Term]]
+    expect(result.content).toContain('[[Turbopump]]');
+    expect(result.implicitEntities).toContain('Turbopump');
   });
 
   it('should not link entities matching notePath', () => {

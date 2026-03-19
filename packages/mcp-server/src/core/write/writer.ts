@@ -819,7 +819,7 @@ export function sanitizeNotePath(notePath: string): string {
 
   filename = stem + (ext || '.md');
 
-  return dir === '.' ? filename : path.join(dir, filename);
+  return dir === '.' ? filename : path.join(dir, filename).replace(/\\/g, '/');
 }
 
 /**

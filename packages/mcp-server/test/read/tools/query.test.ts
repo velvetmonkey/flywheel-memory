@@ -26,7 +26,7 @@ describe('Query Tools', () => {
     describe('Basic Functionality', () => {
       test('returns all notes when no filters', async () => {
 
-        const result = await client.callTool('search', { scope: 'metadata', limit: 100 });
+        const result = await client.callTool('search', { modified_after: '2000-01-01', limit: 100 });
 
         const data = JSON.parse(result.content[0].text);
         expect(data.total_matches).toBeGreaterThan(0);
@@ -35,7 +35,7 @@ describe('Query Tools', () => {
 
       test('respects limit parameter', async () => {
 
-        const result = await client.callTool('search', { scope: 'metadata', limit: 2 });
+        const result = await client.callTool('search', { modified_after: '2000-01-01', limit: 2 });
 
         const data = JSON.parse(result.content[0].text);
         expect(data.returned).toBeLessThanOrEqual(2);
@@ -44,7 +44,7 @@ describe('Query Tools', () => {
 
       test('returns notes in expected format', async () => {
 
-        const result = await client.callTool('search', { scope: 'metadata', limit: 1 });
+        const result = await client.callTool('search', { modified_after: '2000-01-01', limit: 1 });
 
         const data = JSON.parse(result.content[0].text);
         const note = data.notes[0];
@@ -91,7 +91,7 @@ describe('Query Tools', () => {
       test('matches values in arrays', async () => {
 
         // Tags in frontmatter are often arrays
-        const result = await client.callTool('search', { scope: 'metadata', limit: 50 });
+        const result = await client.callTool('search', { modified_after: '2000-01-01', limit: 50 });
 
         const data = JSON.parse(result.content[0].text);
         expect(data).toBeDefined();
@@ -193,9 +193,9 @@ describe('Query Tools', () => {
 
       test('empty has_any_tag returns all notes', async () => {
 
-        const allNotes = await client.callTool('search', { scope: 'metadata', limit: 100 });
+        const allNotes = await client.callTool('search', { modified_after: '2000-01-01', limit: 100 });
         const emptyFilter = await client.callTool('search', {
-          scope: 'metadata',
+          modified_after: '2000-01-01',
           has_any_tag: [],
           limit: 100,
         });
@@ -276,7 +276,7 @@ describe('Query Tools', () => {
     describe('Sorting', () => {
       test('sorts by modified date descending by default', async () => {
 
-        const result = await client.callTool('search', { scope: 'metadata', limit: 10 });
+        const result = await client.callTool('search', { modified_after: '2000-01-01', limit: 10 });
 
         const data = JSON.parse(result.content[0].text);
         if (data.notes.length > 1) {
@@ -291,7 +291,7 @@ describe('Query Tools', () => {
       test('sorts by modified date ascending', async () => {
 
         const result = await client.callTool('search', {
-          scope: 'metadata',
+          modified_after: '2000-01-01',
           sort_by: 'modified',
           order: 'asc',
           limit: 10,
@@ -310,7 +310,7 @@ describe('Query Tools', () => {
       test('sorts by title alphabetically', async () => {
 
         const result = await client.callTool('search', {
-          scope: 'metadata',
+          modified_after: '2000-01-01',
           sort_by: 'title',
           order: 'asc',
           limit: 10,
@@ -327,7 +327,7 @@ describe('Query Tools', () => {
       test('sorts by created date', async () => {
 
         const result = await client.callTool('search', {
-          scope: 'metadata',
+          modified_after: '2000-01-01',
           sort_by: 'created',
           order: 'desc',
           limit: 10,
@@ -374,7 +374,7 @@ describe('Query Tools', () => {
     describe('Tiered Enrichment', () => {
       test('light results lack frontmatter/backlinks/outlinks arrays but have counts', async () => {
         const result = await client.callTool('search', {
-          scope: 'metadata',
+          modified_after: '2000-01-01',
           limit: 10,
           detail_count: 1,
         });
@@ -405,7 +405,7 @@ describe('Query Tools', () => {
 
       test('detail_count equal to limit produces full enrichment on all results', async () => {
         const result = await client.callTool('search', {
-          scope: 'metadata',
+          modified_after: '2000-01-01',
           limit: 5,
           detail_count: 5,
         });
@@ -443,7 +443,7 @@ describe('Query Tools', () => {
         expect(data).toBeDefined();
       });
 
-      test('returns scope in response', async () => {
+      test('returns total_matches and returned in response', async () => {
 
         const result = await client.callTool('search', {
           has_tag: 'test',
@@ -452,7 +452,6 @@ describe('Query Tools', () => {
         });
 
         const data = JSON.parse(result.content[0].text);
-        expect(data.scope).toBe('metadata');
         expect(data.total_matches).toBeDefined();
         expect(data.returned).toBeDefined();
       });

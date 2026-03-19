@@ -45,25 +45,21 @@ Every search result includes:
 
 This is the key design: **one search call returns not just file paths, but the full neighborhood of each result.** That's why Claude can answer "How much have I billed Acme Corp?" from a single search — the client's frontmatter has the totals, and the backlinks show every invoice.
 
-**How matching works** (scope `all`, the default):
+**How matching works** (always start with just a query, no filters):
 
-1. **Title/entity match** — If your query matches a note title or entity name (e.g., "Acme Corp" matches `clients/Acme Corp.md`), that note ranks highest.
-2. **Full-text search (FTS5)** — BM25 ranking over note content. Handles stemming ("billing" matches "billed"), phrases, and boolean operators.
-3. **Entity search** — Matches against the entity database (names, aliases, categories). If "Sarah Chen" is an alias for `users/sarah-chen.md`, it finds it.
-4. **Hybrid ranking** — When semantic embeddings are built (via `init_semantic`), results from all three channels are merged using Reciprocal Rank Fusion. Notes can surface by meaning even without keyword overlap.
+1. **Full-text search (FTS5)** — BM25 ranking over note content. Handles stemming ("billing" matches "billed"), phrases, and boolean operators.
+2. **Entity search** — Matches against the entity database (names, aliases, categories). If "Sarah Chen" is an alias for `users/sarah-chen.md`, it finds it.
+3. **Hybrid ranking** — When semantic embeddings are built (via `init_semantic`), results from all three channels are merged using Reciprocal Rank Fusion. Notes can surface by meaning even without keyword overlap.
 
 The enrichment step is the same regardless of how a note matched — every result gets its full frontmatter, backlinks, and outlinks attached. Top results (controlled by `detail_count`, default 5) get full metadata; remaining results get lightweight summaries (counts only).
 
-**Scopes** let you target a specific search channel:
+**Routing:**
 
-| Scope | When to use it |
-|-------|---------------|
-| `all` | Default. Start here for any question. Tries metadata first, falls back to content + entities. |
-| `metadata` | Filter by frontmatter fields, tags, folders, or titles. Combine with `where`, `has_tag`, `folder`, etc. |
-| `content` | Full-text search. Supports phrases (`"exact match"`), booleans (`term1 AND term2`), and prefix (`prefix*`). |
-| `entities` | Browse people, projects, technologies. Supports `prefix` mode for autocomplete. |
+- **Query present** → content search (FTS5 + semantic + entities, merged). Add `folder` to post-filter results.
+- **No query, filters only** → metadata search (frontmatter, tags, folder, dates).
+- **`prefix: true` + query** → entity autocomplete.
 
-**Common parameters:** `query`, `scope`, `where` (frontmatter filters), `has_tag`, `folder`, `modified_after`, `sort_by`, `limit`, `detail_count`, `context_note`
+**Common parameters:** `query`, `where` (frontmatter filters), `has_tag`, `folder`, `modified_after`, `sort_by`, `limit`, `detail_count`, `context_note`
 
 **How ranking works**
 

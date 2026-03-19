@@ -8,11 +8,12 @@
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](docs/TESTING.md#performance-benchmarks)
 [![Tests](https://img.shields.io/badge/tests-2,482%20passed-brightgreen.svg)](docs/TESTING.md)
 
-**If you use Claude with an Obsidian vault**, this is for you. By default, Claude reaches for the filesystem — reading files one at a time, writing raw text, losing context between sessions. Flywheel is an MCP server that runs locally alongside your vault, giving Claude a pre-indexed knowledge graph, enriched search, safe writes with auto-wikilinks, and persistent memory — so it can answer questions about your notes in milliseconds instead of reading every file.
+**If you use AI with an Obsidian vault**, this is for you. By default, Claude reaches for the filesystem — reading files one at a time, writing raw text, losing context between sessions. Flywheel is an MCP server that runs locally alongside your vault, giving Claude a pre-indexed knowledge graph, enriched search, safe writes with auto-wikilinks, and persistent memory — so it can answer questions about your notes in milliseconds instead of reading every file.
 
 Six lines of JSON config. No cloud. Your data never leaves your machine.
 
@@ -300,7 +301,9 @@ Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CO
 >
 > See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full config example.
 
-> **Note:** Developed and tested with Claude Code. Other MCP clients may work but are untested.
+**Using Cursor, Windsurf, VS Code, or another editor?** See [docs/SETUP.md](docs/SETUP.md) for your client's config.
+
+> **Clients:** Works with any MCP-compatible client. Claude Code and Claude Desktop connect via stdio. Cursor, Windsurf, VS Code + Copilot, and Continue connect via HTTP transport. See [docs/SETUP.md](docs/SETUP.md) for setup guides.
 
 ---
 

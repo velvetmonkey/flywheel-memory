@@ -8,7 +8,7 @@ After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian v
 
 - **Node.js 18–22** -- check with `node --version`. Node 24 does not ship prebuilt `better-sqlite3` binaries and will fail to install.
 - **An Obsidian vault** -- any folder with `.md` files works, but Flywheel detects Obsidian conventions (`.obsidian/` folder, periodic notes, templates)
-- **Claude Code** or **Claude Desktop** -- any MCP-compatible client works
+- **An MCP-compatible client** -- Claude Code, Claude Desktop, Cursor, Windsurf, VS Code + GitHub Copilot, Continue, or any Streamable HTTP client
 
 ---
 
@@ -22,11 +22,13 @@ On Windows, the MCP config differs from macOS/Linux in three ways:
 
 See [CONFIGURATION.md](CONFIGURATION.md#windows) for the full config example.
 
+> **Alternative:** You can also use HTTP transport on Windows — start the server in a terminal with `FLYWHEEL_TRANSPORT=http` and connect from your editor via HTTP URL. See the [HTTP clients](#http-clients-cursor-windsurf-vs-code-continue) section below.
+
 ---
 
-## Step 1: Add MCP Config
+## Step 1: Configure Your Client
 
-### Claude Code
+### Claude Code (stdio)
 
 Create `.mcp.json` in your vault root:
 
@@ -44,7 +46,13 @@ Create `.mcp.json` in your vault root:
 }
 ```
 
-### Claude Desktop
+Launch:
+
+```bash
+cd /path/to/your/vault && claude
+```
+
+### Claude Desktop (stdio)
 
 Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
 
@@ -65,44 +73,81 @@ Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
 
 Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. Claude Code auto-detects the vault root from the working directory.
 
----
-
-## Step 2: Launch
-
-### Claude Code
-
-```bash
-cd /path/to/your/vault && claude
-```
-
-### Claude Desktop
-
 Restart Claude Desktop after editing the config. Flywheel appears in the MCP server list.
 
-On first run, Flywheel creates a `.flywheel/` directory containing its SQLite index. Add `.flywheel/` to your `.gitignore` if your vault is version-controlled.
+### HTTP Clients (Cursor, Windsurf, VS Code, Continue)
 
-### Other MCP Clients (HTTP Transport)
-
-For non-Claude clients that support HTTP — Cursor, Windsurf, Aider, LangGraph, Ollama, or any HTTP-capable agent.
-
-**Start the server:**
+HTTP clients connect to a running Flywheel server. Start it first:
 
 ```bash
-FLYWHEEL_TRANSPORT=http npx @velvetmonkey/flywheel-memory
+VAULT_PATH=/path/to/your/vault FLYWHEEL_TRANSPORT=http npx -y @velvetmonkey/flywheel-memory
 ```
 
-Set `VAULT_PATH` if you're not launching from inside the vault:
-
-```bash
-VAULT_PATH=/path/to/your/vault FLYWHEEL_TRANSPORT=http npx @velvetmonkey/flywheel-memory
-```
-
-**Health check:**
+Verify it's running:
 
 ```bash
 curl http://localhost:3111/health
-# → {"status":"ok","version":"2.0.101","vault":"/path/to/your/vault"}
 ```
+
+Keep the server running in a terminal tab, tmux session, or as a systemd service.
+Then configure your client below.
+
+#### Cursor (HTTP)
+
+```json
+// .cursor/mcp.json (project) or ~/.cursor/mcp.json (global)
+{
+  "mcpServers": {
+    "flywheel": {
+      "url": "http://localhost:3111/mcp"
+    }
+  }
+}
+```
+
+#### Windsurf (HTTP)
+
+```json
+// ~/.codeium/windsurf/mcp_config.json
+{
+  "mcpServers": {
+    "flywheel": {
+      "serverUrl": "http://localhost:3111/mcp"
+    }
+  }
+}
+```
+
+#### VS Code + GitHub Copilot (HTTP)
+
+Note: VS Code uses `"servers"` not `"mcpServers"`.
+
+```json
+// .vscode/mcp.json
+{
+  "servers": {
+    "flywheel": {
+      "type": "http",
+      "url": "http://localhost:3111/mcp"
+    }
+  }
+}
+```
+
+#### Continue (HTTP)
+
+Each server gets its own file:
+
+```yaml
+# .continue/mcpServers/flywheel.yaml
+name: flywheel
+type: streamable-http
+url: http://localhost:3111/mcp
+```
+
+#### Other HTTP Clients
+
+Any client that speaks Streamable HTTP can connect to `http://localhost:3111/mcp`.
 
 **MCP endpoint:** `POST /mcp` — accepts `application/json` and `text/event-stream`.
 
@@ -131,11 +176,13 @@ FLYWHEEL_VAULTS="personal:/home/user/obsidian/Personal,work:/home/user/obsidian/
 
 When multi-vault is active, every tool gains an optional `vault` parameter. The `search` tool automatically searches all vaults when `vault` is omitted, merging results with a `vault` field on each. Other tools default to the primary vault (first in list). The health endpoint reports all vault names.
 
-See [CONFIGURATION.md](CONFIGURATION.md#transport) for all transport and multi-vault options.
+See [CONFIGURATION.md](CONFIGURATION.md#multi-vault) for all multi-vault options.
+
+On first run, Flywheel creates a `.flywheel/` directory containing its SQLite index. Add `.flywheel/` to your `.gitignore` if your vault is version-controlled.
 
 ---
 
-## Step 3: First 5 Commands to Try
+## Step 2: First 5 Commands to Try
 
 Start with these to see Flywheel in action on your vault:
 
@@ -171,7 +218,7 @@ Flywheel auto-links any mentions of existing notes. If your vault has `Stacy Tho
 
 ---
 
-## Step 4: Choose a Tool Preset
+## Step 3: Choose a Tool Preset
 
 Flywheel defaults to the `default` preset (16 tools: search, read, write, tasks).
 Add bundles for graph analysis, wikilinks, memory, or other capabilities:
@@ -188,7 +235,7 @@ See [CONFIGURATION.md](CONFIGURATION.md) for all presets, composable bundles, an
 
 ---
 
-## Step 5: Configure Claude for Your Vault
+## Step 4: Configure Claude for Your Vault
 
 Flywheel gives Claude the tools. Configuration tells Claude *how to think about your vault* -- which folders matter, what frontmatter means, and how notes should be formatted.
 
@@ -298,7 +345,7 @@ Start simple and build up:
 
 ---
 
-## Step 6: Enable Semantic Intelligence (Optional)
+## Step 5: Enable Semantic Intelligence (Optional)
 
 Flywheel supports deep semantic integration that goes far beyond keyword search. To enable it:
 

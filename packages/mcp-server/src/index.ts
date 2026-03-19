@@ -433,7 +433,7 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
 // Server Instructions (dynamic, based on enabled categories)
 // ============================================================================
 
-function generateInstructions(categories: Set<ToolCategory>): string {
+function generateInstructions(categories: Set<ToolCategory>, registry?: VaultRegistry | null): string {
   const parts: string[] = [];
 
   // Base instruction (always present)
@@ -450,6 +450,17 @@ Tool selection:
      and commit changes.
   4. Start with a broad search: just query text, no filters. Only add folder, tag,
      or frontmatter filters to narrow a second search if needed.`);
+
+  // Multi-vault instructions (when registry has multiple vaults)
+  if (registry?.isMultiVault) {
+    parts.push(`
+## Multi-Vault
+
+This server manages multiple vaults. Every tool has an optional "vault" parameter.
+- "search" without vault searches ALL vaults and merges results (each result has a "vault" field).
+- All other tools default to the primary vault when "vault" is omitted.
+- Available vaults: ${registry.getVaultNames().join(', ')}`);
+  }
 
   // Read category instructions
   if (categories.has('read')) {
@@ -825,7 +836,7 @@ function registerAllTools(targetServer: McpServer): void {
 function createConfiguredServer(): McpServer {
   const s = new McpServer(
     { name: 'flywheel-memory', version: pkg.version },
-    { instructions: generateInstructions(enabledCategories) },
+    { instructions: generateInstructions(enabledCategories, vaultRegistry) },
   );
   applyToolGating(s, enabledCategories, () => stateDb, vaultRegistry);
   registerAllTools(s);
@@ -838,7 +849,7 @@ function createConfiguredServer(): McpServer {
 
 const server = new McpServer(
   { name: 'flywheel-memory', version: pkg.version },
-  { instructions: generateInstructions(enabledCategories) },
+  { instructions: generateInstructions(enabledCategories, vaultRegistry) },
 );
 
 const _gatingResult = applyToolGating(server, enabledCategories, () => stateDb, vaultRegistry);

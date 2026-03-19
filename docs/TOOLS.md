@@ -61,6 +61,14 @@ The enrichment step is the same regardless of how a note matched — every resul
 
 **Common parameters:** `query`, `where` (frontmatter filters), `has_tag`, `folder`, `modified_after`, `sort_by`, `limit`, `detail_count`, `context_note`
 
+**Multi-vault behavior**
+
+When the server is configured with `FLYWHEEL_VAULTS`, all tools gain an optional `vault` parameter:
+- **No `vault` parameter** — searches all vaults, merges results by relevance. Each result includes a `vault` field.
+- **`vault: "name"`** — searches only that vault.
+
+Other tools default to the primary vault (first in `FLYWHEEL_VAULTS`) when `vault` is omitted.
+
 **How ranking works**
 
 FTS5 uses BM25 (Best Match 25) to rank results. Column weights control what matters most:

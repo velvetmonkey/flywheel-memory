@@ -209,7 +209,7 @@ Any HuggingFace Transformers-compatible model can be used — unknown models aut
 | `FLYWHEEL_HTTP_HOST` | string | `127.0.0.1` | HTTP bind address |
 
 - **`stdio`** — Standard MCP transport for Claude Code and Claude Desktop
-- **`http`** — HTTP transport for non-Claude clients (Cursor, Windsurf, Aider, LangGraph, Ollama)
+- **`http`** — HTTP transport for non-Claude clients (Cursor, Windsurf, VS Code, Continue, LangGraph)
 - **`both`** — Runs stdio + HTTP simultaneously (two McpServer instances, shared state)
 
 DNS rebinding protection is automatically enabled when bound to localhost/127.0.0.1/::1.
@@ -229,11 +229,42 @@ DNS rebinding protection is automatically enabled when bound to localhost/127.0.
 |----------|--------|---------|
 | `FLYWHEEL_VAULTS` | `name1:/path1,name2:/path2` | (single vault) |
 
-Serve multiple Obsidian vaults from a single server instance. The first vault in the list is the primary (used when the `vault` parameter is omitted from tool calls).
+Serve multiple Obsidian vaults from a single server instance. Falls back to `VAULT_PATH`/`PROJECT_PATH` for single-vault mode when not set.
 
-When `FLYWHEEL_VAULTS` is set, every tool gains an optional `vault` parameter. Each vault gets its own StateDb, index, and file watcher. Falls back to `VAULT_PATH`/`PROJECT_PATH` for single-vault mode when not set.
+#### When to use multi-vault
 
-**Cross-vault search:** The `search` tool automatically searches all vaults when no `vault` parameter is specified. Results are merged, sorted by relevance, and each result includes a `vault` field indicating its source. To search a specific vault, pass the `vault` parameter.
+- **Personal + work vaults** — keep personal notes separate from work, search across both
+- **Client-specific vaults** alongside a shared knowledge base
+- **Team vaults** with individual workspaces
+
+#### How it works
+
+Each vault gets fully isolated state:
+
+- Separate `.flywheel/state.db` per vault root
+- Separate in-memory graph index
+- Separate file watcher
+- Separate runtime config (`FlywheelConfig`)
+
+The first vault in the list is the **primary**. Tools without a `vault` parameter default to the primary vault — except `search`, which searches all vaults.
+
+#### Tool behavior
+
+| Behavior | `vault` specified | `vault` omitted |
+|----------|-------------------|-----------------|
+| `search` | Searches that vault only | Searches **all** vaults, merges results |
+| All other tools | Operates on that vault | Operates on primary vault |
+
+#### Cross-vault search
+
+1. Query runs independently against each vault's index
+2. Results merged into a single list with a `vault` field on each result
+3. Sorted by `rrf_score`
+4. Response includes `method: "cross_vault"` and `vaults_searched: [...]`
+
+#### Configuration examples
+
+**Personal + Work** (most common):
 
 ```json
 {
@@ -243,6 +274,36 @@ When `FLYWHEEL_VAULTS` is set, every tool gains an optional `vault` parameter. E
   }
 }
 ```
+
+**Team setup** (3 vaults):
+
+```json
+{
+  "env": {
+    "FLYWHEEL_VAULTS": "shared:/data/team-vault,alice:/home/alice/vault,bob:/home/bob/vault"
+  }
+}
+```
+
+**Windows paths** — note that single-character vault names followed by `:\` are ambiguous with drive letters. Use descriptive names:
+
+```json
+{
+  "env": {
+    "FLYWHEEL_VAULTS": "personal:C:\\Users\\you\\obsidian\\Personal,work:C:\\Users\\you\\obsidian\\Work"
+  }
+}
+```
+
+#### Health endpoint
+
+With multi-vault, the health endpoint reports all vault names:
+
+```json
+{ "status": "ok", "version": "2.0.103", "vault": "/path/primary", "vaults": ["personal", "work"] }
+```
+
+For client-specific configuration examples (Cursor, Windsurf, VS Code, Continue), see [SETUP.md](SETUP.md).
 
 ### File Watcher
 

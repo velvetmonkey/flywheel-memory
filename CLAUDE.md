@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 67 tools across 11 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 72 tools across 11 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -90,7 +90,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 **Presets:**
 - **`default`** — 19 tools: search, read, write, tasks
 - **`agent`** — 19 tools: search, read, write, memory
-- **`full`** — All categories except memory (64 tools; add `,memory` for all 67)
+- **`full`** — All categories except memory (69 tools; add `,memory` for all 72)
 
 **Composable bundles** (add to presets or each other):
 - **`graph`** — structural analysis, semantic analysis, paths, hubs, connections (10 tools)
@@ -100,7 +100,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`tasks`** — task queries and mutations (3 tools)
 - **`memory`** — agent working memory + recall + brief (3 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
-- **`diagnostics`** — vault health, stats, config, activity (13 tools)
+- **`diagnostics`** — vault health, stats, config, activity, temporal analysis (18 tools)
 **Categories (11):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `diagnostics`
 
 ---

@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 67 tools across 11 categories
+ * 72 tools across 11 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -202,7 +202,7 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherInstanc
 // Presets:
 //   default    - Note-taking essentials: search, read, write, tasks (19 tools)
 //   agent      - Autonomous AI agents: search, read, write, memory (19 tools)
-//   full       - All tools except agent memory (64 tools). Add ",memory" to include.
+//   full       - All tools except agent memory (69 tools). Add ",memory" to include.
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic: backlinks, forward links, graph_analysis, semantic_analysis, paths, hubs, connections (10 tools)
@@ -212,7 +212,7 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherInstanc
 //   tasks       - Task queries and mutations (3 tools)
 //   memory      - Agent working memory + recall + brief (3 tools)
 //   note-ops    - File management: delete, move, rename, merge (4 tools)
-//   diagnostics - Vault health, stats, config, activity (13 tools)
+//   diagnostics - Vault health, stats, config, activity, temporal analysis (18 tools)
 //
 // Examples:
 //   FLYWHEEL_TOOLS=default                    # 19 tools
@@ -418,7 +418,7 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   predict_stale_notes: 'search',
   track_concept_evolution: 'search',
 
-  // diagnostics (13 tools) — vault health, stats, config, activity
+  // diagnostics (18 tools) — vault health, stats, config, activity, temporal analysis
   health_check: 'diagnostics',
   get_vault_stats: 'diagnostics',
   get_folder_structure: 'diagnostics',

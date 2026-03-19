@@ -25,7 +25,7 @@ Six lines of JSON config. No cloud. Your data never leaves your machine. Primari
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
 | Token cost | ~800-2,000 per query | ~50-200 per query |
 
-67 tools. 6-line config. Zero cloud.
+72 tools. 6-line config. Zero cloud.
 
 **Try in 60 seconds:**
 
@@ -250,7 +250,7 @@ Every mutation is:
 | Learns from usage | Feedback loop + suppression | No | No | No |
 | Agent memory | brief + recall + memory | No | No | No |
 | Safe writes | Git + conflict detection | No | N/A | N/A |
-| Tool count | 67 | ~10 | 0 (plugin) | ~5 |
+| Tool count | 72 | ~10 | 0 (plugin) | ~5 |
 
 ---
 
@@ -313,7 +313,7 @@ Defaults to the `default` preset (19 tools). Add bundles as needed. See [docs/CO
 |--------|-------|--------------|
 | `default` | 19 | Note-taking essentials — search, read, write, tasks |
 | `agent` | 19 | Autonomous AI agents — search, read, write, memory |
-| `full` | 64 | Everything — all 11 categories |
+| `full` | 69 | Everything — all 11 categories |
 
 Composable bundles add capabilities to any preset. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all bundles and fine-grained categories.
 
@@ -326,7 +326,7 @@ The fewer tools you load, the less context the AI needs to pick the right one. S
 | Doc | Why read this |
 |---|---|
 | [PROVE-IT.md](docs/PROVE-IT.md) | See it working in 5 minutes |
-| [TOOLS.md](docs/TOOLS.md) | All 67 tools documented |
+| [TOOLS.md](docs/TOOLS.md) | All 72 tools documented |
 | [ALGORITHM.md](docs/ALGORITHM.md) | How the scoring works |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](docs/SETUP.md) | Full setup guide for your vault |

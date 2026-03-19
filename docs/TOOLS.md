@@ -1,6 +1,6 @@
 # Tools
 
-67 tools. Most questions only need one: **search**.
+72 tools. Most questions only need one: **search**.
 
 ---
 
@@ -18,7 +18,7 @@
 | [Record corrections](#corrections) | `vault_record_correction` | 4 |
 | [Move, rename, or merge notes](#organize-notes) | `vault_move_note` | 4 |
 | [Build an autonomous agent](#agent-memory) | `memory`, `recall`, `brief` | 3 |
-| [Check vault health](#vault-health) | `health_check` | 13 |
+| [Check vault health](#vault-health) | `health_check` | 18 |
 | [Automate workflows](#automation) | `policy` | 2 |
 
 ---
@@ -370,6 +370,11 @@ Monitor, configure, and maintain your vault.
 | `suggest_entity_merges` | Find duplicate entities by name similarity and shared backlinks. |
 | `dismiss_merge_suggestion` | "Those aren't duplicates" — dismiss a merge suggestion permanently. |
 | `vault_init` | First-time setup. Scans notes with zero wikilinks and applies entity links. Safe to re-run. |
+| `flywheel_doctor` | Run comprehensive diagnostics. 11 checks with ok/warning/error + fix suggestions. |
+| `get_context_around_date` | Reconstruct vault activity around a specific date. Notes, entities, wikilinks, moves. |
+| `predict_stale_notes` | Multi-signal staleness prediction with importance scoring and recommendations. |
+| `track_concept_evolution` | Entity timeline: link additions, feedback, category changes, co-occurrence. |
+| `temporal_summary` | Period-based vault pulse report. Composes context + staleness + evolution into one summary. |
 
 ---
 

@@ -95,7 +95,7 @@ Vault root detection order:
 |--------|-------|----------|
 | `default` (default) | 16 | Note-taking essentials — search, read, write, tasks |
 | `agent` | 16 | Autonomous AI agents — search, read, write, memory |
-| `full` | 61 | Everything except memory — add `,memory` for all 64 |
+| `full` | 66 | Everything except memory — add `,memory` for all 69 |
 
 The fewer tools you load, the less context Claude needs to pick the right one.
 
@@ -112,7 +112,7 @@ Start with `default`, then add what you need:
 | `tasks` | 3 | Task queries and mutations (already included in `default`) |
 | `memory` | 3 | Agent working memory + recall + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
-| `diagnostics` | 13 | Vault health, stats, config, activity, merges |
+| `diagnostics` | 18 | Vault health, stats, config, activity, merges, temporal analysis |
 
 #### Recipes
 
@@ -152,7 +152,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `tasks` | 3 | tasks, vault_toggle_task, vault_add_task |
 | `memory` | 3 | memory, recall, brief |
 | `note-ops` | 4 | vault_delete/move/rename_note, merge_entities |
-| `diagnostics` | 13 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init |
+| `diagnostics` | 18 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor, get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
 
 Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work with a warning — they resolve to current category names.
 
@@ -170,8 +170,8 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 | wikilinks | 7 | | | Yes |
 | corrections | 4 | | | Yes |
 | note-ops | 4 | | | Yes |
-| diagnostics | 13 | | | Yes |
-| **Total** | **61** | **16** | **16** | **61** |
+| diagnostics | 18 | | | Yes |
+| **Total** | **66** | **16** | **16** | **66** |
 
 ### Semantic Embeddings
 

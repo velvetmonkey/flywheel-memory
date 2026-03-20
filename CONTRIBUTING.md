@@ -84,6 +84,16 @@ npm run bench:all -w @velvetmonkey/flywheel-bench
 
 Keep PRs focused -- one logical change per PR.
 
+## Releasing
+
+Releases are manual. Before tagging:
+
+1. Update `CHANGELOG.md` with a new version section under `[Unreleased]`
+2. Update the `[Unreleased]` compare link and add a new version compare link
+3. Bump `version` in root `package.json`, `packages/mcp-server/package.json`, and `packages/core/package.json`
+4. Commit, tag (`flywheel-memory-vX.Y.Z` + `vault-core-vX.Y.Z`), push with tags
+5. Publish: `npm publish` for both workspace packages
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the [Apache-2.0 License](LICENSE).

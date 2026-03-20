@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.107] - 2026-03-20
+
+### Changed
+- Entity scan performance: targeted WHERE IN replaces full table scan
+- Hub connection count caching via WeakMap (auto-invalidates on index rebuild)
+- 60s TTL entity cache for memory entity detection
+- Binary search insert for Dijkstra priority queue
+- Co-occurrence matching tightened (both tokens for 2-token, 75% for 3+)
+- MD5 replaced with SHA-256 truncated in embeddings content hash
+
+### Fixed
+- Template `resolveExpression` recursion guard (MAX_FILTER_DEPTH=10)
+- Stale git lock removal (>30s age) instead of retrying against them
+- AST fallback logging when parse fails in protectedZones
+
+## [2.0.106] - 2026-03-19
+
+### Added
+- `flywheel_doctor` diagnostic tool (11 checks with ok/warning/error status)
+- `temporal_summary` tool (composes temporal reasoning tools into period overview)
+- Policy examples documentation (`docs/POLICY_EXAMPLES.md`)
+- Performance benchmarks documentation (`docs/BENCHMARKS.md`)
+- Suppression stats in `suggest_wikilinks` output (posteriorMean, totalObservations)
+
+### Changed
+- Semantic embedding UX: estimated build time, progress %, elapsed time on completion
+
 ## [2.0.105] - 2026-03-19
 
 ### Added
@@ -318,7 +345,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI workflows for linting and testing
 - Strategic README with project positioning
 
-[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.105...HEAD
+[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.107...HEAD
+[2.0.107]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.106...flywheel-memory-v2.0.107
+[2.0.106]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.105...flywheel-memory-v2.0.106
 [2.0.105]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.104...flywheel-memory-v2.0.105
 [2.0.104]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.103...flywheel-memory-v2.0.104
 [2.0.103]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.102...flywheel-memory-v2.0.103

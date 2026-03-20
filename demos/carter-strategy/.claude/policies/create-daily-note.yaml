@@ -44,7 +44,6 @@ steps:
         ## Notes
 
         ## Related
-      commit: true
 
 output:
   summary: "Daily note for {{variables.target_date}} created"

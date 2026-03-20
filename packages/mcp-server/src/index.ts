@@ -483,6 +483,10 @@ Escalation: "search" (enriched metadata + content preview) → "get_note_structu
     parts.push(`
 ## Write
 
+**Before writing, check for saved policies** with \`policy(action="list")\`. Policies ensure notes are
+created with the correct structure and frontmatter for this vault. Use a matching policy instead of
+raw write tools when one exists. Fall back to direct tools only when no policy fits.
+
 Write to existing notes with "vault_add_to_section". Create new notes with "vault_create_note".
 Update metadata with "vault_update_frontmatter". All writes auto-link entities — no manual [[wikilinks]] needed.
 Use "vault_undo_last_mutation" to reverse the last write.

@@ -452,9 +452,7 @@ Tool selection:
      This is usually enough to answer without reading any files.
   2. Escalate to "get_note_structure" only when you need the full markdown content
      or word count. Use "get_section_content" to read one section by heading name.
-  3. Use vault write tools instead of raw file writes — they auto-link entities
-     and commit changes.
-  4. Start with a broad search: just query text, no filters. Only add folder, tag,
+  3. Start with a broad search: just query text, no filters. Only add folder, tag,
      or frontmatter filters to narrow a second search if needed.`);
 
   // Multi-vault instructions (when registry has multiple vaults)
@@ -488,7 +486,8 @@ created with the correct structure and frontmatter for this vault. Use a matchin
 raw write tools when one exists. Fall back to direct tools only when no policy fits.
 
 Write to existing notes with "vault_add_to_section". Create new notes with "vault_create_note".
-Update metadata with "vault_update_frontmatter". All writes auto-link entities — no manual [[wikilinks]] needed.
+Update metadata with "vault_update_frontmatter". These are fallback tools — use them when no policy fits.
+All writes auto-link entities — no manual [[wikilinks]] needed.
 Use "vault_undo_last_mutation" to reverse the last write.
 
 **Frontmatter matters more than content** for Flywheel's intelligence. When creating or updating notes, always set:
@@ -506,8 +505,8 @@ language — Claude authors the YAML, saves it, and can execute it on demand. No
 Policies chain vault tools (add/remove/replace sections, create notes, update frontmatter, toggle
 tasks) into atomic operations — all steps succeed or all roll back, committed as a single git commit.
 
-Actions: "author" a policy from a description, "validate" the YAML, "preview" (dry-run),
-"execute" with variables, "list" saved policies, "revise" to modify.
+Actions: "list" saved policies (do this first), "execute" with variables, "author" a policy
+from a description, "validate" the YAML, "preview" (dry-run), "revise" to modify.
 
 Key capabilities:
   - **Variables** — parameterize policies (string, number, boolean, array, enum with defaults).

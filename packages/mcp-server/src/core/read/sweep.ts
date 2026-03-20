@@ -16,6 +16,7 @@
 import type { VaultIndex } from './types.js';
 import { resolveTarget } from './graph.js';
 import { countFTS5Mentions } from './fts5.js';
+import { serverLog } from '../shared/serverLog.js';
 
 /** Default sweep interval: 5 minutes */
 const DEFAULT_SWEEP_INTERVAL_MS = 5 * 60 * 1000;
@@ -145,7 +146,7 @@ export function startSweepTimer(
       try {
         maintenanceCallback();
       } catch (err) {
-        console.error('[Flywheel] Maintenance error:', err);
+        serverLog('sweep', `Maintenance error: ${err}`, 'error');
       }
     }
   }, interval);
@@ -165,7 +166,7 @@ function doSweep(getIndex: () => VaultIndex): void {
       runSweep(index);
     }
   } catch (err) {
-    console.error('[Flywheel] Sweep error:', err);
+    serverLog('sweep', `Sweep error: ${err}`, 'error');
   } finally {
     sweepRunning = false;
   }

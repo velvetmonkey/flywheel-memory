@@ -9,6 +9,7 @@
  */
 
 import type { PolicyContext } from './types.js';
+import { serverLog } from '../../shared/serverLog.js';
 
 /**
  * Pattern to match template expressions: {{...}}
@@ -177,7 +178,7 @@ export function applyFilter(value: unknown, filterName: string, arg?: string): u
   const filter = FILTERS[filterName];
   if (!filter) {
     // Unknown filter, return value unchanged
-    console.error(`[Policy] Unknown filter: ${filterName}`);
+    serverLog('policy', `Unknown filter: ${filterName}`, 'warn');
     return value;
   }
   return filter(value, arg);
@@ -235,7 +236,7 @@ export function interpolate(template: string, context: PolicyContext): string {
     const value = resolveExpression(expr, context);
     if (value === undefined) {
       // Return original placeholder if not found (helps with debugging)
-      console.error(`[Policy] Unresolved template expression: ${match}`);
+      serverLog('policy', `Unresolved template expression: ${match}`, 'warn');
       return match;
     }
     return String(value);

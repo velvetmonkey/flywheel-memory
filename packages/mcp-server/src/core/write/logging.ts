@@ -11,6 +11,7 @@ import {
   generateSessionId,
   setSessionId,
 } from '@velvetmonkey/vault-core';
+import { serverLog } from '../shared/serverLog.js';
 
 let logger: OperationLogger | null = null;
 
@@ -20,7 +21,7 @@ export async function initializeLogger(vaultPath: string): Promise<void> {
     setSessionId(sessionId);
     logger = await createLoggerFromConfig(vaultPath, 'write');
   } catch (error) {
-    console.error(`[Flywheel] Failed to initialize logger: ${error}`);
+    serverLog('server', `Failed to initialize logger: ${error}`, 'error');
     logger = null;
   }
 }
@@ -39,7 +40,7 @@ export async function logOperation(
   try {
     await logger.log({ tool, vault: '', duration_ms: durationMs, success, ...details });
   } catch (error) {
-    console.error(`[Flywheel] Logging error: ${error}`);
+    serverLog('server', `Logging error: ${error}`, 'error');
   }
 }
 

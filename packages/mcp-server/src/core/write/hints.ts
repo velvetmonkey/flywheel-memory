@@ -11,6 +11,7 @@ import {
   getWriteState,
   type StateDb,
 } from '@velvetmonkey/vault-core';
+import { serverLog } from '../shared/serverLog.js';
 
 /**
  * Module-level StateDb reference for hints storage
@@ -88,14 +89,14 @@ export function readHints(): HintsFile {
  */
 export function writeHints(hints: HintsFile): void {
   if (!moduleStateDb) {
-    console.error('[Flywheel] No StateDb available for writing hints');
+    serverLog('hints', 'No StateDb available for writing hints', 'warn');
     return;
   }
 
   try {
     setWriteState(moduleStateDb, 'mutation_hints', hints);
   } catch (e) {
-    console.error('[Flywheel] Failed to write hints to StateDb:', e);
+    serverLog('hints', `Failed to write hints to StateDb: ${e}`, 'error');
   }
 }
 
@@ -138,7 +139,7 @@ export function addMutationHint(
     return true;
   } catch (error) {
     // Log but don't fail the mutation
-    console.error('[Flywheel] Failed to write mutation hint:', error);
+    serverLog('hints', `Failed to write mutation hint: ${error}`, 'error');
     return false;
   }
 }

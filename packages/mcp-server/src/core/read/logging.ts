@@ -19,6 +19,7 @@ import {
   generateSessionId,
   setSessionId,
 } from '@velvetmonkey/vault-core';
+import { serverLog } from '../shared/serverLog.js';
 
 /**
  * Global logger instance (initialized on server start)
@@ -38,7 +39,7 @@ export async function initializeLogger(vaultPath: string): Promise<void> {
     // Create logger from vault config (or use defaults)
     logger = await createLoggerFromConfig(vaultPath, 'flywheel');
   } catch (error) {
-    console.error(`[Flywheel] Failed to initialize logger: ${error}`);
+    serverLog('server', `Failed to initialize logger: ${error}`, 'error');
     // Continue without logging - it's optional
     logger = null;
   }
@@ -79,7 +80,7 @@ export async function logOperation(
     });
   } catch (error) {
     // Don't let logging errors affect tool operations
-    console.error(`[Flywheel] Logging error: ${error}`);
+    serverLog('server', `Logging error: ${error}`, 'error');
   }
 }
 

@@ -15,6 +15,7 @@
 import type Database from 'better-sqlite3';
 import * as fs from 'fs';
 import { scanVault } from './vault.js';
+import { serverLog } from '../shared/serverLog.js';
 
 /** Search result with highlighted snippet */
 export interface FTS5Result {
@@ -145,7 +146,7 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
         rows.push([file.path, title, frontmatter, body]);
       } catch (err) {
         // Skip files we can't read
-        console.error(`[FTS5] Skipping ${file.path}:`, err);
+        serverLog('fts5', `Skipping ${file.path}: ${err}`, 'warn');
       }
     }
 
@@ -176,7 +177,7 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
       error: null,
     };
 
-    console.error(`[FTS5] Indexed ${indexed} notes`);
+    serverLog('fts5', `Indexed ${indexed} notes`);
     return state;
   } catch (err) {
     state = {

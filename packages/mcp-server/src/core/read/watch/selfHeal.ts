@@ -10,6 +10,7 @@
  */
 
 import type { WatcherState, WatcherStatus } from './types.js';
+import { serverLog } from '../../shared/serverLog.js';
 
 /** Initial retry delay in ms */
 const INITIAL_RETRY_DELAY = 1000;
@@ -165,7 +166,7 @@ export class SelfHealingWatcher {
    * Handle a watcher error
    */
   async handleError(error: Error): Promise<void> {
-    console.error('[flywheel] Watcher error:', error.message);
+    serverLog('watcher', `Watcher error: ${error.message}`, 'error');
 
     // Update state
     this.state = updateStateAfterError(this.state, error);
@@ -178,18 +179,18 @@ export class SelfHealingWatcher {
 
     switch (action.type) {
       case 'retry':
-        console.error(`[flywheel] Scheduling retry in ${action.delay}ms (attempt ${this.state.retryCount})`);
+        serverLog('watcher', `Scheduling retry in ${action.delay}ms (attempt ${this.state.retryCount})`, 'warn');
         this.scheduleRetry(action.delay);
         break;
 
       case 'fallback-polling':
-        console.error('[flywheel] Falling back to polling mode');
+        serverLog('watcher', 'Falling back to polling mode', 'warn');
         this.state.isPollingFallback = true;
         await this.restart(true);
         break;
 
       case 'give-up':
-        console.error('[flywheel] Too many retries, giving up on file watching');
+        serverLog('watcher', 'Too many retries, giving up on file watching', 'error');
         this.notifyError(error);
         break;
     }

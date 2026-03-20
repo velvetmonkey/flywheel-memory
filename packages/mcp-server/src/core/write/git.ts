@@ -11,6 +11,7 @@ import {
   deleteWriteState,
   type StateDb,
 } from '@velvetmonkey/vault-core';
+import { serverLog } from '../shared/serverLog.js';
 
 /**
  * Module-level StateDb reference for write state storage
@@ -65,7 +66,7 @@ export function saveLastMutationCommit(
   message: string
 ): void {
   if (!moduleStateDb) {
-    console.error('[Flywheel] No StateDb available for saving last commit');
+    serverLog('git', 'No StateDb available for saving last commit', 'warn');
     return;
   }
 
@@ -78,7 +79,7 @@ export function saveLastMutationCommit(
   try {
     setWriteState(moduleStateDb, 'last_commit', data);
   } catch (e) {
-    console.error('[Flywheel] Failed to save last commit to StateDb:', e);
+    serverLog('git', `Failed to save last commit to StateDb: ${e}`, 'error');
   }
 }
 
@@ -428,7 +429,7 @@ export async function commitChange(
           const lockPath = path.join(vaultPath, '.git/index.lock');
           try {
             await fs.unlink(lockPath);
-            console.error(`[Flywheel] Removed stale git lock (age: ${lockInfo.ageMs}ms)`);
+            serverLog('git', `Removed stale git lock (age: ${lockInfo.ageMs}ms)`, 'warn');
           } catch { /* lock already gone */ }
         }
       }
@@ -654,7 +655,7 @@ export async function commitPolicyChanges(
           const lockPath = path.join(vaultPath, '.git/index.lock');
           try {
             await fs.unlink(lockPath);
-            console.error(`[Flywheel] Removed stale git lock (age: ${lockInfo.ageMs}ms)`);
+            serverLog('git', `Removed stale git lock (age: ${lockInfo.ageMs}ms)`, 'warn');
           } catch { /* lock already gone */ }
         }
       }

@@ -10,6 +10,7 @@ import path from 'path';
 import type { PolicyCondition, PolicyContext } from './types.js';
 import { interpolate } from './template.js';
 import { readVaultFile, findSection } from '../writer.js';
+import { serverLog } from '../../shared/serverLog.js';
 
 /**
  * Result of evaluating a condition
@@ -348,7 +349,7 @@ export function shouldStepExecute(
   const match = when.match(/\{\{conditions\.(\w+)\}\}/);
   if (!match) {
     // Invalid format, treat as truthy
-    console.error(`[Policy] Invalid when clause format: ${when}`);
+    serverLog('policy', `Invalid when clause format: ${when}`, 'error');
     return { execute: true, reason: 'Invalid when clause format' };
   }
 
@@ -356,7 +357,7 @@ export function shouldStepExecute(
   const result = conditionResults[conditionId];
 
   if (result === undefined) {
-    console.error(`[Policy] Unknown condition referenced: ${conditionId}`);
+    serverLog('policy', `Unknown condition referenced: ${conditionId}`, 'error');
     return { execute: false, reason: `Unknown condition: ${conditionId}` };
   }
 

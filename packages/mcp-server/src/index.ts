@@ -476,6 +476,15 @@ This server manages multiple vaults. Every tool has an optional "vault" paramete
 - Available vaults: ${registry.getVaultNames().join(', ')}`);
   }
 
+  // Frontmatter guidance (always present — impacts search, categorization, recall, and suggestions)
+  parts.push(`
+**Frontmatter matters more than content** for Flywheel's intelligence. When creating or updating notes, always set:
+  - \`type:\` — drives entity categorization (person, project, technology). Without it, the category is guessed from the name alone.
+  - \`aliases:\` — alternative names so the entity is found when referred to differently.
+  - \`description:\` — one-line summary shown in search results and used by recall.
+  - Tags — used for filtering, suggestion scoring, and schema analysis.
+Good frontmatter is the highest-leverage action for improving suggestions, recall, and link quality.`);
+
   // Read category instructions
   if (categories.has('read')) {
     parts.push(`
@@ -499,13 +508,6 @@ Write to existing notes with "vault_add_to_section". Create new notes with "vaul
 Update metadata with "vault_update_frontmatter". These are fallback tools — use them when no policy fits.
 All writes auto-link entities — no manual [[wikilinks]] needed.
 Use "vault_undo_last_mutation" to reverse the last write.
-
-**Frontmatter matters more than content** for Flywheel's intelligence. When creating or updating notes, always set:
-  - \`type:\` — drives entity categorization (person, project, technology). Without it, the category is guessed from the name alone.
-  - \`aliases:\` — alternative names so the entity is found when referred to differently.
-  - \`description:\` — one-line summary shown in search results and used by recall.
-  - Tags — used for filtering, suggestion scoring, and schema analysis.
-Good frontmatter is the highest-leverage action for improving suggestions, recall, and link quality.
 
 ### Policies
 

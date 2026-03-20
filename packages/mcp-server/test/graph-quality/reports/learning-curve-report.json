@@ -1,7 +1,7 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-03-20T00:51:35.211Z",
-  "duration_ms": 36770,
+  "timestamp": "2026-03-20T03:13:47.020Z",
+  "duration_ms": 50027,
   "summary": {
     "round0_f1": 0.868,
     "roundN_f1": 0.879,
@@ -3927,7 +3927,7 @@
       "falsePositives": 0,
       "falseNegatives": 13,
       "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 0.9424,
+      "feedbackLayerAvgContribution": 0.9526,
       "byCategory": {
         "people": {
           "precision": 1,

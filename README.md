@@ -179,7 +179,7 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ## Battle-Tested
 
-**2,541 tests. 125 test files. 47,000+ lines of test code.** See [docs/TESTING.md](docs/TESTING.md).
+**2,541 tests. 124 test files. 47,000+ lines of test code.** See [docs/TESTING.md](docs/TESTING.md).
 
 ### Performance
 

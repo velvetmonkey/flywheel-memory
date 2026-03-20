@@ -200,9 +200,9 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherInstanc
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
 // Presets:
-//   default    - Note-taking essentials: search, read, write, tasks (19 tools)
-//   agent      - Autonomous AI agents: search, read, write, memory (19 tools)
-//   full       - All tools except agent memory (69 tools). Add ",memory" to include.
+//   default    - Note-taking essentials: search, read, write, tasks (16 tools)
+//   agent      - Autonomous AI agents: search, read, write, memory (16 tools)
+//   full       - All tools except agent memory (66 tools). Add ",memory" for all 69.
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic: backlinks, forward links, graph_analysis, semantic_analysis, paths, hubs, connections (10 tools)
@@ -215,10 +215,10 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherInstanc
 //   diagnostics - Vault health, stats, config, activity, temporal analysis (18 tools)
 //
 // Examples:
-//   FLYWHEEL_TOOLS=default                    # 19 tools
-//   FLYWHEEL_TOOLS=agent                      # 19 tools
-//   FLYWHEEL_TOOLS=default,graph              # 28 tools
-//   FLYWHEEL_TOOLS=agent,tasks                # 22 tools
+//   FLYWHEEL_TOOLS=default                    # 16 tools
+//   FLYWHEEL_TOOLS=agent                      # 16 tools
+//   FLYWHEEL_TOOLS=default,graph              # 26 tools
+//   FLYWHEEL_TOOLS=agent,tasks                # 19 tools
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
 // Categories (12):

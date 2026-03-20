@@ -1,45 +1,57 @@
 # Carter Strategy
 
-> Solo strategy consultant, 3 clients, 5 projects, $27K in invoices, and no assistant -- until now.
+> Solo strategy consultant, 4 clients, 6 projects, 8 invoices, 6 team members, and no assistant -- until now.
 
 ---
 
 **You are**: A solo strategy consultant specializing in data migration and API architecture
 
-**Your situation**: You juggle client work across Acme Corp, TechStart Inc, and GlobalBank. You have $12,000 in pending invoices, two active proposals worth $80K, and tasks scattered across 30 notes. Your challenge is tracking revenue, deadlines, and client relationships without anything slipping through the cracks.
+**Your situation**: You juggle client work across Acme Corp, TechStart Inc, GlobalBank, and newer clients Meridian Financial and Nexus Health. You have outstanding invoices, active proposals worth $80K+, and tasks scattered across 50 notes. Your challenge is tracking revenue, deadlines, team utilization, and client relationships without anything slipping through the cracks.
 
 ## Vault map
 
 ```
 carter-strategy/
 ├── clients/
-│   ├── Acme Corp.md            ($300/hr, active)
-│   ├── GlobalBank.md           ($350/hr, inactive)
-│   └── TechStart Inc.md        ($250/hr, active)
+│   ├── Acme Corp.md              ($300/hr, active)
+│   ├── GlobalBank.md             ($350/hr, inactive)
+│   ├── Meridian Financial.md     (prospect)
+│   ├── Nexus Health.md           (prospect)
+│   └── TechStart Inc.md          ($250/hr, active)
 ├── projects/
-│   ├── Acme Data Migration.md  ($75K budget, Phase 2)
-│   ├── Beta Corp Dashboard.md  ($28K budget, understaffed)
+│   ├── Acme Data Migration.md    ($75K budget, Phase 2)
+│   ├── Beta Corp Dashboard.md    ($28K budget, understaffed)
 │   ├── Cloud Strategy Template.md
-│   ├── GlobalBank API Audit.md (completed, $52K)
-│   └── TechStart MVP Build.md  (completed, $25K)
+│   ├── GlobalBank API Audit.md   (completed, $52K)
+│   ├── TechStart MVP Build.md    (completed, $25K)
+│   └── TechStart Phase 2.md
 ├── invoices/
-│   ├── INV-2025-047.md         ($15,000 paid)
-│   └── INV-2025-048.md         ($12,000 pending)
+│   ├── INV-2025-047.md           ($15,000 paid)
+│   ├── INV-2025-048.md           ($12,000 pending)
+│   ├── INV-2026-001.md through INV-2026-006.md
 ├── proposals/
-│   ├── Acme Analytics Add-on.md    ($35K draft)
-│   └── TechStart Phase 2.md       ($45K pending)
+│   ├── Acme Analytics Add-on.md                ($35K draft)
+│   ├── Meridian Financial API Modernization.md
+│   ├── Nexus Health Cloud Assessment.md
+│   └── TechStart Phase 2.md                    ($45K pending)
 ├── knowledge/
 │   ├── API Security Checklist.md
 │   ├── Data Migration Playbook.md
 │   ├── Discovery Workshop Template.md
-│   └── Rate Card.md
+│   ├── Rate Card.md
+│   └── Subcontractor Management Guide.md
 ├── admin/
 │   ├── Business Goals 2026.md
 │   └── Quarterly Review Q4 2025.md
 ├── team/
-│   └── Stacy Thompson.md      (40% utilization)
-├── daily-notes/                (8 entries)
-├── weekly-notes/               (2 entries)
+│   ├── Dan Oliveira.md
+│   ├── Leila Farouk.md
+│   ├── Marcus Webb.md
+│   ├── Priya Kapoor.md
+│   ├── Sarah Mitchell.md
+│   └── Stacy Thompson.md        (40% utilization)
+├── daily-notes/                  (8 entries)
+├── weekly-notes/                 (2 entries)
 └── monthly-notes/
     └── 2025-12.md
 ```
@@ -145,7 +157,7 @@ Zero file reads needed.
 
 ---
 
-*30 notes across 10 folders. Just start asking questions.*
+*50 notes across 10 folders. Just start asking questions.*
 
 ---
 

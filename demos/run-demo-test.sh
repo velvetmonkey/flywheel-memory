@@ -13,14 +13,28 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 DEMO_DIR="$REPO_DIR/demos/carter-strategy"
+MCP_SERVER="$REPO_DIR/packages/mcp-server/dist/index.js"
 MODEL="${MODEL:-opus}"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="$REPO_DIR/demos/test-results/demo-$TIMESTAMP"
 SLEEP_BETWEEN="${SLEEP_BETWEEN:-5}"
 
+# Pre-flight checks
+if [[ ! -f "$MCP_SERVER" ]]; then
+  echo "ERROR: MCP server not built. Run: cd $REPO_DIR && npm run build"
+  exit 1
+fi
+
+# Build MCP config with all 69 tools available
+mcp_config=$(cat <<EOF
+{"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$DEMO_DIR","FLYWHEEL_TOOLS":"full,memory"}}}}
+EOF
+)
+
 echo "=== Demo Beat Test Runner ==="
 echo "Demo:    carter-strategy"
 echo "Model:   $MODEL"
+echo "Tools:   full,memory (69 tools)"
 echo "Results: $RESULTS_DIR"
 echo ""
 
@@ -82,6 +96,9 @@ for i in "${!BEAT_NAMES[@]}"; do
     --output-format stream-json \
     --no-session-persistence \
     --permission-mode bypassPermissions \
+    --mcp-config <(echo "$mcp_config") \
+    --strict-mcp-config \
+    --verbose \
     --model "$MODEL" \
     > "$RESULTS_DIR/raw/${beat_name}.jsonl" 2>"$RESULTS_DIR/raw/${beat_name}.stderr"; then
     echo "  -> Completed (output: ${beat_name}.jsonl)"

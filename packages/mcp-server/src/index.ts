@@ -534,7 +534,7 @@ you say "run the weekly review for this week".`);
     parts.push(`
 ## Memory
 
-Session workflow: call "brief" at conversation start for vault context (recent sessions, active entities, stored memories). Use "recall" before answering questions — it searches entities, notes, and memories with graph-boosted ranking. Use "memory" to store observations that should persist across sessions.`);
+Session workflow: call "brief" at conversation start for vault context (recent sessions, active entities, stored memories). Use "recall" before answering questions — it searches entities, notes, and memories with graph-boosted ranking. Use "memory" with action "store" to save observations, facts, or context that should persist across sessions (e.g. key decisions, user preferences, project status).`);
   }
 
   // Graph category instructions
@@ -545,8 +545,20 @@ Session workflow: call "brief" at conversation start for vault context (recent s
 Use "get_backlinks" for per-backlink surrounding text (reads source files).
 Use "get_forward_links" for resolved file paths and alias text.
 Use "graph_analysis" for structural queries (hubs, orphans, dead ends).
-Use "get_connection_strength" to measure link strength between notes.
-Use "get_link_path" to find shortest paths.`);
+Use "get_connection_strength" to measure link strength between two entities.
+Use "get_link_path" to trace the shortest path between any two entities or notes.
+Use "get_strong_connections" to find the strongest or most-connected relationships for an entity.`);
+  }
+
+  // Note-ops category instructions
+  if (categories.has('note-ops')) {
+    parts.push(`
+## Note Operations
+
+Use "vault_delete_note" to permanently remove a note from the vault.
+Use "vault_move_note" to relocate a note to a different folder (updates all backlinks automatically).
+Use "vault_rename_note" to change a note's title in place (updates all backlinks automatically).
+Use "merge_entities" to consolidate two entity notes into one — adds aliases, merges content, rewires wikilinks, and deletes the source.`);
   }
 
   // Tasks category instructions
@@ -562,7 +574,10 @@ Use "tasks" to query tasks across the vault (filter by status, due date, path). 
     parts.push(`
 ## Schema
 
-Use "vault_schema" before bulk operations to understand field conventions, inconsistencies, and note types. Use "note_intelligence" for per-note analysis.`);
+Use "vault_schema" before bulk operations to understand field types, values, and note type distribution.
+Use "schema_conventions" to infer frontmatter conventions from folder usage patterns, find notes with incomplete metadata, or suggest field values.
+Use "schema_validate" to validate frontmatter against explicit rules or find notes missing expected fields by folder.
+Use "note_intelligence" for per-note analysis (completeness, quality, suggestions).`);
   }
 
   return parts.join('\n');

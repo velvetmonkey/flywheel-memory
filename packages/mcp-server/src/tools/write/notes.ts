@@ -232,7 +232,7 @@ export function registerNoteTools(
   // ========================================
   server.tool(
     'vault_delete_note',
-    'Delete a note from the vault',
+    'Permanently delete a note file from the vault. Use this when a note should be removed entirely (not moved or renamed).',
     {
       path: z.string().describe('Vault-relative path to the note to delete'),
       confirm: z.boolean().default(false).describe('Must be true to confirm deletion'),

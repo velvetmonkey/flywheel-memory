@@ -191,9 +191,9 @@ export function registerVaultSchemaTools(
     {
       title: 'Schema Validate',
       description:
-        'Validate frontmatter against rules.\n' +
-        '- "validate": Validate notes against a provided schema (requires schema param)\n' +
-        '- "missing": Find notes missing expected fields by folder (requires folder_schemas param)',
+        'Check frontmatter compliance against explicit rules or folder expectations.\n' +
+        '- "validate": Check notes against a provided schema definition (required_fields, allowed_values, field_types)\n' +
+        '- "missing": Find notes that are missing expected frontmatter fields compared to their folder peers',
       inputSchema: {
         analysis: z.enum(['validate', 'missing']).describe('Type of validation'),
         schema: z.record(z.object({

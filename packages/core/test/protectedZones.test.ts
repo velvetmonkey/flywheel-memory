@@ -40,6 +40,15 @@ Content`;
     const end = findFrontmatterEnd(content);
     expect(end).toBeGreaterThan(0);
   });
+
+  it('should handle CRLF line endings', () => {
+    const content = '---\r\ntitle: Test\r\ntags: [a, b]\r\n---\r\n# Heading';
+    const end = findFrontmatterEnd(content);
+    expect(end).toBeGreaterThan(0);
+    // Body should start at or before '# Heading'
+    const afterEnd = content.slice(end);
+    expect(afterEnd).toContain('# Heading');
+  });
 });
 
 describe('getProtectedZones', () => {

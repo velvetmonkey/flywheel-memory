@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { scanVaultEntities, getAllEntities, STOP_ENTITIES } from '../src/entities.js';
+import { scanVaultEntities, getAllEntities, STOP_ENTITIES, extractEntityDescription } from '../src/entities.js';
 
 describe('STOP_ENTITIES', () => {
   it('should contain expected stop words', () => {
@@ -126,6 +126,38 @@ describe('scanVaultEntities', () => {
       expect(names).not.toContain('2025-01-01');
       expect(names).not.toContain('2025-W17');
       expect(names).toContain('React');
+    });
+  });
+
+  describe('CRLF line endings', () => {
+    it('should extract aliases and type from CRLF frontmatter', async () => {
+      // Write a note with Windows-style line endings
+      const crlfContent = '---\r\ntype: technology\r\naliases: [JS, JavaScript]\r\n---\r\nA programming language.';
+      fs.writeFileSync(path.join(tmpDir, 'JavaScript.md'), crlfContent, 'utf-8');
+
+      const index = await scanVaultEntities(tmpDir);
+      const all = getAllEntities(index);
+      const entity = all.find(
+        e => (typeof e === 'string' ? e : e.name) === 'JavaScript'
+      );
+      expect(entity).toBeDefined();
+      // Aliases should be extracted despite CRLF
+      if (typeof entity !== 'string') {
+        expect(entity!.aliases).toContain('JS');
+      }
+    });
+
+    it('should extract description from CRLF content', () => {
+      const crlfContent = '---\r\ndescription: A short desc\r\n---\r\nFirst paragraph here.';
+      const desc = extractEntityDescription(crlfContent);
+      expect(desc).toBe('A short desc');
+    });
+
+    it('should extract first-paragraph description from CRLF content without frontmatter description', () => {
+      const crlfContent = '---\r\ntype: technology\r\n---\r\nThis is a valid first paragraph for the entity.';
+      const desc = extractEntityDescription(crlfContent);
+      expect(desc).toBeTruthy();
+      expect(desc).toContain('This is a valid first paragraph');
     });
   });
 

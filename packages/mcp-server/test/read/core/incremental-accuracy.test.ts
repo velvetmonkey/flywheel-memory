@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { buildVaultIndex } from '../../../src/core/read/graph.js';
-import { upsertNote, deleteNote } from '../../../src/core/read/watch/incrementalIndex.js';
-import type { VaultIndex } from '../../../src/core/read/types.js';
+import { upsertNote, deleteNote, removeNoteFromIndex, addNoteToIndex, reconcileReleasedKeys } from '../../../src/core/read/watch/incrementalIndex.js';
+import type { VaultIndex, VaultNote } from '../../../src/core/read/types.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -119,5 +119,93 @@ describe('incremental accuracy', () => {
     } finally {
       await fs.rename(newPath, oldPath);
     }
+  });
+});
+
+describe('entity reconciliation', () => {
+  function makeNote(title: string, notePath: string, aliases: string[] = []): VaultNote {
+    return {
+      title,
+      path: notePath,
+      aliases,
+      frontmatter: {},
+      tags: [],
+      outlinks: [],
+      headings: [],
+      modified: new Date(),
+    };
+  }
+
+  function emptyIndex(): VaultIndex {
+    return {
+      notes: new Map(),
+      entities: new Map(),
+      tags: new Map(),
+      backlinks: new Map(),
+    };
+  }
+
+  it('alias reclaimed after rename releases it', () => {
+    const index = emptyIndex();
+    const noteA = makeNote('Note A', 'a.md', ['foo']);
+    const noteB = makeNote('Note B', 'b.md', ['foo']);
+
+    // A wins "foo" by first-wins
+    addNoteToIndex(index, noteA);
+    addNoteToIndex(index, noteB);
+    expect(index.entities.get('foo')).toBe('a.md');
+
+    // Remove A — "foo" is released and should be reclaimed by B
+    const released = removeNoteFromIndex(index, 'a.md');
+    expect(released).toContain('foo');
+    reconcileReleasedKeys(index, released);
+    expect(index.entities.get('foo')).toBe('b.md');
+  });
+
+  it('title release reclaimed by note with matching alias', () => {
+    const index = emptyIndex();
+    const noteA = makeNote('Concept', 'a.md');
+    const noteB = makeNote('Other', 'b.md', ['Concept']);
+
+    addNoteToIndex(index, noteA);
+    addNoteToIndex(index, noteB);
+    // A owns "concept" by title
+    expect(index.entities.get('concept')).toBe('a.md');
+
+    // Delete A — B has alias "Concept", should reclaim
+    const released = removeNoteFromIndex(index, 'a.md');
+    reconcileReleasedKeys(index, released);
+    expect(index.entities.get('concept')).toBe('b.md');
+  });
+
+  it('deleteNote reconciles released keys', () => {
+    const index = emptyIndex();
+    const noteA = makeNote('Shared', 'a.md');
+    const noteB = makeNote('Other', 'b.md', ['Shared']);
+
+    addNoteToIndex(index, noteA);
+    addNoteToIndex(index, noteB);
+    expect(index.entities.get('shared')).toBe('a.md');
+
+    deleteNote(index, 'a.md');
+    expect(index.entities.get('shared')).toBe('b.md');
+  });
+
+  it('new note in batch claims key over reconciliation', () => {
+    const index = emptyIndex();
+    const noteA = makeNote('Widget', 'a.md');
+    const noteB = makeNote('Other', 'b.md', ['Widget']);
+
+    addNoteToIndex(index, noteA);
+    addNoteToIndex(index, noteB);
+    expect(index.entities.get('widget')).toBe('a.md');
+
+    // Simulate batch: delete A, add C which claims "widget"
+    const noteC = makeNote('Widget', 'c.md');
+    const released = removeNoteFromIndex(index, 'a.md');
+    addNoteToIndex(index, noteC);
+    // C claimed "widget" via addNoteToIndex, reconcile should be a no-op
+    reconcileReleasedKeys(index, released);
+    expect(index.entities.get('widget')).toBe('c.md');
   });
 });

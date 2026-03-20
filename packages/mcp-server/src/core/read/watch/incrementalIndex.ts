@@ -56,25 +56,28 @@ export interface IncrementalUpdateResult {
  *
  * Note: Does NOT remove backlinks TO this note (those become broken links)
  */
-export function removeNoteFromIndex(index: VaultIndex, notePath: string): boolean {
+export function removeNoteFromIndex(index: VaultIndex, notePath: string): string[] {
   const note = index.notes.get(notePath);
   if (!note) {
-    return false;
+    return [];
   }
 
   // Remove from notes map
   index.notes.delete(notePath);
 
-  // Remove entity mappings
+  // Remove entity mappings, tracking released keys
+  const releasedKeys: string[] = [];
   const normalizedTitle = normalizeTarget(note.title);
   const normalizedPath = normalizeNotePath(notePath);
 
   // Only remove if this path is the one mapped
   if (index.entities.get(normalizedTitle) === notePath) {
     index.entities.delete(normalizedTitle);
+    releasedKeys.push(normalizedTitle);
   }
   if (index.entities.get(normalizedPath) === notePath) {
     index.entities.delete(normalizedPath);
+    // Path keys are unique per note, no need to reconcile
   }
 
   // Remove alias mappings
@@ -82,6 +85,7 @@ export function removeNoteFromIndex(index: VaultIndex, notePath: string): boolea
     const normalizedAlias = normalizeTarget(alias);
     if (index.entities.get(normalizedAlias) === notePath) {
       index.entities.delete(normalizedAlias);
+      releasedKeys.push(normalizedAlias);
     }
   }
 
@@ -113,7 +117,32 @@ export function removeNoteFromIndex(index: VaultIndex, notePath: string): boolea
     }
   }
 
-  return true;
+  return releasedKeys;
+}
+
+/**
+ * After removing a note, scan remaining notes to reclaim any released entity keys.
+ * This prevents orphaned keys when two notes compete for the same title/alias.
+ */
+export function reconcileReleasedKeys(index: VaultIndex, releasedKeys: string[]): void {
+  for (const key of releasedKeys) {
+    if (index.entities.has(key)) continue; // already reclaimed by addNoteToIndex
+
+    for (const [, note] of index.notes) {
+      const normalizedTitle = normalizeTarget(note.title);
+      if (normalizedTitle === key) {
+        index.entities.set(key, note.path);
+        break;
+      }
+      for (const alias of note.aliases) {
+        if (normalizeTarget(alias) === key) {
+          index.entities.set(key, note.path);
+          break;
+        }
+      }
+      if (index.entities.has(key)) break;
+    }
+  }
 }
 
 /**
@@ -189,8 +218,9 @@ export async function upsertNote(
     const existed = index.notes.has(notePath);
 
     // Remove old data if exists
+    let releasedKeys: string[] = [];
     if (existed) {
-      removeNoteFromIndex(index, notePath);
+      releasedKeys = removeNoteFromIndex(index, notePath);
     }
 
     // Create VaultFile for parsing
@@ -207,8 +237,11 @@ export async function upsertNote(
     // Parse the note
     const note = await parseNote(vaultFile);
 
-    // Add to index
+    // Add to index, then reconcile any keys the old version released
     addNoteToIndex(index, note);
+    if (releasedKeys.length > 0) {
+      reconcileReleasedKeys(index, releasedKeys);
+    }
 
     return {
       success: true,
@@ -232,11 +265,16 @@ export function deleteNote(
   index: VaultIndex,
   notePath: string
 ): IncrementalUpdateResult {
-  const removed = removeNoteFromIndex(index, notePath);
+  const existed = index.notes.has(notePath);
+  const releasedKeys = removeNoteFromIndex(index, notePath);
+
+  if (releasedKeys.length > 0) {
+    reconcileReleasedKeys(index, releasedKeys);
+  }
 
   return {
-    success: removed,
-    action: removed ? 'removed' : 'unchanged',
+    success: existed,
+    action: existed ? 'removed' : 'unchanged',
     path: notePath,
   };
 }
@@ -253,22 +291,36 @@ export async function applyTransaction(
   transaction: IndexTransaction
 ): Promise<IncrementalUpdateResult[]> {
   const results: IncrementalUpdateResult[] = [];
+  const allReleasedKeys: string[] = [];
 
   // Remove notes first
   for (const notePath of transaction.notesToRemove) {
-    results.push(deleteNote(index, notePath));
+    const existed = index.notes.has(notePath);
+    const releasedKeys = removeNoteFromIndex(index, notePath);
+    allReleasedKeys.push(...releasedKeys);
+    results.push({
+      success: existed,
+      action: existed ? 'removed' : 'unchanged',
+      path: notePath,
+    });
   }
 
   // Add new notes
   for (const note of transaction.notesToAdd) {
     // Remove if exists (for consistency)
-    removeNoteFromIndex(index, note.path);
+    const releasedKeys = removeNoteFromIndex(index, note.path);
+    allReleasedKeys.push(...releasedKeys);
     addNoteToIndex(index, note);
     results.push({
       success: true,
       action: 'added',
       path: note.path,
     });
+  }
+
+  // Reconcile all released keys once at the end
+  if (allReleasedKeys.length > 0) {
+    reconcileReleasedKeys(index, allReleasedKeys);
   }
 
   return results;
@@ -283,13 +335,56 @@ export async function processBatch(
   events: Array<{ type: 'upsert' | 'delete'; path: string }>
 ): Promise<IncrementalUpdateResult[]> {
   const results: IncrementalUpdateResult[] = [];
+  const allReleasedKeys: string[] = [];
 
   for (const event of events) {
     if (event.type === 'delete') {
-      results.push(deleteNote(index, event.path));
+      const existed = index.notes.has(event.path);
+      const releasedKeys = removeNoteFromIndex(index, event.path);
+      allReleasedKeys.push(...releasedKeys);
+      results.push({
+        success: existed,
+        action: existed ? 'removed' : 'unchanged',
+        path: event.path,
+      });
     } else {
-      results.push(await upsertNote(index, vaultPath, event.path));
+      // Upsert: remove old, parse new, add
+      const existed = index.notes.has(event.path);
+      if (existed) {
+        const releasedKeys = removeNoteFromIndex(index, event.path);
+        allReleasedKeys.push(...releasedKeys);
+      }
+
+      try {
+        const fullPath = path.join(vaultPath, event.path);
+        const fs = await import('fs/promises');
+        const stats = await fs.stat(fullPath);
+        const vaultFile: VaultFile = {
+          path: event.path,
+          absolutePath: fullPath,
+          modified: stats.mtime,
+        };
+        const note = await parseNote(vaultFile);
+        addNoteToIndex(index, note);
+        results.push({
+          success: true,
+          action: existed ? 'updated' : 'added',
+          path: event.path,
+        });
+      } catch (error) {
+        results.push({
+          success: false,
+          action: 'unchanged',
+          path: event.path,
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
+      }
     }
+  }
+
+  // Reconcile all released keys once at the end
+  if (allReleasedKeys.length > 0) {
+    reconcileReleasedKeys(index, allReleasedKeys);
   }
 
   return results;

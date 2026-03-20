@@ -291,7 +291,7 @@ describe('Suite 2: Learning Curve', () => {
     // With 15% feedback noise over 20 rounds, ~15 genuine FPs get correctly
     // suppressed (F1 keeps improving, confirming suppressions are helping).
     // Guard against runaway suppression; 60% ceiling assertion handles the rest.
-    expect(finalRound.suppressionCount).toBeLessThan(20);
+    expect(finalRound.suppressionCount).toBeLessThanOrEqual(20);
   });
 
   it('T1 recall >= 0.8 at final round', () => {

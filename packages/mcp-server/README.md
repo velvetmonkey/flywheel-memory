@@ -7,7 +7,7 @@
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md#performance-benchmarks)
 [![Tests](https://img.shields.io/badge/tests-2,482%20passed-brightgreen.svg)](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md)
@@ -393,4 +393,4 @@ The fewer tools you load, the less context the AI needs to pick the right one. S
 
 ## License
 
-Apache 2.0 — see [LICENSE](https://github.com/velvetmonkey/flywheel-memory/blob/main/LICENSE) for details.
+AGPL-3.0 — see [LICENSE](https://github.com/velvetmonkey/flywheel-memory/blob/main/LICENSE) for details.

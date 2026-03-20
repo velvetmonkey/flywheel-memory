@@ -1,7 +1,7 @@
 {
   "suite": "vault-lifecycle",
-  "timestamp": "2026-03-19T04:43:42.912Z",
-  "duration_ms": 12679,
+  "timestamp": "2026-03-20T00:51:28.006Z",
+  "duration_ms": 18240,
   "summary": {
     "total_epochs": 5,
     "genesis_entities": 216,
@@ -32,11 +32,11 @@
       },
       "suggestionCoverage": 0.965,
       "scoreDistribution": {
-        "mean": 33.2975,
-        "p50": 33,
-        "p90": 39.44,
-        "min": 13,
-        "max": 55
+        "mean": 35.3981,
+        "p50": 35.5,
+        "p90": 42.2,
+        "min": 14,
+        "max": 56
       },
       "entityStats": {
         "totalEntities": 216,
@@ -60,7 +60,7 @@
           "other": 9
         }
       },
-      "duration_ms": 2169
+      "duration_ms": 5010
     },
     {
       "epoch": "growth",
@@ -83,11 +83,11 @@
       },
       "suggestionCoverage": 0.764,
       "scoreDistribution": {
-        "mean": 32.6118,
-        "p50": 33,
-        "p90": 39.2,
-        "min": 13,
-        "max": 55
+        "mean": 34.8442,
+        "p50": 35.1,
+        "p90": 42.2,
+        "min": 14,
+        "max": 56
       },
       "entityStats": {
         "totalEntities": 216,
@@ -111,7 +111,7 @@
           "other": 9
         }
       },
-      "duration_ms": 2707
+      "duration_ms": 3563
     },
     {
       "epoch": "reorganization",
@@ -134,11 +134,11 @@
       },
       "suggestionCoverage": 0.769,
       "scoreDistribution": {
-        "mean": 32.6408,
-        "p50": 33,
-        "p90": 39.2,
-        "min": 13,
-        "max": 55
+        "mean": 34.8696,
+        "p50": 35.5,
+        "p90": 42.2,
+        "min": 14,
+        "max": 56
       },
       "entityStats": {
         "totalEntities": 216,
@@ -162,7 +162,7 @@
           "other": 9
         }
       },
-      "duration_ms": 2808
+      "duration_ms": 3315
     },
     {
       "epoch": "pruning",
@@ -185,11 +185,11 @@
       },
       "suggestionCoverage": 0.74,
       "scoreDistribution": {
-        "mean": 32.0021,
-        "p50": 33,
-        "p90": 39.2,
-        "min": 13,
-        "max": 55
+        "mean": 34.2473,
+        "p50": 35,
+        "p90": 42.2,
+        "min": 14,
+        "max": 56
       },
       "entityStats": {
         "totalEntities": 216,
@@ -213,7 +213,7 @@
           "other": 9
         }
       },
-      "duration_ms": 2391
+      "duration_ms": 2827
     },
     {
       "epoch": "recovery",
@@ -236,11 +236,11 @@
       },
       "suggestionCoverage": 0.777,
       "scoreDistribution": {
-        "mean": 31.3485,
-        "p50": 33,
-        "p90": 38.7,
-        "min": 13,
-        "max": 55
+        "mean": 33.4956,
+        "p50": 34.4,
+        "p90": 42,
+        "min": 14,
+        "max": 56
       },
       "entityStats": {
         "totalEntities": 216,
@@ -264,7 +264,7 @@
           "other": 9
         }
       },
-      "duration_ms": 2604
+      "duration_ms": 3525
     }
   ],
   "tuning_recommendations": [

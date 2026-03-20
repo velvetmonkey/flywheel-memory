@@ -1,14 +1,14 @@
 {
   "suite": "parameter-sweep-report",
-  "timestamp": "2026-03-19T04:47:38.625Z",
-  "duration_ms": 3726,
+  "timestamp": "2026-03-20T00:51:08.489Z",
+  "duration_ms": 10048,
   "summary": {
-    "best_f1": 0.938,
+    "best_f1": 0.889,
     "best_maxSuggestions": 10,
     "current_default_f1": 0.824,
-    "delta": 0.11399999999999999,
-    "score_distribution_mean": 22.0966,
-    "score_distribution_p50": 17,
+    "delta": 0.06500000000000006,
+    "score_distribution_mean": 20.6716,
+    "score_distribution_p50": 15,
     "score_distribution_p90": 34,
     "threshold_best_f1": 0.919,
     "threshold_best_value": 12
@@ -20,16 +20,16 @@
         {
           "maxSuggestions": 1,
           "strictness": "conservative",
-          "f1": 0.378,
+          "f1": 0.4,
           "precision": 1,
-          "recall": 0.233
+          "recall": 0.25
         },
         {
           "maxSuggestions": 3,
           "strictness": "conservative",
-          "f1": 0.696,
+          "f1": 0.71,
           "precision": 1,
-          "recall": 0.533
+          "recall": 0.55
         },
         {
           "maxSuggestions": 5,
@@ -55,16 +55,16 @@
         {
           "maxSuggestions": 1,
           "strictness": "balanced",
-          "f1": 0.378,
+          "f1": 0.4,
           "precision": 1,
-          "recall": 0.233
+          "recall": 0.25
         },
         {
           "maxSuggestions": 3,
           "strictness": "balanced",
-          "f1": 0.696,
+          "f1": 0.71,
           "precision": 1,
-          "recall": 0.533
+          "recall": 0.55
         },
         {
           "maxSuggestions": 5,
@@ -83,23 +83,23 @@
         {
           "maxSuggestions": 10,
           "strictness": "balanced",
-          "f1": 0.909,
+          "f1": 0.879,
           "precision": 1,
-          "recall": 0.833
+          "recall": 0.783
         },
         {
           "maxSuggestions": 1,
           "strictness": "aggressive",
-          "f1": 0.378,
+          "f1": 0.4,
           "precision": 1,
-          "recall": 0.233
+          "recall": 0.25
         },
         {
           "maxSuggestions": 3,
           "strictness": "aggressive",
-          "f1": 0.696,
+          "f1": 0.71,
           "precision": 1,
-          "recall": 0.533
+          "recall": 0.55
         },
         {
           "maxSuggestions": 5,
@@ -111,32 +111,32 @@
         {
           "maxSuggestions": 7,
           "strictness": "aggressive",
-          "f1": 0.868,
+          "f1": 0.857,
           "precision": 1,
-          "recall": 0.767
+          "recall": 0.75
         },
         {
           "maxSuggestions": 10,
           "strictness": "aggressive",
-          "f1": 0.938,
+          "f1": 0.889,
           "precision": 1,
-          "recall": 0.883
+          "recall": 0.8
         }
       ]
     },
     {
       "sweep": "score_distribution",
       "stats": {
-        "mean": 22.0966,
-        "p50": 17,
+        "mean": 20.6716,
+        "p50": 15,
         "p90": 34,
         "min": 10,
-        "max": 60.7
+        "max": 59.7
       },
       "layer_contributions": [
         {
           "layer": "contentMatch",
-          "mean": 11.8742,
+          "mean": 9.8936,
           "p50": 10,
           "p90": 28,
           "min": 0,
@@ -144,15 +144,15 @@
         },
         {
           "layer": "cooccurrenceBoost",
-          "mean": 3.41,
-          "p50": 3,
-          "p90": 7,
+          "mean": 3.9306,
+          "p50": 4,
+          "p90": 8,
           "min": 0,
-          "max": 11
+          "max": 12
         },
         {
           "layer": "typeBoost",
-          "mean": 0.288,
+          "mean": 0.2538,
           "p50": 0,
           "p90": 2,
           "min": 0,
@@ -160,7 +160,7 @@
         },
         {
           "layer": "contextBoost",
-          "mean": 0.278,
+          "mean": 0.3418,
           "p50": 0,
           "p90": 0,
           "min": 0,
@@ -168,7 +168,7 @@
         },
         {
           "layer": "recencyBoost",
-          "mean": 1.424,
+          "mean": 1.2047,
           "p50": 0,
           "p90": 8,
           "min": 0,
@@ -176,17 +176,17 @@
         },
         {
           "layer": "crossFolderBoost",
-          "mean": 2.528,
-          "p50": 3,
+          "mean": 2.4315,
+          "p50": 2,
           "p90": 3,
           "min": 0,
           "max": 3
         },
         {
           "layer": "hubBoost",
-          "mean": 2.2944,
+          "mean": 2.6156,
           "p50": 4,
-          "p90": 5.1,
+          "p90": 4.6,
           "min": 0,
           "max": 6
         },
@@ -216,53 +216,45 @@
           "f1": 0.919,
           "precision": 1,
           "recall": 0.85,
-          "candidateCount": 542
+          "candidateCount": 665
         },
         {
           "threshold": 8,
           "f1": 0.919,
           "precision": 1,
           "recall": 0.85,
-          "candidateCount": 542
+          "candidateCount": 665
         },
         {
           "threshold": 10,
           "f1": 0.919,
           "precision": 1,
           "recall": 0.85,
-          "candidateCount": 542
+          "candidateCount": 665
         },
         {
           "threshold": 12,
           "f1": 0.919,
           "precision": 1,
           "recall": 0.85,
-          "candidateCount": 491
+          "candidateCount": 562
         },
         {
           "threshold": 15,
-          "f1": 0.889,
+          "f1": 0.879,
           "precision": 1,
-          "recall": 0.8,
-          "candidateCount": 321
+          "recall": 0.783,
+          "candidateCount": 344
         },
         {
           "threshold": 20,
           "f1": 0.868,
           "precision": 1,
           "recall": 0.767,
-          "candidateCount": 240
+          "candidateCount": 242
         }
       ]
     }
   ],
-  "tuning_recommendations": [
-    {
-      "parameter": "maxSuggestions+strictness",
-      "current_value": 5,
-      "suggested_value": 10,
-      "evidence": "Config (maxSuggestions=10, strictness=aggressive) achieves F1=0.938 vs default F1=0.824 (delta=0.114)",
-      "confidence": "medium"
-    }
-  ]
+  "tuning_recommendations": []
 }

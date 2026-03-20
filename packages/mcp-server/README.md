@@ -20,7 +20,7 @@
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
 | Hubs, orphans, paths? | Not possible | Pre-indexed graph analysis |
 
-72 tools across 11 categories. 6-line config. Zero cloud dependencies.
+69 tools across 12 categories. 6-line config. Zero cloud dependencies.
 
 **Try in 60 seconds:**
 
@@ -366,7 +366,7 @@ When multi-vault is active, every tool gains an optional `vault` parameter. The 
 |--------|-------|--------------|
 | `default` | 19 | Note-taking essentials — search, read, write, tasks |
 | `agent` | 19 | Autonomous AI agents — search, read, write, memory |
-| `full` | 69 | Everything — all 11 categories |
+| `full` | 69 | Everything — all 12 categories |
 
 Composable bundles add capabilities to any preset. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all bundles and fine-grained categories.
 
@@ -379,7 +379,7 @@ The fewer tools you load, the less context the AI needs to pick the right one. S
 | Doc | Why read this |
 |---|---|
 | [PROVE-IT.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/PROVE-IT.md) | See it working in 5 minutes |
-| [TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) | All 72 tools documented |
+| [TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) | All 69 tools documented |
 | [ALGORITHM.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/ALGORITHM.md) | How the scoring works |
 | [COOKBOOK.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/SETUP.md) | Full setup guide for your vault |

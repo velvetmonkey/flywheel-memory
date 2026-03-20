@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 72 tools across 11 categories
+ * 69 tools across 12 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -221,22 +221,22 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherInstanc
 //   FLYWHEEL_TOOLS=agent,tasks                # 22 tools
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
-// Categories (11):
+// Categories (12):
 //   search, read, write, graph, schema, wikilinks,
-//   corrections, tasks, memory, note-ops, diagnostics
+//   corrections, tasks, memory, note-ops, temporal, diagnostics
 // ============================================================================
 
 type ToolCategory =
   | 'search' | 'read' | 'write'
   | 'graph' | 'schema' | 'wikilinks' | 'corrections'
   | 'tasks' | 'memory' | 'note-ops'
-  | 'diagnostics';
+  | 'temporal' | 'diagnostics';
 
 const ALL_CATEGORIES: ToolCategory[] = [
   'search', 'read', 'write',
   'graph', 'schema', 'wikilinks', 'corrections',
   'tasks', 'memory', 'note-ops',
-  'diagnostics',
+  'temporal', 'diagnostics',
 ];
 
 const PRESETS: Record<string, ToolCategory[]> = {
@@ -253,6 +253,7 @@ const PRESETS: Record<string, ToolCategory[]> = {
   tasks: ['tasks'],
   memory: ['memory'],
   'note-ops': ['note-ops'],
+  temporal: ['temporal'],
   diagnostics: ['diagnostics'],
 };
 
@@ -342,7 +343,7 @@ const enabledCategories = parseEnabledCategories();
 // Per-tool category mapping (tool name → category)
 // Every tool MUST have an entry — tools without entries bypass gating entirely.
 const TOOL_CATEGORY: Record<string, ToolCategory> = {
-  // search (6 tools)
+  // search (3 tools)
   search: 'search',
   init_semantic: 'search',
   find_similar: 'search',
@@ -413,12 +414,13 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_rename_note: 'note-ops',
   merge_entities: 'note-ops',
 
-  // temporal (3 tools) — time-based vault intelligence
-  get_context_around_date: 'search',
-  predict_stale_notes: 'search',
-  track_concept_evolution: 'search',
+  // temporal (4 tools) — time-based vault intelligence
+  get_context_around_date: 'temporal',
+  predict_stale_notes: 'temporal',
+  track_concept_evolution: 'temporal',
+  temporal_summary: 'temporal',
 
-  // diagnostics (18 tools) — vault health, stats, config, activity, temporal analysis
+  // diagnostics (14 tools) — vault health, stats, config, activity, merges
   health_check: 'diagnostics',
   get_vault_stats: 'diagnostics',
   get_folder_structure: 'diagnostics',
@@ -432,6 +434,7 @@ const TOOL_CATEGORY: Record<string, ToolCategory> = {
   suggest_entity_merges: 'diagnostics',
   dismiss_merge_suggestion: 'diagnostics',
   vault_init: 'diagnostics',
+  flywheel_doctor: 'diagnostics',
 
 };
 
@@ -817,7 +820,36 @@ function registerAllTools(targetServer: McpServer): void {
   registerMoveNoteTools(targetServer, () => vaultPath);
   registerWriteMergeTools(targetServer, () => vaultPath);
   registerWriteSystemTools(targetServer, () => vaultPath);
-  registerPolicyTools(targetServer, () => vaultPath);
+  registerPolicyTools(targetServer, () => vaultPath, () => {
+    if (!vaultIndex) return undefined;
+    const index = vaultIndex;
+    return ({ query, folder, where, limit = 10 }) => {
+      let notes = Array.from(index.notes.values());
+      if (folder) {
+        const normalizedFolder = folder.endsWith('/') ? folder : folder + '/';
+        notes = notes.filter(n => n.path.startsWith(normalizedFolder) || n.path.split('/')[0] === folder.replace('/', ''));
+      }
+      if (where) {
+        notes = notes.filter(n => {
+          for (const [key, value] of Object.entries(where)) {
+            const noteValue = n.frontmatter[key];
+            if (Array.isArray(value)) {
+              if (!value.some(v => String(noteValue).toLowerCase() === String(v).toLowerCase())) return false;
+            } else if (value !== undefined && String(noteValue ?? '').toLowerCase() !== String(value).toLowerCase()) {
+              return false;
+            }
+          }
+          return true;
+        });
+      }
+      return notes.slice(0, limit).map(n => ({
+        path: n.path,
+        title: n.title,
+        frontmatter: n.frontmatter,
+        snippet: undefined,
+      }));
+    };
+  });
   registerTagTools(targetServer, () => vaultIndex, () => vaultPath);
   registerWikilinkFeedbackTools(targetServer, () => stateDb);
   registerCorrectionTools(targetServer, () => stateDb);

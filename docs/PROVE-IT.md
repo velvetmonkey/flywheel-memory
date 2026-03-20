@@ -200,6 +200,6 @@ Measured with Claude Sonnet on the demo vaults. Enriched search results (frontma
 ## Next Steps
 
 - **[SETUP.md](SETUP.md)** -- Full setup guide for your own vault
-- **[TOOLS.md](TOOLS.md)** -- Reference for all 72 tools
+- **[TOOLS.md](TOOLS.md)** -- Reference for all 69 tools
 - **[ALGORITHM.md](ALGORITHM.md)** -- How scoring, ranking, and wikilink suggestion work
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts by use case

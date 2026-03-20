@@ -97,6 +97,7 @@ const PolicyToolNameSchema = z.enum([
   'vault_add_task',
   'vault_update_frontmatter',
   'vault_add_frontmatter_field',
+  'vault_search',
 ]);
 
 /**

@@ -19,7 +19,7 @@ Two layers of configuration: **environment variables** set in your MCP config (s
 }
 ```
 
-No `FLYWHEEL_TOOLS` needed — defaults to `default` (19 tools). Add it only to override.
+No `FLYWHEEL_TOOLS` needed — defaults to `default` (16 tools). Add it only to override.
 
 ### Claude Desktop (`claude_desktop_config.json`)
 
@@ -112,7 +112,8 @@ Start with `default`, then add what you need:
 | `tasks` | 3 | Task queries and mutations (already included in `default`) |
 | `memory` | 3 | Agent working memory + recall + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
-| `diagnostics` | 18 | Vault health, stats, config, activity, merges, temporal analysis |
+| `temporal` | 4 | Time-based vault intelligence: get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
+| `diagnostics` | 14 | Vault health, stats, config, activity, merges, doctor |
 
 #### Recipes
 
@@ -122,7 +123,7 @@ Start with `default`, then add what you need:
 | `agent` | 16 | search, read, write, memory |
 | `default,graph` | 26 | default + graph analysis, semantic analysis, paths, hubs |
 | `default,graph,wikilinks` | 33 | + link suggestions, validation |
-| `full` | 61 | All categories except memory |
+| `full` | 66 | All categories except memory |
 
 #### How It Works
 
@@ -170,8 +171,9 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 | wikilinks | 7 | | | Yes |
 | corrections | 4 | | | Yes |
 | note-ops | 4 | | | Yes |
-| diagnostics | 18 | | | Yes |
-| **Total** | **66** | **16** | **16** | **66** |
+| temporal | 4 | | | Yes |
+| diagnostics | 14 | | | Yes |
+| **Total** | **69** | **16** | **16** | **66** |
 
 ### Semantic Embeddings
 

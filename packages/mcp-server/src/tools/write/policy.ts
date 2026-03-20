@@ -23,6 +23,7 @@ import {
   writePolicyRaw,
   serializePolicyToYaml,
   type PolicyDefinition,
+  type PolicySearchFn,
 } from '../../core/write/policy/index.js';
 import { estimateTokens } from '../../core/write/constants.js';
 
@@ -31,7 +32,8 @@ import { estimateTokens } from '../../core/write/constants.js';
  */
 export function registerPolicyTools(
   server: McpServer,
-  getVaultPath: () => string
+  getVaultPath: () => string,
+  getSearchFn?: () => PolicySearchFn | undefined
 ): void {
   server.tool(
     'policy',
@@ -306,7 +308,8 @@ export function registerPolicyTools(
               };
             }
 
-            const result = await executePolicy(policyDef, vaultPath, variables, commitFlag);
+            const searchFn = getSearchFn?.();
+            const result = await executePolicy(policyDef, vaultPath, variables, commitFlag, searchFn);
 
             return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
           }

@@ -1,4 +1,4 @@
-# Carter Strategy Demo Video Script (5 minutes)
+# Carter Strategy Demo Video Script (~5 minutes)
 
 Filmed from Telegram (phone or desktop split-screen), with Obsidian visible showing the graph sidebar + note content updating. Each beat is a message to @carterstrategybot.
 
@@ -11,7 +11,21 @@ Filmed from Telegram (phone or desktop split-screen), with Obsidian visible show
 
 ---
 
-## Beat 1: "What's my billing situation?" (0:00-0:50)
+## Beat 1: "Brief me" (0:00–0:40)
+
+**Send:**
+> Brief me on what's happening
+
+**Expected behavior:**
+- Tool: `brief`
+- Shows startup context assembly: recent activity, vault pulse, active entities
+- Natural opener that demonstrates agent intelligence
+
+**Why flashy:** The bot already knows what's going on — no "let me read your files" warm-up.
+
+---
+
+## Beat 2: "Billing recall" (0:40–1:20)
 
 **Send:**
 > What's outstanding on billing? Any overdue invoices I need to chase?
@@ -28,7 +42,7 @@ Filmed from Telegram (phone or desktop split-screen), with Obsidian visible show
 
 ---
 
-## Beat 2: "Chase Acme + log it" (0:50-1:40)
+## Beat 3: "Chase Acme + log it" (1:20–2:00)
 
 **Send:**
 > Add tasks to chase Sarah Mitchell at Acme about those three overdue invoices, and separately remind me to check in with Mike Chen at TechStart about today's invoice. Both due Wednesday.
@@ -41,13 +55,13 @@ Filmed from Telegram (phone or desktop split-screen), with Obsidian visible show
 
 ---
 
-## Beat 3: "Project update - THE SHOWSTOPPER" (1:40-3:10)
+## Beat 4: "Project update — THE SHOWSTOPPER" (2:00–3:10)
 
-**Send (long message - paste this):**
+**Send (long message — paste this):**
 > Had a really productive call with Sarah Mitchell and James Rodriguez from Acme Corp this morning about the Data Migration cutover. Great news — UAT is fully complete. All the validation scripts Marcus Webb wrote passed across every table, and the performance benchmarks show we're hitting the 3x improvement target we originally set during the Discovery Workshop back in October. Marcus has confirmed the Airflow pipelines are rock solid and all the rollback procedures are documented in the Data Migration Playbook. We've locked in March 28-29 as the cutover window — Sarah is getting final sign-off from Emily Chen on production environment access. One risk flag: James says the legacy Oracle system decommission timeline still hasn't been confirmed by their IT team. I've asked him to escalate to his director. If we can't get a firm date by next Friday we may need to run both systems in parallel during the support window, which would push costs beyond the original $75K budget — probably an extra $8-10K for Marcus's time. On a more positive note, Sarah mentioned the Acme Analytics Add-on proposal I drafted has been circulating with their finance team and getting good reception. She wants to schedule a scoping call with Emily Chen and their data team right after cutover wraps up. I told her Priya Kapoor would be ideal for the requirements gathering given her financial modeling background. Also need to update the Rate Card — Marcus's rate is going up to $220/hr from April, and we should reflect Leila Farouk's rates for the Nexus Health engagement. Speaking of Nexus Health — Tom Huang emailed back confirming they want to proceed with the Cloud Assessment. He wants to start as soon as Leila is available. I need to check with Leila on her April availability and get the proposal finalized. Mike Chen from TechStart gave them a strong reference which definitely helped close it. Finally, Dan Oliveira pinged me about the Beta Corp Dashboard — he's finished the Pipeline module and wants to demo it to Stacy Thompson before the client presentation next Wednesday.
 
 **Expected behavior:**
-- Daily note already exists from Beat 2 (policy idempotent)
+- Daily note already exists from Beat 3 (policy idempotent)
 - Adds content to `## Notes` section
 - Auto-wikilinks fire on 15+ entities: Sarah Mitchell, James Rodriguez, Acme Corp, Acme Data Migration, Marcus Webb, Discovery Workshop Template, Data Migration Playbook, Emily Chen, Acme Analytics Add-on, Priya Kapoor, Rate Card, Leila Farouk, Nexus Health, Tom Huang, Mike Chen, TechStart Inc, Dan Oliveira, Beta Corp Dashboard, Stacy Thompson
 - Graph sidebar explodes with connections
@@ -56,26 +70,41 @@ Filmed from Telegram (phone or desktop split-screen), with Obsidian visible show
 
 ---
 
-## Beat 4: "Assign team to Nexus Health" (3:10-3:50)
+## Beat 5: "Team assignment + frontmatter" (3:10–3:50)
 
 **Send:**
-> Great, sounds like Nexus Health is a go. Assign Leila Farouk as the cloud and security lead and Priya Kapoor for the HIPAA compliance analysis. Update their profiles and the proposal. Also add a task to finalize the proposal by end of next week.
+> Nexus Health is a go. Assign Leila Farouk as the cloud and security lead and Priya Kapoor for HIPAA compliance analysis. Update their utilization to show they're assigned and mark the proposal status as confirmed. Add a task to finalize the proposal by end of next week.
 
 **Expected behavior:**
-- Updates Leila Farouk note (Nexus Health as upcoming project)
-- Updates Priya Kapoor note (assigned to Nexus Health)
-- Updates Nexus Health Cloud Assessment proposal (team assignments)
+- Updates Leila Farouk frontmatter (utilization, current assignment)
+- Updates Priya Kapoor frontmatter (utilization, current assignment)
+- Updates Nexus Health Cloud Assessment proposal frontmatter (status → confirmed, team assignments)
 - Adds task: finalize Nexus Health proposal by 2026-03-28
 - Cross-entity wikilinks connect everything
 
-**Why flashy:** One instruction triggers 3 note updates + 1 task creation.
+**Why flashy:** Structured metadata updates + prose updates + task creation in one instruction. Vault as living system, not just text files — frontmatter is first-class.
 
 ---
 
-## Beat 5: "Pipeline check" (3:50-4:30)
+## Beat 6: "Create meeting note" (3:50–4:20)
 
 **Send:**
-> /pipeline
+> Create a meeting note for the Acme Corp cutover planning session with Sarah Mitchell and Marcus Webb, scheduled for March 28. Include the key agenda items: production environment access, rollback procedures, and the Oracle decommission risk.
+
+**Expected behavior:**
+- Tool: `vault_create_note`
+- Creates new note with proper frontmatter (type: meeting, date, attendees, etc.)
+- Auto-wikilinks in content: [[Acme Corp]], [[Sarah Mitchell]], [[Marcus Webb]]
+- Graph grows — new entity connected to existing ones
+
+**Why flashy:** Vault expanding from conversation, not manual file creation. New entity with rich metadata.
+
+---
+
+## Beat 7: "Pipeline + graph reveal" (4:20–5:00)
+
+**Send:**
+> Give me a full pipeline overview: active projects, pending proposals, outstanding billing, and team utilization.
 
 **Expected response synthesizes:**
 - **Active engagements:**
@@ -90,15 +119,7 @@ Filmed from Telegram (phone or desktop split-screen), with Obsidian visible show
 - **Outstanding billing:** $52.5K (flag overdue)
 - **Team utilization:** Marcus 90%, Stacy 80%, Dan 60%, Priya/Leila incoming
 
----
-
-## Beat 6: "Graph reveal" (4:30-5:00)
-
-**Visual only (no message). Switch focus to Obsidian. Show:**
-1. Today's daily note with all wikilinks rendered
-2. Graph sidebar context cloud — color-coded pills
-3. Native graph view zoomed out — dense web of connections
-4. Click an entity (Sarah Mitchell) — sidebar redraws showing HER connections
+**Then:** Switch to Obsidian and show the graph. Show today's daily note with all wikilinks rendered. Show graph sidebar context cloud. Click an entity (Sarah Mitchell) — sidebar redraws showing HER connections.
 
 **Voiceover:**
 > "Every message enriched the knowledge graph. Tasks link to people and invoices. Project updates connect team members to deliverables and knowledge assets. The system learns what matters — entities you mention together get boosted in future suggestions."

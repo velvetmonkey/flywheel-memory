@@ -66,7 +66,28 @@ export type PolicyToolName =
   | 'vault_toggle_task'
   | 'vault_add_task'
   | 'vault_update_frontmatter'
-  | 'vault_add_frontmatter_field';
+  | 'vault_add_frontmatter_field'
+  | 'vault_search';
+
+/**
+ * Result from a vault_search step
+ */
+export interface PolicySearchResult {
+  path: string;
+  title: string;
+  frontmatter: Record<string, unknown>;
+  snippet?: string;
+}
+
+/**
+ * Function signature for the search function injected into the policy executor
+ */
+export type PolicySearchFn = (params: {
+  query?: string;
+  folder?: string;
+  where?: Record<string, unknown>;
+  limit?: number;
+}) => PolicySearchResult[];
 
 /**
  * Step definition in a policy

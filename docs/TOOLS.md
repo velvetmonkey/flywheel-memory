@@ -1,6 +1,8 @@
 # Tools
 
-72 tools. Most questions only need one: **search**.
+69 tools. Most questions only need one: **search**.
+
+> **Start here:** Most vaults only need `default` (16 tools). Add bundles as you need them — `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`. See [CONFIGURATION.md](CONFIGURATION.md) for preset recipes.
 
 ---
 
@@ -18,7 +20,8 @@
 | [Record corrections](#corrections) | `vault_record_correction` | 4 |
 | [Move, rename, or merge notes](#organize-notes) | `vault_move_note` | 4 |
 | [Build an autonomous agent](#agent-memory) | `memory`, `recall`, `brief` | 3 |
-| [Check vault health](#vault-health) | `health_check` | 18 |
+| [Analyze temporal patterns](#temporal-analysis) | `get_context_around_date` | 4 |
+| [Check vault health](#vault-health) | `health_check` | 14 |
 | [Automate workflows](#automation) | `policy` | 2 |
 
 ---
@@ -351,6 +354,19 @@ Cold-start context for agents. Builds a token-budgeted summary of recent session
 
 ---
 
+## Temporal Analysis
+
+Understand how your vault changes over time.
+
+| Tool | What it does |
+|------|-------------|
+| `get_context_around_date` | Reconstruct vault activity around a specific date. Notes, entities, wikilinks, moves. |
+| `predict_stale_notes` | Multi-signal staleness prediction with importance scoring and recommendations. |
+| `track_concept_evolution` | Entity timeline: link additions, feedback, category changes, co-occurrence. |
+| `temporal_summary` | Period-based vault pulse report. Composes context + staleness + evolution into one summary. |
+
+---
+
 ## Vault Health
 
 Monitor, configure, and maintain your vault.
@@ -371,10 +387,6 @@ Monitor, configure, and maintain your vault.
 | `dismiss_merge_suggestion` | "Those aren't duplicates" — dismiss a merge suggestion permanently. |
 | `vault_init` | First-time setup. Scans notes with zero wikilinks and applies entity links. Safe to re-run. |
 | `flywheel_doctor` | Run comprehensive diagnostics. 11 checks with ok/warning/error + fix suggestions. |
-| `get_context_around_date` | Reconstruct vault activity around a specific date. Notes, entities, wikilinks, moves. |
-| `predict_stale_notes` | Multi-signal staleness prediction with importance scoring and recommendations. |
-| `track_concept_evolution` | Entity timeline: link additions, feedback, category changes, co-occurrence. |
-| `temporal_summary` | Period-based vault pulse report. Composes context + staleness + evolution into one summary. |
 
 ---
 

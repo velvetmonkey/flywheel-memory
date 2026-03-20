@@ -1,0 +1,52 @@
+version: '1.0'
+name: pipeline-overview
+description: Full business pipeline overview — active projects, proposals, outstanding billing, and team utilization
+
+steps:
+  - id: projects
+    tool: vault_search
+    description: Find active projects
+    params:
+      query: ""
+      folder: projects
+      where:
+        status: active
+      limit: 10
+
+  - id: proposals
+    tool: vault_search
+    description: Find pending proposals
+    params:
+      query: ""
+      folder: proposals
+      limit: 10
+
+  - id: invoices
+    tool: vault_search
+    description: Find outstanding invoices
+    params:
+      query: ""
+      folder: invoices
+      limit: 20
+
+  - id: team
+    tool: vault_search
+    description: Get team member profiles
+    params:
+      query: ""
+      folder: team
+      limit: 10
+
+output:
+  summary: |
+    ## Active Projects
+    {{steps.projects.summary}}
+
+    ## Pending Proposals
+    {{steps.proposals.summary}}
+
+    ## Outstanding Invoices
+    {{steps.invoices.summary}}
+
+    ## Team Utilization
+    {{steps.team.summary}}

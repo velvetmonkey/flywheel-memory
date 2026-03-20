@@ -15,6 +15,8 @@ import type {
   StepExecutionResult,
   PolicyPreviewResult,
   PolicyToolName,
+  PolicySearchFn,
+  PolicySearchResult,
 } from './types.js';
 import type { MutationResult, FormatType, Position } from '../types.js';
 import { createContext, interpolateObject, interpolate } from './template.js';
@@ -53,7 +55,8 @@ async function executeStep(
   step: PolicyStep,
   vaultPath: string,
   context: PolicyContext,
-  conditionResults: Record<string, boolean>
+  conditionResults: Record<string, boolean>,
+  searchFn?: PolicySearchFn
 ): Promise<StepExecutionResult> {
   // Check if step should execute based on condition
   const { execute, reason } = shouldStepExecute(step.when, conditionResults);
@@ -72,6 +75,11 @@ async function executeStep(
   const resolvedParams = interpolateObject(step.params, context) as Record<string, unknown>;
 
   try {
+    // Handle vault_search separately (read-only, no MutationResult)
+    if (step.tool === 'vault_search') {
+      return executeSearch(step.id, resolvedParams, searchFn);
+    }
+
     const result = await executeToolCall(step.tool, resolvedParams, vaultPath, context);
 
     // Capture outputs from tool result
@@ -591,6 +599,58 @@ async function executeAddFrontmatterField(
 }
 
 /**
+ * Execute a vault_search step (read-only, no file mutation)
+ */
+function executeSearch(
+  stepId: string,
+  params: Record<string, unknown>,
+  searchFn?: PolicySearchFn
+): StepExecutionResult {
+  if (!searchFn) {
+    return {
+      stepId,
+      success: false,
+      message: 'vault_search requires a search function — not available in this context',
+    };
+  }
+
+  const query = params.query != null ? String(params.query) : undefined;
+  const folder = params.folder ? String(params.folder) : undefined;
+  const where = (params.where && typeof params.where === 'object')
+    ? params.where as Record<string, unknown>
+    : undefined;
+  const limit = params.limit ? Number(params.limit) : 10;
+
+  const results = searchFn({ query, folder, where, limit });
+
+  // Build human-readable summary from results
+  const summaryLines = results.map(r => {
+    const fm = r.frontmatter;
+    const parts = [r.title];
+    if (fm.status) parts.push(`status: ${fm.status}`);
+    if (fm.amount) parts.push(`$${fm.amount}`);
+    if (fm.budget) parts.push(`budget: $${fm.budget}`);
+    if (fm.utilization) parts.push(`utilization: ${fm.utilization}`);
+    if (fm.due_date) parts.push(`due: ${fm.due_date}`);
+    return `- ${parts.join(' | ')}`;
+  });
+  const summary = summaryLines.length > 0
+    ? summaryLines.join('\n')
+    : '(no results)';
+
+  return {
+    stepId,
+    success: true,
+    message: `Found ${results.length} result(s)`,
+    outputs: {
+      results,
+      summary,
+      count: results.length,
+    },
+  };
+}
+
+/**
  * Execute a complete policy with strict atomic mode
  *
  * Policies always use strict atomic mode for commits:
@@ -608,7 +668,8 @@ export async function executePolicy(
   policy: PolicyDefinition,
   vaultPath: string,
   variables: Record<string, unknown>,
-  commit: boolean = false
+  commit: boolean = false,
+  searchFn?: PolicySearchFn
 ): Promise<PolicyExecutionResult> {
   // Validate required variables before execution
   const { validateVariables } = await import('./schema.js');
@@ -687,7 +748,7 @@ export async function executePolicy(
   const stepResults: StepExecutionResult[] = [];
 
   for (const step of policy.steps) {
-    const result = await executeStep(step, vaultPath, context, context.conditions);
+    const result = await executeStep(step, vaultPath, context, context.conditions, searchFn);
     stepResults.push(result);
 
     // Track modified files

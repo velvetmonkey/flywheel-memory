@@ -1,0 +1,5 @@
+# Ephemeral state (rebuilt automatically)
+.flywheel/
+
+# Daily note created during demo runs (today's date)
+daily-notes/2026-03-20.md

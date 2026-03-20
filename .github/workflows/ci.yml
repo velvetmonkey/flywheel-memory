@@ -212,8 +212,15 @@ jobs:
         run: npm ci
       - name: Build (required for workspace imports)
         run: npm run build
-      - name: Run tests
+      - name: Run tests (Linux)
+        if: matrix.os != 'windows-latest'
         run: npm test
+      - name: Run tests (Windows)
+        if: matrix.os == 'windows-latest'
+        # Orphan processes from package-startup tests (chokidar, sqlite) cause
+        # vitest to exit non-zero despite all tests passing. --forceExit skips
+        # waiting for process cleanup.
+        run: npm test --workspaces --if-present -- --forceExit
 
       - name: Upload coverage
         if: matrix.os == 'ubuntu-latest' && matrix.node == '20'

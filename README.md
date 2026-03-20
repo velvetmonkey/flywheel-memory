@@ -11,7 +11,7 @@
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![Scale](https://img.shields.io/badge/scale-100k--line%20files%20%7C%202.5k%20entities-brightgreen.svg)](docs/TESTING.md#performance-benchmarks)
-[![Tests](https://img.shields.io/badge/tests-2,456%20passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-2,541%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **If you use AI with an Obsidian vault**, this is for you. By default, AI agents reach for the filesystem — reading files one at a time, writing raw text, losing context between sessions. Flywheel is an MCP server that runs locally alongside your vault, giving any MCP-compatible AI a pre-indexed knowledge graph, enriched search, safe writes with auto-wikilinks, and persistent memory — so it can answer questions about your notes in milliseconds instead of reading every file.
 
@@ -179,7 +179,7 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ## Battle-Tested
 
-**2,456 tests. 122 test files. 47,000+ lines of test code.** See [docs/TESTING.md](docs/TESTING.md).
+**2,541 tests. 125 test files. 47,000+ lines of test code.** See [docs/TESTING.md](docs/TESTING.md).
 
 ### Performance
 

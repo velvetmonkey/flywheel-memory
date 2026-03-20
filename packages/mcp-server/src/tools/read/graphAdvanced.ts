@@ -7,6 +7,35 @@
 import type { VaultIndex, Backlink } from '../../core/read/types.js';
 import { getBacklinksForNote, resolveTarget, findHubNotes } from '../../core/read/graph.js';
 
+// Module-level cache: keyed on VaultIndex instance, auto-invalidates on rebuild
+const hubConnectionCache = new WeakMap<VaultIndex, Map<string, number>>();
+
+function getHubConnectionCounts(index: VaultIndex): Map<string, number> {
+  let cached = hubConnectionCache.get(index);
+  if (cached) return cached;
+
+  const hubNotes = findHubNotes(index, 0);
+  cached = new Map<string, number>();
+  for (const hub of hubNotes) {
+    cached.set(hub.path, hub.total_connections);
+  }
+  hubConnectionCache.set(index, cached);
+  return cached;
+}
+
+/**
+ * Binary search for sorted insertion into priority queue
+ */
+function binaryInsert(pq: { node: string; cost: number }[], entry: { node: string; cost: number }): void {
+  let lo = 0, hi = pq.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (pq[mid].cost <= entry.cost) lo = mid + 1;
+    else hi = mid;
+  }
+  pq.splice(lo, 0, entry);
+}
+
 /**
  * Find shortest path between two notes using BFS
  */
@@ -100,12 +129,8 @@ export function getWeightedLinkPath(
     return { exists: true, path: [from], length: 0, total_weight: 0, weights: [] };
   }
 
-  // Precompute hub connection counts
-  const hubNotes = findHubNotes(index, 0);
-  const connectionCounts = new Map<string, number>();
-  for (const hub of hubNotes) {
-    connectionCounts.set(hub.path, hub.total_connections);
-  }
+  // Get hub connection counts (cached per VaultIndex instance)
+  const connectionCounts = getHubConnectionCounts(index);
 
   // Dijkstra's algorithm
   const dist = new Map<string, number>();
@@ -150,14 +175,8 @@ export function getWeightedLinkPath(
         prev.set(targetPath, current);
         depthMap.set(targetPath, currentDepth + 1);
 
-        // Insert in sorted order
-        const entry = { node: targetPath, cost: newDist };
-        const insertIdx = pq.findIndex(e => e.cost > newDist);
-        if (insertIdx === -1) {
-          pq.push(entry);
-        } else {
-          pq.splice(insertIdx, 0, entry);
-        }
+        // Insert in sorted order (binary search)
+        binaryInsert(pq, { node: targetPath, cost: newDist });
       }
     }
   }

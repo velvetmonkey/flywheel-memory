@@ -331,7 +331,7 @@ export async function embedTextCached(text: string): Promise<Float32Array> {
 // =============================================================================
 
 function contentHash(content: string): string {
-  return crypto.createHash('md5').update(content).digest('hex');
+  return crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
 }
 
 // =============================================================================

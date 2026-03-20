@@ -21,6 +21,11 @@ const TEMPLATE_PATTERN = /\{\{([^}]+)\}\}/g;
 const FILTER_PATTERN = /^(.+?)\s*\|\s*(\w+)(?:\(([^)]*)\))?$/;
 
 /**
+ * Maximum recursion depth for chained filters in template expressions
+ */
+const MAX_FILTER_DEPTH = 10;
+
+/**
  * Available filter functions
  */
 const FILTERS: Record<string, (value: unknown, arg?: string) => unknown> = {
@@ -181,14 +186,18 @@ export function applyFilter(value: unknown, filterName: string, arg?: string): u
 /**
  * Resolve a single template expression (without {{ }})
  */
-export function resolveExpression(expr: string, context: PolicyContext): unknown {
+export function resolveExpression(expr: string, context: PolicyContext, depth: number = 0): unknown {
+  if (depth >= MAX_FILTER_DEPTH) {
+    throw new Error('Template filter chain too deep (max 10)');
+  }
+
   const trimmed = expr.trim();
 
   // Check for filter syntax: value | filter
   const filterMatch = trimmed.match(FILTER_PATTERN);
   if (filterMatch) {
     const [, valuePath, filterName, filterArg] = filterMatch;
-    const value = resolveExpression(valuePath.trim(), context);
+    const value = resolveExpression(valuePath.trim(), context, depth + 1);
     return applyFilter(value, filterName, filterArg);
   }
 

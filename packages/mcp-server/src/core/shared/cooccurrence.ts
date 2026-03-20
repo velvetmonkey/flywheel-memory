@@ -97,12 +97,16 @@ function noteContainsEntity(content: string, entityName: string, contentTokens?:
     }
   }
 
-  // Require at least 50% of words to match for multi-word entities
-  // or exact match for single-word entities
+  // Require exact match for single-word entities
   if (entityTokens.length === 1) {
     return matchCount === 1;
   }
-  return matchCount / entityTokens.length >= 0.5;
+  // Require higher match ratio for short multi-token entities
+  // to avoid false positives from hyphenated terms like "AI-powered"
+  if (entityTokens.length === 2) {
+    return matchCount === 2; // Both tokens must match
+  }
+  return matchCount / entityTokens.length >= 0.75;
 }
 
 /**

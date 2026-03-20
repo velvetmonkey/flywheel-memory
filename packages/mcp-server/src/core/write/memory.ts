@@ -78,17 +78,36 @@ export interface SessionSummary {
 // ENTITY DETECTION
 // =============================================================================
 
+// Module-level cache for entity list (refreshed when stale)
+let entityCache: Array<{ name: string; name_lower: string; aliases_json: string | null }> | null = null;
+let entityCacheTime = 0;
+const ENTITY_CACHE_TTL_MS = 60_000; // 1 minute
+
+function getEntityList(stateDb: StateDb): Array<{ name: string; name_lower: string; aliases_json: string | null }> {
+  const now = Date.now();
+  if (entityCache && (now - entityCacheTime) < ENTITY_CACHE_TTL_MS) {
+    return entityCache;
+  }
+  entityCache = stateDb.getAllEntities.all() as Array<{ name: string; name_lower: string; aliases_json: string | null }>;
+  entityCacheTime = now;
+  return entityCache;
+}
+
+/**
+ * Clear the entity cache. Exported for testing.
+ */
+export function clearEntityCache(): void {
+  entityCache = null;
+  entityCacheTime = 0;
+}
+
 /**
  * Detect entities mentioned in memory text using the entity index in StateDb.
  * Returns entity names found as matches (case-insensitive).
  */
 function detectEntities(stateDb: StateDb, text: string): string[] {
-  // Get all entities from the index
-  const allEntities = stateDb.getAllEntities.all() as Array<{
-    name: string;
-    name_lower: string;
-    aliases_json: string | null;
-  }>;
+  // Get all entities from the index (cached)
+  const allEntities = getEntityList(stateDb);
 
   const detected = new Set<string>();
   const textLower = text.toLowerCase();

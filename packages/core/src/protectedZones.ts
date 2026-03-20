@@ -145,6 +145,7 @@ export function getProtectedZones(content: string): ProtectedZone[] {
   if (tree) {
     return getProtectedZonesFromAst(tree, content);
   }
+  console.error('[ProtectedZones] AST parse failed, falling back to regex detection');
   return getProtectedZonesRegex(content);
 }
 

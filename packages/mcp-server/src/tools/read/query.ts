@@ -237,15 +237,16 @@ export function registerQueryTools(
             note.title.toLowerCase().includes(searchTerm)
           );
         }
-        // Date filters
+        // Date filters use local timezone — correct for Obsidian which stores file
+        // modification times in the local filesystem's timezone
         if (modified_after) {
           const afterDate = new Date(modified_after);
-          afterDate.setHours(0, 0, 0, 0);
+          afterDate.setHours(0, 0, 0, 0); // Start of day, local timezone
           matchingNotes = matchingNotes.filter((note) => note.modified >= afterDate);
         }
         if (modified_before) {
           const beforeDate = new Date(modified_before);
-          beforeDate.setHours(23, 59, 59, 999);
+          beforeDate.setHours(23, 59, 59, 999); // End of day, local timezone
           matchingNotes = matchingNotes.filter((note) => note.modified <= beforeDate);
         }
 
@@ -310,10 +311,12 @@ export function registerQueryTools(
               `).all(context_note, limit) as Array<{ target: string; weight: number }>;
 
               if (edgeRows.length > 0) {
-                // Build target->path map from entities table
+                // Build target->path map from entities table (only matching targets)
+                const targets = edgeRows.map(r => r.target);
+                const placeholders = targets.map(() => '?').join(',');
                 const entityRows = ctxStateDb.db.prepare(
-                  'SELECT path, name_lower FROM entities'
-                ).all() as Array<{ path: string; name_lower: string }>;
+                  `SELECT path, name_lower FROM entities WHERE name_lower IN (${placeholders})`
+                ).all(...targets) as Array<{ path: string; name_lower: string }>;
                 const targetToPath = new Map<string, string>();
                 for (const e of entityRows) {
                   targetToPath.set(e.name_lower, e.path);

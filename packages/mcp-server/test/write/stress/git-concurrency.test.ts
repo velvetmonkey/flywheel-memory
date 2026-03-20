@@ -228,7 +228,7 @@ describe('Stale lock detection', () => {
     expect(result.staleLockDetected).toBeUndefined();
   });
 
-  it('should NOT auto-remove stale locks (report only)', async () => {
+  it('should auto-remove stale locks', async () => {
     await createTestNote(tempVault, 'test.md', '# Test');
 
     // Create a stale lock
@@ -241,8 +241,8 @@ describe('Stale lock detection', () => {
       jitter: false,
     });
 
-    // Lock should still exist - we only report, not cleanup
-    expect(await lockFileExists(tempVault)).toBe(true);
+    // Stale lock should be removed automatically
+    expect(await lockFileExists(tempVault)).toBe(false);
   });
 
   it('should report stale lock even when commit eventually succeeds', async () => {

@@ -424,6 +424,12 @@ export async function commitChange(
         lockAgeMs = lockInfo.ageMs;
         if (lockInfo.stale) {
           staleLockDetected = true;
+          // Remove stale lock from crashed process
+          const lockPath = path.join(vaultPath, '.git/index.lock');
+          try {
+            await fs.unlink(lockPath);
+            console.error(`[Flywheel] Removed stale git lock (age: ${lockInfo.ageMs}ms)`);
+          } catch { /* lock already gone */ }
         }
       }
 
@@ -644,6 +650,12 @@ export async function commitPolicyChanges(
         lockAgeMs = lockInfo.ageMs;
         if (lockInfo.stale) {
           staleLockDetected = true;
+          // Remove stale lock from crashed process
+          const lockPath = path.join(vaultPath, '.git/index.lock');
+          try {
+            await fs.unlink(lockPath);
+            console.error(`[Flywheel] Removed stale git lock (age: ${lockInfo.ageMs}ms)`);
+          } catch { /* lock already gone */ }
         }
       }
 

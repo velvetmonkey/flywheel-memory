@@ -1,7 +1,7 @@
 {
   "suite": "layer-ablation-report",
-  "timestamp": "2026-03-20T18:01:58.915Z",
-  "duration_ms": 4282,
+  "timestamp": "2026-03-20T18:55:40.782Z",
+  "duration_ms": 28667,
   "summary": {
     "primary_baseline_f1": 0.868,
     "primary_baseline_precision": 1,
@@ -441,7 +441,7 @@
           }
         },
         "falseNegativeDetails": [],
-        "mrr": 1,
+        "mrr": 0.983,
         "hitsAt3": 1,
         "precisionAtK": 0.919
       },

@@ -1,7 +1,7 @@
 {
   "suite": "cross-vault-learning-report",
-  "timestamp": "2026-03-20T03:12:32.810Z",
-  "duration_ms": 258268,
+  "timestamp": "2026-03-20T18:02:25.936Z",
+  "duration_ms": 277440,
   "summary": {
     "primary_final_f1": 0.879,
     "small-world_final_f1": 0.591,
@@ -235,7 +235,7 @@
           "f1": 0.879,
           "precision": 1,
           "recall": 0.783,
-          "suppressionCount": 7,
+          "suppressionCount": 9,
           "byTier": {
             "1": {
               "precision": 1,
@@ -262,7 +262,7 @@
           "f1": 0.879,
           "precision": 1,
           "recall": 0.783,
-          "suppressionCount": 9,
+          "suppressionCount": 8,
           "byTier": {
             "1": {
               "precision": 1,
@@ -289,7 +289,7 @@
           "f1": 0.879,
           "precision": 1,
           "recall": 0.783,
-          "suppressionCount": 11,
+          "suppressionCount": 12,
           "byTier": {
             "1": {
               "precision": 1,
@@ -313,10 +313,10 @@
         },
         {
           "round": 11,
-          "f1": 0.868,
+          "f1": 0.879,
           "precision": 1,
-          "recall": 0.767,
-          "suppressionCount": 11,
+          "recall": 0.783,
+          "suppressionCount": 12,
           "byTier": {
             "1": {
               "precision": 1,
@@ -332,8 +332,8 @@
             },
             "3": {
               "precision": 1,
-              "recall": 0.06666666666666667,
-              "f1": 0.125,
+              "recall": 0.13333333333333333,
+              "f1": 0.23529411764705882,
               "count": 15
             }
           }
@@ -367,9 +367,9 @@
         },
         {
           "round": 13,
-          "f1": 0.868,
+          "f1": 0.879,
           "precision": 1,
-          "recall": 0.767,
+          "recall": 0.783,
           "suppressionCount": 13,
           "byTier": {
             "1": {
@@ -386,18 +386,18 @@
             },
             "3": {
               "precision": 1,
-              "recall": 0.06666666666666667,
-              "f1": 0.125,
+              "recall": 0.13333333333333333,
+              "f1": 0.23529411764705882,
               "count": 15
             }
           }
         },
         {
           "round": 14,
-          "f1": 0.868,
+          "f1": 0.879,
           "precision": 1,
-          "recall": 0.767,
-          "suppressionCount": 14,
+          "recall": 0.783,
+          "suppressionCount": 15,
           "byTier": {
             "1": {
               "precision": 1,
@@ -413,18 +413,18 @@
             },
             "3": {
               "precision": 1,
-              "recall": 0.06666666666666667,
-              "f1": 0.125,
+              "recall": 0.13333333333333333,
+              "f1": 0.23529411764705882,
               "count": 15
             }
           }
         },
         {
           "round": 15,
-          "f1": 0.857,
+          "f1": 0.879,
           "precision": 1,
-          "recall": 0.75,
-          "suppressionCount": 14,
+          "recall": 0.783,
+          "suppressionCount": 13,
           "byTier": {
             "1": {
               "precision": 1,
@@ -439,9 +439,9 @@
               "count": 21
             },
             "3": {
-              "precision": 0,
-              "recall": 0,
-              "f1": 0,
+              "precision": 1,
+              "recall": 0.13333333333333333,
+              "f1": 0.23529411764705882,
               "count": 15
             }
           }
@@ -451,7 +451,7 @@
           "f1": 0.868,
           "precision": 1,
           "recall": 0.767,
-          "suppressionCount": 17,
+          "suppressionCount": 15,
           "byTier": {
             "1": {
               "precision": 1,
@@ -475,10 +475,10 @@
         },
         {
           "round": 17,
-          "f1": 0.868,
+          "f1": 0.879,
           "precision": 1,
-          "recall": 0.767,
-          "suppressionCount": 18,
+          "recall": 0.783,
+          "suppressionCount": 15,
           "byTier": {
             "1": {
               "precision": 1,
@@ -494,8 +494,8 @@
             },
             "3": {
               "precision": 1,
-              "recall": 0.06666666666666667,
-              "f1": 0.125,
+              "recall": 0.13333333333333333,
+              "f1": 0.23529411764705882,
               "count": 15
             }
           }
@@ -505,7 +505,7 @@
           "f1": 0.868,
           "precision": 1,
           "recall": 0.767,
-          "suppressionCount": 18,
+          "suppressionCount": 16,
           "byTier": {
             "1": {
               "precision": 1,
@@ -532,7 +532,7 @@
           "f1": 0.879,
           "precision": 1,
           "recall": 0.783,
-          "suppressionCount": 17,
+          "suppressionCount": 16,
           "byTier": {
             "1": {
               "precision": 1,

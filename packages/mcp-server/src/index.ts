@@ -455,6 +455,13 @@ Tool selection:
   3. Start with a broad search: just query text, no filters. Only add folder, tag,
      or frontmatter filters to narrow a second search if needed.`);
 
+  // Onboarding hint: nudge init_semantic if embeddings aren't built
+  if (!hasEmbeddingsIndex()) {
+    parts.push(`
+**Setup:** Run \`init_semantic\` once to build embeddings. This unlocks hybrid search (BM25 + semantic),
+improves recall results, and enables similarity-based tools. Without it, search is keyword-only.`);
+  }
+
   // Multi-vault instructions (when registry has multiple vaults)
   if (registry?.isMultiVault) {
     parts.push(`

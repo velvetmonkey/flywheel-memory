@@ -9,7 +9,7 @@ phone: "+1 555-0142"
 industry: Manufacturing
 started: 2024-03-15
 rate: 300
-total_billed: 156000
+total_billed: 189000
 tags:
   - client
   - enterprise
@@ -27,15 +27,15 @@ Acme Corp]] is a mid-size manufacturing company undergoing digital transformatio
 **Location**: Chicago, IL
 **Relationship**: Ongoing strategic partner since [[March 2024]]
 
-## [[Active Engagement]]
+## Active Engagement
 
 ### [[Acme Data Migration]]
-- **Status**: Active - [[Phase 2]]
+- **Status**: Active - Phase 3 (Production Cutover)
 - **Budget**: $75,000
-- **Billed to Date**: $42,000
-- **Timeline**: [[October 2025]] - [[March 2026]]
+- **Billed to Date**: $45,000 (60%)
+- **Timeline**: October 2025 - March 2026
 
-Migrating legacy ERP data to cloud-native platform. Currently in testing phase with production cutover scheduled for Q1 2026.
+UAT complete, cutover window locked March 28-29. [[Marcus Webb]] leading technical cutover. Risk: legacy Oracle decommission timeline unconfirmed.
 
 ## [[Completed Projects]]
 
@@ -49,13 +49,14 @@ Migrating legacy ERP data to cloud-native platform. Currently in testing phase w
 - Delivered: Integration strategy, priority matrix
 - Revenue: $8,000
 
-## [[Financial Summary]]
+## Financial Summary
 
 | Year | Revenue | Projects |
 |------|---------|----------|
 | 2024 | $114,000 | 3 |
 | 2025 | $42,000 | 1 (ongoing) |
-| **Total** | **$156,000** | |
+| 2026 | $33,000 | 1 (ongoing) |
+| **Total** | **$189,000** | |
 
 ## Pending Opportunities
 
@@ -66,8 +67,10 @@ Migrating legacy ERP data to cloud-native platform. Currently in testing phase w
 
 ## Invoices
 
-- [[INV-2025-047]] - [[November 2025]] ($15,000) - Paid
-- [[INV-2025-048]] - December 2025 ($12,000) - Pending
+- [[INV-2025-047]] - November 2025 ($15,000) - Paid
+- [[INV-2025-048]] - December 2025 ($12,000) - **OVERDUE 64 days**
+- [[INV-2026-001]] - January 2026 ($18,000) - **OVERDUE 33 days**
+- [[INV-2026-002]] - February 2026 ($15,000) - **OVERDUE 5 days**
 
 ## [[Key Stakeholders]]
 
@@ -89,8 +92,9 @@ Migrating legacy ERP data to cloud-native platform. Currently in testing phase w
 - Project: [[Acme Data Migration]]
 - Proposal: [[Acme Analytics Add-on]]
 - Knowledge: [[Data Migration Playbook]]
-- Invoices: [[INV-2025-047]], [[INV-2025-048]]
+- Invoices: [[INV-2025-047]], [[INV-2025-048]], [[INV-2026-001]], [[INV-2026-002]]
+- Team: [[Marcus Webb]]
 
 ---
 
-*Last updated: 2025-12-30*
+*Last updated: 2026-03-20*

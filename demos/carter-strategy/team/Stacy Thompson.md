@@ -23,23 +23,25 @@ Senior consultant specializing in front-end development and user experience desi
 
 ## Current Availability
 
-- **Utilization**: 40%
-- **Available**: 24 hours/week
-- **Status**: Available for new project assignment
+- **Utilization**: 80%
+- **Available**: 8 hours/week
+- **Status**: Active on [[Beta Corp Dashboard]]
 
 ## Project History
 
 | Project | Client | Role | Duration |
 |---------|--------|------|----------|
-| MVP Build | [[TechStart Inc]] | Lead Developer | Q3-Q4 2025 |
+| [[Beta Corp Dashboard]] | [[Beta Corp]] | Frontend/UX Lead | Mar 2026 - present |
+| [[TechStart MVP Build]] | [[TechStart Inc]] | Lead Developer | Q3-Q4 2025 |
 | Portal Redesign | [[GlobalBank]] | UX Consultant | Q2 2025 |
 
 ## Notes
 
 - Prefers projects with design component
 - Strong client communication skills
-- Available for Q1-Q2 2026 engagements
+- Currently leading frontend/UX on [[Beta Corp Dashboard]] with [[Dan Oliveira]]
+- Client demo scheduled 2026-03-26
 
 ---
 
-*Last updated: 2026-01-15*
+*Last updated: 2026-03-20*

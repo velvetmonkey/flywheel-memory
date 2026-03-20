@@ -9,7 +9,7 @@ phone: "+1 555-0187"
 industry: SaaS
 started: 2025-06-01
 rate: "250"
-total_billed: 25000
+total_billed: 37500
 tags:
   - client
   - startup
@@ -27,29 +27,38 @@ tags:
 **Location**: [[San Francisco]], CA (remote-first)
 **Relationship**: Active since [[June 2025]]
 
-## [[Active Engagement]]
+## Completed Engagements
 
 ### [[TechStart MVP Build]]
-- **Status**: Wrapping up (handover phase)
+- **Status**: Completed
 - **Budget**: $25,000
 - **Billed**: $25,000 (100%)
-- **Timeline**: June - [[December 2025]]
+- **Timeline**: June - December 2025
 
 Successfully delivered MVP with auth, core APIs, and deployment pipeline.
 
-### [[TechStart Phase 2]] (Proposed)
-- **Status**: Proposal pending decision
-- **Value**: $45,000
-- **Decision Due**: January 15, 2026
+## Active Engagement
 
-Multi-tenant architecture, analytics dashboard, API marketplace integration.
+### [[TechStart Phase 2]]
+- **Status**: Active (started February 2026)
+- **Budget**: $45,000
+- **Billed to Date**: $12,500 (28%)
+- **Timeline**: Feb - May 2026
+
+Multi-tenant architecture (70% complete), analytics dashboard, API marketplace. Weekly demos going well. [[Dan Oliveira]] supporting backend development.
 
 ## Financial Summary
 
 | Year | Revenue | Projects |
 |------|---------|----------|
-| 2025 | $25,000 | 1 |
-| 2026 (projected) | $45,000 | 1 (proposed) |
+| 2025 | $25,000 | 1 (completed) |
+| 2026 | $12,500 billed / $45,000 budget | 1 (active) |
+| **Total** | **$37,500** | |
+
+## Invoices
+
+- [[INV-2026-005]] - January 2026 ($5,000) - Paid
+- [[INV-2026-006]] - February 2026 ($7,500) - DUE TODAY
 
 ## [[Key Stakeholders]]
 
@@ -65,14 +74,16 @@ Multi-tenant architecture, analytics dashboard, API marketplace integration.
 - Budget-conscious but willing to invest in quality
 - Prefers async communication (Slack)
 - Strong technical background - can discuss architecture directly
-- Referral potential to other startups in their network
+- Referral potential — already referred [[Nexus Health]]
 
 ## Related
 
-- Projects: [[TechStart MVP Build]]
-- Proposals: [[TechStart Phase 2]]
+- Projects: [[TechStart MVP Build]], [[TechStart Phase 2]]
+- Invoices: [[INV-2026-005]], [[INV-2026-006]]
+- Referral: [[Nexus Health]]
+- Team: [[Dan Oliveira]]
 - Knowledge: [[API Security Checklist]]
 
 ---
 
-*Last updated: 2025-12-28*
+*Last updated: 2026-03-20*

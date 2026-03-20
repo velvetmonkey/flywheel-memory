@@ -119,14 +119,30 @@ const PolicyOutputSchema = z.object({
 });
 
 /**
+ * Accept conditions as either an array (schema form) or a map (author-friendly form).
+ * Map form: { note_exists: { check: "file_exists", path: "..." } }
+ * → Array form: [{ id: "note_exists", check: "file_exists", path: "..." }]
+ */
+const ConditionsSchema = z.preprocess((val) => {
+  if (Array.isArray(val)) return val;
+  if (val && typeof val === 'object' && !Array.isArray(val)) {
+    return Object.entries(val as Record<string, unknown>).map(([id, def]) => ({
+      id,
+      ...(def && typeof def === 'object' ? def : {}),
+    }));
+  }
+  return val;
+}, z.array(PolicyConditionSchema));
+
+/**
  * Complete policy definition schema
  */
 export const PolicyDefinitionSchema = z.object({
-  version: z.literal('1.0'),
+  version: z.union([z.literal('1.0'), z.literal('1')]).transform(() => '1.0' as const),
   name: z.string().min(1, 'Policy name is required'),
   description: z.string().min(1, 'Policy description is required'),
   variables: z.record(PolicyVariableSchema).optional(),
-  conditions: z.array(PolicyConditionSchema).optional(),
+  conditions: ConditionsSchema.optional(),
   steps: z.array(PolicyStepSchema).min(1, 'At least one step is required'),
   output: PolicyOutputSchema.optional(),
 });

@@ -1,0 +1,50 @@
+version: "1.0"
+name: create-daily-note
+description: >
+  Create a daily note with the standard carter-strategy structure:
+  Log, Billable Summary, Tasks, Notes, Related.
+
+variables:
+  target_date:
+    type: string
+    required: true
+    description: "Date in YYYY-MM-DD format"
+
+conditions:
+  note_exists:
+    check: file_exists
+    path: "daily-notes/{{variables.target_date}}.md"
+
+steps:
+  - id: create_note
+    tool: vault_create_note
+    when: "{{conditions.note_exists | negate}}"
+    params:
+      path: "daily-notes/{{variables.target_date}}.md"
+      frontmatter:
+        type: daily
+        date: "{{variables.target_date}}"
+        billable_hours: 0
+        clients_worked: []
+        tags:
+          - daily
+          - work-log
+      content: |
+        # {{variables.target_date}}
+
+        ## Log
+
+        ## Billable Summary
+
+        | Client | Hours | Rate | Amount |
+        |--------|-------|------|--------|
+
+        ## Tasks
+
+        ## Notes
+
+        ## Related
+      commit: true
+
+output:
+  summary: "Daily note for {{variables.target_date}} created"

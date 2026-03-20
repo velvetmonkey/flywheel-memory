@@ -177,6 +177,23 @@ export async function handleGitCommit(
 }
 
 /**
+ * Check if saved policies exist in the vault's .claude/policies/ directory.
+ * Returns a hint string if policies are available, or empty string if not.
+ */
+async function getPolicyHint(vaultPath: string): Promise<string> {
+  try {
+    const policiesDir = path.join(vaultPath, '.claude', 'policies');
+    const files = await fs.readdir(policiesDir);
+    const yamlFiles = files.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+    if (yamlFiles.length > 0) {
+      const names = yamlFiles.map(f => f.replace(/\.ya?ml$/, '')).join(', ');
+      return ` This vault has saved policies (${names}) — run policy(action="list") and use a matching policy to create the note with proper structure.`;
+    }
+  } catch { /* no policies dir */ }
+  return '';
+}
+
+/**
  * Check if a file exists and return an error result if not
  */
 export async function ensureFileExists(
@@ -188,18 +205,20 @@ export async function ensureFileExists(
     await fs.access(fullPath);
     return null; // File exists
   } catch {
-    return errorResult(notePath, `File not found: ${notePath}`);
+    const hint = await getPolicyHint(vaultPath);
+    return errorResult(notePath, `File not found: ${notePath}.${hint}`);
   }
 }
 
 /**
  * Find a section and return an error result if not found
  */
-export function ensureSectionExists(
+export async function ensureSectionExists(
   content: string,
   section: string,
-  notePath: string
-): { boundary: SectionBoundary } | { error: MutationResult } {
+  notePath: string,
+  vaultPath?: string
+): Promise<{ boundary: SectionBoundary } | { error: MutationResult }> {
   const boundary = findSection(content, section);
   if (boundary) {
     return { boundary };
@@ -207,12 +226,13 @@ export function ensureSectionExists(
 
   // Provide context-aware error message
   const headings = extractHeadings(content);
+  const hint = vaultPath ? await getPolicyHint(vaultPath) : '';
   let message: string;
   if (headings.length === 0) {
-    message = `Section '${section}' not found. This file has no headings. Add section structure (## Heading) to enable section-scoped mutations.`;
+    message = `Section '${section}' not found. This file has no headings.${hint || ' Add section structure (## Heading) to enable section-scoped mutations.'}`;
   } else {
     const availableSections = headings.map(h => h.text).join(', ');
-    message = `Section '${section}' not found. Available sections: ${availableSections}`;
+    message = `Section '${section}' not found. Available sections: ${availableSections}.${hint}`;
   }
 
   return { error: errorResult(notePath, message) };
@@ -270,7 +290,7 @@ export async function withVaultFile(
       // Find section if requested
       let sectionBoundary: SectionBoundary | undefined;
       if (section) {
-        const sectionResult = ensureSectionExists(content, section, notePath);
+        const sectionResult = await ensureSectionExists(content, section, notePath, vaultPath);
         if ('error' in sectionResult) {
           return { error: sectionResult.error };
         }

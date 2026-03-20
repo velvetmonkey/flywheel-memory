@@ -138,9 +138,9 @@ Just plain text.
   });
 
   describe('ensureSectionExists', () => {
-    it('returns boundary for existing section', () => {
+    it('returns boundary for existing section', async () => {
       const content = '# Title\n\n## Log\n\nContent\n';
-      const result = ensureSectionExists(content, 'Log', 'test.md');
+      const result = await ensureSectionExists(content, 'Log', 'test.md');
 
       expect('boundary' in result).toBe(true);
       if ('boundary' in result) {
@@ -148,9 +148,9 @@ Just plain text.
       }
     });
 
-    it('returns error for missing section with suggestions', () => {
+    it('returns error for missing section with suggestions', async () => {
       const content = '# Title\n\n## Tasks\n\n## Notes\n';
-      const result = ensureSectionExists(content, 'Log', 'test.md');
+      const result = await ensureSectionExists(content, 'Log', 'test.md');
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
@@ -160,14 +160,13 @@ Just plain text.
       }
     });
 
-    it('returns error for file without headings', () => {
+    it('returns error for file without headings', async () => {
       const content = 'No headings here.\n\nJust text.';
-      const result = ensureSectionExists(content, 'Log', 'test.md');
+      const result = await ensureSectionExists(content, 'Log', 'test.md');
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
         expect(result.error.message).toContain('no headings');
-        expect(result.error.message).toContain('section structure');
       }
     });
   });

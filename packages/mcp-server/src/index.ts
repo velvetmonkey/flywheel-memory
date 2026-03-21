@@ -35,6 +35,7 @@ import {
   setIndexError,
   loadVaultIndexFromCache,
   saveVaultIndexToCache,
+  type IndexState,
 } from './core/read/graph.js';
 import { scanVault } from './core/read/vault.js';
 import { loadConfig, inferConfig, saveConfig, type FlywheelConfig } from './core/read/config.js';
@@ -171,6 +172,7 @@ import { registerVaultResources } from './resources/vault.js';
 
 // Multi-vault
 import { VaultRegistry, parseVaultConfig, type VaultContext } from './vault-registry.js';
+import { setActiveScope, type VaultScope } from './vault-scope.js';
 
 
 // ============================================================================
@@ -941,6 +943,12 @@ async function initializeVault(name: string, vaultPathArg: string): Promise<Vaul
     vaultIndex: undefined as unknown as VaultIndex,
     flywheelConfig: {},
     watcher: null,
+    cooccurrenceIndex: null,
+    embeddingsBuilding: false,
+    indexState: 'building',
+    indexError: null,
+    lastCooccurrenceRebuildAt: 0,
+    lastEdgeWeightRebuildAt: 0,
   };
 
   try {
@@ -978,6 +986,47 @@ function activateVault(ctx: VaultContext): void {
     setTaskCacheDatabase(ctx.stateDb.db);
     setEmbeddingsDatabase(ctx.stateDb.db);
     loadEntityEmbeddingsToMemory();
+  }
+
+  // Swap state that was previously not per-vault
+  setWikilinkConfig(ctx.flywheelConfig);
+  setCooccurrenceIndex(ctx.cooccurrenceIndex);
+  setIndexState(ctx.indexState);
+  setIndexError(ctx.indexError);
+  setEmbeddingsBuilding(ctx.embeddingsBuilding);
+
+  // Set the unified VaultScope (for modules migrated to getActiveScope())
+  setActiveScope({
+    name: ctx.name,
+    vaultPath: ctx.vaultPath,
+    stateDb: ctx.stateDb,
+    flywheelConfig: ctx.flywheelConfig,
+    cooccurrenceIndex: ctx.cooccurrenceIndex,
+    indexState: ctx.indexState,
+    indexError: ctx.indexError,
+    embeddingsBuilding: ctx.embeddingsBuilding,
+  });
+}
+
+/**
+ * Get the currently active VaultContext (by __flywheel_active_vault name).
+ * Used to mirror module-level state changes back to the context.
+ */
+function getActiveVaultContext(): VaultContext | null {
+  if (!vaultRegistry) return null;
+  const name = (globalThis as any).__flywheel_active_vault;
+  if (!name) return null;
+  try { return vaultRegistry.getContext(name); } catch { return null; }
+}
+
+/** Update index state on both module-level singleton and active VaultContext */
+function updateIndexState(state: IndexState, error?: Error | null): void {
+  setIndexState(state);
+  if (error !== undefined) setIndexError(error);
+  const ctx = getActiveVaultContext();
+  if (ctx) {
+    ctx.indexState = state;
+    if (error !== undefined) ctx.indexError = error;
   }
 }
 
@@ -1017,14 +1066,21 @@ async function main() {
     activateVault(ctx);
   }
 
-  // Load cached co-occurrence index (primary vault)
-  if (stateDb) {
-    const cachedCooc = loadCooccurrenceFromStateDb(stateDb);
-    if (cachedCooc) {
-      setCooccurrenceIndex(cachedCooc.index);
-      lastCooccurrenceRebuildAt = cachedCooc.builtAt;
-      serverLog('index', `Co-occurrence: loaded from cache (${Object.keys(cachedCooc.index.associations).length} entities, ${cachedCooc.index._metadata.total_associations} associations)`);
+  // Load cached co-occurrence index for all vaults
+  for (const ctx of vaultRegistry.getAllContexts()) {
+    if (ctx.stateDb) {
+      const cachedCooc = loadCooccurrenceFromStateDb(ctx.stateDb);
+      if (cachedCooc) {
+        ctx.cooccurrenceIndex = cachedCooc.index;
+        ctx.lastCooccurrenceRebuildAt = cachedCooc.builtAt;
+        serverLog('index', `[${ctx.name}] Co-occurrence: loaded from cache (${Object.keys(cachedCooc.index.associations).length} entities, ${cachedCooc.index._metadata.total_associations} associations)`);
+      }
     }
+  }
+  // Activate primary vault again to pick up loaded co-occurrence state
+  {
+    const primary = vaultRegistry.getContext();
+    activateVault(primary);
   }
 
   // Connect transports
@@ -1115,7 +1171,7 @@ async function main() {
   if (cachedIndex) {
     // Cache hit
     vaultIndex = cachedIndex;
-    setIndexState('ready');
+    updateIndexState('ready');
     const duration = Date.now() - startTime;
     const cacheAge = cachedIndex.builtAt ? Math.round((Date.now() - cachedIndex.builtAt.getTime()) / 1000) : 0;
     serverLog('index', `Cache hit: ${cachedIndex.notes.size} notes, ${cacheAge}s old — loaded in ${duration}ms`);
@@ -1133,7 +1189,7 @@ async function main() {
 
     try {
       vaultIndex = await buildVaultIndex(vaultPath);
-      setIndexState('ready');
+      updateIndexState('ready');
       const duration = Date.now() - startTime;
       serverLog('index', `Vault index ready in ${duration}ms — ${vaultIndex.notes.size} notes`);
       if (stateDb) {
@@ -1156,8 +1212,7 @@ async function main() {
 
       await runPostIndexWork(vaultIndex);
     } catch (err) {
-      setIndexState('error');
-      setIndexError(err instanceof Error ? err : new Error(String(err)));
+      updateIndexState('error', err instanceof Error ? err : new Error(String(err)));
       const duration = Date.now() - startTime;
       if (stateDb) {
         recordIndexEvent(stateDb, {
@@ -1382,6 +1437,7 @@ async function runPostIndexWork(index: VaultIndex) {
 
       const attemptBuild = async (attempt: number): Promise<void> => {
         setEmbeddingsBuilding(true);
+        { const ctx = getActiveVaultContext(); if (ctx) ctx.embeddingsBuilding = true; }
         try {
           await buildEmbeddingsIndex(vaultPath, (p) => {
             if (p.current % 100 === 0 || p.current === p.total) {
@@ -1415,6 +1471,7 @@ async function runPostIndexWork(index: VaultIndex) {
           serverLog('semantic', 'Keyword search (BM25) remains fully available', 'error');
         } finally {
           setEmbeddingsBuilding(false);
+          { const ctx = getActiveVaultContext(); if (ctx) ctx.embeddingsBuilding = false; }
         }
       };
 
@@ -1600,7 +1657,7 @@ async function runPostIndexWork(index: VaultIndex) {
             const batchResult = await processBatch(vaultIndex, vaultPath, absoluteBatch);
             serverLog('watcher', `Incremental: ${batchResult.successful}/${batchResult.total} files in ${batchResult.durationMs}ms`);
           }
-          setIndexState('ready');
+          updateIndexState('ready');
           tracker.end({ note_count: vaultIndex.notes.size, entity_count: vaultIndex.entities.size, tag_count: vaultIndex.tags.size });
 
           // Step 1.5: Note moves (rename pairs already recorded above; emit step for pipeline visibility)
@@ -1704,6 +1761,8 @@ async function runPostIndexWork(index: VaultIndex) {
               const cooccurrenceIdx = await mineCooccurrences(vaultPath, entityNames);
               setCooccurrenceIndex(cooccurrenceIdx);
               lastCooccurrenceRebuildAt = Date.now();
+              const activeCtx = getActiveVaultContext();
+              if (activeCtx) { activeCtx.cooccurrenceIndex = cooccurrenceIdx; activeCtx.lastCooccurrenceRebuildAt = lastCooccurrenceRebuildAt; }
               if (stateDb) {
                 saveCooccurrenceToStateDb(stateDb, cooccurrenceIdx);
               }
@@ -1728,6 +1787,7 @@ async function runPostIndexWork(index: VaultIndex) {
               if (edgeWeightAgeMs >= 60 * 60 * 1000) {
                 const result = recomputeEdgeWeights(stateDb);
                 lastEdgeWeightRebuildAt = Date.now();
+                { const activeCtx = getActiveVaultContext(); if (activeCtx) activeCtx.lastEdgeWeightRebuildAt = lastEdgeWeightRebuildAt; }
                 tracker.end({
                   rebuilt: true,
                   edges: result.edges_updated,
@@ -2301,8 +2361,7 @@ async function runPostIndexWork(index: VaultIndex) {
           }
           serverLog('watcher', `Batch complete: ${filteredEvents.length} files, ${duration}ms, ${tracker.steps.length} steps`);
         } catch (err) {
-          setIndexState('error');
-          setIndexError(err instanceof Error ? err : new Error(String(err)));
+          updateIndexState('error', err instanceof Error ? err : new Error(String(err)));
           const duration = Date.now() - batchStart;
           if (stateDb) {
             recordIndexEvent(stateDb, {

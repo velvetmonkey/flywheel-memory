@@ -67,6 +67,7 @@ import {
 } from '../shared/recency.js';
 import { embedTextCached, findSemanticallySimilarEntities, hasEntityEmbeddingsIndex } from '../read/embeddings.js';
 import { getEntityEdgeWeightMap } from './edgeWeights.js';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /**
  * Module-level StateDb reference
@@ -104,9 +105,15 @@ export function setWikilinkConfig(config: FlywheelConfig): void {
   moduleConfig = config;
 }
 
-/** Get the configured strictness mode (default: balanced) */
+/** Get the effective config (VaultScope if available, else module-level) */
+function getConfig(): FlywheelConfig | null {
+  const scope = getActiveScopeOrNull();
+  return scope ? scope.flywheelConfig : moduleConfig;
+}
+
+/** Get the configured strictness mode (reads from VaultScope if available) */
 export function getWikilinkStrictness(): StrictnessMode {
-  return moduleConfig?.wikilink_strictness ?? 'balanced';
+  return getConfig()?.wikilink_strictness ?? 'balanced';
 }
 
 /**
@@ -117,19 +124,17 @@ export function getWikilinkStrictness(): StrictnessMode {
  */
 function getEffectiveStrictness(notePath?: string): StrictnessMode {
   const base = getWikilinkStrictness();
-  if (moduleConfig?.adaptive_strictness === false) return base;
+  if (getConfig()?.adaptive_strictness === false) return base;
   // Adaptive is on by default — daily notes get aggressive
   const context = notePath ? getNoteContext(notePath) : 'general';
   if (context === 'daily') return 'aggressive';
   return base;
 }
 
-/**
- * Get the co-occurrence index (if built).
- * Used by discovery tools to find co-occurrence gaps.
- */
+/** Get the co-occurrence index (reads from VaultScope if available) */
 export function getCooccurrenceIndex(): CooccurrenceIndex | null {
-  return cooccurrenceIndex;
+  const scope = getActiveScopeOrNull();
+  return scope ? scope.cooccurrenceIndex : cooccurrenceIndex;
 }
 
 /**
@@ -458,10 +463,11 @@ export function processWikilinks(content: string, notePath?: string, existingCon
   });
 
   // Step 3: Detect implicit entities (dead wikilinks for unrecognized proper nouns, camelCase, acronyms)
-  const implicitEnabled = moduleConfig?.implicit_detection !== false; // default: true
+  const cfg = getConfig();
+  const implicitEnabled = cfg?.implicit_detection !== false; // default: true
   const validPatterns = new Set<string>(ALL_IMPLICIT_PATTERNS);
-  const implicitPatterns = moduleConfig?.implicit_patterns?.length
-    ? moduleConfig.implicit_patterns.filter(p => validPatterns.has(p)) as Array<typeof ALL_IMPLICIT_PATTERNS[number]>
+  const implicitPatterns = cfg?.implicit_patterns?.length
+    ? cfg.implicit_patterns.filter(p => validPatterns.has(p)) as Array<typeof ALL_IMPLICIT_PATTERNS[number]>
     : [...ALL_IMPLICIT_PATTERNS];
   const implicitMatches = detectImplicitEntities(result.content, {
     detectImplicit: implicitEnabled,

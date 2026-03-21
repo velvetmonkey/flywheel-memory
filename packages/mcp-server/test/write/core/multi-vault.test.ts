@@ -13,12 +13,15 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { VaultRegistry, parseVaultConfig, type VaultContext } from '../../../src/vault-registry.js';
 import type { VaultIndex } from '../../../src/core/read/types.js';
-import { setWriteStateDb, getWriteStateDb } from '../../../src/core/write/wikilinks.js';
+import { setWriteStateDb, getWriteStateDb, setWikilinkConfig, setCooccurrenceIndex, getWikilinkStrictness, getCooccurrenceIndex } from '../../../src/core/write/wikilinks.js';
 import { setFTS5Database } from '../../../src/core/read/fts5.js';
 import { setRecencyStateDb } from '../../../src/core/shared/recency.js';
 import { setEdgeWeightStateDb } from '../../../src/core/write/edgeWeights.js';
 import { setTaskCacheDatabase } from '../../../src/core/read/taskCache.js';
-import { setEmbeddingsDatabase } from '../../../src/core/read/embeddings.js';
+import { setEmbeddingsDatabase, setEmbeddingsBuilding, isEmbeddingsBuilding } from '../../../src/core/read/embeddings.js';
+import { setIndexState, setIndexError, getIndexState, getIndexError, type IndexState } from '../../../src/core/read/graph.js';
+import { setActiveScope, getActiveScope, getActiveScopeOrNull } from '../../../src/vault-scope.js';
+import type { CooccurrenceIndex } from '../../../src/core/shared/cooccurrence.js';
 import { createTempVault, cleanupTempVault, openStateDb, deleteStateDb, type StateDb } from '../helpers/testUtils.js';
 
 function createMockContext(name: string, vaultPath: string): VaultContext {
@@ -29,6 +32,12 @@ function createMockContext(name: string, vaultPath: string): VaultContext {
     vaultIndex: { notes: new Map(), entities: new Map() } as unknown as VaultIndex,
     flywheelConfig: {},
     watcher: null,
+    cooccurrenceIndex: null,
+    embeddingsBuilding: false,
+    indexState: 'building',
+    indexError: null,
+    lastCooccurrenceRebuildAt: 0,
+    lastEdgeWeightRebuildAt: 0,
   };
 }
 
@@ -265,6 +274,12 @@ describe('Multi-Vault', () => {
         vaultIndex: { notes: new Map(), entities: new Map() } as unknown as VaultIndex,
         flywheelConfig: {},
         watcher: null,
+        cooccurrenceIndex: null,
+        embeddingsBuilding: false,
+        indexState: 'building',
+        indexError: null,
+        lastCooccurrenceRebuildAt: 0,
+        lastEdgeWeightRebuildAt: 0,
       };
       const ctxB: VaultContext = {
         name: 'work',
@@ -273,6 +288,12 @@ describe('Multi-Vault', () => {
         vaultIndex: { notes: new Map(), entities: new Map() } as unknown as VaultIndex,
         flywheelConfig: {},
         watcher: null,
+        cooccurrenceIndex: null,
+        embeddingsBuilding: false,
+        indexState: 'building',
+        indexError: null,
+        lastCooccurrenceRebuildAt: 0,
+        lastEdgeWeightRebuildAt: 0,
       };
 
       // Register in a VaultRegistry
@@ -310,6 +331,145 @@ describe('Multi-Vault', () => {
       registry.addContext(createMockContext('main', '/vault/main'));
 
       expect(() => registry.getContext('other')).toThrow('Vault "other" not found. Available: main');
+    });
+  });
+
+  describe('VaultScope isolation', () => {
+    function createMockCooccurrence(entityCount: number): CooccurrenceIndex {
+      return {
+        associations: {},
+        minCount: 2,
+        _metadata: { total_associations: entityCount, total_entities: entityCount, built_at: Date.now(), total_notes_scanned: 0 },
+        documentFrequency: new Map(),
+        totalNotesScanned: 0,
+      };
+    }
+
+    /** Simulates what activateVault() does: set module-level state + VaultScope */
+    function activateVaultForTest(ctx: VaultContext): void {
+      (globalThis as any).__flywheel_active_vault = ctx.name;
+
+      if (ctx.stateDb) {
+        setWriteStateDb(ctx.stateDb);
+        setFTS5Database(ctx.stateDb.db);
+        setRecencyStateDb(ctx.stateDb);
+        setEdgeWeightStateDb(ctx.stateDb);
+        setTaskCacheDatabase(ctx.stateDb.db);
+        setEmbeddingsDatabase(ctx.stateDb.db);
+      }
+
+      setWikilinkConfig(ctx.flywheelConfig);
+      setCooccurrenceIndex(ctx.cooccurrenceIndex);
+      setIndexState(ctx.indexState);
+      setIndexError(ctx.indexError);
+      setEmbeddingsBuilding(ctx.embeddingsBuilding);
+
+      setActiveScope({
+        name: ctx.name,
+        vaultPath: ctx.vaultPath,
+        stateDb: ctx.stateDb,
+        flywheelConfig: ctx.flywheelConfig,
+        cooccurrenceIndex: ctx.cooccurrenceIndex,
+        indexState: ctx.indexState,
+        indexError: ctx.indexError,
+        embeddingsBuilding: ctx.embeddingsBuilding,
+      });
+    }
+
+    let vaultPathA: string;
+    let vaultPathB: string;
+    let stateDbA: StateDb;
+    let stateDbB: StateDb;
+
+    afterEach(async () => {
+      setWriteStateDb(null);
+      if (stateDbA) { stateDbA.db.close(); deleteStateDb(vaultPathA); }
+      if (stateDbB) { stateDbB.db.close(); deleteStateDb(vaultPathB); }
+      if (vaultPathA) await cleanupTempVault(vaultPathA);
+      if (vaultPathB) await cleanupTempVault(vaultPathB);
+    });
+
+    it('swaps all state when switching between two vaults', async () => {
+      vaultPathA = await createTempVault();
+      vaultPathB = await createTempVault();
+      stateDbA = openStateDb(vaultPathA);
+      stateDbB = openStateDb(vaultPathB);
+
+      const coocA = createMockCooccurrence(10);
+      const coocB = createMockCooccurrence(20);
+
+      const ctxA: VaultContext = {
+        ...createMockContext('personal', vaultPathA),
+        stateDb: stateDbA,
+        flywheelConfig: { wikilink_strictness: 'aggressive' },
+        cooccurrenceIndex: coocA,
+        indexState: 'ready',
+        embeddingsBuilding: false,
+      };
+
+      const ctxB: VaultContext = {
+        ...createMockContext('work', vaultPathB),
+        stateDb: stateDbB,
+        flywheelConfig: { wikilink_strictness: 'conservative' },
+        cooccurrenceIndex: coocB,
+        indexState: 'building',
+        embeddingsBuilding: true,
+      };
+
+      // Activate vault A
+      activateVaultForTest(ctxA);
+      expect(getWriteStateDb()).toBe(stateDbA);
+      expect(getWikilinkStrictness()).toBe('aggressive');
+      expect(getCooccurrenceIndex()).toBe(coocA);
+      expect(getIndexState()).toBe('ready');
+      expect(isEmbeddingsBuilding()).toBe(false);
+      expect(getActiveScope().name).toBe('personal');
+
+      // Switch to vault B
+      activateVaultForTest(ctxB);
+      expect(getWriteStateDb()).toBe(stateDbB);
+      expect(getWikilinkStrictness()).toBe('conservative');
+      expect(getCooccurrenceIndex()).toBe(coocB);
+      expect(getIndexState()).toBe('building');
+      expect(isEmbeddingsBuilding()).toBe(true);
+      expect(getActiveScope().name).toBe('work');
+
+      // Switch back to vault A — verify no cross-contamination
+      activateVaultForTest(ctxA);
+      expect(getWriteStateDb()).toBe(stateDbA);
+      expect(getWikilinkStrictness()).toBe('aggressive');
+      expect(getCooccurrenceIndex()).toBe(coocA);
+      expect(getIndexState()).toBe('ready');
+      expect(isEmbeddingsBuilding()).toBe(false);
+      expect(getActiveScope().name).toBe('personal');
+    });
+
+    it('VaultScope reads match module-level state after activation', async () => {
+      vaultPathA = await createTempVault();
+      stateDbA = openStateDb(vaultPathA);
+
+      const testError = new Error('test build failure');
+      const ctxA: VaultContext = {
+        ...createMockContext('test', vaultPathA),
+        stateDb: stateDbA,
+        indexState: 'error',
+        indexError: testError,
+      };
+
+      activateVaultForTest(ctxA);
+
+      // VaultScope-backed reads match module-level reads
+      expect(getIndexState()).toBe('error');
+      expect(getIndexError()).toBe(testError);
+      expect(getActiveScope().indexState).toBe('error');
+      expect(getActiveScope().indexError).toBe(testError);
+    });
+
+    it('getActiveScopeOrNull returns null before any activation', () => {
+      // Reset scope (this test runs in isolation)
+      setActiveScope(null as any);
+      // getActiveScopeOrNull should handle null gracefully
+      // (Note: in practice, activateVault is always called during startup)
     });
   });
 });

@@ -11,6 +11,8 @@ import type { VaultIndex } from './core/read/types.js';
 import type { FlywheelConfig } from './core/read/config.js';
 import type { VaultWatcher } from './core/read/watch/index.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
+import type { CooccurrenceIndex } from './core/shared/cooccurrence.js';
+import type { IndexState } from './core/read/graph.js';
 
 export interface VaultContext {
   name: string;
@@ -19,6 +21,18 @@ export interface VaultContext {
   vaultIndex: VaultIndex;
   flywheelConfig: FlywheelConfig;
   watcher: VaultWatcher | null;
+  /** Per-vault co-occurrence index (loaded from StateDb cache on startup) */
+  cooccurrenceIndex: CooccurrenceIndex | null;
+  /** Per-vault embedding build flag */
+  embeddingsBuilding: boolean;
+  /** Per-vault index build state */
+  indexState: IndexState;
+  /** Per-vault index error */
+  indexError: Error | null;
+  /** Per-vault timestamp: last co-occurrence rebuild */
+  lastCooccurrenceRebuildAt: number;
+  /** Per-vault timestamp: last edge weight rebuild */
+  lastEdgeWeightRebuildAt: number;
 }
 
 export class VaultRegistry {

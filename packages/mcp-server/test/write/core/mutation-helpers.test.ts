@@ -6,6 +6,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   withVaultFile,
   withVaultFrontmatter,
+  executeMutation,
+  executeFrontmatterMutation,
+  executeCreateNote,
+  executeDeleteNote,
   formatMcpResult,
   errorResult,
   successResult,
@@ -418,6 +422,168 @@ Just plain text.
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.success).toBe(false);
       expect(parsed.message).toContain('File not found');
+    });
+  });
+
+  describe('executeMutation', () => {
+    it('reads file, runs operation, writes back', async () => {
+      const outcome = await executeMutation(
+        { vaultPath, notePath: 'test-note.md', section: 'Log', actionDescription: 'test' },
+        async (ctx) => ({
+          updatedContent: ctx.content.replace('Entry 1', 'Entry 1 (modified)'),
+          message: 'Modified entry',
+        })
+      );
+
+      expect(outcome.success).toBe(true);
+      expect(outcome.result.message).toBe('Modified entry');
+      expect(outcome.filesWritten).toEqual(['test-note.md']);
+    });
+
+    it('returns error for non-existent file', async () => {
+      const outcome = await executeMutation(
+        { vaultPath, notePath: 'nonexistent.md', actionDescription: 'test' },
+        async () => ({ updatedContent: '', message: '' })
+      );
+
+      expect(outcome.success).toBe(false);
+      expect(outcome.result.message).toContain('File not found');
+      expect(outcome.filesWritten).toEqual([]);
+    });
+
+    it('returns error for non-existent section', async () => {
+      const outcome = await executeMutation(
+        { vaultPath, notePath: 'test-note.md', section: 'Nonexistent', actionDescription: 'test' },
+        async () => ({ updatedContent: '', message: '' })
+      );
+
+      expect(outcome.success).toBe(false);
+      expect(outcome.result.message).toContain("Section 'Nonexistent' not found");
+    });
+
+    it('supports dry run mode', async () => {
+      const outcome = await executeMutation(
+        { vaultPath, notePath: 'test-note.md', section: 'Log', actionDescription: 'test', dryRun: true },
+        async () => ({ updatedContent: 'modified', message: 'Would modify', preview: 'preview text' })
+      );
+
+      expect(outcome.success).toBe(true);
+      expect(outcome.result.message).toContain('[dry run]');
+      expect(outcome.result.dryRun).toBe(true);
+      expect(outcome.filesWritten).toEqual([]);
+    });
+  });
+
+  describe('executeFrontmatterMutation', () => {
+    it('reads file, updates frontmatter, writes back', async () => {
+      const outcome = await executeFrontmatterMutation(
+        { vaultPath, notePath: 'test-note.md', actionDescription: 'test' },
+        async (ctx) => ({
+          updatedFrontmatter: { ...ctx.frontmatter, status: 'active' },
+          message: 'Added status',
+        })
+      );
+
+      expect(outcome.success).toBe(true);
+      expect(outcome.result.message).toBe('Added status');
+      expect(outcome.filesWritten).toEqual(['test-note.md']);
+    });
+
+    it('returns error for non-existent file', async () => {
+      const outcome = await executeFrontmatterMutation(
+        { vaultPath, notePath: 'nonexistent.md', actionDescription: 'test' },
+        async () => ({ updatedFrontmatter: {}, message: '' })
+      );
+
+      expect(outcome.success).toBe(false);
+      expect(outcome.result.message).toContain('File not found');
+    });
+  });
+
+  describe('executeCreateNote', () => {
+    it('creates a new note', async () => {
+      const outcome = await executeCreateNote({
+        vaultPath,
+        notePath: 'new-note.md',
+        content: '# New Note\n\nHello world',
+        frontmatter: { type: 'test' },
+      });
+
+      expect(outcome.success).toBe(true);
+      expect(outcome.result.message).toContain('Created note');
+      expect(outcome.filesWritten).toEqual(['new-note.md']);
+    });
+
+    it('creates parent directories', async () => {
+      const outcome = await executeCreateNote({
+        vaultPath,
+        notePath: 'subdir/deep/new-note.md',
+        content: 'content',
+        frontmatter: {},
+      });
+
+      expect(outcome.success).toBe(true);
+    });
+
+    it('rejects overwrite when not specified', async () => {
+      const outcome = await executeCreateNote({
+        vaultPath,
+        notePath: 'test-note.md',
+        content: 'overwrite',
+        frontmatter: {},
+      });
+
+      expect(outcome.success).toBe(false);
+      expect(outcome.result.message).toContain('already exists');
+    });
+
+    it('allows overwrite when specified', async () => {
+      const outcome = await executeCreateNote({
+        vaultPath,
+        notePath: 'test-note.md',
+        content: 'overwritten content',
+        frontmatter: {},
+        overwrite: true,
+      });
+
+      expect(outcome.success).toBe(true);
+    });
+  });
+
+  describe('executeDeleteNote', () => {
+    it('deletes a note with confirmation', async () => {
+      await createTestNote(vaultPath, 'to-delete.md', '# Delete me');
+
+      const outcome = await executeDeleteNote({
+        vaultPath,
+        notePath: 'to-delete.md',
+        confirm: true,
+      });
+
+      expect(outcome.success).toBe(true);
+      expect(outcome.result.message).toContain('Deleted note');
+    });
+
+    it('rejects without confirmation', async () => {
+      const outcome = await executeDeleteNote({
+        vaultPath,
+        notePath: 'test-note.md',
+        confirm: false,
+      });
+
+      expect(outcome.success).toBe(false);
+      expect(outcome.result.message).toContain('confirmation');
+    });
+
+    it('returns error for non-existent file', async () => {
+      const outcome = await executeDeleteNote({
+        vaultPath,
+        notePath: 'nonexistent.md',
+        confirm: true,
+      });
+
+      expect(outcome.success).toBe(false);
+      expect(outcome.result.message).toContain('File not found');
     });
   });
 });

@@ -34,6 +34,7 @@
 import type Database from 'better-sqlite3';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 import * as path from 'path';
 import { scanVault } from './vault.js';
 
@@ -606,7 +607,8 @@ export function reciprocalRankFusion<T extends { path: string }>(
  * Check if the embeddings index has been built.
  */
 export function isEmbeddingsBuilding(): boolean {
-  return embeddingsBuilding;
+  const scope = getActiveScopeOrNull();
+  return scope ? scope.embeddingsBuilding : embeddingsBuilding;
 }
 
 export function setEmbeddingsBuilding(value: boolean): void {

@@ -20,6 +20,7 @@ import {
 import { parseNote } from './parser.js';
 import { levenshteinDistance } from '../shared/levenshtein.js';
 import { embedTextCached, findSemanticallySimilarEntities, hasEntityEmbeddingsIndex } from './embeddings.js';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /** Default timeout for vault indexing (5 minutes) */
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
@@ -46,9 +47,10 @@ let indexProgress = { parsed: 0, total: 0 };
 /** Error if index building failed */
 let indexError: Error | null = null;
 
-/** Get the current index state */
+/** Get the current index state (reads from VaultScope if available) */
 export function getIndexState(): IndexState {
-  return indexState;
+  const scope = getActiveScopeOrNull();
+  return scope ? scope.indexState : indexState;
 }
 
 /** Get the current index build progress */
@@ -56,9 +58,10 @@ export function getIndexProgress(): { parsed: number; total: number } {
   return { ...indexProgress };
 }
 
-/** Get the index error (if any) */
+/** Get the index error (reads from VaultScope if available) */
 export function getIndexError(): Error | null {
-  return indexError;
+  const scope = getActiveScopeOrNull();
+  return scope ? scope.indexError : indexError;
 }
 
 /** Set the index state (called by index.ts during startup) */

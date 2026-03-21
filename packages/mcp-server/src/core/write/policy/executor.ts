@@ -48,6 +48,7 @@ import {
 import { maybeApplyWikilinks, suggestRelatedLinks } from '../wikilinks.js';
 import { runValidationPipeline, type GuardrailMode } from '../validator.js';
 import { estimateTokens } from '../constants.js';
+import { executeMutation, executeFrontmatterMutation, executeCreateNote as executeCreateNoteCore, executeDeleteNote as executeDeleteNoteCore } from '../mutation-helpers.js';
 
 /**
  * Execute a single step of a policy
@@ -154,7 +155,7 @@ async function executeToolCall(
 }
 
 /**
- * Execute vault_add_to_section
+ * Execute vault_add_to_section via unified executeMutation path
  */
 async function executeAddToSection(
   params: Record<string, unknown>,
@@ -171,59 +172,50 @@ async function executeAddToSection(
   const suggestOutgoingLinks = params.suggestOutgoingLinks !== false;
   const maxSuggestions = Number(params.maxSuggestions) || 3;
 
-  const fullPath = path.join(vaultPath, notePath);
+  const outcome = await executeMutation(
+    { vaultPath, notePath, section, actionDescription: 'add content' },
+    async (ctx) => {
+      const validationResult = runValidationPipeline(content, format, {
+        validate: true, normalize: true, guardrails: 'warn',
+      });
+      if (validationResult.blocked) {
+        throw new Error(validationResult.blockReason || 'Output validation failed');
+      }
 
-  // Check file exists
-  try {
-    await fs.access(fullPath);
-  } catch {
-    return { success: false, message: `File not found: ${notePath}`, path: notePath };
-  }
+      let workingContent = validationResult.content;
+      let { content: processedContent, wikilinkInfo } = maybeApplyWikilinks(workingContent, skipWikilinks, notePath, ctx.content);
 
-  // Read file
-  const { content: fileContent, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
+      let suggestInfo: string | undefined;
+      if (suggestOutgoingLinks && !skipWikilinks) {
+        const result = await suggestRelatedLinks(processedContent, { maxSuggestions, notePath });
+        if (result.suffix) {
+          processedContent = processedContent + ' ' + result.suffix;
+          suggestInfo = `Suggested: ${result.suggestions.join(', ')}`;
+        }
+      }
 
-  // Find section
-  const sectionBoundary = findSection(fileContent, section);
-  if (!sectionBoundary) {
-    return { success: false, message: `Section '${section}' not found`, path: notePath };
-  }
+      const formattedContent = formatContent(processedContent, format);
+      const updatedContent = insertInSection(ctx.content, ctx.sectionBoundary!, formattedContent, position, { preserveListNesting });
 
-  // Run validation pipeline
-  const validationResult = runValidationPipeline(content, format, {
-    validate: true,
-    normalize: true,
-    guardrails: 'warn',
-  });
+      const infoLines = [wikilinkInfo, suggestInfo].filter(Boolean);
+      const preview = formattedContent + (infoLines.length > 0 ? `\n(${infoLines.join('; ')})` : '');
 
-  let workingContent = validationResult.content;
-
-  // Apply wikilinks
-  const { content: processedContent } = maybeApplyWikilinks(workingContent, skipWikilinks, notePath);
-
-  // Format and insert
-  const formattedContent = formatContent(processedContent, format);
-  const updatedContent = insertInSection(
-    fileContent,
-    sectionBoundary,
-    formattedContent,
-    position,
-    { preserveListNesting }
+      return {
+        updatedContent,
+        message: `Added content to section "${ctx.sectionBoundary!.name}" in ${notePath}`,
+        preview,
+        warnings: validationResult.inputWarnings.length > 0 ? validationResult.inputWarnings : undefined,
+        outputIssues: validationResult.outputIssues.length > 0 ? validationResult.outputIssues : undefined,
+        normalizationChanges: validationResult.normalizationChanges.length > 0 ? validationResult.normalizationChanges : undefined,
+      };
+    }
   );
 
-  // Write file (no commit - done at policy level)
-  await writeVaultFile(vaultPath, notePath, updatedContent, frontmatter, lineEnding, contentHash);
-
-  return {
-    success: true,
-    message: `Added content to section "${sectionBoundary.name}" in ${notePath}`,
-    path: notePath,
-    preview: formattedContent,
-  };
+  return outcome.result;
 }
 
 /**
- * Execute vault_remove_from_section
+ * Execute vault_remove_from_section via unified executeMutation path
  */
 async function executeRemoveFromSection(
   params: Record<string, unknown>,
@@ -235,39 +227,26 @@ async function executeRemoveFromSection(
   const mode = (params.mode as MatchMode) || 'first';
   const useRegex = Boolean(params.useRegex);
 
-  const fullPath = path.join(vaultPath, notePath);
+  const outcome = await executeMutation(
+    { vaultPath, notePath, section, actionDescription: 'remove content' },
+    async (ctx) => {
+      const removeResult = removeFromSection(ctx.content, ctx.sectionBoundary!, pattern, mode, useRegex);
+      if (removeResult.removedCount === 0) {
+        throw new Error(`No content matching "${pattern}" found in section "${ctx.sectionBoundary!.name}"`);
+      }
+      return {
+        updatedContent: removeResult.content,
+        message: `Removed ${removeResult.removedCount} line(s) from section "${ctx.sectionBoundary!.name}"`,
+        preview: removeResult.removedLines.join('\n'),
+      };
+    }
+  );
 
-  try {
-    await fs.access(fullPath);
-  } catch {
-    return { success: false, message: `File not found: ${notePath}`, path: notePath };
-  }
-
-  const { content: fileContent, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
-
-  const sectionBoundary = findSection(fileContent, section);
-  if (!sectionBoundary) {
-    return { success: false, message: `Section '${section}' not found`, path: notePath };
-  }
-
-  const removeResult = removeFromSection(fileContent, sectionBoundary, pattern, mode, useRegex);
-
-  if (removeResult.removedCount === 0) {
-    return { success: false, message: `No content matching "${pattern}" found`, path: notePath };
-  }
-
-  await writeVaultFile(vaultPath, notePath, removeResult.content, frontmatter, lineEnding, contentHash);
-
-  return {
-    success: true,
-    message: `Removed ${removeResult.removedCount} line(s) from section "${sectionBoundary.name}"`,
-    path: notePath,
-    preview: removeResult.removedLines.join('\n'),
-  };
+  return outcome.result;
 }
 
 /**
- * Execute vault_replace_in_section
+ * Execute vault_replace_in_section via unified executeMutation path
  */
 async function executeReplaceInSection(
   params: Record<string, unknown>,
@@ -281,132 +260,83 @@ async function executeReplaceInSection(
   const mode = (params.mode as MatchMode) || 'first';
   const useRegex = Boolean(params.useRegex);
   const skipWikilinks = Boolean(params.skipWikilinks);
+  const suggestOutgoingLinks = params.suggestOutgoingLinks !== false;
+  const maxSuggestions = Number(params.maxSuggestions) || 3;
 
-  const fullPath = path.join(vaultPath, notePath);
+  const outcome = await executeMutation(
+    { vaultPath, notePath, section, actionDescription: 'replace content' },
+    async (ctx) => {
+      const validationResult = runValidationPipeline(replacement, 'plain', {
+        validate: true, normalize: true, guardrails: 'warn',
+      });
+      if (validationResult.blocked) {
+        throw new Error(validationResult.blockReason || 'Output validation failed');
+      }
 
-  try {
-    await fs.access(fullPath);
-  } catch {
-    return { success: false, message: `File not found: ${notePath}`, path: notePath };
-  }
+      let { content: processedReplacement } = maybeApplyWikilinks(validationResult.content, skipWikilinks, notePath, ctx.content);
 
-  const { content: fileContent, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
+      if (suggestOutgoingLinks && !skipWikilinks) {
+        const result = await suggestRelatedLinks(processedReplacement, { maxSuggestions, notePath });
+        if (result.suffix) {
+          processedReplacement = processedReplacement + ' ' + result.suffix;
+        }
+      }
 
-  const sectionBoundary = findSection(fileContent, section);
-  if (!sectionBoundary) {
-    return { success: false, message: `Section '${section}' not found`, path: notePath };
-  }
+      const replaceResult = replaceInSection(ctx.content, ctx.sectionBoundary!, search, processedReplacement, mode, useRegex);
+      if (replaceResult.replacedCount === 0) {
+        throw new Error(`No content matching "${search}" found in section "${ctx.sectionBoundary!.name}"`);
+      }
 
-  const { content: processedReplacement } = maybeApplyWikilinks(replacement, skipWikilinks, notePath);
+      const previewLines = replaceResult.originalLines.map((orig, i) =>
+        `- ${orig}\n+ ${replaceResult.newLines[i]}`
+      );
 
-  const replaceResult = replaceInSection(
-    fileContent,
-    sectionBoundary,
-    search,
-    processedReplacement,
-    mode,
-    useRegex
+      return {
+        updatedContent: replaceResult.content,
+        message: `Replaced ${replaceResult.replacedCount} occurrence(s) in section "${ctx.sectionBoundary!.name}"`,
+        preview: previewLines.join('\n'),
+        warnings: validationResult.inputWarnings.length > 0 ? validationResult.inputWarnings : undefined,
+        outputIssues: validationResult.outputIssues.length > 0 ? validationResult.outputIssues : undefined,
+        normalizationChanges: validationResult.normalizationChanges.length > 0 ? validationResult.normalizationChanges : undefined,
+      };
+    }
   );
 
-  if (replaceResult.replacedCount === 0) {
-    return { success: false, message: `No content matching "${search}" found`, path: notePath };
-  }
-
-  await writeVaultFile(vaultPath, notePath, replaceResult.content, frontmatter, lineEnding, contentHash);
-
-  return {
-    success: true,
-    message: `Replaced ${replaceResult.replacedCount} occurrence(s) in section "${sectionBoundary.name}"`,
-    path: notePath,
-    preview: replaceResult.originalLines.map((orig, i) =>
-      `- ${orig}\n+ ${replaceResult.newLines[i]}`
-    ).join('\n'),
-  };
+  return outcome.result;
 }
 
 /**
- * Execute vault_create_note
+ * Execute vault_create_note via shared executeCreateNote path
  */
 async function executeCreateNote(
   params: Record<string, unknown>,
   vaultPath: string,
   context: PolicyContext
 ): Promise<MutationResult> {
-  const notePath = String(params.path || '');
-  const content = String(params.content || '');
-  const frontmatter = (params.frontmatter as Record<string, unknown>) || {};
-  const overwrite = Boolean(params.overwrite);
-  const skipWikilinks = Boolean(params.skipWikilinks);
-
-  const pathCheck = await validatePathSecure(vaultPath, notePath);
-  if (!pathCheck.valid) {
-    return { success: false, message: `Path blocked: ${pathCheck.reason}`, path: notePath };
-  }
-
-  const fullPath = path.join(vaultPath, notePath);
-
-  // Check if exists
-  try {
-    await fs.access(fullPath);
-    if (!overwrite) {
-      return { success: false, message: `File already exists: ${notePath}`, path: notePath };
-    }
-  } catch {
-    // File doesn't exist - good
-  }
-
-  // Create parent directories (after secure validation)
-  const dir = path.dirname(fullPath);
-  await fs.mkdir(dir, { recursive: true });
-
-  // Process content
-  const { content: processedContent } = maybeApplyWikilinks(content, skipWikilinks, notePath);
-
-  // Write note (writeVaultFile also validates path internally)
-  await writeVaultFile(vaultPath, notePath, processedContent, frontmatter);
-
-  return {
-    success: true,
-    message: `Created note: ${notePath}`,
-    path: notePath,
-    preview: `Frontmatter: ${Object.keys(frontmatter).join(', ') || 'none'}, Content: ${processedContent.length} chars`,
-  };
+  const outcome = await executeCreateNoteCore({
+    vaultPath,
+    notePath: String(params.path || ''),
+    content: String(params.content || ''),
+    frontmatter: (params.frontmatter as Record<string, unknown>) || {},
+    overwrite: Boolean(params.overwrite),
+    skipWikilinks: Boolean(params.skipWikilinks),
+  });
+  return outcome.result;
 }
 
 /**
- * Execute vault_delete_note
+ * Execute vault_delete_note via shared executeDeleteNote path
  */
 async function executeDeleteNote(
   params: Record<string, unknown>,
   vaultPath: string
 ): Promise<MutationResult> {
-  const notePath = String(params.path || '');
-  const confirm = Boolean(params.confirm);
-
-  if (!confirm) {
-    return { success: false, message: 'Deletion requires explicit confirmation (confirm=true)', path: notePath };
-  }
-
-  const pathCheck = await validatePathSecure(vaultPath, notePath);
-  if (!pathCheck.valid) {
-    return { success: false, message: `Path blocked: ${pathCheck.reason}`, path: notePath };
-  }
-
-  const fullPath = path.join(vaultPath, notePath);
-
-  try {
-    await fs.access(fullPath);
-  } catch {
-    return { success: false, message: `File not found: ${notePath}`, path: notePath };
-  }
-
-  await fs.unlink(fullPath);
-
-  return {
-    success: true,
-    message: `Deleted note: ${notePath}`,
-    path: notePath,
-  };
+  const outcome = await executeDeleteNoteCore({
+    vaultPath,
+    notePath: String(params.path || ''),
+    confirm: Boolean(params.confirm),
+  });
+  return outcome.result;
 }
 
 /**
@@ -469,7 +399,7 @@ async function executeToggleTask(
 }
 
 /**
- * Execute vault_add_task
+ * Execute vault_add_task via unified executeMutation path
  */
 async function executeAddTask(
   params: Record<string, unknown>,
@@ -484,53 +414,33 @@ async function executeAddTask(
   const skipWikilinks = Boolean(params.skipWikilinks);
   const preserveListNesting = params.preserveListNesting !== false;
 
-  const fullPath = path.join(vaultPath, notePath);
+  const outcome = await executeMutation(
+    { vaultPath, notePath, section, actionDescription: 'add task' },
+    async (ctx) => {
+      const validationResult = runValidationPipeline(task.trim(), 'task', {
+        validate: true, normalize: true, guardrails: 'warn',
+      });
 
-  try {
-    await fs.access(fullPath);
-  } catch {
-    return { success: false, message: `File not found: ${notePath}`, path: notePath };
-  }
+      const { content: processedTask } = maybeApplyWikilinks(validationResult.content, skipWikilinks, notePath, ctx.content);
 
-  const { content: fileContent, frontmatter, contentHash } = await readVaultFile(vaultPath, notePath);
+      const checkbox = completed ? '[x]' : '[ ]';
+      const taskLine = `- ${checkbox} ${processedTask}`;
 
-  const sectionBoundary = findSection(fileContent, section);
-  if (!sectionBoundary) {
-    return { success: false, message: `Section not found: ${section}`, path: notePath };
-  }
+      const updatedContent = insertInSection(ctx.content, ctx.sectionBoundary!, taskLine, position, { preserveListNesting });
 
-  // Process task text
-  const validationResult = runValidationPipeline(task.trim(), 'task', {
-    validate: true,
-    normalize: true,
-    guardrails: 'warn',
-  });
-
-  const { content: processedTask } = maybeApplyWikilinks(validationResult.content, skipWikilinks, notePath);
-
-  const checkbox = completed ? '[x]' : '[ ]';
-  const taskLine = `- ${checkbox} ${processedTask}`;
-
-  const updatedContent = insertInSection(
-    fileContent,
-    sectionBoundary,
-    taskLine,
-    position,
-    { preserveListNesting }
+      return {
+        updatedContent,
+        message: `Added task to section "${ctx.sectionBoundary!.name}"`,
+        preview: taskLine,
+      };
+    }
   );
 
-  await writeVaultFile(vaultPath, notePath, updatedContent, frontmatter, 'LF', contentHash);
-
-  return {
-    success: true,
-    message: `Added task to section "${sectionBoundary.name}"`,
-    path: notePath,
-    preview: taskLine,
-  };
+  return outcome.result;
 }
 
 /**
- * Execute vault_update_frontmatter
+ * Execute vault_update_frontmatter via unified executeFrontmatterMutation path
  */
 async function executeUpdateFrontmatter(
   params: Record<string, unknown>,
@@ -539,33 +449,25 @@ async function executeUpdateFrontmatter(
   const notePath = String(params.path || '');
   const updates = (params.frontmatter as Record<string, unknown>) || {};
 
-  const fullPath = path.join(vaultPath, notePath);
+  const outcome = await executeFrontmatterMutation(
+    { vaultPath, notePath, actionDescription: 'update frontmatter' },
+    async (ctx) => {
+      const updatedFrontmatter = { ...ctx.frontmatter, ...updates };
+      const updatedKeys = Object.keys(updates);
+      const preview = updatedKeys.map(k => `${k}: ${JSON.stringify(updates[k])}`).join('\n');
+      return {
+        updatedFrontmatter,
+        message: `Updated ${updatedKeys.length} frontmatter field(s)`,
+        preview,
+      };
+    }
+  );
 
-  try {
-    await fs.access(fullPath);
-  } catch {
-    return { success: false, message: `File not found: ${notePath}`, path: notePath };
-  }
-
-  const { content, frontmatter, contentHash } = await readVaultFile(vaultPath, notePath);
-
-  const updatedFrontmatter = { ...frontmatter, ...updates };
-
-  await writeVaultFile(vaultPath, notePath, content, updatedFrontmatter, 'LF', contentHash);
-
-  const updatedKeys = Object.keys(updates);
-  const preview = updatedKeys.map(k => `${k}: ${JSON.stringify(updates[k])}`).join('\n');
-
-  return {
-    success: true,
-    message: `Updated ${updatedKeys.length} frontmatter field(s)`,
-    path: notePath,
-    preview,
-  };
+  return outcome.result;
 }
 
 /**
- * Execute vault_add_frontmatter_field
+ * Execute vault_add_frontmatter_field via unified executeFrontmatterMutation path
  */
 async function executeAddFrontmatterField(
   params: Record<string, unknown>,
@@ -575,30 +477,22 @@ async function executeAddFrontmatterField(
   const key = String(params.key || '');
   const value = params.value;
 
-  const fullPath = path.join(vaultPath, notePath);
+  const outcome = await executeFrontmatterMutation(
+    { vaultPath, notePath, actionDescription: 'add frontmatter field' },
+    async (ctx) => {
+      if (key in ctx.frontmatter) {
+        throw new Error(`Field "${key}" already exists`);
+      }
+      const updatedFrontmatter = { ...ctx.frontmatter, [key]: value };
+      return {
+        updatedFrontmatter,
+        message: `Added frontmatter field "${key}"`,
+        preview: `${key}: ${JSON.stringify(value)}`,
+      };
+    }
+  );
 
-  try {
-    await fs.access(fullPath);
-  } catch {
-    return { success: false, message: `File not found: ${notePath}`, path: notePath };
-  }
-
-  const { content, frontmatter, contentHash } = await readVaultFile(vaultPath, notePath);
-
-  if (key in frontmatter) {
-    return { success: false, message: `Field "${key}" already exists`, path: notePath };
-  }
-
-  const updatedFrontmatter = { ...frontmatter, [key]: value };
-
-  await writeVaultFile(vaultPath, notePath, content, updatedFrontmatter, 'LF', contentHash);
-
-  return {
-    success: true,
-    message: `Added frontmatter field "${key}"`,
-    path: notePath,
-    preview: `${key}: ${JSON.stringify(value)}`,
-  };
+  return outcome.result;
 }
 
 /**

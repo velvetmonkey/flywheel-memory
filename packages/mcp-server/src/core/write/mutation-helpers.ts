@@ -12,6 +12,7 @@ import {
   extractHeadings,
   DiagnosticError,
   WriteConflictError,
+  validatePathSecure,
   type SectionBoundary,
 } from './writer.js';
 import { commitChange } from './git.js';
@@ -239,118 +240,109 @@ export async function ensureSectionExists(
 }
 
 /**
- * Higher-order function that handles common file mutation patterns
- *
- * @example
- * ```typescript
- * const result = await withVaultFile(
- *   {
- *     vaultPath,
- *     notePath,
- *     commit,
- *     commitPrefix: '[Flywheel:Add]',
- *     section: 'Log',
- *     actionDescription: 'add content',
- *   },
- *   async (ctx) => {
- *     // ctx.content, ctx.frontmatter, ctx.sectionBoundary are available
- *     const updatedContent = insertInSection(ctx.content, ctx.sectionBoundary!, text, 'append');
- *     return {
- *       updatedContent,
- *       message: `Added to section "${ctx.sectionBoundary!.name}"`,
- *       preview: text,
- *     };
- *   }
- * );
- * ```
+ * Options for executeMutation (core mutation logic without git/MCP concerns)
  */
-export async function withVaultFile(
-  options: WithVaultFileOptions,
+export interface MutationOptions {
+  /** Vault root path */
+  vaultPath: string;
+  /** Vault-relative path to the file */
+  notePath: string;
+  /** Optional: section to find (returns error if not found) */
+  section?: string;
+  /** Action description for error messages */
+  actionDescription: string;
+  /** Optional: agent/session scoping for multi-agent deployments */
+  scoping?: ScopingMetadata;
+  /** If true, compute the mutation but skip all writes */
+  dryRun?: boolean;
+  /** Whether to run implicit feedback detection. Default: true */
+  implicitFeedback?: boolean;
+}
+
+/**
+ * Outcome from executeMutation — raw result before git commit or MCP formatting.
+ * Used by both direct tools (via withVaultFile) and policy executor.
+ */
+export interface MutationOutcome {
+  success: boolean;
+  result: MutationResult;
+  /** Vault-relative paths of files written (empty on error or dry run) */
+  filesWritten: string[];
+}
+
+/**
+ * Core mutation logic: read file, find section, run operation, write back.
+ * Does NOT handle git commits or MCP response formatting.
+ * Used by withVaultFile (direct tools) and the policy executor.
+ */
+export async function executeMutation(
+  options: MutationOptions,
   operation: (ctx: VaultFileContext) => Promise<MutationOperation>
-): Promise<McpResponse> {
-  const { vaultPath, notePath, commit, commitPrefix, section, actionDescription, scoping, dryRun } = options;
+): Promise<MutationOutcome> {
+  const { vaultPath, notePath, section, actionDescription, scoping, dryRun } = options;
+  const implicitFeedback = options.implicitFeedback !== false;
 
   try {
     // 1. Check file exists
     const existsError = await ensureFileExists(vaultPath, notePath);
     if (existsError) {
-      return formatMcpResult(existsError);
+      return { success: false, result: existsError, filesWritten: [] };
     }
 
-    // Helper: read file, find section, build context, run operation
-    const runMutation = async () => {
-      const { content, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
+    // 2. Read file
+    const { content, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
 
-      // Find section if requested
-      let sectionBoundary: SectionBoundary | undefined;
-      if (section) {
-        const sectionResult = await ensureSectionExists(content, section, notePath, vaultPath);
-        if ('error' in sectionResult) {
-          return { error: sectionResult.error };
-        }
-        sectionBoundary = sectionResult.boundary;
+    // 3. Find section if requested
+    let sectionBoundary: SectionBoundary | undefined;
+    if (section) {
+      const sectionResult = await ensureSectionExists(content, section, notePath, vaultPath);
+      if ('error' in sectionResult) {
+        return { success: false, result: sectionResult.error, filesWritten: [] };
       }
-
-      const ctx: VaultFileContext = {
-        content,
-        frontmatter,
-        lineEnding,
-        sectionBoundary,
-        vaultPath,
-        notePath,
-      };
-
-      const opResult = await operation(ctx);
-      return { opResult, content, frontmatter, lineEnding, contentHash };
-    };
-
-    // 2. First attempt
-    let result = await runMutation();
-    if ('error' in result) {
-      return formatMcpResult(result.error!);
+      sectionBoundary = sectionResult.boundary;
     }
 
-    const { opResult, frontmatter, lineEnding } = result;
+    // 4. Build context and run operation
+    const ctx: VaultFileContext = { content, frontmatter, lineEnding, sectionBoundary, vaultPath, notePath };
+    const opResult = await operation(ctx);
 
-    // Dry run: return preview without writing or committing
+    // 5. Dry run: return preview without writing
     if (dryRun) {
-      const dryResult = successResult(notePath, `[dry run] ${opResult.message}`, {}, {
+      const result = successResult(notePath, `[dry run] ${opResult.message}`, {}, {
         preview: opResult.preview,
         warnings: opResult.warnings,
         outputIssues: opResult.outputIssues,
         normalizationChanges: opResult.normalizationChanges,
         dryRun: true,
       });
-      return formatMcpResult(dryResult);
+      return { success: true, result, filesWritten: [] };
     }
 
-    // Implicit feedback — detect removed auto-applied wikilinks (after dry_run gate)
-    const writeStateDb = getWriteStateDb();
-    if (writeStateDb) {
-      processImplicitFeedback(writeStateDb, notePath, result.content);
+    // 6. Implicit feedback — detect removed auto-applied wikilinks
+    if (implicitFeedback) {
+      const writeStateDb = getWriteStateDb();
+      if (writeStateDb) {
+        processImplicitFeedback(writeStateDb, notePath, content);
+      }
     }
 
-    // 3. Prepare frontmatter (inject metadata if scoping provided)
+    // 7. Prepare frontmatter (inject metadata if scoping provided)
     let finalFrontmatter = opResult.updatedFrontmatter ?? frontmatter;
     if (scoping && (scoping.agent_id || scoping.session_id)) {
       finalFrontmatter = injectMutationMetadata(finalFrontmatter, scoping);
     }
 
-    // 4. Write file back (hash guard detects external modifications)
-    await writeVaultFile(vaultPath, notePath, opResult.updatedContent, finalFrontmatter, lineEnding, result.contentHash);
+    // 8. Write file back (hash guard detects external modifications)
+    await writeVaultFile(vaultPath, notePath, opResult.updatedContent, finalFrontmatter, lineEnding, contentHash);
 
-    // 5. Handle git commit
-    const gitInfo = await handleGitCommit(vaultPath, notePath, commit, commitPrefix);
-
-    // 6. Build result
-    const successRes = successResult(notePath, opResult.message, gitInfo, {
+    // 9. Build result (without git info — caller adds that)
+    const result = successResult(notePath, opResult.message, {}, {
       preview: opResult.preview,
       warnings: opResult.warnings,
       outputIssues: opResult.outputIssues,
       normalizationChanges: opResult.normalizationChanges,
     });
-
-    return formatMcpResult(successRes);
+    return { success: true, result, filesWritten: [notePath] };
   } catch (error) {
     const extras: Partial<MutationResult> = {};
     if (error instanceof WriteConflictError) {
@@ -368,29 +360,68 @@ export async function withVaultFile(
       `Failed to ${actionDescription}: ${error instanceof Error ? error.message : String(error)}`,
       extras
     );
-    return formatMcpResult(result);
+    return { success: false, result, filesWritten: [] };
   }
 }
 
 /**
- * Simplified wrapper for frontmatter-only operations
- * (No section handling, just read/modify frontmatter/write)
+ * Higher-order function that handles common file mutation patterns.
+ * Thin wrapper around executeMutation that adds git commits and MCP response formatting.
  */
-export async function withVaultFrontmatter(
-  options: Omit<WithVaultFileOptions, 'section' | 'actionDescription'> & { actionDescription: string },
-  operation: (ctx: Omit<VaultFileContext, 'sectionBoundary'>) => Promise<{
-    updatedFrontmatter: Record<string, unknown>;
-    message: string;
-    preview?: string;
-  }>
+export async function withVaultFile(
+  options: WithVaultFileOptions,
+  operation: (ctx: VaultFileContext) => Promise<MutationOperation>
 ): Promise<McpResponse> {
-  const { vaultPath, notePath, commit, commitPrefix, actionDescription, dryRun } = options;
+  const outcome = await executeMutation({
+    vaultPath: options.vaultPath,
+    notePath: options.notePath,
+    section: options.section,
+    actionDescription: options.actionDescription,
+    scoping: options.scoping,
+    dryRun: options.dryRun,
+  }, operation);
+
+  if (!outcome.success || options.dryRun) {
+    return formatMcpResult(outcome.result);
+  }
+
+  // Add git commit info
+  const gitInfo = await handleGitCommit(options.vaultPath, options.notePath, options.commit, options.commitPrefix);
+  if (gitInfo.gitCommit) outcome.result.gitCommit = gitInfo.gitCommit;
+  if (gitInfo.undoAvailable) outcome.result.undoAvailable = gitInfo.undoAvailable;
+  if (gitInfo.staleLockDetected) {
+    outcome.result.staleLockDetected = gitInfo.staleLockDetected;
+    outcome.result.lockAgeMs = gitInfo.lockAgeMs;
+  }
+
+  return formatMcpResult(outcome.result);
+}
+
+/**
+ * Result from a frontmatter operation callback
+ */
+export interface FrontmatterOperation {
+  updatedFrontmatter: Record<string, unknown>;
+  message: string;
+  preview?: string;
+}
+
+/**
+ * Core frontmatter mutation logic: read file, run operation, write back.
+ * Does NOT handle git commits or MCP response formatting.
+ * Used by withVaultFrontmatter (direct tools) and the policy executor.
+ */
+export async function executeFrontmatterMutation(
+  options: Pick<MutationOptions, 'vaultPath' | 'notePath' | 'actionDescription' | 'dryRun'>,
+  operation: (ctx: Omit<VaultFileContext, 'sectionBoundary'>) => Promise<FrontmatterOperation>
+): Promise<MutationOutcome> {
+  const { vaultPath, notePath, actionDescription, dryRun } = options;
 
   try {
     // 1. Check file exists
     const existsError = await ensureFileExists(vaultPath, notePath);
     if (existsError) {
-      return formatMcpResult(existsError);
+      return { success: false, result: existsError, filesWritten: [] };
     }
 
     // 2. Read file
@@ -400,27 +431,23 @@ export async function withVaultFrontmatter(
     const ctx = { content, frontmatter, lineEnding, vaultPath, notePath };
     const opResult = await operation(ctx);
 
-    // Dry run: return preview without writing or committing
+    // 4. Dry run: return preview without writing
     if (dryRun) {
       const result = successResult(notePath, `[dry run] ${opResult.message}`, {}, {
         preview: opResult.preview,
         dryRun: true,
       });
-      return formatMcpResult(result);
+      return { success: true, result, filesWritten: [] };
     }
 
-    // 4. Write file back (content unchanged, only frontmatter updated; hash guard detects external modifications)
+    // 5. Write file back (content unchanged, only frontmatter updated; hash guard)
     await writeVaultFile(vaultPath, notePath, content, opResult.updatedFrontmatter, lineEnding, contentHash);
 
-    // 5. Handle git commit
-    const gitInfo = await handleGitCommit(vaultPath, notePath, commit, commitPrefix);
-
-    // 6. Build result
-    const result = successResult(notePath, opResult.message, gitInfo, {
+    // 6. Build result (without git info)
+    const result = successResult(notePath, opResult.message, {}, {
       preview: opResult.preview,
     });
-
-    return formatMcpResult(result);
+    return { success: true, result, filesWritten: [notePath] };
   } catch (error) {
     const extras: Partial<MutationResult> = {};
     if (error instanceof WriteConflictError) {
@@ -435,6 +462,160 @@ export async function withVaultFrontmatter(
       `Failed to ${actionDescription}: ${error instanceof Error ? error.message : String(error)}`,
       extras
     );
-    return formatMcpResult(result);
+    return { success: false, result, filesWritten: [] };
+  }
+}
+
+/**
+ * Simplified wrapper for frontmatter-only operations.
+ * Thin wrapper around executeFrontmatterMutation that adds git commits and MCP response formatting.
+ */
+export async function withVaultFrontmatter(
+  options: Omit<WithVaultFileOptions, 'section' | 'actionDescription'> & { actionDescription: string },
+  operation: (ctx: Omit<VaultFileContext, 'sectionBoundary'>) => Promise<FrontmatterOperation>
+): Promise<McpResponse> {
+  const outcome = await executeFrontmatterMutation({
+    vaultPath: options.vaultPath,
+    notePath: options.notePath,
+    actionDescription: options.actionDescription,
+    dryRun: options.dryRun,
+  }, operation);
+
+  if (!outcome.success || options.dryRun) {
+    return formatMcpResult(outcome.result);
+  }
+
+  // Add git commit info
+  const gitInfo = await handleGitCommit(options.vaultPath, options.notePath, options.commit, options.commitPrefix);
+  if (gitInfo.gitCommit) outcome.result.gitCommit = gitInfo.gitCommit;
+  if (gitInfo.undoAvailable) outcome.result.undoAvailable = gitInfo.undoAvailable;
+  if (gitInfo.staleLockDetected) {
+    outcome.result.staleLockDetected = gitInfo.staleLockDetected;
+    outcome.result.lockAgeMs = gitInfo.lockAgeMs;
+  }
+
+  return formatMcpResult(outcome.result);
+}
+
+// ============================================================================
+// Shared Create/Delete Note Logic
+// ============================================================================
+
+/**
+ * Options for executeCreateNote
+ */
+export interface CreateNoteOptions {
+  vaultPath: string;
+  notePath: string;
+  content: string;
+  frontmatter: Record<string, unknown>;
+  overwrite?: boolean;
+  skipWikilinks?: boolean;
+  scoping?: ScopingMetadata;
+}
+
+/**
+ * Core create-note logic: validate path, check exists, create dirs, apply wikilinks, write.
+ * Does NOT handle: templates, preflight checks, alias detection, git commits, MCP formatting.
+ * Callers (direct tool, policy executor) add their own pre-write intelligence.
+ */
+export async function executeCreateNote(options: CreateNoteOptions): Promise<MutationOutcome> {
+  const { vaultPath, notePath, content, frontmatter, overwrite, skipWikilinks, scoping } = options;
+
+  try {
+    // 1. Validate path
+    const pathCheck = await validatePathSecure(vaultPath, notePath);
+    if (!pathCheck.valid) {
+      return { success: false, result: errorResult(notePath, `Path blocked: ${pathCheck.reason}`), filesWritten: [] };
+    }
+
+    // 2. Check if file already exists
+    const fullPath = path.join(vaultPath, notePath);
+    let fileExists = false;
+    try {
+      await fs.access(fullPath);
+      fileExists = true;
+    } catch {
+      // File doesn't exist — good
+    }
+
+    if (fileExists && !overwrite) {
+      return { success: false, result: errorResult(notePath, `File already exists: ${notePath}. Use overwrite=true to replace.`), filesWritten: [] };
+    }
+
+    // 3. Create parent directories
+    await fs.mkdir(path.dirname(fullPath), { recursive: true });
+
+    // 4. Apply wikilinks
+    const { maybeApplyWikilinks } = await import('./wikilinks.js');
+    const { content: processedContent } = maybeApplyWikilinks(content, skipWikilinks ?? false, notePath);
+
+    // 5. Inject scoping metadata
+    let finalFrontmatter = frontmatter;
+    if (scoping && (scoping.agent_id || scoping.session_id)) {
+      finalFrontmatter = injectMutationMetadata(frontmatter, scoping);
+    }
+
+    // 6. Write file
+    await writeVaultFile(vaultPath, notePath, processedContent, finalFrontmatter);
+
+    const result = successResult(notePath, `Created note: ${notePath}`, {}, {
+      preview: `Frontmatter: ${Object.keys(frontmatter).join(', ') || 'none'}, Content: ${processedContent.length} chars`,
+    });
+    return { success: true, result, filesWritten: [notePath] };
+  } catch (error) {
+    return {
+      success: false,
+      result: errorResult(notePath, `Failed to create note: ${error instanceof Error ? error.message : String(error)}`),
+      filesWritten: [],
+    };
+  }
+}
+
+/**
+ * Core delete-note logic: validate path, check exists, confirm, delete.
+ * Does NOT handle: backlink checking, git commits, MCP formatting.
+ */
+export async function executeDeleteNote(options: {
+  vaultPath: string;
+  notePath: string;
+  confirm: boolean;
+}): Promise<MutationOutcome> {
+  const { vaultPath, notePath, confirm } = options;
+
+  try {
+    if (!confirm) {
+      return {
+        success: false,
+        result: errorResult(notePath, 'Deletion requires explicit confirmation (confirm=true)'),
+        filesWritten: [],
+      };
+    }
+
+    // 1. Validate path
+    const pathCheck = await validatePathSecure(vaultPath, notePath);
+    if (!pathCheck.valid) {
+      return { success: false, result: errorResult(notePath, `Path blocked: ${pathCheck.reason}`), filesWritten: [] };
+    }
+
+    // 2. Check file exists
+    const fullPath = path.join(vaultPath, notePath);
+    try {
+      await fs.access(fullPath);
+    } catch {
+      return { success: false, result: errorResult(notePath, `File not found: ${notePath}`), filesWritten: [] };
+    }
+
+    // 3. Delete
+    await fs.unlink(fullPath);
+
+    const result = successResult(notePath, `Deleted note: ${notePath}`, {});
+    return { success: true, result, filesWritten: [notePath] };
+  } catch (error) {
+    return {
+      success: false,
+      result: errorResult(notePath, `Failed to delete note: ${error instanceof Error ? error.message : String(error)}`),
+      filesWritten: [],
+    };
   }
 }

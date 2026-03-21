@@ -78,27 +78,28 @@ export interface SessionSummary {
 // ENTITY DETECTION
 // =============================================================================
 
-// Module-level cache for entity list (refreshed when stale)
-let entityCache: Array<{ name: string; name_lower: string; aliases_json: string | null }> | null = null;
-let entityCacheTime = 0;
+// Per-vault cache for entity list (keyed by dbPath, refreshed when stale)
+type EntityCacheEntry = { cache: Array<{ name: string; name_lower: string; aliases_json: string | null }>; time: number };
+const entityCacheMap = new Map<string, EntityCacheEntry>();
 const ENTITY_CACHE_TTL_MS = 60_000; // 1 minute
 
 function getEntityList(stateDb: StateDb): Array<{ name: string; name_lower: string; aliases_json: string | null }> {
   const now = Date.now();
-  if (entityCache && (now - entityCacheTime) < ENTITY_CACHE_TTL_MS) {
-    return entityCache;
+  const key = stateDb.dbPath;
+  const entry = entityCacheMap.get(key);
+  if (entry && (now - entry.time) < ENTITY_CACHE_TTL_MS) {
+    return entry.cache;
   }
-  entityCache = stateDb.getAllEntities.all() as Array<{ name: string; name_lower: string; aliases_json: string | null }>;
-  entityCacheTime = now;
-  return entityCache;
+  const cache = stateDb.getAllEntities.all() as Array<{ name: string; name_lower: string; aliases_json: string | null }>;
+  entityCacheMap.set(key, { cache, time: now });
+  return cache;
 }
 
 /**
  * Clear the entity cache. Exported for testing.
  */
 export function clearEntityCache(): void {
-  entityCache = null;
-  entityCacheTime = 0;
+  entityCacheMap.clear();
 }
 
 /**

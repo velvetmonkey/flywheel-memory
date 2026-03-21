@@ -1,7 +1,7 @@
 {
   "suite": "topology-resilience",
-  "timestamp": "2026-03-21T14:00:41.278Z",
-  "duration_ms": 4731,
+  "timestamp": "2026-03-21T18:20:34.895Z",
+  "duration_ms": 11502,
   "summary": {
     "archetypes_tested": 6,
     "archetypes_recovered": 6,
@@ -17,7 +17,7 @@
       "postMutationNoteCount": 78,
       "baselineF1": 0.25,
       "postOrphanRate": 0.295,
-      "duration_ms": 665
+      "duration_ms": 2141
     },
     {
       "archetype": "hierarchical",
@@ -28,7 +28,7 @@
       "postMutationNoteCount": 107,
       "baselineF1": 0.25,
       "postOrphanRate": 0.505,
-      "duration_ms": 880
+      "duration_ms": 2526
     },
     {
       "archetype": "dense-mesh",
@@ -39,7 +39,7 @@
       "postMutationNoteCount": 69,
       "baselineF1": 0.24,
       "postOrphanRate": 0.174,
-      "duration_ms": 620
+      "duration_ms": 1446
     },
     {
       "archetype": "sparse-orphan",
@@ -50,7 +50,7 @@
       "postMutationNoteCount": 109,
       "baselineF1": 0.36,
       "postOrphanRate": 0.917,
-      "duration_ms": 840
+      "duration_ms": 1755
     },
     {
       "archetype": "bridge-network",
@@ -61,7 +61,7 @@
       "postMutationNoteCount": 95,
       "baselineF1": 0.407,
       "postOrphanRate": 0.516,
-      "duration_ms": 783
+      "duration_ms": 1513
     },
     {
       "archetype": "small-world",
@@ -72,7 +72,7 @@
       "postMutationNoteCount": 110,
       "baselineF1": 0.229,
       "postOrphanRate": 0.182,
-      "duration_ms": 943
+      "duration_ms": 2121
     }
   ],
   "tuning_recommendations": []

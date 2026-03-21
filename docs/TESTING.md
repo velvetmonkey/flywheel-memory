@@ -106,7 +106,7 @@ Source: [`packages/mcp-server/test/write/coldstart/`](../packages/mcp-server/tes
 
 The graph quality suite validates that the wikilink suggestion engine works correctly across every scenario that matters: precision/recall, scoring layers, archetypes, feedback loops, temporal evolution, and regression gates.
 
-**Precision & Scoring:** precision/recall, 13-layer ablation, parameter sweep (+ deep), golden set, strictness differentiation, baselines
+**Precision & Scoring:** precision/recall, 12-layer ablation, parameter sweep (+ deep), golden set, strictness differentiation, baselines
 
 **Stability & Evolution:** multi-generation (50 gen), temporal evolution, vault lifecycle, learning curve, flywheel pipeline
 
@@ -124,9 +124,9 @@ Locked in `baselines.json` (2026-02-26). CI fails if any metric regresses >5pp.
 
 | Mode | Precision | Recall | F1 | MRR |
 |---|---|---|---|---|
-| Conservative | 100% | 71.7% | 83.5% | 0.720 |
-| Balanced | 100% | 80.0% | 88.9% | 0.697 |
-| Aggressive | 100% | 81.7% | 89.9% | 0.697 |
+| Conservative | 51.2% | 71.7% | 59.7% | 0.742 |
+| Balanced | 27.5% | 76.7% | 40.5% | 0.742 |
+| Aggressive | 26.1% | 76.7% | 39.0% | 0.742 |
 
 Measured against a 96-note/61-entity ground truth vault. Links stripped, engine must rediscover them.
 

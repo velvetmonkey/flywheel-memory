@@ -203,9 +203,9 @@ The feedback loop claim isn't asserted — it's measured. We build a test vault 
 
 | Mode | Precision | Recall | F1 |
 |---|---|---|---|
-| Conservative | 100% | 71.7% | 83.5% |
-| Balanced | 100% | 76.7% | 86.8% |
-| Aggressive | 100% | 76.7% | 86.8% |
+| Conservative | 51.2% | 71.7% | 59.7% |
+| Balanced | 27.5% | 76.7% | 40.5% |
+| Aggressive | 26.1% | 76.7% | 39.0% |
 
 **Precision** = "of the links suggested, how many were correct?" (100% = never suggests a wrong link). **Recall** = "of the links that should exist, how many were found?" **F1** = the balance of both — higher is better.
 

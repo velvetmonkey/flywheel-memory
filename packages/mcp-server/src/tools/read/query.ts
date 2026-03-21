@@ -395,7 +395,7 @@ export function registerQueryTools(
             return { content: [{ type: 'text' as const, text: JSON.stringify({
               method: 'hybrid',
               query,
-              total_results: Math.min(filtered.length, limit),
+              total_results: filtered.length,
               results,
             }, null, 2) }] };
           } catch (err) {

@@ -51,6 +51,7 @@ export {
   getProtectedZones,
   getProtectedZonesRegex,
   isInProtectedZone,
+  mergeOverlappingZones,
   rangeOverlapsProtectedZone,
 } from './protectedZones.js';
 

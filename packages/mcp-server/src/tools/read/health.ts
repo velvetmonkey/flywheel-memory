@@ -877,6 +877,50 @@ export function registerHealthTools(
         }
       }
 
+      // 12. Hub scores
+      if (stateDb) {
+        try {
+          const hubStats = stateDb.db.prepare(
+            `SELECT COUNT(*) as total, COUNT(CASE WHEN hub_score > 0 THEN 1 END) as with_score,
+             MAX(hub_score) as max_score, ROUND(AVG(CASE WHEN hub_score > 0 THEN hub_score END), 1) as avg_score
+             FROM entities`
+          ).get() as { total: number; with_score: number; max_score: number; avg_score: number } | undefined;
+          if (hubStats) {
+            checks.push({ name: 'hub_scores', status: 'ok',
+              detail: `${hubStats.with_score}/${hubStats.total} entities have hub scores (max: ${hubStats.max_score}, avg: ${hubStats.avg_score ?? 0})` });
+          }
+        } catch { /* skip */ }
+      }
+
+      // 13. Edge weights
+      if (stateDb) {
+        try {
+          const edgeStats = stateDb.db.prepare(
+            `SELECT COUNT(*) as total, COUNT(CASE WHEN weight > 1.0 THEN 1 END) as weighted,
+             COUNT(CASE WHEN weight > 3.0 THEN 1 END) as strong,
+             ROUND(AVG(weight), 2) as avg_weight
+             FROM note_links WHERE weight IS NOT NULL`
+          ).get() as { total: number; weighted: number; strong: number; avg_weight: number } | undefined;
+          if (edgeStats && edgeStats.total > 0) {
+            checks.push({ name: 'edge_weights', status: 'ok',
+              detail: `${edgeStats.total} links, ${edgeStats.weighted} weighted (>${1.0}), ${edgeStats.strong} strong (>${3.0}), avg: ${edgeStats.avg_weight}` });
+          }
+        } catch { /* skip */ }
+      }
+
+      // 14. Content hashes
+      if (stateDb) {
+        try {
+          const hashCount = stateDb.db.prepare(
+            `SELECT COUNT(*) as count FROM content_hashes`
+          ).get() as { count: number } | undefined;
+          if (hashCount) {
+            checks.push({ name: 'content_hashes', status: 'ok',
+              detail: `${hashCount.count} content hashes cached` });
+          }
+        } catch { /* skip */ }
+      }
+
       // Summary
       const errorCount = checks.filter(c => c.status === 'error').length;
       const warningCount = checks.filter(c => c.status === 'warning').length;

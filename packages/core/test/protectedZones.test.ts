@@ -7,6 +7,7 @@ import {
   findFrontmatterEnd,
   getProtectedZones,
   isInProtectedZone,
+  mergeOverlappingZones,
   rangeOverlapsProtectedZone,
 } from '../src/protectedZones.js';
 
@@ -94,8 +95,10 @@ Content`;
   it('should detect URLs', () => {
     const content = 'Visit https://example.com for more';
     const zones = getProtectedZones(content);
-    const url = zones.find(z => z.type === 'url');
+    // URL may be merged with markdown_link zone (same range from AST)
+    const url = zones.find(z => z.type === 'url' || z.type === 'markdown_link');
     expect(url).toBeDefined();
+    expect(url!.start).toBe(6);
   });
 
   it('should detect hashtags', () => {
@@ -170,6 +173,80 @@ Content`;
     const zones = getProtectedZones(content);
     const callout = zones.find(z => z.type === 'obsidian_callout');
     expect(callout).toBeDefined();
+  });
+});
+
+describe('mergeOverlappingZones', () => {
+  it('should merge two overlapping zones', () => {
+    const zones = [
+      { start: 0, end: 10, type: 'code_block' as const },
+      { start: 5, end: 15, type: 'inline_code' as const },
+    ];
+    const merged = mergeOverlappingZones(zones);
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toEqual({ start: 0, end: 15, type: 'code_block' });
+  });
+
+  it('should merge adjacent zones (end === start)', () => {
+    const zones = [
+      { start: 0, end: 10, type: 'code_block' as const },
+      { start: 10, end: 20, type: 'wikilink' as const },
+    ];
+    const merged = mergeOverlappingZones(zones);
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toEqual({ start: 0, end: 20, type: 'code_block' });
+  });
+
+  it('should not merge non-overlapping zones', () => {
+    const zones = [
+      { start: 0, end: 10, type: 'code_block' as const },
+      { start: 15, end: 25, type: 'wikilink' as const },
+    ];
+    const merged = mergeOverlappingZones(zones);
+    expect(merged).toHaveLength(2);
+    expect(merged[0]).toEqual({ start: 0, end: 10, type: 'code_block' });
+    expect(merged[1]).toEqual({ start: 15, end: 25, type: 'wikilink' });
+  });
+
+  it('should collapse a zone fully contained within another', () => {
+    const zones = [
+      { start: 0, end: 30, type: 'code_block' as const },
+      { start: 5, end: 15, type: 'inline_code' as const },
+    ];
+    const merged = mergeOverlappingZones(zones);
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toEqual({ start: 0, end: 30, type: 'code_block' });
+  });
+
+  it('should merge multiple overlapping zones into one', () => {
+    const zones = [
+      { start: 0, end: 10, type: 'code_block' as const },
+      { start: 5, end: 20, type: 'inline_code' as const },
+      { start: 15, end: 30, type: 'wikilink' as const },
+    ];
+    const merged = mergeOverlappingZones(zones);
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toEqual({ start: 0, end: 30, type: 'code_block' });
+  });
+
+  it('should return empty array unchanged', () => {
+    expect(mergeOverlappingZones([])).toEqual([]);
+  });
+
+  it('should return single zone unchanged', () => {
+    const zones = [{ start: 5, end: 10, type: 'header' as const }];
+    expect(mergeOverlappingZones(zones)).toEqual(zones);
+  });
+
+  it('should handle unsorted input', () => {
+    const zones = [
+      { start: 20, end: 30, type: 'wikilink' as const },
+      { start: 0, end: 10, type: 'code_block' as const },
+      { start: 5, end: 25, type: 'inline_code' as const },
+    ];
+    const merged = mergeOverlappingZones(zones);
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toEqual({ start: 0, end: 30, type: 'code_block' });
   });
 });
 

@@ -128,10 +128,10 @@ export function getProtectedZonesRegex(content: string): ProtectedZone[] {
   // 12. Obsidian callouts (> [!type] syntax)
   zones.push(...findPatternZones(content, /^>\s*\[![\w-]+\].*$/gm, 'obsidian_callout'));
 
-  // Sort by start position
+  // Sort by start position and merge overlapping zones
   zones.sort((a, b) => a.start - b.start);
 
-  return zones;
+  return mergeOverlappingZones(zones);
 }
 
 /**
@@ -143,10 +143,30 @@ export function getProtectedZonesRegex(content: string): ProtectedZone[] {
 export function getProtectedZones(content: string): ProtectedZone[] {
   const tree = parseMarkdown(content);
   if (tree) {
-    return getProtectedZonesFromAst(tree, content);
+    return mergeOverlappingZones(getProtectedZonesFromAst(tree, content));
   }
   console.error('[ProtectedZones] AST parse failed, falling back to regex detection');
   return getProtectedZonesRegex(content);
+}
+
+/**
+ * Merge overlapping or adjacent protected zones into a single list.
+ * Zones that touch (end === start) or overlap are collapsed.
+ */
+export function mergeOverlappingZones(zones: ProtectedZone[]): ProtectedZone[] {
+  if (zones.length <= 1) return zones;
+  const sorted = [...zones].sort((a, b) => a.start - b.start || b.end - a.end);
+  const merged: ProtectedZone[] = [sorted[0]];
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = merged[merged.length - 1];
+    const curr = sorted[i];
+    if (curr.start <= prev.end) {
+      prev.end = Math.max(prev.end, curr.end);
+    } else {
+      merged.push(curr);
+    }
+  }
+  return merged;
 }
 
 /**

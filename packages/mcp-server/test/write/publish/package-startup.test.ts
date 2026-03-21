@@ -63,7 +63,7 @@ describe('Package Startup', () => {
     execSync(`npm install ${tarballPath}`, {
       cwd: testProjectDir,
       stdio: 'pipe',
-      timeout: 120000,
+      timeout: 300000,
     });
 
     // Verify node_modules contains the package

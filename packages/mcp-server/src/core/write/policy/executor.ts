@@ -32,6 +32,7 @@ import {
   removeFromSection,
   replaceInSection,
   validatePath,
+  validatePathSecure,
   type MatchMode,
 } from '../writer.js';
 import {
@@ -337,8 +338,9 @@ async function executeCreateNote(
   const overwrite = Boolean(params.overwrite);
   const skipWikilinks = Boolean(params.skipWikilinks);
 
-  if (!validatePath(vaultPath, notePath)) {
-    return { success: false, message: 'Invalid path: path traversal not allowed', path: notePath };
+  const pathCheck = await validatePathSecure(vaultPath, notePath);
+  if (!pathCheck.valid) {
+    return { success: false, message: `Path blocked: ${pathCheck.reason}`, path: notePath };
   }
 
   const fullPath = path.join(vaultPath, notePath);
@@ -353,14 +355,14 @@ async function executeCreateNote(
     // File doesn't exist - good
   }
 
-  // Create parent directories
+  // Create parent directories (after secure validation)
   const dir = path.dirname(fullPath);
   await fs.mkdir(dir, { recursive: true });
 
   // Process content
   const { content: processedContent } = maybeApplyWikilinks(content, skipWikilinks, notePath);
 
-  // Write note
+  // Write note (writeVaultFile also validates path internally)
   await writeVaultFile(vaultPath, notePath, processedContent, frontmatter);
 
   return {
@@ -385,8 +387,9 @@ async function executeDeleteNote(
     return { success: false, message: 'Deletion requires explicit confirmation (confirm=true)', path: notePath };
   }
 
-  if (!validatePath(vaultPath, notePath)) {
-    return { success: false, message: 'Invalid path: path traversal not allowed', path: notePath };
+  const pathCheck = await validatePathSecure(vaultPath, notePath);
+  if (!pathCheck.valid) {
+    return { success: false, message: `Path blocked: ${pathCheck.reason}`, path: notePath };
   }
 
   const fullPath = path.join(vaultPath, notePath);
@@ -866,6 +869,9 @@ async function rollbackChanges(
   filesModified: Set<string>
 ): Promise<void> {
   for (const filePath of filesModified) {
+    // Re-validate path during rollback (defense in depth)
+    if (!validatePath(vaultPath, filePath)) continue;
+
     const original = originalContents.get(filePath);
     const fullPath = path.join(vaultPath, filePath);
 

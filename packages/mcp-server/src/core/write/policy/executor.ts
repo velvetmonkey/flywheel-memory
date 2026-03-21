@@ -869,8 +869,9 @@ async function rollbackChanges(
   filesModified: Set<string>
 ): Promise<void> {
   for (const filePath of filesModified) {
-    // Re-validate path during rollback (defense in depth)
-    if (!validatePath(vaultPath, filePath)) continue;
+    // Full secure validation during rollback (defense in depth)
+    const pathCheck = await validatePathSecure(vaultPath, filePath);
+    if (!pathCheck.valid) continue;
 
     const original = originalContents.get(filePath);
     const fullPath = path.join(vaultPath, filePath);

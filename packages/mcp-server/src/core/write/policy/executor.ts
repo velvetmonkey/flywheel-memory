@@ -734,8 +734,8 @@ export async function executePolicy(
       const notePath = interpolate(String(step.params.path), context);
       if (!originalContents.has(notePath)) {
         try {
-          const { content } = await readVaultFile(vaultPath, notePath);
-          originalContents.set(notePath, content);
+          const { rawContent } = await readVaultFile(vaultPath, notePath);
+          originalContents.set(notePath, rawContent);
         } catch {
           // File doesn't exist yet
           originalContents.set(notePath, null);

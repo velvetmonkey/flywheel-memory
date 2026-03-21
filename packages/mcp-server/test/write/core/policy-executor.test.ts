@@ -248,4 +248,63 @@ describe('Policy Executor - Step Output Passing', () => {
     expect(result.stepResults[0].outputs?.path).toBe('new.md');
     expect(result.stepResults[1].outputs?.path).toBe('always.md');
   });
+
+  it('should preserve frontmatter on rollback after step failure', async () => {
+    // Create a note with frontmatter
+    const notePath = 'rollback-test.md';
+    const originalContent = `---
+title: Important Note
+tags:
+  - project
+  - critical
+custom_field: preserve-me
+---
+# Rollback Test
+
+## Content
+
+Original content here.
+`;
+    await fs.writeFile(path.join(vaultPath, notePath), originalContent);
+
+    // Policy: step 1 modifies the note, step 2 targets a non-existent file (will fail)
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'test-rollback-frontmatter',
+      description: 'Test that rollback preserves frontmatter',
+      steps: [
+        {
+          id: 'modify-note',
+          tool: 'vault_add_to_section',
+          params: {
+            path: notePath,
+            section: '## Content',
+            content: 'Added by policy',
+            format: 'plain',
+          },
+        },
+        {
+          id: 'fail-step',
+          tool: 'vault_add_to_section',
+          params: {
+            path: 'nonexistent/deeply/nested/file.md',
+            section: '## Missing',
+            content: 'This will fail',
+            format: 'plain',
+          },
+        },
+      ],
+    };
+
+    const result = await executePolicy(policy, vaultPath, {}, true);
+
+    expect(result.success).toBe(false);
+
+    // Read back the file — frontmatter must be intact
+    const restored = await fs.readFile(path.join(vaultPath, notePath), 'utf-8');
+    expect(restored).toBe(originalContent);
+    expect(restored).toContain('title: Important Note');
+    expect(restored).toContain('custom_field: preserve-me');
+    expect(restored).toContain('tags:');
+  });
 });

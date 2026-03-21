@@ -340,6 +340,28 @@ Just plain text.
       expect(parsed.warnings).toHaveLength(1);
       expect(parsed.outputIssues).toHaveLength(1);
     });
+
+    it('dry run does not trigger implicit feedback side effects', async () => {
+      const result = await withVaultFile(
+        {
+          vaultPath,
+          notePath: 'test-note.md',
+          commit: false,
+          commitPrefix: '[Test]',
+          actionDescription: 'dry run test',
+          dryRun: true,
+        },
+        async (ctx) => ({
+          updatedContent: ctx.content + '\nDry run change',
+          message: 'Preview',
+        })
+      );
+
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.success).toBe(true);
+      expect(parsed.dryRun).toBe(true);
+      expect(parsed.message).toContain('[dry run]');
+    });
   });
 
   describe('withVaultFrontmatter', () => {

@@ -281,12 +281,6 @@ export async function withVaultFile(
     const runMutation = async () => {
       const { content, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
 
-      // Implicit feedback — detect removed auto-applied wikilinks
-      const writeStateDb = getWriteStateDb();
-      if (writeStateDb) {
-        processImplicitFeedback(writeStateDb, notePath, content);
-      }
-
       // Find section if requested
       let sectionBoundary: SectionBoundary | undefined;
       if (section) {
@@ -307,7 +301,7 @@ export async function withVaultFile(
       };
 
       const opResult = await operation(ctx);
-      return { opResult, frontmatter, lineEnding, contentHash };
+      return { opResult, content, frontmatter, lineEnding, contentHash };
     };
 
     // 2. First attempt
@@ -328,6 +322,12 @@ export async function withVaultFile(
         dryRun: true,
       });
       return formatMcpResult(dryResult);
+    }
+
+    // Implicit feedback — detect removed auto-applied wikilinks (after dry_run gate)
+    const writeStateDb = getWriteStateDb();
+    if (writeStateDb) {
+      processImplicitFeedback(writeStateDb, notePath, result.content);
     }
 
     // 3. Prepare frontmatter (inject metadata if scoping provided)

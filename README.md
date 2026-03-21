@@ -230,7 +230,7 @@ Every mutation is:
 
 **AST-protected wikilinks.** Before inserting any link, Flywheel parses the Markdown AST to identify protected zones where links must never go — code blocks, inline code, YAML frontmatter, existing `[[wikilinks]]` and `[markdown](links)`, bare URLs, HTML tags and comments, Obsidian callouts (including nested callouts), pipe tables, math expressions, and hashtags. Pure regex can't reliably handle nested callouts or multi-line HTML; the AST parser does, with a transparent regex fallback if parsing fails.
 
-**Correction loop suppression.** If you mark a suggested wikilink as wrong, that correction is checked before any future auto-link attempt on the same entity — the same wrong link is never re-suggested. Deleted notes are also handled cleanly: they don't generate false negative feedback against the entity.
+**Feedback-driven suppression.** Two layers keep bad links from recurring. When you thumbs-down a wikilink in Obsidian, the entity is immediately blocked from that specific note (correction exclusion) and a vote is cast toward statistical suppression (Beta-Binomial model). If you simply delete a `[[wikilink]]` from a note, the watcher detects the removal and records implicit negative feedback — no manual action needed. Over time, entities that are consistently rejected or removed get suppressed globally or per-folder. Deleted notes are handled cleanly: they don't generate false negative feedback against the entity.
 
 ---
 

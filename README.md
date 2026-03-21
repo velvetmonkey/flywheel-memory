@@ -204,8 +204,8 @@ The feedback loop claim isn't asserted — it's measured. We build a test vault 
 | Mode | Precision | Recall | F1 |
 |---|---|---|---|
 | Conservative | 100% | 71.7% | 83.5% |
-| Balanced | 100% | 80.0% | 88.9% |
-| Aggressive | 100% | 81.7% | 89.9% |
+| Balanced | 100% | 76.7% | 86.8% |
+| Aggressive | 100% | 76.7% | 86.8% |
 
 **Precision** = "of the links suggested, how many were correct?" (100% = never suggests a wrong link). **Recall** = "of the links that should exist, how many were found?" **F1** = the balance of both — higher is better.
 
@@ -213,7 +213,7 @@ Measured against a 96-note/61-entity ground truth vault.
 
 - **50-generation stress test** — suggest → accept/reject (85% correct, 15% noise) → mutate vault → rebuild index → repeat. F1 holds steady — the feedback loop doesn't degrade under realistic noise.
 - **7 vault archetypes** — hub-and-spoke, hierarchical, dense-mesh, sparse-orphan, bridge-network, small-world, chaos
-- **13 scoring layers** individually ablated, contribution measured
+- **12 scoring layers** individually ablated, contribution measured
 - **Regression gate** — CI fails if any mode's F1/precision/recall drops >5pp from baseline
 
 See [docs/TESTING.md](docs/TESTING.md) for full methodology. Auto-generated report: [docs/QUALITY_REPORT.md](docs/QUALITY_REPORT.md).

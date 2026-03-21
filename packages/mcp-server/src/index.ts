@@ -218,7 +218,7 @@ export function getWatcherStatus(): WatcherStatus | null { return watcherInstanc
 //   FLYWHEEL_TOOLS=default                    # 16 tools
 //   FLYWHEEL_TOOLS=agent                      # 16 tools
 //   FLYWHEEL_TOOLS=default,graph              # 26 tools
-//   FLYWHEEL_TOOLS=agent,tasks                # 19 tools
+//   FLYWHEEL_TOOLS=agent,tasks                # 16 tools
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
 // Categories (12):

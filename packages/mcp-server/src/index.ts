@@ -1558,13 +1558,20 @@ async function runPostIndexWork(index: VaultIndex) {
           }
         }
 
-        if (filteredEvents.length === 0) {
-          if (batchRenames.length > 0) {
-            serverLog('watcher', `Batch complete (renames only): ${batchRenames.length} rename(s)`);
-          } else {
-            serverLog('watcher', 'All files unchanged (hash gate), skipping batch');
-          }
+        if (filteredEvents.length === 0 && batchRenames.length === 0) {
+          serverLog('watcher', 'All files unchanged (hash gate), skipping batch');
           return;
+        }
+
+        // Synthesize upsert events for renamed files so the full pipeline refreshes in-memory state
+        if (filteredEvents.length === 0 && batchRenames.length > 0) {
+          for (const rename of batchRenames) {
+            filteredEvents.push({
+              type: 'upsert' as const,
+              path: rename.newPath,
+              originalEvents: [],
+            });
+          }
         }
 
         serverLog('watcher', `Processing ${filteredEvents.length} file changes`);

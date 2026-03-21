@@ -70,6 +70,9 @@ function coalesceEvents(events: WatchEvent[]): CoalescedEventType | null {
 /** Maximum milliseconds between a delete and add to be considered a rename pair */
 const RENAME_PROXIMITY_MS = 5000;
 
+/** Common file stems that should not match cross-directory (too ambiguous) */
+const COMMON_STEMS = new Set(['readme', 'index', 'todo', 'changelog', 'license', 'notes']);
+
 /**
  * Get the file stem (basename without extension)
  */
@@ -104,15 +107,24 @@ function detectRenames(events: CoalescedEvent[]): {
   // For each delete, find the best matching upsert by stem + timestamp proximity
   for (const del of deletes) {
     const stem = fileStem(del.path);
+    const delDir = path.dirname(del.path);
     const delTimestamp = del.originalEvents.length > 0
       ? Math.max(...del.originalEvents.map(e => e.timestamp))
       : 0;
 
     // Gather candidate upserts with the same stem not yet used
-    const candidates = upserts.filter(u =>
+    const allCandidates = upserts.filter(u =>
       !usedUpserts.has(u.path) &&
       fileStem(u.path) === stem
     );
+
+    if (allCandidates.length === 0) continue;
+
+    // Prefer same-directory candidates; for common stems, require same directory
+    const sameDirCandidates = allCandidates.filter(c => path.dirname(c.path) === delDir);
+    const candidates = sameDirCandidates.length > 0
+      ? sameDirCandidates
+      : (COMMON_STEMS.has(stem.toLowerCase()) ? [] : allCandidates);
 
     if (candidates.length === 0) continue;
 

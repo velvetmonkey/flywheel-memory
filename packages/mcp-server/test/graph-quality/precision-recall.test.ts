@@ -41,12 +41,19 @@ describe('Pillar 1: Precision/Recall', () => {
       report = evaluateSuggestions(runs, spec.groundTruth, spec.entities);
     }, 30000);
 
-    it('achieves precision >= 85%', () => {
-      expect(report.precision).toBeGreaterThanOrEqual(0.85);
+    it('achieves strict precision >= 45%', () => {
+      // Strict precision counts all wrong suggestions as FPs (including known entities)
+      expect(report.precision).toBeGreaterThanOrEqual(0.45);
     });
 
-    it('has false positive rate < 20%', () => {
-      expect(report.fpRate).toBeLessThan(0.20);
+    it('achieves entity precision >= 85%', () => {
+      // Entity precision excludes known-entity suggestions from FPs (lenient)
+      expect(report.entityPrecision).toBeGreaterThanOrEqual(0.85);
+    });
+
+    it('has false positive rate < 55%', () => {
+      // Strict FP rate is higher now that known-entity FPs are counted
+      expect(report.fpRate).toBeLessThan(0.55);
     });
 
     it('reports valid metrics', () => {
@@ -68,8 +75,9 @@ describe('Pillar 1: Precision/Recall', () => {
       expect(report.recall).toBeGreaterThanOrEqual(0.60);
     });
 
-    it('achieves F1 >= 0.75', () => {
-      expect(report.f1).toBeGreaterThanOrEqual(0.75);
+    it('achieves F1 >= 0.35', () => {
+      // F1 is lower with strict precision counting
+      expect(report.f1).toBeGreaterThanOrEqual(0.35);
     });
   });
 
@@ -86,8 +94,9 @@ describe('Pillar 1: Precision/Recall', () => {
       expect(report.recall).toBeGreaterThan(0);
     });
 
-    it('achieves F1 >= 0.75', () => {
-      expect(report.f1).toBeGreaterThanOrEqual(0.75);
+    it('achieves F1 >= 0.35', () => {
+      // F1 is lower with strict precision counting
+      expect(report.f1).toBeGreaterThanOrEqual(0.35);
     });
   });
 

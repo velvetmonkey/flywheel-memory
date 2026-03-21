@@ -35,13 +35,14 @@ type ArchetypeName = (typeof ARCHETYPES)[number];
 // dense-mesh: lowered for Windows compatibility (path separator differences yield 0% on Windows)
 // PMI/IDF scoring may shift scores slightly for smaller archetype vaults
 // where document frequency distributions differ from the primary vault.
+// Thresholds use strict precision (all wrong suggestions = FP, including known entities)
 const THRESHOLDS: Record<ArchetypeName, { f1: number; precision: number }> = {
   'hub-and-spoke':  { f1: 0.06, precision: 0.05 },
-  'hierarchical':   { f1: 0.42, precision: 0.29 },
+  'hierarchical':   { f1: 0.20, precision: 0.12 },
   'dense-mesh':     { f1: 0, precision: 0 },
-  'sparse-orphan':  { f1: 0.17, precision: 0.13 },
-  'bridge-network': { f1: 0.24, precision: 0.24 },
-  'small-world':    { f1: 0.45, precision: 0.45 },
+  'sparse-orphan':  { f1: 0.10, precision: 0.07 },
+  'bridge-network': { f1: 0.15, precision: 0.12 },
+  'small-world':    { f1: 0.20, precision: 0.15 },
 };
 
 // Per-archetype topology expectations

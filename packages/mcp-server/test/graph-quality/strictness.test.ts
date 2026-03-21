@@ -82,8 +82,8 @@ describe('Strictness Modes', () => {
         diffCount++;
       }
     }
-    // Use >= 0 since modes may tie (known gap #5)
-    expect(diffCount).toBeGreaterThanOrEqual(0);
+    // Modes must produce at least 1 different suggestion set
+    expect(diffCount).toBeGreaterThanOrEqual(1);
   });
 
   it('at least 2 suggestions differ between balanced and aggressive', () => {
@@ -97,8 +97,8 @@ describe('Strictness Modes', () => {
         diffCount++;
       }
     }
-    // Use >= 0 since modes may tie (known gap #5)
-    expect(diffCount).toBeGreaterThanOrEqual(0);
+    // Modes must produce at least 1 different suggestion set
+    expect(diffCount).toBeGreaterThanOrEqual(1);
   });
 
   it('recall ordering across modes (documents known gap #5)', () => {

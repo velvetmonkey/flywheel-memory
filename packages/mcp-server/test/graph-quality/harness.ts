@@ -92,11 +92,13 @@ export interface SuggestionRun {
 /** Precision/recall evaluation report */
 export interface PrecisionRecallReport {
   precision: number;
+  entityPrecision: number;  // lenient: excludes known-entity FPs from denominator
   recall: number;
   f1: number;
   fpRate: number;
   truePositives: number;
   falsePositives: number;
+  knownEntityFPs: number;
   falseNegatives: number;
   totalSuggestions: number;
   totalGroundTruth: number;
@@ -241,9 +243,15 @@ export async function stripLinks(
     let content = await readFile(fullPath, 'utf-8');
 
     for (const link of links) {
-      // Remove [[Entity]] wikilink, leave entity name as plain text
       const wikilinkPattern = new RegExp(`\\[\\[${escapeRegex(link.entity)}\\]\\]`, 'g');
-      content = content.replace(wikilinkPattern, link.entity);
+      if (link.tier === 3) {
+        // Tier 3: remove mention entirely — tests graph-only discovery
+        content = content.replace(wikilinkPattern, '');
+        content = content.replace(/  +/g, ' ').replace(/^ +| +$/gm, m => m.trim());
+      } else {
+        // Tier 1/2: leave entity name as plain text
+        content = content.replace(wikilinkPattern, link.entity);
+      }
     }
 
     await writeFile(fullPath, content, 'utf-8');
@@ -346,6 +354,7 @@ export function evaluateSuggestions(
 
   let truePositives = 0;
   let falsePositives = 0;
+  let knownEntityFPs = 0;  // wrong suggestions that ARE known entities (lenient counting)
   let totalSuggestions = 0;
 
   // Per-tier tracking
@@ -422,14 +431,15 @@ export function evaluateSuggestions(
         const cat = entityCategoryMap.get(suggested) || 'unknown';
         if (!catStats.has(cat)) catStats.set(cat, { tp: 0, fp: 0, fn: 0, total: 0 });
         catStats.get(cat)!.tp++;
-      } else if (!knownEntities.has(suggested)) {
-        // Only count as FP if the suggestion is not a known entity —
-        // suggesting a real entity that's not in the ground truth is not a false positive,
-        // it's a correct suggestion for a link we didn't strip.
+      } else {
+        // Strict: any wrong suggestion is a false positive
         totalSuggestions++;
         falsePositives++;
+        // Track known-entity FPs separately for lenient (entityPrecision) metric
+        if (knownEntities.has(suggested)) {
+          knownEntityFPs++;
+        }
       }
-      // else: suggestion matches a known entity but not in GT — ignore (correct but not measured)
     }
 
     // MRR: reciprocal of first correct rank
@@ -460,6 +470,9 @@ export function evaluateSuggestions(
   }
 
   // Compute aggregate metrics
+  const strictFPs = falsePositives - knownEntityFPs;
+  const entityPrecisionDenom = totalSuggestions - knownEntityFPs;
+  const entityPrecision = entityPrecisionDenom > 0 ? truePositives / entityPrecisionDenom : 0;
   const precision = totalSuggestions > 0 ? truePositives / totalSuggestions : 0;
   const recall = groundTruth.length > 0 ? truePositives / groundTruth.length : 0;
   const f1 = precision + recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
@@ -489,11 +502,13 @@ export function evaluateSuggestions(
 
   return {
     precision: round(precision),
+    entityPrecision: round(entityPrecision),
     recall: round(recall),
     f1: round(f1),
     fpRate: round(fpRate),
     truePositives,
     falsePositives,
+    knownEntityFPs,
     falseNegatives,
     totalSuggestions,
     totalGroundTruth: groundTruth.length,

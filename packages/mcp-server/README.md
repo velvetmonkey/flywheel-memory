@@ -119,7 +119,7 @@ When you write a note, entities are auto-linked — creating edges. When you kee
 
 This is the uncontested gap — no competitor has a feedback loop that learns from knowledge management actions.
 
-We prove it: every auto-linked entity is correct (100% precision), and the system finds 72–82% of links it should (recall) — stable over 50 generations of noisy feedback. See [Graph Quality](#graph-quality) below.
+We prove it: auto-linked entities achieve 100% entity precision (never suggests a non-existent entity), 51% strict precision, and the system finds 72–82% of links it should (recall) — stable over 50 generations of noisy feedback. See [Graph Quality](#graph-quality) below.
 
 Result: a queryable graph. "What's the shortest path between AlphaFold and my docking experiment?" Backlinks, forward links, hubs, orphans, shortest paths — every query leverages hundreds of accumulated connections. Denser graphs make every query more precise.
 
@@ -229,13 +229,13 @@ See [docs/PROVE-IT.md](https://github.com/velvetmonkey/flywheel-memory/blob/main
 
 The feedback loop claim isn't asserted — it's measured. We build a test vault with known-correct links, strip them out, and measure how well the engine rediscovers them. CI locks these baselines and fails if quality regresses.
 
-| Mode | Precision | Recall | F1 |
-|---|---|---|---|
-| Conservative | 100% | 71.7% | 83.5% |
-| Balanced | 100% | 80.0% | 88.9% |
-| Aggressive | 100% | 81.7% | 89.9% |
+| Mode | Strict Precision | Entity Precision | Recall | F1 |
+|---|---|---|---|---|
+| Conservative | 51.2% | 100% | 71.7% | 59.7% |
+| Balanced | 27.5% | 100% | 76.7% | 40.5% |
+| Aggressive | 26.1% | 100% | 76.7% | 39.0% |
 
-**Precision** = "of the links suggested, how many were correct?" (100% = never suggests a wrong link). **Recall** = "of the links that should exist, how many were found?" **F1** = the balance of both — higher is better.
+**Precision** = "of the links suggested, how many were correct?" (strict: counts all wrong suggestions; entity precision: excludes known-entity suggestions). **Recall** = "of the links that should exist, how many were found?" **F1** = the balance of both — higher is better.
 
 Measured against a 96-note/61-entity ground truth vault.
 

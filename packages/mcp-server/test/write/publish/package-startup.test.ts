@@ -14,7 +14,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
-import { mkdtempSync, mkdirSync, rmSync, existsSync, readdirSync } from 'fs';
+import { mkdtempSync, mkdirSync, rmSync, existsSync, readdirSync, readFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { pathToFileURL } from 'url';
@@ -153,5 +153,13 @@ describe('Package Startup', () => {
     expect(pkg.bin).toBeDefined();
     expect(pkg.dependencies).toBeDefined();
     expect(pkg.files).toContain('dist');
+  });
+
+  it('bin entry points to existing file', () => {
+    const pkg = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf-8'));
+    const binPath = typeof pkg.bin === 'string' ? pkg.bin : pkg.bin?.['flywheel-memory'];
+    expect(binPath, 'package.json should have a bin entry').toBeDefined();
+    const resolved = join(packageDir, binPath);
+    expect(existsSync(resolved), `bin entry ${binPath} not found`).toBe(true);
   });
 });

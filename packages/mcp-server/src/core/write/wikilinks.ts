@@ -97,7 +97,7 @@ export function getWriteStateDb(): StateDb | null {
  */
 let moduleConfig: FlywheelConfig | null = null;
 
-const ALL_IMPLICIT_PATTERNS = ['proper-nouns', 'single-caps', 'camel-case', 'acronyms'] as const;
+const ALL_IMPLICIT_PATTERNS = ['proper-nouns', 'single-caps', 'camel-case', 'acronyms', 'quoted-terms'] as const;
 
 /** Set the FlywheelConfig for wikilink behavior (called at startup and on config change) */
 export function setWikilinkConfig(config: FlywheelConfig): void {

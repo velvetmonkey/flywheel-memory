@@ -101,7 +101,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`memory`** — agent working memory + recall + brief (3 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
 - **`temporal`** — time-based vault intelligence (4 tools)
-- **`diagnostics`** — vault health, stats, config, activity (14 tools)
+- **`diagnostics`** — vault health, stats, config, activity (18 tools)
 **Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `temporal`, `diagnostics`
 
 ---

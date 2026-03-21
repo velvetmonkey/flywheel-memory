@@ -14,7 +14,7 @@ Three principles guide every test in this project:
 
 2. **Break it before users do.** The test suite is adversarial by design: property-based fuzzing with randomized inputs, injection attacks against every input surface, race conditions under concurrent load.
 
-3. **Document with tests.** README examples are test fixtures. Tool counts are verified in CI. If the documentation says it works, a test proves it.
+3. **Document with tests.** README examples run against demo vaults. Tool counts, config keys, and category mappings are cross-checked against source in CI. Coverage is strongest for read-side MCP flows, write-side logic, security boundaries, and concurrency. Write-side MCP integration covers core mutation, config, and safety flows.
 
 ---
 

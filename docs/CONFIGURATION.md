@@ -153,7 +153,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `tasks` | 3 | tasks, vault_toggle_task, vault_add_task |
 | `memory` | 3 | memory, recall, brief |
 | `note-ops` | 4 | vault_delete/move/rename_note, merge_entities |
-| `diagnostics` | 18 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor, get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
+| `diagnostics` | 14 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor |
 
 Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work with a warning — they resolve to current category names.
 
@@ -414,13 +414,15 @@ Sets a single key and returns the updated config.
 | `exclude_task_tags` | string[] | `[]` | Tags to exclude from task queries. Tasks with these tags are filtered out of `tasks` tool results. |
 | `exclude_analysis_tags` | string[] | `[]` | Tags to exclude from schema analysis. Notes with these tags are skipped by `vault_schema` and `note_intelligence`. |
 
-#### Vault Structure (auto-inferred, overridable)
+#### Vault Structure (auto-inferred, read-only)
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `vault_name` | string | (inferred from folder name) | Display name for the vault. |
 | `paths` | object | (auto-detected) | Periodic note folder paths. Sub-keys: `daily_notes`, `weekly_notes`, `monthly_notes`, `quarterly_notes`, `yearly_notes`, `templates`. Override if auto-detection picks the wrong folder. |
 | `templates` | object | (auto-detected) | Template file paths. Sub-keys: `daily`, `weekly`, `monthly`, `quarterly`, `yearly`. |
+
+> **Note:** `paths` and `templates` are auto-detected at startup. They cannot be changed via `flywheel_config` — use `vault_init` to override them.
 
 ### Examples
 

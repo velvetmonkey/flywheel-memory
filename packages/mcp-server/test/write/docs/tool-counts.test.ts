@@ -8,9 +8,11 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
+import { VALID_CONFIG_KEYS } from '../../../src/tools/write/config.js';
 
 const TOOLS_DIR = path.join(__dirname, '../../../src/tools');
-const DOCS_DIR = path.join(__dirname, '../../../../docs');
+const DOCS_DIR = path.join(__dirname, '../../../../../docs');
+const INDEX_PATH = path.join(__dirname, '../../../src/index.ts');
 
 /**
  * Count tool registrations in source files (scans read/ and write/ subdirectories)
@@ -166,34 +168,27 @@ describe('Tool Count Verification', () => {
   });
 
   describe('documentation accuracy', () => {
-    it('should have consistent tool descriptions in README', async () => {
-      const readmePath = path.join(DOCS_DIR, 'README.md');
+    it('should have key tools documented in TOOLS.md', async () => {
+      const toolsPath = path.join(DOCS_DIR, 'TOOLS.md');
+      const content = await fs.readFile(toolsPath, 'utf-8');
 
-      try {
-        const content = await fs.readFile(readmePath, 'utf-8');
-
-        // README should mention key tools
-        expect(content).toContain('vault_add_to_section');
-        expect(content).toContain('vault_toggle_task');
-      } catch (error) {
-        // README might not exist or be in different location
-        console.log('README not found at expected path, skipping');
-      }
+      // TOOLS.md should mention key tools
+      expect(content).toContain('vault_add_to_section');
+      expect(content).toContain('vault_toggle_task');
     });
 
-    it('should have tools documented in tools-reference.md', async () => {
-      const toolsRefPath = path.join(DOCS_DIR, 'tools-reference.md');
+    it('should document config keys in CONFIGURATION.md', async () => {
+      const configPath = path.join(DOCS_DIR, 'CONFIGURATION.md');
+      const content = await fs.readFile(configPath, 'utf-8');
 
-      try {
-        const content = await fs.readFile(toolsRefPath, 'utf-8');
+      // All settable config keys should be documented
+      expect(content).toContain('wikilink_strictness');
+      expect(content).toContain('exclude_entities');
+      expect(content).toContain('exclude_entity_folders');
+      expect(content).toContain('implicit_detection');
 
-        // Check for key tool documentation
-        expect(content).toContain('vault_add_to_section');
-        expect(content).toContain('vault_replace_in_section');
-        expect(content).toContain('vault_toggle_task');
-      } catch (error) {
-        console.log('tools-reference.md not found, skipping');
-      }
+      // paths/templates should be documented as read-only
+      expect(content).toContain('read-only');
     });
   });
 
@@ -238,5 +233,103 @@ describe('Tool Count Verification', () => {
         expect(validPattern.test(tool), `Tool ${tool} should only contain lowercase letters and underscores`).toBe(true);
       }
     });
+  });
+});
+
+// =============================================================================
+// Documentation Contract Tests
+// =============================================================================
+
+/**
+ * Parse TOOL_CATEGORY from index.ts source → Record<category, toolName[]>
+ */
+async function parseToolCategoryFromSource(): Promise<Record<string, string[]>> {
+  const source = await fs.readFile(INDEX_PATH, 'utf-8');
+  const match = source.match(/const TOOL_CATEGORY[^{]*\{([\s\S]*?)\n\};/);
+  if (!match) throw new Error('Could not find TOOL_CATEGORY in index.ts');
+  const entries = [...match[1].matchAll(/^\s*(\w+):\s*'([\w-]+)'/gm)];
+  const byCategory: Record<string, string[]> = {};
+  for (const [, tool, cat] of entries) {
+    (byCategory[cat] ??= []).push(tool);
+  }
+  return byCategory;
+}
+
+/**
+ * Parse PRESETS from index.ts source → Record<preset, category[]>
+ */
+async function parsePresetsFromSource(): Promise<Record<string, string[]>> {
+  const source = await fs.readFile(INDEX_PATH, 'utf-8');
+  const match = source.match(/const PRESETS[^{]*\{([\s\S]*?)\n\};/);
+  if (!match) throw new Error('Could not find PRESETS in index.ts');
+  const result: Record<string, string[]> = {};
+  // Match lines like: default: ['search', 'read', 'write', 'tasks'],
+  const presetLines = [...match[1].matchAll(/^\s*(\w[\w-]*):\s*\[([^\]]*)\]/gm)];
+  for (const [, name, categoriesStr] of presetLines) {
+    const categories = [...categoriesStr.matchAll(/'([\w-]+)'/g)].map(m => m[1]);
+    if (categories.length > 0) {
+      result[name] = categories;
+    }
+  }
+  return result;
+}
+
+describe('Documentation Contracts', () => {
+  it('CONFIGURATION.md category counts match TOOL_CATEGORY source', async () => {
+    const byCategory = await parseToolCategoryFromSource();
+    const configContent = await fs.readFile(path.join(DOCS_DIR, 'CONFIGURATION.md'), 'utf-8');
+
+    // Parse the composable bundles table: | `category` | N |
+    const bundleRows = [...configContent.matchAll(/\|\s*`(\w[\w-]*)`\s*\|\s*(\d+)\s*\|/g)];
+    const docCounts: Record<string, number> = {};
+    for (const [, cat, count] of bundleRows) {
+      // Only track categories that exist in TOOL_CATEGORY
+      if (byCategory[cat]) {
+        docCounts[cat] = parseInt(count, 10);
+      }
+    }
+
+    // Every category in source should appear in doc with correct count
+    for (const [cat, tools] of Object.entries(byCategory)) {
+      if (docCounts[cat] !== undefined) {
+        expect(docCounts[cat], `CONFIGURATION.md claims ${cat} has ${docCounts[cat]} tools, source has ${tools.length}`).toBe(tools.length);
+      }
+    }
+  });
+
+  it('CONFIGURATION.md settable keys match VALID_CONFIG_KEYS', async () => {
+    const configContent = await fs.readFile(path.join(DOCS_DIR, 'CONFIGURATION.md'), 'utf-8');
+
+    for (const key of Object.keys(VALID_CONFIG_KEYS)) {
+      expect(configContent, `VALID_CONFIG_KEYS key "${key}" not documented in CONFIGURATION.md`).toContain(key);
+    }
+
+    // paths and templates should NOT be in VALID_CONFIG_KEYS
+    expect(VALID_CONFIG_KEYS['paths']).toBeUndefined();
+    expect(VALID_CONFIG_KEYS['templates']).toBeUndefined();
+
+    // Doc should mention read-only
+    expect(configContent).toContain('read-only');
+  });
+
+  it('TOOLS.md total tool count matches source', async () => {
+    const byCategory = await parseToolCategoryFromSource();
+    const toolsContent = await fs.readFile(path.join(DOCS_DIR, 'TOOLS.md'), 'utf-8');
+
+    const totalInSource = Object.values(byCategory).reduce((sum, tools) => sum + tools.length, 0);
+
+    // TOOLS.md line 1-3 claims "69 tools"
+    const match = toolsContent.match(/(\d+)\s+tools/);
+    expect(match, 'TOOLS.md should contain a tool count').toBeTruthy();
+
+    const docTotal = parseInt(match![1], 10);
+    expect(docTotal, `TOOLS.md claims ${docTotal} tools, source has ${totalInSource}`).toBe(totalInSource);
+  });
+
+  it('preset compositions match source', async () => {
+    const presets = await parsePresetsFromSource();
+
+    expect(presets['default']).toEqual(['search', 'read', 'write', 'tasks']);
+    expect(presets['agent']).toEqual(['search', 'read', 'write', 'memory']);
   });
 });

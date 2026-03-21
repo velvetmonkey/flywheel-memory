@@ -13,8 +13,10 @@ import {
   removeFromSection,
   replaceInSection,
   validatePath,
+  validatePathSecure,
   type MatchMode,
 } from '../../../src/core/write/writer.js';
+import { createNoteFromTemplate } from '../../../src/tools/write/mutations.js';
 import {
   createTempVault,
   cleanupTempVault,
@@ -1832,6 +1834,8 @@ type: test
 // ========================================
 
 import { extractHeadings } from '../../../src/core/write/writer.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 describe('Section not found error messages', () => {
   let tempVault: string;
@@ -1947,5 +1951,78 @@ Final thoughts.
     expect(result).toContain('\t-\tNested tab item');
     // New item is appended
     expect(result).toContain('-\tNew tab item');
+  });
+});
+
+// ========================================
+// create_if_missing path safety + dry_run
+// ========================================
+
+describe('createNoteFromTemplate path safety', () => {
+  let tempVault: string;
+
+  beforeEach(async () => {
+    tempVault = await createTempVault();
+  });
+
+  afterEach(async () => {
+    await cleanupTempVault(tempVault);
+  });
+
+  it('should reject path traversal via createNoteFromTemplate', async () => {
+    const traversalPath = '../../../etc/malicious.md';
+    await expect(
+      createNoteFromTemplate(tempVault, traversalPath, {})
+    ).rejects.toThrow('Path blocked');
+
+    // Verify no file was created outside the vault
+    const targetPath = path.resolve(tempVault, traversalPath);
+    await expect(fs.access(targetPath)).rejects.toThrow();
+  });
+
+  it('should reject absolute path via createNoteFromTemplate', async () => {
+    await expect(
+      createNoteFromTemplate(tempVault, '/tmp/malicious.md', {})
+    ).rejects.toThrow('Path blocked');
+  });
+
+  it('should reject sensitive file paths via createNoteFromTemplate', async () => {
+    await expect(
+      createNoteFromTemplate(tempVault, '.env', {})
+    ).rejects.toThrow('Path blocked');
+  });
+
+  it('should create valid nested note via createNoteFromTemplate', async () => {
+    const notePath = 'daily/2026-03-21.md';
+    const result = await createNoteFromTemplate(tempVault, notePath, {});
+    expect(result.created).toBe(true);
+
+    // Verify file actually exists
+    const fullPath = path.join(tempVault, notePath);
+    await fs.access(fullPath);
+
+    // Verify it has frontmatter with date
+    const content = await fs.readFile(fullPath, 'utf-8');
+    expect(content).toContain('date:');
+  });
+
+  it('should use daily template when pattern matches', async () => {
+    // Create a template file
+    const templateDir = path.join(tempVault, 'templates');
+    await fs.mkdir(templateDir, { recursive: true });
+    await fs.writeFile(
+      path.join(templateDir, 'daily.md'),
+      '---\ntype: daily\n---\n\n# {{title}}\n\n## Log\n',
+      'utf-8'
+    );
+
+    const config = { templates: { daily: 'templates/daily.md' } };
+    const result = await createNoteFromTemplate(tempVault, 'daily/2026-03-21.md', config);
+    expect(result.created).toBe(true);
+    expect(result.templateUsed).toBe('templates/daily.md');
+
+    const content = await fs.readFile(path.join(tempVault, 'daily/2026-03-21.md'), 'utf-8');
+    expect(content).toContain('## Log');
+    expect(content).toContain('type: daily');
   });
 });

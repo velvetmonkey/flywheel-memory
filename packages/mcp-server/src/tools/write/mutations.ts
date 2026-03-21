@@ -15,6 +15,7 @@ import {
   writeVaultFile,
   DiagnosticError,
   buildReplaceNotFoundDiagnostic,
+  validatePathSecure,
   type MatchMode,
 } from '../../core/write/writer.js';
 import type { FormatType, Position } from '../../core/write/types.js';
@@ -37,11 +38,17 @@ import type { FlywheelConfig } from '../../core/read/config.js';
  * Create a note from template or minimal fallback.
  * Returns the path that was created.
  */
-async function createNoteFromTemplate(
+export async function createNoteFromTemplate(
   vaultPath: string,
   notePath: string,
   config: FlywheelConfig
 ): Promise<{ created: boolean; templateUsed?: string }> {
+  // Validate path before any filesystem operations (secure: follows symlinks, blocks sensitive files)
+  const validation = await validatePathSecure(vaultPath, notePath);
+  if (!validation.valid) {
+    throw new Error(`Path blocked: ${validation.reason}`);
+  }
+
   const fullPath = path.join(vaultPath, notePath);
 
   // Ensure parent directories exist
@@ -101,9 +108,8 @@ async function createNoteFromTemplate(
   if (!parsed.data.date) {
     parsed.data.date = dateStr;
   }
-  templateContent = matter.stringify(parsed.content, parsed.data);
-
-  await fs.writeFile(fullPath, templateContent, 'utf-8');
+  // Write via secure writeVaultFile (validates path + blocks sensitive files)
+  await writeVaultFile(vaultPath, notePath, parsed.content, parsed.data as Record<string, unknown>);
 
   return { created: true, templateUsed: templatePath };
 }
@@ -151,7 +157,7 @@ export function registerMutationTools(
       // Handle create_if_missing: create note from template before proceeding
       let noteCreated = false;
       let templateUsed: string | undefined;
-      if (create_if_missing) {
+      if (create_if_missing && !dry_run) {
         const fullPath = path.join(vaultPath, notePath);
         try {
           await fs.access(fullPath);
@@ -161,6 +167,24 @@ export function registerMutationTools(
           const result = await createNoteFromTemplate(vaultPath, notePath, config);
           noteCreated = result.created;
           templateUsed = result.templateUsed;
+        }
+      }
+
+      // dry_run + create_if_missing: preview without creating
+      if (create_if_missing && dry_run) {
+        const fullPath = path.join(vaultPath, notePath);
+        try {
+          await fs.access(fullPath);
+        } catch {
+          // File doesn't exist — in dry_run mode, just preview what would happen
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify(successResult(notePath, `[dry run] Would create note and add to section "${section}"`, {}, {
+                preview: content,
+              }), null, 2),
+            }],
+          };
         }
       }
 

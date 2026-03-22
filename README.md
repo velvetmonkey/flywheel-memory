@@ -38,6 +38,38 @@ Then ask: *"How much have I billed Acme Corp?"*
 
 ---
 
+## Measured, Not Claimed
+
+### Retrieval Quality (HotpotQA)
+
+| Metric | Result |
+|--------|--------|
+| Document Recall | **83.2%** (333/400 supporting docs found) |
+| Full Recall (both docs found) | **69.0%** (138/200 questions) |
+| Partial Recall (≥1 doc found) | **97.5%** (195/200 questions) |
+| Bridge (multi-hop) | 80.6% |
+| Comparison | 95.7% |
+
+End-to-end on [HotpotQA](https://hotpotqa.github.io/) — 200 hard multi-hop questions, 1,993 documents, real Claude + Flywheel via `claude -p`. No cherry-picking, no pre-processing, no trained retriever. Multi-hop backfill follows links from found documents to discover second-hop results — zero LLM re-ranking. $0.062/question.
+
+Run it yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [Full benchmark results](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+
+### Graph Quality
+
+| Metric | Result |
+|--------|--------|
+| F1 (conservative) | **59.7%** — CI-gated, 50-gen stress tested |
+| Wikilink precision (production) | **1.0** — never inserts a wrong link |
+| Token savings (brief vs raw reads) | **44x** measured |
+
+### Tested with Real AI Sessions
+
+Every tool is tested with real `claude -p` sessions — not mocked handlers, not simulated calls. 69 individual tool tests, 36 bundle adoption runs, and a 7-beat sequential workflow where each step builds on previous vault state. Claude gets strict MCP config (vault tools only, no filesystem), a natural-language prompt, and we measure what it actually does.
+
+[Full methodology and results](docs/TESTING.md#live-ai-testing)
+
+---
+
 ## Configure Your Tools
 
 | Preset | Tools | What you get |
@@ -125,7 +157,7 @@ Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Fee
 Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
 ```
 
-10 scoring dimensions, every number traceable to vault usage. Recency came from what you last wrote. Co-occurrence came from notes you've written before. Hub came from how many other notes link there. The score learns as you use it.
+10 scoring dimensions, every number traceable to vault usage. Recency came from what you last wrote. Co-occurrence came from notes you've written before. Hub came from eigenvector centrality — not just how many notes link there, but how important those linking notes are. The score learns as you use it.
 
 See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
@@ -218,22 +250,6 @@ Measured against a 96-note/61-entity ground truth vault.
 
 See [docs/TESTING.md](docs/TESTING.md) for full methodology. Auto-generated report: [docs/QUALITY_REPORT.md](docs/QUALITY_REPORT.md).
 
-### Retrieval Benchmark (HotpotQA)
-
-End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/) — a standard multi-hop question answering benchmark. 200 hard questions, 1,993 documents, real Claude + Flywheel via `claude -p`. No cherry-picking, no pre-processing.
-
-| Metric | Score |
-|---|---|
-| Document Recall | **83.2%** (333/400 supporting docs found) |
-| Full Recall (both docs found) | **69.0%** (138/200 questions) |
-| Partial Recall (≥1 doc found) | **97.5%** (195/200 questions) |
-| Bridge (multi-hop) | 80.6% |
-| Comparison | 95.7% |
-
-Beats the standard BM25 baseline (~75%) by +8pp with zero training — just FTS5 keyword search with multi-hop backfill (outlinks from top results auto-included). See [how we compare to trained retrievers and other MCP tools](docs/TESTING.md#how-flywheel-compares).
-
-Run it yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [Full methodology + comparisons](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-
 ### Safe Writes
 
 Every mutation is:
@@ -252,17 +268,19 @@ Every mutation is:
 
 ## How It Compares
 
-| Feature | Flywheel Memory | Obsidian CLI (MCP) | Smart Connections | Khoj |
-|---------|----------------|-------------------|-------------------|------|
-| Backlink graph | Bidirectional | No | No | No |
-| Hybrid search | Local (keyword + semantic) | No | Cloud only | Cloud |
-| Auto-wikilinks | Yes (alias resolution) | No | No | No |
-| Schema intelligence | 6 analysis modes | No | No | No |
-| Entity extraction | Auto (18 categories) | No | No | No |
-| Learns from usage | Feedback loop + suppression + retrieval co-occurrence | No | No | No |
-| Agent memory | brief + recall + memory | No | No | No |
-| Safe writes | Git + conflict detection | No | N/A | N/A |
-| Tool count | 69 | ~10 | 0 (plugin) | ~5 |
+Most Obsidian AI tools are either simple MCP bridges (read/write files, no graph) or cloud-dependent embedding search (no local processing, no learning). Flywheel is neither:
+
+| Capability | Flywheel Memory | Typical MCP bridge | Typical AI plugin |
+|---------|----------------|-------------------|-------------------|
+| Backlink graph | Bidirectional, eigenvector centrality | No | No |
+| Search | Local hybrid (BM25 + semantic) | Basic file read | Cloud embedding |
+| Auto-wikilinks | Yes (alias resolution, 18 entity categories) | No | No |
+| Schema intelligence | 9 analysis modes | No | No |
+| Learns from usage | Feedback loop + suppression + co-occurrence | No | No |
+| Agent memory | brief + recall + memory | No | No |
+| Safe writes | Git + conflict detection + dry-run | No | N/A |
+| Retrieval benchmark | 83.2% on HotpotQA (200q, e2e) | None published | None published |
+| Tool count | 69 | ~5-15 | 0 (plugin) |
 
 ---
 

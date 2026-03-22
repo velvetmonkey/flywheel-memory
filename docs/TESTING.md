@@ -138,17 +138,9 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 - **Flywheel's 83.2%** beats the standard BM25 baseline (~75%) by +8pp, attributable to multi-hop backfill (following outlinks from top results) and FTS5 column weighting (title 5x, frontmatter 10x).
 - **The gap to trained retrievers** (83% vs 88-93%) is the cost of being general-purpose. These systems iterate: retrieve, read, re-query. Flywheel does one search + backfill.
 
-### Comparison with MCP memory tools
+### Comparison with other MCP/vault tools
 
-| System | HotpotQA Benchmark | Tools | Search | Memory | Learning |
-|---|---|---|---|---|---|
-| **Flywheel** | **83.2%** (200q, e2e) | 69 | Hybrid BM25 + semantic | Yes (brief/recall/store) | Feedback loop + co-occurrence |
-| [Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos) | Claims 90% Recall@5 (synthetic) | 16 | 4-signal fusion | Yes (ACT-R decay) | Contextual bandits |
-| [TurboVault](https://github.com/Epistates/turbovault) | None published | 44 | BM25 only | No | No |
-| [Mem0](https://github.com/mem0ai/mem0) | None published | ~5 | Embedding similarity | Yes | No |
-| Smart Connections | None published | 0 (plugin) | Embedding similarity | No | No |
-
-Note: Ori Mnemos reports 90% Recall@5 on a synthetic benchmark, not end-to-end HotpotQA. Their methodology and ours are not directly comparable.
+As of March 2026, we are not aware of any other MCP memory tool that has published end-to-end retrieval benchmarks on a standard academic dataset. Most tools in this space report feature lists but not measured retrieval quality.
 
 Source: [`demos/hotpotqa/`](../demos/hotpotqa/) | [`packages/mcp-server/test/retrieval-bench/`](../packages/mcp-server/test/retrieval-bench/)
 
@@ -158,7 +150,7 @@ Source: [`demos/hotpotqa/`](../demos/hotpotqa/) | [`packages/mcp-server/test/ret
 
 The graph quality suite validates that the wikilink suggestion engine works correctly across every scenario that matters: precision/recall, scoring layers, archetypes, feedback loops, temporal evolution, and regression gates.
 
-**Precision & Scoring:** precision/recall, 12-layer ablation, parameter sweep (+ deep), golden set, strictness differentiation, baselines
+**Precision & Scoring:** precision/recall, 13-layer ablation, parameter sweep (+ deep), golden set, strictness differentiation, baselines
 
 **Stability & Evolution:** multi-generation (50 gen), temporal evolution, vault lifecycle, learning curve, flywheel pipeline
 
@@ -204,11 +196,37 @@ To regenerate baselines: `npx tsx packages/mcp-server/test/graph-quality/generat
 
 ---
 
-## Tool Adoption
+## Live AI Testing
 
-Live testing verifies that Claude discovers and uses flywheel tools when enabled.
+Most MCP servers test "does the handler return valid JSON?" Flywheel tests something harder: **does an AI agent actually discover, choose, and correctly use each tool in a realistic scenario?**
 
-### Bundle Adoption
+Every test is a real `claude -p` session against a demo vault. Claude gets the flywheel MCP config, a natural-language prompt, and `--strict-mcp-config` (no filesystem access, no web — vault tools only). The output is captured as `stream-json` JSONL, and Python analyzers extract every `tool_use` event to compute adoption rates, tool sequences, and category coverage.
+
+Clean state is enforced between runs: StateDb is deleted, write operations trigger `git checkout` to restore the vault. Results are timestamped and versioned. Nothing is mocked, nothing is simulated.
+
+### Test Suites
+
+| Test Suite | What it proves | Sessions | Script |
+|---|---|---|---|
+| **Bundle adoption** | Claude discovers the right tools for each of 12 bundles | 36 (12 × 3 runs) | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
+| **Per-tool coverage** | Claude can discover and use each of 69 individual tools | 69 (resumable via `SKIP_TO`) | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
+| **Sequential workflow** | 7-beat workflow where each beat builds on previous vault state | 7 beats, cumulative | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
+| **Retrieval benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 200 questions, 1,993 docs | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
+
+### Key Design Decisions
+
+- **`--strict-mcp-config`** prevents Claude from bypassing flywheel tools with raw filesystem access — if a tool can't answer the question, the test reveals it
+- **`--no-session-persistence`** ensures each run starts fresh (no cached tool schemas from prior sessions)
+- **`--permission-mode bypassPermissions`** avoids interactive approval for write operations
+- Each prompt is designed to trigger specific tools — if Claude reaches for `search` instead of `graph_analysis`, that's a signal the tool description needs work
+- HotpotQA benchmark uses seeded RNG (`SEED=42`) and a ground-truth file for reproducible comparisons
+- Python analyzers (`analyze-bundle-test.py`, `analyze-coverage-test.py`, `analyze-demo-test.py`) parse JSONL and generate markdown reports
+
+### Tool Adoption Results
+
+Results from live testing. Claude discovers and uses flywheel tools when enabled.
+
+#### Bundle Adoption
 
 Each of 12 tool bundles tested with a targeted prompt against carter-strategy vault.
 

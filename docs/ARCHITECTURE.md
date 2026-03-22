@@ -18,14 +18,15 @@ packages/
 │       │   │   ├── query.ts     # search (unified: metadata + content + entities)
 │       │   │   ├── graph.ts     # get_backlinks (+ bidirectional), get_forward_links
 │       │   │   ├── graphAdvanced.ts  # get_link_path, get_common_neighbors, get_connection_strength
-│       │   │   ├── graphAnalysis.ts  # graph_analysis (unified: orphans, dead_ends, sources, hubs, stale)
+│       │   │   ├── graphAnalysis.ts  # graph_analysis (7 modes + centrality + cycles)
 │       │   │   ├── vaultSchema.ts    # vault_schema (unified: overview, field_values, inconsistencies, validate, conventions, incomplete)
 │       │   │   ├── noteIntelligence.ts # note_intelligence (unified: prose_patterns, suggest_frontmatter, suggest_wikilinks, cross_layer, compute)
 │       │   │   ├── primitives.ts     # get_note_structure, get_section_content, find_sections, tasks
-│       │   │   ├── health.ts    # health_check, get_vault_stats (+ recent_activity), get_folder_structure
+│       │   │   ├── health.ts    # health_check, get_vault_stats, get_folder_structure, flywheel_doctor
 │       │   │   ├── system.ts    # refresh_index, get_all_entities, get_unlinked_mentions
 │       │   │   ├── wikilinks.ts # suggest_wikilinks, validate_links (+ typo detection)
 │       │   │   ├── migrations.ts # rename_field, migrate_field_values
+│       │   │   ├── temporalAnalysis.ts # temporal_summary, predict_stale_notes, track_concept_evolution, get_context_around_date
 │       │   │   ├── brief.ts         # brief (startup context assembly)
 │       │   │   └── recall.ts        # recall (unified knowledge retrieval)
 │       │   └── write/           # Write tool registrations
@@ -87,6 +88,8 @@ packages/
 │               ├── toolTracking.ts # Tool invocation tracking
 │               ├── indexActivity.ts # Index rebuild activity logging
 │               ├── graphSnapshots.ts # Graph topology snapshots
+│               ├── retrievalCooccurrence.ts # Retrieval co-occurrence scoring (Adamic-Adar)
+│               ├── levenshtein.ts # Levenshtein distance for fuzzy matching
 │               └── metrics.ts    # Vault growth metrics
 ├── core/                        # Shared library (@velvetmonkey/vault-core)
 │   └── src/

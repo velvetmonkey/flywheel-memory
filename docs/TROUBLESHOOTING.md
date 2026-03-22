@@ -48,7 +48,15 @@ git add -A && git commit -m "Initial vault snapshot"
 
 ## StateDb Corruption
 
-The StateDb at `.flywheel/state.db` stores the FTS5 search index, entity index, index cache, and configuration. It is entirely derived from your markdown files.
+The StateDb at `.flywheel/state.db` stores the FTS5 search index, entity index, index cache, feedback data, and configuration. It is derived from your markdown files — but also accumulates learned signals over time (wikilink feedback, suppression data, edge weights, co-occurrence cache, agent memories).
+
+### Automatic Protection
+
+Flywheel protects the StateDb automatically:
+
+- **Startup backup** — Every server startup copies `state.db` → `state.db.backup` before any mutations. This is your last-known-good snapshot.
+- **Corruption recovery** — If the database fails to open (e.g., "file is not a database"), the corrupted file is preserved as `state.db.corrupt` for inspection, and a fresh database is created automatically.
+- **Zero-byte guard** — If `state.db` is 0 bytes (e.g., native module compilation failure), it's deleted and rebuilt.
 
 ### Symptoms
 
@@ -59,18 +67,45 @@ The StateDb at `.flywheel/state.db` stores the FTS5 search index, entity index, 
 
 ### Recovery
 
-Delete the `.flywheel/` directory and restart the server:
+**Option 1: Restore from backup** (preserves learned signals)
 
 ```bash
-rm -rf /path/to/your/vault/.flywheel/
+# Stop the MCP server first
+cp /path/to/vault/.flywheel/state.db.backup /path/to/vault/.flywheel/state.db
+rm -f /path/to/vault/.flywheel/state.db-wal /path/to/vault/.flywheel/state.db-shm
+# Restart — picks up last-known-good state
 ```
 
-Flywheel recreates `.flywheel/state.db` on next startup by scanning your vault. For a vault with a few thousand notes, this takes a few seconds.
+This restores everything to the point of last server startup. You only lose changes made since then.
+
+**Option 2: Full rebuild** (loses learned signals)
+
+```bash
+rm -rf /path/to/vault/.flywheel/
+# Restart — rebuilds everything from markdown files
+```
+
+Flywheel recreates `state.db` on next startup by scanning your vault. For a vault with a few thousand notes, this takes a few seconds. What you lose:
+
+- Wikilink feedback (which links were accepted/rejected)
+- Suppression data (which entities are suppressed)
+- Edge weights (link quality accumulated over time)
+- Co-occurrence cache (entity co-occurrence statistics)
+- Agent memories and session summaries
+- Tool invocation history and token tracking
+
+These are learned signals that accumulated over time. The vault's notes and links are not affected — only Flywheel's intelligence about them.
+
+### Diagnostics
+
+- **`health_check`** — Runs `PRAGMA quick_check` to verify database integrity. Reports `healthy`, `degraded`, or `unhealthy` with recommendations.
+- **`flywheel_doctor`** — Comprehensive 12-check diagnostic including database integrity, schema version, index freshness, and more.
 
 ### Prevention
 
 - Don't modify `.flywheel/state.db` directly
 - If running multiple MCP clients pointing at the same vault, be aware of potential SQLite lock contention (WAL mode handles most concurrent reads, but simultaneous writes can conflict)
+- The `.flywheel/` directory is safe to add to `.gitignore` — it's entirely regenerable
 
 ---
 

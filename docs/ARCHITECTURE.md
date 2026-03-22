@@ -320,6 +320,14 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 
 **Database settings:** WAL journal mode for concurrent read performance. Foreign keys enabled. Schema version tracking with migration support.
 
+### Backup & Recovery
+
+Every server startup copies `state.db` → `state.db.backup` before opening the database. If the database fails to open, the corrupted file is preserved as `state.db.corrupt` and a fresh database is created automatically. A 0-byte file guard catches native module compilation failures.
+
+All state in `state.db` is derived from the vault's markdown files — a full rebuild from scratch is always safe. However, some tables contain accumulated signals that take time to rebuild organically: `wikilink_feedback`, `wikilink_suppressions`, `note_links` (edge weights), `cooccurrence_cache`, `memories`, and `session_summaries`. Restoring from `.backup` preserves these; a full rebuild does not.
+
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#statedb-corruption) for recovery steps.
+
 ---
 
 ## Schema Versioning

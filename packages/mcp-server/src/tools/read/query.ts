@@ -29,7 +29,9 @@ import {
 import {
   enrichResult,
   enrichResultLight,
+  enrichResultCompact,
 } from '../../core/read/enrichment.js';
+import { multiHopBackfill, extractExpansionTerms, expandQuery } from '../../core/read/multihop.js';
 import { getStoredNoteLinks } from '../../core/write/wikilinkFeedback.js';
 
 /**
@@ -385,42 +387,19 @@ export function registerQueryTools(
             const filtered = applyFolderFilter(scored);
 
             const stateDb = getStateDb();
-            const results = filtered.slice(0, limit).map((item, i) => ({
-              ...(i < detailN ? enrichResult : enrichResultLight)({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
+            const results = filtered.slice(0, limit).map(item => ({
+              ...enrichResultCompact({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
               rrf_score: item.rrf_score,
               in_fts5: item.in_fts5,
               in_semantic: item.in_semantic,
               in_entity: item.in_entity,
             }));
 
-            // Multi-hop backfill: include outlink targets from top results
-            if (stateDb && results.length < limit) {
-              const existingPaths = new Set(results.map(r => (r as any).path));
-              const backfill: typeof results = [];
-              for (const r of results.slice(0, 3)) {
-                const rPath = (r as any).path;
-                if (!rPath) continue;
-                try {
-                  const outlinks = getStoredNoteLinks(stateDb, rPath);
-                  for (const target of outlinks) {
-                    const entityRow = stateDb.db.prepare(
-                      'SELECT path FROM entities WHERE name_lower = ?'
-                    ).get(target) as { path: string } | undefined;
-                    if (entityRow?.path && !existingPaths.has(entityRow.path)) {
-                      existingPaths.add(entityRow.path);
-                      backfill.push({
-                        ...enrichResultLight({ path: entityRow.path, title: target }, index, stateDb),
-                        rrf_score: 0,
-                        in_fts5: false,
-                        in_semantic: false,
-                        in_entity: false,
-                      } as any);
-                    }
-                  }
-                } catch { /* backfill is best-effort */ }
-              }
-              results.push(...backfill.slice(0, limit - results.length));
-            }
+            // Multi-hop backfill: 2-hop outlink traversal + query expansion
+            const hopResults = multiHopBackfill(results, index, stateDb, { maxBackfill: limit });
+            const expansionTerms = extractExpansionTerms(results, query, index);
+            const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
+            results.push(...hopResults, ...expansionResults);
 
             return { content: [{ type: 'text' as const, text: JSON.stringify({
               method: 'hybrid',
@@ -446,35 +425,16 @@ export function registerQueryTools(
           const filtered = applyFolderFilter(mergedItems);
           const stateDb = getStateDb();
           const sliced = filtered.slice(0, limit);
-          const results = sliced.map((item, i) => ({
-            ...(i < detailN ? enrichResult : enrichResultLight)({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
+          const results = sliced.map(item => ({
+            ...enrichResultCompact({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
             ...('in_fts5' in item ? { in_fts5: true } : { in_entity: true }),
           }));
 
-          // Multi-hop backfill: include outlink targets from top results
-          if (stateDb && results.length < limit) {
-            const existingPaths = new Set(results.map(r => (r as any).path));
-            const backfill: typeof results = [];
-            for (const r of results.slice(0, 3)) {
-              const rPath = (r as any).path;
-              if (!rPath) continue;
-              try {
-                const outlinks = getStoredNoteLinks(stateDb, rPath);
-                for (const target of outlinks) {
-                  const entityRow = stateDb.db.prepare(
-                    'SELECT path FROM entities WHERE name_lower = ?'
-                  ).get(target) as { path: string } | undefined;
-                  if (entityRow?.path && !existingPaths.has(entityRow.path)) {
-                    existingPaths.add(entityRow.path);
-                    backfill.push({
-                      ...enrichResultLight({ path: entityRow.path, title: target }, index, stateDb),
-                    } as any);
-                  }
-                }
-              } catch { /* backfill is best-effort */ }
-            }
-            results.push(...backfill.slice(0, limit - results.length));
-          }
+          // Multi-hop backfill: 2-hop outlink traversal + query expansion
+          const hopResults = multiHopBackfill(results, index, stateDb, { maxBackfill: limit });
+          const expansionTerms = extractExpansionTerms(results, query, index);
+          const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
+          results.push(...hopResults, ...expansionResults);
 
           return { content: [{ type: 'text' as const, text: JSON.stringify({
             method: 'fts5',
@@ -486,12 +446,19 @@ export function registerQueryTools(
 
         const stateDbFts = getStateDb();
         const fts5Filtered = applyFolderFilter(fts5Results);
-        const enrichedFts5 = fts5Filtered.map((r, i) => ({ ...(i < detailN ? enrichResult : enrichResultLight)({ path: r.path, title: r.title, snippet: r.snippet }, index, stateDbFts), in_fts5: true }));
+        const results: Array<Record<string, unknown>> = fts5Filtered.map(r => ({ ...enrichResultCompact({ path: r.path, title: r.title, snippet: r.snippet }, index, stateDbFts), in_fts5: true }));
+
+        // Multi-hop backfill + query expansion
+        const hopResults = multiHopBackfill(results, index, stateDbFts, { maxBackfill: limit });
+        const expansionTerms = extractExpansionTerms(results, query, index);
+        const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDbFts);
+        results.push(...hopResults, ...expansionResults);
+
         return { content: [{ type: 'text' as const, text: JSON.stringify({
           method: 'fts5',
           query,
-          total_results: enrichedFts5.length,
-          results: enrichedFts5,
+          total_results: results.length,
+          results,
         }, null, 2) }] };
       }
 

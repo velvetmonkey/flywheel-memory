@@ -13,7 +13,7 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 import { searchEntities as searchEntitiesDb } from '@velvetmonkey/vault-core';
 import type { VaultIndex } from '../../core/read/types.js';
 import { searchFTS5 } from '../../core/read/fts5.js';
-import { enrichEntityResult, enrichNoteResult } from '../../core/read/enrichment.js';
+import { enrichEntityCompact, enrichNoteCompact } from '../../core/read/enrichment.js';
 import { searchMemories } from '../../core/write/memory.js';
 import { getRecencyBoost, loadRecencyFromStateDb, type RecencyIndex } from '../../core/shared/recency.js';
 import { getCooccurrenceBoost, type CooccurrenceIndex } from '../../core/shared/cooccurrence.js';
@@ -411,13 +411,13 @@ export function registerRecallTools(
               description: e.content,
               score: Math.round(e.score * 10) / 10,
               breakdown: e.breakdown,
-              ...enrichEntityResult(e.id, stateDb, index),
+              ...enrichEntityCompact(e.id, stateDb, index),
             })),
             notes: notes.map(n => ({
               path: n.id,
               snippet: n.content,
               score: Math.round(n.score * 10) / 10,
-              ...enrichNoteResult(n.id, stateDb, index),
+              ...enrichNoteCompact(n.id, stateDb, index),
             })),
             memories: memories.map(m => ({
               key: m.id,

@@ -153,6 +153,109 @@ export function rankBacklinks(
     .slice(0, maxLinks);
 }
 
+export const COMPACT_OUTLINK_NAMES = 10;
+
+/**
+ * Compact enrichment for all results (primary + multi-hop).
+ * Returns: path, title, snippet, category, hub_score, modified, backlink_count,
+ * outlink_names[] (just names, sorted by edge weight), tags.
+ *
+ * Compared to enrichResult(): removes full backlinks[]/outlinks[] arrays with
+ * per-link metadata, frontmatter object, and aliases. Saves ~75% tokens per result.
+ * Every result gets a snippet (FTS5 match, content preview, or entity description).
+ */
+export function enrichResultCompact(
+  result: { path: string; title: string; snippet?: string },
+  index: VaultIndex,
+  stateDb: StateDb | null,
+  opts?: { via?: string; hop?: number },
+): Record<string, unknown> {
+  const note = index.notes.get(result.path);
+  const normalizedPath = result.path.toLowerCase().replace(/\.md$/, '');
+  const backlinks = index.backlinks.get(normalizedPath) || [];
+
+  const enriched: Record<string, unknown> = {
+    path: result.path,
+    title: result.title,
+  };
+
+  // Snippet: FTS5 match > content preview > entity description
+  if (result.snippet) {
+    enriched.snippet = result.snippet;
+  } else {
+    const preview = getContentPreview(result.path);
+    if (preview) enriched.snippet = preview;
+  }
+
+  // From VaultIndex (in-memory)
+  if (note) {
+    enriched.backlink_count = backlinks.length;
+    enriched.modified = note.modified.toISOString();
+    if (note.tags.length > 0) enriched.tags = note.tags;
+
+    // Outlink names only (sorted by edge weight if available)
+    if (note.outlinks.length > 0) {
+      enriched.outlink_names = getOutlinkNames(note.outlinks, result.path, index, stateDb, COMPACT_OUTLINK_NAMES);
+    }
+  }
+
+  // From StateDb entity table (single row lookup)
+  if (stateDb) {
+    try {
+      const entity = getEntityByName(stateDb, result.title);
+      if (entity) {
+        enriched.category = entity.category;
+        enriched.hub_score = entity.hubScore;
+        // Use entity description as fallback snippet
+        if (!enriched.snippet && entity.description) {
+          enriched.snippet = entity.description;
+        }
+      }
+    } catch { /* entity lookup is best-effort */ }
+  }
+
+  // Multi-hop provenance
+  if (opts?.via) enriched.via = opts.via;
+  if (opts?.hop) enriched.hop = opts.hop;
+
+  return enriched;
+}
+
+/**
+ * Get outlink target names sorted by edge weight (descending).
+ * Returns just string[] — no per-link metadata, no DB lookups per link.
+ */
+function getOutlinkNames(
+  outlinks: Array<{ target: string; line: number; alias?: string }>,
+  notePath: string,
+  index: VaultIndex,
+  stateDb: StateDb | null,
+  max: number,
+): string[] {
+  // Load edge weights if available (single query for all outlinks)
+  const weightMap = new Map<string, number>();
+  if (stateDb) {
+    try {
+      const rows = stateDb.db.prepare(
+        'SELECT target, weight, weight_updated_at FROM note_links WHERE note_path = ?'
+      ).all(notePath) as Array<{ target: string; weight: number; weight_updated_at: number | null }>;
+      for (const row of rows) {
+        const daysSince = row.weight_updated_at
+          ? (Date.now() - row.weight_updated_at) / (1000 * 60 * 60 * 24)
+          : 0;
+        const decay = Math.max(0.1, 1.0 - daysSince / 180);
+        weightMap.set(row.target, row.weight * decay);
+      }
+    } catch { /* best-effort */ }
+  }
+
+  return outlinks
+    .map(l => ({ name: l.target, weight: weightMap.get(l.target.toLowerCase()) ?? 1.0 }))
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, max)
+    .map(l => l.name);
+}
+
 /**
  * Enrich a search result with indexed metadata (zero extra I/O).
  * Looks up VaultNote from index and entity metadata from StateDb.
@@ -333,6 +436,90 @@ export function enrichNoteResult(
   }
   if (note.outlinks.length > 0) {
     enriched.top_outlinks = rankOutlinks(note.outlinks, notePath, index, stateDb, RECALL_TOP_LINKS);
+  }
+
+  if (stateDb) {
+    try {
+      const entity = getEntityByName(stateDb, note.title);
+      if (entity) {
+        enriched.category = entity.category;
+        enriched.hub_score = entity.hubScore;
+      }
+    } catch { /* best-effort */ }
+  }
+
+  return enriched;
+}
+
+/**
+ * Compact enrichment for entity results from recall.
+ * Returns: category, hub_score, aliases, path, backlink_count, outlink_names[], tags.
+ * Removes top_backlinks/top_outlinks full arrays.
+ */
+export function enrichEntityCompact(
+  entityName: string,
+  stateDb: StateDb | null,
+  index: VaultIndex | null,
+): Record<string, unknown> {
+  const enriched: Record<string, unknown> = {};
+
+  if (stateDb) {
+    try {
+      const entity = getEntityByName(stateDb, entityName);
+      if (entity) {
+        enriched.category = entity.category;
+        enriched.hub_score = entity.hubScore;
+        if (entity.aliases.length > 0) enriched.aliases = entity.aliases;
+        enriched.path = entity.path;
+      }
+    } catch { /* best-effort */ }
+  }
+
+  if (index) {
+    const entityPath = (enriched.path as string) ?? index.entities.get(entityName.toLowerCase());
+    if (entityPath) {
+      const note = index.notes.get(entityPath);
+      const normalizedPath = entityPath.toLowerCase().replace(/\.md$/, '');
+      const backlinks = index.backlinks.get(normalizedPath) || [];
+
+      enriched.backlink_count = backlinks.length;
+      if (note) {
+        if (note.tags.length > 0) enriched.tags = note.tags;
+        if (note.outlinks.length > 0) {
+          enriched.outlink_names = getOutlinkNames(note.outlinks, entityPath, index, stateDb, COMPACT_OUTLINK_NAMES);
+        }
+      }
+    }
+  }
+
+  return enriched;
+}
+
+/**
+ * Compact enrichment for note results from recall.
+ * Returns: tags, category, hub_score, backlink_count, outlink_names[], modified.
+ * Removes frontmatter, top_backlinks/top_outlinks full arrays.
+ */
+export function enrichNoteCompact(
+  notePath: string,
+  stateDb: StateDb | null,
+  index: VaultIndex | null,
+): Record<string, unknown> {
+  const enriched: Record<string, unknown> = {};
+  if (!index) return enriched;
+
+  const note = index.notes.get(notePath);
+  if (!note) return enriched;
+
+  const normalizedPath = notePath.toLowerCase().replace(/\.md$/, '');
+  const backlinks = index.backlinks.get(normalizedPath) || [];
+
+  if (note.tags.length > 0) enriched.tags = note.tags;
+  enriched.backlink_count = backlinks.length;
+  enriched.modified = note.modified.toISOString();
+
+  if (note.outlinks.length > 0) {
+    enriched.outlink_names = getOutlinkNames(note.outlinks, notePath, index, stateDb, COMPACT_OUTLINK_NAMES);
   }
 
   if (stateDb) {

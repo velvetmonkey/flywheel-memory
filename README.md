@@ -23,7 +23,7 @@ Six lines of JSON config. No cloud. Your data never leaves your machine. Primari
 | "What links here?" | Grep for name, flat list | Backlink graph, pre-indexed |
 | "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
-| Token cost | ~800-2,000 per query | ~50-200 per query (44x savings measured on brief) |
+| Token cost | ~800-2,000 per query | ~50-200 per query (53x savings measured on brief) |
 
 69 tools. 6-line config. Zero cloud.
 
@@ -40,19 +40,21 @@ Then ask: *"How much have I billed Acme Corp?"*
 
 ## Measured, Not Claimed
 
-### Retrieval Quality (HotpotQA)
+### Retrieval: 84.8% document recall on HotpotQA
+
+**82.1% on multi-hop bridge questions. 99.5% partial recall — only 1 out of 200 questions had zero supporting documents found.**
 
 | Metric | Result |
 |--------|--------|
 | Document Recall | **84.8%** (339/400 supporting docs found) |
-| Full Recall (both docs found) | **70.0%** (140/200 questions) |
+| Bridge (multi-hop) | **82.1%** — the metric that proves graph-aware retrieval |
 | Partial Recall (≥1 doc found) | **99.5%** (199/200 questions) |
-| Bridge (multi-hop) | 82.1% |
+| Full Recall (both docs found) | **70.0%** (140/200 questions) |
 | Comparison | 97.1% |
 
-End-to-end on [HotpotQA](https://hotpotqa.github.io/) — 200 hard multi-hop questions, 1,993 documents, real Claude + Flywheel via `claude -p`. No cherry-picking, no pre-processing, no trained retriever. Multi-hop backfill follows links from found documents to discover second-hop results — zero LLM re-ranking. $0.062/question.
+End-to-end on [HotpotQA](https://hotpotqa.github.io/) — 200 hard multi-hop questions, 1,993 documents, real Claude + Flywheel via `claude -p`. No cherry-picking, no pre-processing, no trained retriever. 2-hop backfill follows outlinks from found documents to discover second-hop results — zero LLM re-ranking. $0.061/question.
 
-Run it yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [Full benchmark results](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+Beats the standard BM25 baseline (~75%) by +10pp with zero training. Within 3pp of purpose-built ML retrievers trained on HotpotQA. [Full benchmark + comparisons](docs/TESTING.md#retrieval-benchmark-hotpotqa) | Run it yourself: [`demos/hotpotqa/`](demos/hotpotqa/)
 
 ### Graph Quality
 
@@ -60,31 +62,20 @@ Run it yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [Full benchmark results]
 |--------|--------|
 | F1 (conservative) | **59.7%** — CI-gated, 50-gen stress tested |
 | Wikilink precision (production) | **1.0** — never inserts a wrong link |
-| Token savings (brief vs raw reads) | **44x** measured |
+| Token savings (brief vs raw reads) | **53x** measured |
 
 ### Tested with Real AI Sessions
 
-Every tool is tested with real `claude -p` sessions — not mocked handlers, not simulated calls. 69 individual tool tests, 36 bundle adoption runs, and a 7-beat sequential workflow where each step builds on previous vault state. Claude gets strict MCP config (vault tools only, no filesystem), a natural-language prompt, and we measure what it actually does.
+Most MCP servers ship unit tests for their handlers. Flywheel also tests whether the AI actually picks the right tool, gets the answer, and moves on — using real `claude -p` sessions against demo vaults with `--strict-mcp-config` (no filesystem, no web).
 
-[Full methodology and results](docs/TESTING.md#live-ai-testing)
+| Test | Sessions | Result |
+|------|----------|--------|
+| Per-tool coverage | 69 (1 per tool) | **100% adoption** |
+| Bundle adoption | 36 (12 bundles × 3) | 11/12 at 100% |
+| Sequential workflow | 7 beats (cumulative state) | 7/7 passed |
+| HotpotQA retrieval | 200 questions | 84.8% recall |
 
----
-
-## Configure Your Tools
-
-| Preset | Tools | What you get |
-|--------|-------|--------------|
-| `default` | 16 | search, read, write, tasks |
-| `agent` | 16 | search, read, write, memory |
-| `full` | 66 | Everything — all 12 categories |
-
-```json
-{ "env": { "FLYWHEEL_TOOLS": "default,graph" } }
-```
-
-Start with `default` (16 tools). Add bundles as you need them: `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`, and more.
-
-[Browse all 69 tools →](docs/TOOLS.md) | [Preset recipes →](docs/CONFIGURATION.md)
+Every session is captured as `stream-json` JSONL, analyzed by Python scripts, and reported with tool sequences and category breakdowns. Nothing is mocked. [Full methodology and results](docs/TESTING.md#live-ai-testing)
 
 ---
 
@@ -322,7 +313,21 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
+### Step 3: Configure your tools
+
+| Preset | Tools | What you get |
+|--------|-------|--------------|
+| `default` | 16 | search, read, write, tasks |
+| `agent` | 16 | search, read, write, memory |
+| `full` | 66 | Everything — all 12 categories |
+
+Start with `default` (16 tools). Add bundles as you need them: `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`, and more.
+
+```json
+{ "env": { "FLYWHEEL_TOOLS": "default,graph" } }
+```
+
+[Browse all 69 tools →](docs/TOOLS.md) | [Preset recipes →](docs/CONFIGURATION.md)
 
 > **Windows users — read this before you start.** Three things differ from macOS/Linux:
 > 1. **`cmd /c npx`** instead of `npx` — Windows installs npx as a `.cmd` batch script that can't be spawned directly

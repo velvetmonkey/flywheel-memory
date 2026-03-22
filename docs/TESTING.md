@@ -198,33 +198,48 @@ To regenerate baselines: `npx tsx packages/mcp-server/test/graph-quality/generat
 
 ## Live AI Testing
 
-Most MCP servers test "does the handler return valid JSON?" Flywheel tests something harder: **does an AI agent actually discover, choose, and correctly use each tool in a realistic scenario?**
+Unit tests prove handlers work. **Live AI tests prove the product works** — that an AI agent given a natural-language question and a vault of notes will discover the right tools, call them in the right order, and get the answer.
 
-Every test is a real `claude -p` session against a demo vault. Claude gets the flywheel MCP config, a natural-language prompt, and `--strict-mcp-config` (no filesystem access, no web — vault tools only). The output is captured as `stream-json` JSONL, and Python analyzers extract every `tool_use` event to compute adoption rates, tool sequences, and category coverage.
+This is a fundamentally different claim than "the handler returns valid JSON." It tests:
+- **Tool descriptions** — is the description clear enough that Claude picks the right tool?
+- **Response shapes** — does the AI get enough information to answer without extra calls?
+- **Tool composition** — does Claude chain multiple tools correctly in a multi-step workflow?
+- **Regression detection** — if a code change makes Claude stop using a tool or pick a worse one, the test catches it
 
-Clean state is enforced between runs: StateDb is deleted, write operations trigger `git checkout` to restore the vault. Results are timestamped and versioned. Nothing is mocked, nothing is simulated.
+Every test is a real `claude -p` session against a demo vault. Claude gets `--strict-mcp-config` (no filesystem, no web — vault tools only). The output is captured as `stream-json` JSONL, and Python analyzers extract every `tool_use` event to compute adoption rates, tool sequences, and category breakdowns. Clean state between runs: StateDb deleted, write operations git-restored. Nothing is mocked.
+
+We are not aware of any other MCP server that publishes live AI test results.
 
 ### Test Suites
 
-| Test Suite | What it proves | Sessions | Script |
-|---|---|---|---|
-| **Bundle adoption** | Claude discovers the right tools for each of 12 bundles | 36 (12 × 3 runs) | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
-| **Per-tool coverage** | Claude can discover and use each of 69 individual tools | 69 (resumable via `SKIP_TO`) | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
-| **Sequential workflow** | 7-beat workflow where each beat builds on previous vault state | 7 beats, cumulative | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
-| **Retrieval benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 200 questions, 1,993 docs | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
+| Test Suite | What it proves | Sessions | Result | Script |
+|---|---|---|---|---|
+| **Per-tool coverage** | Claude discovers and uses each of 69 individual tools | 69 | **100% adoption** | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
+| **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
+| **Sequential workflow** | 7-beat workflow where each beat builds on previous vault state | 7 beats | 7/7 passed | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
+| **Retrieval benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 200 questions | 84.8% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
 
-### Key Design Decisions
+### Why This Matters
 
-- **`--strict-mcp-config`** prevents Claude from bypassing flywheel tools with raw filesystem access — if a tool can't answer the question, the test reveals it
-- **`--no-session-persistence`** ensures each run starts fresh (no cached tool schemas from prior sessions)
-- **`--permission-mode bypassPermissions`** avoids interactive approval for write operations
-- Each prompt is designed to trigger specific tools — if Claude reaches for `search` instead of `graph_analysis`, that's a signal the tool description needs work
-- HotpotQA benchmark uses seeded RNG (`SEED=42`) and a ground-truth file for reproducible comparisons
-- Python analyzers (`analyze-bundle-test.py`, `analyze-coverage-test.py`, `analyze-demo-test.py`) parse JSONL and generate markdown reports
+A tool might work perfectly in isolation but fail in practice because its description is ambiguous, its response is too large, or it overlaps confusingly with another tool. Live AI testing catches these issues:
+
+- If Claude reaches for `search` instead of `graph_analysis` when asked about connections, the tool description needs work
+- If Claude makes 5 follow-up calls after a search, the response shape needs more information
+- If a write tool consistently gets skipped, the AI doesn't understand when to use it
+
+These are product quality signals that no amount of handler unit testing can detect.
+
+### Design Decisions
+
+- **`--strict-mcp-config`** — prevents Claude from bypassing vault tools with raw filesystem access. If a tool can't answer the question, the test reveals it.
+- **`--no-session-persistence`** — each run starts fresh. No cached tool schemas from prior sessions.
+- **`--permission-mode bypassPermissions`** — avoids interactive approval for write operations.
+- **Seeded RNG** — HotpotQA benchmark uses `SEED=42` and a ground-truth file for reproducible comparisons across runs.
+- **Python analyzers** — `analyze-bundle-test.py`, `analyze-coverage-test.py`, `analyze-demo-test.py` parse JSONL and generate markdown reports with per-tool adoption rates, tool sequences, and category breakdowns.
 
 ### Tool Adoption Results
 
-Results from live testing. Claude discovers and uses flywheel tools when enabled.
+Results from live testing (2026-03-22). Claude discovers and uses flywheel tools when enabled.
 
 #### Bundle Adoption
 

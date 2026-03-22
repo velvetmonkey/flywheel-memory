@@ -189,6 +189,7 @@ export function enrichResultCompact(
 
   // From VaultIndex (in-memory)
   if (note) {
+    if (Object.keys(note.frontmatter).length > 0) enriched.frontmatter = note.frontmatter;
     enriched.backlink_count = backlinks.length;
     enriched.modified = note.modified.toISOString();
     if (note.tags.length > 0) enriched.tags = note.tags;

@@ -13,6 +13,8 @@
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-84.8%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![Tests](https://img.shields.io/badge/tests-2,600%2B%20passed-brightgreen.svg)](docs/TESTING.md)
 
+**[Measured, Not Claimed](#measured-not-claimed)** · **[See It Work](#see-it-work)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Try It](#try-it)** · **[Docs](#documentation)**
+
 **If you use AI with an Obsidian vault**, this is for you. By default, AI agents reach for the filesystem — reading files one at a time, writing raw text, losing context between sessions. Flywheel is an MCP server that runs locally alongside your vault, giving any MCP-compatible AI a pre-indexed knowledge graph, enriched search, safe writes with auto-wikilinks, and persistent memory — so it can answer questions about your notes in milliseconds instead of reading every file.
 
 Six lines of JSON config. No cloud. Your data never leaves your machine. Primarily tested with Claude (Code + Desktop), also works with Cursor, Windsurf, VS Code + Copilot, Continue, and any MCP client.

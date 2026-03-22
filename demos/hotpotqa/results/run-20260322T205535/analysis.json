@@ -1,0 +1,3490 @@
+{
+  "generated": "2026-03-22T22:00:24.424089",
+  "dataset": "hotpot_dev_distractor_v1",
+  "total_questions": 200,
+  "total_documents": 1993,
+  "overall_recall": 0.8475,
+  "full_recall_count": 140,
+  "partial_recall_count": 199,
+  "total_cost_usd": 12.1795,
+  "by_type": {
+    "bridge": {
+      "recall": 0.8212,
+      "found": 271,
+      "relevant": 330,
+      "count": 165
+    },
+    "comparison": {
+      "recall": 0.9714,
+      "found": 68,
+      "relevant": 70,
+      "count": 35
+    }
+  },
+  "by_level": {
+    "hard": {
+      "recall": 0.8475,
+      "found": 339,
+      "relevant": 400,
+      "count": 200
+    }
+  },
+  "per_question": [
+    {
+      "id": "5a808c215542995d8a8ddf90",
+      "question": "Who's fifth album and debut single are Startin' Fires and Austin respectively?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0755
+    },
+    {
+      "id": "5ab8919655429934fafe6e13",
+      "question": "Who used a Barrack buster to shoot down a British Army Lynx helicopter",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Barrack buster.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0488
+    },
+    {
+      "id": "5a89706055429951533612f9",
+      "question": "Scott Sandelin grew up in a town in what Minnesota county?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Hibbing, Minnesota.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0562
+    },
+    {
+      "id": "5a7cb9b95542990527d55515",
+      "question": "What is the year of the event that occured first, Making Today a Perfect Day was",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0784
+    },
+    {
+      "id": "5a875b755542996e4f308796",
+      "question": "The song \"Medicine\" by The 1975 appears in a film directed by what Danish filmma",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure",
+        "search"
+      ],
+      "paths_accessed": 9,
+      "cost_usd": 0.0694
+    },
+    {
+      "id": "5a90629855429916514e749e",
+      "question": "What is one risk to Norway's financial reserve?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Forsvarets Spesialkommando.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0648
+    },
+    {
+      "id": "5a8bc0485542995d1e6f143d",
+      "question": "What continents are the Moneuptychia found in?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Neotropical realm.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0755
+    },
+    {
+      "id": "5a73b0975542992d56e7e387",
+      "question": "Which market town in Lancashire is part of the BB postcode area?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Burnley.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0491
+    },
+    {
+      "id": "5a839c8b5542996488c2e479",
+      "question": "James Spedding was chiefly known as the editor of the works of an author who ser",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Francis Bacon.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0476
+    },
+    {
+      "id": "5a8e2147554299068b959e67",
+      "question": "Murray Seafield St George Head most recognised for which song from the concept a",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/One Night in Bangkok.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.048
+    },
+    {
+      "id": "5a80f793554299260e20a1e1",
+      "question": "What British company was involved in recording the audiobook for the book known ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0588
+    },
+    {
+      "id": "5ade99ad554299728e26c75d",
+      "question": "How many acts is the ballet Rita Sangalli premiered in, in the year 1876?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0562
+    },
+    {
+      "id": "5a7a69365542996c55b2dd9b",
+      "question": "Which film was Shannyn Sossamon in that was directed by Michael Lehmann?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0525
+    },
+    {
+      "id": "5ab5052a5542990594ba9ccf",
+      "question": "Who did a new permanent member on the fourteenth season of  So You Think You Can",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "ToolSearch",
+        "get_note_structure"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0709
+    },
+    {
+      "id": "5a83ab355542990548d0b218",
+      "question": "Who was a higher ranked tennis player: Paola Su\u00e1rez or Michael Venus?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0486
+    },
+    {
+      "id": "5ab6cebd55429954757d3378",
+      "question": "What kind of act does Whaling in Australia and Right whale have in common?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure",
+        "get_note_structure",
+        "search"
+      ],
+      "paths_accessed": 12,
+      "cost_usd": 0.0867
+    },
+    {
+      "id": "5ae0818e55429924de1b70e9",
+      "question": "Gleannt\u00e1in Ghlas' Ghaoth Dobhair is a song that can be heard in pubs licensed to",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 16,
+      "cost_usd": 0.0765
+    },
+    {
+      "id": "5a7180205542994082a3e856",
+      "question": "The creator of \"Wallace and Gromit\" also created what animation comedy that matc",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0554
+    },
+    {
+      "id": "5ac54f8d5542993e66e822f5",
+      "question": "When did the author of \"Computing Machinery and Intelligence\" die?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 3,
+      "cost_usd": 0.0465
+    },
+    {
+      "id": "5abf2e605542993fe9a41de4",
+      "question": "In between Atsushi Ogata and Ralph Smart who graduated from Harvard College?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 42,
+      "cost_usd": 0.3241
+    },
+    {
+      "id": "5a85d4395542996432c570f5",
+      "question": "What city, located in Lincoln County, Montana, United States, is Vegepet based i",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Troy, Montana.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 3,
+      "cost_usd": 0.0455
+    },
+    {
+      "id": "5a7717635542994aec3b71e3",
+      "question": "Who is the writer for an American teen sitcom created by Kim Bass for Nickelodeo",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/King's Ransom (film).md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0487
+    },
+    {
+      "id": "5a7211e655429971e9dc923c",
+      "question": "What Finnish Christmas figure, which eventually become more or less conflated wi",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.049
+    },
+    {
+      "id": "5a7217f255429971e9dc9260",
+      "question": "Which Member of Parliament for Macclesfield was married to Jane Ann Winterton?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0482
+    },
+    {
+      "id": "5a85eed75542996432c5713b",
+      "question": "Where did the descendants of the group of black Indians associated with the Semi",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure",
+        "search"
+      ],
+      "paths_accessed": 7,
+      "cost_usd": 0.0698
+    },
+    {
+      "id": "5a74702555429929fddd8428",
+      "question": "Who is older out of Bob Saget, the American comedian, and Indian director S. Sha",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0511
+    },
+    {
+      "id": "5abb08c65542996cc5e49f61",
+      "question": "George Borba was part of the team that competed at what 1970 championship?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/1970 FIFA World Cup.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0514
+    },
+    {
+      "id": "5a7a0a2d5542990783324e06",
+      "question": "The Dressing Point massacre occurred 2 years after which important document was ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "get_note_structure",
+        "get_note_structure"
+      ],
+      "paths_accessed": 17,
+      "cost_usd": 0.0875
+    },
+    {
+      "id": "5a899f4955429946c8d6e971",
+      "question": "Who directed a 2009 comedy released by BBC Films?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0483
+    },
+    {
+      "id": "5a7f660555429969796c1a2e",
+      "question": "The 2015 American drama film, Being Charlie, stars which Canadian actor that app",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0533
+    },
+    {
+      "id": "5ab7f0b9554299366779405d",
+      "question": "What type of vegetation does Tabernaemontana and Crinum have in common?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0488
+    },
+    {
+      "id": "5a735c3a55429901807daff7",
+      "question": "Nikolay Mitrofanovich Krylov and Anatoly Fomenko both held what academic title?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "get_note_structure",
+        "search"
+      ],
+      "paths_accessed": 15,
+      "cost_usd": 0.104
+    },
+    {
+      "id": "5ab85a1155429934fafe6d7c",
+      "question": "Are both Rutgers University and Carnegie Mellon University located in America?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0478
+    },
+    {
+      "id": "5ae4c39f5542995dadf243fb",
+      "question": "Which former mill town is near Rivington Hall Barn?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Bolton.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 3,
+      "cost_usd": 0.046
+    },
+    {
+      "id": "5ab9668c55429970cfb8eaba",
+      "question": "What major city is John Bice Memorial Oval located within?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Christies Beach, South Australia.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 3,
+      "cost_usd": 0.0458
+    },
+    {
+      "id": "5ab1c693554299722f9b4c66",
+      "question": "Which team based in South Wales participated in a final game of 1980 Welsh Cup F",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Newport County A.F.C..md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0478
+    },
+    {
+      "id": "5ac507725542994611c8b32a",
+      "question": "When was the person who did the music for Manru born?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0567
+    },
+    {
+      "id": "5a8325b35542990548d0b18f",
+      "question": "Who held the record for the longest service in the Australian Parliament for a w",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0597
+    },
+    {
+      "id": "5ab2958c554299449642c912",
+      "question": "When was the only long-term psychiatric hospital operated founded in a county in",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 0,
+      "docs_missed": [
+        "docs/Deer Lodge County, Montana.md",
+        "docs/Warm Springs, Montana.md"
+      ],
+      "recall": 0.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 18,
+      "cost_usd": 0.1364
+    },
+    {
+      "id": "5ab2eff05542991669774140",
+      "question": "Which of the following is home to the 642nd Aviation Support Battalion: Greater ",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Valley International Airport.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0474
+    },
+    {
+      "id": "5a78db8055429970f5fffdb2",
+      "question": "Flyboys stars which actor who was nominated for an Academy Award for \"127 Hours\"",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/James Franco.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0523
+    },
+    {
+      "id": "5a8900c75542997e5c09a6ed",
+      "question": "What ingredient is in both Cosmopolitan and Cuba Libre?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0476
+    },
+    {
+      "id": "5ae71f06554299572ea54708",
+      "question": "Christopher de Haro provided the financial backing to what Portuguese explorer w",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0536
+    },
+    {
+      "id": "5adc8977554299438c868de2",
+      "question": "What does the goddess associated with the goddess frigg  consists of what tales?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0677
+    },
+    {
+      "id": "5ab3d2b7554299233954ffb8",
+      "question": "The king deposed in the Glorious Revolution of 1688 was supported by the grandso",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 7,
+      "cost_usd": 0.1033
+    },
+    {
+      "id": "5ae18b555542997b2ef7d1f7",
+      "question": "How far from Buenos Aires is the birthplace of Ezequiel Lazaro? ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/C\u00f3rdoba, Argentina.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0473
+    },
+    {
+      "id": "5a78ce79554299029c4b5ea1",
+      "question": "Jacques Coghen is a direct ancestor to the spouse of which Belgian Queen?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0514
+    },
+    {
+      "id": "5a72634d5542997f82783994",
+      "question": "what city will host the event in which marie gisele eleme asse won twoo medals i",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0652
+    },
+    {
+      "id": "5a76538d5542992db9473764",
+      "question": "Which singer/songwriter is the Executive Vice President of A&R at Capitol Record",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0518
+    },
+    {
+      "id": "5ae2c2c05542996483e64a4a",
+      "question": "How many member universities are there in this conference of which the Connectic",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 15,
+      "cost_usd": 0.0801
+    },
+    {
+      "id": "5a77e2095542995d8318131d",
+      "question": "Who was person born in Sweden 1964 that founded Hidden City Entertainment in 200",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.052
+    },
+    {
+      "id": "5ae3e2455542994393b9e78c",
+      "question": "Scout Tufankjian and Daron Malakian are both what?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Daron Malakian.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0489
+    },
+    {
+      "id": "5ac51c2255429924173fb5b4",
+      "question": "Neil B. Shulman was the associate producer of what 1991 American romantic comedy",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.055
+    },
+    {
+      "id": "5adfa1f9554299025d62a308",
+      "question": "What is the full name of the captain of the Australian team that won the 1930 As",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Bill Woodfull.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0484
+    },
+    {
+      "id": "5adca8215542994ed6169bbc",
+      "question": "Which American actor tries to make his long distance relationship with Priya wor",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Johnny Galecki.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0494
+    },
+    {
+      "id": "5ac0c1cf5542992a796ded7c",
+      "question": "Crestfallen's artwork is done by a photographer of which nationality?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.052
+    },
+    {
+      "id": "5a78f8e555429970f5fffe01",
+      "question": "The British diver featured in Splash! specializes in what event?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Tom Daley.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0509
+    },
+    {
+      "id": "5ade64c7554299728e26c710",
+      "question": "Is Northeast Florida Regional Airport farther from St. Augustine than Glacier Pa",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 18,
+      "cost_usd": 0.0624
+    },
+    {
+      "id": "5ae35b6b5542990afbd1e116",
+      "question": "Knockout song was from which album of Lil Wayne on Cash Money Records ?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Rebirth (Lil Wayne album).md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0486
+    },
+    {
+      "id": "5ae72ab25542991e8301cb77",
+      "question": "Spider9 was founded in 2011 by the head of which subsidiary of Wanxiang Group?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure",
+        "get_note_structure",
+        "search"
+      ],
+      "paths_accessed": 19,
+      "cost_usd": 0.09
+    },
+    {
+      "id": "5ac2716f5542992f1f2b38cb",
+      "question": "What type of area did Michel Thomas work in when he was in the French Resistance",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0643
+    },
+    {
+      "id": "5a80c79155429938b61421da",
+      "question": "How many seasons has a popular tv show had, in which one of the episodes is call",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/The Simpsons (season 28).md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0706
+    },
+    {
+      "id": "5ae26fad554299495565da6f",
+      "question": "Which historical drama filmed in the Winter Palace of the Russian State Hermitag",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0523
+    },
+    {
+      "id": "5a71224f5542994082a3e5c1",
+      "question": "When was the actor born who starred in Nambia: The Struggle for Liberation and p",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Namibia_ The Struggle for Liberation.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0497
+    },
+    {
+      "id": "5add596f5542990dbb2f7e4d",
+      "question": "Grown-Ups starred the actor who was best known for which role on  \"'Allo 'Allo!\"",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0631
+    },
+    {
+      "id": "5adf37955542993a75d2642e",
+      "question": "What year did the actor, who appeared in \"One Life to Live\" and \"General Hospita",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0501
+    },
+    {
+      "id": "5ab29486554299545a2cf9a4",
+      "question": "Which has more members, Dada or Alt-J?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0511
+    },
+    {
+      "id": "5a7f84225542994857a76756",
+      "question": "The Pappas house is the largest of the Usonian Automatics built after a house lo",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 7,
+      "cost_usd": 0.0809
+    },
+    {
+      "id": "5a77dbaf5542997042120b5b",
+      "question": "Mikael \u00c5kerfeldt and Lee Ranaldo were this kind of instrumentalist in their resp",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0483
+    },
+    {
+      "id": "5ab7f1315542991d322237d1",
+      "question": "\"Look At Us Now\" is a song by American DJs based in which city ?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Lost Kings.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0488
+    },
+    {
+      "id": "5ade8802554299728e26c72d",
+      "question": "What company operates in Switzerland and is part of the name of an award Gene Ho",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Rolex.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 8,
+      "cost_usd": 0.0775
+    },
+    {
+      "id": "5ab7b0575542992aa3b8c83d",
+      "question": "Bally's & Paris station is on the monorail that is of what length?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 7,
+      "cost_usd": 0.0589
+    },
+    {
+      "id": "5a7a276d5542996c55b2dd27",
+      "question": "Who was Chamberlain and Colonel of the military staff of The Merrie Monarch?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Kal\u0101kaua.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0523
+    },
+    {
+      "id": "5ae0968955429924de1b7105",
+      "question": "When was the rock band to which Pre-Creedence name was changed active? ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0519
+    },
+    {
+      "id": "5a8d7b1755429941ae14dfc6",
+      "question": "What is the 2010 population of the city 2.1 miles southwest of Marietta Air Forc",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 19,
+      "cost_usd": 0.0694
+    },
+    {
+      "id": "5ac325495542995ef918c12e",
+      "question": "Which region of Ghana was the city where Akrofuom is located? ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Obuasi Municipal District.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 3,
+      "cost_usd": 0.0461
+    },
+    {
+      "id": "5a7f3c8f55429930675136c9",
+      "question": "Buck Rogers XXVC is a published campaign setting or a homebrew campaign setting?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Campaign setting.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0702
+    },
+    {
+      "id": "5ae400ab5542995dadf242be",
+      "question": "Were both the One, Inc. v. Olesen and  Erie Railroad Co. v. Tompkins cases ones ",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 14,
+      "cost_usd": 0.0921
+    },
+    {
+      "id": "5ae3a8985542992f92d82329",
+      "question": "Politician Lyman Sherwood was born in what New York county?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Hoosick, New York.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0755
+    },
+    {
+      "id": "5ab8883455429916710eb084",
+      "question": "The 2008 IIHF World Championship rosters recognized the top defenceman as which ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.049
+    },
+    {
+      "id": "5ae1c214554299234fd042ed",
+      "question": "Which  Australian singer-songwriter wrote  Cold Hard Bitch",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Nic Cester.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0488
+    },
+    {
+      "id": "5a86113355429960ec39b618",
+      "question": "Who had the lowest vocal range in Cosmos?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0516
+    },
+    {
+      "id": "5ae09ea05542993d6555ebc1",
+      "question": "The Bachelor was based on what novel written by an Austrian author?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0522
+    },
+    {
+      "id": "5a7a10755542996a35c170b1",
+      "question": "The most principle species of plants which requires an ericaceous type of compos",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "ToolSearch",
+        "get_note_structure"
+      ],
+      "paths_accessed": 13,
+      "cost_usd": 0.0909
+    },
+    {
+      "id": "5ac3aa3655429939154138a2",
+      "question": "What Albanian department is reasonbile for an international integration effort f",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0479
+    },
+    {
+      "id": "5ac2efd65542990b17b154c7",
+      "question": "What season of the Indian reality TV series \"Big Boss\" did the model Lopamundra ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Bigg Boss 10.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0682
+    },
+    {
+      "id": "5ab913205542991b5579f0e0",
+      "question": "The Sanders-Brown Center on Aging was funded by a grant from a businessman known",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0519
+    },
+    {
+      "id": "5ae641f65542992ae0d162a3",
+      "question": "What is the mononym of the Fillipino singer that released the album \"My Inspirat",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Jake Zyrus.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0484
+    },
+    {
+      "id": "5a74c1c05542996c70cfadd8",
+      "question": "What flag features 13 stars, and has a creator who also has a memorial bridge na",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0509
+    },
+    {
+      "id": "5abad70d5542996606241631",
+      "question": "How high on the US \"Billboard\" Hot 100 chart did Dan Smith's song reach in 2013?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 8,
+      "cost_usd": 0.0781
+    },
+    {
+      "id": "5adfb4b8554299603e418381",
+      "question": "What do K\u00e1\u0165a Kabanov\u00e1t and Der ferne Klang have in common?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure",
+        "get_note_structure"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0681
+    },
+    {
+      "id": "5a74684655429929fddd8410",
+      "question": "Which American music star appeared as a guest in a Will & Grace episode called \"",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Janet Jackson.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0571
+    },
+    {
+      "id": "5a76067e55429976ec32bce9",
+      "question": "What Box Codax group musician was also the guitarist, backing/lead vocalist and ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0483
+    },
+    {
+      "id": "5a8c90db554299653c1aa0bf",
+      "question": "Is the building located at 200 West Street taller than the one at 888 7th Avenue",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0545
+    },
+    {
+      "id": "5a8f6fbf5542992414482acd",
+      "question": "What was the nationality of the person Mountbatten Institute was named after?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0476
+    },
+    {
+      "id": "5a831fcc55429940e5e1a96a",
+      "question": "Does Kurt Cobain and Glenn Frey work in the music industry?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0487
+    },
+    {
+      "id": "5ae74818554299572ea547ad",
+      "question": "James Fowle Baldwin helped design a historic railroad that operated in Massachus",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0479
+    },
+    {
+      "id": "5ac44b47554299194317396c",
+      "question": "Which became a Cathedral first St Chad's Cathedral, Birmingham or Chelmsford Cat",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0554
+    },
+    {
+      "id": "5ae36ee05542992f92d822c4",
+      "question": "On what date will the election for which Krishanti Vignarajah is a declared Demo",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Maryland gubernatorial election, 2018.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0494
+    },
+    {
+      "id": "5a81ff1a554299676cceb1c2",
+      "question": "Oscar is what type of animal with black fur that may be a mixed or specific bree",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0474
+    },
+    {
+      "id": "5ab2b6fb5542992953946848",
+      "question": "The arena in which the Adelaide Adrenaline play is also home to the world's firs",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0521
+    },
+    {
+      "id": "5abd580855429924427fcfb8",
+      "question": "Both Dusty Drake and Joe Diffie sing which genre of music?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0737
+    },
+    {
+      "id": "5a7da4865542990b8f5039ed",
+      "question": "The Synod of Chester led to the battle of the same name that took place in what ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.074
+    },
+    {
+      "id": "5a80721b554299485f5985ef",
+      "question": "The Livesey Hal War Memorial commemorates the fallen of which war, that had over",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/World War II casualties.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0495
+    },
+    {
+      "id": "5abe49765542991f6610611f",
+      "question": "The Bulls\u2013Knicks rivalry involved a well known player who was how tall? ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.1055
+    },
+    {
+      "id": "5a771d6155429966f1a36c6d",
+      "question": "What lieutenant general stayed in the Elliott-Donaldson House?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Nathan Bedford Forrest.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0494
+    },
+    {
+      "id": "5a872c3f5542994775f607a8",
+      "question": "Which company is an American petroleum company, EOG Resources Inc. or General Mi",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.048
+    },
+    {
+      "id": "5a7929c8554299029c4b5f11",
+      "question": "Which breed of dog has origins outside of the United States, Old German Shepherd",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0476
+    },
+    {
+      "id": "5adec53655429975fa854f87",
+      "question": "Are Kim Dong-jun and Charlie Harper both singers?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0508
+    },
+    {
+      "id": "5adcfb5f5542990d50227d81",
+      "question": "Are Grant Nicholas and Danny Shirley both American singers?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0532
+    },
+    {
+      "id": "5a7f46115542994857a766d9",
+      "question": "What dynasty was the creator of Mouten Cadet wine a part of?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.048
+    },
+    {
+      "id": "5ab236645542993be8fa98c9",
+      "question": "August R. Lindt served as chairman of a UN program from 1956 to 1960 that won ho",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0715
+    },
+    {
+      "id": "5ab31adc554299233954ff0a",
+      "question": "How much Argentina currency was involved in Boudougate?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0568
+    },
+    {
+      "id": "5a7fa48c5542994857a7679a",
+      "question": "In addition to Syosset Central, Half Hollow Hills Central, and the school distri",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0695
+    },
+    {
+      "id": "5a77309d55429972597f1487",
+      "question": "Who was born first, Jos\u00e9 Echegaray y Eizaguirre or P. J. O'Rourke?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0511
+    },
+    {
+      "id": "5a8a429955429930ff3c0d34",
+      "question": "The first of the Simon Bloom books was optioned by a company founded in what yea",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 8,
+      "cost_usd": 0.0595
+    },
+    {
+      "id": "5a7fb17c5542994857a767bb",
+      "question": "Which two teams did the the head coach of The 2007 San Diego State Aztecs play f",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0529
+    },
+    {
+      "id": "5ae524415542992663a4f121",
+      "question": "In what city did the 23rd overall pick of the 2015 NHL Entry Draft helped the Un",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 7,
+      "cost_usd": 0.0688
+    },
+    {
+      "id": "5abbee315542993f40c73c1d",
+      "question": "Could you read both Bicycling and National Review",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0517
+    },
+    {
+      "id": "5ab3c05d55429969a97a81aa",
+      "question": "How many times has the author of Negotiating with the Dead been shortlisted for ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Negotiating with the Dead.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 7,
+      "cost_usd": 0.0609
+    },
+    {
+      "id": "5ae444b55542996836b02c63",
+      "question": "When was the brewery founded which has The Stag Inn Hastings as a tied house ?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0481
+    },
+    {
+      "id": "5abfa5fb5542990832d3a183",
+      "question": "Where is the  city and \"comune\" in Emilia-Romagna in which talian Renaissance pa",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Ferrara.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0491
+    },
+    {
+      "id": "5ac3b04f55429939154138b7",
+      "question": "Which railway is a part of Summerseat and also runs between Heywood and Rawtenst",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0487
+    },
+    {
+      "id": "5a81f49c5542995ce29dcc9a",
+      "question": "The physicist that saw a deficiency in Newton's classical theory of gravity rece",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Cosmic catastrophe.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 7,
+      "cost_usd": 0.0761
+    },
+    {
+      "id": "5ab6c94c554299710c8d1f5e",
+      "question": "What New York City\u2013based hip-hop musical group consists of rappers including Dar",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Wu-Tang Clan anthology.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0485
+    },
+    {
+      "id": "5adfd30c55429906c02daa53",
+      "question": "What movie studio produced The Benchwarmers, which starred Rob Schneider and Nap",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0545
+    },
+    {
+      "id": "5ab5744e554299494045efdf",
+      "question": "The third solo album by David Gates of Bread shares a name with a 1977 film dire",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 19,
+      "cost_usd": 0.0763
+    },
+    {
+      "id": "5a7577145542996c70cfaf03",
+      "question": "Which park is larger, Timanfaya National Park or Sierra Nevada National Park?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0529
+    },
+    {
+      "id": "5a80838d5542992bc0c4a745",
+      "question": "Which game can have more players, The Magic Labyrinth or Shogun?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 16,
+      "cost_usd": 0.0791
+    },
+    {
+      "id": "5add47085542997545bbbd13",
+      "question": "What English-American actor known for his role in \"Raiders of the Lost Ark\" star",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/The Lodger (2009 film).md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0704
+    },
+    {
+      "id": "5abfd3d65542994516f4550b",
+      "question": "Are both Don Giovanni and Cardillac operas with three acts?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0508
+    },
+    {
+      "id": "5a7ba83f5542995eb53be981",
+      "question": "Who was born more recently, Billy Corgan or Jeff Martin?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0509
+    },
+    {
+      "id": "5ae72e5d5542991e8301cba8",
+      "question": "What position did the winner of the MVP in Pool C of the 2017 WBC play?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Manny Machado.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "ToolSearch",
+        "get_note_structure"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.074
+    },
+    {
+      "id": "5a70eee85542994082a3e3f0",
+      "question": "Which group of people in West Africa with significant populations in Ghana, Ivor",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Yoruba people.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 8,
+      "cost_usd": 0.0602
+    },
+    {
+      "id": "5a8bd43c5542997f31a41dd6",
+      "question": "Of which painting was this German dancer, actress, and writer who lived during t",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0489
+    },
+    {
+      "id": "5ab6b13b554299710c8d1f3f",
+      "question": "The Roissy Airport connects to Paris and cities in what countries?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0765
+    },
+    {
+      "id": "5abac89d55429901930fa8b5",
+      "question": "How many Golden Globe Awards did this English retired actress whose career has s",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 9,
+      "cost_usd": 0.0622
+    },
+    {
+      "id": "5add2b865542992c1e3a2550",
+      "question": "Which Persian historical figure was an astronomer, Al-Karaji or Ahmad Nahavandi?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.053
+    },
+    {
+      "id": "5a74ee175542996c70cfae41",
+      "question": "Which Indian actor is best known for his role in the film Tadakha following his ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0489
+    },
+    {
+      "id": "5ae5e8c85542996de7b71a69",
+      "question": "Name the actor who has acted in the film Arrival and who has been nominated for ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0599
+    },
+    {
+      "id": "5a7c49dc55429935c91b514f",
+      "question": "The head of the Foreign Relations Department of the Rastriya Janashakti Party ho",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Master of Science.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0527
+    },
+    {
+      "id": "5ae527945542993aec5ec167",
+      "question": "The youngest male model ever to participate in Seoul Fashion Week stars with Par",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 15,
+      "cost_usd": 0.0711
+    },
+    {
+      "id": "5ab2979c554299449642c919",
+      "question": "Pawnography, featuring Richard Corey Harrison, is filmed in what shop and town?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0479
+    },
+    {
+      "id": "5ac370ce5542995ef918c18c",
+      "question": "Are Southwest Florida International Airport and Henry E. Rohlsen Airport both in",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0522
+    },
+    {
+      "id": "5ac01e77554299012d1db5ac",
+      "question": "By what type of music was this English composer who collaborated with Ella Mary ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 7,
+      "cost_usd": 0.0594
+    },
+    {
+      "id": "5abbfbcf55429965836003cf",
+      "question": "James Leal Greenleaf worked on a monument located where? ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Lincoln Memorial.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0568
+    },
+    {
+      "id": "5a8cfa2e554299585d9e378b",
+      "question": "What career did the British actor born in 1965  and star of Lock, Stock and Two ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 8,
+      "cost_usd": 0.0636
+    },
+    {
+      "id": "5ab2b5a0554299295394683c",
+      "question": "What are the symptoms of the virus identified by Robert Purcell?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0582
+    },
+    {
+      "id": "5ab9625e55429970cfb8eaa9",
+      "question": "Fort Snelling spurred growth of Saint Paul was located in this county?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0474
+    },
+    {
+      "id": "5add7ce55542992ae4cec585",
+      "question": "When was the Swiss author and dramatist died who's novel is \"A Dangerous Game\"?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Male Nilluvavarege.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0482
+    },
+    {
+      "id": "5a836a765542996488c2e446",
+      "question": "are Mikhail Glinka and Jean-Baptiste Lully both composers ?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0489
+    },
+    {
+      "id": "5a76334c5542994ccc918710",
+      "question": "Where is the author of Killing Pablo: The Hunt for the World's Greatest Outlaw (",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.049
+    },
+    {
+      "id": "5a81d1f0554299676cceb0ee",
+      "question": "Which part of Handel's Messiah covers the birth of a child who, according to the",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_section_content"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0779
+    },
+    {
+      "id": "5a7119f75542994082a3e58e",
+      "question": "When was the composer of \"Persian Surgery Dervishes\" born?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0565
+    },
+    {
+      "id": "5abbf8bc5542993f40c73c35",
+      "question": "Are both Viken Babikian and Don Manoukian American ?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 6,
+      "cost_usd": 0.0511
+    },
+    {
+      "id": "5ae6050f55429929b0807a5e",
+      "question": "This singer of A Rather Blustery Day also voiced what hedgehog?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0526
+    },
+    {
+      "id": "5adfa3da554299025d62a317",
+      "question": "What is the birthday of the actress who was the Duchess in \"The Revengers Traged",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure",
+        "search"
+      ],
+      "paths_accessed": 8,
+      "cost_usd": 0.0668
+    },
+    {
+      "id": "5ade79335542997c77adee38",
+      "question": "The Ran Paul presidential campaign, 2016 event was held at a hotel on what river",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Galt House.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0479
+    },
+    {
+      "id": "5adc6ca85542994650320ce1",
+      "question": "The 1998\u201399 Los Angeles Lakers season included the signing of the rebounding spe",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Dennis Rodman.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0579
+    },
+    {
+      "id": "5a77e70f5542992a6e59dfeb",
+      "question": "What is the title of the 1979 film adaptation of William Shakespeare's play in w",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 19,
+      "cost_usd": 0.071
+    },
+    {
+      "id": "5abbf7d755429931dba145eb",
+      "question": "ICI House is now named after the company that provides what type of item?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Orica.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.051
+    },
+    {
+      "id": "5abba584554299642a094afa",
+      "question": "How many yards did the nephew of Ivory Lee Brown get during his 2004 true freshm",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure",
+        "get_note_structure"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0702
+    },
+    {
+      "id": "5aba749855429955dce3ee34",
+      "question": "Minneapolis hip hop collective member that released album in 2006?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Doomtree.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0481
+    },
+    {
+      "id": "5a7e052d5542995f4f40238e",
+      "question": "The Joggers are a four-piece band whose lead singer is the son of an American ch",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 26,
+      "cost_usd": 0.0955
+    },
+    {
+      "id": "5add39ca5542992ae4cec4fb",
+      "question": "Which maker of Robatumumab is American?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Merck &amp; Co..md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0481
+    },
+    {
+      "id": "5a83aaeb5542996488c2e483",
+      "question": "What studio album did Kanye West record with Roc-A-Fella Records and soul singer",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 8,
+      "cost_usd": 0.0623
+    },
+    {
+      "id": "5ab66b63554299110f219a0a",
+      "question": "The Transylvanian Hound and Jack Russell Terrier were originally bred for what a",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0485
+    },
+    {
+      "id": "5a7c6d98554299683c1c6304",
+      "question": "What ABC television series was inspired by a 2011 film and cast Dominic Cooper a",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Agent Carter (TV series).md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0489
+    },
+    {
+      "id": "5ae7316e554299572ea5477e",
+      "question": "Band-e-Amir Dragons is named after the lakes in which Afghan national park?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 3,
+      "cost_usd": 0.0461
+    },
+    {
+      "id": "5ade8b2655429975fa854eff",
+      "question": "What is the nickname of this American retired airline captain celebrated for his",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0489
+    },
+    {
+      "id": "5a7e283655429965cec5eaab",
+      "question": "The founder of this Canadian owned, American manufacturer of business jets for c",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.052
+    },
+    {
+      "id": "5a81ea115542995ce29dcc78",
+      "question": "The compilation EP \"COM LAG \" by Radiohead collects many B-side singles from the",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0482
+    },
+    {
+      "id": "5ade15a45542997545bbbe46",
+      "question": "Are both Upper Crust Pizzeria and Eatza Pizza restaurants?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0521
+    },
+    {
+      "id": "5a778cae55429949eeb29eeb",
+      "question": "Who is younger Chris Gould or Robbie Gould ?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.052
+    },
+    {
+      "id": "5a80f499554299260e20a1d9",
+      "question": "Khushi Ek Roag is broadcast by a company based out of where?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/ARY Digital.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 3,
+      "cost_usd": 0.047
+    },
+    {
+      "id": "5a77767a55429967ab10519b",
+      "question": "Which interviewee featured in The History of Sex also hosted the radio show \"Sex",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0523
+    },
+    {
+      "id": "5a8bae135542996e8ac889b6",
+      "question": "Nathan Bridger was a character played by which actor and amateur boxer?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0472
+    },
+    {
+      "id": "5ae005b555429942ec259bec",
+      "question": "In what year was the novel that Louren\u00e7o Mutarelli based \"Nina\" on based first p",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 7,
+      "cost_usd": 0.0595
+    },
+    {
+      "id": "5ae75eb45542991bbc976201",
+      "question": "Norman Buckley is associated with a family drama for what cable network, formerl",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/The Fosters (2013 TV series).md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0755
+    },
+    {
+      "id": "5ae8202255429952e35eaa3a",
+      "question": "What Japanese fashion label was founded by the creator of Dover Street Market?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0791
+    },
+    {
+      "id": "5ae195bf5542997b2ef7d207",
+      "question": "Are the Galata Tower and S\u00fcleymaniye Mosque located in the same city?",
+      "type": "comparison",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0482
+    },
+    {
+      "id": "5ac2da27554299657fa2909f",
+      "question": "Which town was home to a forward for the Western New York Flash? ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Massapequa, New York.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0482
+    },
+    {
+      "id": "5ae6914755429908198fa627",
+      "question": "Brian Olsen was the lst WEC heavyweight champion before the promotion company fo",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 19,
+      "cost_usd": 0.0763
+    },
+    {
+      "id": "5ac248fd55429951e9e68525",
+      "question": "What is the approximate population of the town near which Forward Operating Base",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 9,
+      "cost_usd": 0.0598
+    },
+    {
+      "id": "5ab2da99554299194fa93544",
+      "question": "Who aided the Colorado forces in the Uruguayan war?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.052
+    },
+    {
+      "id": "5ac2782d55429963665199cc",
+      "question": "Aleksandras Stulginskis' successor held office between what dates?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0485
+    },
+    {
+      "id": "5a8f2ba155429918e830d1b9",
+      "question": "What theme park was seen as a competitor for Ocean Park Hong Kong and opened in ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.048
+    },
+    {
+      "id": "5abda6e955429965af743d9b",
+      "question": "What country does Ogwini Comprehensive Technical High School and Durban have in ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0525
+    },
+    {
+      "id": "5a728f015542991f9a20c4e4",
+      "question": "Which star of Zork was also the voice of Pac-Man?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Zork_ Grand Inquisitor.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0534
+    },
+    {
+      "id": "5a8e3ea95542995a26add48d",
+      "question": "The director of the romantic comedy \"Big Stone Gap\" is based in what New York ci",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 20,
+      "cost_usd": 0.068
+    },
+    {
+      "id": "5ae1b8075542997283cd2262",
+      "question": "What muffler repair shop owner inspired Andrey Zvyagintsev's film Leviathan?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.053
+    },
+    {
+      "id": "5adf85e05542993344016cba",
+      "question": "What football league did John Moncur belong to during his time at Ipswich Town F",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 7,
+      "cost_usd": 0.0953
+    },
+    {
+      "id": "5a7c084d5542997c3ec972c8",
+      "question": "Syracuse Orange men's basketball team was part of a conference that participated",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0796
+    },
+    {
+      "id": "5ade69e455429975fa854ec5",
+      "question": "What director worked with Vikram Bhatt on a film starring actors Rajneesh Duggal",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 21,
+      "cost_usd": 0.1547
+    },
+    {
+      "id": "5adf734b5542995ec70e9016",
+      "question": "What show other than Hello Ross did Chelsea Handler appear on in January of 2016",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Hello Ross.md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0528
+    },
+    {
+      "id": "5ae0b0ab55429945ae959423",
+      "question": "The 2000\u201301 A.S. Roma season had several important signings, one of which was a ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "get_note_structure",
+        "search",
+        "get_note_structure"
+      ],
+      "paths_accessed": 8,
+      "cost_usd": 0.0877
+    },
+    {
+      "id": "5a77727555429972597f1540",
+      "question": "Which actress appeared in Studio 60 on the Sunset Strip in 2007 and American Hor",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/Blood Bath (American Horror Story).md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0487
+    },
+    {
+      "id": "5a79c2955542994f819ef097",
+      "question": "Of the two Sopranos co-stars who starred in a 2009 American thriller film togeth",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 1,
+      "docs_missed": [
+        "docs/The Taking of Pelham 123 (2009 film).md"
+      ],
+      "recall": 0.5,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0817
+    },
+    {
+      "id": "5ab9180b5542991b5579f0f3",
+      "question": "The Running Man Brothers is a South Korean pop duo. Kim Jong-kook is one member ",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 5,
+      "cost_usd": 0.0483
+    },
+    {
+      "id": "5a7e1ad155429965cec5ea66",
+      "question": "The first book in the Sprawl Trilogy won what three awards?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search"
+      ],
+      "paths_accessed": 10,
+      "cost_usd": 0.0738
+    }
+  ]
+}

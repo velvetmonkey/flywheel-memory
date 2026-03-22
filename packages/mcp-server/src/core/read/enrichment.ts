@@ -498,8 +498,8 @@ export function enrichEntityCompact(
 
 /**
  * Compact enrichment for note results from recall.
- * Returns: tags, category, hub_score, backlink_count, outlink_names[], modified.
- * Removes frontmatter, top_backlinks/top_outlinks full arrays.
+ * Returns: frontmatter, tags, category, hub_score, backlink_count, outlink_names[], modified.
+ * Removes top_backlinks/top_outlinks full arrays.
  */
 export function enrichNoteCompact(
   notePath: string,
@@ -515,6 +515,7 @@ export function enrichNoteCompact(
   const normalizedPath = notePath.toLowerCase().replace(/\.md$/, '');
   const backlinks = index.backlinks.get(normalizedPath) || [];
 
+  if (Object.keys(note.frontmatter).length > 0) enriched.frontmatter = note.frontmatter;
   if (note.tags.length > 0) enriched.tags = note.tags;
   enriched.backlink_count = backlinks.length;
   enriched.modified = note.modified.toISOString();

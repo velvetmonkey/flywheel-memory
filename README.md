@@ -10,7 +10,7 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![HotpotQA](https://img.shields.io/badge/HotpotQA-83.2%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+[![HotpotQA](https://img.shields.io/badge/HotpotQA-84.8%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![Tests](https://img.shields.io/badge/tests-2,600%2B%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **If you use AI with an Obsidian vault**, this is for you. By default, AI agents reach for the filesystem — reading files one at a time, writing raw text, losing context between sessions. Flywheel is an MCP server that runs locally alongside your vault, giving any MCP-compatible AI a pre-indexed knowledge graph, enriched search, safe writes with auto-wikilinks, and persistent memory — so it can answer questions about your notes in milliseconds instead of reading every file.
@@ -44,11 +44,11 @@ Then ask: *"How much have I billed Acme Corp?"*
 
 | Metric | Result |
 |--------|--------|
-| Document Recall | **83.2%** (333/400 supporting docs found) |
-| Full Recall (both docs found) | **69.0%** (138/200 questions) |
-| Partial Recall (≥1 doc found) | **97.5%** (195/200 questions) |
-| Bridge (multi-hop) | 80.6% |
-| Comparison | 95.7% |
+| Document Recall | **84.8%** (339/400 supporting docs found) |
+| Full Recall (both docs found) | **70.0%** (140/200 questions) |
+| Partial Recall (≥1 doc found) | **99.5%** (199/200 questions) |
+| Bridge (multi-hop) | 82.1% |
+| Comparison | 97.1% |
 
 End-to-end on [HotpotQA](https://hotpotqa.github.io/) — 200 hard multi-hop questions, 1,993 documents, real Claude + Flywheel via `claude -p`. No cherry-picking, no pre-processing, no trained retriever. Multi-hop backfill follows links from found documents to discover second-hop results — zero LLM re-ranking. $0.062/question.
 
@@ -279,7 +279,7 @@ Most Obsidian AI tools are either simple MCP bridges (read/write files, no graph
 | Learns from usage | Feedback loop + suppression + co-occurrence | No | No |
 | Agent memory | brief + recall + memory | No | No |
 | Safe writes | Git + conflict detection + dry-run | No | N/A |
-| Retrieval benchmark | 83.2% on HotpotQA (200q, e2e) | None published | None published |
+| Retrieval benchmark | 84.8% on HotpotQA (200q, e2e) | None published | None published |
 | Tool count | 69 | ~5-15 | 0 (plugin) |
 
 ---

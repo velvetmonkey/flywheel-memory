@@ -387,7 +387,7 @@ export function registerQueryTools(
             const filtered = applyFolderFilter(scored);
 
             const stateDb = getStateDb();
-            const results = filtered.slice(0, limit).map(item => ({
+            const results: Array<Record<string, unknown>> = filtered.slice(0, limit).map(item => ({
               ...enrichResultCompact({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
               rrf_score: item.rrf_score,
               in_fts5: item.in_fts5,
@@ -425,7 +425,7 @@ export function registerQueryTools(
           const filtered = applyFolderFilter(mergedItems);
           const stateDb = getStateDb();
           const sliced = filtered.slice(0, limit);
-          const results = sliced.map(item => ({
+          const results: Array<Record<string, unknown>> = sliced.map(item => ({
             ...enrichResultCompact({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
             ...('in_fts5' in item ? { in_fts5: true } : { in_entity: true }),
           }));

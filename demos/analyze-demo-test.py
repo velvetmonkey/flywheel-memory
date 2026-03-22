@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Analyze demo test results — extract tool calls per beat, verify expectations, and report category coverage."""
+"""Analyze demo test results — extract tool calls per beat, verify expectations, report category coverage, and token economics."""
 
+import glob as globmod
 import json
 import sys
 import os
@@ -106,6 +107,94 @@ EXPECTED_TOOLS = {
 }
 
 
+# Baseline files per beat: what you'd read without Flywheel to answer the same question.
+# Globs are resolved relative to the demo vault directory.
+BASELINE_FILES = {
+    "beat1-brief": ["daily-notes/*.md", "weekly-notes/*.md"],
+    "beat2-billing": ["clients/*.md", "invoices/*.md"],
+    "beat3-tasks": [],       # write-only
+    "beat4-showstopper": [], # write-only
+    "beat5-assign": ["team/*.md", "proposals/*.md"],
+    "beat6-meeting": [],     # write-only
+    "beat7-pipeline": ["clients/*.md", "projects/*.md", "proposals/*.md",
+                        "invoices/*.md", "team/*.md"],
+}
+
+
+def compute_baseline_tokens(demo_dir, globs):
+    """Sum file sizes for baseline glob patterns, return estimated tokens (size / 4)."""
+    total_bytes = 0
+    files_count = 0
+    for pattern in globs:
+        for filepath in globmod.glob(os.path.join(demo_dir, pattern)):
+            try:
+                total_bytes += os.path.getsize(filepath)
+                files_count += 1
+            except OSError:
+                pass
+    return total_bytes // 4, files_count
+
+
+def extract_flywheel_tool_tokens(jsonl_path):
+    """Extract flywheel tool result text sizes from stream-json JSONL.
+    Only counts results from flywheel tools (not builtins like ToolSearch, Read).
+    Returns (estimated_tokens, list_of_flywheel_tools_used)."""
+    tool_use_names = {}  # tool_use_id -> tool_name
+    total_chars = 0
+    tools_used = []
+    try:
+        with open(jsonl_path) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if obj.get("type") == "assistant":
+                    for block in obj.get("message", {}).get("content", []):
+                        if isinstance(block, dict) and block.get("type") == "tool_use":
+                            tool_use_names[block["id"]] = normalize_tool(block["name"])
+                elif obj.get("type") == "user":
+                    for block in obj.get("message", {}).get("content", []):
+                        if isinstance(block, dict) and block.get("type") == "tool_result":
+                            tool_name = tool_use_names.get(block.get("tool_use_id", ""), "unknown")
+                            # Only count flywheel tools, not builtins
+                            if tool_name not in TOOL_CATEGORY:
+                                continue
+                            tools_used.append(tool_name)
+                            content = block.get("content", [])
+                            if isinstance(content, list):
+                                for c in content:
+                                    if isinstance(c, dict) and c.get("type") == "text":
+                                        total_chars += len(c["text"])
+                            elif isinstance(content, str):
+                                total_chars += len(content)
+    except FileNotFoundError:
+        pass
+    return total_chars // 4, tools_used
+
+
+def extract_api_cost(jsonl_path):
+    """Extract total API cost from the result block in stream-json JSONL."""
+    try:
+        with open(jsonl_path) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if obj.get("type") == "result":
+                    return obj.get("total_cost_usd", 0)
+    except FileNotFoundError:
+        pass
+    return 0
+
+
 def extract_tool_calls(jsonl_path):
     """Extract ALL tool names from a stream-json JSONL file (flywheel + builtin)."""
     tools = []
@@ -142,6 +231,8 @@ def categorize_tool(name):
 def main():
     parser = argparse.ArgumentParser(description="Analyze demo beat test results")
     parser.add_argument("results_dir", help="Path to results directory")
+    parser.add_argument("--demo-dir", metavar="PATH", help="Demo vault directory for baseline file sizes",
+                        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "carter-strategy"))
     parser.add_argument("--update-docs", metavar="PATH", help="Update TESTING.md at PATH with results")
     args = parser.parse_args()
 
@@ -256,6 +347,64 @@ def main():
     lines.append(f"**Coverage:** {len(flywheel_used)}/69 flywheel tools used")
     lines.append("")
 
+    # Token Economics
+    token_beats = []
+    total_flywheel_tokens = 0
+    total_baseline_tokens = 0
+    total_api_cost = 0.0
+
+    lines.append("## Token Economics")
+    lines.append("")
+    lines.append("| Beat | Flywheel Tokens | Baseline Tokens | Savings | Ratio | API Cost |")
+    lines.append("|------|----------------|-----------------|---------|-------|----------|")
+
+    for beat_name in sorted(EXPECTED_TOOLS.keys()):
+        jsonl_path = raw_dir / f"{beat_name}.jsonl"
+        flywheel_tokens, fw_tools = extract_flywheel_tool_tokens(str(jsonl_path))
+        api_cost = extract_api_cost(str(jsonl_path))
+        total_api_cost += api_cost
+
+        baseline_globs = BASELINE_FILES.get(beat_name, [])
+        if not baseline_globs:
+            # Write-only beat — no baseline comparison
+            token_beats.append({
+                "beat": beat_name,
+                "flywheel_tokens": flywheel_tokens,
+                "baseline_tokens": 0,
+                "savings_ratio": 0,
+                "baseline_files": 0,
+                "flywheel_tools": fw_tools,
+                "api_cost_usd": round(api_cost, 4),
+                "type": "write",
+            })
+            lines.append(f"| {beat_name} | {flywheel_tokens:,} | — | — | (write) | ${api_cost:.2f} |")
+            continue
+
+        baseline_tokens, baseline_files = compute_baseline_tokens(args.demo_dir, baseline_globs)
+        savings = baseline_tokens - flywheel_tokens
+        ratio = round(baseline_tokens / flywheel_tokens, 1) if flywheel_tokens > 0 else 0
+
+        total_flywheel_tokens += flywheel_tokens
+        total_baseline_tokens += baseline_tokens
+
+        token_beats.append({
+            "beat": beat_name,
+            "flywheel_tokens": flywheel_tokens,
+            "baseline_tokens": baseline_tokens,
+            "savings_ratio": ratio,
+            "baseline_files": baseline_files,
+            "flywheel_tools": fw_tools,
+            "api_cost_usd": round(api_cost, 4),
+            "type": "read",
+        })
+        lines.append(f"| {beat_name} | {flywheel_tokens:,} | {baseline_tokens:,} | {savings:,} | {ratio}x | ${api_cost:.2f} |")
+
+    lines.append("")
+    overall_ratio = round(total_baseline_tokens / total_flywheel_tokens, 1) if total_flywheel_tokens > 0 else 0
+    lines.append(f"**Overall (read beats):** {total_flywheel_tokens:,} flywheel tokens vs {total_baseline_tokens:,} baseline tokens (**{overall_ratio}x savings**)")
+    lines.append(f"**Total API Cost:** ${total_api_cost:.2f} across {len(EXPECTED_TOOLS)} beats")
+    lines.append("")
+
     report = "\n".join(lines)
 
     # Print to stdout
@@ -276,6 +425,13 @@ def main():
             "beats": results,
             "tool_usage": dict(all_tools_used),
             "flywheel_tools_used": len(flywheel_used),
+            "token_economics": {
+                "beats": token_beats,
+                "total_flywheel_tokens": total_flywheel_tokens,
+                "total_baseline_tokens": total_baseline_tokens,
+                "overall_savings_ratio": overall_ratio,
+                "total_api_cost_usd": round(total_api_cost, 4),
+            },
         }, f, indent=2)
     print(f"Summary written to {summary_path}", file=sys.stderr)
 

@@ -1,0 +1,119 @@
+{
+  "generated": "2026-03-22T13:26:01.824846",
+  "dataset": "hotpot_dev_distractor_v1",
+  "total_questions": 5,
+  "total_documents": 50,
+  "overall_recall": 0.2,
+  "full_recall_count": 1,
+  "partial_recall_count": 1,
+  "total_cost_usd": 0.1422,
+  "by_type": {
+    "bridge": {
+      "recall": 0.2,
+      "found": 2,
+      "relevant": 10,
+      "count": 5
+    }
+  },
+  "by_level": {
+    "hard": {
+      "recall": 0.2,
+      "found": 2,
+      "relevant": 10,
+      "count": 5
+    }
+  },
+  "per_question": [
+    {
+      "id": "5a808c215542995d8a8ddf90",
+      "question": "Who's fifth album and debut single are Startin' Fires and Austin respectively?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 2,
+      "docs_missed": [],
+      "recall": 1.0,
+      "tools_used": [
+        "ToolSearch",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "search",
+        "get_note_structure",
+        "get_note_structure",
+        "get_note_structure",
+        "get_note_structure",
+        "search",
+        "search"
+      ],
+      "paths_accessed": 19,
+      "cost_usd": 0.1422
+    },
+    {
+      "id": "5ab8919655429934fafe6e13",
+      "question": "Who used a Barrack buster to shoot down a British Army Lynx helicopter",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 0,
+      "docs_missed": [
+        "docs/1994 British Army Lynx shootdown.md",
+        "docs/Barrack buster.md"
+      ],
+      "recall": 0.0,
+      "tools_used": [],
+      "paths_accessed": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "5a89706055429951533612f9",
+      "question": "Scott Sandelin grew up in a town in what Minnesota county?",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 0,
+      "docs_missed": [
+        "docs/Hibbing, Minnesota.md",
+        "docs/Scott Sandelin.md"
+      ],
+      "recall": 0.0,
+      "tools_used": [],
+      "paths_accessed": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "5a7cb9b95542990527d55515",
+      "question": "What is the year of the event that occured first, Making Today a Perfect Day was",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 0,
+      "docs_missed": [
+        "docs/Frozen Fever.md",
+        "docs/Making Today a Perfect Day.md"
+      ],
+      "recall": 0.0,
+      "tools_used": [],
+      "paths_accessed": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "5a875b755542996e4f308796",
+      "question": "The song \"Medicine\" by The 1975 appears in a film directed by what Danish filmma",
+      "type": "bridge",
+      "level": "hard",
+      "supporting_docs": 2,
+      "docs_found": 0,
+      "docs_missed": [
+        "docs/Drive (2011 film).md",
+        "docs/Medicine (The 1975 song).md"
+      ],
+      "recall": 0.0,
+      "tools_used": [],
+      "paths_accessed": 0,
+      "cost_usd": 0.0
+    }
+  ]
+}

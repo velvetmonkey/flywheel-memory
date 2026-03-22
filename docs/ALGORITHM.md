@@ -84,6 +84,10 @@ Co-occurrence candidates must also have at least 1 word overlapping with the con
 
 Co-occurrence strength uses **NPMI (Normalized Pointwise Mutual Information)** scoring to penalize ubiquitous entities. An entity that co-occurs with everything gets a lower boost than one with a focused co-occurrence pattern. The `computeNpmi()` function scales by PMI_SCALE=12, capped at 12.
 
+**Retrieval co-occurrence** adds a second signal: notes that are frequently retrieved together in search/recall sessions build implicit associations. The watcher mines `tool_invocations` for co-retrieved note pairs, weights them with Adamic-Adar (smaller sessions = stronger signal), and applies 7-day exponential decay. The final boost is `Math.max(contentBoost, retrievalBoost)` — the stronger signal wins, no double-counting. Retrieval boost caps at 6 (half of content co-occurrence max).
+
+**Multi-hop search backfill.** Search results automatically include documents linked from top results. When a search finds document A which mentions entity B, document B is included in the result set at lower rank. This enables second-hop retrieval without LLM re-ranking — measured at 87% document recall on HotpotQA hard questions (up from 78% without backfill).
+
 ### Layer 3: Type Boost
 
 Different entity categories have different baseline value for linking. People are almost always worth linking. Common technology names can over-saturate if boosted.

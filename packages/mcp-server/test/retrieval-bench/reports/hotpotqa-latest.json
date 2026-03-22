@@ -1,0 +1,70 @@
+{
+  "generated": "2026-03-22T13:18:34.054Z",
+  "dataset": "hotpot_dev_distractor_v1",
+  "total_questions": 200,
+  "total_documents": 1993,
+  "metrics": {
+    "total_queries": 200,
+    "recall_at_5": 0.74,
+    "recall_at_10": 0.868,
+    "precision_at_5": 0.296,
+    "mrr": 0.87,
+    "ndcg_at_10": 0.766
+  },
+  "by_type": {
+    "bridge": {
+      "total_queries": 165,
+      "recall_at_5": 0.712,
+      "recall_at_10": 0.852,
+      "precision_at_5": 0.285,
+      "mrr": 0.863,
+      "ndcg_at_10": 0.745
+    },
+    "comparison": {
+      "total_queries": 35,
+      "recall_at_5": 0.871,
+      "recall_at_10": 0.943,
+      "precision_at_5": 0.349,
+      "mrr": 0.906,
+      "ndcg_at_10": 0.864
+    }
+  },
+  "by_level": {
+    "hard": {
+      "total_queries": 200,
+      "recall_at_5": 0.74,
+      "recall_at_10": 0.868,
+      "precision_at_5": 0.296,
+      "mrr": 0.87,
+      "ndcg_at_10": 0.766
+    }
+  },
+  "pipeline_comparison": {
+    "fts5_only": {
+      "total_queries": 200,
+      "recall_at_5": 0.74,
+      "recall_at_10": 0.868,
+      "precision_at_5": 0.296,
+      "mrr": 0.87,
+      "ndcg_at_10": 0.766
+    },
+    "notes_with_graph": {
+      "total_queries": 200,
+      "recall_at_5": 0.71,
+      "recall_at_10": 0.868,
+      "precision_at_5": 0.284,
+      "mrr": 0.809,
+      "ndcg_at_10": 0.731
+    },
+    "entities_and_notes_with_graph": {
+      "total_queries": 200,
+      "recall_at_5": 0.873,
+      "recall_at_10": 1.185,
+      "precision_at_5": 0.349,
+      "mrr": 0.812,
+      "ndcg_at_10": 0.892
+    },
+    "recall_5_improvement": "+13.3pp",
+    "mrr_improvement": "-0.058"
+  }
+}

@@ -109,7 +109,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 29;
+export const SCHEMA_VERSION = 30;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -303,7 +303,9 @@ CREATE TABLE IF NOT EXISTS tool_invocations (
   session_id TEXT,
   note_paths TEXT,
   duration_ms INTEGER,
-  success INTEGER NOT NULL DEFAULT 1
+  success INTEGER NOT NULL DEFAULT 1,
+  response_tokens INTEGER,
+  baseline_tokens INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_tool_inv_ts ON tool_invocations(timestamp);
 CREATE INDEX IF NOT EXISTS idx_tool_inv_tool ON tool_invocations(tool_name, timestamp);
@@ -522,6 +524,19 @@ CREATE TABLE IF NOT EXISTS session_summaries (
   ended_at INTEGER NOT NULL,
   tool_count INTEGER
 );
+
+-- Retrieval co-occurrence (v30): notes retrieved together build implicit edges
+CREATE TABLE IF NOT EXISTS retrieval_cooccurrence (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  note_a TEXT NOT NULL,
+  note_b TEXT NOT NULL,
+  session_id TEXT NOT NULL,
+  timestamp INTEGER NOT NULL,
+  weight REAL NOT NULL DEFAULT 1.0,
+  UNIQUE(note_a, note_b, session_id)
+);
+CREATE INDEX IF NOT EXISTS idx_retcooc_notes ON retrieval_cooccurrence(note_a, note_b);
+CREATE INDEX IF NOT EXISTS idx_retcooc_ts ON retrieval_cooccurrence(timestamp);
 `;
 
 // =============================================================================
@@ -718,6 +733,17 @@ function initSchema(db: Database.Database): void {
 
     // v29: index on wikilink_feedback(note_path) for temporal analysis queries
     // (created by SCHEMA_SQL above via CREATE INDEX IF NOT EXISTS)
+
+    // v30: token economics columns on tool_invocations
+    if (currentVersion < 30) {
+      const hasResponseTokens = db.prepare(
+        `SELECT COUNT(*) as cnt FROM pragma_table_info('tool_invocations') WHERE name = 'response_tokens'`
+      ).get() as { cnt: number };
+      if (hasResponseTokens.cnt === 0) {
+        db.exec('ALTER TABLE tool_invocations ADD COLUMN response_tokens INTEGER');
+        db.exec('ALTER TABLE tool_invocations ADD COLUMN baseline_tokens INTEGER');
+      }
+    }
 
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'

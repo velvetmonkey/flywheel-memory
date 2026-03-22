@@ -91,7 +91,7 @@ function getEdgeWeightBoost(entityName: string, edgeWeightMap: Map<string, numbe
 // Core recall logic
 // =============================================================================
 
-async function performRecall(
+export async function performRecall(
   stateDb: StateDb,
   query: string,
   options: {

@@ -30,6 +30,7 @@ import {
   enrichResult,
   enrichResultLight,
 } from '../../core/read/enrichment.js';
+import { getStoredNoteLinks } from '../../core/write/wikilinkFeedback.js';
 
 /**
  * Check if a note matches frontmatter filters
@@ -392,6 +393,35 @@ export function registerQueryTools(
               in_entity: item.in_entity,
             }));
 
+            // Multi-hop backfill: include outlink targets from top results
+            if (stateDb && results.length < limit) {
+              const existingPaths = new Set(results.map(r => (r as any).path));
+              const backfill: typeof results = [];
+              for (const r of results.slice(0, 3)) {
+                const rPath = (r as any).path;
+                if (!rPath) continue;
+                try {
+                  const outlinks = getStoredNoteLinks(stateDb, rPath);
+                  for (const target of outlinks) {
+                    const entityRow = stateDb.db.prepare(
+                      'SELECT path FROM entities WHERE name_lower = ?'
+                    ).get(target) as { path: string } | undefined;
+                    if (entityRow?.path && !existingPaths.has(entityRow.path)) {
+                      existingPaths.add(entityRow.path);
+                      backfill.push({
+                        ...enrichResultLight({ path: entityRow.path, title: target }, index, stateDb),
+                        rrf_score: 0,
+                        in_fts5: false,
+                        in_semantic: false,
+                        in_entity: false,
+                      } as any);
+                    }
+                  }
+                } catch { /* backfill is best-effort */ }
+              }
+              results.push(...backfill.slice(0, limit - results.length));
+            }
+
             return { content: [{ type: 'text' as const, text: JSON.stringify({
               method: 'hybrid',
               query,
@@ -420,6 +450,32 @@ export function registerQueryTools(
             ...(i < detailN ? enrichResult : enrichResultLight)({ path: item.path, title: item.title, snippet: item.snippet }, index, stateDb),
             ...('in_fts5' in item ? { in_fts5: true } : { in_entity: true }),
           }));
+
+          // Multi-hop backfill: include outlink targets from top results
+          if (stateDb && results.length < limit) {
+            const existingPaths = new Set(results.map(r => (r as any).path));
+            const backfill: typeof results = [];
+            for (const r of results.slice(0, 3)) {
+              const rPath = (r as any).path;
+              if (!rPath) continue;
+              try {
+                const outlinks = getStoredNoteLinks(stateDb, rPath);
+                for (const target of outlinks) {
+                  const entityRow = stateDb.db.prepare(
+                    'SELECT path FROM entities WHERE name_lower = ?'
+                  ).get(target) as { path: string } | undefined;
+                  if (entityRow?.path && !existingPaths.has(entityRow.path)) {
+                    existingPaths.add(entityRow.path);
+                    backfill.push({
+                      ...enrichResultLight({ path: entityRow.path, title: target }, index, stateDb),
+                    } as any);
+                  }
+                }
+              } catch { /* backfill is best-effort */ }
+            }
+            results.push(...backfill.slice(0, limit - results.length));
+          }
+
           return { content: [{ type: 'text' as const, text: JSON.stringify({
             method: 'fts5',
             query,

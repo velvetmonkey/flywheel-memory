@@ -63,3 +63,6 @@ ROADMAP.md
 ROADMAP*.md
 RESEARCH/
 roadmap/
+demos/hotpotqa/vault/
+demos/hotpotqa/results/*/raw/
+demos/hotpotqa/ground-truth.json

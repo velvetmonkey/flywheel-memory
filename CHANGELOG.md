@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Token economics tracking** — `response_tokens` and `baseline_tokens` columns on `tool_invocations` (schema v30). `getTokenEconomics()` query for per-tool and aggregate savings ratios. `wrapWithTracking()` auto-computes tokens per call.
+- **Retrieval co-occurrence** — "Notes that travel together get linked together." New `retrieval_cooccurrence` table tracks note pairs co-retrieved across sessions. Watcher step 19 mines `tool_invocations`, generates pairs with Adamic-Adar weighting. Integrated into Layer 4 scoring via `Math.max(contentBoost, retrievalBoost)`. 7-day decay half-life.
+- **Retrieval benchmark** — 15-question multi-document retrieval test (31 docs). Measures Recall@K, MRR, Precision@K, NDCG@10. Results: 100% Recall@5, 0.97 MRR.
+- **Demo token analysis** — `analyze-demo-test.py` now reports Token Economics: flywheel tool tokens vs baseline file read cost per beat, with API cost tracking.
+- **FTS5 query sanitization** — `searchFTS5()` now strips FTS5 operators from natural language queries instead of silently failing. Fixes search and recall on queries with punctuation, hyphens, parentheses.
+- **Multi-hop search backfill** — search results automatically include documents linked from top results (outlink targets). Enables second-hop retrieval without LLM re-ranking.
+- **HotpotQA end-to-end benchmark** — 50 hard questions, 500 documents, real Claude + Flywheel via `claude -p`. 87% document recall, 78% full recall, 96% partial recall. Runner at `demos/hotpotqa/`.
+
 ## [2.0.107] - 2026-03-20
 
 ### Changed

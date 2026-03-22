@@ -235,6 +235,19 @@ export function isIndexStale(_vaultPath?: string): boolean {
  * - Prefix: auth*
  * - Column filter: title:api
  */
+/**
+ * Sanitize a natural language query for FTS5 MATCH.
+ * Strips operators, escapes quotes, normalizes whitespace.
+ */
+function sanitizeFTS5Query(query: string): string {
+  if (!query?.trim()) return '';
+  return query
+    .replace(/"/g, '""')          // escape double quotes
+    .replace(/[(){}[\]^~:\-]/g, ' ') // strip FTS5 operators
+    .replace(/\s+/g, ' ')         // normalize whitespace
+    .trim();
+}
+
 export function searchFTS5(
   _vaultPath: string,
   query: string,
@@ -244,6 +257,9 @@ export function searchFTS5(
   if (!db) {
     throw new Error('FTS5 database not initialized. Call setFTS5Database() first.');
   }
+
+  const sanitized = sanitizeFTS5Query(query);
+  if (!sanitized) return [];
 
   try {
     // Use snippet() on content column (index 3) with BM25 column weights:
@@ -259,12 +275,12 @@ export function searchFTS5(
       LIMIT ?
     `);
 
-    const results = stmt.all(query, limit) as FTS5Result[];
+    const results = stmt.all(sanitized, limit) as FTS5Result[];
     return results;
   } catch (err) {
-    // Handle common FTS5 query errors
-    if (err instanceof Error && err.message.includes('fts5: syntax error')) {
-      throw new Error(`Invalid search query: ${query}. Check FTS5 syntax.`);
+    // Handle common FTS5 query errors — return empty instead of crashing
+    if (err instanceof Error && err.message.includes('fts5:')) {
+      return [];
     }
     throw err;
   }

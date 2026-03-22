@@ -17,7 +17,7 @@
  */
 
 import * as path from 'path';
-import { readFileSync, realpathSync, existsSync } from 'fs';
+import { readFileSync, realpathSync, existsSync, statSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -155,6 +155,7 @@ import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecen
 
 // Core imports - Co-occurrence
 import { mineCooccurrences, saveCooccurrenceToStateDb, loadCooccurrenceFromStateDb } from './core/shared/cooccurrence.js';
+import { mineRetrievalCooccurrence, pruneStaleRetrievalCooccurrence } from './core/shared/retrievalCooccurrence.js';
 
 // Core imports - Corrections
 import { processPendingCorrections } from './core/write/corrections.js';
@@ -614,6 +615,7 @@ function applyToolGating(
   categories: Set<ToolCategory>,
   getDb: () => StateDb | null,
   registry?: VaultRegistry | null,
+  getVaultPath?: () => string,
 ): { registered: number; skipped: number } {
   let _registered = 0;
   let _skipped = 0;
@@ -633,6 +635,7 @@ function applyToolGating(
       const start = Date.now();
       let success = true;
       let notePaths: string[] | undefined;
+      let result: any;
       const params = args[0];
       if (params && typeof params === 'object') {
         const paths: string[] = [];
@@ -644,7 +647,8 @@ function applyToolGating(
         if (paths.length > 0) notePaths = paths;
       }
       try {
-        return await handler(...args);
+        result = await handler(...args);
+        return result;
       } catch (err) {
         success = false;
         throw err;
@@ -654,12 +658,40 @@ function applyToolGating(
           try {
             let sessionId: string | undefined;
             try { sessionId = getSessionId(); } catch { /* no session */ }
+
+            // Estimate response tokens from MCP response
+            let responseTokens: number | undefined;
+            if (result?.content) {
+              let totalChars = 0;
+              for (const block of result.content) {
+                if (block?.type === 'text' && typeof block.text === 'string') {
+                  totalChars += block.text.length;
+                }
+              }
+              if (totalChars > 0) responseTokens = Math.ceil(totalChars / 4);
+            }
+
+            // Estimate baseline tokens (raw file read cost)
+            let baselineTokens: number | undefined;
+            if (notePaths && notePaths.length > 0 && getVaultPath) {
+              const vp = getVaultPath();
+              let totalBytes = 0;
+              for (const p of notePaths) {
+                try {
+                  totalBytes += statSync(path.join(vp, p)).size;
+                } catch { /* file may not exist */ }
+              }
+              if (totalBytes > 0) baselineTokens = Math.ceil(totalBytes / 4);
+            }
+
             recordToolInvocation(db, {
               tool_name: toolName,
               session_id: sessionId,
               note_paths: notePaths,
               duration_ms: Date.now() - start,
               success,
+              response_tokens: responseTokens,
+              baseline_tokens: baselineTokens,
             });
           } catch {
             // Never let tracking errors affect tool execution
@@ -916,7 +948,7 @@ function createConfiguredServer(): McpServer {
     { name: 'flywheel-memory', version: pkg.version },
     { instructions: generateInstructions(enabledCategories, vaultRegistry) },
   );
-  applyToolGating(s, enabledCategories, () => stateDb, vaultRegistry);
+  applyToolGating(s, enabledCategories, () => stateDb, vaultRegistry, () => vaultPath);
   registerAllTools(s);
   return s;
 }
@@ -930,7 +962,7 @@ const server = new McpServer(
   { instructions: generateInstructions(enabledCategories, vaultRegistry) },
 );
 
-const _gatingResult = applyToolGating(server, enabledCategories, () => stateDb, vaultRegistry);
+const _gatingResult = applyToolGating(server, enabledCategories, () => stateDb, vaultRegistry, () => vaultPath);
 registerAllTools(server);
 
 const categoryList = Array.from(enabledCategories).sort().join(', ');
@@ -1346,6 +1378,7 @@ function runPeriodicMaintenance(db: StateDb): void {
     purgeOldSuggestionEvents(db, 30);
     purgeOldNoteLinkHistory(db, 90);
     purgeOldSnapshots(db, 90);
+    pruneStaleRetrievalCooccurrence(db, 30);
     lastPurgeAt = now;
     serverLog('server', 'Daily purge complete');
   }
@@ -2366,6 +2399,23 @@ async function runPostIndexWork(index: VaultIndex) {
           } catch (e) {
             tracker.end({ error: String(e) });
             serverLog('watcher', `Tag scan: failed: ${e}`, 'error');
+          }
+
+          // Step 19: Retrieval co-occurrence — mine tool_invocations for co-retrieved notes
+          tracker.start('retrieval_cooccurrence', {});
+          try {
+            if (stateDb) {
+              const inserted = mineRetrievalCooccurrence(stateDb);
+              tracker.end({ pairs_inserted: inserted });
+              if (inserted > 0) {
+                serverLog('watcher', `Retrieval co-occurrence: ${inserted} new pairs`);
+              }
+            } else {
+              tracker.end({ skipped: 'no stateDb' });
+            }
+          } catch (e) {
+            tracker.end({ error: String(e) });
+            serverLog('watcher', `Retrieval co-occurrence: failed: ${e}`, 'error');
           }
 
           // Record event with all steps

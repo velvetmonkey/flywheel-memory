@@ -58,6 +58,7 @@ import {
   deserializeCooccurrenceIndex,
   type CooccurrenceIndex,
 } from '../shared/cooccurrence.js';
+import { buildRetrievalBoostMap, getRetrievalBoost } from '../shared/retrievalCooccurrence.js';
 import {
   buildRecencyIndex,
   getRecencyBoost,
@@ -1414,6 +1415,23 @@ export async function suggestRelatedLinks(
       if (displayName) cooccurrenceSeeds.add(displayName);
     }
   }
+  // Build retrieval co-occurrence boost map (bulk query)
+  const stateDb = getWriteStateDb();
+  let retrievalBoostMap = new Map<string, number>();
+  if (!disabled.has('cooccurrence') && stateDb && cooccurrenceSeeds.size > 0) {
+    // Collect note paths for seed entities
+    const seedNotePaths = new Set<string>();
+    for (const seedName of cooccurrenceSeeds) {
+      const seedEntity = entitiesWithTypes.find(e => e.entity.name === seedName);
+      if (seedEntity?.entity.path) seedNotePaths.add(seedEntity.entity.path);
+    }
+    if (seedNotePaths.size > 0) {
+      try {
+        retrievalBoostMap = buildRetrievalBoostMap(seedNotePaths, stateDb);
+      } catch { /* table may not exist yet */ }
+    }
+  }
+
   if (!disabled.has('cooccurrence') && cooccurrenceIndex && cooccurrenceSeeds.size > 0) {
     for (const { entity, category } of entitiesWithTypes) {
       const entityName = entity.name;
@@ -1424,8 +1442,10 @@ export async function suggestRelatedLinks(
       if (!disabled.has('article_filter') && isLikelyArticleTitle(entityName)) continue;
       if (linkedEntities.has(entityName.toLowerCase())) continue;
 
-      // Get co-occurrence boost (with recency weighting)
-      const boost = getCooccurrenceBoost(entityName, cooccurrenceSeeds, cooccurrenceIndex, recencyIndex);
+      // Get co-occurrence boost: max(content co-occurrence, retrieval co-occurrence)
+      const contentCoocBoost = getCooccurrenceBoost(entityName, cooccurrenceSeeds, cooccurrenceIndex, recencyIndex);
+      const retrievalCoocBoost = getRetrievalBoost(entity.path, retrievalBoostMap);
+      const boost = Math.max(contentCoocBoost, retrievalCoocBoost);
 
       if (boost > 0) {
         // Check if entity is already in scored list (already has content match)

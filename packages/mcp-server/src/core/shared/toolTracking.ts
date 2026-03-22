@@ -19,6 +19,8 @@ export interface ToolInvocation {
   note_paths: string[] | null;
   duration_ms: number | null;
   success: boolean;
+  response_tokens: number | null;
+  baseline_tokens: number | null;
 }
 
 export interface ToolUsageSummary {
@@ -60,11 +62,13 @@ export function recordToolInvocation(
     note_paths?: string[];
     duration_ms?: number;
     success?: boolean;
+    response_tokens?: number;
+    baseline_tokens?: number;
   }
 ): void {
   stateDb.db.prepare(
-    `INSERT INTO tool_invocations (timestamp, tool_name, session_id, note_paths, duration_ms, success)
-     VALUES (?, ?, ?, ?, ?, ?)`
+    `INSERT INTO tool_invocations (timestamp, tool_name, session_id, note_paths, duration_ms, success, response_tokens, baseline_tokens)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     Date.now(),
     event.tool_name,
@@ -72,6 +76,8 @@ export function recordToolInvocation(
     event.note_paths ? JSON.stringify(event.note_paths) : null,
     event.duration_ms ?? null,
     event.success !== false ? 1 : 0,
+    event.response_tokens ?? null,
+    event.baseline_tokens ?? null,
   );
 }
 
@@ -87,6 +93,8 @@ interface RawInvocationRow {
   note_paths: string | null;
   duration_ms: number | null;
   success: number;
+  response_tokens: number | null;
+  baseline_tokens: number | null;
 }
 
 function rowToInvocation(row: RawInvocationRow): ToolInvocation {
@@ -98,6 +106,8 @@ function rowToInvocation(row: RawInvocationRow): ToolInvocation {
     note_paths: row.note_paths ? JSON.parse(row.note_paths) : null,
     duration_ms: row.duration_ms,
     success: row.success === 1,
+    response_tokens: row.response_tokens,
+    baseline_tokens: row.baseline_tokens,
   };
 }
 
@@ -269,6 +279,83 @@ export function getRecentInvocations(stateDb: StateDb, limit: number = 20): Tool
   ).all(limit) as RawInvocationRow[];
 
   return rows.map(rowToInvocation);
+}
+
+// =============================================================================
+// TOKEN ECONOMICS
+// =============================================================================
+
+export interface TokenEconomics {
+  period_days: number;
+  total_invocations: number;
+  total_response_tokens: number;
+  total_baseline_tokens: number;
+  total_tokens_saved: number;
+  overall_savings_ratio: number;
+  per_tool: Array<{
+    tool_name: string;
+    invocations: number;
+    response_tokens: number;
+    baseline_tokens: number;
+    tokens_saved: number;
+    savings_ratio: number;
+  }>;
+}
+
+/**
+ * Get token economics summary: how many tokens Flywheel saved vs raw file reads.
+ */
+export function getTokenEconomics(stateDb: StateDb, daysBack: number = 30): TokenEconomics {
+  const cutoff = Date.now() - daysBack * 24 * 60 * 60 * 1000;
+
+  const rows = stateDb.db.prepare(`
+    SELECT
+      tool_name,
+      COUNT(*) as invocations,
+      COALESCE(SUM(response_tokens), 0) as response_tokens,
+      COALESCE(SUM(baseline_tokens), 0) as baseline_tokens
+    FROM tool_invocations
+    WHERE timestamp >= ? AND response_tokens IS NOT NULL
+    GROUP BY tool_name
+    ORDER BY (COALESCE(SUM(baseline_tokens), 0) - COALESCE(SUM(response_tokens), 0)) DESC
+  `).all(cutoff) as Array<{
+    tool_name: string;
+    invocations: number;
+    response_tokens: number;
+    baseline_tokens: number;
+  }>;
+
+  let totalResponse = 0;
+  let totalBaseline = 0;
+  let totalInvocations = 0;
+
+  const perTool = rows.map(r => {
+    totalResponse += r.response_tokens;
+    totalBaseline += r.baseline_tokens;
+    totalInvocations += r.invocations;
+    return {
+      tool_name: r.tool_name,
+      invocations: r.invocations,
+      response_tokens: r.response_tokens,
+      baseline_tokens: r.baseline_tokens,
+      tokens_saved: r.baseline_tokens - r.response_tokens,
+      savings_ratio: r.response_tokens > 0
+        ? Math.round((r.baseline_tokens / r.response_tokens) * 10) / 10
+        : 0,
+    };
+  });
+
+  return {
+    period_days: daysBack,
+    total_invocations: totalInvocations,
+    total_response_tokens: totalResponse,
+    total_baseline_tokens: totalBaseline,
+    total_tokens_saved: totalBaseline - totalResponse,
+    overall_savings_ratio: totalResponse > 0
+      ? Math.round((totalBaseline / totalResponse) * 10) / 10
+      : 0,
+    per_tool: perTool,
+  };
 }
 
 // =============================================================================

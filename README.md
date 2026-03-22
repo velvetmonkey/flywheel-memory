@@ -23,7 +23,7 @@ Six lines of JSON config. No cloud. Your data never leaves your machine. Primari
 | "What links here?" | Grep for name, flat list | Backlink graph, pre-indexed |
 | "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
-| Token cost | ~800-2,000 per query | ~50-200 per query |
+| Token cost | ~800-2,000 per query | ~50-200 per query (44x savings measured on brief) |
 
 69 tools. 6-line config. Zero cloud.
 
@@ -213,10 +213,26 @@ Measured against a 96-note/61-entity ground truth vault.
 
 - **50-generation stress test** — suggest → accept/reject (85% correct, 15% noise) → mutate vault → rebuild index → repeat. F1 holds steady — the feedback loop doesn't degrade under realistic noise.
 - **7 vault archetypes** — hub-and-spoke, hierarchical, dense-mesh, sparse-orphan, bridge-network, small-world, chaos
-- **12 scoring layers** individually ablated, contribution measured
+- **13 scoring layers** individually ablated, contribution measured (including retrieval co-occurrence)
 - **Regression gate** — CI fails if any mode's F1/precision/recall drops >5pp from baseline
 
 See [docs/TESTING.md](docs/TESTING.md) for full methodology. Auto-generated report: [docs/QUALITY_REPORT.md](docs/QUALITY_REPORT.md).
+
+### Retrieval Benchmark (HotpotQA)
+
+End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/) — a standard multi-hop question answering benchmark. 50 hard questions, 500 documents, real Claude + Flywheel via `claude -p`. No cherry-picking, no pre-processing.
+
+| Metric | Score |
+|---|---|
+| Document Recall | **87%** (87/100 supporting docs found) |
+| Full Recall (both docs found) | **78%** (39/50 questions) |
+| Partial Recall (≥1 doc found) | **96%** (48/50 questions) |
+| Bridge (multi-hop) | 85.4% |
+| Comparison | 94.4% |
+
+Flywheel's search automatically follows links from found documents to discover second-hop results — multi-hop retrieval with zero LLM re-ranking.
+
+Run it yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [Benchmark results](demos/hotpotqa/results/) | [Test harness](packages/mcp-server/test/retrieval-bench/)
 
 ### Safe Writes
 
@@ -243,7 +259,7 @@ Every mutation is:
 | Auto-wikilinks | Yes (alias resolution) | No | No | No |
 | Schema intelligence | 6 analysis modes | No | No | No |
 | Entity extraction | Auto (18 categories) | No | No | No |
-| Learns from usage | Feedback loop + suppression | No | No | No |
+| Learns from usage | Feedback loop + suppression + retrieval co-occurrence | No | No | No |
 | Agent memory | brief + recall + memory | No | No | No |
 | Safe writes | Git + conflict detection | No | N/A | N/A |
 | Tool count | 69 | ~10 | 0 (plugin) | ~5 |

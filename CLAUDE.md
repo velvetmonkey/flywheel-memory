@@ -51,7 +51,7 @@ packages/mcp-server/src/
 └── core/
     ├── read/                   # Read-side core logic (graph, vault, parser, fts5, config, watcher)
     ├── write/                  # Write-side core logic (writer, wikilinks, git, validator, policy engine)
-    ├── shared/                 # Shared utilities (recency, cooccurrence, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots)
+    ├── shared/                 # Shared utilities (recency, cooccurrence, retrievalCooccurrence, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots)
     └── semantic/               # Semantic search (embeddings.ts — embedding generation, similarity.ts — hybrid ranking)
 ```
 

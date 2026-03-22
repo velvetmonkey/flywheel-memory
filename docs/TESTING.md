@@ -102,6 +102,25 @@ Source: [`packages/mcp-server/test/write/coldstart/`](../packages/mcp-server/tes
 
 ---
 
+## Retrieval Benchmark (HotpotQA)
+
+End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/) hard questions. Real Claude + Flywheel via `claude -p` — no pre-processing, no cherry-picking.
+
+| Metric | Score |
+|---|---|
+| Document Recall | **87%** (87/100 supporting docs) |
+| Full Recall (both docs) | **78%** (39/50) |
+| Partial Recall (≥1 doc) | **96%** (48/50) |
+| Bridge (multi-hop) | 85.4% |
+| Comparison | 94.4% |
+| Cost | $0.073/question |
+
+50 questions, 500 documents. Multi-hop backfill automatically includes documents linked from top search results.
+
+Source: [`demos/hotpotqa/`](../demos/hotpotqa/) | [`packages/mcp-server/test/retrieval-bench/`](../packages/mcp-server/test/retrieval-bench/)
+
+---
+
 ## Graph Quality (266 tests, 31 files)
 
 The graph quality suite validates that the wikilink suggestion engine works correctly across every scenario that matters: precision/recall, scoring layers, archetypes, feedback loops, temporal evolution, and regression gates.

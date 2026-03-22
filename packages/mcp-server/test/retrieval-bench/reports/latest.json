@@ -1,0 +1,15 @@
+{
+  "generated": "2026-03-22T15:49:11.088Z",
+  "total_questions": 15,
+  "bridge_questions": 12,
+  "comparison_questions": 3,
+  "total_documents": 31,
+  "metrics": {
+    "total_queries": 15,
+    "recall_at_5": 1,
+    "recall_at_10": 1,
+    "precision_at_5": 0.34,
+    "mrr": 0.967,
+    "ndcg_at_10": 0.943
+  }
+}

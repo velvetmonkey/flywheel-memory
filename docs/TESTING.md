@@ -366,86 +366,10 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 | wikilinks | 7 | 3/3 (100%) | 2/7 | discover_stub_candidates, suggest_entity_aliases, suggest_wikilinks, validate_links, wikilink_feedback |
 | write | 7 | 3/3 (100%) | 1/7 | policy, vault_create_note, vault_remove_from_section, vault_replace_in_section, vault_undo_last_mutation, vault_update_frontmatter |
 
-## Full Coverage Matrix
-
-| Tool | Category | Times Used |
-|------|----------|-----------|
-| find_similar | search | 0 |
-| init_semantic | search | 0 |
-| search | search | 24 |
-| find_sections | read | 0 |
-| get_note_structure | read | 5 |
-| get_section_content | read | 1 |
-| policy | write | 1 |
-| vault_add_to_section | write | 3 |
-| vault_create_note | write | 0 |
-| vault_remove_from_section | write | 0 |
-| vault_replace_in_section | write | 0 |
-| vault_undo_last_mutation | write | 0 |
-| vault_update_frontmatter | write | 0 |
-| get_backlinks | graph | 0 |
-| get_common_neighbors | graph | 0 |
-| get_connection_strength | graph | 3 |
-| get_forward_links | graph | 0 |
-| get_link_path | graph | 3 |
-| get_strong_connections | graph | 0 |
-| get_weighted_links | graph | 0 |
-| graph_analysis | graph | 0 |
-| list_entities | graph | 0 |
-| semantic_analysis | graph | 0 |
-| migrate_field_values | schema | 0 |
-| note_intelligence | schema | 0 |
-| rename_field | schema | 0 |
-| rename_tag | schema | 0 |
-| schema_conventions | schema | 6 |
-| schema_validate | schema | 0 |
-| vault_schema | schema | 6 |
-| discover_cooccurrence_gaps | wikilinks | 1 |
-| discover_stub_candidates | wikilinks | 0 |
-| suggest_entity_aliases | wikilinks | 0 |
-| suggest_wikilinks | wikilinks | 0 |
-| unlinked_mentions_report | wikilinks | 3 |
-| validate_links | wikilinks | 0 |
-| wikilink_feedback | wikilinks | 0 |
-| absorb_as_alias | corrections | 0 |
-| vault_list_corrections | corrections | 0 |
-| vault_record_correction | corrections | 3 |
-| vault_resolve_correction | corrections | 0 |
-| tasks | tasks | 5 |
-| vault_add_task | tasks | 0 |
-| vault_toggle_task | tasks | 0 |
-| brief | memory | 3 |
-| memory | memory | 0 |
-| recall | memory | 0 |
-| merge_entities | note-ops | 0 |
-| vault_delete_note | note-ops | 0 |
-| vault_move_note | note-ops | 0 |
-| vault_rename_note | note-ops | 3 |
-| get_context_around_date | temporal | 1 |
-| predict_stale_notes | temporal | 6 |
-| temporal_summary | temporal | 3 |
-| track_concept_evolution | temporal | 0 |
-| dismiss_merge_suggestion | diagnostics | 0 |
-| flywheel_config | diagnostics | 0 |
-| flywheel_doctor | diagnostics | 0 |
-| get_all_entities | diagnostics | 0 |
-| get_folder_structure | diagnostics | 0 |
-| get_unlinked_mentions | diagnostics | 0 |
-| get_vault_stats | diagnostics | 3 |
-| health_check | diagnostics | 3 |
-| refresh_index | diagnostics | 0 |
-| server_log | diagnostics | 0 |
-| suggest_entity_merges | diagnostics | 0 |
-| vault_activity | diagnostics | 0 |
-| vault_growth | diagnostics | 0 |
-| vault_init | diagnostics | 0 |
-| Read | builtin | 4 |
-| ToolSearch | builtin | 49 |
-
 ## Overall
 
 - **Bundles adopted:** 12/12
-- **Flywheel tools used:** 20/69
+- **Distinct flywheel tools used:** 20/69
 
 <!-- END BUNDLE TEST RESULTS -->
 
@@ -646,69 +570,7 @@ Each of 69 tools tested with a targeted prompt against carter-strategy vault.
 | beat6-meeting | PASS | vault_create_note | ToolSearch, policy, search, search, search, get_folder_structure, vault_create_note | builtin:1, diagnostics:1, search:3, write:2 |
 | beat7-pipeline | PASS | policy, recall, search | ToolSearch, search, search, search, search, search, search | builtin:1, search:6 |
 
-**7/7 beats passed**
-
-## Per-Beat Category Breakdown
-
-### beat1-brief
-
-- **builtin**: ToolSearch, ToolSearch, Read
-- **memory**: brief
-
-### beat2-billing
-
-- **builtin**: ToolSearch
-- **search**: search
-- **tasks**: tasks
-
-### beat3-tasks
-
-- **builtin**: ToolSearch, ToolSearch, ToolSearch
-- **search**: search, search
-- **tasks**: vault_add_task, vault_add_task, vault_add_task, vault_add_task
-- **write**: policy, policy
-
-### beat4-showstopper
-
-- **builtin**: ToolSearch, TodoWrite, ToolSearch, TodoWrite, ToolSearch, Read, Read, Read, TodoWrite, TodoWrite
-- **diagnostics**: refresh_index, get_folder_structure, refresh_index
-- **read**: get_note_structure, get_note_structure, get_note_structure, get_section_content, get_note_structure, get_note_structure, get_note_structure, get_section_content, get_section_content
-- **search**: search, search, search, search, search, search, search, search, search, search, search, search
-- **write**: vault_add_to_section, vault_add_to_section, vault_add_to_section, policy, vault_add_to_section, policy, vault_add_to_section, vault_update_frontmatter, vault_update_frontmatter, vault_update_frontmatter, vault_create_note, vault_create_note, vault_add_to_section, vault_add_to_section, vault_add_to_section, vault_update_frontmatter, vault_update_frontmatter
-
-### beat5-assign
-
-- **builtin**: ToolSearch, ToolSearch
-- **read**: get_note_structure
-- **search**: search, search, search, search, search, search
-- **tasks**: vault_add_task
-- **write**: vault_update_frontmatter, vault_create_note, vault_create_note, vault_create_note, vault_create_note
-
-### beat6-meeting
-
-- **builtin**: ToolSearch
-- **diagnostics**: get_folder_structure
-- **search**: search, search, search
-- **write**: policy, vault_create_note
-
-### beat7-pipeline
-
-- **builtin**: ToolSearch
-- **search**: search, search, search, search, search, search
-
-## Aggregate Category Usage
-
-| Category | Tools Used | Distinct Tools |
-|----------|-----------|----------------|
-| search | 30 | 1 |
-| read | 10 | 2 |
-| write | 26 | 4 |
-| tasks | 6 | 2 |
-| memory | 1 | 1 |
-| diagnostics | 4 | 2 |
-| builtin | 21 | 3 |
-
-**Coverage:** 12/69 flywheel tools used
+**7/7 beats passed. 12 distinct flywheel tools used across all beats.**
 
 <!-- END DEMO TEST RESULTS -->
 

@@ -235,17 +235,18 @@ export function registerHealthTools(
       }
 
       // Check database integrity
+      let dbIntegrityFailed = false;
       const stateDb = getStateDb();
       if (stateDb) {
         try {
           const result = stateDb.db.pragma('quick_check') as Array<Record<string, string>>;
           const ok = result.length === 1 && Object.values(result[0])[0] === 'ok';
           if (!ok) {
-            overall = 'unhealthy';
+            dbIntegrityFailed = true;
             recommendations.push(`Database integrity check failed: ${Object.values(result[0])[0] ?? 'unknown error'}`);
           }
         } catch (err) {
-          overall = 'unhealthy';
+          dbIntegrityFailed = true;
           recommendations.push(`Database integrity check error: ${err instanceof Error ? err.message : err}`);
         }
       }
@@ -283,7 +284,7 @@ export function registerHealthTools(
 
       // Determine overall status
       let status: 'healthy' | 'degraded' | 'unhealthy';
-      if (!vaultAccessible || indexState === 'error') {
+      if (!vaultAccessible || indexState === 'error' || dbIntegrityFailed) {
         status = 'unhealthy';
       } else if (indexState === 'building' || indexStale || recommendations.length > 0) {
         status = 'degraded';

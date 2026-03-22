@@ -1,45 +1,105 @@
 /**
- * Hub score export - enriches entity data with backlink counts
+ * Hub score export — eigenvector centrality
  *
- * After graph build, this module computes hub scores from backlinks
- * and writes them to SQLite so Flywheel Memory can use them
- * for wikilink prioritization.
+ * Computes eigenvector centrality via power iteration on the vault's
+ * wikilink graph and writes scores to SQLite. Eigenvector centrality
+ * weights nodes by the importance of their connections — a note linked
+ * from important notes scores higher than one with many low-importance links.
  *
- * Architecture:
- * - Flywheel builds VaultIndex with backlinks (in-memory)
- * - This module exports hub scores to SQLite StateDb
- * - Flywheel Memory reads hub scores from SQLite for wikilink suggestions
+ * Replaces the previous raw backlink count with a topology-aware signal.
+ * All downstream consumers (Layer 9 hub_boost, recall, enrichment,
+ * emerging_hubs) automatically get the improved scores.
  */
 
 import type { VaultIndex } from './types.js';
-import { getBacklinksForNote, normalizeTarget } from '../read/graph.js';
+import { normalizeTarget } from '../read/graph.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 
+/** Number of power iterations for eigenvector convergence */
+const EIGEN_ITERATIONS = 50;
 
 /**
- * Compute hub scores from the vault index
+ * Compute hub scores using eigenvector centrality.
  *
- * Returns a map of normalized note path -> backlink count
+ * Builds a bidirectional adjacency list from the vault's wikilink graph,
+ * then runs power iteration to convergence. Scores are scaled to 0-100.
+ *
+ * @returns Map of normalized entity name → score (0-100)
  */
 export function computeHubScores(index: VaultIndex): Map<string, number> {
-  const hubScores = new Map<string, number>();
+  // Build node list and adjacency
+  const nodes: string[] = [];
+  const nodeIdx = new Map<string, number>();
+  const adj: number[][] = [];
 
   for (const note of index.notes.values()) {
-    const backlinks = getBacklinksForNote(index, note.path);
-    const backlinkCount = backlinks.length;
-
-    // Store by normalized path (lowercase, no .md)
-    const normalizedPath = normalizeTarget(note.path);
-    hubScores.set(normalizedPath, backlinkCount);
-
-    // Also store by title for matching by name
-    const title = note.title.toLowerCase();
-    if (!hubScores.has(title) || backlinkCount > hubScores.get(title)!) {
-      hubScores.set(title, backlinkCount);
+    const key = normalizeTarget(note.path);
+    if (!nodeIdx.has(key)) {
+      nodeIdx.set(key, nodes.length);
+      nodes.push(key);
+      adj.push([]);
+    }
+    // Also register by title
+    const titleKey = note.title.toLowerCase();
+    if (!nodeIdx.has(titleKey)) {
+      nodeIdx.set(titleKey, nodeIdx.get(key)!);
     }
   }
 
-  return hubScores;
+  const N = nodes.length;
+  if (N === 0) return new Map();
+
+  // Build edges from outlinks (bidirectional for eigenvector)
+  for (const note of index.notes.values()) {
+    const fromIdx = nodeIdx.get(normalizeTarget(note.path));
+    if (fromIdx === undefined) continue;
+    for (const link of note.outlinks) {
+      const target = normalizeTarget(link.target);
+      // Try direct match, then title-based lookup
+      let toIdx = nodeIdx.get(target);
+      if (toIdx === undefined) {
+        toIdx = nodeIdx.get(link.target.toLowerCase());
+      }
+      if (toIdx !== undefined && toIdx !== fromIdx) {
+        adj[fromIdx].push(toIdx);
+        adj[toIdx].push(fromIdx);
+      }
+    }
+  }
+
+  // Power iteration for eigenvector centrality
+  let scores = new Float64Array(N).fill(1 / N);
+  for (let iter = 0; iter < EIGEN_ITERATIONS; iter++) {
+    const next = new Float64Array(N);
+    for (let i = 0; i < N; i++) {
+      for (const j of adj[i]) {
+        next[i] += scores[j];
+      }
+    }
+    // L2 normalize
+    let norm = 0;
+    for (let i = 0; i < N; i++) norm += next[i] * next[i];
+    norm = Math.sqrt(norm);
+    if (norm > 0) {
+      for (let i = 0; i < N; i++) next[i] /= norm;
+    }
+    scores = next;
+  }
+
+  // Scale to 0-100 and build result map
+  let maxScore = 0;
+  for (let i = 0; i < N; i++) {
+    if (scores[i] > maxScore) maxScore = scores[i];
+  }
+
+  const result = new Map<string, number>();
+  for (let i = 0; i < N; i++) {
+    const scaled = maxScore > 0 ? Math.round((scores[i] / maxScore) * 100) : 0;
+    if (scaled > 0) {
+      result.set(nodes[i], scaled);
+    }
+  }
+  return result;
 }
 
 

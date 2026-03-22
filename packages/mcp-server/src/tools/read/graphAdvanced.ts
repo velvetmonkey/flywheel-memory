@@ -525,3 +525,233 @@ export function getConnectionStrength(
 
   return { score, factors };
 }
+
+// =============================================================================
+// Centrality Metrics (Brandes betweenness + closeness + degree)
+// =============================================================================
+
+export interface CentralityResult {
+  path: string;
+  title: string;
+  degree: number;
+  betweenness: number;
+  closeness: number;
+}
+
+/**
+ * Compute degree, betweenness, and closeness centrality for all notes.
+ * Uses Brandes algorithm for betweenness (O(V*E)).
+ */
+export function computeCentralityMetrics(
+  index: VaultIndex,
+  limit: number = 20,
+): CentralityResult[] {
+  // Build adjacency (directed outlinks)
+  const paths = Array.from(index.notes.keys());
+  const N = paths.length;
+  if (N === 0) return [];
+
+  const pathIdx = new Map<string, number>();
+  paths.forEach((p, i) => pathIdx.set(p, i));
+
+  // Also map normalized targets to indices
+  for (const note of index.notes.values()) {
+    const normalized = note.title.toLowerCase();
+    if (!pathIdx.has(normalized)) {
+      pathIdx.set(normalized, pathIdx.get(note.path)!);
+    }
+  }
+
+  const outAdj: number[][] = Array.from({ length: N }, () => []);
+  const inAdj: number[][] = Array.from({ length: N }, () => []);
+
+  for (const note of index.notes.values()) {
+    const fromIdx = pathIdx.get(note.path);
+    if (fromIdx === undefined) continue;
+    for (const link of note.outlinks) {
+      let toIdx = pathIdx.get(link.target);
+      if (toIdx === undefined) toIdx = pathIdx.get(link.target.toLowerCase());
+      if (toIdx !== undefined && toIdx !== fromIdx) {
+        outAdj[fromIdx].push(toIdx);
+        inAdj[toIdx].push(fromIdx);
+      }
+    }
+  }
+
+  // Degree centrality
+  const degree = new Float64Array(N);
+  for (let i = 0; i < N; i++) {
+    degree[i] = outAdj[i].length + inAdj[i].length;
+  }
+
+  // Brandes betweenness + closeness (undirected BFS from each node)
+  const betweenness = new Float64Array(N);
+  const closenessSum = new Float64Array(N); // sum of distances
+  const reachable = new Int32Array(N); // count of reachable nodes
+
+  // Build undirected adjacency for BFS
+  const undirAdj: number[][] = Array.from({ length: N }, () => []);
+  for (let i = 0; i < N; i++) {
+    for (const j of outAdj[i]) {
+      undirAdj[i].push(j);
+      undirAdj[j].push(i);
+    }
+  }
+
+  for (let s = 0; s < N; s++) {
+    // BFS from s (Brandes)
+    const stack: number[] = [];
+    const pred: number[][] = Array.from({ length: N }, () => []);
+    const sigma = new Float64Array(N);
+    const dist = new Int32Array(N).fill(-1);
+    sigma[s] = 1;
+    dist[s] = 0;
+    const queue: number[] = [s];
+    let head = 0;
+
+    while (head < queue.length) {
+      const v = queue[head++];
+      stack.push(v);
+      for (const w of undirAdj[v]) {
+        if (dist[w] < 0) {
+          dist[w] = dist[v] + 1;
+          queue.push(w);
+        }
+        if (dist[w] === dist[v] + 1) {
+          sigma[w] += sigma[v];
+          pred[w].push(v);
+        }
+      }
+    }
+
+    // Accumulate closeness distance
+    for (let t = 0; t < N; t++) {
+      if (dist[t] > 0) {
+        closenessSum[s] += dist[t];
+        reachable[s]++;
+      }
+    }
+
+    // Accumulate betweenness
+    const delta = new Float64Array(N);
+    while (stack.length > 0) {
+      const w = stack.pop()!;
+      for (const v of pred[w]) {
+        delta[v] += (sigma[v] / sigma[w]) * (1 + delta[w]);
+      }
+      if (w !== s) {
+        betweenness[w] += delta[w];
+      }
+    }
+  }
+
+  // Normalize betweenness (divide by (N-1)*(N-2) for directed graph normalization)
+  const normFactor = N > 2 ? (N - 1) * (N - 2) : 1;
+
+  // Build results
+  const results: CentralityResult[] = [];
+  for (let i = 0; i < N; i++) {
+    const note = index.notes.get(paths[i]);
+    results.push({
+      path: paths[i],
+      title: note?.title || paths[i],
+      degree: degree[i],
+      betweenness: Math.round((betweenness[i] / normFactor) * 10000) / 10000,
+      closeness: reachable[i] > 0
+        ? Math.round((reachable[i] / closenessSum[i]) * 10000) / 10000
+        : 0,
+    });
+  }
+
+  // Sort by betweenness descending
+  results.sort((a, b) => b.betweenness - a.betweenness);
+  return results.slice(0, limit);
+}
+
+// =============================================================================
+// Cycle Detection (DFS with coloring)
+// =============================================================================
+
+export interface CycleResult {
+  cycle: string[];
+  length: number;
+}
+
+/**
+ * Detect cycles in the directed wikilink graph using DFS coloring.
+ */
+export function detectCycles(
+  index: VaultIndex,
+  maxLength: number = 10,
+  limit: number = 20,
+): CycleResult[] {
+  const paths = Array.from(index.notes.keys());
+  const N = paths.length;
+  if (N === 0) return [];
+
+  const pathIdx = new Map<string, number>();
+  paths.forEach((p, i) => pathIdx.set(p, i));
+
+  for (const note of index.notes.values()) {
+    const normalized = note.title.toLowerCase();
+    if (!pathIdx.has(normalized)) {
+      pathIdx.set(normalized, pathIdx.get(note.path)!);
+    }
+  }
+
+  const adj: number[][] = Array.from({ length: N }, () => []);
+  for (const note of index.notes.values()) {
+    const fromIdx = pathIdx.get(note.path);
+    if (fromIdx === undefined) continue;
+    for (const link of note.outlinks) {
+      let toIdx = pathIdx.get(link.target);
+      if (toIdx === undefined) toIdx = pathIdx.get(link.target.toLowerCase());
+      if (toIdx !== undefined && toIdx !== fromIdx) {
+        adj[fromIdx].push(toIdx);
+      }
+    }
+  }
+
+  const WHITE = 0, GRAY = 1, BLACK = 2;
+  const color = new Uint8Array(N); // WHITE by default
+  const cycles: CycleResult[] = [];
+  const stack: number[] = [];
+
+  function dfs(u: number): void {
+    if (cycles.length >= limit) return;
+    color[u] = GRAY;
+    stack.push(u);
+
+    for (const v of adj[u]) {
+      if (cycles.length >= limit) return;
+      if (color[v] === GRAY) {
+        // Found cycle — extract from stack
+        const cycleStart = stack.indexOf(v);
+        if (cycleStart >= 0) {
+          const cyclePath = stack.slice(cycleStart);
+          if (cyclePath.length <= maxLength) {
+            const note = (idx: number) => index.notes.get(paths[idx])?.title || paths[idx];
+            cycles.push({
+              cycle: cyclePath.map(note),
+              length: cyclePath.length,
+            });
+          }
+        }
+      } else if (color[v] === WHITE) {
+        dfs(v);
+      }
+    }
+
+    stack.pop();
+    color[u] = BLACK;
+  }
+
+  for (let i = 0; i < N; i++) {
+    if (color[i] === WHITE && cycles.length < limit) {
+      dfs(i);
+    }
+  }
+
+  cycles.sort((a, b) => a.length - b.length);
+  return cycles;
+}

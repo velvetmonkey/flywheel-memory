@@ -14,6 +14,7 @@ import type { FlywheelConfig } from '../../core/read/config.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { findOrphanNotes, findHubNotes } from '../../core/read/graph.js';
+import { computeCentralityMetrics, detectCycles } from './graphAdvanced.js';
 
 /** Check if a note path looks like a periodic note (daily, weekly, monthly, quarterly, yearly). */
 function isPeriodicNote(notePath: string): boolean {
@@ -97,9 +98,11 @@ export function registerGraphAnalysisTools(
         '- "hubs": Highly connected notes (params: min_links, limit, offset)\n' +
         '- "stale": Important notes not recently modified (params: days [required], min_backlinks, limit, offset)\n' +
         '- "immature": Notes scored by maturity (params: folder, limit, offset)\n' +
-        '- "emerging_hubs": Entities growing fastest in connection count (params: days, limit, offset)',
+        '- "emerging_hubs": Entities growing fastest in connection count (params: days, limit, offset)\n' +
+        '- "centrality": Degree, betweenness, and closeness centrality metrics (params: limit, offset)\n' +
+        '- "cycles": Detect circular link chains in the vault (params: limit)',
       inputSchema: {
-        analysis: z.enum(['orphans', 'dead_ends', 'sources', 'hubs', 'stale', 'immature', 'emerging_hubs']).describe('Type of graph analysis to perform'),
+        analysis: z.enum(['orphans', 'dead_ends', 'sources', 'hubs', 'stale', 'immature', 'emerging_hubs', 'centrality', 'cycles']).describe('Type of graph analysis to perform'),
         folder: z.string().optional().describe('Limit to notes in this folder (orphans, dead_ends, sources, immature)'),
         min_links: z.coerce.number().default(5).describe('Minimum total connections for hubs'),
         min_backlinks: z.coerce.number().default(1).describe('Minimum backlinks (dead_ends, stale)'),
@@ -339,6 +342,30 @@ export function registerGraphAnalysisTools(
               total_count: totalHubs,
               returned_count: paginatedHubs.length,
               hubs: paginatedHubs,
+            }, null, 2) }],
+          };
+        }
+
+        case 'centrality': {
+          const results = computeCentralityMetrics(index, limit);
+          const paginated = results.slice(offset, offset + limit);
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify({
+              analysis: 'centrality',
+              total_count: results.length,
+              returned_count: paginated.length,
+              notes: paginated,
+            }, null, 2) }],
+          };
+        }
+
+        case 'cycles': {
+          const cycles = detectCycles(index, 10, limit);
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify({
+              analysis: 'cycles',
+              total_count: cycles.length,
+              cycles,
             }, null, 2) }],
           };
         }

@@ -52,6 +52,7 @@ export function registerHealthTools(
 
   const HealthCheckOutputSchema = {
     status: z.enum(['healthy', 'degraded', 'unhealthy']).describe('Overall health status'),
+    vault_health_score: z.coerce.number().describe('Composite vault health score (0-100)'),
     schema_version: z.coerce.number().describe('StateDb schema version'),
     vault_accessible: z.boolean().describe('Whether the vault path is accessible'),
     vault_path: z.string().describe('The vault path being used'),
@@ -149,6 +150,7 @@ export function registerHealthTools(
 
   type HealthCheckOutput = {
     status: 'healthy' | 'degraded' | 'unhealthy';
+    vault_health_score: number;
     schema_version: number;
     vault_accessible: boolean;
     vault_path: string;
@@ -395,8 +397,57 @@ export function registerHealthTools(
         .sort((a, b) => b.mention_count - a.mention_count)
         .slice(0, 5);
 
+      // Compute vault health score (0-100)
+      let vault_health_score = 0;
+      if (indexBuilt && noteCount > 0) {
+        // Link density: avg outlinks per note, target 3+
+        const avgOutlinks = linkCount / noteCount;
+        const linkDensity = Math.min(1, avgOutlinks / 3);
+
+        // Orphan ratio: notes with 0 backlinks (excluding periodic notes)
+        let orphanCount = 0;
+        for (const note of index.notes.values()) {
+          const bl = index.backlinks.get(note.title.toLowerCase());
+          if (!bl || bl.length === 0) orphanCount++;
+        }
+        const orphanRatio = 1 - (orphanCount / noteCount);
+
+        // Dead link ratio
+        const totalLinks = linkCount > 0 ? linkCount : 1;
+        const deadLinkRatio = 1 - (deadLinkCount / totalLinks);
+
+        // Frontmatter coverage
+        let notesWithFm = 0;
+        for (const note of index.notes.values()) {
+          if (Object.keys(note.frontmatter).length > 0) notesWithFm++;
+        }
+        const fmCoverage = notesWithFm / noteCount;
+
+        // Freshness: notes modified in last 90 days
+        const freshCutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+        let freshCount = 0;
+        for (const note of index.notes.values()) {
+          if (note.modified && note.modified.getTime() > freshCutoff) freshCount++;
+        }
+        const freshness = freshCount / noteCount;
+
+        // Entity coverage: target 1 entity per 2 notes
+        const entityCoverage = Math.min(1, entityCount / (noteCount * 0.5));
+
+        // Weighted composite
+        vault_health_score = Math.round(
+          (linkDensity * 25 +
+           orphanRatio * 20 +
+           deadLinkRatio * 15 +
+           fmCoverage * 15 +
+           freshness * 15 +
+           entityCoverage * 10)
+        );
+      }
+
       const output: HealthCheckOutput = {
         status,
+        vault_health_score,
         schema_version: SCHEMA_VERSION,
         vault_accessible: vaultAccessible,
         vault_path: vaultPath,

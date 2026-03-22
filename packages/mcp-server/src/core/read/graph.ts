@@ -47,10 +47,19 @@ let indexProgress = { parsed: 0, total: 0 };
 /** Error if index building failed */
 let indexError: Error | null = null;
 
-/** Get the current index state (reads from VaultScope if available) */
+/** Get the current index state.
+ * Reads from VaultScope if available, but falls through to module-level
+ * if the scope is stale (still 'building' while module-level is 'ready').
+ * This handles the case where the scope was created before the index finished building.
+ */
 export function getIndexState(): IndexState {
   const scope = getActiveScopeOrNull();
-  return scope ? scope.indexState : indexState;
+  if (scope) {
+    // Module-level 'ready' always wins over stale scope 'building'
+    if (scope.indexState === 'building' && indexState === 'ready') return 'ready';
+    return scope.indexState;
+  }
+  return indexState;
 }
 
 /** Get the current index build progress */

@@ -83,14 +83,17 @@ export function parseVaultConfig(): Array<{ name: string; path: string }> | null
   for (const entry of envValue.split(',')) {
     const trimmed = entry.trim();
     const colonIdx = trimmed.indexOf(':');
-    if (colonIdx <= 0) continue; // skip malformed entries
+    if (colonIdx <= 0) {
+      console.error(`[flywheel] Warning: skipping malformed FLYWHEEL_VAULTS entry: "${trimmed}" (expected name:/path)`);
+      continue;
+    }
     // Handle Windows paths (e.g., "name:C:\path") — colon at index > 1 is the separator
     // For single-char names followed by Windows path, look for second colon
     let name: string;
     let vaultPath: string;
     if (colonIdx === 1 && trimmed.length > 2 && (trimmed[2] === '\\' || trimmed[2] === '/')) {
       // Looks like "C:\..." — treat entire thing as path, not name:path
-      // Skip this entry — ambiguous
+      console.error(`[flywheel] Warning: skipping ambiguous FLYWHEEL_VAULTS entry: "${trimmed}" (looks like a Windows path, not name:path)`);
       continue;
     }
     name = trimmed.substring(0, colonIdx);

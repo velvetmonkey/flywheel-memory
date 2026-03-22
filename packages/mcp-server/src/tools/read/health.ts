@@ -234,6 +234,22 @@ export function registerHealthTools(
         recommendations.push('Vault path is not accessible. Check PROJECT_PATH environment variable.');
       }
 
+      // Check database integrity
+      const stateDb = getStateDb();
+      if (stateDb) {
+        try {
+          const result = stateDb.db.pragma('quick_check') as Array<Record<string, string>>;
+          const ok = result.length === 1 && Object.values(result[0])[0] === 'ok';
+          if (!ok) {
+            overall = 'unhealthy';
+            recommendations.push(`Database integrity check failed: ${Object.values(result[0])[0] ?? 'unknown error'}`);
+          }
+        } catch (err) {
+          overall = 'unhealthy';
+          recommendations.push(`Database integrity check error: ${err instanceof Error ? err.message : err}`);
+        }
+      }
+
       // Check index status
       const indexBuilt = indexState === 'ready' && index !== undefined && index.notes !== undefined;
       const indexAge = indexBuilt && index.builtAt
@@ -300,7 +316,6 @@ export function registerHealthTools(
 
       // Get last rebuild event from StateDb
       let lastRebuild: HealthCheckOutput['last_rebuild'];
-      const stateDb = getStateDb();
       if (stateDb) {
         try {
           const events = getRecentIndexEvents(stateDb, 1);

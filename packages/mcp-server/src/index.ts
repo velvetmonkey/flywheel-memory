@@ -17,7 +17,7 @@
  */
 
 import * as path from 'path';
-import { readFileSync, realpathSync } from 'fs';
+import { readFileSync, realpathSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -184,6 +184,13 @@ import { setActiveScope, runInVaultScope, getActiveScopeOrNull, type VaultScope 
 const vaultPath: string = process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot();
 let resolvedVaultPath: string;
 try { resolvedVaultPath = realpathSync(vaultPath).replace(/\\/g, '/'); } catch { resolvedVaultPath = vaultPath.replace(/\\/g, '/'); }
+
+// Validate vault path exists
+if (!existsSync(resolvedVaultPath)) {
+  console.error(`[flywheel] Fatal: vault path does not exist: ${resolvedVaultPath}`);
+  console.error(`[flywheel] Set PROJECT_PATH or VAULT_PATH to a valid Obsidian vault directory.`);
+  process.exit(1);
+}
 
 // State variables (module-level singletons — swapped by activateVault for multi-vault)
 let vaultIndex: VaultIndex;
@@ -1108,6 +1115,10 @@ async function main() {
     const { StreamableHTTPServerTransport } = await import('@modelcontextprotocol/sdk/server/streamableHttp.js');
 
     const httpPort = parseInt(process.env.FLYWHEEL_HTTP_PORT ?? '3111', 10);
+    if (!Number.isFinite(httpPort) || httpPort < 1 || httpPort > 65535) {
+      console.error(`[flywheel] Fatal: invalid FLYWHEEL_HTTP_PORT: ${process.env.FLYWHEEL_HTTP_PORT} (must be 1-65535)`);
+      process.exit(1);
+    }
     const httpHost = process.env.FLYWHEEL_HTTP_HOST ?? '127.0.0.1';
 
     const app = createMcpExpressApp({ host: httpHost });

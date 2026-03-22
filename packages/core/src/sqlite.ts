@@ -109,7 +109,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 28;
+export const SCHEMA_VERSION = 29;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -261,6 +261,7 @@ CREATE TABLE IF NOT EXISTS wikilink_feedback (
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_wl_feedback_entity ON wikilink_feedback(entity);
+CREATE INDEX IF NOT EXISTS idx_wl_feedback_note_path ON wikilink_feedback(note_path);
 
 -- Wikilink suppressions (v4: auto-suppress false positives)
 CREATE TABLE IF NOT EXISTS wikilink_suppressions (
@@ -715,6 +716,9 @@ function initSchema(db: Database.Database): void {
     // v28: content_hashes table (persist watcher content hashes across restarts)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
+    // v29: index on wikilink_feedback(note_path) for temporal analysis queries
+    // (created by SCHEMA_SQL above via CREATE INDEX IF NOT EXISTS)
+
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
     ).run(SCHEMA_VERSION);
@@ -728,6 +732,30 @@ function deleteStateDbFiles(dbPath: string): void {
   }
 }
 
+/** Back up state.db before opening (skip if missing or 0 bytes). */
+function backupStateDb(dbPath: string): void {
+  try {
+    if (!fs.existsSync(dbPath)) return;
+    const stat = fs.statSync(dbPath);
+    if (stat.size === 0) return;
+    fs.copyFileSync(dbPath, dbPath + '.backup');
+  } catch (err) {
+    console.error(`[vault-core] Failed to back up state.db: ${err instanceof Error ? err.message : err}`);
+  }
+}
+
+/** Preserve a corrupted database for inspection before deleting. */
+function preserveCorruptedDb(dbPath: string): void {
+  try {
+    if (fs.existsSync(dbPath)) {
+      fs.copyFileSync(dbPath, dbPath + '.corrupt');
+      console.error(`[vault-core] Corrupted database preserved at ${dbPath}.corrupt`);
+    }
+  } catch {
+    // Best effort — don't block recovery
+  }
+}
+
 /**
  * Open or create the state database for a vault
  *
@@ -736,6 +764,9 @@ function deleteStateDbFiles(dbPath: string): void {
  */
 export function openStateDb(vaultPath: string): StateDb {
   const dbPath = getStateDbPath(vaultPath);
+
+  // Back up existing database before any mutations
+  backupStateDb(dbPath);
 
   // Guard: Delete corrupted 0-byte database files
   // This can happen when better-sqlite3 fails to compile (e.g., Node 24)
@@ -753,10 +784,11 @@ export function openStateDb(vaultPath: string): StateDb {
     db = new Database(dbPath);
     initSchema(db);
   } catch (err) {
-    // Corrupted database (e.g., "file is not a database") — delete and retry once
+    // Corrupted database (e.g., "file is not a database") — preserve, delete, and retry once
     if (fs.existsSync(dbPath)) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error(`[vault-core] Corrupted state.db (${msg}) — deleting and recreating`);
+      preserveCorruptedDb(dbPath);
       try { db!?.close(); } catch { /* ignore */ }
       deleteStateDbFiles(dbPath);
       db = new Database(dbPath);

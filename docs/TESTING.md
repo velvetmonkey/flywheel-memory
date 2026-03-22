@@ -104,18 +104,51 @@ Source: [`packages/mcp-server/test/write/coldstart/`](../packages/mcp-server/tes
 
 ## Retrieval Benchmark (HotpotQA)
 
-End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/) hard questions. Real Claude + Flywheel via `claude -p` — no pre-processing, no cherry-picking.
+End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/) — a standard multi-hop question answering benchmark from CMU/Stanford. Real Claude + Flywheel via `claude -p`, no pre-processing, no cherry-picking.
+
+### Results (200 hard questions, 1,993 documents)
 
 | Metric | Score |
 |---|---|
-| Document Recall | **87%** (87/100 supporting docs) |
-| Full Recall (both docs) | **78%** (39/50) |
-| Partial Recall (≥1 doc) | **96%** (48/50) |
-| Bridge (multi-hop) | 85.4% |
-| Comparison | 94.4% |
-| Cost | $0.073/question |
+| Document Recall | **83.2%** (333/400 supporting docs found) |
+| Full Recall (both docs found) | **69.0%** (138/200) |
+| Partial Recall (≥1 doc found) | **97.5%** (195/200) |
+| Bridge (multi-hop) | 80.6% |
+| Comparison | 95.7% |
+| Cost | $0.062/question |
 
-50 questions, 500 documents. Multi-hop backfill automatically includes documents linked from top search results.
+### How Flywheel compares
+
+HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/F1). The retrieval stage — finding the right documents — is what we measure. Most academic systems are purpose-built ML retrieval models trained specifically on HotpotQA; Flywheel is a general-purpose vault tool.
+
+| System | Type | Retrieval Recall | Approach | Notes |
+|---|---|---|---|---|
+| **Flywheel** | MCP vault tool | **83.2%** | BM25 + entity search + multi-hop backfill | General-purpose, zero training, end-to-end via Claude |
+| BM25 baseline | IR baseline | ~70-75% | TF-IDF keyword matching | Standard academic baseline |
+| [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | IR baseline | ~80% | TF-IDF with named entity overlap | Original HotpotQA paper baseline |
+| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Multi-hop dense retrieval (iterative) | Facebook, 2021. Trained on HotpotQA. Two-hop BERT encoder |
+| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Condensed retrieval with hop-aware filtering | Stanford, 2021. Trained on HotpotQA |
+| [ColBERTv2](https://arxiv.org/abs/2112.01488) | Trained retriever | ~90%+ | Late interaction dense retrieval | Stanford, 2022. Fine-tuned on MS MARCO |
+| [Beam Retrieval](https://arxiv.org/abs/2308.08973) | Trained retriever | ~93% | Beam search over retrieval paths | 2023. Trained end-to-end for multi-hop |
+
+**Key differences:**
+
+- **Trained retrievers** (MDR, Baleen, Beam Retrieval) are neural models fine-tuned on HotpotQA training data. They learn query-document relationships. Flywheel has zero training — it uses BM25 keyword search with structural backfill.
+- **Our test setting** is harder than standard distractor (10 docs per question) but easier than fullwiki (5M docs). We pool all 1,993 documents from 200 questions into one vault, so each query searches ~2,000 docs, not 10.
+- **Flywheel's 83.2%** beats the standard BM25 baseline (~75%) by +8pp, attributable to multi-hop backfill (following outlinks from top results) and FTS5 column weighting (title 5x, frontmatter 10x).
+- **The gap to trained retrievers** (83% vs 88-93%) is the cost of being general-purpose. These systems iterate: retrieve, read, re-query. Flywheel does one search + backfill.
+
+### Comparison with MCP memory tools
+
+| System | HotpotQA Benchmark | Tools | Search | Memory | Learning |
+|---|---|---|---|---|---|
+| **Flywheel** | **83.2%** (200q, e2e) | 69 | Hybrid BM25 + semantic | Yes (brief/recall/store) | Feedback loop + co-occurrence |
+| [Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos) | Claims 90% Recall@5 (synthetic) | 16 | 4-signal fusion | Yes (ACT-R decay) | Contextual bandits |
+| [TurboVault](https://github.com/Epistates/turbovault) | None published | 44 | BM25 only | No | No |
+| [Mem0](https://github.com/mem0ai/mem0) | None published | ~5 | Embedding similarity | Yes | No |
+| Smart Connections | None published | 0 (plugin) | Embedding similarity | No | No |
+
+Note: Ori Mnemos reports 90% Recall@5 on a synthetic benchmark, not end-to-end HotpotQA. Their methodology and ours are not directly comparable.
 
 Source: [`demos/hotpotqa/`](../demos/hotpotqa/) | [`packages/mcp-server/test/retrieval-bench/`](../packages/mcp-server/test/retrieval-bench/)
 

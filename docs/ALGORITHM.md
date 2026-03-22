@@ -84,9 +84,9 @@ Co-occurrence candidates must also have at least 1 word overlapping with the con
 
 Co-occurrence strength uses **NPMI (Normalized Pointwise Mutual Information)** scoring to penalize ubiquitous entities. An entity that co-occurs with everything gets a lower boost than one with a focused co-occurrence pattern. The `computeNpmi()` function scales by PMI_SCALE=12, capped at 12.
 
-**Retrieval co-occurrence** adds a second signal: notes that are frequently retrieved together in search/recall sessions build implicit associations. The watcher mines `tool_invocations` for co-retrieved note pairs, weights them with Adamic-Adar (smaller sessions = stronger signal), and applies 7-day exponential decay. The final boost is `Math.max(contentBoost, retrievalBoost)` — the stronger signal wins, no double-counting. Retrieval boost caps at 6 (half of content co-occurrence max).
+**Retrieval co-occurrence** adds a second signal: notes that are frequently retrieved together in search/recall sessions build implicit associations. The watcher mines `tool_invocations` for co-retrieved note pairs, weights them with Adamic-Adar (smaller sessions = stronger signal), and applies 7-day exponential decay. Co-occurrence pairs are stored in the `retrieval_cooccurrence` table (schema v30). The final boost is `Math.max(contentBoost, retrievalBoost)` — the stronger signal wins, no double-counting. Retrieval boost caps at 6 (half of content co-occurrence max).
 
-**Multi-hop search backfill.** Search results automatically include documents linked from top results. When a search finds document A which mentions entity B, document B is included in the result set at lower rank. This enables second-hop retrieval without LLM re-ranking — measured at 87% document recall on HotpotQA hard questions (up from 78% without backfill).
+**Multi-hop search backfill.** Search results automatically include documents linked from top results. When a search finds document A which mentions entity B, document B is included in the result set at lower rank. This enables second-hop retrieval without LLM re-ranking — measured at 83.2% document recall on 200 hard HotpotQA questions.
 
 ### Layer 3: Type Boost
 
@@ -146,15 +146,18 @@ Entities from a different top-level folder than the current note are more valuab
 
 ### Layer 7: Hub Boost
 
-Notes with many backlinks (hub notes) are central to the knowledge graph. Linking to them strengthens the graph's connective tissue.
+Central notes strengthen graph connectivity. Hub scores are computed using **eigenvector centrality** — a power-iteration algorithm on the bidirectional wikilink graph (50 iterations). Scores are scaled 0–100 and stored in `entities.hub_score`. Unlike simple backlink counting, eigenvector centrality weighs the *quality* of connections — a note linked by other well-connected notes scores higher than one with many links from peripheral notes.
 
-| Backlink count | Boost |
+The boost uses logarithmic scaling: `min(round(log₂(hubScore) × 10) / 10, 6)`.
+
+| Hub Score (eigenvector) | Boost |
 |---|---|
-| >= 100 | +8 |
-| >= 50 | +5 |
-| >= 20 | +3 |
-| >= 5 | +1 |
-| < 5 | 0 |
+| 100 | +6.0 (max) |
+| 50 | +5.6 |
+| 20 | +4.3 |
+| 10 | +3.3 |
+| 5 | +2.3 |
+| 1 | 0 |
 
 ### Layer 8: Feedback Adjustment
 
@@ -290,7 +293,7 @@ This is a daily note at `daily-notes/2025-06-15.md`. Adaptive strictness escalat
 
 The entity index contains thousands of entities. After filtering (length <= 25, word count <= 3, not already linked, no article patterns, not suppressed), the scoring loop evaluates each survivor.
 
-Let's trace three entities through all 9 layers:
+Let's trace three entities through all 10 scoring layers (Layer 10 — Edge Weight — is zero for all three in this example since none have accumulated edge weight data yet):
 
 ### Marcus Johnson (people, path: `people/Marcus Johnson.md`)
 
@@ -302,10 +305,10 @@ Let's trace three entities through all 9 layers:
 | 4. Context Boost | daily note + people | +5 |
 | 5. Recency | mentioned 2 hours ago | +5 |
 | 6. Cross-Folder | `people/` != `daily-notes/` | +3 |
-| 7. Hub Boost | 12 backlinks (>= 5) | +1 |
+| 7. Hub Boost | eigenvector hub score 12 | +3.6 |
 | 8. Feedback | 85% accuracy over 8 samples | +2 |
 | 9. Semantic | "tracking delivery" ↔ Marcus: 0.25 (below 0.30 min) | 0 |
-| **Total** | | **34** |
+| **Total** | | **36.6** |
 
 ### Acme Corp (organizations, path: `organizations/Acme Corp.md`)
 
@@ -317,10 +320,10 @@ Let's trace three entities through all 9 layers:
 | 4. Context Boost | daily note + organizations: none | 0 |
 | 5. Recency | mentioned 18 hours ago | +5 |
 | 6. Cross-Folder | `organizations/` != `daily-notes/` | +3 |
-| 7. Hub Boost | 7 backlinks (>= 5) | +1 |
+| 7. Hub Boost | eigenvector hub score 7 | +2.8 |
 | 8. Feedback | no feedback yet | 0 |
 | 9. Semantic | "delivery delayed" ↔ Acme: 0.22 (below 0.30 min) | 0 |
-| **Total** | | **24** |
+| **Total** | | **25.8** |
 
 ### Turbopump (projects, path: `projects/Turbopump.md`)
 
@@ -332,10 +335,10 @@ Let's trace three entities through all 9 layers:
 | 4. Context Boost | daily note + projects | +2 |
 | 5. Recency | mentioned 30 minutes ago | +8 |
 | 6. Cross-Folder | `projects/` != `daily-notes/` | +3 |
-| 7. Hub Boost | 25 backlinks (>= 20) | +3 |
+| 7. Hub Boost | eigenvector hub score 25 | +4.6 |
 | 8. Feedback | 92% accuracy over 12 samples | +2 |
 | 9. Semantic | "delivery delayed" ↔ Turbopump: 0.41 × 12 × 0.6 = 2.95 | +2.95 |
-| **Total** | | **36.95** |
+| **Total** | | **38.55** |
 
 Layer 9 is where it gets interesting. "Turbopump delivery delayed" is semantically close to the Turbopump entity (0.41 similarity). That exceeds the 0.30 minimum, so the formula kicks in: `0.41 × 12 × 0.6 = 2.95` (conservative multiplier). Marcus and Acme didn't clear the 0.30 threshold — their names already matched via Layer 1, so semantic adds nothing new for them.
 
@@ -345,13 +348,13 @@ Sorted by score descending, then by recency as tiebreaker:
 
 | Rank | Entity | Score | Recency |
 |---|---|---|---|
-| 1 | Turbopump | 36.95 | 30 min ago |
-| 2 | Marcus Johnson | 34 | 2 hours ago |
-| 3 | Acme Corp | 24 | 18 hours ago |
+| 1 | Turbopump | 38.55 | 30 min ago |
+| 2 | Marcus Johnson | 36.6 | 2 hours ago |
+| 3 | Acme Corp | 25.8 | 18 hours ago |
 
 **Output:** `-> [[Turbopump]], [[Marcus Johnson]], [[Acme Corp]]`
 
-All three exceed the conservative threshold of 15. Turbopump pulls ahead with the Layer 9 semantic boost. The top 3 are returned by default.
+All three exceed the conservative threshold of 15. Turbopump pulls ahead with the Layer 9 semantic boost and the highest eigenvector hub score. The top 3 are returned by default.
 
 ---
 

@@ -220,19 +220,19 @@ See [docs/TESTING.md](docs/TESTING.md) for full methodology. Auto-generated repo
 
 ### Retrieval Benchmark (HotpotQA)
 
-End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/) — a standard multi-hop question answering benchmark. 50 hard questions, 500 documents, real Claude + Flywheel via `claude -p`. No cherry-picking, no pre-processing.
+End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/) — a standard multi-hop question answering benchmark. 200 hard questions, 1,993 documents, real Claude + Flywheel via `claude -p`. No cherry-picking, no pre-processing.
 
 | Metric | Score |
 |---|---|
-| Document Recall | **87%** (87/100 supporting docs found) |
-| Full Recall (both docs found) | **78%** (39/50 questions) |
-| Partial Recall (≥1 doc found) | **96%** (48/50 questions) |
-| Bridge (multi-hop) | 85.4% |
-| Comparison | 94.4% |
+| Document Recall | **83.2%** (333/400 supporting docs found) |
+| Full Recall (both docs found) | **69.0%** (138/200 questions) |
+| Partial Recall (≥1 doc found) | **97.5%** (195/200 questions) |
+| Bridge (multi-hop) | 80.6% |
+| Comparison | 95.7% |
 
-Flywheel's search automatically follows links from found documents to discover second-hop results — multi-hop retrieval with zero LLM re-ranking.
+Beats the standard BM25 baseline (~75%) by +8pp with zero training — just FTS5 keyword search with multi-hop backfill (outlinks from top results auto-included). See [how we compare to trained retrievers and other MCP tools](docs/TESTING.md#how-flywheel-compares).
 
-Run it yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [Benchmark results](demos/hotpotqa/results/) | [Test harness](packages/mcp-server/test/retrieval-bench/)
+Run it yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [Full methodology + comparisons](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
 ### Safe Writes
 

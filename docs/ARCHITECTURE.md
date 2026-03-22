@@ -11,6 +11,8 @@ packages/
 ├── mcp-server/                  # The MCP server (published as @velvetmonkey/flywheel-memory)
 │   └── src/
 │       ├── index.ts             # Entry point, tool preset gating, startup
+│       ├── vault-registry.ts    # Multi-vault context management (VaultRegistry, parseVaultConfig)
+│       ├── vault-scope.ts       # Per-request vault isolation via AsyncLocalStorage
 │       ├── tools/
 │       │   ├── read/            # Read tool registrations
 │       │   │   ├── query.ts     # search (unified: metadata + content + entities)
@@ -229,7 +231,7 @@ Each `VaultNote` stores its outlinks with: target string, optional alias, line n
 
 ### Hub Detection
 
-`find_hub_notes` counts backlinks + forward links for every note and returns those above a threshold (default: 5). Hub scores are exported to StateDb for use by the auto-wikilink system.
+Hub scores are computed using **eigenvector centrality** — a power-iteration algorithm (50 iterations) on the bidirectional wikilink graph. Scores are scaled 0–100 and stored in `entities.hub_score`. This replaces simple backlink counting: a note linked by other well-connected notes scores higher than one with many links from peripheral notes. Hub scores are exported to StateDb for use by the auto-wikilink scoring system (Layer 7).
 
 ### Path Finding
 
@@ -311,6 +313,7 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 | `memories` | Agent memory storage |
 | `memories_fts` | FTS5 index for memory search |
 | `session_summaries` | Agent session summary storage |
+| `retrieval_cooccurrence` | Notes co-retrieved in search/recall sessions (Adamic-Adar weighted, 7-day decay) |
 
 **Database settings:** WAL journal mode for concurrent read performance. Foreign keys enabled. Schema version tracking with migration support.
 
@@ -358,6 +361,8 @@ New tables are added directly to `SCHEMA_SQL` with `CREATE TABLE IF NOT EXISTS`,
 | v26 | Added `memories` + `memories_fts` + `session_summaries` tables (agentic memory) |
 | v27 | Added `cooccurrence_cache` table (serialized co-occurrence BLOB) |
 | v28 | Added `content_hashes` table (write conflict detection) |
+| v29 | Added `idx_wl_feedback_note_path` index on `wikilink_feedback(note_path)` for temporal analysis queries |
+| v30 | Added `response_tokens`/`baseline_tokens` on `tool_invocations` (token economics) + `retrieval_cooccurrence` table |
 
 ---
 

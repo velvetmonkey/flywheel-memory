@@ -69,6 +69,7 @@ import {
   needsEmbeddingRebuild,
   getStoredEmbeddingModel,
   getActiveModelId,
+  getEntityEmbeddingsMap,
 } from './core/read/embeddings.js';
 import {
   setTaskCacheDatabase,
@@ -172,7 +173,7 @@ import { registerVaultResources } from './resources/vault.js';
 
 // Multi-vault
 import { VaultRegistry, parseVaultConfig, type VaultContext } from './vault-registry.js';
-import { setActiveScope, type VaultScope } from './vault-scope.js';
+import { setActiveScope, runInVaultScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
 
 
 // ============================================================================
@@ -682,12 +683,10 @@ function applyToolGating(
         return crossVaultSearch(registry!, handler, args);
       }
       const ctx = registry.getContext(vaultName);
+      // Set fallback scope + module-level state (for watcher/startup code paths)
       activateVault(ctx);
-      // Update module-level state references so closures see the right vault
-      stateDb = ctx.stateDb;
-      vaultIndex = ctx.vaultIndex;
-      flywheelConfig = ctx.flywheelConfig;
-      return handler(...args);
+      // Run handler inside ALS context for per-request isolation
+      return runInVaultScope(buildVaultScope(ctx), () => handler(...args));
     };
   }
 
@@ -704,11 +703,9 @@ function applyToolGating(
 
     for (const ctx of reg.getAllContexts()) {
       activateVault(ctx);
-      stateDb = ctx.stateDb;
-      vaultIndex = ctx.vaultIndex;
-      flywheelConfig = ctx.flywheelConfig;
       try {
-        const result = await handler(...args);
+        // Run each vault's search inside its own ALS context
+        const result = await runInVaultScope(buildVaultScope(ctx), () => handler(...args));
         const text = result?.content?.[0]?.text;
         if (text) {
           perVault.push({ vault: ctx.name, data: JSON.parse(text) });
@@ -811,37 +808,43 @@ function applyToolGating(
  * Safe because JS is single-threaded and state is read-mostly (watcher updates, tools read).
  */
 function registerAllTools(targetServer: McpServer): void {
+  // Scope-aware getters: read from ALS VaultScope first, fallback to module-level
+  const gvp = () => getActiveScopeOrNull()?.vaultPath ?? vaultPath;
+  const gvi = () => getActiveScopeOrNull()?.vaultIndex ?? vaultIndex;
+  const gsd = (): StateDb | null => getActiveScopeOrNull()?.stateDb ?? stateDb;
+  const gcf = () => getActiveScopeOrNull()?.flywheelConfig ?? flywheelConfig;
+
   // Read tools
-  registerHealthTools(targetServer, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb, getWatcherStatus);
+  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, getWatcherStatus);
   registerReadSystemTools(
     targetServer,
-    () => vaultIndex,
+    gvi,
     (newIndex) => { vaultIndex = newIndex; },
-    () => vaultPath,
+    gvp,
     (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
-    () => stateDb
+    gsd
   );
-  registerGraphTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
-  registerWikilinkTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
-  registerQueryTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
-  registerPrimitiveTools(targetServer, () => vaultIndex, () => vaultPath, () => flywheelConfig, () => stateDb);
-  registerGraphAnalysisTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb, () => flywheelConfig);
-  registerSemanticAnalysisTools(targetServer, () => vaultIndex, () => vaultPath);
-  registerVaultSchemaTools(targetServer, () => vaultIndex, () => vaultPath);
-  registerNoteIntelligenceTools(targetServer, () => vaultIndex, () => vaultPath, () => flywheelConfig);
-  registerMigrationTools(targetServer, () => vaultIndex, () => vaultPath);
+  registerGraphTools(targetServer, gvi, gvp, gsd);
+  registerWikilinkTools(targetServer, gvi, gvp, gsd);
+  registerQueryTools(targetServer, gvi, gvp, gsd);
+  registerPrimitiveTools(targetServer, gvi, gvp, gcf, gsd);
+  registerGraphAnalysisTools(targetServer, gvi, gvp, gsd, gcf);
+  registerSemanticAnalysisTools(targetServer, gvi, gvp);
+  registerVaultSchemaTools(targetServer, gvi, gvp);
+  registerNoteIntelligenceTools(targetServer, gvi, gvp, gcf);
+  registerMigrationTools(targetServer, gvi, gvp);
 
   // Write tools
-  registerMutationTools(targetServer, () => vaultPath, () => flywheelConfig);
-  registerTaskTools(targetServer, () => vaultPath);
-  registerFrontmatterTools(targetServer, () => vaultPath);
-  registerNoteTools(targetServer, () => vaultPath, () => vaultIndex);
-  registerMoveNoteTools(targetServer, () => vaultPath);
-  registerWriteMergeTools(targetServer, () => vaultPath);
-  registerWriteSystemTools(targetServer, () => vaultPath);
-  registerPolicyTools(targetServer, () => vaultPath, () => {
-    if (!vaultIndex) return undefined;
-    const index = vaultIndex;
+  registerMutationTools(targetServer, gvp, gcf);
+  registerTaskTools(targetServer, gvp);
+  registerFrontmatterTools(targetServer, gvp);
+  registerNoteTools(targetServer, gvp, gvi);
+  registerMoveNoteTools(targetServer, gvp);
+  registerWriteMergeTools(targetServer, gvp);
+  registerWriteSystemTools(targetServer, gvp);
+  registerPolicyTools(targetServer, gvp, () => {
+    const index = gvi();
+    if (!index) return undefined;
     return ({ query, folder, where, limit = 10 }) => {
       let notes = Array.from(index.notes.values());
       if (folder) {
@@ -869,32 +872,32 @@ function registerAllTools(targetServer: McpServer): void {
       }));
     };
   });
-  registerTagTools(targetServer, () => vaultIndex, () => vaultPath);
-  registerWikilinkFeedbackTools(targetServer, () => stateDb);
-  registerCorrectionTools(targetServer, () => stateDb);
-  registerInitTools(targetServer, () => vaultPath, () => stateDb);
+  registerTagTools(targetServer, gvi, gvp);
+  registerWikilinkFeedbackTools(targetServer, gsd);
+  registerCorrectionTools(targetServer, gsd);
+  registerInitTools(targetServer, gvp, gsd);
   registerConfigTools(
     targetServer,
-    () => flywheelConfig,
+    gcf,
     (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
-    () => stateDb
+    gsd
   );
 
   // Additional read tools
-  registerMetricsTools(targetServer, () => vaultIndex, () => stateDb);
-  registerActivityTools(targetServer, () => stateDb, () => { try { return getSessionId(); } catch { return null; } });
-  registerSimilarityTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
-  registerSemanticTools(targetServer, () => vaultPath, () => stateDb);
-  registerReadMergeTools(targetServer, () => stateDb);
-  registerTemporalAnalysisTools(targetServer, () => vaultIndex, () => vaultPath, () => stateDb);
+  registerMetricsTools(targetServer, gvi, gsd);
+  registerActivityTools(targetServer, gsd, () => { try { return getSessionId(); } catch { return null; } });
+  registerSimilarityTools(targetServer, gvi, gvp, gsd);
+  registerSemanticTools(targetServer, gvp, gsd);
+  registerReadMergeTools(targetServer, gsd);
+  registerTemporalAnalysisTools(targetServer, gvi, gvp, gsd);
 
   // Memory tools
-  registerMemoryTools(targetServer, () => stateDb);
-  registerRecallTools(targetServer, () => stateDb, () => vaultPath, () => vaultIndex ?? null);
-  registerBriefTools(targetServer, () => stateDb);
+  registerMemoryTools(targetServer, gsd);
+  registerRecallTools(targetServer, gsd, gvp, () => gvi() ?? null);
+  registerBriefTools(targetServer, gsd);
 
   // Resources (always registered, not gated by tool presets)
-  registerVaultResources(targetServer, () => vaultIndex ?? null);
+  registerVaultResources(targetServer, () => gvi() ?? null);
 }
 
 /**
@@ -969,10 +972,26 @@ async function initializeVault(name: string, vaultPathArg: string): Promise<Vaul
   return ctx;
 }
 
+/** Build a VaultScope snapshot from a VaultContext (for runInVaultScope). */
+function buildVaultScope(ctx: VaultContext): VaultScope {
+  return {
+    name: ctx.name,
+    vaultPath: ctx.vaultPath,
+    stateDb: ctx.stateDb,
+    flywheelConfig: ctx.flywheelConfig,
+    vaultIndex: ctx.vaultIndex,
+    cooccurrenceIndex: ctx.cooccurrenceIndex,
+    indexState: ctx.indexState,
+    indexError: ctx.indexError,
+    embeddingsBuilding: ctx.embeddingsBuilding,
+    entityEmbeddingsMap: getEntityEmbeddingsMap(),
+  };
+}
+
 /**
  * Activate a vault context by swapping all module-level singletons.
- * Safe because MCP processes requests sequentially per transport (JS is single-threaded).
- * Stateless HTTP runs one request to completion per McpServer instance.
+ * Also sets the fallback VaultScope for code outside ALS context.
+ * Tool handlers additionally run inside runInVaultScope() for per-request isolation.
  */
 function activateVault(ctx: VaultContext): void {
   // Update module-level state
@@ -995,17 +1014,8 @@ function activateVault(ctx: VaultContext): void {
   setIndexError(ctx.indexError);
   setEmbeddingsBuilding(ctx.embeddingsBuilding);
 
-  // Set the unified VaultScope (for modules migrated to getActiveScope())
-  setActiveScope({
-    name: ctx.name,
-    vaultPath: ctx.vaultPath,
-    stateDb: ctx.stateDb,
-    flywheelConfig: ctx.flywheelConfig,
-    cooccurrenceIndex: ctx.cooccurrenceIndex,
-    indexState: ctx.indexState,
-    indexError: ctx.indexError,
-    embeddingsBuilding: ctx.embeddingsBuilding,
-  });
+  // Set the fallback VaultScope (for code outside ALS context: startup, watcher)
+  setActiveScope(buildVaultScope(ctx));
 }
 
 /**

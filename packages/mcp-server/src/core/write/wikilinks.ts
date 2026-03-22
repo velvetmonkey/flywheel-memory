@@ -87,10 +87,11 @@ export function setWriteStateDb(stateDb: StateDb | null): void {
 }
 
 /**
- * Get the StateDb instance (for use by other modules like mutation-helpers)
+ * Get the StateDb instance (for use by other modules like mutation-helpers).
+ * Checks ALS scope first for per-request isolation.
  */
 export function getWriteStateDb(): StateDb | null {
-  return moduleStateDb;
+  return getActiveScopeOrNull()?.stateDb ?? moduleStateDb;
 }
 
 /**

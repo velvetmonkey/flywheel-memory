@@ -136,17 +136,29 @@ const EMBEDDING_CACHE_MAX = 500;
 /** In-memory entity embeddings for fast cosine search */
 const entityEmbeddingsMap = new Map<string, Float32Array>();
 
+/** Resolve DB handle: ALS scope first, fallback to module-level. */
+function getDb(): Database.Database | null {
+  return getActiveScopeOrNull()?.stateDb?.db ?? db;
+}
+
+/** Resolve entity embeddings map: ALS scope first, fallback to module-level. */
+function getEmbMap(): Map<string, Float32Array> {
+  return getActiveScopeOrNull()?.entityEmbeddingsMap ?? entityEmbeddingsMap;
+}
+
 // =============================================================================
 // Build State Tracking
 // =============================================================================
 
 function getEmbeddingsBuildState(): string {
+  const db = getDb();
   if (!db) return 'none';
   const row = db.prepare(`SELECT value FROM fts_metadata WHERE key = 'embeddings_state'`).get() as { value: string } | undefined;
   return row?.value || 'none';
 }
 
 export function setEmbeddingsBuildState(state: 'none' | 'building_notes' | 'building_entities' | 'complete'): void {
+  const db = getDb();
   if (!db) return;
   db.prepare(`INSERT OR REPLACE INTO fts_metadata (key, value) VALUES ('embeddings_state', ?)`)
     .run(state);
@@ -361,6 +373,7 @@ export async function buildEmbeddingsIndex(
   vaultPath: string,
   onProgress?: (progress: BuildProgress) => void
 ): Promise<BuildProgress> {
+  const db = getDb();
   if (!db) {
     throw new Error('Embeddings database not initialized. Call setEmbeddingsDatabase() first.');
   }
@@ -437,6 +450,7 @@ export async function buildEmbeddingsIndex(
  * Update embedding for a single note (used by file watcher).
  */
 export async function updateEmbedding(notePath: string, absolutePath: string): Promise<void> {
+  const db = getDb();
   if (!db) return;
 
   try {
@@ -463,6 +477,7 @@ export async function updateEmbedding(notePath: string, absolutePath: string): P
  * Remove embedding for a deleted note.
  */
 export function removeEmbedding(notePath: string): void {
+  const db = getDb();
   if (!db) return;
   db.prepare('DELETE FROM note_embeddings WHERE path = ?').run(notePath);
 }
@@ -501,6 +516,7 @@ export async function semanticSearch(
   query: string,
   limit: number = 10
 ): Promise<ScoredNote[]> {
+  const db = getDb();
   if (!db) {
     throw new Error('Embeddings database not initialized. Call setEmbeddingsDatabase() first.');
   }
@@ -536,6 +552,7 @@ export async function findSemanticallySimilar(
   limit: number = 10,
   excludePaths?: Set<string>
 ): Promise<ScoredNote[]> {
+  const db = getDb();
   if (!db) {
     throw new Error('Embeddings database not initialized. Call setEmbeddingsDatabase() first.');
   }
@@ -616,6 +633,7 @@ export function setEmbeddingsBuilding(value: boolean): void {
 }
 
 export function hasEmbeddingsIndex(): boolean {
+  const db = getDb();
   if (!db) return false;
   try {
     const state = getEmbeddingsBuildState();
@@ -636,6 +654,7 @@ export function hasEmbeddingsIndex(): boolean {
  * Returns null if no embeddings exist.
  */
 export function getStoredEmbeddingModel(): string | null {
+  const db = getDb();
   if (!db) return null;
   try {
     const row = db.prepare('SELECT model FROM note_embeddings LIMIT 1').get() as { model: string } | undefined;
@@ -658,6 +677,7 @@ export function needsEmbeddingRebuild(): boolean {
  * Get the number of embedded notes.
  */
 export function getEmbeddingsCount(): number {
+  const db = getDb();
   if (!db) return 0;
   try {
     const row = db.prepare('SELECT COUNT(*) as count FROM note_embeddings').get() as { count: number };
@@ -672,6 +692,7 @@ export function getEmbeddingsCount(): number {
  * Used by graph analysis for clustering and bridge detection.
  */
 export function loadAllNoteEmbeddings(): Map<string, Float32Array> {
+  const db = getDb();
   const result = new Map<string, Float32Array>();
   if (!db) return result;
 
@@ -741,6 +762,7 @@ export async function buildEntityEmbeddingsIndex(
   entities: Map<string, EntityInfo>,
   onProgress?: (done: number, total: number) => void
 ): Promise<number> {
+  const db = getDb();
   if (!db) {
     throw new Error('Embeddings database not initialized. Call setEmbeddingsDatabase() first.');
   }
@@ -808,6 +830,7 @@ export async function updateEntityEmbedding(
   entity: EntityInfo,
   vaultPath: string
 ): Promise<void> {
+  const db = getDb();
   if (!db) return;
 
   try {
@@ -844,7 +867,7 @@ export function findSemanticallySimilarEntities(
 ): EntitySimilarityResult[] {
   const scored: EntitySimilarityResult[] = [];
 
-  for (const [entityName, embedding] of entityEmbeddingsMap) {
+  for (const [entityName, embedding] of getEmbMap()) {
     if (excludeEntities?.has(entityName)) continue;
 
     const similarity = cosineSimilarity(queryEmbedding, embedding);
@@ -859,13 +882,19 @@ export function findSemanticallySimilarEntities(
  * Check if entity embeddings are loaded in memory.
  */
 export function hasEntityEmbeddingsIndex(): boolean {
-  return entityEmbeddingsMap.size > 0;
+  return getEmbMap().size > 0;
+}
+
+/** Get the current in-memory entity embeddings map (for VaultScope). */
+export function getEntityEmbeddingsMap(): Map<string, Float32Array> {
+  return entityEmbeddingsMap;
 }
 
 /**
  * Load all entity embeddings from DB into memory for fast cosine search.
  */
 export function loadEntityEmbeddingsToMemory(): void {
+  const db = getDb();
   if (!db) return;
 
   try {
@@ -894,6 +923,7 @@ export function loadEntityEmbeddingsToMemory(): void {
  * Returns only embeddings that exist in the database.
  */
 export function loadNoteEmbeddingsForPaths(paths: string[]): Map<string, Float32Array> {
+  const db = getDb();
   const result = new Map<string, Float32Array>();
   if (!db || paths.length === 0) return result;
 
@@ -922,13 +952,14 @@ export function loadNoteEmbeddingsForPaths(paths: string[]): Map<string, Float32
  * Returns null if not loaded.
  */
 export function getEntityEmbedding(entityName: string): Float32Array | null {
-  return entityEmbeddingsMap.get(entityName) ?? null;
+  return getEmbMap().get(entityName) ?? null;
 }
 
 /**
  * Get the number of entity embeddings in the database.
  */
 export function getEntityEmbeddingsCount(): number {
+  const db = getDb();
   if (!db) return 0;
   try {
     const row = db.prepare('SELECT COUNT(*) as count FROM entity_embeddings').get() as { count: number };

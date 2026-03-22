@@ -16,6 +16,7 @@ import type Database from 'better-sqlite3';
 import * as fs from 'fs';
 import { scanVault } from './vault.js';
 import { serverLog } from '../shared/serverLog.js';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /** Search result with highlighted snippet */
 export interface FTS5Result {
@@ -68,6 +69,12 @@ function splitFrontmatter(raw: string): { frontmatter: string; body: string } {
 }
 
 let db: Database.Database | null = null;
+
+/** Resolve DB handle: ALS scope first, fallback to module-level. */
+function getDb(): Database.Database | null {
+  return getActiveScopeOrNull()?.stateDb?.db ?? db;
+}
+
 let state: FTS5State = {
   ready: false,
   building: false,
@@ -119,6 +126,7 @@ function shouldIndexFile(filePath: string): boolean {
  * Build or rebuild the FTS5 index
  */
 export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
+  const db = getDb();
   try {
     state.error = null;
     state.building = true;
@@ -157,11 +165,11 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
     const now = new Date();
 
     const swapAll = db.transaction(() => {
-      db!.exec('DELETE FROM notes_fts');
+      db.exec('DELETE FROM notes_fts');
       for (const row of rows) {
         insert.run(...row);
       }
-      db!.prepare(
+      db.prepare(
         'INSERT OR REPLACE INTO fts_metadata (key, value) VALUES (?, ?)'
       ).run('last_built', now.toISOString());
     });
@@ -195,6 +203,7 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
  * Check if index needs rebuilding
  */
 export function isIndexStale(_vaultPath?: string): boolean {
+  const db = getDb();
   if (!db) {
     return true;
   }
@@ -231,6 +240,7 @@ export function searchFTS5(
   query: string,
   limit: number = 10
 ): FTS5Result[] {
+  const db = getDb();
   if (!db) {
     throw new Error('FTS5 database not initialized. Call setFTS5Database() first.');
   }
@@ -272,6 +282,7 @@ export function getFTS5State(): FTS5State {
  * Returns the first ~maxChars of the note body, truncated at a word boundary.
  */
 export function getContentPreview(notePath: string, maxChars: number = 300): string | null {
+  const db = getDb();
   if (!db) return null;
   try {
     const row = db.prepare(
@@ -290,6 +301,7 @@ export function getContentPreview(notePath: string, maxChars: number = 300): str
  * Returns 0 if FTS5 is not ready or query fails.
  */
 export function countFTS5Mentions(term: string): number {
+  const db = getDb();
   if (!db) return 0;
   try {
     const result = db.prepare(

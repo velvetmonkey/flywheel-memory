@@ -10,9 +10,15 @@ import * as path from 'path';
 import type { VaultIndex } from './types.js';
 import { extractTasksFromNote, type Task } from '../../tools/read/tasks.js';
 import { serverLog } from '../shared/serverLog.js';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 // Module-level database reference
 let db: Database.Database | null = null;
+
+/** Resolve DB handle: ALS scope first, fallback to module-level. */
+function getDb(): Database.Database | null {
+  return getActiveScopeOrNull()?.stateDb?.db ?? db;
+}
 
 /** Staleness threshold: 30 minutes */
 const TASK_CACHE_STALE_MS = 30 * 60 * 1000;
@@ -69,6 +75,7 @@ export async function buildTaskCache(
   index: VaultIndex,
   excludeTags?: string[]
 ): Promise<void> {
+  const db = getDb();
   if (!db) {
     throw new Error('Task cache database not initialized. Call setTaskCacheDatabase() first.');
   }
@@ -118,11 +125,11 @@ export async function buildTaskCache(
     `);
 
     const swapAll = db.transaction(() => {
-      db!.prepare('DELETE FROM tasks').run();
+      db.prepare('DELETE FROM tasks').run();
       for (const row of allRows) {
         insertStmt.run(...row);
       }
-      db!.prepare(
+      db.prepare(
         'INSERT OR REPLACE INTO fts_metadata (key, value) VALUES (?, ?)'
       ).run('task_cache_built', new Date().toISOString());
     });
@@ -144,6 +151,7 @@ export async function updateTaskCacheForFile(
   vaultPath: string,
   relativePath: string
 ): Promise<void> {
+  const db = getDb();
   if (!db) return;
 
   // Delete existing tasks for this path
@@ -181,6 +189,7 @@ export async function updateTaskCacheForFile(
  * Remove tasks for a deleted file
  */
 export function removeTaskCacheForFile(relativePath: string): void {
+  const db = getDb();
   if (!db) return;
   db.prepare('DELETE FROM tasks WHERE path = ?').run(relativePath);
 }
@@ -197,6 +206,7 @@ export function queryTasksFromCache(options: {
   limit?: number;
   offset?: number;
 }): { total: number; open_count: number; completed_count: number; cancelled_count: number; tasks: Task[] } {
+  const db = getDb();
   if (!db) {
     throw new Error('Task cache database not initialized.');
   }
@@ -319,6 +329,7 @@ export function queryTasksFromCache(options: {
  * Check if the task cache is stale
  */
 export function isTaskCacheStale(): boolean {
+  const db = getDb();
   if (!db) return true;
 
   try {

@@ -21,12 +21,18 @@ import {
   type StateDb,
   type RecencyRow,
 } from '@velvetmonkey/vault-core';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /**
  * Module-level StateDb reference for recency storage
  * Set via setRecencyStateDb() during initialization
  */
 let moduleStateDb: StateDb | null = null;
+
+/** Resolve StateDb: ALS scope first, fallback to module-level. */
+function getStateDb(): StateDb | null {
+  return getActiveScopeOrNull()?.stateDb ?? moduleStateDb;
+}
 
 /**
  * Set the StateDb instance for this module
@@ -198,10 +204,11 @@ export function getRecencyBoost(entityName: string, index: RecencyIndex): number
  * @returns RecencyIndex or null if StateDb unavailable or empty
  */
 export function loadRecencyFromStateDb(): RecencyIndex | null {
-  if (!moduleStateDb) return null;
+  const stateDb = getStateDb();
+  if (!stateDb) return null;
 
   try {
-    const rows = getAllRecencyFromDb(moduleStateDb);
+    const rows = getAllRecencyFromDb(stateDb);
     if (rows.length === 0) return null;
 
     const lastMentioned = new Map<string, number>();
@@ -231,17 +238,18 @@ export function loadRecencyFromStateDb(): RecencyIndex | null {
  * @param index - RecencyIndex to save
  */
 export function saveRecencyToStateDb(index: RecencyIndex): void {
-  if (!moduleStateDb) {
-    console.error('[Flywheel] saveRecencyToStateDb: No StateDb available (moduleStateDb is null)');
+  const stateDb = getStateDb();
+  if (!stateDb) {
+    console.error('[Flywheel] saveRecencyToStateDb: No StateDb available');
     return;
   }
 
   console.error(`[Flywheel] saveRecencyToStateDb: Saving ${index.lastMentioned.size} entries...`);
   try {
     for (const [entityNameLower, timestamp] of index.lastMentioned) {
-      recordEntityMention(moduleStateDb, entityNameLower, new Date(timestamp));
+      recordEntityMention(stateDb, entityNameLower, new Date(timestamp));
     }
-    const count = moduleStateDb.db.prepare('SELECT COUNT(*) as cnt FROM recency').get() as { cnt: number };
+    const count = stateDb.db.prepare('SELECT COUNT(*) as cnt FROM recency').get() as { cnt: number };
     console.error(`[Flywheel] Saved recency: ${index.lastMentioned.size} entries → ${count.cnt} rows in table`);
   } catch (e) {
     console.error('[Flywheel] Failed to save recency to StateDb:', e);

@@ -1,7 +1,7 @@
 {
   "suite": "cross-vault-learning-report",
-  "timestamp": "2026-03-22T10:35:49.208Z",
-  "duration_ms": 230582,
+  "timestamp": "2026-03-22T16:26:50.184Z",
+  "duration_ms": 242525,
   "summary": {
     "primary_final_f1": 0.45,
     "small-world_final_f1": 0.283,
@@ -998,7 +998,7 @@
           "f1": 0.261,
           "precision": 0.194,
           "recall": 0.4,
-          "suppressionCount": 14,
+          "suppressionCount": 15,
           "byTier": {
             "1": {
               "precision": 1,

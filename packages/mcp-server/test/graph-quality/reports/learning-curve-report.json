@@ -1,12 +1,12 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-03-22T10:29:58.047Z",
-  "duration_ms": 29411,
+  "timestamp": "2026-03-22T16:21:44.392Z",
+  "duration_ms": 28309,
   "summary": {
     "round0_f1": 0.405,
     "roundN_f1": 0.44,
     "f1_improvement": 0.035,
-    "total_suppressions": 17
+    "total_suppressions": 18
   },
   "details": [
     {
@@ -3051,7 +3051,7 @@
       "truePositives": 47,
       "falsePositives": 102,
       "falseNegatives": 13,
-      "suppressionCount": 13,
+      "suppressionCount": 14,
       "feedbackLayerAvgContribution": 0.8785,
       "byCategory": {
         "people": {
@@ -3173,6 +3173,7 @@
         "production",
         "project-meridian",
         "q1-review",
+        "redis",
         "signal-patterns",
         "skyforge",
         "supplements",
@@ -3257,8 +3258,8 @@
       "truePositives": 46,
       "falsePositives": 109,
       "falseNegatives": 14,
-      "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 0.7816,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 0.7847,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3379,6 +3380,7 @@
         "production",
         "project-meridian",
         "q1-review",
+        "redis",
         "signal-patterns",
         "skyforge",
         "staging",
@@ -3469,8 +3471,8 @@
       "truePositives": 47,
       "falsePositives": 108,
       "falseNegatives": 13,
-      "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 0.8313,
+      "suppressionCount": 17,
+      "feedbackLayerAvgContribution": 0.8347,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3592,6 +3594,7 @@
         "production",
         "project-meridian",
         "q1-review",
+        "redis",
         "rex",
         "signal-patterns",
         "skyforge",
@@ -3678,8 +3681,8 @@
       "truePositives": 46,
       "falsePositives": 109,
       "falseNegatives": 14,
-      "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 0.8934,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.8971,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3802,6 +3805,7 @@
         "production",
         "project-meridian",
         "q1-review",
+        "redis",
         "rex",
         "signal-patterns",
         "skyforge",
@@ -3893,8 +3897,8 @@
       "truePositives": 46,
       "falsePositives": 103,
       "falseNegatives": 14,
-      "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 0.7254,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.7284,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -4017,6 +4021,7 @@
         "project-meridian",
         "q1-budget",
         "q1-review",
+        "redis",
         "rex",
         "signal-patterns",
         "skyforge",

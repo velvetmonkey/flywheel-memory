@@ -49,7 +49,7 @@
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist",
     "postinstall": "node -e \"['bin/flywheel-memory.js','dist/index.js'].forEach(f=>{try{require('fs').chmodSync(f,0o755)}catch{}})\"",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run lint && npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",

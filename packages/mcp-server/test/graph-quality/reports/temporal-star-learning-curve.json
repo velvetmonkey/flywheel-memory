@@ -1,7 +1,7 @@
 {
   "suite": "temporal-star-learning-curve",
-  "timestamp": "2026-03-22T10:29:23.055Z",
-  "duration_ms": 211452,
+  "timestamp": "2026-03-22T16:21:08.583Z",
+  "duration_ms": 181805,
   "summary": {
     "round0_f1": 0.596,
     "roundN_f1": 0.729,
@@ -642,7 +642,7 @@
       "falsePositives": 200,
       "falseNegatives": 135,
       "suppressionCount": 13,
-      "feedbackLayerAvgContribution": 4.3118,
+      "feedbackLayerAvgContribution": 4.3212,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -890,7 +890,7 @@
       "falsePositives": 197,
       "falseNegatives": 133,
       "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 4.2144,
+      "feedbackLayerAvgContribution": 4.2285,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1138,7 +1138,7 @@
       "falsePositives": 194,
       "falseNegatives": 131,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.3262,
+      "feedbackLayerAvgContribution": 4.3121,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1200,7 +1200,7 @@
       "falsePositives": 196,
       "falseNegatives": 133,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.3086,
+      "feedbackLayerAvgContribution": 4.2945,
       "byCategory": {
         "health": {
           "precision": 1,

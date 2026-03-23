@@ -16,7 +16,7 @@
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-58.5%25%20answer%20accuracy-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Tests](https://img.shields.io/badge/tests-2,640%20passed-brightgreen.svg)](docs/TESTING.md)
 
-**[Try It](#try-it)** · **[See It Work](#see-it-work)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[How It Compares](#how-it-compares)** · **[Benchmarked](#benchmarked)** · **[Docs](#documentation)**
+**[Try It](#try-it)** · **[See It Work](#see-it-work)** · **[How It Compares](#how-it-compares)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Docs](#documentation)**
 
 | | Without Flywheel | With Flywheel |
 |---|---|---|
@@ -151,6 +151,72 @@ Most Obsidian AI tools are either simple MCP bridges (read/write files, no graph
 
 ---
 
+## What Makes Flywheel Different
+
+### 1. Enriched Search
+
+Every search result comes back enriched — frontmatter, ranked backlinks, ranked outlinks, and content snippets, all from an in-memory index. That's how one call answers a billing question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project — each with its own frontmatter. The graph did the joining.
+
+With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally — SQLite + FTS5 for BM25, in-memory embeddings for semantic, Reciprocal Rank Fusion to merge results.
+
+### 2. Every Link Has a Reason
+
+Those `→` suggestions aren't random. Ask why Flywheel suggested `[[Marcus Johnson]]`:
+
+```
+Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Feedback  Semantic  Edge
+──────────────────────────────────────────────────────────────────────────────────────────────────────
+Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
+```
+
+10 scoring dimensions, every number traceable to vault usage. Recency from what you last wrote. Co-occurrence from notes you've written before. Hub score from eigenvector centrality — not just how many notes link there, but how important those linking notes are. The score learns as you use it.
+
+See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
+
+### 3. Use It and It Gets Smarter
+
+Every sentence you write through Flywheel makes your graph denser. A denser graph gives better search results, richer backlinks, and sharper suggestions. That's the flywheel.
+
+- **Co-occurrence** builds over time — two entities appearing in 20 notes form a statistical bond
+- **Edge weights** accumulate — links that survive edits gain influence
+- **Suppression** learns — connections you repeatedly break stop being suggested (Beta-Binomial posterior model, not a blacklist)
+
+Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation.
+
+### 4. Agentic Memory
+
+Your AI knows what you were working on yesterday without you re-explaining it.
+
+- **`brief`** — startup context: what happened recently, what's active, what needs attention
+- **`recall`** — retrieves across notes, entities, memories, and semantic search in one call
+- **`memory`** — stores observations that persist across sessions, with automatic decay
+
+No session is a blank slate.
+
+### 5. Deterministic Policies
+
+Complex vault workflows shouldn't be ad-hoc. Describe what you want in plain language — the AI creates the policy, saves it, and executes it on demand.
+
+```
+❯ Create a policy that generates a weekly review note, pulls open tasks,
+  and updates project frontmatter with hours logged
+
+● flywheel › policy action=author
+  → Saved .claude/policies/weekly-review.yaml
+
+❯ Run the weekly review for this week
+
+● flywheel › policy action=execute name=weekly-review
+  variables: { week: "2026-W12" }
+  → Created weekly-notes/2026-W12.md
+  → Updated 3 project frontmatter files
+  → All steps committed atomically
+```
+
+Policies chain vault tools into atomic operations — all steps succeed or all roll back, committed as a single git commit.
+
+---
+
 ## Benchmarked
 
 Every number is measured on standard academic datasets and reproducible on your machine.
@@ -249,72 +315,6 @@ Every session is captured as JSONL, analyzed by Python scripts, and reported wit
 Every mutation is git-committed (one `vault_undo_last_mutation` away from reverting), conflict-detected (SHA-256 hash before every write), and dry-run capable. Auto-wikilinks are AST-protected — code blocks, frontmatter, existing links, callouts, math, and HTML are never touched.
 
 </details>
-
----
-
-## What Makes Flywheel Different
-
-### 1. Enriched Search
-
-Every search result comes back enriched — frontmatter, ranked backlinks, ranked outlinks, and content snippets, all from an in-memory index. That's how one call answers a billing question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project — each with its own frontmatter. The graph did the joining.
-
-With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally — SQLite + FTS5 for BM25, in-memory embeddings for semantic, Reciprocal Rank Fusion to merge results.
-
-### 2. Every Link Has a Reason
-
-Those `→` suggestions aren't random. Ask why Flywheel suggested `[[Marcus Johnson]]`:
-
-```
-Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Feedback  Semantic  Edge
-──────────────────────────────────────────────────────────────────────────────────────────────────────
-Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
-```
-
-10 scoring dimensions, every number traceable to vault usage. Recency from what you last wrote. Co-occurrence from notes you've written before. Hub score from eigenvector centrality — not just how many notes link there, but how important those linking notes are. The score learns as you use it.
-
-See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
-
-### 3. Use It and It Gets Smarter
-
-Every sentence you write through Flywheel makes your graph denser. A denser graph gives better search results, richer backlinks, and sharper suggestions. That's the flywheel.
-
-- **Co-occurrence** builds over time — two entities appearing in 20 notes form a statistical bond
-- **Edge weights** accumulate — links that survive edits gain influence
-- **Suppression** learns — connections you repeatedly break stop being suggested (Beta-Binomial posterior model, not a blacklist)
-
-Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation.
-
-### 4. Agentic Memory
-
-Your AI knows what you were working on yesterday without you re-explaining it.
-
-- **`brief`** — startup context: what happened recently, what's active, what needs attention
-- **`recall`** — retrieves across notes, entities, memories, and semantic search in one call
-- **`memory`** — stores observations that persist across sessions, with automatic decay
-
-No session is a blank slate.
-
-### 5. Deterministic Policies
-
-Complex vault workflows shouldn't be ad-hoc. Describe what you want in plain language — the AI creates the policy, saves it, and executes it on demand.
-
-```
-❯ Create a policy that generates a weekly review note, pulls open tasks,
-  and updates project frontmatter with hours logged
-
-● flywheel › policy action=author
-  → Saved .claude/policies/weekly-review.yaml
-
-❯ Run the weekly review for this week
-
-● flywheel › policy action=execute name=weekly-review
-  variables: { week: "2026-W12" }
-  → Created weekly-notes/2026-W12.md
-  → Updated 3 project frontmatter files
-  → All steps committed atomically
-```
-
-Policies chain vault tools into atomic operations — all steps succeed or all roll back, committed as a single git commit.
 
 ---
 

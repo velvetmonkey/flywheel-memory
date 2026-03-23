@@ -147,7 +147,7 @@ No other MCP memory tool publishes retrieval benchmarks on standard academic dat
 
 **HotpotQA** (200 hard multi-hop questions, 1,993 documents, v2.0.126) — End-to-end via real `claude -p` sessions, not a component test. 82.1% on multi-hop bridge questions. 99.5% partial recall (199/200 questions had at least one supporting doc found). $0.061/question. Zero training. For context: BM25 keyword search — the standard baseline — scores ~75%. Purpose-built neural retrievers trained on this dataset score 85-93%. Flywheel scores 84.8% with general-purpose vault tools.
 
-**LoCoMo** (10 conversations, 272 session notes, 5 question categories, ACL 2024) — Unit-level: 84.8% Recall@5, 90.4% Recall@10. End-to-end via Claude + MCP (50 questions): 71.2% evidence recall, with 91.7% on single-hop questions.
+**LoCoMo** (10 conversations, 272 session notes, 5 question categories, ACL 2024) — Unit-level: 84.8% Recall@5, 90.4% Recall@10. End-to-end (200 questions, balanced across categories): 55.0% answer accuracy (LLM-as-judge), 70.0% on single-hop, 75.0% on commonsense.
 
 ### How Flywheel Compares
 
@@ -160,18 +160,18 @@ No other MCP memory tool publishes retrieval benchmarks on standard academic dat
 | [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, 2021. Trained on HotpotQA |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Facebook, 2021. Trained on HotpotQA |
 
-**Conversational memory (LoCoMo):**
+**Conversational memory (LoCoMo, answer accuracy via LLM-as-judge):**
 
-> **A note on metrics.** Flywheel reports *evidence recall* — did the retrieval pipeline find the correct source notes? Other systems report *answer accuracy* — did the LLM produce the correct final answer, scored by LLM-as-judge. Evidence recall is strictly harder: an answer can be "correct" without finding the right evidence (the LLM infers from partial context), but evidence recall requires actually retrieving the right documents. These numbers are shown together because LoCoMo is the only conversational memory benchmark with published results across multiple systems.
+| System | Type | Single-hop | Multi-hop | Commonsense | Overall |
+|---|---|---|---|---|---|
+| **Flywheel** | MCP vault tool | **70.0%** | 15.0% | **75.0%** | **55.0%** |
+| [Mem0](https://mem0.ai/) | Cloud memory | 38.7 | **28.6** | — | — |
+| [Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos) | Graph memory | 37.7 | 29.3 | — | — |
+| [Zep](https://getzep.com/) | Cloud memory | 35.7 | 19.4 | — | — |
+| [LangMem](https://github.com/langchain-ai/langmem) | Memory framework | 35.5 | 26.0 | — | — |
+| [MemGPT/Letta](https://memgpt.ai/) | Agent memory | 26.7 | — | — | — |
 
-| System | Type | Metric | Single-hop | Multi-hop |
-|---|---|---|---|---|
-| **Flywheel** | MCP vault tool | Evidence recall | **91.7%** | **62.8%** |
-| [Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos) | Graph memory | Answer accuracy | 37.7 | 29.3 |
-| [Mem0](https://mem0.ai/) | Cloud memory | Answer accuracy | 38.7 | 28.6 |
-| [Zep](https://getzep.com/) | Cloud memory | Answer accuracy | 35.7 | 19.4 |
-| [LangMem](https://github.com/langchain-ai/langmem) | Memory framework | Answer accuracy | 35.5 | 26.0 |
-| [MemGPT/Letta](https://memgpt.ai/) | Agent memory | Answer accuracy | 26.7 | — |
+Flywheel's single-hop accuracy (70.0%) is nearly 2x the next best system. Multi-hop (15.0%) is an area for improvement — the retrieval pipeline finds 60% of evidence sessions, but combining facts from multiple sessions into a single concise answer remains hard. Same LLM-as-judge methodology (binary CORRECT/WRONG); Flywheel uses Claude Haiku, Ori uses GPT-4o. 200 questions (balanced, 40 per category) vs 695 for Ori.
 
 [Full benchmark methodology →](docs/TESTING.md) | Run them yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
 

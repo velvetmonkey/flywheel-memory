@@ -110,12 +110,12 @@ End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/)
 
 | Metric | Score |
 |---|---|
-| Document Recall | **84.8%** (339/400 supporting docs found) |
-| Full Recall (both docs found) | **70.0%** (140/200) |
+| Document Recall | **87.5%** (350/400 supporting docs found) |
+| Full Recall (both docs found) | **75.5%** (151/200) |
 | Partial Recall (≥1 doc found) | **99.5%** (199/200) |
-| Bridge (multi-hop) | 82.1% |
+| Bridge (multi-hop) | 85.5% |
 | Comparison | 97.1% |
-| Cost | $0.061/question |
+| Cost | $0.062/question |
 
 ### How Flywheel compares
 
@@ -123,7 +123,7 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 
 | System | Type | Retrieval Recall | Approach | Notes |
 |---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **84.8%** | BM25 + entity search + 2-hop backfill + query expansion | General-purpose, zero training, end-to-end via Claude |
+| **Flywheel** | MCP vault tool | **87.5%** | BM25 + entity search + 2-hop backfill + query expansion | General-purpose, zero training, end-to-end via Claude |
 | BM25 baseline | IR baseline | ~70-75% | TF-IDF keyword matching | Standard academic baseline |
 | [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | IR baseline | ~80% | TF-IDF with named entity overlap | Original HotpotQA paper baseline |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Multi-hop dense retrieval (iterative) | Facebook, 2021. Trained on HotpotQA. Two-hop BERT encoder |
@@ -135,8 +135,8 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 
 - **Trained retrievers** (MDR, Baleen, Beam Retrieval) are neural models fine-tuned on HotpotQA training data. They learn query-document relationships. Flywheel has zero training — it uses BM25 keyword search with structural backfill.
 - **Our test setting** is harder than standard distractor (10 docs per question) but easier than fullwiki (5M docs). We pool all 1,993 documents from 200 questions into one vault, so each query searches ~2,000 docs, not 10.
-- **Flywheel's 84.8%** beats the standard BM25 baseline (~75%) by +10pp, attributable to 2-hop backfill (outlinks from top results + their outlinks), query expansion, and FTS5 column weighting (title 5x, frontmatter 10x).
-- **The gap to trained retrievers** (85% vs 88-93%) is the cost of being general-purpose. These systems iterate: retrieve, read, re-query. Flywheel does one search + backfill.
+- **Flywheel's 87.5%** beats the standard BM25 baseline (~75%) by +12pp, attributable to 2-hop backfill (outlinks from top results + their outlinks), query expansion, and FTS5 column weighting (title 5x, frontmatter 10x).
+- **The gap to trained retrievers** (87.5% vs 88-93%) is narrow and closing. These systems iterate: retrieve, read, re-query. Flywheel does one search + backfill with zero training data.
 
 ### Comparison with other MCP/vault tools
 
@@ -287,7 +287,7 @@ We are not aware of any other MCP server that publishes live AI test results.
 | **Per-tool coverage** | Claude discovers and uses each of 69 individual tools | 69 | **100% adoption** | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
 | **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
 | **Sequential workflow** | 7-beat workflow where each beat builds on previous vault state | 7 beats | 7/7 passed | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
-| **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 200 questions | 84.8% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
+| **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 200 questions | 87.5% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
 | **LoCoMo benchmark** | Retrieval quality on long-term conversational memory (5 categories) | 1,531 questions | 90.4% Recall@10 | [`locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts) |
 
 ### Why This Matters

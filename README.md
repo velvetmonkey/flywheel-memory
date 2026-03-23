@@ -12,7 +12,7 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![HotpotQA](https://img.shields.io/badge/HotpotQA-84.8%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+[![HotpotQA](https://img.shields.io/badge/HotpotQA-87.5%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-58.5%25%20answer%20accuracy-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Tests](https://img.shields.io/badge/tests-2,640%20passed-brightgreen.svg)](docs/TESTING.md)
 
@@ -203,7 +203,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 | System | Type | Recall | |
 |---|---|---|---|
-| **Flywheel** | General-purpose MCP tool | **84.8%** | No training, end-to-end |
+| **Flywheel** | General-purpose MCP tool | **87.5%** | No training, end-to-end |
 | BM25 baseline | Industry-standard IR | ~70-75% | Powers Elasticsearch, GitHub, Netflix |
 | [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021 |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021 |

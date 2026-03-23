@@ -111,6 +111,10 @@ cd /path/to/your/vault && claude
 
 Flywheel does not replace Obsidian. It runs alongside as a background index — watches for changes, indexes in real-time, and makes the full graph available to any AI client. No proprietary format, no cloud sync, no account. Delete `.flywheel/state.db` and it rebuilds from scratch.
 
+**Export your knowledge graph** as [GraphML](demos/carter-strategy/carter-strategy.graphml) for Gephi, Cytoscape, NetworkX, or any graph tool. Zero vendor lock-in — your data is always portable.
+
+![Carter Strategy Knowledge Graph](demos/carter-strategy/carter-strategy-graph.png)
+
 ### Configure your tools
 
 | Preset | Tools | What you get |

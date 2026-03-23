@@ -76,6 +76,28 @@ Find connections and navigate the knowledge graph.
 
 > "Which notes are emerging as new hubs? Show me entities growing fastest in connections"
 
+### Visualize your knowledge graph
+
+Export your vault as a graph file and open it in professional visualization tools.
+
+> "Export my vault graph as GraphML so I can open it in Gephi"
+
+> "Export the knowledge graph as JSON, include co-occurrence edges"
+
+> "Export the graph but only include edges with weight above 2.0"
+
+**How to use the export:**
+
+1. **Gephi** (gephi.org) — Open-source graph visualization. File → Open → select the .graphml file. Apply Force Atlas 2 layout. Color nodes by `category` attribute.
+2. **yEd** (yworks.com/yed) — Free graph editor. File → Open → GraphML. Use hierarchical or organic layout.
+3. **Cytoscape** (cytoscape.org) — Network analysis platform. File → Import → Network from File. Map `hub_score` to node size.
+4. **NetworkX** (Python) — `import networkx as nx; G = nx.read_graphml('vault.graphml')`
+5. **JSON format** — Use `format: "json"` for programmatic analysis. Parse with any language.
+
+**What's in the export:**
+- **Nodes**: Every note (title, modified date, tags, frontmatter type) + every entity (category, hub score, aliases)
+- **Edges**: Wikilinks (note→note), weighted connections (from feedback learning), co-occurrence relationships (entity↔entity)
+
 ---
 
 ## Semantic Search

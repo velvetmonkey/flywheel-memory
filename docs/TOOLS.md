@@ -1,6 +1,6 @@
 # Tools
 
-69 tools. Most questions only need one: **search**.
+70 tools. Most questions only need one: **search**.
 
 > **Start here:** Most vaults only need `default` (16 tools). Add bundles as you need them — `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`. See [CONFIGURATION.md](CONFIGURATION.md) for preset recipes.
 
@@ -50,7 +50,7 @@ This is the key design: **one search call returns not just file paths, but the f
 
 **How matching works** (always start with just a query, no filters):
 
-1. **Full-text search (FTS5)** — BM25 ranking over note content. Handles stemming ("billing" matches "billed"), phrases, and boolean operators.
+1. **Full-text search (FTS5)** — BM25 ranking over note content. Handles stemming ("[[billing]]" matches "billed"), phrases, and boolean operators.
 2. **Entity search** — Matches against the entity database (names, aliases, categories). If "Sarah Chen" is an alias for `users/sarah-chen.md`, it finds it.
 3. **Hybrid ranking** — When semantic embeddings are built (via `init_semantic`), results from all three channels are merged using Reciprocal Rank Fusion. Notes can surface by meaning even without keyword overlap.
 
@@ -222,6 +222,7 @@ Embedding-based vault analysis (requires `init_semantic`).
 | `get_common_neighbors` | Notes that both A and B link to — find what they have in common. |
 | `get_weighted_links` | Outgoing links ranked by connection strength. |
 | `get_strong_connections` | Bidirectional connections ranked by combined weight. |
+| `export_graph` | Export vault knowledge graph as GraphML (Gephi/yEd/Cytoscape) or JSON. Includes notes, entities, wikilinks, edge weights, and co-occurrence. Supports `min_edge_weight` filtering. |
 
 ---
 
@@ -301,7 +302,7 @@ Deep analysis of a single note:
 
 ## Corrections
 
-Record mistakes that should persist across sessions. Flywheel processes these into feedback that improves future suggestions.
+Record mistakes that should persist across sessions. [[Flywheel]] processes these into feedback that improves future suggestions.
 
 | Tool | What it does |
 |------|-------------|

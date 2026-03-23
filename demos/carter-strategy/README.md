@@ -161,4 +161,19 @@ Zero file reads needed.
 
 ---
 
+### Knowledge Graph Export
+
+The vault's knowledge graph, exported via `export_graph` and visualized with NetworkX + matplotlib:
+
+![Carter Strategy Knowledge Graph](carter-strategy-graph.png)
+
+**88 nodes** (40 entities + 48 notes) and **434 edges** (wikilinks + weighted connections). People in blue, projects in green, documents in orange, invoices at the periphery. The hub structure shows Acme Corp's central role across the practice.
+
+**Download and explore yourself:**
+- [carter-strategy.graphml](carter-strategy.graphml) — open in [Gephi](https://gephi.org), [yEd](https://www.yworks.com/products/yed), or [Cytoscape](https://cytoscape.org)
+- Load in Python: `G = networkx.read_graphml('carter-strategy.graphml')`
+- Regenerate the image: `python3 generate-graph-image.py`
+
+---
+
 **Token savings**: Enriched search returns frontmatter, backlinks, outlinks, and headings — often answering the question in a single call with zero file reads.

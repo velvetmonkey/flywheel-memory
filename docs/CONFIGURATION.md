@@ -105,7 +105,7 @@ Start with `default`, then add what you need:
 
 | Bundle | Tools | What it adds |
 |--------|-------|--------------|
-| `graph` | 10 | Structural analysis, semantic analysis, backlinks, forward links, hubs, paths, connections |
+| `graph` | 11 | Structural analysis, semantic analysis, backlinks, forward links, hubs, paths, connections, graph export |
 | `schema` | 7 | Schema inspection, conventions, validation, note intelligence, migrations, tag rename |
 | `wikilinks` | 7 | Link suggestions, validation, feedback, discovery |
 | `corrections` | 4 | Correction recording + resolution |
@@ -146,7 +146,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `search` | 3 | search, init_semantic, find_similar |
 | `read` | 3 | get_note_structure, get_section_content, find_sections |
 | `write` | 7 | vault_add/remove/replace_in_section, vault_update_frontmatter, vault_create_note, vault_undo_last_mutation, policy |
-| `graph` | 10 | graph_analysis, semantic_analysis, get_backlinks, get_forward_links, connection strength, entities, paths, neighbors, weighted/strong links |
+| `graph` | 11 | graph_analysis, semantic_analysis, get_backlinks, get_forward_links, connection strength, entities, paths, neighbors, weighted/strong links, export_graph |
 | `schema` | 7 | vault_schema, schema_conventions, schema_validate, note_intelligence, rename_field, migrate_field_values, rename_tag |
 | `wikilinks` | 7 | suggest_wikilinks, validate_links, wikilink_feedback, discover_stub_candidates, discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report |
 | `corrections` | 4 | vault_record_correction, vault_list/resolve_correction, absorb_as_alias |
@@ -166,7 +166,7 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 | write | 7 | Yes | Yes | Yes |
 | tasks | 3 | Yes | | Yes |
 | memory | 3 | | Yes | |
-| graph | 10 | | | Yes |
+| graph | 11 | | | Yes |
 | schema | 7 | | | Yes |
 | wikilinks | 7 | | | Yes |
 | corrections | 4 | | | Yes |

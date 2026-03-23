@@ -212,6 +212,7 @@ describe('Tool Count Verification', () => {
         'memory', 'recall', 'brief',
         'predict_stale_notes', 'track_concept_evolution', 'temporal_summary',
         'flywheel_doctor',
+        'export_graph',
       ]);
 
       for (const tool of toolNames) {

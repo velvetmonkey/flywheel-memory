@@ -1,7 +1,7 @@
 {
   "suite": "temporal-star-learning-curve",
-  "timestamp": "2026-03-23T01:20:24.720Z",
-  "duration_ms": 187896,
+  "timestamp": "2026-03-23T04:39:30.036Z",
+  "duration_ms": 208819,
   "summary": {
     "round0_f1": 0.596,
     "roundN_f1": 0.722,
@@ -642,7 +642,7 @@
       "falsePositives": 205,
       "falseNegatives": 140,
       "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 4.192,
+      "feedbackLayerAvgContribution": 4.1569,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -704,7 +704,7 @@
       "falsePositives": 208,
       "falseNegatives": 143,
       "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 4.0447,
+      "feedbackLayerAvgContribution": 4.054,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -890,7 +890,7 @@
       "falsePositives": 206,
       "falseNegatives": 142,
       "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 4.2002,
+      "feedbackLayerAvgContribution": 4.1908,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -952,7 +952,7 @@
       "falsePositives": 201,
       "falseNegatives": 137,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.2453,
+      "feedbackLayerAvgContribution": 4.2827,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1014,7 +1014,7 @@
       "falsePositives": 204,
       "falseNegatives": 141,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.1511,
+      "feedbackLayerAvgContribution": 4.1558,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1076,7 +1076,7 @@
       "falsePositives": 204,
       "falseNegatives": 141,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.1936,
+      "feedbackLayerAvgContribution": 4.1983,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1138,7 +1138,7 @@
       "falsePositives": 202,
       "falseNegatives": 139,
       "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 4.227,
+      "feedbackLayerAvgContribution": 4.255,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1200,7 +1200,7 @@
       "falsePositives": 200,
       "falseNegatives": 137,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.066,
+      "feedbackLayerAvgContribution": 4.0848,
       "byCategory": {
         "health": {
           "precision": 1,

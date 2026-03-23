@@ -252,7 +252,11 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third iteration at AI-powered knowledge management — the first two (Claude Code skills, then split read/write MCP servers) taught me what doesn't work. This version is one unified server with deterministic mutations, hybrid search, and a graph that learns.
 
-The design choices aren't accidental. Attention, memory, and reasoning are increasingly being shaped by systems you don't control — platforms, models, defaults. I wanted a knowledge layer that works for the person using it, not for someone else's engagement metrics or training pipeline. Local-only because your thinking is yours. Self-correcting because it should learn from how you actually work, not from how someone else thinks you should. I built this for myself first. If it resonates, you probably already know why.
+The design choices aren't accidental. Your attention, memory, and reasoning are increasingly shaped by systems you don't control — platforms, models, defaults you never chose. I wanted a knowledge layer that works for the person using it, not for someone else's training pipeline.
+
+Local-only because your thinking is yours. Self-correcting because it should learn from how *you* actually work. No cloud, no account, no data leaving your machine.
+
+I built this for myself first. If it resonates, you probably already know why.
 
 I couldn't have built this by myself — not in a year, and definitely not without AI. Everything here was driven through Claude Code with Opus 4.5 and 4.6. I've barely opened the IDE except to review what was generated. I've subjected it to extensive code reviews and stress-tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 
@@ -260,16 +264,18 @@ I dogfood it daily through a Telegram bot using voice input, because I'm a lazy 
 
 ### Dogfooding: my vault, unvarnished
 
-I run Flywheel on my own 1,600-note vault — 2.5 years of daily notes, work docs, personal projects, and reference material. The telling number is daily note link density before and after:
+I run Flywheel on my own 1,600-note vault — 2.5 years of daily notes, work docs, personal projects, and reference material.
+
+The telling number is wikilinks per daily note — the connections Flywheel creates between your notes, people, projects, and concepts as you write. More links means richer graph queries, better search results, and stronger suggestions over time.
 
 | Period | Links per daily note |
 |--------|---------------------|
-| Pre-Flywheel (manual) | 3-11 |
-| Post-Flywheel (3 months) | 20-625 |
+| Pre-Flywheel (manual) | 3–11 |
+| Post-Flywheel (3 months) | 20–625 |
 
-The note count only grew ~13%, but wikilink density exploded — 3,097 new linked lines in three months. The connections are growing faster than the content. The high end (625) includes auto-logged bot conversations with entity links, so take it with appropriate salt. But even quiet days run 20-30 links where they used to be 3-5.
+The note count only grew ~13%, but link density exploded. The high end (625) includes auto-logged bot conversations with entity links, so take it with appropriate salt — but even quiet days run 20–30 links where they used to be 3–5. The connections grow faster than the content. That's the flywheel.
 
-12% orphan notes is honest — some are stubs, some are clippings that haven't earned their connections yet. I'm not hiding that. The full vault stats: 618 entities indexed, 37,259 total wikilinks, 23.2 links per note average.
+12% orphan notes is honest — some are stubs, some are clippings that haven't earned their connections yet. Full vault stats: 618 entities indexed, 37,259 total wikilinks, 23.2 links per note average.
 
 ---
 

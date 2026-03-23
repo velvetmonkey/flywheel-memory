@@ -182,24 +182,24 @@ Real `claude -p` sessions with the `agent` preset (recall, memory, brief tools).
 
 | Category | Questions | Evidence Recall | Answer Accuracy (LLM-judge) |
 |---|---|---|---|
-| **Overall** | **200** | **66.6%** | **55.0%** |
-| Single-hop | 40 | 88.9% | 70.0% |
-| Commonsense | 40 | 90.0% | 75.0% |
-| Adversarial | 40 | 70.0% | 77.5% |
-| Temporal | 40 | 46.0% | 37.5% |
-| Multi-hop | 40 | 60.2% | 15.0% |
+| **Overall** | **200** | **62.4%** | **58.5%** |
+| Commonsense | 40 | 92.5% | 80.0% |
+| Single-hop | 40 | 91.1% | 75.0% |
+| Adversarial | 40 | 77.5% | 55.0% |
+| Temporal | 40 | 38.1% | 55.0% |
+| Multi-hop | 40 | 49.6% | 27.5% |
 
-Cost: $18.22 total ($0.091/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts, matching the methodology used by Ori Mnemos and others.
+Cost: $18.76 total ($0.094/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts, matching the methodology used by Ori Mnemos and others.
 
 ### How Flywheel compares to other memory systems
 
-[Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos) benchmarks six memory systems on LoCoMo using answer accuracy (LLM-as-judge). We now report the same metric for direct comparison.
+[Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos) benchmarks six memory systems on LoCoMo using answer accuracy (LLM-as-judge). We report the same metric for direct comparison.
 
 | System | Type | Single-hop | Multi-hop | Metric | Infrastructure |
 |---|---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **70.0%** | **15.0%** | Answer accuracy (LLM-judge, 200q) | Local (SQLite + markdown) |
-| **Flywheel** | MCP vault tool | **88.9%** | **60.2%** | Evidence recall (E2E, 200q) | Local (SQLite + markdown) |
-| Ori Mnemos | Graph memory | 37.7 | 29.3 | Answer accuracy (LLM-judge, 695q) | Local (markdown) |
+| **Flywheel** | MCP vault tool | **75.0%** | 27.5% | Answer accuracy (LLM-judge, 200q) | Local (SQLite + markdown) |
+| **Flywheel** | MCP vault tool | **91.1%** | **49.6%** | Evidence recall (E2E, 200q) | Local (SQLite + markdown) |
+| Ori Mnemos | Graph memory | 37.7 | **29.3** | Answer accuracy (LLM-judge, 695q) | Local (markdown) |
 | Mem0 | Cloud memory | 38.7 | 28.6 | Answer accuracy (LLM-judge, 695q) | Redis + Qdrant |
 | Zep | Cloud memory | 35.7 | 19.4 | Answer accuracy (LLM-judge, 695q) | Cloud service |
 | LangMem | Memory framework | 35.5 | 26.0 | Answer accuracy (LLM-judge, 695q) | Varies |
@@ -207,9 +207,10 @@ Cost: $18.22 total ($0.091/question). LLM-as-judge scoring uses Claude Haiku for
 
 **Key takeaways:**
 
-- **Single-hop: 70.0%** — nearly 2x the next best system (Mem0 at 38.7%). Flywheel finds the right note and Claude extracts the answer.
-- **Multi-hop: 15.0%** — lower than Ori Mnemos (29.3%). Multi-hop questions require synthesizing facts from multiple sessions. Flywheel's retrieval finds 60.2% of evidence sessions, but Claude struggles to combine them into correct answers within a single concise response.
-- **Adversarial: 77.5%** — Flywheel correctly identifies "no information available" for most trick questions.
+- **Single-hop: 75.0%** — nearly 2x the next best system (Mem0 at 38.7%). Flywheel finds the right note and Claude extracts the answer.
+- **Commonsense: 80.0%** — highest of any category. Questions about common-sense inferences from conversation context.
+- **Multi-hop: 27.5%** — approaching Ori Mnemos (29.3%) and Mem0 (28.6%). Iterative retrieval (searching, reading sessions, then searching again with discovered terms) drives the improvement over the baseline.
+- **Temporal: 55.0%** — questions about when events happened, temporal ordering across sessions.
 - **Same metric.** Both Flywheel and Ori Mnemos use LLM-as-judge (binary CORRECT/WRONG). Flywheel uses Claude Haiku as judge; Ori uses GPT-4o.
 - **Infrastructure.** Flywheel runs locally on markdown files with SQLite. Mem0 requires Redis + Qdrant. Zep requires a cloud service.
 

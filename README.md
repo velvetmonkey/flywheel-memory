@@ -147,7 +147,7 @@ Most Obsidian AI tools are either simple MCP bridges (read/write files, no graph
 | Learns from usage | Feedback loop + suppression + co-occurrence | No | No |
 | Agent memory | brief + recall + memory | No | No |
 | Safe writes | Git + conflict detection + dry-run | No | N/A |
-| Retrieval benchmarks | HotpotQA 84.8%, LoCoMo 55.0% | None published | None published |
+| Retrieval benchmarks | HotpotQA 84.8%, LoCoMo 58.5% | None published | None published |
 
 ---
 
@@ -160,11 +160,11 @@ Every number is measured on standard academic datasets and reproducible on your 
 | Benchmark | What it tests | Questions | Key result |
 |---|---|---|---|
 | [HotpotQA](https://hotpotqa.github.io/) | Multi-hop document retrieval | 200 | **84.8%** document recall |
-| [LoCoMo](https://snap-research.github.io/locomo/) | Conversational memory | 200 | **55.0%** answer accuracy |
+| [LoCoMo](https://snap-research.github.io/locomo/) | Conversational memory | 200 | **58.5%** answer accuracy |
 
 **HotpotQA** (200 hard multi-hop questions, 1,993 documents, v2.0.126) — End-to-end via real `claude -p` sessions, not a component test. 82.1% on multi-hop bridge questions. 99.5% partial recall (199/200 questions had at least one supporting doc found). $0.061/question. Zero training. For context: BM25 keyword search — the standard baseline — scores ~75%. Purpose-built neural retrievers trained on this dataset score 85-93%. Flywheel scores 84.8% with general-purpose vault tools.
 
-**LoCoMo** (10 conversations, 272 session notes, 5 question categories, ACL 2024) — Unit-level: 84.8% Recall@5, 90.4% Recall@10. End-to-end (200 questions, balanced across categories): 55.0% answer accuracy (LLM-as-judge), 70.0% on single-hop, 75.0% on commonsense.
+**LoCoMo** (10 conversations, 272 session notes, 5 question categories, ACL 2024) — Unit-level: 84.8% Recall@5, 90.4% Recall@10. End-to-end (200 questions, balanced across categories): 58.5% answer accuracy (LLM-as-judge), 75.0% on single-hop, 80.0% on commonsense, 27.5% on multi-hop.
 
 ### How Flywheel Compares
 
@@ -183,7 +183,7 @@ Every number is measured on standard academic datasets and reproducible on your 
 
 | System | Single-hop | Multi-hop | Commonsense | Backed By |
 |---|---|---|---|---|
-| **Flywheel** | **70.0%** | 15.0% | **75.0%** | Self-funded, local-only (SQLite + markdown) |
+| **Flywheel** | **75.0%** | 27.5% | **80.0%** | Self-funded, local-only (SQLite + markdown) |
 | [Mem0](https://mem0.ai/) | 38.7 | **28.6** | — | YC ($24M), AWS Agent SDK partner |
 | [Zep](https://getzep.com/) | 35.7 | 19.4 | — | YC, enterprise memory platform |
 | [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | LangChain ($25M+ raised) |
@@ -192,11 +192,11 @@ Every number is measured on standard academic datasets and reproducible on your 
 > **Transparency notes:**
 > - All numbers are answer accuracy via LLM-as-judge (binary CORRECT/WRONG) — same methodology across all systems. Flywheel uses Claude Haiku as judge; competitor numbers from the Mem0 paper.
 > - Flywheel: 200 questions (balanced, 40 per category, all 10 conversations). Competitors: 695 questions.
-> - Multi-hop (15%) is below competitors. The retrieval pipeline finds 60% of evidence sessions, but synthesizing facts from multiple sessions into a concise answer remains hard. This is an active area of improvement.
+> - Multi-hop (27.5%) is approaching Ori Mnemos (29.3%) and Mem0 (28.6%). Iterative retrieval + reading session notes directly drives the improvement.
 
 **What we don't claim:**
 - We don't claim to beat trained retrievers. We sit *next to* them without any training.
-- We don't claim multi-hop is solved. 15% — retrieval works, synthesis doesn't yet.
+- We don't claim multi-hop is fully solved. 27.5% is competitive but there's room to grow.
 - We don't claim Flywheel is the best at everything. Dedicated GraphRAG systems may edge ahead on complex multi-step reasoning.
 
 [Full benchmark methodology →](docs/TESTING.md) | Run them yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)

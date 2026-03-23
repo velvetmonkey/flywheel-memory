@@ -267,9 +267,6 @@ Every number is measured on standard academic datasets and reproducible on your 
 
 [Full benchmark methodology →](docs/TESTING.md) | Run them yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
 
-<details>
-<summary><strong>Graph quality, live AI testing, and safety</strong></summary>
-
 ### Graph Quality
 
 The feedback loop claim is measured, not asserted. A test vault with known-correct links is stripped, and the engine rediscovers them. CI regression-gates these baselines — if any metric drops >5pp, the build fails.
@@ -313,8 +310,6 @@ Every session is captured as JSONL, analyzed by Python scripts, and reported wit
 | Graph quality | 266 tests — precision/recall, archetypes, feedback loops |
 
 Every mutation is git-committed (one `vault_undo_last_mutation` away from reverting), conflict-detected (SHA-256 hash before every write), and dry-run capable. Auto-wikilinks are AST-protected — code blocks, frontmatter, existing links, callouts, math, and HTML are never touched.
-
-</details>
 
 ---
 

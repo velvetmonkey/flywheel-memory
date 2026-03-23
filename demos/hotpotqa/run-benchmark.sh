@@ -60,7 +60,7 @@ for i in $(seq 0 $((QUESTION_COUNT - 1))); do
 
   echo -n "  q${padded}: "
 
-  if claude -p "Answer this question using only the search tool. Do not use WebSearch or WebFetch. Be concise.
+  if claude -p "Answer this question using only the Flywheel MCP tools (search, get_note_structure, etc). Do not use WebSearch, WebFetch, or ToolSearch. Be concise.
 
 $question" \
     --output-format stream-json \

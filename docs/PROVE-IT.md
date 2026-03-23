@@ -184,16 +184,9 @@ See [SETUP.md](SETUP.md) for the complete walkthrough.
 
 ---
 
-## Typical Cost Per Query
+## Why It's Efficient
 
-| Prompt type | Cost | Duration |
-|-------------|------|----------|
-| Single search query | ~$0.03 | ~10-20s |
-| Search + one read | ~$0.06 | ~15-25s |
-| Multi-step (2-3 tools) | ~$0.10 | ~20-30s |
-| Write + auto-wikilinks | ~$0.15 | ~30-40s |
-
-Measured with Claude Sonnet on the demo vaults. Enriched search results (frontmatter, ranked backlinks, ranked outlinks, 64-token snippets) mean most queries need fewer tool calls than before.
+Flywheel's enriched search returns frontmatter, ranked backlinks, ranked outlinks, and content snippets in a single call. Most queries that would otherwise need 5-10 file reads can be answered from one search result. Fewer tool calls means less context, faster responses, and lower cost — regardless of which model or pricing tier you use.
 
 ---
 

@@ -2,7 +2,7 @@
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
   <p><strong>Give Claude your entire Obsidian vault.</strong><br/>
-  MCP tools for search, write, and graph. Auto-wikilinks on every mutation.<br/>
+  87.5% retrieval recall on HotpotQA with zero training data. Auto-wikilinks on every mutation.<br/>
   A feedback loop that learns from your edits. Zero cloud. Six lines of config.</p>
 </div>
 
@@ -212,7 +212,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ### Conversational Memory (LoCoMo)
 
-200 questions across 10 conversations. Answer accuracy via LLM-as-judge — same methodology as competitor benchmarks.
+200 questions across 10 conversations. Answer accuracy via LLM-as-judge.
 
 | System | Single-hop | Multi-hop | Commonsense |
 |---|---|---|---|
@@ -222,7 +222,11 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 | [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — |
 | [Letta](https://memgpt.ai/) | 26.7 | — | — |
 
-> Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413) (695 questions). Flywheel: 200 questions balanced across categories.
+> **Methodology notes:**
+> - Flywheel: 200 questions, all 10 conversations, Claude Sonnet + Flywheel agent preset. Judge: Claude Haiku (binary CORRECT/WRONG).
+> - Competitors: 695 questions, from the [Mem0 paper](https://arxiv.org/abs/2504.19413). Judge: GPT-4o.
+> - Different judge models may score differently. Different sample sizes produce different confidence intervals.
+> - Run it yourself: [`demos/locomo/`](demos/locomo/)
 
 [Full benchmark methodology →](docs/TESTING.md)
 

@@ -117,17 +117,11 @@ for i in $INDICES; do
 
   if claude -p "You are answering questions about conversations stored in this vault.
 Each note is one session of a multi-session conversation between two people.
-Sessions are organized by conversation pair (e.g., conversations/caroline-melanie/).
-
-Strategy:
-1. Search for key entities or topics in the question.
-2. Read the most relevant session notes to find specific facts.
-3. If the question requires combining facts from multiple sessions, search again with new terms you discovered in step 2.
-4. Only say \"no information available\" if you have searched at least twice and read at least 2 session notes without finding relevant content.
 
 Question: $question
 
-Answer concisely — just the facts, in one or two sentences." \
+Answer concisely — just the facts, in one or two sentences.
+If the information is not in the vault, say so." \
     --output-format stream-json \
     --no-session-persistence \
     --permission-mode bypassPermissions \

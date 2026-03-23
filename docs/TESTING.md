@@ -212,6 +212,13 @@ Competitor numbers sourced from the Mem0 paper, which benchmarks memory systems 
 - **Temporal: 55.0%** — questions about when events happened, temporal ordering across sessions.
 - **Infrastructure.** Flywheel runs locally on markdown files with SQLite. Mem0 requires Redis + Qdrant. Zep requires a cloud service.
 
+**What's different about our methodology:**
+
+- **Judge model:** Flywheel uses Claude Haiku; the Mem0 paper uses GPT-4o. We have not measured inter-judge agreement.
+- **Prompt:** Claude is told the vault structure but not given a retrieval strategy.
+- **Vault mode:** Dialog (raw conversation turns) — the most keyword-rich representation. Summary mode scores ~1-2pp lower on retrieval.
+- **Sample:** 200 questions across all 10 conversations, stratified 40 per category. Competitors: 695 questions.
+
 Source: [`demos/locomo/`](../demos/locomo/) | [`packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts)
 
 ---

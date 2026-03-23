@@ -10,6 +10,7 @@ Usage:
 """
 
 import json
+import math
 import re
 import sys
 from collections import defaultdict
@@ -18,6 +19,19 @@ from pathlib import Path
 
 
 ARTICLES = {'a', 'an', 'the'}
+
+
+def wilson_ci(correct, total, z=1.96):
+    """Wilson score interval (95% CI) for a binomial proportion."""
+    if total == 0:
+        return (0.0, 0.0)
+    p = correct / total
+    denom = 1 + z * z / total
+    centre = p + z * z / (2 * total)
+    spread = z * math.sqrt(p * (1 - p) / total + z * z / (4 * total * total))
+    lo = (centre - spread) / denom
+    hi = (centre + spread) / denom
+    return (max(0.0, lo), min(1.0, hi))
 
 
 def normalize_answer(text):
@@ -311,7 +325,7 @@ def main():
     print(f'Analysis: {analysis_path}', file=sys.stderr)
 
 
-def judge_answers(results_dir, gt_path):
+def judge_answers(results_dir, gt_path, judge_model='haiku'):
     """LLM-as-judge scoring: ask Claude to evaluate each answer as correct/wrong.
 
     Creates a judge-results.json with binary accuracy per question.
@@ -363,7 +377,7 @@ Reply with exactly one word: CORRECT or WRONG"""
 
         try:
             result = subprocess.run(
-                ['claude', '-p', prompt, '--model', 'haiku', '--no-session-persistence'],
+                ['claude', '-p', prompt, '--model', judge_model, '--no-session-persistence'],
                 capture_output=True, text=True, timeout=30
             )
             verdict = result.stdout.strip().upper()
@@ -384,17 +398,21 @@ Reply with exactly one word: CORRECT or WRONG"""
     total_count = sum(s['total'] for s in cat_accuracy.values())
     overall_acc = total_correct / total_count if total_count > 0 else 0
 
+    overall_lo, overall_hi = wilson_ci(total_correct, total_count)
+
     lines = []
     lines.append('')
     lines.append('## LLM-as-Judge Answer Accuracy')
     lines.append('')
-    lines.append(f'**Overall: {overall_acc:.1%}** ({total_correct}/{total_count})')
+    lines.append(f'**Overall: {overall_acc:.1%}** ({total_correct}/{total_count}) — 95% CI [{overall_lo:.1%}, {overall_hi:.1%}]')
+    lines.append(f'Judge model: {judge_model}')
     lines.append('')
-    lines.append('| Category | Questions | Accuracy |')
-    lines.append('|----------|-----------|----------|')
+    lines.append('| Category | Questions | Accuracy | 95% CI |')
+    lines.append('|----------|-----------|----------|--------|')
     for cat, stats in sorted(cat_accuracy.items()):
         acc = stats['correct'] / stats['total'] if stats['total'] > 0 else 0
-        lines.append(f'| {cat} | {stats["total"]} | {acc:.1%} ({stats["correct"]}/{stats["total"]}) |')
+        lo, hi = wilson_ci(stats['correct'], stats['total'])
+        lines.append(f'| {cat} | {stats["total"]} | {acc:.1%} ({stats["correct"]}/{stats["total"]}) | [{lo:.1%}, {hi:.1%}] |')
     lines.append('')
 
     judge_report = '\n'.join(lines)
@@ -409,11 +427,17 @@ Reply with exactly one word: CORRECT or WRONG"""
     judge_path = results_dir / 'judge-results.json'
     with open(judge_path, 'w') as f:
         json.dump({
+            'judge_model': judge_model,
             'overall_accuracy': round(overall_acc, 4),
+            'overall_ci_95': [round(overall_lo, 4), round(overall_hi, 4)],
             'total_correct': total_correct,
             'total_scored': total_count,
             'by_category': {
-                k: {'accuracy': round(v['correct']/v['total'], 4) if v['total'] else 0, **v}
+                k: {
+                    'accuracy': round(v['correct']/v['total'], 4) if v['total'] else 0,
+                    'ci_95': [round(x, 4) for x in wilson_ci(v['correct'], v['total'])],
+                    **v,
+                }
                 for k, v in cat_accuracy.items()
             },
             'per_question': judge_results,
@@ -428,5 +452,10 @@ if __name__ == '__main__':
 
     # Run LLM-as-judge if --judge flag is passed
     if '--judge' in sys.argv:
-        print('\n=== Running LLM-as-Judge Scoring ===\n', file=sys.stderr)
-        judge_answers(sys.argv[1], sys.argv[2])
+        judge_model = 'haiku'
+        if '--judge-model' in sys.argv:
+            idx = sys.argv.index('--judge-model')
+            if idx + 1 < len(sys.argv):
+                judge_model = sys.argv[idx + 1]
+        print(f'\n=== Running LLM-as-Judge Scoring (model: {judge_model}) ===\n', file=sys.stderr)
+        judge_answers(sys.argv[1], sys.argv[2], judge_model=judge_model)

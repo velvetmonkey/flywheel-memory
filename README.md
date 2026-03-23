@@ -262,7 +262,7 @@ Local-only because your thinking is yours. Self-correcting because it should lea
 
 I built this for myself first. If it resonates, you probably already know why.
 
-I couldn't have built this by myself — not in a year, and definitely not without AI. Everything here was driven through Claude Code with Opus 4.5 and 4.6. I've barely opened the IDE except to review what was generated. I've subjected it to extensive code reviews and stress-tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
+I designed every part of this and understand every line — but I couldn't have shipped it this fast without AI. The entire codebase was built through Claude Code with Opus 4.5 and 4.6. I architect, review, and stress-test; Claude writes the code. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 
 I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space.
 

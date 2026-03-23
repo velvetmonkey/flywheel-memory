@@ -388,8 +388,8 @@ Every write tool follows the same pipeline:
 4. **Input validation** -- Checks for common issues (double timestamps, non-markdown bullets)
 5. **Normalization** -- Auto-fixes issues (replace `*` with `-`, trim whitespace)
 6. **Auto-wikilinks** -- Applies `[[wikilinks]]` to known entities
-6a. **Heading level bumping** -- `bumpHeadingLevels()` adjusts heading levels in inserted content to nest under the target section's level (opt-out via `bumpHeadings: false`)
-7. **Outgoing link suggestions** -- Suggests related links based on content
+6a. **Heading level bumping** -- `bumpHeadingLevels()` adjusts heading levels in inserted content to nest under the target section's level
+7. **Outgoing link suggestions** -- Appends suggested related links based on content (enabled by default, opt-out via `suggestOutgoingLinks: false`)
 8. **Content formatting** -- Applies format (plain, bullet, task, numbered, timestamp-bullet)
 9. **Section insertion** -- Inserts at position (append/prepend) with list nesting preservation
 10. **Guardrails** -- Output validation (warn/strict/off modes). Write errors use `DiagnosticError` for structured diagnostics — includes closest match to target section, per-line analysis of the content, and actionable fix suggestions on `MutationResult.diagnostic`

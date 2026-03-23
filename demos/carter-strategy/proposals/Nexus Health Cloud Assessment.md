@@ -1,10 +1,10 @@
 ---
 type: proposal
 status: draft
-client: "[[Nexus Health]]"
+client: '[[Nexus Health]]'
 value: 22000
 submitted: null
-decision_due: 2026-04-01
+decision_due: 2026-04-01T00:00:00.000Z
 priority: high
 tags:
   - proposal
@@ -111,7 +111,7 @@ AWS infrastructure audit and HIPAA compliance gap analysis for [[Nexus Health]],
 
 - [ ] Confirm [[Leila Farouk]] April availability 📅 2026-03-25
 - [ ] Finalize proposal and send to [[Dr. Anika Patel]] 📅 2026-03-28
-- [ ] Complete reference check with [[Mike Chen]] 📅 2026-03-22
+- [x] Complete reference check with [[Mike Chen]] 📅 2026-03-22
 - [ ] Draft NDA for [[Leila Farouk]] 📅 2026-03-28
 
 ## Related

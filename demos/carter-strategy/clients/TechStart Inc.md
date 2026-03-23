@@ -5,10 +5,10 @@ aliases:
   - TechStart
 contact: Mike Chen
 email: mike@techstart.io
-phone: "+1 555-0187"
+phone: +1 555-0187
 industry: SaaS
-started: 2025-06-01
-rate: "250"
+started: 2025-06-01T00:00:00.000Z
+rate: '250'
 total_billed: 37500
 tags:
   - client
@@ -59,7 +59,7 @@ Multi-tenant architecture (70% complete), analytics dashboard, API marketplace. 
 
 - [[INV-2026-005]] - January 2026 ($5,000) - Paid
 - [[INV-2026-006]] - February 2026 ($7,500) - DUE TODAY
-
+- [ ] Check in with [[Mike Chen]] re [[INV-2026-006]] ($7,500 due today) 📅 2026-03-25 → [[INV-2026-003]], [[INV-2026-004]], [[INV-2025-047]]
 ## [[Key Stakeholders]]
 
 | Name | Role | Engagement |

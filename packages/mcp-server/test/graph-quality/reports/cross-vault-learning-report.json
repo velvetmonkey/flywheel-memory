@@ -1,12 +1,12 @@
 {
   "suite": "cross-vault-learning-report",
-  "timestamp": "2026-03-23T09:24:41.871Z",
-  "duration_ms": 242849,
+  "timestamp": "2026-03-23T17:31:54.516Z",
+  "duration_ms": 255423,
   "summary": {
-    "primary_final_f1": 0.448,
+    "primary_final_f1": 0.45,
     "small-world_final_f1": 0.283,
     "hub-and-spoke_final_f1": 0.377,
-    "temporal-star_final_f1": 0.719
+    "temporal-star_final_f1": 0.718
   },
   "details": [
     {
@@ -424,7 +424,7 @@
           "f1": 0.421,
           "precision": 0.292,
           "recall": 0.75,
-          "suppressionCount": 14,
+          "suppressionCount": 15,
           "byTier": {
             "1": {
               "precision": 1,
@@ -451,7 +451,7 @@
           "f1": 0.418,
           "precision": 0.288,
           "recall": 0.767,
-          "suppressionCount": 17,
+          "suppressionCount": 18,
           "byTier": {
             "1": {
               "precision": 1,
@@ -478,7 +478,7 @@
           "f1": 0.424,
           "precision": 0.293,
           "recall": 0.767,
-          "suppressionCount": 18,
+          "suppressionCount": 19,
           "byTier": {
             "1": {
               "precision": 1,
@@ -502,8 +502,8 @@
         },
         {
           "round": 18,
-          "f1": 0.438,
-          "precision": 0.307,
+          "f1": 0.44,
+          "precision": 0.309,
           "recall": 0.767,
           "suppressionCount": 18,
           "byTier": {
@@ -529,10 +529,10 @@
         },
         {
           "round": 19,
-          "f1": 0.448,
-          "precision": 0.313,
+          "f1": 0.45,
+          "precision": 0.315,
           "recall": 0.783,
-          "suppressionCount": 17,
+          "suppressionCount": 18,
           "byTier": {
             "1": {
               "precision": 1,
@@ -1819,15 +1819,15 @@
         },
         {
           "round": 6,
-          "f1": 0.714,
-          "precision": 0.678,
-          "recall": 0.755,
+          "f1": 0.723,
+          "precision": 0.686,
+          "recall": 0.763,
           "suppressionCount": 16,
           "byTier": {
             "1": {
               "precision": 1,
-              "recall": 0.7655038759689923,
-              "f1": 0.867178924259056,
+              "recall": 0.7751937984496124,
+              "f1": 0.8733624454148472,
               "count": 516
             },
             "2": {
@@ -1846,15 +1846,15 @@
         },
         {
           "round": 7,
-          "f1": 0.719,
-          "precision": 0.683,
-          "recall": 0.76,
-          "suppressionCount": 16,
+          "f1": 0.729,
+          "precision": 0.692,
+          "recall": 0.77,
+          "suppressionCount": 15,
           "byTier": {
             "1": {
               "precision": 1,
-              "recall": 0.7693798449612403,
-              "f1": 0.8696604600219058,
+              "recall": 0.7810077519379846,
+              "f1": 0.8770402611534277,
               "count": 516
             },
             "2": {
@@ -1873,21 +1873,21 @@
         },
         {
           "round": 8,
-          "f1": 0.713,
-          "precision": 0.677,
-          "recall": 0.753,
+          "f1": 0.709,
+          "precision": 0.673,
+          "recall": 0.75,
           "suppressionCount": 16,
           "byTier": {
             "1": {
               "precision": 1,
-              "recall": 0.7635658914728682,
-              "f1": 0.865934065934066,
+              "recall": 0.7577519379844961,
+              "f1": 0.8621830209481808,
               "count": 516
             },
             "2": {
               "precision": 1,
-              "recall": 0.6610169491525424,
-              "f1": 0.7959183673469388,
+              "recall": 0.6779661016949152,
+              "f1": 0.8080808080808081,
               "count": 59
             },
             "3": {
@@ -1900,10 +1900,37 @@
         },
         {
           "round": 9,
+          "f1": 0.713,
+          "precision": 0.677,
+          "recall": 0.753,
+          "suppressionCount": 15,
+          "byTier": {
+            "1": {
+              "precision": 1,
+              "recall": 0.7596899224806202,
+              "f1": 0.8634361233480177,
+              "count": 516
+            },
+            "2": {
+              "precision": 1,
+              "recall": 0.6949152542372882,
+              "f1": 0.8200000000000001,
+              "count": 59
+            },
+            "3": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0,
+              "count": 0
+            }
+          }
+        },
+        {
+          "round": 10,
           "f1": 0.703,
           "precision": 0.667,
           "recall": 0.743,
-          "suppressionCount": 17,
+          "suppressionCount": 18,
           "byTier": {
             "1": {
               "precision": 1,
@@ -1926,49 +1953,22 @@
           }
         },
         {
-          "round": 10,
-          "f1": 0.709,
-          "precision": 0.673,
-          "recall": 0.75,
+          "round": 11,
+          "f1": 0.713,
+          "precision": 0.677,
+          "recall": 0.753,
           "suppressionCount": 17,
           "byTier": {
             "1": {
               "precision": 1,
-              "recall": 0.7577519379844961,
-              "f1": 0.8621830209481808,
+              "recall": 0.7596899224806202,
+              "f1": 0.8634361233480177,
               "count": 516
             },
             "2": {
               "precision": 1,
-              "recall": 0.6779661016949152,
-              "f1": 0.8080808080808081,
-              "count": 59
-            },
-            "3": {
-              "precision": 0,
-              "recall": 0,
-              "f1": 0,
-              "count": 0
-            }
-          }
-        },
-        {
-          "round": 11,
-          "f1": 0.709,
-          "precision": 0.673,
-          "recall": 0.75,
-          "suppressionCount": 16,
-          "byTier": {
-            "1": {
-              "precision": 1,
-              "recall": 0.7577519379844961,
-              "f1": 0.8621830209481808,
-              "count": 516
-            },
-            "2": {
-              "precision": 1,
-              "recall": 0.6779661016949152,
-              "f1": 0.8080808080808081,
+              "recall": 0.6949152542372882,
+              "f1": 0.8200000000000001,
               "count": 59
             },
             "3": {
@@ -1981,15 +1981,15 @@
         },
         {
           "round": 12,
-          "f1": 0.719,
-          "precision": 0.683,
-          "recall": 0.76,
-          "suppressionCount": 16,
+          "f1": 0.718,
+          "precision": 0.681,
+          "recall": 0.758,
+          "suppressionCount": 17,
           "byTier": {
             "1": {
               "precision": 1,
-              "recall": 0.7674418604651163,
-              "f1": 0.868421052631579,
+              "recall": 0.7655038759689923,
+              "f1": 0.867178924259056,
               "count": 516
             },
             "2": {
@@ -2008,33 +2008,6 @@
         },
         {
           "round": 13,
-          "f1": 0.719,
-          "precision": 0.683,
-          "recall": 0.76,
-          "suppressionCount": 17,
-          "byTier": {
-            "1": {
-              "precision": 1,
-              "recall": 0.7674418604651163,
-              "f1": 0.868421052631579,
-              "count": 516
-            },
-            "2": {
-              "precision": 1,
-              "recall": 0.6949152542372882,
-              "f1": 0.8200000000000001,
-              "count": 59
-            },
-            "3": {
-              "precision": 0,
-              "recall": 0,
-              "f1": 0,
-              "count": 0
-            }
-          }
-        },
-        {
-          "round": 14,
           "f1": 0.721,
           "precision": 0.684,
           "recall": 0.762,
@@ -2061,7 +2034,7 @@
           }
         },
         {
-          "round": 15,
+          "round": 14,
           "f1": 0.719,
           "precision": 0.683,
           "recall": 0.76,
@@ -2069,8 +2042,35 @@
           "byTier": {
             "1": {
               "precision": 1,
-              "recall": 0.7655038759689923,
-              "f1": 0.867178924259056,
+              "recall": 0.7674418604651163,
+              "f1": 0.868421052631579,
+              "count": 516
+            },
+            "2": {
+              "precision": 1,
+              "recall": 0.6949152542372882,
+              "f1": 0.8200000000000001,
+              "count": 59
+            },
+            "3": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0,
+              "count": 0
+            }
+          }
+        },
+        {
+          "round": 15,
+          "f1": 0.716,
+          "precision": 0.68,
+          "recall": 0.757,
+          "suppressionCount": 19,
+          "byTier": {
+            "1": {
+              "precision": 1,
+              "recall": 0.7616279069767442,
+              "f1": 0.8646864686468647,
               "count": 516
             },
             "2": {
@@ -2089,15 +2089,15 @@
         },
         {
           "round": 16,
-          "f1": 0.716,
-          "precision": 0.68,
-          "recall": 0.757,
+          "f1": 0.718,
+          "precision": 0.681,
+          "recall": 0.758,
           "suppressionCount": 18,
           "byTier": {
             "1": {
               "precision": 1,
-              "recall": 0.7635658914728682,
-              "f1": 0.865934065934066,
+              "recall": 0.7655038759689923,
+              "f1": 0.867178924259056,
               "count": 516
             },
             "2": {
@@ -2170,15 +2170,15 @@
         },
         {
           "round": 19,
-          "f1": 0.719,
-          "precision": 0.683,
-          "recall": 0.76,
+          "f1": 0.718,
+          "precision": 0.681,
+          "recall": 0.758,
           "suppressionCount": 19,
           "byTier": {
             "1": {
               "precision": 1,
-              "recall": 0.7674418604651163,
-              "f1": 0.868421052631579,
+              "recall": 0.7655038759689923,
+              "f1": 0.867178924259056,
               "count": 516
             },
             "2": {

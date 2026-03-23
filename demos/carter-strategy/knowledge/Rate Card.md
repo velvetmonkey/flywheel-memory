@@ -1,7 +1,7 @@
 ---
 type: knowledge
 category: reference
-last_reviewed: 2025-11-01
+last_reviewed: 2025-11-01T00:00:00.000Z
 tags:
   - knowledge
   - reusable
@@ -84,6 +84,16 @@ Standard pricing for Carter [[Strategy Consulting]] services. Rates vary by enga
 - Late fee: 1.5%/month
 
 ## Related
+### Subcontractor Rates
+
+Pass-through rates billed to clients. Carter margin per contractor.
+
+| Contractor | Our Rate | Client Rate | Markup | Notes |
+|------------|----------|-------------|--------|-------|
+| [[Marcus Webb]] | $200/hr ($220 from Apr 2026) | $275/hr | 37% | Rate increase confirmed 2026-03-23 |
+| [[Leila Farouk]] | $250/hr | $325/hr | 30% | Cloud & Security; first engagement [[Nexus Health Cloud Assessment\|Nexus Health]] |
+| [[Dan Oliveira]] | $180/hr | $250/hr | 39% | Full-stack developer |
+| [[Stacy Thompson]] | $150/hr | $250/hr | 67% | Frontend / UX |
 
 - Clients: [[Acme Corp]], [[TechStart Inc]], [[GlobalBank]]
 - Admin: [[Business Goals 2026]]

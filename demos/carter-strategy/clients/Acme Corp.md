@@ -5,9 +5,9 @@ aliases:
   - Acme
 contact: Sarah Mitchell
 email: sarah.mitchell@acmecorp.com
-phone: "+1 555-0142"
+phone: +1 555-0142
 industry: Manufacturing
-started: 2024-03-15
+started: 2024-03-15T00:00:00.000Z
 rate: 300
 total_billed: 189000
 tags:
@@ -71,7 +71,7 @@ UAT complete, cutover window locked March 28-29. [[Marcus Webb]] leading technic
 - [[INV-2025-048]] - December 2025 ($12,000) - **OVERDUE 64 days**
 - [[INV-2026-001]] - January 2026 ($18,000) - **OVERDUE 33 days**
 - [[INV-2026-002]] - February 2026 ($15,000) - **OVERDUE 5 days**
-
+- [ ] Chase [[Sarah Mitchell]] about 3 overdue invoices ([[INV-2025-048]], [[INV-2026-001]], [[INV-2026-002]]) 📅 2026-03-25 → [[INV-2026-003]], [[INV-2026-006]], [[INV-2026-004]]
 ## [[Key Stakeholders]]
 
 | Name | Role | Engagement |

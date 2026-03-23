@@ -136,15 +136,16 @@ function buildObservationNote(
   lines.push('');
 
   // Try to find observations for this session
-  // LoCoMo stores observations keyed by session
+  // LoCoMo keys observations as session_N_observation -> speaker -> [items]
   const obs = entry.observation;
-  if (obs) {
+  const obsKey = `${sessionKey}_observation`;
+  if (obs && obs[obsKey]) {
+    const sessionObs = obs[obsKey];
     for (const speaker of [speakerA, speakerB]) {
-      const speakerObs = obs[speaker];
-      if (speakerObs && speakerObs[sessionKey]) {
+      if (sessionObs[speaker]) {
         lines.push(`## ${speaker}`);
         lines.push('');
-        const items = speakerObs[sessionKey];
+        const items = sessionObs[speaker];
         if (Array.isArray(items)) {
           for (const item of items) {
             // Items can be [observation, evidence] tuples or just strings

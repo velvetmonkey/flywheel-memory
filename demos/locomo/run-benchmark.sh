@@ -19,6 +19,7 @@ GROUND_TRUTH="$SCRIPT_DIR/ground-truth.json"
 MODEL="${MODEL:-sonnet}"
 COUNT="${COUNT:-0}"  # 0 = all
 MODE="${MODE:-dialog}"
+SEED="${SEED:-42}"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="$SCRIPT_DIR/results/run-$TIMESTAMP"
 
@@ -34,15 +35,64 @@ if [[ ! -d "$VAULT_DIR" || ! -f "$GROUND_TRUTH" ]]; then
   node "$SCRIPT_DIR/build-vault.js" --mode "$MODE"
 fi
 
-# Read question count
+# Build balanced sample indices
 TOTAL_QUESTIONS=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['count'])")
 if [[ "$COUNT" -eq 0 || "$COUNT" -gt "$TOTAL_QUESTIONS" ]]; then
   COUNT=$TOTAL_QUESTIONS
 fi
 
+INDICES_FILE="$RESULTS_DIR/indices.json"
+mkdir -p "$RESULTS_DIR/raw"
+
+# Stratified sampling: equal per category, spread across conversations
+python3 -c "
+import json, random
+random.seed(${SEED})
+gt = json.load(open('$GROUND_TRUTH'))
+questions = gt['questions']
+count = $COUNT
+
+if count >= len(questions):
+    indices = list(range(len(questions)))
+else:
+    # Group by category
+    by_cat = {}
+    for i, q in enumerate(questions):
+        cat = q['category']
+        by_cat.setdefault(cat, []).append(i)
+
+    # Shuffle within each category
+    for cat in by_cat:
+        random.shuffle(by_cat[cat])
+
+    # Round-robin across categories
+    indices = []
+    cats = sorted(by_cat.keys())
+    per_cat = max(1, count // len(cats))
+    for cat in cats:
+        indices.extend(by_cat[cat][:per_cat])
+    # Fill remainder from largest categories
+    remaining = count - len(indices)
+    for cat in cats:
+        if remaining <= 0:
+            break
+        extra = by_cat[cat][per_cat:per_cat + remaining]
+        indices.extend(extra)
+        remaining -= len(extra)
+    indices = sorted(indices[:count])
+
+json.dump(indices, open('$INDICES_FILE', 'w'))
+print(f'Sampled {len(indices)} questions across {len(set(questions[i][\"category\"] for i in indices))} categories')
+# Show distribution
+from collections import Counter
+dist = Counter(questions[i]['category'] for i in indices)
+for cat, n in sorted(dist.items()):
+    print(f'  {cat}: {n}')
+"
+
 echo ""
 echo "=== LoCoMo End-to-End Benchmark ==="
-echo "Questions:     $COUNT / $TOTAL_QUESTIONS"
+echo "Questions:     $COUNT / $TOTAL_QUESTIONS (balanced)"
 echo "Model:         $MODEL"
 echo "Vault mode:    $MODE"
 echo "Results:       $RESULTS_DIR"
@@ -54,10 +104,12 @@ mcp_config=$(cat <<EOF
 EOF
 )
 
-mkdir -p "$RESULTS_DIR/raw"
+# Read indices
+INDICES=$(python3 -c "import json; print(' '.join(str(i) for i in json.load(open('$INDICES_FILE'))))")
+QNUM=0
 
-for i in $(seq 0 $((COUNT - 1))); do
-  padded=$(printf "%03d" "$i")
+for i in $INDICES; do
+  padded=$(printf "%04d" "$i")
   question=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['questions'][$i]['question'])")
   category=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['questions'][$i]['category'])")
 

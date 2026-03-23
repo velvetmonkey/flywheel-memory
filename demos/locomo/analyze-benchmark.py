@@ -174,8 +174,10 @@ def main():
     cat_answer = defaultdict(lambda: {'score_sum': 0.0, 'count': 0})
 
     for i, q in enumerate(questions):
-        padded = f'{i:03d}'
-        jsonl_path = raw_dir / f'q{padded}.jsonl'
+        # Support both 3-digit (legacy) and 4-digit (balanced) filenames
+        jsonl_path = raw_dir / f'q{i:04d}.jsonl'
+        if not jsonl_path.exists():
+            jsonl_path = raw_dir / f'q{i:03d}.jsonl'
 
         # Skip questions without result files (subset runs)
         if not jsonl_path.exists():
@@ -309,5 +311,122 @@ def main():
     print(f'Analysis: {analysis_path}', file=sys.stderr)
 
 
+def judge_answers(results_dir, gt_path):
+    """LLM-as-judge scoring: ask Claude to evaluate each answer as correct/wrong.
+
+    Creates a judge-results.json with binary accuracy per question.
+    Comparable to Ori Mnemos / Mem0 evaluation methodology.
+    """
+    import subprocess
+
+    results_dir = Path(results_dir)
+    gt = json.load(open(gt_path))
+    questions = gt['questions']
+    raw_dir = results_dir / 'raw'
+
+    judge_results = []
+    cat_accuracy = defaultdict(lambda: {'correct': 0, 'total': 0})
+
+    for i, q in enumerate(questions):
+        jsonl_path = raw_dir / f'q{i:04d}.jsonl'
+        if not jsonl_path.exists():
+            jsonl_path = raw_dir / f'q{i:03d}.jsonl'
+        if not jsonl_path.exists():
+            continue
+
+        _, _, _, answer = extract_accessed_paths(str(jsonl_path))
+        if not answer:
+            judge_results.append({'index': i, 'correct': 0, 'category': q['category']})
+            cat_accuracy[q['category']]['total'] += 1
+            continue
+
+        ground_truth = str(q.get('answer', ''))
+        category = q['category']
+
+        # For adversarial: use our existing detector
+        if q.get('category_num') == 5:
+            score = adversarial_score(answer)
+            judge_results.append({'index': i, 'correct': score, 'category': category})
+            cat_accuracy[category]['correct'] += int(score)
+            cat_accuracy[category]['total'] += 1
+            continue
+
+        # LLM-as-judge prompt
+        prompt = f"""Judge whether the predicted answer is correct given the ground truth.
+A prediction is CORRECT if it conveys the same core information as the ground truth, even if worded differently or more verbose.
+A prediction is WRONG if it contradicts the ground truth, gives a different answer, or says the information is not available when it is.
+
+Ground truth: {ground_truth}
+Prediction: {answer[:500]}
+
+Reply with exactly one word: CORRECT or WRONG"""
+
+        try:
+            result = subprocess.run(
+                ['claude', '-p', prompt, '--model', 'haiku', '--no-session-persistence'],
+                capture_output=True, text=True, timeout=30
+            )
+            verdict = result.stdout.strip().upper()
+            is_correct = 1 if 'CORRECT' in verdict else 0
+        except Exception:
+            is_correct = 0
+
+        judge_results.append({'index': i, 'correct': is_correct, 'category': category})
+        cat_accuracy[category]['correct'] += is_correct
+        cat_accuracy[category]['total'] += 1
+
+        padded = f'{i:04d}'
+        symbol = '+' if is_correct else '-'
+        print(f'  q{padded} [{category}]: {symbol}', file=sys.stderr)
+
+    # Report
+    total_correct = sum(s['correct'] for s in cat_accuracy.values())
+    total_count = sum(s['total'] for s in cat_accuracy.values())
+    overall_acc = total_correct / total_count if total_count > 0 else 0
+
+    lines = []
+    lines.append('')
+    lines.append('## LLM-as-Judge Answer Accuracy')
+    lines.append('')
+    lines.append(f'**Overall: {overall_acc:.1%}** ({total_correct}/{total_count})')
+    lines.append('')
+    lines.append('| Category | Questions | Accuracy |')
+    lines.append('|----------|-----------|----------|')
+    for cat, stats in sorted(cat_accuracy.items()):
+        acc = stats['correct'] / stats['total'] if stats['total'] > 0 else 0
+        lines.append(f'| {cat} | {stats["total"]} | {acc:.1%} ({stats["correct"]}/{stats["total"]}) |')
+    lines.append('')
+
+    judge_report = '\n'.join(lines)
+    print(judge_report)
+
+    # Append to existing report
+    report_path = results_dir / 'report.md'
+    with open(report_path, 'a') as f:
+        f.write(judge_report)
+
+    # Write judge results
+    judge_path = results_dir / 'judge-results.json'
+    with open(judge_path, 'w') as f:
+        json.dump({
+            'overall_accuracy': round(overall_acc, 4),
+            'total_correct': total_correct,
+            'total_scored': total_count,
+            'by_category': {
+                k: {'accuracy': round(v['correct']/v['total'], 4) if v['total'] else 0, **v}
+                for k, v in cat_accuracy.items()
+            },
+            'per_question': judge_results,
+        }, f, indent=2)
+
+    print(f'\nJudge results: {judge_path}', file=sys.stderr)
+    return overall_acc, cat_accuracy
+
+
 if __name__ == '__main__':
     main()
+
+    # Run LLM-as-judge if --judge flag is passed
+    if '--judge' in sys.argv:
+        print('\n=== Running LLM-as-Judge Scoring ===\n', file=sys.stderr)
+        judge_answers(sys.argv[1], sys.argv[2])

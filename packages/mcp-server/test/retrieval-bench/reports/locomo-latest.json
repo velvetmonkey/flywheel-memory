@@ -1,5 +1,5 @@
 {
-  "generated": "2026-03-23T00:28:10.714Z",
+  "generated": "2026-03-23T01:22:40.252Z",
   "dataset": "locomo10",
   "total_conversations": 10,
   "total_questions": 1986,
@@ -58,11 +58,11 @@
     },
     "observation": {
       "total_queries": 1531,
-      "recall_at_5": 0.135,
-      "recall_at_10": 0.27,
-      "precision_at_5": 0.041,
-      "mrr": 0.078,
-      "ndcg_at_10": 0.12
+      "recall_at_5": 0.769,
+      "recall_at_10": 0.845,
+      "precision_at_5": 0.189,
+      "mrr": 0.694,
+      "ndcg_at_10": 0.712
     },
     "summary": {
       "total_queries": 1531,

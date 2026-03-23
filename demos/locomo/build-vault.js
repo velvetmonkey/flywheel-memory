@@ -98,13 +98,14 @@ function buildObservationNote(session, speakerA, speakerB, entry) {
   lines.push(`# Session ${pad} — Observations`, '');
 
   const obs = entry.observation;
+  const obsKey = `${sessionKey}_observation`;
   let hasContent = false;
-  if (obs) {
+  if (obs && obs[obsKey]) {
+    const sessionObs = obs[obsKey];
     for (const speaker of [speakerA, speakerB]) {
-      const speakerObs = obs[speaker];
-      if (speakerObs && speakerObs[sessionKey]) {
+      if (sessionObs[speaker]) {
         lines.push(`## ${speaker}`, '');
-        const items = speakerObs[sessionKey];
+        const items = sessionObs[speaker];
         if (Array.isArray(items)) {
           for (const item of items) {
             const text = Array.isArray(item) ? item[0] : item;

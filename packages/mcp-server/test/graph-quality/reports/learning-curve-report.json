@@ -1,12 +1,12 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-03-22T22:30:36.833Z",
-  "duration_ms": 47168,
+  "timestamp": "2026-03-23T01:21:00.625Z",
+  "duration_ms": 29365,
   "summary": {
     "round0_f1": 0.405,
-    "roundN_f1": 0.456,
-    "f1_improvement": 0.051,
-    "total_suppressions": 17
+    "roundN_f1": 0.448,
+    "f1_improvement": 0.043,
+    "total_suppressions": 19
   },
   "details": [
     {
@@ -3494,7 +3494,7 @@
       "truePositives": 46,
       "falsePositives": 111,
       "falseNegatives": 14,
-      "suppressionCount": 18,
+      "suppressionCount": 19,
       "feedbackLayerAvgContribution": 1.2283,
       "byCategory": {
         "people": {
@@ -3614,6 +3614,7 @@
         "machine-learning",
         "melbourne",
         "meridian-labs",
+        "portland",
         "prism-core",
         "production",
         "project-meridian",
@@ -3703,231 +3704,15 @@
     },
     {
       "round": 18,
-      "f1": 0.438,
-      "precision": 0.307,
-      "recall": 0.767,
-      "mrr": 0.75,
-      "truePositives": 46,
-      "falsePositives": 104,
-      "falseNegatives": 14,
-      "suppressionCount": 18,
-      "feedbackLayerAvgContribution": 0.931,
-      "byCategory": {
-        "people": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 9
-        },
-        "organizations": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "hobbies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 2
-        },
-        "media": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "concepts": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 12
-        },
-        "documents": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "projects": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 6
-        },
-        "events": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 2
-        },
-        "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
-          "count": 3
-        },
-        "acronyms": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 3
-        },
-        "health": {
-          "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571428571428571,
-          "count": 4
-        },
-        "locations": {
-          "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
-          "count": 4
-        },
-        "finance": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "technologies": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 1
-        },
-        "animals": {
-          "precision": 0,
-          "recall": 0,
-          "f1": 0,
-          "count": 8
-        }
-      },
-      "byTier": {
-        "1": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 24
-        },
-        "2": {
-          "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "count": 21
-        },
-        "3": {
-          "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
-          "count": 15
-        }
-      },
-      "suppressedEntities": [
-        "clean-architecture",
-        "machine-learning",
-        "melbourne",
-        "meridian-labs",
-        "portland",
-        "prism-core",
-        "production",
-        "project-meridian",
-        "q1-budget",
-        "q1-review",
-        "rex",
-        "signal-patterns",
-        "skyforge",
-        "staging",
-        "tessa-liu",
-        "uat",
-        "yoga",
-        "zurich"
-      ],
-      "unresolvedLinks": [
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-01.md",
-          "tier": 3
-        },
-        {
-          "entity": "Code Breakers",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-03.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-04.md",
-          "tier": 3
-        },
-        {
-          "entity": "Rex",
-          "notePath": "daily-notes/2026-01-06.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Yoga",
-          "notePath": "daily-notes/2026-01-08.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-09.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-10.md",
-          "tier": 3
-        },
-        {
-          "entity": "Luna",
-          "notePath": "daily-notes/2026-01-12.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-13.md",
-          "tier": 3
-        },
-        {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        },
-        {
-          "entity": "Melbourne",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        }
-      ]
-    },
-    {
-      "round": 19,
-      "f1": 0.456,
-      "precision": 0.322,
+      "f1": 0.454,
+      "precision": 0.32,
       "recall": 0.783,
-      "mrr": 0.742,
+      "mrr": 0.75,
       "truePositives": 47,
-      "falsePositives": 99,
+      "falsePositives": 100,
       "falseNegatives": 13,
       "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 0.9526,
+      "feedbackLayerAvgContribution": 0.9536,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -4056,8 +3841,220 @@
         "skyforge",
         "staging",
         "tessa-liu",
-        "yoga",
-        "zurich"
+        "uat",
+        "yoga"
+      ],
+      "unresolvedLinks": [
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-01.md",
+          "tier": 3
+        },
+        {
+          "entity": "Code Breakers",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-03.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Yoga",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-10.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-12.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 3
+        },
+        {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-14.md",
+          "tier": 3
+        },
+        {
+          "entity": "Hackathon Spring",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        },
+        {
+          "entity": "Melbourne",
+          "notePath": "daily-notes/2026-01-15.md",
+          "tier": 3
+        }
+      ]
+    },
+    {
+      "round": 19,
+      "f1": 0.448,
+      "precision": 0.313,
+      "recall": 0.783,
+      "mrr": 0.742,
+      "truePositives": 47,
+      "falsePositives": 103,
+      "falseNegatives": 13,
+      "suppressionCount": 19,
+      "feedbackLayerAvgContribution": 0.8077,
+      "byCategory": {
+        "people": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 9
+        },
+        "organizations": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "hobbies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 2
+        },
+        "media": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "concepts": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 12
+        },
+        "documents": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "projects": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 6
+        },
+        "events": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 2
+        },
+        "food": {
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "count": 3
+        },
+        "acronyms": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 3
+        },
+        "health": {
+          "precision": 1,
+          "recall": 0.75,
+          "f1": 0.8571428571428571,
+          "count": 4
+        },
+        "locations": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "count": 4
+        },
+        "finance": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "technologies": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 1
+        },
+        "animals": {
+          "precision": 1,
+          "recall": 0.125,
+          "f1": 0.2222222222222222,
+          "count": 8
+        }
+      },
+      "byTier": {
+        "1": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 24
+        },
+        "2": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "count": 21
+        },
+        "3": {
+          "precision": 1,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
+          "count": 15
+        }
+      },
+      "suppressedEntities": [
+        "clean-architecture",
+        "machine-learning",
+        "melbourne",
+        "meridian-labs",
+        "portland",
+        "prism-core",
+        "production",
+        "project-meridian",
+        "python",
+        "q1-budget",
+        "q1-review",
+        "redis",
+        "rex",
+        "signal-patterns",
+        "skyforge",
+        "staging",
+        "supplements",
+        "tessa-liu",
+        "yoga"
       ],
       "unresolvedLinks": [
         {
@@ -4128,5 +4125,13 @@
       ]
     }
   ],
-  "tuning_recommendations": []
+  "tuning_recommendations": [
+    {
+      "parameter": "FEEDBACK_BOOST_MIN_SAMPLES",
+      "current_value": 5,
+      "suggested_value": 3,
+      "evidence": "F1 improvement over 20 rounds was only 4.3% (< 5%). Tightening feedback thresholds may help the system learn faster.",
+      "confidence": "medium"
+    }
+  ]
 }

@@ -131,12 +131,12 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 | [ColBERTv2](https://arxiv.org/abs/2112.01488) | Trained retriever | ~90%+ | Late interaction dense retrieval | Stanford, 2022. Fine-tuned on MS MARCO |
 | [Beam Retrieval](https://arxiv.org/abs/2308.08973) | Trained retriever | ~93% | Beam search over retrieval paths | 2023. Trained end-to-end for multi-hop |
 
-**Key differences:**
+**Not apples-to-apples — read this before comparing:**
 
-- **Trained retrievers** (MDR, Baleen, Beam Retrieval) are neural models fine-tuned on HotpotQA training data. They learn query-document relationships. Flywheel has zero training — it uses BM25 keyword search with structural backfill.
-- **Our test setting** is harder than standard distractor (10 docs per question) but easier than fullwiki (5M docs). We pool all 1,993 documents from 200 questions into one vault, so each query searches ~2,000 docs, not 10.
-- **Flywheel's 87.5%** beats the standard BM25 baseline (~75%) by +12pp, attributable to 2-hop backfill (outlinks from top results + their outlinks), query expansion, and FTS5 column weighting (title 5x, frontmatter 10x).
-- **The gap to trained retrievers** (87.5% vs 88-93%) is narrow and closing. These systems iterate: retrieve, read, re-query. Flywheel does one search + backfill with zero training data.
+- **Training data.** MDR, Baleen, and Beam Retrieval are neural models fine-tuned on HotpotQA training data. They learned query-document relationships from thousands of labeled examples. Flywheel has seen zero HotpotQA training data.
+- **Test setting.** Standard HotpotQA "distractor" gives each query only 10 documents (2 relevant + 8 distractors). "Fullwiki" searches 5M+ documents. Flywheel pools all 1,993 documents from 200 questions into one vault, so each query searches ~2,000 docs. This is harder than distractor but far easier than fullwiki. The numbers are not directly comparable to either setting.
+- **Sample size.** Flywheel: 200 questions. Academic baselines typically use the full dev set (7,405 questions). Our confidence intervals are wider.
+- **What's real.** Flywheel's 87.5% beats the standard BM25 baseline (~75%) by +12pp, attributable to 2-hop backfill, query expansion, and FTS5 column weighting. The gap to trained retrievers (87.5% vs 88-93%) is narrow, but those systems had every advantage — training data, purpose-built architectures, and a simpler retrieval setting.
 
 ### Comparison with other MCP/vault tools
 
@@ -193,31 +193,29 @@ Cost: $18.76 total ($0.094/question). LLM-as-judge scoring uses Claude Haiku for
 
 ### How Flywheel compares to other memory systems
 
-Competitor numbers sourced from the Mem0 paper, which benchmarks memory systems on LoCoMo using answer accuracy (LLM-as-judge). We report the same metric for direct comparison.
+Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.19413). We report the same metric (answer accuracy via LLM-as-judge) for comparison, but **the methodologies differ in important ways** — see below.
 
-| System | Type | Single-hop | Multi-hop | Metric | Infrastructure |
-|---|---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **75.0%** | 27.5% | Answer accuracy (LLM-judge, 200q) | Local (SQLite + markdown) |
-| **Flywheel** | MCP vault tool | **91.1%** | **49.6%** | Evidence recall (E2E, 200q) | Local (SQLite + markdown) |
-| Mem0 | Cloud memory | 38.7 | 28.6 | Answer accuracy (LLM-judge, 695q) | Redis + Qdrant |
-| Zep | Cloud memory | 35.7 | 19.4 | Answer accuracy (LLM-judge, 695q) | Cloud service |
-| LangMem | Memory framework | 35.5 | 26.0 | Answer accuracy (LLM-judge, 695q) | Varies |
-| MemGPT/Letta | Agent memory | 26.7 | — | Answer accuracy (LLM-judge, 695q) | Cloud/local |
+| System | Type | Single-hop | Multi-hop | Questions | Judge | Infrastructure |
+|---|---|---|---|---|---|---|
+| **Flywheel** | MCP vault tool | **75.0%** | 27.5% | 200 | Claude Haiku | Local (SQLite + markdown) |
+| **Flywheel** | MCP vault tool | **91.1%** | **49.6%** | 200 | — | Evidence recall (not answer accuracy) |
+| Mem0 | Cloud memory | 38.7 | 28.6 | 695 | GPT-4o | Redis + Qdrant |
+| Zep | Cloud memory | 35.7 | 19.4 | 695 | GPT-4o | Cloud service |
+| LangMem | Memory framework | 35.5 | 26.0 | 695 | GPT-4o | Varies |
+| MemGPT/Letta | Agent memory | 26.7 | — | 695 | GPT-4o | Cloud/local |
 
-**Key takeaways:**
+**Not apples-to-apples — read this before comparing:**
 
-- **Single-hop: 75.0%** — nearly 2x the next best system (Mem0 at 38.7%). Flywheel finds the right note and Claude extracts the answer.
-- **Commonsense: 80.0%** — highest of any category. Questions about common-sense inferences from conversation context.
-- **Multi-hop: 27.5%** — approaching Mem0 (28.6%). Iterative retrieval (searching, reading sessions, then searching again with discovered terms) drives the improvement over the baseline.
-- **Temporal: 55.0%** — questions about when events happened, temporal ordering across sessions.
+- **Sample size.** Flywheel: 200 questions (stratified 40 per category). Competitors: 695 questions. Smaller samples have wider confidence intervals — at 40 questions per category, each question swings the score by ±2.5pp.
+- **Judge model.** Flywheel uses Claude Haiku for CORRECT/WRONG verdicts. The Mem0 paper uses GPT-4o. Different judges may have different leniency or strictness. We have not measured inter-judge agreement.
+- **Vault mode.** Flywheel uses dialog mode (raw conversation turns) — the most keyword-rich representation. Summary mode scores ~1-2pp lower on retrieval. Competitors may use different representations.
+- **Prompt.** Claude is told the vault structure (notes are conversation sessions) but is not given a retrieval strategy.
+
+**What the numbers do suggest:**
+
+- **Single-hop: 75.0%** — nearly 2x the next system (Mem0 at 38.7%), even accounting for methodology differences. Flywheel finds the right note and Claude extracts the answer.
+- **Multi-hop: 27.5%** — roughly tied with Mem0 (28.6%). Hard for everyone. The methodology differences make it impossible to say who's ahead.
 - **Infrastructure.** Flywheel runs locally on markdown files with SQLite. Mem0 requires Redis + Qdrant. Zep requires a cloud service.
-
-**What's different about our methodology:**
-
-- **Judge model:** Flywheel uses Claude Haiku; the Mem0 paper uses GPT-4o. We have not measured inter-judge agreement.
-- **Prompt:** Claude is told the vault structure but not given a retrieval strategy.
-- **Vault mode:** Dialog (raw conversation turns) — the most keyword-rich representation. Summary mode scores ~1-2pp lower on retrieval.
-- **Sample:** 200 questions across all 10 conversations, stratified 40 per category. Competitors: 695 questions.
 
 Source: [`demos/locomo/`](../demos/locomo/) | [`packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts)
 

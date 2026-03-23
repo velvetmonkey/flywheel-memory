@@ -203,30 +203,26 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 | System | Type | Recall | |
 |---|---|---|---|
-| **Flywheel** | General-purpose MCP tool | **87.5%** | No training, end-to-end |
-| BM25 baseline | Industry-standard IR | ~70-75% | Powers Elasticsearch, GitHub, Netflix |
-| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021 |
-| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021 |
+| **Flywheel** | General-purpose MCP tool | **87.5%** | Zero training, 200 questions, end-to-end via Claude |
+| BM25 baseline | Industry-standard IR | ~70-75% | Standard academic baseline |
+| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
+| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021. Trained on HotpotQA |
 
-> Flywheel has never seen HotpotQA training data. Baleen and MDR were trained on it.
+> **Not apples-to-apples.** Baleen and MDR are neural models trained on HotpotQA data — they learned the dataset. Flywheel has never seen it. Their test setting is also different: standard distractor gives each query 10 documents; Flywheel searches a pooled vault of ~2,000 documents (harder than distractor, but far easier than fullwiki's 5M). We report this because it's the closest meaningful comparison, not because it's a fair fight in either direction. [Details →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
 ### Conversational Memory (LoCoMo)
 
 200 questions across 10 conversations. Answer accuracy via LLM-as-judge.
 
-| System | Single-hop | Multi-hop | Commonsense |
-|---|---|---|---|
-| **Flywheel** | **75.0%** | 27.5% | **80.0%** |
-| [Mem0](https://mem0.ai/) | 38.7 | **28.6** | — |
-| [Zep](https://getzep.com/) | 35.7 | 19.4 | — |
-| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — |
-| [Letta](https://memgpt.ai/) | 26.7 | — | — |
+| System | Single-hop | Multi-hop | Commonsense | Questions | Judge |
+|---|---|---|---|---|---|
+| **Flywheel** | **75.0%** | 27.5% | **80.0%** | 200 | Claude Haiku |
+| [Mem0](https://mem0.ai/) | 38.7 | **28.6** | — | 695 | GPT-4o |
+| [Zep](https://getzep.com/) | 35.7 | 19.4 | — | 695 | GPT-4o |
+| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | 695 | GPT-4o |
+| [Letta](https://memgpt.ai/) | 26.7 | — | — | 695 | GPT-4o |
 
-> **Methodology notes:**
-> - Flywheel: 200 questions, all 10 conversations, Claude Sonnet + Flywheel agent preset. Judge: Claude Haiku (binary CORRECT/WRONG).
-> - Competitors: 695 questions, from the [Mem0 paper](https://arxiv.org/abs/2504.19413). Judge: GPT-4o.
-> - Different judge models may score differently. Different sample sizes produce different confidence intervals.
-> - Run it yourself: [`demos/locomo/`](demos/locomo/)
+> **Not apples-to-apples.** Flywheel tested 200 questions with Claude Haiku as judge. Competitors tested 695 questions with GPT-4o as judge ([Mem0 paper](https://arxiv.org/abs/2504.19413)). Different judge models may score differently — we have not measured inter-judge agreement. Flywheel uses dialog-mode vault notes (raw conversation turns), which is the most keyword-rich representation. These differences mean the numbers are directionally useful but not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-locomo)
 
 [Full benchmark methodology →](docs/TESTING.md)
 

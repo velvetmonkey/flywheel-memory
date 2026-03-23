@@ -116,13 +116,18 @@ for i in $INDICES; do
   echo -n "  q${padded} [${category}]: "
 
   if claude -p "You are answering questions about conversations stored in this vault.
-Each note represents one session of a conversation between two people.
-Use the recall and search tools to find relevant information.
-If the information cannot be found in the vault, say \"no information available\".
+Each note is one session of a multi-session conversation between two people.
+Sessions are organized by conversation pair (e.g., conversations/caroline-melanie/).
+
+Strategy:
+1. Search for key entities or topics in the question.
+2. Read the most relevant session notes to find specific facts.
+3. If the question requires combining facts from multiple sessions, search again with new terms you discovered in step 2.
+4. Only say \"no information available\" if you have searched at least twice and read at least 2 session notes without finding relevant content.
 
 Question: $question
 
-Answer concisely in one or two sentences." \
+Answer concisely — just the facts, in one or two sentences." \
     --output-format stream-json \
     --no-session-persistence \
     --permission-mode bypassPermissions \

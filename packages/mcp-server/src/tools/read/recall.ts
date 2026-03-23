@@ -14,7 +14,7 @@ import { searchEntities as searchEntitiesDb } from '@velvetmonkey/vault-core';
 import type { VaultIndex } from '../../core/read/types.js';
 import { searchFTS5 } from '../../core/read/fts5.js';
 import { enrichEntityCompact, enrichNoteCompact } from '../../core/read/enrichment.js';
-import { multiHopBackfill } from '../../core/read/multihop.js';
+import { multiHopBackfill, extractExpansionTerms, expandQuery } from '../../core/read/multihop.js';
 import { searchMemories } from '../../core/write/memory.js';
 import { getRecencyBoost, loadRecencyFromStateDb, type RecencyIndex } from '../../core/shared/recency.js';
 import { getCooccurrenceBoost, type CooccurrenceIndex } from '../../core/shared/cooccurrence.js';
@@ -109,7 +109,7 @@ export async function performRecall(
     focus,
     entity,
     max_tokens,
-    diversity = 0.7,
+    diversity = 1.0,
     vaultPath,
   } = options;
 
@@ -412,6 +412,14 @@ export function registerRecallTools(
             maxBackfill: Math.max(5, (args.max_results ?? 10) - notes.length),
           })
         : [];
+
+      // Query expansion: re-query with entity names discovered in results (parity with search)
+      if (index) {
+        const allNoteResults = [...enrichedNotes, ...hopResults];
+        const expansionTerms = extractExpansionTerms(allNoteResults, args.query, index);
+        const expansionResults = expandQuery(expansionTerms, allNoteResults, index, stateDb);
+        hopResults.push(...expansionResults);
+      }
 
       return {
         content: [{

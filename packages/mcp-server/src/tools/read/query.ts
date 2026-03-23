@@ -24,6 +24,8 @@ import {
   semanticSearch,
   hasEmbeddingsIndex,
   reciprocalRankFusion,
+  loadNoteEmbeddingsForPaths,
+  embedTextCached,
   type ScoredNote,
 } from '../../core/read/embeddings.js';
 import {
@@ -32,7 +34,87 @@ import {
   enrichResultCompact,
 } from '../../core/read/enrichment.js';
 import { multiHopBackfill, extractExpansionTerms, expandQuery } from '../../core/read/multihop.js';
-import { getStoredNoteLinks } from '../../core/write/wikilinkFeedback.js';
+import { getStoredNoteLinks, getAllFeedbackBoosts } from '../../core/write/wikilinkFeedback.js';
+import { getCooccurrenceBoost } from '../../core/shared/cooccurrence.js';
+import { getCooccurrenceIndex } from '../../core/write/wikilinks.js';
+import { getRecencyBoost, loadRecencyFromStateDb } from '../../core/shared/recency.js';
+import { getEntityEdgeWeightMap } from '../../core/write/edgeWeights.js';
+import { extractBestSnippets } from '../../core/read/snippets.js';
+import { selectByMmr } from '../../core/read/mmr.js';
+import { tokenize } from '../../core/shared/stemmer.js';
+
+/**
+ * Apply graph signal re-ranking to search results.
+ * Adds cooccurrence, recency, feedback, and edge weight boosts,
+ * then re-sorts by combined score. Parity with recall tool scoring.
+ */
+function applyGraphReranking(
+  results: Array<Record<string, unknown>>,
+  stateDb: StateDb | null,
+): void {
+  if (!stateDb) return;
+
+  const cooccurrenceIndex = getCooccurrenceIndex();
+  const recencyIndex = loadRecencyFromStateDb();
+  const feedbackBoosts = getAllFeedbackBoosts(stateDb);
+  const edgeWeightMap = getEntityEdgeWeightMap(stateDb);
+
+  if (!cooccurrenceIndex && !recencyIndex) return;
+
+  // Build seed set from result titles/paths
+  const seedEntities = new Set<string>();
+  for (const r of results) {
+    const name = (r.title as string) || (r.path as string)?.replace(/\.md$/, '').split('/').pop() || '';
+    if (name) seedEntities.add(name);
+  }
+
+  for (const r of results) {
+    const name = (r.title as string) || (r.path as string)?.replace(/\.md$/, '').split('/').pop() || '';
+    let graphBoost = 0;
+    if (cooccurrenceIndex) graphBoost += getCooccurrenceBoost(name, seedEntities, cooccurrenceIndex, recencyIndex);
+    if (recencyIndex) graphBoost += getRecencyBoost(name, recencyIndex);
+    graphBoost += feedbackBoosts.get(name) ?? 0;
+    const avgWeight = edgeWeightMap.get(name.toLowerCase());
+    if (avgWeight && avgWeight > 1.0) graphBoost += Math.min((avgWeight - 1.0) * 3, 6);
+
+    if (graphBoost > 0) {
+      r.graph_boost = graphBoost;
+      const baseScore = (r.rrf_score as number) ?? 0;
+      r._combined_score = baseScore + (graphBoost / 50);
+    }
+  }
+
+  results.sort((a, b) =>
+    ((b._combined_score as number) ?? (b.rrf_score as number) ?? 0) -
+    ((a._combined_score as number) ?? (a.rrf_score as number) ?? 0)
+  );
+}
+
+/**
+ * Enhance snippets with semantic + token matching when embeddings are available.
+ * Falls back to existing FTS5 snippets when embeddings are not built.
+ */
+async function enhanceSnippets(
+  results: Array<Record<string, unknown>>,
+  query: string,
+  vaultPath: string,
+): Promise<void> {
+  if (!hasEmbeddingsIndex()) return;
+
+  const queryTokens = tokenize(query).map(t => t.toLowerCase());
+  let queryEmb: Float32Array | null = null;
+  try { queryEmb = await embedTextCached(query); } catch { /* non-fatal */ }
+
+  for (const r of results) {
+    if (!r.path) continue;
+    try {
+      const snippets = await extractBestSnippets(`${vaultPath}/${r.path}`, queryEmb, queryTokens);
+      if (snippets.length > 0 && snippets[0].text.length > 0) {
+        r.snippet = snippets[0].text;
+      }
+    } catch { /* non-fatal */ }
+  }
+}
 
 /**
  * Check if a note matches frontmatter filters
@@ -401,6 +483,10 @@ export function registerQueryTools(
             const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
             results.push(...hopResults, ...expansionResults);
 
+            // Graph re-ranking + enhanced snippets (parity with recall)
+            applyGraphReranking(results, stateDb);
+            await enhanceSnippets(results, query, vaultPath);
+
             return { content: [{ type: 'text' as const, text: JSON.stringify({
               method: 'hybrid',
               query,
@@ -436,6 +522,10 @@ export function registerQueryTools(
           const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
           results.push(...hopResults, ...expansionResults);
 
+          // Graph re-ranking + enhanced snippets (parity with recall)
+          applyGraphReranking(results, stateDb);
+          await enhanceSnippets(results, query, vaultPath);
+
           return { content: [{ type: 'text' as const, text: JSON.stringify({
             method: 'fts5',
             query,
@@ -453,6 +543,10 @@ export function registerQueryTools(
         const expansionTerms = extractExpansionTerms(results, query, index);
         const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDbFts);
         results.push(...hopResults, ...expansionResults);
+
+        // Graph re-ranking + enhanced snippets (parity with recall)
+        applyGraphReranking(results, stateDbFts);
+        await enhanceSnippets(results, query, vaultPath);
 
         return { content: [{ type: 'text' as const, text: JSON.stringify({
           method: 'fts5',

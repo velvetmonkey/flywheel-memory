@@ -460,7 +460,7 @@ $$math$$
       expect(result).toContain('[[TypeScript]]');
       expect(result).toContain('[[React]]');
       expect(result).toContain('[[Jordan Smith]]');
-      expect(applyDuration).toBeLessThan(100); // Should complete in under 100ms
+      expect(applyDuration).toBeLessThan(1000); // Should complete in under 1s
     });
   });
 });

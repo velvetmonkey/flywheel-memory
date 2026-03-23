@@ -24,6 +24,7 @@
 | "What links here?" | Grep the vault, flat list | Ranked backlinks + outlinks, pre-indexed |
 | "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
 | "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
+| "Export my knowledge graph" | Not possible | GraphML export → open in Gephi, Cytoscape, NetworkX |
 | Token cost per query | Hundreds to thousands | Graph does the joining — one search, not ten file reads |
 
 ---
@@ -184,6 +185,14 @@ Static tools give you the same results on day 1 and day 100. Flywheel's suggesti
 Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `recall` retrieves across notes, entities (people, projects, concepts), and memories in one call, and `memory` stores observations that persist across sessions with automatic decay.
 
 Complex vault workflows become deterministic policies — describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back, committed as a single git commit.
+
+### 5. Portable Knowledge Graph
+
+Your vault is never locked in. Export the full knowledge graph as GraphML and open it in any graph tool — Gephi, Cytoscape, yEd, NetworkX, or your own code.
+
+![Carter Strategy Knowledge Graph](demos/carter-strategy/carter-strategy-graph.png)
+
+*40 entities (people, projects, organizations, invoices) and 48 notes from the [carter-strategy](demos/carter-strategy/) demo vault. [Download the GraphML →](demos/carter-strategy/carter-strategy.graphml)*
 
 ---
 

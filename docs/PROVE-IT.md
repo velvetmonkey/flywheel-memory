@@ -27,12 +27,12 @@ Wait for it:
 
 ```
 Test Suites: 111 passed, 111 total
-Tests:       2,456 passed, 2,456 total
+Tests:       2,640 passed, 2,640 total
 Snapshots:   0 total
 Time:        ~18s
 ```
 
-2,456 tests. All passing. No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults. If something is broken, you know in 18 seconds.
+2,640 tests. All passing. No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults. If something is broken, you know in 18 seconds.
 
 ---
 
@@ -175,7 +175,7 @@ See [SETUP.md](SETUP.md) for the complete walkthrough.
 
 ## What You Just Proved
 
-1. **Tests pass** -- 2,456 of them, against real data
+1. **Tests pass** -- 2,640 of them, against real data
 2. **Graph queries work** -- backlinks + metadata, no file reads
 3. **Auto-wikilinks work** -- plain text in, linked text out
 4. **The algorithm is transparent** -- scores with explanations, not black boxes

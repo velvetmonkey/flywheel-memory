@@ -24,7 +24,7 @@
 | "What links here?" | Grep the vault, flat list | Ranked backlinks + outlinks, pre-indexed |
 | "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
 | "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
-| Token cost per query | Hundreds to thousands | [53x less](docs/PROVE-IT.md#token-economics) — graph does the joining |
+| Token cost per query | Hundreds to thousands | Graph does the joining — one search, not ten file reads |
 
 ---
 

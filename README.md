@@ -260,9 +260,11 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ## The Story Behind This
 
-I've been writing code for over 30 years, and I tried every PKM tool going before landing on Obsidian — I chose it for the plugin ecosystem and fell in love with the app. My first attempt at AI-powered knowledge management was pure Claude Code skills and hooks with no MCP server — writes were non-deterministic and recall was poor. Then I split it into two separate MCP tools for reading and writing, which was better but still fragmented. Flywheel is the third iteration: one unified server with deterministic mutations, hybrid search, and a graph that learns. I'm humble enough to admit I could never have built this by myself in my spare time — probably not even in a year, and definitely not without AI. I can read and write code, but this is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. Everything here was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and stress-tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
+I've been writing code for over 30 years, and I tried every PKM tool going before landing on Obsidian — I chose it for the plugin ecosystem and fell in love with the app. My first attempt at AI-powered knowledge management was pure Claude Code skills and hooks with no MCP server — writes were non-deterministic and recall was poor. Then I split it into two separate MCP tools for reading and writing, which was better but still fragmented. Flywheel is the third iteration: one unified server with deterministic mutations, hybrid search, and a graph that learns.
 
-I think what's happening right now is simultaneous invention — many people are grappling with the same problems, trying to build the same sort of thing for different audiences. This is mine. I dogfood it daily through a Telegram bot using voice input, and my intention is to automate as much voice-driven knowledge workflow as possible, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space. Times are changing.
+I'm humble enough to admit I could never have built this by myself in my spare time — probably not even in a year, and definitely not without AI. I can read and write code, but this is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. Everything here was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and stress-tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
+
+I think what's happening right now is simultaneous invention — many people are grappling with the same problems, trying to build the same sort of thing for different audiences. This is mine. I dogfood it daily through a Telegram bot using voice input, and my intention is to automate as much voice-driven knowledge workflow as possible, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space.
 
 ### Dogfooding: my vault, unvarnished
 
@@ -282,13 +284,19 @@ The telling number is daily note link density before and after Flywheel:
 | Period | Links per daily note |
 |--------|---------------------|
 | Pre-Flywheel (manual) | 3–11 |
-| Post-Flywheel (3 months) | 20–625 |
+| Post-Flywheel (3 months) | 20–625 (includes auto-logged bot sessions) |
 
 The note count only grew ~13%, but wikilink density exploded — 3,097 new linked lines in three months. The connections are growing faster than the content. That's not a folder of files; it's a graph that's actually densifying. The high end (625) includes auto-logged bot conversations with entity links, so take it with appropriate salt. But even the quiet days run 20–30 links where they used to be 3–5.
 
 12% orphan notes is honest — some are stubs, some are clippings that haven't earned their connections yet. I'm not hiding that.
 
-I'm also in the early days of building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) — an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor. Very early days, but the intent is to give value back to Obsidian itself.
+Since introducing Flywheel, my daily notes have become *long*. I log everything through the bot — interactions, research, work notes, tasks — and the auto-wikilinks and recall provide the value. I rarely open Obsidian to hunt for things or manually edit anymore. I do it all through voice and the AI. That might look alarming at first glance — you're suddenly writing a lot, building a lot, creating edges to things that may or may not deserve a permanent note yet. But they're all useful edges. By going at this speed, you're building a meaningful graph, which was the original intent. It's just the mode of interaction that's changing.
+
+And Obsidian is still there for everything it was always good at — editing, curating, caring about your vault's structure. You can give the AI commands to create hub notes, build spokes, update leaves, compile research, slice and query across your graph. The combination of voice-driven capture and Obsidian's editing environment is genuinely easier than either one alone.
+
+One more thing I should address: the benchmark scores. HotpotQA is running at 89.6% recall across 500 multi-hop questions, matching specially trained neural retrievers from Stanford and Meta AI. I know how that sounds — it's a bonkers claim for a general-purpose MCP tool with zero training data. We acknowledge it's not a fair comparison (different test settings, different sample sizes, trained vs untrained), and the [Benchmarked](#benchmarked) section spells out every caveat. But with 500 questions, the sample size is representative and the direction is clear. We think the tests are sensible, we've made them reproducible, and the numbers are what they are. Draw your own conclusions.
+
+I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) — an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor. Early days, but the intent is to give value back to Obsidian itself.
 
 ---
 

@@ -208,7 +208,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 | [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021. Trained on HotpotQA |
 
-> **Not apples-to-apples.** Baleen and MDR are neural models trained on HotpotQA data — they learned the dataset. Flywheel has never seen it. Their test setting is also different: standard distractor gives each query 10 documents; Flywheel searches a pooled vault of ~5,000 documents (harder than distractor, but far easier than fullwiki's 5M). We report this because it's the closest meaningful comparison, not because it's a fair fight in either direction. [Details →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+> **Not apples-to-apples.** Baleen and MDR are neural models trained on HotpotQA data — they learned the dataset. Flywheel has never seen it. Their test setting is also different: standard distractor gives each query 10 documents; Flywheel searches a pooled vault of ~5,000 documents (harder than distractor, but far easier than fullwiki's 5M). Academic baselines use the full 7,405-question dev set; Flywheel uses 500. We report this because it's the closest meaningful comparison, not because it's a fair fight in either direction. [Details →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
 ### Conversational Memory (LoCoMo)
 

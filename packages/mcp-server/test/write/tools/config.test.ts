@@ -18,6 +18,9 @@ describe('VALID_CONFIG_KEYS', () => {
       'implicit_detection',
       'implicit_patterns',
       'adaptive_strictness',
+      'proactive_linking',
+      'proactive_min_score',
+      'proactive_max_per_file',
     ];
 
     for (const key of expectedKeys) {
@@ -39,7 +42,7 @@ describe('VALID_CONFIG_KEYS', () => {
   });
 
   it('should validate boolean config keys', () => {
-    for (const key of ['implicit_detection', 'adaptive_strictness']) {
+    for (const key of ['implicit_detection', 'adaptive_strictness', 'proactive_linking']) {
       const schema = VALID_CONFIG_KEYS[key];
       expect(schema.safeParse(true).success, `${key} should accept true`).toBe(true);
       expect(schema.safeParse(false).success, `${key} should accept false`).toBe(true);
@@ -55,6 +58,14 @@ describe('VALID_CONFIG_KEYS', () => {
       expect(schema.safeParse([]).success, `${key} should accept empty array`).toBe(true);
       expect(schema.safeParse('not-array').success, `${key} should reject string`).toBe(false);
       expect(schema.safeParse([1, 2]).success, `${key} should reject number[]`).toBe(false);
+    }
+  });
+
+  it('should validate number config keys', () => {
+    for (const key of ['proactive_min_score', 'proactive_max_per_file']) {
+      const schema = VALID_CONFIG_KEYS[key];
+      expect(schema.safeParse(20).success, `${key} should accept number`).toBe(true);
+      expect(schema.safeParse('20').success, `${key} should reject string`).toBe(false);
     }
   });
 

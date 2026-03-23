@@ -203,7 +203,15 @@ let watcherInstance: VaultWatcher | null = null;
 let vaultRegistry: VaultRegistry | null = null;
 
 /** Current watcher status (live — reads state at call time, not a stale snapshot). */
-export function getWatcherStatus(): WatcherStatus | null { return watcherInstance?.status ?? null; }
+export function getWatcherStatus(): WatcherStatus | null {
+  if (vaultRegistry) {
+    const name = (globalThis as any).__flywheel_active_vault;
+    if (name) {
+      try { return vaultRegistry.getContext(name).watcher?.status ?? null; } catch { /* fall through */ }
+    }
+  }
+  return watcherInstance?.status ?? null;
+}
 
 // ============================================================================
 // Tool Presets & Composable Bundles
@@ -858,9 +866,9 @@ function registerAllTools(targetServer: McpServer): void {
   registerReadSystemTools(
     targetServer,
     gvi,
-    (newIndex) => { vaultIndex = newIndex; },
+    (newIndex) => { updateVaultIndex(newIndex); },
     gvp,
-    (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
+    (newConfig) => { updateFlywheelConfig(newConfig); },
     gsd
   );
   registerGraphTools(targetServer, gvi, gvp, gsd);
@@ -918,7 +926,7 @@ function registerAllTools(targetServer: McpServer): void {
   registerConfigTools(
     targetServer,
     gcf,
-    (newConfig) => { flywheelConfig = newConfig; setWikilinkConfig(newConfig); },
+    (newConfig) => { updateFlywheelConfig(newConfig); },
     gsd
   );
 
@@ -948,7 +956,7 @@ function createConfiguredServer(): McpServer {
     { name: 'flywheel-memory', version: pkg.version },
     { instructions: generateInstructions(enabledCategories, vaultRegistry) },
   );
-  applyToolGating(s, enabledCategories, () => stateDb, vaultRegistry, () => vaultPath);
+  applyToolGating(s, enabledCategories, () => getActiveScopeOrNull()?.stateDb ?? stateDb, vaultRegistry, () => getActiveScopeOrNull()?.vaultPath ?? vaultPath);
   registerAllTools(s);
   return s;
 }
@@ -962,7 +970,7 @@ const server = new McpServer(
   { instructions: generateInstructions(enabledCategories, vaultRegistry) },
 );
 
-const _gatingResult = applyToolGating(server, enabledCategories, () => stateDb, vaultRegistry, () => vaultPath);
+const _gatingResult = applyToolGating(server, enabledCategories, () => getActiveScopeOrNull()?.stateDb ?? stateDb, vaultRegistry, () => getActiveScopeOrNull()?.vaultPath ?? vaultPath);
 registerAllTools(server);
 
 const categoryList = Array.from(enabledCategories).sort().join(', ');
@@ -1079,6 +1087,124 @@ function updateIndexState(state: IndexState, error?: Error | null): void {
   }
 }
 
+/** Update vaultIndex on both module-level singleton and active VaultContext */
+function updateVaultIndex(index: VaultIndex): void {
+  vaultIndex = index;
+  const ctx = getActiveVaultContext();
+  if (ctx) ctx.vaultIndex = index;
+}
+
+/** Update flywheelConfig on both module-level singleton and active VaultContext */
+function updateFlywheelConfig(config: FlywheelConfig): void {
+  flywheelConfig = config;
+  setWikilinkConfig(config);
+  const ctx = getActiveVaultContext();
+  if (ctx) ctx.flywheelConfig = config;
+}
+
+/**
+ * Boot a single vault: logging, FTS5, index build, post-index work.
+ * Called once per vault in the registry (sequentially — module-level state is correct).
+ */
+async function bootVault(ctx: VaultContext, startTime: number): Promise<void> {
+  const vp = ctx.vaultPath;
+  const sd = ctx.stateDb;
+
+  // Initialize logging
+  initializeReadLogger(vp).then(() => {
+    const logger = getLogger();
+    if (logger?.enabled) {
+      serverLog('server', `[${ctx.name}] Unified logging enabled`);
+    }
+  }).catch(() => {});
+
+  initializeWriteLogger(vp).catch(err => {
+    serverLog('server', `[${ctx.name}] Write logger initialization failed: ${err}`, 'error');
+  });
+
+  // Kick off FTS5 immediately (fire-and-forget, parallel with graph build)
+  if (process.env.FLYWHEEL_SKIP_FTS5 !== 'true') {
+    if (isIndexStale(vp)) {
+      buildFTS5Index(vp).then(() => {
+        serverLog('fts5', `[${ctx.name}] Search index ready`);
+      }).catch(err => {
+        serverLog('fts5', `[${ctx.name}] Build failed: ${err instanceof Error ? err.message : err}`, 'error');
+      });
+    } else {
+      serverLog('fts5', `[${ctx.name}] Search index already fresh, skipping rebuild`);
+    }
+  } else {
+    serverLog('fts5', 'Skipping — FLYWHEEL_SKIP_FTS5');
+  }
+
+  // Try loading index from cache
+  let cachedIndex: VaultIndex | null = null;
+  if (sd) {
+    try {
+      const files = await scanVault(vp);
+      const noteCount = files.length;
+      serverLog('index', `[${ctx.name}] Found ${noteCount} markdown files`);
+      const newestMtime = files.reduce((max, f) => f.modified > max ? f.modified : max, new Date(0));
+      cachedIndex = loadVaultIndexFromCache(sd, noteCount, undefined, undefined, newestMtime);
+    } catch (err) {
+      serverLog('index', `[${ctx.name}] Cache check failed: ${err instanceof Error ? err.message : err}`, 'warn');
+    }
+  }
+
+  if (cachedIndex) {
+    updateVaultIndex(cachedIndex);
+    updateIndexState('ready');
+    const duration = Date.now() - startTime;
+    const cacheAge = cachedIndex.builtAt ? Math.round((Date.now() - cachedIndex.builtAt.getTime()) / 1000) : 0;
+    serverLog('index', `[${ctx.name}] Cache hit: ${cachedIndex.notes.size} notes, ${cacheAge}s old — loaded in ${duration}ms`);
+    if (sd) {
+      recordIndexEvent(sd, {
+        trigger: 'startup_cache',
+        duration_ms: duration,
+        note_count: cachedIndex.notes.size,
+      });
+    }
+    await runPostIndexWork(ctx);
+  } else {
+    serverLog('index', `[${ctx.name}] Cache miss: building from scratch`);
+    try {
+      const built = await buildVaultIndex(vp);
+      updateVaultIndex(built);
+      updateIndexState('ready');
+      const duration = Date.now() - startTime;
+      serverLog('index', `[${ctx.name}] Vault index ready in ${duration}ms — ${vaultIndex.notes.size} notes`);
+      if (sd) {
+        recordIndexEvent(sd, {
+          trigger: 'startup_build',
+          duration_ms: duration,
+          note_count: vaultIndex.notes.size,
+        });
+      }
+      if (sd) {
+        try {
+          saveVaultIndexToCache(sd, vaultIndex);
+          serverLog('index', `[${ctx.name}] Index cache saved`);
+        } catch (err) {
+          serverLog('index', `[${ctx.name}] Failed to save index cache: ${err instanceof Error ? err.message : err}`, 'error');
+        }
+      }
+      await runPostIndexWork(ctx);
+    } catch (err) {
+      updateIndexState('error', err instanceof Error ? err : new Error(String(err)));
+      const duration = Date.now() - startTime;
+      if (sd) {
+        recordIndexEvent(sd, {
+          trigger: 'startup_build',
+          duration_ms: duration,
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+      serverLog('index', `[${ctx.name}] Failed to build vault index: ${err instanceof Error ? err.message : err}`, 'error');
+    }
+  }
+}
+
 // ============================================================================
 // Main Entry Point
 // ============================================================================
@@ -1177,106 +1303,11 @@ async function main() {
     });
   }
 
-  // Initialize logging
-  initializeReadLogger(vaultPath).then(() => {
-    const logger = getLogger();
-    if (logger?.enabled) {
-      serverLog('server', 'Unified logging enabled');
-    }
-  }).catch(() => {
-    // Logging initialization failed, continue without it
-  });
-
-  initializeWriteLogger(vaultPath).catch(err => {
-    serverLog('server', `Write logger initialization failed: ${err}`, 'error');
-  });
-
-  // Kick off FTS5 immediately (fire-and-forget, parallel with graph build)
-  if (process.env.FLYWHEEL_SKIP_FTS5 !== 'true') {
-    if (isIndexStale(vaultPath)) {
-      buildFTS5Index(vaultPath).then(() => {
-        serverLog('fts5', 'Search index ready');
-      }).catch(err => {
-        serverLog('fts5', `Build failed: ${err instanceof Error ? err.message : err}`, 'error');
-      });
-    } else {
-      serverLog('fts5', 'Search index already fresh, skipping rebuild');
-    }
-  } else {
-    serverLog('fts5', 'Skipping — FLYWHEEL_SKIP_FTS5');
-  }
-
-  // Try loading index from cache
-  let cachedIndex: VaultIndex | null = null;
-  if (stateDb) {
-    try {
-      const files = await scanVault(vaultPath);
-      const noteCount = files.length;
-      serverLog('index', `Found ${noteCount} markdown files`);
-      // Find newest file mtime to invalidate cache if files changed since last build
-      const newestMtime = files.reduce((max, f) => f.modified > max ? f.modified : max, new Date(0));
-      cachedIndex = loadVaultIndexFromCache(stateDb, noteCount, undefined, undefined, newestMtime);
-    } catch (err) {
-      serverLog('index', `Cache check failed: ${err instanceof Error ? err.message : err}`, 'warn');
-    }
-  }
-
-  if (cachedIndex) {
-    // Cache hit
-    vaultIndex = cachedIndex;
-    updateIndexState('ready');
-    const duration = Date.now() - startTime;
-    const cacheAge = cachedIndex.builtAt ? Math.round((Date.now() - cachedIndex.builtAt.getTime()) / 1000) : 0;
-    serverLog('index', `Cache hit: ${cachedIndex.notes.size} notes, ${cacheAge}s old — loaded in ${duration}ms`);
-    if (stateDb) {
-      recordIndexEvent(stateDb, {
-        trigger: 'startup_cache',
-        duration_ms: duration,
-        note_count: cachedIndex.notes.size,
-      });
-    }
-    runPostIndexWork(vaultIndex);
-  } else {
-    // Cache miss - build index
-    serverLog('index', 'Cache miss: building from scratch');
-
-    try {
-      vaultIndex = await buildVaultIndex(vaultPath);
-      updateIndexState('ready');
-      const duration = Date.now() - startTime;
-      serverLog('index', `Vault index ready in ${duration}ms — ${vaultIndex.notes.size} notes`);
-      if (stateDb) {
-        recordIndexEvent(stateDb, {
-          trigger: 'startup_build',
-          duration_ms: duration,
-          note_count: vaultIndex.notes.size,
-        });
-      }
-
-      // Save to cache
-      if (stateDb) {
-        try {
-          saveVaultIndexToCache(stateDb, vaultIndex);
-          serverLog('index', 'Index cache saved');
-        } catch (err) {
-          serverLog('index', `Failed to save index cache: ${err instanceof Error ? err.message : err}`, 'error');
-        }
-      }
-
-      await runPostIndexWork(vaultIndex);
-    } catch (err) {
-      updateIndexState('error', err instanceof Error ? err : new Error(String(err)));
-      const duration = Date.now() - startTime;
-      if (stateDb) {
-        recordIndexEvent(stateDb, {
-          trigger: 'startup_build',
-          duration_ms: duration,
-          success: false,
-          error: err instanceof Error ? err.message : String(err),
-        });
-      }
-      serverLog('index', `Failed to build vault index: ${err instanceof Error ? err.message : err}`, 'error');
-    }
+  // Boot all vaults sequentially (index, post-index work, watcher)
+  for (const vaultCtx of vaultRegistry.getAllContexts()) {
+    activateVault(vaultCtx);
+    stateDb = vaultCtx.stateDb;
+    await bootVault(vaultCtx, startTime);
   }
 }
 
@@ -1291,19 +1322,21 @@ let lastEdgeWeightRebuildAt = 0;
 /**
  * Scan vault for entities and save to StateDb
  */
-async function updateEntitiesInStateDb(): Promise<void> {
-  if (!stateDb) return;
+async function updateEntitiesInStateDb(vp?: string, sd?: StateDb | null): Promise<void> {
+  const db = sd ?? stateDb;
+  const vault = vp ?? vaultPath;
+  if (!db) return;
 
   try {
-    const config = loadConfig(stateDb);
+    const config = loadConfig(db);
     const excludeFolders = config.exclude_entity_folders?.length
       ? config.exclude_entity_folders
       : DEFAULT_ENTITY_EXCLUDE_FOLDERS;
 
-    const entityIndex = await scanVaultEntities(vaultPath, {
+    const entityIndex = await scanVaultEntities(vault, {
       excludeFolders,
     });
-    stateDb.replaceAllEntities(entityIndex);
+    db.replaceAllEntities(entityIndex);
     serverLog('index', `Updated ${entityIndex._metadata.total_entities} entities in StateDb`);
   } catch (e) {
     serverLog('index', `Failed to update entities in StateDb: ${e instanceof Error ? e.message : e}`, 'error');
@@ -1385,37 +1418,43 @@ function runPeriodicMaintenance(db: StateDb): void {
 }
 
 /**
- * Post-index work: config inference, hub export, file watcher
+ * Post-index work: config inference, hub export, file watcher.
+ * Accepts VaultContext so all state is scoped per-vault (multi-vault safe).
  */
-async function runPostIndexWork(index: VaultIndex) {
+async function runPostIndexWork(ctx: VaultContext) {
+  const index = ctx.vaultIndex;
+  const vp = ctx.vaultPath;
+  const sd = ctx.stateDb;
+  let rvp: string;
+  try { rvp = realpathSync(vp).replace(/\\/g, '/'); } catch { rvp = vp.replace(/\\/g, '/'); }
   const postStart = Date.now();
 
   // Scan and save entities to StateDb
   serverLog('index', 'Scanning entities...');
-  await updateEntitiesInStateDb();
+  await updateEntitiesInStateDb(vp, sd);
 
   // Initialize wikilink entity index from StateDb (now populated)
-  await initializeEntityIndex(vaultPath);
+  await initializeEntityIndex(vp);
   serverLog('index', 'Entity index initialized');
 
   // Export hub scores
-  await exportHubScores(index, stateDb);
+  await exportHubScores(index, sd);
   serverLog('index', 'Hub scores exported');
 
   // Record growth metrics
-  if (stateDb) {
+  if (sd) {
     try {
-      const metrics = computeMetrics(index, stateDb);
-      recordMetrics(stateDb, metrics);
-      purgeOldMetrics(stateDb, 90);
-      purgeOldIndexEvents(stateDb, 90);
-      purgeOldInvocations(stateDb, 90);
-      purgeOldSuggestionEvents(stateDb, 30);
-      purgeOldNoteLinkHistory(stateDb, 90);
+      const metrics = computeMetrics(index, sd);
+      recordMetrics(sd, metrics);
+      purgeOldMetrics(sd, 90);
+      purgeOldIndexEvents(sd, 90);
+      purgeOldInvocations(sd, 90);
+      purgeOldSuggestionEvents(sd, 30);
+      purgeOldNoteLinkHistory(sd, 90);
       // Memory lifecycle maintenance
-      sweepExpiredMemories(stateDb);
-      decayMemoryConfidence(stateDb);
-      pruneSupersededMemories(stateDb, 90);
+      sweepExpiredMemories(sd);
+      decayMemoryConfidence(sd);
+      pruneSupersededMemories(sd, 90);
       serverLog('server', 'Growth metrics recorded');
     } catch (err) {
       serverLog('server', `Failed to record metrics: ${err instanceof Error ? err.message : err}`, 'error');
@@ -1423,20 +1462,20 @@ async function runPostIndexWork(index: VaultIndex) {
   }
 
   // Record graph topology snapshot
-  if (stateDb) {
+  if (sd) {
     try {
       const graphMetrics = computeGraphMetrics(index);
-      recordGraphSnapshot(stateDb, graphMetrics);
-      purgeOldSnapshots(stateDb, 90);
+      recordGraphSnapshot(sd, graphMetrics);
+      purgeOldSnapshots(sd, 90);
     } catch (err) {
       serverLog('server', `Failed to record graph snapshot: ${err instanceof Error ? err.message : err}`, 'error');
     }
   }
 
   // Update wikilink suppression list
-  if (stateDb) {
+  if (sd) {
     try {
-      updateSuppressionList(stateDb);
+      updateSuppressionList(sd);
       serverLog('index', 'Suppression list updated');
     } catch (err) {
       serverLog('server', `Failed to update suppression list: ${err instanceof Error ? err.message : err}`, 'error');
@@ -1444,21 +1483,20 @@ async function runPostIndexWork(index: VaultIndex) {
   }
 
   // Load/infer config early so task cache can use exclude_task_tags
-  const existing = loadConfig(stateDb);
-  const inferred = inferConfig(index, vaultPath);
-  if (stateDb) {
-    saveConfig(stateDb, inferred, existing);
+  const existing = loadConfig(sd);
+  const inferred = inferConfig(index, vp);
+  if (sd) {
+    saveConfig(sd, inferred, existing);
   }
-  flywheelConfig = loadConfig(stateDb);
-  setWikilinkConfig(flywheelConfig);
+  updateFlywheelConfig(loadConfig(sd));
   const configKeys = Object.keys(flywheelConfig).filter(k => (flywheelConfig as Record<string, unknown>)[k] != null);
   serverLog('config', `Config inferred: ${configKeys.join(', ')}`);
 
   // Build task cache (skip rebuild if SQLite cache is already fresh)
-  if (stateDb) {
+  if (sd) {
     if (isTaskCacheStale()) {
       serverLog('tasks', 'Task cache stale, rebuilding...');
-      refreshIfStale(vaultPath, index, flywheelConfig.exclude_task_tags);
+      refreshIfStale(vp, index, flywheelConfig.exclude_task_tags);
     } else {
       serverLog('tasks', 'Task cache fresh, skipping rebuild');
     }
@@ -1476,9 +1514,9 @@ async function runPostIndexWork(index: VaultIndex) {
     if (hasEmbeddingsIndex() && needsEmbeddingRebuild()) {
       const oldModel = getStoredEmbeddingModel();
       serverLog('semantic', `Embedding model changed from ${oldModel} to ${getActiveModelId()}, rebuilding`);
-      if (stateDb) {
-        stateDb.db.exec('DELETE FROM note_embeddings');
-        stateDb.db.exec('DELETE FROM entity_embeddings');
+      if (sd) {
+        sd.db.exec('DELETE FROM note_embeddings');
+        sd.db.exec('DELETE FROM entity_embeddings');
       }
       setEmbeddingsBuildState('none');
       modelChanged = true;
@@ -1490,16 +1528,20 @@ async function runPostIndexWork(index: VaultIndex) {
       const MAX_BUILD_RETRIES = 2;
 
       const attemptBuild = async (attempt: number): Promise<void> => {
+        // Re-activate this vault's context before each attempt — in multi-vault mode,
+        // another vault's boot may have swapped the module-level DB handles since this
+        // fire-and-forget build was launched.
+        activateVault(ctx);
         setEmbeddingsBuilding(true);
-        { const ctx = getActiveVaultContext(); if (ctx) ctx.embeddingsBuilding = true; }
+        ctx.embeddingsBuilding = true;
         try {
-          await buildEmbeddingsIndex(vaultPath, (p) => {
+          await buildEmbeddingsIndex(vp, (p) => {
             if (p.current % 100 === 0 || p.current === p.total) {
               serverLog('semantic', `Embedding ${p.current}/${p.total} notes...`);
             }
           });
-          if (stateDb) {
-            const entities = getAllEntitiesFromDb(stateDb);
+          if (sd) {
+            const entities = getAllEntitiesFromDb(sd);
             if (entities.length > 0) {
               const entityMap = new Map(entities.map(e => [e.name, {
                 name: e.name,
@@ -1507,9 +1549,12 @@ async function runPostIndexWork(index: VaultIndex) {
                 category: e.category,
                 aliases: e.aliases,
               }]));
-              await buildEntityEmbeddingsIndex(vaultPath, entityMap);
+              // Re-activate before entity embeddings (may have been swapped during note build)
+              activateVault(ctx);
+              await buildEntityEmbeddingsIndex(vp, entityMap);
             }
           }
+          activateVault(ctx);
           loadEntityEmbeddingsToMemory();
           setEmbeddingsBuildState('complete');
           serverLog('semantic', 'Embeddings ready — searches now use hybrid ranking');
@@ -1524,8 +1569,9 @@ async function runPostIndexWork(index: VaultIndex) {
           serverLog('semantic', `Embeddings build failed after ${MAX_BUILD_RETRIES} attempts: ${msg}`, 'error');
           serverLog('semantic', 'Keyword search (BM25) remains fully available', 'error');
         } finally {
+          activateVault(ctx);
           setEmbeddingsBuilding(false);
-          { const ctx = getActiveVaultContext(); if (ctx) ctx.embeddingsBuilding = false; }
+          ctx.embeddingsBuilding = false;
         }
       };
 
@@ -1539,8 +1585,8 @@ async function runPostIndexWork(index: VaultIndex) {
   if (process.env.FLYWHEEL_WATCH !== 'false') {
     const config = parseWatcherConfig();
     const lastContentHashes = new Map<string, string>();
-    if (stateDb) {
-      const persisted = loadContentHashes(stateDb);
+    if (sd) {
+      const persisted = loadContentHashes(sd);
       for (const [p, h] of persisted) lastContentHashes.set(p, h);
       if (persisted.size > 0) {
         serverLog('watcher', `Loaded ${persisted.size} persisted content hashes`);
@@ -1553,8 +1599,8 @@ async function runPostIndexWork(index: VaultIndex) {
         // Convert event paths from absolute to vault-relative
         // Handles symlink mismatches (e.g., WSL /mnt/c/ vs /home/user/ mounts)
         const vaultPrefixes = new Set([
-          vaultPath.replace(/\\/g, '/'),
-          resolvedVaultPath,
+          vp.replace(/\\/g, '/'),
+          rvp,
         ]);
         /** Normalize a single path from absolute to vault-relative */
         const normalizeEventPath = (rawPath: string): string => {
@@ -1611,7 +1657,7 @@ async function runPostIndexWork(index: VaultIndex) {
             continue;
           }
           try {
-            const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+            const content = await fs.readFile(path.join(vp, event.path), 'utf-8');
             const hash = createHash('sha256').update(content).digest('hex').slice(0, 16);
             if (lastContentHashes.get(event.path) === hash) {
               serverLog('watcher', `Hash unchanged, skipping: ${event.path}`);
@@ -1624,27 +1670,27 @@ async function runPostIndexWork(index: VaultIndex) {
             filteredEvents.push(event); // File may have been deleted mid-batch
           }
         }
-        if (stateDb && (hashUpserts.length || hashDeletes.length)) {
-          saveContentHashBatch(stateDb, hashUpserts, hashDeletes);
+        if (sd && (hashUpserts.length || hashDeletes.length)) {
+          saveContentHashBatch(sd, hashUpserts, hashDeletes);
         }
 
         // Process rename events: record moves and update path references in DB
-        if (batchRenames.length > 0 && stateDb) {
+        if (batchRenames.length > 0 && sd) {
           try {
-            const insertMove = stateDb.db.prepare(`
+            const insertMove = sd.db.prepare(`
               INSERT INTO note_moves (old_path, new_path, old_folder, new_folder)
               VALUES (?, ?, ?, ?)
             `);
-            const renameNoteLinks = stateDb.db.prepare(
+            const renameNoteLinks = sd.db.prepare(
               'UPDATE note_links SET note_path = ? WHERE note_path = ?'
             );
-            const renameNoteTags = stateDb.db.prepare(
+            const renameNoteTags = sd.db.prepare(
               'UPDATE note_tags SET note_path = ? WHERE note_path = ?'
             );
-            const renameNoteLinkHistory = stateDb.db.prepare(
+            const renameNoteLinkHistory = sd.db.prepare(
               'UPDATE note_link_history SET note_path = ? WHERE note_path = ?'
             );
-            const renameWikilinkApplications = stateDb.db.prepare(
+            const renameWikilinkApplications = sd.db.prepare(
               'UPDATE wikilink_applications SET note_path = ? WHERE note_path = ?'
             );
             for (const rename of batchRenames) {
@@ -1660,7 +1706,7 @@ async function runPostIndexWork(index: VaultIndex) {
               if (oldHash !== undefined) {
                 lastContentHashes.set(rename.newPath, oldHash);
                 lastContentHashes.delete(rename.oldPath);
-                renameContentHash(stateDb, rename.oldPath, rename.newPath);
+                renameContentHash(sd, rename.oldPath, rename.newPath);
               }
             }
             serverLog('watcher', `Renames: recorded ${batchRenames.length} move(s) in note_moves`);
@@ -1694,8 +1740,9 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.start('index_rebuild', { files_changed: filteredEvents.length, changed_paths: changedPaths });
           if (!vaultIndex) {
             // First run or null index: full build needed
-            vaultIndex = await buildVaultIndex(vaultPath);
-            serverLog('watcher', `Index rebuilt (full): ${vaultIndex.notes.size} notes, ${vaultIndex.entities.size} entities`);
+            const rebuilt = await buildVaultIndex(vp);
+            updateVaultIndex(rebuilt);
+            serverLog('watcher', `Index rebuilt (full): ${rebuilt.notes.size} notes, ${rebuilt.entities.size} entities`);
           } else {
             // Incremental update: only process changed files
             // processBatch expects absolute paths (it calls getRelativePath internally),
@@ -1705,10 +1752,10 @@ async function runPostIndexWork(index: VaultIndex) {
               ...batch,
               events: filteredEvents.map(e => ({
                 ...e,
-                path: path.join(vaultPath, e.path),
+                path: path.join(vp, e.path),
               })),
             };
-            const batchResult = await processBatch(vaultIndex, vaultPath, absoluteBatch);
+            const batchResult = await processBatch(vaultIndex, vp, absoluteBatch);
             serverLog('watcher', `Incremental: ${batchResult.successful}/${batchResult.total} files in ${batchResult.durationMs}ms`);
           }
           updateIndexState('ready');
@@ -1725,24 +1772,24 @@ async function runPostIndexWork(index: VaultIndex) {
 
           // Capture hub scores BEFORE entity scan resets them
           const hubBefore = new Map<string, number>();
-          if (stateDb) {
-            const rows = stateDb.db.prepare('SELECT name, hub_score FROM entities').all() as Array<{ name: string; hub_score: number }>;
+          if (sd) {
+            const rows = sd.db.prepare('SELECT name, hub_score FROM entities').all() as Array<{ name: string; hub_score: number }>;
             for (const r of rows) hubBefore.set(r.name, r.hub_score);
           }
 
           // Step 2: Entity scan (with diff tracking)
-          const entitiesBefore = stateDb ? getAllEntitiesFromDb(stateDb) : [];
+          const entitiesBefore = sd ? getAllEntitiesFromDb(sd) : [];
           tracker.start('entity_scan', { note_count: vaultIndex.notes.size });
-          await updateEntitiesInStateDb();
-          const entitiesAfter = stateDb ? getAllEntitiesFromDb(stateDb) : [];
+          await updateEntitiesInStateDb(vp, sd);
+          const entitiesAfter = sd ? getAllEntitiesFromDb(sd) : [];
           const entityDiff = computeEntityDiff(entitiesBefore, entitiesAfter);
 
           // Detect category changes and record in entity_changes audit log
           const categoryChanges: Array<{ entity: string; from: string; to: string }> = [];
           const descriptionChanges: Array<{ entity: string; from: string | null; to: string | null }> = [];
-          if (stateDb) {
+          if (sd) {
             const beforeMap = new Map(entitiesBefore.map(e => [e.name, e]));
-            const insertChange = stateDb.db.prepare(
+            const insertChange = sd.db.prepare(
               'INSERT INTO entity_changes (entity, field, old_value, new_value) VALUES (?, ?, ?, ?)'
             );
             for (const after of entitiesAfter) {
@@ -1768,10 +1815,10 @@ async function runPostIndexWork(index: VaultIndex) {
           // Step 3: Hub scores (with before/after diffs) [non-critical]
           tracker.start('hub_scores', { entity_count: entitiesAfter.length });
           try {
-            const hubUpdated = await exportHubScores(vaultIndex, stateDb);
+            const hubUpdated = await exportHubScores(vaultIndex, sd);
             const hubDiffs: Array<{ entity: string; before: number; after: number }> = [];
-            if (stateDb) {
-              const rows = stateDb.db.prepare('SELECT name, hub_score FROM entities').all() as Array<{ name: string; hub_score: number }>;
+            if (sd) {
+              const rows = sd.db.prepare('SELECT name, hub_score FROM entities').all() as Array<{ name: string; hub_score: number }>;
               for (const r of rows) {
                 const prev = hubBefore.get(r.name) ?? 0;
                 if (prev !== r.hub_score) hubDiffs.push({ entity: r.name, before: prev, after: r.hub_score });
@@ -1791,7 +1838,7 @@ async function runPostIndexWork(index: VaultIndex) {
             const cacheAgeMs = cachedRecency ? Date.now() - (cachedRecency.lastUpdated ?? 0) : Infinity;
             if (cacheAgeMs >= 60 * 60 * 1000) {
               const entities = entitiesAfter.map(e => ({ name: e.name, path: e.path, aliases: e.aliases }));
-              const recencyIndex = await buildRecencyIndex(vaultPath, entities);
+              const recencyIndex = await buildRecencyIndex(vp, entities);
               saveRecencyToStateDb(recencyIndex);
               tracker.end({ rebuilt: true, entities: recencyIndex.lastMentioned.size });
               serverLog('watcher', `Recency: rebuilt ${recencyIndex.lastMentioned.size} entities`);
@@ -1807,18 +1854,17 @@ async function runPostIndexWork(index: VaultIndex) {
           // Step 3.6: Co-occurrence index — rebuild if stale (> 1 hour)
           tracker.start('cooccurrence', { entity_count: entitiesAfter.length });
           try {
-            const cooccurrenceAgeMs = lastCooccurrenceRebuildAt > 0
-              ? Date.now() - lastCooccurrenceRebuildAt
+            const cooccurrenceAgeMs = ctx.lastCooccurrenceRebuildAt > 0
+              ? Date.now() - ctx.lastCooccurrenceRebuildAt
               : Infinity;
             if (cooccurrenceAgeMs >= 60 * 60 * 1000) {
               const entityNames = entitiesAfter.map(e => e.name);
-              const cooccurrenceIdx = await mineCooccurrences(vaultPath, entityNames);
+              const cooccurrenceIdx = await mineCooccurrences(vp, entityNames);
               setCooccurrenceIndex(cooccurrenceIdx);
-              lastCooccurrenceRebuildAt = Date.now();
-              const activeCtx = getActiveVaultContext();
-              if (activeCtx) { activeCtx.cooccurrenceIndex = cooccurrenceIdx; activeCtx.lastCooccurrenceRebuildAt = lastCooccurrenceRebuildAt; }
-              if (stateDb) {
-                saveCooccurrenceToStateDb(stateDb, cooccurrenceIdx);
+              ctx.lastCooccurrenceRebuildAt = Date.now();
+              ctx.cooccurrenceIndex = cooccurrenceIdx;
+              if (sd) {
+                saveCooccurrenceToStateDb(sd, cooccurrenceIdx);
               }
               tracker.end({ rebuilt: true, associations: cooccurrenceIdx._metadata.total_associations });
               serverLog('watcher', `Co-occurrence: rebuilt ${cooccurrenceIdx._metadata.total_associations} associations`);
@@ -1832,16 +1878,15 @@ async function runPostIndexWork(index: VaultIndex) {
           }
 
           // Step 3.7: Edge weights — recompute if stale (> 1 hour)
-          if (stateDb) {
+          if (sd) {
             tracker.start('edge_weights', {});
             try {
-              const edgeWeightAgeMs = lastEdgeWeightRebuildAt > 0
-                ? Date.now() - lastEdgeWeightRebuildAt
+              const edgeWeightAgeMs = ctx.lastEdgeWeightRebuildAt > 0
+                ? Date.now() - ctx.lastEdgeWeightRebuildAt
                 : Infinity;
               if (edgeWeightAgeMs >= 60 * 60 * 1000) {
-                const result = recomputeEdgeWeights(stateDb);
-                lastEdgeWeightRebuildAt = Date.now();
-                { const activeCtx = getActiveVaultContext(); if (activeCtx) activeCtx.lastEdgeWeightRebuildAt = lastEdgeWeightRebuildAt; }
+                const result = recomputeEdgeWeights(sd);
+                ctx.lastEdgeWeightRebuildAt = Date.now();
                 tracker.end({
                   rebuilt: true,
                   edges: result.edges_updated,
@@ -1873,7 +1918,7 @@ async function runPostIndexWork(index: VaultIndex) {
                   removeEmbedding(event.path);
                   embRemoved++;
                 } else if (event.path.endsWith('.md')) {
-                  const absPath = path.join(vaultPath, event.path);
+                  const absPath = path.join(vp, event.path);
                   await updateEmbedding(event.path, absPath);
                   embUpdated++;
                 }
@@ -1888,12 +1933,12 @@ async function runPostIndexWork(index: VaultIndex) {
           }
 
           // Step 5: Entity embeddings (with entity names)
-          if (hasEntityEmbeddingsIndex() && stateDb) {
+          if (hasEntityEmbeddingsIndex() && sd) {
             tracker.start('entity_embeddings', { files: filteredEvents.length });
             let entEmbUpdated = 0;
             const entEmbNames: string[] = [];
             try {
-              const allEntities = getAllEntitiesFromDb(stateDb);
+              const allEntities = getAllEntitiesFromDb(sd);
               for (const event of filteredEvents) {
                 if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
                 const matching = allEntities.filter(e => e.path === event.path);
@@ -1903,7 +1948,7 @@ async function runPostIndexWork(index: VaultIndex) {
                     path: entity.path,
                     category: entity.category,
                     aliases: entity.aliases,
-                  }, vaultPath);
+                  }, vp);
                   entEmbUpdated++;
                   entEmbNames.push(entity.name);
                 }
@@ -1914,14 +1959,14 @@ async function runPostIndexWork(index: VaultIndex) {
             tracker.end({ updated: entEmbUpdated, updated_entities: entEmbNames.slice(0, 10) });
             serverLog('watcher', `Entity embeddings: ${entEmbUpdated} updated`);
           } else {
-            tracker.skip('entity_embeddings', !stateDb ? 'no stateDb' : 'not built');
+            tracker.skip('entity_embeddings', !sd ? 'no sd' : 'not built');
           }
 
           // Step 6: Index cache
-          if (stateDb) {
+          if (sd) {
             tracker.start('index_cache', { note_count: vaultIndex.notes.size });
             try {
-              saveVaultIndexToCache(stateDb, vaultIndex);
+              saveVaultIndexToCache(sd, vaultIndex);
               tracker.end({ saved: true });
               serverLog('watcher', 'Index cache saved');
             } catch (err) {
@@ -1929,7 +1974,7 @@ async function runPostIndexWork(index: VaultIndex) {
               serverLog('index', `Failed to update index cache: ${err instanceof Error ? err.message : err}`, 'error');
             }
           } else {
-            tracker.skip('index_cache', 'no stateDb');
+            tracker.skip('index_cache', 'no sd');
           }
 
           // Step 7: Task cache
@@ -1942,7 +1987,7 @@ async function runPostIndexWork(index: VaultIndex) {
                 removeTaskCacheForFile(event.path);
                 taskRemoved++;
               } else if (event.path.endsWith('.md')) {
-                await updateTaskCacheForFile(vaultPath, event.path);
+                await updateTaskCacheForFile(vp, event.path);
                 taskUpdated++;
               }
             } catch {
@@ -1984,20 +2029,20 @@ async function runPostIndexWork(index: VaultIndex) {
           }
 
           // Diff against stored links to detect additions/removals
-          if (stateDb) {
+          if (sd) {
             // Prepared statements for link survival tracking (T2)
-            const upsertHistory = stateDb.db.prepare(`
+            const upsertHistory = sd.db.prepare(`
               INSERT INTO note_link_history (note_path, target) VALUES (?, ?)
               ON CONFLICT(note_path, target) DO UPDATE SET edits_survived = edits_survived + 1
             `);
-            const checkThreshold = stateDb.db.prepare(`
+            const checkThreshold = sd.db.prepare(`
               SELECT target FROM note_link_history
               WHERE note_path = ? AND target = ? AND edits_survived >= 3 AND last_positive_at IS NULL
             `);
-            const markPositive = stateDb.db.prepare(`
+            const markPositive = sd.db.prepare(`
               UPDATE note_link_history SET last_positive_at = datetime('now') WHERE note_path = ? AND target = ?
             `);
-            const getEdgeCount = stateDb.db.prepare(
+            const getEdgeCount = sd.db.prepare(
               'SELECT edits_survived FROM note_link_history WHERE note_path=? AND target=?'
             );
 
@@ -2006,18 +2051,18 @@ async function runPostIndexWork(index: VaultIndex) {
                 ...entry.resolved.map(n => n.toLowerCase()),
                 ...entry.dead.map(n => n.toLowerCase()),
               ]);
-              const previousSet = getStoredNoteLinks(stateDb, entry.file);
+              const previousSet = getStoredNoteLinks(sd, entry.file);
               // First-run mitigation: if no stored links, seed without reporting additions
               // (avoids flooding on first pipeline run after schema upgrade)
               if (previousSet.size === 0) {
-                updateStoredNoteLinks(stateDb, entry.file, currentSet);
+                updateStoredNoteLinks(sd, entry.file, currentSet);
                 continue;
               }
               const diff = diffNoteLinks(previousSet, currentSet);
               if (diff.added.length > 0 || diff.removed.length > 0) {
                 linkDiffs.push({ file: entry.file, ...diff });
               }
-              updateStoredNoteLinks(stateDb, entry.file, currentSet);
+              updateStoredNoteLinks(sd, entry.file, currentSet);
 
               // Track survival of persisted links and emit positive feedback at threshold.
               // Only when links were actually removed — removals mean the user was curating
@@ -2038,7 +2083,7 @@ async function runPostIndexWork(index: VaultIndex) {
                          (e.aliases ?? []).some((a: string) => a.toLowerCase() === link)
                   );
                   if (entity) {
-                    recordFeedback(stateDb, entity.name, 'implicit:kept', entry.file, true, 0.8);
+                    recordFeedback(sd, entity.name, 'implicit:kept', entry.file, true, 0.8);
                     markPositive.run(entry.file, link);
                   }
                 }
@@ -2047,10 +2092,10 @@ async function runPostIndexWork(index: VaultIndex) {
             // Handle deleted files — clear their stored links and report removals
             for (const event of filteredEvents) {
               if (event.type === 'delete') {
-                const previousSet = getStoredNoteLinks(stateDb, event.path);
+                const previousSet = getStoredNoteLinks(sd, event.path);
                 if (previousSet.size > 0) {
                   linkDiffs.push({ file: event.path, added: [], removed: [...previousSet] });
-                  updateStoredNoteLinks(stateDb, event.path, new Set());
+                  updateStoredNoteLinks(sd, event.path, new Set());
                 }
               }
             }
@@ -2062,10 +2107,10 @@ async function runPostIndexWork(index: VaultIndex) {
             for (const event of filteredEvents) {
               if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
               if (processedFiles.has(event.path)) continue;
-              const previousSet = getStoredNoteLinks(stateDb, event.path);
+              const previousSet = getStoredNoteLinks(sd, event.path);
               if (previousSet.size > 0) {
                 linkDiffs.push({ file: event.path, added: [], removed: [...previousSet] });
-                updateStoredNoteLinks(stateDb, event.path, new Set());
+                updateStoredNoteLinks(sd, event.path, new Set());
               }
             }
           }
@@ -2096,11 +2141,11 @@ async function runPostIndexWork(index: VaultIndex) {
           // Step 9: Wikilink check — which tracked links exist in changed files
           tracker.start('wikilink_check', { files: filteredEvents.length });
           const trackedLinks: Array<{ file: string; entities: string[] }> = [];
-          if (stateDb) {
+          if (sd) {
             for (const event of filteredEvents) {
               if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
               try {
-                const apps = getTrackedApplications(stateDb, event.path);
+                const apps = getTrackedApplications(sd, event.path);
                 if (apps.length > 0) trackedLinks.push({ file: event.path, entities: apps });
               } catch { /* ignore */ }
             }
@@ -2128,7 +2173,7 @@ async function runPostIndexWork(index: VaultIndex) {
           for (const event of filteredEvents) {
             if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
             try {
-              const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+              const content = await fs.readFile(path.join(vp, event.path), 'utf-8');
               const zones = getProtectedZones(content);
               // Already-wikified entities for this file (from step 8)
               const linked = new Set(
@@ -2138,7 +2183,7 @@ async function runPostIndexWork(index: VaultIndex) {
               const mentions: string[] = [];
               for (const entity of entitiesAfter) {
                 if (linked.has(entity.nameLower)) continue; // already wikified
-                if (stateDb && isSuppressed(stateDb, entity.name)) continue; // suppressed
+                if (sd && isSuppressed(sd, entity.name)) continue; // suppressed
                 // Check entity name
                 const matches = findEntityMatches(content, entity.name, true);
                 const valid = matches.some(m => !rangeOverlapsProtectedZone(m.start, m.end, zones));
@@ -2173,22 +2218,22 @@ async function runPostIndexWork(index: VaultIndex) {
           );
 
           // T6: Capture pre-feedback suppression state for threshold crossing detection
-          const preSuppressed = stateDb ? new Set(getAllSuppressionPenalties(stateDb).keys()) : new Set<string>();
+          const preSuppressed = sd ? new Set(getAllSuppressionPenalties(sd).keys()) : new Set<string>();
 
           const feedbackResults: Array<{ entity: string; file: string }> = [];
-          if (stateDb) {
+          if (sd) {
             for (const event of filteredEvents) {
               if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
               try {
-                const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
-                const removed = processImplicitFeedback(stateDb, event.path, content);
+                const content = await fs.readFile(path.join(vp, event.path), 'utf-8');
+                const removed = processImplicitFeedback(sd, event.path, content);
                 for (const entity of removed) feedbackResults.push({ entity, file: event.path });
               } catch { /* ignore */ }
             }
           }
 
           // Also detect manual wikilink removals via forward_links diff
-          if (stateDb && linkDiffs.length > 0) {
+          if (sd && linkDiffs.length > 0) {
             for (const diff of linkDiffs) {
               if (deletedFiles.has(diff.file)) continue; // Skip deleted files — not deliberate removals
               for (const target of diff.removed) {
@@ -2200,7 +2245,7 @@ async function runPostIndexWork(index: VaultIndex) {
                     (e.aliases ?? []).some((a: string) => a.toLowerCase() === target)
                 );
                 if (entity) {
-                  recordFeedback(stateDb, entity.name, 'implicit:removed', diff.file, false);
+                  recordFeedback(sd, entity.name, 'implicit:removed', diff.file, false);
                   feedbackResults.push({ entity: entity.name, file: diff.file });
                 }
               }
@@ -2209,8 +2254,8 @@ async function runPostIndexWork(index: VaultIndex) {
 
           // Detect manual wikilink additions via forward_links diff
           const additionResults: Array<{ entity: string; file: string }> = [];
-          if (stateDb && linkDiffs.length > 0) {
-            const checkApplication = stateDb.db.prepare(
+          if (sd && linkDiffs.length > 0) {
+            const checkApplication = sd.db.prepare(
               `SELECT 1 FROM wikilink_applications WHERE LOWER(entity) = LOWER(?) AND note_path = ? AND status = 'applied'`
             );
             for (const diff of linkDiffs) {
@@ -2224,7 +2269,7 @@ async function runPostIndexWork(index: VaultIndex) {
                     (e.aliases ?? []).some((a: string) => a.toLowerCase() === target)
                 );
                 if (entity) {
-                  recordFeedback(stateDb, entity.name, 'implicit:manual_added', diff.file, true);
+                  recordFeedback(sd, entity.name, 'implicit:manual_added', diff.file, true);
                   additionResults.push({ entity: entity.name, file: diff.file });
                 }
               }
@@ -2233,8 +2278,8 @@ async function runPostIndexWork(index: VaultIndex) {
 
           // T6: Detect newly suppressed entities (crossed threshold this pipeline)
           const newlySuppressed: string[] = [];
-          if (stateDb) {
-            const postSuppressed = getAllSuppressionPenalties(stateDb);
+          if (sd) {
+            const postSuppressed = getAllSuppressionPenalties(sd);
             for (const entity of postSuppressed.keys()) {
               if (!preSuppressed.has(entity)) {
                 newlySuppressed.push(entity);
@@ -2253,10 +2298,10 @@ async function runPostIndexWork(index: VaultIndex) {
           // Step 10.5: Process pending corrections [non-critical]
           tracker.start('corrections', {});
           try {
-            if (stateDb) {
-              const corrProcessed = processPendingCorrections(stateDb);
+            if (sd) {
+              const corrProcessed = processPendingCorrections(sd);
               if (corrProcessed > 0) {
-                updateSuppressionList(stateDb);
+                updateSuppressionList(sd);
               }
               tracker.end({ processed: corrProcessed });
               if (corrProcessed > 0) {
@@ -2281,7 +2326,7 @@ async function runPostIndexWork(index: VaultIndex) {
           for (const event of filteredEvents) {
             if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
             try {
-              const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+              const content = await fs.readFile(path.join(vp, event.path), 'utf-8');
               const zones = getProtectedZones(content);
               const linkedSet = new Set(
                 (forwardLinkResults.find(r => r.file === event.path)?.resolved ?? [])
@@ -2324,7 +2369,7 @@ async function runPostIndexWork(index: VaultIndex) {
           for (const event of filteredEvents) {
             if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
             try {
-              const rawContent = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+              const rawContent = await fs.readFile(path.join(vp, event.path), 'utf-8');
               // Strip existing suggestion suffixes so prior entries don't block new scoring
               const content = rawContent.replace(/ → \[\[.*$/gm, '');
               const result = await suggestRelatedLinks(content, {
@@ -2356,7 +2401,7 @@ async function runPostIndexWork(index: VaultIndex) {
               const proactiveResults: Array<{ file: string; applied: string[] }> = [];
               for (const { file, top } of suggestionResults) {
                 try {
-                  const result = await applyProactiveSuggestions(file, vaultPath, top, {
+                  const result = await applyProactiveSuggestions(file, vp, top, {
                     minScore: flywheelConfig?.proactive_min_score ?? 20,
                     maxPerFile: flywheelConfig?.proactive_max_per_file ?? 3,
                   });
@@ -2380,7 +2425,7 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.start('tag_scan', { files: filteredEvents.length });
           try {
             const tagDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
-            if (stateDb) {
+            if (sd) {
               // Build forward lookup: note path → tags (from VaultIndex inverted index)
               const noteTagsForward = new Map<string, Set<string>>();
               for (const [tag, paths] of vaultIndex.tags) {
@@ -2393,10 +2438,10 @@ async function runPostIndexWork(index: VaultIndex) {
               for (const event of filteredEvents) {
                 if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
                 const currentSet = noteTagsForward.get(event.path) ?? new Set<string>();
-                const previousSet = getStoredNoteTags(stateDb, event.path);
+                const previousSet = getStoredNoteTags(sd, event.path);
                 // First-run mitigation: seed without reporting additions
                 if (previousSet.size === 0 && currentSet.size > 0) {
-                  updateStoredNoteTags(stateDb, event.path, currentSet);
+                  updateStoredNoteTags(sd, event.path, currentSet);
                   continue;
                 }
                 const added = [...currentSet].filter(t => !previousSet.has(t));
@@ -2404,16 +2449,16 @@ async function runPostIndexWork(index: VaultIndex) {
                 if (added.length > 0 || removed.length > 0) {
                   tagDiffs.push({ file: event.path, added, removed });
                 }
-                updateStoredNoteTags(stateDb, event.path, currentSet);
+                updateStoredNoteTags(sd, event.path, currentSet);
               }
 
               // Handle deleted files — clear stored tags and report removals
               for (const event of filteredEvents) {
                 if (event.type === 'delete') {
-                  const previousSet = getStoredNoteTags(stateDb, event.path);
+                  const previousSet = getStoredNoteTags(sd, event.path);
                   if (previousSet.size > 0) {
                     tagDiffs.push({ file: event.path, added: [], removed: [...previousSet] });
-                    updateStoredNoteTags(stateDb, event.path, new Set());
+                    updateStoredNoteTags(sd, event.path, new Set());
                   }
                 }
               }
@@ -2432,14 +2477,14 @@ async function runPostIndexWork(index: VaultIndex) {
           // Step 19: Retrieval co-occurrence — mine tool_invocations for co-retrieved notes
           tracker.start('retrieval_cooccurrence', {});
           try {
-            if (stateDb) {
-              const inserted = mineRetrievalCooccurrence(stateDb);
+            if (sd) {
+              const inserted = mineRetrievalCooccurrence(sd);
               tracker.end({ pairs_inserted: inserted });
               if (inserted > 0) {
                 serverLog('watcher', `Retrieval co-occurrence: ${inserted} new pairs`);
               }
             } else {
-              tracker.end({ skipped: 'no stateDb' });
+              tracker.end({ skipped: 'no sd' });
             }
           } catch (e) {
             tracker.end({ error: String(e) });
@@ -2448,8 +2493,8 @@ async function runPostIndexWork(index: VaultIndex) {
 
           // Record event with all steps
           const duration = Date.now() - batchStart;
-          if (stateDb) {
-            recordIndexEvent(stateDb, {
+          if (sd) {
+            recordIndexEvent(sd, {
               trigger: 'watcher',
               duration_ms: duration,
               note_count: vaultIndex.notes.size,
@@ -2462,8 +2507,8 @@ async function runPostIndexWork(index: VaultIndex) {
         } catch (err) {
           updateIndexState('error', err instanceof Error ? err : new Error(String(err)));
           const duration = Date.now() - batchStart;
-          if (stateDb) {
-            recordIndexEvent(stateDb, {
+          if (sd) {
+            recordIndexEvent(sd, {
               trigger: 'watcher',
               duration_ms: duration,
               success: false,
@@ -2478,7 +2523,7 @@ async function runPostIndexWork(index: VaultIndex) {
     };
 
     const watcher = createVaultWatcher({
-      vaultPath,
+      vaultPath: vp,
       config,
       onBatch: handleBatch,
       onStateChange: (status) => {
@@ -2490,15 +2535,16 @@ async function runPostIndexWork(index: VaultIndex) {
         serverLog('watcher', `Watcher error: ${err.message}`, 'error');
       },
     });
+    ctx.watcher = watcher;
     watcherInstance = watcher;
 
     // Startup catch-up: process files that were modified while the server was offline.
     // getRecentPipelineEvent returns the last event with steps (i.e. last watcher run).
     // Files with mtime > that timestamp were not seen by the watcher last session.
-    if (stateDb) {
-      const lastPipelineEvent = getRecentPipelineEvent(stateDb);
+    if (sd) {
+      const lastPipelineEvent = getRecentPipelineEvent(sd);
       if (lastPipelineEvent) {
-        const catchupEvents = await buildStartupCatchupBatch(vaultPath, lastPipelineEvent.timestamp);
+        const catchupEvents = await buildStartupCatchupBatch(vp, lastPipelineEvent.timestamp);
         if (catchupEvents.length > 0) {
           // eslint-disable-next-line no-console
           console.error(`[Flywheel] Startup catch-up: ${catchupEvents.length} file(s) modified while offline`);
@@ -2513,8 +2559,8 @@ async function runPostIndexWork(index: VaultIndex) {
 
   // Start periodic sweep for graph hygiene metrics (only when watcher is active)
   if (process.env.FLYWHEEL_WATCH !== 'false') {
-    startSweepTimer(() => vaultIndex, undefined, () => {
-      if (stateDb) runPeriodicMaintenance(stateDb);
+    startSweepTimer(() => ctx.vaultIndex, undefined, () => {
+      if (sd) runPeriodicMaintenance(sd);
     });
     serverLog('server', 'Sweep timer started (5 min interval)');
   }

@@ -19,6 +19,9 @@ export const VALID_CONFIG_KEYS: Record<string, z.ZodType> = {
   implicit_detection: z.boolean(),
   implicit_patterns: z.array(z.string()),
   adaptive_strictness: z.boolean(),
+  proactive_linking: z.boolean(),
+  proactive_min_score: z.number(),
+  proactive_max_per_file: z.number(),
 };
 
 /**

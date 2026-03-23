@@ -404,6 +404,9 @@ Sets a single key and returns the updated config.
 | `adaptive_strictness` | boolean | `true` | When enabled, daily notes automatically use aggressive strictness regardless of the global setting. Disable if daily notes are getting too many links. |
 | `implicit_detection` | boolean | `true` | Detect potential entities from patterns like proper nouns, CamelCase, quoted terms — even when no backing note exists. Creates dead wikilinks that signal "this could be a note." |
 | `implicit_patterns` | string[] | all 5 | Which implicit detection patterns to use. Options: `"proper-nouns"`, `"single-caps"`, `"quoted-terms"`, `"camel-case"`, `"acronyms"`. |
+| `proactive_linking` | boolean | `true` | When enabled, the file watcher automatically inserts high-confidence wikilinks into vault files during batch processing. Only links scoring above `proactive_min_score` are applied. Disable if you want auto-linking only through explicit write tool calls. |
+| `proactive_min_score` | number | `20` | Minimum suggestion score for proactive linking. Higher values mean fewer but more confident auto-links. The default of 20 is well above the balanced threshold (10), ensuring only strong matches are applied automatically. |
+| `proactive_max_per_file` | number | `3` | Maximum number of wikilinks the watcher will proactively insert per file per batch. Prevents flooding notes with links during a single watcher cycle. |
 
 #### Exclusions
 

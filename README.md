@@ -16,7 +16,7 @@
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-58.5%25%20answer%20accuracy-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Tests](https://img.shields.io/badge/tests-2,640%20passed-brightgreen.svg)](docs/TESTING.md)
 
-**[Try It](#try-it)** · **[See It Work](#see-it-work)** · **[How It Compares](#how-it-compares)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Docs](#documentation)**
+**[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)**
 
 | | Without Flywheel | With Flywheel |
 |---|---|---|
@@ -25,83 +25,6 @@
 | "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
 | Token cost | ~800-2,000 per query | ~50-200 per query ([53x savings measured](docs/PROVE-IT.md#token-economics)) |
-
-Every number on this page is measured, CI-gated, and reproducible on your machine.
-
----
-
-## Try It
-
-### Quick start (60 seconds)
-
-```bash
-git clone https://github.com/velvetmonkey/flywheel-memory.git
-cd flywheel-memory/demos/carter-strategy && claude
-```
-
-Then ask: *"How much have I billed Acme Corp?"*
-
-### Demos
-
-| Demo | You are | Ask this |
-|------|---------|----------|
-| [carter-strategy](demos/carter-strategy/) | Solo consultant | "How much have I billed Acme Corp?" |
-| [artemis-rocket](demos/artemis-rocket/) | Rocket engineer | "What's blocking propulsion?" |
-| [startup-ops](demos/startup-ops/) | SaaS co-founder | "What's our MRR?" |
-| [nexus-lab](demos/nexus-lab/) | PhD researcher | "How does AlphaFold connect to my experiment?" |
-| [solo-operator](demos/solo-operator/) | Content creator | "How's revenue looking?" |
-| [support-desk](demos/support-desk/) | Support agent | "What's Sarah Chen's situation?" |
-| [zettelkasten](demos/zettelkasten/) | Zettelkasten student | "How does spaced repetition connect to active recall?" |
-
-### Install on your own vault
-
-Add `.mcp.json` to your vault root:
-
-```json
-{
-  "mcpServers": {
-    "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"]
-    }
-  }
-}
-```
-
-```bash
-cd /path/to/your/vault && claude
-```
-
-Flywheel does not replace Obsidian. You keep writing and organizing notes exactly as you do now. Flywheel runs alongside it as a background index — it watches for changes, indexes them in real-time, and makes the full graph available to any AI client. When Flywheel writes a note, it appears in Obsidian as a normal markdown file. There is no proprietary format, no cloud sync, no account. Delete `.flywheel/state.db` and it rebuilds from scratch.
-
-### Configure your tools
-
-| Preset | Tools | What you get |
-|--------|-------|--------------|
-| `default` | 16 | search, read, write, tasks |
-| `agent` | 16 | search, read, write, memory |
-| `full` | 66 | Everything except memory (all 12 categories) |
-
-Start with `default`. Add bundles as you need them: `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`, and more.
-
-```json
-{ "env": { "FLYWHEEL_TOOLS": "default,graph" } }
-```
-
-[Browse all 69 tools →](docs/TOOLS.md) | [Preset recipes →](docs/CONFIGURATION.md)
-
-<details>
-<summary><strong>Windows users — read this before you start</strong></summary>
-
-Three things differ from macOS/Linux:
-1. **`cmd /c npx`** instead of `npx` — Windows installs npx as a `.cmd` batch script that can't be spawned directly
-2. **`VAULT_PATH`** — set this to your vault's Windows path
-3. **`FLYWHEEL_WATCH_POLL: "true"`** — **required**. Without this, Flywheel won't pick up changes you make in Obsidian.
-
-See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full config example.
-</details>
-
-**Using Cursor, Windsurf, VS Code, or another editor?** See [docs/SETUP.md](docs/SETUP.md) for your client's config.
 
 ---
 
@@ -134,20 +57,73 @@ You typed a plain sentence. Flywheel recognized three entities from your vault a
 
 ---
 
-## How It Compares
+## Try It
 
-Most Obsidian AI tools are either simple MCP bridges (read/write files, no graph) or cloud-dependent embedding search (no local processing, no learning). Flywheel is neither:
+### Quick start (60 seconds)
 
-| Capability | Flywheel Memory | Typical MCP bridge | Typical AI plugin |
-|---------|----------------|-------------------|-------------------|
-| Backlink graph | Bidirectional, eigenvector centrality | No | No |
-| Search | Local hybrid (BM25 + semantic) | Basic file read | Cloud embedding |
-| Auto-wikilinks | Yes (alias resolution, 18 entity categories) | No | No |
-| Schema intelligence | 9 analysis modes | No | No |
-| Learns from usage | Feedback loop + suppression + co-occurrence | No | No |
-| Agent memory | brief + recall + memory | No | No |
-| Safe writes | Git + conflict detection + dry-run | No | N/A |
-| Retrieval benchmarks | HotpotQA 84.8%, LoCoMo 58.5% | None published | None published |
+```bash
+git clone https://github.com/velvetmonkey/flywheel-memory.git
+cd flywheel-memory/demos/carter-strategy && claude
+```
+
+Then ask: *"How much have I billed Acme Corp?"*
+
+| Demo | You are | Ask this |
+|------|---------|----------|
+| [carter-strategy](demos/carter-strategy/) | Solo consultant | "How much have I billed Acme Corp?" |
+| [artemis-rocket](demos/artemis-rocket/) | Rocket engineer | "What's blocking propulsion?" |
+| [nexus-lab](demos/nexus-lab/) | PhD researcher | "How does AlphaFold connect to my experiment?" |
+| [zettelkasten](demos/zettelkasten/) | Zettelkasten student | "How does spaced repetition connect to active recall?" |
+
+### Install on your own vault
+
+Add `.mcp.json` to your vault root:
+
+```json
+{
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"]
+    }
+  }
+}
+```
+
+```bash
+cd /path/to/your/vault && claude
+```
+
+Flywheel does not replace Obsidian. It runs alongside as a background index — watches for changes, indexes in real-time, and makes the full graph available to any AI client. No proprietary format, no cloud sync, no account. Delete `.flywheel/state.db` and it rebuilds from scratch.
+
+### Configure your tools
+
+| Preset | Tools | What you get |
+|--------|-------|--------------|
+| `default` | 16 | search, read, write, tasks |
+| `agent` | 16 | search, read, write, memory |
+| `full` | 66 | Everything except memory (all 12 categories) |
+
+Start with `default`. Add bundles as you need them: `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`, and more.
+
+```json
+{ "env": { "FLYWHEEL_TOOLS": "default,graph" } }
+```
+
+[Browse all 69 tools →](docs/TOOLS.md) | [Preset recipes →](docs/CONFIGURATION.md)
+
+<details>
+<summary><strong>Windows users — read this before you start</strong></summary>
+
+Three things differ from macOS/Linux:
+1. **`cmd /c npx`** instead of `npx` — Windows installs npx as a `.cmd` batch script that can't be spawned directly
+2. **`VAULT_PATH`** — set this to your vault's Windows path
+3. **`FLYWHEEL_WATCH_POLL: "true"`** — **required**. Without this, Flywheel won't pick up changes you make in Obsidian.
+
+See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full config example.
+</details>
+
+**Using Cursor, Windsurf, VS Code, or another editor?** See [docs/SETUP.md](docs/SETUP.md) for your client's config.
 
 ---
 
@@ -165,7 +141,7 @@ Those `→` suggestions aren't random. Ask why Flywheel suggested `[[Marcus John
 
 ```
 Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Feedback  Semantic  Edge
-──────────────────────────────────────────────────────────────────────────────────────────────────────
+---------------------------------------------------------------------------------------------------
 Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
 ```
 
@@ -179,7 +155,7 @@ Every sentence you write through Flywheel makes your graph denser. A denser grap
 
 - **Co-occurrence** builds over time — two entities appearing in 20 notes form a statistical bond
 - **Edge weights** accumulate — links that survive edits gain influence
-- **Suppression** learns — connections you repeatedly break stop being suggested (Beta-Binomial posterior model, not a blacklist)
+- **Suppression** learns — connections you repeatedly break stop being suggested
 
 Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation.
 
@@ -219,97 +195,49 @@ Policies chain vault tools into atomic operations — all steps succeed or all r
 
 ## Benchmarked
 
-Every number is measured on standard academic datasets and reproducible on your machine.
+Measured on standard academic datasets. Reproducible on your machine: [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
 
-### Retrieval Quality
+### Document Retrieval (HotpotQA)
 
-| Benchmark | What it tests | Questions | Key result |
+200 multi-hop questions across 1,993 documents. End-to-end via real Claude sessions, not a component test. Zero training data.
+
+| System | Type | Recall | |
 |---|---|---|---|
-| [HotpotQA](https://hotpotqa.github.io/) | Multi-hop document retrieval | 200 | **84.8%** document recall |
-| [LoCoMo](https://snap-research.github.io/locomo/) | Conversational memory | 200 | **58.5%** answer accuracy |
+| **Flywheel** | General-purpose MCP tool | **84.8%** | No training, end-to-end |
+| BM25 baseline | Industry-standard IR | ~70-75% | Powers Elasticsearch, GitHub, Netflix |
+| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021 |
+| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021 |
 
-**HotpotQA** (200 hard multi-hop questions, 1,993 documents, v2.0.126) — End-to-end via real `claude -p` sessions, not a component test. 82.1% on multi-hop bridge questions. 99.5% partial recall (199/200 questions had at least one supporting doc found). $0.061/question. Zero training. For context: BM25 keyword search — the standard baseline — scores ~75%. Purpose-built neural retrievers trained on this dataset score 85-93%. Flywheel scores 84.8% with general-purpose vault tools.
+> Flywheel has never seen HotpotQA training data. Baleen and MDR were trained on it.
 
-**LoCoMo** (10 conversations, 272 session notes, 5 question categories, ACL 2024) — Unit-level: 84.8% Recall@5, 90.4% Recall@10. End-to-end (200 questions, balanced across categories): 58.5% answer accuracy (LLM-as-judge), 75.0% on single-hop, 80.0% on commonsense, 27.5% on multi-hop.
+### Conversational Memory (LoCoMo)
 
-### How Flywheel Compares
+200 questions across 10 conversations. Answer accuracy via LLM-as-judge — same methodology as competitor benchmarks.
 
-**Document retrieval (HotpotQA):**
-
-| System | Type | Recall | Context |
+| System | Single-hop | Multi-hop | Commonsense |
 |---|---|---|---|
-| **Flywheel** | MCP vault tool | **84.8%** | Zero training, general-purpose, end-to-end via Claude |
-| BM25 baseline | IR baseline | ~70-75% | Powers Elasticsearch (Wikipedia, GitHub, Netflix, Uber) |
-| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
-| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI Research, ICLR 2021. Trained on HotpotQA |
+| **Flywheel** | **75.0%** | 27.5% | **80.0%** |
+| [Mem0](https://mem0.ai/) | 38.7 | **28.6** | — |
+| [Zep](https://getzep.com/) | 35.7 | 19.4 | — |
+| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — |
+| [Letta](https://memgpt.ai/) | 26.7 | — | — |
 
-> Flywheel has never seen HotpotQA training data. Baleen and MDR were trained on it. BM25 is the industry-standard algorithm behind every major search engine.
+> Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413) (695 questions). Flywheel: 200 questions balanced across categories.
 
-**Conversational memory (LoCoMo, answer accuracy via LLM-as-judge):**
+[Full benchmark methodology →](docs/TESTING.md)
 
-| System | Single-hop | Multi-hop | Commonsense | Backed By |
-|---|---|---|---|---|
-| **Flywheel** | **75.0%** | 27.5% | **80.0%** | Self-funded, local-only (SQLite + markdown) |
-| [Mem0](https://mem0.ai/) | 38.7 | **28.6** | — | YC ($24M), AWS Agent SDK partner |
-| [Zep](https://getzep.com/) | 35.7 | 19.4 | — | YC, enterprise memory platform |
-| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | LangChain ($25M+ raised) |
-| [Letta](https://memgpt.ai/) | 26.7 | — | — | UC Berkeley research ($10M, Felicis Ventures) |
+---
 
-> **Transparency notes:**
-> - All numbers are answer accuracy via LLM-as-judge (binary CORRECT/WRONG) — same methodology across all systems. Flywheel uses Claude Haiku as judge; competitor numbers from the Mem0 paper.
-> - Flywheel: 200 questions (balanced, 40 per category, all 10 conversations). Competitors: 695 questions.
-> - Multi-hop (27.5%) is approaching Mem0 (28.6%). Iterative retrieval + reading session notes directly drives the improvement.
+## Tested
 
-**What we don't claim:**
-- We don't claim to beat trained retrievers. We sit *next to* them without any training.
-- We don't claim multi-hop is fully solved. 27.5% is competitive but there's room to grow.
-- We don't claim Flywheel is the best at everything. Dedicated GraphRAG systems may edge ahead on complex multi-step reasoning.
+2,640 tests across read, write, security, concurrency, and graph quality. CI-gated on Ubuntu + Windows, Node 20 + 22.
 
-[Full benchmark methodology →](docs/TESTING.md) | Run them yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
+- **Graph quality** — 100% wikilink precision on ground truth vault, stress-tested over 50 generations with realistic noise. [Report →](docs/QUALITY_REPORT.md)
+- **Live AI testing** — Real `claude -p` sessions verify tool adoption end-to-end, not just handler logic
+- **Write safety** — Git-backed conflict detection, atomic rollback, 100 parallel writes with zero corruption
+- **Security** — SQL injection, path traversal, Unicode normalization, permission bypass
 
-### Graph Quality
-
-The feedback loop claim is measured, not asserted. A test vault with known-correct links is stripped, and the engine rediscovers them. CI regression-gates these baselines — if any metric drops >5pp, the build fails.
-
-| Mode | Precision | Recall | F1 |
-|---|---|---|---|
-| Conservative | 100.0% | 71.7% | 83.5% |
-| Balanced | 100.0% | 76.7% | 86.8% |
-| Aggressive | 100.0% | 76.7% | 86.8% |
-
-Measured against a 96-note/61-entity ground truth vault. 100% precision = zero wrong links suggested. [Auto-generated report →](docs/QUALITY_REPORT.md)
-
-- **50-generation stress test** — suggest → accept/reject (85% correct, 15% noise) → mutate → rebuild → repeat. F1 holds steady under realistic noise.
-- **7 vault archetypes** — hub-and-spoke, hierarchical, dense-mesh, sparse-orphan, bridge-network, small-world, chaos
-- **13 scoring layers** individually ablated, contribution measured
-
-### Live AI Testing
-
-Most MCP servers unit-test their handlers. Flywheel also tests whether the AI picks the right tool — using real `claude -p` sessions with `--strict-mcp-config` (no filesystem, no web).
-
-| Test | Sessions | Result |
-|------|----------|--------|
-| Bundle adoption | 36 (12 bundles × 3) | 11/12 at 100% |
-| Sequential workflow | 7 beats (cumulative state) | 7/7 passed |
-| HotpotQA retrieval | 200 questions | 84.8% recall |
-| LoCoMo retrieval | 1,531 questions | 90.4% Recall@10 |
-
-Every session is captured as JSONL, analyzed by Python scripts, and reported with tool sequences. Nothing is mocked. [Full results →](docs/TESTING.md#live-ai-testing)
-
-### Performance & Safety
-
-**2,541 tests. 124 test files. 47,000+ lines of test code.** 10 focused CI jobs plus cross-platform matrix (Ubuntu + Windows, Node 20 + 22).
-
-| Category | What it proves |
-|---|---|
-| Read tools + graph | Search, backlinks, scoring, FTS5 |
-| Write safety | Mutations, conflict detection, git integration |
-| Security | SQL injection, path traversal, permission bypass, Unicode normalization |
-| Concurrency | 100 parallel writes, zero corruption |
-| Property-based fuzzing | 700+ randomized scenarios |
-| Graph quality | 266 tests — precision/recall, archetypes, feedback loops |
-
-Every mutation is git-committed (one `vault_undo_last_mutation` away from reverting), conflict-detected (SHA-256 hash before every write), and dry-run capable. Auto-wikilinks are AST-protected — code blocks, frontmatter, existing links, callouts, math, and HTML are never touched.
+[Full methodology and results →](docs/TESTING.md)
 
 ---
 

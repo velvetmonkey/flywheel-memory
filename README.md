@@ -2,7 +2,7 @@
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
   <p><strong>Give Claude your entire Obsidian vault.</strong><br/>
-  87.5% retrieval recall on HotpotQA with zero training data. Auto-wikilinks on every mutation.<br/>
+  MCP tools for search, write, and graph. Auto-wikilinks on every mutation.<br/>
   A feedback loop that learns from your edits. Zero cloud. Six lines of config.</p>
 </div>
 

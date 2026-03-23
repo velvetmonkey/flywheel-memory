@@ -1280,23 +1280,31 @@ export interface LayerContributionBucket {
 
 /**
  * 4.1 Get an entity's score timeline from suggestion_events.
- * Returns chronological score history for visualization.
+ * Aggregates by day — returns the max-scoring event per day for chart visualization.
  */
 export function getEntityScoreTimeline(
   stateDb: StateDb,
   entityName: string,
-  daysBack: number = 30,
-  limit: number = 100,
+  daysBack: number = 90,
+  limit: number = 90,
 ): EntityScoreTimelineEntry[] {
   const cutoff = Date.now() - (daysBack * 24 * 60 * 60 * 1000);
 
+  // Get the max-scoring event per day — preserves full entry shape including breakdown
   const rows = stateDb.db.prepare(`
-    SELECT timestamp, total_score, breakdown_json, note_path, passed, threshold
-    FROM suggestion_events
-    WHERE entity = ? AND timestamp >= ?
-    ORDER BY timestamp ASC
+    SELECT s.timestamp, s.total_score, s.breakdown_json, s.note_path, s.passed, s.threshold
+    FROM suggestion_events s
+    INNER JOIN (
+      SELECT date(timestamp/1000, 'unixepoch') as day, MAX(total_score) as max_score
+      FROM suggestion_events
+      WHERE entity = ? AND timestamp >= ?
+      GROUP BY day
+    ) agg ON date(s.timestamp/1000, 'unixepoch') = agg.day AND s.total_score = agg.max_score
+    WHERE s.entity = ? AND s.timestamp >= ?
+    GROUP BY agg.day
+    ORDER BY s.timestamp ASC
     LIMIT ?
-  `).all(entityName, cutoff, limit) as Array<{
+  `).all(entityName, cutoff, entityName, cutoff, limit) as Array<{
     timestamp: number;
     total_score: number;
     breakdown_json: string;

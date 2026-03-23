@@ -112,7 +112,7 @@ packages/
 4. **Connect MCP transport** -- `StdioServerTransport` for Claude Code / Claude Desktop
 5. **Load index from cache** -- Checks `vault_index_cache` table in StateDb (valid if note count matches within 5% and age < 24h)
 6. **Build index if cache miss** -- Scans all `.md` files, parses notes in parallel (concurrency limit: 50), builds backlink/entity/tag maps
-7. **Post-index work** -- Scans vault entities, exports hub scores, infers config (periodic note folders, templates, etc.), starts file watcher
+7. **Post-index work** -- Scans vault entities, exports hub scores, infers config (periodic note folders, templates, etc.), starts file [[watcher]]
 
 ---
 
@@ -273,7 +273,7 @@ Common words, sentence starters, and technical terms are excluded to minimize fa
 
 ### Outgoing Link Suggestions
 
-Write tools can optionally append suggested outgoing links based on content analysis. For example, after adding a note about "React migration", the tool might append: `-> [[React]], [[Migration Plan]]`.
+Write tools append suggested outgoing links by default based on content analysis. For example, after adding a note about "React migration", the tool might append: `→ [[React]], [[Migration Plan]]`. Set `suggestOutgoingLinks: false` to disable.
 
 ---
 

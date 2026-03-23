@@ -46,7 +46,7 @@ Every search result includes:
 | **tags, aliases** | Tags and alternative names | Understand categorization and find notes by alternate names. |
 | **category, hub_score** | Entity type and graph importance | Know if this is a person, project, or concept — and how central it is in the vault. |
 
-This is the key design: **one search call returns not just file paths, but the full neighborhood of each result.** That's why Claude can answer "How much have I billed Acme Corp?" from a single search — the client's frontmatter has the totals, and the backlinks show every invoice.
+This is the key design: **one search call returns not just file paths, but the full neighborhood of each result.** That's why Claude can answer "How much have I billed [[Acme Corp]]?" from a single search — the client's frontmatter has the totals, and the backlinks show every invoice.
 
 **How matching works** (always start with just a query, no filters):
 
@@ -155,7 +155,9 @@ Every write auto-links known entities as wikilinks. Every write can be previewed
 | Parameter | Default | What it does |
 |-----------|---------|-------------|
 | `dry_run` | `false` | Preview changes without writing. |
-| `commit` | `true` | Auto-commit to git after writing. |
+| `commit` | `false` | Auto-commit to git after writing (creates undo point). |
+| `skipWikilinks` | `false` | Skip auto-wikilink application on content. |
+| `suggestOutgoingLinks` | `true` | Append suggested related wikilinks (e.g., `→ [[React]], [[Migration Plan]]`). |
 
 ---
 

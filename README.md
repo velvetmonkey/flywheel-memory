@@ -12,7 +12,7 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![HotpotQA](https://img.shields.io/badge/HotpotQA-87.5%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+[![HotpotQA](https://img.shields.io/badge/HotpotQA-89.6%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-58.5%25%20answer%20accuracy-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Tests](https://img.shields.io/badge/tests-2,640%20passed-brightgreen.svg)](docs/TESTING.md)
 
@@ -199,16 +199,16 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ### Document Retrieval (HotpotQA)
 
-200 multi-hop questions across 1,993 documents. End-to-end via real Claude sessions, not a component test. Zero training data.
+500 multi-hop questions across 4,960 documents. End-to-end via real Claude sessions, not a component test. Zero training data.
 
 | System | Type | Recall | |
 |---|---|---|---|
-| **Flywheel** | General-purpose MCP tool | **87.5%** | Zero training, 200 questions, end-to-end via Claude |
+| **Flywheel** | General-purpose MCP tool | **89.6%** | Zero training, 500 questions, end-to-end via Claude |
 | BM25 baseline | Industry-standard IR | ~70-75% | Standard academic baseline |
 | [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021. Trained on HotpotQA |
 
-> **Not apples-to-apples.** Baleen and MDR are neural models trained on HotpotQA data — they learned the dataset. Flywheel has never seen it. Their test setting is also different: standard distractor gives each query 10 documents; Flywheel searches a pooled vault of ~2,000 documents (harder than distractor, but far easier than fullwiki's 5M). We report this because it's the closest meaningful comparison, not because it's a fair fight in either direction. [Details →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+> **Not apples-to-apples.** Baleen and MDR are neural models trained on HotpotQA data — they learned the dataset. Flywheel has never seen it. Their test setting is also different: standard distractor gives each query 10 documents; Flywheel searches a pooled vault of ~5,000 documents (harder than distractor, but far easier than fullwiki's 5M). We report this because it's the closest meaningful comparison, not because it's a fair fight in either direction. [Details →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
 ### Conversational Memory (LoCoMo)
 
@@ -263,6 +263,30 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 I've been writing code for over 30 years, and I tried every PKM tool going before landing on Obsidian — I chose it for the plugin ecosystem and fell in love with the app. My first attempt at AI-powered knowledge management was pure Claude Code skills and hooks with no MCP server — writes were non-deterministic and recall was poor. Then I split it into two separate MCP tools for reading and writing, which was better but still fragmented. Flywheel is the third iteration: one unified server with deterministic mutations, hybrid search, and a graph that learns. I'm humble enough to admit I could never have built this by myself in my spare time — probably not even in a year, and definitely not without AI. I can read and write code, but this is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. Everything here was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and stress-tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 
 I think what's happening right now is simultaneous invention — many people are grappling with the same problems, trying to build the same sort of thing for different audiences. This is mine. I dogfood it daily through a Telegram bot using voice input, and my intention is to automate as much voice-driven knowledge workflow as possible, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space. Times are changing.
+
+### Dogfooding: my vault, unvarnished
+
+I run Flywheel on my own 1,600-note vault — 2.5 years of daily notes, work documentation, personal projects, and reference material across six domains. Here's what the graph looks like after three months of daily use via a Telegram voice bot:
+
+| Metric | Value |
+|--------|-------|
+| Notes | 1,600 |
+| Entities indexed | 618 |
+| Total wikilinks | 37,259 |
+| Links per note (average) | 23.2 |
+| Orphan notes (zero links) | 193 (12%) |
+| Daily note consistency | ~25-31 notes/month for 2.5 years |
+
+The telling number is daily note link density before and after Flywheel:
+
+| Period | Links per daily note |
+|--------|---------------------|
+| Pre-Flywheel (manual) | 3–11 |
+| Post-Flywheel (3 months) | 20–625 |
+
+The note count only grew ~13%, but wikilink density exploded — 3,097 new linked lines in three months. The connections are growing faster than the content. That's not a folder of files; it's a graph that's actually densifying. The high end (625) includes auto-logged bot conversations with entity links, so take it with appropriate salt. But even the quiet days run 20–30 links where they used to be 3–5.
+
+12% orphan notes is honest — some are stubs, some are clippings that haven't earned their connections yet. I'm not hiding that.
 
 I'm also in the early days of building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) — an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor. Very early days, but the intent is to give value back to Obsidian itself.
 

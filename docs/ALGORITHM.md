@@ -86,7 +86,7 @@ Co-occurrence strength uses **NPMI (Normalized Pointwise Mutual Information)** s
 
 **Retrieval co-occurrence** adds a second signal: notes that are frequently retrieved together in search/recall sessions build implicit associations. The watcher mines `tool_invocations` for co-retrieved note pairs, weights them with Adamic-Adar (smaller sessions = stronger signal), and applies 7-day exponential decay. Co-occurrence pairs are stored in the `retrieval_cooccurrence` table (schema v30). The final boost is `Math.max(contentBoost, retrievalBoost)` — the stronger signal wins, no double-counting. Retrieval boost caps at 6 (half of content co-occurrence max).
 
-**Multi-hop search backfill.** Search results automatically include documents linked from top results. When a search finds document A which mentions entity B, document B is included in the result set at lower rank. This enables second-hop retrieval without LLM re-ranking — measured at 87.5% document recall on 200 hard HotpotQA questions.
+**Multi-hop search backfill.** Search results automatically include documents linked from top results. When a search finds document A which mentions entity B, document B is included in the result set at lower rank. This enables second-hop retrieval without LLM re-ranking — measured at 89.6% document recall on 500 hard HotpotQA questions (4,960 documents).
 
 ### Layer 3: Type Boost
 

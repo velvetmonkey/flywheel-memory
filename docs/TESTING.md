@@ -106,16 +106,16 @@ Source: [`packages/mcp-server/test/write/coldstart/`](../packages/mcp-server/tes
 
 End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/) — a standard multi-hop question answering benchmark from CMU/Stanford. Real Claude + Flywheel via `claude -p`, no pre-processing, no cherry-picking.
 
-### Results (200 hard questions, 1,993 documents)
+### Results (500 hard questions, 4,960 documents)
 
 | Metric | Score |
 |---|---|
-| Document Recall | **87.5%** (350/400 supporting docs found) |
-| Full Recall (both docs found) | **75.5%** (151/200) |
-| Partial Recall (≥1 doc found) | **99.5%** (199/200) |
-| Bridge (multi-hop) | 85.5% |
-| Comparison | 97.1% |
-| Cost | $0.062/question |
+| Document Recall | **89.6%** (896/1000 supporting docs found) |
+| Full Recall (both docs found) | **80.0%** (400/500) |
+| Partial Recall (≥1 doc found) | **99.2%** (496/500) |
+| Bridge (multi-hop) | 87.7% |
+| Comparison | 97.0% |
+| Cost | $0.057/question |
 
 ### How Flywheel compares
 
@@ -123,7 +123,7 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 
 | System | Type | Retrieval Recall | Approach | Notes |
 |---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **87.5%** | BM25 + entity search + 2-hop backfill + query expansion | General-purpose, zero training, end-to-end via Claude |
+| **Flywheel** | MCP vault tool | **89.6%** | BM25 + entity search + 2-hop backfill + query expansion | General-purpose, zero training, 500 questions end-to-end via Claude |
 | BM25 baseline | IR baseline | ~70-75% | TF-IDF keyword matching | Standard academic baseline |
 | [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | IR baseline | ~80% | TF-IDF with named entity overlap | Original HotpotQA paper baseline |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Multi-hop dense retrieval (iterative) | Facebook, 2021. Trained on HotpotQA. Two-hop BERT encoder |
@@ -134,9 +134,9 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 **Not apples-to-apples — read this before comparing:**
 
 - **Training data.** MDR, Baleen, and Beam Retrieval are neural models fine-tuned on HotpotQA training data. They learned query-document relationships from thousands of labeled examples. Flywheel has seen zero HotpotQA training data.
-- **Test setting.** Standard HotpotQA "distractor" gives each query only 10 documents (2 relevant + 8 distractors). "Fullwiki" searches 5M+ documents. Flywheel pools all 1,993 documents from 200 questions into one vault, so each query searches ~2,000 docs. This is harder than distractor but far easier than fullwiki. The numbers are not directly comparable to either setting.
-- **Sample size.** Flywheel: 200 questions. Academic baselines typically use the full dev set (7,405 questions). Our confidence intervals are wider.
-- **What's real.** Flywheel's 87.5% beats the standard BM25 baseline (~75%) by +12pp, attributable to 2-hop backfill, query expansion, and FTS5 column weighting. The gap to trained retrievers (87.5% vs 88-93%) is narrow, but those systems had every advantage — training data, purpose-built architectures, and a simpler retrieval setting.
+- **Test setting.** Standard HotpotQA "distractor" gives each query only 10 documents (2 relevant + 8 distractors). "Fullwiki" searches 5M+ documents. Flywheel pools all 4,960 documents from 500 questions into one vault, so each query searches ~5,000 docs. This is harder than distractor but far easier than fullwiki. The numbers are not directly comparable to either setting.
+- **Sample size.** Flywheel: 500 questions. Academic baselines typically use the full dev set (7,405 questions). Our confidence intervals are tighter than our earlier 200-question run but still wider than the full set.
+- **What's real.** Flywheel's 89.6% beats the standard BM25 baseline (~75%) by +15pp, attributable to 2-hop backfill, query expansion, and FTS5 column weighting. The gap to trained retrievers (89.6% vs 88-93%) is narrow — Flywheel now matches MDR (~88%) despite zero training data, purpose-built architectures, and a harder retrieval setting (5,000 docs vs 10).
 
 ### Comparison with other MCP/vault tools
 
@@ -292,7 +292,7 @@ We are not aware of any other MCP server that publishes live AI test results.
 | **Per-tool coverage** | Claude discovers and uses each of 69 individual tools | 69 | **100% adoption** | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
 | **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
 | **Sequential workflow** | 7-beat workflow where each beat builds on previous vault state | 7 beats | 7/7 passed | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
-| **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 200 questions | 87.5% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
+| **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 500 questions | 89.6% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
 | **LoCoMo benchmark** | Retrieval quality on long-term conversational memory (5 categories) | 1,531 questions | 90.4% Recall@10 | [`locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts) |
 
 ### Why This Matters

@@ -1706,8 +1706,8 @@ export async function suggestRelatedLinks(
   // Lower-scoring entities still appear in suggestions/suggestion_events for
   // dashboard observability — we just don't write them into the suffix.
   const MAX_SUFFIX_ENTRIES = 3;
-  const MIN_SUFFIX_SCORE = 12;
-  const MIN_SUFFIX_CONTENT = 3;
+  const MIN_SUFFIX_SCORE = noteContext === 'daily' ? 8 : 12;
+  const MIN_SUFFIX_CONTENT = noteContext === 'daily' ? 2 : 3;
   const suffixEntries = topEntries.filter(e =>
     e.score >= MIN_SUFFIX_SCORE &&
     (e.breakdown.contentMatch >= MIN_SUFFIX_CONTENT ||

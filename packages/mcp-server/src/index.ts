@@ -2324,10 +2324,11 @@ async function runPostIndexWork(index: VaultIndex) {
           for (const event of filteredEvents) {
             if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
             try {
-              const content = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+              const rawContent = await fs.readFile(path.join(vaultPath, event.path), 'utf-8');
+              // Strip existing suggestion suffixes so prior entries don't block new scoring
+              const content = rawContent.replace(/ → \[\[.*$/gm, '');
               const result = await suggestRelatedLinks(content, {
                 maxSuggestions: 5,
-                strictness: 'balanced',
                 notePath: event.path,
                 detail: true,
               });
@@ -2354,7 +2355,6 @@ async function runPostIndexWork(index: VaultIndex) {
             try {
               const proactiveResults: Array<{ file: string; applied: string[] }> = [];
               for (const { file, top } of suggestionResults) {
-                if (getNoteContext(file) === 'daily') continue; // daily notes already auto-linked
                 try {
                   const result = await applyProactiveSuggestions(file, vaultPath, top, {
                     minScore: flywheelConfig?.proactive_min_score ?? 20,

@@ -13,8 +13,8 @@
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-84.8%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-55%25%20answer%20accuracy-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
-[![Tests](https://img.shields.io/badge/tests-2,541%20passed-brightgreen.svg)](docs/TESTING.md)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-58.5%25%20answer%20accuracy-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![Tests](https://img.shields.io/badge/tests-2,640%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **[Try It](#try-it)** · **[See It Work](#see-it-work)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[How It Compares](#how-it-compares)** · **[Benchmarked](#benchmarked)** · **[Docs](#documentation)**
 

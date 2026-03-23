@@ -258,6 +258,14 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ---
 
+## The Story Behind This
+
+I've been writing code for over 30 years, and I tried every PKM tool going before landing on Obsidian — I chose it for the plugin ecosystem and fell in love with the app. My first attempt at AI-powered knowledge management was pure Claude Code skills and hooks with no MCP server — writes were non-deterministic and recall was poor. Then I split it into two separate MCP tools for reading and writing, which was better but still fragmented. Flywheel is the third iteration: one unified server with deterministic mutations, hybrid search, and a graph that learns. I'm humble enough to admit I could never have built this by myself in my spare time — probably not even in a year, and definitely not without AI. I can read and write code, but this is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. Everything here was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and stress-tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
+
+I think what's happening right now is simultaneous invention — many people are grappling with the same problems, trying to build the same sort of thing for different audiences. This is mine. I dogfood it daily through a Telegram bot using voice input, and my intention is to automate as much voice-driven knowledge workflow as possible, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space. Times are changing.
+
+---
+
 ## License
 
 AGPL-3.0 — see [LICENSE](./LICENSE) for details. The source stays open. If someone forks this and offers it as a service, they must publish their changes. Your data is local; the code is transparent.

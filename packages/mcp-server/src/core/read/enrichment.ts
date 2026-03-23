@@ -485,6 +485,7 @@ export function enrichEntityCompact(
 
       enriched.backlink_count = backlinks.length;
       if (note) {
+        if (Object.keys(note.frontmatter).length > 0) enriched.frontmatter = note.frontmatter;
         if (note.tags.length > 0) enriched.tags = note.tags;
         if (note.outlinks.length > 0) {
           enriched.outlink_names = getOutlinkNames(note.outlinks, entityPath, index, stateDb, COMPACT_OUTLINK_NAMES);

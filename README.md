@@ -13,7 +13,7 @@
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-84.8%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-90.4%25%20Recall%4010-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-55%25%20answer%20accuracy-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Tests](https://img.shields.io/badge/tests-2,541%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **[Try It](#try-it)** · **[See It Work](#see-it-work)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[How It Compares](#how-it-compares)** · **[Benchmarked](#benchmarked)** · **[Docs](#documentation)**
@@ -153,14 +153,14 @@ Most Obsidian AI tools are either simple MCP bridges (read/write files, no graph
 
 ## Benchmarked
 
-No other MCP memory tool publishes retrieval benchmarks on standard academic datasets. Flywheel does — on two of them.
+Every number is measured on standard academic datasets and reproducible on your machine.
 
 ### Retrieval Quality
 
 | Benchmark | What it tests | Questions | Key result |
 |---|---|---|---|
 | [HotpotQA](https://hotpotqa.github.io/) | Multi-hop document retrieval | 200 | **84.8%** document recall |
-| [LoCoMo](https://snap-research.github.io/locomo/) | Conversational memory | 1,531 | **90.4%** Recall@10 |
+| [LoCoMo](https://snap-research.github.io/locomo/) | Conversational memory | 200 | **55.0%** answer accuracy |
 
 **HotpotQA** (200 hard multi-hop questions, 1,993 documents, v2.0.126) — End-to-end via real `claude -p` sessions, not a component test. 82.1% on multi-hop bridge questions. 99.5% partial recall (199/200 questions had at least one supporting doc found). $0.061/question. Zero training. For context: BM25 keyword search — the standard baseline — scores ~75%. Purpose-built neural retrievers trained on this dataset score 85-93%. Flywheel scores 84.8% with general-purpose vault tools.
 

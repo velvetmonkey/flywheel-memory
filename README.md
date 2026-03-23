@@ -13,7 +13,7 @@
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-89.6%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-58.5%25%20answer%20accuracy-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-51.0%25%20answer%20accuracy-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Tests](https://img.shields.io/badge/tests-2,640%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)**
@@ -229,17 +229,17 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ### Conversational Memory (LoCoMo)
 
-200 questions across 10 conversations. Answer accuracy via LLM-as-judge.
+600 questions across 10 conversations. Answer accuracy via LLM-as-judge.
 
 | System | Single-hop | Multi-hop | Commonsense | Questions | Judge |
 |---|---|---|---|---|---|
-| **Flywheel** | **75.0%** | 27.5% | **80.0%** | 200 | Claude Haiku |
-| [Mem0](https://mem0.ai/) | 38.7 | **28.6** | — | 695 | GPT-4o |
+| **Flywheel** | **59.2%** | **32.5%** | **65.8%** | 600 | Claude Haiku |
+| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | — | 695 | GPT-4o |
 | [Zep](https://getzep.com/) | 35.7 | 19.4 | — | 695 | GPT-4o |
 | [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | 695 | GPT-4o |
 | [Letta](https://memgpt.ai/) | 26.7 | — | — | 695 | GPT-4o |
 
-> **Not apples-to-apples.** Flywheel tested 200 questions with Claude Haiku as judge. Competitors tested 695 questions with GPT-4o as judge ([Mem0 paper](https://arxiv.org/abs/2504.19413)). Different judge models may score differently — we have not measured inter-judge agreement. Flywheel uses dialog-mode vault notes (raw conversation turns), which is the most keyword-rich representation. These differences mean the numbers are directionally useful but not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-locomo)
+> **Not apples-to-apples.** Flywheel tested 600 questions with Claude Haiku as judge. Competitors tested 695 questions with GPT-4o as judge ([Mem0 paper](https://arxiv.org/abs/2504.19413)). Different judge models may score differently — we have not measured inter-judge agreement. Flywheel uses dialog-mode vault notes (raw conversation turns), which is the most keyword-rich representation. These differences mean the numbers are directionally useful but not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-locomo)
 
 [Full benchmark methodology →](docs/TESTING.md)
 

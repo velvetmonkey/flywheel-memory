@@ -176,20 +176,20 @@ LoCoMo provides three representations of the same conversations. Flywheel builds
 | Summary | 82.7% | 89.2% | Close second — concise but retains key facts |
 | Observation | 76.9% | 84.5% | Shorter, less keyword overlap |
 
-### End-to-End Results (200 questions, balanced, Claude Sonnet + Flywheel MCP)
+### End-to-End Results (600 questions, balanced, Claude Sonnet + Flywheel MCP)
 
-Real `claude -p` sessions with the `agent` preset (recall, memory, brief tools). Stratified sampling: 40 questions per category, spread across all 10 conversations. No pre-processing, no cherry-picking.
+Real `claude -p` sessions with the `agent` preset (recall, memory, brief tools). Stratified sampling: 120 questions per category (96 for temporal), spread across all 10 conversations. No pre-processing, no cherry-picking.
 
-| Category | Questions | Evidence Recall | Answer Accuracy (LLM-judge) |
-|---|---|---|---|
-| **Overall** | **200** | **62.4%** | **58.5%** |
-| Commonsense | 40 | 92.5% | 80.0% |
-| Single-hop | 40 | 91.1% | 75.0% |
-| Adversarial | 40 | 77.5% | 55.0% |
-| Temporal | 40 | 38.1% | 55.0% |
-| Multi-hop | 40 | 49.6% | 27.5% |
+| Category | Questions | Evidence Recall | Answer Accuracy (LLM-judge) | 95% CI |
+|---|---|---|---|---|
+| **Overall** | **600** | **71.2%** | **51.0%** | [47.0%, 55.0%] |
+| Commonsense | 120 | 88.4% | 65.8% | [57.0%, 73.7%] |
+| Single-hop | 120 | 85.6% | 59.2% | [50.2%, 67.5%] |
+| Adversarial | 144 | 88.2% | 54.2% | [46.0%, 62.1%] |
+| Temporal | 96 | 56.4% | 40.6% | [31.3%, 50.6%] |
+| Multi-hop | 120 | 58.6% | 32.5% | [24.8%, 41.3%] |
 
-Cost: $18.76 total ($0.094/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts.
+Cost: $51.68 total ($0.086/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts (Wilson 95% confidence intervals).
 
 ### How Flywheel compares to other memory systems
 
@@ -197,8 +197,8 @@ Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.1941
 
 | System | Type | Single-hop | Multi-hop | Questions | Judge | Infrastructure |
 |---|---|---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **75.0%** | 27.5% | 200 | Claude Haiku | Local (SQLite + markdown) |
-| **Flywheel** | MCP vault tool | **91.1%** | **49.6%** | 200 | — | Evidence recall (not answer accuracy) |
+| **Flywheel** | MCP vault tool | **59.2%** | **32.5%** | 600 | Claude Haiku | Local (SQLite + markdown) |
+| **Flywheel** | MCP vault tool | **85.6%** | **58.6%** | 600 | — | Evidence recall (not answer accuracy) |
 | Mem0 | Cloud memory | 38.7 | 28.6 | 695 | GPT-4o | Redis + Qdrant |
 | Zep | Cloud memory | 35.7 | 19.4 | 695 | GPT-4o | Cloud service |
 | LangMem | Memory framework | 35.5 | 26.0 | 695 | GPT-4o | Varies |
@@ -206,15 +206,16 @@ Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.1941
 
 **Not apples-to-apples — read this before comparing:**
 
-- **Sample size.** Flywheel: 200 questions (stratified 40 per category). Competitors: 695 questions. Smaller samples have wider confidence intervals — at 40 questions per category, each question swings the score by ±2.5pp.
+- **Sample size.** Flywheel: 600 questions (stratified ~120 per category). Competitors: 695 questions. Comparable sample sizes, but not identical.
 - **Judge model.** Flywheel uses Claude Haiku for CORRECT/WRONG verdicts. The Mem0 paper uses GPT-4o. Different judges may have different leniency or strictness. We have not measured inter-judge agreement.
 - **Vault mode.** Flywheel uses dialog mode (raw conversation turns) — the most keyword-rich representation. Summary mode scores ~1-2pp lower on retrieval. Competitors may use different representations.
 - **Prompt.** Claude is told the vault structure (notes are conversation sessions) but is not given a retrieval strategy.
 
 **What the numbers do suggest:**
 
-- **Single-hop: 75.0%** — nearly 2x the next system (Mem0 at 38.7%), even accounting for methodology differences. Flywheel finds the right note and Claude extracts the answer.
-- **Multi-hop: 27.5%** — roughly tied with Mem0 (28.6%). Hard for everyone. The methodology differences make it impossible to say who's ahead.
+- **Single-hop: 59.2%** — still 20pp ahead of Mem0 (38.7%), even with a fairer prompt and different judge model. Flywheel finds the right note and Claude extracts the answer.
+- **Multi-hop: 32.5%** — ahead of Mem0 (28.6%), though the confidence intervals overlap ([24.8%, 41.3%] vs their point estimate). Hard for everyone.
+- **Temporal: 40.6%** — the weakest category. Questions about when events happened require precise date reasoning across sessions.
 - **Infrastructure.** Flywheel runs locally on markdown files with SQLite. Mem0 requires Redis + Qdrant. Zep requires a cloud service.
 
 Source: [`demos/locomo/`](../demos/locomo/) | [`packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts)

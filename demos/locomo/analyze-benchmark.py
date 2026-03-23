@@ -22,7 +22,7 @@ ARTICLES = {'a', 'an', 'the'}
 
 def normalize_answer(text):
     """Lowercase, strip articles/punctuation/whitespace."""
-    text = text.lower()
+    text = str(text).lower()
     text = re.sub(r'[^\w\s]', ' ', text)
     tokens = [t for t in text.split() if t and t not in ARTICLES]
     return ' '.join(tokens)
@@ -177,6 +177,10 @@ def main():
         padded = f'{i:03d}'
         jsonl_path = raw_dir / f'q{padded}.jsonl'
 
+        # Skip questions without result files (subset runs)
+        if not jsonl_path.exists():
+            continue
+
         accessed_paths, cost, tools, answer = extract_accessed_paths(str(jsonl_path))
         total_cost += cost
 
@@ -224,7 +228,8 @@ def main():
     lines.append('# LoCoMo End-to-End Benchmark')
     lines.append('')
     lines.append(f'**Date:** {datetime.now().strftime("%Y-%m-%d %H:%M")}')
-    lines.append(f'**Questions:** {len(questions)}')
+    scored_count = len(per_question)
+    lines.append(f'**Questions Scored:** {scored_count} / {len(questions)}')
     lines.append(f'**Vault Mode:** {gt.get("vault_mode", "dialog")}')
     lines.append(f'**Sessions:** {gt.get("total_sessions", "?")}')
     lines.append(f'**Total Cost:** ${total_cost:.2f}')
@@ -236,7 +241,7 @@ def main():
     lines.append('|--------|-------|')
     lines.append(f'| Evidence Recall | **{overall_evidence_recall:.1%}** ({total_found}/{total_relevant} evidence sessions found) |')
     lines.append(f'| Answer Score | **{overall_answer_score:.3f}** (F1 for cat 1-4, adversarial detection for cat 5) |')
-    lines.append(f'| Avg Cost/Question | ${total_cost/len(questions):.3f} |')
+    lines.append(f'| Avg Cost/Question | ${total_cost/scored_count:.3f} |' if scored_count > 0 else '| Avg Cost/Question | N/A |')
     lines.append('')
 
     lines.append('## By Category — Evidence Recall')
@@ -286,6 +291,7 @@ def main():
             'dataset': 'locomo10',
             'vault_mode': gt.get('vault_mode', 'dialog'),
             'total_questions': len(questions),
+            'scored_questions': scored_count,
             'total_sessions': gt.get('total_sessions', 0),
             'overall_evidence_recall': round(overall_evidence_recall, 4),
             'overall_answer_score': round(overall_answer_score, 4),

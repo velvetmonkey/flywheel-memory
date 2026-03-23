@@ -11,7 +11,7 @@ const ARTICLES = new Set(['a', 'an', 'the']);
  * Normalize answer text: lowercase, strip articles, punctuation, extra whitespace.
  */
 export function normalizeAnswer(text: string): string {
-  return text
+  return String(text)
     .toLowerCase()
     .replace(/[^\w\s]/g, ' ')  // strip punctuation
     .split(/\s+/)

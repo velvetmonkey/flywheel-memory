@@ -176,23 +176,41 @@ LoCoMo provides three representations of the same conversations. Flywheel builds
 | Summary | 82.7% | 89.2% | Close second — concise but retains key facts |
 | Observation | 13.5% | 27.0% | Poor — sparse annotations, low keyword overlap |
 
-### How Flywheel compares
+### End-to-End Results (50 questions, Claude Sonnet + Flywheel MCP)
 
-[Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos), a graph-based memory system, reports LoCoMo answer accuracy (LLM-as-judge) on 695 questions:
+Real `claude -p` sessions with the `agent` preset (recall, memory, brief tools). No pre-processing, no cherry-picking.
+
+| Category | Questions | Evidence Recall | Token F1 |
+|---|---|---|---|
+| **Overall** | **50** | **71.2%** | **0.132** |
+| Single-hop | 24 | 91.7% | 0.181 |
+| Multi-hop | 19 | 62.8% | 0.086 |
+| Temporal | 7 | 50.0% | 0.088 |
+
+Cost: $4.50 total ($0.09/question).
+
+**Note on token F1:** LoCoMo ground truth answers are terse ("7 May 2023", "Single"). Claude gives full-sentence answers that are substantively correct but contain many extra tokens, which depresses F1. Evidence recall — did the system find the right session notes — is the more meaningful retrieval metric.
+
+### How Flywheel compares to other memory systems
+
+[Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos) benchmarks six memory systems on LoCoMo. They report answer accuracy (LLM-as-judge). Flywheel's evidence recall measures whether the right notes were retrieved — a prerequisite for correct answers.
 
 | System | Type | Single-hop | Multi-hop | Metric |
 |---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **88.1%** | **58.1%** | Retrieval Recall@5 (unit-level) |
-| Ori Mnemos | Graph memory | 37.69 | 29.31 | Answer accuracy (LLM-as-judge) |
-| Mem0 | Cloud memory | 38.72 | 28.64 | Answer accuracy (LLM-as-judge) |
-| Zep | Cloud memory | 35.74 | 19.37 | Answer accuracy (LLM-as-judge) |
-| LangMem | Memory framework | 35.51 | 26.04 | Answer accuracy (LLM-as-judge) |
+| **Flywheel** | MCP vault tool | **91.7%** | **62.8%** | Evidence recall (E2E, 50q) |
+| **Flywheel** | MCP vault tool | **88.1%** | **58.1%** | Retrieval Recall@5 (unit, 1,531q) |
+| Ori Mnemos | Graph memory | 37.7 | 29.3 | Answer accuracy (LLM-judge, 695q) |
+| Mem0 | Cloud (Redis+Qdrant) | 38.7 | 28.6 | Answer accuracy (LLM-judge, 695q) |
+| Zep | Cloud memory | 35.7 | 19.4 | Answer accuracy (LLM-judge, 695q) |
+| LangMem | Memory framework | 35.5 | 26.0 | Answer accuracy (LLM-judge, 695q) |
+| MemGPT/Letta | Agent memory | 26.7 | — | Answer accuracy (LLM-judge, 695q) |
+| A-Mem | Agent memory | 20.8 | — | Answer accuracy (LLM-judge, 695q) |
 
-**Important caveats:**
+**Key differences:**
 
-- **Different metrics.** Flywheel's numbers are retrieval Recall@5 (did the right session note appear in top 5 results?). Ori Mnemos and others report answer accuracy (did the LLM produce the correct answer?). These are not directly comparable — retrieval recall is a necessary condition for answer accuracy, not the same thing.
-- **E2E comparison pending.** The Flywheel E2E demo (`demos/locomo/run-benchmark.sh`) is built but not yet run. Once run, it will produce comparable answer accuracy numbers via Claude + Flywheel MCP with the `agent` preset.
-- **Question count.** Flywheel tests 1,531 non-adversarial questions (full dataset). Ori Mnemos tests 695 questions.
+- **Different metrics.** Evidence recall measures whether the retrieval pipeline found the right conversation sessions. Answer accuracy measures whether the LLM produced the correct final answer. Evidence recall is a necessary condition for answer accuracy — you can't answer correctly if you don't find the right notes.
+- **Infrastructure.** Flywheel runs locally on markdown files with SQLite. Mem0 requires Redis + Qdrant. Zep requires a cloud service. Ori Mnemos uses local markdown (similar to Flywheel).
+- **Question count.** Flywheel unit-level tests all 1,531 non-adversarial questions. E2E tests 50 questions. Ori Mnemos tests 695.
 
 Source: [`demos/locomo/`](../demos/locomo/) | [`packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts)
 

@@ -258,7 +258,7 @@ Every number is measured on standard academic datasets and reproducible on your 
 > **Transparency notes:**
 > - All numbers are answer accuracy via LLM-as-judge (binary CORRECT/WRONG) — same methodology across all systems. Flywheel uses Claude Haiku as judge; competitor numbers from the Mem0 paper.
 > - Flywheel: 200 questions (balanced, 40 per category, all 10 conversations). Competitors: 695 questions.
-> - Multi-hop (27.5%) is approaching Ori Mnemos (29.3%) and Mem0 (28.6%). Iterative retrieval + reading session notes directly drives the improvement.
+> - Multi-hop (27.5%) is approaching Mem0 (28.6%). Iterative retrieval + reading session notes directly drives the improvement.
 
 **What we don't claim:**
 - We don't claim to beat trained retrievers. We sit *next to* them without any training.

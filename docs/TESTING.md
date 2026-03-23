@@ -189,17 +189,16 @@ Real `claude -p` sessions with the `agent` preset (recall, memory, brief tools).
 | Temporal | 40 | 38.1% | 55.0% |
 | Multi-hop | 40 | 49.6% | 27.5% |
 
-Cost: $18.76 total ($0.094/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts, matching the methodology used by Ori Mnemos and others.
+Cost: $18.76 total ($0.094/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts.
 
 ### How Flywheel compares to other memory systems
 
-[Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos) benchmarks six memory systems on LoCoMo using answer accuracy (LLM-as-judge). We report the same metric for direct comparison.
+Competitor numbers sourced from the Mem0 paper, which benchmarks memory systems on LoCoMo using answer accuracy (LLM-as-judge). We report the same metric for direct comparison.
 
 | System | Type | Single-hop | Multi-hop | Metric | Infrastructure |
 |---|---|---|---|---|---|
 | **Flywheel** | MCP vault tool | **75.0%** | 27.5% | Answer accuracy (LLM-judge, 200q) | Local (SQLite + markdown) |
 | **Flywheel** | MCP vault tool | **91.1%** | **49.6%** | Evidence recall (E2E, 200q) | Local (SQLite + markdown) |
-| Ori Mnemos | Graph memory | 37.7 | **29.3** | Answer accuracy (LLM-judge, 695q) | Local (markdown) |
 | Mem0 | Cloud memory | 38.7 | 28.6 | Answer accuracy (LLM-judge, 695q) | Redis + Qdrant |
 | Zep | Cloud memory | 35.7 | 19.4 | Answer accuracy (LLM-judge, 695q) | Cloud service |
 | LangMem | Memory framework | 35.5 | 26.0 | Answer accuracy (LLM-judge, 695q) | Varies |
@@ -209,9 +208,8 @@ Cost: $18.76 total ($0.094/question). LLM-as-judge scoring uses Claude Haiku for
 
 - **Single-hop: 75.0%** — nearly 2x the next best system (Mem0 at 38.7%). Flywheel finds the right note and Claude extracts the answer.
 - **Commonsense: 80.0%** — highest of any category. Questions about common-sense inferences from conversation context.
-- **Multi-hop: 27.5%** — approaching Ori Mnemos (29.3%) and Mem0 (28.6%). Iterative retrieval (searching, reading sessions, then searching again with discovered terms) drives the improvement over the baseline.
+- **Multi-hop: 27.5%** — approaching Mem0 (28.6%). Iterative retrieval (searching, reading sessions, then searching again with discovered terms) drives the improvement over the baseline.
 - **Temporal: 55.0%** — questions about when events happened, temporal ordering across sessions.
-- **Same metric.** Both Flywheel and Ori Mnemos use LLM-as-judge (binary CORRECT/WRONG). Flywheel uses Claude Haiku as judge; Ori uses GPT-4o.
 - **Infrastructure.** Flywheel runs locally on markdown files with SQLite. Mem0 requires Redis + Qdrant. Zep requires a cloud service.
 
 Source: [`demos/locomo/`](../demos/locomo/) | [`packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts)

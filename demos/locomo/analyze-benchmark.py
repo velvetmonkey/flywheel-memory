@@ -315,7 +315,7 @@ def judge_answers(results_dir, gt_path):
     """LLM-as-judge scoring: ask Claude to evaluate each answer as correct/wrong.
 
     Creates a judge-results.json with binary accuracy per question.
-    Comparable to Ori Mnemos / Mem0 evaluation methodology.
+    Comparable to Mem0 evaluation methodology.
     """
     import subprocess
 

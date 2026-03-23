@@ -21,10 +21,10 @@
 | | Without Flywheel | With Flywheel |
 |---|---|---|
 | "What's overdue?" | Read every file | Indexed query, <10ms |
-| "What links here?" | Grep for name, flat list | Backlink graph, pre-indexed |
+| "What links here?" | Grep the vault, flat list | Ranked backlinks + outlinks, pre-indexed |
 | "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
-| "What should I link?" | Not possible | 10-dimension scoring + semantic search |
-| Token cost | ~800-2,000 per query | ~50-200 per query ([53x savings measured](docs/PROVE-IT.md#token-economics)) |
+| "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
+| Token cost per query | Hundreds to thousands | [53x less](docs/PROVE-IT.md#token-economics) — graph does the joining |
 
 ---
 
@@ -145,7 +145,7 @@ Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Fee
 Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
 ```
 
-10 scoring dimensions, every number traceable to vault usage. Recency from what you last wrote. Co-occurrence from notes you've written before. Hub score from eigenvector centrality — not just how many notes link there, but how important those linking notes are. The score learns as you use it.
+13 scoring layers, every number traceable to vault usage. Recency from what you last wrote. Co-occurrence from notes you've written before. Hub score from eigenvector centrality — not just how many notes link there, but how important those linking notes are. The score learns as you use it.
 
 See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 

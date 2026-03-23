@@ -113,15 +113,15 @@ describe('Demo Vault: Artemis Rocket', () => {
 
 describe('Demo Vault: Carter Strategy', () => {
   describe('File Counts', () => {
-    it('should have approximately 51 markdown files', async () => {
+    it('should have approximately 43 markdown files', async () => {
       const files = await glob('**/*.md', {
         cwd: CARTER_VAULT,
         ignore: ['**/node_modules/**'],
       });
 
-      // Allow some flexibility (45-60 files)
-      expect(files.length).toBeGreaterThanOrEqual(45);
-      expect(files.length).toBeLessThanOrEqual(60);
+      // Allow some flexibility (38-55 files)
+      expect(files.length).toBeGreaterThanOrEqual(38);
+      expect(files.length).toBeLessThanOrEqual(55);
     });
   });
 

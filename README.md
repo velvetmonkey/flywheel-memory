@@ -3,7 +3,7 @@
   <h1>Flywheel</h1>
   <p><strong>Your Obsidian vault, wired.</strong><br/>
   Search, write, and graph tools that auto-link your notes and learn from your edits.<br/>
-  All local. All markdown. Six lines of config.</p>
+  All local. All markdown. A few lines of config.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
@@ -36,7 +36,7 @@ From the [carter-strategy](demos/carter-strategy/) demo — a solo consultant wi
 
 <video src="https://github.com/user-attachments/assets/ec1b51a7-cb30-4c49-a35f-aa82c31ec976" autoplay loop muted playsinline width="100%"></video>
 
-One search call returned everything — frontmatter with amounts and status, backlink lists, outlink lists. Zero file reads needed. The graph did the joining, not the AI reading files one by one.
+One search call returned everything — metadata (frontmatter) with amounts and status, backlink lists, outlink lists. Zero file reads needed. The graph did the joining, not the AI reading files one by one.
 
 ### Write: Auto-wikilinks on every mutation
 
@@ -152,7 +152,7 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 
 Every search result comes back enriched — frontmatter, ranked backlinks, ranked outlinks, and content snippets, all from an in-memory index. That's how one call answers a billing question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project — each with its own frontmatter. The graph did the joining.
 
-With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally — SQLite + FTS5 for BM25, in-memory embeddings for semantic, Reciprocal Rank Fusion to merge results.
+With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally — SQLite full-text search (BM25), in-memory embeddings for semantic similarity, fused together for best-of-both results.
 
 ### 2. Every Link Has a Reason
 
@@ -181,7 +181,7 @@ Static tools give you the same results on day 1 and day 100. Flywheel's suggesti
 
 ### 4. Agentic Memory & Policies
 
-Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `recall` retrieves across notes + entities + memories in one call, and `memory` stores observations that persist across sessions with automatic decay.
+Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `recall` retrieves across notes, entities (people, projects, concepts), and memories in one call, and `memory` stores observations that persist across sessions with automatic decay.
 
 Complex vault workflows become deterministic policies — describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back, committed as a single git commit.
 
@@ -270,16 +270,16 @@ I dogfood it daily through a Telegram bot using voice input, because I'm a lazy 
 
 I run Flywheel on my own 1,600-note vault — 2.5 years of daily notes, work docs, personal projects, and reference material.
 
-The telling number is wikilinks per daily note — the connections Flywheel creates between your notes, people, projects, and concepts as you write. More links means richer graph queries, better search results, and stronger suggestions over time.
+The number I track is wikilinks per daily note — the connections Flywheel creates between your notes, people, projects, and concepts as you write. More links means richer search results and stronger suggestions over time.
 
 | Period | Links per daily note |
 |--------|---------------------|
 | Pre-Flywheel (manual) | 3–11 |
 | Post-Flywheel (3 months) | 20–625 |
 
-The note count only grew ~13%, but link density exploded. The high end (625) includes auto-logged bot conversations with entity links, so take it with appropriate salt — but even quiet days run 20–30 links where they used to be 3–5. The connections grow faster than the content. That's the flywheel.
+Over three months, my vault went from ~1,400 to ~1,600 notes — modest growth. But the link density exploded. The high end (625) includes auto-logged bot conversations, so take it with salt — but even quiet days run 20–30 links where they used to be 3–5. The connections grow faster than the content. That's the flywheel.
 
-12% orphan notes is honest — some are stubs, some are clippings that haven't earned their connections yet. Full vault stats: 618 entities indexed, 37,259 total wikilinks, 23.2 links per note average.
+88% of notes are connected to at least one other note. The remaining 12% are stubs or clippings that haven't earned their connections yet.
 
 ---
 

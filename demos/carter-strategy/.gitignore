@@ -1,9 +1,8 @@
 # Ephemeral state (rebuilt automatically)
 .flywheel/
 
-# Daily note created during demo runs (today's date)
-daily-notes/2026-03-20.md
+# Daily notes created during demo/test runs
+daily-notes/
 
-# Demo video scripts (local only)
-DEMO-VIDEO-SCRIPT.md
-DEMO-VOICE-PKM.md
+# Test results
+test-results/

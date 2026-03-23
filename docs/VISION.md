@@ -16,15 +16,15 @@ Most knowledge tools solve for capture. Flywheel solves for retrieval, connectio
 
 ---
 
-## The Vision Stack
+## How It Works in Practice
 
-The complete picture looks like this:
+This isn't aspirational -- it's running in production daily via a Telegram voice bot:
 
 ```
 Voice → Transcription → AI Agent → Flywheel → Queryable Knowledge
 ```
 
-You're walking to lunch after a meeting. You pull out your phone and say: "Log that we agreed to push the launch to March. Sarah Mitchell owns the Acme Data Migration, and Stacy Thompson is starting the Beta Corp Dashboard." Your voice becomes a transcript. The AI agent sends it to Flywheel. Flywheel recognizes `[[Sarah Mitchell]]`, `[[Acme Data Migration]]`, `[[Stacy Thompson]]`, and `[[Beta Corp Dashboard]]` from your existing vault. It writes the note, links it to the right entities, and the knowledge graph grows -- all before you've sat down.
+Walking to lunch after a meeting. Pull out your phone and say: "Log that we agreed to push the launch to March. Sarah Mitchell owns the Acme Data Migration, and Stacy Thompson is starting the Beta Corp Dashboard." Your voice becomes a transcript. The AI agent sends it to Flywheel. Flywheel recognizes `[[Sarah Mitchell]]`, `[[Acme Data Migration]]`, `[[Stacy Thompson]]`, and `[[Beta Corp Dashboard]]` from your existing vault. It writes the note, links it to the right entities, and the knowledge graph grows -- all before you've sat down.
 
 The next time you ask "What's the latest on the Acme deal?", the answer is already indexed, linked, and ready in under 10ms.
 
@@ -70,7 +70,7 @@ Drop a 6-line `.mcp.json` file in your vault. That's it. Flywheel auto-detects y
 
 ### Deterministic: every suggestion is verifiable
 
-Auto-wikilinks aren't magic -- they're a 10-layer scoring algorithm you can inspect, trace, and override. Every suggestion has a score breakdown. Every suppression has a reason. See [ALGORITHM.md](ALGORITHM.md) for the full specification.
+Auto-wikilinks aren't magic -- they're a 13-layer scoring algorithm you can inspect, trace, and override. Every suggestion has a score breakdown. Every suppression has a reason. See [ALGORITHM.md](ALGORITHM.md) for the full specification.
 
 ---
 
@@ -94,7 +94,7 @@ The demo vaults in this repo cover these personas with production-realistic data
 
 ### Flywheel Memory
 
-The MCP server. 69 tools across 11 categories give Claude structured access to Obsidian vaults: search, graph queries, schema intelligence, content mutations, task management, agent memory, and policy automation. Published as `@velvetmonkey/flywheel-memory`.
+The MCP server. 69 tools across 12 categories give Claude structured access to Obsidian vaults: search, graph queries, schema intelligence, content mutations, task management, agent memory, and policy automation. Published as `@velvetmonkey/flywheel-memory`.
 
 ### Vault-Core
 

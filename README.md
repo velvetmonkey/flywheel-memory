@@ -1,9 +1,9 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>A brain for your Obsidian vault.</strong><br/>
-  MCP tools for search, write, and graph. Auto-wikilinks on every mutation.<br/>
-  A feedback loop that learns from your edits. Zero cloud. Six lines of config.</p>
+  <p><strong>Your Obsidian vault, wired.</strong><br/>
+  Search, write, and graph tools that auto-link your notes and learn from your edits.<br/>
+  All local. All markdown. Six lines of config.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
@@ -12,9 +12,9 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![HotpotQA](https://img.shields.io/badge/HotpotQA-89.6%25%20recall-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-51.0%25%20answer%20accuracy-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
-[![Tests](https://img.shields.io/badge/tests-2,640%20passed-brightgreen.svg)](docs/TESTING.md)
+[![HotpotQA](https://img.shields.io/badge/HotpotQA-89.6%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-51.0%25%20answer%20accuracy-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![Tests](https://img.shields.io/badge/tests-2,579%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)**
 
@@ -174,37 +174,11 @@ Every sentence you write through Flywheel makes your graph denser. A denser grap
 
 Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation.
 
-### 4. Agentic Memory
+### 4. Agentic Memory & Policies
 
-Your AI knows what you were working on yesterday without you re-explaining it.
+Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `recall` retrieves across notes + entities + memories in one call, and `memory` stores observations that persist across sessions with automatic decay.
 
-- **`brief`** — startup context: what happened recently, what's active, what needs attention
-- **`recall`** — retrieves across notes, entities, memories, and semantic search in one call
-- **`memory`** — stores observations that persist across sessions, with automatic decay
-
-No session is a blank slate.
-
-### 5. Deterministic Policies
-
-Complex vault workflows shouldn't be ad-hoc. Describe what you want in plain language — the AI creates the policy, saves it, and executes it on demand.
-
-```
-❯ Create a policy that generates a weekly review note, pulls open tasks,
-  and updates project frontmatter with hours logged
-
-● flywheel › policy action=author
-  → Saved .claude/policies/weekly-review.yaml
-
-❯ Run the weekly review for this week
-
-● flywheel › policy action=execute name=weekly-review
-  variables: { week: "2026-W12" }
-  → Created weekly-notes/2026-W12.md
-  → Updated 3 project frontmatter files
-  → All steps committed atomically
-```
-
-Policies chain vault tools into atomic operations — all steps succeed or all roll back, committed as a single git commit.
+Complex vault workflows become deterministic policies — describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back, committed as a single git commit.
 
 ---
 
@@ -245,7 +219,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ## Tested
 
-2,640 tests across read, write, security, concurrency, and graph quality. CI-gated on Ubuntu + Windows, Node 20 + 22.
+2,579 tests across read, write, security, concurrency, and graph quality. CI-gated on Ubuntu + Windows, Node 20 + 22.
 
 - **Graph quality** — 100% wikilink precision on ground truth vault, stress-tested over 50 generations with realistic noise. [Report →](docs/QUALITY_REPORT.md)
 - **Live AI testing** — Real `claude -p` sessions verify tool adoption end-to-end, not just handler logic
@@ -275,43 +249,24 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ## The Story Behind This
 
-I've been writing code for over 30 years, and I tried every PKM tool going before landing on Obsidian — I chose it for the plugin ecosystem and fell in love with the app. My first attempt at AI-powered knowledge management was pure Claude Code skills and hooks with no MCP server — writes were non-deterministic and recall was poor. Then I split it into two separate MCP tools for reading and writing, which was better but still fragmented. Flywheel is the third iteration: one unified server with deterministic mutations, hybrid search, and a graph that learns.
+I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third iteration at AI-powered knowledge management — the first two (Claude Code skills, then split read/write MCP servers) taught me what doesn't work. This version is one unified server with deterministic mutations, hybrid search, and a graph that learns.
 
-I'm humble enough to admit I could never have built this by myself in my spare time — probably not even in a year, and definitely not without AI. I can read and write code, but this is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. Everything here was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and stress-tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
+I couldn't have built this by myself — not in a year, and definitely not without AI. Everything here was driven through Claude Code with Opus 4.5 and 4.6. I've barely opened the IDE except to review what was generated. I've subjected it to extensive code reviews and stress-tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 
-I think what's happening right now is simultaneous invention — many people are grappling with the same problems, trying to build the same sort of thing for different audiences. This is mine. I dogfood it daily through a Telegram bot using voice input, and my intention is to automate as much voice-driven knowledge workflow as possible, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space.
+I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space.
 
 ### Dogfooding: my vault, unvarnished
 
-I run Flywheel on my own 1,600-note vault — 2.5 years of daily notes, work documentation, personal projects, and reference material across six domains. Here's what the graph looks like after three months of daily use via a Telegram voice bot:
-
-| Metric | Value |
-|--------|-------|
-| Notes | 1,600 |
-| Entities indexed | 618 |
-| Total wikilinks | 37,259 |
-| Links per note (average) | 23.2 |
-| Orphan notes (zero links) | 193 (12%) |
-| Daily note consistency | ~25-31 notes/month for 2.5 years |
-
-The telling number is daily note link density before and after Flywheel:
+I run Flywheel on my own 1,600-note vault — 2.5 years of daily notes, work docs, personal projects, and reference material. The telling number is daily note link density before and after:
 
 | Period | Links per daily note |
 |--------|---------------------|
-| Pre-Flywheel (manual) | 3–11 |
-| Post-Flywheel (3 months) | 20–625 (includes auto-logged bot sessions) |
+| Pre-Flywheel (manual) | 3-11 |
+| Post-Flywheel (3 months) | 20-625 |
 
-The note count only grew ~13%, but wikilink density exploded — 3,097 new linked lines in three months. The connections are growing faster than the content. That's not a folder of files; it's a graph that's actually densifying. The high end (625) includes auto-logged bot conversations with entity links, so take it with appropriate salt. But even the quiet days run 20–30 links where they used to be 3–5.
+The note count only grew ~13%, but wikilink density exploded — 3,097 new linked lines in three months. The connections are growing faster than the content. The high end (625) includes auto-logged bot conversations with entity links, so take it with appropriate salt. But even quiet days run 20-30 links where they used to be 3-5.
 
-12% orphan notes is honest — some are stubs, some are clippings that haven't earned their connections yet. I'm not hiding that.
-
-Since introducing Flywheel, my daily notes have become *long*. I log everything through the bot — interactions, research, work notes, tasks — and the auto-wikilinks and recall provide the value. I rarely open Obsidian to hunt for things or manually edit anymore. I do it all through voice and the AI. That might look alarming at first glance — you're suddenly writing a lot, building a lot, creating edges to things that may or may not deserve a permanent note yet. But they're all useful edges. By going at this speed, you're building a meaningful graph, which was the original intent. It's just the mode of interaction that's changing.
-
-And Obsidian is still there for everything it was always good at — editing, curating, caring about your vault's structure. You can give the AI commands to create hub notes, build spokes, update leaves, compile research, slice and query across your graph. The combination of voice-driven capture and Obsidian's editing environment is genuinely easier than either one alone.
-
-One more thing I should address: the benchmark scores. HotpotQA is running at 89.6% recall across 500 multi-hop questions, matching specially trained neural retrievers from Stanford and Meta AI. I know how that sounds — it's a bonkers claim for a general-purpose MCP tool with zero training data. We acknowledge it's not a fair comparison (different test settings, different sample sizes, trained vs untrained), and the [Benchmarked](#benchmarked) section spells out every caveat. But with 500 questions, the sample size is representative and the direction is clear. We think the tests are sensible, we've made them reproducible, and the numbers are what they are. Draw your own conclusions.
-
-I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) — an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor. Early days, but the intent is to give value back to Obsidian itself.
+12% orphan notes is honest — some are stubs, some are clippings that haven't earned their connections yet. I'm not hiding that. The full vault stats: 618 entities indexed, 37,259 total wikilinks, 23.2 links per note average.
 
 ---
 

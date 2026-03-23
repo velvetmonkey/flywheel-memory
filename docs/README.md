@@ -6,8 +6,8 @@
 
 ## Getting Started
 
-- **Install** — see [Quick Start](../README.md#quick-start) in the main README
-- **First query** — see [Live Example](../README.md#live-example-the-flywheel-in-action) for a walkthrough
+- **Install** — see [Try It](../README.md#try-it) in the main README
+- **First query** — see [See It Work](../README.md#see-it-work) for a walkthrough
 - **Demo vaults** — jump to [Demo Vaults](#demo-vaults) below
 
 ---
@@ -17,21 +17,21 @@
 | Document | Description | Key Question |
 |----------|-------------|--------------|
 | [SETUP.md](SETUP.md) | Set up your own vault — prerequisites, config, first commands | "How do I get started with my own vault?" |
-| [TOOLS.md](TOOLS.md) | Full tool reference — 69 tools across 11 categories | "What tools are available and what do they do?" |
+| [TOOLS.md](TOOLS.md) | Full tool reference — 69 tools across 12 categories | "What tools are available and what do they do?" |
 | [COOKBOOK.md](COOKBOOK.md) | Example prompts organized by use case | "What can I ask Claude to do with my vault?" |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Index strategy, FTS5 search, graph model, auto-wikilinks | "How does Flywheel work under the hood?" |
 | [CONFIGURATION.md](CONFIGURATION.md) | Environment variables, tool presets, platform setup | "How do I customize my setup?" |
 | [TESTING.md](TESTING.md) | Test philosophy, performance benchmarks, security testing | "How is this tested and can I trust it?" |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Error recovery, diagnostics, common issues | "Something went wrong — how do I fix it?" |
 | [VISION.md](VISION.md) | The flywheel effect, design principles, ecosystem | "Where is this project going?" |
-| [ALGORITHM.md](ALGORITHM.md) | The 10-layer scoring system — how every suggestion is computed | "How does auto-wikilinks decide what to link?" |
+| [ALGORITHM.md](ALGORITHM.md) | The 13-layer scoring system — how every suggestion is computed | "How does auto-wikilinks decide what to link?" |
 | [PROVE-IT.md](PROVE-IT.md) | Clone it, run it, see it in 5 minutes | "Can I try this right now?" |
 
 ---
 
 ## Demo Vaults
 
-6 production-ready vaults representing real knowledge work. Each demo is a self-contained Obsidian vault with an `.mcp.json` already configured.
+7 production-ready vaults representing real knowledge work. Each demo is a self-contained Obsidian vault with an `.mcp.json` already configured.
 
 | Demo | Persona | Try This | Notes |
 |------|---------|----------|-------|
@@ -56,7 +56,7 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 ```bash
 npm run build    # Build both packages
-npm test         # Run full test suite (2,456 tests)
+npm test         # Run full test suite (2,579 tests)
 npm run dev      # Watch mode
 npm run lint     # Type check
 ```
@@ -74,7 +74,7 @@ No. Flywheel runs entirely on your machine. No cloud services, no API keys (beyo
 CI benchmarks test 100,000-line file mutations and 2,500-entity indexes. The bench package can generate vaults up to 100k notes. The in-memory index builds at startup (a few seconds cold, ~100ms cached) and queries return in under 10ms.
 
 **Will it corrupt my vault?**
-2,456 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
+2,579 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
 
 **How much does it cost in tokens?**
 A typical query uses 50-200 tokens of context. Compare that to grep-and-read, which typically costs ~800-2,000 tokens for text-searchable questions. Measured across a 7-beat demo scenario: the `brief` tool delivers 44x token savings (71 tokens vs 3,164 baseline). The bigger win is structural queries (backlinks, hubs, paths) that grep can't answer at all.

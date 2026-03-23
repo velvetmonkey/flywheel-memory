@@ -2,7 +2,7 @@
 
 Your vault is your second brain. You don't hand it to software you can't trust.
 
-**2,541 tests | 124 test files | 47,000+ lines of test code**
+**2,579 tests | 129 test files | 47,000+ lines of test code**
 
 ---
 
@@ -10,11 +10,36 @@ Your vault is your second brain. You don't hand it to software you can't trust.
 
 Three principles guide every test in this project:
 
-1. **Prove it at scale.** Not with 5 notes in a toy vault -- with 100,000-line files and 2,500-entity indexes. If it works at scale, it works everywhere.
+1. **Prove it at scale.** Not with 5 notes in a toy vault -- with 100,000-line files and 2,500-entity indexes. If it works at scale, it works everywhere. Small test vaults mask O(n) regressions. A 5-note vault won't reveal that entity scoring degrades above 1,000 entities, or that FTS5 queries slow down with 100k lines. The performance thresholds exist because we measured where things actually break.
 
-2. **Break it before users do.** The test suite is adversarial by design: property-based fuzzing with randomized inputs, injection attacks against every input surface, race conditions under concurrent load.
+2. **Break it before users do.** The test suite is adversarial by design: property-based fuzzing with randomized inputs, injection attacks against every input surface, race conditions under concurrent load. A vault is user data. Unlike a web app where a bug shows an error page, a vault bug silently corrupts markdown. The adversarial stance exists because silent corruption is the worst failure mode -- the user doesn't know their notes changed.
 
-3. **Document with tests.** README examples run against demo vaults. Tool counts, config keys, and category mappings are cross-checked against source in CI. Coverage is strongest for read-side MCP flows, write-side logic, security boundaries, and concurrency. Write-side MCP integration covers core mutation, config, and safety flows.
+3. **Document with tests.** README examples run against demo vaults. Tool counts, config keys, and category mappings are cross-checked against source in CI. The `readme-examples.test.ts` and `demo-vault-assertions.test.ts` files exist specifically so that every claim in the README is backed by a test that would fail if the claim became false. Coverage is strongest for read-side MCP flows, write-side logic, security boundaries, and concurrency.
+
+---
+
+## CI Pipeline
+
+12 focused test jobs, each a separate GitHub Actions check:
+
+| Job | What it gates | Why separate |
+|-----|---------------|--------------|
+| Lint | Type check | Catches type errors before test runtime |
+| Build | Package compilation | Ensures the published artifact compiles |
+| Test: core | vault-core unit tests | Core library must pass independently |
+| Test: read tools | Read-side MCP handlers | Search, graph, schema tools |
+| Test: write core | Writer, git, validator | Mutation engine correctness |
+| Test: write tools & workflows | Write-side MCP handlers | Tool integration |
+| Test: write security | Injection, path traversal, permissions | Attack surface coverage |
+| Test: write stress & battle-hardening | Concurrency, fuzzing | Load and chaos resistance |
+| Test: platform & publish | WSL paths, package startup | Cross-platform correctness |
+| Test: graph quality | Precision/recall, ablation, regression gate | Algorithm quality |
+| Test: bench | vault-core benchmark suite | Scale and performance |
+| Test: full matrix | Node 20 x Ubuntu + Windows | Cross-platform x older Node |
+
+Each job surfaces as its own pass/fail check in GitHub. A PR cannot merge if any job fails.
+
+The full matrix job runs the entire test suite on Node 20 (Ubuntu + Windows) in addition to the focused Node 22 jobs. This catches Node version regressions and Windows-specific path handling issues (WSL path translation, case sensitivity, file watching).
 
 ---
 
@@ -41,7 +66,7 @@ Source: [`packages/mcp-server/test/write/performance/benchmarks.test.ts`](../pac
 
 ## Concurrency & Stress
 
-The concurrency suite verifies that parallel and sequential operations never corrupt vault state.
+A vault tool that corrupts files under concurrent access is worse than no tool at all. The stress suite doesn't just test parallel writes -- it verifies that the result is deterministic. Same inputs, same order, same output, every time.
 
 - **100 parallel mutations** to different files -- zero corruption, all entries verified.
 - **100 sequential mutations** to the same file -- all entries preserved, ordering maintained.
@@ -56,7 +81,7 @@ Source: [`packages/mcp-server/test/write/stress/concurrency.test.ts`](../package
 
 ## Battle-Hardening (Fuzzing)
 
-Property-based testing using [fast-check](https://github.com/dubzzz/fast-check). Each property runs 50 randomized iterations by default (configurable).
+Vault mutations accept arbitrary markdown -- a finite set of example inputs can't cover the input space. We use property-based testing via [fast-check](https://github.com/dubzzz/fast-check) because it generates inputs we'd never think to write by hand. Each property runs 50 randomized iterations by default (configurable).
 
 Properties tested:
 
@@ -76,7 +101,7 @@ Source: [`packages/mcp-server/test/write/battle-hardening/fuzzing.test.ts`](../p
 
 ## Security Testing
 
-Six dedicated security test files cover the attack surface:
+Every input surface that accepts user-provided strings is a potential injection vector. The security tests are organized by attack class (injection, path encoding, permission bypass, boundaries) rather than by feature, because attackers don't respect feature boundaries. Six dedicated security test files cover the attack surface:
 
 - **`injection.test.ts`** -- YAML injection in frontmatter fields, shell command injection via crafted git commit messages, template injection in policy YAML definitions.
 - **`path-encoding.test.ts`** -- URL-encoded path traversal (`%2e%2e%2f`), double encoding, null byte injection, Windows backslash sequences, Unicode normalization attacks.
@@ -99,6 +124,33 @@ Tests for first-run and degraded environments:
 - **Read-only vault:** appropriate error handling when the filesystem denies writes.
 
 Source: [`packages/mcp-server/test/write/coldstart/`](../packages/mcp-server/test/write/coldstart/)
+
+---
+
+## Read-Side Testing
+
+The read path is where users interact most. These tests verify that the index, search, graph, and watcher work correctly under realistic conditions.
+
+- **FTS5 search** -- Full-text search queries across vault content, frontmatter, and tags. Tests cover ranking, phrase matching, prefix search, and edge cases like empty queries and special characters. Source: [`fts5.test.ts`](../packages/mcp-server/test/read/core/fts5.test.ts)
+- **Entity search** -- Entity index queries, category filtering, alias resolution. Source: [`entity-search.test.ts`](../packages/mcp-server/test/read/core/entity-search.test.ts)
+- **Graph operations** -- Backlinks, forward links, graph analysis modes (hubs, bridges, clusters), connection strength, link paths. Source: [`graph.test.ts`](../packages/mcp-server/test/read/core/graph.test.ts)
+- **Embeddings & semantic** -- Embedding generation, similarity search, hybrid ranking (BM25 + semantic via RRF). Source: [`embeddings.test.ts`](../packages/mcp-server/test/read/core/embeddings.test.ts)
+- **File watcher** -- Change detection, rename detection (delete+upsert pairs within 5s), batch processing, graceful recovery from watcher errors. WSL-specific watcher tests for Windows path translation. Sources: [`watch.test.ts`](../packages/mcp-server/test/read/core/watch.test.ts), [`wsl-watcher.test.ts`](../packages/mcp-server/test/read/platform/wsl-watcher.test.ts)
+- **Multi-vault isolation** -- Per-request vault scoping via AsyncLocalStorage. Interleaved operations across two vaults never cross-contaminate. Source: [`multi-vault-isolation.test.ts`](../packages/mcp-server/test/read/core/multi-vault-isolation.test.ts)
+- **Co-occurrence & edge weights** -- NPMI scoring, retrieval co-occurrence, edge weight accumulation and staleness gating. Sources: [`cooccurrence.test.ts`](../packages/mcp-server/test/read/core/cooccurrence.test.ts), [`edgeWeights.test.ts`](../packages/mcp-server/test/read/core/edgeWeights.test.ts)
+- **Recency** -- Time-bucketed entity recency, watcher step integration. Source: [`recency.test.ts`](../packages/mcp-server/test/read/core/recency.test.ts)
+- **Read tool integration** -- MCP tool handlers for search, primitives, graph analysis, schema, notes, wikilinks, temporal, and health. Each tool tested with realistic vault fixtures. Source: [`packages/mcp-server/test/read/tools/`](../packages/mcp-server/test/read/tools/)
+
+---
+
+## What Isn't Tested
+
+Honesty about coverage gaps:
+
+- **No automated Obsidian plugin testing.** Flywheel Crank (the Obsidian plugin) is tested manually. Browser/plugin automation is not part of CI.
+- **Live AI tests are not part of CI.** They require Claude API credits and are run on-demand before releases. Results are committed as markdown reports.
+- **No load testing above 100 concurrent operations.** Flywheel is a single-user vault tool. 100 parallel writes is well beyond any realistic usage pattern.
+- **Edge weight and retrieval co-occurrence are newer.** These layers (added in schema v22 and v30) have less test coverage than older layers like FTS5 and entity scoring.
 
 ---
 
@@ -252,7 +304,7 @@ Measured against a 96-note/61-entity ground truth vault. Links stripped, engine 
 
 ### Multi-Generation Stress Test
 
-50 generations of suggest → feedback (85/15 noise) → mutate vault → rebuild index. Proves the Beta-Binomial suppression model prevents F1 death spiral under sustained noisy feedback.
+50 generations of suggest -> feedback (85/15 noise) -> mutate vault -> rebuild index. 85/15 noise is deliberately hostile -- real users don't reject 15% of suggestions. But if the algorithm survives 15% noise without F1 collapse, it will handle the 1-5% noise of real usage comfortably. Proves the Beta-Binomial suppression model prevents F1 death spiral under sustained noisy feedback.
 
 **6 CI assertions:**
 1. F1 stays within 20pp of baseline across all generations

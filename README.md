@@ -56,7 +56,9 @@ One search call returned everything — metadata (frontmatter) with amounts and 
 
 You typed a plain sentence. Flywheel recognized three entities from your vault and linked them — no brackets, no lookup, no manual work. Those links are graph edges that make future search richer.
 
-**Auto-wikilinks** (inline `[[linking]]`) are always on — that's the core value. Every link has a reason: entity names, aliases, and fuzzy matches scored across 13 dimensions. **Outgoing link suggestions** (`→ [[Entity]]`) are off by default and opt-in via `suggestOutgoingLinks: true`. When enabled, suggestions are contextual: entities that co-occur with Stacy and security across your past notes, scored and ranked. Links you keep strengthen future scoring; links you edit out get suppressed. The system learns.
+**Auto-wikilinks** (inline `[[linking]]`) are always on — that's the core value. Every link has a reason: entity names, aliases, and fuzzy matches scored across 13 dimensions.
+
+**Outgoing link suggestions** (`→ [[Entity]]`) are off by default and opt-in via `suggestOutgoingLinks: true`. When enabled, suggestions are contextual: entities that co-occur with Stacy and security across your past notes, scored and ranked. Links you keep strengthen future scoring; links you edit out get suppressed. The system learns.
 
 **When to enable suggestions**
 
@@ -111,9 +113,7 @@ cd /path/to/your/vault && claude
 
 Flywheel does not replace Obsidian. It runs alongside as a background index — watches for changes, indexes in real-time, and makes the full graph available to any AI client. No proprietary format, no cloud sync, no account. Delete `.flywheel/state.db` and it rebuilds from scratch.
 
-**Export your knowledge graph** as [GraphML](demos/carter-strategy/carter-strategy.graphml) for Gephi, Cytoscape, NetworkX, or any graph tool. Zero vendor lock-in — your data is always portable.
-
-![Carter Strategy Knowledge Graph](demos/carter-strategy/carter-strategy-graph.png)
+**Export your knowledge graph** as [GraphML](demos/carter-strategy/carter-strategy.graphml) for Gephi, Cytoscape, NetworkX, or any graph tool. Zero vendor lock-in — your data is always portable. [See the demo vault export →](demos/carter-strategy#knowledge-graph-export)
 
 ### Configure your tools
 
@@ -150,7 +150,7 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 
 ### 1. Enriched Search
 
-Every search result comes back enriched — frontmatter, ranked backlinks, ranked outlinks, and content snippets, all from an in-memory index. That's how one call answers a billing question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project — each with its own frontmatter. The graph did the joining.
+Every search result comes back enriched — frontmatter, ranked backlinks, ranked outlinks, and content snippets, all from an in-memory index. That's how one call answers a [[billing]] question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project — each with its own frontmatter. The graph did the joining.
 
 With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally — SQLite full-text search (BM25), in-memory embeddings for semantic similarity, fused together for best-of-both results.
 

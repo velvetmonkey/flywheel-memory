@@ -24,9 +24,9 @@ function escapeXml(s: string): string {
     .replace(/'/g, '&apos;');
 }
 
-/** Sanitize a string for use as an XML id attribute (no spaces, special chars) */
+/** Build a node/edge ID string. NOT escaped here — toGraphML escapes when writing attributes. */
 function xmlId(prefix: string, value: string): string {
-  return `${prefix}:${escapeXml(value)}`;
+  return `${prefix}:${value}`;
 }
 
 function dataTag(key: string, value: string | number | boolean | undefined | null): string {
@@ -138,16 +138,25 @@ export function buildGraphData(
     for (const row of rows) {
       const sourceId = xmlId('note', row.note_path);
       const targetLower = row.target.toLowerCase();
-      // Target is a lowercased entity/note name — try to resolve
+      // Target is a lowercased entity/note name or alias — try to resolve
       let targetId: string | undefined;
       if (entityIds.has(xmlId('entity', row.target))) {
         targetId = xmlId('entity', row.target);
       } else {
-        // Try case-insensitive entity match
+        // Try case-insensitive match on entity label or aliases
         for (const n of nodes) {
-          if (n.type === 'entity' && n.label.toLowerCase() === targetLower) {
+          if (n.type !== 'entity') continue;
+          if (n.label.toLowerCase() === targetLower) {
             targetId = n.id;
             break;
+          }
+          // Check aliases (comma-separated string from buildGraphData)
+          if (n.aliases) {
+            const aliasList = n.aliases.split(', ').map(a => a.toLowerCase());
+            if (aliasList.includes(targetLower)) {
+              targetId = n.id;
+              break;
+            }
           }
         }
       }

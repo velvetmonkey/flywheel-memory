@@ -16,7 +16,7 @@
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-90.4%25%20Recall%4010-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Tests](https://img.shields.io/badge/tests-2,541%20passed-brightgreen.svg)](docs/TESTING.md)
 
-**[Try It](#try-it)** · **[See It Work](#see-it-work)** · **[Benchmarked](#benchmarked)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Docs](#documentation)**
+**[Try It](#try-it)** · **[See It Work](#see-it-work)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[How It Compares](#how-it-compares)** · **[Benchmarked](#benchmarked)** · **[Docs](#documentation)**
 
 | | Without Flywheel | With Flywheel |
 |---|---|---|
@@ -134,6 +134,23 @@ You typed a plain sentence. Flywheel recognized three entities from your vault a
 
 ---
 
+## How It Compares
+
+Most Obsidian AI tools are either simple MCP bridges (read/write files, no graph) or cloud-dependent embedding search (no local processing, no learning). Flywheel is neither:
+
+| Capability | Flywheel Memory | Typical MCP bridge | Typical AI plugin |
+|---------|----------------|-------------------|-------------------|
+| Backlink graph | Bidirectional, eigenvector centrality | No | No |
+| Search | Local hybrid (BM25 + semantic) | Basic file read | Cloud embedding |
+| Auto-wikilinks | Yes (alias resolution, 18 entity categories) | No | No |
+| Schema intelligence | 9 analysis modes | No | No |
+| Learns from usage | Feedback loop + suppression + co-occurrence | No | No |
+| Agent memory | brief + recall + memory | No | No |
+| Safe writes | Git + conflict detection + dry-run | No | N/A |
+| Retrieval benchmarks | HotpotQA 84.8%, LoCoMo 55.0% | None published | None published |
+
+---
+
 ## Benchmarked
 
 No other MCP memory tool publishes retrieval benchmarks on standard academic datasets. Flywheel does — on two of them.
@@ -153,25 +170,34 @@ No other MCP memory tool publishes retrieval benchmarks on standard academic dat
 
 **Document retrieval (HotpotQA):**
 
-| System | Type | Recall | Notes |
+| System | Type | Recall | Context |
 |---|---|---|---|
-| **Flywheel** | MCP vault tool | **84.8%** | Zero training, end-to-end via Claude |
-| BM25 baseline | IR baseline | ~70-75% | Standard academic baseline |
-| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, 2021. Trained on HotpotQA |
-| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Facebook, 2021. Trained on HotpotQA |
+| **Flywheel** | MCP vault tool | **84.8%** | Zero training, general-purpose, end-to-end via Claude |
+| BM25 baseline | IR baseline | ~70-75% | Powers Elasticsearch (Wikipedia, GitHub, Netflix, Uber) |
+| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
+| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI Research, ICLR 2021. Trained on HotpotQA |
+
+> Flywheel has never seen HotpotQA training data. Baleen and MDR were trained on it. BM25 is the industry-standard algorithm behind every major search engine.
 
 **Conversational memory (LoCoMo, answer accuracy via LLM-as-judge):**
 
-| System | Type | Single-hop | Multi-hop | Commonsense | Overall |
-|---|---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **70.0%** | 15.0% | **75.0%** | **55.0%** |
-| [Mem0](https://mem0.ai/) | Cloud memory | 38.7 | **28.6** | — | — |
-| [Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos) | Graph memory | 37.7 | 29.3 | — | — |
-| [Zep](https://getzep.com/) | Cloud memory | 35.7 | 19.4 | — | — |
-| [LangMem](https://github.com/langchain-ai/langmem) | Memory framework | 35.5 | 26.0 | — | — |
-| [MemGPT/Letta](https://memgpt.ai/) | Agent memory | 26.7 | — | — | — |
+| System | Single-hop | Multi-hop | Commonsense | Backed By |
+|---|---|---|---|---|
+| **Flywheel** | **70.0%** | 15.0% | **75.0%** | Self-funded, local-only (SQLite + markdown) |
+| [Mem0](https://mem0.ai/) | 38.7 | **28.6** | — | YC ($24M), AWS Agent SDK partner |
+| [Zep](https://getzep.com/) | 35.7 | 19.4 | — | YC, enterprise memory platform |
+| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | LangChain ($25M+ raised) |
+| [Letta](https://memgpt.ai/) | 26.7 | — | — | UC Berkeley research ($10M, Felicis Ventures) |
 
-Flywheel's single-hop accuracy (70.0%) is nearly 2x the next best system. Multi-hop (15.0%) is an area for improvement — the retrieval pipeline finds 60% of evidence sessions, but combining facts from multiple sessions into a single concise answer remains hard. Same LLM-as-judge methodology (binary CORRECT/WRONG); Flywheel uses Claude Haiku, Ori uses GPT-4o. 200 questions (balanced, 40 per category) vs 695 for Ori.
+> **Transparency notes:**
+> - All numbers are answer accuracy via LLM-as-judge (binary CORRECT/WRONG) — same methodology across all systems. Flywheel uses Claude Haiku as judge; competitor numbers from the Mem0 paper.
+> - Flywheel: 200 questions (balanced, 40 per category, all 10 conversations). Competitors: 695 questions.
+> - Multi-hop (15%) is below competitors. The retrieval pipeline finds 60% of evidence sessions, but synthesizing facts from multiple sessions into a concise answer remains hard. This is an active area of improvement.
+
+**What we don't claim:**
+- We don't claim to beat trained retrievers. We sit *next to* them without any training.
+- We don't claim multi-hop is solved. 15% — retrieval works, synthesis doesn't yet.
+- We don't claim Flywheel is the best at everything. Dedicated GraphRAG systems may edge ahead on complex multi-step reasoning.
 
 [Full benchmark methodology →](docs/TESTING.md) | Run them yourself: [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
 
@@ -289,23 +315,6 @@ Complex vault workflows shouldn't be ad-hoc. Describe what you want in plain lan
 ```
 
 Policies chain vault tools into atomic operations — all steps succeed or all roll back, committed as a single git commit.
-
----
-
-## How It Compares
-
-Most Obsidian AI tools are either simple MCP bridges (read/write files, no graph) or cloud-dependent embedding search (no local processing, no learning). Flywheel is neither:
-
-| Capability | Flywheel Memory | Typical MCP bridge | Typical AI plugin |
-|---------|----------------|-------------------|-------------------|
-| Backlink graph | Bidirectional, eigenvector centrality | No | No |
-| Search | Local hybrid (BM25 + semantic) | Basic file read | Cloud embedding |
-| Auto-wikilinks | Yes (alias resolution, 18 entity categories) | No | No |
-| Schema intelligence | 9 analysis modes | No | No |
-| Learns from usage | Feedback loop + suppression + co-occurrence | No | No |
-| Agent memory | brief + recall + memory | No | No |
-| Safe writes | Git + conflict detection + dry-run | No | N/A |
-| Retrieval benchmarks | HotpotQA 84.8%, LoCoMo 90.4% | None published | None published |
 
 ---
 

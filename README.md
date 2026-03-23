@@ -26,23 +26,6 @@
 | "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
 | Token cost per query | Hundreds to thousands | Graph does the joining — one search, not ten file reads |
 
-
-## Why This Matters: Cognitive Sovereignty
-
-Flywheel Memory was built for people who want to own their own mind in an age of engineered consensus.
-
-We live in a world where attention, memory, and even reasoning are being subtly (and not so subtly) directed at scale — by platforms, institutions, long-cycle interests, and now superintelligent systems. The quiet counter-move isn't to unplug or rage against the machine. The counter-move is to own your own knowledge graph.
-
-This is deliberately **minarchist software**: small-government technology for your second brain.
-- It runs entirely on your machine.
-- It requires responsible use and gets smarter the more honestly you engage with it.
-- It resists external steering, corporate datasets, and narrative control.
-- It gives you (and any agent you trust) a private, learning memory layer that belongs only to you.
-
-Flywheel doesn't optimize for engagement or someone else's agenda. It optimizes for *your* thinking, *your* history, and your ability to connect your own dots — forever.
-
-In short: infrastructure for independent thought.
-
 ---
 
 ## See It Work
@@ -269,7 +252,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third iteration at AI-powered knowledge management — the first two (Claude Code skills, then split read/write MCP servers) taught me what doesn't work. This version is one unified server with deterministic mutations, hybrid search, and a graph that learns.
 
-The design choices aren't accidental. I spend a lot of time watching how attention, memory, and reasoning are being directed at scale — by platforms, institutions, and now by AI systems that are smarter than any of us. The quiet counter-move isn't to unplug. It's to own your own knowledge graph. Local-only because your thinking shouldn't train someone else's model. Self-correcting because a system that learns from your honest engagement is worth more than one that optimizes for someone else's engagement metrics. Zero-cloud because sovereignty means something when the default is to hand everything to a third party. I built this for myself first. If it resonates, it's because you see the same things I do.
+The design choices aren't accidental. Attention, memory, and reasoning are increasingly being shaped by systems you don't control — platforms, models, defaults. I wanted a knowledge layer that works for the person using it, not for someone else's engagement metrics or training pipeline. Local-only because your thinking is yours. Self-correcting because it should learn from how you actually work, not from how someone else thinks you should. I built this for myself first. If it resonates, you probably already know why.
 
 I couldn't have built this by myself — not in a year, and definitely not without AI. Everything here was driven through Claude Code with Opus 4.5 and 4.6. I've barely opened the IDE except to review what was generated. I've subjected it to extensive code reviews and stress-tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 

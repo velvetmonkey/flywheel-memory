@@ -258,13 +258,13 @@ I've been writing code for over 30 years and tried every PKM tool going before l
 
 The design choices aren't accidental. Your attention, memory, and reasoning are increasingly shaped by systems you don't control — platforms, models, defaults you never chose. I wanted a knowledge layer that works for the person using it, not for someone else's training pipeline.
 
-Local-only because your thinking is yours. Self-correcting because it should learn from how *you* actually work. No cloud, no account, no data leaving your machine.
+Local-only because your thinking is yours. Every interaction feeds the graph — what you write, what you link, what you leave, what you remove. That's not error correction; it's a full-spectrum model of what matters to you, compounding with every note. No cloud, no account, no data leaving your machine.
 
 I built this for myself first. If it resonates, you probably already know why.
 
 I designed every part of this and understand every line — but I couldn't have shipped it this fast without AI. The entire codebase was built through Claude Code with Opus 4.5 and 4.6. I architect, review, and stress-test; Claude writes the code. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 
-I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space.
+I dogfood it daily through a Telegram bot using voice input, because talking is faster than typing. All help is welcome — I'm looking for people who care about this space.
 
 ### Dogfooding: my vault, unvarnished
 

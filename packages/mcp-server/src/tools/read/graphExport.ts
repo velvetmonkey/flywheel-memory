@@ -70,7 +70,7 @@ export interface GraphData {
 export function buildGraphData(
   index: VaultIndex,
   stateDb: StateDb | null,
-  options: { include_cooccurrence: boolean; min_edge_weight: number }
+  options: { include_cooccurrence: boolean; min_edge_weight: number; center_entity?: string; depth?: number }
 ): GraphData {
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
@@ -197,6 +197,56 @@ export function buildGraphData(
     }
   }
 
+  // --- Ego-network filter (optional) ---
+  if (options.center_entity) {
+    const centerLower = options.center_entity.toLowerCase();
+    const maxDepth = options.depth ?? 1;
+
+    // Find center node by label (case-insensitive)
+    const centerNode = nodes.find(n => n.label.toLowerCase() === centerLower);
+    if (centerNode) {
+      // Build adjacency map from edges
+      const adj = new Map<string, Set<string>>();
+      for (const edge of edges) {
+        if (!adj.has(edge.source)) adj.set(edge.source, new Set());
+        if (!adj.has(edge.target)) adj.set(edge.target, new Set());
+        adj.get(edge.source)!.add(edge.target);
+        adj.get(edge.target)!.add(edge.source);
+      }
+
+      // BFS from center to maxDepth
+      const reachable = new Set<string>();
+      const queue: Array<{ id: string; depth: number }> = [{ id: centerNode.id, depth: 0 }];
+      reachable.add(centerNode.id);
+
+      while (queue.length > 0) {
+        const { id, depth } = queue.shift()!;
+        if (depth >= maxDepth) continue;
+        for (const neighbor of adj.get(id) ?? []) {
+          if (!reachable.has(neighbor)) {
+            reachable.add(neighbor);
+            queue.push({ id: neighbor, depth: depth + 1 });
+          }
+        }
+      }
+
+      // Filter nodes and edges
+      const filteredNodes = nodes.filter(n => reachable.has(n.id));
+      const filteredEdges = edges.filter(e => reachable.has(e.source) && reachable.has(e.target));
+
+      return {
+        nodes: filteredNodes,
+        edges: filteredEdges,
+        metadata: {
+          note_count: filteredNodes.filter(n => n.type === 'note').length,
+          entity_count: filteredNodes.filter(n => n.type === 'entity').length,
+          edge_count: filteredEdges.length,
+          exported_at: new Date().toISOString(),
+        },
+      };
+    }
+  }
+
   return {
     nodes,
     edges,
@@ -269,7 +319,7 @@ export function registerGraphExportTools(
     'export_graph',
     'Export the vault knowledge graph as GraphML (for Gephi/yEd/Cytoscape) or JSON. ' +
     'Includes notes, entities, wikilinks, edge weights, and co-occurrence relationships. ' +
-    'Use the output with graph visualization tools to explore your vault structure.',
+    'Use center_entity + depth for focused ego-network exports (e.g., "everything within 2 hops of Acme Corp").',
     {
       format: z.enum(['graphml', 'json']).default('graphml')
         .describe('Output format: "graphml" for graph tools (Gephi, yEd, Cytoscape), "json" for programmatic use'),
@@ -277,13 +327,17 @@ export function registerGraphExportTools(
         .describe('Include co-occurrence edges between entities'),
       min_edge_weight: z.number().default(0)
         .describe('Minimum edge weight threshold (filters weighted edges)'),
+      center_entity: z.string().optional()
+        .describe('Center the export on this entity (ego network). Only includes nodes within `depth` hops.'),
+      depth: z.number().default(1)
+        .describe('Hops from center_entity to include (default 1). Ignored without center_entity.'),
     },
-    async ({ format, include_cooccurrence, min_edge_weight }) => {
+    async ({ format, include_cooccurrence, min_edge_weight, center_entity, depth }) => {
       requireIndex();
       const index = getIndex();
       const stateDb = getStateDb?.() ?? null;
 
-      const data = buildGraphData(index, stateDb, { include_cooccurrence, min_edge_weight });
+      const data = buildGraphData(index, stateDb, { include_cooccurrence, min_edge_weight, center_entity, depth });
 
       let output: string;
       if (format === 'json') {

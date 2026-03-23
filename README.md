@@ -188,11 +188,11 @@ Complex vault workflows become deterministic policies — describe what you want
 
 ### 5. Portable Knowledge Graph
 
-Your vault is never locked in. Export the full knowledge graph as GraphML and open it in any graph tool — Gephi, Cytoscape, yEd, NetworkX, or your own code.
+Your vault is never locked in. Export the full knowledge graph as GraphML and open it in any graph tool. Use `center_entity` to focus on one entity's neighborhood:
 
-![Carter Strategy Knowledge Graph](demos/carter-strategy/carter-strategy-graph.png)
+![Acme Corp ego network — exported via export_graph, visualized in Gephi](demos/carter-strategy/carter-strategy-acme-graph.png)
 
-*40 entities (people, projects, organizations, invoices) and 48 notes from the [carter-strategy](demos/carter-strategy/) demo vault. [Download the GraphML →](demos/carter-strategy/carter-strategy.graphml)*
+*Acme Corp and everything within 1 hop — people, projects, invoices, knowledge assets. One `export_graph` call with `center_entity: "Acme Corp"`. [Download the GraphML →](demos/carter-strategy/carter-strategy-acme.graphml)*
 
 ---
 

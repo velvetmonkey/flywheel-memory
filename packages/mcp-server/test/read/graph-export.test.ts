@@ -390,4 +390,56 @@ print('VALID')
     expect(json.edges.length).toBeGreaterThanOrEqual(20);
     expect(json.metadata.exported_at).toBeDefined();
   });
+
+  it('filters to ego network around a center entity', () => {
+    const full = buildGraphData(vaultIndex, stateDb, { include_cooccurrence: false, min_edge_weight: 0 });
+    const ego = buildGraphData(vaultIndex, stateDb, {
+      include_cooccurrence: false,
+      min_edge_weight: 0,
+      center_entity: 'Acme Corp',
+      depth: 1,
+    });
+
+    // Ego network should be much smaller than full graph
+    expect(ego.nodes.length).toBeLessThan(full.nodes.length);
+    expect(ego.nodes.length).toBeGreaterThanOrEqual(3);
+
+    // Acme Corp should be in the result
+    const acme = ego.nodes.find(n => n.label === 'Acme Corp');
+    expect(acme).toBeDefined();
+
+    // All edges should connect nodes in the result
+    const nodeIds = new Set(ego.nodes.map(n => n.id));
+    for (const edge of ego.edges) {
+      expect(nodeIds.has(edge.source)).toBe(true);
+      expect(nodeIds.has(edge.target)).toBe(true);
+    }
+  });
+
+  it('depth 2 includes more nodes than depth 1', () => {
+    const d1 = buildGraphData(vaultIndex, stateDb, {
+      include_cooccurrence: false, min_edge_weight: 0,
+      center_entity: 'Acme Corp', depth: 1,
+    });
+    const d2 = buildGraphData(vaultIndex, stateDb, {
+      include_cooccurrence: false, min_edge_weight: 0,
+      center_entity: 'Acme Corp', depth: 2,
+    });
+
+    expect(d2.nodes.length).toBeGreaterThanOrEqual(d1.nodes.length);
+  });
+
+  it('writes ego-network GraphML for Acme Corp', async () => {
+    const ego = buildGraphData(vaultIndex, stateDb, {
+      include_cooccurrence: false, min_edge_weight: 0,
+      center_entity: 'Acme Corp', depth: 1,
+    });
+    const xml = toGraphML(ego);
+    const egoPath = path.join(demoVaultPath, 'carter-strategy-acme.graphml');
+    await writeFile(egoPath, xml, 'utf-8');
+
+    // Should be smaller than full export (88 nodes)
+    expect(ego.nodes.length).toBeLessThan(60);
+    expect(ego.edges.length).toBeLessThan(300);
+  });
 });

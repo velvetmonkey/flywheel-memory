@@ -1,0 +1,1797 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+    "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" >
+<svg contentScriptType="text/ecmascript" width="1153.5725"
+     xmlns:xlink="http://www.w3.org/1999/xlink" zoomAndPan="magnify"
+     contentStyleType="text/css"
+     viewBox="-551.684448 -542.723755 1153.572510 1077.634521"
+     height="1077.6345" preserveAspectRatio="xMidYMid meet"
+     xmlns="http://www.w3.org/2000/svg" version="1.1">
+    <g id="edges">
+        <path stroke-linecap="round" fill="none"
+              class="id_note:DEMO-VIDEO-SCRIPT.md id_note:team/Sarah_Mitchell.md"
+              d="M 404.214447,-391.822571 A 585.409573,585.409573 0,0 1,401.146973,280.577728"
+              stroke="#999d9a" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:DEMO-VIDEO-SCRIPT.md id_note:clients/Acme_Corp.md"
+              d="M 389.893433,-393.420868 A 174.917723,174.917723 0,0 1,238.924728,-356.373566"
+              stroke="#d3dadb" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:DEMO-VOICE-PKM.md id_note:clients/Acme_Corp.md"
+              d="M -422.386353,-387.296509 A 520.091685,520.091685 0,0 1,145.720169,-405.434296"
+              stroke="#c5d5d2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:DEMO-VOICE-PKM.md id_note:team/Sarah_Mitchell.md"
+              d="M -419.580444,-377.665436 A 887.856308,887.856308 0,0 1,378.940796,276.201080"
+              stroke="#8b9891" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:DEMO-VOICE-PKM.md id_note:projects/Acme_Data_Migration.md"
+              d="M -419.741333,-376.174194 A 250.485067,250.485067 0,0 1,-227.982071,-206.831741"
+              stroke="#c5d5d2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:DEMO-VOICE-PKM.md id_note:invoices/INV-2025-047.md"
+              d="M -419.617493,-377.166626 A 1079.571389,1079.571389 0,0 1,529.185852,464.413849"
+              stroke="#9fd572" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:DEMO-VOICE-PKM.md id_note:invoices/INV-2025-048.md"
+              d="M -420.915344,-372.286560 A 530.704833,530.704833 0,0 1,-119.985573,155.338699"
+              stroke="#9fd572" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:DEMO-VOICE-PKM.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M -440.630188,-392.241791 A 100.487171,100.487171 0,0 1,-432.112488,-477.706757"
+              stroke="#cfceca" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:DEMO-VOICE-PKM.md id_note:knowledge/Rate_Card.md"
+              d="M -419.625244,-377.084106 A 1085.837766,1085.837766 0,0 1,529.005249,469.911438"
+              stroke="#cfceca" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Business_Goals_2026.md id_note:clients/Acme_Corp.md"
+              d="M -61.395470,267.854889 A 587.304206,587.304206 0,0 1,146.273880,-345.032074"
+              stroke="#60beaa" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Business_Goals_2026.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M -71.983917,276.190277 A 717.601392,717.601392 0,0 1,-421.253693,-472.706665"
+              stroke="#69b8a2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Business_Goals_2026.md id_note:projects/Acme_Data_Migration.md"
+              d="M -71.087135,274.750763 A 401.595697,401.595697 0,0 1,-228.654129,-131.445343"
+              stroke="#60beaa" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Business_Goals_2026.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M -55.162373,267.280731 A 327.219785,327.219785 0,0 1,173.040375,-7.824018"
+              stroke="#60beaa" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Business_Goals_2026.md id_note:admin/Quarterly_Review_Q4_2025.md"
+              d="M -64.148239,268.877441 A 468.378023,468.378023 0,0 1,31.968885,-253.551666"
+              stroke="#00bd94" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Business_Goals_2026.md id_note:knowledge/Rate_Card.md"
+              d="M -39.916817,279.754242 A 521.916585,521.916585 0,0 1,520.198120,473.718567"
+              stroke="#69b8a2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path fill="none" stroke-width="1.0"
+              d="M 46.770969,-267.734344 C 81.770966,-302.734344 81.770966,-232.734344 46.770969,-267.734344"
+              class="id_note:admin/Quarterly_Review_Q4_2025.md"
+              stroke-opacity="1.0" stroke="#00bd94"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:clients/Acme_Corp.md"
+              d="M 52.588078,-284.239227 A 149.134465,149.134465 0,0 1,137.425751,-366.024658"
+              stroke="#60beaa" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:projects/Acme_Data_Migration.md"
+              d="M 36.762936,-253.378540 A 236.236563,236.236563 0,0 1,-180.968903,-161.124298"
+              stroke="#60beaa" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M 62.709404,-260.508270 A 245.714102,245.714102 0,0 1,199.057846,-39.880375"
+              stroke="#60beaa" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M 29.500757,-264.907715 A 430.877262,430.877262 0,0 1,-404.180573,-475.295868"
+              stroke="#69b8a2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:admin/Business_Goals_2026.md"
+              d="M 54.219654,-251.898712 A 468.378023,468.378023 0,0 1,-41.897469,270.530396"
+              stroke="#00bd94" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:monthly-notes/2025-12.md"
+              d="M 61.623211,-258.479034 A 279.761036,279.761036 0,0 1,182.090561,21.239141"
+              stroke="#60beaa" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path fill="none" stroke-width="1.0"
+              d="M 189.547638,-375.632416 C 289.547638,-475.632416 289.547638,-275.632416 189.547638,-375.632416"
+              class="id_note:clients/Acme_Corp.md" stroke-opacity="1.0"
+              stroke="#c0c0c0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:team/Sarah_Mitchell.md"
+              d="M 228.163239,-343.870239 A 587.591631,587.591631 0,0 1,394.216858,276.888550"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:projects/Acme_Data_Migration.md"
+              d="M 164.499512,-332.358978 A 381.491913,381.491913 0,0 1,-180.450577,-164.236191"
+              stroke="#c0c0c0" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:team/Marcus_Webb.md"
+              d="M 234.251099,-353.235962 A 446.690860,446.690860 0,0 1,457.741760,65.300888"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M 217.068512,-333.887939 A 301.088143,301.088143 0,0 1,211.618896,-35.766632"
+              stroke="#c0c0c0" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2025-047.md"
+              d="M 231.395752,-348.269379 A 770.548065,770.548065 0,0 1,537.757935,464.593750"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2025-048.md"
+              d="M 193.643143,-325.800446 A 528.477203,528.477203 0,0 1,-102.987732,167.583374"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2026-001.md"
+              d="M 231.615494,-348.608429 A 638.382848,638.382848 0,0 1,489.192749,312.165314"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2026-002.md"
+              d="M 198.548828,-326.449310 A 550.476307,550.476307 0,0 1,-62.471260,219.270981"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2026-003.md"
+              d="M 202.307404,-327.287933 A 555.387958,555.387958 0,0 1,-21.553122,244.783951"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2026-006.md"
+              d="M 235.534988,-356.006836 A 319.950930,319.950930 0,0 1,407.291687,-72.216339"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2026-004.md"
+              d="M 232.954483,-350.816193 A 359.485256,359.485256 0,0 1,389.829681,-6.193338"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M 143.418777,-356.341797 A 515.034719,515.034719 0,0 1,-398.873322,-479.121429"
+              stroke="#c9b9b8" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_note:team/Sarah_Mitchell.md"
+              d="M -140.240128,126.926582 A 475.656058,475.656058 0,0 1,369.386414,280.848816"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_note:team/Marcus_Webb.md"
+              d="M -143.986282,120.202507 A 514.082774,514.082774 0,0 1,434.305389,76.987022"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M -177.651245,122.464142 A 567.755155,567.755155 0,0 1,-422.260620,-472.926666"
+              stroke="#69bbd7" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M -148.802963,115.960518 A 322.552808,322.552808 0,0 1,172.742630,-19.777452"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_note:clients/Acme_Corp.md"
+              d="M -160.450256,112.700996 A 514.666117,514.666117 0,0 1,140.273361,-356.112030"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_note:team/Priya_Kapoor.md"
+              d="M -139.191940,134.567078 A 328.782412,328.782412 0,0 1,145.557526,357.124878"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_note:knowledge/Rate_Card.md"
+              d="M -139.397629,130.432007 A 651.303380,651.303380 0,0 1,523.128235,471.966125"
+              stroke="#69bbd7" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_note:projects/Acme_Data_Migration.md"
+              d="M -174.878326,118.947067 A 256.900167,256.900167 0,0 1,-233.219147,-132.925278"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2025-047.md id_note:clients/Acme_Corp.md"
+              d="M 519.646362,474.469696 A 770.548065,770.548065 0,0 1,177.545074,-324.009369"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2025-047.md id_note:projects/Acme_Data_Migration.md"
+              d="M 517.304749,481.570068 A 829.397499,829.397499 0,0 1,-209.883438,-131.303345"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2025-047.md id_note:invoices/INV-2025-048.md"
+              d="M 517.548401,485.878784 A 602.895586,602.895586 0,0 1,-111.975571,195.181793"
+              stroke="#73c000" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2025-048.md id_note:clients/Acme_Corp.md"
+              d="M -124.398178,158.322144 A 528.477203,528.477203 0,0 1,142.134399,-351.947296"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2025-048.md id_note:projects/Acme_Data_Migration.md"
+              d="M -136.543701,164.937378 A 299.043313,299.043313 0,0 1,-230.677460,-132.024475"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2025-048.md id_note:team/Sarah_Mitchell.md"
+              d="M -105.329262,169.727264 A 435.830671,435.830671 0,0 1,368.165131,281.848297"
+              stroke="#5f831f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2025-048.md id_note:invoices/INV-2025-047.md"
+              d="M -104.350037,173.057831 A 602.895586,602.895586 0,0 1,523.963074,466.363098"
+              stroke="#73c000" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-001.md id_note:clients/Acme_Corp.md"
+              d="M 470.405670,322.663422 A 638.382848,638.382848 0,0 1,178.679810,-323.758636"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-001.md id_note:projects/Acme_Data_Migration.md"
+              d="M 467.993652,331.531921 A 719.505180,719.505180 0,0 1,-206.174347,-132.395432"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-001.md id_note:team/Marcus_Webb.md"
+              d="M 473.629395,318.806915 A 202.685666,202.685666 0,0 1,444.360718,111.934090"
+              stroke="#5f831f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-001.md id_note:team/Sarah_Mitchell.md"
+              d="M 468.539307,335.537994 A 86.274671,86.274671 0,0 1,404.165161,320.239502"
+              stroke="#5f831f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-001.md id_note:invoices/INV-2025-048.md"
+              d="M 469.167999,337.451630 A 522.022023,522.022023 0,0 1,-108.637383,192.883499"
+              stroke="#73c000" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-001.md id_note:invoices/INV-2026-002.md"
+              d="M 469.615204,338.476501 A 476.698335,476.698335 0,0 1,-65.565048,241.300415"
+              stroke="#73c000" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-002.md id_note:clients/Acme_Corp.md"
+              d="M -81.200981,213.655914 A 550.476307,550.476307 0,0 1,144.597961,-347.551697"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-002.md id_note:projects/Acme_Data_Migration.md"
+              d="M -90.346527,219.751801 A 351.358807,351.358807 0,0 1,-228.491470,-131.403900"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-002.md id_note:team/Marcus_Webb.md"
+              d="M -68.488914,216.745346 A 459.220258,459.220258 0,0 1,432.289429,81.100952"
+              stroke="#5f831f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-002.md id_note:invoices/INV-2026-001.md"
+              d="M -64.504921,221.836975 A 476.698335,476.698335 0,0 1,471.011810,317.140991"
+              stroke="#73c000" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:invoices/INV-2026-004.md id_note:invoices/INV-2026-003.md"
+              d="M 383.457153,17.412926 A 405.800053,405.800053 0,0 1,-19.209951,253.954697"
+              stroke="#73c000" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path fill="none" stroke-width="1.0"
+              d="M -416.314728,-497.723785 C -371.314728,-542.723755 -371.314728,-452.723785 -416.314728,-497.723785"
+              class="id_note:knowledge/Data_Migration_Playbook.md"
+              stroke-opacity="1.0" stroke="#d3b3b0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:knowledge/Data_Migration_Playbook.md id_note:projects/Acme_Data_Migration.md"
+              d="M -395.786835,-488.512054 A 319.464048,319.464048 0,0 1,-217.354187,-207.854462"
+              stroke="#c9b9b8" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path fill="none" stroke-width="1.0"
+              d="M 533.864990,493.244049 C 575.531677,451.577393 575.531677,534.910706 533.864990,493.244049"
+              class="id_note:knowledge/Rate_Card.md" stroke-opacity="1.0"
+              stroke="#d3b3b0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:knowledge/Rate_Card.md id_note:clients/Acme_Corp.md"
+              d="M 516.251282,482.118134 A 778.843811,778.843811 0,0 1,177.352600,-324.054504"
+              stroke="#c9b9b8" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:knowledge/Rate_Card.md id_note:team/Marcus_Webb.md"
+              d="M 518.843201,478.808868 A 342.468426,342.468426 0,0 1,445.400757,112.421860"
+              stroke="#8f7c77" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:knowledge/Rate_Card.md id_note:admin/Business_Goals_2026.md"
+              d="M 513.866821,499.083557 A 521.916585,521.916585 0,0 1,-44.997849,301.545197"
+              stroke="#69b8a2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:monthly-notes/2025-12.md id_note:clients/Acme_Corp.md"
+              d="M 168.164047,26.770128 A 347.585385,347.585385 0,0 1,159.836273,-331.743530"
+              stroke="#c0c0c0" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:monthly-notes/2025-12.md id_note:projects/Acme_Data_Migration.md"
+              d="M 160.560303,43.623779 A 374.327429,374.327429 0,0 1,-200.645798,-134.824509"
+              stroke="#c0c0c0" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:monthly-notes/2025-12.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M 175.740112,23.942173 A 49.272936,49.272936 0,0 1,180.808411,4.708764"
+              stroke="#c0c0c0" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:monthly-notes/2025-12.md id_note:invoices/INV-2025-047.md"
+              d="M 194.779831,45.948219 A 472.216320,472.216320 0,0 1,532.072937,464.032684"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:monthly-notes/2025-12.md id_note:invoices/INV-2025-048.md"
+              d="M 168.968994,56.353310 A 274.420537,274.420537 0,0 1,-101.366371,180.390182"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:monthly-notes/2025-12.md id_note:weekly-notes/2025-W52.md"
+              d="M 177.417236,58.800747 A 462.740714,462.740714 0,0 1,-145.218475,478.305481"
+              stroke="#df8aa2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:monthly-notes/2025-12.md id_note:weekly-notes/2026-W01.md"
+              d="M 162.328964,49.282265 A 493.837515,493.837515 0,0 1,-394.986786,-36.156998"
+              stroke="#df8aa2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:monthly-notes/2025-12.md id_note:admin/Business_Goals_2026.md"
+              d="M 175.212387,58.598988 A 281.718612,281.718612 0,0 1,-36.594837,280.706757"
+              stroke="#60beaa" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:monthly-notes/2025-12.md id_note:admin/Quarterly_Review_Q4_2025.md"
+              d="M 163.054108,32.052265 A 279.761036,279.761036 0,0 1,42.586754,-247.665909"
+              stroke="#60beaa" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path fill="none" stroke-width="1.0"
+              d="M -218.983719,-169.055328 C -147.317047,-240.721985 -147.317047,-97.388664 -218.983719,-169.055328"
+              class="id_note:projects/Acme_Data_Migration.md"
+              stroke-opacity="1.0" stroke="#c0c0c0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:projects/Acme_Data_Migration.md id_note:clients/Acme_Corp.md"
+              d="M -201.612381,-200.396423 A 381.491913,381.491913 0,0 1,136.844086,-381.230286"
+              stroke="#c0c0c0" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:projects/Acme_Data_Migration.md id_note:team/Sarah_Mitchell.md"
+              d="M -183.188766,-167.397186 A 638.445918,638.445918 0,0 1,378.011963,276.456055"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:projects/Acme_Data_Migration.md id_note:team/Marcus_Webb.md"
+              d="M -184.239182,-177.821426 A 601.941911,601.941911 0,0 1,441.809174,69.234947"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:projects/Acme_Data_Migration.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M -251.362686,-184.405579 A 319.464048,319.464048 0,0 1,-417.916840,-472.274170"
+              stroke="#c9b9b8" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:projects/Acme_Data_Migration.md id_note:invoices/INV-2025-047.md"
+              d="M -183.302811,-165.753754 A 829.397499,829.397499 0,0 1,528.894836,464.477905"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:projects/Acme_Data_Migration.md id_note:invoices/INV-2025-048.md"
+              d="M -191.916626,-145.573425 A 299.043313,299.043313 0,0 1,-115.332314,156.394440"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:projects/Acme_Data_Migration.md id_note:invoices/INV-2026-001.md"
+              d="M -183.150391,-169.071915 A 719.505180,719.505180 0,0 1,478.419464,312.651459"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:projects/Acme_Data_Migration.md id_note:invoices/INV-2026-002.md"
+              d="M -190.187439,-147.729248 A 351.358807,351.358807 0,0 1,-73.109917,211.003769"
+              stroke="#99c060" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:projects/Acme_Data_Migration.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M -184.175095,-177.563416 A 370.356049,370.356049 0,0 1,183.141388,-35.372246"
+              stroke="#c0c0c0" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:projects/Acme_Data_Migration.md id_note:team/Priya_Kapoor.md"
+              d="M -185.487534,-156.326080 A 549.063750,549.063750 0,0 1,151.852890,356.280243"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path fill="none" stroke-width="1.0"
+              d="M 197.673065,-14.418003 C 242.673065,-59.418003 242.673065,30.581997 197.673065,-14.418003"
+              class="id_note:proposals/Acme_Analytics_Add-on.md"
+              stroke-opacity="1.0" stroke="#c0c0c0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:proposals/Acme_Analytics_Add-on.md id_note:clients/Acme_Corp.md"
+              d="M 184.442429,-32.616909 A 301.088143,301.088143 0,0 1,162.622696,-329.981049"
+              stroke="#c0c0c0" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:proposals/Acme_Analytics_Add-on.md id_note:team/Sarah_Mitchell.md"
+              d="M 218.143036,-5.078292 A 306.413842,306.413842 0,0 1,387.144592,275.439789"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:proposals/Acme_Analytics_Add-on.md id_note:projects/Acme_Data_Migration.md"
+              d="M 175.916275,-8.682852 A 370.356049,370.356049 0,0 1,-196.282425,-137.548523"
+              stroke="#c0c0c0" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path fill="none" stroke-width="1.0"
+              d="M 455.351776,89.851494 C 498.685120,46.518162 498.685120,133.184830 455.351776,89.851494"
+              class="id_note:team/Marcus_Webb.md" stroke-opacity="1.0"
+              stroke="#4c463e"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:team/Marcus_Webb.md id_note:projects/Acme_Data_Migration.md"
+              d="M 434.407288,95.398849 A 601.941911,601.941911 0,0 1,-197.282654,-136.851425"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:team/Marcus_Webb.md id_note:clients/Acme_Corp.md"
+              d="M 435.682037,80.766037 A 446.690860,446.690860 0,0 1,186.089340,-322.745361"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:team/Marcus_Webb.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M 433.700775,90.674927 A 876.010199,876.010199 0,0 1,-407.601227,-473.758698"
+              stroke="#8f7c77" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path fill="none" stroke-width="1.0"
+              d="M 151.286102,375.938751 C 184.619446,342.605408 184.619446,409.272095 151.286102,375.938751"
+              class="id_note:team/Priya_Kapoor.md" stroke-opacity="1.0"
+              stroke="#4c463e"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:team/Priya_Kapoor.md id_note:clients/Acme_Corp.md"
+              d="M 142.161469,361.991760 A 627.120387,627.120387 0,0 1,157.384369,-333.507324"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path fill="none" stroke-width="1.0"
+              d="M 385.445953,301.718292 C 432.112610,255.051620 432.112610,348.384949 385.445953,301.718292"
+              class="id_note:team/Sarah_Mitchell.md" stroke-opacity="1.0"
+              stroke="#4c463e"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:team/Sarah_Mitchell.md id_note:clients/Acme_Corp.md"
+              d="M 367.093506,287.308838 A 587.591631,587.591631 0,0 1,173.033890,-325.270752"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:team/Sarah_Mitchell.md id_note:projects/Acme_Data_Migration.md"
+              d="M 362.128174,300.866852 A 638.445918,638.445918 0,0 1,-207.656647,-131.910675"
+              stroke="#86837f" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:team/Sarah_Mitchell.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M 362.384521,298.166473 A 943.518741,943.518741 0,0 1,-412.331207,-472.536865"
+              stroke="#8f7c77" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_note:team/Sarah_Mitchell.md"
+              d="M -52.993492,-288.586060 A 626.738104,626.738104 0,0 1,384.578033,275.399261"
+              stroke="#779084" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_note:knowledge/Rate_Card.md"
+              d="M -52.964233,-288.685577 A 828.655413,828.655413 0,0 1,533.215271,469.419586"
+              stroke="#bbc6bd" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_note:team/Marcus_Webb.md"
+              d="M -52.132942,-294.416992 A 544.451476,544.451476 0,0 1,447.569305,66.444702"
+              stroke="#779084" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_note:team/Priya_Kapoor.md"
+              d="M -56.036877,-282.370544 A 589.134295,589.134295 0,0 1,157.173630,357.174011"
+              stroke="#779084" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M -93.736435,-292.894287 A 332.481244,332.481244 0,0 1,-405.655640,-474.558441"
+              stroke="#bbc6bd" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_note:projects/Acme_Data_Migration.md"
+              d="M -78.772804,-274.504913 A 160.426299,160.426299 0,0 1,-180.831985,-176.299133"
+              stroke="#b1cdc5" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_note:clients/Acme_Corp.md"
+              d="M -59.978271,-310.802094 A 228.967861,228.967861 0,0 1,137.916870,-387.601715"
+              stroke="#b1cdc5" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M -52.512226,-290.554321 A 324.570808,324.570808 0,0 1,193.509216,-39.575752"
+              stroke="#b1cdc5" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:team/Sarah_Mitchell.md"
+              d="M -391.206085,118.580551 A 678.928959,678.928959 0,0 1,367.876038,282.103424"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:team/Marcus_Webb.md"
+              d="M -393.991333,113.953972 A 722.034833,722.034833 0,0 1,434.768127,76.258934"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M -422.623108,110.126228 A 520.562062,520.562062 0,0 1,-430.909729,-476.813599"
+              stroke="#69bbd7" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M -396.576752,111.244019 A 520.152313,520.152313 0,0 1,174.093369,-24.126152"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:clients/Acme_Corp.md"
+              d="M -405.225342,106.715057 A 652.119318,652.119318 0,0 1,136.784210,-370.630310"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:team/Priya_Kapoor.md"
+              d="M -389.902954,122.664764 A 511.930369,511.930369 0,0 1,141.358612,358.961639"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:knowledge/Rate_Card.md"
+              d="M -390.169220,121.544724 A 843.946296,843.946296 0,0 1,520.977539,473.195587"
+              stroke="#69bbd7" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:projects/Acme_Data_Migration.md"
+              d="M -411.009094,106.100563 A 293.687122,293.687122 0,0 1,-254.447830,-153.233673"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:team/Sarah_Mitchell.md"
+              d="M -12.779172,-204.533722 A 550.743539,550.743539 0,0 1,383.713196,275.442017"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:team/Marcus_Webb.md"
+              d="M -12.127448,-211.384735 A 477.443829,477.443829 0,0 1,445.688629,67.156387"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M -53.734180,-210.457428 A 399.513763,399.513763 0,0 1,-408.407776,-473.480621"
+              stroke="#69bbd7" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M -12.181167,-207.802872 A 251.913366,251.913366 0,0 1,190.755661,-38.961830"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:clients/Acme_Corp.md"
+              d="M -26.116209,-229.600159 A 231.168738,231.168738 0,0 1,136.877777,-369.726013"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:team/Priya_Kapoor.md"
+              d="M -16.235596,-197.412933 A 511.764709,511.764709 0,0 1,157.466278,357.268372"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:knowledge/Rate_Card.md"
+              d="M -12.789670,-204.494537 A 752.611359,752.611359 0,0 1,532.655945,469.441406"
+              stroke="#69bbd7" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:projects/Acme_Data_Migration.md"
+              d="M -47.513130,-195.048309 A 158.755589,158.755589 0,0 1,-181.940140,-157.401947"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:team/Sarah_Mitchell.md"
+              d="M -367.833038,302.585358 A 641.706365,641.706365 0,0 1,363.795685,286.727966"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:team/Marcus_Webb.md"
+              d="M -371.391479,298.900208 A 724.600089,724.600089 0,0 1,432.305084,81.059731"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M -397.377960,298.739685 A 677.876051,677.876051 0,0 1,-430.407562,-476.471924"
+              stroke="#69bbd7" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M -375.783264,296.175659 A 557.457914,557.457914 0,0 1,172.315002,-17.104687"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:clients/Acme_Corp.md"
+              d="M -383.156982,294.313568 A 748.438793,748.438793 0,0 1,138.458237,-361.530182"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:team/Priya_Kapoor.md"
+              d="M -366.275299,304.984100 A 449.345075,449.345075 0,0 1,136.692505,362.755249"
+              stroke="#26859e" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:knowledge/Rate_Card.md"
+              d="M -365.623413,306.258301 A 779.556956,779.556956 0,0 1,517.602112,475.821472"
+              stroke="#69bbd7" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:projects/Acme_Data_Migration.md"
+              d="M -390.436432,295.139252 A 426.387872,426.387872 0,0 1,-250.051147,-145.756348"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:weekly-notes/2025-W52.md id_note:clients/Acme_Corp.md"
+              d="M -162.155029,471.203491 A 771.937734,771.937734 0,0 1,145.086304,-346.784698"
+              stroke="#df8aa2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:weekly-notes/2025-W52.md id_note:projects/Acme_Data_Migration.md"
+              d="M -166.999756,473.769165 A 545.244831,545.244831 0,0 1,-238.160873,-135.287521"
+              stroke="#df8aa2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:weekly-notes/2026-W01.md id_note:clients/Acme_Corp.md"
+              d="M -401.422577,-62.361328 A 567.439654,567.439654 0,0 1,136.792343,-380.719543"
+              stroke="#df8aa2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:weekly-notes/2026-W01.md id_note:projects/Acme_Data_Migration.md"
+              d="M -401.963135,-62.602818 A 186.561018,186.561018 0,0 1,-257.801941,-167.972549"
+              stroke="#df8aa2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:weekly-notes/2026-W01.md id_note:proposals/Acme_Analytics_Add-on.md"
+              d="M -395.197083,-56.908295 A 505.381297,505.381297 0,0 1,177.764648,-30.352400"
+              stroke="#df8aa2" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:weekly-notes/2026-W01.md id_note:knowledge/Data_Migration_Playbook.md"
+              d="M -416.796509,-60.799072 A 374.179291,374.179291 0,0 1,-430.512054,-476.541565"
+              stroke="#e9849a" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:weekly-notes/2026-W01.md id_note:invoices/INV-2025-048.md"
+              d="M -392.828094,-48.047474 A 303.064283,303.064283 0,0 1,-128.537292,156.124420"
+              stroke="#b98a42" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:weekly-notes/2026-W01.md id_note:admin/Business_Goals_2026.md"
+              d="M -392.945770,-46.773727 A 403.545135,403.545135 0,0 1,-60.631805,264.593750"
+              stroke="#7f898c" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:Acme_Corp"
+              d="M 192.389252,-325.713226 A 755.002157,755.002157 0,0 1,-263.145355,385.374969"
+              stroke="#c0c0c0" stroke-width="3.5" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:Sarah_Mitchell"
+              d="M 170.842819,-329.262909 A 349.494412,349.494412 0,0 1,-129.722488,-133.618698"
+              stroke="#c0c0c0" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:Acme_Data_Migration"
+              d="M 177.452652,-327.117340 A 572.184832,572.184832 0,0 1,-300.580536,78.161186"
+              stroke="#dfa462" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:Marcus_Webb"
+              d="M 139.706863,-379.619537 A 186.685364,186.685364 0,0 1,12.678646,-478.004425"
+              stroke="#c0c0c0" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:Acme_Analytics_Add-on"
+              d="M 154.129654,-340.339844 A 375.660309,375.660309 0,0 1,-230.362961,-273.957764"
+              stroke="#dfa462" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:INV-2025-047"
+              d="M 165.073425,-332.031799 A 282.595254,282.595254 0,0 1,-88.444160,-209.750168"
+              stroke="#cfa4df" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:INV-2025-048"
+              d="M 145.314789,-352.320313 A 177.451483,177.451483 0,0 1,-7.757604,-368.437012"
+              stroke="#cfa4df" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:INV-2026-002"
+              d="M 234.024979,-352.790222 A 544.815245,544.815245 0,0 1,504.683167,179.655746"
+              stroke="#cfa4df" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:INV-2026-003"
+              d="M 162.553513,-333.545410 A 106.959008,106.959008 0,0 1,102.090317,-304.640961"
+              stroke="#cfa4df" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:INV-2026-006"
+              d="M 147.547241,-348.503723 A 534.823435,534.823435 0,0 1,-436.929901,-379.063934"
+              stroke="#cfa4df" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:INV-2026-004"
+              d="M 187.844238,-325.661438 A 805.690988,805.690988 0,0 1,-374.706482,390.583923"
+              stroke="#cfa4df" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:clients/Acme_Corp.md id_entity:Data_Migration_Playbook"
+              d="M 188.244476,-325.649414 A 531.096526,531.096526 0,0 1,-160.097336,134.713181"
+              stroke="#dfa462" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_entity:Sarah_Mitchell"
+              d="M -171.242935,115.990601 A 222.603598,222.603598 0,0 1,-166.312973,-114.619339"
+              stroke="#60c2df" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_entity:Marcus_Webb"
+              d="M -167.575699,114.122551 A 545.261361,545.261361 0,0 1,-15.125937,-484.677399"
+              stroke="#60c2df" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_entity:Acme_Analytics_Add-on"
+              d="M -175.383072,119.480568 A 355.496761,355.496761 0,0 1,-260.548584,-261.717682"
+              stroke="#7fa682" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_entity:Acme_Corp"
+              d="M -156.900421,154.130997 A 242.198629,242.198629 0,0 1,-265.964600,383.042023"
+              stroke="#60c2df" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:daily-notes/2026-03-23.md id_entity:Acme_Data_Migration"
+              d="M -180.145142,138.837723 A 143.322011,143.322011 0,0 1,-307.726379,99.413651"
+              stroke="#7fa682" stroke-width="3.5" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:knowledge/Rate_Card.md id_entity:Acme_Corp"
+              d="M 515.675903,503.402069 A 688.699263,688.699263 0,0 1,-269.084106,411.359039"
+              stroke="#c9b9b8" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:knowledge/Rate_Card.md id_entity:Marcus_Webb"
+              d="M 515.085754,484.223572 A 938.464013,938.464013 0,0 1,-0.076884,-476.320618"
+              stroke="#c9b9b8" stroke-width="3.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Sarah_Mitchell"
+              d="M -406.767548,106.389473 A 305.139301,305.139301 0,0 1,-169.790771,-130.496979"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Marcus_Webb"
+              d="M -411.208221,106.108330 A 625.932338,625.932338 0,0 1,-13.580147,-493.768372"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Data_Migration_Playbook"
+              d="M -392.240295,116.529716 A 190.637276,190.637276 0,0 1,-195.547241,131.552582"
+              stroke="#7fa682" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Acme_Analytics_Add-on"
+              d="M -415.367798,106.714981 A 366.375235,366.375235 0,0 1,-265.991669,-273.675995"
+              stroke="#7fa682" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Acme_Corp"
+              d="M -392.404663,137.594177 A 246.054932,246.054932 0,0 1,-283.588226,377.360687"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Acme_Data_Migration"
+              d="M -399.167511,109.310120 A 81.914301,81.914301 0,0 1,-340.770905,79.741501"
+              stroke="#7fa682" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Sarah_Mitchell"
+              d="M -387.437195,294.481384 A 420.716231,420.716231 0,0 1,-168.185333,-125.708412"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Marcus_Webb"
+              d="M -388.331055,294.629211 A 752.261679,752.261679 0,0 1,-12.562197,-491.530640"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Data_Migration_Playbook"
+              d="M -378.983704,295.010742 A 221.890555,221.890555 0,0 1,-199.116241,143.897659"
+              stroke="#7fa682" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Acme_Analytics_Add-on"
+              d="M -392.686127,295.953156 A 510.651581,510.651581 0,0 1,-264.489441,-271.714447"
+              stroke="#7fa682" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Acme_Corp"
+              d="M -363.859680,318.038879 A 105.258283,105.258283 0,0 1,-292.509308,378.040436"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Acme_Data_Migration"
+              d="M -391.393890,295.450012 A 201.932734,201.932734 0,0 1,-336.575348,91.819710"
+              stroke="#7fa682" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_entity:Sarah_Mitchell"
+              d="M -70.613541,-273.812592 A 149.797688,149.797688 0,0 1,-138.024506,-142.087753"
+              stroke="#b1cdc5" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_entity:Marcus_Webb"
+              d="M -77.742218,-314.791138 A 182.712675,182.712675 0,0 1,-11.359907,-489.605896"
+              stroke="#b1cdc5" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_entity:Data_Migration_Playbook"
+              d="M -65.414085,-275.096283 A 375.062902,375.062902 0,0 1,-168.969284,131.016449"
+              stroke="#d1b168" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_entity:Acme_Data_Migration"
+              d="M -72.410843,-273.686737 A 375.927796,375.927796 0,0 1,-307.563202,74.489517"
+              stroke="#d1b168" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_entity:Acme_Corp"
+              d="M -66.301880,-274.773956 A 601.640092,601.640092 0,0 1,-272.304352,384.311768"
+              stroke="#b1cdc5" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/report.md id_entity:Acme_Analytics_Add-on"
+              d="M -89.708908,-282.114899 A 149.203803,149.203803 0,0 1,-236.768066,-274.543488"
+              stroke="#d1b168" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Sarah_Mitchell"
+              d="M -41.936924,-191.129822 A 118.535813,118.535813 0,0 1,-135.722321,-133.431900"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Marcus_Webb"
+              d="M -42.467365,-228.415863 A 243.689591,243.689591 0,0 1,-8.736894,-486.679626"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Data_Migration_Playbook"
+              d="M -28.562969,-189.529907 A 318.612633,318.612633 0,0 1,-167.436081,133.121597"
+              stroke="#7fa682" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Acme_Analytics_Add-on"
+              d="M -53.006889,-204.421524 A 192.218391,192.218391 0,0 1,-241.271149,-269.429688"
+              stroke="#7fa682" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Acme_Corp"
+              d="M -28.215195,-189.607178 A 546.730172,546.730172 0,0 1,-271.346039,385.730469"
+              stroke="#60c2df" stroke-width="1.0" stroke-opacity="1.0"/>
+        <path stroke-linecap="round" fill="none"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Acme_Data_Migration"
+              d="M -36.489498,-189.381851 A 342.459601,342.459601 0,0 1,-306.694214,77.707466"
+              stroke="#7fa682" stroke-width="1.0" stroke-opacity="1.0"/>
+    </g>
+    <g id="arrows">
+        <polyline fill="#999d9a" fill-opacity="1.0"
+                  class="id_note:DEMO-VIDEO-SCRIPT.md id_note:team/Sarah_Mitchell.md"
+                  points="399.358246,282.986145 399.942749,279.683380 402.351196,281.472076"
+                  stroke="none"/>
+        <polyline fill="#d3dadb" fill-opacity="1.0"
+                  class="id_note:DEMO-VIDEO-SCRIPT.md id_note:clients/Acme_Corp.md"
+                  points="236.129791,-357.463684 239.469788,-357.771027 238.379669,-354.976105"
+                  stroke="none"/>
+        <polyline fill="#c5d5d2" fill-opacity="1.0"
+                  class="id_note:DEMO-VOICE-PKM.md id_note:clients/Acme_Corp.md"
+                  points="148.200958,-403.747406 144.876709,-404.193909 146.563599,-406.674683"
+                  stroke="none"/>
+        <polyline fill="#8b9891" fill-opacity="1.0"
+                  class="id_note:DEMO-VOICE-PKM.md id_note:team/Sarah_Mitchell.md"
+                  points="379.681915,279.108124 377.487274,276.571625 380.394318,275.830536"
+                  stroke="none"/>
+        <polyline fill="#c5d5d2" fill-opacity="1.0"
+                  class="id_note:DEMO-VOICE-PKM.md id_note:projects/Acme_Data_Migration.md"
+                  points="-227.286926,-203.913391 -229.441238,-206.484161 -226.522903,-207.179321"
+                  stroke="none"/>
+        <polyline fill="#9fd572" fill-opacity="1.0"
+                  class="id_note:DEMO-VOICE-PKM.md id_note:invoices/INV-2025-047.md"
+                  points="529.807251,467.348785 527.718384,464.724579 530.653320,464.103119"
+                  stroke="none"/>
+        <polyline fill="#9fd572" fill-opacity="1.0"
+                  class="id_note:DEMO-VOICE-PKM.md id_note:invoices/INV-2025-048.md"
+                  points="-120.318001,158.320221 -121.476334,155.172485 -118.494812,155.504913"
+                  stroke="none"/>
+        <polyline fill="#cfceca" fill-opacity="1.0"
+                  class="id_note:DEMO-VOICE-PKM.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-430.253906,-480.061707 -430.935028,-476.777466 -433.289948,-478.636047"
+                  stroke="none"/>
+        <polyline fill="#cfceca" fill-opacity="1.0"
+                  class="id_note:DEMO-VOICE-PKM.md id_note:knowledge/Rate_Card.md"
+                  points="529.616943,472.848419 527.536743,470.217285 530.473755,469.605591"
+                  stroke="none"/>
+        <polyline fill="#60beaa" fill-opacity="1.0"
+                  class="id_note:admin/Business_Goals_2026.md id_note:clients/Acme_Corp.md"
+                  points="148.723328,-346.764160 147.139908,-343.807343 145.407822,-346.256805"
+                  stroke="none"/>
+        <polyline fill="#69b8a2" fill-opacity="1.0"
+                  class="id_note:admin/Business_Goals_2026.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-420.672638,-475.649841 -419.782104,-472.416138 -422.725281,-472.997192"
+                  stroke="none"/>
+        <polyline fill="#60beaa" fill-opacity="1.0"
+                  class="id_note:admin/Business_Goals_2026.md id_note:projects/Acme_Data_Migration.md"
+                  points="-227.907059,-134.350830 -227.201385,-131.071808 -230.106873,-131.818878"
+                  stroke="none"/>
+        <polyline fill="#60beaa" fill-opacity="1.0"
+                  class="id_note:admin/Business_Goals_2026.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="175.938339,-8.599781 173.428253,-6.375036 172.652496,-9.273000"
+                  stroke="none"/>
+        <polyline fill="#00bd94" fill-opacity="1.0"
+                  class="id_note:admin/Business_Goals_2026.md id_note:admin/Quarterly_Review_Q4_2025.md"
+                  points="34.135044,-255.627182 33.006641,-252.468582 30.931129,-254.634750"
+                  stroke="none"/>
+        <polyline fill="#69b8a2" fill-opacity="1.0"
+                  class="id_note:admin/Business_Goals_2026.md id_note:knowledge/Rate_Card.md"
+                  points="521.918457,476.176300 518.969238,474.578705 521.427002,472.858429"
+                  stroke="none"/>
+        <polyline fill="#60beaa" fill-opacity="1.0"
+                  class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:clients/Acme_Corp.md"
+                  points="140.376038,-366.568481 137.697662,-364.549500 137.153839,-367.499817"
+                  stroke="none"/>
+        <polyline fill="#60beaa" fill-opacity="1.0"
+                  class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:projects/Acme_Data_Migration.md"
+                  points="-183.905670,-161.737000 -180.662552,-162.592682 -181.275253,-159.655914"
+                  stroke="none"/>
+        <polyline fill="#60beaa" fill-opacity="1.0"
+                  class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="198.894928,-36.884804 197.560059,-39.961834 200.555634,-39.798916"
+                  stroke="none"/>
+        <polyline fill="#69b8a2" fill-opacity="1.0"
+                  class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-405.608124,-477.934448 -402.861298,-476.009644 -405.499847,-474.582092"
+                  stroke="none"/>
+        <polyline fill="#00bd94" fill-opacity="1.0"
+                  class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:admin/Business_Goals_2026.md"
+                  points="-44.063625,272.605896 -42.935226,269.447327 -40.859711,271.613464"
+                  stroke="none"/>
+        <polyline fill="#60beaa" fill-opacity="1.0"
+                  class="id_note:admin/Quarterly_Review_Q4_2025.md id_note:monthly-notes/2025-12.md"
+                  points="181.478241,24.175987 180.622131,20.932980 183.558990,21.545303"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:team/Sarah_Mitchell.md"
+                  points="393.217651,279.717255 392.802521,276.388947 395.631195,277.388153"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:projects/Acme_Data_Migration.md"
+                  points="-183.427383,-164.608475 -180.264435,-165.724594 -180.636719,-162.747787"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:team/Marcus_Webb.md"
+                  points="457.451080,68.286774 456.248810,65.155548 459.234711,65.446228"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="209.978210,-33.255028 210.363098,-36.586975 212.874695,-34.946289"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2025-047.md"
+                  points="537.013916,467.500000 536.304810,464.221741 539.211060,464.965759"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2025-048.md"
+                  points="-105.710487,168.842987 -103.617538,166.222000 -102.357925,168.944748"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2026-001.md"
+                  points="488.501129,315.084473 487.733154,311.819489 490.652344,312.511139"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2026-002.md"
+                  points="-65.064850,220.778732 -63.225136,217.974182 -61.717384,220.567780"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2026-003.md"
+                  points="-24.030270,246.476212 -22.399254,243.545380 -20.706993,246.022522"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2026-006.md"
+                  points="407.228607,-69.217003 405.792023,-72.247887 408.791351,-72.184792"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:invoices/INV-2026-004.md"
+                  points="389.391083,-3.225573 388.345795,-6.412636 391.313568,-5.974041"
+                  stroke="none"/>
+        <polyline fill="#c9b9b8" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-400.925262,-481.309937 -397.779053,-480.147400 -399.967590,-478.095459"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_note:team/Sarah_Mitchell.md"
+                  points="371.215973,283.226349 368.197632,281.763611 370.575195,279.934021"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_note:team/Marcus_Webb.md"
+                  points="436.865112,78.551620 433.523102,78.266869 435.087677,75.707176"
+                  stroke="none"/>
+        <polyline fill="#69bbd7" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-421.561096,-475.843994 -420.801971,-472.576904 -423.719269,-473.276428"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="175.675629,-19.146931 172.427368,-18.310959 173.057892,-21.243950"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_note:clients/Acme_Corp.md"
+                  points="143.062469,-357.216949 140.825821,-354.717468 139.720901,-357.506592"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_note:team/Priya_Kapoor.md"
+                  points="146.431381,359.994812 144.122574,357.561798 146.992477,356.687958"
+                  stroke="none"/>
+        <polyline fill="#69bbd7" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_note:knowledge/Rate_Card.md"
+                  points="524.479736,474.644470 521.789063,472.641876 524.467407,471.290375"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_note:projects/Acme_Data_Migration.md"
+                  points="-232.119415,-135.716446 -231.823563,-132.375427 -234.614731,-133.475159"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2025-047.md id_note:clients/Acme_Corp.md"
+                  points="178.224472,-326.931427 179.006104,-323.669678 176.084045,-324.349060"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2025-047.md id_note:projects/Acme_Data_Migration.md"
+                  points="-210.586456,-134.219803 -208.425201,-131.654861 -211.341675,-130.951828"
+                  stroke="none"/>
+        <polyline fill="#73c000" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2025-047.md id_note:invoices/INV-2025-048.md"
+                  points="-113.434402,192.560379 -110.664864,194.452377 -113.286278,195.911209"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2025-048.md id_note:clients/Acme_Corp.md"
+                  points="144.818161,-353.287964 142.804733,-350.605438 141.464066,-353.289215"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2025-048.md id_note:projects/Acme_Data_Migration.md"
+                  points="-229.774078,-134.885223 -229.247086,-131.572784 -232.107834,-132.476166"
+                  stroke="none"/>
+        <polyline fill="#5f831f" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2025-048.md id_note:team/Sarah_Mitchell.md"
+                  points="370.133820,284.111969 367.033295,282.832642 369.296967,280.863953"
+                  stroke="none"/>
+        <polyline fill="#73c000" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2025-048.md id_note:invoices/INV-2025-047.md"
+                  points="525.416443,468.987518 522.650879,467.089783 525.275269,465.636414"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-001.md id_note:clients/Acme_Corp.md"
+                  points="179.294968,-326.694885 180.147934,-323.451019 177.211685,-324.066193"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-001.md id_note:projects/Acme_Data_Migration.md"
+                  points="-207.163910,-135.227539 -204.758301,-132.890228 -207.590393,-131.900665"
+                  stroke="none"/>
+        <polyline fill="#5f831f" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-001.md id_note:team/Marcus_Webb.md"
+                  points="445.697449,109.248367 445.703583,112.602455 443.017853,111.265709"
+                  stroke="none"/>
+        <polyline fill="#5f831f" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-001.md id_note:team/Sarah_Mitchell.md"
+                  points="402.032593,318.129486 405.220154,319.173218 403.110168,321.305786"
+                  stroke="none"/>
+        <polyline fill="#73c000" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-001.md id_note:invoices/INV-2025-048.md"
+                  points="-110.565651,190.585281 -107.488274,191.919373 -109.786491,193.847626"
+                  stroke="none"/>
+        <polyline fill="#73c000" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-001.md id_note:invoices/INV-2026-002.md"
+                  points="-67.643005,239.136597 -64.483139,240.261444 -66.646957,242.339386"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-002.md id_note:clients/Acme_Corp.md"
+                  points="147.142288,-349.141174 145.392700,-346.279541 143.803223,-348.823853"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-002.md id_note:projects/Acme_Data_Migration.md"
+                  points="-227.756958,-134.312592 -227.037125,-131.036652 -229.945816,-131.771149"
+                  stroke="none"/>
+        <polyline fill="#5f831f" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-002.md id_note:team/Marcus_Webb.md"
+                  points="435.094299,82.165207 431.757294,82.503395 432.821564,79.698509"
+                  stroke="none"/>
+        <polyline fill="#73c000" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-002.md id_note:invoices/INV-2026-001.md"
+                  points="473.093536,319.301178 469.931732,318.181854 472.091888,316.100128"
+                  stroke="none"/>
+        <polyline fill="#73c000" fill-opacity="1.0"
+                  class="id_note:invoices/INV-2026-004.md id_note:invoices/INV-2026-003.md"
+                  points="-22.195255,253.658127 -19.061665,252.462051 -19.358242,255.447342"
+                  stroke="none"/>
+        <polyline fill="#c9b9b8" fill-opacity="1.0"
+                  class="id_note:knowledge/Data_Migration_Playbook.md id_note:projects/Acme_Data_Migration.md"
+                  points="-217.480072,-204.857101 -218.852859,-207.917404 -215.855515,-207.791519"
+                  stroke="none"/>
+        <polyline fill="#c9b9b8" fill-opacity="1.0"
+                  class="id_note:knowledge/Rate_Card.md id_note:clients/Acme_Corp.md"
+                  points="178.042877,-326.973999 178.812347,-323.709351 175.892853,-324.399658"
+                  stroke="none"/>
+        <polyline fill="#8f7c77" fill-opacity="1.0"
+                  class="id_note:knowledge/Rate_Card.md id_note:team/Marcus_Webb.md"
+                  points="446.611023,109.676819 446.773285,113.026993 444.028229,111.816727"
+                  stroke="none"/>
+        <polyline fill="#69b8a2" fill-opacity="1.0"
+                  class="id_note:knowledge/Rate_Card.md id_note:admin/Business_Goals_2026.md"
+                  points="-46.710293,299.081940 -43.766232,300.688965 -46.229465,302.401428"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:monthly-notes/2025-12.md id_note:clients/Acme_Corp.md"
+                  points="161.518036,-334.227814 161.078415,-330.902649 158.594131,-332.584412"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:monthly-notes/2025-12.md id_note:projects/Acme_Data_Migration.md"
+                  points="-202.062469,-137.468964 -199.323578,-135.532852 -201.968018,-134.116196"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:monthly-notes/2025-12.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="182.792480,2.458557 181.933517,5.700804 179.683304,3.716726"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:monthly-notes/2025-12.md id_note:invoices/INV-2025-047.md"
+                  points="532.234497,467.028320 530.575134,464.113464 533.570740,463.951904"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:monthly-notes/2025-12.md id_note:invoices/INV-2025-048.md"
+                  points="-104.317123,179.848846 -101.095703,178.914810 -101.637039,181.865555"
+                  stroke="none"/>
+        <polyline fill="#df8aa2" fill-opacity="1.0"
+                  class="id_note:monthly-notes/2025-12.md id_note:weekly-notes/2025-W52.md"
+                  points="-148.092697,479.165070 -145.648270,476.868378 -144.788681,479.742584"
+                  stroke="none"/>
+        <polyline fill="#df8aa2" fill-opacity="1.0"
+                  class="id_note:monthly-notes/2025-12.md id_note:weekly-notes/2026-W01.md"
+                  points="-397.123932,-38.262360 -393.934113,-37.225578 -396.039459,-35.088417"
+                  stroke="none"/>
+        <polyline fill="#60beaa" fill-opacity="1.0"
+                  class="id_note:monthly-notes/2025-12.md id_note:admin/Business_Goals_2026.md"
+                  points="-39.536991,281.293060 -36.887981,279.235687 -36.301693,282.177826"
+                  stroke="none"/>
+        <polyline fill="#60beaa" fill-opacity="1.0"
+                  class="id_note:monthly-notes/2025-12.md id_note:admin/Quarterly_Review_Q4_2025.md"
+                  points="43.199078,-250.602753 44.055176,-247.359741 41.118332,-247.972076"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:projects/Acme_Data_Migration.md id_note:clients/Acme_Corp.md"
+                  points="139.827301,-380.913422 136.685654,-379.738678 137.002518,-382.721893"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:projects/Acme_Data_Migration.md id_note:team/Sarah_Mitchell.md"
+                  points="378.858856,279.334045 376.572968,276.879517 379.450958,276.032593"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:projects/Acme_Data_Migration.md id_note:team/Marcus_Webb.md"
+                  points="443.456238,71.742371 440.555420,70.058487 443.062866,68.411407"
+                  stroke="none"/>
+        <polyline fill="#c9b9b8" fill-opacity="1.0"
+                  class="id_note:projects/Acme_Data_Migration.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-417.728363,-475.268250 -416.419800,-472.179932 -419.413879,-472.368408"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:projects/Acme_Data_Migration.md id_note:invoices/INV-2025-047.md"
+                  points="529.562622,467.402618 527.432495,464.811798 530.357178,464.144012"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:projects/Acme_Data_Migration.md id_note:invoices/INV-2025-048.md"
+                  points="-116.319107,159.227493 -116.748848,155.901047 -113.915779,156.887833"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:projects/Acme_Data_Migration.md id_note:invoices/INV-2026-001.md"
+                  points="479.371216,315.496490 476.996948,313.127319 479.841980,312.175598"
+                  stroke="none"/>
+        <polyline fill="#99c060" fill-opacity="1.0"
+                  class="id_note:projects/Acme_Data_Migration.md id_note:invoices/INV-2026-002.md"
+                  points="-73.930389,213.889389 -74.552727,210.593536 -71.667107,211.414001"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:projects/Acme_Data_Migration.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="184.850998,-32.907040 181.908783,-34.517441 184.373993,-36.227051"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:projects/Acme_Data_Migration.md id_note:team/Priya_Kapoor.md"
+                  points="151.766434,359.278992 150.353516,356.237000 153.352264,356.323486"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:proposals/Acme_Analytics_Add-on.md id_note:clients/Acme_Corp.md"
+                  points="164.146744,-332.565094 163.914719,-329.219025 161.330673,-330.743073"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:proposals/Acme_Analytics_Add-on.md id_note:team/Sarah_Mitchell.md"
+                  points="386.951080,278.433563 385.647705,275.343018 388.641479,275.536560"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:proposals/Acme_Analytics_Add-on.md id_note:projects/Acme_Data_Migration.md"
+                  points="-198.036179,-139.982513 -195.065445,-138.425400 -197.499435,-136.671646"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:team/Marcus_Webb.md id_note:projects/Acme_Data_Migration.md"
+                  points="-198.959137,-139.339279 -196.038727,-137.689667 -198.526581,-136.013184"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:team/Marcus_Webb.md id_note:clients/Acme_Corp.md"
+                  points="186.285095,-325.738983 187.586151,-322.647491 184.592529,-322.843231"
+                  stroke="none"/>
+        <polyline fill="#8f7c77" fill-opacity="1.0"
+                  class="id_note:team/Marcus_Webb.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-408.626343,-476.578125 -406.191528,-474.271271 -409.010925,-473.246124"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:team/Priya_Kapoor.md id_note:clients/Acme_Corp.md"
+                  points="159.204926,-335.891754 158.576584,-332.597046 156.192154,-334.417603"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:team/Sarah_Mitchell.md id_note:clients/Acme_Corp.md"
+                  points="173.968628,-328.121429 174.459213,-324.803375 171.608566,-325.738129"
+                  stroke="none"/>
+        <polyline fill="#86837f" fill-opacity="1.0"
+                  class="id_note:team/Sarah_Mitchell.md id_note:projects/Acme_Data_Migration.md"
+                  points="-208.531693,-134.780228 -206.221878,-132.348206 -209.091415,-131.473145"
+                  stroke="none"/>
+        <polyline fill="#8f7c77" fill-opacity="1.0"
+                  class="id_note:team/Sarah_Mitchell.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-412.799866,-475.500031 -410.849609,-472.771179 -413.812805,-472.302551"
+                  stroke="none"/>
+        <polyline fill="#779084" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_note:team/Sarah_Mitchell.md"
+                  points="384.676910,278.397644 383.078857,275.448700 386.077209,275.349823"
+                  stroke="none"/>
+        <polyline fill="#bbc6bd" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_note:knowledge/Rate_Card.md"
+                  points="533.297058,472.418457 531.715820,469.460480 534.714722,469.378693"
+                  stroke="none"/>
+        <polyline fill="#779084" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_note:team/Marcus_Webb.md"
+                  points="448.515839,69.291473 446.145905,66.917961 448.992706,65.971443"
+                  stroke="none"/>
+        <polyline fill="#779084" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_note:team/Priya_Kapoor.md"
+                  points="156.275528,360.036438 155.742416,356.724976 158.604843,357.623047"
+                  stroke="none"/>
+        <polyline fill="#bbc6bd" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-406.909637,-477.283752 -404.292969,-475.185455 -407.018311,-473.931427"
+                  stroke="none"/>
+        <polyline fill="#b1cdc5" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_note:projects/Acme_Data_Migration.md"
+                  points="-183.779327,-175.739532 -181.111786,-177.772812 -180.552185,-174.825455"
+                  stroke="none"/>
+        <polyline fill="#b1cdc5" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_note:clients/Acme_Corp.md"
+                  points="140.839371,-386.924194 137.578110,-386.140472 138.255630,-389.062958"
+                  stroke="none"/>
+        <polyline fill="#b1cdc5" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="193.999084,-36.616020 192.029343,-39.330822 194.989090,-39.820683"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:team/Sarah_Mitchell.md"
+                  points="369.877686,284.338043 366.758728,283.104248 368.993347,281.102600"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:team/Marcus_Webb.md"
+                  points="437.271545,77.912086 433.941559,77.510651 435.594696,75.007233"
+                  stroke="none"/>
+        <polyline fill="#69bbd7" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-429.192657,-479.273621 -429.679718,-475.955078 -432.139740,-477.672119"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="176.867462,-22.984016 173.522308,-22.739111 174.664429,-25.513193"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:clients/Acme_Corp.md"
+                  points="139.770813,-370.913452 136.925781,-369.136993 136.642639,-372.123627"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:team/Priya_Kapoor.md"
+                  points="142.872971,361.551361 140.063751,359.718811 142.653473,358.204468"
+                  stroke="none"/>
+        <polyline fill="#69bbd7" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:knowledge/Rate_Card.md"
+                  points="522.599731,475.719177 519.715759,474.006683 522.239319,472.384491"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_note:projects/Acme_Data_Migration.md"
+                  points="-251.708099,-154.455948 -253.836700,-151.863815 -255.058960,-154.603531"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:team/Sarah_Mitchell.md"
+                  points="383.910583,278.435516 382.216461,275.540710 385.209930,275.343323"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:team/Marcus_Webb.md"
+                  points="446.863861,69.916603 444.308533,67.744011 447.068726,66.568764"
+                  stroke="none"/>
+        <polyline fill="#69bbd7" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-409.338013,-476.332764 -406.981720,-473.945770 -409.833832,-473.015533"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="191.569473,-36.074322 189.311905,-38.554924 192.199417,-39.368736"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:clients/Acme_Corp.md"
+                  points="139.859085,-370.060364 137.044937,-368.235352 136.710617,-371.216675"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:team/Priya_Kapoor.md"
+                  points="156.523544,360.116394 156.042267,356.796997 158.890289,357.739746"
+                  stroke="none"/>
+        <polyline fill="#69bbd7" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:knowledge/Rate_Card.md"
+                  points="532.808105,472.437531 531.157898,469.517517 534.153992,469.365295"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_note:projects/Acme_Data_Migration.md"
+                  points="-184.801880,-158.302216 -181.490005,-158.832809 -182.390274,-155.971085"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:team/Sarah_Mitchell.md"
+                  points="366.262177,288.435730 362.941803,287.961212 364.649567,285.494720"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:team/Marcus_Webb.md"
+                  points="435.108063,82.128998 431.770447,82.461220 432.839722,79.658241"
+                  stroke="none"/>
+        <polyline fill="#69bbd7" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-428.749573,-478.972137 -429.157440,-475.642944 -431.657684,-477.300903"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="175.298294,-16.788607 172.156967,-15.613035 172.473038,-18.596338"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:clients/Acme_Corp.md"
+                  points="141.350082,-362.328430 138.857361,-360.084259 138.059113,-362.976105"
+                  stroke="none"/>
+        <polyline fill="#26859e" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:team/Priya_Kapoor.md"
+                  points="138.918640,364.766296 135.686981,363.868317 137.698029,361.642181"
+                  stroke="none"/>
+        <polyline fill="#69bbd7" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:knowledge/Rate_Card.md"
+                  points="519.649170,478.014496 516.505615,476.845001 518.698608,474.797943"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_note:projects/Acme_Data_Migration.md"
+                  points="-247.651093,-147.556274 -249.151184,-144.556320 -250.951111,-146.956375"
+                  stroke="none"/>
+        <polyline fill="#df8aa2" fill-opacity="1.0"
+                  class="id_note:weekly-notes/2025-W52.md id_note:clients/Acme_Corp.md"
+                  points="147.602997,-348.417603 145.902756,-345.526367 144.269852,-348.043030"
+                  stroke="none"/>
+        <polyline fill="#df8aa2" fill-opacity="1.0"
+                  class="id_note:weekly-notes/2025-W52.md id_note:projects/Acme_Data_Migration.md"
+                  points="-236.679382,-137.896194 -236.856537,-134.546783 -239.465210,-136.028290"
+                  stroke="none"/>
+        <polyline fill="#df8aa2" fill-opacity="1.0"
+                  class="id_note:weekly-notes/2026-W01.md id_note:clients/Acme_Corp.md"
+                  points="139.778488,-380.431610 136.648361,-379.226471 136.936325,-382.212616"
+                  stroke="none"/>
+        <polyline fill="#df8aa2" fill-opacity="1.0"
+                  class="id_note:weekly-notes/2026-W01.md id_note:projects/Acme_Data_Migration.md"
+                  points="-254.803116,-168.056198 -257.760132,-166.473129 -257.843750,-169.471970"
+                  stroke="none"/>
+        <polyline fill="#df8aa2" fill-opacity="1.0"
+                  class="id_note:weekly-notes/2026-W01.md id_note:proposals/Acme_Analytics_Add-on.md"
+                  points="180.106812,-28.477764 176.827332,-29.181316 178.701965,-31.523483"
+                  stroke="none"/>
+        <polyline fill="#e9849a" fill-opacity="1.0"
+                  class="id_note:weekly-notes/2026-W01.md id_note:knowledge/Data_Migration_Playbook.md"
+                  points="-428.841766,-479.033600 -429.266052,-475.706421 -431.758057,-477.376709"
+                  stroke="none"/>
+        <polyline fill="#b98a42" fill-opacity="1.0"
+                  class="id_note:weekly-notes/2026-W01.md id_note:invoices/INV-2025-048.md"
+                  points="-127.667137,158.995453 -129.972809,156.559494 -127.101776,155.689346"
+                  stroke="none"/>
+        <polyline fill="#7f898c" fill-opacity="1.0"
+                  class="id_note:weekly-notes/2026-W01.md id_note:admin/Business_Goals_2026.md"
+                  points="-60.056355,267.538025 -62.103954,264.881470 -59.159664,264.306030"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:Acme_Corp"
+                  points="-272.854248,389.373383 -265.144562,380.520508 -261.146149,390.229431"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:Sarah_Mitchell"
+                  points="-138.722382,-133.572662 -129.745499,-138.118637 -129.699478,-129.118759"
+                  stroke="none"/>
+        <polyline fill="#dfa462" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:Acme_Data_Migration"
+                  points="-309.532440,79.090332 -301.045105,73.685234 -300.115967,82.637138"
+                  stroke="none"/>
+        <polyline fill="#c0c0c0" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:Marcus_Webb"
+                  points="9.152267,-486.284790 16.818834,-479.767609 8.538458,-476.241241"
+                  stroke="none"/>
+        <polyline fill="#dfa462" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:Acme_Analytics_Add-on"
+                  points="-238.631546,-277.511719 -228.585999,-278.092072 -232.139923,-269.823456"
+                  stroke="none"/>
+        <polyline fill="#cfa4df" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:INV-2025-047"
+                  points="-97.394119,-210.697906 -87.970291,-214.225143 -88.918030,-205.275192"
+                  stroke="none"/>
+        <polyline fill="#cfa4df" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:INV-2025-048"
+                  points="-15.149620,-373.571014 -5.190598,-372.133026 -10.324612,-364.740997"
+                  stroke="none"/>
+        <polyline fill="#cfa4df" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:INV-2026-001"
+                  points="214.289719,-413.403564 208.281418,-405.331970 204.227493,-413.367249"
+                  stroke="none"/>
+        <polyline fill="#cfa4df" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:INV-2026-002"
+                  points="503.540497,188.582916 500.219574,179.084396 509.146759,180.227097"
+                  stroke="none"/>
+        <polyline fill="#cfa4df" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:INV-2026-003"
+                  points="93.096931,-304.295898 101.917786,-309.137665 102.262848,-300.144257"
+                  stroke="none"/>
+        <polyline fill="#cfa4df" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:INV-2026-006"
+                  points="-444.100220,-384.503296 -434.210236,-382.649078 -439.649567,-375.478790"
+                  stroke="none"/>
+        <polyline fill="#cfa4df" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:INV-2026-004"
+                  points="-383.324097,393.179443 -376.004242,386.275116 -373.408722,394.892731"
+                  stroke="none"/>
+        <polyline fill="#dfa462" fill-opacity="1.0"
+                  class="id_note:clients/Acme_Corp.md id_entity:Data_Migration_Playbook"
+                  points="-168.621490,137.600861 -161.541168,130.451096 -158.653503,138.975266"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_entity:Sarah_Mitchell"
+                  points="-161.097855,-121.954353 -162.645462,-112.011780 -169.980484,-117.226898"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_entity:Marcus_Webb"
+                  points="-8.225597,-490.455414 -12.236937,-481.227234 -18.014938,-488.127563"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_entity:Data_Migration_Playbook"
+                  points="-168.765778,137.195313 -161.905945,129.833755 -158.760620,138.266251"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_entity:Acme_Analytics_Add-on"
+                  points="-257.090393,-270.026764 -256.394043,-259.988586 -264.703125,-263.446777"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_entity:Acme_Corp"
+                  points="-273.749420,387.558289 -268.222748,379.149628 -263.706451,386.934418"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:daily-notes/2026-03-23.md id_entity:Acme_Data_Migration"
+                  points="-314.493347,91.385078 -303.712097,96.030159 -311.740662,102.797142"
+                  stroke="none"/>
+        <polyline fill="#c9b9b8" fill-opacity="1.0"
+                  class="id_note:knowledge/Rate_Card.md id_entity:Acme_Corp"
+                  points="-275.699097,405.256439 -266.032806,408.051544 -272.135406,414.666534"
+                  stroke="none"/>
+        <polyline fill="#c9b9b8" fill-opacity="1.0"
+                  class="id_note:knowledge/Rate_Card.md id_entity:Marcus_Webb"
+                  points="1.180060,-485.232422 4.379013,-475.692139 -4.532782,-476.949097"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Sarah_Mitchell"
+                  points="-166.837051,-131.021820 -169.528351,-129.020111 -170.053192,-131.973846"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Marcus_Webb"
+                  points="-10.770961,-494.821198 -13.053727,-492.363770 -14.106568,-495.172974"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Data_Migration_Playbook"
+                  points="-193.186600,133.403915 -196.472900,132.732895 -194.621582,130.372269"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Acme_Analytics_Add-on"
+                  points="-263.484833,-275.323944 -265.167694,-272.422577 -266.815643,-274.929413"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Acme_Corp"
+                  points="-284.110870,380.314819 -285.065277,377.099365 -282.111176,377.622009"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md id_entity:Acme_Data_Migration"
+                  points="-337.774231,79.883293 -340.841797,81.239822 -340.700012,78.243179"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Sarah_Mitchell"
+                  points="-165.512161,-127.070084 -167.504501,-124.371819 -168.866165,-127.044991"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Marcus_Webb"
+                  points="-9.922668,-492.956451 -11.849298,-490.210876 -13.275094,-492.850403"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Data_Migration_Playbook"
+                  points="-196.131897,143.591599 -198.963211,145.389832 -199.269272,142.405487"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Acme_Analytics_Add-on"
+                  points="-262.245117,-273.705200 -263.494080,-270.592285 -265.484802,-272.836609"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Acme_Corp"
+                  points="-291.545105,380.881256 -293.929718,378.522522 -291.088898,377.558350"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md id_entity:Acme_Data_Migration"
+                  points="-334.311920,89.850746 -335.590881,92.951431 -337.559814,90.687988"
+                  stroke="none"/>
+        <polyline fill="#b1cdc5" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_entity:Sarah_Mitchell"
+                  points="-140.622162,-140.587021 -138.774872,-143.386581 -137.274139,-140.788925"
+                  stroke="none"/>
+        <polyline fill="#b1cdc5" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_entity:Marcus_Webb"
+                  points="-8.920762,-491.352478 -10.486614,-488.386322 -12.233202,-490.825470"
+                  stroke="none"/>
+        <polyline fill="#d1b168" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_entity:Data_Migration_Playbook"
+                  points="-171.253342,132.961472 -169.941788,129.874420 -167.996780,132.158478"
+                  stroke="none"/>
+        <polyline fill="#d1b168" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_entity:Acme_Data_Migration"
+                  points="-310.369843,75.549133 -308.093018,73.086197 -307.033386,75.892838"
+                  stroke="none"/>
+        <polyline fill="#b1cdc5" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_entity:Acme_Corp"
+                  points="-274.707642,386.107391 -273.202148,383.110138 -271.406555,385.513397"
+                  stroke="none"/>
+        <polyline fill="#d1b168" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/report.md id_entity:Acme_Analytics_Add-on"
+                  points="-239.368256,-276.039825 -236.019897,-275.843567 -237.516235,-273.243408"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Sarah_Mitchell"
+                  points="-138.722305,-133.443832 -135.716354,-134.931885 -135.728287,-131.931915"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Marcus_Webb"
+                  points="-6.734917,-488.913940 -7.619744,-485.678650 -9.854043,-487.680603"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Data_Migration_Playbook"
+                  points="-169.988083,134.698715 -168.224640,131.845596 -166.647522,134.397598"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Acme_Analytics_Add-on"
+                  points="-243.084381,-271.819702 -240.076141,-270.336304 -242.466156,-268.523071"
+                  stroke="none"/>
+        <polyline fill="#60c2df" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Acme_Corp"
+                  points="-273.909027,387.289612 -272.125610,384.448975 -270.566467,387.011963"
+                  stroke="none"/>
+        <polyline fill="#7fa682" fill-opacity="1.0"
+                  class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md id_entity:Acme_Data_Migration"
+                  points="-309.652710,78.204727 -306.942841,76.228218 -306.445587,79.186714"
+                  stroke="none"/>
+    </g>
+    <g id="nodes">
+        <circle fill-opacity="1.0" fill="#e7f5f7" r="9.966666" cx="397.95126"
+                class="id_note:DEMO-VIDEO-SCRIPT.md" cy="-400.6619"
+                stroke="#a1abac" stroke-opacity="1.0" stroke-width="1.7333332"/>
+        <circle fill-opacity="1.0" fill="#cbeae5" r="13.8" cx="-434.5557"
+                class="id_note:DEMO-VOICE-PKM.md" cy="-378.52682"
+                stroke="#8ea3a0" stroke-opacity="1.0" stroke-width="2.3999999"/>
+        <circle fill-opacity="1.0" fill="#00bd94" r="16.1" cx="-56.69955"
+                class="id_note:admin/Business_Goals_2026.md" cy="284.71307"
+                stroke="#008467" stroke-opacity="1.0" stroke-width="2.8"/>
+        <circle fill-opacity="1.0" fill="#00bd94" r="16.1" cx="46.77097"
+                class="id_note:admin/Quarterly_Review_Q4_2025.md"
+                cy="-267.73434" stroke="#008467" stroke-opacity="1.0"
+                stroke-width="2.8"/>
+        <circle fill-opacity="1.0" fill="#c0c0c0" r="46.0" cx="189.54764"
+                class="id_note:clients/Acme_Corp.md" cy="-375.63242"
+                stroke="#868686" stroke-opacity="1.0" stroke-width="8.0"/>
+        <circle fill-opacity="1.0" fill="#00c4ff" r="19.166668" cx="-159.99942"
+                class="id_note:daily-notes/2026-03-23.md" cy="133.52945"
+                stroke="#0089b2" stroke-opacity="1.0" stroke-width="3.3333333"/>
+        <circle fill-opacity="1.0" fill="#73c000" r="14.566667" cx="533.08716"
+                class="id_note:invoices/INV-2025-047.md" cy="482.83868"
+                stroke="#508600" stroke-opacity="1.0" stroke-width="2.5333333"/>
+        <circle fill-opacity="1.0" fill="#73c000" r="16.866665" cx="-122.34951"
+                class="id_note:invoices/INV-2025-048.md" cy="176.54065"
+                stroke="#508600" stroke-opacity="1.0" stroke-width="2.9333332"/>
+        <circle fill-opacity="1.0" fill="#73c000" r="15.333335" cx="484.65872"
+                class="id_note:invoices/INV-2026-001.md" cy="331.3022"
+                stroke="#508600" stroke-opacity="1.0" stroke-width="2.6666667"/>
+        <circle fill-opacity="1.0" fill="#73c000" r="13.8" cx="-78.03277"
+                class="id_note:invoices/INV-2026-002.md" cy="228.3175"
+                stroke="#508600" stroke-opacity="1.0" stroke-width="2.3999999"/>
+        <circle fill-opacity="1.0" fill="#73c000" r="9.966666" cx="-32.97552"
+                class="id_note:invoices/INV-2026-003.md" cy="252.58714"
+                stroke="#508600" stroke-opacity="1.0" stroke-width="1.7333332"/>
+        <circle fill-opacity="1.0" fill="#73c000" r="9.966666" cx="387.80728"
+                class="id_note:invoices/INV-2026-004.md" cy="7.491359"
+                stroke="#508600" stroke-opacity="1.0" stroke-width="1.7333332"/>
+        <circle fill-opacity="1.0" fill="#73c000" r="9.2" cx="407.01828"
+                class="id_note:invoices/INV-2026-006.md" cy="-59.21921"
+                stroke="#508600" stroke-opacity="1.0" stroke-width="1.5999999"/>
+        <circle fill-opacity="1.0" fill="#d3b3b0" r="20.7" cx="-416.31473"
+                class="id_note:knowledge/Data_Migration_Playbook.md"
+                cy="-497.7238" stroke="#937d7b" stroke-opacity="1.0"
+                stroke-width="3.6"/>
+        <circle fill-opacity="1.0" fill="#d3b3b0" r="19.166668" cx="533.865"
+                class="id_note:knowledge/Rate_Card.md" cy="493.24405"
+                stroke="#937d7b" stroke-opacity="1.0" stroke-width="3.3333333"/>
+        <circle fill-opacity="1.0" fill="#c0c0c0" r="16.1" cx="177.90634"
+                class="id_note:monthly-notes/2025-12.md" cy="41.307583"
+                stroke="#868686" stroke-opacity="1.0" stroke-width="2.8"/>
+        <circle fill-opacity="1.0" fill="#c0c0c0" r="32.966667" cx="-218.98372"
+                class="id_note:projects/Acme_Data_Migration.md" cy="-169.05533"
+                stroke="#868686" stroke-opacity="1.0" stroke-width="5.733333"/>
+        <circle fill-opacity="1.0" fill="#c0c0c0" r="20.7" cx="197.67307"
+                class="id_note:proposals/Acme_Analytics_Add-on.md"
+                cy="-14.418003" stroke="#868686" stroke-opacity="1.0"
+                stroke-width="3.6"/>
+        <circle fill-opacity="1.0" fill="#4c463e" r="19.933332" cx="455.35178"
+                class="id_note:team/Marcus_Webb.md" cy="89.851494"
+                stroke="#35312b" stroke-opacity="1.0" stroke-width="3.4666665"/>
+        <circle fill-opacity="1.0" fill="#4c463e" r="15.333335" cx="151.2861"
+                class="id_note:team/Priya_Kapoor.md" cy="375.93875"
+                stroke="#35312b" stroke-opacity="1.0" stroke-width="2.6666667"/>
+        <circle fill-opacity="1.0" fill="#4c463e" r="21.466667" cx="385.44595"
+                class="id_note:team/Sarah_Mitchell.md" cy="301.7183"
+                stroke="#35312b" stroke-opacity="1.0" stroke-width="3.7333333"/>
+        <circle fill-opacity="1.0" fill="#a3dacb" r="19.166668" cx="-72.96606"
+                class="id_note:test-results/20260323T161000/report.md"
+                cy="-294.51266" stroke="#72988e" stroke-opacity="1.0"
+                stroke-width="3.3333333"/>
+        <circle fill-opacity="1.0" fill="#00c4ff" r="19.166668" cx="-410.29672"
+                class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md"
+                cy="126.921715" stroke="#0089b2" stroke-opacity="1.0"
+                stroke-width="3.3333333"/>
+        <circle fill-opacity="1.0" fill="#00c4ff" r="19.166668" cx="-32.90817"
+                class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md"
+                cy="-209.90506" stroke="#0089b2" stroke-opacity="1.0"
+                stroke-width="3.3333333"/>
+        <circle fill-opacity="1.0" fill="#00c4ff" r="19.166668" cx="-384.48532"
+                class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md"
+                cy="315.10452" stroke="#0089b2" stroke-opacity="1.0"
+                stroke-width="3.3333333"/>
+        <circle fill-opacity="1.0" fill="#ff5584" r="10.733334" cx="-159.2702"
+                class="id_note:weekly-notes/2025-W52.md" cy="482.50787"
+                stroke="#b23b5c" stroke-opacity="1.0" stroke-width="1.8666667"/>
+        <circle fill-opacity="1.0" fill="#ff5584" r="13.8" cx="-407.80975"
+                class="id_note:weekly-notes/2026-W01.md" cy="-48.789158"
+                stroke="#b23b5c" stroke-opacity="1.0" stroke-width="2.3999999"/>
+        <circle fill-opacity="1.0" fill="#ff8805" r="13.033333" cx="-251.64691"
+                class="id_entity:Acme_Analytics_Add-on" cy="-283.10587"
+                stroke="#b25f03" stroke-opacity="1.0" stroke-width="2.2666664"/>
+        <circle fill-opacity="1.0" fill="#c0c0c0" r="13.8" cx="-286.7241"
+                class="id_entity:Acme_Corp" cy="395.08542" stroke="#868686"
+                stroke-opacity="1.0" stroke-width="2.3999999"/>
+        <circle fill-opacity="1.0" fill="#ff8805" r="13.033333" cx="-323.6234"
+                class="id_entity:Acme_Data_Migration" cy="80.55288"
+                stroke="#b25f03" stroke-opacity="1.0" stroke-width="2.2666664"/>
+        <circle fill-opacity="1.0" fill="#ff8805" r="13.033333" cx="-182.03915"
+                class="id_entity:Data_Migration_Playbook" cy="142.14627"
+                stroke="#b25f03" stroke-opacity="1.0" stroke-width="2.2666664"/>
+        <circle fill-opacity="1.0" fill="#df89ff" r="9.2" cx="-107.338524"
+                class="id_entity:INV-2025-047" cy="-211.75095" stroke="#9c5fb2"
+                stroke-opacity="1.0" stroke-width="1.5999999"/>
+        <circle fill-opacity="1.0" fill="#df89ff" r="9.2" cx="-23.36297"
+                class="id_entity:INV-2025-048" cy="-379.27548" stroke="#9c5fb2"
+                stroke-opacity="1.0" stroke-width="1.5999999"/>
+        <circle fill-opacity="1.0" fill="#df89ff" r="9.2" cx="223.2178"
+                class="id_entity:INV-2026-001" cy="-417.90793" stroke="#9c5fb2"
+                stroke-opacity="1.0" stroke-width="1.5999999"/>
+        <circle fill-opacity="1.0" fill="#df89ff" r="9.2" cx="502.27084"
+                class="id_entity:INV-2026-002" cy="198.50198" stroke="#9c5fb2"
+                stroke-opacity="1.0" stroke-width="1.5999999"/>
+        <circle fill-opacity="1.0" fill="#df89ff" r="9.2" cx="83.10429"
+                class="id_entity:INV-2026-003" cy="-303.9125" stroke="#9c5fb2"
+                stroke-opacity="1.0" stroke-width="1.5999999"/>
+        <circle fill-opacity="1.0" fill="#df89ff" r="9.2" cx="-392.89923"
+                class="id_entity:INV-2026-004" cy="396.06332" stroke="#9c5fb2"
+                stroke-opacity="1.0" stroke-width="1.5999999"/>
+        <circle fill-opacity="1.0" fill="#df89ff" r="9.2" cx="-452.06723"
+                class="id_entity:INV-2026-006" cy="-390.54703" stroke="#9c5fb2"
+                stroke-opacity="1.0" stroke-width="1.5999999"/>
+        <circle fill-opacity="1.0" fill="#c0c0c0" r="13.8" cx="3.2749684"
+                class="id_entity:Marcus_Webb" cy="-500.08542" stroke="#868686"
+                stroke-opacity="1.0" stroke-width="2.3999999"/>
+        <circle fill-opacity="1.0" fill="#c0c0c0" r="13.033333" cx="-152.88885"
+                class="id_entity:Sarah_Mitchell" cy="-133.50021"
+                stroke="#868686" stroke-opacity="1.0" stroke-width="2.2666664"/>
+    </g>
+    <g id="node-labels">
+        <text font-size="8" x="397.95126" y="-399.1801" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:DEMO-VIDEO-SCRIPT.md">
+            DEMO-VIDEO-SCRIPT
+        </text>
+        <text font-size="8" x="-434.5557" y="-377.04504" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:DEMO-VOICE-PKM.md">
+            DEMO-VOICE-PKM
+        </text>
+        <text font-size="8" x="-56.69955" y="286.1942" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:admin/Business_Goals_2026.md">
+            Business Goals 2026
+        </text>
+        <text font-size="8" x="46.77097" y="-265.85608" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial"
+              class="id_note:admin/Quarterly_Review_Q4_2025.md">
+            Quarterly Review Q4 2025
+        </text>
+        <text font-size="8" x="189.54764" y="-373.77826" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:clients/Acme_Corp.md">
+            Acme Corp
+        </text>
+        <text font-size="8" x="-159.99942" y="134.99234" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:daily-notes/2026-03-23.md">
+            2026-03-23
+        </text>
+        <text font-size="8" x="533.08716" y="484.30093" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:invoices/INV-2025-047.md">
+            INV-2025-047
+        </text>
+        <text font-size="8" x="-122.34951" y="178.00288" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:invoices/INV-2025-048.md">
+            INV-2025-048
+        </text>
+        <text font-size="8" x="484.65872" y="332.76443" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:invoices/INV-2026-001.md">
+            INV-2026-001
+        </text>
+        <text font-size="8" x="-78.03277" y="229.77974" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:invoices/INV-2026-002.md">
+            INV-2026-002
+        </text>
+        <text font-size="8" x="-32.97552" y="254.05003" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:invoices/INV-2026-003.md">
+            INV-2026-003
+        </text>
+        <text font-size="8" x="387.80728" y="8.953599" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:invoices/INV-2026-004.md">
+            INV-2026-004
+        </text>
+        <text font-size="8" x="407.01828" y="-57.756973" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:invoices/INV-2026-006.md">
+            INV-2026-006
+        </text>
+        <text font-size="8" x="-416.31473" y="-495.8709" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial"
+              class="id_note:knowledge/Data_Migration_Playbook.md">
+            Data Migration Playbook
+        </text>
+        <text font-size="8" x="533.865" y="494.72516" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:knowledge/Rate_Card.md">
+            Rate Card
+        </text>
+        <text font-size="8" x="177.90634" y="42.76982" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:monthly-notes/2025-12.md">
+            2025-12
+        </text>
+        <text font-size="8" x="-218.98372" y="-167.20247" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial"
+              class="id_note:projects/Acme_Data_Migration.md">
+            Acme Data Migration
+        </text>
+        <text font-size="8" x="197.67307" y="-12.565139" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial"
+              class="id_note:proposals/Acme_Analytics_Add-on.md">
+            Acme Analytics Add-on
+        </text>
+        <text font-size="8" x="455.35178" y="91.30657" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:team/Marcus_Webb.md">
+            Marcus Webb
+        </text>
+        <text font-size="8" x="151.2861" y="377.79163" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:team/Priya_Kapoor.md">
+            Priya Kapoor
+        </text>
+        <text font-size="8" x="385.44595" y="303.1994" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:team/Sarah_Mitchell.md">
+            Sarah Mitchell
+        </text>
+        <text font-size="8" x="-72.96606" y="-292.71515" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial"
+              class="id_note:test-results/20260323T161000/report.md">
+            report
+        </text>
+        <text font-size="8" x="-410.29672" y="128.38461" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial"
+              class="id_note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md">
+            2026-03-23
+        </text>
+        <text font-size="8" x="-32.90817" y="-208.44217" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md">
+            2026-03-23
+        </text>
+        <text font-size="8" x="-384.48532" y="316.5674" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial"
+              class="id_note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md">
+            2026-03-23
+        </text>
+        <text font-size="8" x="-159.2702" y="483.97012" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:weekly-notes/2025-W52.md">
+            2025-W52
+        </text>
+        <text font-size="8" x="-407.80975" y="-47.32692" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_note:weekly-notes/2026-W01.md">
+            2026-W01
+        </text>
+        <text font-size="32" x="-251.64691" y="-275.6944" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:Acme_Analytics_Add-on">
+            Acme Analytics Add-on
+        </text>
+        <text font-size="32" x="-286.7241" y="402.50208" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:Acme_Corp">
+            Acme Corp
+        </text>
+        <text font-size="32" x="-323.6234" y="87.96434" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:Acme_Data_Migration">
+            Acme Data Migration
+        </text>
+        <text font-size="32" x="-182.03915" y="149.55772" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:Data_Migration_Playbook">
+            Data Migration Playbook
+        </text>
+        <text font-size="32" x="-107.338524" y="-205.902" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:INV-2025-047">
+            INV-2025-047
+        </text>
+        <text font-size="32" x="-23.36297" y="-373.4265" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:INV-2025-048">
+            INV-2025-048
+        </text>
+        <text font-size="32" x="223.2178" y="-412.05896" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:INV-2026-001">
+            INV-2026-001
+        </text>
+        <text font-size="32" x="502.27084" y="204.35094" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:INV-2026-002">
+            INV-2026-002
+        </text>
+        <text font-size="32" x="83.10429" y="-298.06094" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:INV-2026-003">
+            INV-2026-003
+        </text>
+        <text font-size="32" x="-392.89923" y="401.9123" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:INV-2026-004">
+            INV-2026-004
+        </text>
+        <text font-size="32" x="-452.06723" y="-384.69806" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:INV-2026-006">
+            INV-2026-006
+        </text>
+        <text font-size="32" x="3.2749684" y="-494.2651" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:Marcus_Webb">
+            Marcus Webb
+        </text>
+        <text font-size="32" x="-152.88885" y="-127.57574" fill="#000000"
+              style="text-anchor: middle; dominant-baseline: central;"
+              font-family="Arial" class="id_entity:Sarah_Mitchell">
+            Sarah Mitchell
+        </text>
+    </g>
+</svg>

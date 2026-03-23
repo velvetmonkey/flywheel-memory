@@ -264,6 +264,8 @@ I've been writing code for over 30 years, and I tried every PKM tool going befor
 
 I think what's happening right now is simultaneous invention — many people are grappling with the same problems, trying to build the same sort of thing for different audiences. This is mine. I dogfood it daily through a Telegram bot using voice input, and my intention is to automate as much voice-driven knowledge workflow as possible, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space. Times are changing.
 
+I'm also in the early days of building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) — an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor. Very early days, but the intent is to give value back to Obsidian itself.
+
 ---
 
 ## License

@@ -146,6 +146,58 @@ Source: [`demos/hotpotqa/`](../demos/hotpotqa/) | [`packages/mcp-server/test/ret
 
 ---
 
+## Retrieval Benchmark (LoCoMo)
+
+Retrieval quality measured on [LoCoMo](https://snap-research.github.io/locomo/) (Long-Term Conversational Memory) — a benchmark from Snap Research (ACL 2024) for evaluating memory over extended multi-session conversations. 10 conversations, each spanning 19-32 sessions over weeks/months, with 1,986 QA pairs across 5 categories.
+
+LoCoMo tests a different, more natural fit for Flywheel than HotpotQA: each conversation session becomes a vault note (like daily notes or meeting logs), and questions test whether the system can retrieve the right sessions when asked about events, facts, or temporal relationships.
+
+### Unit-Level Results (1,531 scored questions, 272 session notes)
+
+FTS5 retrieval quality on the full LoCoMo-10 dataset. Each conversation session is stored as a markdown note with frontmatter dates, speaker names, and dialog content.
+
+| Category | Questions | Recall@5 | Recall@10 | MRR |
+|---|---|---|---|---|
+| **Overall** | **1,531** | **84.8%** | **90.4%** | **0.767** |
+| Commonsense | 841 | 95.4% | 98.3% | 0.835 |
+| Single-hop | 320 | 88.1% | 91.7% | 0.737 |
+| Multi-hop | 281 | 58.1% | 72.7% | 0.674 |
+| Temporal | 89 | 56.9% | 67.4% | 0.528 |
+
+446 adversarial questions are excluded from retrieval scoring (they test the ability to say "I don't know", which is an LLM capability, not a retrieval one).
+
+### Vault Mode Comparison
+
+LoCoMo provides three representations of the same conversations. Flywheel builds each as a separate vault and measures retrieval quality:
+
+| Vault Mode | Recall@5 | Recall@10 | Notes |
+|---|---|---|---|
+| **Dialog** (raw turns) | **84.8%** | **90.4%** | Best — most keyword-rich |
+| Summary | 82.7% | 89.2% | Close second — concise but retains key facts |
+| Observation | 13.5% | 27.0% | Poor — sparse annotations, low keyword overlap |
+
+### How Flywheel compares
+
+[Ori Mnemos](https://github.com/aayoawoyemi/Ori-Mnemos), a graph-based memory system, reports LoCoMo answer accuracy (LLM-as-judge) on 695 questions:
+
+| System | Type | Single-hop | Multi-hop | Metric |
+|---|---|---|---|---|
+| **Flywheel** | MCP vault tool | **88.1%** | **58.1%** | Retrieval Recall@5 (unit-level) |
+| Ori Mnemos | Graph memory | 37.69 | 29.31 | Answer accuracy (LLM-as-judge) |
+| Mem0 | Cloud memory | 38.72 | 28.64 | Answer accuracy (LLM-as-judge) |
+| Zep | Cloud memory | 35.74 | 19.37 | Answer accuracy (LLM-as-judge) |
+| LangMem | Memory framework | 35.51 | 26.04 | Answer accuracy (LLM-as-judge) |
+
+**Important caveats:**
+
+- **Different metrics.** Flywheel's numbers are retrieval Recall@5 (did the right session note appear in top 5 results?). Ori Mnemos and others report answer accuracy (did the LLM produce the correct answer?). These are not directly comparable — retrieval recall is a necessary condition for answer accuracy, not the same thing.
+- **E2E comparison pending.** The Flywheel E2E demo (`demos/locomo/run-benchmark.sh`) is built but not yet run. Once run, it will produce comparable answer accuracy numbers via Claude + Flywheel MCP with the `agent` preset.
+- **Question count.** Flywheel tests 1,531 non-adversarial questions (full dataset). Ori Mnemos tests 695 questions.
+
+Source: [`demos/locomo/`](../demos/locomo/) | [`packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts)
+
+---
+
 ## Graph Quality (266 tests, 31 files)
 
 The graph quality suite validates that the wikilink suggestion engine works correctly across every scenario that matters: precision/recall, scoring layers, archetypes, feedback loops, temporal evolution, and regression gates.
@@ -217,7 +269,8 @@ We are not aware of any other MCP server that publishes live AI test results.
 | **Per-tool coverage** | Claude discovers and uses each of 69 individual tools | 69 | **100% adoption** | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
 | **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
 | **Sequential workflow** | 7-beat workflow where each beat builds on previous vault state | 7 beats | 7/7 passed | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
-| **Retrieval benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 200 questions | 84.8% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
+| **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 200 questions | 84.8% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
+| **LoCoMo benchmark** | Retrieval quality on long-term conversational memory (5 categories) | 1,531 questions | 90.4% Recall@10 | [`locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts) |
 
 ### Why This Matters
 

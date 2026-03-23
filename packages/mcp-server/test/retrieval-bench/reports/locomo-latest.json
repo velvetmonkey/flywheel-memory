@@ -1,0 +1,94 @@
+{
+  "generated": "2026-03-23T00:28:10.714Z",
+  "dataset": "locomo10",
+  "total_conversations": 10,
+  "total_questions": 1986,
+  "total_sessions": 272,
+  "scored_questions": 1540,
+  "metrics": {
+    "total_queries": 1531,
+    "recall_at_5": 0.848,
+    "recall_at_10": 0.904,
+    "precision_at_5": 0.208,
+    "mrr": 0.767,
+    "ndcg_at_10": 0.782
+  },
+  "by_category": {
+    "single_hop": {
+      "total_queries": 320,
+      "recall_at_5": 0.881,
+      "recall_at_10": 0.917,
+      "precision_at_5": 0.19,
+      "mrr": 0.737,
+      "ndcg_at_10": 0.776
+    },
+    "temporal": {
+      "total_queries": 89,
+      "recall_at_5": 0.569,
+      "recall_at_10": 0.674,
+      "precision_at_5": 0.187,
+      "mrr": 0.528,
+      "ndcg_at_10": 0.526
+    },
+    "multi_hop": {
+      "total_queries": 281,
+      "recall_at_5": 0.581,
+      "recall_at_10": 0.727,
+      "precision_at_5": 0.286,
+      "mrr": 0.674,
+      "ndcg_at_10": 0.6
+    },
+    "commonsense": {
+      "total_queries": 841,
+      "recall_at_5": 0.954,
+      "recall_at_10": 0.983,
+      "precision_at_5": 0.191,
+      "mrr": 0.835,
+      "ndcg_at_10": 0.871
+    }
+  },
+  "by_vault_mode": {
+    "dialog": {
+      "total_queries": 1531,
+      "recall_at_5": 0.848,
+      "recall_at_10": 0.904,
+      "precision_at_5": 0.208,
+      "mrr": 0.767,
+      "ndcg_at_10": 0.782
+    },
+    "observation": {
+      "total_queries": 1531,
+      "recall_at_5": 0.135,
+      "recall_at_10": 0.27,
+      "precision_at_5": 0.041,
+      "mrr": 0.078,
+      "ndcg_at_10": 0.12
+    },
+    "summary": {
+      "total_queries": 1531,
+      "recall_at_5": 0.827,
+      "recall_at_10": 0.892,
+      "precision_at_5": 0.203,
+      "mrr": 0.746,
+      "ndcg_at_10": 0.762
+    }
+  },
+  "pipeline_comparison": {
+    "fts5_only": {
+      "total_queries": 1531,
+      "recall_at_5": 0.848,
+      "recall_at_10": 0.904,
+      "precision_at_5": 0.208,
+      "mrr": 0.767,
+      "ndcg_at_10": 0.782
+    },
+    "full_pipeline": {
+      "total_queries": 1531,
+      "recall_at_5": 0.835,
+      "recall_at_10": 0.904,
+      "precision_at_5": 0.205,
+      "mrr": 0.769,
+      "ndcg_at_10": 0.785
+    }
+  }
+}

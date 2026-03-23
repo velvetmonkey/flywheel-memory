@@ -1,12 +1,12 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-03-23T17:24:34.216Z",
-  "duration_ms": 31981,
+  "timestamp": "2026-03-23T22:30:35.536Z",
+  "duration_ms": 30759,
   "summary": {
     "round0_f1": 0.405,
     "roundN_f1": 0.448,
     "f1_improvement": 0.043,
-    "total_suppressions": 19
+    "total_suppressions": 17
   },
   "details": [
     {
@@ -3494,7 +3494,7 @@
       "truePositives": 46,
       "falsePositives": 111,
       "falseNegatives": 14,
-      "suppressionCount": 19,
+      "suppressionCount": 18,
       "feedbackLayerAvgContribution": 1.2283,
       "byCategory": {
         "people": {
@@ -3614,7 +3614,6 @@
         "machine-learning",
         "melbourne",
         "meridian-labs",
-        "portland",
         "prism-core",
         "production",
         "project-meridian",
@@ -3704,15 +3703,15 @@
     },
     {
       "round": 18,
-      "f1": 0.454,
-      "precision": 0.32,
-      "recall": 0.783,
+      "f1": 0.438,
+      "precision": 0.307,
+      "recall": 0.767,
       "mrr": 0.75,
-      "truePositives": 47,
-      "falsePositives": 100,
-      "falseNegatives": 13,
-      "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 0.9536,
+      "truePositives": 46,
+      "falsePositives": 104,
+      "falseNegatives": 14,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.931,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3799,9 +3798,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -3820,8 +3819,8 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
@@ -3842,7 +3841,8 @@
         "staging",
         "tessa-liu",
         "uat",
-        "yoga"
+        "yoga",
+        "zurich"
       ],
       "unresolvedLinks": [
         {
@@ -3878,6 +3878,11 @@
         {
           "entity": "Yoga",
           "notePath": "daily-notes/2026-01-08.md",
+          "tier": 3
+        },
+        {
+          "entity": "Luna",
+          "notePath": "daily-notes/2026-01-09.md",
           "tier": 3
         },
         {
@@ -3921,8 +3926,8 @@
       "truePositives": 47,
       "falsePositives": 103,
       "falseNegatives": 13,
-      "suppressionCount": 19,
-      "feedbackLayerAvgContribution": 0.8077,
+      "suppressionCount": 17,
+      "feedbackLayerAvgContribution": 0.9424,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -4044,17 +4049,15 @@
         "prism-core",
         "production",
         "project-meridian",
-        "python",
         "q1-budget",
         "q1-review",
-        "redis",
         "rex",
         "signal-patterns",
         "skyforge",
         "staging",
-        "supplements",
         "tessa-liu",
-        "yoga"
+        "yoga",
+        "zurich"
       ],
       "unresolvedLinks": [
         {

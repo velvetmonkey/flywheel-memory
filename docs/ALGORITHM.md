@@ -74,6 +74,14 @@ Semantic embeddings are built. Content about "deployment automation" now suggest
 
 **The loop**: writes create edges -> edges create co-occurrence -> co-occurrence sharpens scoring -> sharper scoring creates better edges -> better edges improve search -> better search drives more writes.
 
+### Proactive Linking: The Watcher Closes the Loop
+
+The flywheel doesn't require you to write through Claude. **Proactive linking** (on by default) means the file watcher monitors your vault for any change -- Obsidian edits, synced files, external tools -- and runs the full 13-layer scoring pipeline on changed notes. When an entity scores above the proactive threshold (default 20, double the balanced minimum), the watcher inserts the wikilink directly into the file. Up to 3 links per file per batch.
+
+This is what makes the flywheel self-sustaining. You edit a note in Obsidian. Flywheel links it. Those links create new co-occurrence edges. Those edges sharpen future scoring. The graph grows whether you're using Claude or not.
+
+The threshold is deliberately conservative -- score 20 means strong exact match plus multiple contextual signals. Flywheel won't speculatively link based on a stem match alone. And the cap of 3 prevents flooding. If this is too aggressive for your workflow, disable it: `flywheel_config({ mode: "set", key: "proactive_linking", value: false })`. Auto-linking through explicit write tool calls (`vault_add_to_section`, etc.) is unaffected.
+
 Static tools give you the same results on day 1 and day 100. Flywheel's results on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration changes, no manual curation. Just use it.
 
 ---

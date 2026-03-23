@@ -168,6 +168,7 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
 Every sentence you write through Flywheel makes your graph denser. A denser graph gives better search results, richer backlinks, and sharper suggestions. That's the flywheel.
 
+- **Proactive linking** — the file watcher scores your notes in the background and inserts high-confidence wikilinks automatically. Edit a note in Obsidian, and Flywheel links it without being asked. Only strong matches clear the threshold (score >= 20, max 3 per file). Disable with `proactive_linking: false` if you prefer links only through explicit tool calls.
 - **Co-occurrence** builds over time — two entities appearing in 20 notes form a statistical bond
 - **Edge weights** accumulate — links that survive edits gain influence
 - **Suppression** learns — connections you repeatedly break stop being suggested

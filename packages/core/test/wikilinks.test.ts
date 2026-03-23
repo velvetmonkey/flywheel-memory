@@ -1218,3 +1218,131 @@ Machine Learning is great outside the comment`;
     expect(commentPart).not.toContain('[[Artificial Intelligence]]');
   });
 });
+
+describe('noise reduction', () => {
+  describe('T1: minimum alias length guard', () => {
+    it('should not match single-char aliases like "I" for Ben', () => {
+      const result = applyWikilinks('I went to the store', [{ name: 'Ben', aliases: ['I'] }]);
+      expect(result.content).toBe('I went to the store');
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it('should not match two-char common-word aliases like "us" and "me"', () => {
+      const result = applyWikilinks('Tell us about me', [
+        { name: 'USA', aliases: ['us'] },
+        { name: 'Ben', aliases: ['me'] },
+      ]);
+      expect(result.content).toBe('Tell us about me');
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it('should still match two-char non-common aliases like JS', () => {
+      const result = applyWikilinks('The JS framework', [{ name: 'JavaScript', aliases: ['JS'] }]);
+      expect(result.content).toContain('[[JavaScript|JS]]');
+      expect(result.linksAdded).toBe(1);
+    });
+  });
+
+  describe('T2: EXCLUDE_WORDS expansion', () => {
+    it('should not match common words used as entity names', () => {
+      const words = ['walk', 'rest', 'share', 'surface', 'cover', 'skip'];
+      for (const word of words) {
+        const result = applyWikilinks(`I need to ${word} now`, [word]);
+        expect(result.linksAdded).toBe(0);
+      }
+    });
+
+    it('should not match common words used as entity aliases', () => {
+      const result = applyWikilinks('Time for a walk and some rest', [
+        { name: 'Go for a walk', aliases: ['walk'] },
+        { name: 'REST API', aliases: ['rest'] },
+      ]);
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it('should still match proper entity names not in EXCLUDE_WORDS', () => {
+      const result = applyWikilinks('Working on Flywheel today', ['Flywheel']);
+      expect(result.content).toContain('[[Flywheel]]');
+      expect(result.linksAdded).toBe(1);
+    });
+  });
+
+  describe('T3: cross-line matching prevention', () => {
+    it('should not match proper nouns across newlines', () => {
+      const result = detectImplicitEntities('Cover\nVandalism promise');
+      const names = result.map(m => m.text);
+      expect(names).not.toContain('Cover Vandalism');
+      expect(names).not.toContain('Cover\nVandalism');
+    });
+
+    it('should not match across newlines in multi-line text', () => {
+      const result = detectImplicitEntities('Hastings Direct\nThanks for choosing');
+      const names = result.map(m => m.text);
+      expect(names).not.toContain('Hastings Direct Thanks');
+      expect(names).not.toContain('Hastings Direct\nThanks');
+    });
+
+    it('should still match proper nouns on the same line', () => {
+      const result = detectImplicitEntities('met with Marcus Johnson yesterday');
+      const names = result.map(m => m.text);
+      expect(names).toContain('Marcus Johnson');
+    });
+  });
+
+  describe('T4: sentence starter trimming', () => {
+    it('should trim "So" from proper noun matches', () => {
+      const result = detectImplicitEntities('So Fartimus Venturi is here');
+      const names = result.map(m => m.text);
+      expect(names).not.toContain('So Fartimus Venturi');
+    });
+
+    it('should trim "Hello" from proper noun matches', () => {
+      const result = detectImplicitEntities('Hello Ben Smith arrived');
+      const names = result.map(m => m.text);
+      expect(names).not.toContain('Hello Ben Smith');
+    });
+
+    it('should trim "Mr" from proper noun matches', () => {
+      const result = detectImplicitEntities('Mr Ben Cassie signed');
+      const names = result.map(m => m.text);
+      expect(names).not.toContain('Mr Ben Cassie');
+    });
+
+    it('should trim "How" and keep multi-word remainder', () => {
+      const result = detectImplicitEntities('it is about How To Approach Them');
+      const names = result.map(m => m.text);
+      expect(names).not.toContain('How To Approach Them');
+    });
+
+    it('should trim "Skip" and skip single-word remainder', () => {
+      const result = detectImplicitEntities('about Skip Twitter today');
+      const names = result.map(m => m.text);
+      expect(names).not.toContain('Skip Twitter');
+    });
+  });
+
+  describe('T5: IMPLICIT_EXCLUDE_WORDS expansion', () => {
+    it('should not detect common adjectives as implicit entities via single-caps', () => {
+      // single-caps pattern requires lowercase char + space before the capitalized word
+      const adjectives = ['Comprehensive', 'Enhanced', 'Protected', 'Missing', 'Direct'];
+      for (const adj of adjectives) {
+        const result = detectImplicitEntities(`text goes ${adj} review of things`);
+        const names = result.map(m => m.text);
+        expect(names).not.toContain(adj);
+      }
+    });
+
+    it('should not detect common past participles as implicit entities', () => {
+      const result = detectImplicitEntities('text goes Discussed the plan with team');
+      const names = result.map(m => m.text);
+      expect(names).not.toContain('Discussed');
+    });
+
+    it('should still detect real proper nouns via proper-nouns pattern', () => {
+      // proper-nouns is in the default config (multi-word capitalized phrases)
+      const result = detectImplicitEntities('talked with Marcus Johnson yesterday');
+      const names = result.map(m => m.text);
+      expect(names).toContain('Marcus Johnson');
+    });
+  });
+});

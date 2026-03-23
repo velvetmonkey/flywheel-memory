@@ -42,6 +42,12 @@ export interface FlywheelConfig {
   implicit_patterns?: string[];
   /** Auto-select aggressive strictness for daily notes (default: true) */
   adaptive_strictness?: boolean;
+  /** Enable proactive wikilink insertion via watcher (default: true) */
+  proactive_linking?: boolean;
+  /** Minimum score for proactive insertion (default: 20) */
+  proactive_min_score?: number;
+  /** Maximum proactive insertions per file per batch (default: 3) */
+  proactive_max_per_file?: number;
 }
 
 /** Default config for new vaults — opinionated: aggressive linking by default, opt out to dial back */

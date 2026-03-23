@@ -51,7 +51,7 @@ import { exportHubScores } from './core/shared/hubExport.js';
 import { initializeLogger as initializeReadLogger, getLogger } from './core/read/logging.js';
 
 // Core imports - Write
-import { initializeEntityIndex, setWriteStateDb, setWikilinkConfig, setCooccurrenceIndex, suggestRelatedLinks } from './core/write/wikilinks.js';
+import { initializeEntityIndex, setWriteStateDb, setWikilinkConfig, setCooccurrenceIndex, suggestRelatedLinks, getNoteContext, applyProactiveSuggestions } from './core/write/wikilinks.js';
 import { initializeLogger as initializeWriteLogger, flushLogs } from './core/write/logging.js';
 import { setFTS5Database, buildFTS5Index, isIndexStale } from './core/read/fts5.js';
 import {
@@ -2346,6 +2346,34 @@ async function runPostIndexWork(index: VaultIndex) {
           tracker.end({ scored_files: suggestionResults.length, suggestions: suggestionResults });
           if (suggestionResults.length > 0) {
             serverLog('watcher', `Suggestion scoring: ${suggestionResults.length} files scored`);
+          }
+
+          // Step 12.5: Proactive linking — insert high-confidence wikilinks [non-critical, on by default]
+          if (flywheelConfig?.proactive_linking !== false && suggestionResults.length > 0) {
+            tracker.start('proactive_linking', { files: suggestionResults.length });
+            try {
+              const proactiveResults: Array<{ file: string; applied: string[] }> = [];
+              for (const { file, top } of suggestionResults) {
+                if (getNoteContext(file) === 'daily') continue; // daily notes already auto-linked
+                try {
+                  const result = await applyProactiveSuggestions(file, vaultPath, top, {
+                    minScore: flywheelConfig?.proactive_min_score ?? 20,
+                    maxPerFile: flywheelConfig?.proactive_max_per_file ?? 3,
+                  });
+                  if (result.applied.length > 0) {
+                    proactiveResults.push({ file, applied: result.applied });
+                  }
+                } catch { /* non-critical: skip file on error */ }
+              }
+              const totalApplied = proactiveResults.reduce((s, r) => s + r.applied.length, 0);
+              tracker.end({ files_modified: proactiveResults.length, total_applied: totalApplied, results: proactiveResults });
+              if (totalApplied > 0) {
+                serverLog('watcher', `Proactive linking: ${totalApplied} links in ${proactiveResults.length} files`);
+              }
+            } catch (e) {
+              tracker.end({ error: String(e) });
+              serverLog('watcher', `Proactive linking failed: ${e}`, 'error');
+            }
           }
 
           // Step 13: Tag scan — detect tag additions/removals per changed note [non-critical]

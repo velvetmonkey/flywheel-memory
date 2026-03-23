@@ -47,6 +47,7 @@ import { setGitStateDb } from './git.js';
 import { setHintsStateDb } from './hints.js';
 import { setRecencyStateDb } from '../shared/recency.js';
 import path from 'path';
+import * as fs from 'fs/promises';
 import type { FlywheelConfig } from '../read/config.js';
 import type { SuggestOptions, SuggestResult, SuggestionConfig, StrictnessMode, NoteContext, ScoreBreakdown, ScoredSuggestion, ConfidenceLevel, ScoringLayer } from './types.js';
 import { stem, tokenize } from '../shared/stemmer.js';
@@ -954,7 +955,7 @@ const CONTEXT_BOOST: Record<NoteContext, Partial<Record<EntityCategory, number>>
  * @param notePath - Path to the note (vault-relative)
  * @returns Detected note context
  */
-function getNoteContext(notePath: string): NoteContext {
+export function getNoteContext(notePath: string): NoteContext {
   const lower = notePath.toLowerCase();
 
   // Daily notes, journals, logs
@@ -2012,4 +2013,117 @@ export async function checkPreflightSimilarity(noteName: string): Promise<Prefli
   }
 
   return result;
+}
+
+/**
+ * Apply high-confidence proactive wikilinks to a file.
+ *
+ * Only inserts entities that scored above the proactive threshold with
+ * 'high' confidence. Uses applyWikilinks from vault-core (no implicit
+ * entity detection). Skips files modified within the last 30 seconds
+ * to avoid clashing with active editing.
+ */
+export async function applyProactiveSuggestions(
+  filePath: string,
+  vaultPath: string,
+  suggestions: Array<{ entity: string; score: number; confidence: string }>,
+  config: { minScore: number; maxPerFile: number },
+): Promise<{ applied: string[]; skipped: string[] }> {
+  const stateDb = getWriteStateDb();
+
+  // Filter to high-confidence suggestions above threshold
+  const candidates = suggestions
+    .filter(s => s.score >= config.minScore && s.confidence === 'high')
+    .slice(0, config.maxPerFile);
+
+  if (candidates.length === 0) {
+    return { applied: [], skipped: [] };
+  }
+
+  const fullPath = path.join(vaultPath, filePath);
+
+  // Skip files modified within last 30 seconds (active editing)
+  try {
+    const stat = await fs.stat(fullPath);
+    if (Date.now() - stat.mtimeMs < 30_000) {
+      return { applied: [], skipped: candidates.map(c => c.entity) };
+    }
+  } catch {
+    return { applied: [], skipped: candidates.map(c => c.entity) };
+  }
+
+  // Read current file content
+  let content: string;
+  try {
+    content = await fs.readFile(fullPath, 'utf-8');
+  } catch {
+    return { applied: [], skipped: candidates.map(c => c.entity) };
+  }
+
+  // Build Entity objects for candidates, filtering out suppressed entities
+  const entityObjects: Entity[] = [];
+  for (const candidate of candidates) {
+    if (stateDb && isSuppressed(stateDb, candidate.entity)) continue;
+
+    // Look up entity in stateDb to get aliases
+    if (stateDb) {
+      const entityObj = getEntityByName(stateDb, candidate.entity);
+      if (entityObj) {
+        entityObjects.push({
+          name: entityObj.name,
+          path: entityObj.path,
+          aliases: entityObj.aliases ?? [],
+        });
+        continue;
+      }
+    }
+    // Fallback: use entity name as a string entity
+    entityObjects.push(candidate.entity);
+  }
+
+  if (entityObjects.length === 0) {
+    return { applied: [], skipped: candidates.map(c => c.entity) };
+  }
+
+  // Apply wikilinks with only the high-confidence entities (no implicit detection)
+  const result = applyWikilinks(content, entityObjects, {
+    firstOccurrenceOnly: true,
+    caseInsensitive: true,
+  });
+
+  if (result.linksAdded === 0) {
+    return { applied: [], skipped: candidates.map(c => c.entity) };
+  }
+
+  // Write back to file
+  try {
+    await fs.writeFile(fullPath, result.content, 'utf-8');
+  } catch {
+    return { applied: [], skipped: candidates.map(c => c.entity) };
+  }
+
+  // Track applications for feedback loop
+  if (stateDb) {
+    trackWikilinkApplications(stateDb, filePath, result.linkedEntities);
+
+    // Mark as applied in suggestion_events
+    try {
+      const markApplied = stateDb.db.prepare(
+        `UPDATE suggestion_events SET applied = 1
+         WHERE note_path = ? AND entity = ? AND applied = 0`,
+      );
+      for (const entity of result.linkedEntities) {
+        markApplied.run(filePath, entity);
+      }
+    } catch {
+      // Non-critical
+    }
+  }
+
+  return {
+    applied: result.linkedEntities,
+    skipped: candidates
+      .map(c => c.entity)
+      .filter(e => !result.linkedEntities.includes(e)),
+  };
 }

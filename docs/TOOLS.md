@@ -157,7 +157,7 @@ Every write auto-links known entities as wikilinks. Every write can be previewed
 | `dry_run` | `false` | Preview changes without writing. |
 | `commit` | `false` | Auto-commit to git after writing (creates undo point). |
 | `skipWikilinks` | `false` | Skip auto-wikilink application on content. |
-| `suggestOutgoingLinks` | `true` | Append suggested related wikilinks (e.g., `→ [[React]], [[Migration Plan]]`). |
+| `suggestOutgoingLinks` | `false` | Append suggested related wikilinks (e.g., `→ [[React]], [[Migration Plan]]`). Off by default — set `true` for daily notes, journals, or capture-heavy contexts. |
 
 ---
 

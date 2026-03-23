@@ -46,6 +46,7 @@ One search call returned everything — frontmatter with amounts and status, bac
 ● flywheel › vault_add_to_section
   path: "daily-notes/2026-01-04.md"
   section: "Log"
+  suggestOutgoingLinks: true
   content: "[[Stacy Thompson|Stacy]] reviewed the [[API Security Checklist|security checklist]]
             before the [[Beta Corp Dashboard|Beta Corp]] kickoff
             → [[GlobalBank API Audit]], [[Acme Data Migration]]"
@@ -53,7 +54,21 @@ One search call returned everything — frontmatter with amounts and status, bac
             → 2 suggested links: entities co-occurring with Stacy + security across past notes
 ```
 
-You typed a plain sentence. Flywheel recognized three entities from your vault and linked them — no brackets, no lookup, no manual work. Those links are graph edges that make future search richer. The `→` suggestions are contextual: entities that co-occur with Stacy and security across your past notes, scored and ranked. Links you keep strengthen future scoring; links you edit out get suppressed. The system learns.
+You typed a plain sentence. Flywheel recognized three entities from your vault and linked them — no brackets, no lookup, no manual work. Those links are graph edges that make future search richer.
+
+**Auto-wikilinks** (inline `[[linking]]`) are always on — that's the core value. **Outgoing link suggestions** (`→ [[Entity]]`) are opt-in via `suggestOutgoingLinks: true`. When enabled, suggestions are contextual: entities that co-occur with Stacy and security across your past notes, scored and ranked. Links you keep strengthen future scoring; links you edit out get suppressed. The system learns.
+
+<details>
+<summary><strong>When to enable suggestions</strong></summary>
+
+Set `suggestOutgoingLinks: true` for:
+- **Daily notes / journals** — fast capture where you want the graph to grow organically
+- **Meeting logs** — surface related projects, people, and follow-ups you might miss
+- **Voice-to-text dumps** — unstructured input benefits from entity discovery
+- **Research notes** — find connections across reading notes and references
+
+Leave it off (the default) for structured content — project docs, blog posts, reference material — where `→` arrows would clutter.
+</details>
 
 > **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/carter-strategy/run-demo-test.sh) script that runs all five beats end-to-end via `claude -p`, verifying tool usage and vault state between each step.
 

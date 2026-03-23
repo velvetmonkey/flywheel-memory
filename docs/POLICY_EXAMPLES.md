@@ -203,7 +203,7 @@ steps:
         **Next:** {{variables.next}}
         **Blockers:** {{variables.blockers}}
       format: append
-      suggestOutgoingLinks: true
+      suggestOutgoingLinks: true  # opt-in: suggestions useful for standup logs
 
 output:
   summary: "Standup logged for {{variables.date}}"

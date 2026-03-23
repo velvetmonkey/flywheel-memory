@@ -1382,7 +1382,7 @@ describe('vault_add_to_section suggestOutgoingLinks parameter', () => {
     await cleanupTempVault(tempVault);
   });
 
-  it('should append suggestions when suggestOutgoingLinks is true (default)', async () => {
+  it('should append suggestions when suggestOutgoingLinks is true', async () => {
     // Test directly with suggestRelatedLinks to verify the feature works
     const result = await suggestRelatedLinks('Working on a TypeScript project with the team');
 

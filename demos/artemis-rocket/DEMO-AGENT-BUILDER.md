@@ -76,7 +76,7 @@ await flywheel.vault_add_to_section({
   section: 'Morning Briefing',
   content: 'Overnight analysis identified propulsion Test 4 at risk due to Turbopump delivery delay. Marcus Johnson tracking with Acme Aerospace - status call today.',
   format: 'timestamp-bullet',
-  suggestOutgoingLinks: true  // enabled (default is true)
+  suggestOutgoingLinks: true  // opt-in (default is false)
 });
 ```
 

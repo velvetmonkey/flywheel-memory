@@ -273,7 +273,7 @@ Common words, sentence starters, and technical terms are excluded to minimize fa
 
 ### Outgoing Link Suggestions
 
-Write tools append suggested outgoing links by default based on content analysis. For example, after adding a note about "React migration", the tool might append: `→ [[React]], [[Migration Plan]]`. Set `suggestOutgoingLinks: false` to disable.
+Write tools can append suggested outgoing links when enabled (`suggestOutgoingLinks: true`). For example, after adding a note about "React migration", the tool might append: `→ [[React]], [[Migration Plan]]`. Suggestions are off by default — enable them for daily notes, journals, meeting logs, or any capture-heavy context where you want the graph to grow organically. Auto-wikilinks (inline `[[linking]]`) are always on regardless of this setting.
 
 ---
 
@@ -389,7 +389,7 @@ Every write tool follows the same pipeline:
 5. **Normalization** -- Auto-fixes issues (replace `*` with `-`, trim whitespace)
 6. **Auto-wikilinks** -- Applies `[[wikilinks]]` to known entities
 6a. **Heading level bumping** -- `bumpHeadingLevels()` adjusts heading levels in inserted content to nest under the target section's level
-7. **Outgoing link suggestions** -- Appends suggested related links based on content (enabled by default, opt-out via `suggestOutgoingLinks: false`)
+7. **Outgoing link suggestions** -- Appends suggested related links based on content (disabled by default, opt-in via `suggestOutgoingLinks: true`)
 8. **Content formatting** -- Applies format (plain, bullet, task, numbered, timestamp-bullet)
 9. **Section insertion** -- Inserts at position (append/prepend) with list nesting preservation
 10. **Guardrails** -- Output validation (warn/strict/off modes). Write errors use `DiagnosticError` for structured diagnostics — includes closest match to target section, per-line analysis of the content, and actionable fix suggestions on `MutationResult.diagnostic`

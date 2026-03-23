@@ -81,7 +81,7 @@ async function createNote(
     // Apply wikilinks to content (unless skipped)
     let { content: processedContent, wikilinkInfo } = maybeApplyWikilinks(content, skipWikilinks, notePath);
 
-    // Suggest outgoing links (enabled by default)
+    // Suggest outgoing links (disabled by default, opt-in)
     let suggestInfo: string | undefined;
     if (suggestOutgoingLinks && !skipWikilinks) {
       const result = await suggestRelatedLinks(processedContent, { maxSuggestions, notePath });
@@ -496,7 +496,7 @@ describe('vault_create_note wikilink integration', () => {
       'test.md',
       'Working on a JavaScript project.',
       { type: 'test' }
-      // No suggestOutgoingLinks parameter = uses default (true)
+      // No suggestOutgoingLinks parameter = uses default (false)
     );
 
     expect(result.success).toBe(true);

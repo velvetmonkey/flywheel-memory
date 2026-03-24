@@ -1,9 +1,9 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Your Obsidian vault, wired.</strong><br/>
+  <p><strong>Cognitive sovereignty for your Obsidian vault.</strong><br/>
   Search, write, and graph tools that auto-link your notes and learn from your edits.<br/>
-  All local. All markdown. A few lines of config.</p>
+  All local. All yours. A few lines of config.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
@@ -265,7 +265,7 @@ I've been writing code for over 30 years and tried every PKM tool going before l
 
 Flywheel is my third attempt at wiring AI into a knowledge vault. The first was pure Claude Code skills and hooks — no MCP server, no structure. Writes were non-deterministic and recall was poor; I'd ask about something I wrote last week and get nothing. The second split reading and writing into two separate MCP tools, which was more reliable but fragmented — context didn't flow between them, and every session started cold. This version unifies everything: one server with deterministic mutations, hybrid search, and a graph that compounds with use. Each failure taught me something specific, and the architecture exists because I kept hitting the same walls and refusing to stop.
 
-The design choices are deliberate. Your attention, memory, and even the way you reason are increasingly shaped by systems you didn't choose — platforms that optimise for engagement, models trained on someone else's priorities, defaults that quietly steer how you organise what you know. I wanted a knowledge layer that works for the person using it. Not for a training pipeline, not for an ad model, not for anyone else's roadmap.
+The word for what I'm building toward is cognitive sovereignty — the idea that your knowledge, memory, and reasoning tools should serve you, not a platform. The design choices follow from there. Your attention, memory, and even the way you reason are increasingly shaped by systems you didn't choose — platforms that optimise for engagement, models trained on someone else's priorities, defaults that quietly steer how you organise what you know. I wanted a knowledge layer that works for the person using it. Not for a training pipeline, not for an ad model, not for anyone else's roadmap.
 
 So it stays local. Your data never leaves your machine — no cloud, no account, no sync. The graph learns exclusively from what you write, link, edit, and remove. A system that only gets smarter from your own honest engagement is fundamentally different from one that optimises for someone else's metrics. Every interaction compounds: what you keep strengthens the graph, what you remove weakens it. Over time it becomes a model of what actually matters to you.
 
@@ -297,3 +297,5 @@ Over three months, my vault went from ~1,400 to ~1,600 notes — modest growth. 
 ## License
 
 AGPL-3.0 — see [LICENSE](./LICENSE) for details. The source stays open. If someone forks this and offers it as a service, they must publish their changes. Your data is local; the code is transparent.
+
+> Your knowledge. Your graph. Your terms.

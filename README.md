@@ -192,7 +192,7 @@ One call to `export_graph` and your entire vault — or any entity's neighborhoo
 
 ![Acme Corp ego network](demos/carter-strategy/carter-strategy-acme-graph.png)
 
-*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. Sarah Mitchell is the single contact linking 3 projects to the client. The Data Migration Playbook bridges two engagements. Seven invoices, two team members, one proposal — all from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
+*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. [[Sarah Mitchell]] is the single contact linking 3 projects to the client. The [[Data Migration Playbook]] bridges two engagements. Seven invoices, two team members, one proposal — all from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
 
 ---
 
@@ -275,7 +275,7 @@ I think what's happening right now is simultaneous invention — a lot of people
 
 I designed every part of this and understand every line — but I built it entirely in flow, not by plan. This is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. The entire codebase was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 
-I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. Since introducing Flywheel, I rarely open Obsidian to hunt for things manually anymore — the combination of voice-driven capture and Obsidian's editing environment is genuinely easier than either one alone. All help is welcome — I'm looking for people who care about this space.
+I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. Since introducing Flywheel, I rarely open Obsidian to hunt for things manually anymore — the combination of voice-driven capture and Obsidian's editing environment is genuinely easier than either one alone. The volume of knowledge you can accumulate at speed through voice is staggering — Flywheel exists partly because I needed something that could keep up. All help is welcome — I'm looking for people who care about this space.
 
 I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) — an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor. Early days, but the intent is to give value back to Obsidian itself.
 

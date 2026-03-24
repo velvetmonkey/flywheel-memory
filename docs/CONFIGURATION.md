@@ -407,6 +407,7 @@ Sets a single key and returns the updated config.
 | `proactive_linking` | boolean | `true` | When enabled, the file watcher automatically inserts high-confidence wikilinks into vault files during batch processing. Only links scoring above `proactive_min_score` are applied. Disable if you want auto-linking only through explicit write tool calls. |
 | `proactive_min_score` | number | `20` | Minimum suggestion score for proactive linking. Higher values mean fewer but more confident auto-links. The default of 20 is well above the balanced threshold (10), ensuring only strong matches are applied automatically. |
 | `proactive_max_per_file` | number | `3` | Maximum number of wikilinks the watcher will proactively insert per file per batch. Prevents flooding notes with links during a single watcher cycle. |
+| `proactive_max_per_day` | number | `10` | Maximum number of wikilinks the watcher will proactively insert per file per day. Prevents accumulated queue drains from flooding a single note over time. |
 
 #### Exclusions
 

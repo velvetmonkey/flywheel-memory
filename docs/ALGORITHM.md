@@ -76,11 +76,16 @@ Semantic embeddings are built. Content about "deployment automation" now suggest
 
 ### Proactive Linking: The Watcher Closes the Loop
 
-The flywheel doesn't require you to write through Claude. **Proactive linking** (on by default) means the file watcher monitors your vault for any change -- Obsidian edits, synced files, external tools -- and runs the full 13-layer scoring pipeline on changed notes. When an entity scores above the proactive threshold (default 20, double the balanced minimum), the watcher inserts the wikilink directly into the file. Up to 3 links per file per batch.
+The flywheel doesn't require you to write through Claude. **Proactive linking** (on by default) means the file watcher monitors your vault for any change -- Obsidian edits, synced files, external tools -- and runs the full 13-layer scoring pipeline on changed notes. When an entity scores above the proactive threshold (default 20, double the balanced minimum), the watcher **queues** the suggestion for deferred application.
 
-This is what makes the flywheel self-sustaining. You edit a note in Obsidian. Flywheel links it. Those links create new co-occurrence edges. Those edges sharpen future scoring. The graph grows whether you're using Claude or not.
+Why deferred? The file that triggered the watcher was just modified -- its mtime is fresh, so a 30-second safety guard blocks immediate writes. Applying inline would either fail silently or conflict with in-progress edits. Instead, proactive linking uses a two-step queue:
 
-The threshold is deliberately conservative -- score 20 means strong exact match plus multiple contextual signals. Flywheel won't speculatively link based on a stem match alone. And the cap of 3 prevents flooding. If this is too aggressive for your workflow, disable it: `flywheel_config({ mode: "set", key: "proactive_linking", value: false })`. Auto-linking through explicit write tool calls (`vault_add_to_section`, etc.) is unaffected.
+1. **Enqueue (step 12.5)** -- After suggestion scoring, high-confidence entities (score >= 20, confidence = high) are persisted to a `proactive_queue` table. Up to 3 per file per batch. Duplicate entities deduplicate, keeping the higher score. Entries expire after 1 hour.
+2. **Drain (step 0.5)** -- At the start of the *next* watcher batch, pending queue entries are applied to files that pass safety checks: not in the current batch (not actively being edited), mtime older than 30 seconds, and under the daily cap (default 10 links per file per day).
+
+This is what makes the flywheel self-sustaining. You edit a note in Obsidian. The watcher scores it and queues links. Next time the watcher fires, those links are applied. The new links create co-occurrence edges. Those edges sharpen future scoring. The graph grows whether you're using Claude or not.
+
+The threshold is deliberately conservative -- score 20 means strong exact match plus multiple contextual signals. Flywheel won't speculatively link based on a stem match alone. The per-batch cap of 3 and daily cap of 10 prevent flooding. If this is too aggressive for your workflow, disable it: `flywheel_config({ mode: "set", key: "proactive_linking", value: false })`. Auto-linking through explicit write tool calls (`vault_add_to_section`, etc.) is unaffected.
 
 Static tools give you the same results on day 1 and day 100. Flywheel's results on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration changes, no manual curation. Just use it.
 
@@ -92,7 +97,7 @@ Before scoring begins, candidates are pruned. This keeps the hot path fast and p
 
 ### Layer 1: Length & Pattern Filter
 
-**Length filter** -- Entity names longer than 25 characters are dropped. Article titles like "Complete Guide to Azure Data Factory" are not concepts worth linking.
+**Length filter** -- Entity names longer than 25 characters are dropped. Article titles like "Complete Guide to [[ADF|Azure Data Factory]]" are not concepts worth linking.
 
 **Word count filter** -- Entity names with more than 3 words are dropped. Real concepts are 1-3 words: "Marcus Johnson", "MCP", "Turbopump".
 

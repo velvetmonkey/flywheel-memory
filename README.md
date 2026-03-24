@@ -33,7 +33,7 @@ Flywheel auto-links on every write, voice or keyboard.
 | As models improve | Migration or vendor upgrade | Better answers automatically: smarter models reason over the same data |
 | "What's overdue?" | Read every file | Indexed query, <10ms |
 | "What links here?" | Grep the vault, flat list | Ranked backlinks + outlinks, pre-indexed |
-| "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
+| "Add a meeting note" | Raw write, no linking | Structured mutations that auto-link entities and densify the graph |
 | "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
 | Your graph | Owned by the platform | Yours to [export](https://en.wikipedia.org/wiki/GraphML), analyse, or delete |
 | Tool calls | Hidden behind abstractions | Traceable, auditable, git-committed |

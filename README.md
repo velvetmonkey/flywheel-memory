@@ -271,7 +271,7 @@ The design choices are deliberate. Your attention, memory, and even the way you 
 
 So it stays local. Your data never leaves your machine — no cloud, no account, no sync. The graph learns exclusively from what you write, link, edit, and remove. A system that only gets smarter from your own honest engagement is fundamentally different from one that optimises for someone else's metrics. Every interaction compounds: what you keep strengthens the graph, what you remove weakens it. Over time it becomes a model of what actually matters to you.
 
-I think what's happening right now is simultaneous invention — a lot of people are grappling with the same problem, trying to build the same sort of thing for different audiences. This is mine. I built it for myself first. If it resonates, you probably already know why.
+I think what's happening right now is simultaneous invention — a lot of people are building AI memory products, grappling with the same problem from different angles for different audiences. This is mine. I built it for myself first. If it resonates, you probably already know why.
 
 I designed every part of this and understand every line — but I built it entirely in flow, not by plan. This is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. The entire codebase was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 

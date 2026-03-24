@@ -14,7 +14,7 @@ meeting_type: technical
 ## Agenda
 
 ## Notes
-Architecture review
+[[ARCHITECTURE]] review
 
 ## Action Items
 - [ ]

@@ -1,9 +1,9 @@
 {
   "suite": "cross-vault-learning-report",
-  "timestamp": "2026-03-24T09:12:04.230Z",
-  "duration_ms": 229562,
+  "timestamp": "2026-03-24T17:21:06.857Z",
+  "duration_ms": 254956,
   "summary": {
-    "primary_final_f1": 0.442,
+    "primary_final_f1": 0.448,
     "small-world_final_f1": 0.283,
     "hub-and-spoke_final_f1": 0.377,
     "temporal-star_final_f1": 0.718
@@ -424,7 +424,7 @@
           "f1": 0.421,
           "precision": 0.292,
           "recall": 0.75,
-          "suppressionCount": 15,
+          "suppressionCount": 14,
           "byTier": {
             "1": {
               "precision": 1,
@@ -451,7 +451,7 @@
           "f1": 0.418,
           "precision": 0.288,
           "recall": 0.767,
-          "suppressionCount": 18,
+          "suppressionCount": 17,
           "byTier": {
             "1": {
               "precision": 1,
@@ -478,7 +478,7 @@
           "f1": 0.424,
           "precision": 0.293,
           "recall": 0.767,
-          "suppressionCount": 20,
+          "suppressionCount": 18,
           "byTier": {
             "1": {
               "precision": 1,
@@ -502,8 +502,35 @@
         },
         {
           "round": 18,
-          "f1": 0.456,
-          "precision": 0.322,
+          "f1": 0.438,
+          "precision": 0.307,
+          "recall": 0.767,
+          "suppressionCount": 18,
+          "byTier": {
+            "1": {
+              "precision": 1,
+              "recall": 1,
+              "f1": 1,
+              "count": 24
+            },
+            "2": {
+              "precision": 1,
+              "recall": 1,
+              "f1": 1,
+              "count": 21
+            },
+            "3": {
+              "precision": 1,
+              "recall": 0.06666666666666667,
+              "f1": 0.125,
+              "count": 15
+            }
+          }
+        },
+        {
+          "round": 19,
+          "f1": 0.448,
+          "precision": 0.313,
           "recall": 0.783,
           "suppressionCount": 17,
           "byTier": {
@@ -523,33 +550,6 @@
               "precision": 1,
               "recall": 0.13333333333333333,
               "f1": 0.23529411764705882,
-              "count": 15
-            }
-          }
-        },
-        {
-          "round": 19,
-          "f1": 0.442,
-          "precision": 0.311,
-          "recall": 0.767,
-          "suppressionCount": 20,
-          "byTier": {
-            "1": {
-              "precision": 1,
-              "recall": 1,
-              "f1": 1,
-              "count": 24
-            },
-            "2": {
-              "precision": 1,
-              "recall": 1,
-              "f1": 1,
-              "count": 21
-            },
-            "3": {
-              "precision": 1,
-              "recall": 0.06666666666666667,
-              "f1": 0.125,
               "count": 15
             }
           }
@@ -998,7 +998,7 @@
           "f1": 0.261,
           "precision": 0.194,
           "recall": 0.4,
-          "suppressionCount": 15,
+          "suppressionCount": 14,
           "byTier": {
             "1": {
               "precision": 1,

@@ -319,7 +319,7 @@ describe('Documentation Contracts', () => {
 
     const totalInSource = Object.values(byCategory).reduce((sum, tools) => sum + tools.length, 0);
 
-    // TOOLS.md line 1-3 claims "69 tools"
+    // TOOLS.md total should match TOOL_CATEGORY count
     const match = toolsContent.match(/(\d+)\s+tools/);
     expect(match, 'TOOLS.md should contain a tool count').toBeTruthy();
 
@@ -332,5 +332,38 @@ describe('Documentation Contracts', () => {
 
     expect(presets['default']).toEqual(['search', 'read', 'write', 'tasks']);
     expect(presets['agent']).toEqual(['search', 'read', 'write', 'memory']);
+  });
+});
+
+// =============================================================================
+// Tool Gating Invariants (T11)
+// =============================================================================
+
+describe('Tool Gating Invariants', () => {
+  it('every server.tool() call has a TOOL_CATEGORY entry', async () => {
+    const { toolNames } = await countToolsInSource();
+    const byCategory = await parseToolCategoryFromSource();
+    const categorized = new Set(Object.values(byCategory).flat());
+
+    for (const tool of toolNames) {
+      expect(
+        categorized.has(tool),
+        `Tool "${tool}" registered via server.tool() but missing from TOOL_CATEGORY in config.ts`
+      ).toBe(true);
+    }
+  });
+
+  it('every TOOL_CATEGORY entry has a server.tool() registration', async () => {
+    const { toolNames } = await countToolsInSource();
+    const byCategory = await parseToolCategoryFromSource();
+    const sourceSet = new Set(toolNames);
+    const categorized = Object.values(byCategory).flat();
+
+    for (const tool of categorized) {
+      expect(
+        sourceSet.has(tool),
+        `TOOL_CATEGORY has entry for "${tool}" but no server.tool() call found in source`
+      ).toBe(true);
+    }
   });
 });

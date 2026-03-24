@@ -117,7 +117,13 @@ export function applyToolGating(
 
   function gate(name: string): boolean {
     const category = TOOL_CATEGORY[name];
-    if (category && !categories.has(category)) {
+    if (!category) {
+      throw new Error(
+        `Tool "${name}" has no entry in TOOL_CATEGORY (config.ts). ` +
+        `Every tool must be assigned a category for gating to work.`
+      );
+    }
+    if (!categories.has(category)) {
       _skipped++;
       return false;
     }

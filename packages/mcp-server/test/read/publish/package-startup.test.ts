@@ -68,7 +68,7 @@ describe('Package Startup', () => {
     execSync(`npm install ${tarballPath}`, {
       cwd: testProjectDir,
       stdio: 'pipe',
-      timeout: 300000,
+      timeout: 600000,
     });
 
     // Verify node_modules contains the package
@@ -143,7 +143,7 @@ describe('Package Startup', () => {
 
       throw new Error(`Import failed: ${stderr || stdout}`);
     }
-  }, 360000); // 6 minute timeout — Windows npm install is slow
+  }, 660000); // 11 minute timeout — Windows npm install with native deps is very slow on Node 24
 
   it('dist/index.js exists and is executable', () => {
     const distPath = join(packageDir, 'dist', 'index.js');

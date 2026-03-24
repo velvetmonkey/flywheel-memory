@@ -16,22 +16,23 @@ import type { VaultRegistry } from './vault-registry.js';
 // Presets:
 //   default    - Note-taking essentials: search, read, write, tasks (16 tools)
 //   agent      - Autonomous AI agents: search, read, write, memory (16 tools)
-//   full       - All tools except agent memory (66 tools). Add ",memory" for all 69.
+//   full       - All tools except agent memory (67 tools). Add ",memory" for all 70.
 //
 // Composable bundles (combine with presets or each other):
-//   graph       - Structural analysis + link detail + semantic + export: backlinks, forward links, graph_analysis, semantic_analysis, paths, hubs, connections, export (11 tools)
+//   graph       - Structural analysis + link detail + semantic + export (11 tools)
 //   schema      - Schema intelligence + migrations: vault_schema, schema_conventions, schema_validate, note_intelligence, rename_field, migrate_field_values, rename_tag (7 tools)
 //   wikilinks   - Wikilink suggestions, validation, discovery (7 tools)
 //   corrections - Correction recording + resolution (4 tools)
 //   tasks       - Task queries and mutations (3 tools)
 //   memory      - Agent working memory + recall + brief (3 tools)
 //   note-ops    - File management: delete, move, rename, merge (4 tools)
-//   diagnostics - Vault health, stats, config, activity, temporal analysis (18 tools)
+//   temporal    - Time-based vault intelligence (4 tools)
+//   diagnostics - Vault health, stats, config, activity, merges, doctor (14 tools)
 //
 // Examples:
 //   FLYWHEEL_TOOLS=default                    # 16 tools
 //   FLYWHEEL_TOOLS=agent                      # 16 tools
-//   FLYWHEEL_TOOLS=default,graph              # 26 tools
+//   FLYWHEEL_TOOLS=default,graph              # 27 tools
 //   FLYWHEEL_TOOLS=agent,tasks                # 16 tools
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
@@ -152,8 +153,9 @@ export function parseEnabledCategories(envValue?: string): Set<ToolCategory> {
   return categories;
 }
 
-// Per-tool category mapping (tool name -> category)
-// Every tool MUST have an entry -- tools without entries bypass gating entirely.
+// Per-tool category mapping (tool name -> category).
+// This is the single source of truth for tool count: Object.keys(TOOL_CATEGORY).length.
+// Every tool MUST have an entry — gate() throws on startup if one is missing.
 export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   // search (3 tools)
   search: 'search',

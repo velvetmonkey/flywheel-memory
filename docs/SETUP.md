@@ -1,20 +1,20 @@
 # Set Up Your Own Vault
 
-After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian vault.
+After trying the [demo vaults](../demos/), point [[Flywheel]] at your own Obsidian vault.
 
 ---
 
 ## Prerequisites
 
-- **Node.js 20–24** -- check with `node --version`.
+- **Node.js 22–24** -- check with `node --version`.
 - **An Obsidian vault** -- any folder with `.md` files works, but Flywheel detects Obsidian conventions (`.obsidian/` folder, periodic notes, templates)
-- **An MCP-compatible client** -- Claude Code, Claude Desktop, Cursor, Windsurf, VS Code + GitHub Copilot, Continue, or any Streamable HTTP client
+- **An MCP-compatible client** -- Claude Code, Claude Desktop, Cursor, Windsurf, VS Code + [[Github]] Copilot, Continue, or any Streamable HTTP client
 
 ---
 
 ## Windows
 
-On Windows, the MCP config differs from macOS/Linux in three ways:
+On Windows, the [[Claude Desktop Config|MCP config]] differs from macOS/Linux in three ways:
 
 1. **`cmd /c` wrapper** — use `"command": "cmd"` with `"args": ["/c", "npx", ...]` instead of `"command": "npx"`. Windows installs npx as a batch script (`npx.cmd`) which MCP clients can't execute directly — without this wrapper the server silently fails.
 2. **`VAULT_PATH`** — set to your vault's Windows path (e.g. `C:\Users\you\obsidian\MyVault`)
@@ -472,6 +472,6 @@ All vault operations work without git. You just won't have undo or commit histor
 ## Next Steps
 
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full reference for all 69 tools
+- **[TOOLS.md](TOOLS.md)** -- Full reference for all 70 tools
 - **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics

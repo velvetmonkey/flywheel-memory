@@ -30,7 +30,7 @@ This policy covers:
 
 Out of scope:
 - Obsidian plugin (`flywheel-crank`) — report to that repo
-- Issues requiring physical access to the machine running Flywheel
+- Issues requiring physical access to the machine running [[Flywheel]]
 - Social engineering
 
 ## Security Architecture
@@ -60,8 +60,12 @@ Core indexing, search, and graph run with **zero network access**. The only outb
 - `@huggingface/transformers` model download (one-time, on `init_semantic`)
 - `simple-git` operations (local only, no remote push)
 
-No telemetry, no analytics, no phone-home.
+No telemetry, no analytics, no phone-home. Enforced by `test/write/security/sovereignty.test.ts` — CI scans all source files for unaudited network calls.
+
+### Audit trail
+
+Every tool call is recorded to `tool_invocations` in `.flywheel/state.db`. Every write is a git commit. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#audit-trail) for the full audit model and inspection commands.
 
 ## Testing
 
-Security is tested in CI with 6 dedicated test suites covering injection, path encoding, permission bypass, boundaries, platform behavior, and sensitive file detection. See [docs/TESTING.md](docs/TESTING.md) for methodology.
+Security is tested in CI with 7 dedicated test suites covering injection, path encoding, permission bypass, boundaries, platform behavior, sensitive file detection, and sovereignty enforcement. See [docs/TESTING.md](docs/TESTING.md) for methodology.

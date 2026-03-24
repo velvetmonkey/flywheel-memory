@@ -42,7 +42,11 @@ describe('Package Startup', () => {
 
   afterAll(() => {
     if (tempDir && existsSync(tempDir)) {
-      rmSync(tempDir, { recursive: true, force: true });
+      try {
+        rmSync(tempDir, { recursive: true, force: true });
+      } catch {
+        // Windows: EBUSY/EPERM from file locking — temp dir cleaned up by OS
+      }
     }
   });
 
@@ -63,7 +67,7 @@ describe('Package Startup', () => {
     execSync(`npm install ${tarballPath}`, {
       cwd: testProjectDir,
       stdio: 'pipe',
-      timeout: 300000,
+      timeout: 600000,
     });
 
     // Verify node_modules contains the package
@@ -137,7 +141,7 @@ describe('Package Startup', () => {
 
       throw new Error(`Import failed: ${stderr || stdout}`);
     }
-  }, 300000); // 5 minute timeout — npm install is slow on Windows CI
+  }, 660000); // 11 minute timeout — Windows npm install with native deps is very slow on Node 24
 
   it('dist/index.js exists and is executable', () => {
     const distPath = join(packageDir, 'dist', 'index.js');

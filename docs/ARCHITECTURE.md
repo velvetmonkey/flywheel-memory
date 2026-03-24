@@ -1,6 +1,6 @@
 # Architecture
 
-Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 69 tools for search, graph queries, and mutations.
+Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 70 tools for search, graph queries, and mutations.
 
 ---
 
@@ -418,3 +418,44 @@ Every write path checks for concurrent edits using SHA-256 content hashes (trunc
 | `chokidar` | File system watching |
 | `zod` | Input schema validation |
 | `@huggingface/transformers` | Embedding generation (all-MiniLM-L6-v2) |
+
+---
+
+## Audit Trail
+
+Every operation produces auditable records. This is a sovereignty guarantee, not a feature.
+
+### What's recorded
+
+| Layer | Mechanism | Storage | What |
+|-------|-----------|---------|------|
+| Tool calls | `recordToolInvocation()` | `tool_invocations` table in StateDb | Timestamp, tool name, session ID, affected note paths, duration, success/failure, token estimates |
+| Write mutations | Git auto-commit | `.git/` in vault | Full diff of every write, author, timestamp, operation description |
+| Wikilink feedback | `wikilink_feedback` table | StateDb | Accept/reject/implicit signals with confidence, timestamps |
+| Index events | `index_events` table | StateDb | Rebuild triggers, step counts, durations |
+| Entity changes | `entity_changes` table | StateDb | Entity lifecycle events (created, merged, renamed) |
+
+### How to inspect
+
+```bash
+# Recent tool invocations
+sqlite3 .flywheel/state.db \
+  "SELECT datetime(timestamp/1000, 'unixepoch', 'localtime'), tool_name, success, duration_ms
+   FROM tool_invocations ORDER BY timestamp DESC LIMIT 20"
+
+# Write history
+git log --oneline -20
+
+# Undo the last write (or use vault_undo_last_mutation tool)
+git revert HEAD
+```
+
+### Network access model
+
+Core indexing, search, graph analysis, and all write operations run with **zero network access**. The only outbound call is:
+
+- `@huggingface/transformers` model download (~23MB, one-time on `init_semantic`), cached locally at `~/.cache/huggingface/`
+
+This is enforced by CI tests in `test/write/security/sovereignty.test.ts` that scan all production source files for network call patterns. Any new network call site must be added to an explicit allowlist with documentation.
+
+No telemetry. No analytics. No phone-home. No remote git operations.

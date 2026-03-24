@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 69 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 70 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -90,10 +90,10 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 **Presets:**
 - **`default`** — 16 tools: search, read, write, tasks
 - **`agent`** — 16 tools: search, read, write, memory
-- **`full`** — All categories except memory (66 tools; add `,memory` for all 69)
+- **`full`** — All categories except memory (67 tools; add `,memory` for all 70)
 
 **Composable bundles** (add to presets or each other):
-- **`graph`** — structural analysis, semantic analysis, paths, hubs, connections (10 tools)
+- **`graph`** — structural analysis, semantic analysis, paths, hubs, connections, export (11 tools)
 - **`schema`** — schema intelligence + migrations (7 tools)
 - **`wikilinks`** — suggestions, validation, discovery (7 tools)
 - **`corrections`** — correction recording + resolution (4 tools)
@@ -101,7 +101,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`memory`** — agent working memory + recall + brief (3 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
 - **`temporal`** — time-based vault intelligence (4 tools)
-- **`diagnostics`** — vault health, stats, config, activity (18 tools)
+- **`diagnostics`** — vault health, stats, config, activity, merges, doctor (14 tools)
 **Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `temporal`, `diagnostics`
 
 ---

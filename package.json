@@ -2,7 +2,7 @@
   "name": "flywheel-memory-monorepo",
   "version": "2.0.114",
   "private": true,
-  "description": "Local-first memory for AI agents. Select from 69 tools. No cloud. Everything connects.",
+  "description": "Local-first memory for AI agents. Select from 70 tools. No cloud. Everything connects.",
   "workspaces": [
     "packages/*"
   ],
@@ -21,7 +21,7 @@
   "author": "velvetmonkey",
   "license": "AGPL-3.0-only",
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=22.0.0",
     "npm": ">=9.0.0"
   },
   "devDependencies": {

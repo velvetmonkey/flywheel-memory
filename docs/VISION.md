@@ -2,7 +2,7 @@
 
 Your vault is the most valuable dataset you own. It holds your professional memory, your decision history, your relationship map, the accumulated context of every project you've ever worked on. It deserves infrastructure as serious as a production database -- indexed, queryable, and aware of its own structure.
 
-Flywheel Memory is that infrastructure.
+[[Flywheel]] Memory is that infrastructure.
 
 ---
 
@@ -58,7 +58,7 @@ See the main [README](../packages/mcp-server/README.md#the-flywheel-effect) for 
 
 ### Local-first: your trust guarantee
 
-Everything runs on your machine. No cloud services, no API keys (beyond Claude itself), no data leaving your disk. The SQLite databases live inside your vault directory. Delete them and they rebuild from your markdown. You are always in control.
+Everything runs on your machine. No cloud services, no [[API Management|API]] keys (beyond Claude itself), no data leaving your disk. The SQLite databases live inside your vault directory. Delete them and they rebuild from your markdown. You are always in control.
 
 ### Markdown is truth: zero lock-in
 
@@ -82,7 +82,7 @@ Flywheel is for anyone who uses a vault as working memory and wants compound ret
 
 **The researcher** navigating 300 literature notes, 50 experiment logs, and a citation network that keeps growing. Flywheel finds citation chains -- "Which papers connect AlphaFold to my CRISPR experiment?" -- that manual search would miss entirely.
 
-**The founder** running a SaaS startup with standups, OKRs, decision records, and onboarding playbooks. Flywheel turns the vault into an operational dashboard: "What's blocking the Q1 launch?" pulls from milestones, meeting notes, and team assignments simultaneously.
+**The founder** running a SaaS startup with standups, OKRs, decision records, and [[onboarding]] playbooks. Flywheel turns the vault into an operational dashboard: "What's blocking the Q1 launch?" pulls from milestones, meeting notes, and team assignments simultaneously.
 
 **The student** connecting concepts across 5 textbooks and 100 lecture notes. Flywheel surfaces structural connections -- "How does spaced repetition connect to active recall?" -- by traversing the link graph across notebooks, not just matching keywords.
 
@@ -94,7 +94,7 @@ The demo vaults in this repo cover these personas with production-realistic data
 
 ### Flywheel Memory
 
-The MCP server. 69 tools across 12 categories give Claude structured access to Obsidian vaults: search, graph queries, schema intelligence, content mutations, task management, agent memory, and policy automation. Published as `@velvetmonkey/flywheel-memory`.
+The MCP server. 70 tools across 12 categories give Claude structured access to Obsidian vaults: search, graph queries, schema intelligence, content mutations, task management, agent memory, and policy automation. Published as `@velvetmonkey/flywheel-memory`.
 
 ### Vault-Core
 

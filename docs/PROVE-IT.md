@@ -64,7 +64,7 @@ Watch the tool trace (Claude's exact path varies between runs):
       frontmatter: { amount: 12000, status: "pending" }
 ```
 
-**What happened:** Flywheel's enriched search returned frontmatter (amounts, status), backlinks, and outlinks for every hit -- all in one call. Zero file reads needed. The answer was in the search result itself.
+**What happened:** [[Flywheel]]'s enriched search returned frontmatter (amounts, status), backlinks, and outlinks for every hit -- all in one call. Zero file reads needed. The answer was in the search result itself.
 
 Without Flywheel, Claude would grep for "Acme" and scan matching files. The real win shows in structural queries like "what are the hub notes?" or "what's the shortest path between X and Y?" — those need a graph, not file reads.
 
@@ -159,7 +159,7 @@ Same tools, completely different domain. Outlinks in search results trace the ci
 
 Ready to point Flywheel at your own vault? See the [full setup guide](SETUP.md) for:
 
-- MCP config for Claude Code and Claude Desktop
+- [[Claude Desktop Config|MCP config]] for Claude Code and Claude Desktop
 - Tool preset recommendations
 - Semantic search enablement
 
@@ -193,6 +193,6 @@ Flywheel's enriched search returns frontmatter, ranked backlinks, ranked outlink
 ## Next Steps
 
 - **[SETUP.md](SETUP.md)** -- Full setup guide for your own vault
-- **[TOOLS.md](TOOLS.md)** -- Reference for all 69 tools
+- **[TOOLS.md](TOOLS.md)** -- Reference for all 70 tools
 - **[ALGORITHM.md](ALGORITHM.md)** -- How scoring, ranking, and wikilink suggestion work
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts by use case

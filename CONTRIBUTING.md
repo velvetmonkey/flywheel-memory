@@ -3,11 +3,11 @@
 ## Prerequisites
 
 - Node.js >= 18.0.0
-- npm >= 9.0.0
+- [[npmjs|npm]] >= 9.0.0
 
 ## Development Setup
 
-Flywheel is an npm workspaces monorepo. Install everything from the root:
+[[Flywheel]] is an npm workspaces monorepo. Install everything from the root:
 
 ```bash
 git clone https://github.com/velvetmonkey/flywheel-memory.git
@@ -32,7 +32,7 @@ npm test
 ```
 packages/
   core/         # @velvetmonkey/vault-core -- shared utilities (entity scanning, wikilinks, SQLite)
-  mcp-server/   # @velvetmonkey/flywheel-memory -- the MCP server (69 tools)
+  mcp-server/   # @velvetmonkey/flywheel-memory -- the MCP server (70 tools)
   bench/        # @velvetmonkey/flywheel-bench -- benchmark infrastructure and vault generation
   demos/        # Demo vault fixtures (also used as test fixtures in CI)
 ```
@@ -80,7 +80,7 @@ npm run bench:all -w @velvetmonkey/flywheel-bench
 2. Make your changes. Add or update tests as appropriate.
 3. Run `npm run build && npm test` from the root to verify everything passes.
 4. Run `npm run lint` to confirm type checking passes.
-5. Open a PR against `main`. CI will run lint, build, and the full test suite automatically.
+5. Open a [[Pull Request|PR]] against `main`. CI will run lint, build, and the full test suite automatically.
 
 Keep PRs focused -- one logical change per PR.
 

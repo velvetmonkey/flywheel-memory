@@ -1,6 +1,6 @@
 # Configuration
 
-Two layers of configuration: **environment variables** set in your MCP config (startup-time), and **runtime config** adjustable via the `flywheel_config` tool (persisted in StateDb). No config files to manage.
+Two layers of configuration: **environment variables** set in your [[Claude Desktop Config|MCP config]] (startup-time), and **runtime config** adjustable via the `flywheel_config` tool (persisted in StateDb). No config files to manage.
 
 ---
 
@@ -95,7 +95,7 @@ Vault root detection order:
 |--------|-------|----------|
 | `default` (default) | 16 | Note-taking essentials — search, read, write, tasks |
 | `agent` | 16 | Autonomous AI agents — search, read, write, memory |
-| `full` | 66 | Everything except memory — add `,memory` for all 69 |
+| `full` | 67 | Everything except memory — add `,memory` for all 70 |
 
 The fewer tools you load, the less context Claude needs to pick the right one.
 
@@ -121,9 +121,9 @@ Start with `default`, then add what you need:
 |--------|-------|--------------|
 | `default` | 16 | search, read, write, tasks |
 | `agent` | 16 | search, read, write, memory |
-| `default,graph` | 26 | default + graph analysis, semantic analysis, paths, hubs |
-| `default,graph,wikilinks` | 33 | + link suggestions, validation |
-| `full` | 66 | All categories except memory |
+| `default,graph` | 27 | default + graph analysis, semantic analysis, paths, hubs |
+| `default,graph,wikilinks` | 34 | + link suggestions, validation |
+| `full` | 67 | All categories except memory |
 
 #### How It Works
 

@@ -277,6 +277,8 @@ I designed every part of this and understand every line — but I built it entir
 
 I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. Since introducing Flywheel, I rarely open Obsidian to hunt for things manually anymore — the combination of voice-driven capture and Obsidian's editing environment is genuinely easier than either one alone. All help is welcome — I'm looking for people who care about this space.
 
+I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) — an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor. Early days, but the intent is to give value back to Obsidian itself.
+
 ### Dogfooding: my vault, unvarnished
 
 I run Flywheel on my own 1,600-note vault — 2.5 years of daily notes, work docs, personal projects, and reference material.

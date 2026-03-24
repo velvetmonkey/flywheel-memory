@@ -255,8 +255,6 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 | [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021. Trained on HotpotQA |
 
-> **Not apples-to-apples.** Baleen/MDR are trained on HotpotQA; Flywheel has never seen it. Different test sizes, document pools, and settings; directionally useful, not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-
 ### Conversational Memory (LoCoMo)
 
 600 questions across 10 conversations. Answer accuracy via LLM-as-judge.
@@ -269,11 +267,9 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 | [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | 695 | GPT-4o |
 | [Letta](https://memgpt.ai/) | 26.7 | — | — | 695 | GPT-4o |
 
-> **Not apples-to-apples.** Different question counts, judge models (Haiku vs GPT-4o), and note representations; directionally useful, not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-locomo)
-
 [Full benchmark methodology →](docs/TESTING.md)
 
-> These comparisons aren't apples-to-apples — different test sizes, different judges, different document pools. We haven't run controlled head-to-head tests yet. But there's a plausible reason the numbers are high: trained retrievers optimise a single embedding space, while Flywheel fuses multiple orthogonal signals — FTS5 keyword matching, graph structure (backlinks, hubs, co-occurrence), entity type awareness, and semantic similarity via RRF. Each signal catches what the others miss. A multi-hop question that defeats pure embedding retrieval can still resolve through graph traversal; a semantic near-miss can still surface via BM25 keyword overlap. Whether that's a durable advantage or a favourable artefact of these specific benchmarks, we don't know yet. The numbers reproduce — clone the repo and check.
+> These comparisons aren't apples-to-apples — different test sizes, different judges, different document pools. We haven't run controlled head-to-head tests yet. But there's a plausible reason the numbers are high: trained retrievers optimise a single embedding space, while Flywheel fuses multiple orthogonal signals — FTS5 keyword matching, graph structure (backlinks, hubs, co-occurrence), entity type awareness, and semantic similarity via RRF. Each signal catches what the others miss. A multi-hop question that defeats pure embedding retrieval can still resolve through graph traversal; a semantic near-miss can still surface via BM25 keyword overlap. Whether that's a durable advantage or a favourable artefact of these specific benchmarks, we don't know yet. The numbers reproduce — clone the repo and check. [Details →](docs/TESTING.md)
 
 ---
 

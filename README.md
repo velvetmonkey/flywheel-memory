@@ -22,7 +22,7 @@
 
 ### The scaling problem
 
-You want to use your vault with AI? Manual linking can't keep up with how fast you think. A 1,600-note vault is 750k tokens of raw markdown — but manual wikilinks top out at 3–11 per daily note. Voice capture makes it worse: you can dictate ten notes in the time it takes to link one.
+Your vault grows faster than you can link it. A thousand notes with sparse connections is a filing cabinet, not a knowledge graph. Voice capture, quick notes, web clippings — every workflow that speeds up capture widens the gap. Without links, your AI reads files one by one instead of traversing a graph. This isn't a discipline problem. It's a throughput problem.
 
 Flywheel auto-links on every write, voice or keyboard.
 

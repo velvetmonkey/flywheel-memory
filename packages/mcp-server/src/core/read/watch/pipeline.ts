@@ -265,27 +265,33 @@ export class PipelineRunner {
     const entityDiff = computeEntityDiff(this.entitiesBefore, this.entitiesAfter);
 
     // Detect category/description changes and record in entity_changes audit log
+    // Uses INSERT OR IGNORE + ms-precision timestamps to avoid UNIQUE constraint crashes
     const categoryChanges: Array<{ entity: string; from: string; to: string }> = [];
     const descriptionChanges: Array<{ entity: string; from: string | null; to: string | null }> = [];
     if (p.sd) {
       const beforeMap = new Map(this.entitiesBefore.map(e => [e.name, e]));
       const insertChange = p.sd.db.prepare(
-        'INSERT INTO entity_changes (entity, field, old_value, new_value) VALUES (?, ?, ?, ?)'
+        'INSERT OR IGNORE INTO entity_changes (entity, field, old_value, new_value, changed_at) VALUES (?, ?, ?, ?, ?)'
       );
-      for (const after of this.entitiesAfter) {
-        const before = beforeMap.get(after.name);
-        if (before && before.category !== after.category) {
-          insertChange.run(after.name, 'category', before.category, after.category);
-          categoryChanges.push({ entity: after.name, from: before.category, to: after.category });
-        }
-        if (before) {
-          const oldDesc = before.description ?? null;
-          const newDesc = after.description ?? null;
-          if (oldDesc !== newDesc) {
-            insertChange.run(after.name, 'description', oldDesc, newDesc);
-            descriptionChanges.push({ entity: after.name, from: oldDesc, to: newDesc });
+      try {
+        const now = new Date().toISOString();
+        for (const after of this.entitiesAfter) {
+          const before = beforeMap.get(after.name);
+          if (before && before.category !== after.category) {
+            insertChange.run(after.name, 'category', before.category, after.category, now);
+            categoryChanges.push({ entity: after.name, from: before.category, to: after.category });
+          }
+          if (before) {
+            const oldDesc = before.description ?? null;
+            const newDesc = after.description ?? null;
+            if (oldDesc !== newDesc) {
+              insertChange.run(after.name, 'description', oldDesc, newDesc, now);
+              descriptionChanges.push({ entity: after.name, from: oldDesc, to: newDesc });
+            }
           }
         }
+      } catch (e) {
+        serverLog('watcher', `entity_changes audit failed: ${e}`, 'error');
       }
     }
 

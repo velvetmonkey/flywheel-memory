@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 31;
+export const SCHEMA_VERSION = 32;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -296,14 +296,13 @@ CREATE TABLE IF NOT EXISTS note_links (
   PRIMARY KEY (note_path, target)
 );
 
--- Entity field change audit log (v17)
+-- Entity field change audit log (v17, rowid PK since v32)
 CREATE TABLE IF NOT EXISTS entity_changes (
   entity TEXT NOT NULL,
   field TEXT NOT NULL,
   old_value TEXT,
   new_value TEXT,
-  changed_at TEXT NOT NULL DEFAULT (datetime('now')),
-  PRIMARY KEY (entity, field, changed_at)
+  changed_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 -- Note tag persistence for diff-based feedback (v18)

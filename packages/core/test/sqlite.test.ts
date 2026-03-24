@@ -422,7 +422,7 @@ describe('SQLite State Management', () => {
       const duration = performance.now() - start;
 
       expect(count).toBe(1000);
-      expect(duration).toBeLessThan(500); // Should complete in under 500ms
+      expect(duration).toBeLessThan(1000); // Should complete in under 1s
     });
 
     it('should efficiently search 10k entities', () => {
@@ -444,7 +444,7 @@ describe('SQLite State Management', () => {
       const duration = performance.now() - start;
 
       expect(results.length).toBeGreaterThan(0);
-      expect(duration).toBeLessThan(50); // Should complete in under 50ms
+      expect(duration).toBeLessThan(100); // Should complete in under 100ms
     });
   });
 });

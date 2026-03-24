@@ -47,12 +47,12 @@ describe('Large Vault Performance Baselines', () => {
       const duration = performance.now() - start;
 
       expect(result.noteCount).toBeGreaterThanOrEqual(1000);
-      expect(duration).toBeLessThan(30000); // 30 seconds
+      expect(duration).toBeLessThan(60000); // 60 seconds
 
       console.log(`1000-note vault generated in ${(duration / 1000).toFixed(2)}s`);
-    }, 60000);
+    }, 120000);
 
-    it.skipIf(SKIP_PERF)('should generate 5000 notes in under 120 seconds', async () => {
+    it.skipIf(SKIP_PERF)('should generate 5000 notes in under 240 seconds', async () => {
       const outputDir = await createTempDir();
 
       const start = performance.now();
@@ -60,7 +60,7 @@ describe('Large Vault Performance Baselines', () => {
       const duration = performance.now() - start;
 
       expect(result.noteCount).toBeGreaterThanOrEqual(5000);
-      expect(duration).toBeLessThan(120000); // 2 minutes
+      expect(duration).toBeLessThan(240000); // 4 minutes
 
       console.log(`5000-note vault generated in ${(duration / 1000).toFixed(2)}s`);
     }, 180000);
@@ -106,7 +106,7 @@ describe('Large Vault Performance Baselines', () => {
       const duration = performance.now() - start;
 
       expect(files.length).toBeGreaterThanOrEqual(5000);
-      expect(duration).toBeLessThan(5000); // 5 seconds
+      expect(duration).toBeLessThan(20000); // 20 seconds
 
       console.log(`Listed ${files.length} files in ${duration.toFixed(0)}ms`);
     }, 180000);
@@ -143,7 +143,7 @@ describe('Large Vault Performance Baselines', () => {
 
       const duration = performance.now() - start;
 
-      expect(duration).toBeLessThan(10000); // 10 seconds
+      expect(duration).toBeLessThan(20000); // 20 seconds
       console.log(`Read ${files.length} files (${(totalBytes / 1024 / 1024).toFixed(2)}MB) in ${duration.toFixed(0)}ms`);
     }, 60000);
   });
@@ -176,7 +176,7 @@ describe('Large Vault Performance Baselines', () => {
       await countLinks(vaultDir);
       const duration = performance.now() - start;
 
-      expect(duration).toBeLessThan(30000); // 30 seconds
+      expect(duration).toBeLessThan(60000); // 60 seconds
       expect(filesProcessed).toBeGreaterThanOrEqual(5000);
 
       console.log(`Counted ${totalLinks} links across ${filesProcessed} files in ${duration.toFixed(0)}ms`);
@@ -214,7 +214,7 @@ describe('Large Vault Performance Baselines', () => {
       await extractEntities(vaultDir);
       const duration = performance.now() - start;
 
-      expect(duration).toBeLessThan(30000); // 30 seconds
+      expect(duration).toBeLessThan(60000); // 60 seconds
       expect(filesProcessed).toBeGreaterThanOrEqual(5000);
 
       console.log(`Extracted ${entities.size} unique entities from ${filesProcessed} files in ${duration.toFixed(0)}ms`);

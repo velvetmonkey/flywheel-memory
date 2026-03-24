@@ -223,6 +223,29 @@ export function initSchema(db: Database.Database): void {
       }
     }
 
+    // v32: Drop composite PRIMARY KEY on entity_changes (was causing UNIQUE constraint
+    // crashes when two changes hit the same entity+field within one second).
+    // Recreate as rowid table — audit log doesn't need dedup.
+    if (currentVersion < 32) {
+      const hasTable = db.prepare(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name='entity_changes'`
+      ).get();
+      if (hasTable) {
+        db.exec(`
+          CREATE TABLE IF NOT EXISTS entity_changes_new (
+            entity TEXT NOT NULL,
+            field TEXT NOT NULL,
+            old_value TEXT,
+            new_value TEXT,
+            changed_at TEXT NOT NULL DEFAULT (datetime('now'))
+          );
+          INSERT INTO entity_changes_new SELECT entity, field, old_value, new_value, changed_at FROM entity_changes;
+          DROP TABLE entity_changes;
+          ALTER TABLE entity_changes_new RENAME TO entity_changes;
+        `);
+      }
+    }
+
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
     ).run(SCHEMA_VERSION);

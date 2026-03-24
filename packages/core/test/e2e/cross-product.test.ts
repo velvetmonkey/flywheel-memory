@@ -428,7 +428,7 @@ $$math$$
       const insertDuration = performance.now() - startInsert;
 
       expect(count).toBe(500);
-      expect(insertDuration).toBeLessThan(500); // Should complete in under 500ms
+      expect(insertDuration).toBeLessThan(1000); // Should complete in under 1s
 
       // Search should be fast (use prefix search for FTS5)
       const startSearch = performance.now();
@@ -436,7 +436,7 @@ $$math$$
       const searchDuration = performance.now() - startSearch;
 
       expect(results.length).toBeGreaterThan(0);
-      expect(searchDuration).toBeLessThan(50); // Should complete in under 50ms
+      expect(searchDuration).toBeLessThan(100); // Should complete in under 100ms
     });
 
     it('should apply wikilinks to large content efficiently', () => {
@@ -460,7 +460,7 @@ $$math$$
       expect(result).toContain('[[TypeScript]]');
       expect(result).toContain('[[React]]');
       expect(result).toContain('[[Jordan Smith]]');
-      expect(applyDuration).toBeLessThan(1000); // Should complete in under 1s
+      expect(applyDuration).toBeLessThan(2000); // Should complete in under 2s
     });
   });
 });

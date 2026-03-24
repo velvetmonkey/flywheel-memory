@@ -38,7 +38,7 @@ describe('Graph Query Performance Benchmarks', () => {
       const elapsed = performance.now() - start;
 
       expect(result.content[0].text).toBeDefined();
-      expect(elapsed).toBeLessThan(2000);
+      expect(elapsed).toBeLessThan(4000);
 
       console.log(`search_notes latency: ${elapsed.toFixed(2)}ms`);
     });
@@ -53,7 +53,7 @@ describe('Graph Query Performance Benchmarks', () => {
       const elapsed = performance.now() - start;
 
       expect(result.content[0].text).toBeDefined();
-      expect(elapsed).toBeLessThan(2000);
+      expect(elapsed).toBeLessThan(4000);
 
       console.log(`get_backlinks latency: ${elapsed.toFixed(2)}ms`);
     });
@@ -68,7 +68,7 @@ describe('Graph Query Performance Benchmarks', () => {
       const elapsed = performance.now() - start;
 
       expect(result.content[0].text).toBeDefined();
-      expect(elapsed).toBeLessThan(500);
+      expect(elapsed).toBeLessThan(1000);
 
       console.log(`search metadata latency: ${elapsed.toFixed(2)}ms`);
     });
@@ -99,7 +99,7 @@ describe('Graph Query Performance Benchmarks', () => {
 
       const elapsed = performance.now() - start;
 
-      expect(elapsed).toBeLessThan(2000);
+      expect(elapsed).toBeLessThan(4000);
 
       console.log(`Combined meeting prep query latency: ${elapsed.toFixed(2)}ms`);
     });

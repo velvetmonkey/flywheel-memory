@@ -191,6 +191,8 @@ Your AI knows what you were working on yesterday without re-explaining it. `brie
 
 Complex vault workflows become deterministic policies — describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back, committed as a single git commit.
 
+Most agent frameworks solve the trust problem through containment — sandboxing arbitrary code in isolates or containers. Flywheel solves it through constraint: policies can only express vault operations, every step is auditable, and the entire execution is a single reversible git commit. No sandbox needed when the language itself can't do anything dangerous.
+
 ### 5. Portable Knowledge Graph
 
 One call to `export_graph` and your entire vault — or any entity's neighborhood — becomes a [GraphML](https://en.wikipedia.org/wiki/GraphML) file. Open it in any graph tool, run community detection, find bottlenecks, or just see what's connected to what.

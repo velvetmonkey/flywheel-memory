@@ -33,6 +33,7 @@ import { exportHubScores } from '../../shared/hubExport.js';
 import { buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from '../../shared/recency.js';
 import { mineCooccurrences, saveCooccurrenceToStateDb } from '../../shared/cooccurrence.js';
 import { setCooccurrenceIndex, suggestRelatedLinks, applyProactiveSuggestions } from '../../write/wikilinks.js';
+import { enqueueProactiveSuggestions, drainProactiveQueue, type QueueEntry } from '../../write/proactiveQueue.js';
 import { mineRetrievalCooccurrence } from '../../shared/retrievalCooccurrence.js';
 
 // Read modules
@@ -118,12 +119,13 @@ async function runStep(
  * Runs the 19-step watcher pipeline for a single batch of file changes.
  *
  * Steps (in order):
+ * 0.5. drain_proactive_queue (apply deferred links from previous batch),
  * 1. index_rebuild, 1.5. note_moves, 2. entity_scan, 3. hub_scores,
  * 3.5. recency, 3.6. cooccurrence, 3.7. edge_weights,
  * 4. note_embeddings, 5. entity_embeddings, 6. index_cache, 7. task_cache,
  * 8. forward_links, 9. wikilink_check, 10. implicit_feedback,
  * 10.5. corrections, 11. prospect_scan, 12. suggestion_scoring,
- * 12.5. proactive_linking, 13. tag_scan, 19. retrieval_cooccurrence
+ * 12.5. proactive_enqueue, 13. tag_scan, 19. retrieval_cooccurrence
  */
 export class PipelineRunner {
   private tracker: StepTracker;
@@ -147,6 +149,9 @@ export class PipelineRunner {
     const { p, tracker } = this;
 
     try {
+      // Step 0.5: Drain deferred proactive queue (before any file processing)
+      await runStep('drain_proactive_queue', tracker, {}, () => this.drainQueue());
+
       // Critical steps (throw on failure)
       await this.indexRebuild();
       this.noteMoves();
@@ -865,34 +870,73 @@ export class PipelineRunner {
     }
   }
 
-  // ── Step 12.5: Proactive linking ──────────────────────────────────
+  // ── Step 0.5: Drain proactive queue ──────────────────────────────
+
+  private async drainQueue(): Promise<Record<string, unknown>> {
+    const { p } = this;
+    if (!p.sd || p.flywheelConfig?.proactive_linking === false) {
+      return { skipped: true };
+    }
+
+    const currentBatchPaths = new Set(p.events.map(e => e.path));
+    const result = await drainProactiveQueue(
+      p.sd,
+      p.vp,
+      currentBatchPaths,
+      {
+        minScore: p.flywheelConfig?.proactive_min_score ?? 20,
+        maxPerFile: p.flywheelConfig?.proactive_max_per_file ?? 3,
+        maxPerDay: p.flywheelConfig?.proactive_max_per_day ?? 10,
+      },
+      applyProactiveSuggestions,
+    );
+
+    const totalApplied = result.applied.reduce((s, r) => s + r.entities.length, 0);
+    if (totalApplied > 0) {
+      serverLog('watcher', `Proactive drain: applied ${totalApplied} links in ${result.applied.length} files`);
+    }
+
+    return {
+      applied: result.applied,
+      total_applied: totalApplied,
+      expired: result.expired,
+      skipped_active: result.skippedActiveEdit,
+      skipped_mtime: result.skippedMtimeGuard,
+      skipped_daily_cap: result.skippedDailyCap,
+    };
+  }
+
+  // ── Step 12.5: Proactive enqueue ───────────────────────────────────
 
   private async proactiveLinking(): Promise<void> {
     const { p, tracker } = this;
     if (p.flywheelConfig?.proactive_linking === false || this.suggestionResults.length === 0) return;
+    if (!p.sd) return;
 
-    tracker.start('proactive_linking', { files: this.suggestionResults.length });
+    tracker.start('proactive_enqueue', { files: this.suggestionResults.length });
     try {
-      const proactiveResults: Array<{ file: string; applied: string[] }> = [];
+      const minScore = p.flywheelConfig?.proactive_min_score ?? 20;
+      const maxPerFile = p.flywheelConfig?.proactive_max_per_file ?? 3;
+      const entries: QueueEntry[] = [];
+
       for (const { file, top } of this.suggestionResults) {
-        try {
-          const result = await applyProactiveSuggestions(file, p.vp, top, {
-            minScore: p.flywheelConfig?.proactive_min_score ?? 20,
-            maxPerFile: p.flywheelConfig?.proactive_max_per_file ?? 3,
-          });
-          if (result.applied.length > 0) {
-            proactiveResults.push({ file, applied: result.applied });
-          }
-        } catch { /* non-critical: skip file on error */ }
+        const candidates = top
+          .filter(s => s.score >= minScore && s.confidence === 'high')
+          .slice(0, maxPerFile);
+
+        for (const c of candidates) {
+          entries.push({ notePath: file, entity: c.entity, score: c.score, confidence: c.confidence });
+        }
       }
-      const totalApplied = proactiveResults.reduce((s, r) => s + r.applied.length, 0);
-      tracker.end({ files_modified: proactiveResults.length, total_applied: totalApplied, results: proactiveResults });
-      if (totalApplied > 0) {
-        serverLog('watcher', `Proactive linking: ${totalApplied} links in ${proactiveResults.length} files`);
+
+      const enqueued = enqueueProactiveSuggestions(p.sd, entries);
+      tracker.end({ enqueued, total_candidates: entries.length });
+      if (enqueued > 0) {
+        serverLog('watcher', `Proactive enqueue: ${enqueued} suggestions queued for deferred application`);
       }
     } catch (e) {
       tracker.end({ error: String(e) });
-      serverLog('watcher', `Proactive linking failed: ${e}`, 'error');
+      serverLog('watcher', `Proactive enqueue failed: ${e}`, 'error');
     }
   }
 

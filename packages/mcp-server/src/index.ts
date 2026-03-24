@@ -1697,6 +1697,9 @@ async function runPostIndexWork(ctx: VaultContext) {
             const renameWikilinkApplications = sd.db.prepare(
               'UPDATE wikilink_applications SET note_path = ? WHERE note_path = ?'
             );
+            const renameProactiveQueue = sd.db.prepare(
+              'UPDATE proactive_queue SET note_path = ? WHERE note_path = ? AND status = \'pending\''
+            );
             for (const rename of batchRenames) {
               const oldFolder = rename.oldPath.includes('/') ? rename.oldPath.split('/').slice(0, -1).join('/') : '';
               const newFolder = rename.newPath.includes('/') ? rename.newPath.split('/').slice(0, -1).join('/') : '';
@@ -1705,6 +1708,7 @@ async function runPostIndexWork(ctx: VaultContext) {
               renameNoteTags.run(rename.newPath, rename.oldPath);
               renameNoteLinkHistory.run(rename.newPath, rename.oldPath);
               renameWikilinkApplications.run(rename.newPath, rename.oldPath);
+              renameProactiveQueue.run(rename.newPath, rename.oldPath);
               // Also update the content hash map (in-memory + persisted)
               const oldHash = lastContentHashes.get(rename.oldPath);
               if (oldHash !== undefined) {
@@ -1786,6 +1790,17 @@ async function runPostIndexWork(ctx: VaultContext) {
           await handleBatch({ events: catchupEvents, renames: [], timestamp: Date.now() });
         }
       }
+    }
+
+    // Expire stale proactive queue entries from previous session
+    if (sd) {
+      try {
+        const { expireStaleEntries } = await import('./core/write/proactiveQueue.js');
+        const expired = expireStaleEntries(sd);
+        if (expired > 0) {
+          serverLog('watcher', `Startup: expired ${expired} stale proactive queue entries`);
+        }
+      } catch { /* non-critical */ }
     }
 
     watcher.start();

@@ -109,7 +109,7 @@ export interface StateDb {
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 30;
+export const SCHEMA_VERSION = 31;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -537,6 +537,21 @@ CREATE TABLE IF NOT EXISTS retrieval_cooccurrence (
 );
 CREATE INDEX IF NOT EXISTS idx_retcooc_notes ON retrieval_cooccurrence(note_a, note_b);
 CREATE INDEX IF NOT EXISTS idx_retcooc_ts ON retrieval_cooccurrence(timestamp);
+
+-- Deferred proactive linking queue (v31)
+CREATE TABLE IF NOT EXISTS proactive_queue (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  note_path TEXT NOT NULL,
+  entity TEXT NOT NULL,
+  score REAL NOT NULL,
+  confidence TEXT NOT NULL,
+  queued_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  applied_at INTEGER,
+  UNIQUE(note_path, entity)
+);
+CREATE INDEX IF NOT EXISTS idx_pq_status ON proactive_queue(status, expires_at);
 `;
 
 // =============================================================================
@@ -733,6 +748,9 @@ function initSchema(db: Database.Database): void {
 
     // v29: index on wikilink_feedback(note_path) for temporal analysis queries
     // (created by SCHEMA_SQL above via CREATE INDEX IF NOT EXISTS)
+
+    // v31: proactive_queue table (deferred proactive linking)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     // v30: token economics columns on tool_invocations
     if (currentVersion < 30) {

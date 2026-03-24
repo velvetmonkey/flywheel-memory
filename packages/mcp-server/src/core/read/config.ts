@@ -48,6 +48,8 @@ export interface FlywheelConfig {
   proactive_min_score?: number;
   /** Maximum proactive insertions per file per batch (default: 3) */
   proactive_max_per_file?: number;
+  /** Maximum proactive insertions per file per day (default: 10) */
+  proactive_max_per_day?: number;
 }
 
 /** Default config for new vaults — opinionated: aggressive linking by default, opt out to dial back */

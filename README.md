@@ -22,17 +22,9 @@
 
 ### The scaling problem
 
-Manual linking can't keep up with how fast you think. A 1,600-note vault is 750k tokens of raw markdown — but manual wikilinks top out at 3–11 per daily note. Voice capture makes it worse: you can dictate ten notes in the time it takes to link one.
+You want to use your vault with AI? Manual linking can't keep up with how fast you think. A 1,600-note vault is 750k tokens of raw markdown — but manual wikilinks top out at 3–11 per daily note. Voice capture makes it worse: you can dictate ten notes in the time it takes to link one.
 
-Flywheel auto-links on every write, voice or keyboard. Three months of daily use:
-
-| | Before | After |
-|---|---|---|
-| Links per daily note | 3–11 | 20–625 |
-| Total wikilinks | sparse | 37,259 |
-| Links per note (avg) | — | 23.2 |
-
-The graph densifies faster than content grows. That's not search — that's structure accumulating from use.
+Flywheel auto-links on every write, voice or keyboard.
 
 | | Without | With Flywheel |
 |---|---|---|

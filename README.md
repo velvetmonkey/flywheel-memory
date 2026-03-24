@@ -307,7 +307,7 @@ I've been writing code for over 30 years and tried every PKM tool going before l
 
 Your attention, memory, and even the way you reason are increasingly shaped by systems you didn't choose. Platforms that optimise for engagement, models trained on someone else's priorities, defaults that quietly steer how you organise what you know. I wanted a knowledge layer that works for the person using it. A system that only gets smarter from your own honest engagement is fundamentally different from one that optimises for someone else's metrics.
 
-I designed every part of this and understand every line 🫠 but I built it entirely in flow, not by plan. The entire codebase was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
+The entire codebase was built through Claude Code with Opus 4.5 and 4.6. I designed the architecture and made every decision, but I haven't read every line 🫠 I've got bills to pay. It's been through extensive code reviews and testing, but verify what matters to you.
 
 I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. The volume of knowledge you can accumulate at speed through voice is staggering. Flywheel exists partly because I needed something that could keep up. All help is welcome. I'm looking for people who care about this space.
 

@@ -199,6 +199,8 @@ Complex vault workflows become deterministic policies — describe what you want
 
 Most agent frameworks solve the trust problem through containment — sandboxing arbitrary code in isolates or containers. Flywheel solves it through constraint: policies can only express vault operations, every step is auditable, and the entire execution is a single reversible git commit. No sandbox needed when the language itself can't do anything dangerous.
 
+Under the hood, every write operation parses your markdown at the AST level — not regex, not string matching. Flywheel understands headings, frontmatter, lists, and code blocks as structure. Mutations target specific sections without corrupting surrounding content, even in complex documents. Safe writes aren't a promise — they're a property of the parser.
+
 ### 5. Portable Knowledge Graph
 
 One call to `export_graph` and your entire vault — or any entity's neighborhood — becomes a [GraphML](https://en.wikipedia.org/wiki/GraphML) file. Open it in any graph tool, run community detection, find bottlenecks, or just see what's connected to what.

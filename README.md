@@ -273,6 +273,8 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 [Full benchmark methodology →](docs/TESTING.md)
 
+> These comparisons aren't apples-to-apples — different test sizes, different judges, different document pools. We haven't run controlled head-to-head tests yet. But there's a plausible reason the numbers are high: trained retrievers optimise a single embedding space, while Flywheel fuses multiple orthogonal signals — FTS5 keyword matching, graph structure (backlinks, hubs, co-occurrence), entity type awareness, and semantic similarity via RRF. Each signal catches what the others miss. A multi-hop question that defeats pure embedding retrieval can still resolve through graph traversal; a semantic near-miss can still surface via BM25 keyword overlap. Whether that's a durable advantage or a favourable artefact of these specific benchmarks, we don't know yet. The numbers reproduce — clone the repo and check.
+
 ---
 
 ## Tested

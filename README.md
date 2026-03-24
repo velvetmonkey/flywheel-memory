@@ -18,7 +18,18 @@
 
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)**
 
-> **What is cognitive sovereignty?** Your recall, your reasoning, and the way you organise what you know are increasingly shaped by systems you didn't choose. Flywheel quietly pulls that control back. Your data stays on your machine, your graph learns only from your own edits, and no platform, training pipeline, or cloud service ever touches it. As models get better, your knowledge gets more powerful — no code change, no migration, no lock-in. It's a subtle shift with a profound effect: your second brain actually belongs to you.
+> **Cognitive sovereignty** = your knowledge, your models, your rules, executed locally with explicit control.
+
+Your recall, your reasoning, and the way you organise what you know are increasingly shaped by systems you didn't choose. Flywheel quietly pulls that control back. Your data stays on your machine, your graph learns only from your own edits, and no platform, training pipeline, or cloud service ever touches it. As models get better, your knowledge gets more powerful — no code change, no migration, no lock-in. Your second brain actually belongs to you.
+
+| | Without cognitive sovereignty | With Flywheel |
+|---|---|---|
+| Your data | Leaves your machine for cloud processing | Stays local — no sync, no upload, no account |
+| Your prompts | Opaque, shaped by platform defaults | Explicit, scoped to your vault context |
+| Tool calls | Hidden behind abstractions | Traceable, auditable, git-committed |
+| Model choice | Locked to one provider | Model-agnostic via MCP — swap anytime |
+| Your graph | Owned by the platform | Yours to export, analyse, or delete |
+| As models improve | Requires migration or vendor upgrade | Automatic — better models, same local data, no code change |
 
 | | Without Flywheel | With Flywheel |
 |---|---|---|

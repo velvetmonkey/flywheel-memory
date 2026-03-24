@@ -273,6 +273,8 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 [Full benchmark methodology →](docs/TESTING.md)
 
+> An untrained MCP server on SQLite beating trained neural retrievers is, frankly, ridiculous. We're as surprised as you are. But the numbers reproduce — clone the repo and check.
+
 ---
 
 ## Tested

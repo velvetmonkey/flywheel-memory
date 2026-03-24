@@ -2,7 +2,7 @@
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
   <p><strong>Cognitive sovereignty for your Obsidian vault.</strong><br/>
-  Search, write, and graph tools that auto-link your notes and learn from your edits.<br/>
+  Search, write, and graph MCP tools that auto-link your notes and learn from your edits.<br/>
   All local. All yours. A few lines of config.</p>
 </div>
 

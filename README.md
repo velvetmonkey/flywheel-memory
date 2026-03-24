@@ -22,23 +22,17 @@
 
 Your recall, your reasoning, and the way you organise what you know are increasingly shaped by systems you didn't choose. Flywheel quietly pulls that control back. Your data stays on your machine, your graph learns only from your own edits, and no platform, training pipeline, or cloud service ever touches it. As models get better, your knowledge gets more powerful — no code change, no migration, no lock-in. Your second brain actually belongs to you.
 
-| | Without cognitive sovereignty | With Flywheel |
+| | Without | With Flywheel |
 |---|---|---|
-| Your data | Leaves your machine for cloud processing | Stays local — no sync, no upload, no account |
-| Your prompts | Opaque, shaped by platform defaults | Explicit, scoped to your vault context |
-| Tool calls | Hidden behind abstractions | Traceable, auditable, git-committed |
+| Your data | Leaves your machine | Stays local — no sync, no upload, no account |
 | Model choice | Locked to one provider | Model-agnostic via MCP — swap anytime |
-| Your graph | Owned by the platform | Yours to export, analyse, or delete |
-| As models improve | Requires migration or vendor upgrade | Automatic — better models, same local data, no code change |
-
-| | Without Flywheel | With Flywheel |
-|---|---|---|
+| As models improve | Migration or vendor upgrade | Automatic — better models, same data, no code change |
 | "What's overdue?" | Read every file | Indexed query, <10ms |
 | "What links here?" | Grep the vault, flat list | Ranked backlinks + outlinks, pre-indexed |
 | "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
 | "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
-| "Export my knowledge graph" | Not possible | [GraphML](https://en.wikipedia.org/wiki/GraphML) export → open in any graph tool |
-| Token cost per query | Hundreds to thousands | Graph does the joining — one search, not ten file reads |
+| Your graph | Owned by the platform | Yours to [export](https://en.wikipedia.org/wiki/GraphML), analyse, or delete |
+| Tool calls | Hidden behind abstractions | Traceable, auditable, git-committed |
 
 ---
 

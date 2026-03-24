@@ -2922,3 +2922,109 @@ describe('processWikilinks alias resolution', () => {
     expect(result.linkedEntities).toContain('MCP');
   });
 });
+
+describe('sanitizeWikilinks', () => {
+  // Import sanitizer directly for unit testing
+  let sanitizeWikilinks: typeof import('../../../src/core/write/wikilinks.js').sanitizeWikilinks;
+  let isValidWikilinkText: typeof import('../../../src/core/write/wikilinks.js').isValidWikilinkText;
+
+  beforeEach(async () => {
+    const mod = await import('../../../src/core/write/wikilinks.js');
+    sanitizeWikilinks = mod.sanitizeWikilinks;
+    isValidWikilinkText = mod.isValidWikilinkText;
+  });
+
+  describe('isValidWikilinkText', () => {
+    it('should accept normal entity names', () => {
+      expect(isValidWikilinkText('React')).toBe(true);
+      expect(isValidWikilinkText('MCP')).toBe(true);
+      expect(isValidWikilinkText('API Fabric')).toBe(true);
+      expect(isValidWikilinkText('Sarah Mitchell')).toBe(true);
+      expect(isValidWikilinkText('Theo Bell')).toBe(true);
+    });
+
+    it('should accept valid alias syntax', () => {
+      expect(isValidWikilinkText('ESGHub|ESG Hub')).toBe(true);
+      expect(isValidWikilinkText('MCP|Model Context Protocol')).toBe(true);
+    });
+
+    it('should reject text with question marks', () => {
+      expect(isValidWikilinkText('what broke last Tuesday?')).toBe(false);
+      expect(isValidWikilinkText('where did this come from?')).toBe(false);
+    });
+
+    it('should reject text ending with comma or period', () => {
+      expect(isValidWikilinkText('good enough,')).toBe(false);
+      expect(isValidWikilinkText('scam.')).toBe(false);
+    });
+
+    it('should reject text with leading/trailing whitespace', () => {
+      expect(isValidWikilinkText(' ask ')).toBe(false);
+      expect(isValidWikilinkText('  React')).toBe(false);
+    });
+
+    it('should reject blockquote characters', () => {
+      expect(isValidWikilinkText('>')).toBe(false);
+      expect(isValidWikilinkText('>If your data')).toBe(false);
+    });
+
+    it('should reject markdown fragments', () => {
+      expect(isValidWikilinkText('* 2. **Story**')).toBe(false);
+      expect(isValidWikilinkText('# Heading')).toBe(false);
+    });
+
+    it('should reject text over 60 characters', () => {
+      expect(isValidWikilinkText('A'.repeat(61))).toBe(false);
+      expect(isValidWikilinkText('A'.repeat(60))).toBe(true);
+    });
+
+    it('should reject text with more than 5 words', () => {
+      expect(isValidWikilinkText('one two three four five six')).toBe(false);
+      expect(isValidWikilinkText('One Two Three Four Five')).toBe(true);
+    });
+
+    it('should reject all-lowercase prose phrases (>3 words)', () => {
+      expect(isValidWikilinkText("here's a cool AI thing")).toBe(false);
+      expect(isValidWikilinkText('out of the shadows')).toBe(false);
+    });
+
+    it('should reject conversational phrases with contractions (>2 words)', () => {
+      expect(isValidWikilinkText("we've always done it")).toBe(false);
+      expect(isValidWikilinkText("don't do that thing")).toBe(false);
+    });
+
+    it('should accept short lowercase text (<=3 words)', () => {
+      expect(isValidWikilinkText('tech')).toBe(true);
+      expect(isValidWikilinkText('code review')).toBe(true);
+    });
+  });
+
+  describe('sanitizeWikilinks (integration)', () => {
+    it('should unwrap invalid wikilinks while keeping valid ones', () => {
+      const content = 'Hello [[React]] and [[good enough,]] and [[what broke?]]';
+      const result = sanitizeWikilinks(content);
+      expect(result.content).toBe('Hello [[React]] and good enough, and what broke?');
+      expect(result.removed).toContain('good enough,');
+      expect(result.removed).toContain('what broke?');
+    });
+
+    it('should handle alias syntax correctly', () => {
+      const content = '[[ESGHub|ESG Hub]] and [[scam.]]';
+      const result = sanitizeWikilinks(content);
+      expect(result.content).toBe('[[ESGHub|ESG Hub]] and scam.');
+    });
+
+    it('should unwrap blockquote-spanning wikilinks', () => {
+      const content = '> quote one.[[\n\n> ]]next quote';
+      const result = sanitizeWikilinks(content);
+      expect(result.content).not.toContain('[[');
+    });
+
+    it('should unwrap long prose phrases from LLM output', () => {
+      const content = "Don't [[here's a cool AI thing]] or [[we've always done it this way]]";
+      const result = sanitizeWikilinks(content);
+      expect(result.content).not.toContain('[[');
+      expect(result.removed.length).toBe(2);
+    });
+  });
+});

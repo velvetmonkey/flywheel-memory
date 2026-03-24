@@ -694,12 +694,19 @@ export function resolveAliasWikilinks(
   // Key: alias (lowercase if caseInsensitive)
   // Value: { entityName: canonical name, aliasText: original alias casing }
   const aliasMap = new Map<string, { entityName: string; aliasText: string }>();
+  // Track ambiguous aliases (shared by multiple entities) — skip these to avoid wrong resolution
+  const ambiguousAliases = new Set<string>();
 
   for (const entity of entities) {
     if (typeof entity === 'string') continue;
 
     for (const alias of entity.aliases) {
       const key = caseInsensitive ? alias.toLowerCase() : alias;
+      const existing = aliasMap.get(key);
+      if (existing && existing.entityName !== entity.name) {
+        // Two different entities claim this alias — mark as ambiguous
+        ambiguousAliases.add(key);
+      }
       aliasMap.set(key, { entityName: entity.name, aliasText: alias });
     }
 
@@ -744,6 +751,11 @@ export function resolveAliasWikilinks(
     const aliasInfo = aliasMap.get(targetKey);
     if (!aliasInfo) {
       // Target doesn't match any alias or entity name - leave unchanged
+      continue;
+    }
+
+    // Skip ambiguous aliases — multiple entities claim this alias, resolution would be arbitrary
+    if (ambiguousAliases.has(targetKey)) {
       continue;
     }
 
@@ -1275,6 +1287,36 @@ export function detectImplicitEntities(
           if (!text.includes(' ')) {
             continue; // Skip single-word remainder
           }
+        }
+      }
+
+      // Guard: max 4 words — longer phrases are almost always prose, not entity names
+      const wordCount = text.split(/\s+/).length;
+      if (wordCount > 4) continue;
+
+      // Guard: max 40 chars
+      if (text.length > 40) continue;
+
+      // Guard: strip trailing punctuation from match text
+      const stripped = text.replace(/[,.:;!?]+$/, '');
+      if (stripped.length < minEntityLength) continue;
+      if (stripped !== text) {
+        end = start + stripped.length;
+        text = stripped;
+      }
+
+      // Guard: sentence-start capitalization — if match begins at start of line
+      // (after list marker or newline), first word cap is positional, not semantic.
+      // Require at least 2 capitalized words remaining after the first.
+      if (start > 0) {
+        const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+        const before = content.substring(lineStart, start).trim();
+        // After list marker (- * >) or empty (line start), first cap is positional
+        if (before === '' || /^[-*>]+$/.test(before) || /^\d+\.$/.test(before)) {
+          // Already trimmed sentence starters above; this catches the remaining
+          // cases where the first word is capitalized only because of its position
+          const wordsArr = text.split(/\s+/);
+          if (wordsArr.length <= 2) continue; // Too few words to trust positional cap
         }
       }
 

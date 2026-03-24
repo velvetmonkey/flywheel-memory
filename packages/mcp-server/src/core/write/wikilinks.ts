@@ -390,11 +390,79 @@ function sortEntitiesByPriority(entities: Entity[], notePath?: string): Entity[]
 }
 
 /**
+ * Check if a wikilink's inner text looks like a valid entity name.
+ * Returns false for prose phrases, punctuation-laden text, questions, etc.
+ */
+export function isValidWikilinkText(text: string): boolean {
+  // Strip alias display text: [[target|display]] → check target
+  const target = text.includes('|') ? text.split('|')[0] : text;
+
+  // Starts or ends with whitespace
+  if (target !== target.trim()) return false;
+
+  const trimmed = target.trim();
+  if (trimmed.length === 0) return false;
+
+  // Contains question mark, exclamation, or semicolon — not an entity name
+  if (/[?!;]/.test(trimmed)) return false;
+
+  // Ends with comma or period
+  if (/[,.]$/.test(trimmed)) return false;
+
+  // Contains blockquote character
+  if (trimmed.includes('>')) return false;
+
+  // Starts with markdown syntax (* # - for list items, headings, emphasis)
+  if (/^[*#\-]/.test(trimmed)) return false;
+
+  // Too long for an entity name (>60 chars)
+  if (trimmed.length > 60) return false;
+
+  // Too many words (>5 words)
+  const words = trimmed.split(/\s+/);
+  if (words.length > 5) return false;
+
+  // All lowercase with >3 words — prose phrase, not entity
+  if (words.length > 3 && trimmed === trimmed.toLowerCase()) return false;
+
+  // Contains contraction pattern (apostrophe in a word) with >2 words — conversational phrase
+  if (words.length > 2 && /\w'\w/.test(trimmed)) return false;
+
+  // Ends with common verb suffixes suggesting a phrase, not a name (>3 words)
+  if (words.length > 3 && /(?:ing|tion|ment|ness|ould|ould|ight)$/i.test(words[words.length - 1])) return false;
+
+  return true;
+}
+
+/**
+ * Sanitize wikilinks in content — unwrap (remove [[ ]]) any wikilinks
+ * that don't look like valid entity names. Catches bad links from both
+ * LLM-generated content and implicit entity detection.
+ */
+export function sanitizeWikilinks(content: string): { content: string; removed: string[] } {
+  const removed: string[] = [];
+
+  // Match all wikilinks: [[text]] or [[target|display]]
+  const sanitized = content.replace(/\[\[([^\]]+?)\]\]/g, (fullMatch, inner: string) => {
+    if (isValidWikilinkText(inner)) {
+      return fullMatch; // Keep valid wikilinks
+    }
+    removed.push(inner);
+    // Unwrap: return the display text (or target if no alias)
+    const display = inner.includes('|') ? inner.split('|')[1] : inner;
+    return display;
+  });
+
+  return { content: sanitized, removed };
+}
+
+/**
  * Process content through wikilink application
  *
- * Two-step processing:
+ * Three-step processing:
  * 1. Resolve existing wikilinks that use aliases (e.g., [[model context protocol]] → [[MCP|model context protocol]])
  * 2. Apply wikilinks to plain text (normal auto-wikilink processing)
+ * 3. Sanitize all wikilinks — strip invalid ones (punctuation, prose phrases, broken fragments)
  *
  * @param content - Content to process
  * @param notePath - Optional path to the note for priority sorting
@@ -466,8 +534,11 @@ export function processWikilinks(content: string, notePath?: string, existingCon
   });
 
   // Step 3: Detect implicit entities (dead wikilinks for unrecognized proper nouns, camelCase, acronyms)
+  // Disable implicit detection on prose-heavy content (>500 words) — too many false positives.
+  // Known entities (Step 2) are still linked; only speculative pattern-based detection is suppressed.
+  const wordCount = content.split(/\s+/).length;
   const cfg = getConfig();
-  const implicitEnabled = cfg?.implicit_detection !== false; // default: true
+  const implicitEnabled = cfg?.implicit_detection !== false && wordCount <= 500;
   const validPatterns = new Set<string>(ALL_IMPLICIT_PATTERNS);
   const implicitPatterns = cfg?.implicit_patterns?.length
     ? cfg.implicit_patterns.filter(p => validPatterns.has(p)) as Array<typeof ALL_IMPLICIT_PATTERNS[number]>
@@ -519,27 +590,28 @@ export function processWikilinks(content: string, notePath?: string, existingCon
   }
   newImplicits = nonOverlapping;
 
+  let finalContent = result.content;
+  let implicitEntities: string[] | undefined;
+
   if (newImplicits.length > 0) {
-    let processedContent = result.content;
     // Apply in reverse order to preserve positions
     for (let i = newImplicits.length - 1; i >= 0; i--) {
       const m = newImplicits[i];
-      processedContent = processedContent.slice(0, m.start) + `[[${m.text}]]` + processedContent.slice(m.end);
+      finalContent = finalContent.slice(0, m.start) + `[[${m.text}]]` + finalContent.slice(m.end);
     }
-
-    return {
-      content: processedContent,
-      linksAdded: resolved.linksAdded + result.linksAdded + newImplicits.length,
-      linkedEntities: [...resolved.linkedEntities, ...result.linkedEntities],
-      implicitEntities: newImplicits.map(m => m.text),
-    };
+    implicitEntities = newImplicits.map(m => m.text);
   }
 
-  // No implicit matches — return combined result as before
+  // Step 3: Sanitize all wikilinks — remove invalid ones (punctuation, prose phrases, broken fragments)
+  const { content: sanitizedContent, removed } = sanitizeWikilinks(finalContent);
+
+  const totalLinksAdded = resolved.linksAdded + result.linksAdded + (newImplicits.length - removed.length);
+
   return {
-    content: result.content,
-    linksAdded: resolved.linksAdded + result.linksAdded,
+    content: sanitizedContent,
+    linksAdded: Math.max(0, totalLinksAdded),
     linkedEntities: [...resolved.linkedEntities, ...result.linkedEntities],
+    ...(implicitEntities ? { implicitEntities } : {}),
   };
 }
 

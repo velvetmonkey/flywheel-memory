@@ -26,7 +26,7 @@ Flywheel pulls that control back. Your graph learns only from your own edits, an
 |---|---|---|
 | Your data | Leaves your machine | Stays local — no sync, no upload, no account |
 | Model choice | Locked to one provider | Model-agnostic via MCP — swap anytime |
-| As models improve | Migration or vendor upgrade | Automatic — better models, same data, no code change |
+| As models improve | Migration or vendor upgrade | Better answers automatically — smarter models reason better over the same data |
 | "What's overdue?" | Read every file | Indexed query, <10ms |
 | "What links here?" | Grep the vault, flat list | Ranked backlinks + outlinks, pre-indexed |
 | "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |

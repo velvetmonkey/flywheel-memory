@@ -17,12 +17,11 @@
  */
 
 import * as path from 'path';
-import { readFileSync, realpathSync, existsSync, statSync } from 'fs';
+import { readFileSync, realpathSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { z } from 'zod';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -46,13 +45,12 @@ import {
   type VaultWatcher,
   type WatcherStatus,
 } from './core/read/watch/index.js';
-import { processBatch } from './core/read/watch/batchProcessor.js';
 import { PipelineRunner } from './core/read/watch/pipeline.js';
 import { exportHubScores } from './core/shared/hubExport.js';
 import { initializeLogger as initializeReadLogger, getLogger } from './core/read/logging.js';
 
 // Core imports - Write
-import { initializeEntityIndex, setWriteStateDb, setWikilinkConfig, setCooccurrenceIndex, suggestRelatedLinks, getNoteContext, applyProactiveSuggestions } from './core/write/wikilinks.js';
+import { initializeEntityIndex, setWriteStateDb, setWikilinkConfig, setCooccurrenceIndex } from './core/write/wikilinks.js';
 import { initializeLogger as initializeWriteLogger, flushLogs } from './core/write/logging.js';
 import { setFTS5Database, buildFTS5Index, isIndexStale } from './core/read/fts5.js';
 import {
@@ -82,48 +80,10 @@ import {
 } from './core/read/taskCache.js';
 
 // Vault-core shared imports
-import { openStateDb, scanVaultEntities, getSessionId, getAllEntitiesFromDb, findEntityMatches, getProtectedZones, rangeOverlapsProtectedZone, detectImplicitEntities, loadContentHashes, saveContentHashBatch, renameContentHash, type StateDb } from '@velvetmonkey/vault-core';
+import { openStateDb, scanVaultEntities, getAllEntitiesFromDb, loadContentHashes, saveContentHashBatch, renameContentHash, type StateDb } from '@velvetmonkey/vault-core';
 
-// Read tool registrations
-import { registerGraphTools } from './tools/read/graph.js';
-import { registerGraphExportTools } from './tools/read/graphExport.js';
-import { registerWikilinkTools } from './tools/read/wikilinks.js';
-import { registerHealthTools } from './tools/read/health.js';
-import { registerQueryTools } from './tools/read/query.js';
-import { registerSystemTools as registerReadSystemTools } from './tools/read/system.js';
-import { registerPrimitiveTools } from './tools/read/primitives.js';
-import { registerMigrationTools } from './tools/read/migrations.js';
-import { registerGraphAnalysisTools } from './tools/read/graphAnalysis.js';
-import { registerVaultSchemaTools } from './tools/read/vaultSchema.js';
-import { registerSemanticAnalysisTools } from './tools/read/semanticAnalysis.js';
-import { registerNoteIntelligenceTools } from './tools/read/noteIntelligence.js';
-
-// Write tool registrations
-import { registerMutationTools } from './tools/write/mutations.js';
-import { registerTaskTools } from './tools/write/tasks.js';
-import { registerFrontmatterTools } from './tools/write/frontmatter.js';
-import { registerNoteTools } from './tools/write/notes.js';
-import { registerMoveNoteTools } from './tools/write/move-notes.js';
-import { registerMergeTools as registerWriteMergeTools } from './tools/write/merge.js';
-import { registerSystemTools as registerWriteSystemTools } from './tools/write/system.js';
-import { registerPolicyTools } from './tools/write/policy.js';
-import { registerTagTools } from './tools/write/tags.js';
-import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
-import { registerCorrectionTools } from './tools/write/corrections.js';
-import { registerMemoryTools } from './tools/write/memory.js';
+// Memory lifecycle (used directly in index.ts for periodic maintenance)
 import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } from './core/write/memory.js';
-import { registerRecallTools } from './tools/read/recall.js';
-import { registerBriefTools } from './tools/read/brief.js';
-import { registerConfigTools } from './tools/write/config.js';
-import { registerInitTools } from './tools/write/enrich.js';
-
-// Read tool registrations (additional)
-import { registerMetricsTools } from './tools/read/metrics.js';
-import { registerActivityTools } from './tools/read/activity.js';
-import { registerSimilarityTools } from './tools/read/similarity.js';
-import { registerSemanticTools } from './tools/read/semantic.js';
-import { registerMergeTools as registerReadMergeTools } from './tools/read/merges.js';
-import { registerTemporalAnalysisTools } from './tools/read/temporalAnalysis.js';
 
 // Core imports - Sweep
 import { startSweepTimer, stopSweepTimer } from './core/read/sweep.js';
@@ -132,10 +92,10 @@ import { startSweepTimer, stopSweepTimer } from './core/read/sweep.js';
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
 
 // Core imports - Index Activity
-import { recordIndexEvent, purgeOldIndexEvents, purgeOldSuggestionEvents, purgeOldNoteLinkHistory, createStepTracker, computeEntityDiff, getRecentPipelineEvent } from './core/shared/indexActivity.js';
+import { recordIndexEvent, purgeOldIndexEvents, purgeOldSuggestionEvents, purgeOldNoteLinkHistory, getRecentPipelineEvent } from './core/shared/indexActivity.js';
 
 // Core imports - Tool Tracking
-import { recordToolInvocation, purgeOldInvocations } from './core/shared/toolTracking.js';
+import { purgeOldInvocations } from './core/shared/toolTracking.js';
 
 // Core imports - Graph Snapshots
 import { computeGraphMetrics, recordGraphSnapshot, purgeOldSnapshots } from './core/shared/graphSnapshots.js';
@@ -143,40 +103,42 @@ import { computeGraphMetrics, recordGraphSnapshot, purgeOldSnapshots } from './c
 // Core imports - Server Activity Log
 import { serverLog } from './core/shared/serverLog.js';
 
-// Core imports - Graph (forward links)
-import { getForwardLinksForNote } from './core/read/graph.js';
-
 // Core imports - Wikilink Feedback
-import { updateSuppressionList, getTrackedApplications, processImplicitFeedback,
-         getStoredNoteLinks, updateStoredNoteLinks, diffNoteLinks, recordFeedback,
-         getStoredNoteTags, updateStoredNoteTags, isSuppressed,
-         getAllSuppressionPenalties } from './core/write/wikilinkFeedback.js';
+import { updateSuppressionList } from './core/write/wikilinkFeedback.js';
 
 // Core imports - Recency
-import { setRecencyStateDb, buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from './core/shared/recency.js';
+import { setRecencyStateDb } from './core/shared/recency.js';
 
 // Core imports - Co-occurrence
-import { mineCooccurrences, saveCooccurrenceToStateDb, loadCooccurrenceFromStateDb } from './core/shared/cooccurrence.js';
-import { mineRetrievalCooccurrence, pruneStaleRetrievalCooccurrence } from './core/shared/retrievalCooccurrence.js';
-
-// Core imports - Corrections
-import { processPendingCorrections } from './core/write/corrections.js';
+import { loadCooccurrenceFromStateDb } from './core/shared/cooccurrence.js';
+import { pruneStaleRetrievalCooccurrence } from './core/shared/retrievalCooccurrence.js';
 
 // Core imports - Edge Weights
-import { setEdgeWeightStateDb, recomputeEdgeWeights } from './core/write/edgeWeights.js';
+import { setEdgeWeightStateDb } from './core/write/edgeWeights.js';
 
 // Node builtins
 import * as fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import type { CoalescedEvent, EventBatch, RenameEvent } from './core/read/watch/types.js';
+import type { CoalescedEvent, RenameEvent } from './core/read/watch/types.js';
 import type { BatchHandler } from './core/read/watch/index.js';
-
-// Resources
-import { registerVaultResources } from './resources/vault.js';
 
 // Multi-vault
 import { VaultRegistry, parseVaultConfig, type VaultContext } from './vault-registry.js';
-import { setActiveScope, runInVaultScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
+import { setActiveScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
+
+// Config (tool categories, presets, instructions)
+import {
+  parseEnabledCategories,
+  generateInstructions,
+} from './config.js';
+
+// Tool registration and gating
+import {
+  applyToolGating,
+  registerAllTools,
+  type ToolRegistryContext,
+  type VaultActivationCallbacks,
+} from './tool-registry.js';
 
 
 // ============================================================================
@@ -215,740 +177,28 @@ export function getWatcherStatus(): WatcherStatus | null {
   return watcherInstance?.status ?? null;
 }
 
-// ============================================================================
-// Tool Presets & Composable Bundles
-// ============================================================================
-// FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
-//
-// Presets:
-//   default    - Note-taking essentials: search, read, write, tasks (16 tools)
-//   agent      - Autonomous AI agents: search, read, write, memory (16 tools)
-//   full       - All tools except agent memory (66 tools). Add ",memory" for all 69.
-//
-// Composable bundles (combine with presets or each other):
-//   graph       - Structural analysis + link detail + semantic + export: backlinks, forward links, graph_analysis, semantic_analysis, paths, hubs, connections, export (11 tools)
-//   schema      - Schema intelligence + migrations: vault_schema, schema_conventions, schema_validate, note_intelligence, rename_field, migrate_field_values, rename_tag (7 tools)
-//   wikilinks   - Wikilink suggestions, validation, discovery (7 tools)
-//   corrections - Correction recording + resolution (4 tools)
-//   tasks       - Task queries and mutations (3 tools)
-//   memory      - Agent working memory + recall + brief (3 tools)
-//   note-ops    - File management: delete, move, rename, merge (4 tools)
-//   diagnostics - Vault health, stats, config, activity, temporal analysis (18 tools)
-//
-// Examples:
-//   FLYWHEEL_TOOLS=default                    # 16 tools
-//   FLYWHEEL_TOOLS=agent                      # 16 tools
-//   FLYWHEEL_TOOLS=default,graph              # 26 tools
-//   FLYWHEEL_TOOLS=agent,tasks                # 16 tools
-//   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
-//
-// Categories (12):
-//   search, read, write, graph, schema, wikilinks,
-//   corrections, tasks, memory, note-ops, temporal, diagnostics
-// ============================================================================
-
-type ToolCategory =
-  | 'search' | 'read' | 'write'
-  | 'graph' | 'schema' | 'wikilinks' | 'corrections'
-  | 'tasks' | 'memory' | 'note-ops'
-  | 'temporal' | 'diagnostics';
-
-const ALL_CATEGORIES: ToolCategory[] = [
-  'search', 'read', 'write',
-  'graph', 'schema', 'wikilinks', 'corrections',
-  'tasks', 'memory', 'note-ops',
-  'temporal', 'diagnostics',
-];
-
-const PRESETS: Record<string, ToolCategory[]> = {
-  // Presets
-  default: ['search', 'read', 'write', 'tasks'],
-  agent: ['search', 'read', 'write', 'memory'],
-  full: ALL_CATEGORIES.filter(c => c !== 'memory'),
-
-  // Composable bundles (one per category)
-  graph: ['graph'],
-  schema: ['schema'],
-  wikilinks: ['wikilinks'],
-  corrections: ['corrections'],
-  tasks: ['tasks'],
-  memory: ['memory'],
-  'note-ops': ['note-ops'],
-  temporal: ['temporal'],
-  diagnostics: ['diagnostics'],
-};
-
-const DEFAULT_PRESET = 'default';
-
-// Deprecated aliases — old names → new category/preset names
-const DEPRECATED_ALIASES: Record<string, string> = {
-  minimal: 'default',
-  writer: 'default',     // writer was default+tasks, now default includes tasks
-  researcher: 'default', // use default,graph for graph exploration
-  backlinks: 'graph',     // get_backlinks moved to graph
-  structure: 'read',
-  append: 'write',
-  frontmatter: 'write',
-  notes: 'write',
-  orphans: 'graph',
-  hubs: 'graph',
-  paths: 'graph',
-  health: 'diagnostics',
-  analysis: 'wikilinks',
-  git: 'write',
-  ops: 'write',
-  policy: 'write',
-};
-
-/**
- * Parse FLYWHEEL_TOOLS env var into enabled categories
- */
-function parseEnabledCategories(): Set<ToolCategory> {
-  const envValue = (process.env.FLYWHEEL_TOOLS ?? process.env.FLYWHEEL_PRESET)?.trim();
-
-  // No env var = use default preset
-  if (!envValue) {
-    return new Set(PRESETS[DEFAULT_PRESET]);
-  }
-
-  // Check if it's a preset name (direct match)
-  const lowerValue = envValue.toLowerCase();
-  if (PRESETS[lowerValue]) {
-    return new Set(PRESETS[lowerValue]);
-  }
-
-  // Check deprecated alias (single value)
-  if (DEPRECATED_ALIASES[lowerValue]) {
-    const resolved = DEPRECATED_ALIASES[lowerValue];
-    serverLog('server', `Preset "${lowerValue}" is deprecated — use "${resolved}" instead`, 'warn');
-    if (PRESETS[resolved]) {
-      return new Set(PRESETS[resolved]);
-    }
-    return new Set([resolved as ToolCategory]);
-  }
-
-  // Parse comma-separated categories
-  const categories = new Set<ToolCategory>();
-  for (const item of envValue.split(',')) {
-    const raw = item.trim().toLowerCase();
-
-    // Check deprecated alias
-    const resolved = DEPRECATED_ALIASES[raw] ?? raw;
-    if (resolved !== raw) {
-      serverLog('server', `Category "${raw}" is deprecated — use "${resolved}" instead`, 'warn');
-    }
-
-    if (ALL_CATEGORIES.includes(resolved as ToolCategory)) {
-      categories.add(resolved as ToolCategory);
-    } else if (PRESETS[resolved]) {
-      // Allow preset names in comma list
-      for (const c of PRESETS[resolved]) {
-        categories.add(c);
-      }
-    } else {
-      serverLog('server', `Unknown tool category "${item}" — ignoring`, 'warn');
-    }
-  }
-
-  // If nothing valid, fall back to default
-  if (categories.size === 0) {
-    serverLog('server', `No valid categories found, using default (${DEFAULT_PRESET})`, 'warn');
-    return new Set(PRESETS[DEFAULT_PRESET]);
-  }
-
-  return categories;
-}
-
 const enabledCategories = parseEnabledCategories();
 
-// Per-tool category mapping (tool name → category)
-// Every tool MUST have an entry — tools without entries bypass gating entirely.
-const TOOL_CATEGORY: Record<string, ToolCategory> = {
-  // search (3 tools)
-  search: 'search',
-  init_semantic: 'search',
-  find_similar: 'search',
-
-  // read (3 tools) — note reading
-  get_note_structure: 'read',
-  get_section_content: 'read',
-  find_sections: 'read',
-
-  // write (7 tools) — content mutations + frontmatter + note creation + undo + policy
-  vault_add_to_section: 'write',
-  vault_remove_from_section: 'write',
-  vault_replace_in_section: 'write',
-  vault_update_frontmatter: 'write',
-  vault_create_note: 'write',
-  vault_undo_last_mutation: 'write',
-  policy: 'write',
-
-  // graph (11 tools) — structural analysis + link detail + export
-  graph_analysis: 'graph',
-  semantic_analysis: 'graph',
-  get_backlinks: 'graph',
-  get_forward_links: 'graph',
-  get_connection_strength: 'graph',
-  list_entities: 'graph',
-  get_link_path: 'graph',
-  get_common_neighbors: 'graph',
-  get_weighted_links: 'graph',
-  get_strong_connections: 'graph',
-  export_graph: 'graph',
-
-  // schema (7 tools) — schema intelligence + migrations
-  vault_schema: 'schema',
-  schema_conventions: 'schema',
-  schema_validate: 'schema',
-  note_intelligence: 'schema',
-  rename_field: 'schema',
-  migrate_field_values: 'schema',
-  rename_tag: 'schema',
-
-  // wikilinks (7 tools) — suggestions, validation, discovery
-  suggest_wikilinks: 'wikilinks',
-  validate_links: 'wikilinks',
-  wikilink_feedback: 'wikilinks',
-  discover_stub_candidates: 'wikilinks',
-  discover_cooccurrence_gaps: 'wikilinks',
-  suggest_entity_aliases: 'wikilinks',
-  unlinked_mentions_report: 'wikilinks',
-
-  // corrections (4 tools)
-  vault_record_correction: 'corrections',
-  vault_list_corrections: 'corrections',
-  vault_resolve_correction: 'corrections',
-  absorb_as_alias: 'corrections',
-
-  // tasks (3 tools)
-  tasks: 'tasks',
-  vault_toggle_task: 'tasks',
-  vault_add_task: 'tasks',
-
-  // memory (3 tools) — agent working memory
-  memory: 'memory',
-  recall: 'memory',
-  brief: 'memory',
-
-  // note-ops (4 tools) — file management
-  vault_delete_note: 'note-ops',
-  vault_move_note: 'note-ops',
-  vault_rename_note: 'note-ops',
-  merge_entities: 'note-ops',
-
-  // temporal (4 tools) — time-based vault intelligence
-  get_context_around_date: 'temporal',
-  predict_stale_notes: 'temporal',
-  track_concept_evolution: 'temporal',
-  temporal_summary: 'temporal',
-
-  // diagnostics (14 tools) — vault health, stats, config, activity, merges
-  health_check: 'diagnostics',
-  get_vault_stats: 'diagnostics',
-  get_folder_structure: 'diagnostics',
-  refresh_index: 'diagnostics',
-  get_all_entities: 'diagnostics',
-  get_unlinked_mentions: 'diagnostics',
-  vault_growth: 'diagnostics',
-  vault_activity: 'diagnostics',
-  flywheel_config: 'diagnostics',
-  server_log: 'diagnostics',
-  suggest_entity_merges: 'diagnostics',
-  dismiss_merge_suggestion: 'diagnostics',
-  vault_init: 'diagnostics',
-  flywheel_doctor: 'diagnostics',
-
-};
-
 // ============================================================================
-// Server Instructions (dynamic, based on enabled categories)
+// Tool Registration Helpers
 // ============================================================================
 
-function generateInstructions(categories: Set<ToolCategory>, registry?: VaultRegistry | null): string {
-  const parts: string[] = [];
-
-  // Base instruction (always present)
-  parts.push(`Flywheel provides tools to search, read, and write an Obsidian vault's knowledge graph.
-
-Tool selection:
-  1. "search" is the primary tool. Each result includes: frontmatter, tags, aliases,
-     backlinks (with line numbers), outlinks (with line numbers and existence check),
-     headings, content snippet or preview, entity category, hub score, and timestamps.
-     This is usually enough to answer without reading any files.
-  2. Escalate to "get_note_structure" only when you need the full markdown content
-     or word count. Use "get_section_content" to read one section by heading name.
-  3. Start with a broad search: just query text, no filters. Only add folder, tag,
-     or frontmatter filters to narrow a second search if needed.`);
-
-  // Onboarding hint: nudge init_semantic if embeddings aren't built
-  if (!hasEmbeddingsIndex()) {
-    parts.push(`
-**Setup:** Run \`init_semantic\` once to build embeddings. This unlocks hybrid search (BM25 + semantic),
-improves recall results, and enables similarity-based tools. Without it, search is keyword-only.`);
-  }
-
-  // Multi-vault instructions (when registry has multiple vaults)
-  if (registry?.isMultiVault) {
-    parts.push(`
-## Multi-Vault
-
-This server manages multiple vaults. Every tool has an optional "vault" parameter.
-- "search" without vault searches ALL vaults and merges results (each result has a "vault" field).
-- All other tools default to the primary vault when "vault" is omitted.
-- Available vaults: ${registry.getVaultNames().join(', ')}`);
-  }
-
-  // Frontmatter guidance (always present — impacts search, categorization, recall, and suggestions)
-  parts.push(`
-**Frontmatter matters more than content** for Flywheel's intelligence. When creating or updating notes, always set:
-  - \`type:\` — drives entity categorization (person, project, technology). Without it, the category is guessed from the name alone.
-  - \`aliases:\` — alternative names so the entity is found when referred to differently.
-  - \`description:\` — one-line summary shown in search results and used by recall.
-  - Tags — used for filtering, suggestion scoring, and schema analysis.
-Good frontmatter is the highest-leverage action for improving suggestions, recall, and link quality.`);
-
-  // Read category instructions
-  if (categories.has('read')) {
-    parts.push(`
-## Read
-
-Escalation: "search" (enriched metadata + content preview) → "get_note_structure"
-(full content + word count) → "get_section_content" (single section).
-"find_sections" finds headings across the vault by pattern.`);
-  }
-
-  // Write category instructions
-  if (categories.has('write')) {
-    parts.push(`
-## Write
-
-**Before writing, check for saved policies** with \`policy(action="list")\`. Policies ensure notes are
-created with the correct structure and frontmatter for this vault. Use a matching policy instead of
-raw write tools when one exists. Fall back to direct tools only when no policy fits.
-
-Write to existing notes with "vault_add_to_section". Create new notes with "vault_create_note".
-Update metadata with "vault_update_frontmatter". These are fallback tools — use them when no policy fits.
-All writes auto-link entities — no manual [[wikilinks]] needed.
-Use "vault_undo_last_mutation" to reverse the last write.
-
-### Policies
-
-Use "policy" to build deterministic, repeatable vault workflows. Describe what you want in plain
-language — Claude authors the YAML, saves it, and can execute it on demand. No YAML knowledge needed.
-
-Policies chain vault tools (add/remove/replace sections, create notes, update frontmatter, toggle
-tasks) into atomic operations — all steps succeed or all roll back, committed as a single git commit.
-
-Actions: "list" saved policies (do this first), "execute" with variables, "author" a policy
-from a description, "validate" the YAML, "preview" (dry-run), "revise" to modify.
-
-Key capabilities:
-  - **Variables** — parameterize policies (string, number, boolean, array, enum with defaults).
-  - **Conditions** — branch on file/section/frontmatter state (skip steps, don't abort).
-  - **Templates** — interpolate variables, builtins ({{today}}, {{now}}), and prior step outputs.
-  - **Atomicity** — failure at any step rolls back all changes. One policy = one git commit.
-
-Example: ask "create a policy that generates a weekly review note, pulls open tasks, and updates
-project frontmatter" — Claude authors the YAML, saves it to .claude/policies/, and runs it whenever
-you say "run the weekly review for this week".`);
-  }
-
-  // Memory category instructions (agent workflow)
-  if (categories.has('memory')) {
-    parts.push(`
-## Memory
-
-Session workflow: call "brief" at conversation start for vault context (recent sessions, active entities, stored memories). Use "recall" before answering questions — it searches entities, notes, and memories with graph-boosted ranking. Use "memory" with action "store" to save observations, facts, or context that should persist across sessions (e.g. key decisions, user preferences, project status).`);
-  }
-
-  // Graph category instructions
-  if (categories.has('graph')) {
-    parts.push(`
-## Graph
-
-Use "get_backlinks" for per-backlink surrounding text (reads source files).
-Use "get_forward_links" for resolved file paths and alias text.
-Use "graph_analysis" for structural queries (hubs, orphans, dead ends).
-Use "get_connection_strength" to measure link strength between two entities.
-Use "get_link_path" to trace the shortest path between any two entities or notes.
-Use "get_strong_connections" to find the strongest or most-connected relationships for an entity.`);
-  }
-
-  // Note-ops category instructions
-  if (categories.has('note-ops')) {
-    parts.push(`
-## Note Operations
-
-Use "vault_delete_note" to permanently remove a note from the vault.
-Use "vault_move_note" to relocate a note to a different folder (updates all backlinks automatically).
-Use "vault_rename_note" to change a note's title in place (updates all backlinks automatically).
-Use "merge_entities" to consolidate two entity notes into one — adds aliases, merges content, rewires wikilinks, and deletes the source.`);
-  }
-
-  // Tasks category instructions
-  if (categories.has('tasks')) {
-    parts.push(`
-## Tasks
-
-Use "tasks" to query tasks across the vault (filter by status, due date, path). Use "vault_add_task" to create tasks and "vault_toggle_task" to complete them.`);
-  }
-
-  // Schema category instructions
-  if (categories.has('schema')) {
-    parts.push(`
-## Schema
-
-Use "vault_schema" before bulk operations to understand field types, values, and note type distribution.
-Use "schema_conventions" to infer frontmatter conventions from folder usage patterns, find notes with incomplete metadata, or suggest field values.
-Use "schema_validate" to validate frontmatter against explicit rules or find notes missing expected fields by folder.
-Use "note_intelligence" for per-note analysis (completeness, quality, suggestions).`);
-  }
-
-  return parts.join('\n');
-}
-
-// ============================================================================
-// Tool Registration Helpers (reusable for HTTP transport)
-// ============================================================================
-
-/**
- * Apply tool gating to a McpServer instance.
- * Monkey-patches server.tool() and server.registerTool() to filter by category,
- * wrap handlers with invocation tracking, and optionally inject a `vault` parameter
- * for multi-vault support.
- *
- * When registry is multi-vault, every tool gets an optional `vault` parameter.
- * Before each handler runs, `activateVault(registry.getContext(vault))` is called
- * to swap module-level singletons to the correct vault.
- */
-function applyToolGating(
-  targetServer: McpServer,
-  categories: Set<ToolCategory>,
-  getDb: () => StateDb | null,
-  registry?: VaultRegistry | null,
-  getVaultPath?: () => string,
-): { registered: number; skipped: number } {
-  let _registered = 0;
-  let _skipped = 0;
-
-  function gate(name: string): boolean {
-    const category = TOOL_CATEGORY[name];
-    if (category && !categories.has(category)) {
-      _skipped++;
-      return false;
-    }
-    _registered++;
-    return true;
-  }
-
-  function wrapWithTracking(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
-    return async (...args: any[]) => {
-      const start = Date.now();
-      let success = true;
-      let notePaths: string[] | undefined;
-      let result: any;
-      const params = args[0];
-      if (params && typeof params === 'object') {
-        const paths: string[] = [];
-        if (typeof params.path === 'string') paths.push(params.path);
-        if (Array.isArray(params.paths)) paths.push(...params.paths.filter((p: unknown) => typeof p === 'string'));
-        if (typeof params.note_path === 'string') paths.push(params.note_path);
-        if (typeof params.source === 'string') paths.push(params.source);
-        if (typeof params.target === 'string') paths.push(params.target);
-        if (paths.length > 0) notePaths = paths;
-      }
-      try {
-        result = await handler(...args);
-        return result;
-      } catch (err) {
-        success = false;
-        throw err;
-      } finally {
-        const db = getDb();
-        if (db) {
-          try {
-            let sessionId: string | undefined;
-            try { sessionId = getSessionId(); } catch { /* no session */ }
-
-            // Estimate response tokens from MCP response
-            let responseTokens: number | undefined;
-            if (result?.content) {
-              let totalChars = 0;
-              for (const block of result.content) {
-                if (block?.type === 'text' && typeof block.text === 'string') {
-                  totalChars += block.text.length;
-                }
-              }
-              if (totalChars > 0) responseTokens = Math.ceil(totalChars / 4);
-            }
-
-            // Estimate baseline tokens (raw file read cost)
-            let baselineTokens: number | undefined;
-            if (notePaths && notePaths.length > 0 && getVaultPath) {
-              const vp = getVaultPath();
-              let totalBytes = 0;
-              for (const p of notePaths) {
-                try {
-                  totalBytes += statSync(path.join(vp, p)).size;
-                } catch { /* file may not exist */ }
-              }
-              if (totalBytes > 0) baselineTokens = Math.ceil(totalBytes / 4);
-            }
-
-            recordToolInvocation(db, {
-              tool_name: toolName,
-              session_id: sessionId,
-              note_paths: notePaths,
-              duration_ms: Date.now() - start,
-              success,
-              response_tokens: responseTokens,
-              baseline_tokens: baselineTokens,
-            });
-          } catch {
-            // Never let tracking errors affect tool execution
-          }
-        }
-      }
-    };
-  }
-
-  const isMultiVault = registry?.isMultiVault ?? false;
-
-  /**
-   * Wrap a handler to activate the correct vault before execution (multi-vault).
-   * Extracts the `vault` param, calls activateVault(), then forwards to the original handler.
-   * For `search` with no explicit vault, iterates all vaults and merges results.
-   */
-  function wrapWithVaultActivation(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
-    if (!isMultiVault || !registry) return handler;
-    return async (...args: any[]) => {
-      const params = args[0];
-      const vaultName = params?.vault;
-      // Remove vault from params before forwarding (tools don't expect it)
-      if (params && 'vault' in params) {
-        delete params.vault;
-      }
-      // Cross-vault search: when no vault specified, search all vaults and merge
-      if (toolName === 'search' && !vaultName) {
-        return crossVaultSearch(registry!, handler, args);
-      }
-      const ctx = registry.getContext(vaultName);
-      // Set fallback scope + module-level state (for watcher/startup code paths)
-      activateVault(ctx);
-      // Run handler inside ALS context for per-request isolation
-      return runInVaultScope(buildVaultScope(ctx), () => handler(...args));
-    };
-  }
-
-  /**
-   * Cross-vault search: run search handler in each vault context, merge results.
-   * Each vault's results are tagged with a `vault` field.
-   */
-  async function crossVaultSearch(
-    reg: VaultRegistry,
-    handler: (...args: any[]) => any,
-    args: any[]
-  ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
-    const perVault: Array<{ vault: string; data: any }> = [];
-
-    for (const ctx of reg.getAllContexts()) {
-      activateVault(ctx);
-      try {
-        // Run each vault's search inside its own ALS context
-        const result = await runInVaultScope(buildVaultScope(ctx), () => handler(...args));
-        const text = result?.content?.[0]?.text;
-        if (text) {
-          perVault.push({ vault: ctx.name, data: JSON.parse(text) });
-        }
-      } catch {
-        // Skip vaults that error during search
-      }
-    }
-
-    // Merge result items across vaults
-    const merged: any[] = [];
-    const vaultsSearched: string[] = [];
-    let query: string | undefined;
-
-    for (const { vault, data } of perVault) {
-      vaultsSearched.push(vault);
-      if (data.query) query = data.query;
-      if (data.error || data.building) continue;
-      const items = data.results || data.notes || data.entities || [];
-      for (const item of items) {
-        merged.push({ vault, ...item });
-      }
-    }
-
-    // Sort by rrf_score when available (hybrid/fts5), otherwise preserve order
-    if (merged.some((r: any) => r.rrf_score != null)) {
-      merged.sort((a: any, b: any) => (b.rrf_score ?? 0) - (a.rrf_score ?? 0));
-    }
-
-    const limit = args[0]?.limit ?? 10;
-    const truncated = merged.slice(0, limit);
-
-    return {
-      content: [{
-        type: 'text' as const,
-        text: JSON.stringify({
-          method: 'cross_vault',
-          query,
-          vaults_searched: vaultsSearched,
-          total_results: merged.length,
-          returned: truncated.length,
-          results: truncated,
-        }, null, 2),
-      }],
-    };
-  }
-
-  /**
-   * Inject `vault` parameter into a tool's schema (multi-vault only).
-   * server.tool() is called as: (name, description, schema, handler) or (name, schema, handler)
-   */
-  function injectVaultParam(args: any[]): void {
-    if (!isMultiVault || !registry) return;
-    // Find the schema object (the arg before the handler function)
-    const handlerIdx = args.findIndex((a: any) => typeof a === 'function');
-    if (handlerIdx <= 0) return;
-    const schemaIdx = handlerIdx - 1;
-    const schema = args[schemaIdx];
-    if (schema && typeof schema === 'object' && !Array.isArray(schema)) {
-      schema.vault = z.string().optional().describe(
-        `Vault name for multi-vault mode. Available: ${registry.getVaultNames().join(', ')}. Default: ${registry.primaryName}`
-      );
-    }
-  }
-
-  const origTool = targetServer.tool.bind(targetServer) as (...args: unknown[]) => unknown;
-  (targetServer as any).tool = (name: string, ...args: any[]) => {
-    if (!gate(name)) return;
-    // Inject vault param into schema (multi-vault)
-    injectVaultParam(args);
-    // Wrap handler with tracking + vault activation
-    if (args.length > 0 && typeof args[args.length - 1] === 'function') {
-      let handler = args[args.length - 1];
-      handler = wrapWithVaultActivation(name, handler);
-      args[args.length - 1] = wrapWithTracking(name, handler);
-    }
-    return origTool(name, ...args);
+/** Build the ToolRegistryContext from module-level singletons (scope-aware getters). */
+function buildRegistryContext(): ToolRegistryContext {
+  return {
+    getVaultPath: () => getActiveScopeOrNull()?.vaultPath ?? vaultPath,
+    getVaultIndex: () => getActiveScopeOrNull()?.vaultIndex ?? vaultIndex,
+    getStateDb: () => getActiveScopeOrNull()?.stateDb ?? stateDb,
+    getFlywheelConfig: () => getActiveScopeOrNull()?.flywheelConfig ?? flywheelConfig,
+    getWatcherStatus,
+    updateVaultIndex,
+    updateFlywheelConfig,
   };
-
-  const origRegisterTool = (targetServer as any).registerTool?.bind(targetServer);
-  if (origRegisterTool) {
-    (targetServer as any).registerTool = (name: string, ...args: any[]) => {
-      if (!gate(name)) return;
-      injectVaultParam(args);
-      if (args.length > 0 && typeof args[args.length - 1] === 'function') {
-        let handler = args[args.length - 1];
-        handler = wrapWithVaultActivation(name, handler);
-        args[args.length - 1] = wrapWithTracking(name, handler);
-      }
-      return origRegisterTool(name, ...args);
-    };
-  }
-
-  return { get registered() { return _registered; }, get skipped() { return _skipped; } };
 }
 
-/**
- * Register all tools on a McpServer instance.
- * Closes over module-level state (vaultPath, vaultIndex, flywheelConfig, stateDb).
- * Safe because JS is single-threaded and state is read-mostly (watcher updates, tools read).
- */
-function registerAllTools(targetServer: McpServer): void {
-  // Scope-aware getters: read from ALS VaultScope first, fallback to module-level
-  const gvp = () => getActiveScopeOrNull()?.vaultPath ?? vaultPath;
-  const gvi = () => getActiveScopeOrNull()?.vaultIndex ?? vaultIndex;
-  const gsd = (): StateDb | null => getActiveScopeOrNull()?.stateDb ?? stateDb;
-  const gcf = () => getActiveScopeOrNull()?.flywheelConfig ?? flywheelConfig;
-
-  // Read tools
-  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, getWatcherStatus);
-  registerReadSystemTools(
-    targetServer,
-    gvi,
-    (newIndex) => { updateVaultIndex(newIndex); },
-    gvp,
-    (newConfig) => { updateFlywheelConfig(newConfig); },
-    gsd
-  );
-  registerGraphTools(targetServer, gvi, gvp, gsd);
-  registerGraphExportTools(targetServer, gvi, gvp, gsd);
-  registerWikilinkTools(targetServer, gvi, gvp, gsd);
-  registerQueryTools(targetServer, gvi, gvp, gsd);
-  registerPrimitiveTools(targetServer, gvi, gvp, gcf, gsd);
-  registerGraphAnalysisTools(targetServer, gvi, gvp, gsd, gcf);
-  registerSemanticAnalysisTools(targetServer, gvi, gvp);
-  registerVaultSchemaTools(targetServer, gvi, gvp);
-  registerNoteIntelligenceTools(targetServer, gvi, gvp, gcf);
-  registerMigrationTools(targetServer, gvi, gvp);
-
-  // Write tools
-  registerMutationTools(targetServer, gvp, gcf);
-  registerTaskTools(targetServer, gvp);
-  registerFrontmatterTools(targetServer, gvp);
-  registerNoteTools(targetServer, gvp, gvi);
-  registerMoveNoteTools(targetServer, gvp);
-  registerWriteMergeTools(targetServer, gvp);
-  registerWriteSystemTools(targetServer, gvp);
-  registerPolicyTools(targetServer, gvp, () => {
-    const index = gvi();
-    if (!index) return undefined;
-    return ({ query, folder, where, limit = 10 }) => {
-      let notes = Array.from(index.notes.values());
-      if (folder) {
-        const normalizedFolder = folder.endsWith('/') ? folder : folder + '/';
-        notes = notes.filter(n => n.path.startsWith(normalizedFolder) || n.path.split('/')[0] === folder.replace('/', ''));
-      }
-      if (where) {
-        notes = notes.filter(n => {
-          for (const [key, value] of Object.entries(where)) {
-            const noteValue = n.frontmatter[key];
-            if (Array.isArray(value)) {
-              if (!value.some(v => String(noteValue).toLowerCase() === String(v).toLowerCase())) return false;
-            } else if (value !== undefined && String(noteValue ?? '').toLowerCase() !== String(value).toLowerCase()) {
-              return false;
-            }
-          }
-          return true;
-        });
-      }
-      return notes.slice(0, limit).map(n => ({
-        path: n.path,
-        title: n.title,
-        frontmatter: n.frontmatter,
-        snippet: undefined,
-      }));
-    };
-  });
-  registerTagTools(targetServer, gvi, gvp);
-  registerWikilinkFeedbackTools(targetServer, gsd);
-  registerCorrectionTools(targetServer, gsd);
-  registerInitTools(targetServer, gvp, gsd);
-  registerConfigTools(
-    targetServer,
-    gcf,
-    (newConfig) => { updateFlywheelConfig(newConfig); },
-    gsd
-  );
-
-  // Additional read tools
-  registerMetricsTools(targetServer, gvi, gsd);
-  registerActivityTools(targetServer, gsd, () => { try { return getSessionId(); } catch { return null; } });
-  registerSimilarityTools(targetServer, gvi, gvp, gsd);
-  registerSemanticTools(targetServer, gvp, gsd);
-  registerReadMergeTools(targetServer, gsd);
-  registerTemporalAnalysisTools(targetServer, gvi, gvp, gsd);
-
-  // Memory tools
-  registerMemoryTools(targetServer, gsd);
-  registerRecallTools(targetServer, gsd, gvp, () => gvi() ?? null);
-  registerBriefTools(targetServer, gsd);
-
-  // Resources (always registered, not gated by tool presets)
-  registerVaultResources(targetServer, () => gvi() ?? null);
+/** Build vault activation callbacks for multi-vault gating. */
+function buildVaultCallbacks(): VaultActivationCallbacks {
+  return { activateVault, buildVaultScope };
 }
 
 /**
@@ -960,8 +210,9 @@ function createConfiguredServer(): McpServer {
     { name: 'flywheel-memory', version: pkg.version },
     { instructions: generateInstructions(enabledCategories, vaultRegistry) },
   );
-  applyToolGating(s, enabledCategories, () => getActiveScopeOrNull()?.stateDb ?? stateDb, vaultRegistry, () => getActiveScopeOrNull()?.vaultPath ?? vaultPath);
-  registerAllTools(s);
+  const ctx = buildRegistryContext();
+  applyToolGating(s, enabledCategories, ctx.getStateDb, vaultRegistry, ctx.getVaultPath, buildVaultCallbacks());
+  registerAllTools(s, ctx);
   return s;
 }
 
@@ -974,8 +225,9 @@ const server = new McpServer(
   { instructions: generateInstructions(enabledCategories, vaultRegistry) },
 );
 
-const _gatingResult = applyToolGating(server, enabledCategories, () => getActiveScopeOrNull()?.stateDb ?? stateDb, vaultRegistry, () => getActiveScopeOrNull()?.vaultPath ?? vaultPath);
-registerAllTools(server);
+const _registryCtx = buildRegistryContext();
+const _gatingResult = applyToolGating(server, enabledCategories, _registryCtx.getStateDb, vaultRegistry, _registryCtx.getVaultPath, buildVaultCallbacks());
+registerAllTools(server, _registryCtx);
 
 const categoryList = Array.from(enabledCategories).sort().join(', ');
 serverLog('server', `Tool categories: ${categoryList}`);

@@ -12,7 +12,7 @@ import { VALID_CONFIG_KEYS } from '../../../src/tools/write/config.js';
 
 const TOOLS_DIR = path.join(__dirname, '../../../src/tools');
 const DOCS_DIR = path.join(__dirname, '../../../../../docs');
-const INDEX_PATH = path.join(__dirname, '../../../src/index.ts');
+const CONFIG_PATH = path.join(__dirname, '../../../src/config.ts');
 
 /**
  * Count tool registrations in source files (scans read/ and write/ subdirectories)
@@ -242,12 +242,12 @@ describe('Tool Count Verification', () => {
 // =============================================================================
 
 /**
- * Parse TOOL_CATEGORY from index.ts source → Record<category, toolName[]>
+ * Parse TOOL_CATEGORY from config.ts source → Record<category, toolName[]>
  */
 async function parseToolCategoryFromSource(): Promise<Record<string, string[]>> {
-  const source = await fs.readFile(INDEX_PATH, 'utf-8');
+  const source = await fs.readFile(CONFIG_PATH, 'utf-8');
   const match = source.match(/const TOOL_CATEGORY[^{]*\{([\s\S]*?)\n\};/);
-  if (!match) throw new Error('Could not find TOOL_CATEGORY in index.ts');
+  if (!match) throw new Error('Could not find TOOL_CATEGORY in config.ts');
   const entries = [...match[1].matchAll(/^\s*(\w+):\s*'([\w-]+)'/gm)];
   const byCategory: Record<string, string[]> = {};
   for (const [, tool, cat] of entries) {
@@ -257,12 +257,12 @@ async function parseToolCategoryFromSource(): Promise<Record<string, string[]>> 
 }
 
 /**
- * Parse PRESETS from index.ts source → Record<preset, category[]>
+ * Parse PRESETS from config.ts source → Record<preset, category[]>
  */
 async function parsePresetsFromSource(): Promise<Record<string, string[]>> {
-  const source = await fs.readFile(INDEX_PATH, 'utf-8');
+  const source = await fs.readFile(CONFIG_PATH, 'utf-8');
   const match = source.match(/const PRESETS[^{]*\{([\s\S]*?)\n\};/);
-  if (!match) throw new Error('Could not find PRESETS in index.ts');
+  if (!match) throw new Error('Could not find PRESETS in config.ts');
   const result: Record<string, string[]> = {};
   // Match lines like: default: ['search', 'read', 'write', 'tasks'],
   const presetLines = [...match[1].matchAll(/^\s*(\w[\w-]*):\s*\[([^\]]*)\]/gm)];

@@ -30,6 +30,7 @@ credentials.json
 **/.flywheel/state.db
 **/.flywheel/state.db-shm
 **/.flywheel/state.db-wal
+**/.flywheel/state.db.backup
 **/.claude/flywheel.db
 **/.claude/flywheel.db-shm
 **/.claude/flywheel.db-wal

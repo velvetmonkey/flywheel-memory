@@ -263,17 +263,19 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ## The Story Behind This
 
-I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian — I chose it for the plugin ecosystem and fell in love with the app. Flywheel is my third iteration at AI-powered knowledge management. The first (Claude Code skills, no MCP server) had non-deterministic writes and poor recall. The second (split read/write MCP servers) was better but fragmented. This version is one unified server with deterministic mutations, hybrid search, and a graph that learns.
+I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian — I chose it for the plugin ecosystem and fell in love with the app.
 
-The design choices aren't accidental. Your attention, memory, and reasoning are increasingly shaped by systems you don't control — platforms, models, defaults you never chose. I wanted a knowledge layer that works for the person using it, not for someone else's training pipeline.
+Flywheel is my third attempt at wiring AI into a knowledge vault. The first was pure Claude Code skills and hooks — no MCP server, no structure. Writes were non-deterministic and recall was poor; I'd ask about something I wrote last week and get nothing. The second split reading and writing into two separate MCP tools, which was more reliable but fragmented — context didn't flow between them, and every session started cold. This version unifies everything: one server with deterministic mutations, hybrid search, and a graph that compounds with use. Each failure taught me something specific, and the architecture exists because I kept hitting the same walls and refusing to stop.
 
-Local-only because your thinking is yours. Every interaction feeds the graph — what you write, what you link, what you leave, what you remove. That's not error correction; it's a full-spectrum model of what matters to you, compounding with every note. No cloud, no account, no data leaving your machine.
+The design choices are deliberate. Your attention, memory, and even the way you reason are increasingly shaped by systems you didn't choose — platforms that optimise for engagement, models trained on someone else's priorities, defaults that quietly steer how you organise what you know. I wanted a knowledge layer that works for the person using it. Not for a training pipeline, not for an ad model, not for anyone else's roadmap.
 
-I think what's happening right now is simultaneous invention — many people are grappling with the same problems, trying to build the same sort of thing for different audiences. This is mine. I built it for myself first. If it resonates, you probably already know why.
+So it stays local. Your data never leaves your machine — no cloud, no account, no sync. The graph learns exclusively from what you write, link, edit, and remove. A system that only gets smarter from your own honest engagement is fundamentally different from one that optimises for someone else's metrics. Every interaction compounds: what you keep strengthens the graph, what you remove weakens it. Over time it becomes a model of what actually matters to you.
 
-I designed every part of this and understand every line — but this is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. The entire codebase was built through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
+I think what's happening right now is simultaneous invention — a lot of people are grappling with the same problem, trying to build the same sort of thing for different audiences. This is mine. I built it for myself first. If it resonates, you probably already know why.
 
-I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space.
+I designed every part of this and understand every line — but I built it entirely in flow, not by plan. This is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. The entire codebase was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
+
+I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. Since introducing Flywheel, I rarely open Obsidian to hunt for things manually anymore — the combination of voice-driven capture and Obsidian's editing environment is genuinely easier than either one alone. All help is welcome — I'm looking for people who care about this space.
 
 ### Dogfooding: my vault, unvarnished
 

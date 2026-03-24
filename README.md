@@ -36,9 +36,9 @@ Flywheel pulls that control back. Your graph learns only from your own edits, an
 
 ### Who this is for
 
-**For** people who want control over their knowledge — developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input.
+**For** people who want control over their knowledge — developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Also works as persistent memory for bots and agents via the `agent` preset.
 
-**Not for** people who want a chatbot that silently manages everything. Flywheel is explicit by design. If you want autopilot, this isn't it.
+**Not for** people who want a hosted service. Flywheel runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
 
 ---
 

@@ -18,6 +18,8 @@
 
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)**
 
+> **What is cognitive sovereignty?** Your recall, your reasoning, and the way you organise what you know are increasingly shaped by systems you didn't choose. Flywheel quietly pulls that control back. Your data stays on your machine, your graph learns only from your own edits, and no platform, training pipeline, or cloud service ever touches it. As models get better, your knowledge gets more powerful — no code change, no migration, no lock-in. It's a subtle shift with a profound effect: your second brain actually belongs to you.
+
 | | Without Flywheel | With Flywheel |
 |---|---|---|
 | "What's overdue?" | Read every file | Indexed query, <10ms |

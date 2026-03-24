@@ -37,12 +37,13 @@
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",
+    "esbuild": "0.27.4",
     "mdast-util-from-markdown": "^2.0.0",
-    "mdast-util-gfm": "^3.0.0",
     "mdast-util-frontmatter": "^2.0.0",
+    "mdast-util-gfm": "^3.0.0",
     "mdast-util-math": "^3.0.0",
-    "micromark-extension-gfm": "^3.0.0",
     "micromark-extension-frontmatter": "^2.0.0",
+    "micromark-extension-gfm": "^3.0.0",
     "micromark-extension-math": "^3.0.0",
     "unist-util-visit": "^5.0.0"
   },
@@ -50,7 +51,7 @@
     "@types/better-sqlite3": "^7.6.8",
     "@types/node": "^20.10.0",
     "typescript": "^5.3.2",
-    "vitest": "^1.0.0"
+    "vitest": "^4.1.1"
   },
   "engines": {
     "node": ">=18.0.0"

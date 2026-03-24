@@ -14,7 +14,7 @@ meeting_type: technical
 ## Agenda
 
 ## Notes
-[[API]] design decisions
+API design decisions
 
 ## Action Items
 - [ ]

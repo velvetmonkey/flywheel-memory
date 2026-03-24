@@ -97,7 +97,7 @@ describe('Memory Usage Scaling', () => {
 
       expect(ratio).toBeLessThan(sizeRatio * 5);
     }
-  }, { timeout: 180000 });
+  }, 180000);
 
   it.skipIf(SKIP_MEMORY)('should not leak memory during repeated file operations', async () => {
     const dir = await createTempDir();
@@ -142,7 +142,7 @@ describe('Memory Usage Scaling', () => {
 
     // Should not grow more than 50MB after 10 iterations
     expect(memoryGrowth).toBeLessThan(50);
-  }, { timeout: 60000 });
+  }, 60000);
 });
 
 describe('Memory Thresholds', () => {
@@ -191,7 +191,7 @@ describe('Memory Thresholds', () => {
     console.log(`Average per file: ${(memoryUsed / contents.length * 1024).toFixed(2)}KB`);
 
     expect(memoryUsed).toBeLessThan(500); // 500MB threshold
-  }, { timeout: 180000 });
+  }, 180000);
 
   it.skipIf(SKIP_MEMORY)('should process files without holding all in memory', async () => {
     const dir = await createTempDir();
@@ -232,7 +232,7 @@ describe('Memory Thresholds', () => {
 
     // Stream processing should use much less memory than batch loading
     expect(memoryUsed).toBeLessThan(100); // Should stay under 100MB for streaming
-  }, { timeout: 120000 });
+  }, 120000);
 });
 
 describe('Index Building Memory', () => {
@@ -309,5 +309,5 @@ describe('Index Building Memory', () => {
 
     // Should stay reasonable for 1000-file index
     expect(memoryUsed).toBeLessThan(200); // 200MB threshold
-  }, { timeout: 120000 });
+  }, 120000);
 });

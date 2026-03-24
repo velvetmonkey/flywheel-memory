@@ -52,25 +52,25 @@
     "prepublishOnly": "npm run lint && npm run build"
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
     "@modelcontextprotocol/sdk": "^1.25.1",
     "@velvetmonkey/vault-core": "^2.0.136",
     "better-sqlite3": "^11.0.0",
     "chokidar": "^4.0.0",
     "gray-matter": "^4.0.3",
     "simple-git": "^3.22.0",
-    "zod": "^3.22.4",
-    "@huggingface/transformers": "^3.8.1"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^20.10.0",
-    "@vitest/coverage-v8": "^2.0.0",
-    "esbuild": "^0.24.0",
+    "@vitest/coverage-v8": "^4.1.1",
+    "esbuild": "^0.27.4",
     "fast-check": "^3.15.0",
     "mcp-testing-kit": "^0.2.0",
     "tsx": "^4.19.0",
     "typescript": "^5.3.2",
-    "vitest": "^2.0.0"
+    "vitest": "^4.1.1"
   },
   "engines": {
     "node": ">=18.0.0"

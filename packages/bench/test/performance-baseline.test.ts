@@ -50,7 +50,7 @@ describe('Large Vault Performance Baselines', () => {
       expect(duration).toBeLessThan(30000); // 30 seconds
 
       console.log(`1000-note vault generated in ${(duration / 1000).toFixed(2)}s`);
-    }, { timeout: 60000 });
+    }, 60000);
 
     it.skipIf(SKIP_PERF)('should generate 5000 notes in under 120 seconds', async () => {
       const outputDir = await createTempDir();
@@ -63,7 +63,7 @@ describe('Large Vault Performance Baselines', () => {
       expect(duration).toBeLessThan(120000); // 2 minutes
 
       console.log(`5000-note vault generated in ${(duration / 1000).toFixed(2)}s`);
-    }, { timeout: 180000 });
+    }, 180000);
 
     it.skipIf(SKIP_PERF)('should generate deterministic vaults from same seed', async () => {
       const outputDir1 = await createTempDir();
@@ -109,7 +109,7 @@ describe('Large Vault Performance Baselines', () => {
       expect(duration).toBeLessThan(5000); // 5 seconds
 
       console.log(`Listed ${files.length} files in ${duration.toFixed(0)}ms`);
-    }, { timeout: 180000 });
+    }, 180000);
   });
 
   describe('File Read Performance', () => {
@@ -145,7 +145,7 @@ describe('Large Vault Performance Baselines', () => {
 
       expect(duration).toBeLessThan(10000); // 10 seconds
       console.log(`Read ${files.length} files (${(totalBytes / 1024 / 1024).toFixed(2)}MB) in ${duration.toFixed(0)}ms`);
-    }, { timeout: 60000 });
+    }, 60000);
   });
 
   describe('Link Count Aggregation', () => {
@@ -181,7 +181,7 @@ describe('Large Vault Performance Baselines', () => {
 
       console.log(`Counted ${totalLinks} links across ${filesProcessed} files in ${duration.toFixed(0)}ms`);
       console.log(`Expected ~${vaultResult.totalLinks} links from generation`);
-    }, { timeout: 120000 });
+    }, 120000);
   });
 
   describe('Entity Extraction Performance', () => {
@@ -218,7 +218,7 @@ describe('Large Vault Performance Baselines', () => {
       expect(filesProcessed).toBeGreaterThanOrEqual(5000);
 
       console.log(`Extracted ${entities.size} unique entities from ${filesProcessed} files in ${duration.toFixed(0)}ms`);
-    }, { timeout: 120000 });
+    }, 120000);
   });
 });
 
@@ -272,5 +272,5 @@ describe('Scaling Characteristics', () => {
     const sizeRatio1 = sizes[1] / sizes[0];
 
     expect(ratio1).toBeLessThan(sizeRatio1 * 3); // Allow 3x overhead
-  }, { timeout: 180000 });
+  }, 180000);
 });

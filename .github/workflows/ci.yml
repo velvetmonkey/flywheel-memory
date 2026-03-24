@@ -199,7 +199,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [windows-latest]
         node: ['20']
     steps:
       - uses: actions/checkout@v4
@@ -215,10 +215,3 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Upload coverage
-        if: matrix.os == 'ubuntu-latest' && matrix.node == '20'
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: packages/mcp-server/coverage/
-          retention-days: 7

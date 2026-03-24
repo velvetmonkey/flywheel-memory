@@ -34,6 +34,12 @@ Your recall, your reasoning, and the way you organise what you know are increasi
 | Your graph | Owned by the platform | Yours to [export](https://en.wikipedia.org/wiki/GraphML), analyse, or delete |
 | Tool calls | Hidden behind abstractions | Traceable, auditable, git-committed |
 
+### Who this is for
+
+**For** people who want control over their knowledge — developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input.
+
+**Not for** people who want a chatbot that silently manages everything. Flywheel is explicit by design. If you want autopilot, this isn't it.
+
 ---
 
 ## See It Work
@@ -200,6 +206,26 @@ One call to `export_graph` and your entire vault — or any entity's neighborhoo
 ![Acme Corp ego network](demos/carter-strategy/carter-strategy-acme-graph.png)
 
 *"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. [[Sarah Mitchell]] is the single contact linking 3 projects to the client. The [[Data Migration Playbook]] bridges two engagements. Seven invoices, two team members, one proposal — all from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
+
+### 6. System Guarantees
+
+These are rules, not preferences:
+
+- **No implicit writes.** Every mutation is an explicit tool call. Nothing changes in your vault without a traceable action.
+- **No hidden tool execution.** Every tool call is visible, scoped, and logged.
+- **No required cloud dependency.** Core indexing, search, and graph run locally. No account, no sync, no phone-home.
+- **All actions are auditable.** Every write is a git commit. Every commit is reversible. Every change has a reason.
+- **No silent data exfiltration.** Your vault content is never sent anywhere except the AI model you chose to connect.
+
+### How Flywheel compares
+
+| | SaaS copilots | Agent frameworks | Flywheel |
+|---|---|---|---|
+| Execution | Guess, act silently | Chain tools opaquely | Explicit commands, scoped to vault |
+| Data | Cloud-first | Cloud or hybrid | Local only — your machine, your files |
+| Trust model | "Trust us" | Trust the sandbox | Trust the constraint |
+| Auditability | Opaque | Partial | Every action is a git commit |
+| Model lock-in | Total | Varies | None — MCP is model-agnostic |
 
 ---
 

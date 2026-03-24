@@ -218,7 +218,7 @@ One call to `export_graph` and your entire vault — or any entity's neighborhoo
 
 These are rules, not preferences:
 
-- **No implicit writes.** Every mutation is an explicit tool call. Nothing changes in your vault without a traceable action.
+- **No surprise writes.** Tool-initiated mutations require explicit calls. Proactive linking — the only background write — is auditable (git-committed, score-thresholded, configurable) and can be disabled entirely.
 - **No hidden tool execution.** Every tool call is visible, scoped, and logged.
 - **No required cloud dependency.** Core indexing, search, and graph run locally. No account, no sync, no phone-home.
 - **All actions are auditable.** Every write is a git commit. Every commit is reversible. Every change has a reason.

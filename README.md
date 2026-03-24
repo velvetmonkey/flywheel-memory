@@ -24,7 +24,7 @@
 | "What links here?" | Grep the vault, flat list | Ranked backlinks + outlinks, pre-indexed |
 | "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
 | "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
-| "Export my knowledge graph" | Not possible | GraphML export → open in Gephi, Cytoscape, NetworkX |
+| "Export my knowledge graph" | Not possible | [GraphML](https://en.wikipedia.org/wiki/GraphML) export → open in any graph tool |
 | Token cost per query | Hundreds to thousands | Graph does the joining — one search, not ten file reads |
 
 ---
@@ -188,11 +188,11 @@ Complex vault workflows become deterministic policies — describe what you want
 
 ### 5. Portable Knowledge Graph
 
-Your vault is never locked in. Export the full knowledge graph as GraphML and open it in any graph tool. Use `center_entity` to focus on one entity's neighborhood:
+One call to `export_graph` and your entire vault — or any entity's neighborhood — becomes a [GraphML](https://en.wikipedia.org/wiki/GraphML) file. Open it in any graph tool, run community detection, find bottlenecks, or just see what's connected to what.
 
-![Acme Corp ego network — exported via export_graph, visualized in Gephi](demos/carter-strategy/carter-strategy-acme-graph.png)
+![Acme Corp ego network](demos/carter-strategy/carter-strategy-acme-graph.png)
 
-*Acme Corp and everything within 1 hop — people, projects, invoices, knowledge assets. One `export_graph` call with `center_entity: "Acme Corp"`. [Download the GraphML →](demos/carter-strategy/carter-strategy-acme.graphml)*
+*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. Sarah Mitchell is the single contact linking 3 projects to the client. The Data Migration Playbook bridges two engagements. Seven invoices, two team members, one proposal — all from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
 
 ---
 

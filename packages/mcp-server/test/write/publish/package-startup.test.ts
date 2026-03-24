@@ -137,7 +137,7 @@ describe('Package Startup', () => {
 
       throw new Error(`Import failed: ${stderr || stdout}`);
     }
-  }, 180000); // 3 minute timeout for npm install
+  }, 300000); // 5 minute timeout — npm install is slow on Windows CI
 
   it('dist/index.js exists and is executable', () => {
     const distPath = join(packageDir, 'dist', 'index.js');

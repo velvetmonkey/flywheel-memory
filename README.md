@@ -263,17 +263,17 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ## The Story Behind This
 
-I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third iteration at AI-powered knowledge management — the first two (Claude Code skills, then split read/write MCP servers) taught me what doesn't work. This version is one unified server with deterministic mutations, hybrid search, and a graph that learns.
+I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian — I chose it for the plugin ecosystem and fell in love with the app. Flywheel is my third iteration at AI-powered knowledge management. The first (Claude Code skills, no MCP server) had non-deterministic writes and poor recall. The second (split read/write MCP servers) was better but fragmented. This version is one unified server with deterministic mutations, hybrid search, and a graph that learns.
 
 The design choices aren't accidental. Your attention, memory, and reasoning are increasingly shaped by systems you don't control — platforms, models, defaults you never chose. I wanted a knowledge layer that works for the person using it, not for someone else's training pipeline.
 
 Local-only because your thinking is yours. Every interaction feeds the graph — what you write, what you link, what you leave, what you remove. That's not error correction; it's a full-spectrum model of what matters to you, compounding with every note. No cloud, no account, no data leaving your machine.
 
-I built this for myself first. If it resonates, you probably already know why.
+I think what's happening right now is simultaneous invention — many people are grappling with the same problems, trying to build the same sort of thing for different audiences. This is mine. I built it for myself first. If it resonates, you probably already know why.
 
-I designed every part of this and understand every line — but I couldn't have shipped it this fast without AI. The entire codebase was built through Claude Code with Opus 4.5 and 4.6. I architect, review, and stress-test; Claude writes the code. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
+I designed every part of this and understand every line — but this is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. The entire codebase was built through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 
-I dogfood it daily through a Telegram bot using voice input, because talking is faster than typing. All help is welcome — I'm looking for people who care about this space.
+I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. All help is welcome — I'm looking for people who care about this space.
 
 ### Dogfooding: my vault, unvarnished
 

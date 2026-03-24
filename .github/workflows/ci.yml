@@ -200,7 +200,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest]
-        node: ['20']
+        node: ['20', '24']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

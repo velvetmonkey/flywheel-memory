@@ -26,7 +26,9 @@ Ready-to-run policy examples for common vault workflows. Save any of these as `.
 
 ## Available Tools
 
-`vault_add_to_section`, `vault_remove_from_section`, `vault_replace_in_section`, `vault_create_note`, `vault_delete_note`, `vault_toggle_task`, `vault_add_task`, `vault_update_frontmatter`
+**Write:** `vault_add_to_section`, `vault_remove_from_section`, `vault_replace_in_section`, `vault_create_note`, `vault_delete_note`, `vault_toggle_task`, `vault_add_task`, `vault_update_frontmatter`, `vault_add_frontmatter_field`
+
+**Read:** `vault_search` — query the vault index mid-policy. Results are available to subsequent steps via `{{steps.step_id.results}}`. Use this to find notes dynamically, then act on them.
 
 ---
 
@@ -253,3 +255,106 @@ output:
 ```
 
 **Run:** `policy action=execute name=triage-note variables={"note_path": "inbox/meeting-notes.md", "category": "meeting"}`
+
+---
+
+## Example 5: Overdue Invoice Chaser
+
+Searches for overdue invoices and creates a follow-up task in today's daily note. Demonstrates `vault_search` as a read step — the policy finds notes dynamically, then acts on the results.
+
+```yaml
+version: "1.0"
+name: chase-overdue
+description: Find overdue invoices and create follow-up tasks
+
+variables:
+  date:
+    type: string
+    default: "{{builtins.today}}"
+
+steps:
+  - id: find_overdue
+    tool: vault_search
+    params:
+      query: "overdue invoice"
+      where:
+        type: invoice
+        status: pending
+      limit: 10
+
+  - id: log_chasers
+    tool: vault_add_to_section
+    params:
+      path: "daily-notes/{{variables.date}}.md"
+      section: "## Tasks"
+      content: |
+        ### Invoice follow-ups — {{builtins.today}}
+        {{steps.find_overdue.summary}}
+      format: append
+      suggestOutgoingLinks: true
+
+output:
+  summary: "Found {{steps.find_overdue.count}} overdue invoices, tasks added to {{variables.date}}"
+```
+
+**Run:** `policy action=execute name=chase-overdue`
+
+**What happens:** The policy searches the vault for pending invoices, then logs a task list in the daily note with auto-wikilinks to each invoice and client. One command, zero manual lookup.
+
+---
+
+## Example 6: Team Utilization Report
+
+Searches for team members and builds a summary note with current assignments.
+
+```yaml
+version: "1.0"
+name: team-report
+description: Generate a team utilization snapshot from vault data
+
+variables:
+  date:
+    type: string
+    default: "{{builtins.today}}"
+
+conditions:
+  - id: report_exists
+    check: file_exists
+    path: "reports/team-utilization-{{variables.date}}.md"
+
+steps:
+  - id: find_team
+    tool: vault_search
+    params:
+      where:
+        type: person
+        status: active
+      limit: 20
+
+  - id: create_report
+    tool: vault_create_note
+    when: "{{conditions.report_exists | negate}}"
+    params:
+      path: "reports/team-utilization-{{variables.date}}.md"
+      content: |
+        ---
+        type: report
+        category: utilization
+        generated: "{{builtins.now}}"
+        tags:
+          - report
+          - team
+        ---
+        # Team Utilization — {{variables.date}}
+
+        ## Active Team Members
+
+        {{steps.find_team.summary}}
+
+        ## Notes
+
+output:
+  summary: "Team report generated with {{steps.find_team.count}} members"
+```
+
+**Run:** `policy action=execute name=team-report`

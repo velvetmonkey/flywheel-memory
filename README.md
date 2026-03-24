@@ -20,7 +20,7 @@
 
 > **Cognitive sovereignty** = your knowledge, your models, your rules, executed locally with explicit control.
 
-Your recall, your reasoning, and the way you organise what you know are increasingly shaped by systems you didn't choose. Flywheel quietly pulls that control back. Your data stays on your machine, your graph learns only from your own edits, and no platform, training pipeline, or cloud service ever touches it. As models get better, your knowledge gets more powerful — no code change, no migration, no lock-in. Your second brain actually belongs to you.
+Flywheel pulls that control back. Your graph learns only from your own edits, and as models improve, your knowledge gets more powerful — no migration, no lock-in.
 
 | | Without | With Flywheel |
 |---|---|---|
@@ -68,21 +68,26 @@ One search call returned everything — metadata (frontmatter) with amounts and 
             → 2 suggested links: entities co-occurring with Stacy + security across past notes
 ```
 
-You typed a plain sentence. Flywheel recognized three entities from your vault and linked them — no brackets, no lookup, no manual work. Those links are graph edges that make future search richer.
+You typed a plain sentence. Flywheel recognized three entities and linked them — entity names, aliases, and fuzzy matches scored across [13 dimensions](docs/ALGORITHM.md). Links you keep strengthen future scoring; links you edit out get suppressed. The system learns.
 
-**Auto-wikilinks** (inline `[[linking]]`) are always on — that's the core value. Every link has a reason: entity names, aliases, and fuzzy matches scored across 13 dimensions.
+`→` suggestions are off by default. Enable with `suggestOutgoingLinks: true` for daily notes, meeting logs, and voice capture — anywhere you want the graph to grow organically. [Configuration guide →](docs/CONFIGURATION.md)
 
-**Outgoing link suggestions** (`→ [[Entity]]`) are off by default and opt-in via `suggestOutgoingLinks: true`. When enabled, suggestions are contextual: entities that co-occur with Stacy and security across your past notes, scored and ranked. Links you keep strengthen future scoring; links you edit out get suppressed. The system learns.
+### Boundaries in action
 
-**When to enable suggestions**
+```
+You: "Log that I reviewed the security audit with Sarah before the Beta Corp deadline"
 
-Set `suggestOutgoingLinks: true` for:
-- **Daily notes / journals** — fast capture where you want the graph to grow organically
-- **Meeting logs** — surface related projects, people, and follow-ups you might miss
-- **Voice-to-text dumps** — unstructured input benefits from entity discovery
-- **Research notes** — find connections across reading notes and references
+Flywheel:
+  → vault_add_to_section("daily-notes/2026-03-24.md", "Log", ...)
+  → Auto-links: [[Sarah Mitchell|Sarah]], [[Security Audit|security audit]], [[Beta Corp]]
+  → Suggests: → [[GlobalBank API Audit]], [[Compliance Matrix]]
+  → Git commit: 1 file changed, 1 insertion
 
-Leave it off (the default) for structured content — project docs, blog posts, reference material — where `→` arrows would clutter.
+What happened                         What didn't
+✓ One explicit tool call              ✗ No hidden tool chains
+✓ Every link visible before write     ✗ No files touched outside vault
+✓ One reversible git commit           ✗ Nothing sent to cloud
+```
 
 > **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/carter-strategy/run-demo-test.sh) script that runs all five beats end-to-end via `claude -p`, verifying tool usage and vault state between each step.
 
@@ -246,7 +251,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 | [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021. Trained on HotpotQA |
 
-> **Not apples-to-apples.** Baleen and MDR are neural models trained on HotpotQA data — they learned the dataset. Flywheel has never seen it. Their test setting is also different: standard distractor gives each query 10 documents; Flywheel searches a pooled vault of ~5,000 documents (harder than distractor, but far easier than fullwiki's 5M). Academic baselines use the full 7,405-question dev set; Flywheel uses 500. We report this because it's the closest meaningful comparison, not because it's a fair fight in either direction. [Details →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+> **Not apples-to-apples.** Baleen/MDR are trained on HotpotQA; Flywheel has never seen it. Different test sizes, document pools, and settings — directionally useful, not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
 ### Conversational Memory (LoCoMo)
 
@@ -260,7 +265,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 | [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | 695 | GPT-4o |
 | [Letta](https://memgpt.ai/) | 26.7 | — | — | 695 | GPT-4o |
 
-> **Not apples-to-apples.** Flywheel tested 600 questions with Claude Haiku as judge. Competitors tested 695 questions with GPT-4o as judge ([Mem0 paper](https://arxiv.org/abs/2504.19413)). Different judge models may score differently — we have not measured inter-judge agreement. Flywheel uses dialog-mode vault notes (raw conversation turns), which is the most keyword-rich representation. These differences mean the numbers are directionally useful but not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-locomo)
+> **Not apples-to-apples.** Different question counts, judge models (Haiku vs GPT-4o), and note representations. Directionally useful, not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-locomo)
 
 [Full benchmark methodology →](docs/TESTING.md)
 
@@ -298,36 +303,26 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ## The Story Behind This
 
-I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian — I chose it for the plugin ecosystem and fell in love with the app.
+I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third attempt at wiring AI into a knowledge vault — the first two failed because writes were non-deterministic and context didn't flow between sessions. This version unifies everything: one server with deterministic mutations, hybrid search, and a graph that compounds with use. The architecture exists because I kept hitting the same walls and refusing to stop.
 
-Flywheel is my third attempt at wiring AI into a knowledge vault. The first was pure Claude Code skills and hooks — no MCP server, no structure. Writes were non-deterministic and recall was poor; I'd ask about something I wrote last week and get nothing. The second split reading and writing into two separate MCP tools, which was more reliable but fragmented — context didn't flow between them, and every session started cold. This version unifies everything: one server with deterministic mutations, hybrid search, and a graph that compounds with use. Each failure taught me something specific, and the architecture exists because I kept hitting the same walls and refusing to stop.
+Your attention, memory, and even the way you reason are increasingly shaped by systems you didn't choose — platforms that optimise for engagement, models trained on someone else's priorities, defaults that quietly steer how you organise what you know. I wanted a knowledge layer that works for the person using it. A system that only gets smarter from your own honest engagement is fundamentally different from one that optimises for someone else's metrics.
 
-The word for what I'm building toward is cognitive sovereignty — the idea that your knowledge, memory, and reasoning tools should serve you, not a platform. The design choices follow from there. Your attention, memory, and even the way you reason are increasingly shaped by systems you didn't choose — platforms that optimise for engagement, models trained on someone else's priorities, defaults that quietly steer how you organise what you know. I wanted a knowledge layer that works for the person using it. Not for a training pipeline, not for an ad model, not for anyone else's roadmap.
+I designed every part of this and understand every line — but I built it entirely in flow, not by plan. The entire codebase was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 
-So it stays local. Your data never leaves your machine — no cloud, no account, no sync. The graph learns exclusively from what you write, link, edit, and remove. A system that only gets smarter from your own honest engagement is fundamentally different from one that optimises for someone else's metrics. Every interaction compounds: what you keep strengthens the graph, what you remove weakens it. Over time it becomes a model of what actually matters to you.
+I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. The volume of knowledge you can accumulate at speed through voice is staggering — Flywheel exists partly because I needed something that could keep up. All help is welcome — I'm looking for people who care about this space.
 
-I think what's happening right now is simultaneous invention — a lot of people are building AI memory products, grappling with the same problem from different angles for different audiences. This is mine. I built it for myself first. If it resonates, you probably already know why.
-
-I designed every part of this and understand every line — but I built it entirely in flow, not by plan. This is my experiment in *manufacturing* software rather than hand-crafting it. I've barely opened the IDE except to review what was generated. The entire codebase was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
-
-I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. Since introducing Flywheel, I rarely open Obsidian to hunt for things manually anymore — the combination of voice-driven capture and Obsidian's editing environment is genuinely easier than either one alone. The volume of knowledge you can accumulate at speed through voice is staggering — Flywheel exists partly because I needed something that could keep up. All help is welcome — I'm looking for people who care about this space.
-
-I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) — an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor. Early days, but the intent is to give value back to Obsidian itself.
+I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) — an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor.
 
 ### Dogfooding: my vault, unvarnished
 
-I run Flywheel on my own 1,600-note vault — 2.5 years of daily notes, work docs, personal projects, and reference material.
-
-The number I track is wikilinks per daily note — the connections Flywheel creates between your notes, people, projects, and concepts as you write. More links means richer search results and stronger suggestions over time.
+1,600-note vault, 2.5 years of daily notes, work docs, and projects.
 
 | Period | Links per daily note |
 |--------|---------------------|
 | Pre-Flywheel (manual) | 3–11 |
 | Post-Flywheel (3 months) | 20–625 |
 
-Over three months, my vault went from ~1,400 to ~1,600 notes — modest growth. But the link density exploded. The high end (625) includes auto-logged bot conversations, so take it with salt — but even quiet days run 20–30 links where they used to be 3–5. The connections grow faster than the content. That's the flywheel.
-
-88% of notes are connected to at least one other note. The remaining 12% are stubs or clippings that haven't earned their connections yet.
+The high end includes auto-logged bot conversations — but even quiet days run 20–30 links where they used to be 3–5. 88% of notes connected. The connections grow faster than the content. That's the flywheel.
 
 ---
 

@@ -20,8 +20,6 @@
 
 > **Cognitive sovereignty** = your knowledge, your models, your rules, executed locally with explicit control.
 
-Flywheel pulls that control back. Your graph learns only from your own edits, and as models improve, your knowledge gets more powerful. No migration, no lock-in.
-
 | | Without | With Flywheel |
 |---|---|---|
 | Your data | Leaves your machine | Stays local. No sync, no upload, no account |

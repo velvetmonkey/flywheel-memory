@@ -378,6 +378,72 @@ Inferred from the vault root folder name.
 
 Runtime config is persisted in StateDb and survives server restarts. Read or update via the `flywheel_config` tool (requires `diagnostics` category).
 
+### Common Toggles
+
+Most people only need a handful of these. Here's what to reach for:
+
+**"Too many links on my notes"**
+
+```
+flywheel_config({ mode: "set", key: "wikilink_strictness", value: "conservative" })
+```
+
+Raises the minimum score threshold from 10 → 18. Only high-confidence matches get through.
+
+**"I don't want background linking — only link when I explicitly ask"**
+
+```
+flywheel_config({ mode: "set", key: "proactive_linking", value: false })
+```
+
+Disables the file watcher's auto-insert. Wikilinks still apply on explicit write tool calls.
+
+**"Daily notes are getting flooded with links"**
+
+```
+flywheel_config({ mode: "set", key: "adaptive_strictness", value: false })
+```
+
+By default, daily notes use aggressive strictness regardless of your global setting. This turns that off.
+
+**"Stop linking common words that happen to be entity names"**
+
+```
+flywheel_config({ mode: "set", key: "exclude_entities", value: ["API", "MCP", "UI"] })
+```
+
+These entity names will never be auto-linked. Useful when short/common words collide with note titles.
+
+**"I don't want dead wikilinks to notes that don't exist"**
+
+```
+flywheel_config({ mode: "set", key: "implicit_detection", value: false })
+```
+
+Turns off pattern-based detection (proper nouns, CamelCase, acronyms). Only existing notes get linked.
+
+**"I want more links, not fewer"**
+
+```
+flywheel_config({ mode: "set", key: "wikilink_strictness", value: "aggressive" })
+flywheel_config({ mode: "set", key: "proactive_max_per_file", value: 5 })
+flywheel_config({ mode: "set", key: "proactive_max_per_day", value: 20 })
+```
+
+Lowers the score threshold to 5, increases the watcher limits. More links, more graph density, more noise.
+
+**"Show me everything that's currently set"**
+
+```
+flywheel_config({ mode: "get" })
+```
+
+Returns the full config object. Every key, current value, and default.
+
+---
+
+The full reference for all keys is below.
+
 ### Reading Config
 
 ```

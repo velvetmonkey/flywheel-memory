@@ -20,6 +20,20 @@
 
 > **Cognitive sovereignty** = your knowledge, your models, your rules, executed locally with explicit control.
 
+### The scaling problem
+
+Manual linking can't keep up with how fast you think. A 1,600-note vault is 750k tokens of raw markdown — but manual wikilinks top out at 3–11 per daily note. Voice capture makes it worse: you can dictate ten notes in the time it takes to link one.
+
+Flywheel auto-links on every write, voice or keyboard. Three months of daily use:
+
+| | Before | After |
+|---|---|---|
+| Links per daily note | 3–11 | 20–625 |
+| Total wikilinks | sparse | 37,259 |
+| Links per note (avg) | — | 23.2 |
+
+The graph densifies faster than content grows. That's not search — that's structure accumulating from use.
+
 | | Without | With Flywheel |
 |---|---|---|
 | Your data | Leaves your machine | Stays local. No sync, no upload, no account |
@@ -307,20 +321,9 @@ Your attention, memory, and even the way you reason are increasingly shaped by s
 
 The entire codebase was built through Claude Code with Opus 4.5 and 4.6. I designed the architecture and made every decision, but I haven't read every line 🫠 I've got bills to pay. It's been through extensive code reviews and testing, but verify what matters to you.
 
-I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. The volume of knowledge you can accumulate at speed through voice is staggering. Flywheel exists partly because I needed something that could keep up. All help is welcome. I'm looking for people who care about this space.
+I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. The volume of knowledge you can accumulate at speed through voice is staggering — even quiet days produce 20–30 links where they used to be 3–5. Flywheel exists partly because I needed something that could keep up. All help is welcome. I'm looking for people who care about this space.
 
 I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank), an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor.
-
-### Dogfooding: my vault, unvarnished
-
-1,600-note vault, 2.5 years of daily notes, work docs, and projects.
-
-| Period | Links per daily note |
-|--------|---------------------|
-| Pre-Flywheel (manual) | 3–11 |
-| Post-Flywheel (3 months) | 20–625 |
-
-The high end includes auto-logged bot conversations, but even quiet days run 20–30 links where they used to be 3–5. 88% of notes connected. The connections grow faster than the content. That's the flywheel.
 
 ---
 

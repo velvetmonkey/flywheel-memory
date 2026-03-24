@@ -1,11 +1,11 @@
 {
   "suite": "temporal-star-learning-curve",
-  "timestamp": "2026-03-24T19:17:19.104Z",
-  "duration_ms": 198633,
+  "timestamp": "2026-03-24T20:18:41.051Z",
+  "duration_ms": 278145,
   "summary": {
     "round0_f1": 0.596,
-    "roundN_f1": 0.725,
-    "f1_improvement": 0.129,
+    "roundN_f1": 0.724,
+    "f1_improvement": 0.128,
     "total_rounds": 20,
     "total_suppressions": 17,
     "convergence_round": -1,
@@ -146,7 +146,7 @@
       "falsePositives": 232,
       "falseNegatives": 167,
       "suppressionCount": 6,
-      "feedbackLayerAvgContribution": 3.7591,
+      "feedbackLayerAvgContribution": 3.8246,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -208,7 +208,7 @@
       "falsePositives": 214,
       "falseNegatives": 149,
       "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 3.8592,
+      "feedbackLayerAvgContribution": 3.8732,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -270,7 +270,7 @@
       "falsePositives": 211,
       "falseNegatives": 146,
       "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 4.0281,
+      "feedbackLayerAvgContribution": 4.0444,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -332,7 +332,7 @@
       "falsePositives": 212,
       "falseNegatives": 147,
       "suppressionCount": 12,
-      "feedbackLayerAvgContribution": 4.0982,
+      "feedbackLayerAvgContribution": 4.1076,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -580,7 +580,7 @@
       "falsePositives": 202,
       "falseNegatives": 138,
       "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 4.0942,
+      "feedbackLayerAvgContribution": 4.1037,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -637,12 +637,12 @@
       "f1": 0.729,
       "precision": 0.692,
       "recall": 0.77,
-      "mrr": 0.881,
+      "mrr": 0.9,
       "truePositives": 443,
       "falsePositives": 197,
       "falseNegatives": 132,
       "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 4.1171,
+      "feedbackLayerAvgContribution": 4.1897,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -704,7 +704,7 @@
       "falsePositives": 202,
       "falseNegatives": 137,
       "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 4.0305,
+      "feedbackLayerAvgContribution": 4.0024,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -766,7 +766,7 @@
       "falsePositives": 194,
       "falseNegatives": 129,
       "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 4.2066,
+      "feedbackLayerAvgContribution": 4.115,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -890,7 +890,7 @@
       "falsePositives": 200,
       "falseNegatives": 136,
       "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 4.4711,
+      "feedbackLayerAvgContribution": 4.5041,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -952,7 +952,7 @@
       "falsePositives": 208,
       "falseNegatives": 144,
       "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 4.1673,
+      "feedbackLayerAvgContribution": 4.1769,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1014,7 +1014,7 @@
       "falsePositives": 204,
       "falseNegatives": 141,
       "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 4.1842,
+      "feedbackLayerAvgContribution": 4.2928,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1071,12 +1071,12 @@
       "f1": 0.717,
       "precision": 0.682,
       "recall": 0.757,
-      "mrr": 0.9,
+      "mrr": 0.894,
       "truePositives": 435,
       "falsePositives": 203,
       "falseNegatives": 140,
       "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 4.3211,
+      "feedbackLayerAvgContribution": 4.425,
       "byCategory": {
         "health": {
           "precision": 1,
@@ -1130,20 +1130,20 @@
     },
     {
       "round": 18,
-      "f1": 0.719,
-      "precision": 0.683,
-      "recall": 0.758,
-      "mrr": 0.894,
-      "truePositives": 436,
-      "falsePositives": 202,
-      "falseNegatives": 139,
+      "f1": 0.717,
+      "precision": 0.682,
+      "recall": 0.757,
+      "mrr": 0.89,
+      "truePositives": 435,
+      "falsePositives": 203,
+      "falseNegatives": 140,
       "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 4.392,
+      "feedbackLayerAvgContribution": 4.3121,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.7914438502673797,
-          "f1": 0.8835820895522388,
+          "recall": 0.786096256684492,
+          "f1": 0.8802395209580839,
           "count": 187
         },
         "projects": {
@@ -1192,20 +1192,20 @@
     },
     {
       "round": 19,
-      "f1": 0.725,
-      "precision": 0.69,
-      "recall": 0.765,
-      "mrr": 0.894,
-      "truePositives": 440,
-      "falsePositives": 198,
-      "falseNegatives": 135,
+      "f1": 0.724,
+      "precision": 0.688,
+      "recall": 0.763,
+      "mrr": 0.89,
+      "truePositives": 439,
+      "falsePositives": 199,
+      "falseNegatives": 136,
       "suppressionCount": 17,
-      "feedbackLayerAvgContribution": 4.4746,
+      "feedbackLayerAvgContribution": 4.3282,
       "byCategory": {
         "health": {
           "precision": 1,
-          "recall": 0.7914438502673797,
-          "f1": 0.8835820895522388,
+          "recall": 0.786096256684492,
+          "f1": 0.8802395209580839,
           "count": 187
         },
         "projects": {

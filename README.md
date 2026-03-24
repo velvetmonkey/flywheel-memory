@@ -20,13 +20,13 @@
 
 > **Cognitive sovereignty** = your knowledge, your models, your rules, executed locally with explicit control.
 
-Flywheel pulls that control back. Your graph learns only from your own edits, and as models improve, your knowledge gets more powerful — no migration, no lock-in.
+Flywheel pulls that control back. Your graph learns only from your own edits, and as models improve, your knowledge gets more powerful. No migration, no lock-in.
 
 | | Without | With Flywheel |
 |---|---|---|
-| Your data | Leaves your machine | Stays local — no sync, no upload, no account |
-| Model choice | Locked to one provider | Model-agnostic via MCP — swap anytime |
-| As models improve | Migration or vendor upgrade | Better answers automatically — smarter models reason better over the same data |
+| Your data | Leaves your machine | Stays local. No sync, no upload, no account |
+| Model choice | Locked to one provider | Model-agnostic via MCP. Swap anytime |
+| As models improve | Migration or vendor upgrade | Better answers automatically: smarter models reason over the same data |
 | "What's overdue?" | Read every file | Indexed query, <10ms |
 | "What links here?" | Grep the vault, flat list | Ranked backlinks + outlinks, pre-indexed |
 | "Add a meeting note" | Raw write, no linking | Auto-wikilinks on every mutation |
@@ -36,7 +36,7 @@ Flywheel pulls that control back. Your graph learns only from your own edits, an
 
 ### Who this is for
 
-**For** people who want control over their knowledge — developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Also works as persistent memory for bots and agents via the `agent` preset.
+**For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Also works as persistent memory for bots and agents via the `agent` preset.
 
 **Not for** people who want a hosted service. Flywheel runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
 
@@ -46,11 +46,11 @@ Flywheel pulls that control back. Your graph learns only from your own edits, an
 
 ### Read: "How much have I billed Acme Corp?"
 
-From the [carter-strategy](demos/carter-strategy/) demo — a solo consultant with 3 clients, 5 projects, and $27K in invoices.
+From the [carter-strategy](demos/carter-strategy/) demo: a solo consultant with 3 clients, 5 projects, and $27K in invoices.
 
 <video src="https://github.com/user-attachments/assets/ec1b51a7-cb30-4c49-a35f-aa82c31ec976" autoplay loop muted playsinline width="100%"></video>
 
-One search call returned everything — metadata (frontmatter) with amounts and status, backlink lists, outlink lists. Zero file reads needed. The graph did the joining, not the AI reading files one by one.
+One search call returned everything: metadata (frontmatter) with amounts and status, backlink lists, outlink lists. Zero file reads needed. The graph did the joining, not the AI reading files one by one.
 
 ### Write: Auto-wikilinks on every mutation
 
@@ -68,9 +68,9 @@ One search call returned everything — metadata (frontmatter) with amounts and 
             → 2 suggested links: entities co-occurring with Stacy + security across past notes
 ```
 
-You typed a plain sentence. Flywheel recognized three entities and linked them — entity names, aliases, and fuzzy matches scored across [13 dimensions](docs/ALGORITHM.md). Links you keep strengthen future scoring; links you edit out get suppressed. The system learns.
+You typed a plain sentence. Flywheel recognized three entities and linked them: entity names, aliases, and fuzzy matches scored across [13 dimensions](docs/ALGORITHM.md). Links you keep strengthen future scoring; links you edit out get suppressed. The system learns.
 
-`→` suggestions are off by default. Enable with `suggestOutgoingLinks: true` for daily notes, meeting logs, and voice capture — anywhere you want the graph to grow organically. [Configuration guide →](docs/CONFIGURATION.md)
+`→` suggestions are off by default. Enable with `suggestOutgoingLinks: true` for daily notes, meeting logs, and voice capture. Anywhere you want the graph to grow organically. [Configuration guide →](docs/CONFIGURATION.md)
 
 ### Boundaries in action
 
@@ -130,7 +130,7 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Flywheel does not replace Obsidian. It runs alongside as a background index — watches for changes, indexes in real-time, and makes the full graph available to any AI client. No proprietary format, no cloud sync, no account. Delete `.flywheel/state.db` and it rebuilds from scratch.
+Flywheel does not replace Obsidian. It runs alongside as a background index. Watches for changes, indexes in real-time, and makes the full graph available to any AI client. No proprietary format, no cloud sync, no account. Delete `.flywheel/state.db` and it rebuilds from scratch.
 
 ### Configure your tools
 
@@ -152,9 +152,9 @@ Start with `default`. Add bundles as you need them: `graph` (includes GraphML ex
 <summary><strong>Windows users — read this before you start</strong></summary>
 
 Three things differ from macOS/Linux:
-1. **`cmd /c npx`** instead of `npx` — Windows installs npx as a `.cmd` batch script that can't be spawned directly
-2. **`VAULT_PATH`** — set this to your vault's Windows path
-3. **`FLYWHEEL_WATCH_POLL: "true"`** — **required**. Without this, Flywheel won't pick up changes you make in Obsidian.
+1. **`cmd /c npx`** instead of `npx`: Windows installs npx as a `.cmd` batch script that can't be spawned directly
+2. **`VAULT_PATH`**: set this to your vault's Windows path
+3. **`FLYWHEEL_WATCH_POLL: "true"`**: **required**. Without this, Flywheel won't pick up changes you make in Obsidian.
 
 See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full config example.
 </details>
@@ -167,9 +167,9 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 
 ### 1. Enriched Search
 
-Every search result comes back enriched — frontmatter, scored backlinks, scored outlinks, and content snippets, all from an in-memory index. Results are multi-hop: a search for "Acme Corp" returns the client note *and* its connected invoices, projects, and people, each ranked by graph relevance. One call, not ten file reads.
+Every search result comes back enriched: frontmatter, scored backlinks, scored outlinks, and content snippets, all from an in-memory index. Results are multi-hop: a search for "Acme Corp" returns the client note *and* its connected invoices, projects, and people, each ranked by graph relevance. One call, not ten file reads.
 
-With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally — SQLite full-text search (BM25), in-memory embeddings for semantic similarity, fused together for best-of-both results.
+With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally. SQLite full-text search (BM25), in-memory embeddings for semantic similarity, fused together for best-of-both results.
 
 ### 2. Every Link Has a Reason
 
@@ -181,7 +181,7 @@ Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Fee
 Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
 ```
 
-13 scoring layers, every number traceable to vault usage. Recency from what you last wrote. Co-occurrence from notes you've written before. Hub score from eigenvector centrality — not just how many notes link there, but how important those linking notes are. The score learns as you use it.
+13 scoring layers, every number traceable to vault usage. Recency from what you last wrote. Co-occurrence from notes you've written before. Hub score from eigenvector centrality (not just how many notes link there, but how important those linking notes are). The score learns as you use it.
 
 See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
@@ -189,10 +189,10 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
 Every sentence you write through Flywheel makes your graph denser. A denser graph gives better search results, richer backlinks, and sharper suggestions. That's the flywheel.
 
-- **Proactive linking** — the file watcher scores your notes in the background and inserts high-confidence wikilinks automatically. Edit a note in Obsidian, and Flywheel links it without being asked. Only strong matches clear the threshold (score ≥ 20, max 3 per file, max 10 per day). Configurable via `proactive_min_score`, `proactive_max_per_file`, and `proactive_max_per_day` — or disable entirely with `proactive_linking: false`.
-- **Co-occurrence** builds over time — two entities appearing in 20 notes form a statistical bond
-- **Edge weights** accumulate — links that survive edits gain influence
-- **Suppression** learns — connections you repeatedly break stop being suggested
+- **Proactive linking:** the file watcher scores your notes in the background and inserts high-confidence wikilinks automatically. Edit a note in Obsidian, and Flywheel links it without being asked. Only strong matches clear the threshold (score ≥ 20, max 3 per file, max 10 per day). Configurable via `proactive_min_score`, `proactive_max_per_file`, and `proactive_max_per_day`. Disable entirely with `proactive_linking: false`.
+- **Co-occurrence** builds over time. Two entities appearing in 20 notes form a statistical bond
+- **Edge weights** accumulate. Links that survive edits gain influence
+- **Suppression** learns. Connections you repeatedly break stop being suggested
 
 Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation.
 
@@ -200,25 +200,25 @@ Static tools give you the same results on day 1 and day 100. Flywheel's suggesti
 
 Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `recall` retrieves across notes, entities (people, projects, concepts), and memories in one call, and `memory` stores observations that persist across sessions with automatic decay.
 
-Complex vault workflows become deterministic policies — describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back, committed as a single git commit.
+Complex vault workflows become deterministic policies. Describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back, committed as a single git commit.
 
-Most agent frameworks solve the trust problem through containment — sandboxing arbitrary code in isolates or containers. Flywheel solves it through constraint: policies can only express vault operations, every step is auditable, and the entire execution is a single reversible git commit. No sandbox needed when the language itself can't do anything dangerous.
+Most agent frameworks solve the trust problem through containment: sandboxing arbitrary code in isolates or containers. Flywheel solves it through constraint: policies can only express vault operations, every step is auditable, and the entire execution is a single reversible git commit. No sandbox needed when the language itself can't do anything dangerous.
 
-Under the hood, every write operation parses your markdown at the AST level — not regex, not string matching. Flywheel understands headings, frontmatter, lists, and code blocks as structure. Mutations target specific sections without corrupting surrounding content, even in complex documents. Safe writes aren't a promise — they're a property of the parser.
+Under the hood, every write operation parses your markdown at the AST level, not regex, not string matching. Flywheel understands headings, frontmatter, lists, and code blocks as structure. Mutations target specific sections without corrupting surrounding content, even in complex documents. Safe writes aren't a promise. They're a property of the parser.
 
 ### 5. Portable Knowledge Graph
 
-One call to `export_graph` and your entire vault — or any entity's neighborhood — becomes a [GraphML](https://en.wikipedia.org/wiki/GraphML) file. Open it in any graph tool, run community detection, find bottlenecks, or just see what's connected to what.
+One call to `export_graph` and your entire vault (or any entity's neighborhood) becomes a [GraphML](https://en.wikipedia.org/wiki/GraphML) file. Open it in any graph tool, run community detection, find bottlenecks, or just see what's connected to what.
 
 ![Acme Corp ego network](demos/carter-strategy/carter-strategy-acme-graph.png)
 
-*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. [[Sarah Mitchell]] is the single contact linking 3 projects to the client. The [[Data Migration Playbook]] bridges two engagements. Seven invoices, two team members, one proposal — all from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
+*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. [[Sarah Mitchell]] is the single contact linking 3 projects to the client. The [[Data Migration Playbook]] bridges two engagements. Seven invoices, two team members, one proposal. All from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
 
 ### 6. System Guarantees
 
 These are rules, not preferences:
 
-- **No surprise writes.** Tool-initiated mutations require explicit calls. Proactive linking — the only background write — is auditable (git-committed, score-thresholded, configurable) and can be disabled entirely.
+- **No surprise writes.** Tool-initiated mutations require explicit calls. Proactive linking (the only background write) is auditable (git-committed, score-thresholded, configurable) and can be disabled entirely.
 - **No hidden tool execution.** Every tool call is visible, scoped, and logged.
 - **No required cloud dependency.** Core indexing, search, and graph run locally. No account, no sync, no phone-home.
 - **All actions are auditable.** Every write is a git commit. Every commit is reversible. Every change has a reason.
@@ -229,10 +229,10 @@ These are rules, not preferences:
 | | SaaS copilots | Agent frameworks | Flywheel |
 |---|---|---|---|
 | Execution | Guess, act silently | Chain tools opaquely | Explicit commands, scoped to vault |
-| Data | Cloud-first | Cloud or hybrid | Local only — your machine, your files |
+| Data | Cloud-first | Cloud or hybrid | Local only. Your machine, your files |
 | Trust model | "Trust us" | Trust the sandbox | Trust the constraint |
 | Auditability | Opaque | Partial | Every action is a git commit |
-| Model lock-in | Total | Varies | None — MCP is model-agnostic |
+| Model lock-in | Total | Varies | None. MCP is model-agnostic |
 
 ---
 
@@ -251,7 +251,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 | [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021. Trained on HotpotQA |
 
-> **Not apples-to-apples.** Baleen/MDR are trained on HotpotQA; Flywheel has never seen it. Different test sizes, document pools, and settings — directionally useful, not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+> **Not apples-to-apples.** Baleen/MDR are trained on HotpotQA; Flywheel has never seen it. Different test sizes, document pools, and settings; directionally useful, not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
 ### Conversational Memory (LoCoMo)
 
@@ -265,7 +265,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 | [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | 695 | GPT-4o |
 | [Letta](https://memgpt.ai/) | 26.7 | — | — | 695 | GPT-4o |
 
-> **Not apples-to-apples.** Different question counts, judge models (Haiku vs GPT-4o), and note representations. Directionally useful, not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-locomo)
+> **Not apples-to-apples.** Different question counts, judge models (Haiku vs GPT-4o), and note representations; directionally useful, not a controlled comparison. [Details →](docs/TESTING.md#retrieval-benchmark-locomo)
 
 [Full benchmark methodology →](docs/TESTING.md)
 
@@ -275,10 +275,10 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 2,579 tests across read, write, security, concurrency, and graph quality. CI-gated on Ubuntu + Windows, Node 20 + 22.
 
-- **Graph quality** — 100% wikilink precision on ground truth vault, stress-tested over 50 generations with realistic noise. [Report →](docs/QUALITY_REPORT.md)
-- **Live AI testing** — Real `claude -p` sessions verify tool adoption end-to-end, not just handler logic
-- **Write safety** — Git-backed conflict detection, atomic rollback, 100 parallel writes with zero corruption
-- **Security** — SQL injection, path traversal, Unicode normalization, permission bypass
+- **Graph quality:** 100% wikilink precision on ground truth vault, stress-tested over 50 generations with realistic noise. [Report →](docs/QUALITY_REPORT.md)
+- **Live AI testing:** real `claude -p` sessions verify tool adoption end-to-end, not just handler logic
+- **Write safety:** git-backed conflict detection, atomic rollback, 100 parallel writes with zero corruption
+- **Security:** SQL injection, path traversal, Unicode normalization, permission bypass
 
 [Full methodology and results →](docs/TESTING.md)
 
@@ -288,7 +288,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 | Doc | Why read this |
 |---|---|
-| [PROVE-IT.md](docs/PROVE-IT.md) | **Start here** — see it working in 5 minutes |
+| [PROVE-IT.md](docs/PROVE-IT.md) | **Start here.** See it working in 5 minutes |
 | [TOOLS.md](docs/TOOLS.md) | All 70 tools documented |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](docs/SETUP.md) | Full setup guide for your vault |
@@ -303,15 +303,15 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ## The Story Behind This
 
-I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third attempt at wiring AI into a knowledge vault — the first two failed because writes were non-deterministic and context didn't flow between sessions. This version unifies everything: one server with deterministic mutations, hybrid search, and a graph that compounds with use. The architecture exists because I kept hitting the same walls and refusing to stop.
+I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third attempt at wiring AI into a knowledge vault. The first two failed because writes were non-deterministic and context didn't flow between sessions. This version unifies everything: one server with deterministic mutations, hybrid search, and a graph that compounds with use. The architecture exists because I kept hitting the same walls and refusing to stop.
 
-Your attention, memory, and even the way you reason are increasingly shaped by systems you didn't choose — platforms that optimise for engagement, models trained on someone else's priorities, defaults that quietly steer how you organise what you know. I wanted a knowledge layer that works for the person using it. A system that only gets smarter from your own honest engagement is fundamentally different from one that optimises for someone else's metrics.
+Your attention, memory, and even the way you reason are increasingly shaped by systems you didn't choose. Platforms that optimise for engagement, models trained on someone else's priorities, defaults that quietly steer how you organise what you know. I wanted a knowledge layer that works for the person using it. A system that only gets smarter from your own honest engagement is fundamentally different from one that optimises for someone else's metrics.
 
-I designed every part of this and understand every line — but I built it entirely in flow, not by plan. The entire codebase was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
+I designed every part of this and understand every line 🫠 but I built it entirely in flow, not by plan. The entire codebase was driven through Claude Code with Opus 4.5 and 4.6. I've subjected it to extensive code reviews and tested it as thoroughly as I can, but take everything with a pinch of salt and verify what matters to you.
 
-I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. The volume of knowledge you can accumulate at speed through voice is staggering — Flywheel exists partly because I needed something that could keep up. All help is welcome — I'm looking for people who care about this space.
+I dogfood it daily through a Telegram bot using voice input, because I'm a lazy nerd who'd rather talk than type. The volume of knowledge you can accumulate at speed through voice is staggering. Flywheel exists partly because I needed something that could keep up. All help is welcome. I'm looking for people who care about this space.
 
-I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) — an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor.
+I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank), an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor.
 
 ### Dogfooding: my vault, unvarnished
 
@@ -322,12 +322,12 @@ I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-cran
 | Pre-Flywheel (manual) | 3–11 |
 | Post-Flywheel (3 months) | 20–625 |
 
-The high end includes auto-logged bot conversations — but even quiet days run 20–30 links where they used to be 3–5. 88% of notes connected. The connections grow faster than the content. That's the flywheel.
+The high end includes auto-logged bot conversations, but even quiet days run 20–30 links where they used to be 3–5. 88% of notes connected. The connections grow faster than the content. That's the flywheel.
 
 ---
 
 ## License
 
-AGPL-3.0 — see [LICENSE](./LICENSE) for details. The source stays open. If someone forks this and offers it as a service, they must publish their changes. Your data is local; the code is transparent.
+AGPL-3.0. See [LICENSE](./LICENSE) for details. The source stays open. If someone forks this and offers it as a service, they must publish their changes. Your data is local; the code is transparent.
 
 > Your knowledge. Your graph. Your terms.

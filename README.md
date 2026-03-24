@@ -167,7 +167,7 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 
 ### 1. Enriched Search
 
-Every search result comes back enriched — frontmatter, ranked backlinks, ranked outlinks, and content snippets, all from an in-memory index. That's how one call answers a billing question: the search finds `Acme Corp.md` with its frontmatter totals, and the backlinks surface every invoice and project — each with its own frontmatter. The graph did the joining.
+Every search result comes back enriched — frontmatter, scored backlinks, scored outlinks, and content snippets, all from an in-memory index. Results are multi-hop: a search for "Acme Corp" returns the client note *and* its connected invoices, projects, and people, each ranked by graph relevance. One call, not ten file reads.
 
 With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally — SQLite full-text search (BM25), in-memory embeddings for semantic similarity, fused together for best-of-both results.
 
@@ -189,7 +189,7 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
 Every sentence you write through Flywheel makes your graph denser. A denser graph gives better search results, richer backlinks, and sharper suggestions. That's the flywheel.
 
-- **Proactive linking** — the file watcher scores your notes in the background and inserts high-confidence wikilinks automatically. Edit a note in Obsidian, and Flywheel links it without being asked. Only strong matches clear the threshold (score >= 20, max 3 per file). Disable with `proactive_linking: false` if you prefer links only through explicit tool calls.
+- **Proactive linking** — the file watcher scores your notes in the background and inserts high-confidence wikilinks automatically. Edit a note in Obsidian, and Flywheel links it without being asked. Only strong matches clear the threshold (score ≥ 20, max 3 per file, max 10 per day). Configurable via `proactive_min_score`, `proactive_max_per_file`, and `proactive_max_per_day` — or disable entirely with `proactive_linking: false`.
 - **Co-occurrence** builds over time — two entities appearing in 20 notes form a statistical bond
 - **Edge weights** accumulate — links that survive edits gain influence
 - **Suppression** learns — connections you repeatedly break stop being suggested

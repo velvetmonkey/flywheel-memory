@@ -15,6 +15,7 @@ Your vault is your second brain. You don't hand it to software you can't trust.
 - [What Isn't Tested](#what-isnt-tested)
 - [Retrieval Benchmark (HotpotQA)](#retrieval-benchmark-hotpotqa)
 - [Retrieval Benchmark (LoCoMo)](#retrieval-benchmark-locomo)
+- [How the E2E Benchmark Works](#how-the-e2e-benchmark-works)
 - [Graph Quality (266 tests, 31 files)](#graph-quality-266-tests-31-files)
 - [Live AI Testing](#live-ai-testing)
 

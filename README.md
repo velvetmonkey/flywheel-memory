@@ -13,7 +13,7 @@
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-89.6%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-52.1%25%20answer%20accuracy%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-66%25%20single--hop%20%7C%2083%25%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)**
@@ -257,19 +257,21 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ### Conversational Memory (LoCoMo)
 
-695 questions across 10 conversations. Answer accuracy via LLM-as-judge (same sample size as competitors).
+695 questions across 10 conversations — same sample size as Mem0, Zep, and LangMem. Answer accuracy via LLM-as-judge.
 
-| System | Single-hop | Multi-hop | Commonsense | Questions | Judge |
+| System | Single-hop | Multi-hop | Commonsense | Evidence Recall | Questions |
 |---|---|---|---|---|---|
-| **Flywheel** | **66.2%** | **33.8%** | **67.6%** | 695 | Claude Haiku |
-| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | — | 695 | GPT-4o |
-| [Zep](https://getzep.com/) | 35.7 | 19.4 | — | 695 | GPT-4o |
-| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | 695 | GPT-4o |
-| [Letta](https://memgpt.ai/) | 26.7 | — | — | 695 | GPT-4o |
+| **Flywheel** | **66.2%** | **33.8%** | **67.6%** | **83.0%** | 695 |
+| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | — | — | 695 |
+| [Zep](https://getzep.com/) | 35.7 | 19.4 | — | — | 695 |
+| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | — | 695 |
+| [Letta](https://memgpt.ai/) | 26.7 | — | — | — | 695 |
+
+Evidence recall measures whether the system found the right source notes — the harder, more transparent metric. Competitors don't report it.
 
 [Full benchmark methodology →](docs/TESTING.md)
 
-> Different judges and document pools — not perfectly controlled. But there's a plausible reason the numbers are high: trained retrievers optimise a single embedding space, while Flywheel fuses multiple orthogonal signals — FTS5 keyword matching (OR-joined with BM25 ranking), graph structure (backlinks, hubs, co-occurrence), entity type awareness, and semantic similarity via RRF. Each signal catches what the others miss. A multi-hop question that defeats pure embedding retrieval can still resolve through graph traversal; a semantic near-miss can still surface via BM25 keyword overlap. The numbers reproduce — clone the repo and check. [Details →](docs/TESTING.md)
+> Different judges (we use Claude Haiku, competitors use GPT-4o) and document pools — not perfectly controlled. But the gap is large: single-hop is nearly 2x Mem0. The retrieval architecture fuses keyword search (OR-joined BM25), graph structure (backlinks, hubs, co-occurrence), entity type awareness, and semantic similarity via RRF. Each signal catches what the others miss. The numbers reproduce — clone the repo and check. [Details →](docs/TESTING.md)
 
 ---
 

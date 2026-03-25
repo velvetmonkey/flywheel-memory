@@ -26,6 +26,9 @@ export type {
 // Common English words (frequency list for alias filtering)
 export { COMMON_ENGLISH_WORDS } from './common-words.js';
 
+// Porter Stemmer (for morphological entity matching)
+export { stem } from './stemmer.js';
+
 // Entity scanning
 export {
   scanVaultEntities,

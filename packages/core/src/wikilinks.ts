@@ -19,6 +19,7 @@ import type {
   ResolveAliasOptions,
 } from './types.js';
 import { getProtectedZones, rangeOverlapsProtectedZone } from './protectedZones.js';
+import { stem } from './stemmer.js';
 
 /**
  * Get all search terms for an entity (name + aliases)
@@ -528,6 +529,59 @@ export function applyWikilinks(
       linksAdded++;
       if (!linkedEntities.includes(entityName)) {
         linkedEntities.push(entityName);
+      }
+    }
+
+    // Stemmed matching pass: for single-word entities (≥4 chars) that didn't match
+    // exactly, find content words with the same Porter stem and link them.
+    // This eliminates the need for explicit morphological aliases
+    // (e.g., Pipelines matches "Pipeline", Sprint matches "Sprinting").
+    for (const entity of entities) {
+      if (typeof entity === 'string') continue;
+      const entityName = entity.name;
+      if (selectedEntityNames.has(entityName.toLowerCase())) continue;
+      // Only single-word entities ≥4 chars — multi-word needs exact matching
+      if (entityName.includes(' ') || entityName.length < 4) continue;
+      if (shouldExcludeEntity(entityName)) continue;
+
+      const entityStem = stem(entityName);
+      // Find word-boundary matches in content for words with same stem
+      const wordPattern = /\b[A-Za-z]{4,}\b/g;
+      let wordMatch: RegExpExecArray | null;
+      let bestStemMatch: { start: number; end: number; matched: string } | null = null;
+
+      while ((wordMatch = wordPattern.exec(result)) !== null) {
+        const word = wordMatch[0];
+        if (stem(word) !== entityStem) continue;
+        // Skip if same as entity name (already tried in exact pass)
+        if (word.toLowerCase() === entityName.toLowerCase()) continue;
+        const start = wordMatch.index;
+        const end = start + word.length;
+        // Must not be in a protected zone
+        if (rangeOverlapsProtectedZone(start, end, zones)) continue;
+        // Check bracket chars
+        const charBefore = start > 0 ? result[start - 1] : '';
+        const charAfter = end < result.length ? result[end] : '';
+        if ('()[]{}' .includes(charBefore) || '()[]{}' .includes(charAfter)) continue;
+        bestStemMatch = { start, end, matched: word };
+        break; // First occurrence only
+      }
+
+      if (bestStemMatch) {
+        const wikilink = `[[${entityName}|${bestStemMatch.matched}]]`;
+        result = result.slice(0, bestStemMatch.start) + wikilink + result.slice(bestStemMatch.end);
+        const shift = wikilink.length - bestStemMatch.matched.length;
+        zones = zones.map(zone => ({
+          ...zone,
+          start: zone.start <= bestStemMatch!.start ? zone.start : zone.start + shift,
+          end: zone.end <= bestStemMatch!.start ? zone.end : zone.end + shift,
+        }));
+        zones.push({ start: bestStemMatch.start, end: bestStemMatch.start + wikilink.length, type: 'wikilink' });
+        zones.sort((a, b) => a.start - b.start);
+        linksAdded++;
+        if (!linkedEntities.includes(entityName)) {
+          linkedEntities.push(entityName);
+        }
       }
     }
   } else {

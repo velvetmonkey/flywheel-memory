@@ -354,6 +354,60 @@ Learn React here`;
       expect(result.linksAdded).toBe(2);
     });
   });
+
+  describe('stemmed matching', () => {
+    it('should match morphological variants via Porter stemming', () => {
+      const result = applyWikilinks(
+        'Check the Pipeline configuration',
+        [{ name: 'Pipelines', path: 'Pipelines.md', aliases: [] }]
+      );
+      expect(result.content).toContain('[[Pipelines|Pipeline]]');
+      expect(result.linksAdded).toBe(1);
+    });
+
+    it('should match -ing forms to base entity', () => {
+      const result = applyWikilinks(
+        'She was Sprinting across the field',
+        [{ name: 'Sprint', path: 'Sprint.md', aliases: [] }]
+      );
+      expect(result.content).toContain('[[Sprint|Sprinting]]');
+    });
+
+    it('should NOT stem-match unrelated words (Hero ≠ Hera)', () => {
+      const result = applyWikilinks(
+        'The hero saved the day',
+        [{ name: 'Hera', path: 'Hera.md', aliases: [] }]
+      );
+      expect(result.content).not.toContain('[[Hera');
+    });
+
+    it('should skip stemming for short entities (<4 chars)', () => {
+      const result = applyWikilinks(
+        'Using the APIs today',
+        [{ name: 'API', path: 'API.md', aliases: [] }]
+      );
+      // "APIs" should NOT stem-match "API" since entity is only 3 chars
+      expect(result.content).not.toContain('[[API|APIs]]');
+    });
+
+    it('should skip stemming for multi-word entities', () => {
+      const result = applyWikilinks(
+        'Running the Pull Requests review',
+        [{ name: 'Pull Request', path: 'Pull Request.md', aliases: [] }]
+      );
+      // Multi-word entities need exact matching, not stemming
+      expect(result.content).not.toContain('[[Pull Request|Pull Requests]]');
+    });
+
+    it('should prefer exact match over stemmed match', () => {
+      const result = applyWikilinks(
+        'Using Pipelines and Pipeline tools',
+        [{ name: 'Pipelines', path: 'Pipelines.md', aliases: [] }]
+      );
+      // Exact match "Pipelines" should be preferred
+      expect(result.content).toContain('[[Pipelines]]');
+    });
+  });
 });
 
 describe('suggestWikilinks', () => {

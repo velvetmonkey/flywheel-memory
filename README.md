@@ -330,13 +330,21 @@ Evidence recall = did the system find the right source notes. Answer accuracy = 
 
 Flywheel started because I'm fundamentally lazy. I wanted to talk at my vault through a Telegram bot and have it not be rubbish - no typing, no manual linking, no curation. The lazy path needed to be the correct path, so I built a system where they're the same path.
 
-I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third attempt at wiring AI into my knowledge vault. The first two failed because writes were non-deterministic and context didn't flow between sessions. This version unifies everything: one server with deterministic mutations, hybrid search, and a graph that compounds with use. The architecture exists because I kept hitting the same walls and refusing to stop.
+I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third attempt at wiring AI into my knowledge vault. The first two failed because writes were non-deterministic and context didn't flow between sessions. This version unifies everything: one server with deterministic mutations, hybrid search, and a graph that compounds with use. The [[Architecture]] exists because I kept hitting the same walls and refusing to stop.
 
 Your attention, memory, and even the way you reason are increasingly shaped by systems you didn't choose. Platforms that optimise for engagement, models trained on someone else's priorities, defaults that quietly steer how you organise what you know. I wanted a knowledge layer that works for the person using it. A system that only gets smarter from your own honest engagement is fundamentally different from one that optimises for someone else's metrics.
 
 The entire codebase was built through Claude Code with Opus 4.5 and 4.6. I designed the architecture and made every decision, but I haven't read every line 🫠 I've got bills to pay. It's been through extensive code reviews and testing, but verify what matters to you.
 
 I dogfood it daily through a Telegram bot using voice input. The volume of knowledge you can accumulate at speed through voice is staggering - even quiet days produce 20–30 links where they used to be 3–5. Flywheel exists partly because I needed something that could keep up. All suggestions are welcome! I'm looking for people who care about this space.
+
+### The Cognitive Pipeline
+
+What emerged from daily use is a workflow pattern: cheap models generate ideas at volume (Grok, ChatGPT — whatever's free), the Telegram bot filters for truth and persists to the vault, then a separate Claude Code session reads the stored context and executes from filtered material. Generate broadly, filter honestly, execute precisely.
+
+It works because Flywheel makes every stage persistent. The bot's conversation is logged and auto-wikilinked. The filter's judgements become searchable memories. The executor reads yesterday's daily notes and picks up where the last session left off — no re-explaining, no context dump, no starting from scratch.
+
+Because Flywheel is an MCP server, any client can be any stage. An OpenClaw bot, a Cursor session, Claude Desktop — they all get the same persistent, learning memory. The graph compounds across sessions. Your filing cabinet stops being passive storage and starts thinking with you.
 
 I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank), an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor.
 

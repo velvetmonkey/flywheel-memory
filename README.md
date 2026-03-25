@@ -257,21 +257,33 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ### Conversational Memory (LoCoMo)
 
-695 questions across 10 conversations — same sample size as Mem0, Zep, and LangMem. Answer accuracy via LLM-as-judge.
+695 questions from [LoCoMo](https://snap-research.github.io/locomo/) — a multi-session conversational memory benchmark (ACL 2024). Real Claude sessions with Flywheel MCP tools, no pre-processing.
 
-| System | Single-hop | Multi-hop | Commonsense | Evidence Recall | Questions |
+| Category | Evidence Recall | Answer Accuracy | Questions |
+|---|---|---|---|
+| **Single-hop** | **94.2%** | **66.2%** | 139 |
+| **Commonsense** | **95.0%** | **67.6%** | 139 |
+| **Temporal** | **68.6%** | **49.0%** | 96 |
+| **Multi-hop** | **73.2%** | **33.8%** | 139 |
+| **Adversarial** | **97.3%** | **45.1%** | 182 |
+| **Overall** | **83.0%** | **52.1%** | **695** |
+
+Evidence recall = did the system find the right source notes. Answer accuracy = LLM-as-judge (Claude Haiku). [Full results →](demos/locomo/results/) · [Methodology →](docs/TESTING.md)
+
+<details>
+<summary>How this compares to other memory systems (695 questions each)</summary>
+
+| System | Single-hop | Multi-hop | Questions | Judge | Infrastructure |
 |---|---|---|---|---|---|
-| **Flywheel** | **66.2%** | **33.8%** | **67.6%** | **83.0%** | 695 |
-| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | — | — | 695 |
-| [Zep](https://getzep.com/) | 35.7 | 19.4 | — | — | 695 |
-| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | — | 695 |
-| [Letta](https://memgpt.ai/) | 26.7 | — | — | — | 695 |
+| **Flywheel** | **66.2%** | **33.8%** | 695 | Claude Haiku | Local (SQLite) |
+| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | 695 | GPT-4o | Redis + Qdrant |
+| [Zep](https://getzep.com/) | 35.7 | 19.4 | 695 | GPT-4o | Cloud service |
+| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | 695 | GPT-4o | Varies |
+| [Letta](https://memgpt.ai/) | 26.7 | — | 695 | GPT-4o | Cloud/local |
 
-Evidence recall measures whether the system found the right source notes — the harder, more transparent metric. Competitors don't report it.
+Different judges (Haiku vs GPT-4o) — not perfectly controlled. But the gap is large: single-hop is nearly 2x Mem0. Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
 
-[Full benchmark methodology →](docs/TESTING.md)
-
-> Different judges (we use Claude Haiku, competitors use GPT-4o) and document pools — not perfectly controlled. But the gap is large: single-hop is nearly 2x Mem0. The retrieval architecture fuses keyword search (OR-joined BM25), graph structure (backlinks, hubs, co-occurrence), entity type awareness, and semantic similarity via RRF. Each signal catches what the others miss. The numbers reproduce — clone the repo and check. [Details →](docs/TESTING.md)
+</details>
 
 ---
 

@@ -80,7 +80,7 @@ import {
 } from './core/read/taskCache.js';
 
 // Vault-core shared imports
-import { openStateDb, scanVaultEntities, getAllEntitiesFromDb, loadContentHashes, saveContentHashBatch, renameContentHash, type StateDb } from '@velvetmonkey/vault-core';
+import { openStateDb, scanVaultEntities, getAllEntitiesFromDb, loadContentHashes, saveContentHashBatch, renameContentHash, checkDbIntegrity, safeBackupAsync, preserveCorruptedDb, deleteStateDbFiles, attemptSalvage, type StateDb } from '@velvetmonkey/vault-core';
 
 // Memory lifecycle (used directly in index.ts for periodic maintenance)
 import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } from './core/write/memory.js';
@@ -258,6 +258,24 @@ async function initializeVault(name: string, vaultPathArg: string): Promise<Vaul
   try {
     ctx.stateDb = openStateDb(vaultPathArg);
     serverLog('statedb', `[${name}] StateDb initialized`);
+
+    // Post-open integrity check
+    const integrity = checkDbIntegrity(ctx.stateDb.db);
+    if (integrity.ok) {
+      // DB is healthy — create a safe rotated backup (non-blocking)
+      safeBackupAsync(ctx.stateDb.db, ctx.stateDb.dbPath).catch(err => {
+        serverLog('backup', `[${name}] Safe backup failed: ${err}`, 'error');
+      });
+    } else {
+      // DB opened but has page-level corruption — nuke and rebuild
+      serverLog('statedb', `[${name}] Integrity check failed: ${integrity.detail} — recreating`, 'error');
+      const dbPath = ctx.stateDb.dbPath;
+      preserveCorruptedDb(dbPath);
+      ctx.stateDb.close();
+      deleteStateDbFiles(dbPath);
+      ctx.stateDb = openStateDb(vaultPathArg);
+      attemptSalvage(ctx.stateDb.db, dbPath);
+    }
 
     // Nudge if vault_init has never been run
     const vaultInitRow = ctx.stateDb.getMetadataValue.get('vault_init_last_run_at') as { value: string } | undefined;

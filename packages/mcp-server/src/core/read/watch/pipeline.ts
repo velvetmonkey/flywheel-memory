@@ -16,6 +16,8 @@ import {
   getProtectedZones,
   rangeOverlapsProtectedZone,
   detectImplicitEntities,
+  checkDbIntegrity,
+  safeBackupAsync,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
 
@@ -179,6 +181,7 @@ export class PipelineRunner {
       await this.proactiveLinking();
       await runStep('tag_scan', tracker, { files: p.events.length }, () => this.tagScan());
       await runStep('retrieval_cooccurrence', tracker, {}, () => this.retrievalCooccurrence());
+      await runStep('integrity_check', tracker, {}, () => this.integrityCheck());
 
       // Record success
       const duration = Date.now() - this.batchStart;
@@ -1029,5 +1032,30 @@ export class PipelineRunner {
       serverLog('watcher', `Retrieval co-occurrence: ${inserted} new pairs`);
     }
     return { pairs_inserted: inserted };
+  }
+
+  /** Periodic integrity check — staleness-gated to once every 6 hours. */
+  private async integrityCheck(): Promise<Record<string, unknown>> {
+    const { p } = this;
+    if (!p.sd) return { skipped: true, reason: 'no statedb' };
+
+    const INTEGRITY_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
+    const lastCheckRow = p.sd.getMetadataValue.get('last_integrity_check') as { value: string } | undefined;
+    const lastCheck = lastCheckRow ? parseInt(lastCheckRow.value, 10) : 0;
+
+    if (Date.now() - lastCheck < INTEGRITY_CHECK_INTERVAL_MS) {
+      return { skipped: true, reason: 'checked recently' };
+    }
+
+    const result = checkDbIntegrity(p.sd.db);
+    p.sd.setMetadataValue.run('last_integrity_check', String(Date.now()));
+
+    if (result.ok) {
+      await safeBackupAsync(p.sd.db, p.sd.dbPath);
+      return { integrity: 'ok', backed_up: true };
+    } else {
+      serverLog('watcher', `Integrity check FAILED: ${result.detail}`, 'error');
+      return { integrity: 'failed', detail: result.detail };
+    }
   }
 }

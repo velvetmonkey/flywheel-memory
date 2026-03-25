@@ -21,6 +21,17 @@ export { SCHEMA_VERSION, STATE_DB_FILENAME, FLYWHEEL_DIR, SCHEMA_SQL } from './s
 // Re-export migrations
 export { getStateDbPath, initSchema, deleteStateDbFiles, backupStateDb, preserveCorruptedDb } from './migrations.js';
 
+// Re-export backup & recovery
+export {
+  BACKUP_ROTATION_COUNT,
+  SALVAGE_TABLES,
+  rotateBackupFiles,
+  safeBackupAsync,
+  checkDbIntegrity,
+  salvageFeedbackTables,
+  attemptSalvage,
+} from './migrations.js';
+
 // Re-export all query functions
 export {
   searchEntities,
@@ -63,7 +74,7 @@ export {
 export type { FlywheelConfigRow, VaultIndexCacheData, VaultIndexCacheInfo } from './queries.js';
 
 // Import for use in openStateDb
-import { getStateDbPath, initSchema, deleteStateDbFiles, backupStateDb, preserveCorruptedDb } from './migrations.js';
+import { getStateDbPath, initSchema, deleteStateDbFiles, preserveCorruptedDb, attemptSalvage } from './migrations.js';
 
 // =============================================================================
 // Types
@@ -166,8 +177,9 @@ export interface StateDb {
 export function openStateDb(vaultPath: string): StateDb {
   const dbPath = getStateDbPath(vaultPath);
 
-  // Back up existing database before any mutations
-  backupStateDb(dbPath);
+  // Note: safe backup with rotation is done AFTER open + integrity check
+  // by the caller (initializeVault), not here. This avoids overwriting
+  // good backups with a corrupt DB before we've verified it.
 
   // Guard: Delete corrupted 0-byte database files
   // This can happen when better-sqlite3 fails to compile (e.g., Node 24)
@@ -196,6 +208,8 @@ export function openStateDb(vaultPath: string): StateDb {
       deleteStateDbFiles(dbPath);
       db = new Database(dbPath);
       initSchema(db);
+      // Try to recover feedback data from backups or the corrupt file
+      attemptSalvage(db, dbPath);
     } else {
       // Recoverable error (constraint violation, migration issue, etc.) — don't destroy the DB
       console.error(`[vault-core] state.db error (${msg}) — NOT deleting (recoverable)`);

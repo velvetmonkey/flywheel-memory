@@ -1241,6 +1241,9 @@ export function detectImplicitEntities(
     // Length check
     if (text.length < minEntityLength) return true;
 
+    // Must contain at least one letter — pure punctuation/symbols are never entities
+    if (!/[a-zA-Z]/.test(text)) return true;
+
     // Common words
     if (IMPLICIT_EXCLUDE_WORDS.has(text.toLowerCase())) return true;
 

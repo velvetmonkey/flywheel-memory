@@ -1345,4 +1345,27 @@ describe('noise reduction', () => {
       expect(names).toContain('Marcus Johnson');
     });
   });
+
+  describe('T6: pure punctuation exclusion', () => {
+    it('should not detect quoted punctuation like "* + *" as entities', () => {
+      // Regression: markdown italic markers inside quotes were matched by quoted-terms
+      const content = '*"Cognitive sovereignty for your Obsidian vault."* + *"All yours"*';
+      const result = detectImplicitEntities(content);
+      const names = result.map(m => m.text);
+      expect(names).not.toContain('* + *');
+    });
+
+    it('should not detect pure symbols as entities', () => {
+      const result = detectImplicitEntities('symbols like "+++" and "---" are not entities');
+      const names = result.map(m => m.text);
+      expect(names).not.toContain('+++');
+      expect(names).not.toContain('---');
+    });
+
+    it('should still detect real quoted terms', () => {
+      const result = detectImplicitEntities('the concept of "Cognitive Sovereignty" matters');
+      const names = result.map(m => m.text);
+      expect(names).toContain('Cognitive Sovereignty');
+    });
+  });
 });

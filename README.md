@@ -22,7 +22,7 @@
 
 ### The scaling problem
 
-Once you integrate AI, your vault grows faster than you can link it. Thousands of notes with sparse connections is a filing cabinet, not a knowledge graph. Voice capture, quick notes, web clippings — every workflow that speeds up capture widens the gap. Without links, your AI reads files one by one instead of traversing a graph. This isn't a discipline problem. It's a throughput problem.
+Once you integrate AI, your vault grows faster than you can link it. Thousands of notes with sparse connections is a filing cabinet, not a knowledge graph. Voice capture, quick notes, web clippings - every workflow that speeds up capture widens the gap. Without links, your AI reads files one by one instead of traversing a graph. This isn't a discipline problem. It's a throughput problem.
 
 Flywheel auto-links on every write, voice or keyboard.
 
@@ -153,7 +153,7 @@ Start with `default`. Add bundles as you need them: `graph` (includes GraphML ex
 [Browse all 74 tools →](docs/TOOLS.md) | [Preset recipes →](docs/CONFIGURATION.md)
 
 <details>
-<summary><strong>Windows users — read this before you start</strong></summary>
+<summary><strong>Windows users - read this before you start</strong></summary>
 
 Three things differ from macOS/Linux:
 1. **`cmd /c npx`** instead of `npx`: Windows installs npx as a `.cmd` batch script that can't be spawned directly
@@ -196,7 +196,7 @@ Every sentence you write through Flywheel makes your graph denser. A denser grap
 - **Proactive linking:** edit a note in Obsidian and Flywheel links it in the background. The file watcher scores every unlinked entity mention and inserts wikilinks that clear the threshold (score ≥ 20, max 5 per file, max 10 per day). Your graph grows while you write. Tune the thresholds via the `flywheel_config` tool, or disable it entirely.
 - **Co-occurrence** builds over time. Two entities appearing in 20 notes form a statistical bond
 - **Edge weights** accumulate. Links that survive edits gain influence
-- **Suppression** learns. When you delete a wikilink Flywheel inserted, it notices. Remove the same link enough times and Flywheel stops suggesting it — no manual configuration needed
+- **Suppression** learns. When you delete a wikilink Flywheel inserted, it notices. Remove the same link enough times and Flywheel stops suggesting it - no manual configuration needed
 
 Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation.
 
@@ -204,11 +204,11 @@ Static tools give you the same results on day 1 and day 100. Flywheel's suggesti
 
 Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `recall` retrieves across notes, entities (people, projects, concepts), and memories in one call, and `memory` stores observations that persist across sessions with automatic decay.
 
-Complex vault workflows become deterministic policies. Describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back. Commit with one flag — a single git commit covering every step.
+Complex vault workflows become deterministic policies. Describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back. Commit with one flag - a single git commit covering every step.
 
 Most agent frameworks solve the trust problem through containment: sandboxing arbitrary code in isolates or containers. Flywheel solves it through constraint: policies can only express vault operations, every step is auditable, and the entire execution can be committed as a single reversible git commit. No sandbox needed when the language itself can't do anything dangerous.
 
-Under the hood, every write operation uses structured parsing — AST for protected-zone detection, gray-matter for frontmatter, heading-aware section targeting — not blind string replacement. Flywheel understands headings, frontmatter, lists, and code blocks as structure. Mutations target specific sections without corrupting surrounding content, even in complex documents. Safe writes aren't a promise. They're a property of the parser.
+Under the hood, every write operation uses structured parsing - AST for protected-zone detection, gray-matter for frontmatter, heading-aware section targeting - not blind string replacement. Flywheel understands headings, frontmatter, lists, and code blocks as structure. Mutations target specific sections without corrupting surrounding content, even in complex documents. Safe writes aren't a promise. They're a property of the parser.
 
 ### 5. Portable Knowledge Graph
 
@@ -225,7 +225,7 @@ These are rules, not preferences:
 - **No surprise writes.** Tool-initiated mutations require explicit calls. Proactive linking (the only background write) is auditable (score-thresholded, configurable, tracked in state.db) and can be disabled entirely.
 - **No hidden tool execution.** Every tool call is visible, scoped, and logged.
 - **No required cloud dependency.** Core indexing, search, and graph run locally. No account, no sync, no phone-home.
-- **All actions are auditable.** Every write can be a git commit — one parameter. Every change is reversible. Every change has a reason.
+- **All actions are auditable.** Every write can be a git commit - one parameter. Every change is reversible. Every change has a reason.
 - **No silent data exfiltration.** Your vault content is never sent anywhere except the AI model you chose to connect.
 
 ### How Flywheel compares
@@ -244,11 +244,11 @@ These are rules, not preferences:
 
 Two standard academic benchmarks. Reproducible: clone the repo, run the scripts, get the same numbers.
 
-**How it works:** The benchmark builds a vault from the dataset, pre-warms it (index + auto-link + embeddings — same as production), then runs each question as an independent Claude session with Flywheel MCP tools. No cherry-picking, no prompt engineering. [Full methodology →](docs/TESTING.md#how-the-e2e-benchmark-works) | [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
+**How it works:** The benchmark builds a vault from the dataset, pre-warms it (index + auto-link + embeddings - same as production), then runs each question as an independent Claude session with Flywheel MCP tools. No cherry-picking, no prompt engineering. [Full methodology →](docs/TESTING.md#how-the-e2e-benchmark-works) | [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
 
 ### Compared to other systems
 
-> **⚠️ These comparisons are not controlled experiments.** Different systems use different document representations, different LLM judges, different prompts, and different vault structures. We run the same benchmark datasets and report honestly, but treat these as directional indicators — not head-to-head results. The numbers reproduce if you clone the repo and run them yourself.
+> **⚠️ These comparisons are not controlled experiments.** Different systems use different document representations, different LLM judges, different prompts, and different vault structures. We run the same benchmark datasets and report honestly, but treat these as directional indicators - not head-to-head results. The numbers reproduce if you clone the repo and run them yourself.
 
 **Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions):
 
@@ -258,7 +258,7 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 | [Mem0](https://mem0.ai/) | 38.7 | 28.6 | 695 | GPT-4o | Not disclosed | Redis + Qdrant |
 | [Zep](https://getzep.com/) | 35.7 | 19.4 | 695 | GPT-4o | Not disclosed | Cloud service |
 | [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | 695 | GPT-4o | Not disclosed | Varies |
-| [Letta](https://memgpt.ai/) | 26.7 | — | 695 | GPT-4o | Not disclosed | Cloud/local |
+| [Letta](https://memgpt.ai/) | 26.7 | - | 695 | GPT-4o | Not disclosed | Cloud/local |
 
 **Document retrieval** ([HotpotQA](https://hotpotqa.github.io/), 500 questions):
 
@@ -273,9 +273,9 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 
 - **LoCoMo sample size** is the same (695 questions). Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
 - **LoCoMo judge model differs.** We use Claude Haiku; competitors use GPT-4o. Different judges may score differently. We haven't measured inter-judge agreement.
-- **LoCoMo document pool differs.** Flywheel searches 272 markdown session notes. Competitors may chunk, summarise, or embed conversations differently — their document representations aren't published.
+- **LoCoMo document pool differs.** Flywheel searches 272 markdown session notes. Competitors may chunk, summarise, or embed conversations differently - their document representations aren't published.
 - **LoCoMo prompt differs.** Our agent uses a minimal system prompt with the `agent` tool preset. Competitor prompt strategies aren't published.
-- **HotpotQA is not a fair comparison.** MDR and Baleen were trained on HotpotQA specifically and search 5M+ Wikipedia articles. Flywheel is a general-purpose tool with zero training, searching a 4,960-document vault. The comparison shows where untrained retrieval sits relative to specialised systems — not that we "beat" them.
+- **HotpotQA is not a fair comparison.** MDR and Baleen were trained on HotpotQA specifically and search 5M+ Wikipedia articles. Flywheel is a general-purpose tool with zero training, searching a 4,960-document vault. The comparison shows where untrained retrieval sits relative to specialised systems - not that we "beat" them.
 
 ### Full LoCoMo results (695 questions)
 
@@ -288,7 +288,7 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 | Adversarial | 97.3% | 45.1% | [38.0%, 52.3%] | 182 |
 | **Overall** | **83.0%** | **52.1%** | **[48.4%, 55.8%]** | **695** |
 
-Evidence recall = did the system find the right source notes. Answer accuracy = did it give the correct answer (LLM-as-judge, Claude Haiku). The vault is pre-warmed with auto-linking and embeddings before questions run — [how it works →](docs/TESTING.md#how-the-e2e-benchmark-works) · Reproduce: `demos/locomo/run-benchmark.sh`
+Evidence recall = did the system find the right source notes. Answer accuracy = did it give the correct answer (LLM-as-judge, Claude Haiku). The vault is pre-warmed with auto-linking and embeddings before questions run - [how it works →](docs/TESTING.md#how-the-e2e-benchmark-works) · Reproduce: `demos/locomo/run-benchmark.sh`
 
 ---
 
@@ -324,7 +324,7 @@ Evidence recall = did the system find the right source notes. Answer accuracy = 
 
 ## The Story Behind This
 
-Flywheel started because I'm fundamentally lazy. I wanted to talk at my vault through a Telegram bot and have it not be rubbish — no typing, no manual linking, no curation. The lazy path needed to be the correct path, so I built a system where they're the same path.
+Flywheel started because I'm fundamentally lazy. I wanted to talk at my vault through a Telegram bot and have it not be rubbish - no typing, no manual linking, no curation. The lazy path needed to be the correct path, so I built a system where they're the same path.
 
 I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third attempt at wiring AI into a knowledge vault. The first two failed because writes were non-deterministic and context didn't flow between sessions. This version unifies everything: one server with deterministic mutations, hybrid search, and a graph that compounds with use. The architecture exists because I kept hitting the same walls and refusing to stop.
 
@@ -332,7 +332,7 @@ Your attention, memory, and even the way you reason are increasingly shaped by s
 
 The entire codebase was built through Claude Code with Opus 4.5 and 4.6. I designed the architecture and made every decision, but I haven't read every line 🫠 I've got bills to pay. It's been through extensive code reviews and testing, but verify what matters to you.
 
-I dogfood it daily through a Telegram bot using voice input. The volume of knowledge you can accumulate at speed through voice is staggering — even quiet days produce 20–30 links where they used to be 3–5. Flywheel exists partly because I needed something that could keep up. All help is welcome. I'm looking for people who care about this space.
+I dogfood it daily through a Telegram bot using voice input. The volume of knowledge you can accumulate at speed through voice is staggering - even quiet days produce 20–30 links where they used to be 3–5. Flywheel exists partly because I needed something that could keep up. All help is welcome. I'm looking for people who care about this space.
 
 I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank), an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor.
 

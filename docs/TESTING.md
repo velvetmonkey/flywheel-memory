@@ -344,7 +344,7 @@ The graph quality suite validates that the wikilink suggestion engine works corr
 
 **Stability & Evolution:** multi-generation (50 gen), temporal evolution, vault lifecycle, learning curve, flywheel pipeline
 
-**Topology & Resilience:** 7 archetypes, topology resilience, health metrics, health snapshot
+**Topology & Resilience:** 6 archetypes, topology resilience, health metrics, health snapshot
 
 **Feedback & Recovery:** regression gate, feedback integration, sparse feedback, agent feedback, cross-vault learning, recovery
 

@@ -14,6 +14,7 @@
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-89.6%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-66%25%20single--hop%20%7C%2083%25%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![Cost](https://img.shields.io/badge/cost-%240.06--0.09%2Fquery-green.svg)](docs/TESTING.md#how-the-e2e-benchmark-works)
 [![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)**
@@ -31,6 +32,7 @@ Flywheel auto-links on every write, voice or keyboard.
 | Your data | Leaves your machine | Stays local. No sync, no upload, no account |
 | Model choice | Locked to one provider | Model-agnostic via MCP. Swap anytime |
 | As models improve | Migration or vendor upgrade | Same tools, better reasoning. Your graph improves the model, not the other way around |
+| Tokens per question | Read 10-50 files to find context (~50-200k tokens) | One search returns metadata + graph context (~2-5k tokens). [$0.06-0.09/query](#benchmarked) measured |
 | "What's overdue?" | Read every file | Structured task queries with due dates, tags, and path filters |
 | "What links here?" | Grep the vault, flat list | Weighted backlinks + outlinks, ranked by edge strength and recency |
 | "Add a meeting note" | Raw write, no linking | Structured mutations that auto-link entities and densify the graph |
@@ -252,22 +254,24 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 
 **Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions):
 
-| System | Single-hop | Multi-hop | Questions | Judge | Docs/question | Infrastructure |
+| System | Single-hop | Multi-hop | Questions | Judge | Cost/question | Infrastructure |
 |---|---|---|---|---|---|---|
-| **Flywheel** | **66.2%** | **33.8%** | 695 | Claude Haiku | 272 session notes | Local SQLite + markdown |
-| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | 695 | GPT-4o | Not disclosed | Redis + Qdrant |
-| [Zep](https://getzep.com/) | 35.7 | 19.4 | 695 | GPT-4o | Not disclosed | Cloud service |
-| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | 695 | GPT-4o | Not disclosed | Varies |
-| [Letta](https://memgpt.ai/) | 26.7 | - | 695 | GPT-4o | Not disclosed | Cloud/local |
+| **Flywheel** | **66.2%** | **33.8%** | 695 | Claude Haiku | **$0.087** | Local SQLite + markdown |
+| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | 695 | GPT-4o | ~$0.30-0.50* | Redis + Qdrant |
+| [Zep](https://getzep.com/) | 35.7 | 19.4 | 695 | GPT-4o | ~$0.30-0.50* | Cloud service |
+| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | 695 | GPT-4o | ~$0.30-0.50* | Varies |
+| [Letta](https://memgpt.ai/) | 26.7 | - | 695 | GPT-4o | ~$0.30-0.50* | Cloud/local |
+
+\* Competitor costs are estimates based on GPT-4o pricing ($2.50/1M input, $10/1M output) for answer generation + judging. Actual costs not disclosed. Flywheel uses Claude Sonnet for answers + Claude Haiku for judging, roughly 3-5x cheaper per token for the judge step. Infrastructure costs (Redis, Qdrant, cloud hosting) are additional.
 
 **Document retrieval** ([HotpotQA](https://hotpotqa.github.io/), 500 questions):
 
-| System | Type | Recall@5 | Docs | Training |
-|---|---|---|---|---|
-| **Flywheel** | General-purpose MCP tool | **89.6%** | 4,960 | None |
-| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | 5M+ Wikipedia | Trained on HotpotQA |
-| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | 5M+ Wikipedia | Trained on HotpotQA |
-| BM25 baseline | Industry-standard IR | ~70-75% | Varies | None |
+| System | Type | Recall@5 | Docs | Cost/question | Training |
+|---|---|---|---|---|---|
+| **Flywheel** | General-purpose MCP tool | **89.6%** | 4,960 | **$0.063** | None |
+| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | 5M+ Wikipedia | N/A (inference only) | Trained on HotpotQA |
+| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | 5M+ Wikipedia | N/A (inference only) | Trained on HotpotQA |
+| BM25 baseline | Industry-standard IR | ~70-75% | Varies | Negligible | None |
 
 **What's comparable and what isn't:**
 

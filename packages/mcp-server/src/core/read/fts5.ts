@@ -226,6 +226,60 @@ export function isIndexStale(_vaultPath?: string): boolean {
 }
 
 /**
+ * Incrementally update the FTS5 index for changed/new files and remove deleted ones.
+ * Called by the watcher pipeline after each batch.
+ */
+export function updateFTS5Incremental(
+  vaultPath: string,
+  changed: string[],
+  deleted: string[],
+): { updated: number; removed: number } {
+  const db = getDb();
+  if (!db || !state.ready) return { updated: 0, removed: 0 };
+
+  const del = db.prepare('DELETE FROM notes_fts WHERE path = ?');
+  const ins = db.prepare(
+    'INSERT INTO notes_fts (path, title, frontmatter, content) VALUES (?, ?, ?, ?)'
+  );
+
+  let updated = 0;
+  let removed = 0;
+
+  const run = db.transaction(() => {
+    // Remove deleted/moved files
+    for (const p of deleted) {
+      del.run(p);
+      removed++;
+    }
+
+    // Upsert changed files (delete + re-insert)
+    for (const p of changed) {
+      if (!shouldIndexFile(p)) continue;
+      const absPath = `${vaultPath}/${p}`.replace(/\\/g, '/');
+      try {
+        const stats = fs.statSync(absPath);
+        if (stats.size > MAX_INDEX_FILE_SIZE) continue;
+        const raw = fs.readFileSync(absPath, 'utf-8');
+        const { frontmatter, body } = splitFrontmatter(raw);
+        const title = p.replace(/\.md$/, '').split('/').pop() || p;
+        del.run(p);
+        ins.run(p, title, frontmatter, body);
+        updated++;
+      } catch {
+        // File unreadable — remove stale entry if any
+        del.run(p);
+      }
+    }
+  });
+
+  run();
+  if (updated > 0 || removed > 0) {
+    state.noteCount = (db.prepare('SELECT COUNT(*) as count FROM notes_fts').get() as { count: number }).count;
+  }
+  return { updated, removed };
+}
+
+/**
  * Search the FTS5 index
  *
  * Supports FTS5 query syntax:

@@ -2,7 +2,7 @@
 
 Your vault is your second brain. You don't hand it to software you can't trust.
 
-**2,579 tests | 129 test files | 47,000+ lines of test code**
+**2,712 tests | 129 test files | 47,000+ lines of test code**
 
 ---
 
@@ -35,11 +35,11 @@ Three principles guide every test in this project:
 | Test: platform & publish | WSL paths, package startup | Cross-platform correctness |
 | Test: graph quality | Precision/recall, ablation, regression gate | Algorithm quality |
 | Test: bench | vault-core benchmark suite | Scale and performance |
-| Test: full matrix | Node 20 x Ubuntu + Windows | Cross-platform x older Node |
+| Test: full matrix | Node 22 + 24 x Ubuntu + Windows | Cross-platform + Node version matrix |
 
 Each job surfaces as its own pass/fail check in GitHub. A PR cannot merge if any job fails.
 
-The full matrix job runs the entire test suite on Node 20 (Ubuntu + Windows) in addition to the focused Node 22 jobs. This catches Node version regressions and Windows-specific path handling issues (WSL path translation, case sensitivity, file watching).
+The full matrix job runs the entire test suite on Node 22 and 24 (Ubuntu + Windows). This catches Node version regressions (especially native module compatibility with better-sqlite3 v12) and Windows-specific path handling issues (WSL path translation, case sensitivity, file watching).
 
 ---
 
@@ -234,46 +234,45 @@ LoCoMo provides three representations of the same conversations. Flywheel builds
 | Summary | 82.7% | 89.2% | Close second — concise but retains key facts |
 | Observation | 76.9% | 84.5% | Shorter, less keyword overlap |
 
-### End-to-End Results (600 questions, balanced, Claude Sonnet + Flywheel MCP)
+### End-to-End Results (695 questions, balanced, Claude Sonnet + Flywheel MCP)
 
-Real `claude -p` sessions with the `agent` preset (recall, memory, brief tools). Stratified sampling: 120 questions per category (96 for temporal), spread across all 10 conversations. No pre-processing, no cherry-picking.
+Real `claude -p` sessions with the `agent` preset (recall, memory, brief tools). 695 questions — same sample size as Mem0/Zep/LangMem benchmarks. Stratified sampling across all 10 conversations. No pre-processing, no cherry-picking.
 
 | Category | Questions | Evidence Recall | Answer Accuracy (LLM-judge) | 95% CI |
 |---|---|---|---|---|
-| **Overall** | **600** | **71.2%** | **51.0%** | [47.0%, 55.0%] |
-| Commonsense | 120 | 88.4% | 65.8% | [57.0%, 73.7%] |
-| Single-hop | 120 | 85.6% | 59.2% | [50.2%, 67.5%] |
-| Adversarial | 144 | 88.2% | 54.2% | [46.0%, 62.1%] |
-| Temporal | 96 | 56.4% | 40.6% | [31.3%, 50.6%] |
-| Multi-hop | 120 | 58.6% | 32.5% | [24.8%, 41.3%] |
+| **Overall** | **695** | **83.0%** | **52.1%** | [48.4%, 55.8%] |
+| Commonsense | 139 | 95.0% | 67.6% | [59.5%, 74.8%] |
+| Single-hop | 139 | 94.2% | 66.2% | [58.0%, 73.5%] |
+| Adversarial | 182 | 97.3% | 45.1% | [38.0%, 52.3%] |
+| Temporal | 96 | 68.6% | 49.0% | [39.2%, 58.8%] |
+| Multi-hop | 139 | 73.2% | 33.8% | [26.5%, 42.0%] |
 
-Cost: $51.68 total ($0.086/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts (Wilson 95% confidence intervals).
+Cost: $60.80 total ($0.087/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts (Wilson 95% confidence intervals).
 
 ### How Flywheel compares to other memory systems
 
-Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.19413). We report the same metric (answer accuracy via LLM-as-judge) for comparison, but **the methodologies differ in important ways** — see below.
+Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.19413). Same sample size (695 questions), same metric (answer accuracy via LLM-as-judge).
 
 | System | Type | Single-hop | Multi-hop | Questions | Judge | Infrastructure |
 |---|---|---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **59.2%** | **32.5%** | 600 | Claude Haiku | Local (SQLite + markdown) |
-| **Flywheel** | MCP vault tool | **85.6%** | **58.6%** | 600 | — | Evidence recall (not answer accuracy) |
+| **Flywheel** | MCP vault tool | **66.2%** | **33.8%** | 695 | Claude Haiku | Local (SQLite + markdown) |
+| **Flywheel** | MCP vault tool | **94.2%** | **73.2%** | 695 | — | Evidence recall (not answer accuracy) |
 | Mem0 | Cloud memory | 38.7 | 28.6 | 695 | GPT-4o | Redis + Qdrant |
 | Zep | Cloud memory | 35.7 | 19.4 | 695 | GPT-4o | Cloud service |
 | LangMem | Memory framework | 35.5 | 26.0 | 695 | GPT-4o | Varies |
 | MemGPT/Letta | Agent memory | 26.7 | — | 695 | GPT-4o | Cloud/local |
 
-**Not apples-to-apples — read this before comparing:**
+**Methodology differences — read this before comparing:**
 
-- **Sample size.** Flywheel: 600 questions (stratified ~120 per category). Competitors: 695 questions. Comparable sample sizes, but not identical.
 - **Judge model.** Flywheel uses Claude Haiku for CORRECT/WRONG verdicts. The Mem0 paper uses GPT-4o. Different judges may have different leniency or strictness. We have not measured inter-judge agreement.
 - **Vault mode.** Flywheel uses dialog mode (raw conversation turns) — the most keyword-rich representation. Summary mode scores ~1-2pp lower on retrieval. Competitors may use different representations.
 - **Prompt.** Claude is told the vault structure (notes are conversation sessions) but is not given a retrieval strategy.
 
-**What the numbers do suggest:**
+**What the numbers suggest:**
 
-- **Single-hop: 59.2%** — still 20pp ahead of Mem0 (38.7%), even with a fairer prompt and different judge model. Flywheel finds the right note and Claude extracts the answer.
-- **Multi-hop: 32.5%** — ahead of Mem0 (28.6%), though the confidence intervals overlap ([24.8%, 41.3%] vs their point estimate). Hard for everyone.
-- **Temporal: 40.6%** — the weakest category. Questions about when events happened require precise date reasoning across sessions.
+- **Single-hop: 66.2%** — 27.5pp ahead of Mem0 (38.7%). Flywheel finds the right note and Claude extracts the answer.
+- **Multi-hop: 33.8%** — ahead of Mem0 (28.6%), though confidence intervals overlap. Hard for everyone.
+- **Temporal: 49.0%** — improved from 40.6% in previous runs. Still the hardest category — requires precise date reasoning across sessions.
 - **Infrastructure.** Flywheel runs locally on markdown files with SQLite. Mem0 requires Redis + Qdrant. Zep requires a cloud service.
 
 Source: [`demos/locomo/`](../demos/locomo/) | [`packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts)

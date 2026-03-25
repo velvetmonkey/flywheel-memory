@@ -56,7 +56,7 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 ```bash
 npm run build    # Build both packages
-npm test         # Run full test suite (2,579 tests)
+npm test         # Run full test suite (2,712 tests)
 npm run dev      # Watch mode
 npm run lint     # Type check
 ```
@@ -74,7 +74,7 @@ No. [[Flywheel]] runs entirely on your machine. No cloud services, no API keys (
 CI benchmarks test 100,000-line file mutations and 2,500-entity indexes. The bench package can generate vaults up to 100k notes. The in-memory index builds at startup (a few seconds cold, ~100ms cached) and queries return in under 10ms.
 
 **Will it corrupt my vault?**
-2,579 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
+2,712 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
 
 **How much does it cost in tokens?**
 A typical query uses 50-200 tokens of context. Compare that to grep-and-read, which typically costs ~800-2,000 tokens for text-searchable questions. Measured across a 7-beat demo scenario: the `brief` tool delivers 44x token savings (71 tokens vs 3,164 baseline). The bigger win is structural queries (backlinks, hubs, paths) that grep can't answer at all.

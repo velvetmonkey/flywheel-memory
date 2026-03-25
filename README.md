@@ -13,8 +13,8 @@
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-89.6%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-51.0%25%20answer%20accuracy-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
-[![Tests](https://img.shields.io/badge/tests-2,579%20passed-brightgreen.svg)](docs/TESTING.md)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-52.1%25%20answer%20accuracy%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)**
 
@@ -257,11 +257,11 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 ### Conversational Memory (LoCoMo)
 
-600 questions across 10 conversations. Answer accuracy via LLM-as-judge.
+695 questions across 10 conversations. Answer accuracy via LLM-as-judge (same sample size as competitors).
 
 | System | Single-hop | Multi-hop | Commonsense | Questions | Judge |
 |---|---|---|---|---|---|
-| **Flywheel** | **59.2%** | **32.5%** | **65.8%** | 600 | Claude Haiku |
+| **Flywheel** | **66.2%** | **33.8%** | **67.6%** | 695 | Claude Haiku |
 | [Mem0](https://mem0.ai/) | 38.7 | 28.6 | — | 695 | GPT-4o |
 | [Zep](https://getzep.com/) | 35.7 | 19.4 | — | 695 | GPT-4o |
 | [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | — | 695 | GPT-4o |
@@ -269,13 +269,13 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 
 [Full benchmark methodology →](docs/TESTING.md)
 
-> These comparisons aren't apples-to-apples — different test sizes, different judges, different document pools. We haven't run controlled head-to-head tests yet. But there's a plausible reason the numbers are high: trained retrievers optimise a single embedding space, while Flywheel fuses multiple orthogonal signals — FTS5 keyword matching, graph structure (backlinks, hubs, co-occurrence), entity type awareness, and semantic similarity via RRF. Each signal catches what the others miss. A multi-hop question that defeats pure embedding retrieval can still resolve through graph traversal; a semantic near-miss can still surface via BM25 keyword overlap. Whether that's a durable advantage or a favourable artefact of these specific benchmarks, we don't know yet. The numbers reproduce — clone the repo and check. [Details →](docs/TESTING.md)
+> Different judges and document pools — not perfectly controlled. But there's a plausible reason the numbers are high: trained retrievers optimise a single embedding space, while Flywheel fuses multiple orthogonal signals — FTS5 keyword matching (OR-joined with BM25 ranking), graph structure (backlinks, hubs, co-occurrence), entity type awareness, and semantic similarity via RRF. Each signal catches what the others miss. A multi-hop question that defeats pure embedding retrieval can still resolve through graph traversal; a semantic near-miss can still surface via BM25 keyword overlap. The numbers reproduce — clone the repo and check. [Details →](docs/TESTING.md)
 
 ---
 
 ## Tested
 
-2,579 tests across read, write, security, concurrency, and graph quality. CI-gated on Ubuntu + Windows, Node 20 + 22.
+2,712 tests across read, write, security, concurrency, and graph quality. CI-gated on Ubuntu + Windows, Node 22 + 24.
 
 - **Graph quality:** 100% wikilink precision on ground truth vault, stress-tested over 50 generations with realistic noise. [Report →](docs/QUALITY_REPORT.md)
 - **Live AI testing:** real `claude -p` sessions verify tool adoption end-to-end, not just handler logic

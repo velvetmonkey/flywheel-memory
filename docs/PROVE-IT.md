@@ -8,7 +8,7 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 
 ## Prerequisites
 
-- **Node.js 20–24** -- check with `node --version`.
+- **Node.js 22–24** -- check with `node --version`.
 - **[[CLAUDE]] Code** -- authenticated and working (`claude --version`)
 - **git** -- to clone the repo
 
@@ -27,12 +27,12 @@ Wait for it:
 
 ```
 Test Suites: 129 passed, 129 total
-Tests:       2,579 passed, 2,579 total
+Tests:       2,712 passed, 2,712 total
 Snapshots:   0 total
 Time:        ~18s
 ```
 
-2,579 tests. All passing. No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults. If something is broken, you know in 18 seconds.
+2,712 tests. All passing. No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults. If something is broken, you know in 18 seconds.
 
 ---
 
@@ -175,7 +175,7 @@ See [SETUP.md](SETUP.md) for the complete walkthrough.
 
 ## What You Just Proved
 
-1. **Tests pass** -- 2,579 of them, against real data
+1. **Tests pass** -- 2,712 of them, against real data
 2. **Graph queries work** -- backlinks + metadata, no file reads
 3. **Auto-wikilinks work** -- plain text in, linked text out
 4. **The algorithm is transparent** -- scores with explanations, not black boxes

@@ -286,7 +286,7 @@ Two standard academic benchmarks. All results reproducible: [`demos/hotpotqa/`](
 | Adversarial | 97.3% | 45.1% | [38.0%, 52.3%] | 182 |
 | **Overall** | **83.0%** | **52.1%** | **[48.4%, 55.8%]** | **695** |
 
-Evidence recall = did the system find the right source notes. Answer accuracy = did it give the correct answer (LLM-as-judge, Claude Haiku). [Raw results →](demos/locomo/results/) · [Full methodology →](docs/TESTING.md)
+Evidence recall = did the system find the right source notes. Answer accuracy = did it give the correct answer (LLM-as-judge, Claude Haiku). Reproduce locally: `demos/locomo/run-benchmark.sh` · [Full methodology →](docs/TESTING.md)
 
 ---
 

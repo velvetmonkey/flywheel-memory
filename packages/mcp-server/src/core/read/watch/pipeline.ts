@@ -884,14 +884,12 @@ export class PipelineRunner {
       return { skipped: true };
     }
 
-    const currentBatchPaths = new Set(p.events.map(e => e.path));
     const result = await drainProactiveQueue(
       p.sd,
       p.vp,
-      currentBatchPaths,
       {
         minScore: p.flywheelConfig?.proactive_min_score ?? 20,
-        maxPerFile: p.flywheelConfig?.proactive_max_per_file ?? 3,
+        maxPerFile: p.flywheelConfig?.proactive_max_per_file ?? 5,
         maxPerDay: p.flywheelConfig?.proactive_max_per_day ?? 10,
       },
       applyProactiveSuggestions,
@@ -922,7 +920,7 @@ export class PipelineRunner {
     tracker.start('proactive_enqueue', { files: this.suggestionResults.length });
     try {
       const minScore = p.flywheelConfig?.proactive_min_score ?? 20;
-      const maxPerFile = p.flywheelConfig?.proactive_max_per_file ?? 3;
+      const maxPerFile = p.flywheelConfig?.proactive_max_per_file ?? 5;
       const entries: QueueEntry[] = [];
 
       for (const { file, top } of this.suggestionResults) {

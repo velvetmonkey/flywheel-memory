@@ -298,9 +298,9 @@ This server manages multiple vaults. Every tool has an optional "vault" paramete
   // Frontmatter guidance (always present -- impacts search, categorization, recall, and suggestions)
   parts.push(`
 **Frontmatter matters more than content** for Flywheel's intelligence. When creating or updating notes, always set:
-  - \`type:\` — drives entity categorization (person, project, technology). Without it, the category is guessed from the name alone.
-  - \`aliases:\` — alternative names so the entity is found when referred to differently.
-  - \`description:\` — one-line summary shown in search results and used by recall.
+  - \`type:\` — drives entity categorization (person, project, technology). Without it, the category is guessed from the name alone and is often wrong.
+  - \`aliases:\` — alternative names so the entity is found when referred to differently. Without it, the entity is invisible to searches using alternate names.
+  - \`description:\` — one-line summary shown in search results and used by recall. Without it, search results and recall are degraded.
   - Tags — used for filtering, suggestion scoring, and schema analysis.
 Good frontmatter is the highest-leverage action for improving suggestions, recall, and link quality.`);
 
@@ -322,6 +322,10 @@ Escalation: "search" (enriched metadata + content preview) → "get_note_structu
 **Before writing, check for saved policies** with \`policy(action="list")\`. Policies ensure notes are
 created with the correct structure and frontmatter for this vault. Use a matching policy instead of
 raw write tools when one exists. Fall back to direct tools only when no policy fits.
+
+**Every new note should have \`type\`, \`aliases\`, and \`description\` in frontmatter** — this is what powers
+entity categorization, search ranking, and link suggestions. Notes without frontmatter are nearly invisible
+to the intelligence layer.
 
 Write to existing notes with "vault_add_to_section". Create new notes with "vault_create_note".
 Update metadata with "vault_update_frontmatter". These are fallback tools — use them when no policy fits.

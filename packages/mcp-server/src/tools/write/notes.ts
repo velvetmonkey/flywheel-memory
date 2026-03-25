@@ -39,12 +39,12 @@ export function registerNoteTools(
   // ========================================
   server.tool(
     'vault_create_note',
-    'Create a new note in the vault with optional frontmatter and content.\n\nExample: vault_create_note({ path: "people/Jane Smith.md", content: "# Jane Smith\\n\\nProduct manager at Acme.", frontmatter: { type: "person", company: "Acme" } })',
+    'Create a new note in the vault. Always include frontmatter with at least type, aliases, and description — these drive entity categorization, search, and link suggestions.\n\nExample: vault_create_note({ path: "people/Jane Smith.md", content: "# Jane Smith\\n\\nProduct manager at Acme.", frontmatter: { type: "person", aliases: ["Jane"], description: "Product manager at Acme", company: "Acme" } })',
     {
       path: z.string().describe('Vault-relative path for the new note (e.g., "daily-notes/2026-01-28.md")'),
       content: z.string().default('').describe('Initial content for the note'),
       template: z.string().optional().describe('Vault-relative path to a template file (e.g., "templates/person.md"). Template variables {{date}} and {{title}} are substituted. Template frontmatter is merged with the frontmatter parameter (explicit values take precedence).'),
-      frontmatter: z.record(z.any()).default({}).describe('Frontmatter fields (JSON object)'),
+      frontmatter: z.record(z.any()).default({}).describe('Frontmatter fields (JSON object). At minimum set type, aliases, and description — without these the note is nearly invisible to search and suggestions.'),
       overwrite: z.boolean().default(false).describe('If true, overwrite existing file'),
       commit: z.boolean().default(false).describe('If true, commit this change to git (creates undo point)'),
       skipWikilinks: z.boolean().default(false).describe('If true, skip auto-wikilink application (wikilinks are applied by default)'),

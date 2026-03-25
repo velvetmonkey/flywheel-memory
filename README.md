@@ -42,7 +42,7 @@ Flywheel auto-links on every write, voice or keyboard.
 
 ### Who this is for
 
-**For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Every conversation you have with a cloud AI builds a cognitive profile of you that you don't own, can't export, and can't delete. Flywheel keeps that profile local. The people who use AI the most [want more control, not less](https://x.com/AnthropicAI/status/2036499691571953848). Also works as persistent memory for bots and agents via the `agent` preset — including [OpenClaw](https://github.com/openclaw/openclaw), where it replaces default amnesiac file access with graph-aware, learning memory.
+**For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Every conversation you have with a cloud AI builds a cognitive profile of you that you don't own, can't export, and can't delete. Flywheel keeps that profile local. The people who use AI the most [want more control, not less](https://x.com/AnthropicAI/status/2036499691571953848). Also works as persistent memory for bots and agents via the `agent` preset, including [OpenClaw](https://github.com/openclaw/openclaw), where it replaces default amnesiac file access with graph-aware, learning memory.
 
 **Not for** people who want a hosted service. Flywheel runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
 
@@ -346,12 +346,12 @@ I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-cran
 
 **AGPL-3.0.** The architecture keeps your data local. The license keeps the code open. Together, they ensure no one can turn your knowledge graph into a closed product.
 
-Every AI platform is building memory as a retention moat — your cognitive profile, packaged as a subscription you can't leave. AGPL means no one can fork Flywheel and do the same. Derivatives stay open. Your data stays yours.
+Every AI platform is building memory as a retention moat: your cognitive profile, packaged as a subscription you can't leave. AGPL means no one can fork Flywheel and do the same. Derivatives stay open. Your data stays yours.
 
-Using Flywheel internally at your company? AGPL permits that — network distribution triggers source disclosure, not internal use. Need a commercial license? [Get in touch](https://x.com/thevelvetmonke).
+Using Flywheel internally at your company? AGPL permits that. Network distribution triggers source disclosure, not internal use. Need a commercial license? [Get in touch](https://x.com/thevelvetmonke).
 
 See [LICENSE](./LICENSE) for details.
 
 > Your knowledge. Your graph. Your terms.
 >
-> *If you can keep your head when all about you are losing theirs...* — Kipling
+> *If you can keep your head when all about you are losing theirs...* -- Kipling

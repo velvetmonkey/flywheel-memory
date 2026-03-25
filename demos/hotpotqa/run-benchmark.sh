@@ -52,6 +52,33 @@ EOF
 
 mkdir -p "$RESULTS_DIR/raw"
 
+# Pre-warm: ensure vault is fully indexed + embeddings built before questions start
+warmup_config=$(cat <<EOF
+{"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$VAULT_DIR","FLYWHEEL_TOOLS":"full"}}}}
+EOF
+)
+
+echo "Pre-warming vault: index + auto-link + embeddings..."
+if claude -p "Bootstrap this vault for benchmarking. Run these steps in order:
+1. Call health_check — report entity_count and note_count.
+2. Call vault_init with mode='enrich' and dry_run=false to auto-link all notes with wikilinks.
+3. Call refresh_index to re-index with the new wikilinks.
+4. Call init_semantic to build embeddings. Wait for completion.
+5. Call health_check — confirm fts5_ready=true and embeddings_ready=true.
+Report final status with entity_count, note_count, and embeddings_ready." \
+  --output-format stream-json \
+  --no-session-persistence \
+  --permission-mode bypassPermissions \
+  --mcp-config <(echo "$warmup_config") \
+  --strict-mcp-config \
+  --model haiku \
+  > "$RESULTS_DIR/warmup.jsonl" 2>"$RESULTS_DIR/warmup.stderr"; then
+  echo "Vault pre-warmed (index + auto-link + embeddings)"
+else
+  echo "WARNING: Pre-warm failed (exit $?) — continuing anyway"
+fi
+echo ""
+
 # Run each question individually (not piped, to avoid stdin issues)
 for i in $(seq 0 $((QUESTION_COUNT - 1))); do
   padded=$(printf "%03d" "$i")

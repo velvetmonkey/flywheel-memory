@@ -292,16 +292,59 @@ function mapFrontmatterType(type: string): EntityCategory | undefined {
  * 7. Projects - multi-word (fallback)
  * 8. Other - single word default
  */
+// Folder names that imply entity categories
+const FOLDER_CATEGORY_MAP: Record<string, EntityCategory> = {
+  'people': 'people',
+  'person': 'people',
+  'contacts': 'people',
+  'team': 'people',
+  'members': 'people',
+  'projects': 'projects',
+  'project': 'projects',
+  'locations': 'locations',
+  'places': 'locations',
+  'companies': 'organizations',
+  'organizations': 'organizations',
+  'orgs': 'organizations',
+  'concepts': 'concepts',
+  'topics': 'concepts',
+  'tools': 'technologies',
+  'software': 'technologies',
+  'media': 'media',
+  'books': 'media',
+  'films': 'media',
+  'movies': 'media',
+  'music': 'media',
+  'vehicles': 'vehicles',
+  'equipment': 'technologies',
+  'food': 'food',
+  'recipes': 'food',
+  'health': 'health',
+  'finance': 'finance',
+  'hobbies': 'hobbies',
+};
+
 function categorizeEntity(
   name: string,
   techKeywords: string[],
   frontmatterType?: string,
+  notePath?: string,
 ): EntityCategory {
   // 0. Frontmatter type takes priority
   if (frontmatterType) {
     const mapped = mapFrontmatterType(frontmatterType);
     if (mapped) return mapped;
   }
+
+  // 0.5. Folder-based inference (e.g., people/Andrew.md → person)
+  if (notePath) {
+    const segments = notePath.toLowerCase().split('/');
+    for (const segment of segments) {
+      const mapped = FOLDER_CATEGORY_MAP[segment];
+      if (mapped) return mapped;
+    }
+  }
+
   const nameLower = name.toLowerCase();
   const words = name.split(/\s+/);
 
@@ -526,7 +569,7 @@ export async function scanVaultEntities(
   };
 
   for (const entity of uniqueEntities) {
-    const category = categorizeEntity(entity.name, techKeywords, entity.frontmatterType);
+    const category = categorizeEntity(entity.name, techKeywords, entity.frontmatterType, entity.relativePath);
     // Store as EntityWithAliases object
     const entityObj: EntityWithAliases = {
       name: entity.name,

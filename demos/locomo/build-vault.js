@@ -239,7 +239,7 @@ async function main() {
     const safeName = speaker.replace(/[/\\:*?"<>|]/g, '_');
     fs.writeFileSync(
       path.join(peoplePath, `${safeName}.md`),
-      `# ${speaker}\n\nPerson in conversations.\n`,
+      `---\ntype: person\n---\n# ${speaker}\n\nPerson in conversations.\n`,
       'utf-8',
     );
   }

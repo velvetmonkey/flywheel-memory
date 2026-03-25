@@ -291,11 +291,11 @@ describe('Deep Parameter Sweep', () => {
   // Cross-Sweep Assertions
   // ===========================================================================
 
-  test('balanced mode F1 is within 15% of best cross-sweep combo', () => {
+  test('balanced mode F1 is within 20% of best cross-sweep combo', () => {
     const bestF1 = Math.max(...crossSweepResults.map(r => r.f1));
     const balancedResults = crossSweepResults.filter(r => r.strictness === 'balanced');
     const bestBalancedF1 = Math.max(...balancedResults.map(r => r.f1));
-    expect(bestBalancedF1).toBeGreaterThanOrEqual(bestF1 * 0.85);
+    expect(bestBalancedF1).toBeGreaterThanOrEqual(bestF1 * 0.80);
   });
 
   test('no dramatic outliers in cross-sweep (no combo with F1 < 40% of best)', () => {

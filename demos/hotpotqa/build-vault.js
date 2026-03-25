@@ -68,13 +68,25 @@ async function main() {
   const docPathMap = new Map();
   const groundTruth = [];
 
+  /** Infer entity type from Wikipedia content patterns */
+  function inferType(text) {
+    const first = text.slice(0, 500).toLowerCase();
+    if (/\b(born|died)\b.*\bis an?\b|\bis an?\b.*\b(singer|actor|actress|writer|politician|player|coach|artist|musician|author|poet|director|journalist|scientist|professor|engineer|general|admiral|bishop|philosopher)\b/.test(first)) return 'person';
+    if (/\bis an?\b.*\b(city|town|village|municipality|commune|district|county|province|region|state|island|river|mountain|lake|peninsula)\b/.test(first)) return 'location';
+    if (/\bis an?\b.*\b(album|film|movie|song|single|novel|book|series|show|episode|documentary|musical|opera|play|poem|magazine|newspaper|journal)\b/.test(first)) return 'media';
+    if (/\bis an?\b.*\b(company|corporation|organization|institution|university|school|college|agency|foundation|association|team|club|band|group)\b/.test(first)) return 'organization';
+    return 'document';
+  }
+
   for (const entry of selected) {
     // Write context docs
     for (const [title, sentences] of entry.context) {
       if (docPathMap.has(title)) continue;
       const safeName = title.replace(/[/\\:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
       const filePath = `docs/${safeName}.md`;
-      const content = `# ${title}\n\n${sentences.join('\n\n')}`;
+      const body = sentences.join('\n\n');
+      const type = inferType(body);
+      const content = `---\ntype: ${type}\n---\n# ${title}\n\n${body}`;
       fs.writeFileSync(path.join(VAULT_DIR, filePath), content, 'utf-8');
       docPathMap.set(title, filePath);
     }

@@ -371,6 +371,27 @@ export function initSchema(db: Database.Database): void {
       db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(34);
     }
 
+    // v35: matched_term column on wikilink_feedback and wikilink_applications
+    // Enables per-alias feedback tracking — suppression can target individual aliases
+    // instead of penalizing the whole entity (fixes Hera/Hero problem).
+    if (currentVersion < 35) {
+      const hasFeedbackTerm = db.prepare(
+        `SELECT COUNT(*) as cnt FROM pragma_table_info('wikilink_feedback') WHERE name = 'matched_term'`
+      ).get() as { cnt: number };
+      if (hasFeedbackTerm.cnt === 0) {
+        db.exec('ALTER TABLE wikilink_feedback ADD COLUMN matched_term TEXT');
+      }
+
+      const hasAppTerm = db.prepare(
+        `SELECT COUNT(*) as cnt FROM pragma_table_info('wikilink_applications') WHERE name = 'matched_term'`
+      ).get() as { cnt: number };
+      if (hasAppTerm.cnt === 0) {
+        db.exec('ALTER TABLE wikilink_applications ADD COLUMN matched_term TEXT');
+      }
+
+      db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(35);
+    }
+
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
     ).run(SCHEMA_VERSION);

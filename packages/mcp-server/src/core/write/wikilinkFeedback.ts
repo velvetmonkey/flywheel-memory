@@ -139,12 +139,13 @@ export function recordFeedback(
   notePath: string,
   correct: boolean,
   confidence: number = 1.0,
+  matchedTerm?: string,
 ): void {
   try {
-    console.error(`[Flywheel] recordFeedback: entity="${entity}" context="${context}" notePath="${notePath}" correct=${correct}`);
+    console.error(`[Flywheel] recordFeedback: entity="${entity}" term="${matchedTerm ?? entity}" context="${context}" notePath="${notePath}" correct=${correct}`);
     const result = stateDb.db.prepare(
-      'INSERT INTO wikilink_feedback (entity, context, note_path, correct, confidence) VALUES (?, ?, ?, ?, ?)'
-    ).run(entity, context, notePath, correct ? 1 : 0, confidence);
+      'INSERT INTO wikilink_feedback (entity, context, note_path, correct, confidence, matched_term) VALUES (?, ?, ?, ?, ?, ?)'
+    ).run(entity, context, notePath, correct ? 1 : 0, confidence, matchedTerm ?? null);
     console.error(`[Flywheel] recordFeedback: inserted id=${result.lastInsertRowid}`);
   } catch (e) {
     console.error(`[Flywheel] recordFeedback failed for entity="${entity}": ${e}`);
@@ -682,6 +683,63 @@ export function getAllSuppressionPenalties(stateDb: StateDb, now?: Date): Map<st
   return penalties;
 }
 
+/**
+ * Get per-alias suppression penalties.
+ *
+ * Returns penalties keyed by "entity||matchedTerm" for aliases that have
+ * individually poor accuracy even when the entity overall is fine.
+ * Example: Hera via name "Hera" = 95% (no penalty), Hera via alias "Hero" = 20% (suppressed).
+ *
+ * Only returns entries where matched_term is non-null and differs from entity name.
+ * Entity-level penalties are still returned by getAllSuppressionPenalties().
+ */
+export function getPerAliasPenalties(stateDb: StateDb, now?: Date): Map<string, number> {
+  const penalties = new Map<string, number>();
+
+  const rows = stateDb.db.prepare(`
+    SELECT entity, matched_term, correct, confidence, created_at
+    FROM wikilink_feedback
+    WHERE matched_term IS NOT NULL
+    ORDER BY entity COLLATE NOCASE, matched_term COLLATE NOCASE
+  `).all() as Array<{ entity: string; matched_term: string; correct: number; confidence: number; created_at: string }>;
+
+  // Accumulate stats per (entity, matched_term) pair
+  const acc = new Map<string, { weightedCorrect: number; weightedFp: number; rawTotal: number; entity: string; term: string }>();
+
+  for (const row of rows) {
+    const key = `${row.entity.toLowerCase()}||${row.matched_term.toLowerCase()}`;
+    if (!acc.has(key)) {
+      acc.set(key, { weightedCorrect: 0, weightedFp: 0, rawTotal: 0, entity: row.entity, term: row.matched_term });
+    }
+    const stats = acc.get(key)!;
+    const recencyWeight = computeFeedbackWeight(row.created_at, now);
+    const weight = recencyWeight * (row.confidence ?? 1.0);
+    stats.rawTotal++;
+    if (row.correct === 1) {
+      stats.weightedCorrect += weight;
+    } else {
+      stats.weightedFp += weight;
+    }
+  }
+
+  for (const [key, stats] of acc) {
+    // Skip if matched_term IS the entity name (handled by entity-level penalties)
+    if (stats.entity.toLowerCase() === stats.term.toLowerCase()) continue;
+
+    const posteriorMean = computePosteriorMean(stats.weightedCorrect, stats.weightedFp);
+    const totalObs = PRIOR_ALPHA + stats.weightedCorrect + PRIOR_BETA + stats.weightedFp;
+
+    if (totalObs >= SUPPRESSION_MIN_OBSERVATIONS && posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD) {
+      const penalty = Math.round(MAX_SUPPRESSION_PENALTY * (1 - posteriorMean / SUPPRESSION_POSTERIOR_THRESHOLD));
+      if (penalty < 0) {
+        penalties.set(key, penalty);
+      }
+    }
+  }
+
+  return penalties;
+}
+
 // =============================================================================
 // IMPLICIT FEEDBACK (Application Tracking & Removal Detection)
 // =============================================================================
@@ -693,12 +751,13 @@ export function getAllSuppressionPenalties(stateDb: StateDb, now?: Date): Map<st
 export function trackWikilinkApplications(
   stateDb: StateDb,
   notePath: string,
-  entities: string[],
+  entities: string[] | Array<{ entity: string; matchedTerm?: string }>,
 ): void {
   const upsert = stateDb.db.prepare(`
-    INSERT INTO wikilink_applications (entity, note_path, applied_at, status)
-    VALUES (?, ?, datetime('now'), 'applied')
+    INSERT INTO wikilink_applications (entity, note_path, matched_term, applied_at, status)
+    VALUES (?, ?, ?, datetime('now'), 'applied')
     ON CONFLICT(entity, note_path) DO UPDATE SET
+      matched_term = COALESCE(?, matched_term),
       applied_at = datetime('now'),
       status = 'applied'
   `);
@@ -707,10 +766,13 @@ export function trackWikilinkApplications(
   );
 
   const transaction = stateDb.db.transaction(() => {
-    for (const entity of entities) {
-      const row = lookupCanonical.get(entity) as { name: string } | undefined;
-      const canonicalName = row?.name ?? entity;
-      upsert.run(canonicalName, notePath);
+    // Support both string[] (backward compat) and {entity, matchedTerm}[]
+    for (const item of entities) {
+      const entityName = typeof item === 'string' ? item : item.entity;
+      const matchedTerm = typeof item === 'string' ? null : (item.matchedTerm ?? null);
+      const row = lookupCanonical.get(entityName) as { name: string } | undefined;
+      const canonicalName = row?.name ?? entityName;
+      upsert.run(canonicalName, notePath, matchedTerm, matchedTerm);
     }
   });
 
@@ -737,10 +799,10 @@ export function getTrackedApplications(
 function getTrackedApplicationsWithTime(
   stateDb: StateDb,
   notePath: string,
-): Array<{ entity: string; applied_at: string }> {
+): Array<{ entity: string; applied_at: string; matched_term: string | null }> {
   return stateDb.db.prepare(
-    `SELECT entity, applied_at FROM wikilink_applications WHERE note_path = ? AND status = 'applied'`
-  ).all(notePath) as Array<{ entity: string; applied_at: string }>;
+    `SELECT entity, applied_at, matched_term FROM wikilink_applications WHERE note_path = ? AND status = 'applied'`
+  ).all(notePath) as Array<{ entity: string; applied_at: string; matched_term: string | null }>;
 }
 
 /**
@@ -857,10 +919,10 @@ export function processImplicitFeedback(
   );
 
   const transaction = stateDb.db.transaction(() => {
-    for (const { entity, applied_at } of trackedWithTime) {
+    for (const { entity, applied_at, matched_term } of trackedWithTime) {
       if (!currentLinks.has(entity.toLowerCase())) {
         const confidence = computeImplicitRemovalConfidence(applied_at);
-        recordFeedback(stateDb, entity, 'implicit:removed', notePath, false, confidence);
+        recordFeedback(stateDb, entity, 'implicit:removed', notePath, false, confidence, matched_term ?? undefined);
         markRemoved.run(entity, notePath);
         removed.push(entity);
       }
@@ -880,12 +942,12 @@ export function processImplicitFeedback(
      WHERE entity = ? COLLATE NOCASE AND context = 'implicit:survived' AND note_path = ?`
   );
 
-  for (const { entity } of trackedWithTime) {
+  for (const { entity, matched_term } of trackedWithTime) {
     if (currentLinks.has(entity.toLowerCase())) {
       const lastSurvival = getLastSurvival.get(entity, notePath) as { last: string | null } | undefined;
       const lastAt = lastSurvival?.last ? new Date(lastSurvival.last).getTime() : 0;
       if (Date.now() - lastAt > SURVIVAL_COOLDOWN_MS) {
-        recordFeedback(stateDb, entity, 'implicit:survived', notePath, true, 0.8);
+        recordFeedback(stateDb, entity, 'implicit:survived', notePath, true, 0.8, matched_term ?? undefined);
       }
     }
   }

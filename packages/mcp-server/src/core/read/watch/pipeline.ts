@@ -35,6 +35,7 @@ import { mineCooccurrences, saveCooccurrenceToStateDb } from '../../shared/coocc
 import { setCooccurrenceIndex, suggestRelatedLinks, applyProactiveSuggestions } from '../../write/wikilinks.js';
 import { enqueueProactiveSuggestions, drainProactiveQueue, type QueueEntry } from '../../write/proactiveQueue.js';
 import { mineRetrievalCooccurrence } from '../../shared/retrievalCooccurrence.js';
+import { updateFTS5Incremental } from '../fts5.js';
 
 // Read modules
 import { getForwardLinksForNote } from '../graph.js';
@@ -154,6 +155,7 @@ export class PipelineRunner {
 
       // Critical steps (throw on failure)
       await this.indexRebuild();
+      this.fts5Incremental();
       this.noteMoves();
       await this.entityScan();
 
@@ -231,6 +233,28 @@ export class PipelineRunner {
     p.updateIndexState('ready');
     const idx = p.getVaultIndex();
     tracker.end({ note_count: idx.notes.size, entity_count: idx.entities.size, tag_count: idx.tags.size });
+  }
+
+  // ── Step 1.1: FTS5 incremental update ──────────────────────────────
+
+  private fts5Incremental(): void {
+    const { p, tracker } = this;
+    const changed = p.events.filter(e => e.type === 'upsert').map(e => e.path);
+    const deleted = [
+      ...p.events.filter(e => e.type === 'delete').map(e => e.path),
+      ...p.renames.map(r => r.oldPath),
+    ];
+    if (changed.length === 0 && deleted.length === 0) {
+      tracker.start('fts5_incremental', {});
+      tracker.skip('fts5_incremental', 'no changes');
+      return;
+    }
+    tracker.start('fts5_incremental', { changed: changed.length, deleted: deleted.length });
+    const result = updateFTS5Incremental(p.vp, changed, deleted);
+    tracker.end(result);
+    if (result.updated > 0 || result.removed > 0) {
+      serverLog('watcher', `FTS5: ${result.updated} updated, ${result.removed} removed`);
+    }
   }
 
   // ── Step 1.5: Note moves ──────────────────────────────────────────
@@ -884,14 +908,12 @@ export class PipelineRunner {
       return { skipped: true };
     }
 
-    const currentBatchPaths = new Set(p.events.map(e => e.path));
     const result = await drainProactiveQueue(
       p.sd,
       p.vp,
-      currentBatchPaths,
       {
         minScore: p.flywheelConfig?.proactive_min_score ?? 20,
-        maxPerFile: p.flywheelConfig?.proactive_max_per_file ?? 3,
+        maxPerFile: p.flywheelConfig?.proactive_max_per_file ?? 5,
         maxPerDay: p.flywheelConfig?.proactive_max_per_day ?? 10,
       },
       applyProactiveSuggestions,
@@ -922,7 +944,7 @@ export class PipelineRunner {
     tracker.start('proactive_enqueue', { files: this.suggestionResults.length });
     try {
       const minScore = p.flywheelConfig?.proactive_min_score ?? 20;
-      const maxPerFile = p.flywheelConfig?.proactive_max_per_file ?? 3;
+      const maxPerFile = p.flywheelConfig?.proactive_max_per_file ?? 5;
       const entries: QueueEntry[] = [];
 
       for (const { file, top } of this.suggestionResults) {

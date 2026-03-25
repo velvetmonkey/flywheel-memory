@@ -467,30 +467,59 @@ export function isEntityDataStale(
 // =============================================================================
 
 /**
- * Escape special FTS5 characters in a query
+ * Escape special FTS5 characters and convert to OR-joined query.
+ * BM25 ranking naturally scores documents with more matching terms higher,
+ * so OR semantics gives AND-like results at the top while surfacing partial matches.
+ * Preserves quoted phrases as exact matches and * for prefix matching.
  */
 export function escapeFts5Query(query: string): string {
-  // Handle empty query
   if (!query || !query.trim()) {
     return '';
   }
 
-  // Remove or escape FTS5 special characters
-  // Keep * for prefix matching, escape others
-  return query
-    .replace(/"/g, '""')  // Escape quotes
-    .replace(/[(){}[\]^~:-]/g, ' ')  // Remove special operators including hyphen
-    .replace(/\s+/g, ' ')  // Normalize whitespace
+  // Extract quoted phrases first (preserve as AND-joined phrase matches)
+  const phrases: string[] = [];
+  const withoutPhrases = query.replace(/"([^"]+)"/g, (_, phrase) => {
+    phrases.push(`"${phrase.replace(/"/g, '""')}"`);
+    return '';
+  });
+
+  // Clean remaining tokens
+  const cleaned = withoutPhrases
+    .replace(/[(){}[\]^~:-]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
+
+  // Split into tokens, skip explicit AND/OR/NOT operators
+  const tokens = cleaned.split(' ').filter(t => t && t !== 'AND' && t !== 'OR' && t !== 'NOT');
+
+  // Combine: quoted phrases + OR-joined tokens
+  const parts = [...phrases];
+  if (tokens.length === 1) {
+    parts.push(tokens[0]);
+  } else if (tokens.length > 1) {
+    parts.push(tokens.join(' OR '));
+  }
+
+  return parts.join(' ') || '';
 }
 
 /**
  * Rebuild the entities_fts index from the entities table.
- * Uses FTS5's built-in 'rebuild' command to resynchronize.
- * Call this if the FTS index gets out of sync (e.g., T.aliases errors).
+ * Contentless FTS5 tables don't support the 'rebuild' command,
+ * so we manually delete all entries and re-insert from the entities table.
  */
 export function rebuildEntitiesFts(stateDb: StateDb): void {
-  stateDb.db.exec(`INSERT INTO entities_fts(entities_fts) VALUES('rebuild')`);
+  stateDb.db.transaction(() => {
+    stateDb.db.exec(`DELETE FROM entities_fts`);
+    stateDb.db.exec(`
+      INSERT INTO entities_fts(rowid, name, aliases, category)
+      SELECT id, name,
+        COALESCE((SELECT group_concat(value, ' ') FROM json_each(aliases_json)), ''),
+        category
+      FROM entities
+    `);
+  })();
 }
 
 /**

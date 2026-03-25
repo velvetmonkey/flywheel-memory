@@ -16,7 +16,6 @@ import type { VaultIndex } from '../../../src/core/read/types.js';
 import { setWriteStateDb, getWriteStateDb, setWikilinkConfig, setCooccurrenceIndex, getWikilinkStrictness, getCooccurrenceIndex } from '../../../src/core/write/wikilinks.js';
 import { setFTS5Database } from '../../../src/core/read/fts5.js';
 import { setRecencyStateDb } from '../../../src/core/shared/recency.js';
-import { setEdgeWeightStateDb } from '../../../src/core/write/edgeWeights.js';
 import { setTaskCacheDatabase } from '../../../src/core/read/taskCache.js';
 import { setEmbeddingsDatabase, setEmbeddingsBuilding, isEmbeddingsBuilding } from '../../../src/core/read/embeddings.js';
 import { setIndexState, setIndexError, getIndexState, getIndexError, type IndexState } from '../../../src/core/read/graph.js';
@@ -201,7 +200,7 @@ describe('Multi-Vault', () => {
       setWriteStateDb(stateDbA);
       setFTS5Database(stateDbA.db);
       setRecencyStateDb(stateDbA);
-      setEdgeWeightStateDb(stateDbA);
+
       setTaskCacheDatabase(stateDbA.db);
       setEmbeddingsDatabase(stateDbA.db);
 
@@ -212,7 +211,7 @@ describe('Multi-Vault', () => {
       setWriteStateDb(stateDbB);
       setFTS5Database(stateDbB.db);
       setRecencyStateDb(stateDbB);
-      setEdgeWeightStateDb(stateDbB);
+
       setTaskCacheDatabase(stateDbB.db);
       setEmbeddingsDatabase(stateDbB.db);
 
@@ -353,7 +352,6 @@ describe('Multi-Vault', () => {
         setWriteStateDb(ctx.stateDb);
         setFTS5Database(ctx.stateDb.db);
         setRecencyStateDb(ctx.stateDb);
-        setEdgeWeightStateDb(ctx.stateDb);
         setTaskCacheDatabase(ctx.stateDb.db);
         setEmbeddingsDatabase(ctx.stateDb.db);
       }

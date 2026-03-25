@@ -455,15 +455,23 @@ export function registerQueryTools(
             const semanticMap = new Map(semanticResults.map(r => [normalizePath(r.path), r]));
             const entityMap = new Map(entityResults.map(r => [normalizePath(r.path), r]));
 
-            const scored = Array.from(allPaths).map(p => ({
-              path: p,
-              title: fts5Map.get(p)?.title || semanticMap.get(p)?.title || entityMap.get(p)?.name || p.replace(/\.md$/, '').split('/').pop() || p,
-              snippet: fts5Map.get(p)?.snippet,
-              rrf_score: rrfScores.get(p) || 0,
-              in_fts5: fts5Map.has(p),
-              in_semantic: semanticMap.has(p),
-              in_entity: entityMap.has(p),
-            }));
+            const queryLower = query.toLowerCase().trim();
+            const scored = Array.from(allPaths).map(p => {
+              const title = fts5Map.get(p)?.title || semanticMap.get(p)?.title || entityMap.get(p)?.name || p.replace(/\.md$/, '').split('/').pop() || p;
+              let rrf_score = rrfScores.get(p) || 0;
+              // Boost exact title matches so "emma" always ranks Emma first
+              if (title.toLowerCase() === queryLower) rrf_score += 0.5;
+              else if (title.toLowerCase().startsWith(queryLower)) rrf_score += 0.2;
+              return {
+                path: p,
+                title,
+                snippet: fts5Map.get(p)?.snippet,
+                rrf_score,
+                in_fts5: fts5Map.has(p),
+                in_semantic: semanticMap.has(p),
+                in_entity: entityMap.has(p),
+              };
+            });
 
             scored.sort((a, b) => b.rrf_score - a.rrf_score);
             const filtered = applyFolderFilter(scored);
@@ -504,10 +512,17 @@ export function registerQueryTools(
           const normalizePath = (p: string) => p.replace(/\\/g, '/').replace(/\/+/g, '/');
           const fts5Map = new Map(fts5Results.map(r => [normalizePath(r.path), r]));
           const entityRanked = entityResults.filter(r => !fts5Map.has(normalizePath(r.path)));
+          const queryLower = query.toLowerCase().trim();
           const mergedItems = [
             ...fts5Results.map(r => ({ path: r.path, title: r.title, snippet: r.snippet, in_fts5: true as const })),
             ...entityRanked.map(r => ({ path: r.path, title: r.name, snippet: undefined as string | undefined, in_entity: true as const })),
           ];
+          // Boost exact title matches to the top
+          mergedItems.sort((a, b) => {
+            const aExact = a.title.toLowerCase() === queryLower ? 2 : a.title.toLowerCase().startsWith(queryLower) ? 1 : 0;
+            const bExact = b.title.toLowerCase() === queryLower ? 2 : b.title.toLowerCase().startsWith(queryLower) ? 1 : 0;
+            return bExact - aExact;
+          });
           const filtered = applyFolderFilter(mergedItems);
           const stateDb = getStateDb();
           const sliced = filtered.slice(0, limit);

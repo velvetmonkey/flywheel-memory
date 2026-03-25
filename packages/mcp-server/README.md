@@ -20,7 +20,7 @@
 | "What should I link?" | Not possible | 10-dimension scoring + semantic search |
 | Hubs, orphans, paths? | Not possible | Pre-indexed graph analysis |
 
-70 tools across 12 categories. 6-line config. Zero cloud dependencies.
+74 tools across 12 categories. 6-line config. Zero cloud dependencies.
 
 **Try in 60 seconds:**
 
@@ -66,7 +66,7 @@ From the [carter-strategy](https://github.com/velvetmonkey/flywheel-memory/tree/
 └───────────────────────────────────────────────────────┘
 ```
 
-Flywheel's indexed search found all Acme-related notes in one call. The AI read the files it needed for billing details. No grepping, no guessing paths.
+[[Flywheel]]'s indexed search found all Acme-related notes in one call. The AI read the files it needed for billing details. No grepping, no guessing paths.
 
 Flywheel's search found all related notes in one call. Without it, the AI would grep for "Acme" and scan every matching file.
 
@@ -321,7 +321,7 @@ Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CO
 
 ### Transport Options
 
-By default, Flywheel uses stdio transport (works with Claude Code and Claude Desktop). Set `FLYWHEEL_TRANSPORT` to enable HTTP transport for other clients (Cursor, Windsurf, Aider, LangGraph, Ollama):
+By default, Flywheel uses stdio transport (works with [[Claude Code]] and Claude Desktop). Set `FLYWHEEL_TRANSPORT` to enable HTTP transport for other clients (Cursor, Windsurf, Aider, LangGraph, Ollama):
 
 | Env Var | Values | Default |
 |---------|--------|---------|
@@ -379,7 +379,7 @@ The fewer tools you load, the less context the AI needs to pick the right one. S
 | Doc | Why read this |
 |---|---|
 | [PROVE-IT.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/PROVE-IT.md) | See it working in 5 minutes |
-| [TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) | All 70 tools documented |
+| [TOOLS.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TOOLS.md) | All 74 tools documented |
 | [ALGORITHM.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/ALGORITHM.md) | How the scoring works |
 | [COOKBOOK.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/SETUP.md) | Full setup guide for your vault |

@@ -19,7 +19,6 @@ import type { VaultContext } from '../../../src/vault-registry.js';
 import { setWriteStateDb } from '../../../src/core/write/wikilinks.js';
 import { setFTS5Database } from '../../../src/core/read/fts5.js';
 import { setRecencyStateDb } from '../../../src/core/shared/recency.js';
-import { setEdgeWeightStateDb } from '../../../src/core/write/edgeWeights.js';
 import { setTaskCacheDatabase } from '../../../src/core/read/taskCache.js';
 import { setEmbeddingsDatabase } from '../../../src/core/read/embeddings.js';
 import { PipelineRunner, type PipelineContext } from '../../../src/core/read/watch/pipeline.js';
@@ -46,7 +45,6 @@ describe('PipelineRunner', () => {
     setWriteStateDb(stateDb);
     setFTS5Database(stateDb.db);
     setRecencyStateDb(stateDb);
-    setEdgeWeightStateDb(stateDb);
     setTaskCacheDatabase(stateDb.db);
     setEmbeddingsDatabase(stateDb.db);
 

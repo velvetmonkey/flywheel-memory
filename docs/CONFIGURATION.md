@@ -37,7 +37,7 @@ No `FLYWHEEL_TOOLS` needed — defaults to `default` (16 tools). Add it only to 
 }
 ```
 
-Note: Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. Claude Code auto-detects the vault root from the working directory.
+Note: [[CLAUDE]] Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. Claude Code auto-detects the vault root from the working directory.
 
 ---
 
@@ -113,7 +113,7 @@ Start with `default`, then add what you need:
 | `memory` | 3 | Agent working memory + recall + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
 | `temporal` | 4 | Time-based vault intelligence: get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
-| `diagnostics` | 14 | Vault health, stats, config, activity, merges, doctor |
+| `diagnostics` | 18 | Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history |
 
 #### Recipes
 
@@ -153,7 +153,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `tasks` | 3 | tasks, vault_toggle_task, vault_add_task |
 | `memory` | 3 | memory, recall, brief |
 | `note-ops` | 4 | vault_delete/move/rename_note, merge_entities |
-| `diagnostics` | 14 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor |
+| `diagnostics` | 18 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history |
 
 Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work with a warning — they resolve to current category names.
 
@@ -172,8 +172,8 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 | corrections | 4 | | | Yes |
 | note-ops | 4 | | | Yes |
 | temporal | 4 | | | Yes |
-| diagnostics | 14 | | | Yes |
-| **Total** | **69** | **16** | **16** | **66** |
+| diagnostics | 18 | | | Yes |
+| **Total** | **74** | **16** | **16** | **71** |
 
 ### Semantic Embeddings
 
@@ -472,7 +472,7 @@ Sets a single key and returns the updated config.
 | `implicit_patterns` | string[] | all 5 | Which implicit detection patterns to use. Options: `"proper-nouns"`, `"single-caps"`, `"quoted-terms"`, `"camel-case"`, `"acronyms"`. |
 | `proactive_linking` | boolean | `true` | When enabled, the file watcher automatically inserts high-confidence wikilinks into vault files during batch processing. Only links scoring above `proactive_min_score` are applied. Disable if you want auto-linking only through explicit write tool calls. |
 | `proactive_min_score` | number | `20` | Minimum suggestion score for proactive linking. Higher values mean fewer but more confident auto-links. The default of 20 is well above the balanced threshold (10), ensuring only strong matches are applied automatically. |
-| `proactive_max_per_file` | number | `3` | Maximum number of wikilinks the watcher will proactively insert per file per batch. Prevents flooding notes with links during a single watcher cycle. |
+| `proactive_max_per_file` | number | `5` | Maximum number of wikilinks the watcher will proactively insert per file per drain cycle. The daily cap (`proactive_max_per_day`) is the primary safety net. |
 | `proactive_max_per_day` | number | `10` | Maximum number of wikilinks the watcher will proactively insert per file per day. Prevents accumulated queue drains from flooding a single note over time. |
 
 #### Exclusions

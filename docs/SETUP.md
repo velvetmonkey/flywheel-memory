@@ -8,7 +8,7 @@ After trying the [demo vaults](../demos/), point [[Flywheel]] at your own Obsidi
 
 - **Node.js 22–24** -- check with `node --version`.
 - **An Obsidian vault** -- any folder with `.md` files works, but Flywheel detects Obsidian conventions (`.obsidian/` folder, periodic notes, templates)
-- **An MCP-compatible client** -- Claude Code, Claude Desktop, Cursor, Windsurf, VS Code + [[Github]] Copilot, Continue, or any Streamable HTTP client
+- **An MCP-compatible client** -- [[CLAUDE]] Code, Claude Desktop, Cursor, Windsurf, VS Code + [[Github]] Copilot, Continue, or any Streamable HTTP client
 
 ---
 
@@ -71,7 +71,7 @@ Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
 }
 ```
 
-Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. Claude Code auto-detects the vault root from the working directory.
+Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. [[Claude Code]] auto-detects the vault root from the working directory.
 
 Restart Claude Desktop after editing the config. Flywheel appears in the MCP server list.
 
@@ -196,7 +196,7 @@ See [CONFIGURATION.md](CONFIGURATION.md#multi-vault) for all multi-vault options
 
 On first run, Flywheel creates a `.flywheel/` directory containing its SQLite index. Add `.flywheel/` to your `.gitignore` if your vault is version-controlled.
 
-> **Proactive linking is on by default.** Flywheel's file watcher monitors your vault for changes and automatically inserts high-confidence wikilinks into notes you edit -- even outside of Claude. Only strong matches are applied (score >= 20, max 3 per file). This is the core flywheel: edits you make in Obsidian get linked without you asking. If you prefer links only through explicit Claude tool calls, disable it:
+> **Proactive linking is on by default.** Flywheel's file [[watcher]] monitors your vault for changes and automatically inserts high-confidence wikilinks into notes you edit -- even outside of Claude. Only strong matches are applied (score >= 20, max 3 per file). This is the core flywheel: edits you make in Obsidian get linked without you asking. If you prefer links only through explicit Claude tool calls, disable it:
 >
 > ```
 > flywheel_config({ mode: "set", key: "proactive_linking", value: false })
@@ -285,7 +285,7 @@ Here's what to include and why:
 
 **Section conventions** -- what headings your notes use (`## Log`, `## Tasks`, etc.). Claude uses this to target `vault_add_to_section` correctly instead of appending to the wrong place.
 
-**Key hubs** -- notes that serve as connection points (e.g., a "Team Roster" or "Project Index"). Claude checks backlinks on these first when answering broad questions.
+**Key hubs** -- notes that serve as connection points (e.g., a "[[Team Roster]]" or "Project Index"). Claude checks backlinks on these first when answering broad questions.
 
 **Quick commands** (optional) -- natural language shortcuts mapped to what you want. These prime Claude to respond to shorthand like "what's overdue" with the right multi-tool workflow.
 
@@ -472,6 +472,6 @@ All vault operations work without git. You just won't have undo or commit histor
 ## Next Steps
 
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full reference for all 70 tools
+- **[TOOLS.md](TOOLS.md)** -- Full reference for all 74 tools
 - **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics

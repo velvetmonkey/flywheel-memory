@@ -8,8 +8,8 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 
 ## Prerequisites
 
-- **Node.js 20–24** -- check with `node --version`.
-- **Claude Code** -- authenticated and working (`claude --version`)
+- **Node.js 22–24** -- check with `node --version`.
+- **[[CLAUDE]] Code** -- authenticated and working (`claude --version`)
 - **git** -- to clone the repo
 
 ---
@@ -27,12 +27,12 @@ Wait for it:
 
 ```
 Test Suites: 129 passed, 129 total
-Tests:       2,579 passed, 2,579 total
+Tests:       2,712 passed, 2,712 total
 Snapshots:   0 total
 Time:        ~18s
 ```
 
-2,579 tests. All passing. No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults. If something is broken, you know in 18 seconds.
+2,712 tests. All passing. No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults. If something is broken, you know in 18 seconds.
 
 ---
 
@@ -159,7 +159,7 @@ Same tools, completely different domain. Outlinks in search results trace the ci
 
 Ready to point Flywheel at your own vault? See the [full setup guide](SETUP.md) for:
 
-- [[Claude Desktop Config|MCP config]] for Claude Code and Claude Desktop
+- [[Claude Desktop Config|MCP config]] for [[Claude Code]] and Claude Desktop
 - Tool preset recommendations
 - Semantic search enablement
 
@@ -175,7 +175,7 @@ See [SETUP.md](SETUP.md) for the complete walkthrough.
 
 ## What You Just Proved
 
-1. **Tests pass** -- 2,579 of them, against real data
+1. **Tests pass** -- 2,712 of them, against real data
 2. **Graph queries work** -- backlinks + metadata, no file reads
 3. **Auto-wikilinks work** -- plain text in, linked text out
 4. **The algorithm is transparent** -- scores with explanations, not black boxes
@@ -193,6 +193,6 @@ Flywheel's enriched search returns frontmatter, ranked backlinks, ranked outlink
 ## Next Steps
 
 - **[SETUP.md](SETUP.md)** -- Full setup guide for your own vault
-- **[TOOLS.md](TOOLS.md)** -- Reference for all 70 tools
+- **[TOOLS.md](TOOLS.md)** -- Reference for all 74 tools
 - **[ALGORITHM.md](ALGORITHM.md)** -- How scoring, ranking, and wikilink suggestion work
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts by use case

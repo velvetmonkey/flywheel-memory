@@ -1,6 +1,6 @@
 # The Scoring Algorithm
 
-When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 13 scoring layers -- each independently testable, each ablatable, each with a reason to exist. Here's exactly how.
+When [[Flywheel]] suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 13 scoring layers -- each independently testable, each ablatable, each with a reason to exist. Here's exactly how.
 
 ---
 
@@ -80,12 +80,12 @@ The flywheel doesn't require you to write through Claude. **Proactive linking** 
 
 Why deferred? The file that triggered the watcher was just modified -- its mtime is fresh, so a 30-second safety guard blocks immediate writes. Applying inline would either fail silently or conflict with in-progress edits. Instead, proactive linking uses a two-step queue:
 
-1. **Enqueue (step 12.5)** -- After suggestion scoring, high-confidence entities (score >= 20, confidence = high) are persisted to a `proactive_queue` table. Up to 3 per file per batch. Duplicate entities deduplicate, keeping the higher score. Entries expire after 1 hour.
-2. **Drain (step 0.5)** -- At the start of the *next* watcher batch, pending queue entries are applied to files that pass safety checks: not in the current batch (not actively being edited), mtime older than 30 seconds, and under the daily cap (default 10 links per file per day).
+1. **Enqueue (step 12.5)** -- After suggestion scoring, high-confidence entities (score >= 20, confidence = high) are persisted to a `proactive_queue` table. Up to 5 per file per batch. Duplicate entities deduplicate, keeping the higher score. Entries expire after 6 hours.
+2. **Drain (step 0.5)** -- At the start of each watcher batch, pending queue entries are applied to files that pass safety checks: file mtime older than 1 minute (not actively being edited), and under the daily cap (default 10 links per file per day).
 
 This is what makes the flywheel self-sustaining. You edit a note in Obsidian. The watcher scores it and queues links. Next time the watcher fires, those links are applied. The new links create co-occurrence edges. Those edges sharpen future scoring. The graph grows whether you're using Claude or not.
 
-The threshold is deliberately conservative -- score 20 means strong exact match plus multiple contextual signals. Flywheel won't speculatively link based on a stem match alone. The per-batch cap of 3 and daily cap of 10 prevent flooding. If this is too aggressive for your workflow, disable it: `flywheel_config({ mode: "set", key: "proactive_linking", value: false })`. Auto-linking through explicit write tool calls (`vault_add_to_section`, etc.) is unaffected.
+The threshold is deliberately conservative -- score 20 means strong exact match plus multiple contextual signals. Flywheel won't speculatively link based on a stem match alone. The per-cycle cap of 5 and daily cap of 10 prevent flooding. If this is too aggressive for your workflow, disable it: `flywheel_config({ mode: "set", key: "proactive_linking", value: false })`. Auto-linking through explicit write tool calls (`vault_add_to_section`, etc.) is unaffected.
 
 Static tools give you the same results on day 1 and day 100. Flywheel's results on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration changes, no manual curation. Just use it.
 

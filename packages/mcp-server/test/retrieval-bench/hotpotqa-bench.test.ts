@@ -1,8 +1,13 @@
 /**
- * HotpotQA Retrieval Benchmark
+ * HotpotQA Retrieval Benchmark — CI Regression Gate
  *
- * Measures FTS5 retrieval quality on 200 real HotpotQA questions
- * (2 supporting + 8 distractor documents each).
+ * Runs 200 questions (seed 42) as a regression gate to catch catastrophic
+ * retrieval regressions. Thresholds (recall_at_5 >= 0.3, mrr >= 0.2) are
+ * intentionally conservative — they detect breakage, not quality guarantees.
+ *
+ * The published 89.6% recall in docs/TESTING.md comes from a separate full
+ * 500-question benchmark run. The 200-question CI sample has wider confidence
+ * intervals and is not expected to match the headline number.
  *
  * Downloads the dataset on first run (~85MB), cached locally.
  */

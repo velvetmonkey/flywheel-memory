@@ -116,10 +116,23 @@ function buildActiveEntitiesSection(stateDb: StateDb, limit: number): BriefSecti
 
 /**
  * Build active memories section.
+ * Orders by type: recent observations first, then facts/preferences by confidence, then summaries.
  */
 function buildActiveMemoriesSection(stateDb: StateDb, limit: number): BriefSection {
-  const memories = listMemories(stateDb, { limit });
-  const content = memories.map(m => ({
+  // Fetch more than limit so we can reorder by type group, then truncate
+  const memories = listMemories(stateDb, { limit: limit * 2 });
+
+  const observations = memories.filter(m => m.memory_type === 'observation');
+  const factsAndPrefs = memories.filter(m => m.memory_type === 'fact' || m.memory_type === 'preference');
+  const summaries = memories.filter(m => m.memory_type === 'summary');
+
+  // Observations by recency (already sorted by updated_at DESC from listMemories)
+  // Facts/preferences by confidence descending
+  factsAndPrefs.sort((a, b) => b.confidence - a.confidence);
+
+  const ordered = [...observations, ...factsAndPrefs, ...summaries].slice(0, limit);
+
+  const content = ordered.map(m => ({
     key: m.key,
     value: m.value,
     type: m.memory_type,

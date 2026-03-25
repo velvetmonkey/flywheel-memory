@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
 import { openStateDb, deleteStateDb, type StateDb } from '@velvetmonkey/vault-core';
 import { createTempVault, cleanupTempVault } from '../../helpers/testUtils.js';
 import {
@@ -111,7 +113,7 @@ describe('proactiveQueue', () => {
   });
 
   describe('drainProactiveQueue', () => {
-    it('skips files in the current batch', async () => {
+    it('skips files that do not exist on disk', async () => {
       // Clean slate
       stateDb.db.exec(`DELETE FROM proactive_queue`);
 
@@ -123,8 +125,7 @@ describe('proactiveQueue', () => {
       const result = await drainProactiveQueue(
         stateDb,
         tempVault,
-        new Set(['active.md']), // in current batch
-        { minScore: 20, maxPerFile: 3, maxPerDay: 10 },
+        { minScore: 20, maxPerFile: 5, maxPerDay: 10 },
         mockApply,
       );
 
@@ -132,8 +133,14 @@ describe('proactiveQueue', () => {
       expect(result.applied).toHaveLength(0);
     });
 
-    it('applies to files not in the current batch', async () => {
+    it('applies to files with old mtime', async () => {
       stateDb.db.exec(`DELETE FROM proactive_queue`);
+
+      // Create file with old mtime (2 minutes ago)
+      const idlePath = path.join(tempVault, 'idle.md');
+      fs.writeFileSync(idlePath, '# Idle note');
+      const oldTime = new Date(Date.now() - 120_000);
+      fs.utimesSync(idlePath, oldTime, oldTime);
 
       enqueueProactiveSuggestions(stateDb, [
         { notePath: 'idle.md', entity: 'IdleEntity', score: 30, confidence: 'high' },
@@ -143,8 +150,7 @@ describe('proactiveQueue', () => {
       const result = await drainProactiveQueue(
         stateDb,
         tempVault,
-        new Set(['other.md']), // different file in batch
-        { minScore: 20, maxPerFile: 3, maxPerDay: 10 },
+        { minScore: 20, maxPerFile: 5, maxPerDay: 10 },
         mockApply,
       );
 
@@ -160,6 +166,12 @@ describe('proactiveQueue', () => {
 
     it('respects daily cap', async () => {
       stateDb.db.exec(`DELETE FROM proactive_queue`);
+
+      // Create file with old mtime so it passes the mtime guard
+      const cappedPath = path.join(tempVault, 'capped.md');
+      fs.writeFileSync(cappedPath, '# Capped note');
+      const oldTime = new Date(Date.now() - 120_000);
+      fs.utimesSync(cappedPath, oldTime, oldTime);
 
       // Seed wikilink_applications to simulate 10 already applied today
       const today = new Date().toISOString().slice(0, 10);
@@ -177,8 +189,7 @@ describe('proactiveQueue', () => {
       const result = await drainProactiveQueue(
         stateDb,
         tempVault,
-        new Set(),
-        { minScore: 20, maxPerFile: 3, maxPerDay: 10 },
+        { minScore: 20, maxPerFile: 5, maxPerDay: 10 },
         mockApply,
       );
 
@@ -189,21 +200,23 @@ describe('proactiveQueue', () => {
     it('handles mtime-blocked files gracefully (leaves pending)', async () => {
       stateDb.db.exec(`DELETE FROM proactive_queue`);
 
+      // Create file with fresh mtime (just now) — drain's mtime guard will skip
+      const blockedPath = path.join(tempVault, 'blocked.md');
+      fs.writeFileSync(blockedPath, '# Blocked note');
+
       enqueueProactiveSuggestions(stateDb, [
         { notePath: 'blocked.md', entity: 'BlockedEntity', score: 30, confidence: 'high' },
       ]);
 
-      // Mock: applyFn returns all skipped (mtime guard)
-      const mockApply = async () => ({ applied: [], skipped: ['BlockedEntity'] });
+      const mockApply = async () => ({ applied: ['BlockedEntity'], skipped: [] });
       const result = await drainProactiveQueue(
         stateDb,
         tempVault,
-        new Set(),
-        { minScore: 20, maxPerFile: 3, maxPerDay: 10 },
+        { minScore: 20, maxPerFile: 5, maxPerDay: 10 },
         mockApply,
       );
 
-      expect(result.skippedMtimeGuard).toBe(1);
+      expect(result.skippedActiveEdit).toBe(1);
 
       // Entry should still be pending for retry
       const row = stateDb.db.prepare(

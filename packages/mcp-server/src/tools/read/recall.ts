@@ -191,9 +191,26 @@ export async function performRecall(
         entity,
         limit: max_results,
       });
+      const now = Date.now();
       for (const m of memResults) {
         const textScore = scoreTextRelevance(query, `${m.key} ${m.value}`);
-        const memScore = textScore + (m.confidence * 5); // confidence boost
+        const confidenceBoost = m.confidence * 5;
+
+        // Type-aware scoring: facts are stable knowledge, observations decay with freshness
+        let typeBoost = 0;
+        switch (m.memory_type) {
+          case 'fact': typeBoost = 3; break;
+          case 'preference': typeBoost = 2; break;
+          case 'observation': {
+            const ageDays = (now - m.updated_at) / 86400000;
+            const recencyFactor = Math.max(0.2, 1 - ageDays / 7);
+            typeBoost = 1 + (4 * recencyFactor); // 1-5 range, decays over a week
+            break;
+          }
+          case 'summary': typeBoost = 1; break;
+        }
+
+        const memScore = textScore + confidenceBoost + typeBoost;
         results.push({
           type: 'memory',
           id: m.key,
@@ -201,9 +218,9 @@ export async function performRecall(
           score: memScore,
           breakdown: {
             textRelevance: textScore,
-            recencyBoost: 0,
+            recencyBoost: typeBoost,  // type-aware boost reported as recency
             cooccurrenceBoost: 0,
-            feedbackBoost: m.confidence * 5,
+            feedbackBoost: confidenceBoost,
             edgeWeightBoost: 0,
             semanticBoost: 0,
           },

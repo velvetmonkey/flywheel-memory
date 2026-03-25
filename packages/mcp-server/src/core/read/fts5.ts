@@ -226,6 +226,60 @@ export function isIndexStale(_vaultPath?: string): boolean {
 }
 
 /**
+ * Incrementally update the FTS5 index for changed/new files and remove deleted ones.
+ * Called by the watcher pipeline after each batch.
+ */
+export function updateFTS5Incremental(
+  vaultPath: string,
+  changed: string[],
+  deleted: string[],
+): { updated: number; removed: number } {
+  const db = getDb();
+  if (!db || !state.ready) return { updated: 0, removed: 0 };
+
+  const del = db.prepare('DELETE FROM notes_fts WHERE path = ?');
+  const ins = db.prepare(
+    'INSERT INTO notes_fts (path, title, frontmatter, content) VALUES (?, ?, ?, ?)'
+  );
+
+  let updated = 0;
+  let removed = 0;
+
+  const run = db.transaction(() => {
+    // Remove deleted/moved files
+    for (const p of deleted) {
+      del.run(p);
+      removed++;
+    }
+
+    // Upsert changed files (delete + re-insert)
+    for (const p of changed) {
+      if (!shouldIndexFile(p)) continue;
+      const absPath = `${vaultPath}/${p}`.replace(/\\/g, '/');
+      try {
+        const stats = fs.statSync(absPath);
+        if (stats.size > MAX_INDEX_FILE_SIZE) continue;
+        const raw = fs.readFileSync(absPath, 'utf-8');
+        const { frontmatter, body } = splitFrontmatter(raw);
+        const title = p.replace(/\.md$/, '').split('/').pop() || p;
+        del.run(p);
+        ins.run(p, title, frontmatter, body);
+        updated++;
+      } catch {
+        // File unreadable — remove stale entry if any
+        del.run(p);
+      }
+    }
+  });
+
+  run();
+  if (updated > 0 || removed > 0) {
+    state.noteCount = (db.prepare('SELECT COUNT(*) as count FROM notes_fts').get() as { count: number }).count;
+  }
+  return { updated, removed };
+}
+
+/**
  * Search the FTS5 index
  *
  * Supports FTS5 query syntax:
@@ -241,11 +295,33 @@ export function isIndexStale(_vaultPath?: string): boolean {
  */
 function sanitizeFTS5Query(query: string): string {
   if (!query?.trim()) return '';
-  return query
-    .replace(/"/g, '""')          // escape double quotes
-    .replace(/[(){}[\]^~:\-]/g, ' ') // strip FTS5 operators
-    .replace(/\s+/g, ' ')         // normalize whitespace
+
+  // Extract quoted phrases first (preserve as AND-joined phrase matches)
+  const phrases: string[] = [];
+  const withoutPhrases = query.replace(/"([^"]+)"/g, (_, phrase) => {
+    phrases.push(`"${phrase.replace(/"/g, '""')}"`);
+    return '';
+  });
+
+  // Clean remaining tokens
+  const cleaned = withoutPhrases
+    .replace(/[(){}[\]^~:\-]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
+
+  // Split into tokens, skip explicit AND/OR operators
+  const tokens = cleaned.split(' ').filter(t => t && t !== 'AND' && t !== 'OR' && t !== 'NOT');
+
+  // Combine: quoted phrases + OR-joined tokens
+  // OR semantics with BM25 ranking: documents matching more terms score higher
+  const parts = [...phrases];
+  if (tokens.length === 1) {
+    parts.push(tokens[0]);
+  } else if (tokens.length > 1) {
+    parts.push(tokens.join(' OR '));
+  }
+
+  return parts.join(' ') || '';
 }
 
 export function searchFTS5(
@@ -287,9 +363,34 @@ export function searchFTS5(
 }
 
 /**
- * Get the current FTS5 state
+ * Get the current FTS5 state.
+ * Derives from the scope-aware DB when available, falling back to module-level state
+ * during builds (when the state is being modified in-flight).
  */
 export function getFTS5State(): FTS5State {
+  // During builds, the module-level state tracks progress — return it directly
+  if (state.building) return { ...state };
+
+  // Otherwise derive from the scope-aware DB for multi-vault safety
+  const scopeDb = getDb();
+  if (scopeDb) {
+    try {
+      const row = scopeDb.prepare(
+        'SELECT value FROM fts_metadata WHERE key = ?'
+      ).get('last_built') as { value: string } | undefined;
+      const countRow = scopeDb.prepare('SELECT COUNT(*) as count FROM notes_fts').get() as { count: number };
+      return {
+        ready: countRow.count > 0,
+        building: false,
+        lastBuilt: row ? new Date(row.value) : null,
+        noteCount: countRow.count,
+        error: null,
+      };
+    } catch {
+      // DB not ready — fall through to module-level state
+    }
+  }
+
   return { ...state };
 }
 

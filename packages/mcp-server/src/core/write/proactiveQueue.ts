@@ -9,10 +9,13 @@
  * on the next watcher batch, when files are no longer being actively edited.
  */
 
+import * as path from 'path';
+import { statSync } from 'fs';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { serverLog } from '../shared/serverLog.js';
 
-const QUEUE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const QUEUE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+const MTIME_GUARD_MS = 60_000; // 1 minute — skip files modified within this window
 
 export interface QueueEntry {
   notePath: string;
@@ -77,7 +80,6 @@ export function enqueueProactiveSuggestions(
 export async function drainProactiveQueue(
   stateDb: StateDb,
   vaultPath: string,
-  currentBatchPaths: Set<string>,
   config: { minScore: number; maxPerFile: number; maxPerDay: number },
   applyFn: ApplyFn,
 ): Promise<DrainResult> {
@@ -126,8 +128,15 @@ export async function drainProactiveQueue(
 
   // 4. Process each file
   for (const [filePath, suggestions] of byFile) {
-    // Skip files in current batch (actively being edited)
-    if (currentBatchPaths.has(filePath)) {
+    // Skip files modified within the last minute (actively being edited)
+    const fullPath = path.join(vaultPath, filePath);
+    try {
+      const mtime = statSync(fullPath).mtimeMs;
+      if (Date.now() - mtime < MTIME_GUARD_MS) {
+        result.skippedActiveEdit += suggestions.length;
+        continue;
+      }
+    } catch {
       result.skippedActiveEdit += suggestions.length;
       continue;
     }

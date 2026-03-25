@@ -177,7 +177,7 @@ With semantic embeddings enabled, "login security" finds notes about authenticat
 
 ### 2. Every Link Has a Reason
 
-Those `→` suggestions aren't random. Ask why Flywheel suggested `[[Marcus Johnson]]`:
+Those `→` suggestions aren't random. Ask why Flywheel suggested `Marcus Johnson`:
 
 ```
 Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Feedback  Semantic  Edge
@@ -216,7 +216,7 @@ One call to `export_graph` and your entire vault (or any entity's neighborhood) 
 
 ![Acme Corp ego network](demos/carter-strategy/carter-strategy-acme-graph.png)
 
-*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. Sarah Mitchell is the single contact linking 3 projects to the client. The [[Data Migration Playbook]] bridges two engagements. Seven invoices, two team members, one proposal. All from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
+*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. Sarah Mitchell is the single contact linking 3 projects to the client. The Data Migration Playbook bridges two engagements. Seven invoices, two team members, one proposal. All from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
 
 ### 6. System Guarantees
 
@@ -242,7 +242,9 @@ These are rules, not preferences:
 
 ## Benchmarked
 
-Two standard academic benchmarks. All results reproducible: [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
+Two standard academic benchmarks. Reproducible: clone the repo, run the scripts, get the same numbers.
+
+**How it works:** The benchmark builds a vault from the dataset, pre-warms it (index + auto-link + embeddings — same as production), then runs each question as an independent Claude session with Flywheel MCP tools. No cherry-picking, no prompt engineering. [Full methodology →](docs/TESTING.md#how-the-e2e-benchmark-works) | [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
 
 ### Compared to other systems
 
@@ -286,7 +288,7 @@ Two standard academic benchmarks. All results reproducible: [`demos/hotpotqa/`](
 | Adversarial | 97.3% | 45.1% | [38.0%, 52.3%] | 182 |
 | **Overall** | **83.0%** | **52.1%** | **[48.4%, 55.8%]** | **695** |
 
-Evidence recall = did the system find the right source notes. Answer accuracy = did it give the correct answer (LLM-as-judge, Claude Haiku). Reproduce locally: `demos/locomo/run-benchmark.sh` · [Full methodology →](docs/TESTING.md)
+Evidence recall = did the system find the right source notes. Answer accuracy = did it give the correct answer (LLM-as-judge, Claude Haiku). The vault is pre-warmed with auto-linking and embeddings before questions run — [how it works →](docs/TESTING.md#how-the-e2e-benchmark-works) · Reproduce: `demos/locomo/run-benchmark.sh`
 
 ---
 

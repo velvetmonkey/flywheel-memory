@@ -143,7 +143,7 @@ Source: [`packages/mcp-server/test/write/coldstart/`](../packages/mcp-server/tes
 
 ## Read-Side Testing
 
-The read path is where users interact most. These tests verify that the index, search, graph, and [[watcher]] work correctly under realistic conditions.
+The read path is where users interact most. These tests verify that the index, search, graph, and watcher work correctly under realistic conditions.
 
 - **FTS5 search** -- Full-text search queries across vault content, frontmatter, and tags. Tests cover ranking, phrase matching, prefix search, and edge cases like empty queries and special characters. Source: [`fts5.test.ts`](../packages/mcp-server/test/read/core/fts5.test.ts)
 - **Entity search** -- Entity index queries, category filtering, alias resolution. Source: [`entity-search.test.ts`](../packages/mcp-server/test/read/core/entity-search.test.ts)
@@ -248,9 +248,49 @@ LoCoMo provides three representations of the same conversations. Flywheel builds
 | Summary | 82.7% | 89.2% | Close second — concise but retains key facts |
 | Observation | 76.9% | 84.5% | Shorter, less keyword overlap |
 
+### How the E2E Benchmark Works
+
+The benchmark measures whether a real Claude agent with Flywheel tools can answer questions about a vault of conversation transcripts. Here's exactly what happens:
+
+**1. Vault build** (`demos/locomo/build-vault.js`):
+- Downloads the LoCoMo-10 dataset (10 conversations, 272 sessions)
+- Each session becomes a markdown note with frontmatter (date, speakers, session number)
+- People get stub notes with `type: person` frontmatter in a `people/` folder
+- Output: 290 clean markdown files, zero wikilinks, no `.flywheel/` state
+
+**2. Pre-warm** (one Claude Haiku session with `full,memory` preset):
+- `health_check` → confirms FTS5 index built, entities scanned
+- `vault_init` mode='enrich' → auto-links all notes with wikilinks (same as production usage)
+- `refresh_index` → re-indexes with new wikilinks
+- `init_semantic` → builds semantic embeddings for hybrid search
+- `health_check` → confirms everything ready
+
+This matches how a real vault works: Flywheel indexes it, auto-links it, and builds embeddings. The vault state after pre-warm is representative of production usage.
+
+**3. Questions** (695 individual Claude Sonnet sessions with `agent` preset):
+- Each question gets its own `claude -p` session with a fresh MCP server instance
+- The server loads from the warm `.flywheel/state.db` (entities, embeddings, co-occurrence cached)
+- Claude sees a minimal prompt: "Answer this question about conversations in the vault"
+- Tool calls are unrestricted — Claude decides whether to use `search`, `recall`, `memory`, or `brief`
+- JSONL output captures every tool call and the final answer
+
+**4. Evaluation** (`demos/locomo/analyze-benchmark.py`):
+- **Evidence recall**: did the agent's tool calls access the correct source notes? (path matching)
+- **Answer accuracy**: LLM-as-judge (Claude Haiku) scores each answer as CORRECT/WRONG against ground truth
+- Wilson 95% confidence intervals for all accuracy numbers
+
+**What's in the vault state when questions run:**
+- FTS5 content index (BM25 keyword search)
+- Entity index with categories (people detected from `people/` folder + frontmatter)
+- Semantic embeddings (hybrid BM25 + cosine similarity via RRF)
+- Auto-inserted wikilinks (from the enrich step — same as production auto-linking)
+- Co-occurrence and edge weight data (from the index rebuild after enrichment)
+
+This is deliberately not a cold-start test. It tests the system as it runs in production: indexed, linked, and embedding-warm.
+
 ### End-to-End Results (695 questions, balanced, Claude Sonnet + Flywheel MCP)
 
-Real `claude -p` sessions with the `agent` preset (recall, memory, brief tools). 695 questions — same sample size as Mem0/Zep/LangMem benchmarks. Stratified sampling across all 10 conversations. No pre-processing, no cherry-picking.
+695 questions — same sample size as Mem0/Zep/LangMem benchmarks. Stratified sampling across all 10 conversations (seed 42).
 
 | Category | Questions | Evidence Recall | Answer Accuracy (LLM-judge) | 95% CI |
 |---|---|---|---|---|

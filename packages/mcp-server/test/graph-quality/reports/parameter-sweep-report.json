@@ -1,7 +1,7 @@
 {
   "suite": "parameter-sweep-report",
-  "timestamp": "2026-03-24T20:14:24.024Z",
-  "duration_ms": 7016,
+  "timestamp": "2026-03-25T01:12:46.792Z",
+  "duration_ms": 8116,
   "summary": {
     "best_f1": 0.597,
     "best_maxSuggestions": 10,
@@ -20,9 +20,9 @@
         {
           "maxSuggestions": 1,
           "strictness": "conservative",
-          "f1": 0.366,
-          "precision": 0.682,
-          "recall": 0.25
+          "f1": 0.341,
+          "precision": 0.636,
+          "recall": 0.233
         },
         {
           "maxSuggestions": 3,
@@ -144,7 +144,7 @@
         },
         {
           "layer": "cooccurrenceBoost",
-          "mean": 3.9306,
+          "mean": 3.9222,
           "p50": 4,
           "p90": 8,
           "min": 0,
@@ -160,7 +160,7 @@
         },
         {
           "layer": "contextBoost",
-          "mean": 0.3418,
+          "mean": 0.3503,
           "p50": 0,
           "p90": 0,
           "min": 0,

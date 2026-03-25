@@ -486,11 +486,20 @@ export function escapeFts5Query(query: string): string {
 
 /**
  * Rebuild the entities_fts index from the entities table.
- * Uses FTS5's built-in 'rebuild' command to resynchronize.
- * Call this if the FTS index gets out of sync (e.g., T.aliases errors).
+ * Contentless FTS5 tables don't support the 'rebuild' command,
+ * so we manually delete all entries and re-insert from the entities table.
  */
 export function rebuildEntitiesFts(stateDb: StateDb): void {
-  stateDb.db.exec(`INSERT INTO entities_fts(entities_fts) VALUES('rebuild')`);
+  stateDb.db.transaction(() => {
+    stateDb.db.exec(`DELETE FROM entities_fts`);
+    stateDb.db.exec(`
+      INSERT INTO entities_fts(rowid, name, aliases, category)
+      SELECT id, name,
+        COALESCE((SELECT group_concat(value, ' ') FROM json_each(aliases_json)), ''),
+        category
+      FROM entities
+    `);
+  })();
 }
 
 /**

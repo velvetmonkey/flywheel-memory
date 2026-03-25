@@ -1,12 +1,12 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-03-24T20:14:54.177Z",
-  "duration_ms": 51272,
+  "timestamp": "2026-03-25T01:12:58.624Z",
+  "duration_ms": 36802,
   "summary": {
     "round0_f1": 0.405,
-    "roundN_f1": 0.45,
-    "f1_improvement": 0.045,
-    "total_suppressions": 14
+    "roundN_f1": 0.44,
+    "f1_improvement": 0.035,
+    "total_suppressions": 18
   },
   "details": [
     {
@@ -3044,15 +3044,15 @@
     },
     {
       "round": 15,
-      "f1": 0.441,
-      "precision": 0.307,
+      "f1": 0.45,
+      "precision": 0.315,
       "recall": 0.783,
-      "mrr": 0.742,
+      "mrr": 0.708,
       "truePositives": 47,
-      "falsePositives": 106,
+      "falsePositives": 102,
       "falseNegatives": 13,
       "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 0.8619,
+      "feedbackLayerAvgContribution": 0.8785,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3173,9 +3173,9 @@
         "production",
         "project-meridian",
         "q1-review",
+        "redis",
         "signal-patterns",
         "skyforge",
-        "staging",
         "supplements",
         "tessa-liu",
         "uat",
@@ -3259,7 +3259,7 @@
       "falsePositives": 109,
       "falseNegatives": 14,
       "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 0.7686,
+      "feedbackLayerAvgContribution": 0.7847,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3373,20 +3373,20 @@
         }
       },
       "suppressedEntities": [
-        "api-first",
         "clean-architecture",
         "melbourne",
         "meridian-labs",
-        "portland",
         "prism-core",
         "production",
         "project-meridian",
         "q1-review",
+        "redis",
         "signal-patterns",
         "skyforge",
         "staging",
         "supplements",
         "tessa-liu",
+        "uat",
         "yoga"
       ],
       "unresolvedLinks": [
@@ -3464,15 +3464,15 @@
     },
     {
       "round": 17,
-      "f1": 0.433,
-      "precision": 0.299,
+      "f1": 0.437,
+      "precision": 0.303,
       "recall": 0.783,
       "mrr": 0.742,
       "truePositives": 47,
-      "falsePositives": 110,
+      "falsePositives": 108,
       "falseNegatives": 13,
-      "suppressionCount": 16,
-      "feedbackLayerAvgContribution": 0.7876,
+      "suppressionCount": 17,
+      "feedbackLayerAvgContribution": 0.8347,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3586,7 +3586,6 @@
         }
       },
       "suppressedEntities": [
-        "api-first",
         "clean-architecture",
         "melbourne",
         "meridian-labs",
@@ -3595,6 +3594,8 @@
         "production",
         "project-meridian",
         "q1-review",
+        "redis",
+        "rex",
         "signal-patterns",
         "skyforge",
         "staging",
@@ -3673,15 +3674,15 @@
     },
     {
       "round": 18,
-      "f1": 0.437,
-      "precision": 0.303,
-      "recall": 0.783,
+      "f1": 0.428,
+      "precision": 0.297,
+      "recall": 0.767,
       "mrr": 0.742,
-      "truePositives": 47,
-      "falsePositives": 108,
-      "falseNegatives": 13,
-      "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 0.9833,
+      "truePositives": 46,
+      "falsePositives": 109,
+      "falseNegatives": 14,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.8971,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3768,9 +3769,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -3789,12 +3790,13 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
+        "architecture-rfc",
         "clean-architecture",
         "melbourne",
         "meridian-labs",
@@ -3803,6 +3805,8 @@
         "production",
         "project-meridian",
         "q1-review",
+        "redis",
+        "rex",
         "signal-patterns",
         "skyforge",
         "staging",
@@ -3830,6 +3834,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -3881,15 +3890,15 @@
     },
     {
       "round": 19,
-      "f1": 0.45,
-      "precision": 0.315,
-      "recall": 0.783,
+      "f1": 0.44,
+      "precision": 0.309,
+      "recall": 0.767,
       "mrr": 0.742,
-      "truePositives": 47,
-      "falsePositives": 102,
-      "falseNegatives": 13,
-      "suppressionCount": 14,
-      "feedbackLayerAvgContribution": 0.7357,
+      "truePositives": 46,
+      "falsePositives": 103,
+      "falseNegatives": 14,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 0.7284,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3976,9 +3985,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -3997,8 +4006,8 @@
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
@@ -4006,10 +4015,14 @@
         "clean-architecture",
         "melbourne",
         "meridian-labs",
+        "portland",
         "prism-core",
         "production",
         "project-meridian",
+        "q1-budget",
         "q1-review",
+        "redis",
+        "rex",
         "signal-patterns",
         "skyforge",
         "staging",
@@ -4037,6 +4050,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -4092,7 +4110,7 @@
       "parameter": "FEEDBACK_BOOST_MIN_SAMPLES",
       "current_value": 5,
       "suggested_value": 3,
-      "evidence": "F1 improvement over 20 rounds was only 4.5% (< 5%). Tightening feedback thresholds may help the system learn faster.",
+      "evidence": "F1 improvement over 20 rounds was only 3.5% (< 5%). Tightening feedback thresholds may help the system learn faster.",
       "confidence": "medium"
     }
   ]

@@ -193,10 +193,10 @@ See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
 
 Every sentence you write through Flywheel makes your graph denser. A denser graph gives better search results, richer backlinks, and sharper suggestions. That's the flywheel.
 
-- **Proactive linking:** edit a note in Obsidian and Flywheel links it in the background. The file watcher scores every unlinked entity mention and inserts wikilinks that clear the threshold (score ≥ 20, max 3 per file, max 10 per day). Your graph grows while you write. Tune the thresholds via the `flywheel_config` tool, or disable it entirely.
+- **Proactive linking:** edit a note in Obsidian and Flywheel links it in the background. The file watcher scores every unlinked entity mention and inserts wikilinks that clear the threshold (score ≥ 20, max 5 per file, max 10 per day). Your graph grows while you write. Tune the thresholds via the `flywheel_config` tool, or disable it entirely.
 - **Co-occurrence** builds over time. Two entities appearing in 20 notes form a statistical bond
 - **Edge weights** accumulate. Links that survive edits gain influence
-- **Suppression** learns. Connections you repeatedly break stop being suggested
+- **Suppression** learns. When you delete a wikilink Flywheel inserted, it notices. Remove the same link enough times and Flywheel stops suggesting it — no manual configuration needed
 
 Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation.
 

@@ -353,3 +353,5 @@ Using Flywheel internally at your company? AGPL permits that — network distrib
 See [LICENSE](./LICENSE) for details.
 
 > Your knowledge. Your graph. Your terms.
+>
+> *If you can keep your head when all about you are losing theirs...* — Kipling

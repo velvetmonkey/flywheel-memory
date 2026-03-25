@@ -242,48 +242,45 @@ These are rules, not preferences:
 
 ## Benchmarked
 
-Measured on standard academic datasets. Reproducible on your machine: [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
+Two standard academic benchmarks. All results reproducible: [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
 
-### Document Retrieval (HotpotQA)
+### Compared to other systems
 
-500 multi-hop questions across 4,960 documents. End-to-end via real Claude sessions, not a component test. Zero training data.
+**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions — same sample size as competitors):
 
-| System | Type | Recall | |
+| System | Single-hop | Multi-hop | Questions | Infrastructure |
+|---|---|---|---|---|
+| **Flywheel** | **66.2%** | **33.8%** | 695 | Local (SQLite) |
+| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | 695 | Redis + Qdrant |
+| [Zep](https://getzep.com/) | 35.7 | 19.4 | 695 | Cloud service |
+| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | 695 | Varies |
+| [Letta](https://memgpt.ai/) | 26.7 | — | 695 | Cloud/local |
+
+**Document retrieval** ([HotpotQA](https://hotpotqa.github.io/), 500 multi-hop questions, 4,960 documents):
+
+| System | Type | Recall@5 | |
 |---|---|---|---|
-| **Flywheel** | General-purpose MCP tool | **89.6%** | Zero training, 500 questions, end-to-end via Claude |
-| BM25 baseline | Industry-standard IR | ~70-75% | Standard academic baseline |
-| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
+| **Flywheel** | General-purpose MCP tool | **89.6%** | Zero training, end-to-end via Claude |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021. Trained on HotpotQA |
+| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
+| BM25 baseline | Industry-standard IR | ~70-75% | Standard academic baseline |
 
-### Conversational Memory (LoCoMo)
+**What's fair and what isn't:**
+- **LoCoMo** is an apples-to-apples comparison: same 695 questions, same metric (answer accuracy via LLM-as-judge). The one difference is the judge model — we use Claude Haiku, competitors use GPT-4o. We haven't measured inter-judge agreement. Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
+- **HotpotQA** is not a direct comparison: the trained retrievers (MDR, Baleen) were specifically trained on HotpotQA data. Flywheel uses zero training — it's a general-purpose tool that happens to score well. The comparison shows where general-purpose retrieval sits relative to specialised systems.
 
-695 questions from [LoCoMo](https://snap-research.github.io/locomo/) — a multi-session conversational memory benchmark (ACL 2024). Real Claude sessions with Flywheel MCP tools, no pre-processing.
+### Full LoCoMo results (695 questions)
 
-| Category | Evidence Recall | Answer Accuracy | Questions |
-|---|---|---|---|
-| **Single-hop** | **94.2%** | **66.2%** | 139 |
-| **Commonsense** | **95.0%** | **67.6%** | 139 |
-| **Temporal** | **68.6%** | **49.0%** | 96 |
-| **Multi-hop** | **73.2%** | **33.8%** | 139 |
-| **Adversarial** | **97.3%** | **45.1%** | 182 |
-| **Overall** | **83.0%** | **52.1%** | **695** |
+| Category | Evidence Recall | Answer Accuracy | 95% CI | Questions |
+|---|---|---|---|---|
+| Single-hop | 94.2% | 66.2% | [58.0%, 73.5%] | 139 |
+| Commonsense | 95.0% | 67.6% | [59.5%, 74.8%] | 139 |
+| Temporal | 68.6% | 49.0% | [39.2%, 58.8%] | 96 |
+| Multi-hop | 73.2% | 33.8% | [26.5%, 42.0%] | 139 |
+| Adversarial | 97.3% | 45.1% | [38.0%, 52.3%] | 182 |
+| **Overall** | **83.0%** | **52.1%** | **[48.4%, 55.8%]** | **695** |
 
-Evidence recall = did the system find the right source notes. Answer accuracy = LLM-as-judge (Claude Haiku). [Full results →](demos/locomo/results/) · [Methodology →](docs/TESTING.md)
-
-<details>
-<summary>How this compares to other memory systems (695 questions each)</summary>
-
-| System | Single-hop | Multi-hop | Questions | Judge | Infrastructure |
-|---|---|---|---|---|---|
-| **Flywheel** | **66.2%** | **33.8%** | 695 | Claude Haiku | Local (SQLite) |
-| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | 695 | GPT-4o | Redis + Qdrant |
-| [Zep](https://getzep.com/) | 35.7 | 19.4 | 695 | GPT-4o | Cloud service |
-| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | 695 | GPT-4o | Varies |
-| [Letta](https://memgpt.ai/) | 26.7 | — | 695 | GPT-4o | Cloud/local |
-
-Different judges (Haiku vs GPT-4o) — not perfectly controlled. But the gap is large: single-hop is nearly 2x Mem0. Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
-
-</details>
+Evidence recall = did the system find the right source notes. Answer accuracy = did it give the correct answer (LLM-as-judge, Claude Haiku). [Raw results →](demos/locomo/results/) · [Full methodology →](docs/TESTING.md)
 
 ---
 

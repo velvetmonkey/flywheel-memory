@@ -246,28 +246,34 @@ Two standard academic benchmarks. All results reproducible: [`demos/hotpotqa/`](
 
 ### Compared to other systems
 
-**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions — same sample size as competitors):
+> **⚠️ These comparisons are not controlled experiments.** Different systems use different document representations, different LLM judges, different prompts, and different vault structures. We run the same benchmark datasets and report honestly, but treat these as directional indicators — not head-to-head results. The numbers reproduce if you clone the repo and run them yourself.
 
-| System | Single-hop | Multi-hop | Questions | Infrastructure |
+**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions):
+
+| System | Single-hop | Multi-hop | Questions | Judge | Docs/question | Infrastructure |
+|---|---|---|---|---|---|---|
+| **Flywheel** | **66.2%** | **33.8%** | 695 | Claude Haiku | 272 session notes | Local SQLite + markdown |
+| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | 695 | GPT-4o | Not disclosed | Redis + Qdrant |
+| [Zep](https://getzep.com/) | 35.7 | 19.4 | 695 | GPT-4o | Not disclosed | Cloud service |
+| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | 695 | GPT-4o | Not disclosed | Varies |
+| [Letta](https://memgpt.ai/) | 26.7 | — | 695 | GPT-4o | Not disclosed | Cloud/local |
+
+**Document retrieval** ([HotpotQA](https://hotpotqa.github.io/), 500 questions):
+
+| System | Type | Recall@5 | Docs | Training |
 |---|---|---|---|---|
-| **Flywheel** | **66.2%** | **33.8%** | 695 | Local (SQLite) |
-| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | 695 | Redis + Qdrant |
-| [Zep](https://getzep.com/) | 35.7 | 19.4 | 695 | Cloud service |
-| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | 695 | Varies |
-| [Letta](https://memgpt.ai/) | 26.7 | — | 695 | Cloud/local |
+| **Flywheel** | General-purpose MCP tool | **89.6%** | 4,960 | None |
+| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | 5M+ Wikipedia | Trained on HotpotQA |
+| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | 5M+ Wikipedia | Trained on HotpotQA |
+| BM25 baseline | Industry-standard IR | ~70-75% | Varies | None |
 
-**Document retrieval** ([HotpotQA](https://hotpotqa.github.io/), 500 multi-hop questions, 4,960 documents):
+**What's comparable and what isn't:**
 
-| System | Type | Recall@5 | |
-|---|---|---|---|
-| **Flywheel** | General-purpose MCP tool | **89.6%** | Zero training, end-to-end via Claude |
-| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Meta AI, ICLR 2021. Trained on HotpotQA |
-| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | Stanford, NeurIPS 2021. Trained on HotpotQA |
-| BM25 baseline | Industry-standard IR | ~70-75% | Standard academic baseline |
-
-**What's fair and what isn't:**
-- **LoCoMo** is an apples-to-apples comparison: same 695 questions, same metric (answer accuracy via LLM-as-judge). The one difference is the judge model — we use Claude Haiku, competitors use GPT-4o. We haven't measured inter-judge agreement. Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
-- **HotpotQA** is not a direct comparison: the trained retrievers (MDR, Baleen) were specifically trained on HotpotQA data. Flywheel uses zero training — it's a general-purpose tool that happens to score well. The comparison shows where general-purpose retrieval sits relative to specialised systems.
+- **LoCoMo sample size** is the same (695 questions). Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
+- **LoCoMo judge model differs.** We use Claude Haiku; competitors use GPT-4o. Different judges may score differently. We haven't measured inter-judge agreement.
+- **LoCoMo document pool differs.** Flywheel searches 272 markdown session notes. Competitors may chunk, summarise, or embed conversations differently — their document representations aren't published.
+- **LoCoMo prompt differs.** Our agent uses a minimal system prompt with the `agent` tool preset. Competitor prompt strategies aren't published.
+- **HotpotQA is not a fair comparison.** MDR and Baleen were trained on HotpotQA specifically and search 5M+ Wikipedia articles. Flywheel is a general-purpose tool with zero training, searching a 4,960-document vault. The comparison shows where untrained retrieval sits relative to specialised systems — not that we "beat" them.
 
 ### Full LoCoMo results (695 questions)
 

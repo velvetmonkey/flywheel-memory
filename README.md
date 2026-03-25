@@ -42,7 +42,7 @@ Flywheel auto-links on every write, voice or keyboard.
 
 **For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. The people who use AI the most [want more control, not less](https://x.com/AnthropicAI/status/2036499691571953848). Also works as persistent memory for bots and agents via the `agent` preset.
 
-**Not for** people who want a hosted service. [[Flywheel]] runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
+**Not for** people who want a hosted service. Flywheel runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
 
 ---
 
@@ -216,7 +216,7 @@ One call to `export_graph` and your entire vault (or any entity's neighborhood) 
 
 ![Acme Corp ego network](demos/carter-strategy/carter-strategy-acme-graph.png)
 
-*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. [[Sarah Mitchell]] is the single contact linking 3 projects to the client. The [[Data Migration Playbook]] bridges two engagements. Seven invoices, two team members, one proposal. All from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
+*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. Sarah Mitchell is the single contact linking 3 projects to the client. The Data Migration Playbook bridges two engagements. Seven invoices, two team members, one proposal. All from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
 
 ### 6. System Guarantees
 

@@ -263,7 +263,7 @@ async function initializeVault(name: string, vaultPathArg: string): Promise<Vaul
     const integrity = checkDbIntegrity(ctx.stateDb.db);
     if (integrity.ok) {
       // DB is healthy — create a safe rotated backup (non-blocking)
-      safeBackupAsync(ctx.stateDb.db, ctx.stateDb.dbPath).catch(err => {
+      safeBackupAsync(ctx.stateDb.db, ctx.stateDb.dbPath).catch((err: unknown) => {
         serverLog('backup', `[${name}] Safe backup failed: ${err}`, 'error');
       });
     } else {

@@ -112,6 +112,19 @@ export {
   loadContentHashes,
   saveContentHashBatch,
   renameContentHash,
+  // Database file management
+  deleteStateDbFiles,
+  backupStateDb,
+  preserveCorruptedDb,
+  // Backup & Recovery
+  BACKUP_ROTATION_COUNT,
+  SALVAGE_TABLES,
+  rotateBackupFiles,
+  safeBackupAsync,
+  checkDbIntegrity,
+  salvageFeedbackTables,
+  attemptSalvage,
+  // Constants
   SCHEMA_VERSION,
   STATE_DB_FILENAME,
   FLYWHEEL_DIR,

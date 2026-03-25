@@ -36,7 +36,7 @@ Flywheel auto-links on every write, voice or keyboard.
 | "Add a meeting note" | Raw write, no linking | Structured mutations that auto-link entities and densify the graph |
 | "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
 | Your graph | Owned by the platform | Yours to [export](https://en.wikipedia.org/wiki/GraphML), analyse, or delete |
-| Tool calls | Hidden behind abstractions | Traceable, auditable, git-committed |
+| Tool calls | Hidden behind abstractions | Traceable, auditable, opt-in git commits |
 
 ### Who this is for
 
@@ -204,11 +204,11 @@ Static tools give you the same results on day 1 and day 100. Flywheel's suggesti
 
 Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `recall` retrieves across notes, entities (people, projects, concepts), and memories in one call, and `memory` stores observations that persist across sessions with automatic decay.
 
-Complex vault workflows become deterministic policies. Describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back, committed as a single git commit.
+Complex vault workflows become deterministic policies. Describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back. Commit with one flag — a single git commit covering every step.
 
-Most agent frameworks solve the trust problem through containment: sandboxing arbitrary code in isolates or containers. Flywheel solves it through constraint: policies can only express vault operations, every step is auditable, and the entire execution is a single reversible git commit. No sandbox needed when the language itself can't do anything dangerous.
+Most agent frameworks solve the trust problem through containment: sandboxing arbitrary code in isolates or containers. Flywheel solves it through constraint: policies can only express vault operations, every step is auditable, and the entire execution can be committed as a single reversible git commit. No sandbox needed when the language itself can't do anything dangerous.
 
-Under the hood, every write operation parses your markdown at the AST level, not regex, not string matching. Flywheel understands headings, frontmatter, lists, and code blocks as structure. Mutations target specific sections without corrupting surrounding content, even in complex documents. Safe writes aren't a promise. They're a property of the parser.
+Under the hood, every write operation uses structured parsing — AST for protected-zone detection, gray-matter for frontmatter, heading-aware section targeting — not blind string replacement. Flywheel understands headings, frontmatter, lists, and code blocks as structure. Mutations target specific sections without corrupting surrounding content, even in complex documents. Safe writes aren't a promise. They're a property of the parser.
 
 ### 5. Portable Knowledge Graph
 
@@ -216,16 +216,16 @@ One call to `export_graph` and your entire vault (or any entity's neighborhood) 
 
 ![Acme Corp ego network](demos/carter-strategy/carter-strategy-acme-graph.png)
 
-*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. Sarah Mitchell is the single contact linking 3 projects to the client. The Data Migration Playbook bridges two engagements. Seven invoices, two team members, one proposal. All from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
+*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. Sarah Mitchell is the single contact linking 3 projects to the client. The [[Data Migration Playbook]] bridges two engagements. Seven invoices, two team members, one proposal. All from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
 
 ### 6. System Guarantees
 
 These are rules, not preferences:
 
-- **No surprise writes.** Tool-initiated mutations require explicit calls. Proactive linking (the only background write) is auditable (git-committed, score-thresholded, configurable) and can be disabled entirely.
+- **No surprise writes.** Tool-initiated mutations require explicit calls. Proactive linking (the only background write) is auditable (score-thresholded, configurable, tracked in state.db) and can be disabled entirely.
 - **No hidden tool execution.** Every tool call is visible, scoped, and logged.
 - **No required cloud dependency.** Core indexing, search, and graph run locally. No account, no sync, no phone-home.
-- **All actions are auditable.** Every write is a git commit. Every commit is reversible. Every change has a reason.
+- **All actions are auditable.** Every write can be a git commit — one parameter. Every change is reversible. Every change has a reason.
 - **No silent data exfiltration.** Your vault content is never sent anywhere except the AI model you chose to connect.
 
 ### How Flywheel compares
@@ -235,7 +235,7 @@ These are rules, not preferences:
 | Execution | Guess, act silently | Chain tools opaquely | Explicit commands, scoped to vault |
 | Data | Cloud-first | Cloud or hybrid | Local only. Your machine, your files |
 | Trust model | "Trust us" | Trust the sandbox | Trust the constraint |
-| Auditability | Opaque | Partial | Every action is a git commit |
+| Auditability | Opaque | Partial | Opt-in git commits. One flag, full audit trail |
 | Model lock-in | Total | Varies | None. MCP is model-agnostic |
 
 ---

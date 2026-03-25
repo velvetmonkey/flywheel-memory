@@ -235,7 +235,7 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   track_concept_evolution: 'temporal',
   temporal_summary: 'temporal',
 
-  // diagnostics (14 tools) -- vault health, stats, config, activity, merges
+  // diagnostics (18 tools) -- vault health, stats, config, activity, merges, doctor, trust, benchmark, history
   health_check: 'diagnostics',
   get_vault_stats: 'diagnostics',
   get_folder_structure: 'diagnostics',

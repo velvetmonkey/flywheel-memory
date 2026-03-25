@@ -129,7 +129,7 @@ Source: [`packages/mcp-server/test/write/coldstart/`](../packages/mcp-server/tes
 
 ## Read-Side Testing
 
-The read path is where users interact most. These tests verify that the index, search, graph, and watcher work correctly under realistic conditions.
+The read path is where users interact most. These tests verify that the index, search, graph, and [[watcher]] work correctly under realistic conditions.
 
 - **FTS5 search** -- Full-text search queries across vault content, frontmatter, and tags. Tests cover ranking, phrase matching, prefix search, and edge cases like empty queries and special characters. Source: [`fts5.test.ts`](../packages/mcp-server/test/read/core/fts5.test.ts)
 - **Entity search** -- Entity index queries, category filtering, alias resolution. Source: [`entity-search.test.ts`](../packages/mcp-server/test/read/core/entity-search.test.ts)
@@ -195,6 +195,12 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 As of March 2026, we are not aware of any other MCP memory tool that has published end-to-end retrieval benchmarks on a standard academic dataset. Most tools in this space report feature lists but not measured retrieval quality.
 
 Source: [`demos/hotpotqa/`](../demos/hotpotqa/) | [`packages/mcp-server/test/retrieval-bench/`](../packages/mcp-server/test/retrieval-bench/)
+
+### CI Regression Gate
+
+The CI test ([`hotpotqa-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/hotpotqa-bench.test.ts)) runs a 200-question subset (seed 42) with conservative thresholds: `recall_at_5 >= 0.3` and `mrr >= 0.2`. These are designed to catch catastrophic retrieval regressions (e.g., a broken index or missing search path), not to enforce the headline 89.6% recall. The 200-question sample has wider confidence intervals than the full 500-question run, and CI thresholds are set low enough to avoid false failures from normal variance.
+
+The published 89.6% comes from the full 500-question benchmark run documented above, which is run manually before releases that touch retrieval code.
 
 ---
 

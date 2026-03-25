@@ -172,7 +172,7 @@ describe('Suite: Sparse Feedback', () => {
     expect(roundMetrics.length).toBe(TOTAL_ROUNDS);
     const lastRound = roundMetrics[TOTAL_ROUNDS - 1];
     // Sparse feedback should not make things worse
-    expect(lastRound.f1).toBeGreaterThanOrEqual(baselineReport.f1 - 0.05);
+    expect(lastRound.f1).toBeGreaterThanOrEqual(Math.round((baselineReport.f1 - 0.05) * 1000) / 1000);
   });
 
   it('zero-feedback entities still get suggested', () => {

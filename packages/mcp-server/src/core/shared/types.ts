@@ -187,7 +187,8 @@ export type ScoringLayer =
   | 'type_boost' | 'context_boost'
   | 'recency' | 'cross_folder'
   | 'hub_boost' | 'feedback' | 'semantic'
-  | 'edge_weight';
+  | 'edge_weight'
+  | 'fatigue';
 
 export interface SuggestOptions {
   maxSuggestions?: number;    // default: 5

@@ -939,7 +939,11 @@ const TYPE_BOOST: Record<EntityCategory, number> = {
  * A person note linking to a project note is more valuable than
  * project notes linking to other project notes.
  */
-const CROSS_FOLDER_BOOST = 3;
+/**
+ * Generic folders that shouldn't penalize cross-folder suggestions
+ * (these folders contain notes that naturally reference all domains)
+ */
+const GENERIC_FOLDERS = new Set(['daily-notes', 'weekly-notes', 'clippings', 'templates', 'new']);
 
 /**
  * Hub note boost - logarithmic scaling
@@ -959,25 +963,42 @@ const SEMANTIC_MIN_SIMILARITY = 0.30;
 const SEMANTIC_MAX_BOOST = 12;
 
 /**
- * Get cross-folder boost for an entity
+ * Get domain affinity boost/penalty for an entity relative to the current note.
  *
- * @param entityPath - Path to the entity note
- * @param notePath - Path to the note being edited
- * @returns Boost value if cross-folder, 0 otherwise
+ * Replaces the old flat CROSS_FOLDER_BOOST=3 with bidirectional scoring:
+ * - Same top-level folder: +2 (same domain, encouraged)
+ * - Same second-level folder: +3 (strong same-domain)
+ * - Cross-folder from generic folders: 0 (neutral)
+ * - Cross-folder into daily notes: -1 (daily notes are inherently cross-domain)
+ * - Cross-folder, other: -3 (cross-domain penalty)
  */
 function getCrossFolderBoost(entityPath: string, notePath: string): number {
   if (!entityPath || !notePath) return 0;
 
-  // Get top-level folder for each path
-  const entityFolder = entityPath.split('/')[0];
-  const noteFolder = notePath.split('/')[0];
+  const entityParts = entityPath.split('/');
+  const noteParts = notePath.split('/');
+  const entityFolder = entityParts[0];
+  const noteFolder = noteParts[0];
 
-  // Boost if folders are different and both are non-empty
-  if (entityFolder && noteFolder && entityFolder !== noteFolder) {
-    return CROSS_FOLDER_BOOST;
+  if (!entityFolder || !noteFolder) return 0;
+
+  // Same top-level folder
+  if (entityFolder === noteFolder) {
+    // Same second-level folder = strong affinity
+    if (entityParts[1] && noteParts[1] && entityParts[1] === noteParts[1]) {
+      return 3;
+    }
+    return 2;
   }
 
-  return 0;
+  // Cross-folder: entity comes from a generic folder (neutral)
+  if (GENERIC_FOLDERS.has(entityFolder)) return 0;
+
+  // Cross-folder: target is a daily note (mild penalty — daily notes are cross-domain by nature)
+  if (GENERIC_FOLDERS.has(noteFolder)) return -1;
+
+  // Cross-folder: different domains (penalty)
+  return -3;
 }
 
 /**
@@ -990,9 +1011,9 @@ function getHubBoost(entity: { hubScore?: number }): number {
   const hubScore = entity.hubScore ?? 0;
   if (hubScore <= 0) return 0;
 
-  // Log scaling: 5→1.4, 20→2.6, 50→3.4, 100→4.0, 200→4.6, 700→5.7
-  // Max cap 6 (down from 8)
-  return Math.min(Math.round(Math.log2(hubScore) * 10) / 10, 6);
+  // Dampened log scaling: 5→0.8, 20→1.6, 50→2.1, 100→2.4, 200→2.8, 700→3.4
+  // Max cap 4 (down from 6). Slope factor 0.6 prevents mega-hubs from dominating.
+  return Math.min(Math.round(Math.log2(hubScore) * 6) / 10, 4);
 }
 
 /**
@@ -1566,7 +1587,7 @@ export async function suggestRelatedLinks(
           const rawHubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
           // Cap hub + crossFolder for co-occurrence-only entities (no content overlap)
           // to prevent hub entities from dominating suffix lines via graph signals alone
-          const hubBoost = hasContentOverlap ? rawHubBoost : Math.min(rawHubBoost, 4);
+          const hubBoost = hasContentOverlap ? rawHubBoost : Math.min(rawHubBoost, 2);
           const crossFolderBoost = hasContentOverlap ? rawCrossFolderBoost : Math.min(rawCrossFolderBoost, 2);
           const feedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
           const edgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
@@ -1784,14 +1805,46 @@ export async function suggestRelatedLinks(
   // Lower-scoring entities still appear in suggestions/suggestion_events for
   // dashboard observability — we just don't write them into the suffix.
   const MAX_SUFFIX_ENTRIES = 3;
+  const MAX_SUFFIX_PER_CATEGORY = 2;
+  const MAX_SUFFIX_PER_FOLDER = 2;
+  const MAX_SUFFIX_APPEARANCES = 5; // hard block after 5 appearances in file
   const MIN_SUFFIX_SCORE = noteContext === 'daily' ? 8 : 12;
   const MIN_SUFFIX_CONTENT = noteContext === 'daily' ? 2 : 3;
-  const suffixEntries = topEntries.filter(e =>
-    e.score >= MIN_SUFFIX_SCORE &&
-    (e.breakdown.contentMatch >= MIN_SUFFIX_CONTENT ||
-     e.breakdown.cooccurrenceBoost >= MIN_SUFFIX_CONTENT ||
-     (e.breakdown.semanticBoost ?? 0) >= MIN_SUFFIX_CONTENT)
-  ).slice(0, MAX_SUFFIX_ENTRIES);
+
+  // Per-file fatigue: count existing suffix appearances for each entity
+  const suffixCandidates = topEntries.filter(e => {
+    if (e.score < MIN_SUFFIX_SCORE) return false;
+    if (!(e.breakdown.contentMatch >= MIN_SUFFIX_CONTENT ||
+          e.breakdown.cooccurrenceBoost >= MIN_SUFFIX_CONTENT ||
+          (e.breakdown.semanticBoost ?? 0) >= MIN_SUFFIX_CONTENT)) return false;
+
+    // Count how many times this entity already appears in → suffix lines
+    if (!disabled.has('fatigue')) {
+      const escapedName = e.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const suffixPattern = new RegExp(`→ .*\\[\\[${escapedName}\\]\\]`, 'g');
+      const appearances = (content.match(suffixPattern) || []).length;
+      if (appearances >= MAX_SUFFIX_APPEARANCES) return false;
+    }
+
+    return true;
+  });
+
+  // Suffix diversity: greedy selection with category + folder caps
+  const suffixEntries: typeof suffixCandidates = [];
+  const categoryCount = new Map<string, number>();
+  const folderCount = new Map<string, number>();
+  for (const c of suffixCandidates) {
+    const cat = c.category ?? 'other';
+    const folder = c.path?.split('/')[0] ?? '';
+    const catN = categoryCount.get(cat) ?? 0;
+    const folderN = folderCount.get(folder) ?? 0;
+    if (catN >= MAX_SUFFIX_PER_CATEGORY) continue;
+    if (folderN >= MAX_SUFFIX_PER_FOLDER) continue;
+    suffixEntries.push(c);
+    categoryCount.set(cat, catN + 1);
+    folderCount.set(folder, folderN + 1);
+    if (suffixEntries.length >= MAX_SUFFIX_ENTRIES) break;
+  }
   const suffix = suffixEntries.length > 0
     ? '→ ' + suffixEntries.map(e => `[[${e.name}]]`).join(', ')
     : '';

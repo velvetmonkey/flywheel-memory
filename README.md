@@ -19,7 +19,7 @@
 
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)**
 
-> **Cognitive sovereignty** = your knowledge, your models, your rules, executed locally with explicit control.
+> **Cognitive sovereignty** = your knowledge graph stays on your machine. No platform builds a profile from it. No subscription locks you in. You choose the model. You own the memory.
 
 ### The scaling problem
 
@@ -344,6 +344,12 @@ I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-cran
 
 ## License
 
-AGPL-3.0. See [LICENSE](./LICENSE) for details. The source stays open. If someone forks this and offers it as a service, they must publish their changes. Your data is local; the code is transparent.
+**AGPL-3.0.** The architecture keeps your data local. The license keeps the code open. Together, they ensure no one can turn your knowledge graph into a closed product.
+
+Every AI platform is building memory as a retention moat — your cognitive profile, packaged as a subscription you can't leave. AGPL means no one can fork Flywheel and do the same. Derivatives stay open. Your data stays yours.
+
+Using Flywheel internally at your company? AGPL permits that — network distribution triggers source disclosure, not internal use. Need a commercial license? [Get in touch](https://x.com/thevelvetmonke).
+
+See [LICENSE](./LICENSE) for details.
 
 > Your knowledge. Your graph. Your terms.

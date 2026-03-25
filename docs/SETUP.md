@@ -205,7 +205,7 @@ When multi-vault is active, every tool gains an optional `vault` parameter. The 
 
 See [CONFIGURATION.md](CONFIGURATION.md#multi-vault) for all multi-vault options.
 
-On first run, Flywheel creates a `.flywheel/` directory containing its SQLite index. Add `.flywheel/` to your `.gitignore` if your vault is version-controlled.
+On first run, Flywheel creates a `.flywheel/` directory containing its SQLite index and rotated backups. Add `.flywheel/` to your `.gitignore` if your vault is version-controlled. Flywheel automatically backs up its database on each startup (3 rotated copies) and recovers feedback data from backups if corruption occurs — see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#statedb-corruption) for details.
 
 > **Proactive linking is on by default.** Flywheel's file [[watcher]] monitors your vault for changes and automatically inserts high-confidence wikilinks into notes you edit -- even outside of Claude. Only strong matches are applied (score >= 20, max 5 per file, max 10 per day). This is the core flywheel: edits you make in Obsidian get linked without you asking. If you prefer links only through explicit Claude tool calls, disable it:
 >

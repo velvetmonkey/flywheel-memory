@@ -56,15 +56,32 @@ git add -A && git commit -m "Initial vault snapshot"
 
 ## StateDb Corruption
 
-The StateDb at `.flywheel/state.db` stores the FTS5 search index, entity index, index cache, feedback data, and configuration. It is derived from your markdown files — but also accumulates learned signals over time (wikilink feedback, suppression data, edge weights, co-occurrence cache, agent memories).
+The StateDb at `.flywheel/state.db` stores everything Flywheel learns about your vault — feedback on which links are good/bad, suppression data, edge weights, agent memories, session summaries, and corrections. While notes and entities can be rebuilt from markdown in seconds, **these accumulated signals take weeks of use to develop and cannot be regenerated**. Protecting them is critical.
 
 ### Automatic Protection
 
-Flywheel protects the StateDb automatically:
+Flywheel has four layers of protection:
 
-- **Startup backup** — Every server startup copies `state.db` → `state.db.backup` before any mutations. This is your last-known-good snapshot.
-- **Corruption recovery** — If the database fails to open (e.g., "file is not a database"), the corrupted file is preserved as `state.db.corrupt` for inspection, and a fresh database is created automatically.
-- **Zero-byte guard** — If `state.db` is 0 bytes (e.g., native module compilation failure), it's deleted and rebuilt.
+1. **Rotated WAL-safe backups** — After each successful startup (and every 6 hours during operation), Flywheel creates a backup using SQLite's backup API, which is safe even during active WAL writes. Three rotated copies are kept: `state.db.backup` (most recent), `.backup.1`, `.backup.2`, `.backup.3`. This means even if the most recent backup is bad, older ones are available.
+
+2. **Integrity checks** — `PRAGMA quick_check` runs after every startup and every 6 hours in the watcher pipeline. If corruption is detected, recovery triggers immediately.
+
+3. **Automatic feedback salvage** — When corruption forces a fresh database, Flywheel automatically recovers feedback data by merging rows from all available sources (newest first): `.backup`, `.backup.1`, `.backup.2`, `.backup.3`, `.corrupt`. Each source fills in rows the previous ones didn't cover. The 9 salvaged tables are: `wikilink_feedback`, `wikilink_applications`, `suggestion_events`, `wikilink_suppressions`, `note_links`, `note_link_history`, `memories`, `session_summaries`, `corrections`.
+
+4. **Zero-byte guard** — If `state.db` is 0 bytes (e.g., native module compilation failure), it's deleted and rebuilt.
+
+### Files in `.flywheel/`
+
+| File | Purpose |
+|------|---------|
+| `state.db` | Active database |
+| `state.db-wal` | Write-ahead log (normal, auto-managed) |
+| `state.db-shm` | Shared memory (normal, auto-managed) |
+| `state.db.backup` | Most recent verified-good backup |
+| `state.db.backup.1` | Previous backup |
+| `state.db.backup.2` | Two backups ago |
+| `state.db.backup.3` | Oldest backup (dropped on next rotation) |
+| `state.db.corrupt` | Last corrupted file (preserved for forensics) |
 
 ### Symptoms
 
@@ -75,34 +92,29 @@ Flywheel protects the StateDb automatically:
 
 ### Recovery
 
-**Option 1: Restore from backup** (preserves learned signals)
+**Most cases: Flywheel recovers automatically.** On startup, if corruption is detected, Flywheel preserves the corrupt file, creates a fresh database, and salvages feedback from backups. Check the server logs for `[vault-core] Salvaged N rows from ...` to confirm.
+
+**Manual Option 1: Restore from a specific backup** (if automatic recovery missed something)
 
 ```bash
 # Stop the MCP server first
+# List available backups (newest first)
+ls -lt /path/to/vault/.flywheel/state.db.backup*
+
+# Restore the one you want
 cp /path/to/vault/.flywheel/state.db.backup /path/to/vault/.flywheel/state.db
 rm -f /path/to/vault/.flywheel/state.db-wal /path/to/vault/.flywheel/state.db-shm
-# Restart — picks up last-known-good state
+# Restart
 ```
 
-This restores everything to the point of last server startup. You only lose changes made since then.
-
-**Option 2: Full rebuild** (loses learned signals)
+**Manual Option 2: Full rebuild** (last resort — loses learned signals)
 
 ```bash
 rm -rf /path/to/vault/.flywheel/
 # Restart — rebuilds everything from markdown files
 ```
 
-Flywheel recreates `state.db` on next startup by scanning your vault. For a vault with a few thousand notes, this takes a few seconds. What you lose:
-
-- Wikilink feedback (which links were accepted/rejected)
-- Suppression data (which entities are suppressed)
-- Edge weights (link quality accumulated over time)
-- Co-occurrence cache (entity co-occurrence statistics)
-- Agent memories and session summaries
-- Tool invocation history and token tracking
-
-These are learned signals that accumulated over time. The vault's notes and links are not affected — only Flywheel's intelligence about them.
+This loses all accumulated signals. Only use if all backups are also corrupted.
 
 ### Diagnostics
 
@@ -113,7 +125,7 @@ These are learned signals that accumulated over time. The vault's notes and link
 
 - Don't modify `.flywheel/state.db` directly
 - If running multiple MCP clients pointing at the same vault, be aware of potential SQLite lock contention (WAL mode handles most concurrent reads, but simultaneous writes can conflict)
-- The `.flywheel/` directory is safe to add to `.gitignore` — it's entirely regenerable
+- The `.flywheel/` directory is safe to add to `.gitignore` — it's entirely regenerable (but the backup files within it protect your accumulated data, so don't delete them unless you're doing a full reset)
 
 ---
 
@@ -192,7 +204,7 @@ This forces a complete rebuild from scratch including the StateDb schema.
 Flywheel detects the vault root by walking up from the working directory, looking for `.obsidian/` or `.claude/`.
 
 **Fixes:**
-- **Claude Code:** Run `cd /path/to/your/vault && claude`
+- **[[Claude Code]]:** Run `cd /path/to/your/vault && claude`
 - **Claude Desktop:** Set `VAULT_PATH` in `claude_desktop_config.json`
 - Verify the vault directory contains `.obsidian/` or `.claude/`
 

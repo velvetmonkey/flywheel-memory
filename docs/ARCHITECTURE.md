@@ -336,9 +336,27 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 
 ### Backup & Recovery
 
-Every server startup copies `state.db` → `state.db.backup` before opening the database. If the database fails to open, the corrupted file is preserved as `state.db.corrupt` and a fresh database is created automatically. A 0-byte file guard catches native module compilation failures.
+Flywheel's backup system is designed to protect accumulated feedback data — the signals that take weeks to build and can't be regenerated from markdown alone.
 
-All state in `state.db` is derived from the vault's markdown files — a full rebuild from scratch is always safe. However, some tables contain accumulated signals that take time to rebuild organically: `wikilink_feedback`, `wikilink_suppressions`, `note_links` (edge weights), `cooccurrence_cache`, `memories`, and `session_summaries`. Restoring from `.backup` preserves these; a full rebuild does not.
+**Rotated backups (3 copies):** After each successful startup, Flywheel creates a WAL-safe backup using SQLite's backup API (not `fs.copyFileSync`, which can copy inconsistent state during WAL writes). Existing backups are rotated: `.backup` → `.backup.1` → `.backup.2` → `.backup.3`. The oldest is dropped. This means you always have at least one backup that predates the current session.
+
+**Integrity checks:** On every startup, `PRAGMA quick_check` verifies database integrity after opening. The watcher pipeline also runs an integrity check every 6 hours, triggering a safe backup on pass.
+
+**Automatic feedback salvage:** When corruption is detected, Flywheel:
+1. Preserves the corrupted file as `state.db.corrupt`
+2. Creates a fresh database
+3. Attempts to recover 9 high-value tables from all available sources (newest first): `.backup`, `.backup.1`, `.backup.2`, `.backup.3`, `.corrupt`
+4. Merges rows across all sources using `INSERT OR IGNORE` — each successive source fills in rows the previous ones didn't cover
+
+The salvaged tables are: `wikilink_feedback`, `wikilink_applications`, `suggestion_events`, `wikilink_suppressions`, `note_links`, `note_link_history`, `memories`, `session_summaries`, `corrections`.
+
+**What's regenerable vs. irreplaceable:**
+
+| Regenerable (rebuilt from markdown) | Irreplaceable (accumulated over time) |
+|-------------------------------------|---------------------------------------|
+| Entity index, FTS5 search, hub scores, note tags, task cache | Wikilink feedback, suppressions, edge weights |
+| Content hashes, co-occurrence cache, embeddings | Agent memories, session summaries, corrections |
+| Graph snapshots, index events, tool invocations | Wikilink applications, suggestion events |
 
 See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#statedb-corruption) for recovery steps.
 

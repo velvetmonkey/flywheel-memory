@@ -241,11 +241,33 @@ export function isIndexStale(_vaultPath?: string): boolean {
  */
 function sanitizeFTS5Query(query: string): string {
   if (!query?.trim()) return '';
-  return query
-    .replace(/"/g, '""')          // escape double quotes
-    .replace(/[(){}[\]^~:\-]/g, ' ') // strip FTS5 operators
-    .replace(/\s+/g, ' ')         // normalize whitespace
+
+  // Extract quoted phrases first (preserve as AND-joined phrase matches)
+  const phrases: string[] = [];
+  const withoutPhrases = query.replace(/"([^"]+)"/g, (_, phrase) => {
+    phrases.push(`"${phrase.replace(/"/g, '""')}"`);
+    return '';
+  });
+
+  // Clean remaining tokens
+  const cleaned = withoutPhrases
+    .replace(/[(){}[\]^~:\-]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
+
+  // Split into tokens, skip explicit AND/OR operators
+  const tokens = cleaned.split(' ').filter(t => t && t !== 'AND' && t !== 'OR' && t !== 'NOT');
+
+  // Combine: quoted phrases + OR-joined tokens
+  // OR semantics with BM25 ranking: documents matching more terms score higher
+  const parts = [...phrases];
+  if (tokens.length === 1) {
+    parts.push(tokens[0]);
+  } else if (tokens.length > 1) {
+    parts.push(tokens.join(' OR '));
+  }
+
+  return parts.join(' ') || '';
 }
 
 export function searchFTS5(

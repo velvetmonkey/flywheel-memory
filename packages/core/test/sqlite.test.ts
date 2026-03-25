@@ -391,16 +391,24 @@ describe('SQLite State Management', () => {
   });
 
   describe('FTS5 Query Escaping', () => {
-    it('should escape special characters', () => {
-      expect(escapeFts5Query('test (query)')).toBe('test query');
-      expect(escapeFts5Query('test: value')).toBe('test value');
-      expect(escapeFts5Query('test "value"')).toBe('test ""value""');
+    it('should strip special characters and OR-join tokens', () => {
+      expect(escapeFts5Query('test (query)')).toBe('test OR query');
+      expect(escapeFts5Query('test: value')).toBe('test OR value');
     });
 
-    it('should preserve wildcards for prefix search', () => {
-      // The * character should be preserved for prefix matching
-      const query = escapeFts5Query('test');
-      expect(query + '*').toBe('test*');
+    it('should extract quoted phrases and OR-join remaining tokens', () => {
+      expect(escapeFts5Query('test "value"')).toBe('"value" test');
+      expect(escapeFts5Query('"project alpha" beta gamma')).toBe('"project alpha" beta OR gamma');
+    });
+
+    it('should return single token as-is', () => {
+      expect(escapeFts5Query('test')).toBe('test');
+      expect(escapeFts5Query('test' + '*')).toBe('test*');
+    });
+
+    it('should skip explicit operators', () => {
+      expect(escapeFts5Query('test AND value')).toBe('test OR value');
+      expect(escapeFts5Query('test OR value')).toBe('test OR value');
     });
   });
 

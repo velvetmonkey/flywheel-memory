@@ -10,7 +10,7 @@
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code-blue.svg)](docs/SETUP.md)
+[![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code%20%7C%20OpenClaw-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-89.6%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-66%25%20single--hop%20%7C%2083%25%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
@@ -42,7 +42,7 @@ Flywheel auto-links on every write, voice or keyboard.
 
 ### Who this is for
 
-**For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. The people who use AI the most [want more control, not less](https://x.com/AnthropicAI/status/2036499691571953848). Also works as persistent memory for bots and agents via the `agent` preset.
+**For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Every conversation you have with a cloud AI builds a cognitive profile of you that you don't own, can't export, and can't delete. Flywheel keeps that profile local. The people who use AI the most [want more control, not less](https://x.com/AnthropicAI/status/2036499691571953848). Also works as persistent memory for bots and agents via the `agent` preset — including [OpenClaw](https://github.com/openclaw/openclaw), where it replaces default amnesiac file access with graph-aware, learning memory.
 
 **Not for** people who want a hosted service. Flywheel runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
 
@@ -165,7 +165,7 @@ Three things differ from macOS/Linux:
 See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full config example.
 </details>
 
-**Using Cursor, Windsurf, VS Code, or another editor?** See [docs/SETUP.md](docs/SETUP.md) for your client's config.
+**Using Cursor, Windsurf, VS Code, OpenClaw, or another client?** See [docs/SETUP.md](docs/SETUP.md) for your client's config.
 
 ---
 

@@ -19,7 +19,7 @@ After trying the [demo vaults](../demos/), point [[Flywheel]] at your own Obsidi
 
 - **Node.js 22–24** -- check with `node --version`.
 - **An Obsidian vault** -- any folder with `.md` files works, but Flywheel detects Obsidian conventions (`.obsidian/` folder, periodic notes, templates)
-- **An MCP-compatible client** -- [[CLAUDE]] Code, Claude Desktop, Cursor, Windsurf, VS Code + [[Github]] Copilot, Continue, or any Streamable HTTP client
+- **An MCP-compatible client** -- [[CLAUDE]] Code, Claude Desktop, Cursor, Windsurf, VS Code + [[Github]] Copilot, Continue, [OpenClaw](https://github.com/openclaw/openclaw), or any Streamable HTTP client
 
 ---
 
@@ -85,6 +85,35 @@ Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
 Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. [[Claude Code]] auto-detects the vault root from the working directory.
 
 Restart Claude Desktop after editing the config. Flywheel appears in the MCP server list.
+
+### OpenClaw (stdio)
+
+[OpenClaw](https://github.com/openclaw/openclaw) is a self-hosted, multi-channel AI assistant that lives in Discord, Telegram, WhatsApp, and Slack. Flywheel gives it persistent, graph-aware memory instead of default amnesiac file access.
+
+Add this to `~/.openclaw/openclaw.json`:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "flywheel": {
+        "command": "npx",
+        "args": ["-y", "@velvetmonkey/flywheel-memory"],
+        "env": {
+          "VAULT_PATH": "/path/to/your/vault",
+          "FLYWHEEL_TOOLS": "agent"
+        }
+      }
+    }
+  }
+}
+```
+
+Restart OpenClaw. Flywheel appears as an MCP server with search, read, write, and memory tools.
+
+`FLYWHEEL_TOOLS=agent` gives the right balance -- search, read, write, memory, and graph -- without the full 67-tool firehose. For everything, use `"full,memory"`.
+
+OpenClaw connects via stdio, same as Claude Desktop. For HTTP transport (e.g., running Flywheel as a shared service), see the [HTTP Clients](#http-clients-cursor-windsurf-vs-code-continue) section below.
 
 ### HTTP Clients (Cursor, Windsurf, VS Code, Continue)
 

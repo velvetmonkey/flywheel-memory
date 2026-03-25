@@ -113,7 +113,7 @@ Start with `default`, then add what you need:
 | `memory` | 3 | Agent working memory + recall + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
 | `temporal` | 4 | Time-based vault intelligence: get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
-| `diagnostics` | 16 | Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history |
+| `diagnostics` | 18 | Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history |
 
 #### Recipes
 
@@ -153,7 +153,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `tasks` | 3 | tasks, vault_toggle_task, vault_add_task |
 | `memory` | 3 | memory, recall, brief |
 | `note-ops` | 4 | vault_delete/move/rename_note, merge_entities |
-| `diagnostics` | 16 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history |
+| `diagnostics` | 18 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history |
 
 Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work with a warning — they resolve to current category names.
 
@@ -172,7 +172,7 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 | corrections | 4 | | | Yes |
 | note-ops | 4 | | | Yes |
 | temporal | 4 | | | Yes |
-| diagnostics | 16 | | | Yes |
+| diagnostics | 18 | | | Yes |
 | **Total** | **74** | **16** | **16** | **71** |
 
 ### Semantic Embeddings

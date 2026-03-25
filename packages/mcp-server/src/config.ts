@@ -252,6 +252,8 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   flywheel_doctor: 'diagnostics',
   flywheel_trust_report: 'diagnostics',
   flywheel_benchmark: 'diagnostics',
+  vault_session_history: 'diagnostics',
+  vault_entity_history: 'diagnostics',
 
 };
 

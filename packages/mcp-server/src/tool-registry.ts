@@ -71,6 +71,8 @@ import { registerSimilarityTools } from './tools/read/similarity.js';
 import { registerSemanticTools } from './tools/read/semantic.js';
 import { registerMergeTools as registerReadMergeTools } from './tools/read/merges.js';
 import { registerTemporalAnalysisTools } from './tools/read/temporalAnalysis.js';
+import { registerSessionHistoryTools } from './tools/read/sessionHistory.js';
+import { registerEntityHistoryTools } from './tools/read/entityHistory.js';
 
 // Resources
 import { registerVaultResources } from './resources/vault.js';
@@ -441,6 +443,8 @@ export function registerAllTools(
   registerSemanticTools(targetServer, gvp, gsd);
   registerReadMergeTools(targetServer, gsd);
   registerTemporalAnalysisTools(targetServer, gvi, gvp, gsd);
+  registerSessionHistoryTools(targetServer, gsd);
+  registerEntityHistoryTools(targetServer, gsd);
 
   // Memory tools
   registerMemoryTools(targetServer, gsd);

@@ -271,6 +271,57 @@ export function getSessionHistory(stateDb: StateDb, sessionId?: string): Session
 }
 
 /**
+ * Get full session detail: summary + chronological invocations.
+ * Supports hierarchical sessions: passing a parent ID includes child sessions.
+ */
+export function getSessionDetail(
+  stateDb: StateDb,
+  sessionId: string,
+  options: { include_children?: boolean; limit?: number } = {},
+): { summary: SessionSummary; invocations: ToolInvocation[] } | null {
+  const { include_children = true, limit = 200 } = options;
+
+  const rows = include_children
+    ? stateDb.db.prepare(`
+        SELECT * FROM tool_invocations
+        WHERE session_id = ? OR session_id LIKE ?
+        ORDER BY timestamp
+        LIMIT ?
+      `).all(sessionId, `${sessionId}.%`, limit) as RawInvocationRow[]
+    : stateDb.db.prepare(`
+        SELECT * FROM tool_invocations
+        WHERE session_id = ?
+        ORDER BY timestamp
+        LIMIT ?
+      `).all(sessionId, limit) as RawInvocationRow[];
+
+  if (rows.length === 0) return null;
+
+  const tools = new Set<string>();
+  const notes = new Set<string>();
+  for (const row of rows) {
+    tools.add(row.tool_name);
+    if (row.note_paths) {
+      try {
+        for (const p of JSON.parse(row.note_paths)) notes.add(p);
+      } catch { /* ignore */ }
+    }
+  }
+
+  return {
+    summary: {
+      session_id: sessionId,
+      started_at: rows[0].timestamp,
+      last_activity: rows[rows.length - 1].timestamp,
+      tool_count: rows.length,
+      unique_tools: Array.from(tools),
+      notes_accessed: Array.from(notes),
+    },
+    invocations: rows.map(rowToInvocation),
+  };
+}
+
+/**
  * Get recent invocations for a session
  */
 export function getRecentInvocations(stateDb: StateDb, limit: number = 20): ToolInvocation[] {

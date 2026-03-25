@@ -2,6 +2,14 @@
 
 Two layers of configuration: **environment variables** set in your [[Claude Desktop Config|MCP config]] (startup-time), and **runtime config** adjustable via the `flywheel_config` tool (persisted in StateDb). No config files to manage.
 
+- [MCP Config](#mcp-config)
+- [Windows](#windows)
+- [Environment Variables](#environment-variables)
+- [Auto-Inferred Configuration](#auto-inferred-configuration)
+- [Runtime Configuration](#runtime-configuration)
+- [Data Storage](#data-storage)
+- [Common Configurations](#common-configurations)
+
 ---
 
 ## MCP Config
@@ -49,7 +57,7 @@ On Windows, three things differ from macOS/Linux: the command, the vault path, a
 
 **`VAULT_PATH`** — Set this to your vault's Windows path. Claude Code can auto-detect it if you `cd` into the vault first, but setting it explicitly avoids issues.
 
-**`FLYWHEEL_WATCH_POLL`** — Required on Windows. Native file system events are unreliable on Windows, so you must enable polling for the file watcher to track changes. Without it, Flywheel starts fine and searches work, but edits you make in Obsidian won't appear in search results until you manually refresh. This is the most common source of "stale index" issues on Windows.
+**`FLYWHEEL_WATCH_POLL`** — Required on Windows. Native file system events are unreliable on Windows, so you must enable polling for the file [[watcher]] to track changes. Without it, Flywheel starts fine and searches work, but edits you make in Obsidian won't appear in search results until you manually refresh. This is the most common source of "stale index" issues on Windows.
 
 ```json
 {

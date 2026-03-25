@@ -1,8 +1,16 @@
 # Troubleshooting
 
-Error recovery and diagnostics for Flywheel Memory.
+Error recovery and diagnostics for [[Flywheel]] Memory.
 
 **Safety model:** Your markdown files are the source of truth. Everything in `.flywheel/` is derived data and can be safely deleted -- Flywheel rebuilds it on next startup.
+
+- [Undoing a Mutation](#undoing-a-mutation)
+- [StateDb Corruption](#statedb-corruption)
+- [Git Lock Contention](#git-lock-contention)
+- [Index Rebuild](#index-rebuild)
+- [Common Errors](#common-errors)
+- [Diagnostics](#diagnostics)
+- [Getting Help](#getting-help)
 
 ---
 
@@ -137,7 +145,7 @@ rm /path/to/your/vault/.git/index.lock
 
 ### Prevention
 
-- Avoid force-killing Claude Code or the MCP server during write operations
+- Avoid force-killing [[CLAUDE]] Code or the MCP server during write operations
 - If you see this error frequently, check if another tool (Obsidian git plugin, cron job, etc.) is running git commands on the same vault
 
 ---

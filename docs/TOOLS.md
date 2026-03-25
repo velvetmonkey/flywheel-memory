@@ -4,6 +4,21 @@
 
 > **Start here:** Most vaults only need `default` (16 tools). Add bundles as you need them — `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`. See [CONFIGURATION.md](CONFIGURATION.md) for preset recipes.
 
+- [At a Glance](#at-a-glance)
+- [Find Anything](#find-anything)
+- [Read Deeper](#read-deeper)
+- [Write & Edit](#write--edit)
+- [Tasks](#tasks)
+- [Explore Connections](#explore-connections)
+- [Wikilinks & Linking](#wikilinks--linking)
+- [Schema & Consistency](#schema--consistency)
+- [Corrections](#corrections)
+- [Organize Notes](#organize-notes)
+- [Agent Memory](#agent-memory)
+- [Temporal Analysis](#temporal-analysis)
+- [Vault Health](#vault-health)
+- [Automation](#automation)
+
 ---
 
 ## At a Glance

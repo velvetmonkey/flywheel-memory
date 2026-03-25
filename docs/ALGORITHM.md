@@ -2,6 +2,18 @@
 
 When [[Flywheel]] suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 13 scoring layers -- each independently testable, each ablatable, each with a reason to exist. Here's exactly how.
 
+- [The 13 Layers](#the-13-layers)
+- [The Pipeline](#the-pipeline)
+- [The Flywheel Effect](#the-flywheel-effect)
+- [Phase 1: Filtering (Layers 1-2)](#phase-1-filtering-layers-1-2)
+- [Phase 2: Scoring (Layers 3-13)](#phase-2-scoring-layers-3-13)
+- [Why Marginal Suggestions Matter](#why-marginal-suggestions-matter)
+- [Strictness Modes](#strictness-modes)
+- [Adaptive Thresholds](#adaptive-thresholds)
+- [Worked Example](#worked-example)
+- [The Self-Correcting Loop](#the-self-correcting-loop)
+- [Vectors + Structure: Deeply Integrated](#vectors--structure-deeply-integrated)
+
 ---
 
 ## The 13 Layers
@@ -357,7 +369,7 @@ The minimum score adjusts based on content length:
 | Medium (50-200 chars) | `baseScore` (unchanged) |
 | Long (> 200 chars) | `floor(baseScore * 1.2)` |
 
-Short content (a quick note, a task) gets a lower bar because there are fewer words to match against. Long content gets a higher bar because there are more words, so matches are more likely to be coincidental.
+Short content (a quick note, a task) gets a lower [[bar]] because there are fewer words to match against. Long content gets a higher bar because there are more words, so matches are more likely to be coincidental.
 
 ---
 

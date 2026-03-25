@@ -4,6 +4,17 @@
 
 No screenshots. No demos on someone else's machine. Clone the repo, run the tests, try the tools. Everything below runs on your hardware in your terminal.
 
+- [Prerequisites](#prerequisites)
+- [Phase 1: Clone and Verify](#phase-1-clone-and-verify)
+- [Phase 2: First Graph Query](#phase-2-first-graph-query)
+- [Phase 3: Watch Auto-Wikilinks](#phase-3-watch-auto-wikilinks)
+- [Phase 4: See the Algorithm Think](#phase-4-see-the-algorithm-think)
+- [Phase 5: Try a Different Domain](#phase-5-try-a-different-domain)
+- [Phase 6: Your Own Vault](#phase-6-your-own-vault)
+- [What You Just Proved](#what-you-just-proved)
+- [Why It's Efficient](#why-its-efficient)
+- [Next Steps](#next-steps)
+
 ---
 
 ## Prerequisites
@@ -74,7 +85,7 @@ Without Flywheel, Claude would grep for "Acme" and scan matching files. The real
 
 Still in carter-strategy, tell Claude:
 
-> Log that Stacy Thompson is starting on the Beta Corp Dashboard and reviewed the API Security Checklist
+> Log that Stacy Thompson is starting on the Beta Corp Dashboard and reviewed the [[API]] Security Checklist
 
 Watch the output:
 

@@ -4,6 +4,13 @@ Your vault is the most valuable dataset you own. It holds your professional memo
 
 [[Flywheel]] Memory is that infrastructure.
 
+- [The State of Knowledge Work](#the-state-of-knowledge-work)
+- [How It Works in Practice](#how-it-works-in-practice)
+- [The Flywheel Effect](#the-flywheel-effect)
+- [The Principles](#the-principles)
+- [Who Builds With Flywheel](#who-builds-with-flywheel)
+- [The Ecosystem](#the-ecosystem)
+
 ---
 
 ## The State of Knowledge Work

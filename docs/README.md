@@ -2,6 +2,12 @@
 
 [← Back to main README](../README.md)
 
+- [Getting Started](#getting-started)
+- [Document Guide](#document-guide)
+- [Demo Vaults](#demo-vaults)
+- [Contributing](#contributing)
+- [FAQ](#faq)
+
 ---
 
 ## Getting Started
@@ -68,7 +74,7 @@ For architecture details and code organization, see [ARCHITECTURE.md](ARCHITECTU
 ## FAQ
 
 **Is my data sent anywhere?**
-No. [[Flywheel]] runs entirely on your machine. No cloud services, no API keys (beyond [[CLAUDE]] itself), no data leaves your disk. The SQLite indexes live inside your vault directory.
+No. [[Flywheel]] runs entirely on your machine. No cloud services, no [[API Management|API]] keys (beyond [[CLAUDE]] itself), no data leaves your disk. The SQLite indexes live inside your vault directory.
 
 **How many notes can it handle?**
 CI benchmarks test 100,000-line file mutations and 2,500-entity indexes. The bench package can generate vaults up to 100k notes. The in-memory index builds at startup (a few seconds cold, ~100ms cached) and queries return in under 10ms.

@@ -2,6 +2,20 @@
 
 [[Flywheel]] Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 74 tools for search, graph queries, and mutations.
 
+- [Source Structure](#source-structure)
+- [Startup Flow](#startup-flow)
+- [Index Strategy](#index-strategy)
+- [SQLite FTS5 Full-Text Search](#sqlite-fts5-full-text-search)
+- [Semantic Search & Embeddings](#semantic-search--embeddings)
+- [Knowledge Graph](#knowledge-graph)
+- [Auto-Wikilinks](#auto-wikilinks)
+- [StateDb (Consolidated State)](#statedb-consolidated-state)
+- [Schema Versioning](#schema-versioning)
+- [Write Pipeline](#write-pipeline)
+- [Dependencies](#dependencies)
+- [Audit Trail](#audit-trail)
+- [Module-Level State Isolation](#module-level-state-isolation)
+
 ---
 
 ## Source Structure

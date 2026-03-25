@@ -4,6 +4,16 @@ Example prompts organized by use case. Copy these directly into Claude Code or C
 
 All examples assume Flywheel is connected to your vault. See [SETUP.md](SETUP.md) if you haven't configured it yet.
 
+- [Daily Capture](#daily-capture)
+- [Research](#research)
+- [Semantic Search](#semantic-search)
+- [Maintenance](#maintenance)
+- [Creation](#creation)
+- [Analysis](#analysis)
+- [Inspecting the Algorithm](#inspecting-the-algorithm)
+- [Bulk Operations](#bulk-operations)
+- [Tips](#tips)
+
 ---
 
 ## Daily Capture
@@ -190,7 +200,7 @@ Create well-structured notes with proper metadata.
 
 ### Notes with structure
 
-> "Create a note at people/Alex Rivera.md with role: engineer, company: Acme Corp, and sections for ## Background and ## Interactions"
+> "Create a note at people/[[Alex Chen|Alex]] Rivera.md with role: engineer, company: Acme Corp, and sections for ## Background and ## Interactions"
 
 ### Notes from templates
 
@@ -220,7 +230,7 @@ Understand your vault's structure and consistency.
 
 ### Wikilink suggestions
 
-> "Analyze this text and suggest where I should add wikilinks: 'Acme Data Migration testing done, Stacy Thompson starting Beta Corp Dashboard'"
+> "Analyze this text and suggest where I should add wikilinks: '[[Acme Data Migration]] testing done, Stacy Thompson starting [[Beta Corp Dashboard]]'"
 
 ### Find immature notes
 

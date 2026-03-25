@@ -4,6 +4,20 @@ Your vault is your second brain. You don't hand it to software you can't trust.
 
 **2,712 tests | 129 test files | 47,000+ lines of test code**
 
+- [Test Philosophy](#test-philosophy)
+- [CI Pipeline](#ci-pipeline)
+- [Performance Benchmarks](#performance-benchmarks)
+- [Concurrency & Stress](#concurrency--stress)
+- [Battle-Hardening (Fuzzing)](#battle-hardening-fuzzing)
+- [Security Testing](#security-testing)
+- [Cold Start & Edge Cases](#cold-start--edge-cases)
+- [Read-Side Testing](#read-side-testing)
+- [What Isn't Tested](#what-isnt-tested)
+- [Retrieval Benchmark (HotpotQA)](#retrieval-benchmark-hotpotqa)
+- [Retrieval Benchmark (LoCoMo)](#retrieval-benchmark-locomo)
+- [Graph Quality (266 tests, 31 files)](#graph-quality-266-tests-31-files)
+- [Live AI Testing](#live-ai-testing)
+
 ---
 
 ## Test Philosophy

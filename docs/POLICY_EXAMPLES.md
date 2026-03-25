@@ -2,6 +2,18 @@
 
 Ready-to-run policy examples for common vault workflows. Save any of these as `.claude/policies/<name>.yaml` in your vault, then use `policy action=execute` to run.
 
+- [Quick Reference](#quick-reference)
+- [Template Syntax](#template-syntax)
+- [Available Tools](#available-tools)
+- [Example 1: Weekly Review](#example-1-weekly-review)
+- [Example 2: Project Setup](#example-2-project-setup)
+- [Example 3: Daily Standup Log](#example-3-daily-standup-log)
+- [Example 4: Inbox Processing](#example-4-inbox-processing)
+- [Example 5: Overdue Invoice Chaser](#example-5-overdue-invoice-chaser)
+- [Example 6: Team Utilization Report](#example-6-team-utilization-report)
+
+---
+
 ## Quick Reference
 
 | Action | What it does |

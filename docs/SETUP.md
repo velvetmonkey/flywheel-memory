@@ -2,6 +2,17 @@
 
 After trying the [demo vaults](../demos/), point [[Flywheel]] at your own Obsidian vault.
 
+- [Prerequisites](#prerequisites)
+- [Windows](#windows)
+- [Step 1: Configure Your Client](#step-1-configure-your-client)
+- [Step 2: First 5 Commands to Try](#step-2-first-5-commands-to-try)
+- [Step 3: Choose a Tool Preset](#step-3-choose-a-tool-preset)
+- [Step 4: Configure Claude for Your Vault](#step-4-configure-claude-for-your-vault)
+- [Step 5: Enable Semantic Intelligence (Optional)](#step-5-enable-semantic-intelligence-optional)
+- [Common Issues](#common-issues)
+- [Git Integration (Optional)](#git-integration-optional)
+- [Next Steps](#next-steps)
+
 ---
 
 ## Prerequisites

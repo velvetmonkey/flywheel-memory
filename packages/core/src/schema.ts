@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 32;
+export const SCHEMA_VERSION = 34;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -50,10 +50,10 @@ CREATE TABLE IF NOT EXISTS entities (
 CREATE INDEX IF NOT EXISTS idx_entities_name_lower ON entities(name_lower);
 CREATE INDEX IF NOT EXISTS idx_entities_category ON entities(category);
 
--- FTS5 for entity search with porter stemmer
+-- FTS5 for entity search with porter stemmer (contentless — triggers handle sync)
 CREATE VIRTUAL TABLE IF NOT EXISTS entities_fts USING fts5(
   name, aliases, category,
-  content='entities', content_rowid='id',
+  content='',
   tokenize='porter unicode61'
 );
 
@@ -452,4 +452,18 @@ CREATE TABLE IF NOT EXISTS proactive_queue (
   UNIQUE(note_path, entity)
 );
 CREATE INDEX IF NOT EXISTS idx_pq_status ON proactive_queue(status, expires_at);
+
+-- Performance benchmarks (v33: longitudinal tracking)
+CREATE TABLE IF NOT EXISTS performance_benchmarks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp INTEGER NOT NULL,
+  version TEXT NOT NULL,
+  benchmark TEXT NOT NULL,
+  mean_ms REAL NOT NULL,
+  p50_ms REAL,
+  p95_ms REAL,
+  iterations INTEGER NOT NULL DEFAULT 1
+);
+CREATE INDEX IF NOT EXISTS idx_perf_bench_ts ON performance_benchmarks(timestamp);
+CREATE INDEX IF NOT EXISTS idx_perf_bench_name ON performance_benchmarks(benchmark, timestamp);
 `;

@@ -9,9 +9,15 @@
  */
 
 import * as path from 'path';
-import { statSync } from 'fs';
+import { dirname, join } from 'path';
+import { statSync, readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+
+const __trFilename = fileURLToPath(import.meta.url);
+const __trDirname = dirname(__trFilename);
+const trPkg = JSON.parse(readFileSync(join(__trDirname, '../package.json'), 'utf-8'));
 
 import type { VaultIndex } from './core/read/types.js';
 import type { FlywheelConfig } from './core/read/config.js';
@@ -359,7 +365,7 @@ export function registerAllTools(
   const { getVaultPath: gvp, getVaultIndex: gvi, getStateDb: gsd, getFlywheelConfig: gcf } = ctx;
 
   // Read tools
-  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, ctx.getWatcherStatus);
+  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, ctx.getWatcherStatus, () => trPkg.version);
   registerReadSystemTools(
     targetServer,
     gvi,

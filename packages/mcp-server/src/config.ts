@@ -16,7 +16,7 @@ import type { VaultRegistry } from './vault-registry.js';
 // Presets:
 //   default    - Note-taking essentials: search, read, write, tasks (16 tools)
 //   agent      - Autonomous AI agents: search, read, write, memory (16 tools)
-//   full       - All tools except agent memory (67 tools). Add ",memory" for all 70.
+//   full       - All tools except agent memory (69 tools). Add ",memory" for all 72.
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic + export (11 tools)
@@ -250,6 +250,8 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   dismiss_merge_suggestion: 'diagnostics',
   vault_init: 'diagnostics',
   flywheel_doctor: 'diagnostics',
+  flywheel_trust_report: 'diagnostics',
+  flywheel_benchmark: 'diagnostics',
 
 };
 

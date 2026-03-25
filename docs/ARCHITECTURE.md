@@ -1,6 +1,6 @@
 # Architecture
 
-Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 70 tools for search, graph queries, and mutations.
+[[Flywheel]] Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 74 tools for search, graph queries, and mutations.
 
 ---
 
@@ -109,7 +109,7 @@ packages/
 1. **Detect vault root** -- `findVaultRoot()` walks up from cwd looking for `.obsidian/` or `.claude/`
 2. **Open StateDb** -- `openStateDb(vaultPath)` creates/opens `.flywheel/state.db` (SQLite with WAL mode)
 3. **Initialize entity index** -- Loads entities from StateDb for auto-wikilinks
-4. **Connect MCP transport** -- `StdioServerTransport` for Claude Code / Claude Desktop
+4. **Connect MCP transport** -- `StdioServerTransport` for [[CLAUDE]] Code / Claude Desktop
 5. **Load index from cache** -- Checks `vault_index_cache` table in StateDb (valid if note count matches within 5% and age < 24h)
 6. **Build index if cache miss** -- Scans all `.md` files, parses notes in parallel (concurrency limit: 50), builds backlink/entity/tag maps
 7. **Post-index work** -- Scans vault entities, exports hub scores, infers config (periodic note folders, templates, etc.), starts file [[watcher]]
@@ -265,7 +265,7 @@ When Claude writes content through any mutation tool (`vault_add_to_section`, `v
 
 Optional pattern-based detection for entities that don't have existing files:
 
-- **Multi-word proper nouns** (e.g., "Marcus Johnson", "Project Alpha")
+- **Multi-word proper nouns** (e.g., "[[Marcus Johnson]]", "Project Alpha")
 - **Quoted terms** (e.g., `"Turbopump"` becomes `[[Turbopump]]`)
 - **Single capitalized words** after lowercase text (opt-in)
 
@@ -459,3 +459,60 @@ Core indexing, search, graph analysis, and all write operations run with **zero 
 This is enforced by CI tests in `test/write/security/sovereignty.test.ts` that scan all production source files for network call patterns. Any new network call site must be added to an explicit allowlist with documentation.
 
 No telemetry. No analytics. No phone-home. No remote git operations.
+
+---
+
+## Module-Level State Isolation
+
+Flywheel Memory supports multi-vault operation where concurrent MCP requests may target different vaults. Each vault has its own StateDb, VaultIndex, and configuration. Per-request isolation uses `AsyncLocalStorage` (ALS) in `vault-scope.ts`.
+
+### The Rule
+
+**Never read module-level mutable state directly outside its designated getter function.**
+
+Every module that holds vault-scoped state follows this pattern:
+
+```typescript
+// 1. Module-level variable (fallback for startup/watcher code paths)
+let moduleStateDb: StateDb | null = null;
+
+// 2. Scope-aware getter: ALS first, then fallback
+function getStateDb(): StateDb | null {
+  return getActiveScopeOrNull()?.stateDb ?? moduleStateDb;
+}
+
+// 3. Setter (called by activateVault during startup)
+export function setFooStateDb(stateDb: StateDb | null): void {
+  moduleStateDb = stateDb;
+}
+
+// 4. All other code uses the getter
+export function doWork(): void {
+  const db = getStateDb();  // never moduleStateDb directly
+  if (!db) return;
+  // ...
+}
+```
+
+### Modules following this pattern
+
+| Module | Variable | Getter |
+|--------|----------|--------|
+| `wikilinks.ts` | `moduleStateDb` | `getWriteStateDb()` |
+| `git.ts` | `moduleStateDb` | `getStateDb()` |
+| `hints.ts` | `moduleStateDb` | `getStateDb()` |
+| `recency.ts` | `moduleStateDb` | `getStateDb()` |
+| `fts5.ts` | `db` | `getDb()` |
+| `taskCache.ts` | `db` | `getDb()` |
+| `embeddings.ts` | `db` | `getDb()` |
+| `graph.ts` | `indexState` | `getIndexState()` |
+
+### Exceptions
+
+- `embeddings.ts`: `pipeline` (ML model) and `embeddingCache` are content-addressed and legitimately shared across vaults
+- `sweep.ts`: Results cache is informational only; no data corruption risk
+
+### Enforced by
+
+- `singleton-access.test.ts` — grep-based test that fails if module-level variables are accessed outside their getter/setter functions
+- `singleton-stress.test.ts` — concurrent interleaving test that detects cross-vault data bleed

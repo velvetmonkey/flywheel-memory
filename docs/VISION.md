@@ -58,7 +58,7 @@ See the main [README](../packages/mcp-server/README.md#the-flywheel-effect) for 
 
 ### Local-first: your trust guarantee
 
-Everything runs on your machine. No cloud services, no [[API Management|API]] keys (beyond Claude itself), no data leaving your disk. The SQLite databases live inside your vault directory. Delete them and they rebuild from your markdown. You are always in control.
+Everything runs on your machine. No cloud services, no [[API Management|API]] keys (beyond [[CLAUDE]] itself), no data leaving your disk. The SQLite databases live inside your vault directory. Delete them and they rebuild from your markdown. You are always in control.
 
 ### Markdown is truth: zero lock-in
 
@@ -94,7 +94,7 @@ The demo vaults in this repo cover these personas with production-realistic data
 
 ### Flywheel Memory
 
-The MCP server. 70 tools across 12 categories give Claude structured access to Obsidian vaults: search, graph queries, schema intelligence, content mutations, task management, agent memory, and policy automation. Published as `@velvetmonkey/flywheel-memory`.
+The MCP server. 74 tools across 12 categories give Claude structured access to Obsidian vaults: search, graph queries, schema intelligence, content mutations, task management, agent memory, and policy automation. Published as `@velvetmonkey/flywheel-memory`.
 
 ### Vault-Core
 

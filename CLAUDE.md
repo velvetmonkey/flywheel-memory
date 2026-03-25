@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**Flywheel Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 70 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**[[Flywheel]] Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 74 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -67,7 +67,7 @@ packages/mcp-server/src/
 - `applyToolGating()` — Monkey-patches `server.tool()` to filter by category. In multi-vault mode, wraps handlers with `activateVault()` and injects optional `vault` parameter on all tools.
 - `registerAllTools()` — Calls all tool registration functions. Write tools use `getVaultPath: () => string` getter (not a captured string) so vault switching works.
 - `createConfiguredServer()` — Creates a stateless per-request McpServer for HTTP transport (fresh server per POST /mcp).
-- `activateVault(ctx)` — Swaps 6 module-level singletons: `setWriteStateDb`, `setFTS5Database`, `setRecencyStateDb`, `setEdgeWeightStateDb`, `setTaskCacheDatabase`, `setEmbeddingsDatabase` + `loadEntityEmbeddingsToMemory`.
+- `activateVault(ctx)` — Swaps 5 module-level singletons: `setWriteStateDb`, `setFTS5Database`, `setRecencyStateDb`, `setTaskCacheDatabase`, `setEmbeddingsDatabase` + `loadEntityEmbeddingsToMemory`. (Edge weights removed — functions take `stateDb` as parameter.)
 - Transport env vars: `FLYWHEEL_TRANSPORT` (stdio/http/both), `FLYWHEEL_HTTP_PORT` (default 3111), `FLYWHEEL_HTTP_HOST` (default 127.0.0.1).
 - Multi-vault: `FLYWHEEL_VAULTS=name1:/path1,name2:/path2`. First vault is primary. Falls back to `PROJECT_PATH`/`VAULT_PATH` for single-vault mode.
 - Cross-vault search: `wrapWithVaultActivation` detects `search` tool with no `vault` param → calls `crossVaultSearch()` which iterates all contexts, runs search per vault, merges results with `vault` field, sorts by `rrf_score`. Returns `method: 'cross_vault'`.
@@ -90,7 +90,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 **Presets:**
 - **`default`** — 16 tools: search, read, write, tasks
 - **`agent`** — 16 tools: search, read, write, memory
-- **`full`** — All categories except memory (67 tools; add `,memory` for all 70)
+- **`full`** — All categories except memory (71 tools; add `,memory` for all 74)
 
 **Composable bundles** (add to presets or each other):
 - **`graph`** — structural analysis, semantic analysis, paths, hubs, connections, export (11 tools)
@@ -101,7 +101,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`memory`** — agent working memory + recall + brief (3 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
 - **`temporal`** — time-based vault intelligence (4 tools)
-- **`diagnostics`** — vault health, stats, config, activity, merges, doctor (14 tools)
+- **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history (18 tools)
 **Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `temporal`, `diagnostics`
 
 ---

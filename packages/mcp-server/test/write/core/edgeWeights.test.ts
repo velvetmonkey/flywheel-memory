@@ -13,7 +13,6 @@ import {
 import {
   recomputeEdgeWeights,
   buildPathToTargetsMap,
-  setEdgeWeightStateDb,
 } from '../../../src/core/write/edgeWeights.js';
 
 describe('edgeWeights', () => {
@@ -23,7 +22,6 @@ describe('edgeWeights', () => {
   beforeEach(async () => {
     vaultPath = await createTempVault();
     stateDb = openStateDb(vaultPath);
-    setEdgeWeightStateDb(stateDb);
   });
 
   afterEach(async () => {

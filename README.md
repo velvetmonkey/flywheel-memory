@@ -150,7 +150,7 @@ Start with `default`. Add bundles as you need them: `graph` (includes GraphML ex
 { "env": { "FLYWHEEL_TOOLS": "default,graph" } }
 ```
 
-[Browse all 70 tools →](docs/TOOLS.md) | [Preset recipes →](docs/CONFIGURATION.md)
+[Browse all 74 tools →](docs/TOOLS.md) | [Preset recipes →](docs/CONFIGURATION.md)
 
 <details>
 <summary><strong>Windows users — read this before you start</strong></summary>
@@ -291,7 +291,7 @@ Measured on standard academic datasets. Reproducible on your machine: [`demos/ho
 | Doc | Why read this |
 |---|---|
 | [PROVE-IT.md](docs/PROVE-IT.md) | **Start here.** See it working in 5 minutes |
-| [TOOLS.md](docs/TOOLS.md) | All 70 tools documented |
+| [TOOLS.md](docs/TOOLS.md) | All 74 tools documented |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](docs/SETUP.md) | Full setup guide for your vault |
 | [CONFIGURATION.md](docs/CONFIGURATION.md) | Env vars, presets, custom tool sets |

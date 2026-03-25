@@ -209,9 +209,10 @@ const DEFAULT_EXCLUDE_FOLDERS = [
 export async function initializeEntityIndex(vaultPath: string): Promise<void> {
   try {
     // Try loading from StateDb (fastest path)
-    if (moduleStateDb) {
+    const stateDb = getWriteStateDb();
+    if (stateDb) {
       try {
-        const dbIndex = getEntityIndexFromDb(moduleStateDb);
+        const dbIndex = getEntityIndexFromDb(stateDb);
         if (dbIndex._metadata.total_entities > 0) {
           entityIndex = dbIndex;
           indexReady = true;
@@ -250,9 +251,10 @@ async function rebuildIndex(vaultPath: string): Promise<void> {
   console.error(`[Flywheel] Entity index built: ${entityIndex._metadata.total_entities} entities in ${entityDuration}ms`);
 
   // Save to StateDb for fast subsequent loads
-  if (moduleStateDb) {
+  const stateDb = getWriteStateDb();
+  if (stateDb) {
     try {
-      moduleStateDb.replaceAllEntities(entityIndex);
+      stateDb.replaceAllEntities(entityIndex);
       console.error(`[Flywheel] Saved entities to StateDb`);
     } catch (e) {
       console.error(`[Flywheel] Failed to save entities to StateDb: ${e}`);
@@ -321,10 +323,11 @@ export function getEntityIndex(): EntityIndex | null {
  * Called before applying wikilinks to ensure fresh entity data.
  */
 export function checkAndRefreshIfStale(): void {
-  if (!moduleStateDb || !indexReady) return;
+  const stateDb = getWriteStateDb();
+  if (!stateDb || !indexReady) return;
 
   try {
-    const metadata = getStateDbMetadata(moduleStateDb);
+    const metadata = getStateDbMetadata(stateDb);
     if (!metadata.entitiesBuiltAt) return;
 
     const dbBuiltAt = new Date(metadata.entitiesBuiltAt).getTime();
@@ -332,7 +335,7 @@ export function checkAndRefreshIfStale(): void {
     // If StateDb was updated after we loaded, refresh
     if (dbBuiltAt > lastLoadedAt) {
       console.error('[Flywheel] Entity index stale, reloading from StateDb...');
-      const dbIndex = getEntityIndexFromDb(moduleStateDb);
+      const dbIndex = getEntityIndexFromDb(stateDb);
       if (dbIndex._metadata.total_entities > 0) {
         entityIndex = dbIndex;
         lastLoadedAt = Date.now();
@@ -480,17 +483,18 @@ export function processWikilinks(content: string, notePath?: string, existingCon
   let entities = getAllEntities(entityIndex);
 
   // Filter out suppressed entities (from wikilink feedback, with folder context)
-  if (moduleStateDb) {
+  const stateDb = getWriteStateDb();
+  if (stateDb) {
     const folder = notePath ? notePath.split('/')[0] : undefined;
     entities = entities.filter(e => {
       const name = getEntityName(e);
-      return !isSuppressed(moduleStateDb!, name, folder);
+      return !isSuppressed(stateDb, name, folder);
     });
   }
 
   // Filter out entities with wrong_link corrections for this specific note
-  if (moduleStateDb && notePath) {
-    const correctedPairs = getCorrectedEntityNotePairs(moduleStateDb);
+  if (stateDb && notePath) {
+    const correctedPairs = getCorrectedEntityNotePairs(stateDb);
     entities = entities.filter(e => {
       const name = getEntityName(e).toLowerCase();
       const paths = correctedPairs.get(name);
@@ -640,8 +644,9 @@ export function maybeApplyWikilinks(
 
   if (result.linksAdded > 0) {
     // Track applications for implicit feedback detection
-    if (moduleStateDb && notePath) {
-      trackWikilinkApplications(moduleStateDb, notePath, result.linkedEntities);
+    const stateDb = getWriteStateDb();
+    if (stateDb && notePath) {
+      trackWikilinkApplications(stateDb, notePath, result.linkedEntities);
     }
 
     const implicitCount = result.implicitEntities?.length ?? 0;
@@ -1344,16 +1349,17 @@ export async function suggestRelatedLinks(
 
   // Load feedback boosts once (Layer 10), with folder context for stratification
   const noteFolder = notePath ? notePath.split('/')[0] : undefined;
-  const feedbackBoosts = moduleStateDb ? getAllFeedbackBoosts(moduleStateDb, noteFolder) : new Map<string, number>();
+  const stateDb = getWriteStateDb();
+  const feedbackBoosts = stateDb ? getAllFeedbackBoosts(stateDb, noteFolder) : new Map<string, number>();
 
   // Load suppression penalties once (Layer 0, soft proportional penalty)
-  const suppressionPenalties = moduleStateDb ? getAllSuppressionPenalties(moduleStateDb) : new Map<string, number>();
+  const suppressionPenalties = stateDb ? getAllSuppressionPenalties(stateDb) : new Map<string, number>();
 
   // Load correction exclusions (entity+note pairs with wrong_link corrections)
-  const correctedPairs = moduleStateDb ? getCorrectedEntityNotePairs(moduleStateDb) : new Map();
+  const correctedPairs = stateDb ? getCorrectedEntityNotePairs(stateDb) : new Map();
 
   // Load edge weight map once (Layer 12)
-  const edgeWeightMap = moduleStateDb ? getEntityEdgeWeightMap(moduleStateDb) : new Map<string, number>();
+  const edgeWeightMap = stateDb ? getEntityEdgeWeightMap(stateDb) : new Map<string, number>();
 
   // First pass: Score entities and track which ones matched directly
   interface ScoredEntry {
@@ -1489,7 +1495,6 @@ export async function suggestRelatedLinks(
     }
   }
   // Build retrieval co-occurrence boost map (bulk query)
-  const stateDb = getWriteStateDb();
   let retrievalBoostMap = new Map<string, number>();
   if (!disabled.has('cooccurrence') && stateDb && cooccurrenceSeeds.size > 0) {
     // Collect note paths for seed entities
@@ -1714,15 +1719,16 @@ export async function suggestRelatedLinks(
   });
 
   // Persist suggestion events for pipeline observability (Pillar 6)
-  if (moduleStateDb && notePath) {
+  const persistDb = getWriteStateDb();
+  if (persistDb && notePath) {
     try {
       const now = Date.now();
-      const insertStmt = moduleStateDb.db.prepare(`
+      const insertStmt = persistDb.db.prepare(`
         INSERT OR IGNORE INTO suggestion_events
           (timestamp, note_path, entity, total_score, breakdown_json, threshold, passed, strictness, applied, pipeline_event_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL)
       `);
-      const persistTransaction = moduleStateDb.db.transaction(() => {
+      const persistTransaction = persistDb.db.transaction(() => {
         for (const e of relevantEntities) {
           insertStmt.run(
             now,
@@ -1798,7 +1804,7 @@ export async function suggestRelatedLinks(
   // Build detailed breakdown when requested
   if (detail) {
     // Load feedback stats for count/accuracy (only when detail requested)
-    const feedbackStats = moduleStateDb ? getEntityStats(moduleStateDb) : [];
+    const feedbackStats = stateDb ? getEntityStats(stateDb) : [];
     const feedbackMap = new Map(feedbackStats.map(s => [s.entity, s]));
 
     result.detailed = topEntries.map((e): ScoredSuggestion => {
@@ -1862,12 +1868,13 @@ export function detectAliasCollisions(
   noteName: string,
   aliases: string[] = []
 ): AliasCollision[] {
-  if (!moduleStateDb) return [];
+  const stateDb = getWriteStateDb();
+  if (!stateDb) return [];
 
   const collisions: AliasCollision[] = [];
 
   // 1. Note name matches an existing entity's alias
-  const nameAsAlias = getEntitiesByAlias(moduleStateDb, noteName);
+  const nameAsAlias = getEntitiesByAlias(stateDb, noteName);
   for (const entity of nameAsAlias) {
     // Skip self (if this note already exists as an entity)
     if (entity.name.toLowerCase() === noteName.toLowerCase()) continue;
@@ -1884,7 +1891,7 @@ export function detectAliasCollisions(
 
   for (const alias of aliases) {
     // 2. Alias matches an existing entity's primary name
-    const existingByName = getEntityByName(moduleStateDb, alias);
+    const existingByName = getEntityByName(stateDb, alias);
     if (existingByName && existingByName.name.toLowerCase() !== noteName.toLowerCase()) {
       collisions.push({
         term: alias,
@@ -1898,7 +1905,7 @@ export function detectAliasCollisions(
     }
 
     // 3. Alias matches another entity's alias
-    const existingByAlias = getEntitiesByAlias(moduleStateDb, alias);
+    const existingByAlias = getEntitiesByAlias(stateDb, alias);
     for (const entity of existingByAlias) {
       // Skip self
       if (entity.name.toLowerCase() === noteName.toLowerCase()) continue;
@@ -1948,8 +1955,9 @@ export function suggestAliases(
   function isSafe(alias: string): boolean {
     if (existingLower.has(alias.toLowerCase())) return false;
     if (alias.toLowerCase() === noteName.toLowerCase()) return false;
-    if (!moduleStateDb) return true;
-    const existing = getEntityByName(moduleStateDb, alias);
+    const db = getWriteStateDb();
+    if (!db) return true;
+    const existing = getEntityByName(db, alias);
     return !existing;
   }
 
@@ -2024,10 +2032,11 @@ function inferCategoryFromName(name: string): string | undefined {
 export async function checkPreflightSimilarity(noteName: string): Promise<PreflightResult> {
   const result: PreflightResult = { similarEntities: [] };
 
-  if (!moduleStateDb) return result;
+  const stateDb = getWriteStateDb();
+  if (!stateDb) return result;
 
   // 1. Exact name match
-  const exact = getEntityByName(moduleStateDb, noteName);
+  const exact = getEntityByName(stateDb, noteName);
   if (exact) {
     result.existingEntity = {
       name: exact.name,
@@ -2039,7 +2048,7 @@ export async function checkPreflightSimilarity(noteName: string): Promise<Prefli
   // 2. FTS5 search for similar entities
   const ftsNames = new Set<string>();
   try {
-    const searchResults = searchEntitiesDb(moduleStateDb, noteName, 5);
+    const searchResults = searchEntitiesDb(stateDb, noteName, 5);
     for (const sr of searchResults) {
       // Skip exact match (already reported above)
       if (sr.name.toLowerCase() === noteName.toLowerCase()) continue;
@@ -2069,7 +2078,7 @@ export async function checkPreflightSimilarity(noteName: string): Promise<Prefli
         if (ftsNames.has(match.entityName.toLowerCase())) continue;
 
         // Look up entity details from StateDb
-        const entity = getEntityByName(moduleStateDb!, match.entityName);
+        const entity = getEntityByName(stateDb, match.entityName);
         if (entity) {
           result.similarEntities.push({
             name: entity.name,

@@ -12,6 +12,7 @@ import {
   type StateDb,
 } from '@velvetmonkey/vault-core';
 import { serverLog } from '../shared/serverLog.js';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /**
  * Module-level StateDb reference for write state storage
@@ -25,6 +26,13 @@ let moduleStateDb: StateDb | null = null;
  */
 export function setGitStateDb(stateDb: StateDb | null): void {
   moduleStateDb = stateDb;
+}
+
+/**
+ * Get the StateDb instance (ALS scope first for per-request isolation)
+ */
+function getStateDb(): StateDb | null {
+  return getActiveScopeOrNull()?.stateDb ?? moduleStateDb;
 }
 
 /**
@@ -65,7 +73,8 @@ export function saveLastMutationCommit(
   hash: string,
   message: string
 ): void {
-  if (!moduleStateDb) {
+  const stateDb = getStateDb();
+  if (!stateDb) {
     serverLog('git', 'No StateDb available for saving last commit', 'warn');
     return;
   }
@@ -77,7 +86,7 @@ export function saveLastMutationCommit(
   };
 
   try {
-    setWriteState(moduleStateDb, 'last_commit', data);
+    setWriteState(stateDb, 'last_commit', data);
   } catch (e) {
     serverLog('git', `Failed to save last commit to StateDb: ${e}`, 'error');
   }
@@ -87,12 +96,13 @@ export function saveLastMutationCommit(
  * Get the last tracked mutation commit, if any.
  */
 export function getLastMutationCommit(): LastMutationCommit | null {
-  if (!moduleStateDb) {
+  const stateDb = getStateDb();
+  if (!stateDb) {
     return null;
   }
 
   try {
-    return getWriteState<LastMutationCommit>(moduleStateDb, 'last_commit');
+    return getWriteState<LastMutationCommit>(stateDb, 'last_commit');
   } catch {
     return null;
   }
@@ -102,12 +112,13 @@ export function getLastMutationCommit(): LastMutationCommit | null {
  * Clear the last mutation commit tracking (after successful undo).
  */
 export function clearLastMutationCommit(): void {
-  if (!moduleStateDb) {
+  const stateDb = getStateDb();
+  if (!stateDb) {
     return;
   }
 
   try {
-    deleteWriteState(moduleStateDb, 'last_commit');
+    deleteWriteState(stateDb, 'last_commit');
   } catch {
     // Ignore errors
   }

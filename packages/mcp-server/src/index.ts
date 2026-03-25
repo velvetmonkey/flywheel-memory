@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - Unified local-first memory for AI agents
  *
- * 70 tools across 12 categories
+ * 72 tools across 12 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -90,6 +90,7 @@ import { startSweepTimer, stopSweepTimer } from './core/read/sweep.js';
 
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
+import { purgeOldBenchmarks } from './core/shared/benchmarks.js';
 
 // Core imports - Index Activity
 import { recordIndexEvent, purgeOldIndexEvents, purgeOldSuggestionEvents, purgeOldNoteLinkHistory, getRecentPipelineEvent } from './core/shared/indexActivity.js';
@@ -112,9 +113,6 @@ import { setRecencyStateDb } from './core/shared/recency.js';
 // Core imports - Co-occurrence
 import { loadCooccurrenceFromStateDb } from './core/shared/cooccurrence.js';
 import { pruneStaleRetrievalCooccurrence } from './core/shared/retrievalCooccurrence.js';
-
-// Core imports - Edge Weights
-import { setEdgeWeightStateDb } from './core/write/edgeWeights.js';
 
 // Node builtins
 import * as fs from 'node:fs/promises';
@@ -304,7 +302,6 @@ function activateVault(ctx: VaultContext): void {
     setWriteStateDb(ctx.stateDb);
     setFTS5Database(ctx.stateDb.db);
     setRecencyStateDb(ctx.stateDb);
-    setEdgeWeightStateDb(ctx.stateDb);
     setTaskCacheDatabase(ctx.stateDb.db);
     setEmbeddingsDatabase(ctx.stateDb.db);
     loadEntityEmbeddingsToMemory();
@@ -662,6 +659,7 @@ function runPeriodicMaintenance(db: StateDb): void {
   const now = Date.now();
   if (now - lastPurgeAt > 24 * 60 * 60 * 1000) {
     purgeOldMetrics(db, 90);
+    purgeOldBenchmarks(db, 90);
     purgeOldIndexEvents(db, 90);
     purgeOldInvocations(db, 90);
     purgeOldSuggestionEvents(db, 30);

@@ -9,7 +9,7 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 ## Prerequisites
 
 - **Node.js 20–24** -- check with `node --version`.
-- **Claude Code** -- authenticated and working (`claude --version`)
+- **[[CLAUDE]] Code** -- authenticated and working (`claude --version`)
 - **git** -- to clone the repo
 
 ---
@@ -159,7 +159,7 @@ Same tools, completely different domain. Outlinks in search results trace the ci
 
 Ready to point Flywheel at your own vault? See the [full setup guide](SETUP.md) for:
 
-- [[Claude Desktop Config|MCP config]] for Claude Code and Claude Desktop
+- [[Claude Desktop Config|MCP config]] for [[Claude Code]] and Claude Desktop
 - Tool preset recommendations
 - Semantic search enablement
 
@@ -193,6 +193,6 @@ Flywheel's enriched search returns frontmatter, ranked backlinks, ranked outlink
 ## Next Steps
 
 - **[SETUP.md](SETUP.md)** -- Full setup guide for your own vault
-- **[TOOLS.md](TOOLS.md)** -- Reference for all 70 tools
+- **[TOOLS.md](TOOLS.md)** -- Reference for all 74 tools
 - **[ALGORITHM.md](ALGORITHM.md)** -- How scoring, ranking, and wikilink suggestion work
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts by use case

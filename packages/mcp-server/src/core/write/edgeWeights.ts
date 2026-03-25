@@ -36,16 +36,6 @@ export interface EdgeWeightResult {
 }
 
 // =============================================================================
-// Module-level StateDb injection (follows recency.ts pattern)
-// =============================================================================
-
-let moduleStateDb: StateDb | null = null;
-
-export function setEdgeWeightStateDb(stateDb: StateDb | null): void {
-  moduleStateDb = stateDb;
-}
-
-// =============================================================================
 // Path-to-targets mapping (bridges file paths to wikilink targets)
 // =============================================================================
 

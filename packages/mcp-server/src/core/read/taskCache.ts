@@ -50,10 +50,20 @@ export function setTaskCacheDatabase(database: Database.Database): void {
 }
 
 /**
- * Check if the task cache is ready to serve queries
+ * Check if the task cache is ready to serve queries.
+ * Derives from the scope-aware DB for multi-vault safety.
  */
 export function isTaskCacheReady(): boolean {
-  return cacheReady && db !== null;
+  const scopeDb = getDb();
+  if (!scopeDb) return false;
+  try {
+    const row = scopeDb.prepare(
+      'SELECT value FROM fts_metadata WHERE key = ?'
+    ).get('task_cache_built') as { value: string } | undefined;
+    return !!row;
+  } catch {
+    return false;
+  }
 }
 
 /**

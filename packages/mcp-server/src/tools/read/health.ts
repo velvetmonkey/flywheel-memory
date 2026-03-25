@@ -20,6 +20,10 @@ import { getSweepResults, type SweepResults } from '../../core/read/sweep.js';
 import { getSuppressedCount, getEntityStats, getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD } from '../../core/write/wikilinkFeedback.js';
 import { getEntityEmbeddingsCount } from '../../core/read/embeddings.js';
 import type { WatcherStatus } from '../../core/read/watch/types.js';
+import { TOOL_CATEGORY, parseEnabledCategories, ALL_CATEGORIES } from '../../config.js';
+import { getRecentInvocations } from '../../core/shared/toolTracking.js';
+import { searchFTS5 } from '../../core/read/fts5.js';
+import { recordBenchmark, getBenchmarkHistory, getBenchmarkTrends } from '../../core/shared/benchmarks.js';
 
 /** Staleness threshold in seconds (5 minutes) */
 const STALE_THRESHOLD_SECONDS = 300;
@@ -33,7 +37,8 @@ export function registerHealthTools(
   getVaultPath: () => string,
   getConfig: () => FlywheelConfig = () => ({}),
   getStateDb: () => StateDb | null = () => null,
-  getWatcherStatus: () => WatcherStatus | null = () => null
+  getWatcherStatus: () => WatcherStatus | null = () => null,
+  getVersion: () => string = () => 'unknown'
 ): void {
   // health_check - MCP server health status + periodic note detection + config
   const IndexProgressSchema = z.object({
@@ -1002,6 +1007,221 @@ export function registerHealthTools(
 
       return {
         content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
+      };
+    }
+  );
+
+  // flywheel_trust_report — Auditable config + write activity manifest
+  const WRITE_CATEGORIES = new Set(['write', 'note-ops', 'corrections', 'schema']);
+
+  server.registerTool(
+    'flywheel_trust_report',
+    {
+      title: 'Flywheel Trust Report',
+      description:
+        'Auditable manifest of what this server can do and what it has done. ' +
+        'Returns active config/preset, enabled tool categories, transport mode, ' +
+        'recent write operations, and enforced boundaries. ' +
+        'Supports the cognitive sovereignty thesis with verifiable transparency.',
+      inputSchema: {},
+    },
+    async (): Promise<{
+      content: Array<{ type: 'text'; text: string }>;
+    }> => {
+      const version = getVersion();
+      const vaultPath = getVaultPath();
+      const stateDb = getStateDb();
+      const watcherStatus = getWatcherStatus();
+
+      // Transport
+      const transportMode = (process.env.FLYWHEEL_TRANSPORT ?? 'stdio').toLowerCase();
+      const httpPort = transportMode !== 'stdio' ? parseInt(process.env.FLYWHEEL_HTTP_PORT ?? '3111', 10) : undefined;
+      const httpHost = transportMode !== 'stdio' ? (process.env.FLYWHEEL_HTTP_HOST ?? '127.0.0.1') : undefined;
+
+      // Preset & categories
+      const presetEnv = process.env.FLYWHEEL_TOOLS || process.env.FLYWHEEL_PRESET || 'default';
+      const enabledCategories = parseEnabledCategories(presetEnv);
+      const disabledCategories = ALL_CATEGORIES.filter(c => !enabledCategories.has(c));
+
+      // Tool count
+      const totalTools = Object.keys(TOOL_CATEGORY).length;
+      const enabledTools = Object.entries(TOOL_CATEGORY).filter(([, cat]) => enabledCategories.has(cat)).length;
+
+      // Recent write operations
+      let recentWrites: Array<{
+        timestamp: number;
+        tool: string;
+        success: boolean;
+        duration_ms: number | null;
+      }> = [];
+      if (stateDb) {
+        try {
+          const recent = getRecentInvocations(stateDb, 50);
+          recentWrites = recent
+            .filter(inv => {
+              const cat = TOOL_CATEGORY[inv.tool_name];
+              return cat && WRITE_CATEGORIES.has(cat);
+            })
+            .slice(0, 10)
+            .map(inv => ({
+              timestamp: inv.timestamp,
+              tool: inv.tool_name,
+              success: inv.success,
+              duration_ms: inv.duration_ms,
+            }));
+        } catch { /* no data yet */ }
+      }
+
+      const output = {
+        version,
+        transport_mode: transportMode,
+        ...(httpPort !== undefined && { http_port: httpPort }),
+        ...(httpHost !== undefined && { http_host: httpHost }),
+        preset: presetEnv,
+        enabled_categories: [...enabledCategories],
+        disabled_categories: disabledCategories,
+        tool_count: { enabled: enabledTools, total: totalTools },
+        boundaries: {
+          file_types: '*.md only',
+          path_traversal: 'blocked (validatePath + symlink resolution)',
+          sensitive_patterns: '86 patterns blocked',
+          network: 'none (except one-time embedding model download)',
+          git_scope: 'vault directory only',
+          flywheel_dir: 'not accessible via mutation tools',
+        },
+        recent_writes: recentWrites,
+        watcher: watcherStatus ? {
+          state: watcherStatus.state,
+          pending_events: watcherStatus.pendingEvents ?? 0,
+        } : null,
+        vault_path: vaultPath,
+        generated_at: Date.now(),
+      };
+
+      return {
+        content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
+      };
+    }
+  );
+
+  // flywheel_benchmark — Longitudinal performance benchmarks
+  server.registerTool(
+    'flywheel_benchmark',
+    {
+      title: 'Flywheel Benchmark',
+      description:
+        'Run, record, and trend longitudinal performance benchmarks. ' +
+        'Modes: "run" executes live benchmarks (search latency, entity lookup, index/watcher timing) and records results; ' +
+        '"history" shows past benchmark results; "trends" shows regression/improvement analysis over time.',
+      inputSchema: {
+        mode: z.enum(['run', 'history', 'trends']).default('run')
+          .describe('run = execute benchmarks, history = past results, trends = regression analysis'),
+        benchmark: z.string().optional()
+          .describe('Filter to a specific benchmark name (e.g. "search_latency")'),
+        days_back: z.number().optional().default(30)
+          .describe('For trends mode: how many days to analyze'),
+        limit: z.number().optional().default(20)
+          .describe('For history mode: max results to return'),
+      },
+    },
+    async (params: {
+      mode: 'run' | 'history' | 'trends';
+      benchmark?: string;
+      days_back?: number;
+      limit?: number;
+    }): Promise<{
+      content: Array<{ type: 'text'; text: string }>;
+    }> => {
+      const stateDb = getStateDb();
+      if (!stateDb) {
+        return { content: [{ type: 'text', text: JSON.stringify({ error: 'StateDb not available' }) }] };
+      }
+
+      const version = getVersion();
+
+      if (params.mode === 'history') {
+        const history = getBenchmarkHistory(stateDb, params.benchmark, params.limit ?? 20);
+        return { content: [{ type: 'text', text: JSON.stringify({ mode: 'history', results: history }, null, 2) }] };
+      }
+
+      if (params.mode === 'trends') {
+        if (!params.benchmark) {
+          // Get all unique benchmark names and trend each
+          const names = stateDb.db.prepare(
+            'SELECT DISTINCT benchmark FROM performance_benchmarks ORDER BY benchmark'
+          ).all() as Array<{ benchmark: string }>;
+          const trends = names.map(n => getBenchmarkTrends(stateDb, n.benchmark, params.days_back ?? 30));
+          return { content: [{ type: 'text', text: JSON.stringify({ mode: 'trends', results: trends }, null, 2) }] };
+        }
+        const trend = getBenchmarkTrends(stateDb, params.benchmark, params.days_back ?? 30);
+        return { content: [{ type: 'text', text: JSON.stringify({ mode: 'trends', results: [trend] }, null, 2) }] };
+      }
+
+      // mode === 'run'
+      const results: Array<{
+        benchmark: string;
+        mean_ms: number;
+        p50_ms?: number;
+        p95_ms?: number;
+        iterations: number;
+      }> = [];
+
+      // 1. search_latency — FTS5 search performance
+      const ftsState = getFTS5State();
+      if (ftsState.ready) {
+        const times: number[] = [];
+        const iterations = 5;
+        for (let i = 0; i < iterations; i++) {
+          const start = performance.now();
+          searchFTS5(getVaultPath(), 'test', 10);
+          times.push(performance.now() - start);
+        }
+        times.sort((a, b) => a - b);
+        const mean = times.reduce((s, t) => s + t, 0) / times.length;
+        const p50 = times[Math.floor(times.length * 0.5)];
+        const p95 = times[Math.floor(times.length * 0.95)];
+        const entry = { benchmark: 'search_latency', mean_ms: Math.round(mean * 100) / 100, p50_ms: Math.round(p50 * 100) / 100, p95_ms: Math.round(p95 * 100) / 100, iterations };
+        results.push(entry);
+        recordBenchmark(stateDb, { ...entry, version });
+      }
+
+      // 2. entity_lookup — time to read entity count from index
+      {
+        const start = performance.now();
+        const index = getIndex();
+        const _size = index.entities.size;
+        const elapsed = performance.now() - start;
+        const entry = { benchmark: 'entity_lookup', mean_ms: Math.round(elapsed * 100) / 100, iterations: 1 };
+        results.push(entry);
+        recordBenchmark(stateDb, { ...entry, version });
+      }
+
+      // 3. index_build_time — last recorded startup build duration
+      {
+        const row = stateDb.db.prepare(
+          "SELECT duration_ms FROM index_events WHERE trigger = 'startup_build' ORDER BY timestamp DESC LIMIT 1"
+        ).get() as { duration_ms: number } | undefined;
+        if (row) {
+          const entry = { benchmark: 'index_build_time', mean_ms: row.duration_ms, iterations: 1 };
+          results.push(entry);
+          recordBenchmark(stateDb, { ...entry, version });
+        }
+      }
+
+      // 4. watcher_batch_time — last recorded watcher batch duration
+      {
+        const row = stateDb.db.prepare(
+          "SELECT duration_ms FROM index_events WHERE trigger = 'watcher' ORDER BY timestamp DESC LIMIT 1"
+        ).get() as { duration_ms: number } | undefined;
+        if (row) {
+          const entry = { benchmark: 'watcher_batch_time', mean_ms: row.duration_ms, iterations: 1 };
+          results.push(entry);
+          recordBenchmark(stateDb, { ...entry, version });
+        }
+      }
+
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ mode: 'run', version, results }, null, 2) }],
       };
     }
   );

@@ -287,9 +287,34 @@ export function searchFTS5(
 }
 
 /**
- * Get the current FTS5 state
+ * Get the current FTS5 state.
+ * Derives from the scope-aware DB when available, falling back to module-level state
+ * during builds (when the state is being modified in-flight).
  */
 export function getFTS5State(): FTS5State {
+  // During builds, the module-level state tracks progress — return it directly
+  if (state.building) return { ...state };
+
+  // Otherwise derive from the scope-aware DB for multi-vault safety
+  const scopeDb = getDb();
+  if (scopeDb) {
+    try {
+      const row = scopeDb.prepare(
+        'SELECT value FROM fts_metadata WHERE key = ?'
+      ).get('last_built') as { value: string } | undefined;
+      const countRow = scopeDb.prepare('SELECT COUNT(*) as count FROM notes_fts').get() as { count: number };
+      return {
+        ready: countRow.count > 0,
+        building: false,
+        lastBuilt: row ? new Date(row.value) : null,
+        noteCount: countRow.count,
+        error: null,
+      };
+    } catch {
+      // DB not ready — fall through to module-level state
+    }
+  }
+
   return { ...state };
 }
 

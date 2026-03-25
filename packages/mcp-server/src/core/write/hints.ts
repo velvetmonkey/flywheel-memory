@@ -12,6 +12,7 @@ import {
   type StateDb,
 } from '@velvetmonkey/vault-core';
 import { serverLog } from '../shared/serverLog.js';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /**
  * Module-level StateDb reference for hints storage
@@ -25,6 +26,13 @@ let moduleStateDb: StateDb | null = null;
  */
 export function setHintsStateDb(stateDb: StateDb | null): void {
   moduleStateDb = stateDb;
+}
+
+/**
+ * Get the StateDb instance (ALS scope first for per-request isolation)
+ */
+function getStateDb(): StateDb | null {
+  return getActiveScopeOrNull()?.stateDb ?? moduleStateDb;
 }
 
 /** Maximum number of hints to keep in the file */
@@ -68,12 +76,13 @@ export function computeHash(content: string): string {
  * Read the current hints from StateDb
  */
 export function readHints(): HintsFile {
-  if (!moduleStateDb) {
+  const stateDb = getStateDb();
+  if (!stateDb) {
     return { version: HINT_VERSION, mutations: [] };
   }
 
   try {
-    const data = getWriteState<HintsFile>(moduleStateDb, 'mutation_hints');
+    const data = getWriteState<HintsFile>(stateDb, 'mutation_hints');
     if (data && data.version === HINT_VERSION) {
       return data;
     }
@@ -88,13 +97,14 @@ export function readHints(): HintsFile {
  * Write hints to StateDb
  */
 export function writeHints(hints: HintsFile): void {
-  if (!moduleStateDb) {
+  const stateDb = getStateDb();
+  if (!stateDb) {
     serverLog('hints', 'No StateDb available for writing hints', 'warn');
     return;
   }
 
   try {
-    setWriteState(moduleStateDb, 'mutation_hints', hints);
+    setWriteState(stateDb, 'mutation_hints', hints);
   } catch (e) {
     serverLog('hints', `Failed to write hints to StateDb: ${e}`, 'error');
   }

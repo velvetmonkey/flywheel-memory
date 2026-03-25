@@ -49,7 +49,6 @@ export function registerSessionHistoryTools(
 
         return {
           content: [{ type: 'text' as const, text: JSON.stringify({
-            session_id: args.session_id,
             ...detail.summary,
             invocations: detail.invocations.map(inv => ({
               tool: inv.tool_name,

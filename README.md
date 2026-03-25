@@ -30,9 +30,9 @@ Flywheel auto-links on every write, voice or keyboard.
 |---|---|---|
 | Your data | Leaves your machine | Stays local. No sync, no upload, no account |
 | Model choice | Locked to one provider | Model-agnostic via MCP. Swap anytime |
-| As models improve | Migration or vendor upgrade | Better answers automatically: smarter models reason over the same data |
-| "What's overdue?" | Read every file | Indexed query, <10ms |
-| "What links here?" | Grep the vault, flat list | Ranked backlinks + outlinks, pre-indexed |
+| As models improve | Migration or vendor upgrade | Same tools, better reasoning. Your graph improves the model, not the other way around |
+| "What's overdue?" | Read every file | Structured task queries with due dates, tags, and path filters |
+| "What links here?" | Grep the vault, flat list | Weighted backlinks + outlinks, ranked by edge strength and recency |
 | "Add a meeting note" | Raw write, no linking | Structured mutations that auto-link entities and densify the graph |
 | "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
 | Your graph | Owned by the platform | Yours to [export](https://en.wikipedia.org/wiki/GraphML), analyse, or delete |

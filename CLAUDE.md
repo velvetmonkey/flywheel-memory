@@ -4,6 +4,17 @@
 
 ---
 
+## Git Workflow
+
+**No direct pushes to main.** Branch protection is enforced — all changes require a PR.
+
+- Create a feature branch for code changes
+- Push the branch and open a PR via `gh pr create`
+- Docs-only changes still need a PR but can be fast-tracked
+- Never run `npm run build` while a benchmark is running
+
+---
+
 ## Architecture
 
 ### Source Structure

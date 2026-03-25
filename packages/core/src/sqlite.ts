@@ -192,10 +192,17 @@ export function openStateDb(vaultPath: string): StateDb {
     }
   }
 
+  const isNewDb = !fs.existsSync(dbPath);
+
   let db: InstanceType<typeof Database>;
   try {
     db = new Database(dbPath);
     initSchema(db);
+
+    // If we just created a fresh DB but backup files exist, salvage from them
+    if (isNewDb) {
+      attemptSalvage(db, dbPath);
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     // Only nuke-and-rebuild for actual SQLite corruption, not recoverable errors

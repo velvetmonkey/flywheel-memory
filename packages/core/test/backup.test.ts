@@ -282,43 +282,51 @@ describe('Backup & Recovery', () => {
       }
     });
 
-    it('merges across multiple sources (INSERT OR IGNORE deduplicates)', () => {
-      // Source A: .backup with row E1
+    it('merges unique rows from multiple sources', () => {
+      // Use note_links (has natural PK on note_path+target) for clean dedup testing
+      // Source A: .backup with link A→X
       const dbA = openStateDb(testVaultPath);
       dbA.db.prepare(
-        `INSERT INTO wikilink_feedback (entity, context, note_path, correct) VALUES (?, ?, ?, ?)`
-      ).run('E1', 'ctx', 'n1.md', 1);
+        `INSERT INTO note_links (note_path, target) VALUES (?, ?)`
+      ).run('a.md', 'X');
       dbA.close();
       fs.copyFileSync(dbPath, `${dbPath}.backup`);
 
-      // Source B: .backup.1 with rows E1 (overlap) + E2 (unique)
+      // Source B: .backup.1 with link A→X (overlap) + B→Y (unique)
+      // Build from scratch to avoid auto-salvage contamination
       fs.unlinkSync(dbPath);
       if (fs.existsSync(`${dbPath}-wal`)) fs.unlinkSync(`${dbPath}-wal`);
       if (fs.existsSync(`${dbPath}-shm`)) fs.unlinkSync(`${dbPath}-shm`);
+      // Temporarily move .backup so openStateDb doesn't auto-salvage from it
+      fs.renameSync(`${dbPath}.backup`, `${dbPath}.backup.tmp`);
       const dbB = openStateDb(testVaultPath);
       dbB.db.prepare(
-        `INSERT INTO wikilink_feedback (entity, context, note_path, correct) VALUES (?, ?, ?, ?)`
-      ).run('E1', 'ctx', 'n1.md', 1);
+        `INSERT INTO note_links (note_path, target) VALUES (?, ?)`
+      ).run('a.md', 'X');
       dbB.db.prepare(
-        `INSERT INTO wikilink_feedback (entity, context, note_path, correct) VALUES (?, ?, ?, ?)`
-      ).run('E2', 'ctx2', 'n2.md', 0);
+        `INSERT INTO note_links (note_path, target) VALUES (?, ?)`
+      ).run('b.md', 'Y');
       dbB.close();
       fs.copyFileSync(dbPath, `${dbPath}.backup.1`);
+      // Restore .backup
+      fs.renameSync(`${dbPath}.backup.tmp`, `${dbPath}.backup`);
 
-      // Fresh target
+      // Fresh target — openStateDb auto-salvages from both
       fs.unlinkSync(dbPath);
       if (fs.existsSync(`${dbPath}-wal`)) fs.unlinkSync(`${dbPath}-wal`);
       if (fs.existsSync(`${dbPath}-shm`)) fs.unlinkSync(`${dbPath}-shm`);
       const targetDb = openStateDb(testVaultPath);
 
       try {
-        attemptSalvage(targetDb.db, dbPath);
-        // Should have E1 from .backup + E2 from .backup.1 (E1 duplicate ignored)
-        const rows = targetDb.db.prepare('SELECT COUNT(*) as cnt FROM wikilink_feedback').get() as { cnt: number };
+        // Should have A→X from .backup + B→Y from .backup.1 (A→X dup ignored by PK)
+        const rows = targetDb.db.prepare('SELECT COUNT(*) as cnt FROM note_links').get() as { cnt: number };
         expect(rows.cnt).toBe(2);
 
-        const entities = targetDb.db.prepare('SELECT entity FROM wikilink_feedback ORDER BY entity').all() as Array<{ entity: string }>;
-        expect(entities.map(r => r.entity)).toEqual(['E1', 'E2']);
+        const links = targetDb.db.prepare('SELECT note_path, target FROM note_links ORDER BY note_path').all() as Array<{ note_path: string; target: string }>;
+        expect(links).toEqual([
+          { note_path: 'a.md', target: 'X' },
+          { note_path: 'b.md', target: 'Y' },
+        ]);
       } finally {
         targetDb.close();
       }
@@ -560,16 +568,16 @@ describe('Backup & Recovery', () => {
   // attemptSalvage (extended)
   // ===========================================================================
   describe('attemptSalvage (extended)', () => {
-    it('prefers .backup over .backup.1 (newest first)', () => {
-      // Create DB with 1 row, copy to .backup.1
+    it('merges .backup and .backup.1, getting unique rows from each', () => {
+      // .backup.1 has OldBackup (unique to this source)
       const db1 = openStateDb(testVaultPath);
       db1.db.prepare(
         `INSERT INTO wikilink_feedback (entity, context, note_path, correct) VALUES (?, ?, ?, ?)`
-      ).run('OldBackup', 'ctx', 'n.md', 1);
+      ).run('OldBackup', 'ctx', 'old.md', 1);
       db1.close();
       fs.copyFileSync(dbPath, `${dbPath}.backup.1`);
 
-      // Create DB with 2 rows, copy to .backup
+      // .backup has NewBackup1 + NewBackup2 (unique to this source)
       fs.unlinkSync(dbPath);
       if (fs.existsSync(`${dbPath}-wal`)) fs.unlinkSync(`${dbPath}-wal`);
       if (fs.existsSync(`${dbPath}-shm`)) fs.unlinkSync(`${dbPath}-shm`);
@@ -583,17 +591,16 @@ describe('Backup & Recovery', () => {
       db2.close();
       fs.copyFileSync(dbPath, `${dbPath}.backup`);
 
-      // Fresh target
+      // Fresh target — openStateDb auto-salvages from both sources
       fs.unlinkSync(dbPath);
       if (fs.existsSync(`${dbPath}-wal`)) fs.unlinkSync(`${dbPath}-wal`);
       if (fs.existsSync(`${dbPath}-shm`)) fs.unlinkSync(`${dbPath}-shm`);
       const targetDb = openStateDb(testVaultPath);
 
       try {
-        attemptSalvage(targetDb.db, dbPath);
-        // Should have 2 rows from .backup, not 1 from .backup.1
+        // Should have all 3: NewBackup1 + NewBackup2 from .backup, OldBackup from .backup.1
         const rows = targetDb.db.prepare('SELECT COUNT(*) as cnt FROM wikilink_feedback').get() as { cnt: number };
-        expect(rows.cnt).toBe(2);
+        expect(rows.cnt).toBe(3);
       } finally {
         targetDb.close();
       }
@@ -682,6 +689,36 @@ describe('Backup & Recovery', () => {
       try {
         const rows = recovered.db.prepare('SELECT COUNT(*) as cnt FROM wikilink_feedback').get() as { cnt: number };
         expect(rows.cnt).toBe(1);
+      } finally {
+        recovered.close();
+      }
+    });
+
+    it('salvages from backups when state.db is missing (not just corrupt)', () => {
+      // Create a DB with feedback, then back it up
+      const stateDb = openStateDb(testVaultPath);
+      stateDb.db.prepare(
+        `INSERT INTO wikilink_feedback (entity, context, note_path, correct) VALUES (?, ?, ?, ?)`
+      ).run('MissingDb', 'ctx', 'n.md', 1);
+      stateDb.db.prepare(
+        `INSERT INTO wikilink_applications (entity, note_path) VALUES (?, ?)`
+      ).run('MissingDb', 'n.md');
+      stateDb.close();
+
+      // Simulate a backup existing but state.db deleted (e.g. user deleted it)
+      fs.copyFileSync(dbPath, `${dbPath}.backup`);
+      fs.unlinkSync(dbPath);
+      if (fs.existsSync(`${dbPath}-wal`)) fs.unlinkSync(`${dbPath}-wal`);
+      if (fs.existsSync(`${dbPath}-shm`)) fs.unlinkSync(`${dbPath}-shm`);
+
+      // openStateDb should create fresh DB AND salvage from .backup
+      const recovered = openStateDb(testVaultPath);
+      try {
+        const feedback = recovered.db.prepare('SELECT COUNT(*) as cnt FROM wikilink_feedback').get() as { cnt: number };
+        expect(feedback.cnt).toBe(1);
+
+        const apps = recovered.db.prepare('SELECT COUNT(*) as cnt FROM wikilink_applications').get() as { cnt: number };
+        expect(apps.cnt).toBe(1);
       } finally {
         recovered.close();
       }

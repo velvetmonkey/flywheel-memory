@@ -9,6 +9,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { EntityIndex, EntityCategory, ScanOptions, EntityWithAliases, Entity, EntityWithType } from './types.js';
+import { COMMON_ENGLISH_WORDS } from './common-words.js';
 
 /**
  * Current cache version - bump when schema changes
@@ -82,8 +83,26 @@ const DEFAULT_TECH_KEYWORDS = [
  * Check if an alias passes the length and word count filters
  * Uses same rules as entity names: ≤25 chars, ≤3 words
  */
+/** Stringified YAML/JS primitives that appear as aliases due to parsing artifacts */
+const YAML_PRIMITIVES = new Set(['null', 'undefined', 'true', 'false', 'none', 'nil']);
+
 function isValidAlias(alias: string): boolean {
   if (typeof alias !== 'string' || alias.length === 0) {
+    return false;
+  }
+
+  // Reject stringified YAML/JS primitives (e.g., aliases: [null] → "null")
+  if (YAML_PRIMITIVES.has(alias.toLowerCase())) {
+    return false;
+  }
+
+  // Reject single-word aliases that are common English words (top 10K by frequency).
+  // Multi-word aliases like "Azure Front Door" pass — only single words are checked.
+  // Short all-uppercase aliases (≤4 chars) are exempt — they're intentional acronyms (JS, TS, AI, ML, PR).
+  // Entity NAMES are not affected (isValidAlias only runs on frontmatter aliases).
+  if (!alias.includes(' ') &&
+      !(alias.length <= 4 && alias === alias.toUpperCase()) &&
+      COMMON_ENGLISH_WORDS.has(alias.toLowerCase())) {
     return false;
   }
 

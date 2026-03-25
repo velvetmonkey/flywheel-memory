@@ -23,6 +23,9 @@ export type {
   ProtectedZoneType,
 } from './types.js';
 
+// Common English words (frequency list for alias filtering)
+export { COMMON_ENGLISH_WORDS } from './common-words.js';
+
 // Entity scanning
 export {
   scanVaultEntities,

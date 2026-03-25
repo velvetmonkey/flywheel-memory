@@ -138,13 +138,15 @@ Learn React here`;
   });
 
   it('should exclude common words', () => {
-    const content = 'Meeting on Monday for the project';
-    const entities = ['Monday', 'Project'];
+    const content = 'Meeting on Monday for the project using Flywheel';
+    const entities = ['Monday', 'Project', 'Flywheel'];
     const result = applyWikilinks(content, entities);
 
-    // Monday should be excluded
+    // Monday and Project are common English words — excluded from auto-linking
     expect(result.content).not.toContain('[[Monday]]');
-    expect(result.content).toContain('[[Project]]');
+    expect(result.content).not.toContain('[[Project]]');
+    // Flywheel is not a common word — should be linked
+    expect(result.content).toContain('[[Flywheel]]');
   });
 
   it('excludes "Month End" from auto-linking', () => {
@@ -246,14 +248,26 @@ Learn React here`;
     });
 
     it('should preserve case in display text when matched via alias', () => {
+      // Short uppercase aliases (≤4 chars) match case-sensitively
+      const content = 'Check the PRD for details';
+      const entities = [
+        { name: 'Product Requirements Document', path: 'Product Requirements Document.md', aliases: ['PRD'] }
+      ];
+      const result = applyWikilinks(content, entities, { caseInsensitive: true });
+
+      // PRD matches PRD (case-sensitive for short uppercase aliases)
+      expect(result.content).toBe('Check the [[Product Requirements Document|PRD]] for details');
+    });
+
+    it('should NOT match short uppercase alias case-insensitively', () => {
       const content = 'Check the prd for details';
       const entities = [
         { name: 'Product Requirements Document', path: 'Product Requirements Document.md', aliases: ['PRD'] }
       ];
       const result = applyWikilinks(content, entities, { caseInsensitive: true });
 
-      // Should preserve the original case of the matched text
-      expect(result.content).toBe('Check the [[Product Requirements Document|prd]] for details');
+      // "prd" (lowercase) should NOT match "PRD" (short uppercase alias requires exact case)
+      expect(result.content).toBe('Check the prd for details');
     });
 
     it('should handle multiple aliases for same entity', () => {
@@ -449,8 +463,9 @@ describe('suggestWikilinks', () => {
       expect(suggestions.map(s => s.entity)).toContain('Product Requirements Document');
     });
 
-    it('should find alias case-insensitively', () => {
-      const content = 'Check the prd for details';
+    it('should find short uppercase alias case-sensitively', () => {
+      // Short uppercase aliases (≤4 chars) match case-sensitively
+      const content = 'Check the PRD for details';
       const entities = [
         { name: 'Product Requirements Document', path: 'Product Requirements Document.md', aliases: ['PRD'] }
       ];
@@ -458,6 +473,18 @@ describe('suggestWikilinks', () => {
 
       expect(suggestions).toHaveLength(1);
       expect(suggestions[0].entity).toBe('Product Requirements Document');
+    });
+
+    it('should find longer alias case-insensitively', () => {
+      const content = 'Check the prism doc for details';
+      const entities = [
+        { name: 'PRISM Architecture', path: 'PRISM Architecture.md', aliases: ['PRISM'] }
+      ];
+      const suggestions = suggestWikilinks(content, entities, { caseInsensitive: true });
+
+      // "PRISM" is 5 chars, so normal case-insensitive matching applies
+      expect(suggestions).toHaveLength(1);
+      expect(suggestions[0].entity).toBe('PRISM Architecture');
     });
   });
 });

@@ -59,6 +59,7 @@
   "license": "AGPL-3.0-only",
   "files": [
     "dist",
+    "data",
     "!dist/**/*.js.map",
     "!dist/**/*.d.ts.map",
     "README.md"

@@ -1,15 +1,15 @@
 {
   "suite": "parameter-sweep-report",
-  "timestamp": "2026-03-25T03:00:47.070Z",
-  "duration_ms": 7477,
+  "timestamp": "2026-03-25T17:09:07.549Z",
+  "duration_ms": 6425,
   "summary": {
     "best_f1": 0.597,
     "best_maxSuggestions": 10,
     "current_default_f1": 0.497,
     "delta": 0.09999999999999998,
-    "score_distribution_mean": 20.6716,
-    "score_distribution_p50": 15,
-    "score_distribution_p90": 34,
+    "score_distribution_mean": 21.1897,
+    "score_distribution_p50": 16,
+    "score_distribution_p90": 38,
     "threshold_best_f1": 0.554,
     "threshold_best_value": 20
   },
@@ -20,16 +20,16 @@
         {
           "maxSuggestions": 1,
           "strictness": "conservative",
-          "f1": 0.366,
-          "precision": 0.682,
-          "recall": 0.25
+          "f1": 0.293,
+          "precision": 0.545,
+          "recall": 0.2
         },
         {
           "maxSuggestions": 3,
           "strictness": "conservative",
-          "f1": 0.55,
-          "precision": 0.55,
-          "recall": 0.55
+          "f1": 0.5,
+          "precision": 0.5,
+          "recall": 0.5
         },
         {
           "maxSuggestions": 5,
@@ -55,16 +55,16 @@
         {
           "maxSuggestions": 1,
           "strictness": "balanced",
-          "f1": 0.366,
-          "precision": 0.682,
-          "recall": 0.25
+          "f1": 0.293,
+          "precision": 0.545,
+          "recall": 0.2
         },
         {
           "maxSuggestions": 3,
           "strictness": "balanced",
-          "f1": 0.524,
-          "precision": 0.5,
-          "recall": 0.55
+          "f1": 0.46,
+          "precision": 0.439,
+          "recall": 0.483
         },
         {
           "maxSuggestions": 5,
@@ -76,30 +76,30 @@
         {
           "maxSuggestions": 7,
           "strictness": "balanced",
-          "f1": 0.431,
-          "precision": 0.302,
+          "f1": 0.427,
+          "precision": 0.298,
           "recall": 0.75
         },
         {
           "maxSuggestions": 10,
           "strictness": "balanced",
-          "f1": 0.366,
-          "precision": 0.239,
+          "f1": 0.353,
+          "precision": 0.228,
           "recall": 0.783
         },
         {
           "maxSuggestions": 1,
           "strictness": "aggressive",
-          "f1": 0.366,
-          "precision": 0.682,
-          "recall": 0.25
+          "f1": 0.293,
+          "precision": 0.545,
+          "recall": 0.2
         },
         {
           "maxSuggestions": 3,
           "strictness": "aggressive",
-          "f1": 0.524,
-          "precision": 0.5,
-          "recall": 0.55
+          "f1": 0.46,
+          "precision": 0.439,
+          "recall": 0.483
         },
         {
           "maxSuggestions": 5,
@@ -127,48 +127,48 @@
     {
       "sweep": "score_distribution",
       "stats": {
-        "mean": 20.6716,
-        "p50": 15,
-        "p90": 34,
+        "mean": 21.1897,
+        "p50": 16,
+        "p90": 38,
         "min": 10,
         "max": 59.7
       },
       "layer_contributions": [
         {
           "layer": "contentMatch",
-          "mean": 9.8936,
-          "p50": 10,
+          "mean": 8.9318,
+          "p50": 0,
           "p90": 28,
           "min": 0,
           "max": 35
         },
         {
           "layer": "cooccurrenceBoost",
-          "mean": 3.9306,
-          "p50": 4,
+          "mean": 3.9164,
+          "p50": 3,
           "p90": 8,
           "min": 0,
           "max": 12
         },
         {
           "layer": "typeBoost",
-          "mean": 0.2538,
-          "p50": 0,
-          "p90": 2,
+          "mean": 1.7751,
+          "p50": 1,
+          "p90": 5,
           "min": 0,
-          "max": 2
+          "max": 5
         },
         {
           "layer": "contextBoost",
-          "mean": 0.3418,
+          "mean": 0.4742,
           "p50": 0,
-          "p90": 0,
+          "p90": 2,
           "min": 0,
           "max": 5
         },
         {
           "layer": "recencyBoost",
-          "mean": 1.2047,
+          "mean": 1.0821,
           "p50": 0,
           "p90": 8,
           "min": 0,
@@ -176,7 +176,7 @@
         },
         {
           "layer": "crossFolderBoost",
-          "mean": 2.4315,
+          "mean": 2.3647,
           "p50": 2,
           "p90": 3,
           "min": 0,
@@ -184,7 +184,7 @@
         },
         {
           "layer": "hubBoost",
-          "mean": 2.6156,
+          "mean": 2.6454,
           "p50": 4,
           "p90": 4.6,
           "min": 0,
@@ -213,38 +213,38 @@
       "results": [
         {
           "threshold": 5,
-          "f1": 0.34,
-          "precision": 0.213,
+          "f1": 0.296,
+          "precision": 0.179,
           "recall": 0.85,
-          "candidateCount": 665
+          "candidateCount": 791
         },
         {
           "threshold": 8,
-          "f1": 0.34,
-          "precision": 0.213,
+          "f1": 0.296,
+          "precision": 0.179,
           "recall": 0.85,
-          "candidateCount": 665
+          "candidateCount": 791
         },
         {
           "threshold": 10,
-          "f1": 0.34,
-          "precision": 0.213,
+          "f1": 0.296,
+          "precision": 0.179,
           "recall": 0.85,
-          "candidateCount": 665
+          "candidateCount": 791
         },
         {
           "threshold": 12,
-          "f1": 0.34,
-          "precision": 0.213,
+          "f1": 0.296,
+          "precision": 0.179,
           "recall": 0.85,
-          "candidateCount": 562
+          "candidateCount": 695
         },
         {
           "threshold": 15,
-          "f1": 0.441,
-          "precision": 0.307,
+          "f1": 0.392,
+          "precision": 0.261,
           "recall": 0.783,
-          "candidateCount": 344
+          "candidateCount": 408
         },
         {
           "threshold": 20,
@@ -261,7 +261,7 @@
       "parameter": "minSuggestionScore",
       "current_value": 8,
       "suggested_value": 20,
-      "evidence": "Threshold 20 achieves F1=0.554 vs current threshold 8 F1=0.34",
+      "evidence": "Threshold 20 achieves F1=0.554 vs current threshold 8 F1=0.296",
       "confidence": "high"
     }
   ]

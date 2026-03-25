@@ -109,4 +109,4 @@ Shared library used by Flywheel Memory and other tools in the ecosystem. Handles
 
 ### MCP
 
-Flywheel implements the [Model Context Protocol](https://modelcontextprotocol.io/). Any MCP-compatible client -- Claude Code, Claude Desktop, or third-party tools -- can connect and use the full tool surface. The protocol is the integration layer; Flywheel is the intelligence layer.
+Flywheel implements the [Model Context Protocol](https://modelcontextprotocol.io/). Any MCP-compatible client -- [[Claude Code]], Claude Desktop, or third-party tools -- can connect and use the full tool surface. The protocol is the integration layer; Flywheel is the intelligence layer.

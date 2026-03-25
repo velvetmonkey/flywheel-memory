@@ -162,7 +162,7 @@ The read path is where users interact most. These tests verify that the index, s
 
 Honesty about coverage gaps:
 
-- **No automated Obsidian plugin testing.** Flywheel Crank (the Obsidian plugin) is tested manually. Browser/plugin automation is not part of CI.
+- **No automated Obsidian plugin testing.** [[Flywheel|Flywheel Crank]] (the Obsidian plugin) is tested manually. Browser/plugin automation is not part of CI.
 - **Live AI tests are not part of CI.** They require Claude API credits and are run on-demand before releases. Results are committed as markdown reports.
 - **No load testing above 100 concurrent operations.** Flywheel is a single-user vault tool. 100 parallel writes is well beyond any realistic usage pattern.
 - **Edge weight and retrieval co-occurrence are newer.** These layers (added in schema v22 and v30) have less test coverage than older layers like FTS5 and entity scoring.

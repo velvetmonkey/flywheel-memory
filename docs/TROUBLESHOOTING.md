@@ -147,7 +147,7 @@ This happens when a previous git operation was interrupted (crash, forced kill, 
 ps aux | grep git
 ```
 
-2. If no git processes are running, the lock is stale. Remove it:
+2. If no git [[processes]] are running, the lock is stale. Remove it:
 
 ```bash
 rm /path/to/your/vault/.git/index.lock

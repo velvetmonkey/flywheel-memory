@@ -14,7 +14,7 @@ meeting_type: planning
 ## Agenda
 
 ## Notes
-Sprint 2 planning
+[[Scrum|Sprint]] 2 planning
 
 ## Action Items
 - [ ]

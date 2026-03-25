@@ -1,8 +1,8 @@
 # Cookbook
 
-Example prompts organized by use case. Copy these directly into Claude Code or Claude Desktop.
+Example prompts organized by use case. Copy these directly into [[Claude Code]] or Claude Desktop.
 
-All examples assume Flywheel is connected to your vault. See [SETUP.md](SETUP.md) if you haven't configured it yet.
+All examples assume [[Flywheel]] is connected to your vault. See [SETUP.md](SETUP.md) if you haven't configured it yet.
 
 - [Daily Capture](#daily-capture)
 - [Research](#research)
@@ -118,7 +118,7 @@ Hybrid search that combines keyword matching with conceptual similarity.
 
 > "Build the semantic search index for my vault"
 
-Runs locally, no API keys needed. Only needs to be done once — all subsequent searches automatically upgrade to hybrid ranking.
+Runs locally, no [[API Management|API]] keys needed. Only needs to be done once — all subsequent searches automatically upgrade to hybrid ranking.
 
 ### Search by concept
 

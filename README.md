@@ -200,7 +200,7 @@ Every sentence you write through Flywheel makes your graph denser. A denser grap
 - **Edge weights** accumulate. Links that survive edits gain influence
 - **Suppression** learns. When you delete a wikilink Flywheel inserted, it notices. Remove the same link enough times and Flywheel stops suggesting it - no manual configuration needed
 
-Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation. This isn't a claim - it's [measured](docs/TESTING.md#graph-quality-266-tests-31-files): 266 graph quality tests track F1 across precision/recall baselines, a [50-generation stress test](docs/TESTING.md#multi-generation-stress-test) proves F1 doesn't collapse under 15% hostile feedback, and CI fails if any metric regresses more than 5pp.
+Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation. This isn't a claim - it's [measured](docs/TESTING.md#graph-quality-266-tests-31-files): 266 graph quality tests track F1 across 7 vault archetypes, a [50-generation stress test](docs/TESTING.md#multi-generation-stress-test) proves F1 doesn't collapse under 15% hostile feedback, and CI fails if any metric regresses more than 5pp.
 
 ### 4. Agentic Memory & Policies
 

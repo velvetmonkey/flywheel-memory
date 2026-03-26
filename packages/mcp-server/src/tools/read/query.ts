@@ -39,7 +39,7 @@ import { getCooccurrenceBoost } from '../../core/shared/cooccurrence.js';
 import { getCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { getRecencyBoost, loadRecencyFromStateDb } from '../../core/shared/recency.js';
 import { getEntityEdgeWeightMap } from '../../core/write/edgeWeights.js';
-import { extractBestSnippets } from '../../core/read/snippets.js';
+import { extractBestSnippets, extractDates } from '../../core/read/snippets.js';
 import { selectByMmr } from '../../core/read/mmr.js';
 import { tokenize } from '../../core/shared/stemmer.js';
 
@@ -190,6 +190,9 @@ async function enhanceSnippets(
         r.snippet = snippets[0].text;
         if (snippets[0].section) r.section = snippets[0].section;
         if (snippets[0].confidence != null) r.snippet_confidence = Math.round(snippets[0].confidence * 100) / 100;
+        // Extract dates from snippet text
+        const dates = extractDates(snippets[0].text);
+        if (dates.length > 0) r.dates_mentioned = dates;
       }
     } catch { /* non-fatal */ }
   }

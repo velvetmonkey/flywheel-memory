@@ -348,7 +348,7 @@ It works because Flywheel makes every stage persistent. The bot's conversation i
 
 Because Flywheel is an MCP server, any client can be any stage. An OpenClaw bot, a Cursor session, Claude Desktop — they all get the same persistent, learning memory. The graph compounds across sessions. Your filing cabinet stops being passive storage and starts thinking with you.
 
-I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank), an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor.
+To contribute back to Obsidian I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) (early days), an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor.
 
 ---
 

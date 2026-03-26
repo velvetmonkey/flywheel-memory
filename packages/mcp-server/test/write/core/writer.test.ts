@@ -284,19 +284,22 @@ describe('formatContent', () => {
     it('should indent continuation lines for bullet format', () => {
       const content = 'First line\n\nSecond line\nThird line';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- First line\n\n  Second line\n  Third line');
+      // Blank lines carry indent to preserve Obsidian list nesting
+      expect(result).toBe('- First line\n  \n  Second line\n  Third line');
     });
 
     it('should indent continuation lines for task format', () => {
       const content = 'Task description\n\nMore details';
       const result = formatContent(content, 'task');
-      expect(result).toBe('- [ ] Task description\n\n      More details');
+      // Blank lines carry indent to preserve Obsidian list nesting
+      expect(result).toBe('- [ ] Task description\n      \n      More details');
     });
 
     it('should indent continuation lines for numbered format', () => {
       const content = 'First line\n\nSecond line';
       const result = formatContent(content, 'numbered');
-      expect(result).toBe('1. First line\n\n   Second line');
+      // Blank lines carry indent to preserve Obsidian list nesting
+      expect(result).toBe('1. First line\n   \n   Second line');
     });
 
     it('should indent continuation lines for timestamp-bullet format', () => {
@@ -305,7 +308,7 @@ describe('formatContent', () => {
       // Verify first line has timestamp prefix and continuation is indented
       const lines = result.split('\n');
       expect(lines[0]).toMatch(/^- \*\*\d{2}:\d{2}\*\* First line$/);
-      expect(lines[1]).toBe('');  // Empty line preserved
+      expect(lines[1]).toBe('  ');  // Blank line carries indent to preserve list nesting
       expect(lines[2]).toBe('  Second line');  // Indented with 2 spaces
     });
 
@@ -317,7 +320,8 @@ describe('formatContent', () => {
     it('should handle content with multiple blank lines', () => {
       const content = 'Line 1\n\n\nLine 2';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Line 1\n\n\n  Line 2');
+      // Blank lines carry indent to preserve Obsidian list nesting
+      expect(result).toBe('- Line 1\n  \n  \n  Line 2');
     });
 
     it('should preserve indentation in continuation lines', () => {

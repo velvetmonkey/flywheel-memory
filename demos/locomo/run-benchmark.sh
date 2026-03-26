@@ -145,12 +145,9 @@ for i in $INDICES; do
 
   if claude -p "You are answering questions about conversations stored in this vault.
 Each note is one session of a multi-session conversation between two people.
-
-CRITICAL RULES:
-- Use ONLY Flywheel MCP tools: search, get_note_structure, get_section_content, find_sections.
-- Do NOT use ToolSearch, Agent, Bash, Glob, Grep, Read, WebSearch, or WebFetch.
-- After searching, ALWAYS read relevant session notes with get_note_structure to find evidence.
-- For multi-hop questions, search again using details from what you've read.
+Use the Flywheel MCP tools (search, get_note_structure, get_section_content, find_sections).
+After searching, read relevant session notes with get_note_structure to find evidence.
+For multi-hop questions, search again using details from what you've read.
 
 Question: $question
 
@@ -161,6 +158,7 @@ If the information is not in the vault, say so." \
     --permission-mode bypassPermissions \
     --mcp-config <(echo "$mcp_config") \
     --strict-mcp-config \
+    --disallowedTools "ToolSearch,Agent,Bash,Glob,Grep,Read,WebSearch,WebFetch" \
     --model "$MODEL" \
     > "$RESULTS_DIR/raw/q${padded}.jsonl" 2>"$RESULTS_DIR/raw/q${padded}.stderr"; then
     echo "done"

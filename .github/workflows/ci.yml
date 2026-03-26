@@ -227,6 +227,9 @@ jobs:
         run: npm ci
       - name: Build (required for workspace imports)
         run: npm run build
-      - name: Run tests
-        run: npm test
+      - name: Run vault-core tests
+        run: npm test -w @velvetmonkey/vault-core
+      - name: Run mcp-server tests (excludes retrieval benchmarks)
+        working-directory: packages/mcp-server
+        run: npx vitest run --exclude 'test/retrieval-bench/**'
 

@@ -21,6 +21,7 @@ import {
 import { trackWikilinkApplications, updateStoredNoteLinks } from '../../core/write/wikilinkFeedback.js';
 import { scanVaultEntities, SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
 import { buildFTS5Index, getFTS5State } from '../../core/read/fts5.js';
+import { loadConfig } from '../../core/read/config.js';
 import { hasEmbeddingsIndex } from '../../core/read/embeddings.js';
 
 interface InitPreviewItem {
@@ -204,7 +205,8 @@ async function executeRun(stateDb: StateDb | null, vaultPath: string): Promise<R
   if (entityCount === 0) {
     const start = Date.now();
     try {
-      const entityIndex = await scanVaultEntities(vaultPath, { excludeFolders: EXCLUDE_FOLDERS });
+      const config = loadConfig(stateDb);
+      const entityIndex = await scanVaultEntities(vaultPath, { excludeFolders: EXCLUDE_FOLDERS, customCategories: config.custom_categories });
       stateDb.replaceAllEntities(entityIndex);
       const newCount = entityIndex._metadata.total_entities;
       steps.push({

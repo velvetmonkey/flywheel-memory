@@ -105,6 +105,17 @@ function applySandwichOrdering(results: Array<Record<string, unknown>>): void {
 }
 
 /**
+ * Strip internal scoring/provenance fields that waste context tokens.
+ * Results are already sorted by these scores; exposing them adds no agent value.
+ */
+function stripInternalFields(results: Array<Record<string, unknown>>): void {
+  const INTERNAL = ['rrf_score', 'in_fts5', 'in_semantic', 'in_entity', 'graph_boost', '_combined_score'];
+  for (const r of results) {
+    for (const key of INTERNAL) delete r[key];
+  }
+}
+
+/**
  * Enhance snippets with semantic + token matching when embeddings are available.
  * Falls back to existing FTS5 snippets when embeddings are not built.
  */
@@ -499,16 +510,19 @@ export function registerQueryTools(
               in_entity: item.in_entity,
             }));
 
-            // Multi-hop backfill: 2-hop outlink traversal + query expansion
-            const hopResults = multiHopBackfill(results, index, stateDb, { maxBackfill: limit });
-            const expansionTerms = extractExpansionTerms(results, query, index);
-            const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
-            results.push(...hopResults, ...expansionResults);
+            // Multi-hop backfill — only when primary results are sparse
+            if (results.length < 3) {
+              const hopResults = multiHopBackfill(results, index, stateDb, { maxBackfill: limit });
+              const expansionTerms = extractExpansionTerms(results, query, index);
+              const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
+              results.push(...hopResults, ...expansionResults);
+            }
 
             // Graph re-ranking + sandwich ordering + enhanced snippets
             applyGraphReranking(results, stateDb);
             applySandwichOrdering(results);
             await enhanceSnippets(results, query, vaultPath);
+            stripInternalFields(results);
 
             return { content: [{ type: 'text' as const, text: JSON.stringify({
               method: 'hybrid',
@@ -546,16 +560,19 @@ export function registerQueryTools(
             ...('in_fts5' in item ? { in_fts5: true } : { in_entity: true }),
           }));
 
-          // Multi-hop backfill: 2-hop outlink traversal + query expansion
-          const hopResults = multiHopBackfill(results, index, stateDb, { maxBackfill: limit });
-          const expansionTerms = extractExpansionTerms(results, query, index);
-          const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
-          results.push(...hopResults, ...expansionResults);
+          // Multi-hop backfill — only when primary results are sparse
+          if (results.length < 3) {
+            const hopResults = multiHopBackfill(results, index, stateDb, { maxBackfill: limit });
+            const expansionTerms = extractExpansionTerms(results, query, index);
+            const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
+            results.push(...hopResults, ...expansionResults);
+          }
 
           // Graph re-ranking + sandwich ordering + enhanced snippets
           applyGraphReranking(results, stateDb);
           applySandwichOrdering(results);
           await enhanceSnippets(results, query, vaultPath);
+          stripInternalFields(results);
 
           return { content: [{ type: 'text' as const, text: JSON.stringify({
             method: 'fts5',
@@ -569,16 +586,19 @@ export function registerQueryTools(
         const fts5Filtered = applyFolderFilter(fts5Results);
         const results: Array<Record<string, unknown>> = fts5Filtered.map(r => ({ ...enrichResultCompact({ path: r.path, title: r.title, snippet: r.snippet }, index, stateDbFts), in_fts5: true }));
 
-        // Multi-hop backfill + query expansion
-        const hopResults = multiHopBackfill(results, index, stateDbFts, { maxBackfill: limit });
-        const expansionTerms = extractExpansionTerms(results, query, index);
-        const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDbFts);
-        results.push(...hopResults, ...expansionResults);
+        // Multi-hop backfill — only when primary results are sparse
+        if (results.length < 3) {
+          const hopResults = multiHopBackfill(results, index, stateDbFts, { maxBackfill: limit });
+          const expansionTerms = extractExpansionTerms(results, query, index);
+          const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDbFts);
+          results.push(...hopResults, ...expansionResults);
+        }
 
         // Graph re-ranking + sandwich ordering + enhanced snippets
         applyGraphReranking(results, stateDbFts);
         applySandwichOrdering(results);
         await enhanceSnippets(results, query, vaultPath);
+        stripInternalFields(results);
 
         return { content: [{ type: 'text' as const, text: JSON.stringify({
           method: 'fts5',

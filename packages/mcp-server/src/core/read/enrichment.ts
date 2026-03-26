@@ -153,7 +153,7 @@ export function rankBacklinks(
     .slice(0, maxLinks);
 }
 
-export const COMPACT_OUTLINK_NAMES = 10;
+export const COMPACT_OUTLINK_NAMES = 5;
 
 /**
  * Compact enrichment for all results (primary + multi-hop).

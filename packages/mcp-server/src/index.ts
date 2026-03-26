@@ -381,7 +381,11 @@ function updateFlywheelConfig(config: FlywheelConfig): void {
   flywheelConfig = config;
   setWikilinkConfig(config);
   const ctx = getActiveVaultContext();
-  if (ctx) ctx.flywheelConfig = config;
+  if (ctx) {
+    ctx.flywheelConfig = config;
+    // Rebuild fallback scope so scope-aware getters see the update
+    setActiveScope(buildVaultScope(ctx));
+  }
 }
 
 /**
@@ -569,6 +573,8 @@ async function main() {
   loadVaultCooccurrence(primaryCtx);
   activateVault(primaryCtx);
   await bootVault(primaryCtx, startTime);
+  // Re-activate after boot so fallback scope reflects post-boot state (config, index, etc.)
+  activateVault(primaryCtx);
 
   // ── Phase 4: Initialize + boot secondary vaults (background) ──
   if (vaultConfigs && vaultConfigs.length > 1) {

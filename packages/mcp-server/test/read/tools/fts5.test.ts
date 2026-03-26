@@ -10,6 +10,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import { connectTestClient, type TestClient, createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
+import { openStateDb } from '@velvetmonkey/vault-core';
+import { setFTS5Database } from '../../../src/core/read/fts5.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
@@ -19,6 +21,16 @@ describe('FTS5 Full-Text Search Tools', () => {
   let client: TestClient;
 
   beforeAll(async () => {
+    // Ensure .flywheel/state.db exists (may have been deleted by another test file)
+    const flywheelDir = path.join(FIXTURES_PATH, '.flywheel');
+    if (!fs.existsSync(flywheelDir)) {
+      fs.mkdirSync(flywheelDir, { recursive: true });
+    }
+    // Re-open StateDb and re-inject FTS5 handle before creating server
+    try {
+      const stateDb = openStateDb(FIXTURES_PATH);
+      setFTS5Database(stateDb.db);
+    } catch { /* createTestServer will handle it */ }
     context = await createTestServer(FIXTURES_PATH);
     client = connectTestClient(context.server);
   });

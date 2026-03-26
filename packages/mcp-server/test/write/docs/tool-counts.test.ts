@@ -334,8 +334,8 @@ describe('Documentation Contracts', () => {
   it('preset compositions match source', async () => {
     const presets = await parsePresetsFromSource();
 
-    expect(presets['default']).toEqual(['search', 'read', 'write', 'tasks']);
-    expect(presets['agent']).toEqual(['search', 'read', 'write', 'memory']);
+    expect(presets['default']).toEqual(['search', 'read', 'write', 'tasks', 'memory']);
+    // agent preset removed — deprecated alias to default
   });
 });
 

@@ -13,6 +13,7 @@ import {
   getSuppressedCount,
 } from '../write/wikilinkFeedback.js';
 import { hasEmbeddingsIndex } from './embeddings.js';
+import { createHash } from 'node:crypto';
 
 // =============================================================================
 // TYPES
@@ -383,8 +384,7 @@ export function getCalibrationExport(
   let vaultId: string | undefined;
   if (includeVaultId) {
     // Generate a stable anonymous ID from vault path hash
-    const crypto = require('crypto');
-    vaultId = crypto.createHash('sha256').update(stateDb.vaultPath).digest('hex').slice(0, 16);
+    vaultId = createHash('sha256').update(stateDb.vaultPath).digest('hex').slice(0, 16);
   }
 
   return {

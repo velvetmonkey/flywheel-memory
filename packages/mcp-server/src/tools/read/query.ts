@@ -105,6 +105,58 @@ function applySandwichOrdering(results: Array<Record<string, unknown>>): void {
 }
 
 /**
+ * Compute entity-mediated bridges between results.
+ * For each result pair, find entities (outlink targets) that appear in both notes.
+ * This is the key signal for multi-hop reasoning — tells the agent HOW results connect.
+ */
+function applyEntityBridging(
+  results: Array<Record<string, unknown>>,
+  stateDb: StateDb | null,
+  maxBridgesPerResult: number = 3,
+): void {
+  if (!stateDb || results.length < 2) return;
+
+  // Build map: note_path → set of outlink targets
+  const linkMap = new Map<string, Set<string>>();
+  try {
+    const paths = results.map(r => r.path as string).filter(Boolean);
+    for (const path of paths) {
+      const rows = stateDb.db.prepare(
+        'SELECT target FROM note_links WHERE note_path = ?'
+      ).all(path) as Array<{ target: string }>;
+      linkMap.set(path, new Set(rows.map(r => r.target)));
+    }
+  } catch { return; /* best-effort */ }
+
+  // For each result, find entities shared with other results
+  for (const r of results) {
+    const myPath = r.path as string;
+    const myLinks = linkMap.get(myPath);
+    if (!myLinks || myLinks.size === 0) continue;
+
+    const bridges: Array<{ entity: string; in_result: string }> = [];
+    for (const other of results) {
+      const otherPath = other.path as string;
+      if (otherPath === myPath) continue;
+      const otherLinks = linkMap.get(otherPath);
+      if (!otherLinks) continue;
+
+      // Find intersection
+      for (const entity of myLinks) {
+        if (otherLinks.has(entity) && bridges.length < maxBridgesPerResult) {
+          bridges.push({ entity, in_result: otherPath });
+        }
+      }
+      if (bridges.length >= maxBridgesPerResult) break;
+    }
+
+    if (bridges.length > 0) {
+      r.bridges = bridges;
+    }
+  }
+}
+
+/**
  * Strip internal scoring/provenance fields that waste context tokens.
  * Results are already sorted by these scores; exposing them adds no agent value.
  */
@@ -136,6 +188,8 @@ async function enhanceSnippets(
       const snippets = await extractBestSnippets(`${vaultPath}/${r.path}`, queryEmb, queryTokens);
       if (snippets.length > 0 && snippets[0].text.length > 0) {
         r.snippet = snippets[0].text;
+        if (snippets[0].section) r.section = snippets[0].section;
+        if (snippets[0].confidence != null) r.snippet_confidence = Math.round(snippets[0].confidence * 100) / 100;
       }
     } catch { /* non-fatal */ }
   }
@@ -518,8 +572,9 @@ export function registerQueryTools(
               results.push(...hopResults, ...expansionResults);
             }
 
-            // Graph re-ranking + sandwich ordering + enhanced snippets
+            // Graph re-ranking + bridging + sandwich ordering + enhanced snippets
             applyGraphReranking(results, stateDb);
+            applyEntityBridging(results, stateDb);
             applySandwichOrdering(results);
             await enhanceSnippets(results, query, vaultPath);
             stripInternalFields(results);
@@ -568,8 +623,9 @@ export function registerQueryTools(
             results.push(...hopResults, ...expansionResults);
           }
 
-          // Graph re-ranking + sandwich ordering + enhanced snippets
+          // Graph re-ranking + bridging + sandwich ordering + enhanced snippets
           applyGraphReranking(results, stateDb);
+          applyEntityBridging(results, stateDb);
           applySandwichOrdering(results);
           await enhanceSnippets(results, query, vaultPath);
           stripInternalFields(results);
@@ -594,8 +650,9 @@ export function registerQueryTools(
           results.push(...hopResults, ...expansionResults);
         }
 
-        // Graph re-ranking + sandwich ordering + enhanced snippets
+        // Graph re-ranking + bridging + sandwich ordering + enhanced snippets
         applyGraphReranking(results, stateDbFts);
+        applyEntityBridging(results, stateDbFts);
         applySandwichOrdering(results);
         await enhanceSnippets(results, query, vaultPath);
         stripInternalFields(results);

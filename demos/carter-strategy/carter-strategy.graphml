@@ -407,7 +407,6 @@
       <data key="type">entity</data>
       <data key="category">people</data>
       <data key="hub_score">0</data>
-      <data key="aliases">Dan</data>
     </node>
     <node id="entity:Data Migration Playbook">
       <data key="label">Data Migration Playbook</data>
@@ -493,7 +492,6 @@
       <data key="type">entity</data>
       <data key="category">people</data>
       <data key="hub_score">0</data>
-      <data key="aliases">Marcus</data>
     </node>
     <node id="entity:Meridian Financial">
       <data key="label">Meridian Financial</data>
@@ -551,7 +549,6 @@
       <data key="type">entity</data>
       <data key="category">people</data>
       <data key="hub_score">0</data>
-      <data key="aliases">Sarah</data>
     </node>
     <node id="entity:Stacy Thompson">
       <data key="label">Stacy Thompson</data>

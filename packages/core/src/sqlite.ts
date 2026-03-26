@@ -13,7 +13,7 @@
 import Database from 'better-sqlite3';
 import type { Statement, Transaction } from 'better-sqlite3';
 import * as fs from 'fs';
-import type { EntityCategory, EntityWithAliases, EntityIndex } from './types.js';
+import type { Entity, EntityCategory, EntityWithAliases, EntityIndex } from './types.js';
 
 // Re-export constants from schema
 export { SCHEMA_VERSION, STATE_DB_FILENAME, FLYWHEEL_DIR, SCHEMA_SQL } from './schema.js';
@@ -377,17 +377,12 @@ export function openStateDb(vaultPath: string): StateDb {
       // Clear existing entities
       stateDb.clearEntities.run();
 
-      // Insert all entities by category
-      const categories: EntityCategory[] = [
-        'technologies', 'acronyms', 'people', 'projects',
-        'organizations', 'locations', 'concepts', 'animals',
-        'media', 'events', 'documents', 'vehicles', 'health',
-        'finance', 'food', 'hobbies', 'other',
-      ];
+      // Insert all entities by category (including custom categories)
+      const categories = Object.keys(index).filter(k => k !== '_metadata');
 
       let total = 0;
       for (const category of categories) {
-        const entities = index[category];
+        const entities = index[category] as Entity[] | undefined;
         if (!entities?.length) continue;
 
         for (const entity of entities) {

@@ -3,9 +3,9 @@
  */
 
 /**
- * Categories for entity classification
+ * Built-in entity categories
  */
-export type EntityCategory =
+export type DefaultEntityCategory =
   | 'technologies'
   | 'acronyms'
   | 'people'
@@ -24,6 +24,13 @@ export type EntityCategory =
   | 'hobbies'
   | 'periodical'
   | 'other';
+
+/**
+ * Entity category — built-in defaults + user-defined custom categories.
+ * Custom categories are configured via FlywheelConfig.custom_categories
+ * and populated from frontmatter `type:` fields.
+ */
+export type EntityCategory = DefaultEntityCategory | (string & Record<never, never>);
 
 /**
  * Entity with optional aliases from frontmatter
@@ -55,9 +62,16 @@ export interface EntityWithType {
   category: EntityCategory;
 }
 
+/** Built-in category keys (excludes _metadata) */
+export const DEFAULT_ENTITY_CATEGORIES: DefaultEntityCategory[] = [
+  'technologies', 'acronyms', 'people', 'projects', 'organizations',
+  'locations', 'concepts', 'animals', 'media', 'events', 'documents',
+  'vehicles', 'health', 'finance', 'food', 'hobbies', 'periodical', 'other',
+];
+
 /**
- * Entity index structure matching wikilink-cache.py output
- * Now supports both string[] (legacy) and EntityWithAliases[] (v2)
+ * Entity index structure — built-in categories as typed properties,
+ * custom categories accessed dynamically via getIndexCategory().
  */
 export interface EntityIndex {
   technologies: Entity[];
@@ -78,6 +92,8 @@ export interface EntityIndex {
   hobbies: Entity[];
   periodical: Entity[];
   other: Entity[];
+  /** Dynamic custom categories */
+  [customCategory: string]: Entity[] | EntityIndex['_metadata'];
   _metadata: {
     total_entities: number;
     generated_at: string;
@@ -86,6 +102,19 @@ export interface EntityIndex {
     /** Cache version for migration detection */
     version?: number;
   };
+}
+
+/** Get entities for a category (handles both built-in and custom) */
+export function getIndexCategory(index: EntityIndex, category: string): Entity[] {
+  if (category === '_metadata') return [];
+  return (index[category] as Entity[]) ?? [];
+}
+
+/** Ensure a category array exists on the index */
+export function ensureIndexCategory(index: EntityIndex, category: string): void {
+  if (category !== '_metadata' && !index[category]) {
+    (index as Record<string, unknown>)[category] = [];
+  }
 }
 
 /**
@@ -128,6 +157,13 @@ export interface ScanOptions {
    * Tech keywords for categorization
    */
   techKeywords?: string[];
+
+  /**
+   * Custom entity categories from FlywheelConfig.
+   * Keys are frontmatter `type:` values; entities with matching types
+   * get that key as their category instead of the default classifier.
+   */
+  customCategories?: Record<string, { type_boost?: number }>;
 }
 
 /**

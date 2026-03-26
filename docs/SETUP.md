@@ -246,6 +246,18 @@ On first run, Flywheel creates a `.flywheel/` directory containing its SQLite in
 >
 > See [CONFIGURATION.md](CONFIGURATION.md#wikilink-behavior) for fine-tuning the score threshold and per-file limit.
 
+> **Custom entity categories.** If your vault uses frontmatter `type:` fields for domain-specific note types (e.g., `type: recipe`, `type: work-ticket`, `type: statute`), tell Flywheel about them so they get proper scoring instead of landing in "other":
+>
+> ```
+> flywheel_config({
+>   mode: "set",
+>   key: "custom_categories",
+>   value: { "work-ticket": { "type_boost": 2 }, "recipe": { "type_boost": 1 } }
+> })
+> ```
+>
+> See [CONFIGURATION.md](CONFIGURATION.md#custom-categories) for details.
+
 ---
 
 ## Step 2: First 5 Commands to Try

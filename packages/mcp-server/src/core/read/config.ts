@@ -50,6 +50,15 @@ export interface FlywheelConfig {
   proactive_max_per_file?: number;
   /** Maximum proactive insertions per file per day (default: 10) */
   proactive_max_per_day?: number;
+  /**
+   * Custom entity categories. Keys are frontmatter `type:` values.
+   * Entities with matching frontmatter types get categorized under that key
+   * instead of the default classifier. Optional type_boost overrides the
+   * scoring boost for this category (default: 0).
+   *
+   * Example: { "work-ticket": { type_boost: 2 }, "recipe": { type_boost: 1 } }
+   */
+  custom_categories?: Record<string, { type_boost?: number }>;
 }
 
 /** Default config for new vaults — opinionated: aggressive linking by default, opt out to dial back */

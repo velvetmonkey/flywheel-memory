@@ -1,7 +1,7 @@
 {
   "suite": "cross-vault-learning-report",
-  "timestamp": "2026-03-25T23:11:55.028Z",
-  "duration_ms": 223939,
+  "timestamp": "2026-03-26T12:39:00.604Z",
+  "duration_ms": 216595,
   "summary": {
     "primary_final_f1": 0.543,
     "small-world_final_f1": 0.261,
@@ -2062,15 +2062,15 @@
         },
         {
           "round": 15,
-          "f1": 0.743,
-          "precision": 0.706,
-          "recall": 0.783,
+          "f1": 0.744,
+          "precision": 0.708,
+          "recall": 0.784,
           "suppressionCount": 17,
           "byTier": {
             "1": {
               "precision": 1,
-              "recall": 0.7945736434108527,
-              "f1": 0.8855291576673865,
+              "recall": 0.7965116279069767,
+              "f1": 0.8867313915857604,
               "count": 516
             },
             "2": {

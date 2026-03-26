@@ -177,7 +177,11 @@ export function getEntityIndexFromDb(stateDb: StateDb): EntityIndex {
       hubScore: entity.hubScore,
       description: entity.description,
     };
-    index[entity.category].push(entityObj);
+    // Initialize custom category array if needed
+    if (!index[entity.category]) {
+      (index as Record<string, unknown>)[entity.category] = [];
+    }
+    (index[entity.category] as EntityWithAliases[]).push(entityObj);
   }
 
   return index;

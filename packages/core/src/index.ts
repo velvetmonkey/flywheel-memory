@@ -9,6 +9,7 @@
 export type {
   EntityIndex,
   EntityCategory,
+  DefaultEntityCategory,
   EntityWithAliases,
   Entity,
   EntityWithType,
@@ -21,6 +22,13 @@ export type {
   ResolveAliasOptions,
   ProtectedZone,
   ProtectedZoneType,
+} from './types.js';
+
+// Type helpers and constants
+export {
+  DEFAULT_ENTITY_CATEGORIES,
+  getIndexCategory,
+  ensureIndexCategory,
 } from './types.js';
 
 // Common English words (frequency list for alias filtering)

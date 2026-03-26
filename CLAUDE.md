@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**[[Flywheel]] Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 74 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**[[Flywheel]] Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 76 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -104,7 +104,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`full`** — All categories except memory (71 tools; add `,memory` for all 74)
 
 **Composable bundles** (add to presets or each other):
-- **`graph`** — structural analysis, semantic analysis, paths, hubs, connections, export (11 tools)
+- **`graph`** — structural analysis, semantic analysis, paths, [[Hub|hubs]], connections, export (11 tools)
 - **`schema`** — schema intelligence + migrations (7 tools)
 - **`wikilinks`** — suggestions, validation, discovery (7 tools)
 - **`corrections`** — correction recording + resolution (4 tools)
@@ -112,7 +112,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`memory`** — agent working memory + recall + brief (3 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
 - **`temporal`** — time-based vault intelligence (4 tools)
-- **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history (18 tools)
+- **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export (20 tools)
 **Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `temporal`, `diagnostics`
 
 ---

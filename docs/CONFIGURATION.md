@@ -47,7 +47,7 @@ No `FLYWHEEL_TOOLS` needed — defaults to `default` (16 tools). Add it only to 
 }
 ```
 
-Note: Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. Claude Code auto-detects the vault root from the working directory.
+Note: Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. [[Claude Code]] auto-detects the vault root from the working directory.
 
 ---
 
@@ -123,7 +123,7 @@ Start with `default`, then add what you need:
 | `memory` | 3 | Agent working memory + recall + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
 | `temporal` | 4 | Time-based vault intelligence: get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
-| `diagnostics` | 18 | Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history |
+| `diagnostics` | 20 | Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export |
 
 #### Recipes
 
@@ -163,7 +163,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `tasks` | 3 | tasks, vault_toggle_task, vault_add_task |
 | `memory` | 3 | memory, recall, brief |
 | `note-ops` | 4 | vault_delete/move/rename_note, merge_entities |
-| `diagnostics` | 18 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history |
+| `diagnostics` | 20 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export |
 
 Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work with a warning — they resolve to current category names.
 
@@ -182,8 +182,8 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 | corrections | 4 | | | Yes |
 | note-ops | 4 | | | Yes |
 | temporal | 4 | | | Yes |
-| diagnostics | 18 | | | Yes |
-| **Total** | **74** | **16** | **16** | **71** |
+| diagnostics | 20 | | | Yes |
+| **Total** | **76** | **16** | **16** | **73** |
 
 ### Semantic Embeddings
 
@@ -484,6 +484,38 @@ Sets a single key and returns the updated config.
 | `proactive_min_score` | number | `20` | Minimum suggestion score for proactive linking. Higher values mean fewer but more confident auto-links. The default of 20 is well above the balanced threshold (10), ensuring only strong matches are applied automatically. |
 | `proactive_max_per_file` | number | `5` | Maximum number of wikilinks the watcher will proactively insert per file per drain cycle. The daily cap (`proactive_max_per_day`) is the primary safety net. |
 | `proactive_max_per_day` | number | `10` | Maximum number of wikilinks the watcher will proactively insert per file per day. Prevents accumulated queue drains from flooding a single note over time. |
+| `custom_categories` | object | `{}` | Define custom entity categories from frontmatter `type:` values. Keys are the type strings; values have optional `type_boost` (scoring weight, default 0). See [Custom Categories](#custom-categories) below. |
+
+#### Custom Categories
+
+By default, Flywheel classifies entities into 18 built-in categories (people, projects, technologies, etc.). Entities that don't match any pattern end up in "other" — which means they get zero type boost in scoring and are invisible to category-level analytics.
+
+**Custom categories fix this.** If your vault uses frontmatter `type:` fields that don't map to built-in categories, define them here and they'll be treated as first-class categories with their own scoring weight.
+
+```
+flywheel_config({
+  mode: "set",
+  key: "custom_categories",
+  value: {
+    "work-ticket": { "type_boost": 2 },
+    "recipe": { "type_boost": 1 },
+    "client": { "type_boost": 3 },
+    "statute": { "type_boost": 2 }
+  }
+})
+```
+
+**How it works:**
+- An entity note with `type: work-ticket` in its frontmatter gets category `work-ticket` instead of falling through to "other"
+- The `type_boost` controls how strongly the scoring pipeline favors linking this category (0 = neutral, 5 = strong preference, like people)
+- Built-in frontmatter type mappings still work (`type: person` → people, `type: tool` → technologies, etc.)
+- Custom categories appear in `flywheel_calibration_export` survival-by-category data, making the calibration signal meaningful for your vault's ontology
+- No schema migration needed — the database already stores categories as free text
+
+**When to use this:**
+- Your vault has domain-specific note types (legal: statutes/cases, cooking: recipes/ingredients, work: tickets/sprints)
+- More than ~15% of your entities are categorized as "other"
+- You want the scoring pipeline to weight your custom types differently from the defaults
 
 #### Exclusions
 

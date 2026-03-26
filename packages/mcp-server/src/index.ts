@@ -617,6 +617,7 @@ async function updateEntitiesInStateDb(vp?: string, sd?: StateDb | null): Promis
 
     const entityIndex = await scanVaultEntities(vault, {
       excludeFolders,
+      customCategories: config.custom_categories,
     });
     db.replaceAllEntities(entityIndex);
     serverLog('index', `Updated ${entityIndex._metadata.total_entities} entities in StateDb`);

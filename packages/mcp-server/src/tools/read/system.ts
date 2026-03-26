@@ -77,6 +77,7 @@ export function registerSystemTools(
         const stateDb = getStateDb?.();
         if (stateDb) {
           try {
+            const config = loadConfig(stateDb);
             const entityIndex = await scanVaultEntities(vaultPath, {
               excludeFolders: [
                 'daily-notes', 'daily', 'weekly', 'weekly-notes', 'monthly',
@@ -84,6 +85,7 @@ export function registerSystemTools(
                 'inbox', 'templates', 'attachments', 'tmp',
                 'clippings', 'readwise', 'articles', 'bookmarks', 'web-clips',
               ],
+              customCategories: config.custom_categories,
             });
             stateDb.replaceAllEntities(entityIndex);
             console.error(`[Flywheel] Updated ${entityIndex._metadata.total_entities} entities in StateDb`);

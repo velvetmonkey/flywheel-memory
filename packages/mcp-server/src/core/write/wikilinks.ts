@@ -243,6 +243,7 @@ async function rebuildIndex(vaultPath: string): Promise<void> {
 
   entityIndex = await scanVaultEntities(vaultPath, {
     excludeFolders: DEFAULT_EXCLUDE_FOLDERS,
+    customCategories: getConfig()?.custom_categories,
   });
 
   indexReady = true;

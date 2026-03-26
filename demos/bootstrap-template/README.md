@@ -1,6 +1,6 @@
 # Bootstrap Template: CSV to Knowledge Graph
 
-This demo shows the Flywheel "bootstrap breakthrough" — starting from loose CSV data and building a connected knowledge graph through natural usage.
+This demo shows the [[Flywheel]] "bootstrap breakthrough" — starting from loose CSV data and building a connected knowledge graph through natural usage.
 
 ## The Premise
 
@@ -208,7 +208,7 @@ Flywheel uses folder names to infer entity types:
 | `clients/`, `companies/` | Organizations | +2 |
 | `daily-notes/`, `journal/` | Excluded from entities | — |
 
-See [Flywheel Wikilinks Documentation](../../docs/wikilinks.md) for full details.
+See [Flywheel Algorithm Documentation](../../docs/ALGORITHM.md) for full details.
 
 ## Proof-of-Work Testing
 

@@ -1,5 +1,7 @@
 # Configuration
 
+[← Back to docs](README.md)
+
 Two layers of configuration: **environment variables** set in your [[Claude Desktop Config|MCP config]] (startup-time), and **runtime config** adjustable via the `flywheel_config` tool (persisted in StateDb). No config files to manage.
 
 - [MCP Config](#mcp-config)

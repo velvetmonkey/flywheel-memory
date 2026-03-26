@@ -1,5 +1,7 @@
 # Cookbook
 
+[← Back to docs](README.md)
+
 Example prompts organized by use case. Copy these directly into [[Claude Code]] or Claude Desktop.
 
 All examples assume [[Flywheel]] is connected to your vault. See [SETUP.md](SETUP.md) if you haven't configured it yet.
@@ -52,7 +54,7 @@ Find connections and navigate the knowledge graph.
 
 ### Search by topic
 
-> "Find all notes about machine learning"
+> "Find all notes about [[AI|machine learning]]"
 
 > "Search for notes tagged #project and #active"
 

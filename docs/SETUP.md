@@ -1,5 +1,7 @@
 # Set Up Your Own Vault
 
+[← Back to docs](README.md)
+
 After trying the [demo vaults](../demos/), point [[Flywheel]] at your own Obsidian vault.
 
 - [Prerequisites](#prerequisites)

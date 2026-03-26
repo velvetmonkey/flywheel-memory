@@ -6,6 +6,7 @@ Error recovery and diagnostics for Flywheel Memory.
 
 **Safety model:** Your markdown files are the source of truth. Everything in `.flywheel/` is derived data and can be safely deleted -- Flywheel rebuilds it on next startup.
 
+- [Server Startup Timeout](#server-startup-timeout)
 - [Undoing a Mutation](#undoing-a-mutation)
 - [StateDb Corruption](#statedb-corruption)
 - [Git Lock Contention](#git-lock-contention)
@@ -13,6 +14,18 @@ Error recovery and diagnostics for Flywheel Memory.
 - [Common Errors](#common-errors)
 - [Diagnostics](#diagnostics)
 - [Getting Help](#getting-help)
+
+## Server Startup Timeout
+
+**Symptom:** Your MCP client reports "connection timed out" or "server failed to start."
+
+**What happened:** The client killed the Flywheel process before the graph index finished building. On a cold start with a large vault (1k+ notes), index building can take 10-90 seconds. The MCP handshake itself completes in <1 second, but some clients wait for the first successful tool response before considering the server "ready."
+
+**Fix:** Increase the client's startup timeout. See [Startup Times](SETUP.md#startup-times) for client-specific settings.
+
+**What happens to the server:** When a client times out, it closes the stdio pipes. The Flywheel process receives SIGPIPE (or EPIPE on the next write attempt) and terminates. No data is lost — `.flywheel/state.db` is always in a consistent state, and any partial index build is discarded and rebuilt on next startup.
+
+**Prevention:** After the first successful startup, Flywheel caches the graph index in StateDb. Subsequent starts load from cache in <100ms, avoiding the timeout entirely.
 
 ---
 

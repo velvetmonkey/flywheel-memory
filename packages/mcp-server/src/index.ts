@@ -235,9 +235,20 @@ serverLog('server', `Registered ${_gatingResult.registered} tools, skipped ${_ga
 // Multi-Vault Initialization (MV.2 + MV.3)
 // ============================================================================
 
+/** Load cached co-occurrence index for a single vault context. */
+function loadVaultCooccurrence(ctx: VaultContext): void {
+  if (!ctx.stateDb) return;
+  const cachedCooc = loadCooccurrenceFromStateDb(ctx.stateDb);
+  if (cachedCooc) {
+    ctx.cooccurrenceIndex = cachedCooc.index;
+    ctx.lastCooccurrenceRebuildAt = cachedCooc.builtAt;
+    serverLog('index', `[${ctx.name}] Co-occurrence: loaded from cache (${Object.keys(cachedCooc.index.associations).length} entities, ${cachedCooc.index._metadata.total_associations} associations)`);
+  }
+}
+
 /**
- * Initialize a vault: open StateDb, inject singleton handles, load caches.
- * Returns a VaultContext with all state initialized.
+ * Initialize a vault: open StateDb, run integrity check.
+ * Returns a VaultContext with StateDb ready. Does NOT build indexes.
  */
 async function initializeVault(name: string, vaultPathArg: string): Promise<VaultContext> {
   const ctx: VaultContext = {
@@ -489,22 +500,17 @@ async function main() {
   // Parse multi-vault config
   const vaultConfigs = parseVaultConfig();
 
+  // ── Phase 1: Initialize primary vault (StateDb only — fast) ──
   if (vaultConfigs) {
-    // Multi-vault mode
     vaultRegistry = new VaultRegistry(vaultConfigs[0].name);
     serverLog('server', `Multi-vault mode: ${vaultConfigs.map(v => v.name).join(', ')}`);
 
-    for (const vc of vaultConfigs) {
-      const ctx = await initializeVault(vc.name, vc.path);
-      vaultRegistry.addContext(ctx);
-    }
-
-    // Activate primary vault
-    const primary = vaultRegistry.getContext();
-    stateDb = primary.stateDb;
-    activateVault(primary);
+    // Initialize primary vault first (just StateDb open + integrity check)
+    const primaryCtx = await initializeVault(vaultConfigs[0].name, vaultConfigs[0].path);
+    vaultRegistry.addContext(primaryCtx);
+    stateDb = primaryCtx.stateDb;
+    activateVault(primaryCtx);
   } else {
-    // Single-vault mode (backward compatible)
     vaultRegistry = new VaultRegistry('default');
     const ctx = await initializeVault('default', vaultPath);
     vaultRegistry.addContext(ctx);
@@ -512,31 +518,15 @@ async function main() {
     activateVault(ctx);
   }
 
-  // Load cached co-occurrence index for all vaults
-  for (const ctx of vaultRegistry.getAllContexts()) {
-    if (ctx.stateDb) {
-      const cachedCooc = loadCooccurrenceFromStateDb(ctx.stateDb);
-      if (cachedCooc) {
-        ctx.cooccurrenceIndex = cachedCooc.index;
-        ctx.lastCooccurrenceRebuildAt = cachedCooc.builtAt;
-        serverLog('index', `[${ctx.name}] Co-occurrence: loaded from cache (${Object.keys(cachedCooc.index.associations).length} entities, ${cachedCooc.index._metadata.total_associations} associations)`);
-      }
-    }
-  }
-  // Activate primary vault again to pick up loaded co-occurrence state
-  {
-    const primary = vaultRegistry.getContext();
-    activateVault(primary);
-  }
-
-  // Connect transports
+  // ── Phase 2: Connect transports BEFORE heavy work ──
+  // Tools use lazy getters — they'll return "StateDb not available" until boot
+  // completes, but the MCP handshake completes in <1s instead of 60s+.
   const transportMode = (process.env.FLYWHEEL_TRANSPORT ?? 'stdio').toLowerCase();
 
   if (transportMode === 'stdio' || transportMode === 'both') {
-    // Connect stdio immediately so crank can talk to us while we build indexes
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    serverLog('server', 'MCP server connected (stdio)');
+    serverLog('server', `MCP server connected (stdio) in ${Date.now() - startTime}ms`);
   }
 
   if (transportMode === 'http' || transportMode === 'both') {
@@ -574,11 +564,32 @@ async function main() {
     });
   }
 
-  // Boot all vaults sequentially (index, post-index work, watcher)
-  for (const vaultCtx of vaultRegistry.getAllContexts()) {
-    activateVault(vaultCtx);
-    stateDb = vaultCtx.stateDb;
-    await bootVault(vaultCtx, startTime);
+  // ── Phase 3: Load co-occurrence + boot primary vault ──
+  const primaryCtx = vaultRegistry.getContext();
+  loadVaultCooccurrence(primaryCtx);
+  activateVault(primaryCtx);
+  await bootVault(primaryCtx, startTime);
+
+  // ── Phase 4: Initialize + boot secondary vaults (background) ──
+  if (vaultConfigs && vaultConfigs.length > 1) {
+    const secondaryConfigs = vaultConfigs.slice(1);
+    // Don't await — secondary vaults boot in background
+    (async () => {
+      for (const vc of secondaryConfigs) {
+        try {
+          const ctx = await initializeVault(vc.name, vc.path);
+          vaultRegistry!.addContext(ctx);
+          loadVaultCooccurrence(ctx);
+          activateVault(ctx);
+          await bootVault(ctx, startTime);
+          serverLog('server', `[${vc.name}] Secondary vault ready`);
+        } catch (err) {
+          serverLog('server', `[${vc.name}] Secondary vault boot failed: ${err}`, 'error');
+        }
+      }
+      // Re-activate primary after all secondaries are booted
+      activateVault(vaultRegistry!.getContext());
+    })();
   }
 }
 

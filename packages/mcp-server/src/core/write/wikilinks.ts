@@ -1444,7 +1444,7 @@ export async function suggestRelatedLinks(
     }
 
     // Layer 5: Type boost - prioritize people, projects over common technologies
-    const layerTypeBoost = disabled.has('type_boost') ? 0 : (TYPE_BOOST[category] || 0);
+    const layerTypeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories);
     score += layerTypeBoost;
 
     // Layer 6: Context boost - boost types relevant to note context
@@ -1589,7 +1589,7 @@ export async function suggestRelatedLinks(
           // For purely co-occurrence-based suggestions, add relevant boosts.
           // Recency is omitted for graph-only entities — it's a "recently seen" signal
           // that shouldn't inflate scores for entities absent from the note's text.
-          const typeBoost = disabled.has('type_boost') ? 0 : (TYPE_BOOST[category] || 0);
+          const typeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories);
           const contextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
           const recencyBoostVal = hasContentOverlap && !disabled.has('recency')
             ? (recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0)
@@ -1683,7 +1683,7 @@ export async function suggestRelatedLinks(
           const { entity, category } = entityWithType;
 
           // Reuse existing layer logic for base boosts
-          const layerTypeBoost = disabled.has('type_boost') ? 0 : (TYPE_BOOST[category] || 0);
+          const layerTypeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories);
           const layerContextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
           const layerHubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
           const layerCrossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);

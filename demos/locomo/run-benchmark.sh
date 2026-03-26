@@ -17,7 +17,7 @@ MCP_SERVER="$REPO_DIR/packages/mcp-server/dist/index.js"
 VAULT_DIR="$SCRIPT_DIR/vault"
 GROUND_TRUTH="$SCRIPT_DIR/ground-truth.json"
 MODEL="${MODEL:-sonnet}"
-COUNT="${COUNT:-759}"  # Default: 759 balanced questions (matches documented benchmark)
+COUNT="${COUNT:-695}"  # Default: 695 balanced questions (matches Mem0 competition paper)
 MODE="${MODE:-dialog}"
 SEED="${SEED:-42}"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
@@ -145,6 +145,12 @@ for i in $INDICES; do
 
   if claude -p "You are answering questions about conversations stored in this vault.
 Each note is one session of a multi-session conversation between two people.
+
+CRITICAL RULES:
+- Use ONLY Flywheel MCP tools: search, get_note_structure, get_section_content, find_sections.
+- Do NOT use ToolSearch, Agent, Bash, Glob, Grep, Read, WebSearch, or WebFetch.
+- After searching, ALWAYS read relevant session notes with get_note_structure to find evidence.
+- For multi-hop questions, search again using details from what you've read.
 
 Question: $question
 

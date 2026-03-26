@@ -27,7 +27,7 @@ After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian v
 
 ## Startup Times
 
-Flywheel connects to your MCP client immediately, then builds indexes in the background. Most tools work within seconds; semantic search takes longer on first run.
+Flywheel connects to your MCP client immediately, then builds indexes in the background. Most [[TOOLS]] work within seconds; semantic search takes longer on first run.
 
 | Scenario | MCP handshake | Full index ready |
 |----------|--------------|-----------------|
@@ -144,7 +144,7 @@ Add this to `~/.openclaw/openclaw.json`:
         "args": ["-y", "@velvetmonkey/flywheel-memory"],
         "env": {
           "VAULT_PATH": "/path/to/your/vault",
-          "FLYWHEEL_TOOLS": "agent"
+          "FLYWHEEL_TOOLS": "default"
         }
       }
     }
@@ -154,7 +154,7 @@ Add this to `~/.openclaw/openclaw.json`:
 
 Restart OpenClaw. Flywheel appears as an MCP server with search, read, write, and memory tools.
 
-`FLYWHEEL_TOOLS=agent` gives the right balance -- search, read, write, memory, and graph -- without the full 67-tool firehose. For everything, use `"full,memory"`.
+The `default` preset includes search, read, write, tasks, and memory. For everything, use `"full"`.
 
 OpenClaw connects via stdio, same as Claude Desktop. For HTTP transport (e.g., running Flywheel as a shared service), see the [HTTP Clients](#http-clients-cursor-windsurf-vs-code-continue) section below.
 
@@ -339,8 +339,8 @@ Flywheel auto-links any mentions of existing notes. If your vault has `Stacy Tho
 
 ## Step 3: Choose a Tool Preset
 
-Flywheel defaults to the `default` preset (16 tools: search, read, write, tasks).
-Add bundles for graph analysis, wikilinks, memory, or other capabilities:
+Flywheel defaults to the `default` preset (18 tools: search, read, write, tasks, memory).
+For all tools, use `"full"`. Add bundles for graph analysis, wikilinks, or other capabilities:
 
 ```json
 {
@@ -567,6 +567,6 @@ All vault operations work without git. You just won't have undo or commit histor
 ## Next Steps
 
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full reference for all 74 tools
+- **[TOOLS.md](TOOLS.md)** -- Full reference for all 75 tools
 - **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics

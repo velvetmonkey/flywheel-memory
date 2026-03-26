@@ -59,7 +59,8 @@ import { registerTagTools } from './tools/write/tags.js';
 import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
 import { registerCorrectionTools } from './tools/write/corrections.js';
 import { registerMemoryTools } from './tools/write/memory.js';
-import { registerRecallTools } from './tools/read/recall.js';
+// recall removed — entity/memory search merged into search (uber search)
+// import { registerRecallTools } from './tools/read/recall.js';
 import { registerBriefTools } from './tools/read/brief.js';
 import { registerConfigTools } from './tools/write/config.js';
 import { registerInitTools } from './tools/write/enrich.js';
@@ -452,7 +453,8 @@ export function registerAllTools(
 
   // Memory tools
   registerMemoryTools(targetServer, gsd);
-  registerRecallTools(targetServer, gsd, gvp, () => gvi() ?? null);
+  // recall removed — entity/memory search merged into search (uber search)
+  // registerRecallTools(targetServer, gsd, gvp, () => gvi() ?? null);
   registerBriefTools(targetServer, gsd);
 
   // Resources (always registered, not gated by tool presets)

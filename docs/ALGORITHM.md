@@ -15,6 +15,8 @@ When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a scor
 - [Worked Example](#worked-example)
 - [The Self-Correcting Loop](#the-self-correcting-loop)
 - [Vectors + Structure: Deeply Integrated](#vectors--structure-deeply-integrated)
+- [Search Pipeline](#search-pipeline)
+- [Decision Surface](#decision-surface)
 
 ---
 
@@ -547,3 +549,82 @@ Five properties of the scoring pipeline remain unchanged:
 **Graph-aware** -- Structural signals (backlinks, co-occurrence, folder topology) still dominate. Semantic similarity complements structure -- it doesn't replace it.
 
 **Private** -- All embeddings are generated locally using the `all-MiniLM-L6-v2` model. No content leaves your machine.
+
+---
+
+## Search Pipeline
+
+The scoring algorithm above powers wikilink suggestions -- what to link. The search pipeline is the other half: what to return when an AI asks a question. One call, everything the vault knows, structured for machine consumption.
+
+### Query Routing
+
+| Input | Route | What runs |
+|---|---|---|
+| Query text present | Content search | FTS5 + semantic + entity + memory channels |
+| No query, filters only | Metadata search | Frontmatter, tags, folder, date range |
+| `prefix: true` + query | Entity autocomplete | Name/alias prefix matching |
+
+### Three Search Channels (Structured Response)
+
+Search returns three sections in a single response. The note pipeline is completely independent -- entity and memory channels cannot affect note ranking.
+
+**`results[]` (Notes)** -- FTS5 full-text search with BM25 ranking. Column weights: frontmatter values 10x, title 5x, content 1x. When embeddings are built, semantic similarity runs in parallel (cosine on local all-MiniLM-L6-v2 embeddings -- no content leaves the machine). Results go through RRF fusion, graph reranking, sandwich ordering, and P38 enrichment. This pipeline is identical to pre-merge search -- benchmark-validated, untouched.
+
+**`entities[]`** -- Matches against the entity database (names, aliases, descriptions). Returns entity profiles directly: category, hub score, description, aliases. Separate list, separate ranking.
+
+**`memories[]`** -- FTS5 across stored memory keys and values. Returns stored facts, preferences, observations, and session summaries. Type-aware scoring: facts and preferences are stable, observations decay with age. Separate list.
+
+### Reciprocal Rank Fusion (RRF)
+
+RRF merges the note search channels into one ranked list. Each channel (FTS5, semantic, entity-name matches, edge-weight context) produces a ranked list. RRF combines them:
+
+```
+rrf_score(d) = Σ 1 / (k + rank_i(d))
+```
+
+Constant k=60 (standard RRF). A note that ranks #1 in FTS5 and #3 in semantic scores higher than one that ranks #2 in both. The fusion handles different scales without normalization -- each channel just contributes a reciprocal rank.
+
+When `context_note` is provided, results connected via weighted edges get an additional RRF boost (edge-weight context channel).
+
+### Result Enrichment (P38 Context Engineering)
+
+Every result carries structured metadata for machine consumption -- a decision surface, not a list of filenames:
+
+| Field | What it tells the AI | Present on |
+|---|---|---|
+| `type` | note / entity / memory | All results |
+| `section` | Which heading contains the match | Notes (content matches) |
+| `snippet_confidence` | How likely this result answers the query (0--1) | All results |
+| `dates_mentioned` | Extracted dates from the matching section | When dates found |
+| `bridges` | Shared entities between this result and others | When bridges detected |
+| `frontmatter` | All YAML metadata (status, owner, dates, amounts) | Notes |
+| `backlinks` | Top 10 notes linking here, ranked by edge weight × recency | Notes |
+| `outlinks` | Top 10 outgoing links, existence-checked | Notes |
+| `snippet` | Passage matching query (~64 tokens, `<mark>` tags) | Notes (FTS5 matches) |
+| `content_preview` | First ~300 chars of body | Notes (non-FTS matches) |
+| `category` | Entity type (person, project, technology, etc.) | Entities |
+| `hub_score` | Eigenvector centrality (graph importance) | Entities |
+| `description` | One-line entity summary | Entities |
+
+Top results (controlled by `detail_count`, default 5) get full metadata; remaining results get lightweight summaries with just path, title, snippet, and score.
+
+### Sandwich Ordering
+
+Results are re-ordered so the most relevant appear at the beginning and end of the list -- the positions where attention is strongest. Middle positions hold moderate results. This is invisible to the consumer but measurably improves how models weight results.
+
+---
+
+## Decision Surface
+
+Most MCP search tools return a list of matches and say good luck. Flywheel returns a decision surface -- structured metadata that lets the AI decide whether to spend a tool call going deeper.
+
+What each field enables:
+
+- **Section provenance** → skip the full read, go straight to the right heading via `get_section_content`
+- **Pre-extracted dates** → answer temporal questions without parsing content
+- **Entity bridges** → discover connections between results without a second search
+- **Confidence scores** → skip low-value results without reading them
+- **Frontmatter** → answer structured queries (amounts, status, dates) directly from the result -- no file open needed
+- **Backlinks + outlinks** → multi-hop traversal from the search result itself
+
+One search call replaces what would otherwise be 5--10 follow-up reads. The AI doesn't scan results -- it reasons across a structured surface where every field carries signal.

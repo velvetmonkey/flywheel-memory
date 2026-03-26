@@ -1,8 +1,8 @@
 # Tools
 
-76 tools. Most questions only need one: **search**.
+75 tools. Most questions only need one: **search**.
 
-> **Start here:** Most vaults only need `default` (16 tools). Add bundles as you need them — `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`. See [CONFIGURATION.md](CONFIGURATION.md) for preset recipes.
+> **Start here:** Most vaults only need `default` (18 tools). Add bundles as you need them — `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`. See [CONFIGURATION.md](CONFIGURATION.md) for preset recipes.
 
 - [At a Glance](#at-a-glance)
 - [Find Anything](#find-anything)
@@ -14,7 +14,7 @@
 - [Schema & Consistency](#schema--consistency)
 - [Corrections](#corrections)
 - [Organize Notes](#organize-notes)
-- [Agent Memory](#agent-memory)
+- [Session Memory](#session-memory)
 - [Temporal Analysis](#temporal-analysis)
 - [Vault Health](#vault-health)
 - [Automation](#automation)
@@ -34,7 +34,7 @@
 | [Clean up my schema](#schema--consistency) | `vault_schema`, `schema_conventions`, `schema_validate` | 7 |
 | [Record corrections](#corrections) | `vault_record_correction` | 4 |
 | [Move, rename, or merge notes](#organize-notes) | `vault_move_note` | 4 |
-| [Build an autonomous agent](#agent-memory) | `memory`, `recall`, `brief` | 3 |
+| [Persistent memory](#session-memory) | `memory`, `brief` | 2 |
 | [Analyze temporal patterns](#temporal-analysis) | `get_context_around_date` | 4 |
 | [Check vault health](#vault-health) | `health_check` | 14 |
 | [Automate workflows](#automation) | `policy` | 2 |
@@ -47,7 +47,7 @@ Start here. `search` is the only tool most questions need.
 
 ### `search`
 
-**How it works:** You give it a query. It finds matching notes, then *enriches* every result with the note's full graph context — all from an in-memory index, with zero file reads.
+**How it works:** You give it a query. It searches notes, entities, and memories, then *enriches* every result into a decision surface — section provenance, dates, bridges, confidence — all from an in-memory index, zero file reads. Your AI can reason across results without a single follow-up call.
 
 Every search result includes:
 
@@ -60,6 +60,11 @@ Every search result includes:
 | **content_preview** | First ~300 chars of the note body (non-FTS matches) | When there's no snippet (entity/metadata match), you still get body text. |
 | **tags, aliases** | Tags and alternative names | Understand categorization and find notes by alternate names. |
 | **category, hub_score** | Entity type and graph importance | Know if this is a person, project, or concept — and how central it is in the vault. |
+| **section** | Which heading in the note contains the match | Skip the full read — go straight to the relevant section. |
+| **snippet_confidence** | How likely this result answers the query (0–1) | Skip low-value results without reading them. |
+| **dates_mentioned** | Dates extracted from the matching content | Answer temporal questions without parsing. |
+| **bridges** | Entities shared between this result and others | Multi-hop reasoning without follow-up searches. |
+| **type** | note / entity / memory | Know what kind of result you're looking at. |
 
 This is the key design: **one search call returns not just file paths, but the full neighborhood of each result.** That's why Claude can answer "How much have I billed [[Acme Corp]]?" from a single search — the client's frontmatter has the totals, and the backlinks show every invoice.
 
@@ -341,9 +346,9 @@ Move, rename, delete, or merge — all backlinks update automatically.
 
 ---
 
-## Agent Memory
+## Session Memory
 
-For autonomous agents that need persistent working memory across sessions.
+Persistent working memory across sessions. Included in the default preset.
 
 ### `memory`
 
@@ -358,15 +363,9 @@ Store and retrieve facts, preferences, and observations. Each memory has a key, 
 | `forget` | Delete a memory. |
 | `summarize_session` | Store a session summary with topics and metadata. |
 
-### `recall`
-
-One-stop knowledge retrieval. Searches entities, notes, and memories simultaneously, then ranks everything using text relevance, recency, co-occurrence, feedback, and semantic similarity.
-
-**Parameters:** `query`, `limit`
-
 ### `brief`
 
-Cold-start context for agents. Builds a token-budgeted summary of recent sessions, active entities, stored memories, pending corrections, and vault pulse — so an agent can pick up where it left off without reading the whole vault.
+Cold-start context for any session. Builds a token-budgeted summary of recent sessions, active entities, stored memories, pending corrections, and vault pulse — so an agent can pick up where it left off without reading the whole vault.
 
 **Parameters:** `token_budget`, `sections`
 

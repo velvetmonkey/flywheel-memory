@@ -27,6 +27,8 @@ Once you integrate AI, your vault grows faster than you can link it. Thousands o
 
 Flywheel auto-links on every write, voice or keyboard.
 
+> Most MCP search tools return results for humans to scan. Flywheel returns a **decision surface** — section provenance, extracted dates, entity bridges, confidence scores — structured metadata that lets your AI decide what to read next without opening any files.
+
 | | Without | With Flywheel |
 |---|---|---|
 | Your data | Leaves your machine | Stays local. No sync, no upload, no account |
@@ -42,7 +44,7 @@ Flywheel auto-links on every write, voice or keyboard.
 
 ### Who this is for
 
-**For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Every conversation you have with a cloud AI builds a cognitive profile of you that you don't own, can't export, and can't delete. Flywheel keeps that profile local. The people who use AI the most [want more control, not less](https://x.com/AnthropicAI/status/2036499691571953848). Also works as persistent memory for bots and agents via the `agent` preset, including [OpenClaw](https://github.com/openclaw/openclaw), where it replaces default amnesiac file access with graph-aware, learning memory.
+**For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Every conversation you have with a cloud AI builds a cognitive profile of you that you don't own, can't export, and can't delete. Flywheel keeps that profile local. The people who use AI the most [want more control, not less](https://x.com/AnthropicAI/status/2036499691571953848). Also works as persistent memory for bots and agents — memory tools are included in the default preset, including [OpenClaw](https://github.com/openclaw/openclaw), where it replaces default amnesiac file access with graph-aware, learning memory.
 
 **Not for** people who want a hosted service. Flywheel runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
 
@@ -142,17 +144,16 @@ Flywheel does not replace Obsidian. It runs alongside as a background index. Wat
 
 | Preset | Tools | What you get |
 |--------|-------|--------------|
-| `default` | 16 | search, read, write, tasks |
-| `agent` | 16 | search, read, write, memory |
-| `full` | 71 | Everything except memory (all 12 categories) |
+| `default` | 18 | search, read, write, tasks, memory |
+| `full` | 75 | Everything (all 12 categories) |
 
-Start with `default`. Add bundles as you need them: `graph` (includes GraphML export for Gephi/Cytoscape), `schema`, `wikilinks`, `temporal`, `diagnostics`, and more.
+Start with `default` — it includes search, read, write, tasks, and memory. Add bundles as you need them: `graph` (includes GraphML export for Gephi/Cytoscape), `schema`, `wikilinks`, `temporal`, `diagnostics`.
 
 ```json
 { "env": { "FLYWHEEL_TOOLS": "default,graph" } }
 ```
 
-[Browse all 74 tools →](docs/TOOLS.md) | [Preset recipes →](docs/CONFIGURATION.md)
+[Browse all 75 tools →](docs/TOOLS.md) | [Preset recipes →](docs/CONFIGURATION.md)
 
 <details>
 <summary><strong>Windows users - read this before you start</strong></summary>
@@ -173,7 +174,9 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 
 ### 1. Enriched Search
 
-Every search result comes back enriched: frontmatter, scored backlinks, scored outlinks, and content snippets, all from an in-memory index. Results are multi-hop: a search for "Acme Corp" returns the client note *and* its connected invoices, projects, and people, each ranked by graph relevance. One call, not ten file reads.
+Most search tools return a list of matches and leave the AI to figure out which ones matter. Flywheel returns a **decision surface**: every result includes section provenance (where in the note), pre-extracted dates (when it happened), entity bridges (what it connects to), and confidence scores (whether it's worth reading). One search call replaces what would otherwise be 5–10 follow-up reads.
+
+Results are multi-hop: a search for "Acme Corp" returns the client note *and* its connected invoices, projects, and people, each ranked by graph relevance. Frontmatter, scored backlinks, scored outlinks, content snippets — all from an in-memory index, zero file reads.
 
 With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally. SQLite full-text search (BM25), in-memory embeddings for semantic similarity, fused together for best-of-both results.
 
@@ -210,7 +213,7 @@ None of this data leaves your machine unless you choose to share it. The `flywhe
 
 ### 4. Agentic Memory & Policies
 
-Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `recall` retrieves across notes, entities (people, projects, concepts), and memories in one call, and `memory` stores observations that persist across sessions with automatic decay.
+Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `search` retrieves across notes, entities (people, projects, concepts), and memories in one call, and `memory` stores observations that persist across sessions with automatic decay. Every result is structured for machine consumption — a decision surface, not a text dump.
 
 Complex vault workflows become deterministic policies. Describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back. Commit with one flag - a single git commit covering every step.
 
@@ -284,7 +287,7 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 - **LoCoMo sample size differs.** Flywheel uses 759 questions; competitors use 695. Both are stratified samples from the same 1,986-question dataset. Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
 - **LoCoMo judge model differs.** We use Claude Haiku; competitors use GPT-4o. Different judges may score differently. We haven't measured inter-judge agreement.
 - **LoCoMo document pool differs.** Flywheel searches 272 markdown session notes. Competitors may chunk, summarise, or embed conversations differently - their document representations aren't published.
-- **LoCoMo prompt differs.** Our agent uses a minimal system prompt with the `agent` tool preset. Competitor prompt strategies aren't published.
+- **LoCoMo prompt differs.** Our agent uses a minimal system prompt with the `default` tool preset. Competitor prompt strategies aren't published.
 - **HotpotQA is not a fair comparison.** MDR and Baleen were trained on HotpotQA specifically and search 5M+ Wikipedia articles. Flywheel is a general-purpose tool with zero training, searching a 4,960-document vault. The comparison shows where untrained retrieval sits relative to specialised systems - not that we "beat" them.
 
 ### Full LoCoMo results (759 questions)
@@ -322,7 +325,7 @@ Flywheel controls retrieval; the model controls comprehension. Evidence recall i
 | Doc | Why read this |
 |---|---|
 | [PROVE-IT.md](docs/PROVE-IT.md) | **Start here.** See it working in 5 minutes |
-| [TOOLS.md](docs/TOOLS.md) | All 74 tools documented |
+| [TOOLS.md](docs/TOOLS.md) | All 75 tools documented |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](docs/SETUP.md) | Full setup guide for your vault |
 | [CONFIGURATION.md](docs/CONFIGURATION.md) | Env vars, presets, custom tool sets |

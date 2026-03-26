@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**[[Flywheel]] Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 76 tools across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and agent memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**[[Flywheel]] Memory** is an MCP server that gives Claude full read/write access to Obsidian vaults. 75 [[TOOLS]] across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -42,7 +42,6 @@ packages/mcp-server/src/
 │   │   ├── merges.ts           # suggest_entity_merges, dismiss_merge_suggestion
 │   │   ├── similarity.ts       # find_similar
 │   │   ├── semantic.ts         # init_semantic
-│   │   ├── recall.ts           # recall
 │   │   └── brief.ts            # brief
 │   └── write/                  # Write-side tool registrations
 │       ├── mutations.ts        # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
@@ -99,9 +98,8 @@ packages/mcp-server/src/
 Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`default`** — 16 tools: search, read, write, tasks
-- **`agent`** — 16 tools: search, read, write, memory
-- **`full`** — All categories except memory (71 tools; add `,memory` for all 74)
+- **`default`** — 18 tools: search, read, write, tasks, memory
+- **`full`** — All categories (75 tools)
 
 **Composable bundles** (add to presets or each other):
 - **`graph`** — structural analysis, semantic analysis, paths, [[Hub|hubs]], connections, export (11 tools)
@@ -109,7 +107,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`wikilinks`** — suggestions, validation, discovery (7 tools)
 - **`corrections`** — correction recording + resolution (4 tools)
 - **`tasks`** — task queries and mutations (3 tools)
-- **`memory`** — agent working memory + recall + brief (3 tools)
+- **`memory`** — session memory + brief (2 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
 - **`temporal`** — time-based vault intelligence (4 tools)
 - **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export (20 tools)

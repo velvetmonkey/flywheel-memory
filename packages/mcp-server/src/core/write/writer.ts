@@ -437,7 +437,7 @@ export function formatContent(content: string, format: FormatType): string {
       const lines = trimmed.split('\n');
       return lines.map((line, i) => {
         if (i === 0) return `- ${line}`;
-        if (line === '') return '';
+        if (line === '') return '  ';  // Maintain indent on blank lines to preserve list nesting
         return `  ${line}`;
       }).join('\n');
     }
@@ -451,7 +451,7 @@ export function formatContent(content: string, format: FormatType): string {
       const lines = trimmed.split('\n');
       return lines.map((line, i) => {
         if (i === 0) return `- [ ] ${line}`;
-        if (line === '') return '';
+        if (line === '') return '      ';  // Maintain indent on blank lines to preserve list nesting
         return `      ${line}`;
       }).join('\n');
     }
@@ -465,7 +465,7 @@ export function formatContent(content: string, format: FormatType): string {
       const lines = trimmed.split('\n');
       return lines.map((line, i) => {
         if (i === 0) return `1. ${line}`;
-        if (line === '') return '';
+        if (line === '') return '   ';  // Maintain indent on blank lines to preserve list nesting
         return `   ${line}`;
       }).join('\n');
     }
@@ -484,7 +484,7 @@ export function formatContent(content: string, format: FormatType): string {
       const indent = '  ';
       return lines.map((line, i) => {
         if (i === 0) return `${prefix}${line}`;
-        if (line === '') return '';
+        if (line === '') return indent;  // Maintain indent on blank lines to preserve list nesting
         return `${indent}${line}`;
       }).join('\n');
     }
@@ -674,7 +674,7 @@ export function insertInSection(
         const contentLines = formattedContent.split('\n');
         const indentedContent = contentLines
           .map((line) => {
-            if (line === '') return line;
+            if (line === '') return indent || line;  // Carry indent on blank lines to preserve list nesting
             return indent + line;
           })
           .join('\n');
@@ -705,7 +705,7 @@ export function insertInSection(
         const contentLines = formattedContent.split('\n');
         const indentedContent = contentLines
           .map((line) => {
-            if (line === '') return line;
+            if (line === '') return indent || line;  // Carry indent on blank lines to preserve list nesting
             return indent + line;
           })
           .join('\n');
@@ -742,7 +742,7 @@ export function insertInSection(
         const contentLines = formattedContent.split('\n');
         const indentedContent = contentLines
           .map((line) => {
-            if (line === '') return line;
+            if (line === '') return indent || line;  // Carry indent on blank lines to preserve list nesting
             return indent + line;
           })
           .join('\n');

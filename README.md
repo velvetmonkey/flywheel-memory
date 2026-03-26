@@ -202,6 +202,12 @@ Every sentence you write through Flywheel makes your graph denser. A denser grap
 
 Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation. This isn't a claim - it's [measured](docs/TESTING.md#graph-quality-266-tests-31-files): 266 graph quality tests track F1 across 6 vault archetypes, a [50-generation stress test](docs/TESTING.md#multi-generation-stress-test) proves F1 doesn't collapse under 15% hostile feedback, and CI fails if any metric regresses more than 5pp.
 
+#### What the system tracks
+
+All learning data lives in a local SQLite database (`.flywheel/state.db`) on your machine. There are no network calls, no telemetry, no analytics — [enforced by CI](SECURITY.md). The system records which auto-links you keep or remove (feedback), which entities appear together across notes (co-occurrence), how link weights evolve over time (edge weights), and which entities get auto-suppressed after repeated removal (suppression). This is how scoring improves: real usage, measured locally.
+
+None of this data leaves your machine unless you choose to share it. The `flywheel_calibration_export` tool produces a fully anonymized aggregate snapshot — vault size buckets (not exact counts), entity distribution by category (not names), survival rates, layer contributions, score distributions. No entity names, no note paths, no content. If you want to help tune scoring defaults across different vault sizes and styles, you can paste your export in the [Calibration Data](https://github.com/velvetmonkey/flywheel-memory/discussions/categories/calibration-data) discussion category. See [docs/SHARING.md](docs/SHARING.md) for what's safe to share and what isn't.
+
 ### 4. Agentic Memory & Policies
 
 Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `recall` retrieves across notes, entities (people, projects, concepts), and memories in one call, and `memory` stores observations that persist across sessions with automatic decay.
@@ -324,6 +330,7 @@ Flywheel controls retrieval; the model controls comprehension. Evidence recall i
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Index strategy, graph, auto-wikilinks |
 | [TESTING.md](docs/TESTING.md) | Test methodology and benchmarks |
 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Error recovery and diagnostics |
+| [SHARING.md](docs/SHARING.md) | What's tracked, privacy guarantees, sharing stats |
 | [VISION.md](docs/VISION.md) | Where this is going |
 
 ---

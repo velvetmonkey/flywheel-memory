@@ -90,6 +90,10 @@ Your PR submission serves as your electronic signature. No separate form or bot 
 
 Keep PRs focused -- one logical change per PR.
 
+## Sharing Calibration Data
+
+Sharing your vault's scoring statistics is a non-code contribution that helps tune default thresholds and layer weights. Run `flywheel_calibration_export` (fully anonymized — no entity names, no paths, no content) and paste the JSON in the [Calibration Data](https://github.com/velvetmonkey/flywheel-memory/discussions/categories/calibration-data) discussion category. See [docs/SHARING.md](docs/SHARING.md) for what's safe to share.
+
 ## Releasing
 
 Releases are manual. Before tagging:

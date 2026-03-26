@@ -10,6 +10,7 @@
  * - revise: Modify existing policy
  */
 
+import * as path from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import {
@@ -132,6 +133,8 @@ export function registerPolicyTools(
 
             const response = {
               success: true,
+              vault: path.basename(vaultPath),
+              vault_path: vaultPath,
               count: policies.length,
               policies: policies.map(p => ({
                 name: p.name,

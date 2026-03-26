@@ -46,7 +46,7 @@ import { tokenize } from '../../core/shared/stemmer.js';
 /**
  * Apply graph signal re-ranking to search results.
  * Adds cooccurrence, recency, feedback, and edge weight boosts,
- * then re-sorts by combined score. Parity with recall tool scoring.
+ * then re-sorts by combined score.
  */
 function applyGraphReranking(
   results: Array<Record<string, unknown>>,
@@ -325,7 +325,7 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Search the vault — always start with just a query, no filters. Top results get full metadata (frontmatter, top backlinks/outlinks ranked by edge weight + recency); remaining results get lightweight summaries. Narrow with filters only if the broad search returns too many irrelevant results. Use get_note_structure for headings/full structure, get_backlinks for complete backlink lists.\n\nSearches across content (FTS5 full-text + hybrid semantic), entities (people/projects/technologies), and metadata (frontmatter/tags/folders). Hybrid semantic results are automatically included when embeddings have been built (via init_semantic).\n\nExample: search({ query: "quarterly review", limit: 5 })\nExample: search({ where: { type: "project", status: "active" } })\n\nMulti-vault: when configured with multiple vaults, omitting the `vault` parameter searches all vaults and merges results (each result includes a `vault` field). Pass `vault` to search a specific vault.',
+    'Search everything — notes, entities, and memories — in one call. Returns a decision surface with three sections: note results (with section provenance, dates, bridges, confidence), matching entity profiles, and relevant memories.\n\nNote results carry full metadata (frontmatter, scored backlinks/outlinks, snippets). Start with just a query, no filters. Narrow with filters only if needed. Use get_note_structure for full content, get_section_content to read one section.\n\nSearches note content (FTS5 + hybrid semantic), entity profiles (people, projects, technologies), and stored memories. Hybrid results included automatically when embeddings are built (via init_semantic).\n\nExample: search({ query: "quarterly review", limit: 5 })\nExample: search({ where: { type: "project", status: "active" } })\n\nMulti-vault: omitting `vault` searches all vaults and merges results. Pass `vault` to search a specific vault.',
     {
       query: z.string().optional().describe('Search query text. Required unless using metadata filters (where, has_tag, folder, etc.)'),
 

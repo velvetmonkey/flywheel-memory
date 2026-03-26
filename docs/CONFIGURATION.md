@@ -29,7 +29,7 @@ Two layers of configuration: **environment variables** set in your MCP config (s
 }
 ```
 
-No `FLYWHEEL_TOOLS` needed — defaults to `default` (16 tools). Add it only to override.
+No `FLYWHEEL_TOOLS` needed — defaults to `default` (18 tools). Add it only to override.
 
 ### Claude Desktop (`claude_desktop_config.json`)
 
@@ -103,11 +103,10 @@ Vault root detection order:
 
 | Preset | Tools | Use case |
 |--------|-------|----------|
-| `default` (default) | 16 | Note-taking essentials — search, read, write, tasks |
-| `agent` | 16 | Autonomous AI agents — search, read, write, memory |
-| `full` | 67 | Everything except memory — add `,memory` for all 70 |
+| `default` (default) | 18 | Note-taking essentials + memory — search, read, write, tasks, memory |
+| `full` | 75 | Everything (all 12 categories) |
 
-The fewer tools you load, the less context Claude needs to pick the right one.
+The fewer [[TOOLS]] you load, the less context Claude needs to pick the right one.
 
 #### Composable Bundles
 
@@ -120,7 +119,7 @@ Start with `default`, then add what you need:
 | `wikilinks` | 7 | Link suggestions, validation, feedback, discovery |
 | `corrections` | 4 | Correction recording + resolution |
 | `tasks` | 3 | Task queries and mutations (already included in `default`) |
-| `memory` | 3 | Agent working memory + recall + brief |
+| `memory` | 2 | Session memory + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
 | `temporal` | 4 | Time-based vault intelligence: get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
 | `diagnostics` | 20 | Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export |
@@ -129,11 +128,10 @@ Start with `default`, then add what you need:
 
 | Config | Tools | What you get |
 |--------|-------|--------------|
-| `default` | 16 | search, read, write, tasks |
-| `agent` | 16 | search, read, write, memory |
-| `default,graph` | 27 | default + graph analysis, semantic analysis, paths, hubs |
-| `default,graph,wikilinks` | 34 | + link suggestions, validation |
-| `full` | 67 | All categories except memory |
+| `default` | 18 | search, read, write, tasks, memory |
+| `default,graph` | 28 | default + graph analysis, semantic analysis, paths, hubs |
+| `default,graph,wikilinks` | 35 | + link suggestions, validation |
+| `full` | 75 | All 12 categories |
 
 #### How It Works
 
@@ -161,7 +159,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `wikilinks` | 7 | suggest_wikilinks, validate_links, wikilink_feedback, discover_stub_candidates, discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report |
 | `corrections` | 4 | vault_record_correction, vault_list/resolve_correction, absorb_as_alias |
 | `tasks` | 3 | tasks, vault_toggle_task, vault_add_task |
-| `memory` | 3 | memory, recall, brief |
+| `memory` | 2 | memory, brief |
 | `note-ops` | 4 | vault_delete/move/rename_note, merge_entities |
 | `diagnostics` | 20 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export |
 
@@ -169,21 +167,21 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 
 #### Preset → Category Mapping
 
-| Category | Tools | `default` | `agent` | `full` |
-|----------|------:|:---------:|:-------:|:------:|
-| search | 3 | Yes | Yes | Yes |
-| read | 3 | Yes | Yes | Yes |
-| write | 7 | Yes | Yes | Yes |
-| tasks | 3 | Yes | | Yes |
-| memory | 3 | | Yes | |
-| graph | 11 | | | Yes |
-| schema | 7 | | | Yes |
-| wikilinks | 7 | | | Yes |
-| corrections | 4 | | | Yes |
-| note-ops | 4 | | | Yes |
-| temporal | 4 | | | Yes |
-| diagnostics | 20 | | | Yes |
-| **Total** | **76** | **16** | **16** | **73** |
+| Category | Tools | `default` | `full` |
+|----------|------:|:---------:|:------:|
+| search | 3 | Yes | Yes |
+| read | 3 | Yes | Yes |
+| write | 7 | Yes | Yes |
+| tasks | 3 | Yes | Yes |
+| memory | 2 | Yes | Yes |
+| graph | 11 | | Yes |
+| schema | 7 | | Yes |
+| wikilinks | 7 | | Yes |
+| corrections | 4 | | Yes |
+| note-ops | 4 | | Yes |
+| temporal | 4 | | Yes |
+| diagnostics | 20 | | Yes |
+| **Total** | **75** | **18** | **75** |
 
 ### Semantic Embeddings
 
@@ -287,7 +285,7 @@ The first vault in the list is the **primary**. Tools without a `vault` paramete
 }
 ```
 
-**Team setup** (3 vaults):
+**Team [[SETUP]]** (3 vaults):
 
 ```json
 {
@@ -603,17 +601,9 @@ Daily notes, task management, basic editing — the `default` preset includes ta
 }
 ```
 
-### Autonomous Agent
+### Memory-Enabled Sessions
 
-Memory-enabled preset for agents (e.g., flywheel-engine):
-
-```json
-{
-  "env": {
-    "FLYWHEEL_TOOLS": "agent"
-  }
-}
-```
+Memory tools (brief, memory) are included in the default preset. No additional configuration needed.
 
 ### Knowledge Work
 

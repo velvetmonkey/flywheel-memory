@@ -24,7 +24,7 @@ import type { VaultRegistry } from './vault-registry.js';
 //   wikilinks   - Wikilink suggestions, validation, discovery (7 tools)
 //   corrections - Correction recording + resolution (4 tools)
 //   tasks       - Task queries and mutations (3 tools)
-//   memory      - Agent working memory + recall + brief (3 tools)
+//   memory      - Session memory + brief (2 tools)
 //   note-ops    - File management: delete, move, rename, merge (4 tools)
 //   temporal    - Time-based vault intelligence (4 tools)
 //   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history (18 tools)
@@ -56,9 +56,8 @@ export const ALL_CATEGORIES: ToolCategory[] = [
 
 export const PRESETS: Record<string, ToolCategory[]> = {
   // Presets
-  default: ['search', 'read', 'write', 'tasks'],
-  agent: ['search', 'read', 'write', 'memory'],
-  full: ALL_CATEGORIES.filter(c => c !== 'memory'),
+  default: ['search', 'read', 'write', 'tasks', 'memory'],
+  full: [...ALL_CATEGORIES],
 
   // Composable bundles (one per category)
   graph: ['graph'],
@@ -76,6 +75,7 @@ export const DEFAULT_PRESET = 'default';
 
 // Deprecated aliases -- old names -> new category/preset names
 export const DEPRECATED_ALIASES: Record<string, string> = {
+  agent: 'default',      // agent merged into default — memory now included
   minimal: 'default',
   writer: 'default',     // writer was default+tasks, now default includes tasks
   researcher: 'default', // use default,graph for graph exploration
@@ -218,9 +218,8 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_toggle_task: 'tasks',
   vault_add_task: 'tasks',
 
-  // memory (3 tools) -- agent working memory
+  // memory (2 tools) -- session memory
   memory: 'memory',
-  recall: 'memory',
   brief: 'memory',
 
   // note-ops (4 tools) -- file management
@@ -270,10 +269,12 @@ export function generateInstructions(categories: Set<ToolCategory>, registry?: V
   parts.push(`Flywheel provides tools to search, read, and write an Obsidian vault's knowledge graph.
 
 Tool selection:
-  1. "search" is the primary tool. Each result includes: frontmatter, tags, aliases,
-     backlinks (with line numbers), outlinks (with line numbers and existence check),
-     headings, content snippet or preview, entity category, hub score, and timestamps.
-     This is usually enough to answer without reading any files.
+  1. "search" is the primary tool. One call searches notes, entities, and memories.
+     Each result carries: type (note/entity/memory), frontmatter, tags, aliases,
+     backlinks (ranked by edge weight × recency), outlinks (existence-checked),
+     section provenance, extracted dates, entity bridges, confidence scores,
+     content snippet or preview, entity category, hub score, and timestamps.
+     This is a decision surface — usually enough to answer without reading any files.
   2. Escalate to "get_note_structure" only when you need the full markdown content
      or word count. Use "get_section_content" to read one section by heading name.
   3. Start with a broad search: just query text, no filters. Only add folder, tag,
@@ -283,7 +284,7 @@ Tool selection:
   if (!hasEmbeddingsIndex()) {
     parts.push(`
 **Setup:** Run \`init_semantic\` once to build embeddings. This unlocks hybrid search (BM25 + semantic),
-improves recall results, and enables similarity-based tools. Without it, search is keyword-only.`);
+improves search results, and enables similarity-based tools. Without it, search is keyword-only.`);
   }
 
   // Multi-vault instructions (when registry has multiple vaults)
@@ -297,14 +298,14 @@ This server manages multiple vaults. Every tool has an optional "vault" paramete
 - Available vaults: ${registry.getVaultNames().join(', ')}`);
   }
 
-  // Frontmatter guidance (always present -- impacts search, categorization, recall, and suggestions)
+  // Frontmatter guidance (always present -- impacts search, categorization, and suggestions)
   parts.push(`
 **Frontmatter matters more than content** for Flywheel's intelligence. When creating or updating notes, always set:
   - \`type:\` — drives entity categorization (person, project, technology). Without it, the category is guessed from the name alone and is often wrong.
   - \`aliases:\` — alternative names so the entity is found when referred to differently. Without it, the entity is invisible to searches using alternate names.
-  - \`description:\` — one-line summary shown in search results and used by recall. Without it, search results and recall are degraded.
+  - \`description:\` — one-line summary shown in search results and used for entity ranking. Without it, search quality is degraded.
   - Tags — used for filtering, suggestion scoring, and schema analysis.
-Good frontmatter is the highest-leverage action for improving suggestions, recall, and link quality.`);
+Good frontmatter is the highest-leverage action for improving suggestions, search, and link quality.`);
 
   // Read category instructions
   if (categories.has('read')) {
@@ -356,12 +357,15 @@ project frontmatter" — Claude authors the YAML, saves it to .claude/policies/,
 you say "run the weekly review for this week".`);
   }
 
-  // Memory category instructions (agent workflow)
+  // Memory category instructions
   if (categories.has('memory')) {
     parts.push(`
 ## Memory
 
-Session workflow: call "brief" at conversation start for vault context (recent sessions, active entities, stored memories). Use "recall" before answering questions — it searches entities, notes, and memories with graph-boosted ranking. Use "memory" with action "store" to save observations, facts, or context that should persist across sessions (e.g. key decisions, user preferences, project status).`);
+"brief" delivers startup context (recent sessions, active entities, stored memories) — call it at
+conversation start. "search" finds everything — notes, entities, and memories in one call. "memory"
+with action "store" persists observations, facts, or preferences across sessions (e.g. key decisions,
+user preferences, project status).`);
   }
 
   // Graph category instructions

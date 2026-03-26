@@ -317,7 +317,7 @@ cd /path/to/your/vault && claude
 
 Defaults to the `default` preset (16 tools). Add bundles as needed. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all options.
 
-> **Works with any MCP client.** Primarily tested with Claude. See [Transport Options](#transport-options) for HTTP setup (Cursor, Windsurf, Aider, LangGraph, Ollama, etc.).
+> **Works with any MCP client.** Primarily tested with [[CLAUDE]]. See [Transport Options](#transport-options) for HTTP setup (Cursor, Windsurf, Aider, LangGraph, Ollama, etc.).
 
 ### Transport Options
 

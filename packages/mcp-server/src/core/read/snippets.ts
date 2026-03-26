@@ -210,3 +210,48 @@ export async function extractBestSnippets(
   // Keyword-only fallback
   return topKeyword.slice(0, maxSnippets).map(c => buildSnippet(c, c.keywordScore));
 }
+
+// =============================================================================
+// Date Extraction (T4)
+// =============================================================================
+
+const MONTH_MAP: Record<string, string> = {
+  jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
+  jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12',
+  january: '01', february: '02', march: '03', april: '04',
+  june: '06', july: '07', august: '08', september: '09',
+  october: '10', november: '11', december: '12',
+};
+
+/**
+ * Extract dates mentioned in text. Returns deduplicated ISO date strings.
+ * Handles: 2024-01-15, Jan 15 2024, January 15, 2024, 15 Jan 2024, etc.
+ */
+export function extractDates(text: string): string[] {
+  const dates = new Set<string>();
+
+  // ISO dates: 2024-01-15
+  for (const m of text.matchAll(/\b(\d{4})-(\d{2})-(\d{2})\b/g)) {
+    dates.add(m[0]);
+  }
+
+  // "Jan 15, 2024" or "January 15 2024"
+  for (const m of text.matchAll(/\b((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*)\s+(\d{1,2}),?\s+(\d{4})\b/gi)) {
+    const month = MONTH_MAP[m[1].toLowerCase()];
+    if (month) dates.add(`${m[3]}-${month}-${m[2].padStart(2, '0')}`);
+  }
+
+  // "15 Jan 2024" or "15 January 2024"
+  for (const m of text.matchAll(/\b(\d{1,2})\s+((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*)\s+(\d{4})\b/gi)) {
+    const month = MONTH_MAP[m[2].toLowerCase()];
+    if (month) dates.add(`${m[3]}-${month}-${m[1].padStart(2, '0')}`);
+  }
+
+  // "March 2024" (month + year, no day — use day 01)
+  for (const m of text.matchAll(/\b((?:January|February|March|April|May|June|July|August|September|October|November|December))\s+(\d{4})\b/gi)) {
+    const month = MONTH_MAP[m[1].toLowerCase()];
+    if (month) dates.add(`${m[2]}-${month}-01`);
+  }
+
+  return [...dates].sort();
+}

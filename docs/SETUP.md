@@ -25,6 +25,29 @@ After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian v
 
 ---
 
+## Startup Times
+
+Flywheel connects to your MCP client immediately, then builds indexes in the background. Most tools work within seconds; semantic search takes longer on first run.
+
+| Scenario | MCP handshake | Full index ready |
+|----------|--------------|-----------------|
+| Cache hit, single vault (1k notes) | <1s | 1-3s |
+| Cache hit, single vault (10k notes) | <1s | 3-10s |
+| Cache miss, single vault (1k notes) | <1s | 5-15s |
+| Cache miss, multi-vault (6k+ notes) | <1s | 30-90s |
+| First run with semantic embeddings | <1s | 1-20 min (background) |
+
+> **Client timeouts.** If your MCP client has a startup timeout, set it to at least **120 seconds** to cover cold starts on large vaults. Flywheel signals "connected" within 1 second, but some clients wait for the first successful tool call before considering the server ready.
+>
+> | Client | Config |
+> |--------|--------|
+> | Codex | `startup_timeout_sec = 120` in `config.toml` |
+> | Claude Desktop | No timeout config needed |
+> | Claude Code | No timeout config needed |
+> | Cursor / Windsurf (HTTP) | Start server first, then connect |
+
+---
+
 ## Windows
 
 On Windows, the MCP config differs from macOS/Linux in three ways:

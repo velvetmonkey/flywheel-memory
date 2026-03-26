@@ -12,6 +12,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
     "dev": "npm run dev -w @velvetmonkey/flywheel-memory",
+    "dev:fast": "FLYWHEEL_TOOLS=default VAULT_PATH=. node packages/mcp-server/dist/index.js",
     "bench": "npm run bench -w @velvetmonkey/flywheel-bench"
   },
   "repository": {

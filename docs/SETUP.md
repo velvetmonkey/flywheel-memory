@@ -37,6 +37,24 @@ See [CONFIGURATION.md](CONFIGURATION.md#windows) for the full config example.
 
 > **Alternative:** You can also use HTTP transport on Windows — start the server in a terminal with `FLYWHEEL_TRANSPORT=http` and connect from your editor via HTTP URL. See the [HTTP clients](#http-clients-cursor-windsurf-vs-code-continue) section below.
 
+### WSL2: Keep Your Vault on the Linux Filesystem
+
+If you run Flywheel inside WSL2, **do not** put your vault on `/mnt/c/` (the Windows filesystem mounted in WSL). Every file operation crosses the 9P filesystem bridge, which is 5-10x slower than native Linux I/O. File watching is especially affected — chokidar either misses events entirely or falls back to expensive polling.
+
+**Recommended setup:**
+
+```
+# Vault lives inside WSL's native filesystem — fast
+~/obsidian/MyVault/
+
+# NOT this — slow, unreliable file watching
+/mnt/c/Users/you/obsidian/MyVault/
+```
+
+To edit the vault from Windows Obsidian, open the WSL path directly: `\\wsl$\Ubuntu\home\you\obsidian\MyVault`. Windows can read/write WSL paths natively via the `\\wsl$` network share. This gives you native Linux I/O for Flywheel (fast indexing, reliable file watching) while Obsidian on Windows still has full access to the same files.
+
+**VAULT_PATH for WSL:** Use the Linux path (`/home/you/obsidian/MyVault`), not the Windows path. Flywheel runs inside WSL and needs the Linux-native path.
+
 ---
 
 ## Step 1: Configure Your Client

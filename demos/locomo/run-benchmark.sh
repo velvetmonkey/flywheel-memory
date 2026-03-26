@@ -17,7 +17,7 @@ MCP_SERVER="$REPO_DIR/packages/mcp-server/dist/index.js"
 VAULT_DIR="$SCRIPT_DIR/vault"
 GROUND_TRUTH="$SCRIPT_DIR/ground-truth.json"
 MODEL="${MODEL:-sonnet}"
-COUNT="${COUNT:-0}"  # 0 = all
+COUNT="${COUNT:-759}"  # Default: 759 balanced questions (matches documented benchmark)
 MODE="${MODE:-dialog}"
 SEED="${SEED:-42}"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)

@@ -179,12 +179,12 @@ End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/)
 
 | Metric | Score |
 |---|---|
-| Document Recall | **89.6%** (896/1000 supporting docs found) |
-| Full Recall (both docs found) | **80.0%** (400/500) |
-| Partial Recall (≥1 doc found) | **99.2%** (496/500) |
-| Bridge (multi-hop) | 87.7% |
-| Comparison | 97.0% |
-| Cost | $0.057/question |
+| Document Recall | **93.0%** (930/1000 supporting docs found) |
+| Full Recall (both docs found) | **87.0%** (435/500) |
+| Partial Recall (≥1 doc found) | **99.0%** (495/500) |
+| Bridge (multi-hop) | 92.6% |
+| Comparison | 94.6% |
+| Cost | $0.063/question |
 
 ### How Flywheel compares
 
@@ -192,7 +192,7 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 
 | System | Type | Retrieval Recall | Approach | Notes |
 |---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **89.6%** | BM25 + entity search + 2-hop backfill + query expansion | General-purpose, zero training, 500 questions end-to-end via Claude |
+| **Flywheel** | MCP vault tool | **93.0%** | BM25 + entity search + 2-hop backfill + query expansion | General-purpose, zero training, 500 questions end-to-end via Claude |
 | BM25 baseline | IR baseline | ~70-75% | TF-IDF keyword matching | Standard academic baseline |
 | [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | IR baseline | ~80% | TF-IDF with named entity overlap | Original HotpotQA paper baseline |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Multi-hop dense retrieval (iterative) | Facebook, 2021. Trained on HotpotQA. Two-hop BERT encoder |
@@ -205,7 +205,7 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 - **Training data.** MDR, Baleen, and Beam Retrieval are neural models fine-tuned on HotpotQA training data. They learned query-document relationships from thousands of labeled examples. Flywheel has seen zero HotpotQA training data.
 - **Test setting.** Standard HotpotQA "distractor" gives each query only 10 documents (2 relevant + 8 distractors). "Fullwiki" searches 5M+ documents. Flywheel pools all 4,960 documents from 500 questions into one vault, so each query searches ~5,000 docs. This is harder than distractor but far easier than fullwiki. The numbers are not directly comparable to either setting.
 - **Sample size.** Flywheel: 500 questions. Academic baselines typically use the full dev set (7,405 questions). Our confidence intervals are tighter than our earlier 200-question run but still wider than the full set.
-- **What's real.** Flywheel's 89.6% beats the standard BM25 baseline (~75%) by +15pp, attributable to 2-hop backfill, query expansion, and FTS5 column weighting. The gap to trained retrievers (89.6% vs 88-93%) is narrow — Flywheel now matches MDR (~88%) despite zero training data, purpose-built architectures, and a harder retrieval setting (5,000 docs vs 10).
+- **What's real.** Flywheel's 93.0% beats the standard BM25 baseline (~75%) by +18pp, attributable to 2-hop backfill, query expansion, and FTS5 OR-mode with BM25 ranking. Flywheel now exceeds MDR (~88%) and matches Beam Retrieval (~93%) despite zero training data, purpose-built architectures, and a harder retrieval setting (5,000 docs vs 10).
 
 ### Comparison with other MCP/vault tools
 
@@ -215,9 +215,9 @@ Source: [`demos/hotpotqa/`](../demos/hotpotqa/) | [`packages/mcp-server/test/ret
 
 ### CI Regression Gate
 
-The CI test ([`hotpotqa-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/hotpotqa-bench.test.ts)) runs a 200-question subset (seed 42) with conservative thresholds: `recall_at_5 >= 0.3` and `mrr >= 0.2`. These are designed to catch catastrophic retrieval regressions (e.g., a broken index or missing search path), not to enforce the headline 89.6% recall. The 200-question sample has wider confidence intervals than the full 500-question run, and CI thresholds are set low enough to avoid false failures from normal variance.
+The CI test ([`hotpotqa-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/hotpotqa-bench.test.ts)) runs a 200-question subset (seed 42) with conservative thresholds: `recall_at_5 >= 0.3` and `mrr >= 0.2`. These are designed to catch catastrophic retrieval regressions (e.g., a broken index or missing search path), not to enforce the headline 93.0% recall. The 200-question sample has wider confidence intervals than the full 500-question run, and CI thresholds are set low enough to avoid false failures from normal variance.
 
-The published 89.6% comes from the full 500-question benchmark run documented above, which is run manually before releases that touch retrieval code.
+The published 93.0% comes from the full 500-question benchmark run documented above, which is run manually before releases that touch retrieval code.
 
 ---
 
@@ -270,7 +270,7 @@ The benchmark measures whether a real Claude agent with Flywheel tools can answe
 
 This matches how a real vault works: Flywheel indexes it, auto-links it, and builds embeddings. The vault state after pre-warm is representative of production usage.
 
-**3. Questions** (695 individual Claude Sonnet sessions with `agent` preset):
+**3. Questions** (759 individual Claude Sonnet sessions with `agent` preset):
 - Each question gets its own `claude -p` session with a fresh MCP server instance
 - The server loads from the warm `.flywheel/state.db` (entities, embeddings, co-occurrence cached)
 - Claude sees a minimal prompt: "Answer this question about conversations in the vault"
@@ -291,29 +291,29 @@ This matches how a real vault works: Flywheel indexes it, auto-links it, and bui
 
 This is deliberately not a cold-start test. It tests the system as it runs in production: indexed, linked, and embedding-warm.
 
-### End-to-End Results (695 questions, balanced, Claude Sonnet + Flywheel MCP)
+### End-to-End Results (759 questions, balanced, Claude Sonnet + Flywheel MCP)
 
-695 questions — same sample size as Mem0/Zep/LangMem benchmarks. Stratified sampling across all 10 conversations (seed 42).
+759 questions. Stratified sampling across all 10 conversations (seed 42).
 
 | Category | Questions | Evidence Recall | Answer Accuracy (LLM-judge) | 95% CI |
 |---|---|---|---|---|
-| **Overall** | **695** | **83.0%** | **52.1%** | [48.4%, 55.8%] |
-| Commonsense | 139 | 95.0% | 67.6% | [59.5%, 74.8%] |
-| Single-hop | 139 | 94.2% | 66.2% | [58.0%, 73.5%] |
-| Adversarial | 182 | 97.3% | 45.1% | [38.0%, 52.3%] |
-| Temporal | 96 | 68.6% | 49.0% | [39.2%, 58.8%] |
-| Multi-hop | 139 | 73.2% | 33.8% | [26.5%, 42.0%] |
+| **Overall** | **759** | **84.9%** | **58.8%** | [55.2%, 62.2%] |
+| Commonsense | 311 | 94.2% | 75.6% | [70.5%, 80.0%] |
+| Single-hop | 130 | 93.9% | 65.4% | [56.9%, 73.0%] |
+| Adversarial | 173 | 96.0% | 46.8% | [39.5%, 54.2%] |
+| Temporal | 32 | 63.3% | 40.6% | [25.5%, 57.7%] |
+| Multi-hop | 113 | 67.5% | 28.3% | [20.8%, 37.2%] |
 
-Cost: $60.80 total ($0.087/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts (Wilson 95% confidence intervals).
+Cost: $64.66 total ($0.085/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts (Wilson 95% confidence intervals).
 
 ### How Flywheel compares to other memory systems
 
-Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.19413). Same sample size (695 questions), same metric (answer accuracy via LLM-as-judge).
+Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.19413). Same metric (answer accuracy via LLM-as-judge). Flywheel uses 759 questions; competitors use 695.
 
 | System | Type | Single-hop | Multi-hop | Questions | Judge | Infrastructure |
 |---|---|---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **66.2%** | **33.8%** | 695 | Claude Haiku | Local (SQLite + markdown) |
-| **Flywheel** | MCP vault tool | **94.2%** | **73.2%** | 695 | — | Evidence recall (not answer accuracy) |
+| **Flywheel** | MCP vault tool | **65.4%** | **28.3%** | 759 | Claude Haiku | Local (SQLite + markdown) |
+| **Flywheel** | MCP vault tool | **93.9%** | **67.5%** | 759 | — | Evidence recall (not answer accuracy) |
 | Mem0 | Cloud memory | 38.7 | 28.6 | 695 | GPT-4o | Redis + Qdrant |
 | Zep | Cloud memory | 35.7 | 19.4 | 695 | GPT-4o | Cloud service |
 | LangMem | Memory framework | 35.5 | 26.0 | 695 | GPT-4o | Varies |
@@ -323,15 +323,16 @@ Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.1941
 
 - **Judge model.** Flywheel uses Claude Haiku for CORRECT/WRONG verdicts. The Mem0 paper uses GPT-4o. Different judges may have different leniency or strictness. We have not measured inter-judge agreement.
 - **Vault mode.** Flywheel uses dialog mode (raw conversation turns) — the most keyword-rich representation. Summary mode scores ~1-2pp lower on retrieval. Competitors may use different representations.
-- **Vault enrichment.** HotpotQA notes have minimal frontmatter (heuristic-inferred `type:` only). LoCoMo notes include temporal metadata (`date`, `time`), speaker arrays, session numbers, and entity stubs — closer to a real vault. Both are generated by the harness `build-vault.js`, not present in the source datasets. HotpotQA's 89.6% recall with near-zero metadata is closer to pure search engine performance.
-- **What each benchmark measures.** HotpotQA measures retrieval only (did the agent's tool calls access the right documents?). LoCoMo measures retrieval *and* answer accuracy (LLM-as-judge). Each LoCoMo question requires a Sonnet answer session plus a Haiku judge call, and conversational questions typically need more tool calls to piece together answers from multi-session dialog. This is why LoCoMo costs ~40% more per question ($0.087 vs $0.063).
+- **Vault enrichment.** HotpotQA notes have minimal frontmatter (heuristic-inferred `type:` only). LoCoMo notes include temporal metadata (`date`, `time`), speaker arrays, session numbers, and entity stubs — closer to a real vault. Both are generated by the harness `build-vault.js`, not present in the source datasets. HotpotQA's 93.0% recall with near-zero metadata is closer to pure search engine performance.
+- **What each benchmark measures.** HotpotQA measures retrieval only (did the agent's tool calls access the right documents?). LoCoMo measures retrieval *and* answer accuracy (LLM-as-judge). Each LoCoMo question requires a Sonnet answer session plus a Haiku judge call, and conversational questions typically need more tool calls to piece together answers from multi-session dialog. This is why LoCoMo costs ~35% more per question ($0.085 vs $0.063).
 - **Prompt.** Claude is told the vault structure (notes are conversation sessions) but is not given a retrieval strategy.
 
 **What the numbers suggest:**
 
-- **Single-hop: 66.2%** — 27.5pp ahead of Mem0 (38.7%). Flywheel finds the right note and Claude extracts the answer.
-- **Multi-hop: 33.8%** — ahead of Mem0 (28.6%), though confidence intervals overlap. Hard for everyone.
-- **Temporal: 49.0%** — improved from 40.6% in previous runs. Still the hardest category — requires precise date reasoning across sessions.
+- **Single-hop: 65.4%** — 26.7pp ahead of Mem0 (38.7%). Flywheel finds the right note and Claude extracts the answer.
+- **Multi-hop: 28.3%** — comparable to Mem0 (28.6%). Hard for everyone — the accuracy ceiling here is context presentation, not retrieval (evidence recall is 67.5%).
+- **Temporal: 40.6%** — requires precise date reasoning across sessions. Small sample (32 questions) gives wide confidence intervals.
+- **Commonsense: 75.6%** — strongest category. High evidence recall (94.2%) translates well to correct answers.
 - **Infrastructure.** Flywheel runs locally on markdown files with SQLite. Mem0 requires Redis + Qdrant. Zep requires a cloud service.
 
 Source: [`demos/locomo/`](../demos/locomo/) | [`packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts)
@@ -409,8 +410,8 @@ We are not aware of any other MCP server that publishes live AI test results.
 | **Per-tool coverage** | Claude discovers and uses each of 69 individual tools | 69 | **100% adoption** | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
 | **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
 | **Sequential workflow** | 7-beat workflow where each beat builds on previous vault state | 7 beats | 7/7 passed | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
-| **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 500 questions | 89.6% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
-| **LoCoMo benchmark** | Retrieval quality on long-term conversational memory (5 categories) | 1,531 questions | 90.4% Recall@10 | [`locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts) |
+| **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 500 questions | 93.0% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
+| **LoCoMo benchmark** | Retrieval + answer accuracy on long-term conversational memory (5 categories) | 759 questions | 84.9% recall, 58.8% accuracy | [`locomo/run-benchmark.sh`](../demos/locomo/run-benchmark.sh) |
 
 ### Why This Matters
 

@@ -1,14 +1,14 @@
 {
   "suite": "multi-generation-stress-test",
-  "timestamp": "2026-03-26T16:10:40.510Z",
-  "duration_ms": 161515,
+  "timestamp": "2026-03-26T16:30:04.925Z",
+  "duration_ms": 171690,
   "summary": {
     "gen0_f1": 0.515,
-    "genLast_f1": 0.5,
-    "f1_delta": -0.015,
+    "genLast_f1": 0.489,
+    "f1_delta": -0.026,
     "total_generations": 50,
-    "final_suppressions": 16,
-    "final_note_count": 176
+    "final_suppressions": 17,
+    "final_note_count": 173
   },
   "details": [
     {
@@ -5046,18 +5046,18 @@
     },
     {
       "generation": 46,
-      "f1": 0.497,
-      "precision": 0.376,
+      "f1": 0.494,
+      "precision": 0.373,
       "recall": 0.733,
       "mrr": 0.595,
       "truePositives": 44,
-      "falsePositives": 73,
+      "falsePositives": 74,
       "falseNegatives": 16,
-      "suppressionCount": 17,
-      "totalNotes": 170,
+      "suppressionCount": 18,
+      "totalNotes": 169,
       "mutations": [
-        "created: generated/gen46-note0.md, generated/gen46-note1.md, generated/gen46-note2.md",
-        "deleted: generated/gen20-note1.md",
+        "created: generated/gen46-note0.md, generated/gen46-note1.md",
+        "deleted: generated/gen23-note0.md",
         "edited: 3 notes",
         "moved: reorganized/gen36-note2.md → reorganized/gen36-note2.md"
       ],
@@ -5156,20 +5156,20 @@
     },
     {
       "generation": 47,
-      "f1": 0.497,
-      "precision": 0.376,
-      "recall": 0.733,
-      "mrr": 0.595,
-      "truePositives": 44,
-      "falsePositives": 73,
-      "falseNegatives": 16,
-      "suppressionCount": 17,
-      "totalNotes": 172,
+      "f1": 0.486,
+      "precision": 0.368,
+      "recall": 0.717,
+      "mrr": 0.587,
+      "truePositives": 43,
+      "falsePositives": 74,
+      "falseNegatives": 17,
+      "suppressionCount": 18,
+      "totalNotes": 171,
       "mutations": [
         "created: generated/gen47-note0.md, generated/gen47-note1.md, generated/gen47-note2.md",
-        "deleted: generated/gen46-note0.md",
-        "edited: 3 notes",
-        "moved: reorganized/gen44-note0.md → reorganized/gen44-note0.md"
+        "deleted: generated/gen45-note2.md",
+        "edited: 4 notes",
+        "moved: reorganized/gen35-note0.md → reorganized/gen35-note0.md"
       ],
       "byCategory": {
         "people": {
@@ -5222,8 +5222,8 @@
         },
         "food": {
           "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
           "count": 3
         },
         "acronyms": {
@@ -5266,19 +5266,20 @@
     },
     {
       "generation": 48,
-      "f1": 0.494,
-      "precision": 0.373,
-      "recall": 0.733,
-      "mrr": 0.595,
-      "truePositives": 44,
-      "falsePositives": 74,
-      "falseNegatives": 16,
-      "suppressionCount": 17,
-      "totalNotes": 174,
+      "f1": 0.483,
+      "precision": 0.364,
+      "recall": 0.717,
+      "mrr": 0.587,
+      "truePositives": 43,
+      "falsePositives": 75,
+      "falseNegatives": 17,
+      "suppressionCount": 18,
+      "totalNotes": 171,
       "mutations": [
         "created: generated/gen48-note0.md, generated/gen48-note1.md",
+        "deleted: generated/gen38-note1.md",
         "edited: 3 notes",
-        "moved: reorganized/gen38-note2.md → reorganized/gen38-note2.md"
+        "moved: reorganized/gen24-note2.md → reorganized/gen24-note2.md, reorganized/gen5-note1.md → reorganized/gen5-note1.md"
       ],
       "byCategory": {
         "people": {
@@ -5331,8 +5332,8 @@
         },
         "food": {
           "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
           "count": 3
         },
         "acronyms": {
@@ -5375,19 +5376,19 @@
     },
     {
       "generation": 49,
-      "f1": 0.5,
-      "precision": 0.379,
-      "recall": 0.733,
-      "mrr": 0.595,
-      "truePositives": 44,
-      "falsePositives": 72,
-      "falseNegatives": 16,
-      "suppressionCount": 16,
-      "totalNotes": 176,
+      "f1": 0.489,
+      "precision": 0.371,
+      "recall": 0.717,
+      "mrr": 0.587,
+      "truePositives": 43,
+      "falsePositives": 73,
+      "falseNegatives": 17,
+      "suppressionCount": 17,
+      "totalNotes": 173,
       "mutations": [
         "created: generated/gen49-note0.md, generated/gen49-note1.md",
-        "edited: 3 notes",
-        "moved: reorganized/gen38-note1.md → reorganized/gen38-note1.md"
+        "edited: 4 notes",
+        "moved: reorganized/gen29-note0.md → reorganized/gen29-note0.md"
       ],
       "byCategory": {
         "people": {
@@ -5440,8 +5441,8 @@
         },
         "food": {
           "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
           "count": 3
         },
         "acronyms": {

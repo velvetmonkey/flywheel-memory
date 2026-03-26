@@ -1,7 +1,7 @@
 {
   "suite": "cross-vault-learning-report",
-  "timestamp": "2026-03-26T12:39:00.604Z",
-  "duration_ms": 216595,
+  "timestamp": "2026-03-26T16:11:33.051Z",
+  "duration_ms": 214056,
   "summary": {
     "primary_final_f1": 0.543,
     "small-world_final_f1": 0.261,
@@ -1542,9 +1542,9 @@
         },
         {
           "round": 16,
-          "f1": 0.388,
-          "precision": 0.302,
-          "recall": 0.542,
+          "f1": 0.418,
+          "precision": 0.326,
+          "recall": 0.583,
           "suppressionCount": 13,
           "byTier": {
             "1": {
@@ -1560,9 +1560,9 @@
               "count": 11
             },
             "3": {
-              "precision": 0,
-              "recall": 0,
-              "f1": 0,
+              "precision": 1,
+              "recall": 0.125,
+              "f1": 0.2222222222222222,
               "count": 8
             }
           }
@@ -1572,7 +1572,7 @@
           "f1": 0.438,
           "precision": 0.35,
           "recall": 0.583,
-          "suppressionCount": 12,
+          "suppressionCount": 13,
           "byTier": {
             "1": {
               "precision": 1,
@@ -1596,9 +1596,9 @@
         },
         {
           "round": 18,
-          "f1": 0.418,
-          "precision": 0.326,
-          "recall": 0.583,
+          "f1": 0.406,
+          "precision": 0.325,
+          "recall": 0.542,
           "suppressionCount": 13,
           "byTier": {
             "1": {
@@ -1614,9 +1614,9 @@
               "count": 11
             },
             "3": {
-              "precision": 1,
-              "recall": 0.125,
-              "f1": 0.2222222222222222,
+              "precision": 0,
+              "recall": 0,
+              "f1": 0,
               "count": 8
             }
           }

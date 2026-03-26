@@ -1,7 +1,7 @@
 {
   "suite": "vault-lifecycle",
-  "timestamp": "2026-03-25T21:18:57.877Z",
-  "duration_ms": 18251,
+  "timestamp": "2026-03-25T23:08:40.549Z",
+  "duration_ms": 21162,
   "summary": {
     "total_epochs": 5,
     "genesis_entities": 216,
@@ -32,11 +32,11 @@
       },
       "suggestionCoverage": 0.959,
       "scoreDistribution": {
-        "mean": 29.8372,
+        "mean": 29.7922,
         "p50": 29.7,
         "p90": 38,
         "min": 16,
-        "max": 50
+        "max": 44
       },
       "entityStats": {
         "totalEntities": 216,
@@ -60,7 +60,7 @@
           "other": 9
         }
       },
-      "duration_ms": 3832
+      "duration_ms": 7089
     },
     {
       "epoch": "growth",
@@ -83,11 +83,11 @@
       },
       "suggestionCoverage": 0.759,
       "scoreDistribution": {
-        "mean": 29.3779,
+        "mean": 29.337,
         "p50": 29.7,
         "p90": 38,
         "min": 11,
-        "max": 50
+        "max": 44
       },
       "entityStats": {
         "totalEntities": 216,
@@ -111,7 +111,7 @@
           "other": 9
         }
       },
-      "duration_ms": 4193
+      "duration_ms": 4084
     },
     {
       "epoch": "reorganization",
@@ -134,11 +134,11 @@
       },
       "suggestionCoverage": 0.765,
       "scoreDistribution": {
-        "mean": 29.3455,
+        "mean": 29.3015,
         "p50": 29.5,
         "p90": 38,
         "min": 11,
-        "max": 50
+        "max": 44
       },
       "entityStats": {
         "totalEntities": 216,
@@ -162,7 +162,7 @@
           "other": 9
         }
       },
-      "duration_ms": 4009
+      "duration_ms": 3352
     },
     {
       "epoch": "pruning",
@@ -185,11 +185,11 @@
       },
       "suggestionCoverage": 0.735,
       "scoreDistribution": {
-        "mean": 28.7566,
+        "mean": 28.7144,
         "p50": 29,
         "p90": 38,
         "min": 11,
-        "max": 50
+        "max": 44
       },
       "entityStats": {
         "totalEntities": 216,
@@ -213,7 +213,7 @@
           "other": 9
         }
       },
-      "duration_ms": 3235
+      "duration_ms": 3155
     },
     {
       "epoch": "recovery",
@@ -236,11 +236,11 @@
       },
       "suggestionCoverage": 0.772,
       "scoreDistribution": {
-        "mean": 27.9719,
+        "mean": 27.932,
         "p50": 29,
-        "p90": 38,
+        "p90": 36.2,
         "min": 11,
-        "max": 50
+        "max": 44
       },
       "entityStats": {
         "totalEntities": 216,
@@ -264,7 +264,7 @@
           "other": 9
         }
       },
-      "duration_ms": 2982
+      "duration_ms": 3482
     }
   ],
   "tuning_recommendations": [

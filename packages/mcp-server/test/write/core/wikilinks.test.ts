@@ -2553,19 +2553,19 @@ describe('Combined Cross-Folder and Hub Boosts', () => {
   it('should handle inline detection with priority sorting', async () => {
     createEntityCacheWithDetailsInStateDb(stateDb, tempVault, {
       people: [
-        { name: 'Priority', path: 'people/Priority.md', hubScore: 10 }, // Hub
-        { name: 'Prioriti', path: 'daily-notes/Prioriti.md', hubScore: 0 }, // Same folder, not hub
+        { name: 'Pemberton', path: 'people/Pemberton.md', hubScore: 10 }, // Hub
+        { name: 'Pembertan', path: 'daily-notes/Pembertan.md', hubScore: 0 }, // Same folder, not hub
       ],
     });
 
     await initializeEntityIndex(tempVault);
 
-    // Both entities have same length (8 chars)
-    // processWikilinks should prefer Priority due to hub boost
-    const result = processWikilinks('Priority matters', 'daily-notes/test.md');
+    // Both entities have same length (9 chars)
+    // processWikilinks should prefer Pemberton due to hub boost
+    const result = processWikilinks('Pemberton matters', 'daily-notes/test.md');
 
-    // Should link Priority (the hub note from different folder)
-    expect(result.content).toContain('[[Priority]]');
+    // Should link Pemberton (the hub note from different folder)
+    expect(result.content).toContain('[[Pemberton]]');
   });
 });
 

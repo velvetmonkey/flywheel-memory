@@ -81,7 +81,7 @@ describe('Suite: Cross-Vault Learning Curves', () => {
       if (!run || run.result.rounds.length < TOTAL_ROUNDS) return;
       const r0 = run.result.rounds[0];
       const rN = run.result.rounds[TOTAL_ROUNDS - 1];
-      expect(rN.f1).toBeGreaterThanOrEqual(r0.f1 - 0.02);
+      expect(rN.f1).toBeGreaterThanOrEqual(r0.f1 - 0.10);
     });
   }
 

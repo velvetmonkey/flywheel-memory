@@ -22,6 +22,7 @@ import {
   escapeRegex,
 } from './move-notes.js';
 import fs from 'fs/promises';
+import path from 'path';
 
 /**
  * Register the merge_entities tool with the MCP server
@@ -217,7 +218,7 @@ export function registerMergeTools(
   // ========================================
   server.tool(
     'absorb_as_alias',
-    'Absorb an entity name as an alias of a target note: adds alias to target frontmatter and rewrites all [[source]] links to [[target|source]]. Lighter than merge_entities — no source note required, no content append, no deletion.',
+    'Absorb an entity name as an alias of a target note: adds alias to target frontmatter, rewrites all [[source]] links to [[target|source]], and deletes the source note if it exists. Lighter than merge_entities — no source note required, no content append.',
     {
       source_name: z.string().describe('The entity name to absorb (e.g. "Foo")'),
       target_path: z.string().describe('Vault-relative path of the target entity note (e.g. "entities/Bar.md")'),
@@ -269,6 +270,9 @@ export function registerMergeTools(
         let totalBacklinksUpdated = 0;
         const modifiedFiles: string[] = [];
 
+        // Check if source has a backing note (used by both dry_run and real path)
+        const sourceNoteFile = await findSourceNote(vaultPath, source_name, target_path);
+
         if (dry_run) {
           // Just count what would change
           for (const backlink of backlinks) {
@@ -317,18 +321,26 @@ export function registerMergeTools(
             }
           }
 
-          // 6. Rebuild entity index in background
+          // 6. Delete source note if it exists (and isn't the target)
+          let sourceDeleted = false;
+          if (sourceNoteFile) {
+            await fs.unlink(`${vaultPath}/${sourceNoteFile}`);
+            sourceDeleted = true;
+          }
+
+          // 7. Rebuild entity index in background
           initializeEntityIndex(vaultPath).catch(err => {
             console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
           });
         }
 
-        // 7. Build result
+        // 8. Build result
         const aliasAdded = source_name.toLowerCase() !== targetTitle.toLowerCase();
         const previewLines = [
           `${dry_run ? 'Would absorb' : 'Absorbed'}: "${source_name}" → "${targetTitle}"`,
           `Alias ${dry_run ? 'to add' : 'added'}: ${aliasAdded ? source_name : 'no (matches target title)'}`,
           `Backlinks ${dry_run ? 'to update' : 'updated'}: ${totalBacklinksUpdated}`,
+          sourceNoteFile ? `Source note ${dry_run ? 'to delete' : 'deleted'}: ${sourceNoteFile}` : 'Source note: none found',
         ];
         if (modifiedFiles.length > 0) {
           previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${modifiedFiles.join(', ')}`);
@@ -363,4 +375,34 @@ export function registerMergeTools(
       }
     }
   );
+}
+
+/**
+ * Find a vault note file matching the given entity name (case-insensitive basename match).
+ * Returns the vault-relative path if found, or null.
+ */
+async function findSourceNote(vaultPath: string, sourceName: string, excludePath: string): Promise<string | null> {
+  const targetLower = sourceName.toLowerCase();
+
+  async function scanDir(dir: string): Promise<string | null> {
+    let entries;
+    try { entries = await fs.readdir(dir, { withFileTypes: true }); } catch { return null; }
+    for (const entry of entries) {
+      if (entry.name.startsWith('.')) continue;
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        const found = await scanDir(fullPath);
+        if (found) return found;
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        const basename = path.basename(entry.name, '.md');
+        if (basename.toLowerCase() === targetLower) {
+          const relative = path.relative(vaultPath, fullPath).replace(/\\/g, '/');
+          if (relative !== excludePath) return relative;
+        }
+      }
+    }
+    return null;
+  }
+
+  return scanDir(vaultPath);
 }

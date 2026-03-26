@@ -91,6 +91,20 @@ function applyGraphReranking(
 }
 
 /**
+ * Sandwich reorder: place best result first, second-best last.
+ * Research shows LLMs have a U-shaped attention curve — best performance when
+ * relevant info is at start or end of context, 30%+ drop for middle positions.
+ * (Liu et al. 2024, Stanford "Lost in the Middle")
+ */
+function applySandwichOrdering(results: Array<Record<string, unknown>>): void {
+  if (results.length < 3) return;
+  // Results are already sorted by score descending after graph reranking.
+  // Move the second-best result to the last position.
+  const secondBest = results.splice(1, 1)[0];
+  results.push(secondBest);
+}
+
+/**
  * Enhance snippets with semantic + token matching when embeddings are available.
  * Falls back to existing FTS5 snippets when embeddings are not built.
  */
@@ -491,8 +505,9 @@ export function registerQueryTools(
             const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
             results.push(...hopResults, ...expansionResults);
 
-            // Graph re-ranking + enhanced snippets (parity with recall)
+            // Graph re-ranking + sandwich ordering + enhanced snippets
             applyGraphReranking(results, stateDb);
+            applySandwichOrdering(results);
             await enhanceSnippets(results, query, vaultPath);
 
             return { content: [{ type: 'text' as const, text: JSON.stringify({
@@ -537,8 +552,9 @@ export function registerQueryTools(
           const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
           results.push(...hopResults, ...expansionResults);
 
-          // Graph re-ranking + enhanced snippets (parity with recall)
+          // Graph re-ranking + sandwich ordering + enhanced snippets
           applyGraphReranking(results, stateDb);
+          applySandwichOrdering(results);
           await enhanceSnippets(results, query, vaultPath);
 
           return { content: [{ type: 'text' as const, text: JSON.stringify({
@@ -559,8 +575,9 @@ export function registerQueryTools(
         const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDbFts);
         results.push(...hopResults, ...expansionResults);
 
-        // Graph re-ranking + enhanced snippets (parity with recall)
+        // Graph re-ranking + sandwich ordering + enhanced snippets
         applyGraphReranking(results, stateDbFts);
+        applySandwichOrdering(results);
         await enhanceSnippets(results, query, vaultPath);
 
         return { content: [{ type: 'text' as const, text: JSON.stringify({

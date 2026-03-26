@@ -2,7 +2,7 @@
 
 [← Back to docs](README.md)
 
-[[Flywheel]] Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 74 tools for search, graph queries, and mutations.
+Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 74 tools for search, graph queries, and mutations.
 
 - [Source Structure](#source-structure)
 - [Startup Flow](#startup-flow)
@@ -125,10 +125,10 @@ packages/
 1. **Detect vault root** -- `findVaultRoot()` walks up from cwd looking for `.obsidian/` or `.claude/`
 2. **Open StateDb** -- `openStateDb(vaultPath)` creates/opens `.flywheel/state.db` (SQLite with WAL mode)
 3. **Initialize entity index** -- Loads entities from StateDb for auto-wikilinks
-4. **Connect MCP transport** -- `StdioServerTransport` for [[CLAUDE]] Code / Claude Desktop
+4. **Connect MCP transport** -- `StdioServerTransport` for Claude Code / Claude Desktop
 5. **Load index from cache** -- Checks `vault_index_cache` table in StateDb (valid if note count matches within 5% and age < 24h)
 6. **Build index if cache miss** -- Scans all `.md` files, parses notes in parallel (concurrency limit: 50), builds backlink/entity/tag maps
-7. **Post-index work** -- Scans vault entities, exports hub scores, infers config (periodic note folders, templates, etc.), starts file [[watcher]]
+7. **Post-index work** -- Scans vault entities, exports hub scores, infers config (periodic note folders, templates, etc.), starts file watcher
 
 ---
 

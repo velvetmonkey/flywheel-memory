@@ -2,7 +2,7 @@
 
 [← Back to docs](README.md)
 
-Measured performance characteristics of [[Flywheel]] Memory at various vault sizes. Use these to set expectations for your vault.
+Measured performance characteristics of Flywheel Memory at various vault sizes. Use these to set expectations for your vault.
 
 > **Last measured:** 2026-03-19 | **Node:** 22.x | **Platform:** WSL2 (Linux 6.6) on Windows 11 | **Model:** all-MiniLM-L6-v2 (default embeddings)
 
@@ -38,7 +38,7 @@ Incremental update after a file change (18-step pipeline):
 | Any | 30–80ms | Hash gate skips unchanged files |
 | Any (with embeddings) | 50–150ms | +1 embedding update per changed file |
 
-The [[watcher]] uses content hashing (SHA-256) to skip unchanged files entirely. Batch latency is dominated by the number of *changed* files, not total vault size.
+The watcher uses content hashing (SHA-256) to skip unchanged files entirely. Batch latency is dominated by the number of *changed* files, not total vault size.
 
 ## Semantic Embedding Build
 

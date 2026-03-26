@@ -142,4 +142,4 @@
 - Layer ablation: each scoring layer disabled individually; F1 delta measures contribution
 - Scoring layers (12): length_filter, article_filter, exact_match, stem_match, cooccurrence, type_boost, context_boost, recency, cross_folder, hub_boost, feedback, semantic
 - Run: `npm run test:quality:report`
-- Engine: [[Flywheel|flywheel-memory]] v2.0.139
+- Engine: flywheel-memory v2.0.139

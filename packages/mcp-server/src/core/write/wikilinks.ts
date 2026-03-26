@@ -910,7 +910,7 @@ const DEFAULT_STRICTNESS: StrictnessMode = 'conservative';
  * People and projects are typically more useful to link than
  * common technologies (which may over-saturate links).
  */
-const TYPE_BOOST: Record<EntityCategory, number> = {
+const TYPE_BOOST: Record<string, number> = {
   people: 5,         // Names are high value for connections
   animals: 3,        // Pets and animals are personal and specific
   projects: 3,       // Projects provide context
@@ -930,6 +930,17 @@ const TYPE_BOOST: Record<EntityCategory, number> = {
   acronyms: 0,       // Acronyms may be ambiguous
   other: 0,          // Unknown category
 };
+
+/** Get type boost for a category, checking custom config overrides first */
+function getTypeBoost(
+  category: string,
+  customCategories?: Record<string, { type_boost?: number }>,
+): number {
+  if (customCategories?.[category]?.type_boost != null) {
+    return customCategories[category].type_boost!;
+  }
+  return TYPE_BOOST[category] || 0;
+}
 
 /**
  * Cross-folder boost - prioritize cross-cutting connections

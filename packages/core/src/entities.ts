@@ -293,8 +293,14 @@ const FRONTMATTER_TYPE_MAP: Record<string, EntityCategory> = {
   concept: 'concepts', idea: 'concepts', topic: 'concepts',
 };
 
-function mapFrontmatterType(type: string): EntityCategory | undefined {
-  return FRONTMATTER_TYPE_MAP[type.toLowerCase()];
+function mapFrontmatterType(
+  type: string,
+  customCategories?: Record<string, { type_boost?: number }>,
+): EntityCategory | undefined {
+  const lower = type.toLowerCase();
+  // Custom categories take priority — frontmatter type becomes the category name
+  if (customCategories?.[lower]) return lower;
+  return FRONTMATTER_TYPE_MAP[lower];
 }
 
 /**
@@ -348,10 +354,11 @@ function categorizeEntity(
   techKeywords: string[],
   frontmatterType?: string,
   notePath?: string,
+  customCategories?: Record<string, { type_boost?: number }>,
 ): EntityCategory {
-  // 0. Frontmatter type takes priority
+  // 0. Frontmatter type takes priority (custom categories checked first)
   if (frontmatterType) {
-    const mapped = mapFrontmatterType(frontmatterType);
+    const mapped = mapFrontmatterType(frontmatterType, customCategories);
     if (mapped) return mapped;
   }
 
@@ -529,6 +536,7 @@ export async function scanVaultEntities(
 ): Promise<EntityIndex> {
   const excludeFolders = options.excludeFolders ?? [];
   const techKeywords = options.techKeywords ?? DEFAULT_TECH_KEYWORDS;
+  const customCategories = options.customCategories;
 
   // Scan vault for all markdown files
   const allEntities = await scanDirectory(vaultPath, vaultPath, excludeFolders);
@@ -588,7 +596,7 @@ export async function scanVaultEntities(
   };
 
   for (const entity of uniqueEntities) {
-    const category = categorizeEntity(entity.name, techKeywords, entity.frontmatterType, entity.relativePath);
+    const category = categorizeEntity(entity.name, techKeywords, entity.frontmatterType, entity.relativePath, customCategories);
     // Store as EntityWithAliases object
     const entityObj: EntityWithAliases = {
       name: entity.name,
@@ -596,27 +604,27 @@ export async function scanVaultEntities(
       aliases: entity.aliases,
       description: entity.description,
     };
-    index[category].push(entityObj);
+    // Initialize custom category array if needed
+    if (!index[category]) {
+      (index as Record<string, unknown>)[category] = [];
+    }
+    (index[category] as Entity[]).push(entityObj);
   }
 
-  // Sort each category by name
+  // Sort each category by name (including custom categories)
   const sortByName = (a: Entity, b: Entity) => {
     const nameA = typeof a === 'string' ? a : a.name;
     const nameB = typeof b === 'string' ? b : b.name;
     return nameA.localeCompare(nameB);
   };
-  const allCategories: (keyof Omit<EntityIndex, '_metadata'>)[] = [
-    'technologies', 'acronyms', 'people', 'projects', 'organizations',
-    'locations', 'concepts', 'animals', 'media', 'events', 'documents',
-    'vehicles', 'health', 'finance', 'food', 'hobbies', 'other',
-  ];
-  for (const cat of allCategories) {
-    index[cat].sort(sortByName);
+  const allCategoryKeys = Object.keys(index).filter(k => k !== '_metadata');
+  for (const cat of allCategoryKeys) {
+    (index[cat] as Entity[]).sort(sortByName);
   }
 
   // Update metadata
-  index._metadata.total_entities = allCategories.reduce(
-    (sum, cat) => sum + index[cat].length, 0
+  index._metadata.total_entities = allCategoryKeys.reduce(
+    (sum, cat) => sum + (index[cat] as Entity[]).length, 0
   );
 
   return index;
@@ -626,17 +634,16 @@ export async function scanVaultEntities(
  * Get all entities as a flat array (for wikilink matching)
  * Handles both legacy string format and new EntityWithAliases format
  */
-/** All entity category keys (excludes _metadata) */
-const ALL_ENTITY_CATEGORIES: EntityCategory[] = [
-  'technologies', 'acronyms', 'people', 'projects', 'organizations',
-  'locations', 'concepts', 'animals', 'media', 'events', 'documents',
-  'vehicles', 'health', 'finance', 'food', 'hobbies', 'periodical', 'other',
-];
+/** Get all category keys from an index (includes custom categories, excludes _metadata) */
+function getIndexCategories(index: EntityIndex): string[] {
+  return Object.keys(index).filter(k => k !== '_metadata');
+}
 
 export function getAllEntities(index: EntityIndex): Entity[] {
   const result: Entity[] = [];
-  for (const cat of ALL_ENTITY_CATEGORIES) {
-    if (index[cat]) result.push(...index[cat]);
+  for (const cat of getIndexCategories(index)) {
+    const entities = index[cat];
+    if (Array.isArray(entities)) result.push(...entities);
   }
   return result;
 }
@@ -653,9 +660,8 @@ export function getAllEntities(index: EntityIndex): Entity[] {
  */
 export function getAllEntitiesWithTypes(index: EntityIndex): EntityWithType[] {
   const result: EntityWithType[] = [];
-  const categories = ALL_ENTITY_CATEGORIES;
 
-  for (const category of categories) {
+  for (const category of getIndexCategories(index)) {
     const entities = index[category];
     // Skip undefined or empty categories
     if (!entities || !Array.isArray(entities)) {

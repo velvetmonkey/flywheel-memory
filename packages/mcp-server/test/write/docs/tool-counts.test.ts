@@ -214,6 +214,8 @@ describe('Tool Count Verification', () => {
         'flywheel_doctor',
         'flywheel_trust_report',
         'flywheel_benchmark',
+        'flywheel_learning_report',
+        'flywheel_calibration_export',
         'export_graph',
       ]);
 

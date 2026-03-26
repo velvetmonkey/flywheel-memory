@@ -73,6 +73,8 @@ import { registerMergeTools as registerReadMergeTools } from './tools/read/merge
 import { registerTemporalAnalysisTools } from './tools/read/temporalAnalysis.js';
 import { registerSessionHistoryTools } from './tools/read/sessionHistory.js';
 import { registerEntityHistoryTools } from './tools/read/entityHistory.js';
+import { registerLearningReportTools } from './tools/read/learningReport.js';
+import { registerCalibrationExportTools } from './tools/read/calibrationExport.js';
 
 // Resources
 import { registerVaultResources } from './resources/vault.js';
@@ -445,6 +447,8 @@ export function registerAllTools(
   registerTemporalAnalysisTools(targetServer, gvi, gvp, gsd);
   registerSessionHistoryTools(targetServer, gsd);
   registerEntityHistoryTools(targetServer, gsd);
+  registerLearningReportTools(targetServer, gvi, gsd);
+  registerCalibrationExportTools(targetServer, gvi, gsd, gcf);
 
   // Memory tools
   registerMemoryTools(targetServer, gsd);

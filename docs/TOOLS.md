@@ -1,6 +1,6 @@
 # Tools
 
-74 tools. Most questions only need one: **search**.
+76 tools. Most questions only need one: **search**.
 
 > **Start here:** Most vaults only need `default` (16 tools). Add bundles as you need them — `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`. See [CONFIGURATION.md](CONFIGURATION.md) for preset recipes.
 
@@ -317,7 +317,7 @@ Deep analysis of a single note:
 
 ## Corrections
 
-Record mistakes that should persist across sessions. Flywheel processes these into feedback that improves future suggestions.
+Record mistakes that should persist across sessions. Flywheel [[processes]] these into feedback that improves future suggestions.
 
 | Tool | What it does |
 |------|-------------|
@@ -409,6 +409,8 @@ Monitor, configure, and maintain your vault.
 | `flywheel_benchmark` | Run, record, and trend longitudinal performance benchmarks (search latency, index build, watcher batch). |
 | `vault_session_history` | View session history: recent sessions list or full chronological invocations for a session. Supports hierarchical sessions. |
 | `vault_entity_history` | Unified entity timeline across all tables: applications, feedback, suggestions, edge weights, metadata changes, memories, corrections. |
+| `flywheel_learning_report` | Narrative report of auto-linking learning progress: applications by day, feedback split, survival rate, top rejected entities, suggestion funnel, graph growth. Supports period-over-period comparison. |
+| `flywheel_calibration_export` | Anonymized aggregate scoring data for cross-vault algorithm calibration. No entity names or paths. Includes: funnel, per-layer contributions, survival by category, score distribution, suppression stats, threshold sweep. |
 
 ---
 

@@ -22,7 +22,7 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 ## Prerequisites
 
 - **Node.js 22–24** -- check with `node --version`.
-- **[[CLAUDE]] Code** -- authenticated and working (`claude --version`)
+- **Claude Code** -- authenticated and working (`claude --version`)
 - **git** -- to clone the repo
 
 ---
@@ -77,7 +77,7 @@ Watch the tool trace (Claude's exact path varies between runs):
       frontmatter: { amount: 12000, status: "pending" }
 ```
 
-**What happened:** [[Flywheel]]'s enriched search returned frontmatter (amounts, status), backlinks, and outlinks for every hit -- all in one call. Zero file reads needed. The answer was in the search result itself.
+**What happened:** Flywheel's enriched search returned frontmatter (amounts, status), backlinks, and outlinks for every hit -- all in one call. Zero file reads needed. The answer was in the search result itself.
 
 Without Flywheel, Claude would grep for "Acme" and scan matching files. The real win shows in structural queries like "what are the hub notes?" or "what's the shortest path between X and Y?" — those need a graph, not file reads.
 
@@ -87,7 +87,7 @@ Without Flywheel, Claude would grep for "Acme" and scan matching files. The real
 
 Still in carter-strategy, tell Claude:
 
-> Log that Stacy Thompson is starting on the Beta Corp Dashboard and reviewed the [[API]] Security Checklist
+> Log that Stacy Thompson is starting on the Beta Corp Dashboard and reviewed the API Security Checklist
 
 Watch the output:
 
@@ -172,7 +172,7 @@ Same tools, completely different domain. Outlinks in search results trace the ci
 
 Ready to point Flywheel at your own vault? See the [full setup guide](SETUP.md) for:
 
-- [[Claude Desktop Config|MCP config]] for [[Claude Code]] and Claude Desktop
+- MCP config for Claude Code and Claude Desktop
 - Tool preset recommendations
 - Semantic search enablement
 

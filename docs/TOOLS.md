@@ -61,12 +61,12 @@ Every search result includes:
 | **tags, aliases** | Tags and alternative names | Understand categorization and find notes by alternate names. |
 | **category, hub_score** | Entity type and graph importance | Know if this is a person, project, or concept — and how central it is in the vault. |
 
-This is the key design: **one search call returns not just file paths, but the full neighborhood of each result.** That's why [[CLAUDE]] can answer "How much have I billed [[Acme Corp]]?" from a single search — the client's frontmatter has the totals, and the backlinks show every invoice.
+This is the key design: **one search call returns not just file paths, but the full neighborhood of each result.** That's why Claude can answer "How much have I billed [[Acme Corp]]?" from a single search — the client's frontmatter has the totals, and the backlinks show every invoice.
 
 **How matching works** (always start with just a query, no filters):
 
-1. **Full-text search (FTS5)** — BM25 ranking over note content. Handles stemming ("[[billing]]" matches "billed"), phrases, and boolean operators.
-2. **Entity search** — Matches against the entity database (names, aliases, categories). If "[[Sarah Mitchell|Sarah]] Chen" is an alias for `users/sarah-chen.md`, it finds it.
+1. **Full-text search (FTS5)** — BM25 ranking over note content. Handles stemming ("billing" matches "billed"), phrases, and boolean operators.
+2. **Entity search** — Matches against the entity database (names, aliases, categories). If "Sarah Chen" is an alias for `users/sarah-chen.md`, it finds it.
 3. **Hybrid ranking** — When semantic embeddings are built (via `init_semantic`), results from all three channels are merged using Reciprocal Rank Fusion. Notes can surface by meaning even without keyword overlap.
 
 The enrichment step is the same regardless of how a note matched — every result gets its full frontmatter, backlinks, and outlinks attached. Top results (controlled by `detail_count`, default 5) get full metadata; remaining results get lightweight summaries (counts only).
@@ -317,7 +317,7 @@ Deep analysis of a single note:
 
 ## Corrections
 
-Record mistakes that should persist across sessions. [[Flywheel]] [[processes]] these into feedback that improves future suggestions.
+Record mistakes that should persist across sessions. Flywheel processes these into feedback that improves future suggestions.
 
 | Tool | What it does |
 |------|-------------|

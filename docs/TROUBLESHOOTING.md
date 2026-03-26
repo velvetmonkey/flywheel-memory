@@ -2,7 +2,7 @@
 
 [← Back to docs](README.md)
 
-Error recovery and diagnostics for [[Flywheel]] Memory.
+Error recovery and diagnostics for Flywheel Memory.
 
 **Safety model:** Your markdown files are the source of truth. Everything in `.flywheel/` is derived data and can be safely deleted -- Flywheel rebuilds it on next startup.
 
@@ -64,7 +64,7 @@ The StateDb at `.flywheel/state.db` stores everything Flywheel learns about your
 
 Flywheel has four layers of protection:
 
-1. **Rotated WAL-safe backups** — After each successful startup (and every 6 hours during operation), Flywheel creates a backup using SQLite's backup [[API]], which is safe even during active WAL writes. Three rotated copies are kept: `state.db.backup` (most recent), `.backup.1`, `.backup.2`, `.backup.3`. This means even if the most recent backup is bad, older ones are available.
+1. **Rotated WAL-safe backups** — After each successful startup (and every 6 hours during operation), Flywheel creates a backup using SQLite's backup API, which is safe even during active WAL writes. Three rotated copies are kept: `state.db.backup` (most recent), `.backup.1`, `.backup.2`, `.backup.3`. This means even if the most recent backup is bad, older ones are available.
 
 2. **Integrity checks** — `PRAGMA quick_check` runs after every startup and every 6 hours in the watcher pipeline. If corruption is detected, recovery triggers immediately.
 
@@ -149,7 +149,7 @@ This happens when a previous git operation was interrupted (crash, forced kill, 
 ps aux | grep git
 ```
 
-2. If no git [[processes]] are running, the lock is stale. Remove it:
+2. If no git processes are running, the lock is stale. Remove it:
 
 ```bash
 rm /path/to/your/vault/.git/index.lock
@@ -159,7 +159,7 @@ rm /path/to/your/vault/.git/index.lock
 
 ### Prevention
 
-- Avoid force-killing [[CLAUDE]] Code or the MCP server during write operations
+- Avoid force-killing Claude Code or the MCP server during write operations
 - If you see this error frequently, check if another tool (Obsidian git plugin, cron job, etc.) is running git commands on the same vault
 
 ---
@@ -206,7 +206,7 @@ This forces a complete rebuild from scratch including the StateDb schema.
 Flywheel detects the vault root by walking up from the working directory, looking for `.obsidian/` or `.claude/`.
 
 **Fixes:**
-- **[[Claude Code]]:** Run `cd /path/to/your/vault && claude`
+- **Claude Code:** Run `cd /path/to/your/vault && claude`
 - **Claude Desktop:** Set `VAULT_PATH` in `claude_desktop_config.json`
 - Verify the vault directory contains `.obsidian/` or `.claude/`
 

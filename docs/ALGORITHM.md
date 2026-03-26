@@ -111,7 +111,7 @@ Before scoring begins, candidates are pruned. This keeps the hot path fast and p
 
 ### Layer 1: Length & Pattern Filter
 
-**Length filter** -- Entity names longer than 25 characters are dropped. Article titles like "Complete Guide to [[ADF|Azure Data Factory]]" are not concepts worth linking.
+**Length filter** -- Entity names longer than 25 characters are dropped. Article titles like "Complete Guide to Azure Data Factory" are not concepts worth linking.
 
 **Word count filter** -- Entity names with more than 3 words are dropped. Real concepts are 1-3 words: "Marcus Johnson", "MCP", "Turbopump".
 

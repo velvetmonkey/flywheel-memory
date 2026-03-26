@@ -4,7 +4,7 @@
 
 Your vault is the most valuable dataset you own. It holds your professional memory, your decision history, your relationship map, the accumulated context of every project you've ever worked on. It deserves infrastructure as serious as a production database -- indexed, queryable, and aware of its own structure.
 
-[[Flywheel]] Memory is that infrastructure.
+Flywheel Memory is that infrastructure.
 
 - [The State of Knowledge Work](#the-state-of-knowledge-work)
 - [How It Works in Practice](#how-it-works-in-practice)
@@ -67,7 +67,7 @@ See the main [README](../packages/mcp-server/README.md#the-flywheel-effect) for 
 
 ### Local-first: your trust guarantee
 
-Everything runs on your machine. No cloud services, no [[API Management|API]] keys (beyond [[CLAUDE]] itself), no data leaving your disk. The SQLite databases live inside your vault directory. Delete them and they rebuild from your markdown. You are always in control.
+Everything runs on your machine. No cloud services, no API keys (beyond Claude itself), no data leaving your disk. The SQLite databases live inside your vault directory. Delete them and they rebuild from your markdown. You are always in control.
 
 ### Markdown is truth: zero lock-in
 
@@ -91,7 +91,7 @@ Flywheel is for anyone who uses a vault as working memory and wants compound ret
 
 **The researcher** navigating 300 literature notes, 50 experiment logs, and a citation network that keeps growing. Flywheel finds citation chains -- "Which papers connect AlphaFold to my CRISPR experiment?" -- that manual search would miss entirely.
 
-**The founder** running a SaaS startup with standups, OKRs, decision records, and [[onboarding]] playbooks. Flywheel turns the vault into an operational dashboard: "What's blocking the Q1 launch?" pulls from milestones, meeting notes, and team assignments simultaneously.
+**The founder** running a SaaS startup with standups, OKRs, decision records, and onboarding playbooks. Flywheel turns the vault into an operational dashboard: "What's blocking the Q1 launch?" pulls from milestones, meeting notes, and team assignments simultaneously.
 
 **The student** connecting concepts across 5 textbooks and 100 lecture notes. Flywheel surfaces structural connections -- "How does spaced repetition connect to active recall?" -- by traversing the link graph across notebooks, not just matching keywords.
 
@@ -111,4 +111,4 @@ Shared library used by Flywheel Memory and other tools in the ecosystem. Handles
 
 ### MCP
 
-Flywheel implements the [Model Context Protocol](https://modelcontextprotocol.io/). Any MCP-compatible client -- [[Claude Code]], Claude Desktop, or third-party tools -- can connect and use the full tool surface. The protocol is the integration layer; Flywheel is the intelligence layer.
+Flywheel implements the [Model Context Protocol](https://modelcontextprotocol.io/). Any MCP-compatible client -- Claude Code, Claude Desktop, or third-party tools -- can connect and use the full tool surface. The protocol is the integration layer; Flywheel is the intelligence layer.

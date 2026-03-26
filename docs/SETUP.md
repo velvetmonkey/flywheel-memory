@@ -2,7 +2,7 @@
 
 [← Back to docs](README.md)
 
-After trying the [demo vaults](../demos/), point [[Flywheel]] at your own Obsidian vault.
+After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian vault.
 
 - [Prerequisites](#prerequisites)
 - [Windows](#windows)
@@ -21,13 +21,13 @@ After trying the [demo vaults](../demos/), point [[Flywheel]] at your own Obsidi
 
 - **Node.js 22–24** -- check with `node --version`.
 - **An Obsidian vault** -- any folder with `.md` files works, but Flywheel detects Obsidian conventions (`.obsidian/` folder, periodic notes, templates)
-- **An MCP-compatible client** -- [[CLAUDE]] Code, Claude Desktop, Cursor, Windsurf, VS Code + [[Github]] Copilot, Continue, [OpenClaw](https://github.com/openclaw/openclaw), or any Streamable HTTP client
+- **An MCP-compatible client** -- Claude Code, Claude Desktop, Cursor, Windsurf, VS Code + GitHub Copilot, Continue, [OpenClaw](https://github.com/openclaw/openclaw), or any Streamable HTTP client
 
 ---
 
 ## Windows
 
-On Windows, the [[Claude Desktop Config|MCP config]] differs from macOS/Linux in three ways:
+On Windows, the MCP config differs from macOS/Linux in three ways:
 
 1. **`cmd /c` wrapper** — use `"command": "cmd"` with `"args": ["/c", "npx", ...]` instead of `"command": "npx"`. Windows installs npx as a batch script (`npx.cmd`) which MCP clients can't execute directly — without this wrapper the server silently fails.
 2. **`VAULT_PATH`** — set to your vault's Windows path (e.g. `C:\Users\you\obsidian\MyVault`)
@@ -84,7 +84,7 @@ Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
 }
 ```
 
-Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. [[Claude Code]] auto-detects the vault root from the working directory.
+Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. Claude Code auto-detects the vault root from the working directory.
 
 Restart Claude Desktop after editing the config. Flywheel appears in the MCP server list.
 
@@ -238,7 +238,7 @@ See [CONFIGURATION.md](CONFIGURATION.md#multi-vault) for all multi-vault options
 
 On first run, Flywheel creates a `.flywheel/` directory containing its SQLite index and rotated backups. Add `.flywheel/` to your `.gitignore` if your vault is version-controlled. Flywheel automatically backs up its database on each startup (3 rotated copies) and recovers feedback data from backups if corruption occurs — see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#statedb-corruption) for details.
 
-> **Proactive linking is on by default.** Flywheel's file [[watcher]] monitors your vault for changes and automatically inserts high-confidence wikilinks into notes you edit -- even outside of Claude. Only strong matches are applied (score >= 20, max 5 per file, max 10 per day). This is the core flywheel: edits you make in Obsidian get linked without you asking. If you prefer links only through explicit Claude tool calls, disable it:
+> **Proactive linking is on by default.** Flywheel's file watcher monitors your vault for changes and automatically inserts high-confidence wikilinks into notes you edit -- even outside of Claude. Only strong matches are applied (score >= 20, max 5 per file, max 10 per day). This is the core flywheel: edits you make in Obsidian get linked without you asking. If you prefer links only through explicit Claude tool calls, disable it:
 >
 > ```
 > flywheel_config({ mode: "set", key: "proactive_linking", value: false })

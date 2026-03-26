@@ -294,6 +294,8 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 
 Evidence recall = did the system find the right source notes. Answer accuracy = did it give the correct answer (LLM-as-judge, Claude Haiku). The vault is pre-warmed with auto-linking and embeddings before questions run - [how it works →](docs/TESTING.md#how-the-e2e-benchmark-works) · Reproduce: `demos/locomo/run-benchmark.sh`
 
+Flywheel controls retrieval; the model controls comprehension. Evidence recall is ours — did we find the right documents? Answer accuracy is the model's — did it understand what it found? These are deliberately separate metrics. When models improve, answer accuracy goes up without changing a line of Flywheel code.
+
 ---
 
 ## Tested

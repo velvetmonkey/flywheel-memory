@@ -1,7 +1,7 @@
 {
   "suite": "temporal-star-learning-curve",
-  "timestamp": "2026-03-26T16:10:51.371Z",
-  "duration_ms": 172377,
+  "timestamp": "2026-03-26T16:30:13.681Z",
+  "duration_ms": 180446,
   "summary": {
     "round0_f1": 0.64,
     "roundN_f1": 0.767,

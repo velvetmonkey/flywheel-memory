@@ -1,5 +1,7 @@
 # Performance Benchmarks
 
+[← Back to docs](README.md)
+
 Measured performance characteristics of [[Flywheel]] Memory at various vault sizes. Use these to set expectations for your vault.
 
 > **Last measured:** 2026-03-19 | **Node:** 22.x | **Platform:** WSL2 (Linux 6.6) on Windows 11 | **Model:** all-MiniLM-L6-v2 (default embeddings)

@@ -1,5 +1,7 @@
 # Troubleshooting
 
+[← Back to docs](README.md)
+
 Error recovery and diagnostics for [[Flywheel]] Memory.
 
 **Safety model:** Your markdown files are the source of truth. Everything in `.flywheel/` is derived data and can be safely deleted -- Flywheel rebuilds it on next startup.
@@ -62,7 +64,7 @@ The StateDb at `.flywheel/state.db` stores everything Flywheel learns about your
 
 Flywheel has four layers of protection:
 
-1. **Rotated WAL-safe backups** — After each successful startup (and every 6 hours during operation), Flywheel creates a backup using SQLite's backup API, which is safe even during active WAL writes. Three rotated copies are kept: `state.db.backup` (most recent), `.backup.1`, `.backup.2`, `.backup.3`. This means even if the most recent backup is bad, older ones are available.
+1. **Rotated WAL-safe backups** — After each successful startup (and every 6 hours during operation), Flywheel creates a backup using SQLite's backup [[API]], which is safe even during active WAL writes. Three rotated copies are kept: `state.db.backup` (most recent), `.backup.1`, `.backup.2`, `.backup.3`. This means even if the most recent backup is bad, older ones are available.
 
 2. **Integrity checks** — `PRAGMA quick_check` runs after every startup and every 6 hours in the watcher pipeline. If corruption is detected, recovery triggers immediately.
 

@@ -17,7 +17,7 @@
 [![Cost](https://img.shields.io/badge/cost-%240.06--0.09%2Fquery-green.svg)](docs/TESTING.md#how-the-e2e-benchmark-works)
 [![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
 
-**[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)**
+**[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)** · **[Story](#the-story-behind-this)** · **[License](#license)**
 
 > **Cognitive sovereignty** = your knowledge graph stays on your machine. No platform builds a profile from it. No subscription locks you in. You choose the model. You own the memory.
 
@@ -144,7 +144,7 @@ Flywheel does not replace Obsidian. It runs alongside as a background index. Wat
 |--------|-------|--------------|
 | `default` | 16 | search, read, write, tasks |
 | `agent` | 16 | search, read, write, memory |
-| `full` | 67 | Everything except memory (all 12 categories) |
+| `full` | 71 | Everything except memory (all 12 categories) |
 
 Start with `default`. Add bundles as you need them: `graph` (includes GraphML export for Gephi/Cytoscape), `schema`, `wikilinks`, `temporal`, `diagnostics`, and more.
 

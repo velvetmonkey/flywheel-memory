@@ -1,5 +1,7 @@
 # Vision
 
+[← Back to docs](README.md)
+
 Your vault is the most valuable dataset you own. It holds your professional memory, your decision history, your relationship map, the accumulated context of every project you've ever worked on. It deserves infrastructure as serious as a production database -- indexed, queryable, and aware of its own structure.
 
 [[Flywheel]] Memory is that infrastructure.

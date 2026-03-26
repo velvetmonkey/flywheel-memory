@@ -1,5 +1,7 @@
 # Policy Examples
 
+[← Back to docs](README.md)
+
 Ready-to-run policy examples for common vault workflows. Save any of these as `.claude/policies/<name>.yaml` in your vault, then use `policy action=execute` to run.
 
 - [Quick Reference](#quick-reference)

@@ -1,5 +1,7 @@
 # Prove It
 
+[← Back to docs](README.md)
+
 > Clone. Run. See. 5 minutes.
 
 No screenshots. No demos on someone else's machine. Clone the repo, run the tests, try the tools. Everything below runs on your hardware in your terminal.

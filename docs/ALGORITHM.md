@@ -1,5 +1,7 @@
 # The Scoring Algorithm
 
+[← Back to docs](README.md)
+
 When Flywheel suggests `[[Marcus Johnson]]`, it didn't guess. It computed a score across 13 scoring layers -- each independently testable, each ablatable, each with a reason to exist. Here's exactly how.
 
 - [The 13 Layers](#the-13-layers)

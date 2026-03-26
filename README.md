@@ -12,8 +12,8 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code%20%7C%20OpenClaw-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![HotpotQA](https://img.shields.io/badge/HotpotQA-89.6%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-66%25%20single--hop%20%7C%2083%25%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![HotpotQA](https://img.shields.io/badge/HotpotQA-93.0%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-65%25%20single--hop%20%7C%2085%25%20recall%20(759q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Cost](https://img.shields.io/badge/cost-%240.06--0.09%2Fquery-green.svg)](docs/TESTING.md#how-the-e2e-benchmark-works)
 [![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
 
@@ -252,11 +252,11 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 
 > **⚠️ These comparisons are not controlled experiments.** Different systems use different document representations, different LLM judges, different prompts, and different vault structures. We run the same benchmark datasets and report honestly, but treat these as directional indicators - not head-to-head results. The numbers reproduce if you clone the repo and run them yourself.
 
-**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions):
+**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 759 questions):
 
 | System | Single-hop | Multi-hop | Questions | Judge | Cost/question | Infrastructure |
 |---|---|---|---|---|---|---|
-| **Flywheel** | **66.2%** | **33.8%** | 695 | Claude Haiku | **$0.087** | Local SQLite + markdown |
+| **Flywheel** | **65.4%** | **28.3%** | 759 | Claude Haiku | **$0.085** | Local SQLite + markdown |
 | [Mem0](https://mem0.ai/) | 38.7 | 28.6 | 695 | GPT-4o | ~$0.30-0.50* | Redis + Qdrant |
 | [Zep](https://getzep.com/) | 35.7 | 19.4 | 695 | GPT-4o | ~$0.30-0.50* | Cloud service |
 | [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | 695 | GPT-4o | ~$0.30-0.50* | Varies |
@@ -268,29 +268,29 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 
 | System | Type | Recall@5 | Docs | Cost/question | Training |
 |---|---|---|---|---|---|
-| **Flywheel** | General-purpose MCP tool | **89.6%** | 4,960 | **$0.063** | None |
+| **Flywheel** | General-purpose MCP tool | **93.0%** | 4,960 | **$0.063** | None |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | 5M+ Wikipedia | N/A (inference only) | Trained on HotpotQA |
 | [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | 5M+ Wikipedia | N/A (inference only) | Trained on HotpotQA |
 | BM25 baseline | Industry-standard IR | ~70-75% | Varies | Negligible | None |
 
 **What's comparable and what isn't:**
 
-- **LoCoMo sample size** is the same (695 questions). Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
+- **LoCoMo sample size differs.** Flywheel uses 759 questions; competitors use 695. Both are stratified samples from the same 1,986-question dataset. Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
 - **LoCoMo judge model differs.** We use Claude Haiku; competitors use GPT-4o. Different judges may score differently. We haven't measured inter-judge agreement.
 - **LoCoMo document pool differs.** Flywheel searches 272 markdown session notes. Competitors may chunk, summarise, or embed conversations differently - their document representations aren't published.
 - **LoCoMo prompt differs.** Our agent uses a minimal system prompt with the `agent` tool preset. Competitor prompt strategies aren't published.
 - **HotpotQA is not a fair comparison.** MDR and Baleen were trained on HotpotQA specifically and search 5M+ Wikipedia articles. Flywheel is a general-purpose tool with zero training, searching a 4,960-document vault. The comparison shows where untrained retrieval sits relative to specialised systems - not that we "beat" them.
 
-### Full LoCoMo results (695 questions)
+### Full LoCoMo results (759 questions)
 
 | Category | Evidence Recall | Answer Accuracy | 95% CI | Questions |
 |---|---|---|---|---|
-| Single-hop | 94.2% | 66.2% | [58.0%, 73.5%] | 139 |
-| Commonsense | 95.0% | 67.6% | [59.5%, 74.8%] | 139 |
-| Temporal | 68.6% | 49.0% | [39.2%, 58.8%] | 96 |
-| Multi-hop | 73.2% | 33.8% | [26.5%, 42.0%] | 139 |
-| Adversarial | 97.3% | 45.1% | [38.0%, 52.3%] | 182 |
-| **Overall** | **83.0%** | **52.1%** | **[48.4%, 55.8%]** | **695** |
+| Commonsense | 94.2% | 75.6% | [70.5%, 80.0%] | 311 |
+| Single-hop | 93.9% | 65.4% | [56.9%, 73.0%] | 130 |
+| Adversarial | 96.0% | 46.8% | [39.5%, 54.2%] | 173 |
+| Temporal | 63.3% | 40.6% | [25.5%, 57.7%] | 32 |
+| Multi-hop | 67.5% | 28.3% | [20.8%, 37.2%] | 113 |
+| **Overall** | **84.9%** | **58.8%** | **[55.2%, 62.2%]** | **759** |
 
 Evidence recall = did the system find the right source notes. Answer accuracy = did it give the correct answer (LLM-as-judge, Claude Haiku). The vault is pre-warmed with auto-linking and embeddings before questions run - [how it works →](docs/TESTING.md#how-the-e2e-benchmark-works) · Reproduce: `demos/locomo/run-benchmark.sh`
 

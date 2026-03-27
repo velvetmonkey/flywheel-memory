@@ -193,15 +193,17 @@ Optional semantic search layer that complements FTS5 keyword search. Built on-de
 
 ### Embeddings Module
 
-The `embeddings.ts` module generates vector embeddings for note content using the `all-MiniLM-L6-v2` model from Hugging Face Transformers. The model is downloaded automatically to `~/.cache/huggingface/` on first use. Each note's content is chunked and embedded into a 384-dimensional vector.
+The `embeddings.ts` module generates vector embeddings for note content using the `all-MiniLM-L6-v2` model from Hugging Face Transformers. The model is downloaded automatically to `~/.cache/huggingface/` on first use. Each note is embedded into a 384-dimensional vector.
+
+Before embedding, each note's text is enriched with a contextual prefix: `"Note: {title}. Tags: {tag1}, {tag2}."` followed by the body content with frontmatter stripped. This matches the contextual retrieval technique (Anthropic, 2024) -- the embedding carries document identity alongside content meaning, so a search for "team lead" can surface a note titled "Emma" even when the body text doesn't repeat the name. An `EMBEDDING_TEXT_VERSION` constant is mixed into the content hash; bumping it forces a one-time re-embed on upgrade without schema changes.
 
 ### Storage
 
-Embeddings are stored in the `note_embeddings` table in StateDb (`.flywheel/state.db`). Each row maps a note path to its embedding vector and a content hash for staleness detection.
+Embeddings are stored in the `note_embeddings` table in StateDb (`.flywheel/state.db`). Each row maps a note path to its embedding vector and a content hash (incorporating the embedding text version) for staleness detection.
 
 ### Hybrid Search
 
-The `semantic.ts` module merges BM25 keyword results (from FTS5) with semantic similarity results (from cosine distance on embeddings) using **Reciprocal Rank Fusion (RRF)**. RRF combines two ranked lists by summing `1 / (k + rank)` for each result across both lists, producing a single ranking that benefits from keyword precision and semantic recall.
+The `semantic.ts` module merges BM25 keyword results (from FTS5) with semantic similarity results (from cosine distance on context-enriched embeddings) using **Reciprocal Rank Fusion (RRF)**. RRF combines ranked lists by summing `1 / (k + rank)` for each result across all channels, producing a single ranking that benefits from keyword precision and semantic recall. Results then pass through graph reranking, U-shaped interleaving (placing best results at attention peaks), snippet extraction, and section expansion into a decision surface.
 
 When embeddings exist, `search` and `find_similar` automatically upgrade to hybrid mode. When embeddings are not available, both tools fall back to FTS5-only mode with no degradation.
 

@@ -568,7 +568,7 @@ The scoring algorithm above powers wikilink suggestions -- what to link. The sea
 
 Search returns three sections in a single response. The note pipeline is completely independent -- entity and memory channels cannot affect note ranking.
 
-**`results[]` (Notes)** -- FTS5 full-text search with BM25 ranking. Column weights: frontmatter values 10x, title 5x, content 1x. When embeddings are built, semantic similarity runs in parallel (cosine on local all-MiniLM-L6-v2 embeddings -- no content leaves the machine). Results go through RRF fusion, graph reranking, sandwich ordering, and P38 enrichment. This pipeline is identical to pre-merge search -- benchmark-validated, untouched.
+**`results[]` (Notes)** -- FTS5 full-text search with BM25 ranking. Column weights: frontmatter values 10x, title 5x, content 1x. When embeddings are built, semantic similarity runs in parallel (cosine on local all-MiniLM-L6-v2 embeddings enriched with contextual prefixes -- no content leaves the machine). Results go through RRF fusion, graph reranking, U-shaped interleaving, snippet extraction, and section expansion into a decision surface. This pipeline is identical to pre-merge search -- benchmark-validated, untouched.
 
 **`entities[]`** -- Matches against the entity database (names, aliases, descriptions). Returns entity profiles directly: category, hub score, description, aliases. Separate list, separate ranking.
 
@@ -594,23 +594,50 @@ Every result carries structured metadata for machine consumption -- a decision s
 |---|---|---|
 | `type` | note / entity / memory | All results |
 | `section` | Which heading contains the match | Notes (content matches) |
+| `section_content` | Full section text around the match (up to 2,500 chars) | Top N notes (when section heading exists) |
 | `snippet_confidence` | How likely this result answers the query (0--1) | All results |
 | `dates_mentioned` | Extracted dates from the matching section | When dates found |
 | `bridges` | Shared entities between this result and others | When bridges detected |
 | `frontmatter` | All YAML metadata (status, owner, dates, amounts) | Notes |
 | `backlinks` | Top 10 notes linking here, ranked by edge weight × recency | Notes |
 | `outlinks` | Top 10 outgoing links, existence-checked | Notes |
-| `snippet` | Passage matching query (~64 tokens, `<mark>` tags) | Notes (FTS5 matches) |
+| `snippet` | Best-matching paragraph (~800 chars, section-aware) | Notes (content matches) |
 | `content_preview` | First ~300 chars of body | Notes (non-FTS matches) |
 | `category` | Entity type (person, project, technology, etc.) | Entities |
 | `hub_score` | Eigenvector centrality (graph importance) | Entities |
 | `description` | One-line entity summary | Entities |
 
-Top results (controlled by `detail_count`, default 5) get full metadata; remaining results get lightweight summaries with just path, title, snippet, and score.
+Top results (controlled by `detail_count`, default 5) get full metadata including section expansion; remaining results get lightweight summaries with just path, title, snippet, and score.
 
-### Sandwich Ordering
+### U-Shaped Interleaving (Lost in the Middle)
 
-Results are re-ordered so the most relevant appear at the beginning and end of the list -- the positions where attention is strongest. Middle positions hold moderate results. This is invisible to the consumer but measurably improves how models weight results.
+LLMs have a U-shaped attention curve -- accuracy drops 30%+ for information placed in the middle of context (Liu et al. 2024, "Lost in the Middle"). The search pipeline exploits this by reordering results so the highest-ranked items land at positions 1 and N (the attention peaks), while the lowest-ranked items sit in the middle (the attention trough).
+
+Given score-sorted results `[1, 2, 3, 4, 5, 6, 7, 8]`, the interleave produces `[1, 3, 5, 7, 8, 6, 4, 2]`. Odd-ranked items fill from the front, even-ranked from the back. Best result first, second-best last, worst in the middle. This is invisible to the consumer but measurably improves how models weight results.
+
+### Section Expansion (Dual-Granularity)
+
+Search matches at paragraph level (fine-grained snippets ~800 chars) but presents at section level. For the top N results (controlled by `detail_count`, default 5), when the snippet maps to a `## Section` heading, the pipeline reads the full section content and attaches it as `section_content` (up to 2,500 chars, truncated at paragraph boundaries).
+
+This gives the AI two signals per result:
+- **`snippet`** -- the precision signal: which paragraph matched and why
+- **`section_content`** -- the context signal: the full section around the match, with heading for provenance
+
+The snippet tells the AI *what matched*. The section tells it *what the match means in context*. One search call now delivers enough surrounding content that most follow-up `get_section_content` calls become unnecessary.
+
+### Contextual Embedding Prefix
+
+When embeddings are built, each note's embedding text is enriched with document-level context before vectorisation. Raw markdown (which starts with YAML frontmatter syntax) is replaced with:
+
+```
+Note: {title}. Tags: {tag1}, {tag2}.
+
+{body without frontmatter}
+```
+
+This matches the contextual retrieval technique (Anthropic, 2024) -- embedding a chunk alongside its document identity so the vector carries semantic meaning about *what the note is*, not just what it contains. A note titled "Emma" with tag "person" now embeds as `"Note: Emma. Tags: person. ..."` instead of `"---\ntype: person\nstatus: active\n---"`.
+
+An `EMBEDDING_TEXT_VERSION` constant is mixed into the content hash. Bumping it forces a one-time re-embed on upgrade -- no schema migration needed.
 
 ---
 
@@ -620,7 +647,7 @@ Most MCP search tools return a list of matches and say good luck. Flywheel retur
 
 What each field enables:
 
-- **Section provenance** → skip the full read, go straight to the right heading via `get_section_content`
+- **Section provenance + content** → the snippet tells you *where* the match is; `section_content` gives you the full section so you can reason about it without a follow-up read
 - **Pre-extracted dates** → answer temporal questions without parsing content
 - **Entity bridges** → discover connections between results without a second search
 - **Confidence scores** → skip low-value results without reading them

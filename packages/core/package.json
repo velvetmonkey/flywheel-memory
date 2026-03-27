@@ -62,7 +62,8 @@
     "data",
     "!dist/**/*.js.map",
     "!dist/**/*.d.ts.map",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public"

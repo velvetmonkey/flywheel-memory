@@ -21,7 +21,7 @@ COUNT="${COUNT:-695}"  # Default: 695 balanced questions (matches Mem0 competiti
 MODE="${MODE:-dialog}"
 SEED="${SEED:-42}"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
-RESULTS_DIR="$SCRIPT_DIR/results/run-$TIMESTAMP"
+RESULTS_DIR="${RESUME:-$SCRIPT_DIR/results/run-$TIMESTAMP}"
 
 # Pre-flight
 if [[ ! -f "$MCP_SERVER" ]]; then
@@ -45,6 +45,20 @@ INDICES_FILE="$RESULTS_DIR/indices.json"
 mkdir -p "$RESULTS_DIR/raw"
 
 # Stratified sampling: equal per category, spread across conversations
+if [[ -n "${RESUME:-}" ]] && [[ -f "$INDICES_FILE" ]]; then
+  echo "Resuming — reusing existing indices"
+  python3 -c "
+import json
+from collections import Counter
+gt = json.load(open('$GROUND_TRUTH'))
+questions = gt['questions']
+indices = json.load(open('$INDICES_FILE'))
+print(f'Sampled {len(indices)} questions across {len(set(questions[i][\"category\"] for i in indices))} categories')
+dist = Counter(questions[i]['category'] for i in indices)
+for cat, n in sorted(dist.items()):
+    print(f'  {cat}: {n}')
+"
+else
 python3 -c "
 import json, random
 random.seed(${SEED})
@@ -89,6 +103,7 @@ dist = Counter(questions[i]['category'] for i in indices)
 for cat, n in sorted(dist.items()):
     print(f'  {cat}: {n}')
 "
+fi
 
 echo ""
 echo "=== LoCoMo End-to-End Benchmark ==="
@@ -111,6 +126,9 @@ warmup_config=$(cat <<EOF
 EOF
 )
 
+if [[ -n "${RESUME:-}" ]] && [[ -f "$RESULTS_DIR/warmup.jsonl" ]]; then
+  echo "Resuming — skipping warmup (already done)"
+else
 echo "Pre-warming vault: index + auto-link + embeddings..."
 if claude -p "Bootstrap this vault for benchmarking. Run these steps in order:
 1. Call health_check — report entity_count and note_count.
@@ -130,6 +148,7 @@ Report final status with entity_count, note_count, and embeddings_ready." \
 else
   echo "WARNING: Pre-warm failed (exit $?) — continuing anyway"
 fi
+fi
 echo ""
 
 # Read indices
@@ -142,6 +161,13 @@ for i in $INDICES; do
   category=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['questions'][$i]['category'])")
 
   echo -n "  q${padded} [${category}]: "
+
+  # Resume support: skip questions with >1 line in JSONL (i.e., already answered)
+  existing="$RESULTS_DIR/raw/q${padded}.jsonl"
+  if [[ -f "$existing" ]] && [[ $(wc -l < "$existing") -gt 1 ]]; then
+    echo "skip (exists)"
+    continue
+  fi
 
   if claude -p "You are answering questions about conversations stored in this vault.
 Each note is one session of a multi-session conversation between two people.

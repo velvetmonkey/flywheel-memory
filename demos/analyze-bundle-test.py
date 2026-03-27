@@ -64,9 +64,8 @@ TOOL_CATEGORY = {
     "tasks": "tasks",
     "vault_toggle_task": "tasks",
     "vault_add_task": "tasks",
-    # memory (3 tools)
+    # memory (2 tools)
     "memory": "memory",
-    "recall": "memory",
     "brief": "memory",
     # note-ops (4 tools)
     "vault_delete_note": "note-ops",

@@ -83,7 +83,7 @@ TOOLS=(
 
   # --- memory (3) ---
   'memory|default,memory|Use the vault memory tool to store an observation: the Acme Data Migration cutover is confirmed for March 28-29 and all UAT has passed|yes'
-  'recall|default,memory|Recall everything relevant about billing, invoices, and payment status in this vault|no'
+  'search|default,memory|Search for everything relevant about billing, invoices, and payment status in this vault|no'
   'brief|default,memory|Brief me on the current state of this vault - what is happening, what needs attention|no'
 
   # --- note-ops (4) ---

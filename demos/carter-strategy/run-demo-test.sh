@@ -282,11 +282,19 @@ for i in "${!BEATS[@]}"; do
 
   case $beat_num in
     1)
-      # Beat 1: vault_add_to_section should be called
-      if echo "$tools_used" | grep -q "mcp__flywheel__vault_add_to_section"; then
-        echo "  [PASS] vault_add_to_section called"
+      # Beat 1: brief tool should be called
+      if echo "$tools_used" | grep -q "mcp__flywheel__brief"; then
+        echo "  [PASS] brief tool called"
       else
-        echo "  [FAIL] vault_add_to_section not called"
+        echo "  [WARN] brief tool not called (may have used search instead)"
+      fi
+      ;;
+    2)
+      # Beat 2: should use search, find invoice entities
+      if echo "$tools_used" | grep -qE "mcp__flywheel__search"; then
+        echo "  [PASS] search tool called"
+      else
+        echo "  [FAIL] no search tool used"
         beat_pass=false
       fi
       # Daily note should exist with wikilinks

@@ -98,9 +98,9 @@ echo "Vault mode:    $MODE"
 echo "Results:       $RESULTS_DIR"
 echo ""
 
-# MCP config — agent preset (recall, memory, brief tools for conversational memory)
+# MCP config — default preset (search, memory, brief tools for conversational memory)
 mcp_config=$(cat <<EOF
-{"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$VAULT_DIR","FLYWHEEL_TOOLS":"agent"}}}}
+{"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$VAULT_DIR"}}}}
 EOF
 )
 

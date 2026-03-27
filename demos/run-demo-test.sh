@@ -57,7 +57,7 @@ BEAT_EXPECTED+=("brief")
 
 BEAT_NAMES+=("beat2-billing")
 BEAT_PROMPTS+=("What's outstanding on billing? Any overdue invoices I need to chase?")
-BEAT_EXPECTED+=("recall,search")
+BEAT_EXPECTED+=("search")
 
 BEAT_NAMES+=("beat3-tasks")
 BEAT_PROMPTS+=("Add tasks to chase Sarah Mitchell at Acme about those three overdue invoices, and separately remind me to check in with Mike Chen at TechStart about today's invoice. Both due Wednesday.")
@@ -77,7 +77,7 @@ BEAT_EXPECTED+=("vault_create_note")
 
 BEAT_NAMES+=("beat7-pipeline")
 BEAT_PROMPTS+=("Give me a full pipeline overview: active projects, pending proposals, outstanding billing, and team utilization.")
-BEAT_EXPECTED+=("policy,search,recall")
+BEAT_EXPECTED+=("policy,search")
 
 echo ""
 echo "Running ${#BEAT_NAMES[@]} beats sequentially..."

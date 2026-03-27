@@ -30,7 +30,7 @@ TOOL_CATEGORY = {
     "vault_record_correction": "corrections", "vault_list_corrections": "corrections",
     "vault_resolve_correction": "corrections", "absorb_as_alias": "corrections",
     "tasks": "tasks", "vault_toggle_task": "tasks", "vault_add_task": "tasks",
-    "memory": "memory", "recall": "memory", "brief": "memory",
+    "memory": "memory", "brief": "memory",
     "vault_delete_note": "note-ops", "vault_move_note": "note-ops",
     "vault_rename_note": "note-ops", "merge_entities": "note-ops",
     "get_context_around_date": "temporal", "predict_stale_notes": "temporal",

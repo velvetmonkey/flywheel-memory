@@ -14,9 +14,8 @@ import type { VaultRegistry } from './vault-registry.js';
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
 // Presets:
-//   default    - Note-taking essentials: search, read, write, tasks (16 tools)
-//   agent      - Autonomous AI agents: search, read, write, memory (16 tools)
-//   full       - All tools except agent memory (71 tools). Add ",memory" for all 74.
+//   default    - Note-taking essentials: search, read, write, tasks, memory (18 tools)
+//   full       - All tools, all categories (75 tools)
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic + export (11 tools)
@@ -27,13 +26,12 @@ import type { VaultRegistry } from './vault-registry.js';
 //   memory      - Session memory + brief (2 tools)
 //   note-ops    - File management: delete, move, rename, merge (4 tools)
 //   temporal    - Time-based vault intelligence (4 tools)
-//   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history (18 tools)
+//   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export (20 tools)
 //
 // Examples:
-//   FLYWHEEL_TOOLS=default                    # 16 tools
-//   FLYWHEEL_TOOLS=agent                      # 16 tools
-//   FLYWHEEL_TOOLS=default,graph              # 27 tools
-//   FLYWHEEL_TOOLS=agent,tasks                # 16 tools
+//   FLYWHEEL_TOOLS=default                    # 18 tools
+//   FLYWHEEL_TOOLS=default,graph              # 29 tools
+//   FLYWHEEL_TOOLS=default,graph,wikilinks    # 36 tools
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
 // Categories (12):
@@ -234,7 +232,7 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   track_concept_evolution: 'temporal',
   temporal_summary: 'temporal',
 
-  // diagnostics (18 tools) -- vault health, stats, config, activity, merges, doctor, trust, benchmark, history
+  // diagnostics (20 tools) -- vault health, stats, config, activity, merges, doctor, trust, benchmark, history, learning report, calibration export
   health_check: 'diagnostics',
   get_vault_stats: 'diagnostics',
   get_folder_structure: 'diagnostics',

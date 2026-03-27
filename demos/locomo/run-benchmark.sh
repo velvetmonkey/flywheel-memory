@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # End-to-end LoCoMo retrieval benchmark
 #
-# Runs LoCoMo questions through Claude with Flywheel MCP tools (agent preset),
+# Runs LoCoMo questions through Claude with Flywheel MCP tools (default preset),
 # then analyzes evidence recall and answer quality.
 #
 # Usage:

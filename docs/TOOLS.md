@@ -29,14 +29,14 @@
 | [Read a specific note](#read-deeper) | `get_note_structure` | 3 |
 | [Write or edit content](#write--edit) | `vault_add_to_section` | 5 |
 | [Work with tasks](#tasks) | `tasks` | 3 |
-| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis`, `semantic_analysis` | 10 |
+| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis`, `semantic_analysis` | 11 |
 | [Improve my wikilinks](#wikilinks--linking) | `suggest_wikilinks` | 7 |
 | [Clean up my schema](#schema--consistency) | `vault_schema`, `schema_conventions`, `schema_validate` | 7 |
 | [Record corrections](#corrections) | `vault_record_correction` | 4 |
 | [Move, rename, or merge notes](#organize-notes) | `vault_move_note` | 4 |
 | [Persistent memory](#session-memory) | `memory`, `brief` | 2 |
 | [Analyze temporal patterns](#temporal-analysis) | `get_context_around_date` | 4 |
-| [Check vault health](#vault-health) | `health_check` | 14 |
+| [Check vault health](#vault-health) | `health_check` | 20 |
 | [Automate workflows](#automation) | `policy` | 2 |
 
 ---

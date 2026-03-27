@@ -462,7 +462,7 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 | 3 | vault_record_correction | builtin:1 | Yes | ToolSearch -> vault_record_correction |
 
 ### diagnostics
-> Category: `diagnostics` (14 tools)
+> Category: `diagnostics` (20 tools)
 
 | Run | Target Tools Used | Other Tools | Hit? | Sequence |
 |-----|-------------------|-------------|------|----------|

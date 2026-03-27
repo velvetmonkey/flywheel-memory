@@ -44,7 +44,7 @@ echo "Model:     $MODEL"
 echo "Results:   $RESULTS_DIR"
 echo ""
 
-# MCP config — default preset (16 tools: search, read, write, tasks)
+# MCP config — default preset (18 tools: search, read, write, tasks, memory)
 mcp_config=$(cat <<EOF
 {"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$VAULT_DIR","FLYWHEEL_TOOLS":"default"}}}}
 EOF

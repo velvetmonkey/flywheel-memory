@@ -77,7 +77,7 @@ TOOL_CATEGORY = {
     "predict_stale_notes": "temporal",
     "track_concept_evolution": "temporal",
     "temporal_summary": "temporal",
-    # diagnostics (14 tools)
+    # diagnostics (20 tools)
     "health_check": "diagnostics",
     "get_vault_stats": "diagnostics",
     "get_folder_structure": "diagnostics",

@@ -4,6 +4,12 @@
   <p><strong>MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.</strong><br/>All local. All yours. A few lines of config.</p>
 </div>
 
+**Search** — One call returns section provenance, extracted dates, entity bridges, and confidence scores. Your AI decides what to read next without opening any files.
+
+**Write** — Every mutation auto-links entities across your vault. Names, projects, and relationships wikilinked in real time.
+
+**Remember** — Links you keep get stronger. Links you remove get suppressed. The graph compounds with use.
+
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)

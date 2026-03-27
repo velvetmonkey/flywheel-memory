@@ -722,6 +722,35 @@ export function needsEmbeddingRebuild(): boolean {
 }
 
 /**
+ * Check if any stored embeddings are stale (content hash mismatch).
+ * Samples up to 5 notes for speed — a single mismatch means the
+ * EMBEDDING_TEXT_VERSION bumped and a full rebuild is needed.
+ */
+export function hasStaleEmbeddings(vaultPath: string): boolean {
+  const db = getDb();
+  if (!db) return false;
+  try {
+    const rows = db.prepare(
+      'SELECT path, content_hash FROM note_embeddings ORDER BY RANDOM() LIMIT 5'
+    ).all() as Array<{ path: string; content_hash: string }>;
+    if (rows.length === 0) return false;
+    for (const row of rows) {
+      const absPath = path.resolve(vaultPath, row.path);
+      try {
+        const content = fs.readFileSync(absPath, 'utf-8');
+        if (contentHash(content) !== row.content_hash) return true;
+      } catch {
+        // File may have been deleted — stale
+        return true;
+      }
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Get the number of embedded notes.
  */
 export function getEmbeddingsCount(): number {

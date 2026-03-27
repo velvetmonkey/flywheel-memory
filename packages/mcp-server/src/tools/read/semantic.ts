@@ -9,6 +9,7 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 import {
   setEmbeddingsDatabase,
   hasEmbeddingsIndex,
+  hasStaleEmbeddings,
   getEmbeddingsCount,
   buildEmbeddingsIndex,
   buildEntityEmbeddingsIndex,
@@ -53,20 +54,25 @@ export function registerSemanticTools(
       // Inject db handle (idempotent)
       setEmbeddingsDatabase(stateDb.db);
 
-      // Check if already built
+      // Check if already built and up-to-date
       if (hasEmbeddingsIndex() && !force) {
-        const count = getEmbeddingsCount();
-        return {
-          content: [{
-            type: 'text' as const,
-            text: JSON.stringify({
-              success: true,
-              already_built: true,
-              embedded: count,
-              hint: 'Embeddings already built. All searches automatically use hybrid ranking.',
-            }, null, 2),
-          }],
-        };
+        const vaultPathForCheck = getVaultPath();
+        const stale = hasStaleEmbeddings(vaultPathForCheck);
+        if (!stale) {
+          const count = getEmbeddingsCount();
+          return {
+            content: [{
+              type: 'text' as const,
+              text: JSON.stringify({
+                success: true,
+                already_built: true,
+                embedded: count,
+                hint: 'Embeddings already built. All searches automatically use hybrid ranking.',
+              }, null, 2),
+            }],
+          };
+        }
+        console.error('[Semantic] Stale embeddings detected (EMBEDDING_TEXT_VERSION changed) — rebuilding...');
       }
 
       // Build index with progress logging

@@ -1,12 +1,12 @@
 # Carter Strategy Demo Video Script (~5 minutes)
 
-Single demo showing the learning loop: write notes, get link suggestions, accept/reject feedback, watch the graph improve, see smarter suggestions on the next write. Three-panel layout, six beats, voice-native via Wispr Flow.
+Single demo showing the learning loop: write notes, Flywheel suggests links, accept/reject feedback, graph improves, future suggestions get smarter. Three-panel layout, five beats, voice-native via Wispr Flow.
 
 **Tagline:** "Cognitive sovereignty for your Obsidian vault."
 
-**Key framing:** This demo sells what the vault *learns*, not just what it stores. Flywheel-engine handles the Telegram interaction — the bot layer is hand-waved. The viewer sees natural voice input on the left, structured notes with auto-wikilinks and suggestions in the centre, and a graph reflecting learned relationships on the right. They think: "My vault would actually get smarter over time."
+**Key framing:** This demo sells the flywheel effect -- the system learning from your edits, not just storing them. The viewer sees: write something casual, watch links appear, accept some, reject others, then write something else and see the suggestions already improved. By the end, the graph is visibly denser and the system knows which connections matter.
 
-**Centre panel insight:** The daily note shows two kinds of markup: **blue wikilinks** (auto-applied, high confidence) and **`→` suggestions** (algorithm thinks these are related, pending human judgment). The distinction is the visual hook — it sets up the feedback beats.
+**Centre panel insight:** Every mutation shows auto-wikilinks firing in real time. The viewer sees blue links materialise as words are written. When a link is kept, it silently strengthens future scoring. When a link is edited out, it silently suppresses. Nobody explains this -- it just happens, and the graph tells the story.
 
 ---
 
@@ -53,291 +53,247 @@ This means Beat 1 suggestions already reflect prior learning (GlobalBank suppres
 
 ---
 
-## Beat 1: "Morning capture" (0:00-0:50)
+## Beat 1: "Log a call" -- suggestions appear (0:00-1:00)
 
-**Hero panel: CENTRE (daily note filling up)**
+**Hero panel: CENTRE (daily note)**
 
-**Voice (crisp, consultant morning energy):**
-> "Had a quick sync with Sarah Mitchell about the Acme cutover timeline. Marcus Webb confirmed the Airflow pipelines are solid and rollback procedures are documented in the Playbook. Cutover still locked for March 28-29. Sarah wants to schedule a scoping call for the Analytics Add-on after cutover wraps."
-
-| Panel | What the viewer sees |
-|-------|---------------------|
-| LEFT | Message appears in Telegram via Wispr, bot processes and responds |
-| CENTRE | Daily note created. Entry appears with **auto-wikilinks**: `[[Sarah Mitchell]]`, `[[Acme Corp]]`, `[[Marcus Webb]]`, `[[Data Migration Playbook]]`, `[[Acme Analytics Add-on]]`. PLUS **suggestion suffix**: `→ [[Acme Data Migration]], [[Discovery Workshop Template]], [[Meridian Financial]], [[Rate Card]]` |
-| RIGHT | Graph panel shows entity constellation — connections light up for linked entities |
-
-**What this proves:** Auto-wikilinks fire on known entities. The `→` suggestions go beyond what was explicitly mentioned — the scoring algorithm found related entities. But two suggestions look wrong...
-
-**Voiceover annotation (lower third):**
-> "Blue links: auto-applied. Arrow suggestions: the algorithm's best guesses."
-
-**Editor:** Slow down when the `→` suffix appears. Hold for 2-3 seconds so the viewer can read the suggestions. This sets up the next two beats.
-
----
-
-## Beat 2: "Teach it what's wrong" (0:50-1:40)
-
-**Hero panel: LEFT (feedback interaction)**
-
-**Voice (thoughtful, evaluating):**
-> "Hmm — Meridian Financial? That's a completely different client, nothing to do with the Acme cutover. And Discovery Workshop Template — that was months ago during the discovery phase. Neither of those belong here. Reject both."
+**Voice (casual, post-call energy):**
+> "Log that I just wrapped a call with Sarah Mitchell and James Rodriguez at Acme. UAT is fully complete, Marcus Webb's validation scripts passed, and we're hitting the 3x performance target. Cutover locked for March 28-29."
 
 | Panel | What the viewer sees |
 |-------|---------------------|
-| LEFT | Two feedback reports sent. Bot confirms: "Recorded: Meridian Financial — rejected. Discovery Workshop Template — rejected." |
-| CENTRE | The `→` suggestion line updates — `Meridian Financial` and `Discovery Workshop Template` visually fade or strike through (editorial effect in post) |
-| RIGHT | Graph: connection lines to those entities dim slightly |
+| LEFT | Message appears in Telegram, bot confirms it's logging the entry |
+| CENTRE | Daily note entry appears with auto-wikilinks: [[Sarah Mitchell]], [[James Rodriguez]], [[Acme Corp]], [[Marcus Webb]], [[Acme Data Migration]]. PLUS suggested outgoing links appear: -> [[Discovery Workshop Template]], [[Data Migration Playbook]] |
+| RIGHT | Graph shows existing connections lighting up -- Sarah, James, Marcus all connected to Acme Data Migration |
 
-**What this proves:** The user evaluates suggestions and corrects the algorithm. Human judgment matters — the vault doesn't just guess, it listens.
+**What this proves:** One voice command, five entities auto-linked. The system recognised names, projects, and relationships without being told where anything lives. Two extra suggestions appeared -- entities the system thinks are relevant based on co-occurrence patterns.
 
-**Why these entities are wrong:**
-- **Meridian Financial** — a separate prospect (API modernization). Co-occurrence false positive: both clients appear in weekly planning notes and pipeline overviews, so the algorithm sees correlation. But in the context of an Acme cutover update, it's noise.
-- **Discovery Workshop Template** — was relevant 5 months ago during Acme's discovery phase. The recency boost has decayed, but co-occurrence with Acme-related entities still pushes it above threshold. In a cutover context, it's irrelevant.
-
-**Voiceover annotation:**
-> "Negative feedback suppresses the entity immediately. It won't appear in future suggestions."
-
-**Editor:** Show the first rejection at full speed. Speed through the second (same pattern). The viewer gets it.
+**Editor:** Let the wikilinks render at real speed. The viewer needs to see them appear. Brief pause on the suggested links (arrow notation) -- these are the learning loop's input.
 
 ---
 
-## Beat 3: "Teach it what's right" (1:40-2:20)
+## Beat 2: "Accept and reject" -- feedback captured (1:00-1:45)
 
-**Hero panel: CENTRE then LEFT**
+**Hero panel: CENTRE (editing the note)**
 
-**Voice (approving):**
-> "But Acme Data Migration and Rate Card — yes, both spot on. The migration IS what we're cutting over, and Marcus's new rate needs updating. Accept both."
+**No voice -- hands-on-keyboard moment.**
+
+The presenter manually edits the daily note entry:
+1. **Keeps** the `-> [[Discovery Workshop Template]]` suggestion (it's relevant -- UAT validated patterns from that workshop)
+2. **Removes** the `-> [[Data Migration Playbook]]` suggestion (not relevant to this specific update)
+3. **Adds** `-> [[Emily Chen]]` manually (she needs to sign off on production access -- the system didn't suggest her because she hasn't co-occurred with cutover conversations yet)
 
 | Panel | What the viewer sees |
 |-------|---------------------|
-| LEFT | Two positive feedback reports. Bot confirms: "Recorded: Acme Data Migration — confirmed. Rate Card — confirmed." |
-| CENTRE | The remaining suggestions (`[[Acme Data Migration]]`, `[[Rate Card]]`) get promoted — editorial effect: they become inline wikilinks (the `→` prefix disappears and they turn blue) |
-| RIGHT | Graph: connections to Acme Data Migration and Rate Card brighten/thicken |
+| LEFT | (Static -- Telegram not involved) |
+| CENTRE | Two edits visible: one suggestion kept, one removed, one manual link added |
+| RIGHT | Graph subtly updates -- Discovery Workshop Template connection strengthens, Emily Chen gains a new edge to Acme Data Migration |
 
-**What this proves:** Feedback is bidirectional — not just punishment but reward. Good suggestions get boosted for next time. The viewer has now seen a natural curation pattern: 2 rejected, 2 accepted.
+**What this proves:** Every edit is feedback. Keeping a suggestion boosts that connection. Removing one suppresses it. Adding a manual link teaches the system a new relationship. The graph responds in real time.
 
-**Editor:** This beat should feel satisfying — the user just trained their knowledge graph. Keep it brief. The payoff is Beat 4.
+**Editor:** Show the edits at 70% speed. Highlight the kept vs removed suggestions with a subtle annotation (checkmark/X). This beat is quiet and deliberate -- contrast with the energy of Beat 1.
+
+**Text overlay (optional):** "Every edit teaches the system."
 
 ---
 
-## Beat 4: "The second capture" -- THE PAYOFF (2:20-3:20)
+## Beat 3: "Write more, better suggestions" -- the loop closes (1:45-2:30)
+
+**Hero panel: CENTRE + RIGHT (split focus)**
+
+**Voice:**
+> "Sarah mentioned the Analytics Add-on proposal is circulating with their finance team. She wants to scope it with Emily after cutover. I said Priya Kapoor would be ideal."
+
+| Panel | What the viewer sees |
+|-------|---------------------|
+| LEFT | Message in Telegram, bot logs it |
+| CENTRE | New entry with auto-wikilinks: [[Sarah Mitchell]], [[Acme Analytics Add-on]], [[Emily Chen]], [[Priya Kapoor]]. Suggested links: -> [[Acme Corp]], -> [[Acme Data Migration]]. Notably ABSENT: Data Migration Playbook (suppressed from Beat 2 feedback) |
+| RIGHT | Graph grows -- Emily Chen now firmly connected to Acme cluster (the manual link from Beat 2 taught the system). Priya appears for the first time. |
+
+**What this proves:** The learning loop closed. In Beat 2, the presenter removed Data Migration Playbook -- it doesn't appear in Beat 3's suggestions. In Beat 2, the presenter manually added Emily Chen -- she's now auto-linked in Beat 3 because the system learned she co-occurs with Acme context. The suggestions got smarter from one interaction.
+
+**Editor:** This is the "aha" moment. The viewer needs to notice what's NOT there (Playbook) and what IS there (Emily auto-linked). Consider a brief split-screen comparison: Beat 1 suggestions vs Beat 3 suggestions.
+
+---
+
+## Beat 4: "The voice dump" -- SHOWSTOPPER (2:30-3:45)
 
 **Hero panel: ALL THREE**
 
-**Voice (natural, post-call energy):**
-> "Just got off a call about Nexus Health. They're confirmed to proceed with the Cloud Assessment once Leila Farouk is available in April. Need to finalise the proposal and get Priya Kapoor looped in for the compliance review. Their board wants the audit complete before the fundraise."
+**Voice (natural, stream-of-consciousness -- consultant debriefing after a call):**
+
+> "One more thing -- James says the legacy Oracle decommission timeline hasn't been confirmed by IT. I've asked him to escalate. If we don't get a date by next Friday we might need to run parallel, which would push costs beyond the 75K budget, probably an extra 8 to 10K.
+>
+> Oh, and update the Rate Card -- Marcus is going up to 220 an hour from April. Leila's rates need adding too for the Nexus Health engagement. Tom Huang confirmed Nexus wants to proceed with the Cloud Assessment once Leila's available.
+>
+> Last thing -- Dan Oliveira pinged about the Beta Corp Dashboard. Pipeline module's done, wants to demo to Stacy Thompson before the client presentation Wednesday."
 
 | Panel | What the viewer sees |
 |-------|---------------------|
-| LEFT | Message appears via Wispr, bot processes |
-| CENTRE | Second entry appears with auto-wikilinks: `[[Nexus Health]]`, `[[Leila Farouk]]`, `[[Priya Kapoor]]`. Suggestion suffix: `→ [[Nexus Health Cloud Assessment]], [[API Security Checklist]]`. **Crucially: NO `[[Meridian Financial]]` and NO `[[Discovery Workshop Template]]` in the suggestions.** |
-| RIGHT | Graph grows — Nexus Health cluster forms with new connections |
+| LEFT | Long message appears via Wispr, bot processes |
+| CENTRE | Massive entry with 12+ auto-wikilinks. Suggestions are sharply relevant -- the system has been learning all session. Emily Chen appears in suggestions for budget context (learned from Beat 2-3). Discovery Workshop Template appears where relevant (boosted from Beat 2). |
+| RIGHT | Graph EXPLODES -- Nexus Health cluster forms, Beta Corp connections multiply, Rate Card connects to multiple team members |
 
-**What this proves — THE FLYWHEEL EFFECT:**
-1. **Meridian Financial** was suggested 2 minutes ago in Beat 1. After rejection in Beat 2, it's gone. The system learned.
-2. **Discovery Workshop Template** was rejected and doesn't reappear either.
-3. **Nexus Health Cloud Assessment** IS suggested — strong co-occurrence with Nexus Health + Leila Farouk, plus positive feedback history from pre-seeded state.
-4. **API Security Checklist** appears — relevant to compliance/security work and Leila's cloud expertise.
-
-**Voiceover annotation (this is the key explanatory moment):**
-> "Notice what's missing. Meridian Financial was suggested two minutes ago — after the rejection, it's gone. The algorithm penalised it. Meanwhile, confirmed entities now show up with higher confidence."
+**What this proves:** After 3 beats of feedback, the system's suggestions are measurably better. Entities that were manually added in Beat 2 now auto-link. Entities that were suppressed stay gone. The voice dump fires 12+ auto-links and relevant suggestions -- the graph is learning in real time.
 
 **Voice delivery tips:**
-- Natural pace, not reading
-- This isn't the showstopper monologue of the old script — it's shorter and punchier
-- The visual reveal does the heavy lifting
+- Natural pace, consultant-talking-to-assistant cadence
+- Pause naturally. "Oh, and" before the Rate Card bit
+- "Last thing" signals the close -- slightly faster
 
-**Editor:** This is the money shot. Three phases:
-1. Voice input at real speed
-2. Speed through processing (2-3x)
-3. SLOW DOWN for the reveal — hold on the suggestion suffix for 3-4 seconds so the viewer can see what IS and ISN'T there. Consider a split-screen comparison overlay: "Beat 1 suggestions" vs "Beat 4 suggestions" side by side, with rejected entities crossed out.
-
----
-
-## Beat 5: "Show me the learning" (3:20-4:20)
-
-**Hero panel: LEFT (dashboard data)**
-
-**Voice (leaning back, curious):**
-> "Show me the feedback dashboard — how's the system learning?"
-
-| Panel | What the viewer sees |
-|-------|---------------------|
-| LEFT | Dashboard response streams in: overall accuracy (e.g., 82%), total feedback entries (34), boost tiers showing Sarah Mitchell and Acme Data Migration at strong (+10), Meridian Financial now suppressed, GlobalBank pre-suppressed. Entity graduation: entities moving from "learning" to "strong" tier. |
-| CENTRE | Daily note holds steady — full audit trail of the session visible |
-| RIGHT | Graph holds steady |
-
-**What this proves:** The numbers behind the learning. The viewer can see that feedback directly changes scores. The system is transparent — not a black box.
-
-**Optional enhancement:** Follow up with `suggest_wikilinks` in `detail: true` mode on a test sentence to show the per-layer score breakdown:
-> "Check the score breakdown for Sarah Mitchell."
-
-This shows: contentMatch +8, cooccurrence +3, typeBoost +3, feedbackAdjustment +10 = total 24. vs. Meridian Financial: contentMatch +6, but suppressionPenalty -15 = total -9 (filtered out). The numbers make the feedback effect visceral.
-
-**Editor:** This is data-heavy. Show the dashboard for 3-4 seconds. If using the score breakdown, overlay a clean table (not raw JSON). Use callout to highlight the `feedbackAdjustment` rows. Don't linger — the viewer needs to grasp "numbers go up for good entities, down for bad ones" and move on.
+**Editor:** Three phases:
+1. Voice input at real speed (80%) -- viewer feels the naturalness
+2. Processing at 2-3x -- never show dead air
+3. SLOW DOWN for the reveal -- daily note filling up and graph expanding at real speed. Hold 2-3 seconds after.
 
 ---
 
-## Beat 6: "The graph remembers" (4:20-5:00)
+## Beat 5: "Prove it improved" (3:45-4:40)
 
-**Hero panel: RIGHT (graph), then fade**
+**Hero panel: RIGHT (graph)**
 
-**Voice (quiet, satisfied):**
-> "Show me the Acme cluster."
+**Voice (relaxed):**
+> "Show me what's connected to Sarah Mitchell."
 
 | Panel | What the viewer sees |
 |-------|---------------------|
-| LEFT | (faded) |
-| CENTRE | (faded) |
-| RIGHT | Graph zooms to Acme Corp subgraph. Thick connections to Sarah Mitchell, Marcus Webb, Acme Data Migration, Rate Card (recently confirmed). Thin/absent connection to Meridian Financial (suppressed). The visual weight of edges reflects the feedback — confirmed relationships are thick, rejected ones thin or missing. |
+| LEFT | Agent response: Sarah's connections across the vault |
+| CENTRE | Scroll the daily note -- full audit trail of the session, 4 entries, dozens of wikilinks |
+| RIGHT | Click Sarah Mitchell in graph. Context cloud redraws showing HER connections: Acme Corp, Emily Chen (learned this session!), Data Migration, Analytics Add-on, invoices. Connections are weighted -- thicker lines for stronger relationships. |
 
-Hold for 3-4 seconds. No voiceover. Just the graph.
+**What this proves:** The graph at the end is denser and smarter than the graph at the start. Emily Chen is now firmly in Sarah's orbit -- a connection that didn't exist 5 minutes ago, taught by one manual edit in Beat 2. The flywheel effect is visible: write -> suggest -> feedback -> better suggestions -> denser graph.
 
-**Voice (over the closing shot):**
-> "Every suggestion you accept strengthens a connection. Every rejection teaches the algorithm what doesn't belong. Your vault doesn't just store — it learns."
+**Closing shot (4:40-5:00):**
+
+Hold on Sarah's subgraph for 3-4 seconds. No voiceover. Just the graph.
 
 Fade to repo URL.
 
-**Closing card:** "Flywheel Memory — cognitive sovereignty for your Obsidian vault." 5 seconds. Done.
+**Voiceover (over the graph reveal):**
+> "Every edit taught the system. Links you kept got stronger. Links you removed got suppressed. After five minutes, the graph knows which connections matter -- not because you configured anything, but because you just used it."
 
 ---
 
-## Centre Panel: Learning Loop Summary
+## The Learning Loop (reference for on-screen annotation)
 
-The daily note shows the full feedback cycle:
+```
+   Write a note
+       |
+       v
+  Auto-wikilinks fire
+  + suggestions appear
+       |
+       v
+  Accept / reject / add
+       |
+       v
+  Feedback shapes scoring
+  (boost / suppress / teach)
+       |
+       v
+  Next write: better suggestions
+       |
+       '---------> Graph gets denser
+```
 
-| Beat | Centre panel shows |
-|------|-------------------|
-| 1 | Entry appears with auto-wikilinks + `→` suggestion suffix (4 suggestions) |
-| 2 | Suggestion suffix updates — 2 entities fade (rejected) |
-| 3 | Remaining 2 suggestions promoted to full wikilinks (accepted) |
-| 4 | Second entry — better suggestions, rejected entities absent |
-| 5 | Audit trail of entire session visible |
-| 6 | (faded — graph takes focus) |
+---
 
-By Beat 4, the viewer realises the suggestions improved from one write to the next. The system learned in real time.
+## Centre Panel: Session Progression
+
+| Beat | Centre panel shows | Learning signal |
+|------|-------------------|-----------------|
+| 1 | Entry with 5 auto-links + 2 suggestions | Baseline -- system's initial suggestions |
+| 2 | Manual edits: keep one, remove one, add one | Three feedback signals captured |
+| 3 | New entry: improved suggestions (suppressed + boosted) | Loop closed -- suggestions changed |
+| 4 | Voice dump: 12+ auto-links, sharp suggestions | Accumulated learning from session |
+| 5 | Full audit trail, scroll to show density | Visual proof of graph growth |
+
+---
+
+## Key Difference from Retrieval Demo
+
+The old script showed: "ask questions, get smart answers." That proves recall.
+
+This script shows: "write casually, watch the system learn from your edits." That proves the flywheel effect -- the thing that makes Flywheel different from every other MCP search tool.
+
+The viewer should leave thinking: "I don't need to organize my notes. I just need to keep writing and the system figures out what connects."
 
 ---
 
 ## Voice Delivery Tips
 
-- **Beat 1:** Crisp, morning energy. Business update. Decisive.
-- **Beats 2-3:** Evaluative. Thinking out loud. "Hmm — that's not right" into "yes, that's correct." The consultant is curating, not just dictating.
-- **Beat 4:** Natural post-call energy. The viewer should feel the contrast — same voice-capture pattern as Beat 1, but the system responds differently.
-- **Beat 5:** Curious, data-interested. Leaning back.
-- **Beat 6:** Quiet satisfaction. Let the graph speak.
+- **Beat 1:** Post-call energy. Casual, fast. "Just got off a call."
+- **Beat 2:** Silent. Hands on keyboard. Let the edits speak.
+- **Beat 3:** Casual again, but the viewer is now primed to watch the suggestions.
+- **Beat 4:** Stream-of-consciousness, natural pauses. This is the set piece.
+- **Beat 5:** Relaxed, satisfied. The reveal.
 
 ---
 
 ## Recording Breakdown
 
-Record panels separately, sync in post. The daily note format (structured audit log with timestamps) is different from the Telegram chat, so cross-panel text won't match word-for-word. Three different representations of the same interaction.
+Record panels separately, sync in post. The daily note format is different from Telegram chat -- three different representations of the same interaction.
 
 ### LEFT (Telegram + Wispr)
-One recording session. Run all 6 beats sequentially. Voice through Wispr Flow appears as typed text in Telegram. Can re-record independently if a beat's response is bad.
+One recording session. Run Beats 1, 3, 4, 5 sequentially. Beat 2 is keyboard-only (no Telegram).
 
 ### CENTRE (Obsidian daily note)
-Key moments:
-- Beat 1: Daily note materialises with auto-wikilinks + `→` suggestions (FIRST VISUAL)
-- Beat 2-3: Suggestion suffix updates as feedback is recorded
-- Beat 4: Second entry — cleaner suggestions (THE REVEAL)
-- Beat 5: Full audit trail visible
+The hero panel for this demo. Key moments:
+- Beat 1: Daily note materialises with wikilinks + suggestions
+- Beat 2: Manual edits visible (HERO SHOT -- the feedback moment)
+- Beat 3: Improved suggestions appear (HERO SHOT -- the loop closing)
+- Beat 4: Note fills with 12+ wikilinks
+- Beat 5: Full audit trail scroll
 
 ### RIGHT (Crank graph panel)
-Key moments:
-- Beat 1: Existing entity constellation (baseline from pre-seeded state)
-- Beat 2-3: Edge weights shift subtly (rejections dim, confirmations brighten)
-- Beat 4: New cluster forms (Nexus Health)
-- Beat 6: Acme subgraph click — edge weights reflect feedback (CLOSING SHOT)
+- Beat 1: Existing connections light up
+- Beat 2: Subtle edge changes (strengthen/weaken)
+- Beat 3: Emily Chen firmly in Acme cluster
+- Beat 4: Graph explosion (HERO SHOT)
+- Beat 5: Sarah Mitchell click -> subgraph (CLOSING SHOT)
 
 ### Audio
-AI voiceover generated separately for all 6 beats. Beats 2-3 should sound evaluative, not commanding. Beat 4 same energy as Beat 1 — the contrast in system response is what lands, not the voice.
+AI voiceover for Beats 1, 3, 4, 5. Beat 2 is silent with soft ambient music. Beat 4 should be slower and more natural than Beats 1/3.
 
 ---
 
 ## Recording Order
 
 ```
-Session 1: Seed state.db. Reset daily-notes. Run all 6 beats in Telegram. Record LEFT panel.
-Session 2: Reset daily-notes. Re-run beats. Record CENTRE + RIGHT simultaneously.
-Session 3: Generate AI voiceover for all 6 beats.
+Session 1: Reset vault. Run all 5 beats via Telegram. Record LEFT panel.
+Session 2: Reset vault. Re-run beats. Record CENTRE + RIGHT simultaneously.
+Session 3: Generate AI voiceover for Beats 1, 3, 4, 5.
 ```
-
-Or: run once, screen-record Obsidian and Crank simultaneously (two capture regions), then record Telegram separately if needed for a cleaner take.
 
 ---
 
 ## Editor Notes
 
+- **Beat 2 (the quiet beat):** This is the emotional pivot. Soft music, deliberate pace. The viewer watches human judgment shape machine behaviour.
+- **Beat 3 (the aha):** Consider a brief annotation or split-screen showing "Beat 1 suggestions" vs "Beat 3 suggestions."
 - **Processing gaps:** Cut or speed to 3-4x. Never show waiting.
-- **Suggestion suffix:** This is the visual star of the demo. When suggestion lines appear (e.g., `→ [[Acme Data Migration]], [[Rate Card]]`), highlight or zoom momentarily. The arrow prefix distinguishes suggestions from applied links.
-- **Beat 4 comparison:** Consider a split overlay — "Beat 1 suggestions" on left, "Beat 4 suggestions" on right. Cross out the rejected entities. This is the single most important editorial moment.
-- **Graph animations:** Real speed or slower. Edge weight changes are the visual payoff — don't rush them.
-- **Dashboard (Beat 5):** Format as a clean table overlay, not raw JSON. Highlight the feedback adjustment numbers.
-- **Audio:** Light ambient music, ducked under voice. No music during Beats 2-3 (the evaluative beats need clarity). Music swells for Beat 4 reveal and Beat 6 graph.
-- **End card:** Repo URL + "Flywheel Memory — cognitive sovereignty for your Obsidian vault." 5 seconds. Done.
-
----
-
-## File Handoff
-
-```
-footage/
-+-- telegram-beat1-capture.mp4
-+-- telegram-beat2-reject.mp4
-+-- telegram-beat3-accept.mp4
-+-- telegram-beat4-capture2.mp4
-+-- telegram-beat5-dashboard.mp4
-+-- telegram-beat6-graph.mp4
-+-- obsidian-beat1-suggestions.mp4
-+-- obsidian-beat2-3-feedback.mp4
-+-- obsidian-beat4-reveal.mp4
-+-- obsidian-beat5-audit.mp4
-+-- graph-beat1-baseline.mp4
-+-- graph-beat2-3-edges.mp4
-+-- graph-beat4-nexus.mp4
-+-- graph-beat6-acme-cluster.mp4
-+-- voice-beat1.mp3
-+-- voice-beat2.mp3
-+-- voice-beat3.mp3
-+-- voice-beat4.mp3
-+-- voice-beat5.mp3
-+-- voice-beat6.mp3
-+-- script.md
-```
+- **Graph animations:** Real speed or slower. Visual payoffs.
+- **End card:** Repo URL + "Cognitive sovereignty for your Obsidian vault." 5 seconds.
 
 ---
 
 ## Entity Checklist
 
-Before filming, verify every entity mentioned in Beats 1-6 exists in the vault with enough frontmatter for auto-wikilinks to fire:
+Before filming, verify every entity mentioned exists in the vault:
 
-**Beat 1 (auto-wikilinks):**
-- [ ] Sarah Mitchell — VP Technology, Acme Corp
-- [ ] Acme Corp — client note
-- [ ] Marcus Webb — Senior Data Engineer
-- [ ] Data Migration Playbook — knowledge asset
-- [ ] Acme Analytics Add-on — proposal
-
-**Beat 1 (suggestions):**
-- [ ] Acme Data Migration — project note
-- [ ] Discovery Workshop Template — knowledge asset
-- [ ] Meridian Financial — client note (will be suppressed after Beat 2)
-- [ ] Rate Card — knowledge asset
-
-**Beat 4 (auto-wikilinks):**
-- [ ] Nexus Health — client note
-- [ ] Leila Farouk — cloud/security contractor
-- [ ] Priya Kapoor — financial modeling contractor
-
-**Beat 4 (suggestions):**
-- [ ] Nexus Health Cloud Assessment — proposal
-- [ ] API Security Checklist — knowledge asset
-
-**Beat 5 (dashboard references):**
-- [ ] GlobalBank — client note (pre-suppressed in seeded state)
-
-If any entity is mentioned in a beat but doesn't have a vault note, the auto-wikilink won't fire and the suggestion won't appear.
+- [ ] Sarah Mitchell (Beats 1, 2, 3, 5) -- VP Technology, Acme Corp
+- [ ] James Rodriguez (Beats 1, 4) -- IT contact, Acme Corp
+- [ ] Marcus Webb (Beats 1, 4) -- Senior Data Engineer
+- [ ] Emily Chen (Beats 2, 3, 4) -- Acme Corp, production sign-off
+- [ ] Priya Kapoor (Beat 3) -- financial modeling
+- [ ] Leila Farouk (Beat 4) -- cloud/security
+- [ ] Tom Huang (Beat 4) -- Nexus Health contact
+- [ ] Dan Oliveira (Beat 4) -- Beta Corp Dashboard
+- [ ] Stacy Thompson (Beat 4) -- demo reviewer
+- [ ] Acme Corp, TechStart Inc, Nexus Health (clients)
+- [ ] Acme Data Migration, Beta Corp Dashboard (projects)
+- [ ] Rate Card, Data Migration Playbook, Discovery Workshop Template (knowledge)
+- [ ] Acme Analytics Add-on, Nexus Health Cloud Assessment (proposals)
 
 ---
 
@@ -345,49 +301,36 @@ If any entity is mentioned in a beat but doesn't have a vault note, the auto-wik
 
 | Category | Count |
 |----------|-------|
-| Team members | 6 (Sarah Mitchell, Stacy Thompson, Marcus Webb, Priya Kapoor, Dan Oliveira, Leila Farouk) |
-| Clients | 5 (Acme Corp, TechStart Inc, GlobalBank, Nexus Health, Meridian Financial) |
-| Projects | 6 (Acme Data Migration, Beta Corp Dashboard, TechStart Phase 2, TechStart MVP Build, GlobalBank API Audit, Cloud Strategy Template) |
-| Proposals | 4 (Nexus Health Cloud Assessment, Meridian Financial API Modernization, Acme Analytics Add-on, TechStart Phase 2) |
-| Invoices | 8 (INV-2025-047, INV-2025-048, INV-2026-001 through INV-2026-006) |
-| Knowledge | 5 (Rate Card, Data Migration Playbook, Discovery Workshop Template, API Security Checklist, Subcontractor Management Guide) |
+| Team members | 6 |
+| Clients | 5 |
+| Projects | 6 |
+| Proposals | 4 |
+| Invoices | 8 |
+| Knowledge | 5 |
 | **Total entities** | **~47 notes** |
 
 ---
 
 ## The Flywheel Effect (reference for blog post / X thread)
 
-This section is NOT part of the video. It preserves the learning-loop concept for future written content.
+This section is NOT part of the video. Preserves concepts for future written content.
 
 ### The Learning Loop
 
 ```
-Write content
-     |
-     v
-Auto-wikilinks fire (high confidence)
-+ Suggestions appended (algorithm's best guesses)
-     |
-     v
-Human reviews suggestions
-     |
-     +-- Accept --> Positive feedback --> Entity boosted (+2 to +10)
-     |
-     +-- Reject --> Negative feedback --> Entity suppressed (-15 penalty)
-     |
-     v
-Next write: better suggestions
-     |
-     v
-Graph densifies with confirmed relationships
-     |
-     v
-Search and context improve
-     |
-     (loop repeats)
+  Interaction 1: Write "call with Sarah about cutover"
+    -> System suggests: Data Migration Playbook, Discovery Workshop
+    -> User keeps Workshop, removes Playbook
+    -> Signal: Workshop relevant to cutover context, Playbook not
+
+  Interaction 2: Write "Sarah wants to scope Analytics with Emily"
+    -> System suggests: Acme Corp, Acme Data Migration
+    -> Playbook NOT suggested (suppressed)
+    -> Emily auto-linked (learned from manual add)
+    -> Signal: Feedback from interaction 1 shaped interaction 2
 ```
 
-### The 13-Layer Scoring Algorithm
+### "Wrong" Suggestions Build Context
 
 Every suggestion is scored through 13 layers:
 1. Length/pattern filter
@@ -404,11 +347,10 @@ Every suggestion is scored through 13 layers:
 12. **Feedback adjustment (+5 to -4 based on your accept/reject history)**
 13. Edge weight (link survival tracking, 0 to +4)
 
-Layer 12 is the hero of this demo. It's the layer that responds to your judgment and changes the algorithm's behaviour over time.
+Week 2: Consultant starts GlobalBank pilot project
+  (GlobalBank opportunity came from Acme referral)
 
-### Why Feedback Matters More Than Precision
-
-A static tool gives the same scores on day 1 and day 100. Flywheel's scores change based on accumulated feedback:
+The "imprecise" suggestion captured working context your brain hadn't noticed yet. Over time, wrong suggestions become the connections you accept tomorrow.
 
 | Timeframe | Sarah Mitchell score | Meridian Financial score |
 |-----------|---------------------|------------------------|
@@ -416,8 +358,12 @@ A static tool gives the same scores on day 1 and day 100. Flywheel's scores chan
 | Week 4 | 28 (+10 feedback boost) | 14 (no feedback yet) |
 | Week 8 | 28 (stable — consistently correct) | -1 (suppressed — too many false positives) |
 
-The vault doesn't just store — it learns what matters to you.
+Co-occurrence boost at work -- when you log "Acme call":
+- Sarah Mitchell -- 47 co-occurrences (primary contact)
+- Acme Data Migration -- 32 co-occurrences (active project)
+- TechStart Inc -- 12 co-occurrences (often worked same week)
+- INV-2025-048 -- 8 co-occurrences (pending payment)
 
 ### Key Message
 
-"Your vault learns what you know. Accept a suggestion, strengthen a connection. Reject one, teach the algorithm what doesn't belong. Over time, your knowledge graph reflects your judgment — not just your words."
+"Write casually. The system learns which connections matter."

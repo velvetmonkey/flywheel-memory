@@ -206,6 +206,6 @@ Flywheel's enriched search returns frontmatter, ranked backlinks, ranked outlink
 ## Next Steps
 
 - **[SETUP.md](SETUP.md)** -- Full setup guide for your own vault
-- **[TOOLS.md](TOOLS.md)** -- Reference for all 74 tools
+- **[TOOLS.md](TOOLS.md)** -- Reference for all 75 tools
 - **[ALGORITHM.md](ALGORITHM.md)** -- How scoring, ranking, and wikilink suggestion work
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts by use case

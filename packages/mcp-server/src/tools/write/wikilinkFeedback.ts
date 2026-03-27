@@ -70,6 +70,8 @@ export function registerWikilinkFeedbackTools(
             };
           }
 
+          console.error(`[Flywheel] wikilink_feedback: stateDb path=${stateDb.db.name}`);
+
           try {
             recordFeedback(stateDb, entity, context || '', note_path || '', correct);
           } catch (e) {
@@ -80,6 +82,10 @@ export function registerWikilinkFeedbackTools(
               isError: true,
             };
           }
+
+          // Verify the row persisted
+          const rowCount = (stateDb.db.prepare('SELECT COUNT(*) as cnt FROM wikilink_feedback').get() as { cnt: number }).cnt;
+          console.error(`[Flywheel] wikilink_feedback: after insert, total rows=${rowCount}, db=${stateDb.db.name}`);
 
           if (!correct && note_path && !skip_status_update) {
             stateDb.db.prepare(
@@ -102,6 +108,7 @@ export function registerWikilinkFeedbackTools(
               suppression_updated: suppressionUpdated,
             },
             total_suppressed: getSuppressedCount(stateDb),
+            total_feedback_rows: rowCount,
           };
           break;
         }

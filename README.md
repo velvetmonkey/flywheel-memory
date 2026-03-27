@@ -5,6 +5,14 @@
   All local. All yours. A few lines of config.</p>
 </div>
 
+**Search** — Ask a question, get a decision surface. One call returns section provenance, extracted dates, entity bridges, and confidence scores. Your AI decides what to read next without opening any files. [$0.06-0.09/query](#benchmarked), measured.
+
+**Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief, Flywheel recognises names, projects, and relationships and wikilinks them in real time. [13 scoring layers](docs/ALGORITHM.md), zero manual curation.
+
+**Remember** — The system learns from your edits. Links you keep get stronger. Links you remove get suppressed. After a week, suggestions reflect how *you* think, not how the algorithm was configured. The graph compounds with use.
+
+All local. No cloud. No account. No sync.
+
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
@@ -19,16 +27,6 @@
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)** · **[Story](#the-story-behind-this)** · **[License](#license)**
 
 > **Cognitive sovereignty** = your knowledge graph stays on your machine. No platform builds a profile from it. No subscription locks you in. You choose the model. You own the memory.
-
-### Three things Flywheel does
-
-**Search** — Ask a question, get a decision surface. One call returns section provenance, extracted dates, entity bridges, and confidence scores. Your AI decides what to read next without opening any files. [$0.06-0.09/query](#benchmarked), measured.
-
-**Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief, Flywheel recognises names, projects, and relationships and wikilinks them in real time. [13 scoring layers](docs/ALGORITHM.md), zero manual curation.
-
-**Remember** — The system learns from your edits. Links you keep get stronger. Links you remove get suppressed. After a week, suggestions reflect how *you* think, not how the algorithm was configured. The graph compounds with use.
-
-All local. No cloud. No account. No sync.
 
 <details>
 <summary><strong>How this compares to not using Flywheel</strong></summary>

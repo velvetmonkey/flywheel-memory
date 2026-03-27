@@ -3,17 +3,6 @@
   <h1>Flywheel</h1>
   <p><strong>Persistent, learning AI memory for your Obsidian vault.</strong><br/>
   All local. 60 seconds to install.</p>
-</div>
-
-**[Get started](#try-it)** · **[See it work](#see-it-work)** · **[What's different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)** · **[Story](#the-story-behind-this)**
-
-**Search** — Ask a question, get an answer — not a list of files to open. One call returns structured results with metadata, graph context, and section content. Your AI reasons across your vault without reading files one by one. [$0.06-0.10/query](#benchmarked), measured.
-
-**Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief — Flywheel recognizes names, projects, and relationships and wikilinks them automatically. Zero manual curation.
-
-**Remember** — Your AI knows what you were working on yesterday without re-explaining it. Links you keep get stronger. Links you remove get suppressed. After a week, suggestions reflect how *you* think, not defaults. The graph compounds with use.
-
-All local. No cloud. No account. No sync.
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
@@ -22,6 +11,17 @@ All local. No cloud. No account. No sync.
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code%20%7C%20OpenClaw-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
+</div>
+
+**[Get started](#try-it)** · **[See it work](#see-it-work)** · **[What's different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Docs](#documentation)** · **[Story](#the-story-behind-this)**
+
+**Search** — Ask a question, get an answer — not a list of files to open. One call returns structured results with metadata, graph context, and section content. Your AI reasons across your vault without reading files one by one. [$0.06-0.10/query](#benchmarked), measured.
+
+**Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief — Flywheel recognizes names, projects, and relationships and wikilinks them automatically. Zero manual curation.
+
+**Remember** — Your AI knows what you were working on yesterday without re-explaining it. Links you keep get stronger. Links you remove get suppressed. After a week, suggestions reflect how *you* think, not defaults. The graph compounds with use.
+
+All local. No cloud. No account. No sync.
 
 ---
 
@@ -140,14 +140,6 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 
 ## What Makes Flywheel Different
 
-**Search** — Ask a question, get an answer — not a list of files to open. One call returns structured results with metadata, graph context, and section content. Your AI reasons across your vault without reading files one by one. [$0.06-0.10/query](#benchmarked), measured.
-
-Results are multi-hop: a search for "Acme Corp" returns the client note *and* its connected invoices, projects, and people, each ranked by graph relevance. With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally.
-
-**Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief — Flywheel recognizes names, projects, and relationships and wikilinks them automatically. Zero manual curation.
-
-**Remember** — Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context. `search` retrieves across notes, entities, and memories in one call. `memory` stores observations that persist across sessions. Links you keep get stronger. Links you remove get suppressed. After a week, suggestions reflect your editing patterns, not defaults.
-
 ### Every link has a reason
 
 Suggestions aren't random. Every suggestion is scored across multiple dimensions — match quality, co-occurrence, recency, context, and more. Ask why any link was suggested and get a traceable breakdown. [How scoring works →](docs/ALGORITHM.md)
@@ -219,10 +211,6 @@ Not apples-to-apples — different test settings, sample sizes, and retrieval po
 
 **Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions): **95.5%** single-hop recall, **65.3%** multi-hop, **79.1%** evidence recall overall. $0.095/question. No other MCP memory tool publishes retrieval benchmarks on a standard academic dataset. [LoCoMo details →](docs/TESTING.md#retrieval-benchmark-locomo) | [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
 
----
-
-## Tested
-
 | Metric | Measured |
 |---|---|
 | Tests | 2,712 across 129 files |
@@ -236,7 +224,7 @@ Not apples-to-apples — different test settings, sample sizes, and retrieval po
 
 ---
 
-### Who this is for
+## Who this is for
 
 **For** developers building AI agents and assistants that need persistent memory. Works as the memory backend for [OpenClaw](https://github.com/openclaw/openclaw) and any MCP client. Also for anyone who treats their Obsidian vault as infrastructure, not disposable notes.
 

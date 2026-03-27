@@ -101,7 +101,7 @@ export function getWriteStateDb(): StateDb | null {
  */
 let moduleConfig: FlywheelConfig | null = null;
 
-const ALL_IMPLICIT_PATTERNS = ['proper-nouns', 'single-caps', 'camel-case', 'acronyms', 'quoted-terms'] as const;
+const ALL_IMPLICIT_PATTERNS = ['proper-nouns', 'single-caps', 'camel-case', 'acronyms', 'quoted-terms', 'ticket-refs'] as const;
 
 /** Set the FlywheelConfig for wikilink behavior (called at startup and on config change) */
 export function setWikilinkConfig(config: FlywheelConfig): void {
@@ -407,6 +407,9 @@ export function isValidWikilinkText(text: string): boolean {
   const trimmed = target.trim();
   if (trimmed.length === 0) return false;
 
+  // Contains newline — wikilinks must be single-line
+  if (/\n/.test(trimmed)) return false;
+
   // Contains question mark, exclamation, or semicolon — not an entity name
   if (/[?!;]/.test(trimmed)) return false;
 
@@ -446,8 +449,12 @@ export function isValidWikilinkText(text: string): boolean {
 export function sanitizeWikilinks(content: string): { content: string; removed: string[] } {
   const removed: string[] = [];
 
+  // Repair broken bracket pairs split by whitespace/newlines: [\n[ → [[  and ]\n] → ]]
+  let repaired = content.replace(/\[\s*\n\s*\[/g, '[[');
+  repaired = repaired.replace(/\]\s*\n\s*\]/g, ']]');
+
   // Match all wikilinks: [[text]] or [[target|display]]
-  const sanitized = content.replace(/\[\[([^\]]+?)\]\]/g, (fullMatch, inner: string) => {
+  const sanitized = repaired.replace(/\[\[([^\]]+?)\]\]/g, (fullMatch, inner: string) => {
     if (isValidWikilinkText(inner)) {
       return fullMatch; // Keep valid wikilinks
     }

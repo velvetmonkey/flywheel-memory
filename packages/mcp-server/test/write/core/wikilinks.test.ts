@@ -2997,6 +2997,12 @@ describe('sanitizeWikilinks', () => {
       expect(isValidWikilinkText('tech')).toBe(true);
       expect(isValidWikilinkText('code review')).toBe(true);
     });
+
+    it('should reject text containing newlines', () => {
+      expect(isValidWikilinkText('Marcus\nJohnson')).toBe(false);
+      expect(isValidWikilinkText('FW-123\n')).toBe(false);
+      expect(isValidWikilinkText('\nReact')).toBe(false);
+    });
   });
 
   describe('sanitizeWikilinks (integration)', () => {
@@ -3025,6 +3031,25 @@ describe('sanitizeWikilinks', () => {
       const result = sanitizeWikilinks(content);
       expect(result.content).not.toContain('[[');
       expect(result.removed.length).toBe(2);
+    });
+
+    it('should unwrap wikilinks containing newlines', () => {
+      const content = 'met [[Marcus\nJohnson]] today';
+      const result = sanitizeWikilinks(content);
+      expect(result.content).toBe('met Marcus\nJohnson today');
+      expect(result.removed).toContain('Marcus\nJohnson');
+    });
+
+    it('should repair broken opening brackets split by newline', () => {
+      const content = 'met [\n[Marcus]] today';
+      const result = sanitizeWikilinks(content);
+      expect(result.content).toBe('met [[Marcus]] today');
+    });
+
+    it('should repair broken closing brackets split by newline', () => {
+      const content = 'met [[Marcus]\n] today';
+      const result = sanitizeWikilinks(content);
+      expect(result.content).toBe('met [[Marcus]] today');
     });
   });
 });

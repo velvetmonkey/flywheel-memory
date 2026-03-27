@@ -44,6 +44,7 @@ const SCORING_LAYERS: ScoringLayer[] = [
   'type_boost', 'context_boost',
   'recency', 'cross_folder',
   'hub_boost', 'feedback', 'semantic',
+  'edge_weight',
 ];
 
 const ARCHETYPE_NAMES = [

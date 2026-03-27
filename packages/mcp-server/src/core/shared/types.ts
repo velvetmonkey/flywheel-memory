@@ -165,7 +165,7 @@ export interface SuggestionConfig {
 /**
  * Scoring layers that can be individually disabled for ablation testing.
  *
- * Maps to the 13-layer scoring architecture in suggestRelatedLinks():
+ * There are 13 scoring layers used in suggestRelatedLinks():
  * - 1a: length_filter (>25 chars)
  * - 1b: article_filter (article-like titles)
  * - 2: exact_match (verbatim token match)
@@ -179,6 +179,10 @@ export interface SuggestionConfig {
  * - 10: feedback (historical accuracy adjustment)
  * - 11: semantic (embedding similarity)
  * - 12: edge_weight (high-quality incoming link boost)
+ *
+ * `fatigue` is included in this union so it can be disabled via `disabledLayers`
+ * for ablation testing, but it is a per-file suffix-repetition guard, not a
+ * scoring layer. It does not appear in SCORING_LAYERS or the layer count.
  */
 export type ScoringLayer =
   | 'length_filter' | 'article_filter'

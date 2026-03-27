@@ -26,7 +26,7 @@ const EIGEN_ITERATIONS = 50;
  *
  * @returns Map of normalized entity name → score (0-100)
  */
-export function computeHubScores(index: VaultIndex): Map<string, number> {
+export function computeHubScores(index: VaultIndex): { scores: Map<string, number>; edgeCount: number } {
   // Build node list and adjacency
   const nodes: string[] = [];
   const nodeIdx = new Map<string, number>();
@@ -47,7 +47,7 @@ export function computeHubScores(index: VaultIndex): Map<string, number> {
   }
 
   const N = nodes.length;
-  if (N === 0) return new Map();
+  if (N === 0) return { scores: new Map(), edgeCount: 0 };
 
   // Build edges from outlinks (bidirectional for eigenvector)
   for (const note of index.notes.values()) {
@@ -65,6 +65,13 @@ export function computeHubScores(index: VaultIndex): Map<string, number> {
         adj[toIdx].push(fromIdx);
       }
     }
+  }
+
+  // Count edges for diagnostics
+  const edgeCount = adj.reduce((sum, a) => sum + a.length, 0);
+  if (edgeCount === 0) {
+    console.error(`[Flywheel] Hub scores: 0 edges in graph of ${N} nodes, skipping eigenvector`);
+    return { scores: new Map(), edgeCount: 0 };
   }
 
   // Power iteration for eigenvector centrality
@@ -99,7 +106,25 @@ export function computeHubScores(index: VaultIndex): Map<string, number> {
       result.set(nodes[i], scaled);
     }
   }
-  return result;
+
+  // Fallback to degree centrality when eigenvector is too sparse
+  // (disconnected components cause most nodes to get zero)
+  if (result.size < N * 0.1 && edgeCount > 0) {
+    console.error(`[Flywheel] Hub scores: eigenvector too sparse (${result.size}/${N}), falling back to degree centrality`);
+    result.clear();
+    let maxDegree = 0;
+    for (let i = 0; i < N; i++) {
+      if (adj[i].length > maxDegree) maxDegree = adj[i].length;
+    }
+    if (maxDegree > 0) {
+      for (let i = 0; i < N; i++) {
+        const scaled = Math.round((adj[i].length / maxDegree) * 100);
+        if (scaled > 0) result.set(nodes[i], scaled);
+      }
+    }
+  }
+
+  return { scores: result, edgeCount };
 }
 
 
@@ -150,8 +175,8 @@ export async function exportHubScores(
   }
 
   // Compute hub scores from vault index
-  const hubScores = computeHubScores(vaultIndex);
-  console.error(`[Flywheel] Computed hub scores for ${hubScores.size} notes`);
+  const { scores: hubScores, edgeCount } = computeHubScores(vaultIndex);
+  console.error(`[Flywheel] Computed hub scores for ${hubScores.size} notes (${edgeCount} edges in graph)`);
 
   // Update hub scores in SQLite
   try {

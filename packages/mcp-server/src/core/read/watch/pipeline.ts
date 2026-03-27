@@ -182,6 +182,7 @@ export class PipelineRunner {
       await runStep('tag_scan', tracker, { files: p.events.length }, () => this.tagScan());
       await runStep('retrieval_cooccurrence', tracker, {}, () => this.retrievalCooccurrence());
       await runStep('integrity_check', tracker, {}, () => this.integrityCheck());
+      await runStep('maintenance', tracker, {}, () => this.maintenance());
 
       // Record success
       const duration = Date.now() - this.batchStart;
@@ -1057,5 +1058,25 @@ export class PipelineRunner {
       serverLog('watcher', `Integrity check FAILED: ${result.detail}`, 'error');
       return { integrity: 'failed', detail: result.detail };
     }
+  }
+
+  // ── Maintenance: periodic incremental vacuum ─────────────────────
+
+  private async maintenance(): Promise<Record<string, unknown>> {
+    const { p } = this;
+    if (!p.sd) return { skipped: true, reason: 'no statedb' };
+
+    const VACUUM_INTERVAL_MS = 60 * 60 * 1000; // hourly
+    const lastRow = p.sd.getMetadataValue.get('last_incremental_vacuum') as { value: string } | undefined;
+    const lastVacuum = lastRow ? parseInt(lastRow.value, 10) : 0;
+
+    if (Date.now() - lastVacuum < VACUUM_INTERVAL_MS) {
+      return { skipped: true, reason: 'vacuumed recently' };
+    }
+
+    p.sd.db.pragma('incremental_vacuum');
+    p.sd.setMetadataValue.run('last_incremental_vacuum', String(Date.now()));
+    serverLog('watcher', 'Incremental vacuum completed');
+    return { vacuumed: true };
   }
 }

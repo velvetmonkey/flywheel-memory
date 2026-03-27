@@ -199,6 +199,18 @@ export function openStateDb(vaultPath: string): StateDb {
     db = new Database(dbPath);
     initSchema(db);
 
+    // Enable incremental auto_vacuum on existing databases (one-time cost).
+    // New DBs get it from initSchema before tables are created, but existing
+    // DBs need a VACUUM to switch the file format.
+    if (!isNewDb) {
+      const autoVacuum = db.pragma('auto_vacuum', { simple: true });
+      if (autoVacuum === 0) {
+        console.error('[vault-core] Enabling incremental auto_vacuum (one-time VACUUM)');
+        db.pragma('auto_vacuum = INCREMENTAL');
+        db.exec('VACUUM');
+      }
+    }
+
     // If we just created a fresh DB but backup files exist, salvage from them
     if (isNewDb) {
       attemptSalvage(db, dbPath);

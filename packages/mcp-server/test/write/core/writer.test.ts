@@ -20,6 +20,7 @@ import {
   isStructuredLine,
   isCodeFenceLine,
   isPreformattedList,
+  sanitizeForList,
   checkRegexSafety,
   createSafeRegex,
   safeRegexTest,
@@ -357,22 +358,22 @@ describe('formatContent', () => {
       expect(result).toBe('- Quote:\n  > This is a quote\n  > Second line of quote');
     });
 
-    it('should indent horizontal rules inside bullet list items', () => {
+    it('should convert and indent horizontal rules inside bullet list items', () => {
       const content = 'Before rule\n---\nAfter rule';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Before rule\n  ---\n  After rule');
+      expect(result).toBe('- Before rule\n  —\n  After rule');
     });
 
-    it('should indent asterisk horizontal rules inside bullet list items', () => {
+    it('should convert and indent asterisk horizontal rules inside bullet list items', () => {
       const content = 'Before rule\n***\nAfter rule';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Before rule\n  ***\n  After rule');
+      expect(result).toBe('- Before rule\n  —\n  After rule');
     });
 
-    it('should indent underscore horizontal rules inside bullet list items', () => {
+    it('should convert and indent underscore horizontal rules inside bullet list items', () => {
       const content = 'Before rule\n___\nAfter rule';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Before rule\n  ___\n  After rule');
+      expect(result).toBe('- Before rule\n  —\n  After rule');
     });
 
     it('should indent mixed content with code blocks and tables', () => {
@@ -444,10 +445,10 @@ describe('formatContent', () => {
       expect(result).toBe('- -not a list marker');
     });
 
-    it('should preserve asterisk bullet lists', () => {
+    it('should normalize asterisk bullet lists to dash', () => {
       const content = '* Item 1\n* Item 2';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('* Item 1\n* Item 2');
+      expect(result).toBe('- Item 1\n- Item 2');
     });
 
     it('should preserve plus bullet lists', () => {
@@ -461,6 +462,103 @@ describe('formatContent', () => {
       const result = formatContent(content, 'task');
       expect(result).toBe('- [x] Done task\n- [ ] Todo task');
     });
+  });
+
+  // List sanitization tests (headings, * bullets, horizontal rules)
+  describe('list sanitization', () => {
+    it('should convert headings to bold in bullet format', () => {
+      const content = 'Summary\n\n### Key Points\n\nDetails here';
+      const result = formatContent(content, 'bullet');
+      expect(result).toBe('- Summary\n  \n  **Key Points**\n  \n  Details here');
+    });
+
+    it('should convert multiple heading levels to bold in bullet format', () => {
+      const content = 'Entry\n## Section\nText\n### Subsection\nMore text';
+      const result = formatContent(content, 'bullet');
+      expect(result).toBe('- Entry\n  **Section**\n  Text\n  **Subsection**\n  More text');
+    });
+
+    it('should convert * bullets to - bullets in bullet format', () => {
+      const content = 'List of things:\n\n* First item\n* Second item\n* Third item';
+      const result = formatContent(content, 'bullet');
+      expect(result).toBe('- List of things:\n  \n  - First item\n  - Second item\n  - Third item');
+    });
+
+    it('should convert horizontal rules to em-dash in bullet format', () => {
+      const content = 'Before\n---\nAfter';
+      const result = formatContent(content, 'bullet');
+      expect(result).toBe('- Before\n  —\n  After');
+    });
+
+    it('should convert *** horizontal rules to em-dash', () => {
+      const content = 'Before\n***\nAfter';
+      const result = formatContent(content, 'bullet');
+      expect(result).toBe('- Before\n  —\n  After');
+    });
+
+    it('should preserve content inside code blocks', () => {
+      const content = 'Example:\n```\n### This is code\n* not a bullet\n---\n```\nDone';
+      const result = formatContent(content, 'bullet');
+      expect(result).toContain('  ### This is code');
+      expect(result).toContain('  * not a bullet');
+      expect(result).toContain('  ---');
+    });
+
+    it('should sanitize headings in timestamp-bullet format', () => {
+      const content = 'Summary\n### Key Points\nDetails here';
+      const result = formatContent(content, 'timestamp-bullet');
+      const lines = result.split('\n');
+      expect(lines[0]).toMatch(/^- \*\*\d{2}:\d{2}\*\* Summary$/);
+      expect(lines[1]).toBe('  **Key Points**');
+      expect(lines[2]).toBe('  Details here');
+    });
+
+    it('should sanitize headings in preformatted lists', () => {
+      const content = '- Item one\n### Heading breaks list\n- Item two';
+      const result = formatContent(content, 'bullet');
+      expect(result).toBe('- Item one\n**Heading breaks list**\n- Item two');
+    });
+
+    it('should not touch plain format content', () => {
+      const content = '### Heading\n* bullet\n---';
+      const result = formatContent(content, 'plain');
+      expect(result).toBe('### Heading\n* bullet\n---');
+    });
+  });
+});
+
+describe('sanitizeForList', () => {
+  it('should convert headings to bold', () => {
+    expect(sanitizeForList('### My Heading')).toBe('**My Heading**');
+    expect(sanitizeForList('## Section')).toBe('**Section**');
+    expect(sanitizeForList('# Top Level')).toBe('**Top Level**');
+  });
+
+  it('should convert * bullets to - bullets', () => {
+    expect(sanitizeForList('* Item')).toBe('- Item');
+    expect(sanitizeForList('  * Nested')).toBe('  - Nested');
+  });
+
+  it('should convert horizontal rules to em-dash', () => {
+    expect(sanitizeForList('---')).toBe('—');
+    expect(sanitizeForList('***')).toBe('—');
+    expect(sanitizeForList('___')).toBe('—');
+  });
+
+  it('should not modify content inside code blocks', () => {
+    const input = '```\n### heading\n* bullet\n---\n```';
+    expect(sanitizeForList(input)).toBe(input);
+  });
+
+  it('should handle mixed content', () => {
+    const input = 'Before\n### Section\n* item 1\n* item 2\n---\nAfter';
+    const expected = 'Before\n**Section**\n- item 1\n- item 2\n—\nAfter';
+    expect(sanitizeForList(input)).toBe(expected);
+  });
+
+  it('should preserve normal text unchanged', () => {
+    expect(sanitizeForList('Just plain text')).toBe('Just plain text');
+    expect(sanitizeForList('- Already a dash bullet')).toBe('- Already a dash bullet');
   });
 });
 

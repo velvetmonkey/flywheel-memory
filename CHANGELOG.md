@@ -7,14 +7,104 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.146-150] - 2026-03-26
+*Context engineering & uber search*
+
 ### Added
-- **Token economics tracking** — `response_tokens` and `baseline_tokens` columns on `tool_invocations` (schema v30). `getTokenEconomics()` query for per-tool and aggregate savings ratios. `wrapWithTracking()` auto-computes tokens per call.
-- **Retrieval co-occurrence** — "Notes that travel together get linked together." New `retrieval_cooccurrence` table tracks note pairs co-retrieved across sessions. Watcher step 19 mines `tool_invocations`, generates pairs with Adamic-Adar weighting. Integrated into Layer 4 scoring via `Math.max(contentBoost, retrievalBoost)`. 7-day decay half-life.
-- **Retrieval benchmark** — 15-question multi-document retrieval test (31 docs). Measures Recall@K, MRR, Precision@K, NDCG@10. Results: 100% Recall@5, 0.97 MRR.
-- **Demo token analysis** — `analyze-demo-test.py` now reports Token Economics: flywheel tool tokens vs baseline file read cost per beat, with API cost tracking.
-- **FTS5 query sanitization** — `searchFTS5()` now strips FTS5 operators from natural language queries instead of silently failing. Fixes search and recall on queries with punctuation, hyphens, parentheses.
-- **Multi-hop search backfill** — search results automatically include documents linked from top results (outlink targets). Enables second-hop retrieval without LLM re-ranking.
-- **HotpotQA end-to-end benchmark** — 50 hard questions, 500 documents, real Claude + Flywheel via `claude -p`. 87% document recall, 78% full recall, 96% partial recall. Runner at `demos/hotpotqa/`.
+- **Uber search** — decision surface framing, recall tool removed, agent preset merged into unified search surface
+- **Section-aware snippets** — entity bridging across note sections with date extraction from snippet text (P38)
+- **Sandwich ordering** — search results reordered for optimal context placement
+- **Learning report & calibration export** — custom categories for targeted knowledge review
+- **MCP transport before vault boot** — eliminates boot latency by wiring transport before vault initialization
+
+### Changed
+- **Scoring bloat stripped** — expansion gated, outlinks reduced for leaner ranking
+- **Custom categories** wired into entity scanning and scoring pipeline
+
+### Fixed
+- **`flywheel_config get`** returned `{}` due to stale fallback scope
+- **Dynamic `require('crypto')`** replaced with static ESM import
+
+## [2.0.136-145] - 2026-03-26
+*Security, decomposition & wikilink quality*
+
+### Added
+- **Security remediation** — all advisories resolved, SECURITY.md published, unified vitest harness
+- **P37 wikilink quality** — alias hygiene + common word filtering, suggestion diversity + hub dampening, per-alias feedback tracking (schema v35)
+- **Stemmed entity matching** — wikilink insertion uses stemmed forms for broader recall
+- **Agent memory extensions** — session history, entity timeline, type scoring (P15)
+- **P35 trust invariants** — sovereignty tests, singleton hardening, trust report, Node 24 CI
+- **Backup rotation** — WAL-safe backups, integrity checks, feedback salvage on missing/corrupt state.db
+- **Folder-based entity categorization** — benchmark pre-warm + build frontmatter for folder-aware entity types
+
+### Changed
+- **God-file decomposition** — `index.ts` (1,861 LOC) split into config + tool-registry modules; `sqlite.ts` (1,717 LOC) split into 4 focused modules
+- **Autolink quality** — sanitizer, tighter implicit detection, alias collision guard
+- **FTS5 query reformulation** — implicit AND replaced with OR + BM25 ranking
+- **Incremental FTS5 updates** — watcher pipeline applies FTS5 diffs instead of full rebuilds
+- **Title-match boost** — search ranking elevated for exact title matches
+- **Proactive queue** — mtime guard replaces batch-path guard
+
+### Fixed
+- **State.db recovery** — smarter corruption detection, `entity_changes` dedup
+- **Pure-punctuation implicit entities** rejected from entity index
+
+## [2.0.126-135] - 2026-03-24
+*Launch: search/recall parity, LoCoMo & graph export*
+
+### Added
+- **LoCoMo benchmark** — 200q balanced E2E: 55% answer accuracy, 70% single-hop, 90.4% Recall@10 on conversational memory
+- **Search/recall parity** — graph re-ranking, query expansion, improved snippets (v2.0.128). LoCoMo multi-hop 15% to 27.5%, overall 55% to 58.5%
+- **`export_graph` tool** — ego-network filtering, Gephi-compatible GraphML output, watcher pipeline extraction
+- **Deferred proactive linking queue** — schema v31 for async link suggestion processing
+- **Multi-hop search backfill** — top results' outlink targets included automatically for second-hop retrieval
+- **FTS5 query sanitization** — strips FTS5 operators from natural-language queries instead of silently failing
+
+### Changed
+- **Wikilink noise reduction** — proactive insertion with tighter thresholds (P29)
+- **Default `suggestOutgoingLinks`** set to `false` to reduce write-path overhead
+- **Score timeline** aggregated by day (show trend not noise)
+
+### Fixed
+- **Multi-vault state propagation** — mirror index/config to VaultContext, per-vault boot pipeline
+
+## [2.0.116-125] - 2026-03-22
+*Vault isolation, retrieval quality & benchmarks*
+
+### Added
+- **Per-request vault isolation** — `AsyncLocalStorage` ensures vault contexts never bleed across requests (P27)
+- **Token economics tracking** — `response_tokens` and `baseline_tokens` columns on `tool_invocations` (schema v30). `getTokenEconomics()` for per-tool and aggregate savings ratios
+- **Retrieval co-occurrence** — note pairs co-retrieved across sessions linked via Adamic-Adar weighting with 7-day decay half-life. Integrated into Layer 4 scoring
+- **HotpotQA benchmark** — 50 hard questions, 500 documents, real Claude + Flywheel: 87% document recall, 78% full recall, 96% partial recall
+- **Retrieval benchmark** — 15-question multi-document test (31 docs): 100% Recall@5, 0.97 MRR, Precision@K, NDCG@10
+- **Eigenvector centrality** — graph centrality/cycles modes, vault health score
+- **Compact enrichment + 2-hop multi-hop retrieval** — P29 retrieval depth increase with lighter response payloads
+- **StateDb backup & recovery** — env validation, corruption detection, auto-recovery (P28)
+
+### Changed
+- **better-sqlite3 v12** — Node 20-24 support
+- **Policy executor** aligned with `validatePathSecure` for consistent path validation
+- **Vault isolation refactor** — write path unification across single/multi-vault modes
+
+### Fixed
+- **`health_check`** reported index state `building` when index was ready
+
+## [2.0.108-115] - 2026-03-21
+*Policy, temporal tools & test hardening*
+
+### Added
+- **Policy schema v1** — map-format conditions, policy hints in write error messages, MCP instructions for policy-first writes
+- **Temporal tool category** — extracted as standalone category with policy search step
+- **Tool adoption test suite** — 69/69 tool coverage + MCP write/config integration tests + doc contract checks
+- **P25 T4/T5/T6** — protected zone merging, doctor metrics, union regexp
+- **CRLF frontmatter test coverage** for Windows line-ending edge cases
+- **serverLog ring buffer** — replaces fallback logging (P25/T2)
+
+### Changed
+- **Relicensed from Apache-2.0 to AGPL-3.0-only**
+- **Multi-vault entity cache isolation** — per-vault caches prevent cross-contamination
+- **Pre-launch polish** — honest `total_results` counts, synced baselines, version bumps
+- **Incremental index entity reconciliation** + clustering threshold tuning
 
 ## [2.0.145-2.0.150] - 2026-03-25 to 2026-03-26
 

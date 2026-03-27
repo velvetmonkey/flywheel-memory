@@ -16,6 +16,139 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Multi-hop search backfill** — search results automatically include documents linked from top results (outlink targets). Enables second-hop retrieval without LLM re-ranking.
 - **HotpotQA end-to-end benchmark** — 50 hard questions, 500 documents, real Claude + Flywheel via `claude -p`. 87% document recall, 78% full recall, 96% partial recall. Runner at `demos/hotpotqa/`.
 
+## [2.0.145-2.0.150] - 2026-03-25 to 2026-03-26
+
+Context engineering, uber search unification, benchmark hygiene, custom entity categories, and learning telemetry.
+
+### Added
+- **Context engineering (P38)** — sandwich ordering (Lost in the Middle mitigation), section-aware snippets with provenance, entity-mediated bridging between results, date extraction from snippets, scoring field stripping, gated expansion. Response tokens ~5,750 to ~1,500 per search call.
+- **Uber search** — `recall` tool removed; entity/memory search channels folded into `search`. Agent preset merged into default (18 tools). Decision surface framing across all docs.
+- **Custom entity categories** — `custom_categories` in `flywheel_config`, wired through scoring pipeline and entity scanning.
+- **Learning telemetry** — `learning_report` and `calibration_export` diagnostic tools. Sharing guide and telemetry documentation.
+- **`--disallowedTools` benchmark hygiene** — mechanically strip non-MCP tools (ToolSearch, Agent) from benchmark runs instead of relying on prompt instructions.
+
+### Changed
+- `generateInstructions()` rewritten for decision surface framing.
+- Tool counts corrected to 75 total across 12 categories in all documentation.
+- LoCoMo default corrected to 695 questions (matches Mem0 paper).
+- MCP transport connects before vault boot for faster startup.
+
+### Fixed
+- `flywheel_config get` returned `{}` due to stale fallback scope.
+- Writer list nesting: blank lines broke Obsidian bullet nesting in all 4 format types (bullet/task/numbered/timestamp).
+- Dynamic `require('crypto')` replaced with static ESM import.
+- FTS5 test isolation: re-inject StateDb handle in `beforeAll`.
+- `absorb_as_alias` now correctly deletes source note.
+
+## [2.0.139-2.0.144] - 2026-03-25
+
+Documentation truth pass, wikilink quality overhaul, incremental FTS5 updates, backup/recovery hardening, and entity categorization.
+
+### Added
+- **Wikilink quality (P37)** — alias hygiene (strip brackets, normalize whitespace), common word filtering, suggestion diversity with hub dampening, per-alias feedback tracking (schema v35), stemmed entity matching in wikilink insertion.
+- **Incremental FTS5 updates** — watcher pipeline now incrementally updates FTS5 on file move/delete (fixes stale search results).
+- **Title-match boost** — +0.5 RRF for exact title match, +0.2 for prefix match in search ranking.
+- **Backup rotation** — WAL-safe backups, integrity checks, feedback salvage from corrupt/missing state.db files.
+- **Folder-based entity categorization** — entities auto-categorized by folder path; benchmark pre-warm and build-time frontmatter generation.
+
+### Changed
+- Proactive queue refactored: mtime guard replaces batch-path guard, TTL 1h to 6h, max-per-file 3 to 5.
+- FTS5 query reformulation: implicit AND changed to OR with BM25 ranking for better recall.
+- P36 documentation truth pass: git commit claims, AST parsing scope, tool counts, benchmark CI distinction, quality report refresh all corrected.
+
+### Fixed
+- Pure-punctuation implicit entities rejected.
+- Stray wikilinks stripped from 12 doc files (40 accidental insertions).
+- Contentless `entities_fts` rebuild corrected.
+- `sanitizeNotePath` aligned with `vault_rename_note` (preserve case/spaces, only strip invalid chars).
+- Salvage feedback when state.db is missing (not just corrupt).
+
+## [2.0.129-2.0.138] - 2026-03-23 to 2026-03-24
+
+Security hardening, god-file decomposition, cognitive sovereignty positioning, trust invariants, proactive linking, graph export, and autolink quality.
+
+### Added
+- **Security hardening (P35 Phase A)** — 0 npm audit vulnerabilities, `SECURITY.md`, capability boundary documentation, Vitest upgraded to v4.1.1.
+- **Graph export** — `export_graph` tool with ego-network filtering, GraphML output for Gephi/NetworkX visualization. Watcher pipeline extraction step.
+- **Proactive linking** — deferred proactive linking queue (schema v31). Background wikilink insertion with configurable caps and suppression.
+- **Trust invariants (P35 Phase F)** — `gate()` throws on uncategorized tools. Tool count enforced across 15 documentation files.
+- **Observability (P35 Phase H)** — `flywheel_trust_report` and `flywheel_benchmark` diagnostic tools (schema v33, tool count to 74).
+- **Sovereignty enforcement (P35 Phase C)** — `sovereignty.test.ts` test suite, audit trail documentation in ARCHITECTURE.md.
+- **Session history and entity timeline** — `session_history` and `entity_timeline` diagnostic queries, type-aware scoring.
+- **CI Node 24** — test matrix expanded to ubuntu+windows x Node 22+24, `npm audit` gate, engine requires >=22.
+
+### Changed
+- **God-file decomposition (P35 Phase B)** — `sqlite.ts` 1,717 to 400 LOC (split into 4 focused modules), `index.ts` 1,861 to 1,112 LOC (extracted config + tool-registry).
+- **Autolink quality (P35 Phase E)** — sanitizer, tighter implicit entity detection, alias collision guard, content-type awareness.
+- Cognitive sovereignty README: definition, contrast table, system guarantees, AST-level evidence, competitive comparison.
+- `better-sqlite3` bumped to v12, supporting Node 20-24.
+- `suggestOutgoingLinks` defaults to false (reduces noise on write).
+
+### Fixed
+- State.db recovery: smarter corruption detection, `entity_changes` deduplication, data salvage pipeline.
+- Multi-vault state propagation: mirror index/config to VaultContext, per-vault boot pipeline, scoped telemetry.
+- Aggregate score timeline grouped by day (show trend not noise).
+- Stray wikilinks removed from README and docs.
+- Graph export double-escaping, alias resolution, and brittle test assertions.
+
+## [2.0.119-2.0.128] - 2026-03-21 to 2026-03-23
+
+Retrieval quality push: per-request vault isolation, multi-hop retrieval, HotpotQA and LoCoMo benchmarks, compact enrichment, and search/recall parity.
+
+### Added
+- **Per-request vault isolation (P27)** — AsyncLocalStorage-based isolation, 12 module-level getters replaced with scoped accessors, interleaving stress test.
+- **Compact enrichment (P29)** — 2-hop multi-hop retrieval, reduced result payload size, wikilink noise reduction with proactive insertion.
+- **LoCoMo benchmark** — 695-question conversational memory test. 51.0% answer accuracy, 71.2% evidence recall at 600q. 90.4% Recall@10 on initial run.
+- **Search/recall parity (P31)** — graph re-ranking, query expansion, semantic snippets, co-occurrence signals, and MMR diversity all ported from recall into search.
+- **Eigenvector centrality** — graph centrality and cycle detection modes in `graph_analysis`. Vault health score.
+- **Homepage redesign** — HotpotQA 200-question benchmark results (89.6% recall), competitive comparison tables, demo-first README layout.
+
+### Changed
+- HotpotQA benchmark expanded from 50 to 500 questions (84.8% to 89.6% recall across versions).
+- LoCoMo multi-hop accuracy improved from 15% to 27.5%, overall 55% to 58.5%.
+- Schema version advanced to v32 (state.db recovery hardening).
+- README overhauled: origin story, AI development confession, benchmarks after features, methodology transparency.
+
+### Fixed
+- `health_check` ReferenceError on database integrity failure.
+- `health_check` reported `index_state: 'building'` when index was already ready.
+- StateDb backup, env validation, missing index detection, corruption recovery (P28).
+- Frontmatter missing from recall entity and note results (`enrichEntityCompact`, `enrichNoteCompact`).
+- Flaky perf assertion relaxed from 100ms to 1s.
+- Type annotations for multi-hop results array.
+
+## [2.0.108-2.0.118] - 2026-03-20 to 2026-03-21
+
+Foundation polish: policy engine fixes, AGPL relicense, code health cleanup, testing infrastructure, write path hardening, and pre-launch fixes.
+
+### Added
+- **Tool adoption test suite** — 69/69 tool coverage with MCP instruction improvements.
+- **MCP write/config integration tests** — document contract checks for write tools.
+- **Protected zone merging (P25)** — zone overlap resolution, doctor metrics, union regexp for pattern matching.
+- **Policy hints in write tool errors** — error messages now suggest relevant policies.
+- **MCP instructions** — policy-first write guidance, conditional `init_semantic` hint, frontmatter guidance promoted to base instructions.
+- **CRLF frontmatter test coverage** (P25/T3).
+- **Temporal tool category** — temporal tools elevated to standalone preset category. Policy search step added.
+
+### Changed
+- **Relicensed from Apache-2.0 to AGPL-3.0-only.**
+- Fallback logging migrated to serverLog ring buffer (P25/T2).
+- Pre-launch polish (P26): honest `total_results` count, synced test baselines, version bump.
+- Multi-vault entity cache isolation.
+- Incremental index entity reconciliation and clustering threshold tightened.
+- Policy executor aligned with `validatePathSecure` discipline; rollback preserves frontmatter.
+- `dry_run` skips side effects.
+- Forked pool for vault-core tests to prevent Windows CI segfault.
+
+### Fixed
+- Policy schema accepts `version: "1"` and map-format conditions.
+- Rename-only batches now refresh VaultIndex; tighter rename detection.
+- Honest precision metrics with tier-aware stripping and real assertions.
+- Stale doc numbers synced across 12+ files: preset counts, test files, tool counts.
+- Quality report regenerated (was stale at v2.0.75, now v2.0.112).
+- Package-startup test timeout bumped to 300s for Windows CI.
+- `package-lock.json` synced; rollback unified onto `validatePathSecure`.
+
 ## [2.0.107] - 2026-03-20
 
 ### Changed
@@ -354,7 +487,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI workflows for linting and testing
 - Strategic README with project positioning
 
-[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.107...HEAD
+[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.150...HEAD
+[2.0.145-2.0.150]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.144...flywheel-memory-v2.0.150
+[2.0.139-2.0.144]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.138...flywheel-memory-v2.0.144
+[2.0.129-2.0.138]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.128...flywheel-memory-v2.0.138
+[2.0.119-2.0.128]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.118...flywheel-memory-v2.0.128
+[2.0.108-2.0.118]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.107...flywheel-memory-v2.0.118
 [2.0.107]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.106...flywheel-memory-v2.0.107
 [2.0.106]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.105...flywheel-memory-v2.0.106
 [2.0.105]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.104...flywheel-memory-v2.0.105

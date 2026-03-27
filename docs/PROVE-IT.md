@@ -13,6 +13,10 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 - [Phase 4: See the Algorithm Think](#phase-4-see-the-algorithm-think)
 - [Phase 5: Try a Different Domain](#phase-5-try-a-different-domain)
 - [Phase 6: Your Own Vault](#phase-6-your-own-vault)
+- [Reproduce Our Numbers](#reproduce-our-numbers)
+  - [1. Unit Tests (2,712 passed)](#1-unit-tests-2712-passed)
+  - [2. HotpotQA Retrieval Benchmark (93.0% recall, 500 questions)](#2-hotpotqa-retrieval-benchmark-930-recall-500-questions)
+  - [3. LoCoMo E2E Benchmark (65% single-hop, 759 questions)](#3-locomo-e2e-benchmark-65-single-hop-759-questions)
 - [What You Just Proved](#what-you-just-proved)
 - [Why It's Efficient](#why-its-efficient)
 - [Next Steps](#next-steps)
@@ -183,6 +187,197 @@ Quick version:
 3. Start asking questions
 
 See [SETUP.md](SETUP.md) for the complete walkthrough.
+
+---
+
+## Reproduce Our Numbers
+
+Three headline benchmarks, three sets of instructions. Each is self-contained and copy-pasteable.
+
+### 1. Unit Tests (2,712 passed)
+
+**What it proves:** Every tool handler, search index, graph traversal, mutation engine, security boundary, and concurrency path works correctly against real vaults and real SQLite databases. No external service mocks.
+
+**Prerequisites:**
+- Node.js 22+ (`node --version`)
+- git
+
+**Run:**
+
+```bash
+git clone https://github.com/velvetmonkey/flywheel-memory.git
+cd flywheel-memory
+npm install
+npm test
+```
+
+**Expected output:**
+
+```
+Test Suites: 129 passed, 129 total
+Tests:       2,712 passed, 2,712 total
+Snapshots:   0 total
+Time:        ~18s
+```
+
+`npm test` runs `vitest run` across all three workspace packages (vault-core, flywheel-memory, flywheel-bench). The mcp-server package contains the vast majority of tests. No network access, no API keys, no Docker -- just Node and SQLite.
+
+**Estimated time:** ~1 minute (install) + ~18 seconds (tests).
+
+---
+
+### 2. HotpotQA Retrieval Benchmark (93.0% recall, 500 questions)
+
+**What it proves:** Flywheel's search finds 93% of supporting documents on a standard multi-hop QA dataset from CMU/Stanford -- beating BM25 baselines by +18pp and matching purpose-built neural retrievers that were trained on the dataset.
+
+**Prerequisites:**
+- Everything from step 1 (repo cloned, `npm install` done)
+- MCP server built: `npm run build`
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI authenticated (`claude --version`)
+- Python 3 (for analysis script)
+- Anthropic API credits (~$0.063/question)
+
+**Step 1: Build the benchmark vault**
+
+The vault builder downloads the HotpotQA dev-distractor dataset (~85 MB, cached in `~/.cache/flywheel-bench/`), samples 500 questions with seed 42, and writes each Wikipedia context paragraph as a markdown note with heuristic-inferred `type:` frontmatter.
+
+```bash
+cd flywheel-memory
+node demos/hotpotqa/build-vault.js --count 500 --seed 42
+```
+
+This creates `demos/hotpotqa/vault/` (~4,960 docs) and `demos/hotpotqa/ground-truth.json`.
+
+**Step 2: Run the benchmark**
+
+```bash
+COUNT=500 demos/hotpotqa/run-benchmark.sh
+```
+
+What happens under the hood:
+
+1. **Pre-warm** (1 Claude Haiku session): `health_check` -> `vault_init` (auto-link) -> `refresh_index` -> `init_semantic` (embeddings) -> `health_check`. This matches production usage -- Flywheel indexes and links the vault before questions start.
+2. **500 questions** (500 individual Claude Sonnet sessions): Each question gets its own `claude -p` session with `--strict-mcp-config` (no filesystem access, vault tools only). Claude decides which tools to call. Non-MCP tools (Bash, Grep, Read, etc.) are stripped via `--disallowedTools`.
+3. **Analysis**: Python script parses JSONL output, computes document recall against ground truth.
+
+Results land in `demos/hotpotqa/results/run-<timestamp>/`.
+
+**Step 3: Read the report**
+
+```bash
+cat demos/hotpotqa/results/run-*/report.md
+```
+
+**Expected results:**
+
+| Metric | Expected |
+|---|---|
+| Document Recall | ~93% (930/1000 supporting docs found) |
+| Full Recall (both docs) | ~87% (435/500) |
+| Partial Recall (at least 1 doc) | ~99% (495/500) |
+
+Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 93.0% headline is from seed 42 with Sonnet.
+
+**Estimated time:** ~2-3 hours for 500 questions (each question is a separate Claude session).
+**Estimated cost:** ~$32 (500 questions x ~$0.063/question).
+
+**Smaller test run:** To verify the pipeline works before committing to the full 500:
+
+```bash
+COUNT=20 demos/hotpotqa/run-benchmark.sh
+```
+
+This runs 20 questions in ~10 minutes for ~$1.25.
+
+---
+
+### 3. LoCoMo E2E Benchmark (65% single-hop, 759 questions)
+
+**What it proves:** Flywheel retrieves evidence and answers questions about long-term conversational memory better than Mem0, Zep, LangMem, and MemGPT -- all measured on the same LoCoMo dataset from Snap Research (ACL 2024).
+
+**Prerequisites:**
+- Everything from step 1 (repo cloned, `npm install` done)
+- MCP server built: `npm run build`
+- Claude Code CLI authenticated
+- Python 3
+- Anthropic API credits (~$0.085/question for answers, plus ~$0.01/question for LLM-as-judge)
+
+**Step 1: Build the benchmark vault**
+
+The vault builder downloads the LoCoMo-10 dataset (~2 MB, cached in `~/.cache/flywheel-bench/`). Each conversation session becomes a markdown note with frontmatter dates, speaker arrays, and dialog turns. People get stub notes in a `people/` folder.
+
+```bash
+cd flywheel-memory
+node demos/locomo/build-vault.js --mode dialog
+```
+
+This creates `demos/locomo/vault/` (~290 notes: 272 session notes + 18 people stubs) and `demos/locomo/ground-truth.json` (~1,986 QA pairs across 5 categories).
+
+**Step 2: Run the benchmark**
+
+```bash
+COUNT=759 SEED=42 demos/locomo/run-benchmark.sh
+```
+
+What happens under the hood:
+
+1. **Pre-warm** (1 Claude Haiku session with `full,memory` preset): `health_check` -> `vault_init` (auto-link) -> `refresh_index` -> `init_semantic` (embeddings) -> `health_check`.
+2. **Stratified sampling**: Python selects 759 questions balanced across all 5 categories (commonsense, single-hop, multi-hop, temporal, adversarial) and all 10 conversations.
+3. **759 questions** (759 individual Claude Sonnet sessions): Each question gets its own `claude -p` session. Claude is told notes are conversation sessions and uses search + read tools to find evidence and answer.
+4. **Analysis**: Python script computes evidence recall and token F1 per category.
+
+Results land in `demos/locomo/results/run-<timestamp>/`.
+
+**Step 3: Run LLM-as-judge scoring**
+
+The headline accuracy numbers use LLM-as-judge (Claude Haiku scoring each answer as CORRECT/WRONG), matching the Mem0 paper methodology:
+
+```bash
+python3 demos/locomo/analyze-benchmark.py \
+  demos/locomo/results/run-<timestamp> \
+  demos/locomo/ground-truth.json \
+  --judge
+```
+
+Replace `<timestamp>` with the actual run directory name.
+
+**Step 4: Read the report**
+
+```bash
+cat demos/locomo/results/run-*/report.md
+```
+
+**Expected results (answer accuracy, LLM-as-judge):**
+
+| Category | Questions | Expected Accuracy | 95% CI |
+|---|---|---|---|
+| Overall | 759 | ~58.8% | [55.2%, 62.2%] |
+| Single-hop | 130 | ~65.4% | [56.9%, 73.0%] |
+| Commonsense | 311 | ~75.6% | [70.5%, 80.0%] |
+| Adversarial | 173 | ~46.8% | [39.5%, 54.2%] |
+| Multi-hop | 113 | ~28.3% | [20.8%, 37.2%] |
+| Temporal | 32 | ~40.6% | [25.5%, 57.7%] |
+
+**Expected results (evidence recall):**
+
+| Category | Expected Recall |
+|---|---|
+| Overall | ~84.9% |
+| Single-hop | ~93.9% |
+| Commonsense | ~94.2% |
+| Multi-hop | ~67.5% |
+| Temporal | ~63.3% |
+
+**Estimated time:** ~4-6 hours for 759 questions + ~1 hour for judge scoring.
+**Estimated cost:** ~$65 for answer sessions (759 x ~$0.085) + ~$8 for judge scoring. Total ~$73.
+
+**Smaller test run:** To verify the pipeline:
+
+```bash
+COUNT=30 demos/locomo/run-benchmark.sh
+```
+
+This runs 30 questions in ~15 minutes for ~$2.50.
 
 ---
 

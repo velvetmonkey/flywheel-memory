@@ -8,7 +8,7 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
 import { buildVaultIndex, setIndexState, setIndexError, saveVaultIndexToCache } from '../../core/read/graph.js';
-import { loadConfig, inferConfig, saveConfig, DEFAULT_ENTITY_EXCLUDE_FOLDERS, type FlywheelConfig } from '../../core/read/config.js';
+import { loadConfig, inferConfig, saveConfig, DEFAULT_ENTITY_EXCLUDE_FOLDERS, getExcludeTags, type FlywheelConfig } from '../../core/read/config.js';
 import { buildFTS5Index } from '../../core/read/fts5.js';
 import { scanVaultEntities, getEntityIndexFromDb, getAllEntitiesFromDb, type StateDb } from '@velvetmonkey/vault-core';
 import { suggestEntityAliases } from '../../core/read/aliasSuggestions.js';
@@ -190,7 +190,7 @@ export function registerSystemTools(
         let taskCacheRefreshed = false;
         try {
           const config = loadConfig(stateDb);
-          refreshIfStale(vaultPath, newIndex, config.exclude_task_tags);
+          refreshIfStale(vaultPath, newIndex, getExcludeTags(config));
           taskCacheRefreshed = true;
         } catch (err) {
           console.error('[Flywheel] Task cache refresh failed:', err);

@@ -76,7 +76,7 @@ npm run bench:all -w @velvetmonkey/flywheel-bench
 
 ## Contributor License Agreement
 
-By submitting a pull request, you agree to the terms of our [Contributor License Agreement (CLA)](CLA.md). This grants the maintainer the right to distribute your contributions under AGPL-3.0 and potentially additional license terms in the future, while the open-source version always remains AGPL-3.0.
+By submitting a pull request, you agree to the terms of our [Contributor License Agreement (CLA)](CLA.md). This grants the maintainer the right to distribute your contributions under Apache-2.0 and potentially additional license terms in the future, while the open-source version always remains Apache-2.0.
 
 Your PR submission serves as your electronic signature. No separate form or bot required.
 
@@ -106,4 +106,4 @@ Releases are manual. Before tagging:
 
 ## License
 
-By contributing, you agree to the [CLA](CLA.md) and that your contributions will be licensed under the [AGPL-3.0 License](LICENSE).
+By contributing, you agree to the [CLA](CLA.md) and that your contributions will be licensed under the [Apache-2.0 License](LICENSE).

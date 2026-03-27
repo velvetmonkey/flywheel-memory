@@ -28,7 +28,7 @@ You understand that the decision to include your Contribution in the Project is 
 
 ## 6. Current License
 
-The Project is currently licensed under AGPL-3.0. The rights granted in this CLA allow the Maintainer to offer the Project under additional license terms (e.g., a commercial license) without requiring further permission from contributors. The open-source version will always remain available under AGPL-3.0.
+The Project is currently licensed under Apache-2.0. The rights granted in this CLA allow the Maintainer to offer the Project under additional license terms (e.g., a commercial license) without requiring further permission from contributors. The open-source version will always remain available under Apache-2.0.
 
 ## How to Sign
 

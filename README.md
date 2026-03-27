@@ -16,7 +16,7 @@ All local. No cloud. No account. No sync.
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
-[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code%20%7C%20OpenClaw-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-91.7%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
@@ -368,13 +368,7 @@ To contribute back to Obsidian I'm also building [Flywheel Crank](https://github
 
 ## License
 
-**AGPL-3.0.** The architecture keeps your data local. The license keeps the code open. Together, they ensure no one can turn your knowledge graph into a closed product.
-
-Every AI platform is building memory as a retention moat: your cognitive profile, packaged as a subscription you can't leave. AGPL means no one can fork Flywheel and do the same. Derivatives stay open. Your data stays yours.
-
-Using Flywheel internally at your company? AGPL permits that. Network distribution triggers source disclosure, not internal use. Need a commercial license? [Get in touch](https://x.com/thevelvetmonke).
-
-See [LICENSE](./LICENSE) for details.
+Apache-2.0. See [LICENSE](./LICENSE) for details.
 
 > Your knowledge. Your graph. Your terms.
 >

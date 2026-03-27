@@ -5,12 +5,23 @@
   All local. 60 seconds to install.</p>
 </div>
 
-**[Get started](#try-it)** · **[See it work](#see-it-work)** · **[Benchmarked](#benchmarked)** · **[Docs](#documentation)**
+**[Get started](#try-it)** · **[See it work](#see-it-work)** · **[What's different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)** · **[Story](#the-story-behind-this)**
+
+**Search** — Ask a question, get an answer — not a list of files to open. One call returns structured results with metadata, graph context, and section content. Your AI reasons across your vault without reading files one by one. [$0.06-0.10/query](#benchmarked), measured.
+
+**Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief — Flywheel recognizes names, projects, and relationships and wikilinks them automatically. Zero manual curation.
+
+**Remember** — Your AI knows what you were working on yesterday without re-explaining it. Links you keep get stronger. Links you remove get suppressed. After a week, suggestions reflect how *you* think, not defaults. The graph compounds with use.
+
+All local. No cloud. No account. No sync.
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
+[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
+[![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code%20%7C%20OpenClaw-blue.svg)](docs/SETUP.md)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 
 ---
 

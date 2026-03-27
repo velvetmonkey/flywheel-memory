@@ -344,5 +344,3 @@ To contribute back to Obsidian I'm also building [Flywheel Crank](https://github
 Apache-2.0. See [LICENSE](./LICENSE) for details.
 
 > Your knowledge. Your graph. Your terms.
->
-> *If you can keep your head when all about you are losing theirs...* -- Kipling

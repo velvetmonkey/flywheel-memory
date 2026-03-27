@@ -15,7 +15,7 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 - [Phase 6: Your Own Vault](#phase-6-your-own-vault)
 - [Reproduce Our Numbers](#reproduce-our-numbers)
   - [1. Unit Tests (2,712 passed)](#1-unit-tests-2712-passed)
-  - [2. HotpotQA Retrieval Benchmark (93.0% recall, 500 questions)](#2-hotpotqa-retrieval-benchmark-930-recall-500-questions)
+  - [2. HotpotQA Retrieval Benchmark (91.7% recall, 500 questions)](#2-hotpotqa-retrieval-benchmark-917-recall-500-questions)
   - [3. LoCoMo E2E Benchmark (65% single-hop, 759 questions)](#3-locomo-e2e-benchmark-65-single-hop-759-questions)
 - [What You Just Proved](#what-you-just-proved)
 - [Why It's Efficient](#why-its-efficient)
@@ -226,16 +226,16 @@ Time:        ~18s
 
 ---
 
-### 2. HotpotQA Retrieval Benchmark (93.0% recall, 500 questions)
+### 2. HotpotQA Retrieval Benchmark (91.7% recall, 500 questions)
 
-**What it proves:** Flywheel's search finds 93% of supporting documents on a standard multi-hop QA dataset from CMU/Stanford -- beating BM25 baselines by +18pp and matching purpose-built neural retrievers that were trained on the dataset.
+**What it proves:** Flywheel's search finds 92% of supporting documents on a standard multi-hop QA dataset from CMU/Stanford -- beating BM25 baselines by +17pp and exceeding purpose-built neural retrievers that were trained on the dataset.
 
 **Prerequisites:**
 - Everything from step 1 (repo cloned, `npm install` done)
 - MCP server built: `npm run build`
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI authenticated (`claude --version`)
 - Python 3 (for analysis script)
-- Anthropic API credits (~$0.063/question)
+- Anthropic API credits (~$0.058/question)
 
 **Step 1: Build the benchmark vault**
 
@@ -272,14 +272,14 @@ cat demos/hotpotqa/results/run-*/report.md
 
 | Metric | Expected |
 |---|---|
-| Document Recall | ~93% (930/1000 supporting docs found) |
-| Full Recall (both docs) | ~87% (435/500) |
-| Partial Recall (at least 1 doc) | ~99% (495/500) |
+| Document Recall | ~92% (917/1000 supporting docs found) |
+| Full Recall (both docs) | ~84% (418/500) |
+| Partial Recall (at least 1 doc) | ~99.8% (499/500) |
 
-Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 93.0% headline is from seed 42 with Sonnet.
+Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 91.7% headline is from seed 42 with Sonnet.
 
 **Estimated time:** ~2-3 hours for 500 questions (each question is a separate Claude session).
-**Estimated cost:** ~$32 (500 questions x ~$0.063/question).
+**Estimated cost:** ~$29 (500 questions x ~$0.058/question).
 
 **Smaller test run:** To verify the pipeline works before committing to the full 500:
 

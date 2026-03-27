@@ -19,7 +19,7 @@ All local. No cloud. No account. No sync.
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code%20%7C%20OpenClaw-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![HotpotQA](https://img.shields.io/badge/HotpotQA-93.0%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+[![HotpotQA](https://img.shields.io/badge/HotpotQA-91.7%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-65%25%20single--hop%20%7C%2085%25%20recall%20(759q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Cost](https://img.shields.io/badge/cost-%240.06--0.09%2Fquery-green.svg)](docs/TESTING.md#how-the-e2e-benchmark-works)
 [![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
@@ -281,7 +281,7 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 
 | System | Type | Recall@5 | Docs | Cost/question | Training |
 |---|---|---|---|---|---|
-| **Flywheel** | General-purpose MCP tool | **93.0%** | 4,960 | **$0.063** | None |
+| **Flywheel** | General-purpose MCP tool | **91.7%** | 4,960 | **$0.058** | None |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | 5M+ Wikipedia | N/A (inference only) | Trained on HotpotQA |
 | [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | 5M+ Wikipedia | N/A (inference only) | Trained on HotpotQA |
 | BM25 baseline | Industry-standard IR | ~70-75% | Varies | Negligible | None |

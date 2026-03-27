@@ -180,7 +180,7 @@ Co-occurrence strength uses **NPMI (Normalized Pointwise Mutual Information)** s
 
 **Retrieval co-occurrence** adds a second signal: notes that are frequently retrieved together in search/recall sessions build implicit associations. The watcher mines `tool_invocations` for co-retrieved note pairs, weights them with Adamic-Adar (smaller sessions = stronger signal), and applies 7-day exponential decay. Co-occurrence pairs are stored in the `retrieval_cooccurrence` table (schema v30). The final boost is `Math.max(contentBoost, retrievalBoost)` -- the stronger signal wins, no double-counting. Retrieval boost caps at 6 (half of content co-occurrence max).
 
-**Multi-hop search backfill.** Search results automatically include documents linked from top results. When a search finds document A which mentions entity B, document B is included in the result set at lower rank. This enables second-hop retrieval without LLM re-ranking -- measured at 93.0% document recall on 500 hard HotpotQA questions (4,960 documents).
+**Multi-hop search backfill.** Search results automatically include documents linked from top results. When a search finds document A which mentions entity B, document B is included in the result set at lower rank. This enables second-hop retrieval without LLM re-ranking -- measured at 91.7% document recall on 500 hard HotpotQA questions (4,960 documents).
 
 ### Layer 6: Type Boost
 
@@ -373,7 +373,7 @@ The minimum score adjusts based on content length:
 | Medium (50-200 chars) | `baseScore` (unchanged) |
 | Long (> 200 chars) | `floor(baseScore * 1.2)` |
 
-Short content (a quick note, a task) gets a lower bar because there are fewer words to match against. Long content gets a higher bar because there are more words, so matches are more likely to be coincidental.
+Short content (a quick note, a task) gets a lower [[bar]] because there are fewer words to match against. Long content gets a higher bar because there are more words, so matches are more likely to be coincidental.
 
 ---
 

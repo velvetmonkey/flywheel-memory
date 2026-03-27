@@ -18,6 +18,7 @@ import {
   detectImplicitEntities,
   checkDbIntegrity,
   safeBackupAsync,
+  recordEntityMention,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
 
@@ -64,6 +65,7 @@ import {
   updateStoredNoteTags,
   isSuppressed,
   getAllSuppressionPenalties,
+  trackWikilinkApplications,
 } from '../../write/wikilinkFeedback.js';
 import { processPendingCorrections } from '../../write/corrections.js';
 import { recomputeEdgeWeights } from '../../write/edgeWeights.js';
@@ -175,6 +177,7 @@ export class PipelineRunner {
       await runStep('forward_links', tracker, { files: p.events.length }, () => this.forwardLinks());
       await this.wikilinkCheck();
       await this.implicitFeedback();
+      await runStep('incremental_recency', tracker, { files: p.events.length }, () => this.incrementalRecency());
       await runStep('corrections', tracker, {}, () => this.corrections());
       await runStep('prospect_scan', tracker, { files: p.events.length }, () => this.prospectScan());
       await this.suggestionScoring();
@@ -373,12 +376,12 @@ export class PipelineRunner {
 
   private async recency(): Promise<Record<string, unknown>> {
     const { p } = this;
-    const cachedRecency = loadRecencyFromStateDb();
+    const cachedRecency = loadRecencyFromStateDb(p.sd ?? undefined);
     const cacheAgeMs = cachedRecency ? Date.now() - (cachedRecency.lastUpdated ?? 0) : Infinity;
     if (cacheAgeMs >= 60 * 60 * 1000) {
       const entities = this.entitiesAfter.map(e => ({ name: e.name, path: e.path, aliases: e.aliases }));
       const recencyIndex = await buildRecencyIndex(p.vp, entities);
-      saveRecencyToStateDb(recencyIndex);
+      saveRecencyToStateDb(recencyIndex, p.sd ?? undefined);
       serverLog('watcher', `Recency: rebuilt ${recencyIndex.lastMentioned.size} entities`);
       return { rebuilt: true, entities: recencyIndex.lastMentioned.size };
     }
@@ -805,6 +808,7 @@ export class PipelineRunner {
       );
       for (const diff of this.linkDiffs) {
         if (deletedFiles.has(diff.file)) continue;
+        const newlyTracked: Array<{ entity: string; matchedTerm?: string }> = [];
         for (const target of diff.added) {
           if (checkApplication.get(target, diff.file)) continue;
           const entity = this.entitiesAfter.find(
@@ -814,7 +818,15 @@ export class PipelineRunner {
           if (entity) {
             recordFeedback(p.sd, entity.name, 'implicit:manual_added', diff.file, true);
             additionResults.push({ entity: entity.name, file: diff.file });
+            newlyTracked.push({
+              entity: entity.name,
+              matchedTerm: entity.nameLower === target ? undefined : target,
+            });
           }
+        }
+        // Track applications so removal detection works on subsequent edits
+        if (newlyTracked.length > 0) {
+          trackWikilinkApplications(p.sd, diff.file, newlyTracked);
         }
       }
     }
@@ -837,6 +849,23 @@ export class PipelineRunner {
     if (newlySuppressed.length > 0) {
       serverLog('watcher', `Suppression: ${newlySuppressed.length} entities newly suppressed: ${newlySuppressed.join(', ')}`);
     }
+  }
+
+  // ── Step 10.1: Incremental recency ──────────────────────────────
+
+  private async incrementalRecency(): Promise<Record<string, unknown>> {
+    const { p } = this;
+    if (!p.sd) return { skipped: true };
+
+    let updated = 0;
+    const now = new Date();
+    for (const entry of this.forwardLinkResults) {
+      for (const target of entry.resolved) {
+        recordEntityMention(p.sd, target, now);
+        updated++;
+      }
+    }
+    return { entities_updated: updated };
   }
 
   // ── Step 10.5: Corrections ────────────────────────────────────────

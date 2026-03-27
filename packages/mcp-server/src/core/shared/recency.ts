@@ -203,8 +203,8 @@ export function getRecencyBoost(entityName: string, index: RecencyIndex): number
  *
  * @returns RecencyIndex or null if StateDb unavailable or empty
  */
-export function loadRecencyFromStateDb(): RecencyIndex | null {
-  const stateDb = getStateDb();
+export function loadRecencyFromStateDb(explicitStateDb?: StateDb): RecencyIndex | null {
+  const stateDb = explicitStateDb ?? getStateDb();
   if (!stateDb) return null;
 
   try {
@@ -237,8 +237,8 @@ export function loadRecencyFromStateDb(): RecencyIndex | null {
  *
  * @param index - RecencyIndex to save
  */
-export function saveRecencyToStateDb(index: RecencyIndex): void {
-  const stateDb = getStateDb();
+export function saveRecencyToStateDb(index: RecencyIndex, explicitStateDb?: StateDb): void {
+  const stateDb = explicitStateDb ?? getStateDb();
   if (!stateDb) {
     console.error('[Flywheel] saveRecencyToStateDb: No StateDb available');
     return;

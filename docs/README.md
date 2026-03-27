@@ -33,6 +33,10 @@
 | [VISION.md](VISION.md) | The flywheel effect, design principles, ecosystem | "Where is this project going?" |
 | [ALGORITHM.md](ALGORITHM.md) | The 13-layer scoring system — how every suggestion is computed | "How does auto-wikilinks decide what to link?" |
 | [PROVE-IT.md](PROVE-IT.md) | Clone it, run it, see it in 5 minutes | "Can I try this right now?" |
+| [SHARING.md](SHARING.md) | What's tracked, privacy guarantees, calibration data | "What does Flywheel record and is it safe to share?" |
+| [BENCHMARKS.md](BENCHMARKS.md) | Performance characteristics at various vault sizes | "How fast is it and how does it scale?" |
+| [POLICY_EXAMPLES.md](POLICY_EXAMPLES.md) | Ready-to-run policy YAML examples | "What can policies do?" |
+| [QUALITY_REPORT.md](QUALITY_REPORT.md) | Graph quality metrics and regression tracking | "How accurate are the suggestions?" |
 
 ---
 

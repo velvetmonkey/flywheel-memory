@@ -215,7 +215,7 @@ export interface ImplicitEntityConfig {
    * Which patterns to use for detection
    * @default ['proper-nouns']
    */
-  implicitPatterns?: Array<'proper-nouns' | 'quoted-terms' | 'single-caps' | 'camel-case' | 'acronyms'>;
+  implicitPatterns?: Array<'proper-nouns' | 'quoted-terms' | 'single-caps' | 'camel-case' | 'acronyms' | 'ticket-refs'>;
 
   /**
    * Regex patterns to exclude from implicit detection
@@ -251,7 +251,7 @@ export interface ImplicitEntityMatch {
   /** End position in content */
   end: number;
   /** Detection method used */
-  pattern: 'proper-nouns' | 'quoted-terms' | 'single-caps' | 'camel-case' | 'acronyms';
+  pattern: 'proper-nouns' | 'quoted-terms' | 'single-caps' | 'camel-case' | 'acronyms' | 'ticket-refs';
 }
 
 /**

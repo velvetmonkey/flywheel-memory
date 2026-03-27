@@ -1352,7 +1352,7 @@ export function detectImplicitEntities(
     if (!/[a-zA-Z]/.test(text)) return true;
 
     // Common words
-    if (IMPLICIT_EXCLUDE_WORDS.has(text.toLowerCase())) return true;
+    if (getMergedExcludeWords().has(text.toLowerCase())) return true;
 
     // Exclude patterns
     for (const regex of excludeRegexes) {
@@ -1500,6 +1500,21 @@ export function detectImplicitEntities(
       const end = start + text.length;
       if (!shouldExclude(text) && !isProtected(start, end)) {
         detected.push({ text, start, end, pattern: 'acronyms' });
+        seenTexts.add(text.toLowerCase());
+      }
+    }
+  }
+
+  // Pattern 6: Ticket/issue references (FW-123, PROJ-456, JIRA-1234)
+  if (implicitPatterns.includes('ticket-refs')) {
+    const ticketRegex = /\b([A-Z]{2,6}-\d{1,6})\b/g;
+    let match: RegExpExecArray | null;
+    while ((match = ticketRegex.exec(content)) !== null) {
+      const text = match[1];
+      const start = match.index;
+      const end = start + text.length;
+      if (!shouldExclude(text) && !isProtected(start, end)) {
+        detected.push({ text, start, end, pattern: 'ticket-refs' });
         seenTexts.add(text.toLowerCase());
       }
     }

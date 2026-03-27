@@ -2,7 +2,7 @@
 
 Single demo showing the learning loop: write notes, Flywheel suggests links, accept/reject feedback, graph improves, future suggestions get smarter. Three-panel layout, five beats, voice-native via Wispr Flow.
 
-**Tagline:** "Just talk. Your vault remembers."
+**Tagline:** "Cognitive sovereignty for your Obsidian vault."
 
 **Key framing:** This demo sells the flywheel effect -- the system learning from your edits, not just storing them. The viewer sees: write something casual, watch links appear, accept some, reject others, then write something else and see the suggestions already improved. By the end, the graph is visibly denser and the system knows which connections matter.
 
@@ -26,12 +26,30 @@ Single demo showing the learning loop: write notes, Flywheel suggests links, acc
 ## Setup
 
 - Delete `daily-notes/` contents if any exist from previous runs
+- **Do NOT delete `.flywheel/state.db`** — it contains pre-seeded feedback history (~30 records) that makes suggestions realistic from Beat 1
+- Run `./run-demo-test.sh --seed-only` to ensure feedback is seeded (or manually verify)
 - Restart flywheel-demo service: `sudo systemctl restart flywheel-demo`
 - Open Obsidian with carter-strategy vault visible
 - Open Crank graph panel on right sidebar
 - Open Telegram with bot chat visible (clear history for clean start)
 - Wispr Flow active for voice input
 - Dark mode on Telegram (better contrast on camera)
+
+### Pre-seeded state
+
+The vault has been "in use for weeks." The state.db contains feedback history:
+
+| Entity | Feedback | Effect |
+|--------|----------|--------|
+| Sarah Mitchell | 90% accuracy (10 samples) | +10 boost — high-confidence suggestion |
+| Acme Data Migration | 85% accuracy (8 samples) | +10 boost |
+| Acme Corp | 95% accuracy (12 samples) | +10 boost |
+| Marcus Webb | 80% accuracy (6 samples) | +5 boost |
+| GlobalBank | 30% accuracy (25 samples) | Suppressed — won't appear in suggestions |
+| Meridian Financial | 50% accuracy (4 samples) | Marginal — still suggested but borderline |
+| Discovery Workshop Template | 55% accuracy (3 samples) | Marginal — still suggested but borderline |
+
+This means Beat 1 suggestions already reflect prior learning (GlobalBank suppressed, core Acme entities boosted). The live feedback in Beats 2-3 then demonstrably improves Beat 4.
 
 ---
 
@@ -293,7 +311,7 @@ Before filming, verify every entity mentioned exists in the vault:
 
 ---
 
-## Voice/PKM Philosophy (reference for blog post / X thread)
+## The Flywheel Effect (reference for blog post / X thread)
 
 This section is NOT part of the video. Preserves concepts for future written content.
 
@@ -314,15 +332,31 @@ This section is NOT part of the video. Preserves concepts for future written con
 
 ### "Wrong" Suggestions Build Context
 
-Week 1: Voice logs mention "Acme call", get suggestion -> GlobalBank
-  (Seems wrong -- GlobalBank not directly involved)
+Every suggestion is scored through 13 layers:
+1. Length/pattern filter
+2. Article filter
+3. Suppression filter (entities with high false-positive rates blocked here)
+4. Exact match (+10 per word)
+5. Stem match (+3 to +6)
+6. Co-occurrence boost (+3 per relationship, capped at 6)
+7. Type boost (people +5, projects +3)
+8. Context boost (daily notes boost people, tech docs boost tech)
+9. Recency boost (+8 last hour, decays to 0)
+10. Cross-folder boost (+3)
+11. Hub boost (eigenvector centrality, 0 to +6)
+12. **Feedback adjustment (+5 to -4 based on your accept/reject history)**
+13. Edge weight (link survival tracking, 0 to +4)
 
 Week 2: Consultant starts GlobalBank pilot project
   (GlobalBank opportunity came from Acme referral)
 
 The "imprecise" suggestion captured working context your brain hadn't noticed yet. Over time, wrong suggestions become the connections you accept tomorrow.
 
-### Algorithm Evidence
+| Timeframe | Sarah Mitchell score | Meridian Financial score |
+|-----------|---------------------|------------------------|
+| Week 1 | 18 (match + type + context) | 14 (match + co-occurrence) |
+| Week 4 | 28 (+10 feedback boost) | 14 (no feedback yet) |
+| Week 8 | 28 (stable — consistently correct) | -1 (suppressed — too many false positives) |
 
 Co-occurrence boost at work -- when you log "Acme call":
 - Sarah Mitchell -- 47 co-occurrences (primary contact)

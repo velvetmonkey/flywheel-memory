@@ -19,6 +19,7 @@ import {
 } from '@velvetmonkey/vault-core';
 import { parseNote } from './parser.js';
 import { levenshteinDistance } from '../shared/levenshtein.js';
+import { serverLog } from '../shared/serverLog.js';
 import { embedTextCached, findSemanticallySimilarEntities, hasEntityEmbeddingsIndex } from './embeddings.js';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 
@@ -164,7 +165,7 @@ async function buildVaultIndexInternal(
 
   // Parse all notes with concurrency control
   const notes = new Map<string, VaultNote>();
-  const parseErrors: string[] = [];
+  const parseErrors: Array<{ path: string; reason: string }> = [];
   let parsedCount = 0;
 
   // Process files in batches for controlled concurrency
@@ -178,15 +179,15 @@ async function buildVaultIndexInternal(
       })
     );
 
-    for (const result of results) {
+    for (let j = 0; j < results.length; j++) {
+      const result = results[j];
       if (result.status === 'fulfilled') {
         notes.set(result.value.note.path, result.value.note);
       } else {
-        // Extract file path from the batch (best effort)
-        const batchIndex = results.indexOf(result);
-        if (batchIndex >= 0 && batch[batchIndex]) {
-          parseErrors.push(batch[batchIndex].path);
-        }
+        const filePath = batch[j]?.path ?? '<unknown>';
+        const reason = result.reason instanceof Error
+          ? result.reason.message : String(result.reason);
+        parseErrors.push({ path: filePath, reason });
       }
       parsedCount++;
     }
@@ -203,9 +204,13 @@ async function buildVaultIndexInternal(
   }
 
   if (parseErrors.length > 0) {
-    console.error(`Failed to parse ${parseErrors.length} files:`);
-    for (const errorPath of parseErrors) {
-      console.error(`  - ${errorPath}`);
+    const msg = `Failed to parse ${parseErrors.length} file(s):`;
+    console.error(msg);
+    serverLog('index', msg, 'error');
+    for (const err of parseErrors) {
+      const detail = `  - ${err.path}: ${err.reason}`;
+      console.error(detail);
+      serverLog('index', detail, 'error');
     }
   }
 

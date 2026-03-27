@@ -33,6 +33,12 @@ export interface VaultContext {
   lastCooccurrenceRebuildAt: number;
   /** Per-vault timestamp: last edge weight rebuild */
   lastEdgeWeightRebuildAt: number;
+  /** Per-vault timestamp: last entity scan */
+  lastEntityScanAt: number;
+  /** Per-vault timestamp: last hub score rebuild */
+  lastHubScoreRebuildAt: number;
+  /** Per-vault timestamp: last index cache save */
+  lastIndexCacheSaveAt: number;
 }
 
 export class VaultRegistry {

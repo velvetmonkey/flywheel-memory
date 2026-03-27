@@ -285,9 +285,23 @@ export class PipelineRunner {
       for (const r of rows) this.hubBefore.set(r.name, r.hub_score);
     }
 
+    // Throttle: full entity scan is expensive (recursive directory walk).
+    // Skip if scanned within 5 minutes; downstream steps still get entities from DB.
+    const entityScanAgeMs = p.ctx.lastEntityScanAt > 0
+      ? Date.now() - p.ctx.lastEntityScanAt : Infinity;
+    if (entityScanAgeMs < 5 * 60 * 1000) {
+      tracker.start('entity_scan', {});
+      tracker.skip('entity_scan', `cache valid (${Math.round(entityScanAgeMs / 1000)}s old)`);
+      this.entitiesBefore = p.sd ? getAllEntitiesFromDb(p.sd) : [];
+      this.entitiesAfter = this.entitiesBefore;
+      serverLog('watcher', `Entity scan: throttled (${Math.round(entityScanAgeMs / 1000)}s old)`);
+      return;
+    }
+
     this.entitiesBefore = p.sd ? getAllEntitiesFromDb(p.sd) : [];
     tracker.start('entity_scan', { note_count: vaultIndex.notes.size });
     await p.updateEntitiesInStateDb(p.vp, p.sd);
+    p.ctx.lastEntityScanAt = Date.now();
     this.entitiesAfter = p.sd ? getAllEntitiesFromDb(p.sd) : [];
     const entityDiff = computeEntityDiff(this.entitiesBefore, this.entitiesAfter);
 
@@ -330,6 +344,16 @@ export class PipelineRunner {
 
   private async hubScores(): Promise<Record<string, unknown>> {
     const { p } = this;
+
+    // Throttle: hub score computation iterates all notes + power iteration.
+    // Skip if computed within 5 minutes.
+    const hubAgeMs = p.ctx.lastHubScoreRebuildAt > 0
+      ? Date.now() - p.ctx.lastHubScoreRebuildAt : Infinity;
+    if (hubAgeMs < 5 * 60 * 1000) {
+      serverLog('watcher', `Hub scores: throttled (${Math.round(hubAgeMs / 1000)}s old)`);
+      return { skipped: true, age_ms: hubAgeMs };
+    }
+
     const vaultIndex = p.getVaultIndex();
     const hubUpdated = await exportHubScores(vaultIndex, p.sd);
     const hubDiffs: Array<{ entity: string; before: number; after: number }> = [];
@@ -340,6 +364,7 @@ export class PipelineRunner {
         if (prev !== r.hub_score) hubDiffs.push({ entity: r.name, before: prev, after: r.hub_score });
       }
     }
+    p.ctx.lastHubScoreRebuildAt = Date.now();
     serverLog('watcher', `Hub scores: ${hubUpdated ?? 0} updated`);
     return { updated: hubUpdated ?? 0, diffs: hubDiffs.slice(0, 10) };
   }
@@ -479,9 +504,19 @@ export class PipelineRunner {
     const { p, tracker } = this;
     const vaultIndex = p.getVaultIndex();
     if (p.sd) {
+      // Throttle: full index serialization to SQLite is expensive for large vaults.
+      // Skip if saved within 30 seconds.
+      const cacheAgeMs = p.ctx.lastIndexCacheSaveAt > 0
+        ? Date.now() - p.ctx.lastIndexCacheSaveAt : Infinity;
+      if (cacheAgeMs < 30 * 1000) {
+        tracker.start('index_cache', {});
+        tracker.skip('index_cache', `saved recently (${Math.round(cacheAgeMs / 1000)}s ago)`);
+        return;
+      }
       tracker.start('index_cache', { note_count: vaultIndex.notes.size });
       try {
         saveVaultIndexToCache(p.sd, vaultIndex);
+        p.ctx.lastIndexCacheSaveAt = Date.now();
         tracker.end({ saved: true });
         serverLog('watcher', 'Index cache saved');
       } catch (err) {

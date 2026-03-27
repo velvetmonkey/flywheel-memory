@@ -264,6 +264,9 @@ async function initializeVault(name: string, vaultPathArg: string): Promise<Vaul
     indexError: null,
     lastCooccurrenceRebuildAt: 0,
     lastEdgeWeightRebuildAt: 0,
+    lastEntityScanAt: 0,
+    lastHubScoreRebuildAt: 0,
+    lastIndexCacheSaveAt: 0,
   };
 
   try {

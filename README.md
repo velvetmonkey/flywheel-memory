@@ -189,36 +189,39 @@ These are rules, not preferences:
 
 ## Benchmarked
 
-Flywheel controls retrieval; the model controls comprehension. Evidence recall is ours — did we find the right documents? Answer accuracy is the model's — did it understand what it found?
+**91.7% retrieval recall** on [HotpotQA](https://hotpotqa.github.io/) — 500 hard multi-hop questions across 4,960 documents. Zero training data. $0.06/question. 2-8ms search.
 
-**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions):
+Flywheel controls retrieval — did we find the right documents? The model controls comprehension. Every number is reproducible: clone the repo, run the scripts, get the same numbers.
 
-| System | Evidence Recall | Single-hop Recall | Multi-hop Recall | Cost/question | Infrastructure |
-|---|---|---|---|---|---|
-| **Flywheel** | **79.1%** | **95.5%** | **65.3%** | **$0.095** | Local SQLite + markdown |
-| [Mem0](https://mem0.ai/) | — | — | — | ~$0.30-0.50* | Redis + Qdrant |
-| [Zep](https://getzep.com/) | — | — | — | ~$0.30-0.50* | Cloud service |
-| [LangMem](https://github.com/langchain-ai/langmem) | — | — | — | ~$0.30-0.50* | Varies |
-| [Letta](https://memgpt.ai/) | — | — | — | ~$0.30-0.50* | Cloud/local |
+**Retrieval vs. academic baselines** (HotpotQA, 500 questions):
 
-\* Competitor costs are estimates based on GPT-4o pricing. Competitors do not report evidence recall — a different metric. Flywheel uses Claude Sonnet for answers with token F1 scoring. Infrastructure costs (Redis, Qdrant, cloud hosting) are additional.
+| System | Type | Recall | Training data |
+|---|---|---|---|
+| BM25 baseline | IR | ~75% | None |
+| [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | IR | ~80% | None |
+| [Baleen](https://arxiv.org/abs/2101.00436) (Stanford) | Trained retriever | ~85% | HotpotQA |
+| [MDR](https://arxiv.org/abs/2009.12756) (Facebook) | Trained retriever | ~88% | HotpotQA |
+| **Flywheel** | **MCP vault tool** | **91.7%** | **None** |
+| [Beam Retrieval](https://arxiv.org/abs/2308.08973) | Trained retriever | ~93% | End-to-end |
 
-Different systems, different metrics, different prompts. These are directional indicators, not controlled experiments. [Full methodology and caveats →](docs/TESTING.md#how-the-e2e-benchmark-works)
+Not apples-to-apples — different test settings, sample sizes, and retrieval pools. [Full caveats →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
-91.7% recall on HotpotQA (500 questions). Reproducible: clone the repo, run the scripts, get the same numbers. [HotpotQA details →](docs/TESTING.md#retrieval-benchmark-hotpotqa) | [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
+**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions): **95.5%** single-hop recall, **65.3%** multi-hop, **79.1%** evidence recall overall. $0.095/question. No other MCP memory tool publishes retrieval benchmarks on a standard academic dataset. [LoCoMo details →](docs/TESTING.md#retrieval-benchmark-locomo) | [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
 
 ---
 
 ## Tested
 
-2,712 tests across read, write, security, concurrency, and graph quality. CI-gated on Ubuntu + Windows, Node 22 + 24.
+| Metric | Measured |
+|---|---|
+| Tests | 2,712 across 129 files |
+| Search latency | 2-8ms (FTS5), 10-30ms (hybrid) |
+| Wikilink precision | 100% on ground truth vault, 50 generations |
+| Write safety | 100 parallel writes, zero corruption |
+| Security | SQL injection, path traversal, Unicode normalization |
+| CI | 12 jobs, Ubuntu + Windows, Node 22 + 24 |
 
-- **Graph quality:** 100% wikilink precision on ground truth vault, stress-tested over 50 generations with realistic noise. [Report →](docs/QUALITY_REPORT.md)
-- **Live AI testing:** real `claude -p` sessions verify tool adoption end-to-end, not just handler logic
-- **Write safety:** git-backed conflict detection, atomic rollback, 100 parallel writes with zero corruption
-- **Security:** SQL injection, path traversal, Unicode normalization, permission bypass
-
-[Full methodology and results →](docs/TESTING.md)
+[Full methodology →](docs/TESTING.md) · [Graph quality report →](docs/QUALITY_REPORT.md)
 
 ---
 

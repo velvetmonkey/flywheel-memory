@@ -161,6 +161,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `tasks` | 3 | tasks, vault_toggle_task, vault_add_task |
 | `memory` | 2 | memory, brief |
 | `note-ops` | 4 | vault_delete/move/rename_note, merge_entities |
+| `temporal` | 4 | get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
 | `diagnostics` | 20 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export |
 
 Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work with a warning — they resolve to current category names.

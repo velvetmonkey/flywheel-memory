@@ -1,8 +1,7 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Cognitive sovereignty for your Obsidian vault.</strong><br/>
-  Search, write, and graph MCP tools that auto-link your notes and learn from your edits.<br/>
+  <p><strong>MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.</strong><br/>
   All local. All yours. A few lines of config.</p>
 </div>
 
@@ -21,13 +20,18 @@
 
 > **Cognitive sovereignty** = your knowledge graph stays on your machine. No platform builds a profile from it. No subscription locks you in. You choose the model. You own the memory.
 
-### The scaling problem
+### Three things Flywheel does
 
-Once you integrate AI, your vault grows faster than you can link it. Thousands of notes with sparse connections is a filing cabinet, not a knowledge graph. Voice capture, quick notes, web clippings - every workflow that speeds up capture widens the gap. Without links, your AI reads files one by one instead of traversing a graph. This isn't a discipline problem. It's a throughput problem.
+**Search** — Ask a question, get a decision surface. One call returns section provenance, extracted dates, entity bridges, and confidence scores. Your AI decides what to read next without opening any files. [$0.06-0.09/query](#benchmarked), measured.
 
-Flywheel auto-links on every write, voice or keyboard.
+**Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief, Flywheel recognises names, projects, and relationships and wikilinks them in real time. [13 scoring layers](docs/ALGORITHM.md), zero manual curation.
 
-> Most MCP search tools return results for humans to scan. Flywheel returns a **decision surface** — section provenance, extracted dates, entity bridges, confidence scores — structured metadata that lets your AI decide what to read next without opening any files.
+**Remember** — The system learns from your edits. Links you keep get stronger. Links you remove get suppressed. After a week, suggestions reflect how *you* think, not how the algorithm was configured. The graph compounds with use.
+
+All local. No cloud. No account. No sync.
+
+<details>
+<summary><strong>How this compares to not using Flywheel</strong></summary>
 
 | | Without | With Flywheel |
 |---|---|---|
@@ -41,6 +45,8 @@ Flywheel auto-links on every write, voice or keyboard.
 | "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
 | Your graph | Owned by the platform | Yours to [export](https://en.wikipedia.org/wiki/GraphML), analyse, or delete |
 | Tool calls | Hidden behind abstractions | Traceable, auditable, opt-in git commits |
+
+</details>
 
 ### Who this is for
 

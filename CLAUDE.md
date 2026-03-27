@@ -125,6 +125,14 @@ SQLite Full-Text Search 5 in `.flywheel/state.db`:
 - Phrase matching, prefix search
 - <10ms queries on 10k+ notes
 
+### Context Engineering (P38)
+
+Search results pass through a post-processing pipeline that optimises for LLM consumption:
+- **U-shaped interleaving** — results reordered so best items land at positions 1 and N (attention peaks), lowest-ranked in the middle (Liu et al. 2024)
+- **Section expansion** — top-N results include `section_content` (full `## Section` around the snippet match, up to 2,500 chars) alongside the snippet
+- **Contextual embedding prefix** — note embeddings prepend `"Note: {title}. Tags: ..."` to body text, matching Anthropic's contextual retrieval technique. `EMBEDDING_TEXT_VERSION` bump forces re-embed on upgrade
+- **Decision surface** — each result carries frontmatter, scored backlinks/outlinks, section provenance, dates, bridges, and confidence — structured for machine reasoning, not human scanning
+
 ---
 
 ## Development

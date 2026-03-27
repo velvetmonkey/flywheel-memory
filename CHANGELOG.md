@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Context engineering (P38)** — sandwich ordering upgraded to full U-shaped interleaving across all N results (odd-ranked front, even-ranked back). Section expansion adds `section_content` field to top-N results (full `##` section up to 2,500 chars). Contextual embedding prefix prepends `"Note: {title}. Tags: ..."` to note body before vectorisation, with `EMBEDDING_TEXT_VERSION` bump for automatic re-embed on upgrade. Decision surface documentation updated across all docs.
+
 ## [2.0.146-150] - 2026-03-26
 *Context engineering & uber search*
 

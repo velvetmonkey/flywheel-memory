@@ -47,7 +47,7 @@ Start here. `search` is the only tool most questions need.
 
 ### `search`
 
-**How it works:** You give it a query. It searches notes, entities, and memories, then *enriches* every result into a decision surface — section provenance, dates, bridges, confidence — all from an in-memory index, zero file reads. Your AI can reason across results without a single follow-up call.
+**How it works:** You give it a query. It searches notes, entities, and memories, then *enriches* every result into a decision surface — section provenance, full section content, dates, bridges, confidence — all from an in-memory index and minimal file reads. Results are U-shaped interleaved so the most relevant land at the attention peaks (positions 1 and N). Your AI can reason across results without a single follow-up call.
 
 Every search result includes:
 
@@ -56,17 +56,18 @@ Every search result includes:
 | **frontmatter** | All YAML metadata (status, owner, amount, dates, etc.) | Answer "how much?" or "what status?" questions without opening the file. |
 | **backlinks** | Top 10 notes that link TO this one, ranked by edge weight × recency. `backlink_count` gives the total. | See what references this note — invoices pointing to a client, tickets pointing to a user. Use `get_backlinks` for the full list. |
 | **outlinks** | Top 10 notes this one links TO, ranked by edge weight × recency. Includes existence check. `outlink_count` gives the total. | See what this note references — and whether targets exist. |
-| **snippet** | The passage that matched your query (content search) | See the relevant paragraph in context without reading the whole file. |
+| **snippet** | Best-matching paragraph (~800 chars, section-aware) | See the relevant passage in context without reading the whole file. |
+| **section** | Which heading in the note contains the match | Skip the full read — go straight to the relevant section. |
+| **section_content** | Full section text around the match (up to 2,500 chars, top N results) | Read the complete section without a follow-up tool call. Includes heading for provenance. |
 | **content_preview** | First ~300 chars of the note body (non-FTS matches) | When there's no snippet (entity/metadata match), you still get body text. |
 | **tags, aliases** | Tags and alternative names | Understand categorization and find notes by alternate names. |
 | **category, hub_score** | Entity type and graph importance | Know if this is a person, project, or concept — and how central it is in the vault. |
-| **section** | Which heading in the note contains the match | Skip the full read — go straight to the relevant section. |
 | **snippet_confidence** | How likely this result answers the query (0–1) | Skip low-value results without reading them. |
 | **dates_mentioned** | Dates extracted from the matching content | Answer temporal questions without parsing. |
 | **bridges** | Entities shared between this result and others | Multi-hop reasoning without follow-up searches. |
 | **type** | note / entity / memory | Know what kind of result you're looking at. |
 
-This is the key design: **one search call returns not just file paths, but the full neighborhood of each result.** That's why Claude can answer "How much have I billed [[Acme Corp]]?" from a single search — the client's frontmatter has the totals, and the backlinks show every invoice.
+This is the key design: **one search call returns a decision surface — not file paths, but the full neighborhood of each result.** Top results include the full section content around the match, so the AI can reason about context without a follow-up read. That's why Claude can answer "How much have I billed [[Acme Corp]]?" from a single search — the client's frontmatter has the totals, the backlinks show every invoice, and the section content gives the surrounding narrative.
 
 **How matching works** (always start with just a query, no filters):
 
@@ -74,7 +75,7 @@ This is the key design: **one search call returns not just file paths, but the f
 2. **Entity search** — Matches against the entity database (names, aliases, categories). If "Sarah Chen" is an alias for `users/sarah-chen.md`, it finds it.
 3. **Hybrid ranking** — When semantic embeddings are built (via `init_semantic`), results from all three channels are merged using Reciprocal Rank Fusion. Notes can surface by meaning even without keyword overlap.
 
-The enrichment step is the same regardless of how a note matched — every result gets its full frontmatter, backlinks, and outlinks attached. Top results (controlled by `detail_count`, default 5) get full metadata; remaining results get lightweight summaries (counts only).
+The enrichment step is the same regardless of how a note matched — every result gets its full frontmatter, backlinks, and outlinks attached. Top results (controlled by `detail_count`, default 5) get full metadata including section expansion (the complete `## Section` around the snippet match); remaining results get lightweight summaries (counts only). Results are U-shaped interleaved so the best items land at positions 1 and N — the attention peaks — while moderate results sit in the middle.
 
 **Routing:**
 
@@ -104,7 +105,7 @@ FTS5 uses BM25 (Best Match 25) to rank results. Column weights control what matt
 
 This means `search({ query: "active" })` ranks a note with `status: active` in frontmatter 10x higher than a note that merely mentions "active" in body text. Frontmatter values are indexed as searchable text (keys are stripped — only values are searchable).
 
-When semantic embeddings are built, ranking switches to **Reciprocal Rank Fusion** (RRF), which merges four ranked lists — FTS5, semantic similarity, entity matches, and edge-weight context — into a single ordering. A note that ranks well in multiple channels surfaces higher than one that ranks well in only one.
+When semantic embeddings are built, ranking switches to **Reciprocal Rank Fusion** (RRF), which merges four ranked lists — FTS5, semantic similarity, entity matches, and edge-weight context — into a single ordering. A note that ranks well in multiple channels surfaces higher than one that ranks well in only one. Embeddings are enriched with contextual prefixes (note title + tags) so the vector carries document identity alongside content meaning.
 
 **Snippets vs content previews**
 
@@ -115,11 +116,11 @@ Search results include body text in one of two forms:
 | `snippet` | Content search (FTS5 match) | ~64 tokens around matching terms, with `<mark>` tags wrapping matches |
 | `content_preview` | Entity or metadata match (no FTS5 hit) | First ~300 characters of the note body |
 
-**Snippets** are contextual — FTS5 finds the passage where your query terms appear and extracts a window around them. A 10,000-word note produces a snippet of ~50–80 words focused on the match. Multiple disjoint matches are separated by `...`.
+**Snippets** are contextual and section-aware — the pipeline scores paragraphs by keyword overlap, then re-ranks the top candidates by embedding similarity when semantic search is available. The result is the single best-matching paragraph (~800 chars) with its `## Section` heading for provenance. For top results, the full section content is also attached as `section_content` (up to 2,500 chars).
 
-**Content previews** are positional — always the opening of the note body (after frontmatter — YAML is excluded). They appear when a note matched by entity name, metadata filter, or semantic similarity rather than keyword. Both are read from SQLite with zero filesystem I/O.
+**Content previews** are positional — always the opening of the note body (after frontmatter — YAML is excluded). They appear when a note matched by entity name, metadata filter, or semantic similarity rather than keyword.
 
-Neither field shows the full document. To read the complete note, escalate to `get_note_structure`.
+Between `snippet`, `section_content`, and frontmatter, most questions can be answered from the decision surface alone. Escalate to `get_note_structure` only when you need content outside the matched section.
 
 **What gets indexed**
 

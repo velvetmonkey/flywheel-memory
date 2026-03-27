@@ -101,7 +101,7 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 Search "authentication" -- exact matches. Search "login security" -- same notes, plus every note about auth that never uses the word.
 
-Keyword search finds what you said. Semantic search finds what you meant. Flywheel runs both and fuses the results. Runs locally on a 23 MB model. Nothing leaves your machine.
+Keyword search finds what you said. Semantic search finds what you meant. Flywheel runs both, fuses the results via Reciprocal Rank Fusion, and U-shaped interleaves them so the best results land at attention peaks. Top results include the full section content around each match -- a decision surface, not a list of filenames. Runs locally on a 23 MB model with contextual embedding prefixes. Nothing leaves your machine.
 
 ### 2. Every Suggestion Has a Receipt
 
@@ -137,14 +137,14 @@ Content about "deployment automation" suggests `[[CI/CD]]` — no keyword match 
 - **Semantic clusters**: Groups notes by meaning instead of folder structure
 - **Semantic wikilinks**: Suggestions based on what you *mean*, not just what you typed
 
-Build once with `init_semantic`. Everything upgrades automatically. Configurable model via `EMBEDDING_MODEL` env var.
+Build once with `init_semantic`. Each note is embedded with a contextual prefix (title + tags) so the vector carries document identity alongside content meaning. Everything upgrades automatically. Configurable model via `EMBEDDING_MODEL` env var.
 
 ### 5. Agentic Memory
 
 The system remembers context across sessions. No more starting from scratch.
 
 - **`brief`** assembles startup context: recent sessions, active entities, stored memories, corrections, vault pulse — token-budgeted
-- **`recall`** retrieves across all knowledge channels: entities, notes, memories, and semantic search — ranked by the same scoring signals as the wikilink engine
+- **`search`** retrieves across all knowledge channels: notes, entities, and memories in one call — returns a decision surface with section content, bridges, and confidence scores
 - **`memory`** stores observations with confidence decay, TTL, and lifecycle management
 
 Your AI picks up where it left off.
@@ -160,7 +160,7 @@ Your AI picks up where it left off.
 | Same input → same output? | Not guaranteed | Always | Always |
 | Runs offline? | Often not | Yes | Yes (local embeddings) |
 | Learns from usage? | Retraining | No | Implicit feedback loop |
-| Agent memory | No | No | Yes (brief + recall + memory) |
+| Agent memory | No | No | Yes (brief + search + memory) |
 
 ---
 

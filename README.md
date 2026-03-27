@@ -5,7 +5,7 @@
   All local. All yours. A few lines of config.</p>
 </div>
 
-**Search** — Ask a question, get a decision surface. One call returns section provenance, extracted dates, entity bridges, and confidence scores. Your AI decides what to read next without opening any files. [$0.06-0.09/query](#benchmarked), measured.
+**Search** — Ask a question, get a decision surface. One call returns section provenance, full section content, extracted dates, entity bridges, and confidence scores — U-shaped interleaved so the best results land where attention peaks. Your AI reasons across results without opening any files. [$0.06-0.09/query](#benchmarked), measured.
 
 **Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief, Flywheel recognises names, projects, and relationships and wikilinks them in real time. [13 scoring layers](docs/ALGORITHM.md), zero manual curation.
 
@@ -36,7 +36,7 @@ All local. No cloud. No account. No sync.
 | Your data | Leaves your machine | Stays local. No sync, no upload, no account |
 | Model choice | Locked to one provider | Model-agnostic via MCP. Swap anytime |
 | As models improve | Migration or vendor upgrade | Same tools, better reasoning. Your graph improves the model, not the other way around |
-| Tokens per question | Read 10-50 files to find context (~50-200k tokens) | One search returns metadata + graph context (~2-5k tokens). [$0.06-0.09/query](#benchmarked) measured |
+| Tokens per question | Read 10-50 files to find context (~50-200k tokens) | One search returns a decision surface — metadata, graph context, and section content (~2-5k tokens). [$0.06-0.09/query](#benchmarked) measured |
 | "What's overdue?" | Read every file | Structured task queries with due dates, tags, and path filters |
 | "What links here?" | Grep the vault, flat list | Weighted backlinks + outlinks, ranked by edge strength and recency |
 | "Add a meeting note" | Raw write, no linking | Structured mutations that auto-link entities and densify the graph |
@@ -62,7 +62,7 @@ From the [carter-strategy](demos/carter-strategy/) demo: a solo consultant with 
 
 <video src="https://github.com/user-attachments/assets/ec1b51a7-cb30-4c49-a35f-aa82c31ec976" autoplay loop muted playsinline width="100%"></video>
 
-One search call returned everything: metadata (frontmatter) with amounts and status, backlink lists, outlink lists. Zero file reads needed. The graph did the joining, not the AI reading files one by one.
+One search call returned a decision surface: metadata (frontmatter) with amounts and status, backlink lists, outlink lists, and full section content around each match. Zero follow-up reads needed. The graph did the joining, not the AI reading files one by one.
 
 ### Write: Auto-wikilinks on every mutation
 

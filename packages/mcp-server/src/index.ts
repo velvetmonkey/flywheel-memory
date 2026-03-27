@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Flywheel Memory - Unified local-first memory for AI agents
+ * Flywheel Memory - MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.
  *
  * 75 tools across 12 categories
  * - policy (unified: list, validate, preview, execute, author, revise)

@@ -1,8 +1,7 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Cognitive sovereignty for your Obsidian vault.</strong><br/>
-  Search, write, and graph MCP tools that auto-link your notes and learn from your edits.<br/>
+  <p><strong>MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.</strong><br/>
   All local. All yours. A few lines of config.</p>
 </div>
 

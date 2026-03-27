@@ -15,7 +15,7 @@
 
 **[Get started](#try-it)** · **[See it work](#see-it-work)** · **[What's different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Docs](#documentation)** · **[Story](#the-story-behind-this)**
 
-**Search** — Ask a question, get an answer — not a list of files to open. One call returns structured results with metadata, graph context, and section content. Your AI reasons across your vault without reading files one by one. [$0.06-0.10/query](#benchmarked), measured.
+**Search** — Ask a question, get a decision surface — not a list of files to open. One call returns structured results with metadata, graph context, and section content. Your AI reasons across your vault without reading files one by one. [$0.06-0.10/query](#benchmarked), measured.
 
 **Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief — Flywheel recognizes names, projects, and relationships and wikilinks them automatically. Zero manual curation.
 

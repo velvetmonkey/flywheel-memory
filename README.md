@@ -5,14 +5,6 @@
   All local. All yours. A few lines of config.</p>
 </div>
 
-**Search** — Ask a question, get a decision surface. One call returns section provenance, full section content, extracted dates, entity bridges, and confidence scores — U-shaped interleaved so the best results land where attention peaks. Your AI reasons across results without opening any files. [$0.06-0.10/query](#benchmarked), measured.
-
-**Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief, Flywheel recognises names, projects, and relationships and wikilinks them in real time. [13 scoring layers](docs/ALGORITHM.md), zero manual curation.
-
-**Remember** — The system learns from your edits. Links you keep get stronger. Links you remove get suppressed. After a week, suggestions reflect how *you* think, not how the algorithm was configured. The graph compounds with use.
-
-All local. No cloud. No account. No sync.
-
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
@@ -176,17 +168,13 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 
 ## What Makes Flywheel Different
 
-### 1. Enriched Search
+- **Search** — One call returns a decision surface: section provenance, extracted dates, entity bridges, confidence scores, and full section content. Multi-hop: "Acme Corp" returns the client note *and* its invoices, projects, and people. [$0.06-0.10/query](#benchmarked), measured.
+- **Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief and Flywheel wikilinks names, projects, and relationships automatically. [13 scoring layers](docs/ALGORITHM.md), zero manual curation.
+- **Remember** — `brief` delivers startup context, `memory` persists observations across sessions, and `search` retrieves across all three in one call. The system learns from your edits — links you keep get stronger, links you remove get suppressed.
 
-Most search tools return a list of matches and leave the AI to figure out which ones matter. Flywheel returns a **decision surface**: every result includes section provenance (where in the note), pre-extracted dates (when it happened), entity bridges (what it connects to), and confidence scores (whether it's worth reading). One search call replaces what would otherwise be 5–10 follow-up reads.
+All local. No cloud. No account. No sync.
 
-Results are multi-hop: a search for "Acme Corp" returns the client note *and* its connected invoices, projects, and people, each ranked by graph relevance. Frontmatter, scored backlinks, scored outlinks, content snippets — all from an in-memory index, zero file reads.
-
-With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally. SQLite full-text search (BM25), in-memory embeddings for semantic similarity, fused together for best-of-both results.
-
-### 2. Every Link Has a Reason
-
-Those `→` suggestions aren't random. Ask why Flywheel suggested `Marcus Johnson`:
+### Every link has a reason
 
 ```
 Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Feedback  Semantic  Edge
@@ -194,38 +182,23 @@ Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Fee
 Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
 ```
 
-13 scoring layers, every number traceable to vault usage. Recency from what you last wrote. Co-occurrence from notes you've written before. Hub score from eigenvector centrality (not just how many notes link there, but how important those linking notes are). The score learns as you use it.
+13 scoring layers, every number traceable to vault usage. The score learns as you use it. [How scoring works →](docs/ALGORITHM.md)
 
-See [docs/ALGORITHM.md](docs/ALGORITHM.md) for how scoring works.
+### The flywheel effect
 
-### 3. Use It and It Gets Smarter
+Every sentence you write makes your graph denser — better search results, richer backlinks, sharper suggestions.
 
-Every sentence you write through Flywheel makes your graph denser. A denser graph gives better search results, richer backlinks, and sharper suggestions. That's the flywheel.
+- **Proactive linking:** edit a note in Obsidian and Flywheel links it in the background. Tune thresholds or disable entirely.
+- **Co-occurrence** builds over time. Links that survive edits gain influence.
+- **Suppression** learns. Remove a wikilink enough times and Flywheel stops suggesting it.
 
-- **Proactive linking:** edit a note in Obsidian and Flywheel links it in the background. The file watcher scores every unlinked entity mention and inserts wikilinks that clear the threshold (score ≥ 20, max 5 per file, max 10 per day). Your graph grows while you write. Tune the thresholds via the `flywheel_config` tool, or disable it entirely.
-- **Co-occurrence** builds over time. Two entities appearing in 20 notes form a statistical bond
-- **Edge weights** accumulate. Links that survive edits gain influence
-- **Suppression** learns. When you delete a wikilink Flywheel inserted, it notices. Remove the same link enough times and Flywheel stops suggesting it - no manual configuration needed
+Day 100 suggestions are informed by everything you've written since day 1. This is [measured](docs/TESTING.md#graph-quality-266-tests-31-files), not a claim — CI fails if any metric regresses. All learning data is local SQLite. [What's tracked →](docs/SHARING.md)
 
-Static tools give you the same results on day 1 and day 100. Flywheel's suggestions on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration, no manual curation. This isn't a claim - it's [measured](docs/TESTING.md#graph-quality-266-tests-31-files): 266 graph quality tests track F1 across 6 vault archetypes, a [50-generation stress test](docs/TESTING.md#multi-generation-stress-test) proves F1 doesn't collapse under 15% hostile feedback, and CI fails if any metric regresses more than 5pp.
+### Agentic policies
 
-#### What the system tracks
+Complex vault workflows become deterministic YAML policies. All steps succeed or all roll back. Commit with one flag. Every write uses structured parsing that understands headings, frontmatter, and code blocks as structure — not blind string replacement. [Architecture →](docs/ARCHITECTURE.md)
 
-All learning data lives in a local SQLite database (`.flywheel/state.db`) on your machine. There are no network calls, no telemetry, no analytics — [enforced by CI](SECURITY.md). The system records which auto-links you keep or remove (feedback), which entities appear together across notes (co-occurrence), how link weights evolve over time (edge weights), and which entities get auto-suppressed after repeated removal (suppression). This is how scoring improves: real usage, measured locally.
-
-None of this data leaves your machine unless you choose to share it. The `flywheel_calibration_export` tool produces a fully anonymized aggregate snapshot — vault size buckets (not exact counts), entity distribution by category (not names), survival rates, layer contributions, score distributions. No entity names, no note paths, no content. If you want to help tune scoring defaults across different vault sizes and styles, you can paste your export in the [Calibration Data](https://github.com/velvetmonkey/flywheel-memory/discussions/categories/calibration-data) discussion category. See [docs/SHARING.md](docs/SHARING.md) for what's safe to share and what isn't.
-
-### 4. Agentic Memory & Policies
-
-Your AI knows what you were working on yesterday without re-explaining it. `brief` delivers startup context, `search` retrieves across notes, entities (people, projects, concepts), and memories in one call, and `memory` stores observations that persist across sessions with automatic decay. Every result is structured for machine consumption — a decision surface, not a text dump.
-
-Complex vault workflows become deterministic policies. Describe what you want, the AI authors the YAML, and you can execute it on demand. All steps succeed or all roll back. Commit with one flag - a single git commit covering every step.
-
-Most agent frameworks solve the trust problem through containment: sandboxing arbitrary code in isolates or containers. Flywheel solves it through constraint: policies can only express vault operations, every step is auditable, and the entire execution can be committed as a single reversible git commit. No sandbox needed when the language itself can't do anything dangerous.
-
-Under the hood, every write operation uses structured parsing - AST for protected-zone detection, gray-matter for frontmatter, heading-aware section targeting - not blind string replacement. Flywheel understands headings, frontmatter, lists, and code blocks as structure. Mutations target specific sections without corrupting surrounding content, even in complex documents. Safe writes aren't a promise. They're a property of the parser.
-
-### 5. Portable Knowledge Graph
+### Portable knowledge graph
 
 One call to `export_graph` and your entire vault (or any entity's neighborhood) becomes a [GraphML](https://en.wikipedia.org/wiki/GraphML) file. Open it in any graph tool, run community detection, find bottlenecks, or just see what's connected to what.
 
@@ -233,14 +206,14 @@ One call to `export_graph` and your entire vault (or any entity's neighborhood) 
 
 *"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. Sarah Mitchell is the single contact linking 3 projects to the client. The Data Migration Playbook bridges two engagements. Seven invoices, two team members, one proposal. All from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
 
-### 6. System Guarantees
+### System guarantees
 
 These are rules, not preferences:
 
-- **No surprise writes.** Tool-initiated mutations require explicit calls. Proactive linking (the only background write) is auditable (score-thresholded, configurable, tracked in state.db) and can be disabled entirely.
+- **No surprise writes.** Tool-initiated mutations require explicit calls. Proactive linking (the only background write) is auditable and can be disabled entirely.
 - **No hidden tool execution.** Every tool call is visible, scoped, and logged.
 - **No required cloud dependency.** Core indexing, search, and graph run locally. No account, no sync, no phone-home.
-- **All actions are auditable.** Every write can be a git commit - one parameter. Every change is reversible. Every change has a reason.
+- **All actions are auditable.** Every write can be a git commit — one parameter. Every change is reversible.
 - **No silent data exfiltration.** Your vault content is never sent anywhere except the AI model you chose to connect.
 
 ### How Flywheel compares

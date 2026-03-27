@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>A knowledge graph engine that reads, writes, and learns.</strong><br/>Graph intelligence. Safe writes. A feedback loop that learns from every interaction.<br/>Zero cloud. Your Obsidian vault becomes a queryable second brain.</p>
+  <p><strong>MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.</strong><br/>All local. All yours. A few lines of config.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)

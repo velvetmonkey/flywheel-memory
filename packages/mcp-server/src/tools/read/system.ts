@@ -17,6 +17,7 @@ import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { countFTS5Mentions } from '../../core/read/fts5.js';
 import { recomputeEdgeWeights } from '../../core/write/edgeWeights.js';
+import { hasEmbeddingsIndex, buildEmbeddingsIndex } from '../../core/read/embeddings.js';
 
 /**
  * Register system/utility tools with the MCP server
@@ -36,6 +37,7 @@ export function registerSystemTools(
     entities_count: z.number().describe('Number of entities (titles + aliases)'),
     fts5_notes: z.number().describe('Number of notes in FTS5 search index'),
     edges_recomputed: z.number().optional().describe('Number of edges with recomputed weights'),
+    embeddings_refreshed: z.number().optional().describe('Number of note embeddings updated'),
     duration_ms: z.number().describe('Time taken to rebuild index'),
   };
 
@@ -45,6 +47,7 @@ export function registerSystemTools(
     entities_count: number;
     fts5_notes: number;
     edges_recomputed?: number;
+    embeddings_refreshed?: number;
     duration_ms: number;
   };
 
@@ -126,6 +129,20 @@ export function registerSystemTools(
           }
         }
 
+        // Sync embeddings with current vault state (incremental — skips unchanged notes)
+        let embeddingsRefreshed = 0;
+        if (hasEmbeddingsIndex()) {
+          try {
+            const progress = await buildEmbeddingsIndex(vaultPath);
+            embeddingsRefreshed = progress.total - progress.skipped;
+            if (embeddingsRefreshed > 0) {
+              console.error(`[Flywheel] Embeddings: ${embeddingsRefreshed} notes updated`);
+            }
+          } catch (err) {
+            console.error('[Flywheel] Embedding sync failed:', err);
+          }
+        }
+
         const duration = Date.now() - startTime;
 
         // Record index event
@@ -143,6 +160,7 @@ export function registerSystemTools(
           entities_count: newIndex.entities.size,
           fts5_notes: fts5Notes,
           edges_recomputed: edgesRecomputed,
+          embeddings_refreshed: embeddingsRefreshed || undefined,
           duration_ms: duration,
         };
 

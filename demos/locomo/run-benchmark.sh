@@ -169,7 +169,7 @@ for i in $INDICES; do
     continue
   fi
 
-  if claude -p "You are answering questions about conversations stored in this vault.
+  if timeout 180 claude -p "You are answering questions about conversations stored in this vault.
 Each note is one session of a multi-session conversation between two people.
 Use the Flywheel MCP tools (search, get_note_structure, get_section_content, find_sections).
 After searching, read relevant session notes with get_note_structure to find evidence.

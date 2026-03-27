@@ -129,7 +129,7 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 
 ## What Makes Flywheel Different
 
-**Search** — Ask a question, get an answer — not a list of files to open. One call returns structured results with metadata, graph context, and section content. Your AI reasons across your vault without reading files one by one. [$0.06-0.09/query](#benchmarked), measured.
+**Search** — Ask a question, get an answer — not a list of files to open. One call returns structured results with metadata, graph context, and section content. Your AI reasons across your vault without reading files one by one. [$0.06-0.10/query](#benchmarked), measured.
 
 Results are multi-hop: a search for "Acme Corp" returns the client note *and* its connected invoices, projects, and people, each ranked by graph relevance. With semantic embeddings enabled, "login security" finds notes about authentication without that exact keyword. Everything runs locally.
 
@@ -191,19 +191,19 @@ These are rules, not preferences:
 
 Flywheel controls retrieval; the model controls comprehension. Evidence recall is ours — did we find the right documents? Answer accuracy is the model's — did it understand what it found?
 
-**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 759 questions):
+**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions):
 
-| System | Single-hop | Multi-hop | Cost/question | Infrastructure |
-|---|---|---|---|---|
-| **Flywheel** | **65.4%** | **28.3%** | **$0.085** | Local SQLite + markdown |
-| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | ~$0.30-0.50* | Redis + Qdrant |
-| [Zep](https://getzep.com/) | 35.7 | 19.4 | ~$0.30-0.50* | Cloud service |
-| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | ~$0.30-0.50* | Varies |
-| [Letta](https://memgpt.ai/) | 26.7 | - | ~$0.30-0.50* | Cloud/local |
+| System | Evidence Recall | Single-hop Recall | Multi-hop Recall | Cost/question | Infrastructure |
+|---|---|---|---|---|---|
+| **Flywheel** | **79.1%** | **95.5%** | **65.3%** | **$0.095** | Local SQLite + markdown |
+| [Mem0](https://mem0.ai/) | — | — | — | ~$0.30-0.50* | Redis + Qdrant |
+| [Zep](https://getzep.com/) | — | — | — | ~$0.30-0.50* | Cloud service |
+| [LangMem](https://github.com/langchain-ai/langmem) | — | — | — | ~$0.30-0.50* | Varies |
+| [Letta](https://memgpt.ai/) | — | — | — | ~$0.30-0.50* | Cloud/local |
 
-\* Competitor costs are estimates based on GPT-4o pricing. Flywheel uses Claude Sonnet for answers + Claude Haiku for judging. Infrastructure costs (Redis, Qdrant, cloud hosting) are additional.
+\* Competitor costs are estimates based on GPT-4o pricing. Competitors do not report evidence recall — a different metric. Flywheel uses Claude Sonnet for answers with token F1 scoring. Infrastructure costs (Redis, Qdrant, cloud hosting) are additional.
 
-Different systems, different judges, different prompts. These are directional indicators, not controlled experiments. [Full methodology and caveats →](docs/TESTING.md#how-the-e2e-benchmark-works)
+Different systems, different metrics, different prompts. These are directional indicators, not controlled experiments. [Full methodology and caveats →](docs/TESTING.md#how-the-e2e-benchmark-works)
 
 91.7% recall on HotpotQA (500 questions). Reproducible: clone the repo, run the scripts, get the same numbers. [HotpotQA details →](docs/TESTING.md#retrieval-benchmark-hotpotqa) | [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
 

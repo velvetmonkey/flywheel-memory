@@ -80,6 +80,8 @@ export interface WithVaultFileOptions {
   scoping?: ScopingMetadata;
   /** If true, compute the mutation but skip all writes and git commits */
   dryRun?: boolean;
+  /** If true and section not found, auto-create the section heading in the note */
+  autoCreateSection?: boolean;
 }
 
 /**
@@ -257,6 +259,10 @@ export interface MutationOptions {
   dryRun?: boolean;
   /** Whether to run implicit feedback detection. Default: true */
   implicitFeedback?: boolean;
+  /** If true and section not found, auto-create the section heading in the note.
+   *  Used when a note was just created from template/fallback and the target section
+   *  may not exist yet. The heading level is inferred from the document structure. */
+  autoCreateSection?: boolean;
 }
 
 /**
@@ -290,16 +296,46 @@ export async function executeMutation(
     }
 
     // 2. Read file
-    const { content, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
+    let { content, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath);
 
     // 3. Find section if requested
     let sectionBoundary: SectionBoundary | undefined;
     if (section) {
       const sectionResult = await ensureSectionExists(content, section, notePath, vaultPath);
       if ('error' in sectionResult) {
-        return { success: false, result: sectionResult.error, filesWritten: [] };
+        // Auto-create missing section when the note was just created (e.g., from fallback template)
+        if (options.autoCreateSection) {
+          const sectionName = section.replace(/^#+\s*/, '').trim();
+          const headings = extractHeadings(content);
+          // Infer heading level: use same level as existing headings, or one below the top heading
+          let level = 1;
+          if (headings.length > 0) {
+            const topLevel = Math.min(...headings.map(h => h.level));
+            // If there's a single top-level heading (e.g., # 2026-03-27), nest below it
+            const topHeadings = headings.filter(h => h.level === topLevel);
+            level = topHeadings.length === 1 ? topLevel + 1 : topLevel;
+          }
+          const hashes = '#'.repeat(level);
+          // Append new section heading with a placeholder
+          const newSection = `\n${hashes} ${sectionName}\n- \n`;
+          content = content.trimEnd() + '\n' + newSection;
+          // Write the updated content so the section exists for the mutation
+          await writeVaultFile(vaultPath, notePath, content, frontmatter, lineEnding, contentHash);
+          // Re-read to get fresh content hash
+          ({ content, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, notePath));
+          // Retry section lookup
+          const retryResult = await ensureSectionExists(content, section, notePath, vaultPath);
+          if ('error' in retryResult) {
+            return { success: false, result: retryResult.error, filesWritten: [] };
+          }
+          sectionBoundary = retryResult.boundary;
+          console.error(`[Flywheel] Auto-created section "${sectionName}" (${hashes}) in ${notePath}`);
+        } else {
+          return { success: false, result: sectionResult.error, filesWritten: [] };
+        }
+      } else {
+        sectionBoundary = sectionResult.boundary;
       }
-      sectionBoundary = sectionResult.boundary;
     }
 
     // 4. Build context and run operation
@@ -379,6 +415,7 @@ export async function withVaultFile(
     actionDescription: options.actionDescription,
     scoping: options.scoping,
     dryRun: options.dryRun,
+    autoCreateSection: options.autoCreateSection,
   }, operation);
 
   if (!outcome.success || options.dryRun) {

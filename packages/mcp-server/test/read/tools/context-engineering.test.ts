@@ -167,3 +167,57 @@ describe('buildNoteEmbeddingText', () => {
     expect(body).toBe('Body text.');
   });
 });
+
+// =============================================================================
+// Consumer parameter: LLM vs human output format
+// =============================================================================
+
+describe('consumer parameter — field preservation', () => {
+  /** Fields that stripInternalFields removes for LLM consumers */
+  const INTERNAL_FIELDS = ['rrf_score', 'in_fts5', 'in_semantic', 'in_entity', 'graph_boost', '_combined_score'];
+
+  test('LLM consumer: sandwich ordering applied + internal fields stripped', () => {
+    // Simulate the LLM path: sandwich order then strip
+    const results = [
+      { rank: 1, rrf_score: 0.9, in_fts5: true, in_semantic: true, title: 'A' },
+      { rank: 2, rrf_score: 0.7, in_fts5: true, in_semantic: false, title: 'B' },
+      { rank: 3, rrf_score: 0.3, in_fts5: false, in_semantic: true, title: 'C' },
+    ] as Array<Record<string, unknown>>;
+
+    applySandwichOrdering(results);
+    // Sandwich: [1, 3, 2]
+    expect(results.map(r => r.rank)).toEqual([1, 3, 2]);
+
+    // Strip internal fields
+    for (const r of results) {
+      for (const key of INTERNAL_FIELDS) delete r[key];
+    }
+    for (const r of results) {
+      for (const key of INTERNAL_FIELDS) {
+        expect(r[key]).toBeUndefined();
+      }
+    }
+    // Non-internal fields preserved
+    expect(results[0].title).toBe('A');
+    expect(results[0].rank).toBe(1);
+  });
+
+  test('human consumer: score-sorted order preserved + internal fields retained', () => {
+    // Simulate the human path: NO sandwich ordering, NO stripping
+    const results = [
+      { rank: 1, rrf_score: 0.9, in_fts5: true, in_semantic: true, title: 'A' },
+      { rank: 2, rrf_score: 0.7, in_fts5: true, in_semantic: false, title: 'B' },
+      { rank: 3, rrf_score: 0.3, in_fts5: false, in_semantic: true, title: 'C' },
+    ] as Array<Record<string, unknown>>;
+
+    // No sandwich ordering — score order preserved
+    expect(results.map(r => r.rank)).toEqual([1, 2, 3]);
+
+    // All scoring fields available for UI display
+    expect(results[0].rrf_score).toBe(0.9);
+    expect(results[0].in_fts5).toBe(true);
+    expect(results[0].in_semantic).toBe(true);
+    expect(results[1].in_semantic).toBe(false);
+    expect(results[2].in_fts5).toBe(false);
+  });
+});

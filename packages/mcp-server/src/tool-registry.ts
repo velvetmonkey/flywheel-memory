@@ -26,6 +26,7 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 import { getSessionId } from '@velvetmonkey/vault-core';
 
 import { TOOL_CATEGORY, type ToolCategory } from './config.js';
+import { applySandwichOrdering } from './tools/read/query.js';
 import { VaultRegistry, type VaultContext } from './vault-registry.js';
 import { runInVaultScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
 
@@ -252,12 +253,16 @@ export function applyToolGating(
     args: any[]
   ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
     const perVault: Array<{ vault: string; data: any }> = [];
+    // Preserve the caller's consumer preference; force 'human' for per-vault calls
+    // so rrf_score survives for cross-vault merge-sort, then apply LLM post-processing after
+    const callerConsumer: string = args[0]?.consumer ?? 'llm';
+    const crossArgs = [{ ...args[0], consumer: 'human' }, ...args.slice(1)];
 
     for (const ctx of reg.getAllContexts()) {
       callbacks.activateVault(ctx);
       try {
         // Run each vault's search inside its own ALS context
-        const result = await runInVaultScope(callbacks.buildVaultScope(ctx), () => handler(...args));
+        const result = await runInVaultScope(callbacks.buildVaultScope(ctx), () => handler(...crossArgs));
         const text = result?.content?.[0]?.text;
         if (text) {
           perVault.push({ vault: ctx.name, data: JSON.parse(text) });
@@ -324,6 +329,15 @@ export function applyToolGating(
 
     const limit = args[0]?.limit ?? 10;
     const truncated = mergedResults.slice(0, limit);
+
+    // Apply LLM context engineering on merged results when caller is LLM
+    if (callerConsumer === 'llm') {
+      applySandwichOrdering(truncated);
+      const INTERNAL = ['rrf_score', 'in_fts5', 'in_semantic', 'in_entity', 'graph_boost', '_combined_score'];
+      for (const r of truncated) {
+        for (const key of INTERNAL) delete r[key];
+      }
+    }
 
     return {
       content: [{

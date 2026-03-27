@@ -511,8 +511,11 @@ export function registerQueryTools(
 
       // Context boost (edge weights)
       context_note: z.string().optional().describe('Path of the note providing context. When set, results connected to this note via weighted edges get an RRF boost.'),
+
+      // Consumer format
+      consumer: z.enum(['llm', 'human']).default('llm').describe('Output format: "llm" applies sandwich ordering and strips scoring fields for context efficiency. "human" preserves score order and all scoring metadata for UI display.'),
     },
-    async ({ query, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note }) => {
+    async ({ query, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note, consumer }) => {
       const limit = Math.min(requestedLimit ?? 10, MAX_LIMIT);
       const detailN = requestedDetailCount ?? 5;
       const index = getIndex();
@@ -743,13 +746,15 @@ export function registerQueryTools(
               results.push(...hopResults, ...expansionResults);
             }
 
-            // Graph re-ranking + bridging + sandwich ordering + enhanced snippets + section expansion
+            // Graph re-ranking + bridging + context engineering (LLM only) + enhanced snippets
             applyGraphReranking(results, stateDb);
             applyEntityBridging(results, stateDb);
-            applySandwichOrdering(results);
             await enhanceSnippets(results, query, vaultPath);
-            await expandToSections(results, index, vaultPath, detailN);
-            stripInternalFields(results);
+            if (consumer === 'llm') {
+              applySandwichOrdering(results);
+              await expandToSections(results, index, vaultPath, detailN);
+              stripInternalFields(results);
+            }
 
             const entitySection = await entitySectionPromise;
             return { content: [{ type: 'text' as const, text: JSON.stringify({
@@ -798,13 +803,15 @@ export function registerQueryTools(
             results.push(...hopResults, ...expansionResults);
           }
 
-          // Graph re-ranking + bridging + sandwich ordering + enhanced snippets + section expansion
+          // Graph re-ranking + bridging + context engineering (LLM only) + enhanced snippets
           applyGraphReranking(results, stateDb);
           applyEntityBridging(results, stateDb);
-          applySandwichOrdering(results);
           await enhanceSnippets(results, query, vaultPath);
-          await expandToSections(results, index, vaultPath, detailN);
-          stripInternalFields(results);
+          if (consumer === 'llm') {
+            applySandwichOrdering(results);
+            await expandToSections(results, index, vaultPath, detailN);
+            stripInternalFields(results);
+          }
 
           const entitySection = await entitySectionPromise;
           return { content: [{ type: 'text' as const, text: JSON.stringify({
@@ -829,13 +836,15 @@ export function registerQueryTools(
           results.push(...hopResults, ...expansionResults);
         }
 
-        // Graph re-ranking + bridging + sandwich ordering + enhanced snippets + section expansion
+        // Graph re-ranking + bridging + context engineering (LLM only) + enhanced snippets
         applyGraphReranking(results, stateDbFts);
         applyEntityBridging(results, stateDbFts);
-        applySandwichOrdering(results);
         await enhanceSnippets(results, query, vaultPath);
-        await expandToSections(results, index, vaultPath, detailN);
-        stripInternalFields(results);
+        if (consumer === 'llm') {
+          applySandwichOrdering(results);
+          await expandToSections(results, index, vaultPath, detailN);
+          stripInternalFields(results);
+        }
 
         const entitySection = await entitySectionPromise;
         return { content: [{ type: 'text' as const, text: JSON.stringify({

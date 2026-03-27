@@ -16,7 +16,7 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 - [Reproduce Our Numbers](#reproduce-our-numbers)
   - [1. Unit Tests (2,712 passed)](#1-unit-tests-2712-passed)
   - [2. HotpotQA Retrieval Benchmark (91.7% recall, 500 questions)](#2-hotpotqa-retrieval-benchmark-917-recall-500-questions)
-  - [3. LoCoMo E2E Benchmark (65% single-hop, 759 questions)](#3-locomo-e2e-benchmark-65-single-hop-759-questions)
+  - [3. LoCoMo E2E Benchmark (79% recall, 695 questions)](#3-locomo-e2e-benchmark-79-recall-695-questions)
 - [What You Just Proved](#what-you-just-proved)
 - [Why It's Efficient](#why-its-efficient)
 - [Next Steps](#next-steps)
@@ -291,16 +291,16 @@ This runs 20 questions in ~10 minutes for ~$1.25.
 
 ---
 
-### 3. LoCoMo E2E Benchmark (65% single-hop, 759 questions)
+### 3. LoCoMo E2E Benchmark (79% recall, 695 questions)
 
-**What it proves:** Flywheel retrieves evidence and answers questions about long-term conversational memory better than Mem0, Zep, LangMem, and MemGPT -- all measured on the same LoCoMo dataset from Snap Research (ACL 2024).
+**What it proves:** Flywheel retrieves evidence from long-term conversational memory — measured on the same LoCoMo dataset from Snap Research (ACL 2024) used by Mem0, Zep, LangMem, and MemGPT.
 
 **Prerequisites:**
 - Everything from step 1 (repo cloned, `npm install` done)
 - MCP server built: `npm run build`
 - Claude Code CLI authenticated
 - Python 3
-- Anthropic API credits (~$0.085/question for answers, plus ~$0.01/question for LLM-as-judge)
+- Anthropic API credits (~$0.095/question)
 
 **Step 1: Build the benchmark vault**
 
@@ -316,60 +316,39 @@ This creates `demos/locomo/vault/` (~290 notes: 272 session notes + 18 people st
 **Step 2: Run the benchmark**
 
 ```bash
-COUNT=759 SEED=42 demos/locomo/run-benchmark.sh
+demos/locomo/run-benchmark.sh
 ```
 
 What happens under the hood:
 
 1. **Pre-warm** (1 Claude Haiku session with `full,memory` preset): `health_check` -> `vault_init` (auto-link) -> `refresh_index` -> `init_semantic` (embeddings) -> `health_check`.
-2. **Stratified sampling**: Python selects 759 questions balanced across all 5 categories (commonsense, single-hop, multi-hop, temporal, adversarial) and all 10 conversations.
-3. **759 questions** (759 individual Claude Sonnet sessions): Each question gets its own `claude -p` session. Claude is told notes are conversation sessions and uses search + read tools to find evidence and answer.
+2. **Stratified sampling**: Python selects 695 questions balanced across all 5 categories (commonsense, single-hop, multi-hop, temporal, adversarial) and all 10 conversations (seed 42).
+3. **695 questions** (695 individual Claude Sonnet sessions): Each question gets its own `claude -p` session with `--strict-mcp-config`. Claude is told notes are conversation sessions and uses search + read tools to find evidence and answer.
 4. **Analysis**: Python script computes evidence recall and token F1 per category.
 
 Results land in `demos/locomo/results/run-<timestamp>/`.
 
-**Step 3: Run LLM-as-judge scoring**
-
-The headline accuracy numbers use LLM-as-judge (Claude Haiku scoring each answer as CORRECT/WRONG), matching the Mem0 paper methodology:
-
-```bash
-python3 demos/locomo/analyze-benchmark.py \
-  demos/locomo/results/run-<timestamp> \
-  demos/locomo/ground-truth.json \
-  --judge
-```
-
-Replace `<timestamp>` with the actual run directory name.
-
-**Step 4: Read the report**
+**Step 3: Read the report**
 
 ```bash
 cat demos/locomo/results/run-*/report.md
 ```
 
-**Expected results (answer accuracy, LLM-as-judge):**
+**Expected results:**
 
-| Category | Questions | Expected Accuracy | 95% CI |
+| Category | Questions | Evidence Recall | Answer Score |
 |---|---|---|---|
-| Overall | 759 | ~58.8% | [55.2%, 62.2%] |
-| Single-hop | 130 | ~65.4% | [56.9%, 73.0%] |
-| Commonsense | 311 | ~75.6% | [70.5%, 80.0%] |
-| Adversarial | 173 | ~46.8% | [39.5%, 54.2%] |
-| Multi-hop | 113 | ~28.3% | [20.8%, 37.2%] |
-| Temporal | 32 | ~40.6% | [25.5%, 57.7%] |
+| **Overall** | **695** | **~79%** | **~0.23** |
+| Adversarial | 182 | ~97% | ~0.48 (accuracy) |
+| Commonsense | 139 | ~96% | ~0.17 (F1) |
+| Single-hop | 139 | ~96% | ~0.13 (F1) |
+| Multi-hop | 139 | ~65% | ~0.14 (F1) |
+| Temporal | 96 | ~60% | ~0.09 (F1) |
 
-**Expected results (evidence recall):**
+Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 79.1% headline is from seed 42 with Sonnet.
 
-| Category | Expected Recall |
-|---|---|
-| Overall | ~84.9% |
-| Single-hop | ~93.9% |
-| Commonsense | ~94.2% |
-| Multi-hop | ~67.5% |
-| Temporal | ~63.3% |
-
-**Estimated time:** ~4-6 hours for 759 questions + ~1 hour for judge scoring.
-**Estimated cost:** ~$65 for answer sessions (759 x ~$0.085) + ~$8 for judge scoring. Total ~$73.
+**Estimated time:** ~4-6 hours for 695 questions.
+**Estimated cost:** ~$66 (695 x ~$0.095/question).
 
 **Smaller test run:** To verify the pipeline:
 

@@ -65,10 +65,12 @@ import {
   loadEntityEmbeddingsToMemory,
   updateEntityEmbedding,
   hasEntityEmbeddingsIndex,
-  needsEmbeddingRebuild,
   getStoredEmbeddingModel,
   getActiveModelId,
   getEntityEmbeddingsMap,
+  getStoredTextVersion,
+  clearEmbeddingsForRebuild,
+  EMBEDDING_TEXT_VERSION,
 } from './core/read/embeddings.js';
 import {
   setTaskCacheDatabase,
@@ -800,24 +802,32 @@ async function runPostIndexWork(ctx: VaultContext) {
   }
 
   // Auto-build embeddings in background (fire-and-forget)
-  // Skip if embeddings already populated (file watcher handles incremental updates)
+  // Fast pre-check avoids model loading when embeddings are already current
   if (process.env.FLYWHEEL_SKIP_EMBEDDINGS !== 'true') {
-    // Check for model change — clear and rebuild if model switched
-    let modelChanged = false;
-    if (hasEmbeddingsIndex() && needsEmbeddingRebuild()) {
-      const oldModel = getStoredEmbeddingModel();
-      serverLog('semantic', `Embedding model changed from ${oldModel} to ${getActiveModelId()}, rebuilding`);
-      if (sd) {
-        sd.db.exec('DELETE FROM note_embeddings');
-        sd.db.exec('DELETE FROM entity_embeddings');
-      }
-      setEmbeddingsBuildState('none');
-      modelChanged = true;
-    }
+    const hasIndex = hasEmbeddingsIndex();
+    const storedModel = getStoredEmbeddingModel();
+    const storedVersion = getStoredTextVersion();
+    const modelChanged = storedModel !== null && storedModel !== getActiveModelId();
+    const versionChanged = storedVersion !== null && storedVersion !== EMBEDDING_TEXT_VERSION;
 
-    if (hasEmbeddingsIndex() && !modelChanged) {
-      serverLog('semantic', 'Embeddings already built, skipping full scan');
+    if (hasIndex && !modelChanged && !versionChanged) {
+      // Everything current — skip model load, just load entity embeddings to memory
+      serverLog('semantic', 'Embeddings up-to-date, skipping build');
+      loadEntityEmbeddingsToMemory();
     } else {
+      // Something needs updating — model load required
+      if (modelChanged) {
+        serverLog('semantic', `Model changed ${storedModel} → ${getActiveModelId()}, clearing`);
+        clearEmbeddingsForRebuild();
+      } else if (versionChanged) {
+        serverLog('semantic', `Text version changed v${storedVersion} → v${EMBEDDING_TEXT_VERSION}`);
+      } else if (!hasIndex) {
+        serverLog('semantic', 'No embeddings found, building');
+      } else {
+        // storedVersion is null — migration from pre-version-tracking
+        serverLog('semantic', 'No stored version, running build to verify/update');
+      }
+
       const MAX_BUILD_RETRIES = 2;
 
       const attemptBuild = async (attempt: number): Promise<void> => {
@@ -1121,6 +1131,13 @@ if (process.argv.includes('--init-semantic')) {
       const db = openStateDb(vaultPath);
       setEmbeddingsDatabase(db.db);
 
+      // Model change → full clear
+      const storedModel = getStoredEmbeddingModel();
+      if (storedModel && storedModel !== getActiveModelId()) {
+        console.error(`[Semantic] Model changed ${storedModel} → ${getActiveModelId()}, clearing`);
+        clearEmbeddingsForRebuild();
+      }
+
       const progress = await buildEmbeddingsIndex(vaultPath, (p) => {
         if (p.current % 50 === 0 || p.current === p.total) {
           console.error(`[Semantic] Embedding ${p.current}/${p.total} notes (${p.skipped} skipped)...`);
@@ -1128,6 +1145,7 @@ if (process.argv.includes('--init-semantic')) {
       });
 
       console.error(`[Semantic] Done. Embedded ${progress.total - progress.skipped} notes, skipped ${progress.skipped}.`);
+      setEmbeddingsBuildState('complete');
       db.close();
       process.exit(0);
     } catch (err) {

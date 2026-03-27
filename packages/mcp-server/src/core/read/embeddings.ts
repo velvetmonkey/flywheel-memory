@@ -165,6 +165,42 @@ export function setEmbeddingsBuildState(state: 'none' | 'building_notes' | 'buil
 }
 
 // =============================================================================
+// Version Persistence
+// =============================================================================
+
+/** Read persisted EMBEDDING_TEXT_VERSION from fts_metadata. Returns null if not stored. */
+export function getStoredTextVersion(): number | null {
+  const db = getDb();
+  if (!db) return null;
+  try {
+    const row = db.prepare(`SELECT value FROM fts_metadata WHERE key = 'embedding_text_version'`).get() as { value: string } | undefined;
+    return row ? parseInt(row.value, 10) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setStoredTextVersion(version: number): void {
+  const db = getDb();
+  if (!db) return;
+  db.prepare(`INSERT OR REPLACE INTO fts_metadata (key, value) VALUES ('embedding_text_version', ?)`)
+    .run(String(version));
+}
+
+// =============================================================================
+// Bulk Operations
+// =============================================================================
+
+/** Clear all embeddings and reset build state. Use for model changes or force rebuild. */
+export function clearEmbeddingsForRebuild(): void {
+  const db = getDb();
+  if (!db) return;
+  db.exec('DELETE FROM note_embeddings');
+  db.exec('DELETE FROM entity_embeddings');
+  setEmbeddingsBuildState('none');
+}
+
+// =============================================================================
 // Database Injection
 // =============================================================================
 
@@ -348,7 +384,7 @@ export async function embedTextCached(text: string): Promise<Float32Array> {
  * The version is mixed into the content hash so existing embeddings with the old
  * format get a different hash and are re-computed on the next index build.
  */
-const EMBEDDING_TEXT_VERSION = 2;
+export const EMBEDDING_TEXT_VERSION = 2;
 
 function contentHash(content: string): string {
   return crypto.createHash('sha256').update(content + EMBEDDING_TEXT_VERSION).digest('hex').slice(0, 16);
@@ -488,6 +524,9 @@ export async function buildEmbeddingsIndex(
       deleteStmt.run(existingPath);
     }
   }
+
+  // Persist the text version so startup can detect version changes without loading the model
+  setStoredTextVersion(EMBEDDING_TEXT_VERSION);
 
   embeddingsBuilding = false;
   console.error(`[Semantic] Indexed ${progress.current - progress.skipped} notes, skipped ${progress.skipped}`);
@@ -712,42 +751,140 @@ export function getStoredEmbeddingModel(): string | null {
   }
 }
 
-/**
- * Check if embeddings need rebuilding due to a model change.
- */
-export function needsEmbeddingRebuild(): boolean {
-  const stored = getStoredEmbeddingModel();
-  if (stored === null) return false; // No embeddings yet — not a "rebuild"
-  return stored !== activeModelConfig.id;
+// =============================================================================
+// Embedding Diagnosis
+// =============================================================================
+
+export interface EmbeddingCheck {
+  name: string;
+  status: 'ok' | 'stale' | 'warning';
+  detail: string;
+}
+
+export interface EmbeddingDiagnosis {
+  healthy: boolean;
+  checks: EmbeddingCheck[];
+  counts: {
+    embedded: number;
+    vaultNotes: number;
+    orphaned: number;
+    missing: number;
+  };
 }
 
 /**
- * Check if any stored embeddings are stale (content hash mismatch).
- * Samples up to 5 notes for speed — a single mismatch means the
- * EMBEDDING_TEXT_VERSION bumped and a full rebuild is needed.
+ * Read-only diagnostic: check all aspects of embedding health.
+ * All SQLite reads, no disk I/O, no model loading. <10ms.
  */
-export function hasStaleEmbeddings(vaultPath: string): boolean {
+export function diagnoseEmbeddings(vaultPath: string): EmbeddingDiagnosis {
   const db = getDb();
-  if (!db) return false;
-  try {
-    const rows = db.prepare(
-      'SELECT path, content_hash FROM note_embeddings ORDER BY RANDOM() LIMIT 5'
-    ).all() as Array<{ path: string; content_hash: string }>;
-    if (rows.length === 0) return false;
-    for (const row of rows) {
-      const absPath = path.resolve(vaultPath, row.path);
-      try {
-        const content = fs.readFileSync(absPath, 'utf-8');
-        if (contentHash(content) !== row.content_hash) return true;
-      } catch {
-        // File may have been deleted — stale
-        return true;
-      }
-    }
-    return false;
-  } catch {
-    return false;
+  const checks: EmbeddingCheck[] = [];
+  const counts = { embedded: 0, vaultNotes: 0, orphaned: 0, missing: 0 };
+
+  if (!db) {
+    checks.push({ name: 'database', status: 'stale', detail: 'No database available' });
+    return { healthy: false, checks, counts };
   }
+
+  // Count embeddings
+  try {
+    const row = db.prepare('SELECT COUNT(*) as count FROM note_embeddings').get() as { count: number };
+    counts.embedded = row.count;
+  } catch { /* table may not exist */ }
+
+  if (counts.embedded === 0) {
+    checks.push({ name: 'index', status: 'stale', detail: 'No embeddings built' });
+    return { healthy: false, checks, counts };
+  }
+
+  // Check 1: Model consistency
+  const storedModel = getStoredEmbeddingModel();
+  if (storedModel && storedModel !== activeModelConfig.id) {
+    checks.push({ name: 'model', status: 'stale', detail: `${storedModel} → ${activeModelConfig.id}` });
+  } else {
+    checks.push({ name: 'model', status: 'ok', detail: storedModel || activeModelConfig.id });
+  }
+
+  // Check 2: Text version
+  const storedVersion = getStoredTextVersion();
+  if (storedVersion !== null && storedVersion !== EMBEDDING_TEXT_VERSION) {
+    checks.push({ name: 'text_version', status: 'stale', detail: `v${storedVersion} → v${EMBEDDING_TEXT_VERSION}` });
+  } else if (storedVersion === null) {
+    checks.push({ name: 'text_version', status: 'warning', detail: 'No version stored (pre-migration)' });
+  } else {
+    checks.push({ name: 'text_version', status: 'ok', detail: `v${storedVersion}` });
+  }
+
+  // Check 3: Dimension sanity (skip if dims unknown)
+  if (activeModelConfig.dims > 0) {
+    try {
+      const sample = db.prepare('SELECT embedding FROM note_embeddings LIMIT 1').get() as { embedding: Buffer } | undefined;
+      if (sample) {
+        const storedDims = sample.embedding.byteLength / Float32Array.BYTES_PER_ELEMENT;
+        if (storedDims !== activeModelConfig.dims) {
+          checks.push({ name: 'dimensions', status: 'stale', detail: `stored=${storedDims}, expected=${activeModelConfig.dims}` });
+        } else {
+          checks.push({ name: 'dimensions', status: 'ok', detail: `${storedDims}` });
+        }
+      }
+    } catch {
+      checks.push({ name: 'dimensions', status: 'warning', detail: 'Could not sample' });
+    }
+  }
+
+  // Check 4: Completeness (embedded vs vault notes via notes_fts)
+  try {
+    const ftsRow = db.prepare('SELECT COUNT(*) as count FROM notes_fts').get() as { count: number };
+    counts.vaultNotes = ftsRow.count;
+    counts.missing = Math.max(0, counts.vaultNotes - counts.embedded);
+    if (counts.missing > 0) {
+      checks.push({ name: 'completeness', status: 'warning', detail: `${counts.embedded}/${counts.vaultNotes} notes embedded (${counts.missing} missing)` });
+    } else {
+      checks.push({ name: 'completeness', status: 'ok', detail: `${counts.embedded}/${counts.vaultNotes} notes` });
+    }
+  } catch {
+    checks.push({ name: 'completeness', status: 'warning', detail: 'FTS5 index not available' });
+  }
+
+  // Check 5: Orphans (embeddings for deleted notes)
+  try {
+    const embPaths = new Set(
+      (db.prepare('SELECT path FROM note_embeddings').all() as Array<{ path: string }>).map(r => r.path)
+    );
+    const ftsPaths = new Set(
+      (db.prepare('SELECT path FROM notes_fts').all() as Array<{ path: string }>).map(r => r.path)
+    );
+    counts.orphaned = 0;
+    for (const p of embPaths) {
+      if (!ftsPaths.has(p)) counts.orphaned++;
+    }
+    if (counts.orphaned > 0) {
+      checks.push({ name: 'orphans', status: 'warning', detail: `${counts.orphaned} orphaned embeddings` });
+    } else {
+      checks.push({ name: 'orphans', status: 'ok', detail: '0 orphaned' });
+    }
+  } catch {
+    checks.push({ name: 'orphans', status: 'warning', detail: 'Could not check' });
+  }
+
+  // Check 6: Integrity (NaN/Inf sample)
+  try {
+    const samples = db.prepare('SELECT embedding FROM note_embeddings ORDER BY RANDOM() LIMIT 3').all() as Array<{ embedding: Buffer }>;
+    let corrupt = false;
+    for (const s of samples) {
+      const arr = new Float32Array(s.embedding.buffer, s.embedding.byteOffset, s.embedding.byteLength / Float32Array.BYTES_PER_ELEMENT);
+      for (let i = 0; i < arr.length; i++) {
+        if (!isFinite(arr[i])) { corrupt = true; break; }
+      }
+      if (corrupt) break;
+    }
+    checks.push({ name: 'integrity', status: corrupt ? 'stale' : 'ok', detail: corrupt ? 'Corrupted vectors detected' : 'No corruption' });
+  } catch {
+    checks.push({ name: 'integrity', status: 'warning', detail: 'Could not sample' });
+  }
+
+  const healthy = checks.every(c => c.status === 'ok' || c.status === 'warning');
+  return { healthy, checks, counts };
 }
 
 /**

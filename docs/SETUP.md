@@ -178,7 +178,7 @@ curl http://localhost:3111/health
 |----------|---------|-------------|
 | `FLYWHEEL_TRANSPORT` | `stdio` | Set to `http` for HTTP-only, or `both` to run stdio + HTTP simultaneously |
 | `FLYWHEEL_HTTP_PORT` | `3111` | Port the HTTP server listens on |
-| `FLYWHEEL_HTTP_HOST` | `127.0.0.1` | Bind address. Use `0.0.0.0` to accept connections from other machines |
+| `FLYWHEEL_HTTP_HOST` | `127.0.0.1` | Bind address. Keep as `127.0.0.1` — for remote access, use a [reverse proxy](SECURITY.md) instead |
 
 Example with custom port:
 

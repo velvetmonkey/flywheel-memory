@@ -270,11 +270,11 @@ The benchmark measures whether a real Claude agent with Flywheel tools can answe
 
 This matches how a real vault works: Flywheel indexes it, auto-links it, and builds embeddings. The vault state after pre-warm is representative of production usage.
 
-**3. Questions** (759 individual Claude Sonnet sessions with `agent` preset):
+**3. Questions** (695 individual Claude Sonnet sessions with `default` preset):
 - Each question gets its own `claude -p` session with a fresh MCP server instance
 - The server loads from the warm `.flywheel/state.db` (entities, embeddings, co-occurrence cached)
 - Claude sees a minimal prompt: "Answer this question about conversations in the vault"
-- Tool calls are unrestricted — Claude decides whether to use `search`, `recall`, `memory`, or `brief`
+- Non-MCP tools (Bash, Grep, Read, etc.) are stripped via `--disallowedTools` + `--strict-mcp-config`
 - JSONL output captures every tool call and the final answer
 
 **4. Evaluation** (`demos/locomo/analyze-benchmark.py`):
@@ -291,48 +291,50 @@ This matches how a real vault works: Flywheel indexes it, auto-links it, and bui
 
 This is deliberately not a cold-start test. It tests the system as it runs in production: indexed, linked, and embedding-warm.
 
-### End-to-End Results (759 questions, balanced, Claude Sonnet + Flywheel MCP)
+### End-to-End Results (695 questions, balanced, Claude Sonnet + Flywheel MCP)
 
-759 questions. Stratified sampling across all 10 conversations (seed 42).
+695 questions. Stratified sampling across all 10 conversations (seed 42). Matches the Mem0 competition paper sample size.
 
-| Category | Questions | Evidence Recall | Answer Accuracy (LLM-judge) | 95% CI |
-|---|---|---|---|---|
-| **Overall** | **759** | **84.9%** | **58.8%** | [55.2%, 62.2%] |
-| Commonsense | 311 | 94.2% | 75.6% | [70.5%, 80.0%] |
-| Single-hop | 130 | 93.9% | 65.4% | [56.9%, 73.0%] |
-| Adversarial | 173 | 96.0% | 46.8% | [39.5%, 54.2%] |
-| Temporal | 32 | 63.3% | 40.6% | [25.5%, 57.7%] |
-| Multi-hop | 113 | 67.5% | 28.3% | [20.8%, 37.2%] |
+| Category | Questions | Evidence Recall | Answer Score |
+|---|---|---|---|
+| **Overall** | **695** | **79.1%** (801/1013) | **0.226** |
+| Adversarial | 182 | 97.3% (177/182) | 0.478 (accuracy) |
+| Commonsense | 139 | 96.4% (135/140) | 0.171 (F1) |
+| Single-hop | 139 | 95.5% (148/155) | 0.131 (F1) |
+| Multi-hop | 139 | 65.3% (248/380) | 0.139 (F1) |
+| Temporal | 96 | 59.6% (93/156) | 0.092 (F1) |
 
-Cost: $64.66 total ($0.085/question). LLM-as-judge scoring uses Claude Haiku for binary CORRECT/WRONG verdicts (Wilson 95% confidence intervals).
+Cost: $65.85 total ($0.095/question). Answer score is token F1 for categories 1-4 and adversarial detection accuracy for category 5.
 
 ### How Flywheel compares to other memory systems
 
-Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.19413). Same metric (answer accuracy via LLM-as-judge). Flywheel uses 759 questions; competitors use 695.
+Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.19413). All systems use 695 questions from the same dataset.
 
-| System | Type | Single-hop | Multi-hop | Questions | Judge | Infrastructure |
+| System | Type | Evidence Recall | Single-hop Recall | Multi-hop Recall | Questions | Infrastructure |
 |---|---|---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **65.4%** | **28.3%** | 759 | Claude Haiku | Local (SQLite + markdown) |
-| **Flywheel** | MCP vault tool | **93.9%** | **67.5%** | 759 | — | Evidence recall (not answer accuracy) |
-| Mem0 | Cloud memory | 38.7 | 28.6 | 695 | GPT-4o | Redis + Qdrant |
-| Zep | Cloud memory | 35.7 | 19.4 | 695 | GPT-4o | Cloud service |
-| LangMem | Memory framework | 35.5 | 26.0 | 695 | GPT-4o | Varies |
-| MemGPT/Letta | Agent memory | 26.7 | — | 695 | GPT-4o | Cloud/local |
+| **Flywheel** | MCP vault tool | **79.1%** | **95.5%** | **65.3%** | 695 | Local (SQLite + markdown) |
+| Mem0 | Cloud memory | — | — | — | 695 | Redis + Qdrant |
+| Zep | Cloud memory | — | — | — | 695 | Cloud service |
+| LangMem | Memory framework | — | — | — | 695 | Varies |
+| MemGPT/Letta | Agent memory | — | — | — | 695 | Cloud/local |
+
+Competitors report answer accuracy via GPT-4o judge but do not report evidence recall. Flywheel reports evidence recall (did the system find the right source notes) and token F1 for answer quality — different metrics, not directly comparable.
 
 **Methodology differences — read this before comparing:**
 
-- **Judge model.** Flywheel uses Claude Haiku for CORRECT/WRONG verdicts. The Mem0 paper uses GPT-4o. Different judges may have different leniency or strictness. We have not measured inter-judge agreement.
+- **Metrics differ.** Flywheel reports evidence recall and token F1. Competitors report answer accuracy via GPT-4o judge. These are different metrics and not directly comparable.
 - **Vault mode.** Flywheel uses dialog mode (raw conversation turns) — the most keyword-rich representation. Summary mode scores ~1-2pp lower on retrieval. Competitors may use different representations.
 - **Vault enrichment.** HotpotQA notes have minimal frontmatter (heuristic-inferred `type:` only). LoCoMo notes include temporal metadata (`date`, `time`), speaker arrays, session numbers, and entity stubs — closer to a real vault. Both are generated by the harness `build-vault.js`, not present in the source datasets. HotpotQA's 91.7% recall with near-zero metadata is closer to pure search engine performance.
-- **What each benchmark measures.** HotpotQA measures retrieval only (did the agent's tool calls access the right documents?). LoCoMo measures retrieval *and* answer accuracy (LLM-as-judge). Each LoCoMo question requires a Sonnet answer session plus a Haiku judge call, and conversational questions typically need more tool calls to piece together answers from multi-session dialog. This is why LoCoMo costs ~35% more per question ($0.085 vs $0.063).
+- **What each benchmark measures.** HotpotQA measures retrieval only (did the agent's tool calls access the right documents?). LoCoMo measures retrieval *and* answer quality. Each LoCoMo question requires a Sonnet answer session, and conversational questions typically need more tool calls to piece together answers from multi-session dialog. This is why LoCoMo costs ~60% more per question ($0.095 vs $0.058).
 - **Prompt.** Claude is told the vault structure (notes are conversation sessions) but is not given a retrieval strategy.
 
 **What the numbers suggest:**
 
-- **Single-hop: 65.4%** — 26.7pp ahead of Mem0 (38.7%). Flywheel finds the right note and Claude extracts the answer.
-- **Multi-hop: 28.3%** — comparable to Mem0 (28.6%). Hard for everyone — the accuracy ceiling here is context presentation, not retrieval (evidence recall is 67.5%).
-- **Temporal: 40.6%** — requires precise date reasoning across sessions. Small sample (32 questions) gives wide confidence intervals.
-- **Commonsense: 75.6%** — strongest category. High evidence recall (94.2%) translates well to correct answers.
+- **Single-hop recall: 95.5%** — Flywheel finds the right note almost every time for direct questions.
+- **Multi-hop recall: 65.3%** — harder, requires chaining searches. The answer quality ceiling here is context presentation, not retrieval.
+- **Temporal recall: 59.6%** — requires precise date reasoning across sessions. 96 questions.
+- **Commonsense recall: 96.4%** — strongest category. High evidence recall translates well to correct answers.
+- **Adversarial recall: 97.3%** — system reliably finds relevant context even for trick questions. 47.8% accuracy on correctly refusing unanswerable questions.
 - **Infrastructure.** Flywheel runs locally on markdown files with SQLite. Mem0 requires Redis + Qdrant. Zep requires a cloud service.
 
 Source: [`demos/locomo/`](../demos/locomo/) | [`packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts)

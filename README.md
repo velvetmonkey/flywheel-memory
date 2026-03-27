@@ -5,7 +5,7 @@
   All local. All yours. A few lines of config.</p>
 </div>
 
-**Search** — Ask a question, get a decision surface. One call returns section provenance, full section content, extracted dates, entity bridges, and confidence scores — U-shaped interleaved so the best results land where attention peaks. Your AI reasons across results without opening any files. [$0.06-0.09/query](#benchmarked), measured.
+**Search** — Ask a question, get a decision surface. One call returns section provenance, full section content, extracted dates, entity bridges, and confidence scores — U-shaped interleaved so the best results land where attention peaks. Your AI reasons across results without opening any files. [$0.06-0.10/query](#benchmarked), measured.
 
 **Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief, Flywheel recognises names, projects, and relationships and wikilinks them in real time. [13 scoring layers](docs/ALGORITHM.md), zero manual curation.
 
@@ -20,8 +20,8 @@ All local. No cloud. No account. No sync.
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code%20%7C%20OpenClaw-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-91.7%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-65%25%20single--hop%20%7C%2085%25%20recall%20(759q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
-[![Cost](https://img.shields.io/badge/cost-%240.06--0.09%2Fquery-green.svg)](docs/TESTING.md#how-the-e2e-benchmark-works)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-79%25%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![Cost](https://img.shields.io/badge/cost-%240.06--0.10%2Fquery-green.svg)](docs/TESTING.md#how-the-e2e-benchmark-works)
 [![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)** · **[Story](#the-story-behind-this)** · **[License](#license)**
@@ -265,17 +265,17 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 
 > **⚠️ These comparisons are not controlled experiments.** Different systems use different document representations, different LLM judges, different prompts, and different vault structures. We run the same benchmark datasets and report honestly, but treat these as directional indicators - not head-to-head results. The numbers reproduce if you clone the repo and run them yourself.
 
-**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 759 questions):
+**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions):
 
-| System | Single-hop | Multi-hop | Questions | Judge | Cost/question | Infrastructure |
+| System | Evidence Recall | Single-hop Recall | Multi-hop Recall | Questions | Cost/question | Infrastructure |
 |---|---|---|---|---|---|---|
-| **Flywheel** | **65.4%** | **28.3%** | 759 | Claude Haiku | **$0.085** | Local SQLite + markdown |
-| [Mem0](https://mem0.ai/) | 38.7 | 28.6 | 695 | GPT-4o | ~$0.30-0.50* | Redis + Qdrant |
-| [Zep](https://getzep.com/) | 35.7 | 19.4 | 695 | GPT-4o | ~$0.30-0.50* | Cloud service |
-| [LangMem](https://github.com/langchain-ai/langmem) | 35.5 | 26.0 | 695 | GPT-4o | ~$0.30-0.50* | Varies |
-| [Letta](https://memgpt.ai/) | 26.7 | - | 695 | GPT-4o | ~$0.30-0.50* | Cloud/local |
+| **Flywheel** | **79.1%** | **95.5%** | **65.3%** | 695 | **$0.095** | Local SQLite + markdown |
+| [Mem0](https://mem0.ai/) | — | — | — | 695 | ~$0.30-0.50* | Redis + Qdrant |
+| [Zep](https://getzep.com/) | — | — | — | 695 | ~$0.30-0.50* | Cloud service |
+| [LangMem](https://github.com/langchain-ai/langmem) | — | — | — | 695 | ~$0.30-0.50* | Varies |
+| [Letta](https://memgpt.ai/) | — | — | — | 695 | ~$0.30-0.50* | Cloud/local |
 
-\* Competitor costs are estimates based on GPT-4o pricing ($2.50/1M input, $10/1M output) for answer generation + judging. Actual costs not disclosed. Flywheel uses Claude Sonnet for answers + Claude Haiku for judging, roughly 3-5x cheaper per token for the judge step. Infrastructure costs (Redis, Qdrant, cloud hosting) are additional.
+\* Competitor costs are estimates based on GPT-4o pricing ($2.50/1M input, $10/1M output) for answer generation + judging. Actual costs not disclosed. Competitors do not report evidence recall, only answer accuracy via GPT-4o judge — a different metric. Flywheel uses Claude Sonnet for answers with token F1 scoring. Infrastructure costs (Redis, Qdrant, cloud hosting) are additional.
 
 **Document retrieval** ([HotpotQA](https://hotpotqa.github.io/), 500 questions):
 
@@ -288,26 +288,26 @@ Two standard academic benchmarks. Reproducible: clone the repo, run the scripts,
 
 **What's comparable and what isn't:**
 
-- **LoCoMo sample size differs.** Flywheel uses 759 questions; competitors use 695. Both are stratified samples from the same 1,986-question dataset. Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
-- **LoCoMo judge model differs.** We use Claude Haiku; competitors use GPT-4o. Different judges may score differently. We haven't measured inter-judge agreement.
+- **LoCoMo sample size matches.** Flywheel and competitors both use 695 questions — stratified samples from the same 1,986-question dataset. Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
+- **LoCoMo metrics differ.** Flywheel reports evidence recall (did the system find the right source notes) and token F1 (answer quality). Competitors report answer accuracy via GPT-4o judge — a different metric. These are not directly comparable.
 - **LoCoMo document pool differs.** Flywheel searches 272 markdown session notes. Competitors may chunk, summarise, or embed conversations differently - their document representations aren't published.
-- **LoCoMo prompt differs.** Our agent uses a minimal system prompt with the `default` tool preset. Competitor prompt strategies aren't published.
+- **LoCoMo prompt differs.** Our agent uses a minimal system prompt with the `default` tool preset (18 tools). Competitor prompt strategies aren't published.
 - **HotpotQA is not a fair comparison.** MDR and Baleen were trained on HotpotQA specifically and search 5M+ Wikipedia articles. Flywheel is a general-purpose tool with zero training, searching a 4,960-document vault. The comparison shows where untrained retrieval sits relative to specialised systems - not that we "beat" them.
 
-### Full LoCoMo results (759 questions)
+### Full LoCoMo results (695 questions)
 
-| Category | Evidence Recall | Answer Accuracy | 95% CI | Questions |
-|---|---|---|---|---|
-| Commonsense | 94.2% | 75.6% | [70.5%, 80.0%] | 311 |
-| Single-hop | 93.9% | 65.4% | [56.9%, 73.0%] | 130 |
-| Adversarial | 96.0% | 46.8% | [39.5%, 54.2%] | 173 |
-| Temporal | 63.3% | 40.6% | [25.5%, 57.7%] | 32 |
-| Multi-hop | 67.5% | 28.3% | [20.8%, 37.2%] | 113 |
-| **Overall** | **84.9%** | **58.8%** | **[55.2%, 62.2%]** | **759** |
+| Category | Evidence Recall | Answer Score | Questions |
+|---|---|---|---|
+| Adversarial | 97.3% | 0.478 (accuracy) | 182 |
+| Commonsense | 96.4% | 0.171 (F1) | 139 |
+| Single-hop | 95.5% | 0.131 (F1) | 139 |
+| Multi-hop | 65.3% | 0.139 (F1) | 139 |
+| Temporal | 59.6% | 0.092 (F1) | 96 |
+| **Overall** | **79.1%** | **0.226** | **695** |
 
-Evidence recall = did the system find the right source notes. Answer accuracy = did it give the correct answer (LLM-as-judge, Claude Haiku). The vault is pre-warmed with auto-linking and embeddings before questions run - [how it works →](docs/TESTING.md#how-the-e2e-benchmark-works) · Reproduce: `demos/locomo/run-benchmark.sh`
+Evidence recall = did the system find the right source notes. Answer score = token F1 (categories 1-4) or adversarial detection accuracy (category 5). The vault is pre-warmed with auto-linking and embeddings before questions run - [how it works →](docs/TESTING.md#how-the-e2e-benchmark-works) · Reproduce: `demos/locomo/run-benchmark.sh`
 
-Flywheel controls retrieval; the model controls comprehension. Evidence recall is ours — did we find the right documents? Answer accuracy is the model's — did it understand what it found? These are deliberately separate metrics. When models improve, answer accuracy goes up without changing a line of Flywheel code.
+Flywheel controls retrieval; the model controls comprehension. Evidence recall is ours — did we find the right documents? Answer score is the model's — did it understand what it found? These are deliberately separate metrics. When models improve, answer scores go up without changing a line of Flywheel code.
 
 ---
 

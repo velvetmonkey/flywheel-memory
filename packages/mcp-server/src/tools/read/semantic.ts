@@ -8,12 +8,15 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import {
   setEmbeddingsDatabase,
-  hasEmbeddingsIndex,
-  getEmbeddingsCount,
   buildEmbeddingsIndex,
   buildEntityEmbeddingsIndex,
   loadEntityEmbeddingsToMemory,
+  setEmbeddingsBuildState,
   getEntityEmbeddingsCount,
+  getStoredEmbeddingModel,
+  getActiveModelId,
+  clearEmbeddingsForRebuild,
+  diagnoseEmbeddings,
 } from '../../core/read/embeddings.js';
 import { getAllEntitiesFromDb } from '@velvetmonkey/vault-core';
 
@@ -32,10 +35,10 @@ export function registerSemanticTools(
       description:
         'Download the embedding model and build semantic search index for this vault. ' +
         'After running, search and find_similar automatically use hybrid ranking (BM25 + semantic). ' +
-        'Run once per vault — subsequent calls skip already-embedded notes unless force=true.',
+        'Run once per vault — subsequent calls verify health and skip already-embedded notes unless force=true.',
       inputSchema: {
         force: z.boolean().optional().describe(
-          'Rebuild all embeddings even if they already exist (default: false)'
+          'Clear and rebuild all embeddings from scratch (default: false)'
         ),
       },
     },
@@ -53,27 +56,38 @@ export function registerSemanticTools(
       // Inject db handle (idempotent)
       setEmbeddingsDatabase(stateDb.db);
 
-      // Check if already built
-      if (hasEmbeddingsIndex() && !force) {
-        const count = getEmbeddingsCount();
-        return {
-          content: [{
-            type: 'text' as const,
-            text: JSON.stringify({
-              success: true,
-              already_built: true,
-              embedded: count,
-              hint: 'Embeddings already built. All searches automatically use hybrid ranking.',
-            }, null, 2),
-          }],
-        };
+      const vaultPath = getVaultPath();
+
+      // Quick health check — if not forced and already healthy, return diagnosis
+      if (!force) {
+        const diagnosis = diagnoseEmbeddings(vaultPath);
+        if (diagnosis.healthy) {
+          return {
+            content: [{
+              type: 'text' as const,
+              text: JSON.stringify({
+                success: true,
+                already_built: true,
+                embedded: diagnosis.counts.embedded,
+                checks: diagnosis.checks,
+                hint: 'Embeddings healthy. All searches automatically use hybrid ranking.',
+              }, null, 2),
+            }],
+          };
+        }
       }
 
-      // Build index with progress logging
-      const vaultPath = getVaultPath();
+      // Model change or force → full clear
+      const storedModel = getStoredEmbeddingModel();
+      if (force || (storedModel && storedModel !== getActiveModelId())) {
+        const reason = force ? 'force=true' : `model changed ${storedModel} → ${getActiveModelId()}`;
+        console.error(`[Semantic] Clearing embeddings: ${reason}`);
+        clearEmbeddingsForRebuild();
+      }
+
+      // Build notes (handles version bumps, completeness, orphans via content hash)
       const buildStart = Date.now();
 
-      // Estimate build time (~100ms per note for embedding generation)
       const { scanVault } = await import('../../core/read/vault.js');
       const files = await scanVault(vaultPath);
       const estimatedSeconds = Math.ceil(files.length * 0.1);
@@ -120,8 +134,13 @@ export function registerSemanticTools(
         console.error('[Semantic] Entity embeddings failed:', err instanceof Error ? err.message : err);
       }
 
+      setEmbeddingsBuildState('complete');
+
       const totalElapsed = Math.round((Date.now() - buildStart) / 1000);
       console.error(`[Semantic] Build complete in ${totalElapsed}s: ${embedded} notes + ${entityEmbedded} entities embedded.`);
+
+      // Post-build verification
+      const diagnosis = diagnoseEmbeddings(vaultPath);
 
       return {
         content: [{
@@ -134,6 +153,7 @@ export function registerSemanticTools(
             entity_embeddings: entityEmbedded,
             entity_total: getEntityEmbeddingsCount(),
             build_time_seconds: totalElapsed,
+            checks: diagnosis.checks,
             hint: 'Embeddings built. All searches now automatically use hybrid ranking.',
           }, null, 2),
         }],

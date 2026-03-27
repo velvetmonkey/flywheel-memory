@@ -13,7 +13,7 @@ import type { FlywheelConfig } from '../../core/read/config.js';
 import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
 import { getRecentIndexEvents, getRecentPipelineEvent, type PipelineStep } from '../../core/shared/indexActivity.js';
 import { getFTS5State } from '../../core/read/fts5.js';
-import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount, getActiveModelId } from '../../core/read/embeddings.js';
+import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount, getActiveModelId, diagnoseEmbeddings } from '../../core/read/embeddings.js';
 import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache.js';
 import { getServerLog, type LogEntry } from '../../core/shared/serverLog.js';
 import { getSweepResults, type SweepResults } from '../../core/read/sweep.js';
@@ -115,6 +115,20 @@ export function registerHealthTools(
     embeddings_ready: z.boolean().describe('Whether semantic embeddings have been built (enables hybrid keyword+semantic search)'),
     embeddings_count: z.coerce.number().describe('Number of notes with semantic embeddings'),
     embedding_model: z.string().optional().describe('Active embedding model ID (when embeddings are built)'),
+    embedding_diagnosis: z.object({
+      healthy: z.boolean(),
+      checks: z.array(z.object({
+        name: z.string(),
+        status: z.enum(['ok', 'stale', 'warning']),
+        detail: z.string(),
+      })),
+      counts: z.object({
+        embedded: z.coerce.number(),
+        vaultNotes: z.coerce.number(),
+        orphaned: z.coerce.number(),
+        missing: z.coerce.number(),
+      }),
+    }).optional().describe('Detailed embedding health diagnosis (when embeddings exist)'),
     tasks_ready: z.boolean().describe('Whether the task cache is ready to serve queries'),
     tasks_building: z.boolean().describe('Whether the task cache is currently rebuilding'),
     watcher_state: z.enum(['starting', 'ready', 'rebuilding', 'dirty', 'error']).optional()
@@ -199,6 +213,11 @@ export function registerHealthTools(
     embeddings_ready: boolean;
     embeddings_count: number;
     embedding_model?: string;
+    embedding_diagnosis?: {
+      healthy: boolean;
+      checks: Array<{ name: string; status: 'ok' | 'stale' | 'warning'; detail: string }>;
+      counts: { embedded: number; vaultNotes: number; orphaned: number; missing: number };
+    };
     tasks_ready: boolean;
     tasks_building: boolean;
     watcher_state?: 'starting' | 'ready' | 'rebuilding' | 'dirty' | 'error';
@@ -477,6 +496,7 @@ export function registerHealthTools(
         embeddings_ready: hasEmbeddingsIndex(),
         embeddings_count: getEmbeddingsCount(),
         embedding_model: hasEmbeddingsIndex() ? getActiveModelId() : undefined,
+        embedding_diagnosis: hasEmbeddingsIndex() ? diagnoseEmbeddings(vaultPath) : undefined,
         tasks_ready: isTaskCacheReady(),
         tasks_building: isTaskCacheBuilding(),
         watcher_state: getWatcherStatus()?.state,

@@ -54,69 +54,7 @@ Flywheel runs locally on your machine. The default transport is **stdio** (no ne
 
 When `FLYWHEEL_TRANSPORT=http`, the server listens on `127.0.0.1:3111` by default. **There is no authentication** — any process on localhost can call tools. Do not expose to network without your own auth layer.
 
-### HTTP reverse proxy recipes
-
-If you need to expose the HTTP transport beyond localhost (e.g., for remote agents or multi-machine setups), always put a reverse proxy in front. **Never change `FLYWHEEL_HTTP_HOST` from `127.0.0.1`.**
-
-<details>
-<summary><strong>nginx</strong></summary>
-
-```nginx
-# /etc/nginx/sites-available/flywheel
-limit_req_zone $binary_remote_addr zone=flywheel:10m rate=30r/m;
-
-server {
-    listen 443 ssl;
-    server_name flywheel.example.com;
-
-    ssl_certificate     /etc/ssl/certs/flywheel.pem;
-    ssl_certificate_key /etc/ssl/private/flywheel.key;
-
-    location /mcp {
-        limit_req zone=flywheel burst=10 nodelay;
-
-        proxy_pass http://127.0.0.1:3111;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-
-        # Disable buffering for streaming MCP responses
-        proxy_buffering off;
-
-        # Add your auth layer here (e.g., auth_basic, auth_request, or mTLS)
-    }
-
-    location /health {
-        proxy_pass http://127.0.0.1:3111;
-    }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>Caddy</strong></summary>
-
-```caddyfile
-flywheel.example.com {
-    # Caddy handles TLS automatically
-
-    @mcp path /mcp
-    handle @mcp {
-        reverse_proxy localhost:3111 {
-            flush_interval -1  # Stream responses immediately
-        }
-        # Add your auth layer here (e.g., basicauth, forward_auth)
-    }
-
-    handle /health {
-        reverse_proxy localhost:3111
-    }
-}
-```
-
-</details>
+If you need to expose the HTTP transport beyond localhost (e.g., for remote agents or multi-machine setups), always put a reverse proxy in front. **Never change `FLYWHEEL_HTTP_HOST` from `127.0.0.1`.** See [docs/SECURITY.md](docs/SECURITY.md) for nginx and Caddy recipes with TLS termination, rate limiting, and auth placeholders.
 
 ### Network access
 

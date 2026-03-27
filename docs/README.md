@@ -28,6 +28,7 @@
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Index strategy, FTS5 search, graph model, auto-wikilinks | "How does Flywheel work under the hood?" |
 | [CONFIGURATION.md](CONFIGURATION.md) | Environment variables, tool presets, platform setup | "How do I customize my setup?" |
 | [TESTING.md](TESTING.md) | Test philosophy, performance benchmarks, security testing | "How is this tested and can I trust it?" |
+| [SECURITY.md](SECURITY.md) | HTTP reverse proxy recipes — nginx, Caddy, TLS, auth | "How do I safely expose Flywheel over the network?" |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Error recovery, diagnostics, common issues | "Something went wrong — how do I fix it?" |
 | [VISION.md](VISION.md) | The flywheel effect, design principles, ecosystem | "Where is this project going?" |
 | [ALGORITHM.md](ALGORITHM.md) | The 13-layer scoring system — how every suggestion is computed | "How does auto-wikilinks decide what to link?" |

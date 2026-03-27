@@ -7,17 +7,22 @@ import * as path from 'path';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
-import { buildVaultIndex, setIndexState, setIndexError } from '../../core/read/graph.js';
-import { loadConfig, inferConfig, saveConfig, type FlywheelConfig } from '../../core/read/config.js';
+import { buildVaultIndex, setIndexState, setIndexError, saveVaultIndexToCache } from '../../core/read/graph.js';
+import { loadConfig, inferConfig, saveConfig, DEFAULT_ENTITY_EXCLUDE_FOLDERS, type FlywheelConfig } from '../../core/read/config.js';
 import { buildFTS5Index } from '../../core/read/fts5.js';
-import { scanVaultEntities, getEntityIndexFromDb, type StateDb } from '@velvetmonkey/vault-core';
+import { scanVaultEntities, getEntityIndexFromDb, getAllEntitiesFromDb, type StateDb } from '@velvetmonkey/vault-core';
 import { suggestEntityAliases } from '../../core/read/aliasSuggestions.js';
 import { recordIndexEvent } from '../../core/shared/indexActivity.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { countFTS5Mentions } from '../../core/read/fts5.js';
 import { recomputeEdgeWeights } from '../../core/write/edgeWeights.js';
-import { hasEmbeddingsIndex, buildEmbeddingsIndex } from '../../core/read/embeddings.js';
+import { hasEmbeddingsIndex, buildEmbeddingsIndex, buildEntityEmbeddingsIndex, hasEntityEmbeddingsIndex, loadEntityEmbeddingsToMemory } from '../../core/read/embeddings.js';
+import { initializeEntityIndex } from '../../core/write/wikilinks.js';
+import { exportHubScores } from '../../core/shared/hubExport.js';
+import { computeGraphMetrics, recordGraphSnapshot } from '../../core/shared/graphSnapshots.js';
+import { updateSuppressionList } from '../../core/write/wikilinkFeedback.js';
+import { refreshIfStale } from '../../core/read/taskCache.js';
 
 /**
  * Register system/utility tools with the MCP server
@@ -37,7 +42,13 @@ export function registerSystemTools(
     entities_count: z.number().describe('Number of entities (titles + aliases)'),
     fts5_notes: z.number().describe('Number of notes in FTS5 search index'),
     edges_recomputed: z.number().optional().describe('Number of edges with recomputed weights'),
+    hub_scores: z.number().optional().describe('Number of hub scores exported'),
+    graph_snapshot: z.boolean().optional().describe('Whether graph topology snapshot was recorded'),
+    suppression_list: z.boolean().optional().describe('Whether wikilink suppression list was updated'),
+    task_cache: z.boolean().optional().describe('Whether task cache was refreshed'),
     embeddings_refreshed: z.number().optional().describe('Number of note embeddings updated'),
+    entity_embeddings_refreshed: z.number().optional().describe('Number of entity embeddings updated'),
+    index_cached: z.boolean().optional().describe('Whether vault index cache was saved'),
     duration_ms: z.number().describe('Time taken to rebuild index'),
   };
 
@@ -47,7 +58,13 @@ export function registerSystemTools(
     entities_count: number;
     fts5_notes: number;
     edges_recomputed?: number;
+    hub_scores?: number;
+    graph_snapshot?: boolean;
+    suppression_list?: boolean;
+    task_cache?: boolean;
     embeddings_refreshed?: number;
+    entity_embeddings_refreshed?: number;
+    index_cached?: boolean;
     duration_ms: number;
   };
 
@@ -81,13 +98,11 @@ export function registerSystemTools(
         if (stateDb) {
           try {
             const config = loadConfig(stateDb);
+            const excludeFolders = config.exclude_entity_folders?.length
+              ? config.exclude_entity_folders
+              : DEFAULT_ENTITY_EXCLUDE_FOLDERS;
             const entityIndex = await scanVaultEntities(vaultPath, {
-              excludeFolders: [
-                'daily-notes', 'daily', 'weekly', 'weekly-notes', 'monthly',
-                'monthly-notes', 'quarterly', 'yearly-notes', 'periodic', 'journal',
-                'inbox', 'templates', 'attachments', 'tmp',
-                'clippings', 'readwise', 'articles', 'bookmarks', 'web-clips',
-              ],
+              excludeFolders,
               customCategories: config.custom_categories,
             });
             stateDb.replaceAllEntities(entityIndex);
@@ -129,7 +144,59 @@ export function registerSystemTools(
           }
         }
 
-        // Sync embeddings with current vault state (incremental — skips unchanged notes)
+        // Initialize wikilink entity index from StateDb
+        try {
+          await initializeEntityIndex(vaultPath);
+          console.error('[Flywheel] Entity index initialized');
+        } catch (err) {
+          console.error('[Flywheel] Entity index init failed:', err);
+        }
+
+        // Export hub scores
+        let hubScoresExported = 0;
+        try {
+          hubScoresExported = await exportHubScores(newIndex, stateDb);
+          if (hubScoresExported > 0) {
+            console.error(`[Flywheel] Hub scores: ${hubScoresExported} entities`);
+          }
+        } catch (err) {
+          console.error('[Flywheel] Hub score export failed:', err);
+        }
+
+        // Record graph topology snapshot
+        let graphSnapshotRecorded = false;
+        if (stateDb) {
+          try {
+            const graphMetrics = computeGraphMetrics(newIndex);
+            recordGraphSnapshot(stateDb, graphMetrics);
+            graphSnapshotRecorded = true;
+          } catch (err) {
+            console.error('[Flywheel] Graph snapshot failed:', err);
+          }
+        }
+
+        // Update wikilink suppression list
+        let suppressionUpdated = false;
+        if (stateDb) {
+          try {
+            updateSuppressionList(stateDb);
+            suppressionUpdated = true;
+          } catch (err) {
+            console.error('[Flywheel] Suppression list update failed:', err);
+          }
+        }
+
+        // Refresh task cache
+        let taskCacheRefreshed = false;
+        try {
+          const config = loadConfig(stateDb);
+          refreshIfStale(vaultPath, newIndex, config.exclude_task_tags);
+          taskCacheRefreshed = true;
+        } catch (err) {
+          console.error('[Flywheel] Task cache refresh failed:', err);
+        }
+
+        // Sync note embeddings with current vault state (incremental — skips unchanged notes)
         let embeddingsRefreshed = 0;
         if (hasEmbeddingsIndex()) {
           try {
@@ -140,6 +207,40 @@ export function registerSystemTools(
             }
           } catch (err) {
             console.error('[Flywheel] Embedding sync failed:', err);
+          }
+        }
+
+        // Sync entity embeddings
+        let entityEmbeddingsRefreshed = 0;
+        if (stateDb && hasEntityEmbeddingsIndex()) {
+          try {
+            const entities = getAllEntitiesFromDb(stateDb);
+            if (entities.length > 0) {
+              const entityMap = new Map(entities.map(e => [e.name, {
+                name: e.name,
+                path: e.path,
+                category: e.category,
+                aliases: e.aliases,
+              }]));
+              entityEmbeddingsRefreshed = await buildEntityEmbeddingsIndex(vaultPath, entityMap);
+              loadEntityEmbeddingsToMemory();
+              if (entityEmbeddingsRefreshed > 0) {
+                console.error(`[Flywheel] Entity embeddings: ${entityEmbeddingsRefreshed} updated`);
+              }
+            }
+          } catch (err) {
+            console.error('[Flywheel] Entity embedding sync failed:', err);
+          }
+        }
+
+        // Save vault index cache
+        let indexCached = false;
+        if (stateDb) {
+          try {
+            saveVaultIndexToCache(stateDb, newIndex);
+            indexCached = true;
+          } catch (err) {
+            console.error('[Flywheel] Index cache save failed:', err);
           }
         }
 
@@ -160,7 +261,13 @@ export function registerSystemTools(
           entities_count: newIndex.entities.size,
           fts5_notes: fts5Notes,
           edges_recomputed: edgesRecomputed,
+          hub_scores: hubScoresExported || undefined,
+          graph_snapshot: graphSnapshotRecorded || undefined,
+          suppression_list: suppressionUpdated || undefined,
+          task_cache: taskCacheRefreshed || undefined,
           embeddings_refreshed: embeddingsRefreshed || undefined,
+          entity_embeddings_refreshed: entityEmbeddingsRefreshed || undefined,
+          index_cached: indexCached || undefined,
           duration_ms: duration,
         };
 

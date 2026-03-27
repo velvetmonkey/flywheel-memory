@@ -61,6 +61,9 @@ export interface FlywheelConfig {
   custom_categories?: Record<string, { type_boost?: number }>;
 }
 
+/** Folders excluded from entity scanning when exclude_entity_folders is empty */
+export const DEFAULT_ENTITY_EXCLUDE_FOLDERS = ['node_modules', 'templates', 'attachments', 'tmp'];
+
 /** Default config for new vaults — opinionated: aggressive linking by default, opt out to dial back */
 const DEFAULT_CONFIG: FlywheelConfig = {
   exclude_task_tags: [],

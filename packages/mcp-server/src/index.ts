@@ -37,7 +37,7 @@ import {
   type IndexState,
 } from './core/read/graph.js';
 import { scanVault } from './core/read/vault.js';
-import { loadConfig, inferConfig, saveConfig, type FlywheelConfig } from './core/read/config.js';
+import { loadConfig, inferConfig, saveConfig, DEFAULT_ENTITY_EXCLUDE_FOLDERS, type FlywheelConfig } from './core/read/config.js';
 import { findVaultRoot } from './core/read/vaultRoot.js';
 import {
   createVaultWatcher,
@@ -604,7 +604,7 @@ async function main() {
   }
 }
 
-const DEFAULT_ENTITY_EXCLUDE_FOLDERS = ['node_modules', 'templates', 'attachments', 'tmp'];
+// DEFAULT_ENTITY_EXCLUDE_FOLDERS imported from ./core/read/config.js
 
 /** Timestamp of last co-occurrence index rebuild (epoch ms) */
 let lastCooccurrenceRebuildAt = 0;

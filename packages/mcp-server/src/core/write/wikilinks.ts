@@ -40,6 +40,7 @@ import {
   type Entity,
   type StateDb,
   type EntitySearchResult,
+  STOPWORDS_EN,
 } from '@velvetmonkey/vault-core';
 import { isSuppressed, getAllFeedbackBoosts, getAllSuppressionPenalties, getEntityStats, trackWikilinkApplications } from './wikilinkFeedback.js';
 import { getCorrectedEntityNotePairs } from './corrections.js';
@@ -722,58 +723,6 @@ export function getEntityIndexStats(): {
  */
 const SUGGESTION_PATTERN = /→\s*\[\[.+$/;
 
-/**
- * Common stopwords to exclude from tokenization
- */
-const STOPWORDS = new Set([
-  'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-  'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
-  'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-  'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'this', 'that',
-  'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'what',
-  'which', 'who', 'whom', 'when', 'where', 'why', 'how', 'all', 'each',
-  'every', 'both', 'few', 'more', 'most', 'other', 'some', 'such', 'no',
-  'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'also',
-]);
-
-/**
- * Generic words that are too common to trigger entity suggestions
- *
- * These words pass tokenization filters (4+ chars, not stopwords) but are
- * semantically too generic to meaningfully connect to specific entities.
- * They cause false positives through co-occurrence boosting.
- *
- * Example: "a test message" would match entities containing "message",
- * which then co-occur with unrelated entities like Azure services.
- *
- * NOTE: Intentionally conservative list. Words like "service", "system", "process"
- * are excluded because they're meaningful in tech contexts (e.g., "Azure App Service").
- */
-const GENERIC_WORDS = new Set([
-  // Common nouns that appear everywhere and rarely mean anything specific
-  'message', 'messages',
-  'file', 'files',
-  'info', 'information',
-  'item', 'items',
-  'list', 'lists',
-  'name', 'names',
-  'type', 'types',
-  'value', 'values',
-  'result', 'results',
-  'issue', 'issues',
-  'problem', 'problems',
-  'point', 'points',
-  'example', 'examples',
-  'case', 'cases',
-  'object', 'objects',
-  'option', 'options',
-  'line', 'lines',
-  'text', 'string', 'strings',
-  'number', 'numbers',
-  'size', 'length',
-  'level', 'levels',
-  'mode', 'modes',
-]);
 
 /**
  * Extract entities that are already linked in content
@@ -1373,7 +1322,7 @@ export async function suggestRelatedLinks(
   const contentTokens = new Set<string>();
   const contentStems = new Set<string>();
   for (const token of rawTokens) {
-    if (token.length >= config.minWordLength && !GENERIC_WORDS.has(token)) {
+    if (token.length >= config.minWordLength && !STOPWORDS_EN.has(token)) {
       contentTokens.add(token);
       contentStems.add(stem(token));
     }

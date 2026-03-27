@@ -4,6 +4,24 @@
  */
 
 // ========================================
+// System Directories
+// ========================================
+
+/**
+ * System directories always excluded from vault scanning/indexing.
+ * Single source of truth — replaces 6 duplicate constants across the codebase.
+ */
+export const SYSTEM_EXCLUDED_DIRS = new Set([
+  '.obsidian',
+  '.trash',
+  '.git',
+  'node_modules',
+  '.claude',
+  '.flywheel',
+  'templates',
+]);
+
+// ========================================
 // Limits & Caps
 // ========================================
 

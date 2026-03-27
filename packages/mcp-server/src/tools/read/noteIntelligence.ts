@@ -20,7 +20,7 @@ import {
   embedTextCached,
   findSemanticallySimilarEntities,
 } from '../../core/read/embeddings.js';
-import type { FlywheelConfig } from '../../core/read/config.js';
+import { getExcludeTags, type FlywheelConfig } from '../../core/read/config.js';
 import fs from 'node:fs';
 import nodePath from 'node:path';
 
@@ -122,7 +122,7 @@ export function registerNoteIntelligenceTools(
 
           // Build set of excluded tags for filtering
           const excludeTags = new Set(
-            (getConfig?.()?.exclude_analysis_tags ?? []).map(t => t.toLowerCase())
+            getExcludeTags(getConfig?.() ?? {}).map(t => t.toLowerCase())
           );
 
           try {

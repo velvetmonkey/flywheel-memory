@@ -16,6 +16,7 @@ import type Database from 'better-sqlite3';
 import * as fs from 'fs';
 import { scanVault } from './vault.js';
 import { serverLog } from '../shared/serverLog.js';
+import { SYSTEM_EXCLUDED_DIRS } from '../shared/constants.js';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /** Search result with highlighted snippet */
@@ -34,16 +35,6 @@ export interface FTS5State {
   error: string | null;
 }
 
-/** Directories to exclude from indexing */
-const EXCLUDED_DIRS = new Set([
-  '.obsidian',
-  '.trash',
-  '.git',
-  'node_modules',
-  'templates',
-  '.claude',
-  '.flywheel',
-]);
 
 /** Maximum file size to index (5MB) */
 const MAX_INDEX_FILE_SIZE = 5 * 1024 * 1024;
@@ -119,7 +110,7 @@ export function setFTS5Database(database: Database.Database): void {
  */
 function shouldIndexFile(filePath: string): boolean {
   const parts = filePath.split('/');
-  return !parts.some(part => EXCLUDED_DIRS.has(part));
+  return !parts.some(part => SYSTEM_EXCLUDED_DIRS.has(part));
 }
 
 /**

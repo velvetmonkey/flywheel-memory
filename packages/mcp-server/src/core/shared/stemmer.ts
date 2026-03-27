@@ -1,148 +1,4 @@
-/**
- * Porter Stemmer Implementation
- *
- * Reduces words to their root forms for improved matching:
- * - "philosophical" → "philosoph"
- * - "thinking" → "think"
- * - "consciousness" → "conscious"
- * - "deterministic" → "determinist"
- *
- * Based on the Porter Stemming Algorithm (1980)
- * https://tartarus.org/martin/PorterStemmer/
- */
-
-/**
- * Common stopwords to exclude from tokenization
- *
- * Organized by category:
- * - Articles/pronouns/prepositions (basic)
- * - Common verbs (action words that create false matches)
- * - Time words (temporal references)
- * - Generic/filler words (low semantic value)
- * - Descriptive words (qualifiers and modifiers)
- */
-const STOPWORDS = new Set([
-  // Articles, pronouns, prepositions (basic)
-  'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-  'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
-  'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-  'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'this', 'that',
-  'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'what',
-  'which', 'who', 'whom', 'when', 'where', 'why', 'how', 'all', 'each',
-  'every', 'both', 'few', 'more', 'most', 'other', 'some', 'such', 'no',
-  'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'also',
-  'about', 'after', 'before', 'being', 'between', 'into', 'through', 'during',
-  'above', 'below', 'out', 'off', 'over', 'under', 'again', 'further', 'then',
-  'once', 'here', 'there', 'any', 'now', 'even', 'much', 'back',
-
-  // Common verbs (critical for reducing false positives)
-  // These create matches like "Completed" → "Complete Guide"
-  'going', 'went', 'gone', 'come', 'came', 'coming',
-  'work', 'worked', 'working', 'works',
-  'make', 'made', 'making', 'makes',
-  'take', 'took', 'taken', 'taking', 'takes',
-  'give', 'gave', 'given', 'giving', 'gives',
-  'find', 'found', 'finding', 'finds',
-  'know', 'knew', 'known', 'knowing', 'knows',
-  'think', 'thought', 'thinking', 'thinks',
-  'look', 'looked', 'looking', 'looks',
-  'want', 'wanted', 'wanting', 'wants',
-  'tell', 'told', 'telling', 'tells',
-  'keep', 'kept', 'keeping', 'keeps',
-  'start', 'started', 'starting', 'starts',
-  'complete', 'completed', 'completing', 'completes',
-  'finish', 'finished', 'finishing', 'finishes',
-  'begin', 'began', 'begun', 'beginning', 'begins',
-  'end', 'ended', 'ending', 'ends',
-  'add', 'added', 'adding', 'adds',
-  'update', 'updated', 'updating', 'updates',
-  'change', 'changed', 'changing', 'changes',
-  'remove', 'removed', 'removing', 'removes',
-  'fix', 'fixed', 'fixing', 'fixes',
-  'create', 'created', 'creating', 'creates',
-  'build', 'built', 'building', 'builds',
-  'run', 'ran', 'running', 'runs',
-  'test', 'tested', 'testing', 'tests',
-  'release', 'released', 'releasing', 'releases',
-  'use', 'used', 'using', 'uses',
-  'get', 'got', 'gotten', 'getting', 'gets',
-  'set', 'setting', 'sets',
-  'put', 'putting', 'puts',
-  'try', 'tried', 'trying', 'tries',
-  'move', 'moved', 'moving', 'moves',
-  'show', 'showed', 'shown', 'showing', 'shows',
-  'help', 'helped', 'helping', 'helps',
-  'read', 'reading', 'reads',
-  'write', 'wrote', 'written', 'writing', 'writes',
-  'call', 'called', 'calling', 'calls',
-  'feel', 'felt', 'feeling', 'feels',
-  'seem', 'seemed', 'seeming', 'seems',
-  'turn', 'turned', 'turning', 'turns',
-  'leave', 'left', 'leaving', 'leaves',
-  'play', 'played', 'playing', 'plays',
-  'hold', 'held', 'holding', 'holds',
-  'bring', 'brought', 'bringing', 'brings',
-  'happen', 'happened', 'happening', 'happens',
-  'include', 'included', 'including', 'includes',
-  'continue', 'continued', 'continuing', 'continues',
-  'send', 'sent', 'sending', 'sends',
-  'receive', 'received', 'receiving', 'receives',
-  'follow', 'followed', 'following', 'follows',
-  'stop', 'stopped', 'stopping', 'stops',
-  'open', 'opened', 'opening', 'opens',
-  'close', 'closed', 'closing', 'closes',
-  'done', 'doing',
-
-  // Time words
-  'today', 'tomorrow', 'yesterday',
-  'daily', 'weekly', 'monthly', 'yearly', 'annually',
-  'morning', 'afternoon', 'evening', 'night',
-  'week', 'month', 'year', 'hour', 'minute', 'second',
-  'time', 'date', 'day', 'days', 'weeks', 'months', 'years',
-  'currently', 'recently', 'later', 'earlier', 'soon',
-  'always', 'never', 'sometimes', 'often', 'usually', 'rarely',
-
-  // Generic/filler words
-  'thing', 'things', 'stuff',
-  'something', 'anything', 'nothing', 'everything',
-  'someone', 'anyone', 'noone', 'everyone',
-  'somewhere', 'anywhere', 'nowhere', 'everywhere',
-  'good', 'better', 'best', 'great', 'nice', 'okay', 'fine',
-  'right', 'wrong', 'bad', 'worse', 'worst',
-  'lot', 'lots', 'many', 'several', 'various',
-  'different', 'similar', 'another', 'next', 'last',
-  'first', 'second', 'third', 'new', 'old',
-  'big', 'small', 'large', 'little', 'long', 'short',
-  'high', 'low', 'full', 'empty', 'whole', 'part',
-  'real', 'true', 'false', 'actual', 'main', 'important',
-
-  // Descriptive/qualifier words
-  'really', 'actually', 'basically', 'probably', 'definitely',
-  'certainly', 'possibly', 'maybe', 'perhaps',
-  'like', 'likely', 'unlikely',
-  'almost', 'nearly', 'quite', 'rather', 'pretty',
-  'still', 'already', 'yet', 'though', 'although',
-  'however', 'therefore', 'thus', 'hence',
-  'truly', 'simply', 'easily', 'quickly', 'slowly',
-  'well', 'just', 'ever',
-  'either', 'neither', 'whether',
-  'because', 'since', 'while', 'until', 'unless',
-  'except', 'besides', 'anyway', 'otherwise', 'instead',
-  'meanwhile', 'furthermore', 'moreover', 'nevertheless',
-
-  // Domain-specific (vault/PKM terms - prevent false matches)
-  'note', 'notes', 'page', 'pages', 'vault', 'link', 'links',
-  'wikilink', 'wikilinks', 'markdown', 'frontmatter',
-  'file', 'files', 'folder', 'folders', 'path', 'paths',
-  'section', 'sections', 'heading', 'headings', 'template', 'templates',
-
-  // Task/productivity terms
-  'todo', 'todos', 'task', 'tasks', 'pending', 'inbox', 'archive', 'draft',
-
-  // Additional discourse markers
-  'nonetheless', 'accordingly', 'alternatively', 'specifically',
-  'essentially', 'particularly', 'primarily', 'additionally',
-]);
+import { STOPWORDS_EN } from '@velvetmonkey/vault-core';
 
 /**
  * Check if a character is a consonant
@@ -505,7 +361,7 @@ export function tokenize(text: string): string[] {
   // Extract words (3+ chars starting with a letter, not stopwords)
   // Includes alphanumeric tokens like "k8s", "o11y", "p99" for tech alias matching
   const words = cleanText.match(/\b[a-z][a-z0-9]{2,}\b/g) || [];
-  return words.filter(word => !STOPWORDS.has(word));
+  return words.filter(word => !STOPWORDS_EN.has(word));
 }
 
 /**
@@ -530,5 +386,5 @@ export function tokenizeAndStem(text: string): {
  * Check if a word is a stopword
  */
 export function isStopword(word: string): boolean {
-  return STOPWORDS.has(word.toLowerCase());
+  return STOPWORDS_EN.has(word.toLowerCase());
 }

@@ -64,9 +64,8 @@ TOOL_CATEGORY = {
     "tasks": "tasks",
     "vault_toggle_task": "tasks",
     "vault_add_task": "tasks",
-    # memory (3 tools)
+    # memory (2 tools)
     "memory": "memory",
-    "recall": "memory",
     "brief": "memory",
     # note-ops (4 tools)
     "vault_delete_note": "note-ops",
@@ -98,12 +97,12 @@ TOOL_CATEGORY = {
 # Expected tools per beat (any of these counts as a pass)
 EXPECTED_TOOLS = {
     "beat1-brief": {"brief"},
-    "beat2-billing": {"recall", "search"},
+    "beat2-billing": {"search"},
     "beat3-tasks": {"policy", "vault_add_task"},
     "beat4-showstopper": {"vault_add_to_section"},
     "beat5-assign": {"vault_update_frontmatter"},
     "beat6-meeting": {"vault_create_note"},
-    "beat7-pipeline": {"policy", "search", "recall"},
+    "beat7-pipeline": {"policy", "search"},
 }
 
 

@@ -267,8 +267,10 @@ export function applyToolGating(
       }
     }
 
-    // Merge result items across vaults
-    const merged: any[] = [];
+    // Merge result items across vaults (notes, entities, memories separately)
+    const mergedResults: any[] = [];
+    const mergedEntities: any[] = [];
+    const mergedMemories: any[] = [];
     const vaultsSearched: string[] = [];
     let query: string | undefined;
 
@@ -276,19 +278,52 @@ export function applyToolGating(
       vaultsSearched.push(vault);
       if (data.query) query = data.query;
       if (data.error || data.building) continue;
-      const items = data.results || data.notes || data.entities || [];
+
+      // Note results
+      const items = data.results || data.notes || [];
       for (const item of items) {
-        merged.push({ vault, ...item });
+        mergedResults.push({ vault, ...item });
+      }
+
+      // Entity results
+      if (Array.isArray(data.entities)) {
+        for (const item of data.entities) {
+          mergedEntities.push({ vault, ...item });
+        }
+      }
+
+      // Memory results
+      if (Array.isArray(data.memories)) {
+        for (const item of data.memories) {
+          mergedMemories.push({ vault, ...item });
+        }
       }
     }
 
-    // Sort by rrf_score when available (hybrid/fts5), otherwise preserve order
-    if (merged.some((r: any) => r.rrf_score != null)) {
-      merged.sort((a: any, b: any) => (b.rrf_score ?? 0) - (a.rrf_score ?? 0));
+    // Sort note results by rrf_score when available (hybrid/fts5), otherwise preserve order
+    if (mergedResults.some((r: any) => r.rrf_score != null)) {
+      mergedResults.sort((a: any, b: any) => (b.rrf_score ?? 0) - (a.rrf_score ?? 0));
     }
 
+    // Deduplicate entities across vaults (same name = keep first)
+    const seenEntities = new Set<string>();
+    const dedupedEntities = mergedEntities.filter((e: any) => {
+      const key = (e.name || '').toLowerCase();
+      if (seenEntities.has(key)) return false;
+      seenEntities.add(key);
+      return true;
+    });
+
+    // Deduplicate memories across vaults (same key = keep first)
+    const seenMemories = new Set<string>();
+    const dedupedMemories = mergedMemories.filter((m: any) => {
+      if (seenMemories.has(m.key)) return false;
+      seenMemories.add(m.key);
+      return true;
+    });
+
     const limit = args[0]?.limit ?? 10;
-    const truncated = merged.slice(0, limit);
+    const truncated = mergedResults.slice(0, limit);
 
     return {
       content: [{
@@ -297,9 +332,11 @@ export function applyToolGating(
           method: 'cross_vault',
           query,
           vaults_searched: vaultsSearched,
-          total_results: merged.length,
+          total_results: mergedResults.length,
           returned: truncated.length,
           results: truncated,
+          ...(dedupedEntities.length > 0 ? { entities: dedupedEntities.slice(0, limit) } : {}),
+          ...(dedupedMemories.length > 0 ? { memories: dedupedMemories.slice(0, limit) } : {}),
         }, null, 2),
       }],
     };

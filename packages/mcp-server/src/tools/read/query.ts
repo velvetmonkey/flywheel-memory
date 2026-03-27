@@ -26,12 +26,15 @@ import {
   reciprocalRankFusion,
   loadNoteEmbeddingsForPaths,
   embedTextCached,
+  findSemanticallySimilarEntities,
+  hasEntityEmbeddingsIndex,
   type ScoredNote,
 } from '../../core/read/embeddings.js';
 import {
   enrichResult,
   enrichResultLight,
   enrichResultCompact,
+  enrichEntityCompact,
 } from '../../core/read/enrichment.js';
 import { multiHopBackfill, extractExpansionTerms, expandQuery } from '../../core/read/multihop.js';
 import { getStoredNoteLinks, getAllFeedbackBoosts } from '../../core/write/wikilinkFeedback.js';
@@ -42,6 +45,7 @@ import { getEntityEdgeWeightMap } from '../../core/write/edgeWeights.js';
 import { extractBestSnippets, extractDates } from '../../core/read/snippets.js';
 import { selectByMmr } from '../../core/read/mmr.js';
 import { tokenize } from '../../core/shared/stemmer.js';
+import { searchMemories, type Memory } from '../../core/write/memory.js';
 
 /**
  * Apply graph signal re-ranking to search results.
@@ -165,6 +169,108 @@ function stripInternalFields(results: Array<Record<string, unknown>>): void {
   for (const r of results) {
     for (const key of INTERNAL) delete r[key];
   }
+}
+
+/**
+ * Score and rank memory search results.
+ * Ported from recall.ts Channel 3 scoring logic.
+ * BM25 handles text relevance; this re-ranks by confidence + type boost.
+ */
+function scoreAndRankMemories(memories: Memory[], limit: number): Array<Record<string, unknown>> {
+  const now = Date.now();
+  const scored: Array<{ memory: Memory; score: number }> = [];
+
+  for (const m of memories) {
+    const confidenceBoost = m.confidence * 5;
+    let typeBoost = 0;
+    switch (m.memory_type) {
+      case 'fact': typeBoost = 3; break;
+      case 'preference': typeBoost = 2; break;
+      case 'observation': {
+        const ageDays = (now - m.updated_at) / 86400000;
+        const recencyFactor = Math.max(0.2, 1 - ageDays / 7);
+        typeBoost = 1 + (4 * recencyFactor);
+        break;
+      }
+      case 'summary': typeBoost = 1; break;
+    }
+    scored.push({ memory: m, score: confidenceBoost + typeBoost });
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+
+  return scored.slice(0, limit).map(({ memory: m }) => {
+    const result: Record<string, unknown> = {
+      key: m.key,
+      value: m.value,
+      type: m.memory_type,
+    };
+    if (m.entity) result.entity = m.entity;
+    if (m.entities_json) {
+      try {
+        const entities = JSON.parse(m.entities_json);
+        if (Array.isArray(entities) && entities.length > 0) result.entities = entities;
+      } catch { /* skip malformed */ }
+    }
+    return result;
+  });
+}
+
+/**
+ * Build enriched entity section from entity search results.
+ * Adds semantic entity search for longer queries when embeddings available.
+ * Ported from recall.ts Channel 1 + Channel 4.
+ */
+async function buildEntitySection(
+  entityResults: EntitySearchResult[],
+  query: string,
+  stateDb: StateDb | null,
+  index: VaultIndex,
+  limit: number,
+): Promise<Array<Record<string, unknown>>> {
+  if (!stateDb || entityResults.length === 0 && query.length < 20) return [];
+
+  // Start with FTS5 entity results (keyed by lowercase name for dedup)
+  const entityMap = new Map<string, EntitySearchResult>();
+  for (const e of entityResults) {
+    entityMap.set(e.name.toLowerCase(), e);
+  }
+
+  // Channel 4: Semantic entity search (for longer queries)
+  if (query.length >= 20 && hasEntityEmbeddingsIndex()) {
+    try {
+      const embedding = await embedTextCached(query);
+      const semanticMatches = findSemanticallySimilarEntities(embedding, limit);
+      for (const match of semanticMatches) {
+        if (match.similarity < 0.3) continue;
+        const key = match.entityName.toLowerCase();
+        if (!entityMap.has(key)) {
+          entityMap.set(key, {
+            id: 0, name: match.entityName, nameLower: key,
+            path: '', category: 'unknown' as EntitySearchResult['category'],
+            aliases: [], hubScore: 0, rank: 0,
+          });
+        }
+      }
+    } catch { /* semantic search failure is non-fatal */ }
+  }
+
+  if (entityMap.size === 0) return [];
+
+  // Enrich and return (capped at limit)
+  const enriched: Array<Record<string, unknown>> = [];
+  let count = 0;
+  for (const [, entity] of entityMap) {
+    if (count >= limit) break;
+    enriched.push({
+      name: entity.name,
+      ...(entity.description ? { description: entity.description } : {}),
+      ...enrichEntityCompact(entity.name, stateDb, index),
+    });
+    count++;
+  }
+
+  return enriched;
 }
 
 /**
@@ -464,6 +570,18 @@ export function registerQueryTools(
           } catch { /* entity search is best-effort */ }
         }
 
+        // Memory search — always included in content search
+        let memoryResults: Array<Record<string, unknown>> = [];
+        if (stateDbEntity) {
+          try {
+            const rawMemories = searchMemories(stateDbEntity, { query, limit });
+            memoryResults = scoreAndRankMemories(rawMemories, limit);
+          } catch { /* memory search is best-effort */ }
+        }
+
+        // Entity section — enriched profiles + semantic entity search
+        const entitySectionPromise = buildEntitySection(entityResults, query, stateDbEntity, index, limit);
+
         // Build edge-weight ranked list if context_note is provided
         let edgeRanked: Array<{ path: string; title: string }> = [];
         if (context_note) {
@@ -582,11 +700,14 @@ export function registerQueryTools(
             await enhanceSnippets(results, query, vaultPath);
             stripInternalFields(results);
 
+            const entitySection = await entitySectionPromise;
             return { content: [{ type: 'text' as const, text: JSON.stringify({
               method: 'hybrid',
               query,
               total_results: filtered.length,
               results,
+              ...(entitySection.length > 0 ? { entities: entitySection } : {}),
+              ...(memoryResults.length > 0 ? { memories: memoryResults } : {}),
             }, null, 2) }] };
           } catch (err) {
             // Semantic failed, fall back to FTS5 + entity only
@@ -633,11 +754,14 @@ export function registerQueryTools(
           await enhanceSnippets(results, query, vaultPath);
           stripInternalFields(results);
 
+          const entitySection = await entitySectionPromise;
           return { content: [{ type: 'text' as const, text: JSON.stringify({
             method: 'fts5',
             query,
             total_results: filtered.length,
             results,
+            ...(entitySection.length > 0 ? { entities: entitySection } : {}),
+            ...(memoryResults.length > 0 ? { memories: memoryResults } : {}),
           }, null, 2) }] };
         }
 
@@ -660,11 +784,14 @@ export function registerQueryTools(
         await enhanceSnippets(results, query, vaultPath);
         stripInternalFields(results);
 
+        const entitySection = await entitySectionPromise;
         return { content: [{ type: 'text' as const, text: JSON.stringify({
           method: 'fts5',
           query,
           total_results: results.length,
           results,
+          ...(entitySection.length > 0 ? { entities: entitySection } : {}),
+          ...(memoryResults.length > 0 ? { memories: memoryResults } : {}),
         }, null, 2) }] };
       }
 

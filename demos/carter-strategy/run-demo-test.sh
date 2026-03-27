@@ -156,15 +156,15 @@ for i in "${!BEATS[@]}"; do
       if echo "$tools_used" | grep -q "mcp__flywheel__brief"; then
         echo "  [PASS] brief tool called"
       else
-        echo "  [WARN] brief tool not called (may have used search/recall instead)"
+        echo "  [WARN] brief tool not called (may have used search instead)"
       fi
       ;;
     2)
-      # Beat 2: should use search or recall, find invoice entities
-      if echo "$tools_used" | grep -qE "mcp__flywheel__(search|recall)"; then
-        echo "  [PASS] search/recall tool called"
+      # Beat 2: should use search, find invoice entities
+      if echo "$tools_used" | grep -qE "mcp__flywheel__search"; then
+        echo "  [PASS] search tool called"
       else
-        echo "  [FAIL] no search or recall tool used"
+        echo "  [FAIL] no search tool used"
         beat_pass=false
       fi
       # Check for WebSearch fallback (regression)

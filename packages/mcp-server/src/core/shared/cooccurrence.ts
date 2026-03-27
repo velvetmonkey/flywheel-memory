@@ -14,6 +14,7 @@ import path from 'path';
 import { tokenize } from './stemmer.js';
 import { getRecencyBoost, type RecencyIndex } from './recency.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
+import { SYSTEM_EXCLUDED_DIRS } from './constants.js';
 
 /**
  * Entity associations - maps entity to related entities with co-occurrence counts
@@ -67,15 +68,6 @@ export interface CooccurrenceIndex {
  */
 const DEFAULT_MIN_COOCCURRENCE = 0.5;
 
-/**
- * Folders to exclude from co-occurrence mining (templates, etc.)
- */
-const EXCLUDED_FOLDERS = new Set([
-  'templates',
-  '.obsidian',
-  '.claude',
-  '.git',
-]);
 
 /**
  * Check if a note contains an entity (case-insensitive word boundary match)
@@ -149,7 +141,7 @@ async function* walkMarkdownFiles(
 
       // Skip excluded folders
       const topFolder = relativePath.split(path.sep)[0];
-      if (EXCLUDED_FOLDERS.has(topFolder)) {
+      if (SYSTEM_EXCLUDED_DIRS.has(topFolder)) {
         continue;
       }
 

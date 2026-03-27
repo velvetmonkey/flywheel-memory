@@ -37,7 +37,7 @@ import {
   type IndexState,
 } from './core/read/graph.js';
 import { scanVault } from './core/read/vault.js';
-import { loadConfig, inferConfig, saveConfig, type FlywheelConfig } from './core/read/config.js';
+import { loadConfig, inferConfig, saveConfig, getExcludeTags, type FlywheelConfig } from './core/read/config.js';
 import { findVaultRoot } from './core/read/vaultRoot.js';
 import {
   createVaultWatcher,
@@ -777,7 +777,7 @@ async function runPostIndexWork(ctx: VaultContext) {
     }
   }
 
-  // Load/infer config early so task cache can use exclude_task_tags
+  // Load/infer config early so task cache can use exclude tags
   const existing = loadConfig(sd);
   const inferred = inferConfig(index, vp);
   if (sd) {
@@ -791,7 +791,7 @@ async function runPostIndexWork(ctx: VaultContext) {
   if (sd) {
     if (isTaskCacheStale()) {
       serverLog('tasks', 'Task cache stale, rebuilding...');
-      refreshIfStale(vp, index, flywheelConfig.exclude_task_tags);
+      refreshIfStale(vp, index, getExcludeTags(flywheelConfig));
     } else {
       serverLog('tasks', 'Task cache fresh, skipping rebuild');
     }

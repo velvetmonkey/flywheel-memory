@@ -11,8 +11,12 @@ import { loadConfig, type FlywheelConfig } from '../../core/read/config.js';
 
 export const VALID_CONFIG_KEYS: Record<string, z.ZodType> = {
   vault_name: z.string(),
+  exclude: z.array(z.string()),
+  /** @deprecated Use `exclude` instead */
   exclude_task_tags: z.array(z.string()),
+  /** @deprecated Use `exclude` instead */
   exclude_analysis_tags: z.array(z.string()),
+  /** @deprecated Use `exclude` instead */
   exclude_entities: z.array(z.string()),
   exclude_entity_folders: z.array(z.string()),
   wikilink_strictness: z.enum(['conservative', 'balanced', 'aggressive']),
@@ -46,7 +50,7 @@ export function registerConfigTools(
         '- "get": Returns the current FlywheelConfig\n' +
         '- "set": Updates a single config key and returns the updated config\n\n' +
         'Example: flywheel_config({ mode: "get" })\n' +
-        'Example: flywheel_config({ mode: "set", key: "exclude_analysis_tags", value: ["habit", "daily"] })',
+        'Example: flywheel_config({ mode: "set", key: "exclude", value: ["#habit", "#daily", "walk", "vitamins"] })',
       inputSchema: {
         mode: z.enum(['get', 'set']).describe('Operation mode'),
         key: z.string().optional().describe('Config key to update (required for set mode)'),

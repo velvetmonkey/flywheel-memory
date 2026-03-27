@@ -22,6 +22,7 @@ import {
   type RecencyRow,
 } from '@velvetmonkey/vault-core';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
+import { SYSTEM_EXCLUDED_DIRS } from './constants.js';
 
 /**
  * Module-level StateDb reference for recency storage
@@ -60,16 +61,6 @@ export interface RecencyIndex {
 export const RECENCY_CACHE_VERSION = 1;
 
 
-/**
- * Folders to exclude from recency scanning
- */
-const EXCLUDED_FOLDERS = new Set([
-  'node_modules',
-  '.git',
-  '.obsidian',
-  '.claude',
-  'templates',
-]);
 
 /**
  * Recursively scan directory for markdown files
@@ -87,7 +78,7 @@ async function* walkMarkdownFiles(
 
       // Skip excluded folders
       const topFolder = relativePath.split(path.sep)[0];
-      if (EXCLUDED_FOLDERS.has(topFolder)) {
+      if (SYSTEM_EXCLUDED_DIRS.has(topFolder)) {
         continue;
       }
 

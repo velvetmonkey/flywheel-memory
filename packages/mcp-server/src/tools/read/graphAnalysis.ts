@@ -10,7 +10,7 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
-import type { FlywheelConfig } from '../../core/read/config.js';
+import { getExcludeTags, getExcludeEntities, type FlywheelConfig } from '../../core/read/config.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { findOrphanNotes, findHubNotes } from '../../core/read/graph.js';
@@ -39,8 +39,8 @@ function isTemplatePath(notePath: string): boolean {
 /** Build a set of note paths that should be excluded from analysis based on config. */
 function getExcludedPaths(index: VaultIndex, config: FlywheelConfig): Set<string> {
   const excluded = new Set<string>();
-  const excludeTags = new Set((config.exclude_analysis_tags ?? []).map(t => t.toLowerCase()));
-  const excludeEntities = new Set((config.exclude_entities ?? []).map(e => e.toLowerCase()));
+  const excludeTags = new Set(getExcludeTags(config).map(t => t.toLowerCase()));
+  const excludeEntities = new Set(getExcludeEntities(config).map(e => e.toLowerCase()));
 
   if (excludeTags.size === 0 && excludeEntities.size === 0) return excluded;
 
@@ -327,7 +327,7 @@ export function registerGraphAnalysisTools(
             });
           }
           // Also filter by entity name directly (entity may not have a backing note)
-          const excludeEntities = new Set((config.exclude_entities ?? []).map(e => e.toLowerCase()));
+          const excludeEntities = new Set(getExcludeEntities(config).map(e => e.toLowerCase()));
           if (excludeEntities.size > 0) {
             hubs = hubs.filter(hub => !excludeEntities.has(hub.entity.toLowerCase()));
           }

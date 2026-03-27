@@ -3,7 +3,7 @@
  * entities and validate them against vault content via FTS5.
  */
 
-import type { StateDb } from '@velvetmonkey/vault-core';
+import { STOPWORDS_EN, type StateDb } from '@velvetmonkey/vault-core';
 
 export interface AliasCandidate {
   candidate: string;
@@ -44,10 +44,9 @@ function generateAliasCandidates(entityName: string, existingAliases: string[]):
     }
 
     // Name fragments: individual words from multi-word names (skip stopwords and short words)
-    const STOPWORDS = new Set(['the', 'and', 'for', 'with', 'from', 'into', 'that', 'this', 'are', 'was', 'has', 'its']);
     for (const word of words) {
       if (word.length < 4) continue;
-      if (STOPWORDS.has(word.toLowerCase())) continue;
+      if (STOPWORDS_EN.has(word.toLowerCase())) continue;
       if (existing.has(word.toLowerCase())) continue;
       // Skip the first word if it was already added as short_form
       if (words.length >= 3 && word === words[0]) continue;

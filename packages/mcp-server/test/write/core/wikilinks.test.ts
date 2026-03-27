@@ -2797,19 +2797,19 @@ describe('processWikilinks alias resolution', () => {
     createEntityCacheWithDetailsInStateDb(stateDb, tempVault, {
       technologies: [
         { name: 'MCP', path: 'tech/MCP.md', aliases: ['Model Context Protocol'] },
-        { name: 'API', path: 'tech/API.md', aliases: [] },
+        { name: 'gRPC', path: 'tech/gRPC.md', aliases: [] },
       ],
     });
 
     await initializeEntityIndex(tempVault);
 
     // Has both: alias wikilink + plain text entity
-    const content = 'Using [[model context protocol]] with API calls';
+    const content = 'Using [[model context protocol]] with gRPC calls';
     const result = processWikilinks(content);
 
     // Should resolve alias AND auto-link plain text
     expect(result.content).toContain('[[MCP|model context protocol]]');
-    expect(result.content).toContain('[[API]]');
+    expect(result.content).toContain('[[gRPC]]');
     expect(result.linksAdded).toBe(2);
   });
 

@@ -11,7 +11,7 @@ import { resolveTarget } from '../../core/read/graph.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { suggestRelatedLinks, getCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { countFTS5Mentions } from '../../core/read/fts5.js';
-import { detectImplicitEntities, IMPLICIT_EXCLUDE_WORDS } from '@velvetmonkey/vault-core';
+import { detectImplicitEntities, COMMON_ENGLISH_WORDS } from '@velvetmonkey/vault-core';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD } from '../../core/write/wikilinkFeedback.js';
 
@@ -289,7 +289,7 @@ export function registerWikilinkTools(
         if (links.length < 2) continue;                        // need >= 2 backlinks
         if (index.entities.has(target.toLowerCase())) continue; // already a known entity
         if (linkedSet.has(target.toLowerCase())) continue;      // already matched
-        if (IMPLICIT_EXCLUDE_WORDS.has(target.toLowerCase())) continue; // common word
+        if (COMMON_ENGLISH_WORDS.has(target.toLowerCase())) continue; // common word
         if (target.length < 4) continue;                       // skip short noise
 
         // Search for the dead link target as plain text

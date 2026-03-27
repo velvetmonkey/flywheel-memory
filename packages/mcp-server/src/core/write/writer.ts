@@ -393,6 +393,58 @@ export function isPreformattedList(content: string): boolean {
 }
 
 /**
+ * Sanitize content that will be placed inside a markdown list item.
+ * Converts structural markdown elements that break list parsing into
+ * list-safe equivalents:
+ * - `### Heading` → `**Heading**` (bold, not structural)
+ * - `* item` → `- item` (normalize bullet style)
+ * - `---` horizontal rules → `—` em-dash separator
+ *
+ * Code blocks are preserved as-is (content inside fences is not touched).
+ */
+export function sanitizeForList(content: string): string {
+  const lines = content.split('\n');
+  const result: string[] = [];
+  let inCodeBlock = false;
+
+  for (const line of lines) {
+    if (line.trim().startsWith('```')) {
+      inCodeBlock = !inCodeBlock;
+      result.push(line);
+      continue;
+    }
+    if (inCodeBlock) {
+      result.push(line);
+      continue;
+    }
+
+    // Convert markdown headings to bold text
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      result.push(`**${headingMatch[2]}**`);
+      continue;
+    }
+
+    // Convert * bullets to - bullets for consistency
+    const starBulletMatch = line.match(/^(\s*)\*\s(.+)$/);
+    if (starBulletMatch) {
+      result.push(`${starBulletMatch[1]}- ${starBulletMatch[2]}`);
+      continue;
+    }
+
+    // Convert horizontal rules to em-dash separators
+    if (/^-{3,}$/.test(line.trim()) || /^\*{3,}$/.test(line.trim()) || /^_{3,}$/.test(line.trim())) {
+      result.push('—');
+      continue;
+    }
+
+    result.push(line);
+  }
+
+  return result.join('\n');
+}
+
+/**
  * Format content according to format type.
  *
  * For multi-line content, continuation lines are indented to align under
@@ -429,12 +481,14 @@ export function formatContent(content: string, format: FormatType): string {
     case 'bullet': {
       // If content is already a list, preserve it as-is
       if (isPreformattedList(trimmed)) {
-        return trimmed;
+        return sanitizeForList(trimmed);
       }
+      // Sanitize structural elements that break list parsing (headings → bold, * → -)
+      const sanitized = sanitizeForList(trimmed);
       // Indent continuation lines with 2 spaces to align under "- " text
       // Keep empty lines empty for proper markdown paragraphs
       // Preserve structured blocks (code, tables, blockquotes) as-is
-      const lines = trimmed.split('\n');
+      const lines = sanitized.split('\n');
       return lines.map((line, i) => {
         if (i === 0) return `- ${line}`;
         if (line === '') return '  ';  // Maintain indent on blank lines to preserve list nesting
@@ -472,13 +526,15 @@ export function formatContent(content: string, format: FormatType): string {
     case 'timestamp-bullet': {
       // If content is already a list, preserve it as-is
       if (isPreformattedList(trimmed)) {
-        return trimmed;
+        return sanitizeForList(trimmed);
       }
+      // Sanitize structural elements that break list parsing (headings → bold, * → -)
+      const sanitized = sanitizeForList(trimmed);
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const prefix = `- **${hours}:${minutes}** `;
-      const lines = trimmed.split('\n');
+      const lines = sanitized.split('\n');
       // Indent continuation lines to align under the text after "- "
       // Preserve structured blocks (code, tables, blockquotes) as-is
       const indent = '  ';

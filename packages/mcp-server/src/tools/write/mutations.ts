@@ -35,6 +35,15 @@ import {
 import type { FlywheelConfig } from '../../core/read/config.js';
 
 /**
+ * Built-in daily note fallback template.
+ * Mirrors the canonical template structure so that vault_add_to_section(section: "Log")
+ * always finds a target heading — even when the vault template file is missing from config.
+ */
+function getDailyFallbackTemplate(): string {
+  return `---\ntype: daily\ndate: "{{date}}"\ntags:\n  - "#daily"\n---\n# Food\n- \n\n# Tasks\n- \n\n# Priorities\n- \n\n# Time\n- \n\n# Log\n- \n`;
+}
+
+/**
  * Create a note from template or minimal fallback.
  * Returns the path that was created.
  */
@@ -60,25 +69,49 @@ export async function createNoteFromTemplate(
 
   // Determine which type of periodic note this might be
   let templatePath: string | undefined;
+  let periodicType: string | undefined;
   const dailyPattern = /^\d{4}-\d{2}-\d{2}/;
   const weeklyPattern = /^\d{4}-W\d{2}/;
   const monthlyPattern = /^\d{4}-\d{2}$/;
   const quarterlyPattern = /^\d{4}-Q[1-4]$/;
   const yearlyPattern = /^\d{4}$/;
 
-  if (dailyPattern.test(filename) && templates.daily) {
+  if (dailyPattern.test(filename)) {
     templatePath = templates.daily;
-  } else if (weeklyPattern.test(filename) && templates.weekly) {
+    periodicType = 'daily';
+  } else if (weeklyPattern.test(filename)) {
     templatePath = templates.weekly;
-  } else if (monthlyPattern.test(filename) && templates.monthly) {
+    periodicType = 'weekly';
+  } else if (monthlyPattern.test(filename)) {
     templatePath = templates.monthly;
-  } else if (quarterlyPattern.test(filename) && templates.quarterly) {
+    periodicType = 'monthly';
+  } else if (quarterlyPattern.test(filename)) {
     templatePath = templates.quarterly;
-  } else if (yearlyPattern.test(filename) && templates.yearly) {
+    periodicType = 'quarterly';
+  } else if (yearlyPattern.test(filename)) {
     templatePath = templates.yearly;
+    periodicType = 'yearly';
   }
 
-  // Read template content or use minimal fallback
+  // If config didn't have the template path, scan common locations as fallback
+  if (!templatePath && periodicType) {
+    const candidates = [
+      `templates/${periodicType}.md`,
+      `templates/${periodicType[0].toUpperCase() + periodicType.slice(1)}.md`,
+      `templates/${periodicType}-note.md`,
+      `templates/${periodicType[0].toUpperCase() + periodicType.slice(1)} Note.md`,
+    ];
+    for (const candidate of candidates) {
+      try {
+        await fs.access(path.join(vaultPath, candidate));
+        templatePath = candidate;
+        console.error(`[Flywheel] Template not in config but found at ${candidate} — using it`);
+        break;
+      } catch { /* not found, try next */ }
+    }
+  }
+
+  // Read template content or use structured fallback
   let templateContent: string;
   if (templatePath) {
     try {
@@ -86,13 +119,18 @@ export async function createNoteFromTemplate(
       templateContent = await fs.readFile(absTemplatePath, 'utf-8');
     } catch {
       // Template not readable, use fallback
-      const title = path.basename(notePath, '.md');
-      templateContent = `---\n---\n\n# ${title}\n`;
+      console.error(`[Flywheel] Template at ${templatePath} not readable, using daily fallback`);
+      templateContent = getDailyFallbackTemplate();
       templatePath = undefined;
     }
   } else {
-    const title = path.basename(notePath, '.md');
-    templateContent = `---\n---\n\n# ${title}\n`;
+    if (periodicType === 'daily') {
+      console.error(`[Flywheel] No daily template found in config or vault — using built-in fallback`);
+      templateContent = getDailyFallbackTemplate();
+    } else {
+      const title = path.basename(notePath, '.md');
+      templateContent = `---\n---\n\n# ${title}\n`;
+    }
   }
 
   // Perform simple date substitution in templates

@@ -77,12 +77,12 @@ describe('MCP Write Integration', () => {
     });
 
     it('creates a note when create_if_missing is true', async () => {
-      // Use the title heading (generated template creates # <filename>)
+      // Daily notes use built-in fallback template with standard sections
       const result = await client.callTool({
         name: 'vault_add_to_section',
         arguments: {
           path: 'daily/2099-01-01.md',
-          section: '2099-01-01',
+          section: 'Log',
           content: '- Created via MCP',
           create_if_missing: true,
         },
@@ -95,6 +95,9 @@ describe('MCP Write Integration', () => {
 
       const fileContent = readFileSync(path.join(ctx.vaultPath, 'daily/2099-01-01.md'), 'utf-8');
       expect(fileContent).toContain('Created via MCP');
+      // Verify daily template structure was applied
+      expect(fileContent).toContain('# Food');
+      expect(fileContent).toContain('# Log');
     });
 
     it('dry_run + create_if_missing does not create a file', async () => {

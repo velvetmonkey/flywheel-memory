@@ -343,8 +343,56 @@ export async function embedTextCached(text: string): Promise<Float32Array> {
 // Content Hashing
 // =============================================================================
 
+/**
+ * Bump this when the embedding text format changes to force a one-time re-embed.
+ * The version is mixed into the content hash so existing embeddings with the old
+ * format get a different hash and are re-computed on the next index build.
+ */
+const EMBEDDING_TEXT_VERSION = 2;
+
 function contentHash(content: string): string {
-  return crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
+  return crypto.createHash('sha256').update(content + EMBEDDING_TEXT_VERSION).digest('hex').slice(0, 16);
+}
+
+// =============================================================================
+// Contextual Embedding Prefix
+// =============================================================================
+
+/**
+ * Build the text that gets embedded for a note. Prepends document-level context
+ * (title + tags) so the embedding carries the note's identity — matching the
+ * "contextual retrieval" technique (Anthropic, 2024).
+ *
+ * Before: raw markdown (starting with frontmatter YAML syntax)
+ * After:  "Note: Emma. Tags: person, team-lead.\n\n{body without frontmatter}"
+ */
+export function buildNoteEmbeddingText(content: string, filePath: string): string {
+  const title = filePath.replace(/\.md$/, '').split('/').pop() || '';
+
+  // Strip frontmatter
+  const fmMatch = content.match(/^---[\s\S]*?---\n([\s\S]*)$/);
+  const body = fmMatch ? fmMatch[1] : content;
+  const frontmatter = fmMatch ? content.slice(0, content.indexOf('---', 3) + 3) : '';
+
+  // Extract tags — handle both array style [a, b] and list style (- a\n- b)
+  const tags: string[] = [];
+  const arrayMatch = frontmatter.match(/^tags:\s*\[([^\]]*)\]/m);
+  if (arrayMatch) {
+    tags.push(...arrayMatch[1].split(',').map(t => t.trim().replace(/['"]/g, '')).filter(Boolean));
+  } else {
+    // List-style: tags:\n  - foo\n  - bar
+    const listMatch = frontmatter.match(/^tags:\s*\n((?:\s+-\s+.+\n?)+)/m);
+    if (listMatch) {
+      const items = listMatch[1].matchAll(/^\s+-\s+(.+)/gm);
+      for (const m of items) tags.push(m[1].trim().replace(/['"]/g, ''));
+    }
+  }
+
+  // Build context prefix
+  const parts = [`Note: ${title}`];
+  if (tags.length > 0) parts.push(`Tags: ${tags.slice(0, 5).join(', ')}`);
+
+  return parts.join('. ') + '.\n\n' + body;
 }
 
 // =============================================================================
@@ -419,7 +467,7 @@ export async function buildEmbeddingsIndex(
         continue;
       }
 
-      const embedding = await embedText(content);
+      const embedding = await embedText(buildNoteEmbeddingText(content, file.path));
       const buf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
       upsert.run(file.path, buf, hash, activeModelConfig.id, Date.now());
     } catch (err) {
@@ -461,7 +509,7 @@ export async function updateEmbedding(notePath: string, absolutePath: string): P
     const existing = db.prepare('SELECT content_hash FROM note_embeddings WHERE path = ?').get(notePath) as { content_hash: string } | undefined;
     if (existing?.content_hash === hash) return;
 
-    const embedding = await embedText(content);
+    const embedding = await embedText(buildNoteEmbeddingText(content, notePath));
     const buf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
 
     db.prepare(`

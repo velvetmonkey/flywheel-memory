@@ -46,6 +46,7 @@ import { extractBestSnippets, extractDates } from '../../core/read/snippets.js';
 import { selectByMmr } from '../../core/read/mmr.js';
 import { tokenize } from '../../core/shared/stemmer.js';
 import { searchMemories, type Memory } from '../../core/write/memory.js';
+import { getSectionContent } from './structure.js';
 
 /**
  * Apply graph signal re-ranking to search results.
@@ -95,17 +96,32 @@ function applyGraphReranking(
 }
 
 /**
- * Sandwich reorder: place best result first, second-best last.
- * Research shows LLMs have a U-shaped attention curve — best performance when
- * relevant info is at start or end of context, 30%+ drop for middle positions.
- * (Liu et al. 2024, Stanford "Lost in the Middle")
+ * U-shaped reorder: distribute results so the highest-ranked items land at
+ * positions 1 and N (the attention peaks), while the lowest-ranked items
+ * sit in the middle (the attention trough).
+ *
+ * Given score-sorted input [1,2,3,4,5,6,7,8], produces [1,3,5,7,8,6,4,2].
+ * Odd-ranked items fill from the front, even-ranked from the back.
+ *
+ * Research: LLMs have a U-shaped attention curve — 30%+ accuracy drop for
+ * information placed in middle positions. (Liu et al. 2024, "Lost in the Middle")
  */
-function applySandwichOrdering(results: Array<Record<string, unknown>>): void {
+export function applySandwichOrdering(results: Array<Record<string, unknown>>): void {
   if (results.length < 3) return;
-  // Results are already sorted by score descending after graph reranking.
-  // Move the second-best result to the last position.
-  const secondBest = results.splice(1, 1)[0];
-  results.push(secondBest);
+  const n = results.length;
+  const out = new Array<Record<string, unknown>>(n);
+  let front = 0;
+  let back = n - 1;
+  for (let i = 0; i < n; i++) {
+    if (i % 2 === 0) {
+      out[front++] = results[i];
+    } else {
+      out[back--] = results[i];
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    results[i] = out[i];
+  }
 }
 
 /**
@@ -301,6 +317,40 @@ async function enhanceSnippets(
         if (dates.length > 0) r.dates_mentioned = dates;
       }
     } catch { /* non-fatal */ }
+  }
+}
+
+/**
+ * Expand top-N results from snippet to full section content.
+ * The snippet is the precision signal (which paragraph matched); the section
+ * provides surrounding context so the LLM can reason about the match in context.
+ * Requires enhanceSnippets() to have run first (populates r.section).
+ */
+async function expandToSections(
+  results: Array<Record<string, unknown>>,
+  index: VaultIndex,
+  vaultPath: string,
+  maxExpand: number = 5,
+  maxSectionChars: number = 2500,
+): Promise<void> {
+  const toExpand = results.slice(0, maxExpand);
+  for (const r of toExpand) {
+    const sectionHeading = r.section as string | undefined;
+    const notePath = r.path as string | undefined;
+    if (!sectionHeading || !notePath) continue;
+    try {
+      const section = await getSectionContent(index, notePath, sectionHeading, vaultPath, true);
+      if (!section || !section.content) continue;
+      const heading = `## ${section.heading}`;
+      let content = section.content;
+      if (content.length > maxSectionChars) {
+        // Truncate at last paragraph boundary within budget
+        const truncated = content.slice(0, maxSectionChars);
+        const lastBreak = truncated.lastIndexOf('\n\n');
+        content = (lastBreak > 0 ? truncated.slice(0, lastBreak) : truncated) + '\n\u2026';
+      }
+      r.section_content = `${heading}\n\n${content}`;
+    } catch { /* non-fatal — disk read failure or missing file */ }
   }
 }
 
@@ -693,11 +743,12 @@ export function registerQueryTools(
               results.push(...hopResults, ...expansionResults);
             }
 
-            // Graph re-ranking + bridging + sandwich ordering + enhanced snippets
+            // Graph re-ranking + bridging + sandwich ordering + enhanced snippets + section expansion
             applyGraphReranking(results, stateDb);
             applyEntityBridging(results, stateDb);
             applySandwichOrdering(results);
             await enhanceSnippets(results, query, vaultPath);
+            await expandToSections(results, index, vaultPath, detailN);
             stripInternalFields(results);
 
             const entitySection = await entitySectionPromise;
@@ -747,11 +798,12 @@ export function registerQueryTools(
             results.push(...hopResults, ...expansionResults);
           }
 
-          // Graph re-ranking + bridging + sandwich ordering + enhanced snippets
+          // Graph re-ranking + bridging + sandwich ordering + enhanced snippets + section expansion
           applyGraphReranking(results, stateDb);
           applyEntityBridging(results, stateDb);
           applySandwichOrdering(results);
           await enhanceSnippets(results, query, vaultPath);
+          await expandToSections(results, index, vaultPath, detailN);
           stripInternalFields(results);
 
           const entitySection = await entitySectionPromise;
@@ -777,11 +829,12 @@ export function registerQueryTools(
           results.push(...hopResults, ...expansionResults);
         }
 
-        // Graph re-ranking + bridging + sandwich ordering + enhanced snippets
+        // Graph re-ranking + bridging + sandwich ordering + enhanced snippets + section expansion
         applyGraphReranking(results, stateDbFts);
         applyEntityBridging(results, stateDbFts);
         applySandwichOrdering(results);
         await enhanceSnippets(results, query, vaultPath);
+        await expandToSections(results, index, vaultPath, detailN);
         stripInternalFields(results);
 
         const entitySection = await entitySectionPromise;

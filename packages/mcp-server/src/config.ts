@@ -112,7 +112,6 @@ export function parseEnabledCategories(envValue?: string): Set<ToolCategory> {
   // Check deprecated alias (single value)
   if (DEPRECATED_ALIASES[lowerValue]) {
     const resolved = DEPRECATED_ALIASES[lowerValue];
-    serverLog('server', `Preset "${lowerValue}" is deprecated — use "${resolved}" instead`, 'warn');
     if (PRESETS[resolved]) {
       return new Set(PRESETS[resolved]);
     }
@@ -126,9 +125,6 @@ export function parseEnabledCategories(envValue?: string): Set<ToolCategory> {
 
     // Check deprecated alias
     const resolved = DEPRECATED_ALIASES[rawItem] ?? rawItem;
-    if (resolved !== rawItem) {
-      serverLog('server', `Category "${rawItem}" is deprecated — use "${resolved}" instead`, 'warn');
-    }
 
     if (ALL_CATEGORIES.includes(resolved as ToolCategory)) {
       categories.add(resolved as ToolCategory);

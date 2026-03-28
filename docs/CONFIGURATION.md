@@ -164,7 +164,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `temporal` | 4 | get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
 | `diagnostics` | 20 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest_entity_merges, dismiss_merge_suggestion, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export |
 
-Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work with a warning — they resolve to current category names.
+Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work — they resolve to current category names.
 
 #### Preset → Category Mapping
 

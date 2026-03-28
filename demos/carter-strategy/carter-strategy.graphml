@@ -20,7 +20,7 @@
     <node id="note:DEMO-VIDEO-SCRIPT.md">
       <data key="label">DEMO-VIDEO-SCRIPT</data>
       <data key="type">note</data>
-      <data key="modified">2026-03-23T02:34:23.708Z</data>
+      <data key="modified">2026-03-27T09:26:14.353Z</data>
     </node>
     <node id="note:DEMO-VOICE-PKM.md">
       <data key="label">DEMO-VOICE-PKM</data>
@@ -596,1260 +596,1312 @@
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e2" source="note:DEMO-VIDEO-SCRIPT.md" target="note:clients/TechStart Inc.md">
+    <edge id="e2" source="note:DEMO-VIDEO-SCRIPT.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e3" source="note:DEMO-VOICE-PKM.md" target="note:clients/Acme Corp.md">
+    <edge id="e3" source="note:DEMO-VIDEO-SCRIPT.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e4" source="note:DEMO-VOICE-PKM.md" target="note:clients/TechStart Inc.md">
+    <edge id="e4" source="note:DEMO-VIDEO-SCRIPT.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e5" source="note:DEMO-VOICE-PKM.md" target="note:clients/GlobalBank.md">
+    <edge id="e5" source="note:DEMO-VIDEO-SCRIPT.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e6" source="note:DEMO-VOICE-PKM.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e6" source="note:DEMO-VIDEO-SCRIPT.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e7" source="note:DEMO-VOICE-PKM.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e7" source="note:DEMO-VIDEO-SCRIPT.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e8" source="note:DEMO-VOICE-PKM.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e8" source="note:DEMO-VOICE-PKM.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e9" source="note:DEMO-VOICE-PKM.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e9" source="note:DEMO-VOICE-PKM.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e10" source="note:DEMO-VOICE-PKM.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e10" source="note:DEMO-VOICE-PKM.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e11" source="note:DEMO-VOICE-PKM.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e11" source="note:DEMO-VOICE-PKM.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e12" source="note:DEMO-VOICE-PKM.md" target="note:knowledge/Rate Card.md">
+    <edge id="e12" source="note:DEMO-VOICE-PKM.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e13" source="note:admin/Business Goals 2026.md" target="note:clients/Acme Corp.md">
+    <edge id="e13" source="note:DEMO-VOICE-PKM.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e14" source="note:admin/Business Goals 2026.md" target="note:clients/TechStart Inc.md">
+    <edge id="e14" source="note:DEMO-VOICE-PKM.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e15" source="note:admin/Business Goals 2026.md" target="note:clients/GlobalBank.md">
+    <edge id="e15" source="note:DEMO-VOICE-PKM.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e16" source="note:admin/Business Goals 2026.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e16" source="note:DEMO-VOICE-PKM.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e17" source="note:admin/Business Goals 2026.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e17" source="note:DEMO-VOICE-PKM.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e18" source="note:admin/Business Goals 2026.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e18" source="note:admin/Business Goals 2026.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e19" source="note:admin/Business Goals 2026.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e19" source="note:admin/Business Goals 2026.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e20" source="note:admin/Business Goals 2026.md" target="note:admin/Quarterly Review Q4 2025.md">
+    <edge id="e20" source="note:admin/Business Goals 2026.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e21" source="note:admin/Business Goals 2026.md" target="note:knowledge/Rate Card.md">
+    <edge id="e21" source="note:admin/Business Goals 2026.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e22" source="note:admin/Quarterly Review Q4 2025.md" target="note:admin/Quarterly Review Q4 2025.md">
+    <edge id="e22" source="note:admin/Business Goals 2026.md" target="note:projects/TechStart Phase 2.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e23" source="note:admin/Quarterly Review Q4 2025.md" target="note:clients/Acme Corp.md">
+    <edge id="e23" source="note:admin/Business Goals 2026.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e24" source="note:admin/Quarterly Review Q4 2025.md" target="note:clients/TechStart Inc.md">
+    <edge id="e24" source="note:admin/Business Goals 2026.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e25" source="note:admin/Quarterly Review Q4 2025.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e25" source="note:admin/Business Goals 2026.md" target="note:admin/Quarterly Review Q4 2025.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e26" source="note:admin/Quarterly Review Q4 2025.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e26" source="note:admin/Business Goals 2026.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e27" source="note:admin/Quarterly Review Q4 2025.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e27" source="note:admin/Quarterly Review Q4 2025.md" target="note:admin/Quarterly Review Q4 2025.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e28" source="note:admin/Quarterly Review Q4 2025.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e28" source="note:admin/Quarterly Review Q4 2025.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e29" source="note:admin/Quarterly Review Q4 2025.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e29" source="note:admin/Quarterly Review Q4 2025.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e30" source="note:admin/Quarterly Review Q4 2025.md" target="note:clients/GlobalBank.md">
+    <edge id="e30" source="note:admin/Quarterly Review Q4 2025.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e31" source="note:admin/Quarterly Review Q4 2025.md" target="note:admin/Business Goals 2026.md">
+    <edge id="e31" source="note:admin/Quarterly Review Q4 2025.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e32" source="note:admin/Quarterly Review Q4 2025.md" target="note:monthly-notes/2025-12.md">
+    <edge id="e32" source="note:admin/Quarterly Review Q4 2025.md" target="note:projects/TechStart Phase 2.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e33" source="note:clients/Acme Corp.md" target="note:clients/Acme Corp.md">
+    <edge id="e33" source="note:admin/Quarterly Review Q4 2025.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e34" source="note:clients/Acme Corp.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e34" source="note:admin/Quarterly Review Q4 2025.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e35" source="note:clients/Acme Corp.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e35" source="note:admin/Quarterly Review Q4 2025.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e36" source="note:clients/Acme Corp.md" target="note:team/Marcus Webb.md">
+    <edge id="e36" source="note:admin/Quarterly Review Q4 2025.md" target="note:admin/Business Goals 2026.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e37" source="note:clients/Acme Corp.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e37" source="note:admin/Quarterly Review Q4 2025.md" target="note:monthly-notes/2025-12.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e38" source="note:clients/Acme Corp.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e38" source="note:clients/Acme Corp.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e39" source="note:clients/Acme Corp.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e39" source="note:clients/Acme Corp.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e40" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-001.md">
+    <edge id="e40" source="note:clients/Acme Corp.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e41" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-002.md">
+    <edge id="e41" source="note:clients/Acme Corp.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e42" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-003.md">
+    <edge id="e42" source="note:clients/Acme Corp.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e43" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-006.md">
+    <edge id="e43" source="note:clients/Acme Corp.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e44" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-004.md">
+    <edge id="e44" source="note:clients/Acme Corp.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e45" source="note:clients/Acme Corp.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e45" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-001.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e46" source="note:clients/GlobalBank.md" target="note:clients/GlobalBank.md">
+    <edge id="e46" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-002.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e47" source="note:clients/GlobalBank.md" target="note:projects/GlobalBank API Audit.md">
+    <edge id="e47" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-003.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e48" source="note:clients/GlobalBank.md" target="note:knowledge/API Security Checklist.md">
+    <edge id="e48" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-006.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e49" source="note:clients/Meridian Financial.md" target="note:clients/Meridian Financial.md">
+    <edge id="e49" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-004.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e50" source="note:clients/Meridian Financial.md" target="note:clients/GlobalBank.md">
+    <edge id="e50" source="note:clients/Acme Corp.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e51" source="note:clients/Meridian Financial.md" target="note:proposals/Meridian Financial API Modernization.md">
+    <edge id="e51" source="note:clients/GlobalBank.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e52" source="note:clients/Meridian Financial.md" target="note:projects/GlobalBank API Audit.md">
+    <edge id="e52" source="note:clients/GlobalBank.md" target="note:projects/GlobalBank API Audit.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e53" source="note:clients/Meridian Financial.md" target="note:knowledge/API Security Checklist.md">
+    <edge id="e53" source="note:clients/GlobalBank.md" target="note:knowledge/API Security Checklist.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e54" source="note:clients/Nexus Health.md" target="note:clients/Nexus Health.md">
+    <edge id="e54" source="note:clients/Meridian Financial.md" target="note:clients/Meridian Financial.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e55" source="note:clients/Nexus Health.md" target="note:clients/TechStart Inc.md">
+    <edge id="e55" source="note:clients/Meridian Financial.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e56" source="note:clients/Nexus Health.md" target="note:proposals/Nexus Health Cloud Assessment.md">
+    <edge id="e56" source="note:clients/Meridian Financial.md" target="note:proposals/Meridian Financial API Modernization.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e57" source="note:clients/Nexus Health.md" target="note:team/Leila Farouk.md">
+    <edge id="e57" source="note:clients/Meridian Financial.md" target="note:projects/GlobalBank API Audit.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e58" source="note:clients/Nexus Health.md" target="note:team/Priya Kapoor.md">
+    <edge id="e58" source="note:clients/Meridian Financial.md" target="note:knowledge/API Security Checklist.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e59" source="note:clients/TechStart Inc.md" target="note:clients/TechStart Inc.md">
+    <edge id="e59" source="note:clients/Nexus Health.md" target="note:clients/Nexus Health.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e60" source="note:clients/TechStart Inc.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e60" source="note:clients/Nexus Health.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e61" source="note:clients/TechStart Inc.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e61" source="note:clients/Nexus Health.md" target="note:proposals/Nexus Health Cloud Assessment.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e62" source="note:clients/TechStart Inc.md" target="note:team/Dan Oliveira.md">
+    <edge id="e62" source="note:clients/Nexus Health.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e63" source="note:clients/TechStart Inc.md" target="note:invoices/INV-2026-005.md">
+    <edge id="e63" source="note:clients/Nexus Health.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e64" source="note:clients/TechStart Inc.md" target="note:invoices/INV-2026-006.md">
+    <edge id="e64" source="note:clients/TechStart Inc.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e65" source="note:clients/TechStart Inc.md" target="note:invoices/INV-2026-003.md">
+    <edge id="e65" source="note:clients/TechStart Inc.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e66" source="note:clients/TechStart Inc.md" target="note:invoices/INV-2026-004.md">
+    <edge id="e66" source="note:clients/TechStart Inc.md" target="note:projects/TechStart Phase 2.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e67" source="note:clients/TechStart Inc.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e67" source="note:clients/TechStart Inc.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e68" source="note:clients/TechStart Inc.md" target="note:clients/Nexus Health.md">
+    <edge id="e68" source="note:clients/TechStart Inc.md" target="note:invoices/INV-2026-005.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e69" source="note:clients/TechStart Inc.md" target="note:knowledge/API Security Checklist.md">
+    <edge id="e69" source="note:clients/TechStart Inc.md" target="note:invoices/INV-2026-006.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e70" source="note:daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e70" source="note:clients/TechStart Inc.md" target="note:invoices/INV-2026-003.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e71" source="note:daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
+    <edge id="e71" source="note:clients/TechStart Inc.md" target="note:invoices/INV-2026-004.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e72" source="note:daily-notes/2026-03-23.md" target="note:knowledge/Discovery Workshop Template.md">
+    <edge id="e72" source="note:clients/TechStart Inc.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e73" source="note:daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e73" source="note:clients/TechStart Inc.md" target="note:clients/Nexus Health.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e74" source="note:daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e74" source="note:clients/TechStart Inc.md" target="note:knowledge/API Security Checklist.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e75" source="note:daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
+    <edge id="e75" source="note:daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e76" source="note:daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
+    <edge id="e76" source="note:daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e77" source="note:daily-notes/2026-03-23.md" target="note:team/Leila Farouk.md">
+    <edge id="e77" source="note:daily-notes/2026-03-23.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e78" source="note:daily-notes/2026-03-23.md" target="note:clients/TechStart Inc.md">
+    <edge id="e78" source="note:daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e79" source="note:daily-notes/2026-03-23.md" target="note:team/Dan Oliveira.md">
+    <edge id="e79" source="note:daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e80" source="note:daily-notes/2026-03-23.md" target="note:team/Stacy Thompson.md">
+    <edge id="e80" source="note:daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e81" source="note:daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
+    <edge id="e81" source="note:daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e82" source="note:daily-notes/2026-03-23.md" target="note:clients/Nexus Health.md">
+    <edge id="e82" source="note:daily-notes/2026-03-23.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e83" source="note:daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e83" source="note:daily-notes/2026-03-23.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e84" source="note:daily-notes/2026-03-23.md" target="note:projects/Beta Corp Dashboard.md">
+    <edge id="e84" source="note:daily-notes/2026-03-23.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e85" source="note:daily-notes/2026-03-23.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e85" source="note:daily-notes/2026-03-23.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e86" source="note:invoices/INV-2025-047.md" target="note:clients/Acme Corp.md">
+    <edge id="e86" source="note:daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e87" source="note:invoices/INV-2025-047.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e87" source="note:daily-notes/2026-03-23.md" target="note:clients/Nexus Health.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e88" source="note:invoices/INV-2025-047.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e88" source="note:daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e89" source="note:invoices/INV-2025-048.md" target="note:clients/Acme Corp.md">
+    <edge id="e89" source="note:daily-notes/2026-03-23.md" target="note:projects/Beta Corp Dashboard.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e90" source="note:invoices/INV-2025-048.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e90" source="note:daily-notes/2026-03-23.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e91" source="note:invoices/INV-2025-048.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e91" source="note:invoices/INV-2025-047.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e92" source="note:invoices/INV-2025-048.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e92" source="note:invoices/INV-2025-047.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e93" source="note:invoices/INV-2026-001.md" target="note:clients/Acme Corp.md">
+    <edge id="e93" source="note:invoices/INV-2025-047.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e94" source="note:invoices/INV-2026-001.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e94" source="note:invoices/INV-2025-048.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e95" source="note:invoices/INV-2026-001.md" target="note:team/Marcus Webb.md">
+    <edge id="e95" source="note:invoices/INV-2025-048.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e96" source="note:invoices/INV-2026-001.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e96" source="note:invoices/INV-2025-048.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e97" source="note:invoices/INV-2026-001.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e97" source="note:invoices/INV-2025-048.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e98" source="note:invoices/INV-2026-001.md" target="note:invoices/INV-2026-002.md">
+    <edge id="e98" source="note:invoices/INV-2026-001.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e99" source="note:invoices/INV-2026-002.md" target="note:clients/Acme Corp.md">
+    <edge id="e99" source="note:invoices/INV-2026-001.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e100" source="note:invoices/INV-2026-002.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e100" source="note:invoices/INV-2026-001.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e101" source="note:invoices/INV-2026-002.md" target="note:team/Marcus Webb.md">
+    <edge id="e101" source="note:invoices/INV-2026-001.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e102" source="note:invoices/INV-2026-002.md" target="note:invoices/INV-2026-001.md">
+    <edge id="e102" source="note:invoices/INV-2026-001.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e103" source="note:invoices/INV-2026-003.md" target="note:projects/Beta Corp Dashboard.md">
+    <edge id="e103" source="note:invoices/INV-2026-001.md" target="note:invoices/INV-2026-002.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e104" source="note:invoices/INV-2026-003.md" target="note:team/Stacy Thompson.md">
+    <edge id="e104" source="note:invoices/INV-2026-002.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e105" source="note:invoices/INV-2026-004.md" target="note:projects/Beta Corp Dashboard.md">
+    <edge id="e105" source="note:invoices/INV-2026-002.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e106" source="note:invoices/INV-2026-004.md" target="note:team/Dan Oliveira.md">
+    <edge id="e106" source="note:invoices/INV-2026-002.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e107" source="note:invoices/INV-2026-004.md" target="note:team/Stacy Thompson.md">
+    <edge id="e107" source="note:invoices/INV-2026-002.md" target="note:invoices/INV-2026-001.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e108" source="note:invoices/INV-2026-004.md" target="note:invoices/INV-2026-003.md">
+    <edge id="e108" source="note:invoices/INV-2026-003.md" target="note:projects/Beta Corp Dashboard.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e109" source="note:invoices/INV-2026-005.md" target="note:clients/TechStart Inc.md">
+    <edge id="e109" source="note:invoices/INV-2026-003.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e110" source="note:invoices/INV-2026-005.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e110" source="note:invoices/INV-2026-004.md" target="note:projects/Beta Corp Dashboard.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e111" source="note:invoices/INV-2026-005.md" target="note:invoices/INV-2026-006.md">
+    <edge id="e111" source="note:invoices/INV-2026-004.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e112" source="note:invoices/INV-2026-006.md" target="note:clients/TechStart Inc.md">
+    <edge id="e112" source="note:invoices/INV-2026-004.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e113" source="note:invoices/INV-2026-006.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e113" source="note:invoices/INV-2026-004.md" target="note:invoices/INV-2026-003.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e114" source="note:invoices/INV-2026-006.md" target="note:invoices/INV-2026-005.md">
+    <edge id="e114" source="note:invoices/INV-2026-005.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e115" source="note:knowledge/API Security Checklist.md" target="note:knowledge/API Security Checklist.md">
+    <edge id="e115" source="note:invoices/INV-2026-005.md" target="note:projects/TechStart Phase 2.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e116" source="note:knowledge/API Security Checklist.md" target="note:projects/GlobalBank API Audit.md">
+    <edge id="e116" source="note:invoices/INV-2026-005.md" target="note:invoices/INV-2026-006.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e117" source="note:knowledge/API Security Checklist.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e117" source="note:invoices/INV-2026-006.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e118" source="note:knowledge/API Security Checklist.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e118" source="note:invoices/INV-2026-006.md" target="note:projects/TechStart Phase 2.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e119" source="note:knowledge/Data Migration Playbook.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e119" source="note:invoices/INV-2026-006.md" target="note:invoices/INV-2026-005.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e120" source="note:knowledge/Data Migration Playbook.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e120" source="note:knowledge/API Security Checklist.md" target="note:knowledge/API Security Checklist.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e121" source="note:knowledge/Data Migration Playbook.md" target="note:projects/GlobalBank API Audit.md">
+    <edge id="e121" source="note:knowledge/API Security Checklist.md" target="note:projects/GlobalBank API Audit.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e122" source="note:knowledge/Data Migration Playbook.md" target="note:knowledge/Discovery Workshop Template.md">
+    <edge id="e122" source="note:knowledge/API Security Checklist.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e123" source="note:knowledge/Data Migration Playbook.md" target="note:clients/GlobalBank.md">
+    <edge id="e123" source="note:knowledge/API Security Checklist.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e124" source="note:knowledge/Discovery Workshop Template.md" target="note:knowledge/Discovery Workshop Template.md">
+    <edge id="e124" source="note:knowledge/Data Migration Playbook.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e125" source="note:knowledge/Discovery Workshop Template.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e125" source="note:knowledge/Data Migration Playbook.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e126" source="note:knowledge/Discovery Workshop Template.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e126" source="note:knowledge/Data Migration Playbook.md" target="note:projects/GlobalBank API Audit.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e127" source="note:knowledge/Rate Card.md" target="note:knowledge/Rate Card.md">
+    <edge id="e127" source="note:knowledge/Data Migration Playbook.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e128" source="note:knowledge/Rate Card.md" target="note:clients/GlobalBank.md">
+    <edge id="e128" source="note:knowledge/Data Migration Playbook.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e129" source="note:knowledge/Rate Card.md" target="note:clients/Acme Corp.md">
+    <edge id="e129" source="note:knowledge/Discovery Workshop Template.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e130" source="note:knowledge/Rate Card.md" target="note:clients/TechStart Inc.md">
+    <edge id="e130" source="note:knowledge/Discovery Workshop Template.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e131" source="note:knowledge/Rate Card.md" target="note:team/Marcus Webb.md">
+    <edge id="e131" source="note:knowledge/Discovery Workshop Template.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e132" source="note:knowledge/Rate Card.md" target="note:team/Leila Farouk.md">
+    <edge id="e132" source="note:knowledge/Rate Card.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e133" source="note:knowledge/Rate Card.md" target="note:team/Dan Oliveira.md">
+    <edge id="e133" source="note:knowledge/Rate Card.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e134" source="note:knowledge/Rate Card.md" target="note:team/Stacy Thompson.md">
+    <edge id="e134" source="note:knowledge/Rate Card.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e135" source="note:knowledge/Rate Card.md" target="note:admin/Business Goals 2026.md">
+    <edge id="e135" source="note:knowledge/Rate Card.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e136" source="note:knowledge/Subcontractor Management Guide.md" target="note:knowledge/Subcontractor Management Guide.md">
+    <edge id="e136" source="note:knowledge/Rate Card.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e137" source="note:knowledge/Subcontractor Management Guide.md" target="note:team/Marcus Webb.md">
+    <edge id="e137" source="note:knowledge/Rate Card.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e138" source="note:knowledge/Subcontractor Management Guide.md" target="note:team/Stacy Thompson.md">
+    <edge id="e138" source="note:knowledge/Rate Card.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e139" source="note:knowledge/Subcontractor Management Guide.md" target="note:team/Dan Oliveira.md">
+    <edge id="e139" source="note:knowledge/Rate Card.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e140" source="note:knowledge/Subcontractor Management Guide.md" target="note:team/Leila Farouk.md">
+    <edge id="e140" source="note:knowledge/Rate Card.md" target="note:admin/Business Goals 2026.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e141" source="note:knowledge/Subcontractor Management Guide.md" target="note:knowledge/Rate Card.md">
+    <edge id="e141" source="note:knowledge/Subcontractor Management Guide.md" target="note:knowledge/Subcontractor Management Guide.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e142" source="note:knowledge/Subcontractor Management Guide.md" target="note:admin/Business Goals 2026.md">
+    <edge id="e142" source="note:knowledge/Subcontractor Management Guide.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e143" source="note:monthly-notes/2025-12.md" target="note:clients/TechStart Inc.md">
+    <edge id="e143" source="note:knowledge/Subcontractor Management Guide.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e144" source="note:monthly-notes/2025-12.md" target="note:clients/Acme Corp.md">
+    <edge id="e144" source="note:knowledge/Subcontractor Management Guide.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e145" source="note:monthly-notes/2025-12.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e145" source="note:knowledge/Subcontractor Management Guide.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e146" source="note:monthly-notes/2025-12.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e146" source="note:knowledge/Subcontractor Management Guide.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e147" source="note:monthly-notes/2025-12.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e147" source="note:knowledge/Subcontractor Management Guide.md" target="note:admin/Business Goals 2026.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e148" source="note:monthly-notes/2025-12.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e148" source="note:monthly-notes/2025-12.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e149" source="note:monthly-notes/2025-12.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e149" source="note:monthly-notes/2025-12.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e150" source="note:monthly-notes/2025-12.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e150" source="note:monthly-notes/2025-12.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e151" source="note:monthly-notes/2025-12.md" target="note:weekly-notes/2025-W52.md">
+    <edge id="e151" source="note:monthly-notes/2025-12.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e152" source="note:monthly-notes/2025-12.md" target="note:weekly-notes/2026-W01.md">
+    <edge id="e152" source="note:monthly-notes/2025-12.md" target="note:projects/TechStart Phase 2.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e153" source="note:monthly-notes/2025-12.md" target="note:admin/Business Goals 2026.md">
+    <edge id="e153" source="note:monthly-notes/2025-12.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e154" source="note:monthly-notes/2025-12.md" target="note:admin/Quarterly Review Q4 2025.md">
+    <edge id="e154" source="note:monthly-notes/2025-12.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e155" source="note:projects/Acme Data Migration.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e155" source="note:monthly-notes/2025-12.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e156" source="note:projects/Acme Data Migration.md" target="note:clients/Acme Corp.md">
+    <edge id="e156" source="note:monthly-notes/2025-12.md" target="note:weekly-notes/2025-W52.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e157" source="note:projects/Acme Data Migration.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e157" source="note:monthly-notes/2025-12.md" target="note:weekly-notes/2026-W01.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e158" source="note:projects/Acme Data Migration.md" target="note:knowledge/Discovery Workshop Template.md">
+    <edge id="e158" source="note:monthly-notes/2025-12.md" target="note:admin/Business Goals 2026.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e159" source="note:projects/Acme Data Migration.md" target="note:team/Marcus Webb.md">
+    <edge id="e159" source="note:monthly-notes/2025-12.md" target="note:admin/Quarterly Review Q4 2025.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e160" source="note:projects/Acme Data Migration.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e160" source="note:projects/Acme Data Migration.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e161" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e161" source="note:projects/Acme Data Migration.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e162" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e162" source="note:projects/Acme Data Migration.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e163" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2026-001.md">
+    <edge id="e163" source="note:projects/Acme Data Migration.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e164" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2026-002.md">
+    <edge id="e164" source="note:projects/Acme Data Migration.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e165" source="note:projects/Acme Data Migration.md" target="note:knowledge/API Security Checklist.md">
+    <edge id="e165" source="note:projects/Acme Data Migration.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e166" source="note:projects/Acme Data Migration.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e166" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e167" source="note:projects/Acme Data Migration.md" target="note:team/Priya Kapoor.md">
+    <edge id="e167" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e168" source="note:projects/Beta Corp Dashboard.md" target="note:projects/Beta Corp Dashboard.md">
+    <edge id="e168" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2026-001.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e169" source="note:projects/Beta Corp Dashboard.md" target="note:team/Dan Oliveira.md">
+    <edge id="e169" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2026-002.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e170" source="note:projects/Beta Corp Dashboard.md" target="note:team/Stacy Thompson.md">
+    <edge id="e170" source="note:projects/Acme Data Migration.md" target="note:knowledge/API Security Checklist.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e171" source="note:projects/Beta Corp Dashboard.md" target="note:invoices/INV-2026-003.md">
+    <edge id="e171" source="note:projects/Acme Data Migration.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e172" source="note:projects/Beta Corp Dashboard.md" target="note:invoices/INV-2026-004.md">
+    <edge id="e172" source="note:projects/Acme Data Migration.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e173" source="note:projects/Cloud Strategy Template.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e173" source="note:projects/Beta Corp Dashboard.md" target="note:projects/Beta Corp Dashboard.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e174" source="note:projects/Cloud Strategy Template.md" target="note:knowledge/Discovery Workshop Template.md">
+    <edge id="e174" source="note:projects/Beta Corp Dashboard.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e175" source="note:projects/GlobalBank API Audit.md" target="note:projects/GlobalBank API Audit.md">
+    <edge id="e175" source="note:projects/Beta Corp Dashboard.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e176" source="note:projects/GlobalBank API Audit.md" target="note:clients/GlobalBank.md">
+    <edge id="e176" source="note:projects/Beta Corp Dashboard.md" target="note:invoices/INV-2026-003.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e177" source="note:projects/GlobalBank API Audit.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e177" source="note:projects/Beta Corp Dashboard.md" target="note:invoices/INV-2026-004.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e178" source="note:projects/GlobalBank API Audit.md" target="note:knowledge/API Security Checklist.md">
+    <edge id="e178" source="note:projects/Cloud Strategy Template.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e179" source="note:projects/TechStart MVP Build.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e179" source="note:projects/Cloud Strategy Template.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e180" source="note:projects/TechStart MVP Build.md" target="note:clients/TechStart Inc.md">
+    <edge id="e180" source="note:projects/GlobalBank API Audit.md" target="note:projects/GlobalBank API Audit.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e181" source="note:projects/TechStart MVP Build.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e181" source="note:projects/GlobalBank API Audit.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e182" source="note:projects/TechStart MVP Build.md" target="note:knowledge/API Security Checklist.md">
+    <edge id="e182" source="note:projects/GlobalBank API Audit.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e183" source="note:projects/TechStart Phase 2.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e183" source="note:projects/GlobalBank API Audit.md" target="note:knowledge/API Security Checklist.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e184" source="note:projects/TechStart Phase 2.md" target="note:clients/TechStart Inc.md">
+    <edge id="e184" source="note:projects/TechStart MVP Build.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e185" source="note:projects/TechStart Phase 2.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e185" source="note:projects/TechStart MVP Build.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e186" source="note:projects/TechStart Phase 2.md" target="note:team/Dan Oliveira.md">
+    <edge id="e186" source="note:projects/TechStart MVP Build.md" target="note:projects/TechStart Phase 2.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e187" source="note:projects/TechStart Phase 2.md" target="note:invoices/INV-2026-005.md">
+    <edge id="e187" source="note:projects/TechStart MVP Build.md" target="note:knowledge/API Security Checklist.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e188" source="note:projects/TechStart Phase 2.md" target="note:invoices/INV-2026-006.md">
+    <edge id="e188" source="note:projects/TechStart Phase 2.md" target="note:projects/TechStart Phase 2.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e189" source="note:projects/TechStart Phase 2.md" target="note:clients/Nexus Health.md">
+    <edge id="e189" source="note:projects/TechStart Phase 2.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e190" source="note:proposals/Acme Analytics Add-on.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e190" source="note:projects/TechStart Phase 2.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e191" source="note:proposals/Acme Analytics Add-on.md" target="note:clients/Acme Corp.md">
+    <edge id="e191" source="note:projects/TechStart Phase 2.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e192" source="note:proposals/Acme Analytics Add-on.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e192" source="note:projects/TechStart Phase 2.md" target="note:invoices/INV-2026-005.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e193" source="note:proposals/Acme Analytics Add-on.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e193" source="note:projects/TechStart Phase 2.md" target="note:invoices/INV-2026-006.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e194" source="note:proposals/Meridian Financial API Modernization.md" target="note:clients/Meridian Financial.md">
+    <edge id="e194" source="note:projects/TechStart Phase 2.md" target="note:clients/Nexus Health.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e195" source="note:proposals/Meridian Financial API Modernization.md" target="note:projects/GlobalBank API Audit.md">
+    <edge id="e195" source="note:proposals/Acme Analytics Add-on.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e196" source="note:proposals/Meridian Financial API Modernization.md" target="note:clients/GlobalBank.md">
+    <edge id="e196" source="note:proposals/Acme Analytics Add-on.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e197" source="note:proposals/Meridian Financial API Modernization.md" target="note:team/Dan Oliveira.md">
+    <edge id="e197" source="note:proposals/Acme Analytics Add-on.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e198" source="note:proposals/Meridian Financial API Modernization.md" target="note:team/Marcus Webb.md">
+    <edge id="e198" source="note:proposals/Acme Analytics Add-on.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e199" source="note:proposals/Meridian Financial API Modernization.md" target="note:team/Priya Kapoor.md">
+    <edge id="e199" source="note:proposals/Meridian Financial API Modernization.md" target="note:clients/Meridian Financial.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e200" source="note:proposals/Meridian Financial API Modernization.md" target="note:knowledge/API Security Checklist.md">
+    <edge id="e200" source="note:proposals/Meridian Financial API Modernization.md" target="note:projects/GlobalBank API Audit.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e201" source="note:proposals/Meridian Financial API Modernization.md" target="note:team/Leila Farouk.md">
+    <edge id="e201" source="note:proposals/Meridian Financial API Modernization.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e202" source="note:proposals/Nexus Health Cloud Assessment.md" target="note:clients/Nexus Health.md">
+    <edge id="e202" source="note:proposals/Meridian Financial API Modernization.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e203" source="note:proposals/Nexus Health Cloud Assessment.md" target="note:clients/TechStart Inc.md">
+    <edge id="e203" source="note:proposals/Meridian Financial API Modernization.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e204" source="note:proposals/Nexus Health Cloud Assessment.md" target="note:team/Leila Farouk.md">
+    <edge id="e204" source="note:proposals/Meridian Financial API Modernization.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e205" source="note:proposals/Nexus Health Cloud Assessment.md" target="note:team/Priya Kapoor.md">
+    <edge id="e205" source="note:proposals/Meridian Financial API Modernization.md" target="note:knowledge/API Security Checklist.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e206" source="note:proposals/Nexus Health Cloud Assessment.md" target="note:knowledge/API Security Checklist.md">
+    <edge id="e206" source="note:proposals/Meridian Financial API Modernization.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e207" source="note:proposals/TechStart Phase 2.md" target="note:clients/TechStart Inc.md">
+    <edge id="e207" source="note:proposals/Nexus Health Cloud Assessment.md" target="note:clients/Nexus Health.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e208" source="note:proposals/TechStart Phase 2.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e208" source="note:proposals/Nexus Health Cloud Assessment.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e209" source="note:team/Dan Oliveira.md" target="note:team/Dan Oliveira.md">
+    <edge id="e209" source="note:proposals/Nexus Health Cloud Assessment.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e210" source="note:team/Dan Oliveira.md" target="note:team/Stacy Thompson.md">
+    <edge id="e210" source="note:proposals/Nexus Health Cloud Assessment.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e211" source="note:team/Dan Oliveira.md" target="note:projects/Beta Corp Dashboard.md">
+    <edge id="e211" source="note:proposals/Nexus Health Cloud Assessment.md" target="note:knowledge/API Security Checklist.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e212" source="note:team/Dan Oliveira.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e212" source="note:proposals/TechStart Phase 2.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e213" source="note:team/Dan Oliveira.md" target="note:clients/TechStart Inc.md">
+    <edge id="e213" source="note:proposals/TechStart Phase 2.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e214" source="note:team/Dan Oliveira.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e214" source="note:team/Dan Oliveira.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e215" source="note:team/Leila Farouk.md" target="note:team/Leila Farouk.md">
+    <edge id="e215" source="note:team/Dan Oliveira.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e216" source="note:team/Leila Farouk.md" target="note:clients/GlobalBank.md">
+    <edge id="e216" source="note:team/Dan Oliveira.md" target="note:projects/Beta Corp Dashboard.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e217" source="note:team/Leila Farouk.md" target="note:clients/Nexus Health.md">
+    <edge id="e217" source="note:team/Dan Oliveira.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e218" source="note:team/Leila Farouk.md" target="note:proposals/Nexus Health Cloud Assessment.md">
+    <edge id="e218" source="note:team/Dan Oliveira.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e219" source="note:team/Marcus Webb.md" target="note:team/Marcus Webb.md">
+    <edge id="e219" source="note:team/Dan Oliveira.md" target="note:projects/TechStart Phase 2.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e220" source="note:team/Marcus Webb.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e220" source="note:team/Leila Farouk.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e221" source="note:team/Marcus Webb.md" target="note:clients/Acme Corp.md">
+    <edge id="e221" source="note:team/Leila Farouk.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e222" source="note:team/Marcus Webb.md" target="note:projects/GlobalBank API Audit.md">
+    <edge id="e222" source="note:team/Leila Farouk.md" target="note:clients/Nexus Health.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e223" source="note:team/Marcus Webb.md" target="note:clients/GlobalBank.md">
+    <edge id="e223" source="note:team/Leila Farouk.md" target="note:proposals/Nexus Health Cloud Assessment.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e224" source="note:team/Marcus Webb.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e224" source="note:team/Marcus Webb.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e225" source="note:team/Priya Kapoor.md" target="note:team/Priya Kapoor.md">
+    <edge id="e225" source="note:team/Marcus Webb.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e226" source="note:team/Priya Kapoor.md" target="note:clients/GlobalBank.md">
+    <edge id="e226" source="note:team/Marcus Webb.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e227" source="note:team/Priya Kapoor.md" target="note:clients/Acme Corp.md">
+    <edge id="e227" source="note:team/Marcus Webb.md" target="note:projects/GlobalBank API Audit.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e228" source="note:team/Priya Kapoor.md" target="note:knowledge/Discovery Workshop Template.md">
+    <edge id="e228" source="note:team/Marcus Webb.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e229" source="note:team/Sarah Mitchell.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e229" source="note:team/Marcus Webb.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e230" source="note:team/Sarah Mitchell.md" target="note:clients/Acme Corp.md">
+    <edge id="e230" source="note:team/Priya Kapoor.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e231" source="note:team/Sarah Mitchell.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e231" source="note:team/Priya Kapoor.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e232" source="note:team/Sarah Mitchell.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e232" source="note:team/Priya Kapoor.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e233" source="note:team/Stacy Thompson.md" target="note:team/Stacy Thompson.md">
+    <edge id="e233" source="note:team/Priya Kapoor.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e234" source="note:team/Stacy Thompson.md" target="note:projects/Beta Corp Dashboard.md">
+    <edge id="e234" source="note:team/Sarah Mitchell.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e235" source="note:team/Stacy Thompson.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e235" source="note:team/Sarah Mitchell.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e236" source="note:team/Stacy Thompson.md" target="note:clients/TechStart Inc.md">
+    <edge id="e236" source="note:team/Sarah Mitchell.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e237" source="note:team/Stacy Thompson.md" target="note:clients/GlobalBank.md">
+    <edge id="e237" source="note:team/Sarah Mitchell.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e238" source="note:team/Stacy Thompson.md" target="note:team/Dan Oliveira.md">
+    <edge id="e238" source="note:team/Stacy Thompson.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e239" source="note:test-results/20260323T161000/report.md" target="note:team/Leila Farouk.md">
+    <edge id="e239" source="note:team/Stacy Thompson.md" target="note:projects/Beta Corp Dashboard.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e240" source="note:test-results/20260323T161000/report.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e240" source="note:team/Stacy Thompson.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e241" source="note:test-results/20260323T161000/report.md" target="note:knowledge/Rate Card.md">
+    <edge id="e241" source="note:team/Stacy Thompson.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e242" source="note:test-results/20260323T161000/report.md" target="note:team/Marcus Webb.md">
+    <edge id="e242" source="note:team/Stacy Thompson.md" target="note:clients/GlobalBank.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e243" source="note:test-results/20260323T161000/report.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e243" source="note:team/Stacy Thompson.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e244" source="note:test-results/20260323T161000/report.md" target="note:clients/TechStart Inc.md">
+    <edge id="e244" source="note:test-results/20260323T161000/report.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e245" source="note:test-results/20260323T161000/report.md" target="note:team/Stacy Thompson.md">
+    <edge id="e245" source="note:test-results/20260323T161000/report.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e246" source="note:test-results/20260323T161000/report.md" target="note:team/Priya Kapoor.md">
+    <edge id="e246" source="note:test-results/20260323T161000/report.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e247" source="note:test-results/20260323T161000/report.md" target="note:clients/Nexus Health.md">
+    <edge id="e247" source="note:test-results/20260323T161000/report.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e248" source="note:test-results/20260323T161000/report.md" target="note:knowledge/Discovery Workshop Template.md">
+    <edge id="e248" source="note:test-results/20260323T161000/report.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e249" source="note:test-results/20260323T161000/report.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e249" source="note:test-results/20260323T161000/report.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e250" source="note:test-results/20260323T161000/report.md" target="note:team/Dan Oliveira.md">
+    <edge id="e250" source="note:test-results/20260323T161000/report.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e251" source="note:test-results/20260323T161000/report.md" target="note:projects/Beta Corp Dashboard.md">
+    <edge id="e251" source="note:test-results/20260323T161000/report.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e252" source="note:test-results/20260323T161000/report.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e252" source="note:test-results/20260323T161000/report.md" target="note:clients/Nexus Health.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e253" source="note:test-results/20260323T161000/report.md" target="note:clients/Acme Corp.md">
+    <edge id="e253" source="note:test-results/20260323T161000/report.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e254" source="note:test-results/20260323T161000/report.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e254" source="note:test-results/20260323T161000/report.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e255" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e255" source="note:test-results/20260323T161000/report.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e256" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
+    <edge id="e256" source="note:test-results/20260323T161000/report.md" target="note:projects/Beta Corp Dashboard.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e257" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:knowledge/Discovery Workshop Template.md">
+    <edge id="e257" source="note:test-results/20260323T161000/report.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e258" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e258" source="note:test-results/20260323T161000/report.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e259" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e259" source="note:test-results/20260323T161000/report.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e260" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
+    <edge id="e260" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e261" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
+    <edge id="e261" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e262" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Leila Farouk.md">
+    <edge id="e262" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e263" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:clients/TechStart Inc.md">
+    <edge id="e263" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e264" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Dan Oliveira.md">
+    <edge id="e264" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e265" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Stacy Thompson.md">
+    <edge id="e265" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e266" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
+    <edge id="e266" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e267" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:clients/Nexus Health.md">
+    <edge id="e267" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e268" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e268" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e269" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:projects/Beta Corp Dashboard.md">
+    <edge id="e269" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e270" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e270" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e271" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e271" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e272" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
+    <edge id="e272" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:clients/Nexus Health.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e273" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:knowledge/Discovery Workshop Template.md">
+    <edge id="e273" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e274" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e274" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:projects/Beta Corp Dashboard.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e275" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e275" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e276" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
+    <edge id="e276" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e277" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
+    <edge id="e277" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e278" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Leila Farouk.md">
+    <edge id="e278" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e279" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:clients/TechStart Inc.md">
+    <edge id="e279" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e280" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Dan Oliveira.md">
+    <edge id="e280" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e281" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Stacy Thompson.md">
+    <edge id="e281" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e282" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
+    <edge id="e282" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e283" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:clients/Nexus Health.md">
+    <edge id="e283" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e284" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e284" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e285" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:projects/Beta Corp Dashboard.md">
+    <edge id="e285" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e286" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e286" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e287" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e287" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e288" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
+    <edge id="e288" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:clients/Nexus Health.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e289" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:knowledge/Discovery Workshop Template.md">
+    <edge id="e289" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e290" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e290" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:projects/Beta Corp Dashboard.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e291" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e291" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e292" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
+    <edge id="e292" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e293" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
+    <edge id="e293" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e294" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Leila Farouk.md">
+    <edge id="e294" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:knowledge/Discovery Workshop Template.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e295" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:clients/TechStart Inc.md">
+    <edge id="e295" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e296" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Dan Oliveira.md">
+    <edge id="e296" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e297" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Stacy Thompson.md">
+    <edge id="e297" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e298" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
+    <edge id="e298" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e299" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:clients/Nexus Health.md">
+    <edge id="e299" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Leila Farouk.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e300" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e300" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e301" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:projects/Beta Corp Dashboard.md">
+    <edge id="e301" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Dan Oliveira.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e302" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e302" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Stacy Thompson.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e303" source="note:weekly-notes/2025-W52.md" target="note:clients/Acme Corp.md">
+    <edge id="e303" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e304" source="note:weekly-notes/2025-W52.md" target="note:clients/TechStart Inc.md">
+    <edge id="e304" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:clients/Nexus Health.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e305" source="note:weekly-notes/2025-W52.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e305" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e306" source="note:weekly-notes/2025-W52.md" target="note:projects/TechStart MVP Build.md">
+    <edge id="e306" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:projects/Beta Corp Dashboard.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e307" source="note:weekly-notes/2025-W52.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e307" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e308" source="note:weekly-notes/2026-W01.md" target="note:clients/TechStart Inc.md">
+    <edge id="e308" source="note:weekly-notes/2025-W52.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e309" source="note:weekly-notes/2026-W01.md" target="note:clients/Acme Corp.md">
+    <edge id="e309" source="note:weekly-notes/2025-W52.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e310" source="note:weekly-notes/2026-W01.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e310" source="note:weekly-notes/2025-W52.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e311" source="note:weekly-notes/2026-W01.md" target="note:projects/TechStart Phase 2.md">
+    <edge id="e311" source="note:weekly-notes/2025-W52.md" target="note:projects/TechStart MVP Build.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e312" source="note:weekly-notes/2026-W01.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e312" source="note:weekly-notes/2025-W52.md" target="note:projects/TechStart Phase 2.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e313" source="note:weekly-notes/2026-W01.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e313" source="note:weekly-notes/2026-W01.md" target="note:clients/TechStart Inc.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e314" source="note:weekly-notes/2026-W01.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e314" source="note:weekly-notes/2026-W01.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e315" source="note:weekly-notes/2026-W01.md" target="note:admin/Business Goals 2026.md">
+    <edge id="e315" source="note:weekly-notes/2026-W01.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e316" source="note:weekly-notes/2026-W01.md" target="note:projects/TechStart Phase 2.md">
+      <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e317" source="note:weekly-notes/2026-W01.md" target="note:proposals/Acme Analytics Add-on.md">
+      <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e318" source="note:weekly-notes/2026-W01.md" target="note:knowledge/Data Migration Playbook.md">
+      <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e319" source="note:weekly-notes/2026-W01.md" target="note:invoices/INV-2025-048.md">
+      <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e320" source="note:weekly-notes/2026-W01.md" target="note:admin/Business Goals 2026.md">
+      <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e321" source="note:DEMO-VIDEO-SCRIPT.md" target="entity:Sarah Mitchell">
+      <data key="edge_type">weighted</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e322" source="note:DEMO-VIDEO-SCRIPT.md" target="entity:Acme Corp">
+      <data key="edge_type">weighted</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e323" source="note:DEMO-VIDEO-SCRIPT.md" target="entity:Marcus Webb">
+      <data key="edge_type">weighted</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e324" source="note:DEMO-VIDEO-SCRIPT.md" target="entity:Acme Data Migration">
+      <data key="edge_type">weighted</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e325" source="note:DEMO-VIDEO-SCRIPT.md" target="entity:Discovery Workshop Template">
+      <data key="edge_type">weighted</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e326" source="note:DEMO-VIDEO-SCRIPT.md" target="entity:Data Migration Playbook">
+      <data key="edge_type">weighted</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e327" source="note:DEMO-VIDEO-SCRIPT.md" target="entity:Acme Analytics Add-on">
+      <data key="edge_type">weighted</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e328" source="note:DEMO-VIDEO-SCRIPT.md" target="entity:Priya Kapoor">
+      <data key="edge_type">weighted</data>
       <data key="weight">1</data>
     </edge>
   </graph>

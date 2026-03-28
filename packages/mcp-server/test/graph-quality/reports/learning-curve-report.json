@@ -1,7 +1,7 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-03-26T16:27:38.168Z",
-  "duration_ms": 24933,
+  "timestamp": "2026-03-28T00:29:08.450Z",
+  "duration_ms": 34604,
   "summary": {
     "round0_f1": 0.515,
     "roundN_f1": 0.543,

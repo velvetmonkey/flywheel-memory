@@ -51,6 +51,9 @@ export interface BatchProcessResult {
 
   /** Processing time in ms */
   durationMs: number;
+
+  /** True if any file had entity-relevant changes (title, aliases, type) */
+  hasEntityRelevantChanges: boolean;
 }
 
 /**
@@ -82,6 +85,7 @@ export async function processBatch(
       failed: 0,
       results: [],
       durationMs: 0,
+      hasEntityRelevantChanges: false,
     };
   }
 
@@ -156,6 +160,7 @@ export async function processBatch(
     failed,
     results,
     durationMs,
+    hasEntityRelevantChanges: results.some(r => r.entityFieldChanged),
   };
 }
 

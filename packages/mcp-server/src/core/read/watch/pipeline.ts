@@ -140,6 +140,7 @@ export class PipelineRunner {
   private entitiesAfter: EntitySearchResult[] = [];
   private entitiesBefore: EntitySearchResult[] = [];
   private hubBefore = new Map<string, number>();
+  private hasEntityRelevantChanges = false;
   private forwardLinkResults: Array<{ file: string; resolved: string[]; dead: string[] }> = [];
   private linkDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
   private survivedLinks: Array<{ entity: string; file: string; count: number }> = [];
@@ -228,6 +229,7 @@ export class PipelineRunner {
     if (!vaultIndex) {
       const rebuilt = await p.buildVaultIndex(p.vp);
       p.updateVaultIndex(rebuilt);
+      this.hasEntityRelevantChanges = true; // full rebuild — entity state unknown
       serverLog('watcher', `Index rebuilt (full): ${rebuilt.notes.size} notes, ${rebuilt.entities.size} entities`);
     } else {
       const absoluteBatch = {
@@ -235,6 +237,7 @@ export class PipelineRunner {
         events: p.events.map(e => ({ ...e, path: path.join(p.vp, e.path) })),
       };
       const batchResult = await processBatch(vaultIndex, p.vp, absoluteBatch);
+      this.hasEntityRelevantChanges = batchResult.hasEntityRelevantChanges;
       serverLog('watcher', `Incremental: ${batchResult.successful}/${batchResult.total} files in ${batchResult.durationMs}ms`);
     }
     p.updateIndexState('ready');
@@ -293,7 +296,7 @@ export class PipelineRunner {
     // Skip if scanned within 5 minutes; downstream steps still get entities from DB.
     const entityScanAgeMs = p.ctx.lastEntityScanAt > 0
       ? Date.now() - p.ctx.lastEntityScanAt : Infinity;
-    if (entityScanAgeMs < 5 * 60 * 1000) {
+    if (entityScanAgeMs < 5 * 60 * 1000 && !this.hasEntityRelevantChanges) {
       tracker.start('entity_scan', {});
       tracker.skip('entity_scan', `cache valid (${Math.round(entityScanAgeMs / 1000)}s old)`);
       this.entitiesBefore = p.sd ? getAllEntitiesFromDb(p.sd) : [];

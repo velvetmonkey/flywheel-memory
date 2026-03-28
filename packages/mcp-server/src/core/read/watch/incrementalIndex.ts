@@ -43,6 +43,8 @@ export interface IncrementalUpdateResult {
   action: 'added' | 'updated' | 'removed' | 'unchanged';
   path: string;
   error?: Error;
+  /** True when title, aliases, or frontmatter type changed (or note is new) */
+  entityFieldChanged?: boolean;
 }
 
 /**
@@ -216,6 +218,7 @@ export async function upsertNote(
   try {
     // Check if note already exists
     const existed = index.notes.has(notePath);
+    const oldNote = existed ? index.notes.get(notePath) : undefined;
 
     // Remove old data if exists
     let releasedKeys: string[] = [];
@@ -243,10 +246,18 @@ export async function upsertNote(
       reconcileReleasedKeys(index, releasedKeys);
     }
 
+    // Detect entity-relevant changes (title, aliases, frontmatter type)
+    const entityFieldChanged = !oldNote || (
+      oldNote.title !== note.title ||
+      JSON.stringify(oldNote.aliases) !== JSON.stringify(note.aliases) ||
+      oldNote.frontmatter.type !== note.frontmatter.type
+    );
+
     return {
       success: true,
       action: existed ? 'updated' : 'added',
       path: notePath,
+      entityFieldChanged,
     };
   } catch (error) {
     return {

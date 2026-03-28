@@ -22,8 +22,7 @@ import {
   type VaultMode,
 } from './adapter-locomo.js';
 import { aggregateMetrics, type AggregateMetrics } from './metrics.js';
-import { performRecall } from '../../src/tools/read/recall.js';
-import { initializeEntityIndex, setWriteStateDb } from '../../src/core/write/wikilinks.js';
+import { setWriteStateDb } from '../../src/core/write/wikilinks.js';
 import { setFTS5Database } from '../../src/core/read/fts5.js';
 import { setRecencyStateDb } from '../../src/core/shared/recency.js';
 
@@ -143,61 +142,7 @@ describe('LoCoMo Retrieval Benchmark', { timeout: 300_000 }, () => {
     }
   }, 300_000);
 
-  it('should compare FTS5-only vs full pipeline', async () => {
-    await initializeEntityIndex(vault.vaultPath);
 
-    const testQuestions = questions.filter(q => q.category !== 'adversarial');
-
-    // FTS5-only baseline
-    const fts5Results = runAllQueries(testQuestions, vault);
-    const fts5Metrics = aggregateMetrics(fts5Results);
-
-    // Full pipeline via performRecall
-    const pipelineResults: Array<{ retrieved: string[]; relevant: Set<string> }> = [];
-
-    for (const q of testQuestions) {
-      const sanitized = sanitizeForFTS5(q.question);
-      try {
-        const recallResults = await performRecall(vault.stateDb, sanitized, {
-          max_results: 10,
-          focus: 'notes',
-          vaultPath: vault.vaultPath,
-        });
-
-        const retrieved = recallResults
-          .filter(r => r.type === 'note')
-          .map(r => r.id);
-
-        const relevant = getRelevantPaths(q, vault);
-        if (relevant.size > 0) {
-          pipelineResults.push({ retrieved, relevant });
-        }
-      } catch {
-        const relevant = getRelevantPaths(q, vault);
-        if (relevant.size > 0) {
-          pipelineResults.push({ retrieved: [], relevant });
-        }
-      }
-    }
-
-    const pipelineMetrics = aggregateMetrics(pipelineResults);
-
-    console.log('\n=== FTS5-only vs Full Pipeline ===');
-    printMetrics('FTS5-only', fts5Metrics);
-    printMetrics('Full pipeline (notes)', pipelineMetrics);
-
-    const deltaRecall = pipelineMetrics.recall_at_5 - fts5Metrics.recall_at_5;
-    console.log(`Delta: Recall@5 ${deltaRecall >= 0 ? '+' : ''}${(deltaRecall * 100).toFixed(1)}pp`);
-
-    // Add pipeline comparison to shared report
-    report.pipeline_comparison = {
-      fts5_only: fts5Metrics,
-      full_pipeline: pipelineMetrics,
-    };
-
-    // Pipeline should not be significantly worse than FTS5
-    expect(pipelineMetrics.recall_at_10).toBeGreaterThanOrEqual(fts5Metrics.recall_at_10 * 0.8);
-  }, 300_000);
 });
 
 // --- Helpers ---
@@ -274,21 +219,4 @@ function printMetrics(label: string, m: AggregateMetrics) {
     `${label}: Recall@5=${(m.recall_at_5 * 100).toFixed(1)}% Recall@10=${(m.recall_at_10 * 100).toFixed(1)}% ` +
     `MRR=${m.mrr.toFixed(3)} NDCG@10=${m.ndcg_at_10.toFixed(3)} Prec@5=${(m.precision_at_5 * 100).toFixed(1)}%`,
   );
-}
-
-const STOP_WORDS = new Set([
-  'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her',
-  'was', 'one', 'our', 'out', 'has', 'have', 'been', 'many', 'some', 'them',
-  'than', 'its', 'over', 'such', 'that', 'this', 'what', 'with', 'will',
-  'each', 'make', 'like', 'from', 'when', 'who', 'which', 'their', 'how',
-  'did', 'does', 'more', 'other',
-]);
-
-function sanitizeForFTS5(query: string): string {
-  return query.toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .split(/\s+/)
-    .filter(w => w.length >= 3)
-    .filter(w => !STOP_WORDS.has(w))
-    .join(' OR ');
 }

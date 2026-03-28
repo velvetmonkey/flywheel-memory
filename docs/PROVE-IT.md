@@ -345,7 +345,7 @@ cat demos/locomo/results/run-*/report.md
 | Multi-hop | 139 | ~65% | ~0.14 (F1) |
 | Temporal | 96 | ~60% | ~0.09 (F1) |
 
-Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 79.1% headline is from seed 42 with Sonnet.
+Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 79.1% headline is from seed 42 with Sonnet. Token F1 is a diagnostic metric that penalizes verbosity — LLM-as-judge accuracy (~58.8%) is the primary answer quality metric and is now reported automatically on every run.
 
 **Estimated time:** ~4-6 hours for 695 questions.
 **Estimated cost:** ~$66 (695 x ~$0.095/question).

@@ -3,17 +3,17 @@
 
 Parses stream-json JSONL output from claude -p runs, computes:
   1. Evidence recall (did tools access the right session notes?)
-  2. Answer quality (token F1 for categories 1-4, adversarial detection for cat 5)
+  2. Answer quality — LLM-as-judge accuracy (primary) + token F1 (diagnostic)
 
 Usage:
-    python3 analyze-benchmark.py <results_dir> <ground_truth.json>
+    python3 analyze-benchmark.py <results_dir> <ground_truth.json> [--judge] [--judge-model MODEL]
 """
 
 import json
 import math
 import re
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
 
@@ -52,7 +52,6 @@ def token_f1(prediction, ground_truth):
     if not truth_tokens or not pred_tokens:
         return 0.0
 
-    from collections import Counter
     pred_counts = Counter(pred_tokens)
     truth_counts = Counter(truth_tokens)
 
@@ -165,23 +164,18 @@ def _extract_paths(data, paths):
             _extract_paths(item, paths)
 
 
-def main():
-    if len(sys.argv) < 3:
-        print('Usage: analyze-benchmark.py <results_dir> <ground_truth.json>', file=sys.stderr)
-        sys.exit(1)
+# ---------------------------------------------------------------------------
+# Phase 1: Compute evidence recall + token F1 metrics
+# ---------------------------------------------------------------------------
 
-    results_dir = Path(sys.argv[1])
-    gt_path = sys.argv[2]
+def compute_metrics(results_dir, gt_path):
+    """Compute evidence recall and token F1 for all questions. Returns structured data."""
+    results_dir = Path(results_dir)
     raw_dir = results_dir / 'raw'
-
-    if not raw_dir.exists():
-        print(f'No raw directory at {raw_dir}', file=sys.stderr)
-        sys.exit(1)
 
     gt = json.load(open(gt_path))
     questions = gt['questions']
 
-    # Process each question
     per_question = []
     total_cost = 0.0
     cat_evidence = defaultdict(lambda: {'found': 0, 'relevant': 0, 'count': 0})
@@ -210,7 +204,7 @@ def main():
         cat_evidence[category]['relevant'] += len(relevant)
         cat_evidence[category]['count'] += 1
 
-        # Answer quality
+        # Answer quality (token F1)
         cat_num = q.get('category_num', 0)
         if cat_num == 5:
             answer_score = adversarial_score(answer)
@@ -221,8 +215,12 @@ def main():
         cat_answer[category]['count'] += 1
 
         per_question.append({
-            'question': q['question'][:80],
+            'index': i,
+            'question': q['question'],
+            'answer': answer,
+            'ground_truth': q.get('answer', ''),
             'category': category,
+            'category_num': q.get('category_num', 0),
             'evidence_recall': round(evidence_recall, 3),
             'answer_f1': round(answer_score, 3),
             'tools_used': tools,
@@ -239,137 +237,58 @@ def main():
     total_answer_count = sum(s['count'] for s in cat_answer.values())
     overall_answer_score = total_answer_sum / total_answer_count if total_answer_count > 0 else 0
 
-    # Report
-    lines = []
-    lines.append('# LoCoMo End-to-End Benchmark')
-    lines.append('')
-    lines.append(f'**Date:** {datetime.now().strftime("%Y-%m-%d %H:%M")}')
-    scored_count = len(per_question)
-    lines.append(f'**Questions Scored:** {scored_count} / {len(questions)}')
-    lines.append(f'**Vault Mode:** {gt.get("vault_mode", "dialog")}')
-    lines.append(f'**Sessions:** {gt.get("total_sessions", "?")}')
-    lines.append(f'**Total Cost:** ${total_cost:.2f}')
-    lines.append('')
-
-    lines.append('## Overall Results')
-    lines.append('')
-    lines.append('| Metric | Value |')
-    lines.append('|--------|-------|')
-    lines.append(f'| Evidence Recall | **{overall_evidence_recall:.1%}** ({total_found}/{total_relevant} evidence sessions found) |')
-    lines.append(f'| Answer Score | **{overall_answer_score:.3f}** (F1 for cat 1-4, adversarial detection for cat 5) |')
-    lines.append(f'| Avg Cost/Question | ${total_cost/scored_count:.3f} |' if scored_count > 0 else '| Avg Cost/Question | N/A |')
-    lines.append('')
-
-    lines.append('## By Category — Evidence Recall')
-    lines.append('')
-    lines.append('| Category | Questions | Evidence Recall |')
-    lines.append('|----------|-----------|-----------------|')
-    for cat, stats in sorted(cat_evidence.items()):
-        r = stats['found'] / stats['relevant'] if stats['relevant'] > 0 else 0
-        lines.append(f'| {cat} | {stats["count"]} | {r:.1%} ({stats["found"]}/{stats["relevant"]}) |')
-    lines.append('')
-
-    lines.append('## By Category — Answer Quality')
-    lines.append('')
-    lines.append('| Category | Questions | Avg Score |')
-    lines.append('|----------|-----------|-----------|')
-    for cat, stats in sorted(cat_answer.items()):
-        avg = stats['score_sum'] / stats['count'] if stats['count'] > 0 else 0
-        metric = 'adversarial accuracy' if cat == 'adversarial' else 'token F1'
-        lines.append(f'| {cat} | {stats["count"]} | {avg:.3f} ({metric}) |')
-    lines.append('')
-
-    # Worst evidence recall
-    missed = [q for q in per_question if q['evidence_recall'] < 1.0 and q['category'] != 'adversarial']
-    missed.sort(key=lambda x: x['evidence_recall'])
-    if missed:
-        lines.append('## Lowest Evidence Recall (worst 10)')
-        lines.append('')
-        lines.append('| Question | Category | Recall | F1 |')
-        lines.append('|----------|----------|--------|----|')
-        for q in missed[:10]:
-            lines.append(f'| {q["question"][:55]}... | {q["category"]} | {q["evidence_recall"]:.0%} | {q["answer_f1"]:.2f} |')
-        lines.append('')
-
-    report = '\n'.join(lines)
-    print(report)
-
-    # Write files
-    report_path = results_dir / 'report.md'
-    with open(report_path, 'w') as f:
-        f.write(report)
-    print(f'\nReport: {report_path}', file=sys.stderr)
-
-    analysis_path = results_dir / 'analysis.json'
-    with open(analysis_path, 'w') as f:
-        json.dump({
-            'generated': datetime.now().isoformat(),
-            'dataset': 'locomo10',
-            'vault_mode': gt.get('vault_mode', 'dialog'),
-            'total_questions': len(questions),
-            'scored_questions': scored_count,
-            'total_sessions': gt.get('total_sessions', 0),
-            'overall_evidence_recall': round(overall_evidence_recall, 4),
-            'overall_answer_score': round(overall_answer_score, 4),
-            'total_cost_usd': round(total_cost, 4),
-            'by_category_evidence': {
-                k: {'recall': round(v['found']/v['relevant'], 4) if v['relevant'] else 0, **v}
-                for k, v in cat_evidence.items()
-            },
-            'by_category_answer': {
-                k: {'avg_score': round(v['score_sum']/v['count'], 4) if v['count'] else 0, **v}
-                for k, v in cat_answer.items()
-            },
-            'per_question': per_question,
-        }, f, indent=2)
-    print(f'Analysis: {analysis_path}', file=sys.stderr)
+    return {
+        'gt': gt,
+        'per_question': per_question,
+        'total_cost': total_cost,
+        'cat_evidence': dict(cat_evidence),
+        'cat_answer': dict(cat_answer),
+        'overall_evidence_recall': overall_evidence_recall,
+        'overall_answer_score': overall_answer_score,
+    }
 
 
-def judge_answers(results_dir, gt_path, judge_model='haiku'):
+# ---------------------------------------------------------------------------
+# Phase 2: LLM-as-judge scoring
+# ---------------------------------------------------------------------------
+
+def judge_answers(per_question, judge_model='haiku'):
     """LLM-as-judge scoring: ask Claude to evaluate each answer as correct/wrong.
 
-    Creates a judge-results.json with binary accuracy per question.
     Comparable to Mem0 evaluation methodology.
+    Returns judge data dict (also usable standalone).
     """
     import subprocess
 
-    results_dir = Path(results_dir)
-    gt = json.load(open(gt_path))
-    questions = gt['questions']
-    raw_dir = results_dir / 'raw'
-
-    judge_results = []
     cat_accuracy = defaultdict(lambda: {'correct': 0, 'total': 0})
+    judge_results = []
 
-    for i, q in enumerate(questions):
-        jsonl_path = raw_dir / f'q{i:04d}.jsonl'
-        if not jsonl_path.exists():
-            jsonl_path = raw_dir / f'q{i:03d}.jsonl'
-        if not jsonl_path.exists():
-            continue
+    for pq in per_question:
+        answer = pq['answer']
+        category = pq['category']
 
-        _, _, _, answer = extract_accessed_paths(str(jsonl_path))
         if not answer:
-            judge_results.append({'index': i, 'correct': 0, 'category': q['category']})
-            cat_accuracy[q['category']]['total'] += 1
+            judge_results.append({'index': pq['index'], 'correct': 0, 'category': category})
+            cat_accuracy[category]['total'] += 1
             continue
-
-        ground_truth = str(q.get('answer', ''))
-        category = q['category']
 
         # For adversarial: use our existing detector
-        if q.get('category_num') == 5:
+        if pq['category_num'] == 5:
             score = adversarial_score(answer)
-            judge_results.append({'index': i, 'correct': score, 'category': category})
+            judge_results.append({'index': pq['index'], 'correct': score, 'category': category})
             cat_accuracy[category]['correct'] += int(score)
             cat_accuracy[category]['total'] += 1
             continue
 
+        ground_truth = pq['ground_truth']
+        question = pq['question']
+
         # LLM-as-judge prompt
         prompt = f"""Judge whether the predicted answer is correct given the ground truth.
-A prediction is CORRECT if it conveys the same core information as the ground truth, even if worded differently or more verbose.
-A prediction is WRONG if it contradicts the ground truth, gives a different answer, or says the information is not available when it is.
+CORRECT: prediction conveys the same core fact as the ground truth, even if more verbose.
+WRONG: prediction contradicts the ground truth, gives a different answer, or says info is unavailable when it exists.
 
+Question: {question}
 Ground truth: {ground_truth}
 Prediction: {answer[:500]}
 
@@ -385,72 +304,216 @@ Reply with exactly one word: CORRECT or WRONG"""
         except Exception:
             is_correct = 0
 
-        judge_results.append({'index': i, 'correct': is_correct, 'category': category})
+        judge_results.append({'index': pq['index'], 'correct': is_correct, 'category': category})
         cat_accuracy[category]['correct'] += is_correct
         cat_accuracy[category]['total'] += 1
 
-        padded = f'{i:04d}'
+        padded = f'{pq["index"]:04d}'
         symbol = '+' if is_correct else '-'
         print(f'  q{padded} [{category}]: {symbol}', file=sys.stderr)
 
-    # Report
+    # Aggregate
     total_correct = sum(s['correct'] for s in cat_accuracy.values())
     total_count = sum(s['total'] for s in cat_accuracy.values())
     overall_acc = total_correct / total_count if total_count > 0 else 0
-
     overall_lo, overall_hi = wilson_ci(total_correct, total_count)
 
+    return {
+        'judge_model': judge_model,
+        'overall_accuracy': round(overall_acc, 4),
+        'overall_ci_95': [round(overall_lo, 4), round(overall_hi, 4)],
+        'total_correct': total_correct,
+        'total_scored': total_count,
+        'by_category': {
+            k: {
+                'accuracy': round(v['correct'] / v['total'], 4) if v['total'] else 0,
+                'ci_95': [round(x, 4) for x in wilson_ci(v['correct'], v['total'])],
+                **v,
+            }
+            for k, v in cat_accuracy.items()
+        },
+        'per_question': judge_results,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: Write combined report + analysis JSON
+# ---------------------------------------------------------------------------
+
+def write_report(results_dir, metrics, judge_data=None):
+    """Write report.md and analysis.json with judge as primary (when available)."""
+    results_dir = Path(results_dir)
+    gt = metrics['gt']
+    per_question = metrics['per_question']
+    scored_count = len(per_question)
+
     lines = []
+    lines.append('# LoCoMo End-to-End Benchmark')
     lines.append('')
-    lines.append('## LLM-as-Judge Answer Accuracy')
-    lines.append('')
-    lines.append(f'**Overall: {overall_acc:.1%}** ({total_correct}/{total_count}) — 95% CI [{overall_lo:.1%}, {overall_hi:.1%}]')
-    lines.append(f'Judge model: {judge_model}')
-    lines.append('')
-    lines.append('| Category | Questions | Accuracy | 95% CI |')
-    lines.append('|----------|-----------|----------|--------|')
-    for cat, stats in sorted(cat_accuracy.items()):
-        acc = stats['correct'] / stats['total'] if stats['total'] > 0 else 0
-        lo, hi = wilson_ci(stats['correct'], stats['total'])
-        lines.append(f'| {cat} | {stats["total"]} | {acc:.1%} ({stats["correct"]}/{stats["total"]}) | [{lo:.1%}, {hi:.1%}] |')
+    lines.append(f'**Date:** {datetime.now().strftime("%Y-%m-%d %H:%M")}')
+    lines.append(f'**Questions Scored:** {scored_count} / {len(gt["questions"])}')
+    lines.append(f'**Vault Mode:** {gt.get("vault_mode", "dialog")}')
+    lines.append(f'**Sessions:** {gt.get("total_sessions", "?")}')
+    lines.append(f'**Total Cost:** ${metrics["total_cost"]:.2f}')
     lines.append('')
 
-    judge_report = '\n'.join(lines)
-    print(judge_report)
+    # --- Overall Results ---
+    lines.append('## Overall Results')
+    lines.append('')
+    lines.append('| Metric | Value |')
+    lines.append('|--------|-------|')
 
-    # Append to existing report
+    if judge_data:
+        acc = judge_data['overall_accuracy']
+        lo, hi = judge_data['overall_ci_95']
+        n_correct = judge_data['total_correct']
+        n_total = judge_data['total_scored']
+        lines.append(f'| Answer Accuracy | **{acc:.1%}** ({n_correct}/{n_total}, LLM-as-judge) &mdash; 95% CI [{lo:.1%}, {hi:.1%}] |')
+
+    er = metrics['overall_evidence_recall']
+    total_found = sum(s['found'] for s in metrics['cat_evidence'].values())
+    total_relevant = sum(s['relevant'] for s in metrics['cat_evidence'].values())
+    lines.append(f'| Evidence Recall | **{er:.1%}** ({total_found}/{total_relevant} evidence sessions found) |')
+
+    f1 = metrics['overall_answer_score']
+    label = 'diagnostic' if judge_data else 'token F1'
+    lines.append(f'| Token F1 | {f1:.3f} ({label}) |')
+
+    if scored_count > 0:
+        lines.append(f'| Avg Cost/Question | ${metrics["total_cost"]/scored_count:.3f} |')
+    lines.append('')
+
+    # --- By Category ---
+    lines.append('## By Category')
+    lines.append('')
+
+    # Build header
+    if judge_data:
+        lines.append('| Category | Questions | Accuracy (judge) | 95% CI | Evidence Recall | Token F1 |')
+        lines.append('|----------|-----------|------------------|--------|-----------------|----------|')
+    else:
+        lines.append('| Category | Questions | Evidence Recall | Avg Score |')
+        lines.append('|----------|-----------|-----------------|-----------|')
+
+    all_cats = sorted(set(list(metrics['cat_evidence'].keys()) + list(metrics['cat_answer'].keys())))
+    for cat in all_cats:
+        ev = metrics['cat_evidence'].get(cat, {'found': 0, 'relevant': 0, 'count': 0})
+        ans = metrics['cat_answer'].get(cat, {'score_sum': 0, 'count': 0})
+        n = ev['count'] or ans['count']
+        er_cat = ev['found'] / ev['relevant'] if ev['relevant'] > 0 else 0
+        f1_cat = ans['score_sum'] / ans['count'] if ans['count'] > 0 else 0
+        metric_type = 'adversarial' if cat == 'adversarial' else 'F1'
+
+        if judge_data:
+            jcat = judge_data['by_category'].get(cat, {})
+            acc_cat = jcat.get('accuracy', 0)
+            ci = jcat.get('ci_95', [0, 0])
+            lines.append(f'| {cat} | {n} | {acc_cat:.1%} | [{ci[0]:.1%}, {ci[1]:.1%}] | {er_cat:.1%} | {f1_cat:.3f} ({metric_type}) |')
+        else:
+            lines.append(f'| {cat} | {n} | {er_cat:.1%} ({ev["found"]}/{ev["relevant"]}) | {f1_cat:.3f} ({metric_type}) |')
+    lines.append('')
+
+    # --- Worst evidence recall ---
+    missed = [q for q in per_question if q['evidence_recall'] < 1.0 and q['category'] != 'adversarial']
+    missed.sort(key=lambda x: x['evidence_recall'])
+    if missed:
+        lines.append('## Lowest Evidence Recall (worst 10)')
+        lines.append('')
+        lines.append('| Question | Category | Recall | F1 |')
+        lines.append('|----------|----------|--------|----|')
+        for q in missed[:10]:
+            lines.append(f'| {q["question"][:55]}... | {q["category"]} | {q["evidence_recall"]:.0%} | {q["answer_f1"]:.2f} |')
+        lines.append('')
+
+    if judge_data:
+        lines.append(f'*Judge model: {judge_data["judge_model"]}*')
+        lines.append('')
+
+    report = '\n'.join(lines)
+    print(report)
+
+    # Write report.md
     report_path = results_dir / 'report.md'
-    with open(report_path, 'a') as f:
-        f.write(judge_report)
+    with open(report_path, 'w') as f:
+        f.write(report)
+    print(f'\nReport: {report_path}', file=sys.stderr)
 
-    # Write judge results
-    judge_path = results_dir / 'judge-results.json'
-    with open(judge_path, 'w') as f:
-        json.dump({
-            'judge_model': judge_model,
-            'overall_accuracy': round(overall_acc, 4),
-            'overall_ci_95': [round(overall_lo, 4), round(overall_hi, 4)],
-            'total_correct': total_correct,
-            'total_scored': total_count,
-            'by_category': {
-                k: {
-                    'accuracy': round(v['correct']/v['total'], 4) if v['total'] else 0,
-                    'ci_95': [round(x, 4) for x in wilson_ci(v['correct'], v['total'])],
-                    **v,
-                }
-                for k, v in cat_accuracy.items()
-            },
-            'per_question': judge_results,
-        }, f, indent=2)
+    # Write analysis.json
+    analysis = {
+        'generated': datetime.now().isoformat(),
+        'dataset': 'locomo10',
+        'vault_mode': gt.get('vault_mode', 'dialog'),
+        'total_questions': len(gt['questions']),
+        'scored_questions': scored_count,
+        'total_sessions': gt.get('total_sessions', 0),
+        'overall_evidence_recall': round(metrics['overall_evidence_recall'], 4),
+        'overall_token_f1': round(metrics['overall_answer_score'], 4),
+        'total_cost_usd': round(metrics['total_cost'], 4),
+        'by_category_evidence': {
+            k: {'recall': round(v['found'] / v['relevant'], 4) if v['relevant'] else 0, **v}
+            for k, v in metrics['cat_evidence'].items()
+        },
+        'by_category_answer': {
+            k: {'avg_f1': round(v['score_sum'] / v['count'], 4) if v['count'] else 0, **v}
+            for k, v in metrics['cat_answer'].items()
+        },
+        'per_question': [
+            {k: v for k, v in q.items() if k not in ('answer', 'ground_truth', 'question')}
+            for q in per_question
+        ],
+    }
 
-    print(f'\nJudge results: {judge_path}', file=sys.stderr)
-    return overall_acc, cat_accuracy
+    # Backward compat: keep overall_answer_score as alias for token F1
+    analysis['overall_answer_score'] = analysis['overall_token_f1']
 
+    if judge_data:
+        analysis['primary_answer_metric'] = 'judge_accuracy'
+        analysis['judge_model'] = judge_data['judge_model']
+        analysis['overall_judge_accuracy'] = judge_data['overall_accuracy']
+        analysis['overall_judge_ci_95'] = judge_data['overall_ci_95']
+        for cat, jcat in judge_data['by_category'].items():
+            if cat in analysis['by_category_answer']:
+                analysis['by_category_answer'][cat]['judge_accuracy'] = jcat['accuracy']
+                analysis['by_category_answer'][cat]['judge_ci_95'] = jcat['ci_95']
+    else:
+        analysis['primary_answer_metric'] = 'token_f1'
+
+    analysis_path = results_dir / 'analysis.json'
+    with open(analysis_path, 'w') as f:
+        json.dump(analysis, f, indent=2)
+    print(f'Analysis: {analysis_path}', file=sys.stderr)
+
+    # Write standalone judge-results.json (if judge ran)
+    if judge_data:
+        judge_path = results_dir / 'judge-results.json'
+        with open(judge_path, 'w') as f:
+            json.dump(judge_data, f, indent=2)
+        print(f'Judge results: {judge_path}', file=sys.stderr)
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) < 3:
+        print('Usage: analyze-benchmark.py <results_dir> <ground_truth.json> [--judge] [--judge-model MODEL]', file=sys.stderr)
+        sys.exit(1)
 
-    # Run LLM-as-judge if --judge flag is passed
+    results_dir = sys.argv[1]
+    gt_path = sys.argv[2]
+
+    raw_dir = Path(results_dir) / 'raw'
+    if not raw_dir.exists():
+        print(f'No raw directory at {raw_dir}', file=sys.stderr)
+        sys.exit(1)
+
+    # Phase 1: compute evidence recall + token F1
+    print('Computing metrics...', file=sys.stderr)
+    metrics = compute_metrics(results_dir, gt_path)
+
+    # Phase 2: run judge (if requested)
+    judge_data = None
     if '--judge' in sys.argv:
         judge_model = 'haiku'
         if '--judge-model' in sys.argv:
@@ -458,4 +521,7 @@ if __name__ == '__main__':
             if idx + 1 < len(sys.argv):
                 judge_model = sys.argv[idx + 1]
         print(f'\n=== Running LLM-as-Judge Scoring (model: {judge_model}) ===\n', file=sys.stderr)
-        judge_answers(sys.argv[1], sys.argv[2], judge_model=judge_model)
+        judge_data = judge_answers(metrics['per_question'], judge_model=judge_model)
+
+    # Phase 3: write combined report
+    write_report(results_dir, metrics, judge_data)

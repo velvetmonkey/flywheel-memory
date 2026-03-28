@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'lib'))
 
 from answer_layer import (
     adversarial_score,
+    brevity_check,
     judge_answer as al_judge_answer,
     normalize_answer,
     parse_raw_answer,
@@ -162,12 +163,16 @@ def compute_metrics(results_dir, gt_path):
             extraction_mode = artifact.get('extraction_mode', 'unknown')
             raw_token_count = artifact.get('raw_token_count', 0)
             final_token_count = artifact.get('final_token_count', 0)
+            compression_applied = artifact.get('compression_applied', False)
+            compression_reason = artifact.get('compression_reason', '')
         else:
             # Legacy: no artifact, parse from JSONL
             raw_answer = parse_raw_answer(str(jsonl_path))
             final_answer, extraction_mode = parse_contracted_answer(raw_answer)
             raw_token_count = len(normalize_answer(raw_answer).split())
             final_token_count = len(normalize_answer(final_answer).split())
+            compression_applied = False
+            compression_reason = ''
 
         # Answer quality scoring (raw and final)
         ground_truth = q.get('answer', '')
@@ -196,6 +201,8 @@ def compute_metrics(results_dir, gt_path):
             'extraction_mode': extraction_mode,
             'raw_token_count': raw_token_count,
             'final_token_count': final_token_count,
+            'compression_applied': compression_applied,
+            'compression_reason': compression_reason,
             'evidence_recall': round(evidence_recall, 3),
             'raw_token_f1': round(raw_score, 3),
             'final_token_f1': round(final_score, 3),
@@ -378,17 +385,25 @@ def write_report(results_dir, metrics, judge_data=None):
             lines.append(f'| {cat} | {n} | {er_cat:.1%} ({ev["found"]}/{ev["relevant"]}) | {final_f1_cat:.3f} | {raw_f1_cat:.3f} |')
     lines.append('')
 
-    # --- Extraction summary ---
+    # --- Answer Layer Diagnostics ---
     modes = defaultdict(int)
     for q in per_question:
         modes[q.get('extraction_mode', 'unknown')] += 1
+    compression_count = sum(1 for q in per_question if q.get('compression_applied', False))
+    compression_rate = compression_count / scored_count if scored_count > 0 else 0
+    avg_raw_tokens = sum(q.get('raw_token_count', 0) for q in per_question) / scored_count if scored_count > 0 else 0
+    avg_final_tokens = sum(q.get('final_token_count', 0) for q in per_question) / scored_count if scored_count > 0 else 0
+
     if modes:
-        lines.append('## Answer Extraction')
+        lines.append('## Answer Layer Diagnostics')
         lines.append('')
-        lines.append('| Mode | Count |')
-        lines.append('|------|-------|')
-        for mode, count in sorted(modes.items(), key=lambda x: -x[1]):
-            lines.append(f'| {mode} | {count} |')
+        lines.append('| Metric | Value |')
+        lines.append('|--------|-------|')
+        mode_parts = ', '.join(f'{k}: {v}' for k, v in sorted(modes.items()))
+        lines.append(f'| Extraction Modes | {mode_parts} |')
+        lines.append(f'| Compression Rate | {compression_rate:.0%} ({compression_count}/{scored_count}) |')
+        lines.append(f'| Avg Raw Tokens | {avg_raw_tokens:.1f} |')
+        lines.append(f'| Avg Final Tokens | {avg_final_tokens:.1f} |')
         lines.append('')
 
     # --- Worst evidence recall ---
@@ -455,11 +470,32 @@ def write_report(results_dir, metrics, judge_data=None):
     # Backward compat: overall_token_f1 = raw token F1
     analysis['overall_token_f1'] = analysis['overall_raw_token_f1']
 
+    # Adversarial accuracy (separate metric)
+    adv_final = metrics['cat_final_f1'].get('adversarial', {'score_sum': 0, 'count': 0})
+    if adv_final['count'] > 0:
+        analysis['overall_adversarial_accuracy'] = round(adv_final['score_sum'] / adv_final['count'], 4)
+
+    # Answer layer diagnostics
+    analysis['answer_layer_diagnostics'] = {
+        'extraction_modes': dict(modes),
+        'compression_rate': round(compression_rate, 4),
+        'avg_raw_tokens': round(avg_raw_tokens, 1),
+        'avg_final_tokens': round(avg_final_tokens, 1),
+    }
+
     if judge_data:
         analysis['primary_answer_metric'] = 'judge_accuracy'
         analysis['judge_model'] = judge_data['judge_model']
         analysis['overall_judge_accuracy'] = judge_data['overall_accuracy']
         analysis['overall_judge_ci_95'] = judge_data['overall_ci_95']
+        analysis['judge_scored_count'] = judge_data['total_scored']
+        analysis['judge_failed_count'] = sum(
+            1 for jq in judge_data.get('per_question', [])
+            if jq.get('correct') == 0 and not any(
+                pq['index'] == jq['index'] and pq.get('category_num') == 5
+                for pq in per_question
+            )
+        ) if judge_data.get('per_question') else 0
         for cat, jcat in judge_data['by_category'].items():
             if cat in analysis['by_category_answer']:
                 analysis['by_category_answer'][cat]['judge_accuracy'] = jcat['accuracy']

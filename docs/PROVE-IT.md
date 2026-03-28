@@ -14,9 +14,9 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 - [Phase 5: Try a Different Domain](#phase-5-try-a-different-domain)
 - [Phase 6: Your Own Vault](#phase-6-your-own-vault)
 - [Reproduce Our Numbers](#reproduce-our-numbers)
-  - [1. Unit Tests (2,712 passed)](#1-unit-tests-2712-passed)
-  - [2. HotpotQA Retrieval Benchmark (92.4% recall, 500 questions)](#2-hotpotqa-retrieval-benchmark-917-recall-500-questions)
-  - [3. LoCoMo E2E Benchmark (79% recall, 695 questions)](#3-locomo-e2e-benchmark-79-recall-695-questions)
+  - [1. Unit Tests](#1-unit-tests)
+  - [2. HotpotQA Retrieval Benchmark (92.4% recall, 500 questions)](#2-hotpotqa-retrieval-benchmark-924-recall-500-questions)
+  - [3. LoCoMo E2E Benchmark (84.3% evidence recall, 695 questions)](#3-locomo-e2e-benchmark-843-evidence-recall-695-questions)
 - [What You Just Proved](#what-you-just-proved)
 - [Why It's Efficient](#why-its-efficient)
 - [Next Steps](#next-steps)
@@ -25,7 +25,7 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 
 ## Prerequisites
 
-- **Node.js 22–24** -- check with `node --version`.
+- **Node.js 22+** -- check with `node --version`.
 - **Claude Code** -- authenticated and working (`claude --version`)
 - **git** -- to clone the repo
 
@@ -40,16 +40,9 @@ npm install
 npm test
 ```
 
-Wait for it:
+Your output will reflect the current Vitest totals in this checkout. As of **March 28, 2026**, the repo defines **2,760 tests across 142 test files**.
 
-```
-Test Suites: 129 passed, 129 total
-Tests:       2,712 passed, 2,712 total
-Snapshots:   0 total
-Time:        ~18s
-```
-
-2,712 tests. All passing. No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults. If something is broken, you know in 18 seconds.
+No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults.
 
 ---
 
@@ -194,7 +187,7 @@ See [SETUP.md](SETUP.md) for the complete walkthrough.
 
 Three headline benchmarks, three sets of instructions. Each is self-contained and copy-pasteable.
 
-### 1. Unit Tests (2,712 passed)
+### 1. Unit Tests
 
 **What it proves:** Every tool handler, search index, graph traversal, mutation engine, security boundary, and concurrency path works correctly against real vaults and real SQLite databases. No external service mocks.
 
@@ -213,16 +206,13 @@ npm test
 
 **Expected output:**
 
-```
-Test Suites: 129 passed, 129 total
-Tests:       2,712 passed, 2,712 total
-Snapshots:   0 total
-Time:        ~18s
-```
+- A successful `vitest` run across all three workspace packages
+- Totals that match the current checkout
+- As of **March 28, 2026**: **2,760 defined tests across 142 test files**
 
-`npm test` runs `vitest run` across all three workspace packages (vault-core, flywheel-memory, flywheel-bench). The mcp-server package contains the vast majority of tests. No network access, no API keys, no Docker -- just Node and SQLite.
+`npm test` runs `vitest run` across all three workspace packages (`vault-core`, `flywheel-memory`, `flywheel-bench`). The mcp-server package contains the vast majority of tests. No network access, no API keys, no Docker -- just Node and SQLite.
 
-**Estimated time:** ~1 minute (install) + ~18 seconds (tests).
+**Estimated time:** roughly 1 minute for install, then a short local test run.
 
 ---
 
@@ -235,7 +225,7 @@ Time:        ~18s
 - MCP server built: `npm run build`
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI authenticated (`claude --version`)
 - Python 3 (for analysis script)
-- Anthropic API credits (~$0.058/question)
+- Anthropic API credits (latest checked-in 500-question run averaged **$0.074/question**)
 
 **Step 1: Build the benchmark vault**
 
@@ -268,18 +258,19 @@ Results land in `demos/hotpotqa/results/run-<timestamp>/`.
 cat demos/hotpotqa/results/run-*/report.md
 ```
 
-**Expected results:**
+**Latest checked-in artifact:** `demos/hotpotqa/results/run-20260328T044033/report.md` (**March 28, 2026**)
 
-| Metric | Expected |
+| Metric | Latest checked-in run |
 |---|---|
-| Document Recall | ~92% (917/1000 supporting docs found) |
-| Full Recall (both docs) | ~84% (418/500) |
-| Partial Recall (at least 1 doc) | ~99.8% (499/500) |
+| Document Recall | **92.4%** (924/1000 supporting docs found) |
+| Full Recall (both docs) | **85.2%** (426/500) |
+| Partial Recall (at least 1 doc) | **99.6%** (498/500) |
+| Avg Cost / Question | **$0.074** |
 
-Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 92.4% headline is from seed 42 with Sonnet.
+Exact numbers vary between runs due to model non-determinism and pricing changes. Treat the table above as the latest committed run, not a permanent invariant.
 
 **Estimated time:** ~2-3 hours for 500 questions (each question is a separate Claude session).
-**Estimated cost:** ~$29 (500 questions x ~$0.058/question).
+**Estimated cost:** about **$37** at the pricing/model mix used in the latest checked-in run.
 
 **Smaller test run:** To verify the pipeline works before committing to the full 500:
 
@@ -291,7 +282,7 @@ This runs 20 questions in ~10 minutes for ~$1.25.
 
 ---
 
-### 3. LoCoMo E2E Benchmark (79% recall, 695 questions)
+### 3. LoCoMo E2E Benchmark (84.3% evidence recall, 695 questions)
 
 **What it proves:** Flywheel retrieves evidence from long-term conversational memory — measured on the same LoCoMo dataset from Snap Research (ACL 2024) used by Mem0, Zep, LangMem, and MemGPT.
 
@@ -300,7 +291,7 @@ This runs 20 questions in ~10 minutes for ~$1.25.
 - MCP server built: `npm run build`
 - Claude Code CLI authenticated
 - Python 3
-- Anthropic API credits (~$0.12/question)
+- Anthropic API credits (latest checked-in 695-question run averaged **$0.122/question**)
 
 **Step 1: Build the benchmark vault**
 
@@ -334,21 +325,21 @@ Results land in `demos/locomo/results/run-<timestamp>/`.
 cat demos/locomo/results/run-*/report.md
 ```
 
-**Expected results:**
+**Latest checked-in artifact:** `demos/locomo/results/run-20260328T043936/report.md` (**March 28, 2026**)
 
 | Category | Questions | Evidence Recall | Accuracy (Judge) |
 |---|---|---|---|
-| **Overall** | **695** | **~84%** | **~59%** |
-| Single-hop | 139 | ~97% | ~77% |
-| Commonsense | 139 | ~96% | ~78% |
-| Multi-hop | 139 | ~74% | ~39% |
-| Temporal | 96 | ~69% | ~53% |
-| Adversarial | 182 | ~99% | ~48% |
+| **Overall** | **695** | **84.3%** | **58.7%** |
+| Single-hop | 139 | 97.4% | 77.0% |
+| Commonsense | 139 | 96.4% | 78.4% |
+| Multi-hop | 139 | 73.7% | 38.9% |
+| Temporal | 96 | 69.2% | 53.1% |
+| Adversarial | 182 | 98.9% | 47.8% |
 
-Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 84.3% headline is from seed 42 with Sonnet. Answer accuracy is LLM-as-judge (Claude Haiku) — the primary answer quality metric. Token F1 (diagnostic) is also reported automatically on every run.
+Latest checked-in final token F1 is **0.483** and raw token F1 is **0.291**. Exact numbers vary between runs due to model non-determinism. Answer accuracy is LLM-as-judge (Claude Haiku in the latest committed report).
 
 **Estimated time:** ~8-12 hours for 695 questions.
-**Estimated cost:** ~$85 (695 x ~$0.12/question).
+**Estimated cost:** about **$85** at the pricing/model mix used in the latest checked-in run.
 
 **Smaller test run:** To verify the pipeline:
 
@@ -362,7 +353,7 @@ This runs 30 questions in ~15 minutes for ~$2.50.
 
 ## What You Just Proved
 
-1. **Tests pass** -- 2,712 of them, against real data
+1. **The test corpus is substantial** -- 2,760 defined tests in the current checkout, against real data
 2. **Graph queries work** -- backlinks + metadata, no file reads
 3. **Auto-wikilinks work** -- plain text in, linked text out
 4. **The algorithm is transparent** -- scores with explanations, not black boxes

@@ -4,7 +4,7 @@
 
 Your vault is your second brain. You don't hand it to software you can't trust.
 
-**2,712 tests | 129 test files | 47,000+ lines of test code**
+**2,760 defined tests | 142 test files | 54,700+ lines of test code**
 
 - [Test Philosophy](#test-philosophy)
 - [CI Pipeline](#ci-pipeline)
@@ -207,10 +207,6 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 - **Sample size.** Flywheel: 500 questions. Academic baselines typically use the full dev set (7,405 questions). Our confidence intervals are tighter than our earlier 200-question run but still wider than the full set.
 - **What's real.** Flywheel's 92.4% beats the standard BM25 baseline (~75%) by +17pp, attributable to 2-hop backfill, query expansion, and FTS5 OR-mode with BM25 ranking. Flywheel exceeds MDR (~88%) and approaches Beam Retrieval (~93%) despite zero training data, purpose-built architectures, and a harder retrieval setting (5,000 docs vs 10). Run-to-run variance of ~1pp is expected due to LLM non-determinism.
 
-### Comparison with other MCP/vault tools
-
-As of March 2026, we are not aware of any other MCP memory tool that has published end-to-end retrieval benchmarks on a standard academic dataset. Most tools in this space report feature lists but not measured retrieval quality.
-
 Source: [`demos/hotpotqa/`](../demos/hotpotqa/) | [`packages/mcp-server/test/retrieval-bench/`](../packages/mcp-server/test/retrieval-bench/)
 
 ### CI Regression Gate
@@ -359,7 +355,7 @@ The graph quality suite validates that the wikilink suggestion engine works corr
 
 ### Baselines
 
-Locked in `baselines.json` (2026-02-26). CI fails if any metric regresses >5pp.
+Locked in `baselines.json` (**2026-02-26**). CI fails if any metric regresses >5pp. These are regression baselines, not the same thing as the latest generated proof report in [QUALITY_REPORT.md](QUALITY_REPORT.md).
 
 | Mode | Precision | Recall | F1 | MRR |
 |---|---|---|---|---|
@@ -368,6 +364,8 @@ Locked in `baselines.json` (2026-02-26). CI fails if any metric regresses >5pp.
 | Aggressive | 26.1% | 76.7% | 39.0% | 0.742 |
 
 Measured against a 96-note/61-entity ground truth vault. Links stripped, engine must rediscover them.
+
+The latest generated proof report checked into this repo is [QUALITY_REPORT.md](QUALITY_REPORT.md), generated on **March 27, 2026 21:45 UTC**. Its current balanced-mode headline is **40.2% precision / 71.7% recall / 51.5% F1**.
 
 ### Multi-Generation Stress Test
 
@@ -403,7 +401,7 @@ This is a fundamentally different claim than "the handler returns valid JSON." I
 
 Every test is a real `claude -p` session against a demo vault. Claude gets `--strict-mcp-config` (no filesystem, no web — vault tools only). The output is captured as `stream-json` JSONL, and Python analyzers extract every `tool_use` event to compute adoption rates, tool sequences, and category breakdowns. Clean state between runs: StateDb deleted, write operations git-restored. Nothing is mocked.
 
-We are not aware of any other MCP server that publishes live AI test results.
+This kind of test is valuable because it measures actual tool selection and composition, not just handler correctness.
 
 ### Test Suites
 
@@ -413,7 +411,7 @@ We are not aware of any other MCP server that publishes live AI test results.
 | **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
 | **Sequential workflow** | 7-beat workflow where each beat builds on previous vault state | 7 beats | 7/7 passed | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
 | **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 500 questions | 92.4% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
-| **LoCoMo benchmark** | Retrieval + answer accuracy on long-term conversational memory (5 categories) | 759 questions | 84.9% recall, 58.8% accuracy | [`locomo/run-benchmark.sh`](../demos/locomo/run-benchmark.sh) |
+| **LoCoMo benchmark** | Retrieval + answer accuracy on long-term conversational memory (5 categories) | 695 scored questions | 84.3% evidence recall, 58.7% accuracy | [`locomo/run-benchmark.sh`](../demos/locomo/run-benchmark.sh) |
 
 ### Why This Matters
 

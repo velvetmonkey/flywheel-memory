@@ -44,15 +44,15 @@
 
 7 production-ready vaults representing real knowledge work. Each demo is a self-contained Obsidian vault with an `.mcp.json` already configured.
 
-| Demo | Persona | Try This | Notes |
-|------|---------|----------|-------|
-| [carter-strategy](../demos/carter-strategy/) | Solo consultant tracking clients and invoices | "How much have I billed Acme Corp?" | 32 |
-| [artemis-rocket](../demos/artemis-rocket/) | Rocket engineer managing milestones | "What's blocking the propulsion milestone?" | 63 |
-| [startup-ops](../demos/startup-ops/) | SaaS co-founder running operations | "What's our MRR?" | 31 |
-| [nexus-lab](../demos/nexus-lab/) | PhD researcher navigating literature | "How does AlphaFold connect to my experiment?" | 32 |
-| [solo-operator](../demos/solo-operator/) | Content creator managing revenue | "How's revenue this month?" | 16 |
-| [support-desk](../demos/support-desk/) | Support agent resolving tickets | "What's Sarah Chen's situation?" | 12 |
-| [zettelkasten](../demos/zettelkasten/) | Zettelkasten student studying learning science | "How does spaced repetition connect to active recall?" | 47 |
+| Demo | Persona | Try This |
+|------|---------|----------|
+| [carter-strategy](../demos/carter-strategy/) | Solo consultant tracking clients and invoices | "How much have I billed Acme Corp?" |
+| [artemis-rocket](../demos/artemis-rocket/) | Rocket engineer managing milestones | "What's blocking the propulsion milestone?" |
+| [startup-ops](../demos/startup-ops/) | SaaS co-founder running operations | "What's our MRR?" |
+| [nexus-lab](../demos/nexus-lab/) | PhD researcher navigating literature | "How does AlphaFold connect to my experiment?" |
+| [solo-operator](../demos/solo-operator/) | Content creator managing revenue | "How's revenue this month?" |
+| [support-desk](../demos/support-desk/) | Support agent resolving tickets | "What's Sarah Chen's situation?" |
+| [zettelkasten](../demos/zettelkasten/) | Zettelkasten student studying learning science | "How does spaced repetition connect to active recall?" |
 
 Every demo is a real test fixture. If it works in the README, it passes in CI.
 
@@ -67,7 +67,7 @@ cd flywheel-memory/demos/carter-strategy && claude
 
 ```bash
 npm run build    # Build both packages
-npm test         # Run full test suite (2,712 tests)
+npm test         # Run full test suite
 npm run dev      # Watch mode
 npm run lint     # Type check
 ```
@@ -82,13 +82,13 @@ For architecture details and code organization, see [ARCHITECTURE.md](ARCHITECTU
 No. Flywheel runs entirely on your machine. No cloud services, no API keys (beyond Claude itself), no data leaves your disk. The SQLite indexes live inside your vault directory.
 
 **How many notes can it handle?**
-CI benchmarks test 100,000-line file mutations and 2,500-entity indexes. The bench package can generate vaults up to 100k notes. The in-memory index builds at startup (a few seconds cold, ~100ms cached) and queries return in under 10ms.
+CI benchmarks test 100,000-line file mutations and 2,500-entity indexes. The bench package can generate very large synthetic vaults. See [BENCHMARKS.md](BENCHMARKS.md) and [TESTING.md](TESTING.md) for the scoped measurements that are actually checked in.
 
 **Will it corrupt my vault?**
-2,712 tests say no. The test suite includes 100 parallel write operations with zero corruption, property-based fuzzing with 50+ randomized scenarios per property, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
+The repo currently defines 2,760 tests across 142 test files. The suite includes 100 parallel write operations with zero corruption in the stress tests, property-based fuzzing, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
 
 **How much does it cost in tokens?**
-A typical query uses 50-200 tokens of context. Compare that to grep-and-read, which typically costs ~800-2,000 tokens for text-searchable questions. Measured across a 7-beat demo scenario: the `brief` tool delivers 44x token savings (71 tokens vs 3,164 baseline). The bigger win is structural queries (backlinks, hubs, paths) that grep can't answer at all.
+It depends on the dataset, model, and task. The checked-in benchmark artifacts currently show about **$0.074/question** for the latest HotpotQA 500-question run and **$0.122/question** for the latest 695-question LoCoMo E2E run. See [TESTING.md](TESTING.md) for the exact scope and dates.
 
 **Does it work with Claude Desktop?**
 Yes. See [CONFIGURATION.md](CONFIGURATION.md) for Claude Desktop setup instructions.

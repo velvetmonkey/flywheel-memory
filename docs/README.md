@@ -23,6 +23,7 @@
 | Document | Description | Key Question |
 |----------|-------------|--------------|
 | [SETUP.md](SETUP.md) | Set up your own vault — prerequisites, config, first commands | "How do I get started with my own vault?" |
+| [OPENCLAW.md](OPENCLAW.md) | Wire Flywheel into OpenClaw with MCP, agent bindings, and tool presets | "How should I set up Flywheel behind an OpenClaw bot?" |
 | [TOOLS.md](TOOLS.md) | Full tool reference — 75 tools across 12 categories | "What tools are available and what do they do?" |
 | [COOKBOOK.md](COOKBOOK.md) | Example prompts organized by use case | "What can I ask Claude to do with my vault?" |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Index strategy, FTS5 search, graph model, auto-wikilinks | "How does Flywheel work under the hood?" |

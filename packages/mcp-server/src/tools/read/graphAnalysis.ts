@@ -13,7 +13,7 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 import { getExcludeTags, getExcludeEntities, type FlywheelConfig } from '../../core/read/config.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
-import { findOrphanNotes, findHubNotes } from '../../core/read/graph.js';
+import { findOrphanNotes, findHubNotes, normalizeTarget } from '../../core/read/graph.js';
 import { computeCentralityMetrics, detectCycles } from './graphAdvanced.js';
 
 /** Check if a note path looks like a periodic note (daily, weekly, monthly, quarterly, yearly). */
@@ -262,8 +262,8 @@ export function registerGraphAnalysisTools(
             }
 
             // 4. Backlink count score
-            const normalizedTitle = note.title.toLowerCase();
-            const backlinks = index.backlinks.get(normalizedTitle) || [];
+            const normalizedPath = normalizeTarget(note.path);
+            const backlinks = index.backlinks.get(normalizedPath) || [];
             const backlinkCount = backlinks.length;
             const backlinkScore = backlinkCount === 0 ? 0 : backlinkCount <= 2 ? 0.5 : 1.0;
 

@@ -6,6 +6,7 @@
  */
 
 import type { VaultIndex, VaultNote, Backlink } from '../../core/read/types.js';
+import { normalizeTarget } from '../../core/read/graph.js';
 
 // =============================================================================
 // TYPES
@@ -555,9 +556,9 @@ export function findContradictions(
     }
   }
 
-  for (const [entityName, _entityPath] of entitiesToCheck) {
+  for (const [entityName, entityPath] of entitiesToCheck) {
     // Find all notes that link to this entity
-    const backlinks = index.backlinks.get(entityName);
+    const backlinks = index.backlinks.get(normalizeTarget(entityPath));
     if (!backlinks || backlinks.length < 2) continue;
 
     // Get unique source note paths

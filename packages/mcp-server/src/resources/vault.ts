@@ -8,6 +8,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../core/read/types.js';
 import { getFrontmatterSchema } from '../tools/read/frontmatter.js';
+import { normalizeTarget } from '../core/read/graph.js';
 
 /**
  * Register vault resources with the MCP server
@@ -52,8 +53,8 @@ export function registerVaultResources(
       // Count orphans (notes with no backlinks)
       let orphanCount = 0;
       for (const note of index.notes.values()) {
-        const normalizedTitle = note.title.toLowerCase();
-        const backlinks = index.backlinks.get(normalizedTitle);
+        const normalizedPath = normalizeTarget(note.path);
+        const backlinks = index.backlinks.get(normalizedPath);
         if (!backlinks || backlinks.length === 0) {
           orphanCount++;
         }

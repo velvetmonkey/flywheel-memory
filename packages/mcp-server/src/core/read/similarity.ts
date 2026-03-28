@@ -10,6 +10,7 @@ import type Database from 'better-sqlite3';
 import type { VaultIndex } from './types.js';
 import * as fs from 'fs';
 import * as path from 'path';
+import { normalizeTarget } from './graph.js';
 import {
   findSemanticallySimilar,
   buildEmbeddingsIndex,
@@ -122,8 +123,8 @@ export function findSimilarNotes(
         }
 
         // Backlinks
-        const normalizedTitle = note.title.toLowerCase();
-        const backlinks = index.backlinks.get(normalizedTitle) || [];
+        const normalizedPath = normalizeTarget(note.path);
+        const backlinks = index.backlinks.get(normalizedPath) || [];
         for (const bl of backlinks) {
           linkedPaths.add(bl.source);
         }
@@ -159,8 +160,8 @@ function getLinkedPaths(index: VaultIndex, sourcePath: string): Set<string> {
   }
 
   // Backlinks
-  const normalizedTitle = note.title.toLowerCase();
-  const backlinks = index.backlinks.get(normalizedTitle) || [];
+  const normalizedPath = normalizeTarget(note.path);
+  const backlinks = index.backlinks.get(normalizedPath) || [];
   for (const bl of backlinks) {
     linkedPaths.add(bl.source);
   }

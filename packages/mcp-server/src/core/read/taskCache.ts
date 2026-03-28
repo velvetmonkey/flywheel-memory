@@ -336,6 +336,20 @@ export function queryTasksFromCache(options: {
 }
 
 /**
+ * Return the number of tasks currently in the cache.
+ */
+export function getTaskCount(): number {
+  const scopeDb = getDb();
+  if (!scopeDb) return 0;
+  try {
+    const row = scopeDb.prepare('SELECT COUNT(*) as count FROM tasks').get() as { count: number } | undefined;
+    return row?.count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
  * Check if the task cache is stale
  */
 export function isTaskCacheStale(): boolean {

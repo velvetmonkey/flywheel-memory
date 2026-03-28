@@ -152,10 +152,11 @@ describe('tokenize', () => {
     });
 
     it('should handle aliased wikilinks', () => {
-      const tokens = tokenize('See [[Jordan Smith|Jordan]] for info');
+      // 'info' is now a stopword in the canonical set — use 'details' instead
+      const tokens = tokenize('See [[Jordan Smith|Jordan]] for details');
       expect(tokens).toContain('jordan');
       expect(tokens).toContain('smith');
-      expect(tokens).toContain('info');
+      expect(tokens).toContain('details');
     });
 
     it('should remove markdown formatting', () => {

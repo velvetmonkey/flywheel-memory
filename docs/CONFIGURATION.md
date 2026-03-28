@@ -129,8 +129,8 @@ Start with `default`, then add what you need:
 | Config | Tools | What you get |
 |--------|-------|--------------|
 | `default` | 18 | search, read, write, tasks, memory |
-| `default,graph` | 28 | default + graph analysis, semantic analysis, paths, hubs |
-| `default,graph,wikilinks` | 35 | + link suggestions, validation |
+| `default,graph` | 29 | default + graph analysis, semantic analysis, paths, hubs |
+| `default,graph,wikilinks` | 36 | + link suggestions, validation |
 | `full` | 75 | All 12 categories |
 
 #### How It Works

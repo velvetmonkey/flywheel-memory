@@ -11,7 +11,7 @@
  * - vault_schema (4 modes: overview, field_values, inconsistencies, contradictions)
  * - schema_conventions (extracted: conventions, incomplete, suggest_values)
  * - schema_validate (extracted: validate, missing)
- * - note_intelligence (unified: prose_patterns, suggest_frontmatter, wikilinks, cross_layer, compute)
+ * - note_intelligence (unified: prose_patterns, suggest_frontmatter, wikilinks, compute, semantic_links)
  * - get_backlinks (absorbed find_bidirectional_links via include_bidirectional param)
  * - validate_links (absorbed find_broken_links via typos_only param)
  */
@@ -37,7 +37,7 @@ import {
   type IndexState,
 } from './core/read/graph.js';
 import { scanVault } from './core/read/vault.js';
-import { loadConfig, inferConfig, saveConfig, type FlywheelConfig } from './core/read/config.js';
+import { loadConfig, inferConfig, saveConfig, DEFAULT_ENTITY_EXCLUDE_FOLDERS, getExcludeTags, type FlywheelConfig } from './core/read/config.js';
 import { findVaultRoot } from './core/read/vaultRoot.js';
 import {
   createVaultWatcher,
@@ -604,7 +604,7 @@ async function main() {
   }
 }
 
-const DEFAULT_ENTITY_EXCLUDE_FOLDERS = ['node_modules', 'templates', 'attachments', 'tmp'];
+// DEFAULT_ENTITY_EXCLUDE_FOLDERS imported from ./core/read/config.js
 
 /** Timestamp of last co-occurrence index rebuild (epoch ms) */
 let lastCooccurrenceRebuildAt = 0;
@@ -777,7 +777,7 @@ async function runPostIndexWork(ctx: VaultContext) {
     }
   }
 
-  // Load/infer config early so task cache can use exclude_task_tags
+  // Load/infer config early so task cache can use exclude tags
   const existing = loadConfig(sd);
   const inferred = inferConfig(index, vp);
   if (sd) {
@@ -791,7 +791,7 @@ async function runPostIndexWork(ctx: VaultContext) {
   if (sd) {
     if (isTaskCacheStale()) {
       serverLog('tasks', 'Task cache stale, rebuilding...');
-      refreshIfStale(vp, index, flywheelConfig.exclude_task_tags);
+      refreshIfStale(vp, index, getExcludeTags(flywheelConfig));
     } else {
       serverLog('tasks', 'Task cache fresh, skipping rebuild');
     }

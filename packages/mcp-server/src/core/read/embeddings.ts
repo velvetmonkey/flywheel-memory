@@ -37,6 +37,7 @@ import * as fs from 'fs';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 import * as path from 'path';
 import { scanVault } from './vault.js';
+import { SYSTEM_EXCLUDED_DIRS } from '../shared/constants.js';
 
 // =============================================================================
 // Types
@@ -106,16 +107,6 @@ export function getActiveModelId(): string {
 // Constants
 // =============================================================================
 
-/** Directories to exclude from embedding */
-const EXCLUDED_DIRS = new Set([
-  '.obsidian',
-  '.trash',
-  '.git',
-  'node_modules',
-  'templates',
-  '.claude',
-  '.flywheel',
-]);
 
 /** Maximum file size to embed (5MB) */
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -437,7 +428,7 @@ export function buildNoteEmbeddingText(content: string, filePath: string): strin
 
 function shouldIndexFile(filePath: string): boolean {
   const parts = filePath.split('/');
-  return !parts.some(part => EXCLUDED_DIRS.has(part));
+  return !parts.some(part => SYSTEM_EXCLUDED_DIRS.has(part));
 }
 
 export interface BuildProgress {

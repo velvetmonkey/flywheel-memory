@@ -189,24 +189,36 @@ These are rules, not preferences:
 
 ## Benchmarked
 
-**91.7% retrieval recall** on [HotpotQA](https://hotpotqa.github.io/) — 500 hard multi-hop questions across 4,960 documents. Zero training data. $0.06/question. 2-8ms search.
+**91.7% retrieval recall** on [HotpotQA](https://hotpotqa.github.io/). **84.8% recall@5** on [LoCoMo](https://snap-research.github.io/locomo/) conversational memory. Zero training data. Fully local. $0.06/question.
 
-Flywheel controls retrieval — did we find the right documents? The model controls comprehension. Every number is reproducible: clone the repo, run the scripts, get the same numbers.
+Every number is reproducible: clone the repo, run the scripts, get the same results. No other MCP memory tool publishes retrieval benchmarks on standard academic datasets.
 
-**Retrieval vs. academic baselines** (HotpotQA, 500 questions):
+**Multi-hop retrieval vs. academic baselines** (HotpotQA, 500 questions, 4,960 documents):
 
-| System | Type | Recall | Training data |
-|---|---|---|---|
-| BM25 baseline | IR | ~75% | None |
-| [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | IR | ~80% | None |
-| [Baleen](https://arxiv.org/abs/2101.00436) (Stanford) | Trained retriever | ~85% | HotpotQA |
-| [MDR](https://arxiv.org/abs/2009.12756) (Facebook) | Trained retriever | ~88% | HotpotQA |
-| **Flywheel** | **MCP vault tool** | **91.7%** | **None** |
-| [Beam Retrieval](https://arxiv.org/abs/2308.08973) | Trained retriever | ~93% | End-to-end |
+| System | Recall | Training data |
+|---|---|---|
+| BM25 baseline | ~75% | None |
+| [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | ~80% | None |
+| [Baleen](https://arxiv.org/abs/2101.00436) (Stanford) | ~85% | HotpotQA |
+| [MDR](https://arxiv.org/abs/2009.12756) (Facebook) | ~88% | HotpotQA |
+| **Flywheel** | **91.7%** | **None** |
+| [Beam Retrieval](https://arxiv.org/abs/2308.08973) | ~93% | End-to-end |
 
-Not apples-to-apples — different test settings, sample sizes, and retrieval pools. [Full caveats →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 1,531 questions, 272 session notes):
 
-**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions): **95.5%** single-hop recall, **65.3%** multi-hop, **79.1%** evidence recall overall. $0.095/question. No other MCP memory tool publishes retrieval benchmarks on a standard academic dataset. [LoCoMo details →](docs/TESTING.md#retrieval-benchmark-locomo) | [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
+| Category | Recall@5 | Recall@10 |
+|---|---|---|
+| **Overall** | **84.8%** | **90.4%** |
+| Single-hop | 88.1% | 91.7% |
+| Commonsense | 95.4% | 98.3% |
+| Multi-hop | 58.1% | 72.7% |
+| Temporal | 56.9% | 67.4% |
+
+E2E with Claude Sonnet (695 questions): 95.5% single-hop evidence recall, 65.3% multi-hop, 79.1% overall. Competitors (Mem0, Zep, LangMem) report answer accuracy via GPT-4o judge but not evidence recall — metrics differ. [Full comparison →](docs/TESTING.md#retrieval-benchmark-locomo)
+
+> **Directional, not apples-to-apples.** Different test settings, sample sizes, retrieval pools, and metrics. Flywheel searches 4,960 pooled docs (harder than HotpotQA distractor setting of 10, easier than fullwiki 5M+). Academic retrievers train on the benchmark; Flywheel has zero training data. [Full caveats →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+
+[`demos/hotpotqa/`](demos/hotpotqa/) · [`demos/locomo/`](demos/locomo/) · [Full methodology →](docs/TESTING.md)
 
 ---
 

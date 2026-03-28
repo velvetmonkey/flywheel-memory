@@ -24,6 +24,9 @@ JUDGE="${JUDGE:-1}"
 JUDGE_MODEL="${JUDGE_MODEL:-haiku}"
 ANSWER_EXTRACT="${ANSWER_EXTRACT:-1}"
 EXTRACT_MODEL="${EXTRACT_MODEL:-haiku}"
+ANSWER_MAX_TOKENS="${ANSWER_MAX_TOKENS:-10}"
+ANSWER_MAX_CHARS="${ANSWER_MAX_CHARS:-100}"
+ANSWER_MAX_SENTENCES="${ANSWER_MAX_SENTENCES:-1}"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="${RESUME:-$SCRIPT_DIR/results/run-$TIMESTAMP}"
 
@@ -212,6 +215,9 @@ ANSWER: <your concise factual answer>
       --index "$i" \
       --category "$category" \
       --model "$EXTRACT_MODEL" \
+      --max-tokens "$ANSWER_MAX_TOKENS" \
+      --max-chars "$ANSWER_MAX_CHARS" \
+      --max-sentences "$ANSWER_MAX_SENTENCES" \
       --output "$answer_artifact" 2>&1 | tr '\n' ' '
   fi
   echo "done"

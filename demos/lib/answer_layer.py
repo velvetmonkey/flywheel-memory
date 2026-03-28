@@ -33,6 +33,9 @@ UNAVAILABLE_SENTINEL = 'Not stated in the vault.'
 ANSWER_PREFIX = 'ANSWER:'
 
 BREVITY_THRESHOLD = 10  # normalized token count above which extraction runs
+ANSWER_MAX_TOKENS = 10
+ANSWER_MAX_CHARS = 100
+ANSWER_MAX_SENTENCES = 1
 
 ARTICLES = {'a', 'an', 'the'}
 
@@ -133,6 +136,39 @@ def adversarial_score(prediction):
 
 
 # ---------------------------------------------------------------------------
+# Brevity checks
+# ---------------------------------------------------------------------------
+
+def count_sentences(text):
+    """Count sentences via regex split on sentence-ending punctuation."""
+    if not text.strip():
+        return 0
+    parts = re.split(r'[.!?]+(?:\s|$)', text.strip())
+    return len([p for p in parts if p.strip()])
+
+
+def brevity_check(answer, max_tokens=ANSWER_MAX_TOKENS, max_chars=ANSWER_MAX_CHARS,
+                  max_sentences=ANSWER_MAX_SENTENCES):
+    """Check if answer exceeds any brevity threshold.
+
+    Returns (needs_compression, reason_string).
+    """
+    tc = len(normalize_answer(answer).split()) if answer.strip() else 0
+    if tc > max_tokens:
+        return (True, f'over_max_tokens:{tc}>{max_tokens}')
+
+    cc = len(answer)
+    if cc > max_chars:
+        return (True, f'over_max_chars:{cc}>{max_chars}')
+
+    sc = count_sentences(answer)
+    if sc > max_sentences:
+        return (True, f'over_max_sentences:{sc}>{max_sentences}')
+
+    return (False, '')
+
+
+# ---------------------------------------------------------------------------
 # Raw answer parser
 # ---------------------------------------------------------------------------
 
@@ -196,19 +232,27 @@ def parse_contracted_answer(text):
 # Extraction / compression
 # ---------------------------------------------------------------------------
 
-def extract_concise(raw_answer, question, model='haiku', retries=1):
+def extract_concise(raw_answer, question, model='haiku', retries=1,
+                    max_tokens=ANSWER_MAX_TOKENS, max_chars=ANSWER_MAX_CHARS,
+                    max_sentences=ANSWER_MAX_SENTENCES):
     """Compress a verbose answer into a concise factual statement.
 
-    Only runs LLM extraction when the answer exceeds BREVITY_THRESHOLD tokens.
-    Returns (final_answer, extraction_mode, extract_error).
+    Runs LLM extraction when any brevity threshold is exceeded or parser fell back.
+    Returns (final_answer, extraction_mode, extract_error, compression_reason).
     """
     # First try contract parsing
     parsed, mode = parse_contracted_answer(raw_answer)
 
-    # Check if already concise
+    # Check brevity thresholds
+    needs_compress, compress_reason = brevity_check(parsed, max_tokens, max_chars, max_sentences)
+    if mode == 'parser_fallback' and not needs_compress:
+        needs_compress = True
+        compress_reason = 'fallback_parse'
+
+    if not needs_compress:
+        return parsed, mode, None, ''
+
     token_count = len(normalize_answer(parsed).split())
-    if token_count <= BREVITY_THRESHOLD:
-        return parsed, mode, None
 
     # LLM extraction for verbose answers
     prompt = f"""Extract ONLY the factual answer from this response. Reply with just the fact, nothing else.
@@ -227,7 +271,7 @@ Factual answer:"""
             )
             extracted = result.stdout.strip()
             if extracted:
-                return extracted, 'llm_extract', None
+                return extracted, 'compressed', None, compress_reason
             last_error = f'empty response (exit {result.returncode})'
             if result.stderr.strip():
                 last_error += f': {result.stderr.strip()[:200]}'
@@ -241,7 +285,7 @@ Factual answer:"""
 
     # Extraction failed — return parsed as-is with error detail
     print(f'  extract failed ({token_count} tokens kept): {last_error}', file=sys.stderr)
-    return parsed, mode, last_error
+    return parsed, 'extraction_failed', last_error, compress_reason
 
 
 # ---------------------------------------------------------------------------
@@ -290,14 +334,17 @@ Reply with exactly one word: CORRECT or WRONG"""
 # Per-question artifact
 # ---------------------------------------------------------------------------
 
-def process_question(jsonl_path, question, index, category, model='haiku'):
+def process_question(jsonl_path, question, index, category, model='haiku',
+                     max_tokens=ANSWER_MAX_TOKENS, max_chars=ANSWER_MAX_CHARS,
+                     max_sentences=ANSWER_MAX_SENTENCES):
     """Parse and optionally extract a concise answer from a question's JSONL.
 
-    Returns the answer artifact dict.
+    Returns the answer artifact dict with compression diagnostics.
     """
     raw_answer = parse_raw_answer(jsonl_path)
-    final_answer, extraction_mode, extract_error = extract_concise(
-        raw_answer, question, model=model
+    final_answer, extraction_mode, extract_error, compression_reason = extract_concise(
+        raw_answer, question, model=model,
+        max_tokens=max_tokens, max_chars=max_chars, max_sentences=max_sentences,
     )
 
     raw_tokens = normalize_answer(raw_answer).split()
@@ -312,7 +359,8 @@ def process_question(jsonl_path, question, index, category, model='haiku'):
         'extraction_mode': extraction_mode,
         'raw_token_count': len(raw_tokens),
         'final_token_count': len(final_tokens),
-        'normalized': raw_answer != final_answer,
+        'compression_applied': extraction_mode == 'compressed',
+        'compression_reason': compression_reason,
     }
     if extract_error:
         artifact['extract_error'] = extract_error
@@ -333,13 +381,18 @@ def main():
     ext.add_argument('--index', required=True, type=int, help='Question index')
     ext.add_argument('--category', required=True, help='Question category')
     ext.add_argument('--model', default='haiku', help='Model for extraction')
+    ext.add_argument('--max-tokens', type=int, default=ANSWER_MAX_TOKENS)
+    ext.add_argument('--max-chars', type=int, default=ANSWER_MAX_CHARS)
+    ext.add_argument('--max-sentences', type=int, default=ANSWER_MAX_SENTENCES)
     ext.add_argument('--output', required=True, help='Output artifact path')
 
     args = parser.parse_args()
 
     if args.command == 'extract':
         artifact = process_question(
-            args.jsonl, args.question, args.index, args.category, model=args.model
+            args.jsonl, args.question, args.index, args.category, model=args.model,
+            max_tokens=args.max_tokens, max_chars=args.max_chars,
+            max_sentences=args.max_sentences,
         )
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)

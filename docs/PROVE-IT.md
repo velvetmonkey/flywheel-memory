@@ -15,7 +15,7 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 - [Phase 6: Your Own Vault](#phase-6-your-own-vault)
 - [Reproduce Our Numbers](#reproduce-our-numbers)
   - [1. Unit Tests (2,712 passed)](#1-unit-tests-2712-passed)
-  - [2. HotpotQA Retrieval Benchmark (91.7% recall, 500 questions)](#2-hotpotqa-retrieval-benchmark-917-recall-500-questions)
+  - [2. HotpotQA Retrieval Benchmark (92.4% recall, 500 questions)](#2-hotpotqa-retrieval-benchmark-917-recall-500-questions)
   - [3. LoCoMo E2E Benchmark (79% recall, 695 questions)](#3-locomo-e2e-benchmark-79-recall-695-questions)
 - [What You Just Proved](#what-you-just-proved)
 - [Why It's Efficient](#why-its-efficient)
@@ -226,7 +226,7 @@ Time:        ~18s
 
 ---
 
-### 2. HotpotQA Retrieval Benchmark (91.7% recall, 500 questions)
+### 2. HotpotQA Retrieval Benchmark (92.4% recall, 500 questions)
 
 **What it proves:** Flywheel's search finds 92% of supporting documents on a standard multi-hop QA dataset from CMU/Stanford -- beating BM25 baselines by +17pp and exceeding purpose-built neural retrievers that were trained on the dataset.
 
@@ -276,7 +276,7 @@ cat demos/hotpotqa/results/run-*/report.md
 | Full Recall (both docs) | ~84% (418/500) |
 | Partial Recall (at least 1 doc) | ~99.8% (499/500) |
 
-Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 91.7% headline is from seed 42 with Sonnet.
+Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 92.4% headline is from seed 42 with Sonnet.
 
 **Estimated time:** ~2-3 hours for 500 questions (each question is a separate Claude session).
 **Estimated cost:** ~$29 (500 questions x ~$0.058/question).

@@ -11,7 +11,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code%20%7C%20OpenClaw-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
-[![HotpotQA](https://img.shields.io/badge/HotpotQA-91.7%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+[![HotpotQA](https://img.shields.io/badge/HotpotQA-92.4%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-79%25%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 [![Cost](https://img.shields.io/badge/cost-%240.06--0.10%2Fquery-green.svg)](docs/TESTING.md#how-the-e2e-benchmark-works)
 [![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
@@ -230,7 +230,7 @@ These are rules, not preferences:
 
 ## Benchmarked
 
-**91.7% retrieval recall** on [HotpotQA](https://hotpotqa.github.io/). **84.8% recall@5** on [LoCoMo](https://snap-research.github.io/locomo/) conversational memory. Zero training data. Fully local. $0.06/question.
+**92.4% retrieval recall** on [HotpotQA](https://hotpotqa.github.io/). **84.8% recall@5** on [LoCoMo](https://snap-research.github.io/locomo/) conversational memory. Zero training data. Fully local. $0.07/question.
 
 Every number is reproducible: clone the repo, run the scripts, get the same results. No other MCP memory tool publishes retrieval benchmarks on standard academic datasets.
 
@@ -242,7 +242,7 @@ Every number is reproducible: clone the repo, run the scripts, get the same resu
 | [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | ~80% | None |
 | [Baleen](https://arxiv.org/abs/2101.00436) (Stanford) | ~85% | HotpotQA |
 | [MDR](https://arxiv.org/abs/2009.12756) (Facebook) | ~88% | HotpotQA |
-| **Flywheel** | **91.7%** | **None** |
+| **Flywheel** | **92.4%** | **None** |
 | [Beam Retrieval](https://arxiv.org/abs/2308.08973) | ~93% | End-to-end |
 
 **Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 1,531 questions, 272 session notes):
@@ -257,7 +257,7 @@ Every number is reproducible: clone the repo, run the scripts, get the same resu
 
 E2E with Claude Sonnet (695 questions): 95.5% single-hop evidence recall, 65.3% multi-hop, 79.1% overall. Competitors (Mem0, Zep, LangMem) report answer accuracy via GPT-4o judge but not evidence recall — metrics differ. [Full comparison →](docs/TESTING.md#retrieval-benchmark-locomo)
 
-> **Directional, not apples-to-apples.** Different test settings, sample sizes, retrieval pools, and metrics. Flywheel searches 4,960 pooled docs (harder than HotpotQA distractor setting of 10, easier than fullwiki 5M+). Academic retrievers train on the benchmark; Flywheel has zero training data. [Full caveats →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+> **Directional, not apples-to-apples.** Different test settings, sample sizes, retrieval pools, and metrics. Flywheel searches 4,960 pooled docs (harder than HotpotQA distractor setting of 10, easier than fullwiki 5M+). Academic retrievers train on the benchmark; Flywheel has zero training data. Run-to-run variance of ~1pp is expected due to LLM non-determinism. [Full caveats →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
 [`demos/hotpotqa/`](demos/hotpotqa/) · [`demos/locomo/`](demos/locomo/) · [Full methodology →](docs/TESTING.md)
 

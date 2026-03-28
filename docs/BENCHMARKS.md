@@ -67,7 +67,6 @@ Typical latency for common tool calls (1,500-note vault, index warm):
 | `get_backlinks` | 1–5ms | Index lookup |
 | `health_check` | 10–30ms | Aggregates multiple subsystems |
 | `vault_add_to_section` | 5–20ms | Read + parse + write + hash check |
-| `recall` | 15–50ms | Multi-channel retrieval |
 | `temporal_summary` | 50–200ms | Composes 3 tools |
 
 ## StateDb Disk Usage

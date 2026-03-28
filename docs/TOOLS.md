@@ -367,6 +367,8 @@ Store and retrieve facts, preferences, and observations. Each memory has a key, 
 
 Cold-start context for any session. Builds a token-budgeted summary of recent sessions, active entities, stored memories, pending corrections, and vault pulse — so an agent can pick up where it left off without reading the whole vault.
 
+Available in the `default` preset via the `memory` category.
+
 **Parameters:** `max_tokens`, `focus`
 
 ---

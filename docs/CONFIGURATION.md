@@ -153,16 +153,16 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 |----------|-------|-----------------|
 | `search` | 3 | search, init_semantic, find_similar |
 | `read` | 3 | get_note_structure, get_section_content, find_sections |
-| `write` | 7 | vault_add/remove/replace_in_section, vault_update_frontmatter, vault_create_note, vault_undo_last_mutation, policy |
-| `graph` | 11 | graph_analysis, semantic_analysis, get_backlinks, get_forward_links, connection strength, entities, paths, neighbors, weighted/strong links, export_graph |
+| `write` | 7 | vault_add_to_section, vault_remove_from_section, vault_replace_in_section, vault_update_frontmatter, vault_create_note, vault_undo_last_mutation, policy |
+| `graph` | 11 | graph_analysis, semantic_analysis, get_backlinks, get_forward_links, get_connection_strength, list_entities, get_link_path, get_common_neighbors, get_weighted_links, get_strong_connections, export_graph |
 | `schema` | 7 | vault_schema, schema_conventions, schema_validate, note_intelligence, rename_field, migrate_field_values, rename_tag |
 | `wikilinks` | 7 | suggest_wikilinks, validate_links, wikilink_feedback, discover_stub_candidates, discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report |
-| `corrections` | 4 | vault_record_correction, vault_list/resolve_correction, absorb_as_alias |
+| `corrections` | 4 | vault_record_correction, vault_list_corrections, vault_resolve_correction, absorb_as_alias |
 | `tasks` | 3 | tasks, vault_toggle_task, vault_add_task |
 | `memory` | 2 | memory, brief |
-| `note-ops` | 4 | vault_delete/move/rename_note, merge_entities |
+| `note-ops` | 4 | vault_delete_note, vault_move_note, vault_rename_note, merge_entities |
 | `temporal` | 4 | get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
-| `diagnostics` | 20 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest/dismiss_merge, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export |
+| `diagnostics` | 20 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest_entity_merges, dismiss_merge_suggestion, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export |
 
 Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work with a warning — they resolve to current category names.
 

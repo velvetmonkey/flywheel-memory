@@ -151,7 +151,7 @@ OpenClaw's `bindings[]` model is the right place to decide which conversations g
 
 Recommended starting point:
 
-- Start with `default` for note capture, recall, task updates, and general vault Q&A.
+- Start with `default` for note capture, search, task updates, and general vault Q&A.
 - Move to `full` when you want graph analysis, schema tools, diagnostics, temporal tools, or policy authoring without revisiting the config.
 - Use explicit bundles if you know exactly what the bot should and should not be able to touch.
 

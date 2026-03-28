@@ -565,7 +565,7 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 | corrections | 4 | 3/3 (100%) | 1/4 | absorb_as_alias, vault_list_corrections, vault_resolve_correction |
 | diagnostics | 14 | 3/3 (100%) | 2/14 | dismiss_merge_suggestion, flywheel_config, flywheel_doctor, get_all_entities, get_folder_structure, get_unlinked_mentions, refresh_index, server_log, suggest_entity_merges, vault_activity, vault_growth, vault_init |
 | graph | 10 | 3/3 (100%) | 2/10 | get_backlinks, get_common_neighbors, get_forward_links, get_strong_connections, get_weighted_links, graph_analysis, list_entities, semantic_analysis |
-| memory | 3 | 3/3 (100%) | 1/3 | memory, recall |
+| memory | 2 | 3/3 (100%) | 1/2 | memory |
 | note-ops | 4 | 3/3 (100%) | 1/4 | merge_entities, vault_delete_note, vault_move_note |
 | read | 3 | 3/3 (100%) | 1/3 | find_sections, get_section_content |
 | schema | 7 | 3/3 (100%) | 2/7 | migrate_field_values, note_intelligence, rename_field, rename_tag, schema_validate |
@@ -681,13 +681,12 @@ Each of 69 tools tested with a targeted prompt against carter-strategy vault.
 | vault_add_task | 1/1 | PASS | get_note_structure, search, vault_add_task |
 | vault_toggle_task | 1/1 | PASS | get_note_structure, search, tasks, vault_toggle_task |
 
-### memory (2/3)
+### memory (1/2)
 
 | Tool | Hit Rate | Status | Tools Called |
 |------|---------|--------|-------------|
-| brief | 1/1 | PASS | brief, get_note_structure, recall, search, tasks |
+| brief | 1/1 | PASS | brief, get_note_structure, search, tasks |
 | memory | 0/1 | FAIL | (none) |
-| recall | 1/1 | PASS | get_note_structure, recall |
 
 ### note-ops (3/4)
 
@@ -772,12 +771,12 @@ Each of 69 tools tested with a targeted prompt against carter-strategy vault.
 | Beat | Status | Expected | Tools Used | Categories |
 |------|--------|----------|------------|------------|
 | beat1-brief | PASS | brief | ToolSearch, ToolSearch, brief, Read | builtin:3, memory:1 |
-| beat2-billing | PASS | recall, search | ToolSearch, search, tasks | builtin:1, search:1, tasks:1 |
+| beat2-billing | PASS | search | ToolSearch, search, tasks | builtin:1, search:1, tasks:1 |
 | beat3-tasks | PASS | policy, vault_add_task | ToolSearch, ToolSearch, search, search, vault_add_task, vault_add_task, ToolSearch, policy, policy, vault_add_task, vault_add_task | builtin:3, search:2, tasks:4, write:2 |
 | beat4-showstopper | PASS | vault_add_to_section | ToolSearch, search, search, search, search, search, search, search, search, get_note_structure, get_note_structure, get_note_structure, TodoWrite, get_section_content, get_note_structure, get_note_structure, ToolSearch, search, get_note_structure, TodoWrite, get_section_content, get_section_content, ToolSearch, Read, Read, Read, vault_add_to_section, vault_add_to_section, vault_add_to_section, policy, refresh_index, vault_add_to_section, get_folder_structure, policy, vault_add_to_section, vault_update_frontmatter, vault_update_frontmatter, TodoWrite, refresh_index, vault_update_frontmatter, search, search, search, vault_create_note, vault_create_note, vault_add_to_section, vault_add_to_section, vault_add_to_section, vault_update_frontmatter, vault_update_frontmatter, TodoWrite | builtin:10, diagnostics:3, read:9, search:12, write:17 |
 | beat5-assign | PASS | vault_update_frontmatter | ToolSearch, search, search, search, search, search, search, get_note_structure, vault_update_frontmatter, vault_create_note, vault_create_note, vault_add_task, ToolSearch, vault_create_note, vault_create_note | builtin:2, read:1, search:6, tasks:1, write:5 |
 | beat6-meeting | PASS | vault_create_note | ToolSearch, policy, search, search, search, get_folder_structure, vault_create_note | builtin:1, diagnostics:1, search:3, write:2 |
-| beat7-pipeline | PASS | policy, recall, search | ToolSearch, search, search, search, search, search, search | builtin:1, search:6 |
+| beat7-pipeline | PASS | policy, search | ToolSearch, search, search, search, search, search, search | builtin:1, search:6 |
 
 **7/7 beats passed. 12 distinct flywheel tools used across all beats.**
 

@@ -156,7 +156,14 @@ Restart OpenClaw. Flywheel appears as an MCP server with search, read, write, an
 
 The `default` preset includes search, read, write, tasks, and memory. For everything, use `"full"`.
 
-OpenClaw connects via stdio, same as Claude Desktop. For HTTP transport (e.g., running Flywheel as a shared service), see the [HTTP Clients](#http-clients-cursor-windsurf-vs-code-continue) section below.
+Recommended next step: read the dedicated [OpenClaw integration guide](OPENCLAW.md). It covers the pattern that works best in practice:
+
+- configure Flywheel on the OpenClaw gateway/agent
+- route the right channels to a dedicated OpenClaw agent
+- keep OpenClaw workspace and Obsidian vault separate unless you intentionally want them combined
+- choose `FLYWHEEL_TOOLS` based on whether you want basic note memory (`default`) or the full vault surface (`full`)
+
+OpenClaw connects via stdio here, same as Claude Desktop. For HTTP transport (e.g., running Flywheel as a shared service), see the [HTTP Clients](#http-clients-cursor-windsurf-vs-code-continue) section below.
 
 ### HTTP Clients (Cursor, Windsurf, VS Code, Continue)
 

@@ -149,7 +149,7 @@ Three things differ from macOS/Linux:
 See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full config example.
 </details>
 
-**Using Cursor, Windsurf, VS Code, OpenClaw, or another client?** See [docs/SETUP.md](docs/SETUP.md) for your client's config.
+**Using Cursor, Windsurf, VS Code, OpenClaw, or another client?** See [docs/SETUP.md](docs/SETUP.md) for client config. For OpenClaw, use the dedicated [OpenClaw integration guide](docs/OPENCLAW.md).
 
 ---
 

@@ -15,7 +15,7 @@
     <node id="note:DEMO-VIDEO-SCRIPT.md">
       <data key="label">DEMO-VIDEO-SCRIPT</data>
       <data key="type">note</data>
-      <data key="modified">2026-03-23T02:34:23.708Z</data>
+      <data key="modified">2026-03-27T09:26:14.353Z</data>
     </node>
     <node id="note:DEMO-VOICE-PKM.md">
       <data key="label">DEMO-VOICE-PKM</data>
@@ -202,559 +202,579 @@
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e2" source="note:DEMO-VOICE-PKM.md" target="note:clients/Acme Corp.md">
+    <edge id="e2" source="note:DEMO-VIDEO-SCRIPT.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e3" source="note:DEMO-VOICE-PKM.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e3" source="note:DEMO-VIDEO-SCRIPT.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e4" source="note:DEMO-VOICE-PKM.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e4" source="note:DEMO-VIDEO-SCRIPT.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e5" source="note:DEMO-VOICE-PKM.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e5" source="note:DEMO-VIDEO-SCRIPT.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e6" source="note:DEMO-VOICE-PKM.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e6" source="note:DEMO-VIDEO-SCRIPT.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e7" source="note:DEMO-VOICE-PKM.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e7" source="note:DEMO-VOICE-PKM.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e8" source="note:DEMO-VOICE-PKM.md" target="note:knowledge/Rate Card.md">
+    <edge id="e8" source="note:DEMO-VOICE-PKM.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e9" source="note:admin/Business Goals 2026.md" target="note:clients/Acme Corp.md">
+    <edge id="e9" source="note:DEMO-VOICE-PKM.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e10" source="note:admin/Business Goals 2026.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e10" source="note:DEMO-VOICE-PKM.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e11" source="note:admin/Business Goals 2026.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e11" source="note:DEMO-VOICE-PKM.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e12" source="note:admin/Business Goals 2026.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e12" source="note:DEMO-VOICE-PKM.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e13" source="note:admin/Business Goals 2026.md" target="note:admin/Quarterly Review Q4 2025.md">
+    <edge id="e13" source="note:DEMO-VOICE-PKM.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e14" source="note:admin/Business Goals 2026.md" target="note:knowledge/Rate Card.md">
+    <edge id="e14" source="note:admin/Business Goals 2026.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e15" source="note:admin/Quarterly Review Q4 2025.md" target="note:admin/Quarterly Review Q4 2025.md">
+    <edge id="e15" source="note:admin/Business Goals 2026.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e16" source="note:admin/Quarterly Review Q4 2025.md" target="note:clients/Acme Corp.md">
+    <edge id="e16" source="note:admin/Business Goals 2026.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e17" source="note:admin/Quarterly Review Q4 2025.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e17" source="note:admin/Business Goals 2026.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e18" source="note:admin/Quarterly Review Q4 2025.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e18" source="note:admin/Business Goals 2026.md" target="note:admin/Quarterly Review Q4 2025.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e19" source="note:admin/Quarterly Review Q4 2025.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e19" source="note:admin/Business Goals 2026.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e20" source="note:admin/Quarterly Review Q4 2025.md" target="note:admin/Business Goals 2026.md">
+    <edge id="e20" source="note:admin/Quarterly Review Q4 2025.md" target="note:admin/Quarterly Review Q4 2025.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e21" source="note:admin/Quarterly Review Q4 2025.md" target="note:monthly-notes/2025-12.md">
+    <edge id="e21" source="note:admin/Quarterly Review Q4 2025.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e22" source="note:clients/Acme Corp.md" target="note:clients/Acme Corp.md">
+    <edge id="e22" source="note:admin/Quarterly Review Q4 2025.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e23" source="note:clients/Acme Corp.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e23" source="note:admin/Quarterly Review Q4 2025.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e24" source="note:clients/Acme Corp.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e24" source="note:admin/Quarterly Review Q4 2025.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e25" source="note:clients/Acme Corp.md" target="note:team/Marcus Webb.md">
+    <edge id="e25" source="note:admin/Quarterly Review Q4 2025.md" target="note:admin/Business Goals 2026.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e26" source="note:clients/Acme Corp.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e26" source="note:admin/Quarterly Review Q4 2025.md" target="note:monthly-notes/2025-12.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e27" source="note:clients/Acme Corp.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e27" source="note:clients/Acme Corp.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e28" source="note:clients/Acme Corp.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e28" source="note:clients/Acme Corp.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e29" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-001.md">
+    <edge id="e29" source="note:clients/Acme Corp.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e30" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-002.md">
+    <edge id="e30" source="note:clients/Acme Corp.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e31" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-003.md">
+    <edge id="e31" source="note:clients/Acme Corp.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e32" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-006.md">
+    <edge id="e32" source="note:clients/Acme Corp.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e33" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-004.md">
+    <edge id="e33" source="note:clients/Acme Corp.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e34" source="note:clients/Acme Corp.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e34" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-001.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e35" source="note:daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e35" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-002.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e36" source="note:daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
+    <edge id="e36" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-003.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e37" source="note:daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e37" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-006.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e38" source="note:daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e38" source="note:clients/Acme Corp.md" target="note:invoices/INV-2026-004.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e39" source="note:daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
+    <edge id="e39" source="note:clients/Acme Corp.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e40" source="note:daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
+    <edge id="e40" source="note:daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e41" source="note:daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
+    <edge id="e41" source="note:daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e42" source="note:daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e42" source="note:daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e43" source="note:invoices/INV-2025-047.md" target="note:clients/Acme Corp.md">
+    <edge id="e43" source="note:daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e44" source="note:invoices/INV-2025-047.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e44" source="note:daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e45" source="note:invoices/INV-2025-047.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e45" source="note:daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e46" source="note:invoices/INV-2025-048.md" target="note:clients/Acme Corp.md">
+    <edge id="e46" source="note:daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e47" source="note:invoices/INV-2025-048.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e47" source="note:daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e48" source="note:invoices/INV-2025-048.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e48" source="note:invoices/INV-2025-047.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e49" source="note:invoices/INV-2025-048.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e49" source="note:invoices/INV-2025-047.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e50" source="note:invoices/INV-2026-001.md" target="note:clients/Acme Corp.md">
+    <edge id="e50" source="note:invoices/INV-2025-047.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e51" source="note:invoices/INV-2026-001.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e51" source="note:invoices/INV-2025-048.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e52" source="note:invoices/INV-2026-001.md" target="note:team/Marcus Webb.md">
+    <edge id="e52" source="note:invoices/INV-2025-048.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e53" source="note:invoices/INV-2026-001.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e53" source="note:invoices/INV-2025-048.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e54" source="note:invoices/INV-2026-001.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e54" source="note:invoices/INV-2025-048.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e55" source="note:invoices/INV-2026-001.md" target="note:invoices/INV-2026-002.md">
+    <edge id="e55" source="note:invoices/INV-2026-001.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e56" source="note:invoices/INV-2026-002.md" target="note:clients/Acme Corp.md">
+    <edge id="e56" source="note:invoices/INV-2026-001.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e57" source="note:invoices/INV-2026-002.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e57" source="note:invoices/INV-2026-001.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e58" source="note:invoices/INV-2026-002.md" target="note:team/Marcus Webb.md">
+    <edge id="e58" source="note:invoices/INV-2026-001.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e59" source="note:invoices/INV-2026-002.md" target="note:invoices/INV-2026-001.md">
+    <edge id="e59" source="note:invoices/INV-2026-001.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e60" source="note:invoices/INV-2026-004.md" target="note:invoices/INV-2026-003.md">
+    <edge id="e60" source="note:invoices/INV-2026-001.md" target="note:invoices/INV-2026-002.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e61" source="note:knowledge/Data Migration Playbook.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e61" source="note:invoices/INV-2026-002.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e62" source="note:knowledge/Data Migration Playbook.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e62" source="note:invoices/INV-2026-002.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e63" source="note:knowledge/Rate Card.md" target="note:knowledge/Rate Card.md">
+    <edge id="e63" source="note:invoices/INV-2026-002.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e64" source="note:knowledge/Rate Card.md" target="note:clients/Acme Corp.md">
+    <edge id="e64" source="note:invoices/INV-2026-002.md" target="note:invoices/INV-2026-001.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e65" source="note:knowledge/Rate Card.md" target="note:team/Marcus Webb.md">
+    <edge id="e65" source="note:invoices/INV-2026-004.md" target="note:invoices/INV-2026-003.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e66" source="note:knowledge/Rate Card.md" target="note:admin/Business Goals 2026.md">
+    <edge id="e66" source="note:knowledge/Data Migration Playbook.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e67" source="note:monthly-notes/2025-12.md" target="note:clients/Acme Corp.md">
+    <edge id="e67" source="note:knowledge/Data Migration Playbook.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e68" source="note:monthly-notes/2025-12.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e68" source="note:knowledge/Rate Card.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e69" source="note:monthly-notes/2025-12.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e69" source="note:knowledge/Rate Card.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e70" source="note:monthly-notes/2025-12.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e70" source="note:knowledge/Rate Card.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e71" source="note:monthly-notes/2025-12.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e71" source="note:knowledge/Rate Card.md" target="note:admin/Business Goals 2026.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e72" source="note:monthly-notes/2025-12.md" target="note:weekly-notes/2025-W52.md">
+    <edge id="e72" source="note:monthly-notes/2025-12.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e73" source="note:monthly-notes/2025-12.md" target="note:weekly-notes/2026-W01.md">
+    <edge id="e73" source="note:monthly-notes/2025-12.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e74" source="note:monthly-notes/2025-12.md" target="note:admin/Business Goals 2026.md">
+    <edge id="e74" source="note:monthly-notes/2025-12.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e75" source="note:monthly-notes/2025-12.md" target="note:admin/Quarterly Review Q4 2025.md">
+    <edge id="e75" source="note:monthly-notes/2025-12.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e76" source="note:projects/Acme Data Migration.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e76" source="note:monthly-notes/2025-12.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e77" source="note:projects/Acme Data Migration.md" target="note:clients/Acme Corp.md">
+    <edge id="e77" source="note:monthly-notes/2025-12.md" target="note:weekly-notes/2025-W52.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e78" source="note:projects/Acme Data Migration.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e78" source="note:monthly-notes/2025-12.md" target="note:weekly-notes/2026-W01.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e79" source="note:projects/Acme Data Migration.md" target="note:team/Marcus Webb.md">
+    <edge id="e79" source="note:monthly-notes/2025-12.md" target="note:admin/Business Goals 2026.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e80" source="note:projects/Acme Data Migration.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e80" source="note:monthly-notes/2025-12.md" target="note:admin/Quarterly Review Q4 2025.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e81" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2025-047.md">
+    <edge id="e81" source="note:projects/Acme Data Migration.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e82" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e82" source="note:projects/Acme Data Migration.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e83" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2026-001.md">
+    <edge id="e83" source="note:projects/Acme Data Migration.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e84" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2026-002.md">
+    <edge id="e84" source="note:projects/Acme Data Migration.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e85" source="note:projects/Acme Data Migration.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e85" source="note:projects/Acme Data Migration.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e86" source="note:projects/Acme Data Migration.md" target="note:team/Priya Kapoor.md">
+    <edge id="e86" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2025-047.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e87" source="note:proposals/Acme Analytics Add-on.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e87" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2025-048.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e88" source="note:proposals/Acme Analytics Add-on.md" target="note:clients/Acme Corp.md">
+    <edge id="e88" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2026-001.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e89" source="note:proposals/Acme Analytics Add-on.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e89" source="note:projects/Acme Data Migration.md" target="note:invoices/INV-2026-002.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e90" source="note:proposals/Acme Analytics Add-on.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e90" source="note:projects/Acme Data Migration.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e91" source="note:team/Marcus Webb.md" target="note:team/Marcus Webb.md">
+    <edge id="e91" source="note:projects/Acme Data Migration.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e92" source="note:team/Marcus Webb.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e92" source="note:proposals/Acme Analytics Add-on.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e93" source="note:team/Marcus Webb.md" target="note:clients/Acme Corp.md">
+    <edge id="e93" source="note:proposals/Acme Analytics Add-on.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e94" source="note:team/Marcus Webb.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e94" source="note:proposals/Acme Analytics Add-on.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e95" source="note:team/Priya Kapoor.md" target="note:team/Priya Kapoor.md">
+    <edge id="e95" source="note:proposals/Acme Analytics Add-on.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e96" source="note:team/Priya Kapoor.md" target="note:clients/Acme Corp.md">
+    <edge id="e96" source="note:team/Marcus Webb.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e97" source="note:team/Sarah Mitchell.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e97" source="note:team/Marcus Webb.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e98" source="note:team/Sarah Mitchell.md" target="note:clients/Acme Corp.md">
+    <edge id="e98" source="note:team/Marcus Webb.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e99" source="note:team/Sarah Mitchell.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e99" source="note:team/Marcus Webb.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e100" source="note:team/Sarah Mitchell.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e100" source="note:team/Priya Kapoor.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e101" source="note:test-results/20260323T161000/report.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e101" source="note:team/Priya Kapoor.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e102" source="note:test-results/20260323T161000/report.md" target="note:knowledge/Rate Card.md">
+    <edge id="e102" source="note:team/Sarah Mitchell.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e103" source="note:test-results/20260323T161000/report.md" target="note:team/Marcus Webb.md">
+    <edge id="e103" source="note:team/Sarah Mitchell.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e104" source="note:test-results/20260323T161000/report.md" target="note:team/Priya Kapoor.md">
+    <edge id="e104" source="note:team/Sarah Mitchell.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e105" source="note:test-results/20260323T161000/report.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e105" source="note:team/Sarah Mitchell.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e106" source="note:test-results/20260323T161000/report.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e106" source="note:test-results/20260323T161000/report.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e107" source="note:test-results/20260323T161000/report.md" target="note:clients/Acme Corp.md">
+    <edge id="e107" source="note:test-results/20260323T161000/report.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e108" source="note:test-results/20260323T161000/report.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e108" source="note:test-results/20260323T161000/report.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e109" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e109" source="note:test-results/20260323T161000/report.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e110" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
+    <edge id="e110" source="note:test-results/20260323T161000/report.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e111" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e111" source="note:test-results/20260323T161000/report.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e112" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e112" source="note:test-results/20260323T161000/report.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e113" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
+    <edge id="e113" source="note:test-results/20260323T161000/report.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e114" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
+    <edge id="e114" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e115" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
+    <edge id="e115" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e116" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e116" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e117" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e117" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e118" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
+    <edge id="e118" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e119" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e119" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e120" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e120" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e121" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
+    <edge id="e121" source="note:test-results/20260323T161000/snapshots/beat4_post/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e122" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
+    <edge id="e122" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e123" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
+    <edge id="e123" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e124" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e124" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e125" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
+    <edge id="e125" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e126" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
+    <edge id="e126" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e127" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e127" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e128" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e128" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e129" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
+    <edge id="e129" source="note:test-results/20260323T161000/snapshots/beat5_post/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e130" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
+    <edge id="e130" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Sarah Mitchell.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e131" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
+    <edge id="e131" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Marcus Webb.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e132" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e132" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:knowledge/Data Migration Playbook.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e133" source="note:weekly-notes/2025-W52.md" target="note:clients/Acme Corp.md">
+    <edge id="e133" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:proposals/Acme Analytics Add-on.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e134" source="note:weekly-notes/2025-W52.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e134" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e135" source="note:weekly-notes/2026-W01.md" target="note:clients/Acme Corp.md">
+    <edge id="e135" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:team/Priya Kapoor.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e136" source="note:weekly-notes/2026-W01.md" target="note:projects/Acme Data Migration.md">
+    <edge id="e136" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:knowledge/Rate Card.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e137" source="note:weekly-notes/2026-W01.md" target="note:proposals/Acme Analytics Add-on.md">
+    <edge id="e137" source="note:test-results/20260323T161000/snapshots/beat5_pre/daily-notes/2026-03-23.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e138" source="note:weekly-notes/2026-W01.md" target="note:knowledge/Data Migration Playbook.md">
+    <edge id="e138" source="note:weekly-notes/2025-W52.md" target="note:clients/Acme Corp.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e139" source="note:weekly-notes/2026-W01.md" target="note:invoices/INV-2025-048.md">
+    <edge id="e139" source="note:weekly-notes/2025-W52.md" target="note:projects/Acme Data Migration.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>
-    <edge id="e140" source="note:weekly-notes/2026-W01.md" target="note:admin/Business Goals 2026.md">
+    <edge id="e140" source="note:weekly-notes/2026-W01.md" target="note:clients/Acme Corp.md">
+      <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e141" source="note:weekly-notes/2026-W01.md" target="note:projects/Acme Data Migration.md">
+      <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e142" source="note:weekly-notes/2026-W01.md" target="note:proposals/Acme Analytics Add-on.md">
+      <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e143" source="note:weekly-notes/2026-W01.md" target="note:knowledge/Data Migration Playbook.md">
+      <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e144" source="note:weekly-notes/2026-W01.md" target="note:invoices/INV-2025-048.md">
+      <data key="edge_type">wikilink</data>
+      <data key="weight">1</data>
+    </edge>
+    <edge id="e145" source="note:weekly-notes/2026-W01.md" target="note:admin/Business Goals 2026.md">
       <data key="edge_type">wikilink</data>
       <data key="weight">1</data>
     </edge>

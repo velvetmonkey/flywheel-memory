@@ -145,20 +145,9 @@ import {
 // Configuration
 // ============================================================================
 
-// Auto-detect vault root: FLYWHEEL_VAULTS primary > PROJECT_PATH > VAULT_PATH > auto-detect
-const _earlyVaultConfigs = parseVaultConfig();
-const vaultPath: string = _earlyVaultConfigs
-  ? _earlyVaultConfigs[0].path
-  : (process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot());
+// Auto-detect vault root — resolved at startup in main(), not at import time
+let vaultPath: string;
 let resolvedVaultPath: string;
-try { resolvedVaultPath = realpathSync(vaultPath).replace(/\\/g, '/'); } catch { resolvedVaultPath = vaultPath.replace(/\\/g, '/'); }
-
-// Validate vault path exists
-if (!existsSync(resolvedVaultPath)) {
-  console.error(`[flywheel] Fatal: vault path does not exist: ${resolvedVaultPath}`);
-  console.error(`[flywheel] Set PROJECT_PATH or VAULT_PATH to a valid Obsidian vault directory.`);
-  process.exit(1);
-}
 
 // State variables (module-level singletons — swapped by activateVault for multi-vault)
 let vaultIndex: VaultIndex;
@@ -504,14 +493,23 @@ async function bootVault(ctx: VaultContext, startTime: number): Promise<void> {
 // ============================================================================
 
 async function main() {
+  // Resolve vault path at startup (not import time) so env changes between import and main() take effect
+  const vaultConfigs = parseVaultConfig();
+  vaultPath = vaultConfigs
+    ? vaultConfigs[0].path
+    : (process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot());
+  try { resolvedVaultPath = realpathSync(vaultPath).replace(/\\/g, '/'); } catch { resolvedVaultPath = vaultPath.replace(/\\/g, '/'); }
+
+  // Validate vault path exists
+  if (!existsSync(resolvedVaultPath)) {
+    console.error(`[flywheel] Fatal: vault path does not exist: ${resolvedVaultPath}`);
+    console.error(`[flywheel] Set PROJECT_PATH or VAULT_PATH to a valid Obsidian vault directory.`);
+    process.exit(1);
+  }
+
   serverLog('server', `Starting Flywheel Memory v${pkg.version}...`);
   serverLog('server', `Vault: ${vaultPath}`);
-
   const startTime = Date.now();
-
-  // Parse multi-vault config
-  const vaultConfigs = parseVaultConfig();
-
   // ── Phase 1: Initialize primary vault (StateDb only — fast) ──
   if (vaultConfigs) {
     vaultRegistry = new VaultRegistry(vaultConfigs[0].name);
@@ -1127,11 +1125,17 @@ async function runPostIndexWork(ctx: VaultContext) {
 
 if (process.argv.includes('--init-semantic')) {
   (async () => {
+    // Resolve vault path locally (module-level vaultPath is set in main(), which doesn't run for --init-semantic)
+    const semanticVaultConfigs = parseVaultConfig();
+    const semanticVaultPath = semanticVaultConfigs
+      ? semanticVaultConfigs[0].path
+      : (process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot());
+
     console.error('[Semantic] Pre-warming semantic search...');
-    console.error(`[Semantic] Vault: ${vaultPath}`);
+    console.error(`[Semantic] Vault: ${semanticVaultPath}`);
 
     try {
-      const db = openStateDb(vaultPath);
+      const db = openStateDb(semanticVaultPath);
       setEmbeddingsDatabase(db.db);
 
       // Model change → full clear
@@ -1141,7 +1145,7 @@ if (process.argv.includes('--init-semantic')) {
         clearEmbeddingsForRebuild();
       }
 
-      const progress = await buildEmbeddingsIndex(vaultPath, (p) => {
+      const progress = await buildEmbeddingsIndex(semanticVaultPath, (p) => {
         if (p.current % 50 === 0 || p.current === p.total) {
           console.error(`[Semantic] Embedding ${p.current}/${p.total} notes (${p.skipped} skipped)...`);
         }

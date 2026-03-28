@@ -898,8 +898,13 @@ export function diagnoseEmbeddings(vaultPath: string): EmbeddingDiagnosis {
     } else {
       checks.push({ name: 'entity_orphans', status: 'ok', detail: '0 orphaned' });
     }
-  } catch {
-    checks.push({ name: 'entity_orphans', status: 'warning', detail: 'Could not check entity embeddings' });
+  } catch (e) {
+    const msg = String(e);
+    if (msg.includes('no such table')) {
+      checks.push({ name: 'entity_orphans', status: 'ok', detail: 'No entity embeddings table' });
+    } else {
+      checks.push({ name: 'entity_orphans', status: 'warning', detail: 'Could not check entity orphans' });
+    }
   }
 
   // Check 6: Integrity (NaN/Inf sample)

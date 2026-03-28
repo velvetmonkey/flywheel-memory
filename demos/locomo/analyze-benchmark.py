@@ -5,92 +5,43 @@ Parses stream-json JSONL output from claude -p runs, computes:
   1. Evidence recall (did tools access the right session notes?)
   2. Answer quality — LLM-as-judge accuracy (primary) + token F1 (diagnostic)
 
+Uses the shared answer layer for scoring and judging. Reads per-question
+answer artifacts when available, falls back to JSONL parsing for old runs.
+
 Usage:
     python3 analyze-benchmark.py <results_dir> <ground_truth.json> [--judge] [--judge-model MODEL]
 """
 
 import json
-import math
 import re
 import sys
-from collections import Counter, defaultdict
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
+# Add demos/lib to path for answer_layer import
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'lib'))
 
-ARTICLES = {'a', 'an', 'the'}
-
-
-def wilson_ci(correct, total, z=1.96):
-    """Wilson score interval (95% CI) for a binomial proportion."""
-    if total == 0:
-        return (0.0, 0.0)
-    p = correct / total
-    denom = 1 + z * z / total
-    centre = p + z * z / (2 * total)
-    spread = z * math.sqrt(p * (1 - p) / total + z * z / (4 * total * total))
-    lo = (centre - spread) / denom
-    hi = (centre + spread) / denom
-    return (max(0.0, lo), min(1.0, hi))
-
-
-def normalize_answer(text):
-    """Lowercase, strip articles/punctuation/whitespace."""
-    text = str(text).lower()
-    text = re.sub(r'[^\w\s]', ' ', text)
-    tokens = [t for t in text.split() if t and t not in ARTICLES]
-    return ' '.join(tokens)
-
-
-def token_f1(prediction, ground_truth):
-    """Token-level F1 between prediction and ground truth."""
-    pred_tokens = normalize_answer(prediction).split()
-    truth_tokens = normalize_answer(ground_truth).split()
-
-    if not truth_tokens and not pred_tokens:
-        return 1.0
-    if not truth_tokens or not pred_tokens:
-        return 0.0
-
-    pred_counts = Counter(pred_tokens)
-    truth_counts = Counter(truth_tokens)
-
-    common = 0
-    for token, count in pred_counts.items():
-        common += min(count, truth_counts.get(token, 0))
-
-    precision = common / len(pred_tokens)
-    recall = common / len(truth_tokens)
-    if precision + recall == 0:
-        return 0.0
-    return 2 * precision * recall / (precision + recall)
-
-
-NO_INFO_PATTERNS = [
-    r'no information',
-    r'not (?:enough |sufficient )?information',
-    r'cannot (?:be |find|determine)',
-    r'not (?:mentioned|found|available|specified|stated|provided)',
-    r"(?:doesn't|does not|don't|do not) (?:mention|contain|have|include|provide|specify)",
-    r'unanswerable',
-    r'(?:no|isn\'t any|is no) (?:relevant )?(?:evidence|data|record)',
-]
-
-
-def adversarial_score(prediction):
-    """1 if response correctly indicates no info available, 0 otherwise."""
-    for pattern in NO_INFO_PATTERNS:
-        if re.search(pattern, prediction, re.IGNORECASE):
-            return 1.0
-    return 0.0
+from answer_layer import (
+    adversarial_score,
+    judge_answer as al_judge_answer,
+    normalize_answer,
+    parse_raw_answer,
+    parse_contracted_answer,
+    token_f1,
+    wilson_ci,
+)
 
 
 def extract_accessed_paths(jsonl_path):
-    """Extract note paths accessed via Flywheel tools from stream-json JSONL."""
+    """Extract note paths and tool metadata from stream-json JSONL.
+
+    Returns (paths, cost, tools_used). Answer extraction is handled
+    by the answer layer, not this function.
+    """
     paths = set()
     api_cost = 0.0
     tools_used = []
-    final_answer = ''
 
     try:
         with open(jsonl_path) as f:
@@ -106,16 +57,13 @@ def extract_accessed_paths(jsonl_path):
                 # Tool inputs
                 if obj.get('type') == 'assistant':
                     for block in obj.get('message', {}).get('content', []):
-                        if isinstance(block, dict):
-                            if block.get('type') == 'tool_use':
-                                name = block.get('name', '').replace('mcp__flywheel__', '')
-                                tools_used.append(name)
-                                inp = block.get('input', {})
-                                for key in ('path', 'note_path', 'source', 'target', 'query'):
-                                    if isinstance(inp.get(key), str) and inp[key].endswith('.md'):
-                                        paths.add(inp[key])
-                            elif block.get('type') == 'text':
-                                final_answer = block['text']
+                        if isinstance(block, dict) and block.get('type') == 'tool_use':
+                            name = block.get('name', '').replace('mcp__flywheel__', '')
+                            tools_used.append(name)
+                            inp = block.get('input', {})
+                            for key in ('path', 'note_path', 'source', 'target', 'query'):
+                                if isinstance(inp.get(key), str) and inp[key].endswith('.md'):
+                                    paths.add(inp[key])
 
                 # Tool results
                 elif obj.get('type') == 'user':
@@ -141,15 +89,11 @@ def extract_accessed_paths(jsonl_path):
                 # Cost
                 elif obj.get('type') == 'result':
                     api_cost = obj.get('total_cost_usd', 0)
-                    # Also capture final text from result
-                    result_text = obj.get('result', '')
-                    if result_text:
-                        final_answer = result_text
 
     except FileNotFoundError:
         pass
 
-    return paths, api_cost, tools_used, final_answer
+    return paths, api_cost, tools_used
 
 
 def _extract_paths(data, paths):
@@ -165,13 +109,14 @@ def _extract_paths(data, paths):
 
 
 # ---------------------------------------------------------------------------
-# Phase 1: Compute evidence recall + token F1 metrics
+# Phase 1: Compute evidence recall + raw/final token F1 metrics
 # ---------------------------------------------------------------------------
 
 def compute_metrics(results_dir, gt_path):
-    """Compute evidence recall and token F1 for all questions. Returns structured data."""
+    """Compute evidence recall and token F1 (raw + final) for all questions."""
     results_dir = Path(results_dir)
     raw_dir = results_dir / 'raw'
+    answers_dir = results_dir / 'answers'
 
     gt = json.load(open(gt_path))
     questions = gt['questions']
@@ -179,7 +124,8 @@ def compute_metrics(results_dir, gt_path):
     per_question = []
     total_cost = 0.0
     cat_evidence = defaultdict(lambda: {'found': 0, 'relevant': 0, 'count': 0})
-    cat_answer = defaultdict(lambda: {'score_sum': 0.0, 'count': 0})
+    cat_raw_f1 = defaultdict(lambda: {'score_sum': 0.0, 'count': 0})
+    cat_final_f1 = defaultdict(lambda: {'score_sum': 0.0, 'count': 0})
 
     for i, q in enumerate(questions):
         # Support both 3-digit (legacy) and 4-digit (balanced) filenames
@@ -191,7 +137,7 @@ def compute_metrics(results_dir, gt_path):
         if not jsonl_path.exists():
             continue
 
-        accessed_paths, cost, tools, answer = extract_accessed_paths(str(jsonl_path))
+        accessed_paths, cost, tools = extract_accessed_paths(str(jsonl_path))
         total_cost += cost
 
         # Evidence recall
@@ -204,25 +150,55 @@ def compute_metrics(results_dir, gt_path):
         cat_evidence[category]['relevant'] += len(relevant)
         cat_evidence[category]['count'] += 1
 
-        # Answer quality (token F1)
-        cat_num = q.get('category_num', 0)
-        if cat_num == 5:
-            answer_score = adversarial_score(answer)
-        else:
-            answer_score = token_f1(answer, q.get('answer', ''))
+        # Load answer — prefer artifact, fall back to JSONL parsing
+        artifact_path = answers_dir / f'q{i:04d}.json'
+        if not artifact_path.exists():
+            artifact_path = answers_dir / f'q{i:03d}.json'
 
-        cat_answer[category]['score_sum'] += answer_score
-        cat_answer[category]['count'] += 1
+        if artifact_path.exists():
+            artifact = json.load(open(artifact_path))
+            raw_answer = artifact.get('raw_answer', '')
+            final_answer = artifact.get('final_answer', '')
+            extraction_mode = artifact.get('extraction_mode', 'unknown')
+            raw_token_count = artifact.get('raw_token_count', 0)
+            final_token_count = artifact.get('final_token_count', 0)
+        else:
+            # Legacy: no artifact, parse from JSONL
+            raw_answer = parse_raw_answer(str(jsonl_path))
+            final_answer, extraction_mode = parse_contracted_answer(raw_answer)
+            raw_token_count = len(normalize_answer(raw_answer).split())
+            final_token_count = len(normalize_answer(final_answer).split())
+
+        # Answer quality scoring (raw and final)
+        ground_truth = q.get('answer', '')
+        cat_num = q.get('category_num', 0)
+
+        if cat_num == 5:
+            raw_score = adversarial_score(raw_answer)
+            final_score = adversarial_score(final_answer)
+        else:
+            raw_score = token_f1(raw_answer, ground_truth)
+            final_score = token_f1(final_answer, ground_truth)
+
+        cat_raw_f1[category]['score_sum'] += raw_score
+        cat_raw_f1[category]['count'] += 1
+        cat_final_f1[category]['score_sum'] += final_score
+        cat_final_f1[category]['count'] += 1
 
         per_question.append({
             'index': i,
             'question': q['question'],
-            'answer': answer,
-            'ground_truth': q.get('answer', ''),
+            'raw_answer': raw_answer,
+            'final_answer': final_answer,
+            'ground_truth': ground_truth,
             'category': category,
-            'category_num': q.get('category_num', 0),
+            'category_num': cat_num,
+            'extraction_mode': extraction_mode,
+            'raw_token_count': raw_token_count,
+            'final_token_count': final_token_count,
             'evidence_recall': round(evidence_recall, 3),
-            'answer_f1': round(answer_score, 3),
+            'raw_token_f1': round(raw_score, 3),
+            'final_token_f1': round(final_score, 3),
             'tools_used': tools,
             'paths_accessed': len(accessed_paths),
             'cost_usd': round(cost, 4),
@@ -233,18 +209,21 @@ def compute_metrics(results_dir, gt_path):
     total_relevant = sum(s['relevant'] for s in cat_evidence.values())
     overall_evidence_recall = total_found / total_relevant if total_relevant > 0 else 0
 
-    total_answer_sum = sum(s['score_sum'] for s in cat_answer.values())
-    total_answer_count = sum(s['count'] for s in cat_answer.values())
-    overall_answer_score = total_answer_sum / total_answer_count if total_answer_count > 0 else 0
+    def _avg(cat_dict):
+        total_sum = sum(s['score_sum'] for s in cat_dict.values())
+        total_count = sum(s['count'] for s in cat_dict.values())
+        return total_sum / total_count if total_count > 0 else 0
 
     return {
         'gt': gt,
         'per_question': per_question,
         'total_cost': total_cost,
         'cat_evidence': dict(cat_evidence),
-        'cat_answer': dict(cat_answer),
+        'cat_raw_f1': dict(cat_raw_f1),
+        'cat_final_f1': dict(cat_final_f1),
         'overall_evidence_recall': overall_evidence_recall,
-        'overall_answer_score': overall_answer_score,
+        'overall_raw_token_f1': _avg(cat_raw_f1),
+        'overall_final_token_f1': _avg(cat_final_f1),
     }
 
 
@@ -253,56 +232,36 @@ def compute_metrics(results_dir, gt_path):
 # ---------------------------------------------------------------------------
 
 def judge_answers(per_question, judge_model='haiku'):
-    """LLM-as-judge scoring: ask Claude to evaluate each answer as correct/wrong.
+    """LLM-as-judge scoring: evaluate each answer as correct/wrong.
 
+    Judges against final_answer (extracted/compressed), not raw.
     Comparable to Mem0 evaluation methodology.
-    Returns judge data dict (also usable standalone).
     """
-    import subprocess
-
     cat_accuracy = defaultdict(lambda: {'correct': 0, 'total': 0})
     judge_results = []
 
     for pq in per_question:
-        answer = pq['answer']
+        final_answer = pq['final_answer']
         category = pq['category']
 
-        if not answer:
+        if not final_answer:
             judge_results.append({'index': pq['index'], 'correct': 0, 'category': category})
             cat_accuracy[category]['total'] += 1
             continue
 
         # For adversarial: use our existing detector
         if pq['category_num'] == 5:
-            score = adversarial_score(answer)
+            score = adversarial_score(final_answer)
             judge_results.append({'index': pq['index'], 'correct': score, 'category': category})
             cat_accuracy[category]['correct'] += int(score)
             cat_accuracy[category]['total'] += 1
             continue
 
-        ground_truth = pq['ground_truth']
-        question = pq['question']
-
-        # LLM-as-judge prompt
-        prompt = f"""Judge whether the predicted answer is correct given the ground truth.
-CORRECT: prediction conveys the same core fact as the ground truth, even if more verbose.
-WRONG: prediction contradicts the ground truth, gives a different answer, or says info is unavailable when it exists.
-
-Question: {question}
-Ground truth: {ground_truth}
-Prediction: {answer[:500]}
-
-Reply with exactly one word: CORRECT or WRONG"""
-
-        try:
-            result = subprocess.run(
-                ['claude', '-p', prompt, '--model', judge_model, '--no-session-persistence'],
-                capture_output=True, text=True, timeout=30
-            )
-            verdict = result.stdout.strip().upper()
-            is_correct = 1 if 'CORRECT' in verdict else 0
-        except Exception:
-            is_correct = 0
+        # LLM-as-judge via answer layer
+        verdict = al_judge_answer(
+            pq['question'], pq['ground_truth'], final_answer, model=judge_model
+        )
+        is_correct = 1 if verdict['correct'] else 0
 
         judge_results.append({'index': pq['index'], 'correct': is_correct, 'category': category})
         cat_accuracy[category]['correct'] += is_correct
@@ -375,9 +334,10 @@ def write_report(results_dir, metrics, judge_data=None):
     total_relevant = sum(s['relevant'] for s in metrics['cat_evidence'].values())
     lines.append(f'| Evidence Recall | **{er:.1%}** ({total_found}/{total_relevant} evidence sessions found) |')
 
-    f1 = metrics['overall_answer_score']
-    label = 'diagnostic' if judge_data else 'token F1'
-    lines.append(f'| Token F1 | {f1:.3f} ({label}) |')
+    raw_f1 = metrics['overall_raw_token_f1']
+    final_f1 = metrics['overall_final_token_f1']
+    lines.append(f'| Final Token F1 | {final_f1:.3f} (after extraction) |')
+    lines.append(f'| Raw Token F1 | {raw_f1:.3f} (diagnostic) |')
 
     if scored_count > 0:
         lines.append(f'| Avg Cost/Question | ${metrics["total_cost"]/scored_count:.3f} |')
@@ -387,31 +347,49 @@ def write_report(results_dir, metrics, judge_data=None):
     lines.append('## By Category')
     lines.append('')
 
-    # Build header
     if judge_data:
-        lines.append('| Category | Questions | Accuracy (judge) | 95% CI | Evidence Recall | Token F1 |')
-        lines.append('|----------|-----------|------------------|--------|-----------------|----------|')
+        lines.append('| Category | Questions | Accuracy | 95% CI | Evidence Recall | Final F1 | Raw F1 |')
+        lines.append('|----------|-----------|----------|--------|-----------------|----------|--------|')
     else:
-        lines.append('| Category | Questions | Evidence Recall | Avg Score |')
-        lines.append('|----------|-----------|-----------------|-----------|')
+        lines.append('| Category | Questions | Evidence Recall | Final F1 | Raw F1 |')
+        lines.append('|----------|-----------|-----------------|----------|--------|')
 
-    all_cats = sorted(set(list(metrics['cat_evidence'].keys()) + list(metrics['cat_answer'].keys())))
+    all_cats = sorted(set(
+        list(metrics['cat_evidence'].keys()) +
+        list(metrics['cat_raw_f1'].keys()) +
+        list(metrics['cat_final_f1'].keys())
+    ))
     for cat in all_cats:
         ev = metrics['cat_evidence'].get(cat, {'found': 0, 'relevant': 0, 'count': 0})
-        ans = metrics['cat_answer'].get(cat, {'score_sum': 0, 'count': 0})
-        n = ev['count'] or ans['count']
+        raw = metrics['cat_raw_f1'].get(cat, {'score_sum': 0, 'count': 0})
+        final = metrics['cat_final_f1'].get(cat, {'score_sum': 0, 'count': 0})
+        n = ev['count'] or raw['count']
         er_cat = ev['found'] / ev['relevant'] if ev['relevant'] > 0 else 0
-        f1_cat = ans['score_sum'] / ans['count'] if ans['count'] > 0 else 0
-        metric_type = 'adversarial' if cat == 'adversarial' else 'F1'
+        raw_f1_cat = raw['score_sum'] / raw['count'] if raw['count'] > 0 else 0
+        final_f1_cat = final['score_sum'] / final['count'] if final['count'] > 0 else 0
+        metric_type = 'adv' if cat == 'adversarial' else ''
 
         if judge_data:
             jcat = judge_data['by_category'].get(cat, {})
             acc_cat = jcat.get('accuracy', 0)
             ci = jcat.get('ci_95', [0, 0])
-            lines.append(f'| {cat} | {n} | {acc_cat:.1%} | [{ci[0]:.1%}, {ci[1]:.1%}] | {er_cat:.1%} | {f1_cat:.3f} ({metric_type}) |')
+            lines.append(f'| {cat} | {n} | {acc_cat:.1%} | [{ci[0]:.1%}, {ci[1]:.1%}] | {er_cat:.1%} | {final_f1_cat:.3f} | {raw_f1_cat:.3f} |')
         else:
-            lines.append(f'| {cat} | {n} | {er_cat:.1%} ({ev["found"]}/{ev["relevant"]}) | {f1_cat:.3f} ({metric_type}) |')
+            lines.append(f'| {cat} | {n} | {er_cat:.1%} ({ev["found"]}/{ev["relevant"]}) | {final_f1_cat:.3f} | {raw_f1_cat:.3f} |')
     lines.append('')
+
+    # --- Extraction summary ---
+    modes = defaultdict(int)
+    for q in per_question:
+        modes[q.get('extraction_mode', 'unknown')] += 1
+    if modes:
+        lines.append('## Answer Extraction')
+        lines.append('')
+        lines.append('| Mode | Count |')
+        lines.append('|------|-------|')
+        for mode, count in sorted(modes.items(), key=lambda x: -x[1]):
+            lines.append(f'| {mode} | {count} |')
+        lines.append('')
 
     # --- Worst evidence recall ---
     missed = [q for q in per_question if q['evidence_recall'] < 1.0 and q['category'] != 'adversarial']
@@ -419,10 +397,10 @@ def write_report(results_dir, metrics, judge_data=None):
     if missed:
         lines.append('## Lowest Evidence Recall (worst 10)')
         lines.append('')
-        lines.append('| Question | Category | Recall | F1 |')
-        lines.append('|----------|----------|--------|----|')
+        lines.append('| Question | Category | Recall | Final F1 |')
+        lines.append('|----------|----------|--------|----------|')
         for q in missed[:10]:
-            lines.append(f'| {q["question"][:55]}... | {q["category"]} | {q["evidence_recall"]:.0%} | {q["answer_f1"]:.2f} |')
+            lines.append(f'| {q["question"][:55]}... | {q["category"]} | {q["evidence_recall"]:.0%} | {q["final_token_f1"]:.2f} |')
         lines.append('')
 
     if judge_data:
@@ -447,24 +425,35 @@ def write_report(results_dir, metrics, judge_data=None):
         'scored_questions': scored_count,
         'total_sessions': gt.get('total_sessions', 0),
         'overall_evidence_recall': round(metrics['overall_evidence_recall'], 4),
-        'overall_token_f1': round(metrics['overall_answer_score'], 4),
+        'overall_final_token_f1': round(metrics['overall_final_token_f1'], 4),
+        'overall_raw_token_f1': round(metrics['overall_raw_token_f1'], 4),
         'total_cost_usd': round(metrics['total_cost'], 4),
         'by_category_evidence': {
             k: {'recall': round(v['found'] / v['relevant'], 4) if v['relevant'] else 0, **v}
             for k, v in metrics['cat_evidence'].items()
         },
-        'by_category_answer': {
-            k: {'avg_f1': round(v['score_sum'] / v['count'], 4) if v['count'] else 0, **v}
-            for k, v in metrics['cat_answer'].items()
-        },
+        'by_category_answer': {},
         'per_question': [
-            {k: v for k, v in q.items() if k not in ('answer', 'ground_truth', 'question')}
+            {k: v for k, v in q.items() if k not in ('raw_answer', 'final_answer', 'ground_truth', 'question')}
             for q in per_question
         ],
     }
 
-    # Backward compat: keep overall_answer_score as alias for token F1
-    analysis['overall_answer_score'] = analysis['overall_token_f1']
+    # Merge raw/final F1 per category
+    for cat in all_cats:
+        raw = metrics['cat_raw_f1'].get(cat, {'score_sum': 0, 'count': 0})
+        final = metrics['cat_final_f1'].get(cat, {'score_sum': 0, 'count': 0})
+        entry = {
+            'raw_f1': round(raw['score_sum'] / raw['count'], 4) if raw['count'] else 0,
+            'final_f1': round(final['score_sum'] / final['count'], 4) if final['count'] else 0,
+            'count': raw['count'],
+        }
+        analysis['by_category_answer'][cat] = entry
+
+    # Backward compat: overall_answer_score = raw token F1 (one transition cycle)
+    analysis['overall_answer_score'] = analysis['overall_raw_token_f1']
+    # Backward compat: overall_token_f1 = raw token F1
+    analysis['overall_token_f1'] = analysis['overall_raw_token_f1']
 
     if judge_data:
         analysis['primary_answer_metric'] = 'judge_accuracy'
@@ -508,7 +497,7 @@ if __name__ == '__main__':
         print(f'No raw directory at {raw_dir}', file=sys.stderr)
         sys.exit(1)
 
-    # Phase 1: compute evidence recall + token F1
+    # Phase 1: compute evidence recall + raw/final token F1
     print('Computing metrics...', file=sys.stderr)
     metrics = compute_metrics(results_dir, gt_path)
 

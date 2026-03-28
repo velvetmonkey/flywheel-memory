@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Self-healing embeddings** — automatic re-embed when `EMBEDDING_TEXT_VERSION` changes; LoCoMo benchmark updated to 695 questions
 
 ### Changed
-- **Answer quality metrics (P39)** — LLM-as-judge accuracy is now the primary answer quality metric for LoCoMo benchmarks (replaces token F1 as headline number). Judge runs automatically on every benchmark. Judge prompt now includes question text for better disambiguation. Answer synthesis prompt strengthened with explicit format examples to reduce verbosity. Token F1 retained as diagnostic metric. `analyze-benchmark.py` refactored into compute/judge/report phases.
+- **Shared answer layer (P39)** — new `demos/lib/answer_layer.py` provides dataset-agnostic answer parsing, extraction/compression, LLM-as-judge, and scoring. LoCoMo benchmark uses `ANSWER:` prompt contract with per-question answer artifacts (raw vs final). Token F1 split into raw (diagnostic) and final (after extraction). Env controls: `JUDGE`, `JUDGE_MODEL`, `ANSWER_EXTRACT`, `EXTRACT_MODEL`. 50 unit tests.
 - **README redesigned** as product page, trimmed implementation details, benchmark section leads with data
 - **Stale tool counts** fixed across config, docs, and demos
 

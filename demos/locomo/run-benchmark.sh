@@ -20,6 +20,10 @@ MODEL="${MODEL:-sonnet}"
 COUNT="${COUNT:-695}"  # Default: 695 balanced questions (matches Mem0 competition paper)
 MODE="${MODE:-dialog}"
 SEED="${SEED:-42}"
+JUDGE="${JUDGE:-1}"
+JUDGE_MODEL="${JUDGE_MODEL:-haiku}"
+ANSWER_EXTRACT="${ANSWER_EXTRACT:-1}"
+EXTRACT_MODEL="${EXTRACT_MODEL:-haiku}"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="${RESUME:-$SCRIPT_DIR/results/run-$TIMESTAMP}"
 
@@ -42,7 +46,7 @@ if [[ "$COUNT" -eq 0 || "$COUNT" -gt "$TOTAL_QUESTIONS" ]]; then
 fi
 
 INDICES_FILE="$RESULTS_DIR/indices.json"
-mkdir -p "$RESULTS_DIR/raw"
+mkdir -p "$RESULTS_DIR/raw" "$RESULTS_DIR/answers"
 
 # Stratified sampling: equal per category, spread across conversations
 if [[ -n "${RESUME:-}" ]] && [[ -f "$INDICES_FILE" ]]; then
@@ -162,14 +166,18 @@ for i in $INDICES; do
 
   echo -n "  q${padded} [${category}]: "
 
-  # Resume support: skip questions with >1 line in JSONL (i.e., already answered)
+  # Resume support: skip questions with existing answer artifact
+  answer_artifact="$RESULTS_DIR/answers/q${padded}.json"
   existing="$RESULTS_DIR/raw/q${padded}.jsonl"
-  if [[ -f "$existing" ]] && [[ $(wc -l < "$existing") -gt 1 ]]; then
+  if [[ -f "$answer_artifact" ]]; then
     echo "skip (exists)"
     continue
   fi
 
-  if timeout 180 claude -p "You are answering questions about conversations stored in this vault.
+  # Run question (or skip if JSONL already exists from a pre-answer-layer run)
+  if [[ -f "$existing" ]] && [[ $(wc -l < "$existing") -gt 1 ]]; then
+    echo -n "reuse... "
+  elif timeout 180 claude -p "You are answering questions about conversations stored in this vault.
 Each note is one session of a multi-session conversation between two people.
 Use the Flywheel MCP tools (search, get_note_structure, get_section_content, find_sections).
 After searching, read relevant session notes with get_note_structure to find evidence.
@@ -177,10 +185,11 @@ For multi-hop questions, search again using details from what you've read.
 
 Question: $question
 
-ANSWER FORMAT: Reply with ONLY the factual answer — no reasoning, no explanation of your search.
-Good: '2022', 'Stockholm, Sweden', 'No, they discussed hiking not skiing'
-Bad: 'Based on my search of the vault, I found that the answer is 2022.'
-If the information is not in the vault, say 'The information is not available in the vault.'" \
+After searching, provide your answer in this exact format:
+ANSWER: <your concise factual answer>
+
+- Put ONLY the factual answer after ANSWER: — no reasoning, no search explanation
+- If the information is not in the vault: ANSWER: Not stated in the vault." \
     --output-format stream-json \
     --no-session-persistence \
     --permission-mode bypassPermissions \
@@ -189,10 +198,23 @@ If the information is not in the vault, say 'The information is not available in
     --disallowedTools "ToolSearch,Agent,Bash,Glob,Grep,Read,WebSearch,WebFetch" \
     --model "$MODEL" \
     > "$RESULTS_DIR/raw/q${padded}.jsonl" 2>"$RESULTS_DIR/raw/q${padded}.stderr"; then
-    echo "done"
+    echo -n "answered... "
   else
     echo "FAILED (exit $?)"
+    continue
   fi
+
+  # Extract and persist answer artifact
+  if [[ "${ANSWER_EXTRACT}" == "1" ]]; then
+    python3 "$SCRIPT_DIR/../lib/answer_layer.py" extract \
+      --jsonl "$RESULTS_DIR/raw/q${padded}.jsonl" \
+      --question "$question" \
+      --index "$i" \
+      --category "$category" \
+      --model "$EXTRACT_MODEL" \
+      --output "$answer_artifact" 2>&1 | tr '\n' ' '
+  fi
+  echo "done"
 done
 
 echo ""
@@ -202,5 +224,6 @@ echo ""
 # Run analysis
 if [[ -f "$SCRIPT_DIR/analyze-benchmark.py" ]]; then
   echo "Running analysis..."
-  python3 "$SCRIPT_DIR/analyze-benchmark.py" "$RESULTS_DIR" "$GROUND_TRUTH" --judge
+  python3 "$SCRIPT_DIR/analyze-benchmark.py" "$RESULTS_DIR" "$GROUND_TRUTH" \
+    ${JUDGE:+--judge --judge-model "$JUDGE_MODEL"}
 fi

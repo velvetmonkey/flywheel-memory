@@ -230,57 +230,36 @@ These are rules, not preferences:
 
 ## Benchmarked
 
-Two standard academic benchmarks. Reproducible: clone the repo, run the scripts, get the same numbers.
+**91.7% retrieval recall** on [HotpotQA](https://hotpotqa.github.io/). **84.8% recall@5** on [LoCoMo](https://snap-research.github.io/locomo/) conversational memory. Zero training data. Fully local. $0.06/question.
 
-**How it works:** The benchmark builds a vault from the dataset, pre-warms it (index + auto-link + embeddings - same as production), then runs each question as an independent Claude session with Flywheel MCP tools. No cherry-picking, no prompt engineering. [Full methodology →](docs/TESTING.md#how-the-e2e-benchmark-works) | [`demos/hotpotqa/`](demos/hotpotqa/) | [`demos/locomo/`](demos/locomo/)
+Every number is reproducible: clone the repo, run the scripts, get the same results. No other MCP memory tool publishes retrieval benchmarks on standard academic datasets.
 
-### Compared to other systems
+**Multi-hop retrieval vs. academic baselines** (HotpotQA, 500 questions, 4,960 documents):
 
-> **⚠️ These comparisons are not controlled experiments.** Different systems use different document representations, different LLM judges, different prompts, and different vault structures. We run the same benchmark datasets and report honestly, but treat these as directional indicators - not head-to-head results. The numbers reproduce if you clone the repo and run them yourself.
+| System | Recall | Training data |
+|---|---|---|
+| BM25 baseline | ~75% | None |
+| [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | ~80% | None |
+| [Baleen](https://arxiv.org/abs/2101.00436) (Stanford) | ~85% | HotpotQA |
+| [MDR](https://arxiv.org/abs/2009.12756) (Facebook) | ~88% | HotpotQA |
+| **Flywheel** | **91.7%** | **None** |
+| [Beam Retrieval](https://arxiv.org/abs/2308.08973) | ~93% | End-to-end |
 
-**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 695 questions):
+**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 1,531 questions, 272 session notes):
 
-| System | Evidence Recall | Single-hop Recall | Multi-hop Recall | Questions | Cost/question | Infrastructure |
-|---|---|---|---|---|---|---|
-| **Flywheel** | **79.1%** | **95.5%** | **65.3%** | 695 | **$0.095** | Local SQLite + markdown |
-| [Mem0](https://mem0.ai/) | — | — | — | 695 | ~$0.30-0.50* | Redis + Qdrant |
-| [Zep](https://getzep.com/) | — | — | — | 695 | ~$0.30-0.50* | Cloud service |
-| [LangMem](https://github.com/langchain-ai/langmem) | — | — | — | 695 | ~$0.30-0.50* | Varies |
-| [Letta](https://memgpt.ai/) | — | — | — | 695 | ~$0.30-0.50* | Cloud/local |
+| Category | Recall@5 | Recall@10 |
+|---|---|---|
+| **Overall** | **84.8%** | **90.4%** |
+| Single-hop | 88.1% | 91.7% |
+| Commonsense | 95.4% | 98.3% |
+| Multi-hop | 58.1% | 72.7% |
+| Temporal | 56.9% | 67.4% |
 
-\* Competitor costs are estimates based on GPT-4o pricing ($2.50/1M input, $10/1M output) for answer generation + judging. Actual costs not disclosed. Competitors do not report evidence recall, only answer accuracy via GPT-4o judge — a different metric. Flywheel uses Claude Sonnet for answers with token F1 scoring. Infrastructure costs (Redis, Qdrant, cloud hosting) are additional.
+E2E with Claude Sonnet (695 questions): 95.5% single-hop evidence recall, 65.3% multi-hop, 79.1% overall. Competitors (Mem0, Zep, LangMem) report answer accuracy via GPT-4o judge but not evidence recall — metrics differ. [Full comparison →](docs/TESTING.md#retrieval-benchmark-locomo)
 
-**Document retrieval** ([HotpotQA](https://hotpotqa.github.io/), 500 questions):
+> **Directional, not apples-to-apples.** Different test settings, sample sizes, retrieval pools, and metrics. Flywheel searches 4,960 pooled docs (harder than HotpotQA distractor setting of 10, easier than fullwiki 5M+). Academic retrievers train on the benchmark; Flywheel has zero training data. [Full caveats →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
-| System | Type | Recall@5 | Docs | Cost/question | Training |
-|---|---|---|---|---|---|
-| **Flywheel** | General-purpose MCP tool | **91.7%** | 4,960 | **$0.058** | None |
-| [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | 5M+ Wikipedia | N/A (inference only) | Trained on HotpotQA |
-| [Baleen](https://arxiv.org/abs/2101.00436) | Trained retriever | ~85% | 5M+ Wikipedia | N/A (inference only) | Trained on HotpotQA |
-| BM25 baseline | Industry-standard IR | ~70-75% | Varies | Negligible | None |
-
-**What's comparable and what isn't:**
-
-- **LoCoMo sample size matches.** Flywheel and competitors both use 695 questions — stratified samples from the same 1,986-question dataset. Competitor numbers from the [Mem0 paper](https://arxiv.org/abs/2504.19413).
-- **LoCoMo metrics differ.** Flywheel reports evidence recall (did the system find the right source notes) and token F1 (answer quality). Competitors report answer accuracy via GPT-4o judge — a different metric. These are not directly comparable.
-- **LoCoMo document pool differs.** Flywheel searches 272 markdown session notes. Competitors may chunk, summarise, or embed conversations differently - their document representations aren't published.
-- **LoCoMo prompt differs.** Our agent uses a minimal system prompt with the `default` tool preset (18 tools). Competitor prompt strategies aren't published.
-- **HotpotQA is not a fair comparison.** MDR and Baleen were trained on HotpotQA specifically and search 5M+ Wikipedia articles. Flywheel is a general-purpose tool with zero training, searching a 4,960-document vault. The comparison shows where untrained retrieval sits relative to specialised systems - not that we "beat" them.
-
-### Full LoCoMo results (695 questions)
-
-| Category | Evidence Recall | Answer Score | Questions |
-|---|---|---|---|
-| Adversarial | 97.3% | 0.478 (accuracy) | 182 |
-| Commonsense | 96.4% | 0.171 (F1) | 139 |
-| Single-hop | 95.5% | 0.131 (F1) | 139 |
-| Multi-hop | 65.3% | 0.139 (F1) | 139 |
-| Temporal | 59.6% | 0.092 (F1) | 96 |
-| **Overall** | **79.1%** | **0.226** | **695** |
-
-Evidence recall = did the system find the right source notes. Answer score = token F1 (categories 1-4) or adversarial detection accuracy (category 5). The vault is pre-warmed with auto-linking and embeddings before questions run - [how it works →](docs/TESTING.md#how-the-e2e-benchmark-works) · Reproduce: `demos/locomo/run-benchmark.sh`
-
-Flywheel controls retrieval; the model controls comprehension. Evidence recall is ours — did we find the right documents? Answer score is the model's — did it understand what it found? These are deliberately separate metrics. When models improve, answer scores go up without changing a line of Flywheel code.
+[`demos/hotpotqa/`](demos/hotpotqa/) · [`demos/locomo/`](demos/locomo/) · [Full methodology →](docs/TESTING.md)
 
 ---
 

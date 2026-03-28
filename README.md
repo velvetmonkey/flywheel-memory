@@ -38,14 +38,6 @@
 
 </details>
 
-### Who this is for
-
-**For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Every conversation you have with a cloud AI builds a cognitive profile of you that you don't own, can't export, and can't delete. Flywheel keeps that profile local. The people who use AI the most [want more control, not less](https://x.com/AnthropicAI/status/2036499691571953848). Also works as persistent memory for bots and agents — memory tools are included in the default preset, including [OpenClaw](https://github.com/openclaw/openclaw), where it replaces default amnesiac file access with graph-aware, learning memory.
-
-**Not for** people who want a hosted service. Flywheel runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
-
----
-
 ## See It Work
 
 ### Read: "How much have I billed Acme Corp?"
@@ -163,6 +155,14 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 </details>
 
 **Using Cursor, Windsurf, VS Code, OpenClaw, or another client?** See [docs/SETUP.md](docs/SETUP.md) for your client's config.
+
+---
+
+### Who this is for
+
+**For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Every conversation you have with a cloud AI builds a cognitive profile of you that you don't own, can't export, and can't delete. Flywheel keeps that profile local. The people who use AI the most [want more control, not less](https://x.com/AnthropicAI/status/2036499691571953848). Also works as persistent memory for bots and agents — memory tools are included in the default preset, including [OpenClaw](https://github.com/openclaw/openclaw), where it replaces default amnesiac file access with graph-aware, learning memory.
+
+**Not for** people who want a hosted service. Flywheel runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
 
 ---
 

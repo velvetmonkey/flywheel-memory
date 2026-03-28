@@ -48,6 +48,8 @@ import {
   hasEmbeddingsIndex,
   updateEntityEmbedding,
   hasEntityEmbeddingsIndex,
+  removeOrphanedNoteEmbeddings,
+  removeOrphanedEntityEmbeddings,
 } from '../embeddings.js';
 import { updateTaskCacheForFile, removeTaskCacheForFile } from '../taskCache.js';
 import { saveVaultIndexToCache } from '../graph.js';
@@ -464,8 +466,9 @@ export class PipelineRunner {
           // Don't let embedding errors affect watcher
         }
       }
-      tracker.end({ updated: embUpdated, removed: embRemoved });
-      serverLog('watcher', `Note embeddings: ${embUpdated} updated, ${embRemoved} removed`);
+      const orphansRemoved = removeOrphanedNoteEmbeddings();
+      tracker.end({ updated: embUpdated, removed: embRemoved, orphans_removed: orphansRemoved });
+      serverLog('watcher', `Note embeddings: ${embUpdated} updated, ${embRemoved} removed, ${orphansRemoved} orphans cleaned`);
     } else {
       tracker.skip('note_embeddings', 'not built');
     }
@@ -478,6 +481,7 @@ export class PipelineRunner {
     if (hasEntityEmbeddingsIndex() && p.sd) {
       tracker.start('entity_embeddings', { files: p.events.length });
       let entEmbUpdated = 0;
+      let entEmbOrphansRemoved = 0;
       const entEmbNames: string[] = [];
       try {
         const allEntities = getAllEntitiesFromDb(p.sd);
@@ -495,11 +499,14 @@ export class PipelineRunner {
             entEmbNames.push(entity.name);
           }
         }
+        // Clean up embeddings for entities no longer in the database
+        const currentNames = new Set(allEntities.map(e => e.name));
+        entEmbOrphansRemoved = removeOrphanedEntityEmbeddings(currentNames);
       } catch {
         // Don't let entity embedding errors affect watcher
       }
-      tracker.end({ updated: entEmbUpdated, updated_entities: entEmbNames.slice(0, 10) });
-      serverLog('watcher', `Entity embeddings: ${entEmbUpdated} updated`);
+      tracker.end({ updated: entEmbUpdated, updated_entities: entEmbNames.slice(0, 10), orphans_removed: entEmbOrphansRemoved });
+      serverLog('watcher', `Entity embeddings: ${entEmbUpdated} updated, ${entEmbOrphansRemoved} orphans cleaned`);
     } else {
       tracker.skip('entity_embeddings', !p.sd ? 'no sd' : 'not built');
     }
@@ -1142,8 +1149,9 @@ export class PipelineRunner {
     }
 
     p.sd.db.pragma('incremental_vacuum');
+    p.sd.db.pragma('wal_checkpoint(TRUNCATE)');
     p.sd.setMetadataValue.run('last_incremental_vacuum', String(Date.now()));
-    serverLog('watcher', 'Incremental vacuum completed');
-    return { vacuumed: true };
+    serverLog('watcher', 'Incremental vacuum + WAL checkpoint completed');
+    return { vacuumed: true, wal_checkpointed: true };
   }
 }

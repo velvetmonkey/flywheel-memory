@@ -759,6 +759,7 @@ export interface EmbeddingDiagnosis {
     embedded: number;
     vaultNotes: number;
     orphaned: number;
+    orphanedEntities: number;
     missing: number;
   };
 }
@@ -770,7 +771,7 @@ export interface EmbeddingDiagnosis {
 export function diagnoseEmbeddings(vaultPath: string): EmbeddingDiagnosis {
   const db = getDb();
   const checks: EmbeddingCheck[] = [];
-  const counts = { embedded: 0, vaultNotes: 0, orphaned: 0, missing: 0 };
+  const counts = { embedded: 0, vaultNotes: 0, orphaned: 0, orphanedEntities: 0, missing: 0 };
 
   if (!db) {
     checks.push({ name: 'database', status: 'stale', detail: 'No database available' });
@@ -856,6 +857,27 @@ export function diagnoseEmbeddings(vaultPath: string): EmbeddingDiagnosis {
     }
   } catch {
     checks.push({ name: 'orphans', status: 'warning', detail: 'Could not check' });
+  }
+
+  // Check 5b: Entity embedding orphans
+  try {
+    const embNames = new Set(
+      (db.prepare('SELECT entity_name FROM entity_embeddings').all() as Array<{ entity_name: string }>).map(r => r.entity_name)
+    );
+    const entityNames = new Set(
+      (db.prepare('SELECT name FROM entities').all() as Array<{ name: string }>).map(r => r.name)
+    );
+    counts.orphanedEntities = 0;
+    for (const n of embNames) {
+      if (!entityNames.has(n)) counts.orphanedEntities++;
+    }
+    if (counts.orphanedEntities > 0) {
+      checks.push({ name: 'entity_orphans', status: 'warning', detail: `${counts.orphanedEntities} orphaned entity embeddings` });
+    } else {
+      checks.push({ name: 'entity_orphans', status: 'ok', detail: '0 orphaned' });
+    }
+  } catch {
+    checks.push({ name: 'entity_orphans', status: 'ok', detail: 'No entity embeddings table' });
   }
 
   // Check 6: Integrity (NaN/Inf sample)
@@ -990,6 +1012,7 @@ export async function buildEntityEmbeddingsIndex(
   const total = entities.size;
   let done = 0;
   let updated = 0;
+  let skipped = 0;
 
   for (const [name, entity] of entities) {
     done++;
@@ -1008,8 +1031,11 @@ export async function buildEntityEmbeddingsIndex(
       const buf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
       upsert.run(name, buf, hash, activeModelConfig.id, Date.now());
       updated++;
-    } catch {
-      // Skip entities we can't process
+    } catch (err) {
+      skipped++;
+      if (skipped <= 3) {
+        console.error(`[Semantic] Failed to embed entity ${name}: ${err instanceof Error ? err.message : err}`);
+      }
     }
 
     if (onProgress) onProgress(done, total);
@@ -1023,7 +1049,7 @@ export async function buildEntityEmbeddingsIndex(
     }
   }
 
-  console.error(`[Semantic] Entity embeddings: ${updated} updated, ${total - updated} unchanged`);
+  console.error(`[Semantic] Entity embeddings: ${updated} updated, ${total - updated - skipped} unchanged, ${skipped} failed`);
   return updated;
 }
 
@@ -1056,9 +1082,46 @@ export async function updateEntityEmbedding(
 
     // Update in-memory map
     entityEmbeddingsMap.set(entityName, embedding);
-  } catch {
-    // Skip entities we can't process
+  } catch (err) {
+    console.error(`[Semantic] Failed to update entity embedding ${entityName}: ${err instanceof Error ? err.message : err}`);
   }
+}
+
+/**
+ * Remove note embeddings whose paths no longer exist in the FTS5 index.
+ * Safe to call after fts5Incremental has run.
+ */
+export function removeOrphanedNoteEmbeddings(): number {
+  const db = getDb();
+  if (!db) return 0;
+
+  const result = db.prepare(
+    'DELETE FROM note_embeddings WHERE path NOT IN (SELECT path FROM notes_fts)'
+  ).run();
+  return result.changes;
+}
+
+/**
+ * Remove entity embeddings for entities no longer in the provided set.
+ * Also cleans up the in-memory entity embeddings map.
+ */
+export function removeOrphanedEntityEmbeddings(currentEntityNames: Set<string>): number {
+  const db = getDb();
+  if (!db) return 0;
+
+  const rows = db.prepare('SELECT entity_name FROM entity_embeddings').all() as Array<{ entity_name: string }>;
+  const deleteStmt = db.prepare('DELETE FROM entity_embeddings WHERE entity_name = ?');
+  const embMap = getEmbMap();
+  let removed = 0;
+
+  for (const row of rows) {
+    if (!currentEntityNames.has(row.entity_name)) {
+      deleteStmt.run(row.entity_name);
+      embMap.delete(row.entity_name);
+      removed++;
+    }
+  }
+  return removed;
 }
 
 /**

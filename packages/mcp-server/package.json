@@ -1,7 +1,7 @@
 {
   "name": "@velvetmonkey/flywheel-memory",
-  "version": "2.1.2",
-  "description": "MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.",
+  "version": "2.1.3",
+  "description": "MCP tools that search, write, and auto-link your Obsidian vault \u2014 and learn from your edits.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -54,7 +54,7 @@
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
     "@modelcontextprotocol/sdk": "^1.25.1",
-    "@velvetmonkey/vault-core": "^2.1.2",
+    "@velvetmonkey/vault-core": "^2.1.3",
     "better-sqlite3": "^12.0.0",
     "chokidar": "^4.0.0",
     "gray-matter": "^4.0.3",

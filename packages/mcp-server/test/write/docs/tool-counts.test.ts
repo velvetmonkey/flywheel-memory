@@ -209,7 +209,7 @@ describe('Tool Count Verification', () => {
         'suggest_entity_merges', 'dismiss_merge_suggestion',
         'suggest_entity_aliases', 'merge_entities', 'absorb_as_alias',
         'unlinked_mentions_report', 'discover_stub_candidates', 'discover_cooccurrence_gaps',
-        'memory', 'recall', 'brief',
+        'memory', 'brief',
         'predict_stale_notes', 'track_concept_evolution', 'temporal_summary',
         'flywheel_doctor',
         'flywheel_trust_report',

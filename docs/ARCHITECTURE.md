@@ -44,7 +44,7 @@ packages/
 │       │   │   ├── migrations.ts # rename_field, migrate_field_values
 │       │   │   ├── temporalAnalysis.ts # temporal_summary, predict_stale_notes, track_concept_evolution, get_context_around_date
 │       │   │   ├── brief.ts         # brief (startup context assembly)
-│       │   │   └── recall.ts        # recall (unified knowledge retrieval)
+│       │   │   └── query.ts         # search (unified knowledge retrieval)
 │       │   └── write/           # Write tool registrations
 │       │       ├── mutations.ts # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
 │       │       ├── tasks.ts     # vault_toggle_task, vault_add_task
@@ -90,7 +90,7 @@ packages/
 │           │       ├── template.ts  # Variable templating
 │           │       ├── storage.ts   # Policy file storage
 │           │       └── types.ts     # Policy types
-│           │   ├── memory.ts    # Agent memory lifecycle (store, recall, brief)
+│           │   ├── memory.ts    # Agent memory lifecycle (store, search, brief)
 │           │   ├── corrections.ts # Pending correction processing
 │           │   ├── edgeWeights.ts # Edge weight computation
 │           │   └── wikilinkFeedback.ts # Wikilink feedback tracking
@@ -334,7 +334,7 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 | `memories` | Agent memory storage |
 | `memories_fts` | FTS5 index for memory search |
 | `session_summaries` | Agent session summary storage |
-| `retrieval_cooccurrence` | Notes co-retrieved in search/recall sessions (Adamic-Adar weighted, 7-day decay) |
+| `retrieval_cooccurrence` | Notes co-retrieved in search sessions (Adamic-Adar weighted, 7-day decay) |
 
 **Database settings:** WAL journal mode for concurrent read performance. Foreign keys enabled. Schema version tracking with migration support.
 

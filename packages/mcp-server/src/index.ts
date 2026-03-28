@@ -11,7 +11,7 @@
  * - vault_schema (4 modes: overview, field_values, inconsistencies, contradictions)
  * - schema_conventions (extracted: conventions, incomplete, suggest_values)
  * - schema_validate (extracted: validate, missing)
- * - note_intelligence (unified: prose_patterns, suggest_frontmatter, wikilinks, compute)
+ * - note_intelligence (unified: prose_patterns, suggest_frontmatter, wikilinks, compute, semantic_links)
  * - get_backlinks (absorbed find_bidirectional_links via include_bidirectional param)
  * - validate_links (absorbed find_broken_links via typos_only param)
  */

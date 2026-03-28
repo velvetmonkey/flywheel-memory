@@ -13,6 +13,7 @@ import {
   getForwardLinksForNote,
   resolveTarget,
 } from '../../core/read/graph.js';
+import { getInboundTargetsForNote } from '../../core/read/identity.js';
 import { findBidirectionalLinks } from './graphAdvanced.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 
@@ -326,20 +327,20 @@ export function registerGraphTools(
 
       const limit = Math.min(requestedLimit ?? 20, MAX_LIMIT);
 
-      // For incoming links, we need to resolve target names to note_paths.
-      // note_links.target stores lowercase wikilink text, so we look for
-      // rows where target matches the note's entity name (file stem).
-      const stem = notePath.replace(/\.md$/, '').split('/').pop()?.toLowerCase() ?? '';
+      // Resolve all inbound target identities (entity name, aliases, stem fallback)
+      const targets = getInboundTargetsForNote(stateDb, notePath);
+      const inPlaceholders = targets.map(() => '?').join(',');
 
       const rows = stateDb.db.prepare(`
         SELECT target AS node, weight, 'outgoing' AS direction
         FROM note_links WHERE note_path = ?
         UNION ALL
-        SELECT note_path AS node, weight, 'incoming' AS direction
-        FROM note_links WHERE target = ?
+        SELECT note_path AS node, MAX(weight) AS weight, 'incoming' AS direction
+        FROM note_links WHERE target IN (${inPlaceholders})
+        GROUP BY note_path
         ORDER BY weight DESC
         LIMIT ?
-      `).all(notePath, stem, limit) as Array<{ node: string; weight: number; direction: string }>;
+      `).all(notePath, ...targets, limit) as Array<{ node: string; weight: number; direction: string }>;
 
       return {
         content: [{

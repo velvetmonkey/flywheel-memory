@@ -710,6 +710,15 @@ export function setEmbeddingsBuilding(value: boolean): void {
   embeddingsBuilding = value;
 }
 
+/**
+ * Check if the embeddings index has been built and is usable.
+ *
+ * Side effect: if embeddings_state is stuck at building_* from a
+ * crashed/interrupted build (no active build in this process), this
+ * function repairs it — to 'complete' if rows exist, or 'none' if
+ * no rows remain. This prevents a single crash from permanently
+ * disabling semantic features.
+ */
 export function hasEmbeddingsIndex(): boolean {
   const db = getDb();
   if (!db) return false;
@@ -721,7 +730,20 @@ export function hasEmbeddingsIndex(): boolean {
       const row = db.prepare('SELECT COUNT(*) as count FROM note_embeddings').get() as { count: number };
       return row.count > 0;
     }
-    return false;
+    // State is building_notes or building_entities — stale from crash?
+    if (!isEmbeddingsBuilding()) {
+      const row = db.prepare('SELECT COUNT(*) as count FROM note_embeddings').get() as { count: number };
+      if (row.count > 0) {
+        setEmbeddingsBuildState('complete');
+        console.error('[Semantic] Recovered stale embeddings_state → complete');
+        return true;
+      } else {
+        setEmbeddingsBuildState('none');
+        console.error('[Semantic] Recovered stale embeddings_state → none (no rows)');
+        return false;
+      }
+    }
+    return false; // Active build in progress
   } catch {
     return false;
   }

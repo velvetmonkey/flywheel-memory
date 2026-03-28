@@ -13,6 +13,7 @@
 
 import type { VaultIndex } from './types.js';
 import { normalizeTarget } from '../read/graph.js';
+import { normalizeResolvedPath } from '../read/identity.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 
 /** Number of power iterations for eigenvector convergence */
@@ -129,23 +130,32 @@ export function computeHubScores(index: VaultIndex): { scores: Map<string, numbe
 
 
 /**
- * Update hub scores directly in SQLite database
+ * Update hub scores in SQLite database.
+ *
+ * Resets all hub_score to 0 first (clears stale values for entities
+ * no longer present in the computed graph), then applies fresh scores
+ * by entity id.
  *
  * @param stateDb - State database instance
- * @param hubScores - Map of entity name -> backlink count
- * @returns Number of entities updated
+ * @param hubScores - Map of normalized path → score
+ * @param pathToId - Map of normalized path → entity id
+ * @returns Number of entities that received a nonzero score
  */
-function updateHubScoresInDb(stateDb: StateDb, hubScores: Map<string, number>): number {
-  // Prepare an update statement for hub scores
-  const updateStmt = stateDb.db.prepare(`
-    UPDATE entities SET hub_score = ? WHERE name_lower = ?
-  `);
+function updateHubScoresInDb(
+  stateDb: StateDb,
+  hubScores: Map<string, number>,
+  pathToId: Map<string, number>,
+): number {
+  const resetAll = stateDb.db.prepare('UPDATE entities SET hub_score = 0');
+  const updateById = stateDb.db.prepare('UPDATE entities SET hub_score = ? WHERE id = ?');
 
   let updated = 0;
   const transaction = stateDb.db.transaction(() => {
-    for (const [nameLower, score] of hubScores) {
-      const result = updateStmt.run(score, nameLower);
-      if (result.changes > 0) {
+    resetAll.run();
+    for (const [normalizedPath, score] of hubScores) {
+      const entityId = pathToId.get(normalizedPath);
+      if (entityId !== undefined) {
+        updateById.run(score, entityId);
         updated++;
       }
     }
@@ -178,10 +188,18 @@ export async function exportHubScores(
   const { scores: hubScores, edgeCount } = computeHubScores(vaultIndex);
   console.error(`[Flywheel] Computed hub scores for ${hubScores.size} notes (${edgeCount} edges in graph)`);
 
+  // Build normalized-path → entity.id map for bridging score keys to DB rows
+  const entityRows = stateDb.db.prepare('SELECT id, path FROM entities')
+    .all() as Array<{ id: number; path: string }>;
+  const pathToId = new Map<string, number>();
+  for (const row of entityRows) {
+    pathToId.set(normalizeResolvedPath(row.path), row.id);
+  }
+
   // Update hub scores in SQLite
   try {
-    const updated = updateHubScoresInDb(stateDb, hubScores);
-    console.error(`[Flywheel] Updated ${updated} hub scores in StateDb`);
+    const updated = updateHubScoresInDb(stateDb, hubScores, pathToId);
+    console.error(`[Flywheel] Hub scores: ${updated}/${hubScores.size} scores mapped to entities (all others reset to 0)`);
     return updated;
   } catch (e) {
     console.error('[Flywheel] Failed to update hub scores in StateDb:', e);

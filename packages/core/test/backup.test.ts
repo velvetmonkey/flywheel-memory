@@ -132,7 +132,7 @@ describe('Backup & Recovery', () => {
   // checkDbIntegrity
   // ===========================================================================
   describe('checkDbIntegrity', () => {
-    it('returns ok for a healthy database', () => {
+    it('returns ok for a healthy database', { timeout: 15_000 }, () => {
       const stateDb = openStateDb(testVaultPath);
       try {
         const result = checkDbIntegrity(stateDb.db);

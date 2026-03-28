@@ -306,7 +306,6 @@ Deep analysis of a single note:
 | `prose_patterns` | Find "Key: Value" patterns buried in prose that should be frontmatter. |
 | `suggest_frontmatter` | Generate frontmatter YAML from detected patterns. |
 | `suggest_wikilinks` | Find frontmatter values that could link to existing notes. |
-| `cross_layer` | Check consistency between frontmatter and what the prose says. |
 | `compute` | Auto-compute derived fields (word_count, link_count, etc.). |
 | `semantic_links` | Find semantically related entities not yet linked (requires embeddings). |
 | `all` | Run everything at once. |

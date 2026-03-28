@@ -36,7 +36,7 @@ packages/
 │       │   │   ├── graphAdvanced.ts  # get_link_path, get_common_neighbors, get_connection_strength
 │       │   │   ├── graphAnalysis.ts  # graph_analysis (7 modes + centrality + cycles)
 │       │   │   ├── vaultSchema.ts    # vault_schema (unified: overview, field_values, inconsistencies, validate, conventions, incomplete)
-│       │   │   ├── noteIntelligence.ts # note_intelligence (unified: prose_patterns, suggest_frontmatter, suggest_wikilinks, cross_layer, compute)
+│       │   │   ├── noteIntelligence.ts # note_intelligence (unified: prose_patterns, suggest_frontmatter, suggest_wikilinks, compute, semantic_links)
 │       │   │   ├── primitives.ts     # get_note_structure, get_section_content, find_sections, tasks
 │       │   │   ├── health.ts    # health_check, get_vault_stats, get_folder_structure, flywheel_doctor
 │       │   │   ├── system.ts    # refresh_index, get_all_entities, get_unlinked_mentions

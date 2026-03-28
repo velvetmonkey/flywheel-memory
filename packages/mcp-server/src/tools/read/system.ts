@@ -18,6 +18,7 @@ import { requireIndex } from '../../core/read/indexGuard.js';
 import { countFTS5Mentions } from '../../core/read/fts5.js';
 import { recomputeEdgeWeights } from '../../core/write/edgeWeights.js';
 import { hasEmbeddingsIndex, buildEmbeddingsIndex } from '../../core/read/embeddings.js';
+import { buildTaskCache, getTaskCount } from '../../core/read/taskCache.js';
 
 /**
  * Register system/utility tools with the MCP server
@@ -38,6 +39,7 @@ export function registerSystemTools(
     fts5_notes: z.number().describe('Number of notes in FTS5 search index'),
     edges_recomputed: z.number().optional().describe('Number of edges with recomputed weights'),
     embeddings_refreshed: z.number().optional().describe('Number of note embeddings updated'),
+    task_count: z.number().optional().describe('Number of tasks in rebuilt task cache'),
     duration_ms: z.number().describe('Time taken to rebuild index'),
   };
 
@@ -48,6 +50,7 @@ export function registerSystemTools(
     fts5_notes: number;
     edges_recomputed?: number;
     embeddings_refreshed?: number;
+    task_count?: number;
     duration_ms: number;
   };
 
@@ -143,6 +146,16 @@ export function registerSystemTools(
           }
         }
 
+        // Rebuild task cache
+        let taskCount: number | undefined;
+        try {
+          await buildTaskCache(vaultPath, newIndex);
+          taskCount = getTaskCount();
+          console.error(`[Flywheel] Task cache rebuilt: ${taskCount} tasks`);
+        } catch (err) {
+          console.error('[Flywheel] Task cache rebuild failed:', err);
+        }
+
         const duration = Date.now() - startTime;
 
         // Record index event
@@ -161,6 +174,7 @@ export function registerSystemTools(
           fts5_notes: fts5Notes,
           edges_recomputed: edgesRecomputed,
           embeddings_refreshed: embeddingsRefreshed || undefined,
+          task_count: taskCount,
           duration_ms: duration,
         };
 

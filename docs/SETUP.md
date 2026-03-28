@@ -19,7 +19,7 @@ After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian v
 
 ## Prerequisites
 
-- **Node.js 22–24** -- check with `node --version`.
+- **Node.js 22+** -- check with `node --version`.
 - **An Obsidian vault** -- any folder with `.md` files works, but Flywheel detects Obsidian conventions (`.obsidian/` folder, periodic notes, templates)
 - **An MCP-compatible client** -- Claude Code, Claude Desktop, Cursor, Windsurf, VS Code + GitHub Copilot, Continue, [OpenClaw](https://github.com/openclaw/openclaw), or any Streamable HTTP client
 
@@ -309,7 +309,7 @@ Start with these to see Flywheel in action on your vault:
 
 > "Search for notes about [topic]"
 
-This uses full-text search. Results return in under 10ms with highlighted snippets.
+This uses full-text search with highlighted snippets from the local index.
 
 ### 2. Explore connections
 

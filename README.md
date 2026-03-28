@@ -1,24 +1,19 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.</strong><br/>
-  All local. All yours. A few lines of config.</p>
+  <p><strong>Local-first memory for Obsidian that helps AI search, write, and reuse what your vault already knows.</strong><br/>
+  75 MCP tools. Local indexes. Markdown in, markdown out.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
-[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code%20%7C%20OpenClaw-blue.svg)](docs/SETUP.md)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-92.4%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-84%25%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
-[![Cost](https://img.shields.io/badge/cost-%240.06--0.12%2Fquery-green.svg)](docs/TESTING.md#how-the-e2e-benchmark-works)
-[![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-84.3%25%20evidence%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 
-**[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)** · **[Story](#the-story-behind-this)** · **[License](#license)**
+**[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)** · **[License](#license)**
 
-> **Cognitive sovereignty** = your knowledge graph stays on your machine. No platform builds a profile from it. No subscription locks you in. You choose the model. You own the memory.
+Flywheel gives AI clients structured access to your vault: search results come back with frontmatter, backlinks, outlinks, snippets, and section context; writes can auto-link entities; memory and graph tools stay local to your files and SQLite state.
 
 <details>
 <summary><strong>How this compares to not using Flywheel</strong></summary>
@@ -28,7 +23,7 @@
 | Your data | Leaves your machine | Stays local. No sync, no upload, no account |
 | Model choice | Locked to one provider | Model-agnostic via MCP. Swap anytime |
 | As models improve | Migration or vendor upgrade | Same tools, better reasoning. Your graph improves the model, not the other way around |
-| Tokens per question | Read 10-50 files to find context (~50-200k tokens) | One search returns a decision surface — metadata, graph context, and section content (~2-5k tokens). [$0.06-0.09/query](#benchmarked) measured |
+| Tokens per question | Read files until the answer emerges | One search returns a decision surface — metadata, graph context, and section content |
 | "What's overdue?" | Read every file | Structured task queries with due dates, tags, and path filters |
 | "What links here?" | Grep the vault, flat list | Weighted backlinks + outlinks, ranked by edge strength and recency |
 | "Add a meeting note" | Raw write, no linking | Structured mutations that auto-link entities and densify the graph |
@@ -42,11 +37,11 @@
 
 ### Read: "How much have I billed Acme Corp?"
 
-From the [carter-strategy](demos/carter-strategy/) demo: a solo consultant with 3 clients, 5 projects, and $27K in invoices.
+From the [carter-strategy](demos/carter-strategy/) demo: a consultant vault with clients, invoices, projects, notes, and graph structure the model can query directly.
 
 <video src="https://github.com/user-attachments/assets/ec1b51a7-cb30-4c49-a35f-aa82c31ec976" autoplay loop muted playsinline width="100%"></video>
 
-One search call returned a decision surface: metadata (frontmatter) with amounts and status, backlink lists, outlink lists, and full section content around each match. Zero follow-up reads needed. The graph did the joining, not the AI reading files one by one.
+One search call returned a decision surface: frontmatter with amounts and status, backlink lists, outlink lists, and full section content around each match. Zero follow-up reads needed. The graph did the joining, not the AI reading files one by one.
 
 ### Write: Auto-wikilinks on every mutation
 
@@ -64,7 +59,7 @@ One search call returned a decision surface: metadata (frontmatter) with amounts
             → 2 suggested links: entities co-occurring with Stacy + security across past notes
 ```
 
-You typed a plain sentence. Flywheel recognized three entities and linked them: entity names, aliases, and fuzzy matches scored across [13 dimensions](docs/ALGORITHM.md). Links you keep strengthen future scoring; links you edit out get suppressed. The system learns.
+You typed a plain sentence. Flywheel recognized three entities and linked them: entity names, aliases, and fuzzy matches scored across [13 dimensions](docs/ALGORITHM.md). Links you keep strengthen future scoring; links you edit out get suppressed.
 
 `→` suggestions are off by default. Enable with `suggestOutgoingLinks: true` for daily notes, meeting logs, and voice capture. Anywhere you want the graph to grow organically. [Configuration guide →](docs/CONFIGURATION.md)
 
@@ -126,7 +121,7 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Flywheel does not replace Obsidian. It runs alongside as a background index. Watches for changes, indexes in real-time, and makes the full graph available to any AI client. No proprietary format, no cloud sync, no account. Delete `.flywheel/state.db` and it rebuilds from scratch.
+Flywheel does not replace Obsidian. It runs alongside as a background index, watches for changes, and makes the graph available to MCP clients. No proprietary format. Delete `.flywheel/state.db` and it rebuilds from scratch.
 
 ### Configure your tools
 
@@ -160,7 +155,7 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 
 ### Who this is for
 
-**For** people who want control over their knowledge: developers, researchers, solo operators, and anyone who treats their notes as infrastructure, not disposable input. Every conversation you have with a cloud AI builds a cognitive profile of you that you don't own, can't export, and can't delete. Flywheel keeps that profile local. The people who use AI the most [want more control, not less](https://x.com/AnthropicAI/status/2036499691571953848). Also works as persistent memory for bots and agents — memory tools are included in the default preset, including [OpenClaw](https://github.com/openclaw/openclaw), where it replaces default amnesiac file access with graph-aware, learning memory.
+**For** people who want their vault to be usable by AI without turning it into a hosted product: developers, researchers, solo operators, and anyone who treats notes as working infrastructure. It also works as persistent memory for bots and agents through MCP.
 
 **Not for** people who want a hosted service. Flywheel runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
 
@@ -168,9 +163,9 @@ See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full 
 
 ## What Makes Flywheel Different
 
-- **Search** — One call returns a decision surface: section provenance, extracted dates, entity bridges, confidence scores, and full section content. Multi-hop: "Acme Corp" returns the client note *and* its invoices, projects, and people. [$0.06-0.10/query](#benchmarked), measured.
+- **Search** — One call returns a decision surface: section provenance, extracted dates, entity bridges, confidence scores, and full section content. Multi-hop queries can surface the client note and the related invoices, projects, and people in one pass.
 - **Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief and Flywheel wikilinks names, projects, and relationships automatically. [13 scoring layers](docs/ALGORITHM.md), zero manual curation.
-- **Remember** — `brief` delivers startup context, `memory` persists observations across sessions, and `search` retrieves across all three in one call. The system learns from your edits — links you keep get stronger, links you remove get suppressed.
+- **Remember** — `brief` delivers startup context, `memory` persists observations across sessions, and `search` retrieves across all three in one call.
 
 All local. No cloud. No account. No sync.
 
@@ -182,7 +177,7 @@ Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Fee
 Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
 ```
 
-13 scoring layers, every number traceable to vault usage. The score learns as you use it. [How scoring works →](docs/ALGORITHM.md)
+13 scoring layers, every number traceable to vault usage. [How scoring works →](docs/ALGORITHM.md)
 
 ### The flywheel effect
 
@@ -192,11 +187,11 @@ Every sentence you write makes your graph denser — better search results, rich
 - **Co-occurrence** builds over time. Links that survive edits gain influence.
 - **Suppression** learns. Remove a wikilink enough times and Flywheel stops suggesting it.
 
-Day 100 suggestions are informed by everything you've written since day 1. This is [measured](docs/TESTING.md#graph-quality-266-tests-31-files), not a claim — CI fails if any metric regresses. All learning data is local SQLite. [What's tracked →](docs/SHARING.md)
+Day 100 suggestions are informed by everything you've written since day 1. This is [measured](docs/TESTING.md#graph-quality-266-tests-31-files), not hand-waved. All learning data is local SQLite. [What's tracked →](docs/SHARING.md)
 
 ### Agentic policies
 
-Complex vault workflows become deterministic YAML policies. All steps succeed or all roll back. Commit with one flag. Every write uses structured parsing that understands headings, frontmatter, and code blocks as structure — not blind string replacement. [Architecture →](docs/ARCHITECTURE.md)
+Complex vault workflows become deterministic YAML policies. All steps succeed or all roll back. Commit with one flag. Every write uses structured parsing that understands headings, frontmatter, and code blocks as structure. [Architecture →](docs/ARCHITECTURE.md)
 
 ### Portable knowledge graph
 
@@ -230,9 +225,13 @@ These are rules, not preferences:
 
 ## Benchmarked
 
-**92.4% retrieval recall** on [HotpotQA](https://hotpotqa.github.io/). **84.8% recall@5** on [LoCoMo](https://snap-research.github.io/locomo/) conversational memory. Zero training data. Fully local. $0.07/question.
+Latest checked-in benchmark artifacts:
 
-Every number is reproducible: clone the repo, run the scripts, get the same results. No other MCP memory tool publishes retrieval benchmarks on standard academic datasets.
+- **HotpotQA full end-to-end**: **92.4% document recall** on **500 questions / 4,960 docs**. Latest artifact: **March 28, 2026**. Cost in that run: **$0.074/question**.
+- **LoCoMo full end-to-end**: **84.3% evidence recall** and **58.7% answer accuracy** on **695 scored questions / 272 sessions**. Latest artifact: **March 28, 2026**. Final token F1: **0.483**.
+- **LoCoMo unit retrieval**: **84.8% Recall@5** and **90.4% Recall@10** on the full non-adversarial retrieval set.
+
+Every number below is tied to a checked-in report or reproducible harness in the repo.
 
 **Multi-hop retrieval vs. academic baselines** (HotpotQA, 500 questions, 4,960 documents):
 
@@ -245,7 +244,7 @@ Every number is reproducible: clone the repo, run the scripts, get the same resu
 | **Flywheel** | **92.4%** | **None** |
 | [Beam Retrieval](https://arxiv.org/abs/2308.08973) | ~93% | End-to-end |
 
-**Conversational memory** ([LoCoMo](https://snap-research.github.io/locomo/), 1,531 questions, 272 session notes):
+**Conversational memory retrieval** ([LoCoMo](https://snap-research.github.io/locomo/), 1,531 scored retrieval queries, 272 session notes):
 
 | Category | Recall@5 | Recall@10 |
 |---|---|---|
@@ -255,7 +254,7 @@ Every number is reproducible: clone the repo, run the scripts, get the same resu
 | Multi-hop | 58.1% | 72.7% |
 | Temporal | 56.9% | 67.4% |
 
-E2E with Claude Sonnet (695 questions): 97.4% single-hop evidence recall, 73.7% multi-hop, 84.3% overall. 58.7% answer accuracy (LLM-as-judge). Competitors (Mem0, Zep, LangMem) report answer accuracy via GPT-4o judge but not evidence recall — metrics differ. [Full comparison →](docs/TESTING.md#retrieval-benchmark-locomo)
+E2E with Claude Sonnet (latest checked-in 695-question run): **97.4%** single-hop evidence recall, **73.7%** multi-hop evidence recall, **84.3%** overall evidence recall, and **58.7%** answer accuracy (Claude Haiku judge). [Full methodology and caveats →](docs/TESTING.md#retrieval-benchmark-locomo)
 
 > **Directional, not apples-to-apples.** Different test settings, sample sizes, retrieval pools, and metrics. Flywheel searches 4,960 pooled docs (harder than HotpotQA distractor setting of 10, easier than fullwiki 5M+). Academic retrievers train on the benchmark; Flywheel has zero training data. Run-to-run variance of ~1pp is expected due to LLM non-determinism. [Full caveats →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
@@ -265,9 +264,9 @@ E2E with Claude Sonnet (695 questions): 97.4% single-hop evidence recall, 73.7% 
 
 ## Tested
 
-2,712 tests across read, write, security, concurrency, and graph quality. CI-gated on Ubuntu + Windows, Node 22 + 24.
+2,760 defined tests across 142 test files and ~54.7k lines of test code. CI runs focused jobs on Ubuntu, plus a full matrix on Ubuntu and Windows across Node 22 and 24.
 
-- **Graph quality:** 100% wikilink precision on ground truth vault, stress-tested over 50 generations with realistic noise. [Report →](docs/QUALITY_REPORT.md)
+- **Graph quality:** latest generated report shows balanced-mode **40.2% precision / 71.7% recall / 51.5% F1** on the primary synthetic vault, plus multi-generation, archetype, chaos, and regression tests. [Report →](docs/QUALITY_REPORT.md)
 - **Live AI testing:** real `claude -p` sessions verify tool adoption end-to-end, not just handler logic
 - **Write safety:** git-backed conflict detection, atomic rollback, 100 parallel writes with zero corruption
 - **Security:** SQL injection, path traversal, Unicode normalization, permission bypass
@@ -294,32 +293,6 @@ E2E with Claude Sonnet (695 questions): 97.4% single-hop evidence recall, 73.7% 
 
 ---
 
-## The Story Behind This
-
-Flywheel started because I'm fundamentally lazy. I wanted to talk at my vault through a Telegram bot and have it not be rubbish - no typing, no manual linking, no curation. The lazy path needed to be the correct path, so I built a system where they're the same path.
-
-I've been writing code for over 30 years and tried every PKM tool going before landing on Obsidian. Flywheel is my third attempt at wiring AI into my knowledge vault. The first two failed because writes were non-deterministic and context didn't flow between sessions. This version unifies everything: one server with deterministic mutations, hybrid search, and a graph that compounds with use. The Architecture exists because I kept hitting the same walls and refusing to stop.
-
-Your attention, memory, and even the way you reason are increasingly shaped by systems you didn't choose. Platforms that optimise for engagement, models trained on someone else's priorities, defaults that quietly steer how you organise what you know. I wanted a knowledge layer that works for the person using it. A system that only gets smarter from your own honest engagement is fundamentally different from one that optimises for someone else's metrics.
-
-The entire codebase was built through Claude Code with Opus 4.5 and 4.6. I designed the architecture and made every decision and it's been through extensive code reviews and testing, but verify what matters to you.
-
-I dogfood it daily through a Telegram bot using voice input. The volume of knowledge you can accumulate at speed through voice is staggering - even quiet days produce 20–30 links where they used to be 3–5. Flywheel exists partly because I needed something that could keep up. All suggestions are welcome! I'm looking for people who care about this space.
-
-### The Cognitive Pipeline
-
-What emerged from daily use is a workflow pattern: cheap models generate ideas at volume (Grok, ChatGPT — whatever's free), the Telegram bot filters for truth and persists to the vault, then a separate Claude Code session reads the stored context and executes from filtered material. Generate broadly, filter honestly, execute precisely.
-
-It works because Flywheel makes every stage persistent. The bot's conversation is logged and auto-wikilinked. The filter's judgements become searchable memories. The executor reads yesterday's daily notes and picks up where the last session left off — no re-explaining, no context dump, no starting from scratch.
-
-Because Flywheel is an MCP server, any client can be any stage. An OpenClaw bot, a Cursor session, Claude Desktop — they all get the same persistent, learning memory. The graph compounds across sessions. Your filing cabinet stops being passive storage and starts thinking with you.
-
-To contribute back to Obsidian I'm also building [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) (early days), an Obsidian plugin that surfaces suggestions, graph visibility, and management tools directly in the editor.
-
----
-
 ## License
 
 Apache-2.0. See [LICENSE](./LICENSE) for details.
-
-> Your knowledge. Your graph. Your terms.

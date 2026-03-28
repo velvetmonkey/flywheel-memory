@@ -469,8 +469,8 @@ export class PipelineRunner {
       let orphansRemoved = 0;
       try {
         orphansRemoved = removeOrphanedNoteEmbeddings();
-      } catch {
-        // Don't let orphan cleanup errors affect watcher
+      } catch (e) {
+        serverLog('watcher', `Note embedding orphan cleanup failed: ${e}`, 'error');
       }
       tracker.end({ updated: embUpdated, removed: embRemoved, orphans_removed: orphansRemoved });
       serverLog('watcher', `Note embeddings: ${embUpdated} updated, ${embRemoved} removed, ${orphansRemoved} orphans cleaned`);
@@ -507,8 +507,8 @@ export class PipelineRunner {
         // Clean up embeddings for entities no longer in the database
         const currentNames = new Set(allEntities.map(e => e.name));
         entEmbOrphansRemoved = removeOrphanedEntityEmbeddings(currentNames);
-      } catch {
-        // Don't let entity embedding errors affect watcher
+      } catch (e) {
+        serverLog('watcher', `Entity embedding update/orphan cleanup failed: ${e}`, 'error');
       }
       tracker.end({ updated: entEmbUpdated, updated_entities: entEmbNames.slice(0, 10), orphans_removed: entEmbOrphansRemoved });
       serverLog('watcher', `Entity embeddings: ${entEmbUpdated} updated, ${entEmbOrphansRemoved} orphans cleaned`);

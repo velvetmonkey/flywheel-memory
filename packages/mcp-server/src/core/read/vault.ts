@@ -4,14 +4,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-
-/** Directories to exclude from scanning */
-const EXCLUDED_DIRS = new Set([
-  '.obsidian',
-  '.trash',
-  '.git',
-  'node_modules',
-]);
+import { SYSTEM_EXCLUDED_DIRS } from '../shared/constants.js';
 
 /** Windows path length limit (including drive letter and null terminator) */
 const WINDOWS_MAX_PATH = 260;
@@ -67,7 +60,7 @@ export async function scanVault(vaultPath: string): Promise<VaultFile[]> {
 
       if (entry.isDirectory()) {
         // Skip excluded directories
-        if (EXCLUDED_DIRS.has(entry.name)) {
+        if (SYSTEM_EXCLUDED_DIRS.has(entry.name)) {
           continue;
         }
         try {

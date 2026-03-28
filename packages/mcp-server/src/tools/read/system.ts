@@ -7,18 +7,24 @@ import * as path from 'path';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
-import { buildVaultIndex, setIndexState, setIndexError } from '../../core/read/graph.js';
-import { loadConfig, inferConfig, saveConfig, type FlywheelConfig } from '../../core/read/config.js';
+import { buildVaultIndex, setIndexState, setIndexError, saveVaultIndexToCache } from '../../core/read/graph.js';
+import { loadConfig, inferConfig, saveConfig, DEFAULT_ENTITY_EXCLUDE_FOLDERS, getExcludeTags, type FlywheelConfig } from '../../core/read/config.js';
 import { buildFTS5Index } from '../../core/read/fts5.js';
-import { scanVaultEntities, getEntityIndexFromDb, type StateDb } from '@velvetmonkey/vault-core';
+import { scanVaultEntities, getEntityIndexFromDb, getAllEntitiesFromDb, type StateDb } from '@velvetmonkey/vault-core';
 import { suggestEntityAliases } from '../../core/read/aliasSuggestions.js';
-import { recordIndexEvent } from '../../core/shared/indexActivity.js';
+import { createStepTracker, recordIndexEvent } from '../../core/shared/indexActivity.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { countFTS5Mentions } from '../../core/read/fts5.js';
 import { recomputeEdgeWeights } from '../../core/write/edgeWeights.js';
-import { hasEmbeddingsIndex, buildEmbeddingsIndex } from '../../core/read/embeddings.js';
-import { buildTaskCache, getTaskCount } from '../../core/read/taskCache.js';
+import { hasEmbeddingsIndex, buildEmbeddingsIndex, buildEntityEmbeddingsIndex, hasEntityEmbeddingsIndex, loadEntityEmbeddingsToMemory } from '../../core/read/embeddings.js';
+import { initializeEntityIndex, setCooccurrenceIndex } from '../../core/write/wikilinks.js';
+import { exportHubScores } from '../../core/shared/hubExport.js';
+import { computeGraphMetrics, recordGraphSnapshot } from '../../core/shared/graphSnapshots.js';
+import { updateSuppressionList } from '../../core/write/wikilinkFeedback.js';
+import { buildTaskCache } from '../../core/read/taskCache.js';
+import { buildRecencyIndex, saveRecencyToStateDb } from '../../core/shared/recency.js';
+import { mineCooccurrences, saveCooccurrenceToStateDb } from '../../core/shared/cooccurrence.js';
 
 /**
  * Register system/utility tools with the MCP server
@@ -38,8 +44,15 @@ export function registerSystemTools(
     entities_count: z.number().describe('Number of entities (titles + aliases)'),
     fts5_notes: z.number().describe('Number of notes in FTS5 search index'),
     edges_recomputed: z.number().optional().describe('Number of edges with recomputed weights'),
+    hub_scores: z.number().optional().describe('Number of hub scores exported'),
+    graph_snapshot: z.boolean().optional().describe('Whether graph topology snapshot was recorded'),
+    suppression_list: z.boolean().optional().describe('Whether wikilink suppression list was updated'),
+    task_cache: z.boolean().optional().describe('Whether task cache was refreshed'),
     embeddings_refreshed: z.number().optional().describe('Number of note embeddings updated'),
-    task_count: z.number().optional().describe('Number of tasks in rebuilt task cache'),
+    entity_embeddings_refreshed: z.number().optional().describe('Number of entity embeddings updated'),
+    recency_rebuilt: z.boolean().optional().describe('Whether recency index was rebuilt'),
+    cooccurrence_associations: z.number().optional().describe('Number of co-occurrence associations rebuilt'),
+    index_cached: z.boolean().optional().describe('Whether vault index cache was saved'),
     duration_ms: z.number().describe('Time taken to rebuild index'),
   };
 
@@ -49,8 +62,15 @@ export function registerSystemTools(
     entities_count: number;
     fts5_notes: number;
     edges_recomputed?: number;
+    hub_scores?: number;
+    graph_snapshot?: boolean;
+    suppression_list?: boolean;
+    task_cache?: boolean;
     embeddings_refreshed?: number;
-    task_count?: number;
+    entity_embeddings_refreshed?: number;
+    recency_rebuilt?: boolean;
+    cooccurrence_associations?: number;
+    index_cached?: boolean;
     duration_ms: number;
   };
 
@@ -69,101 +89,259 @@ export function registerSystemTools(
     }> => {
       const vaultPath = getVaultPath();
       const startTime = Date.now();
+      const tracker = createStepTracker();
 
       // Mark index as building during refresh
       setIndexState('building');
       setIndexError(null);
 
       try {
+        // Step 1: Rebuild vault index
+        tracker.start('vault_index', {});
         const newIndex = await buildVaultIndex(vaultPath);
         setIndex(newIndex);
         setIndexState('ready');
+        tracker.end({ notes: newIndex.notes.size, entities: newIndex.entities.size });
 
-        // Update entities in StateDb (for Flywheel Memory wikilinks)
+        // Step 2: Update entities in StateDb
         const stateDb = getStateDb?.();
         if (stateDb) {
+          tracker.start('entity_sync', {});
           try {
             const config = loadConfig(stateDb);
+            const excludeFolders = config.exclude_entity_folders?.length
+              ? config.exclude_entity_folders
+              : DEFAULT_ENTITY_EXCLUDE_FOLDERS;
             const entityIndex = await scanVaultEntities(vaultPath, {
-              excludeFolders: [
-                'daily-notes', 'daily', 'weekly', 'weekly-notes', 'monthly',
-                'monthly-notes', 'quarterly', 'yearly-notes', 'periodic', 'journal',
-                'inbox', 'templates', 'attachments', 'tmp',
-                'clippings', 'readwise', 'articles', 'bookmarks', 'web-clips',
-              ],
+              excludeFolders,
               customCategories: config.custom_categories,
             });
             stateDb.replaceAllEntities(entityIndex);
+            tracker.end({ entities: entityIndex._metadata.total_entities });
             console.error(`[Flywheel] Updated ${entityIndex._metadata.total_entities} entities in StateDb`);
           } catch (e) {
+            tracker.end({ error: String(e) });
             console.error('[Flywheel] Failed to update entities:', e);
           }
         }
 
-        // Infer config from vault, merge with existing, save
+        // Step 3: Infer config from vault, merge with existing, save
+        let flywheelConfig: FlywheelConfig | undefined;
         if (setConfig) {
+          tracker.start('config_merge', {});
           const existing = loadConfig(stateDb);
           const inferred = inferConfig(newIndex, vaultPath);
           if (stateDb) {
             saveConfig(stateDb, inferred, existing);
           }
-          setConfig(loadConfig(stateDb));
+          flywheelConfig = loadConfig(stateDb);
+          setConfig(flywheelConfig);
+          tracker.end({});
         }
 
-        // Rebuild FTS5 search index
+        // Step 4: Rebuild FTS5 search index
         let fts5Notes = 0;
+        tracker.start('fts5_rebuild', {});
         try {
           const ftsState = await buildFTS5Index(vaultPath);
           fts5Notes = ftsState.noteCount;
+          tracker.end({ notes: fts5Notes });
           console.error(`[Flywheel] FTS5 index rebuilt: ${fts5Notes} notes`);
         } catch (err) {
+          tracker.end({ error: String(err) });
           console.error('[Flywheel] FTS5 rebuild failed:', err);
         }
 
-        // Recompute edge weights
+        // Step 5: Recompute edge weights
         let edgesRecomputed = 0;
         if (stateDb) {
+          tracker.start('edge_weights', {});
           try {
             const edgeResult = recomputeEdgeWeights(stateDb);
             edgesRecomputed = edgeResult.edges_updated;
+            tracker.end({ edges: edgeResult.edges_updated, duration_ms: edgeResult.duration_ms });
             console.error(`[Flywheel] Edge weights: ${edgeResult.edges_updated} edges in ${edgeResult.duration_ms}ms`);
           } catch (err) {
+            tracker.end({ error: String(err) });
             console.error('[Flywheel] Edge weight recompute failed:', err);
           }
         }
 
-        // Sync embeddings with current vault state (incremental — skips unchanged notes)
+        // Step 6: Initialize wikilink entity index from StateDb
+        tracker.start('entity_index_init', {});
+        try {
+          await initializeEntityIndex(vaultPath);
+          tracker.end({});
+          console.error('[Flywheel] Entity index initialized');
+        } catch (err) {
+          tracker.end({ error: String(err) });
+          console.error('[Flywheel] Entity index init failed:', err);
+        }
+
+        // Step 7: Export hub scores
+        let hubScoresExported = 0;
+        tracker.start('hub_scores', {});
+        try {
+          hubScoresExported = await exportHubScores(newIndex, stateDb);
+          tracker.end({ exported: hubScoresExported });
+          if (hubScoresExported > 0) {
+            console.error(`[Flywheel] Hub scores: ${hubScoresExported} entities`);
+          }
+        } catch (err) {
+          tracker.end({ error: String(err) });
+          console.error('[Flywheel] Hub score export failed:', err);
+        }
+
+        // Step 8: Record graph topology snapshot
+        let graphSnapshotRecorded = false;
+        if (stateDb) {
+          tracker.start('graph_snapshot', {});
+          try {
+            const graphMetrics = computeGraphMetrics(newIndex);
+            recordGraphSnapshot(stateDb, graphMetrics);
+            graphSnapshotRecorded = true;
+            tracker.end({ recorded: true });
+          } catch (err) {
+            tracker.end({ error: String(err) });
+            console.error('[Flywheel] Graph snapshot failed:', err);
+          }
+        }
+
+        // Step 9: Update wikilink suppression list
+        let suppressionUpdated = false;
+        if (stateDb) {
+          tracker.start('suppression_list', {});
+          try {
+            updateSuppressionList(stateDb);
+            suppressionUpdated = true;
+            tracker.end({ updated: true });
+          } catch (err) {
+            tracker.end({ error: String(err) });
+            console.error('[Flywheel] Suppression list update failed:', err);
+          }
+        }
+
+        // Step 10: Rebuild recency index
+        let recencyRebuilt = false;
+        if (stateDb) {
+          tracker.start('recency', {});
+          try {
+            const entities = getAllEntitiesFromDb(stateDb).map((e: { name: string; path: string; aliases: string[] }) => ({
+              name: e.name, path: e.path, aliases: e.aliases,
+            }));
+            const recencyIndex = await buildRecencyIndex(vaultPath, entities);
+            saveRecencyToStateDb(recencyIndex, stateDb);
+            recencyRebuilt = true;
+            tracker.end({ entities: recencyIndex.lastMentioned.size });
+            console.error(`[Flywheel] Recency: rebuilt ${recencyIndex.lastMentioned.size} entities`);
+          } catch (err) {
+            tracker.end({ error: String(err) });
+            console.error('[Flywheel] Recency rebuild failed:', err);
+          }
+        }
+
+        // Step 11: Rebuild co-occurrence index
+        let cooccurrenceAssociations: number | undefined;
+        if (stateDb) {
+          tracker.start('cooccurrence', {});
+          try {
+            const entityNames = getAllEntitiesFromDb(stateDb).map((e: { name: string }) => e.name);
+            const cooccurrenceIdx = await mineCooccurrences(vaultPath, entityNames);
+            setCooccurrenceIndex(cooccurrenceIdx);
+            saveCooccurrenceToStateDb(stateDb, cooccurrenceIdx);
+            cooccurrenceAssociations = cooccurrenceIdx._metadata.total_associations;
+            tracker.end({ associations: cooccurrenceAssociations });
+            console.error(`[Flywheel] Co-occurrence: rebuilt ${cooccurrenceAssociations} associations`);
+          } catch (err) {
+            tracker.end({ error: String(err) });
+            console.error('[Flywheel] Co-occurrence rebuild failed:', err);
+          }
+        }
+
+        // Step 12: Force-rebuild task cache
+        let taskCacheRefreshed = false;
+        tracker.start('task_cache', {});
+        try {
+          if (!flywheelConfig) {
+            flywheelConfig = loadConfig(stateDb);
+          }
+          await buildTaskCache(vaultPath, newIndex, getExcludeTags(flywheelConfig));
+          taskCacheRefreshed = true;
+          tracker.end({ rebuilt: true });
+          console.error('[Flywheel] Task cache rebuilt');
+        } catch (err) {
+          tracker.end({ error: String(err) });
+          console.error('[Flywheel] Task cache rebuild failed:', err);
+        }
+
+        // Step 13: Sync note embeddings with current vault state (incremental — skips unchanged notes)
         let embeddingsRefreshed = 0;
         if (hasEmbeddingsIndex()) {
+          tracker.start('embeddings_sync', {});
           try {
             const progress = await buildEmbeddingsIndex(vaultPath);
             embeddingsRefreshed = progress.total - progress.skipped;
+            tracker.end({ refreshed: embeddingsRefreshed });
             if (embeddingsRefreshed > 0) {
               console.error(`[Flywheel] Embeddings: ${embeddingsRefreshed} notes updated`);
             }
           } catch (err) {
+            tracker.end({ error: String(err) });
             console.error('[Flywheel] Embedding sync failed:', err);
           }
         }
 
-        // Rebuild task cache
-        let taskCount: number | undefined;
-        try {
-          await buildTaskCache(vaultPath, newIndex);
-          taskCount = getTaskCount();
-          console.error(`[Flywheel] Task cache rebuilt: ${taskCount} tasks`);
-        } catch (err) {
-          console.error('[Flywheel] Task cache rebuild failed:', err);
+        // Step 14: Sync entity embeddings
+        let entityEmbeddingsRefreshed = 0;
+        if (stateDb && hasEntityEmbeddingsIndex()) {
+          tracker.start('entity_embeddings', {});
+          try {
+            const entities = getAllEntitiesFromDb(stateDb);
+            if (entities.length > 0) {
+              const entityMap = new Map(entities.map(e => [e.name, {
+                name: e.name,
+                path: e.path,
+                category: e.category,
+                aliases: e.aliases,
+              }]));
+              entityEmbeddingsRefreshed = await buildEntityEmbeddingsIndex(vaultPath, entityMap);
+              loadEntityEmbeddingsToMemory();
+              tracker.end({ refreshed: entityEmbeddingsRefreshed });
+              if (entityEmbeddingsRefreshed > 0) {
+                console.error(`[Flywheel] Entity embeddings: ${entityEmbeddingsRefreshed} updated`);
+              }
+            } else {
+              tracker.end({ refreshed: 0 });
+            }
+          } catch (err) {
+            tracker.end({ error: String(err) });
+            console.error('[Flywheel] Entity embedding sync failed:', err);
+          }
+        }
+
+        // Step 15: Save vault index cache
+        let indexCached = false;
+        if (stateDb) {
+          tracker.start('index_cache', {});
+          try {
+            saveVaultIndexToCache(stateDb, newIndex);
+            indexCached = true;
+            tracker.end({ cached: true });
+          } catch (err) {
+            tracker.end({ error: String(err) });
+            console.error('[Flywheel] Index cache save failed:', err);
+          }
         }
 
         const duration = Date.now() - startTime;
 
-        // Record index event
+        // Record index event with per-step telemetry
         if (stateDb) {
           recordIndexEvent(stateDb, {
             trigger: 'manual_refresh',
             duration_ms: duration,
             note_count: newIndex.notes.size,
+            steps: tracker.steps,
           });
         }
 
@@ -173,8 +351,15 @@ export function registerSystemTools(
           entities_count: newIndex.entities.size,
           fts5_notes: fts5Notes,
           edges_recomputed: edgesRecomputed,
+          hub_scores: hubScoresExported || undefined,
+          graph_snapshot: graphSnapshotRecorded || undefined,
+          suppression_list: suppressionUpdated || undefined,
+          task_cache: taskCacheRefreshed || undefined,
           embeddings_refreshed: embeddingsRefreshed || undefined,
-          task_count: taskCount,
+          entity_embeddings_refreshed: entityEmbeddingsRefreshed || undefined,
+          recency_rebuilt: recencyRebuilt || undefined,
+          cooccurrence_associations: cooccurrenceAssociations,
+          index_cached: indexCached || undefined,
           duration_ms: duration,
         };
 

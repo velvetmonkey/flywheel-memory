@@ -30,9 +30,19 @@ export interface FlywheelConfig {
   vault_name?: string;
   paths?: FlywheelPaths;
   templates?: FlywheelTemplates;
+  /**
+   * Unified exclusion list — CSV of #hashtags or entity names/aliases.
+   * Excludes from all analysis: tasks, graph, suggestions, hub rankings.
+   * Examples: ["#habit", "#daily", "walk", "vitamins"]
+   */
+  exclude?: string[];
+  /** @deprecated Use `exclude` instead. Migrated on config load. */
   exclude_task_tags?: string[];
+  /** @deprecated Use `exclude` instead. Migrated on config load. */
   exclude_analysis_tags?: string[];
+  /** @deprecated Use `exclude` instead. Migrated on config load. */
   exclude_entities?: string[];
+  /** Folders to exclude from entity scanning */
   exclude_entity_folders?: string[];
   /** Wikilink suggestion strictness: conservative, balanced (default), aggressive */
   wikilink_strictness?: 'conservative' | 'balanced' | 'aggressive';
@@ -61,16 +71,51 @@ export interface FlywheelConfig {
   custom_categories?: Record<string, { type_boost?: number }>;
 }
 
+/** Folders excluded from entity scanning when exclude_entity_folders is empty */
+export const DEFAULT_ENTITY_EXCLUDE_FOLDERS = ['node_modules', 'templates', 'attachments', 'tmp'];
+
 /** Default config for new vaults — opinionated: aggressive linking by default, opt out to dial back */
 const DEFAULT_CONFIG: FlywheelConfig = {
-  exclude_task_tags: [],
-  exclude_analysis_tags: [],
-  exclude_entities: [],
+  exclude: [],
   exclude_entity_folders: [],
   wikilink_strictness: 'balanced',
   implicit_detection: true,
   adaptive_strictness: true,
 };
+
+/**
+ * Migrate legacy exclude fields into unified `exclude` array.
+ * Tags get prefixed with # if not already, entity names stay as-is.
+ * Deduplicates and removes the old fields.
+ */
+function migrateExcludeConfig(config: FlywheelConfig): FlywheelConfig {
+  const oldTags = [
+    ...(config.exclude_task_tags ?? []),
+    ...(config.exclude_analysis_tags ?? []),
+  ];
+  const oldEntities = config.exclude_entities ?? [];
+
+  if (oldTags.length === 0 && oldEntities.length === 0) return config;
+
+  // Normalize tags to #-prefixed
+  const normalizedTags = oldTags.map(t => t.startsWith('#') ? t : `#${t}`);
+
+  // Merge with existing exclude list
+  const merged = new Set([
+    ...(config.exclude ?? []),
+    ...normalizedTags,
+    ...oldEntities,
+  ]);
+
+  return {
+    ...config,
+    exclude: Array.from(merged),
+    // Clear deprecated fields
+    exclude_task_tags: undefined,
+    exclude_analysis_tags: undefined,
+    exclude_entities: undefined,
+  };
+}
 
 /**
  * Load config from SQLite StateDb.
@@ -84,7 +129,7 @@ export function loadConfig(stateDb?: StateDb | null): FlywheelConfig {
       const dbConfig = loadFlywheelConfigFromDb(stateDb);
       if (dbConfig && Object.keys(dbConfig).length > 0) {
         console.error('[Flywheel] Loaded config from StateDb');
-        return { ...DEFAULT_CONFIG, ...dbConfig as FlywheelConfig };
+        return migrateExcludeConfig({ ...DEFAULT_CONFIG, ...dbConfig as FlywheelConfig });
       }
     } catch (err) {
       console.error('[Flywheel] Failed to load config from StateDb:', err);
@@ -161,8 +206,7 @@ function findMatchingFolder(folders: string[], patterns: string[]): string | und
  */
 export function inferConfig(index: VaultIndex, vaultPath?: string): FlywheelConfig {
   const inferred: FlywheelConfig = {
-    exclude_task_tags: [],
-    exclude_analysis_tags: [],
+    exclude: [],
     paths: {},
   };
 
@@ -199,16 +243,33 @@ export function inferConfig(index: VaultIndex, vaultPath?: string): FlywheelConf
     inferred.templates = scanTemplatesFolder(vaultPath, templatesPath);
   }
 
-  // Find tags that match recurring patterns
+  // Find tags that match recurring patterns → add to unified exclude list
   for (const tag of index.tags.keys()) {
     const lowerTag = tag.toLowerCase();
     if (RECURRING_TAG_PATTERNS.some((pattern) => lowerTag.includes(pattern))) {
-      inferred.exclude_task_tags!.push(tag);
-      inferred.exclude_analysis_tags!.push(tag);
+      inferred.exclude!.push(tag.startsWith('#') ? tag : `#${tag}`);
     }
   }
 
   return inferred;
+}
+
+/**
+ * Extract excluded tags from the unified exclude list.
+ * Tags are entries starting with '#'. Returns without the '#' prefix.
+ */
+export function getExcludeTags(config: FlywheelConfig): string[] {
+  return (config.exclude ?? [])
+    .filter(e => e.startsWith('#'))
+    .map(e => e.slice(1));
+}
+
+/**
+ * Extract excluded entity names from the unified exclude list.
+ * Entities are entries NOT starting with '#'.
+ */
+export function getExcludeEntities(config: FlywheelConfig): string[] {
+  return (config.exclude ?? []).filter(e => !e.startsWith('#'));
 }
 
 /** Template filename patterns (case-insensitive) mapped to periodic types */

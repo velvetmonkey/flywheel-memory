@@ -566,7 +566,7 @@ The scoring algorithm above powers wikilink suggestions -- what to link. The sea
 
 ### Three Search Channels (Structured Response)
 
-Search returns three sections in a single response. The note pipeline is completely independent -- entity and memory channels cannot affect note ranking.
+Search returns three sections in a single response. Entity-name matches form a fourth RRF channel alongside FTS5, semantic, and edge-weight context. Memory results are independent and do not affect note ranking.
 
 **`results[]` (Notes)** -- FTS5 full-text search with BM25 ranking. Column weights: frontmatter values 10x, title 5x, content 1x. When embeddings are built, semantic similarity runs in parallel (cosine on local all-MiniLM-L6-v2 embeddings enriched with contextual prefixes -- no content leaves the machine). Results go through RRF fusion, graph reranking, U-shaped interleaving, snippet extraction, and section expansion into a decision surface. This pipeline is identical to pre-merge search -- benchmark-validated, untouched.
 

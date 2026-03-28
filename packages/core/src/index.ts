@@ -34,6 +34,9 @@ export {
 // Common English words (frequency list for alias filtering)
 export { COMMON_ENGLISH_WORDS } from './common-words.js';
 
+// Stopwords (canonical set for search tokenization)
+export { STOPWORDS_EN, isStopword } from './stopwords.js';
+
 // Porter Stemmer (for morphological entity matching)
 export { stem } from './stemmer.js';
 

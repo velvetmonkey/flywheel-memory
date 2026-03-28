@@ -7,8 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Search consumer parameter** — `consumer` param (`human` vs `llm`) adjusts output formatting per audience
+- **Self-healing embeddings** — automatic re-embed when `EMBEDDING_TEXT_VERSION` changes; LoCoMo benchmark updated to 695 questions
+
 ### Changed
-- **Context engineering (P38)** — sandwich ordering upgraded to full U-shaped interleaving across all N results (odd-ranked front, even-ranked back). Section expansion adds `section_content` field to top-N results (full `##` section up to 2,500 chars). Contextual embedding prefix prepends `"Note: {title}. Tags: ..."` to note body before vectorisation, with `EMBEDDING_TEXT_VERSION` bump for automatic re-embed on upgrade. Decision surface documentation updated across all docs.
+- **README redesigned** as product page, trimmed implementation details, benchmark section leads with data
+- **Stale tool counts** fixed across config, docs, and demos
+
+## [2.0.151-154] - 2026-03-27
+*Context engineering, license migration & search unification*
+
+### Added
+- **Context engineering (P38)** — U-shaped interleaving across all N results (odd-ranked front, even-ranked back), section expansion adds `section_content` field (full `##` section up to 2,500 chars), contextual embedding prefix prepends `"Note: {title}. Tags: ..."` before vectorisation with `EMBEDDING_TEXT_VERSION` bump for automatic re-embed on upgrade
+- **Uber search** — entity + memory channels merged into unified `search` tool; `recall` removed
+- **HTTP security guide** — nginx/Caddy reverse proxy recipes for production deployments
+
+### Changed
+- **License migration** — relicensed from AGPL-3.0-only to Apache-2.0
+- **HotpotQA benchmark** updated to 91.7% (500-question run)
+- **README restructured** around three-jobs framing (T11), formatting fixes
+- **Tool count** corrected 74 to 75
+
+### Fixed
+- **Broken wikilinks** in daily notes — garbled brackets, Month End format, ticket format (#58)
+- **Hub scores all-zero** — graph hub scoring returned 0 for all notes; incremental `auto_vacuum` added (#66)
+- **Watcher performance** — throttle expensive pipeline steps, fix parse error logging (#57)
+- **External wikilink edit feedback loop** — closed for issues 1.1-1.3 (#60)
+- **Daily note template fallback** + list sanitization (#63)
+- **LICENSE missing** from npm packages (#49)
 
 ## [2.0.146-150] - 2026-03-26
 *Context engineering & uber search*
@@ -580,7 +607,8 @@ Foundation polish: policy engine fixes, AGPL relicense, code health cleanup, tes
 - CI workflows for linting and testing
 - Strategic README with project positioning
 
-[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.150...HEAD
+[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.154...HEAD
+[2.0.151-154]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.150...flywheel-memory-v2.0.154
 [2.0.145-2.0.150]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.144...flywheel-memory-v2.0.150
 [2.0.139-2.0.144]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.138...flywheel-memory-v2.0.144
 [2.0.129-2.0.138]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.128...flywheel-memory-v2.0.138

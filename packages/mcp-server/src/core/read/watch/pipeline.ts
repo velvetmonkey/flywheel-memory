@@ -140,6 +140,7 @@ export class PipelineRunner {
   private entitiesAfter: EntitySearchResult[] = [];
   private entitiesBefore: EntitySearchResult[] = [];
   private hubBefore = new Map<string, number>();
+  private hasEntityRelevantChanges = false;
   private forwardLinkResults: Array<{ file: string; resolved: string[]; dead: string[] }> = [];
   private linkDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
   private survivedLinks: Array<{ entity: string; file: string; count: number }> = [];
@@ -228,6 +229,7 @@ export class PipelineRunner {
     if (!vaultIndex) {
       const rebuilt = await p.buildVaultIndex(p.vp);
       p.updateVaultIndex(rebuilt);
+      this.hasEntityRelevantChanges = true; // full rebuild — entity state unknown
       serverLog('watcher', `Index rebuilt (full): ${rebuilt.notes.size} notes, ${rebuilt.entities.size} entities`);
     } else {
       const absoluteBatch = {
@@ -235,6 +237,7 @@ export class PipelineRunner {
         events: p.events.map(e => ({ ...e, path: path.join(p.vp, e.path) })),
       };
       const batchResult = await processBatch(vaultIndex, p.vp, absoluteBatch);
+      this.hasEntityRelevantChanges = batchResult.hasEntityRelevantChanges;
       serverLog('watcher', `Incremental: ${batchResult.successful}/${batchResult.total} files in ${batchResult.durationMs}ms`);
     }
     p.updateIndexState('ready');
@@ -279,38 +282,6 @@ export class PipelineRunner {
 
   // ── Step 2: Entity scan (critical) ────────────────────────────────
 
-  /** Returns true if any changed file has entity-relevant field drift vs the DB */
-  private hasEntityFieldDrift(): boolean {
-    const { p } = this;
-    if (!p.sd) return false;
-    const vaultIndex = p.getVaultIndex();
-    const dbEntities = getAllEntitiesFromDb(p.sd);
-    // Build path -> entity lookup from DB
-    const byPath = new Map<string, EntitySearchResult[]>();
-    for (const e of dbEntities) {
-      const arr = byPath.get(e.path) ?? [];
-      arr.push(e);
-      byPath.set(e.path, arr);
-    }
-    for (const event of p.events) {
-      if (event.type === 'delete') return true; // entity may have been removed
-      const note = vaultIndex.notes.get(event.path);
-      if (!note) continue;
-      const existing = byPath.get(event.path);
-      if (!existing || existing.length === 0) return true; // new entity note
-      // Check title match against primary entity
-      const primary = existing.find(e => e.name === note.title);
-      if (!primary) return true; // title changed
-      // Check aliases match
-      const dbAliases = new Set(primary.aliases);
-      if (note.aliases.length !== dbAliases.size) return true;
-      for (const a of note.aliases) {
-        if (!dbAliases.has(a)) return true;
-      }
-    }
-    return false;
-  }
-
   private async entityScan(): Promise<void> {
     const { p, tracker } = this;
     const vaultIndex = p.getVaultIndex();
@@ -322,10 +293,10 @@ export class PipelineRunner {
     }
 
     // Throttle: full entity scan is expensive (recursive directory walk).
-    // Skip if scanned within 5 minutes AND no entity-relevant fields changed.
+    // Skip if scanned within 5 minutes; downstream steps still get entities from DB.
     const entityScanAgeMs = p.ctx.lastEntityScanAt > 0
       ? Date.now() - p.ctx.lastEntityScanAt : Infinity;
-    if (entityScanAgeMs < 5 * 60 * 1000 && !this.hasEntityFieldDrift()) {
+    if (entityScanAgeMs < 5 * 60 * 1000 && !this.hasEntityRelevantChanges) {
       tracker.start('entity_scan', {});
       tracker.skip('entity_scan', `cache valid (${Math.round(entityScanAgeMs / 1000)}s old)`);
       this.entitiesBefore = p.sd ? getAllEntitiesFromDb(p.sd) : [];

@@ -30,7 +30,7 @@ import {
   getConnectionStrength,
 } from './graphAdvanced.js';
 
-import type { FlywheelConfig } from '../../core/read/config.js';
+import { getExcludeTags, type FlywheelConfig } from '../../core/read/config.js';
 import { isTaskCacheReady, queryTasksFromCache, refreshIfStale } from '../../core/read/taskCache.js';
 import { getEntityByName, type StateDb } from '@velvetmonkey/vault-core';
 
@@ -204,7 +204,7 @@ export function registerPrimitiveTools(
 
       // Single-note mode — always read from file (fast for one note)
       if (path) {
-        const result = await getTasksFromNote(index, path, vaultPath, config.exclude_task_tags || []);
+        const result = await getTasksFromNote(index, path, vaultPath, getExcludeTags(config));
 
         if (!result) {
           return {
@@ -235,13 +235,13 @@ export function registerPrimitiveTools(
       // Use task cache if available (fast SQL queries vs full disk scan)
       if (isTaskCacheReady()) {
         // Trigger background refresh if stale
-        refreshIfStale(vaultPath, index, config.exclude_task_tags);
+        refreshIfStale(vaultPath, index, getExcludeTags(config));
 
         if (has_due_date) {
           const result = queryTasksFromCache({
             status,
             folder,
-            excludeTags: config.exclude_task_tags,
+            excludeTags: getExcludeTags(config),
             has_due_date: true,
             limit,
             offset,
@@ -260,7 +260,7 @@ export function registerPrimitiveTools(
           status,
           folder,
           tag,
-          excludeTags: config.exclude_task_tags,
+          excludeTags: getExcludeTags(config),
           limit,
           offset,
         });
@@ -282,7 +282,7 @@ export function registerPrimitiveTools(
         const allResults = await getTasksWithDueDates(index, vaultPath, {
           status,
           folder,
-          excludeTags: config.exclude_task_tags,
+          excludeTags: getExcludeTags(config),
         });
         const paged = allResults.slice(offset, offset + limit);
 
@@ -300,7 +300,7 @@ export function registerPrimitiveTools(
         folder,
         tag,
         limit: limit + offset,
-        excludeTags: config.exclude_task_tags,
+        excludeTags: getExcludeTags(config),
       });
       const paged = result.tasks.slice(offset, offset + limit);
 

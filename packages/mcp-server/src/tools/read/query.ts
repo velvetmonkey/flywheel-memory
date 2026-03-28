@@ -516,6 +516,7 @@ export function registerQueryTools(
       consumer: z.enum(['llm', 'human']).default('llm').describe('Output format: "llm" applies sandwich ordering and strips scoring fields for context efficiency. "human" preserves score order and all scoring metadata for UI display.'),
     },
     async ({ query, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note, consumer }) => {
+      requireIndex();
       const limit = Math.min(requestedLimit ?? 10, MAX_LIMIT);
       const detailN = requestedDetailCount ?? 5;
       const index = getIndex();

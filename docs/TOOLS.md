@@ -137,7 +137,7 @@ The index uses Porter stemming, so "running" matches "run", "runs", and "ran". R
 
 "Show me notes like this one." Give it a note path, and it finds related notes by content overlap. Filters out notes already linked to it, so you only see new connections.
 
-**Parameters:** `path`, `limit`, `exclude_linked`
+**Parameters:** `path`, `limit`, `diversity`
 
 ### `init_semantic`
 
@@ -237,7 +237,7 @@ Embedding-based vault analysis (requires `init_semantic`).
 
 | Tool | When to use it |
 |------|---------------|
-| `list_entities` | Browse all entities with filtering by category, folder, or search term. |
+| `list_entities` | Browse all entities grouped by category. Filter by `category`, cap with `limit`. |
 | `get_connection_strength` | How strongly are two notes connected? Considers links, shared neighbors, co-occurrence. |
 | `get_link_path` | Shortest path between two notes through the link graph. |
 | `get_common_neighbors` | Notes that both A and B link to — find what they have in common. |
@@ -367,7 +367,7 @@ Store and retrieve facts, preferences, and observations. Each memory has a key, 
 
 Cold-start context for any session. Builds a token-budgeted summary of recent sessions, active entities, stored memories, pending corrections, and vault pulse — so an agent can pick up where it left off without reading the whole vault.
 
-**Parameters:** `token_budget`, `sections`
+**Parameters:** `max_tokens`, `focus`
 
 ---
 

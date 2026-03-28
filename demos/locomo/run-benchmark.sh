@@ -177,8 +177,10 @@ For multi-hop questions, search again using details from what you've read.
 
 Question: $question
 
-Answer concisely — just the facts, in one or two sentences.
-If the information is not in the vault, say so." \
+ANSWER FORMAT: Reply with ONLY the factual answer — no reasoning, no explanation of your search.
+Good: '2022', 'Stockholm, Sweden', 'No, they discussed hiking not skiing'
+Bad: 'Based on my search of the vault, I found that the answer is 2022.'
+If the information is not in the vault, say 'The information is not available in the vault.'" \
     --output-format stream-json \
     --no-session-persistence \
     --permission-mode bypassPermissions \
@@ -200,5 +202,5 @@ echo ""
 # Run analysis
 if [[ -f "$SCRIPT_DIR/analyze-benchmark.py" ]]; then
   echo "Running analysis..."
-  python3 "$SCRIPT_DIR/analyze-benchmark.py" "$RESULTS_DIR" "$GROUND_TRUTH"
+  python3 "$SCRIPT_DIR/analyze-benchmark.py" "$RESULTS_DIR" "$GROUND_TRUTH" --judge
 fi

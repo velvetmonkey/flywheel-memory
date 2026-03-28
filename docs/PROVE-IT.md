@@ -300,7 +300,7 @@ This runs 20 questions in ~10 minutes for ~$1.25.
 - MCP server built: `npm run build`
 - Claude Code CLI authenticated
 - Python 3
-- Anthropic API credits (~$0.095/question)
+- Anthropic API credits (~$0.12/question)
 
 **Step 1: Build the benchmark vault**
 
@@ -336,19 +336,19 @@ cat demos/locomo/results/run-*/report.md
 
 **Expected results:**
 
-| Category | Questions | Evidence Recall | Answer Score |
+| Category | Questions | Evidence Recall | Accuracy (Judge) |
 |---|---|---|---|
-| **Overall** | **695** | **~79%** | **~0.23** |
-| Adversarial | 182 | ~97% | ~0.48 (accuracy) |
-| Commonsense | 139 | ~96% | ~0.17 (F1) |
-| Single-hop | 139 | ~96% | ~0.13 (F1) |
-| Multi-hop | 139 | ~65% | ~0.14 (F1) |
-| Temporal | 96 | ~60% | ~0.09 (F1) |
+| **Overall** | **695** | **~84%** | **~59%** |
+| Single-hop | 139 | ~97% | ~77% |
+| Commonsense | 139 | ~96% | ~78% |
+| Multi-hop | 139 | ~74% | ~39% |
+| Temporal | 96 | ~69% | ~53% |
+| Adversarial | 182 | ~99% | ~48% |
 
-Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 79.1% headline is from seed 42 with Sonnet. Token F1 is a diagnostic metric that penalizes verbosity — LLM-as-judge accuracy (~58.8%) is the primary answer quality metric and is now reported automatically on every run.
+Exact numbers vary by a few percentage points between runs due to LLM non-determinism. The 84.3% headline is from seed 42 with Sonnet. Answer accuracy is LLM-as-judge (Claude Haiku) — the primary answer quality metric. Token F1 (diagnostic) is also reported automatically on every run.
 
-**Estimated time:** ~4-6 hours for 695 questions.
-**Estimated cost:** ~$66 (695 x ~$0.095/question).
+**Estimated time:** ~8-12 hours for 695 questions.
+**Estimated cost:** ~$85 (695 x ~$0.12/question).
 
 **Smaller test run:** To verify the pipeline:
 

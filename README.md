@@ -12,8 +12,8 @@
 [![Clients](https://img.shields.io/badge/clients-Claude%20Code%20%7C%20Desktop%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20VS%20Code%20%7C%20OpenClaw-blue.svg)](docs/SETUP.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](https://github.com/velvetmonkey/flywheel-memory)
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-92.4%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-79%25%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
-[![Cost](https://img.shields.io/badge/cost-%240.06--0.10%2Fquery-green.svg)](docs/TESTING.md#how-the-e2e-benchmark-works)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-84%25%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![Cost](https://img.shields.io/badge/cost-%240.06--0.12%2Fquery-green.svg)](docs/TESTING.md#how-the-e2e-benchmark-works)
 [![Tests](https://img.shields.io/badge/tests-2,712%20passed-brightgreen.svg)](docs/TESTING.md)
 
 **[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)** · **[Story](#the-story-behind-this)** · **[License](#license)**
@@ -255,7 +255,7 @@ Every number is reproducible: clone the repo, run the scripts, get the same resu
 | Multi-hop | 58.1% | 72.7% |
 | Temporal | 56.9% | 67.4% |
 
-E2E with Claude Sonnet (695 questions): 95.5% single-hop evidence recall, 65.3% multi-hop, 79.1% overall. Competitors (Mem0, Zep, LangMem) report answer accuracy via GPT-4o judge but not evidence recall — metrics differ. [Full comparison →](docs/TESTING.md#retrieval-benchmark-locomo)
+E2E with Claude Sonnet (695 questions): 97.4% single-hop evidence recall, 73.7% multi-hop, 84.3% overall. 58.7% answer accuracy (LLM-as-judge). Competitors (Mem0, Zep, LangMem) report answer accuracy via GPT-4o judge but not evidence recall — metrics differ. [Full comparison →](docs/TESTING.md#retrieval-benchmark-locomo)
 
 > **Directional, not apples-to-apples.** Different test settings, sample sizes, retrieval pools, and metrics. Flywheel searches 4,960 pooled docs (harder than HotpotQA distractor setting of 10, easier than fullwiki 5M+). Academic retrievers train on the benchmark; Flywheel has zero training data. Run-to-run variance of ~1pp is expected due to LLM non-determinism. [Full caveats →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 

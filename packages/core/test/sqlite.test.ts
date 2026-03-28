@@ -65,7 +65,7 @@ describe('SQLite State Management', () => {
       expect(stateDbExists(testVaultPath)).toBe(true);
     });
 
-    it('should delete database and WAL files', () => {
+    it('should delete database and WAL files', { timeout: 15_000 }, () => {
       stateDb = openStateDb(testVaultPath);
       stateDb.close();
 

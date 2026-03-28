@@ -249,6 +249,10 @@ async function main() {
     generated: new Date().toISOString(),
     dataset: 'locomo10',
     vault_mode: mode,
+    build_config: {
+      mode,
+      conversations: entries.length,
+    },
     count: groundTruth.length,
     total_conversations: entries.length,
     total_sessions: totalSessions,

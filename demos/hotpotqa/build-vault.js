@@ -107,6 +107,11 @@ async function main() {
   // Write ground truth
   fs.writeFileSync(GROUND_TRUTH_FILE, JSON.stringify({
     generated: new Date().toISOString(),
+    dataset: 'hotpot_dev_distractor_v1',
+    build_config: {
+      count: groundTruth.length,
+      seed,
+    },
     count: groundTruth.length,
     seed,
     total_docs: docPathMap.size,

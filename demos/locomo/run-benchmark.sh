@@ -1,91 +1,136 @@
 #!/usr/bin/env bash
-# End-to-end LoCoMo retrieval benchmark
-#
-# Runs LoCoMo questions through Claude with Flywheel MCP tools (default preset),
-# then analyzes evidence recall and answer quality.
-#
-# Usage:
-#   demos/locomo/run-benchmark.sh                              # default: all questions, sonnet, dialog mode
-#   COUNT=50 demos/locomo/run-benchmark.sh                     # subset of questions
-#   MODEL=opus MODE=summary demos/locomo/run-benchmark.sh      # use opus, summary vault mode
+# End-to-end LoCoMo benchmark with answer artifacts and judge-on-by-default.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+LIB_DIR="$REPO_DIR/demos/lib"
 MCP_SERVER="$REPO_DIR/packages/mcp-server/dist/index.js"
 VAULT_DIR="$SCRIPT_DIR/vault"
 GROUND_TRUTH="$SCRIPT_DIR/ground-truth.json"
 MODEL="${MODEL:-sonnet}"
-COUNT="${COUNT:-695}"  # Default: 695 balanced questions (matches Mem0 competition paper)
+COUNT="${COUNT:-695}"
 MODE="${MODE:-dialog}"
 SEED="${SEED:-42}"
+JUDGE="${JUDGE:-1}"
+JUDGE_MODEL="${JUDGE_MODEL:-haiku}"
+ANSWER_EXTRACT="${ANSWER_EXTRACT:-1}"
+EXTRACT_MODEL="${EXTRACT_MODEL:-haiku}"
+ANSWER_MAX_TOKENS="${ANSWER_MAX_TOKENS:-10}"
+ANSWER_MAX_CHARS="${ANSWER_MAX_CHARS:-100}"
+ANSWER_MAX_SENTENCES="${ANSWER_MAX_SENTENCES:-1}"
+QUESTION_TIMEOUT="${QUESTION_TIMEOUT:-180}"
+EXTRACT_TIMEOUT="${EXTRACT_TIMEOUT:-30}"
+JUDGE_TIMEOUT="${JUDGE_TIMEOUT:-30}"
+FORCE_REBUILD="${FORCE_REBUILD:-0}"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="${RESUME:-$SCRIPT_DIR/results/run-$TIMESTAMP}"
+RAW_DIR="$RESULTS_DIR/raw"
+ANSWERS_DIR="$RESULTS_DIR/answers"
 
-# Pre-flight
 if [[ ! -f "$MCP_SERVER" ]]; then
   echo "ERROR: MCP server not built. Run: cd $REPO_DIR && npm run build"
   exit 1
 fi
 
-# Build vault if not present or mode changed
-if [[ ! -d "$VAULT_DIR" || ! -f "$GROUND_TRUTH" ]]; then
-  echo "Building LoCoMo vault (mode=$MODE)..."
+mkdir -p "$RAW_DIR" "$ANSWERS_DIR"
+
+rebuild_reason=""
+if [[ "$FORCE_REBUILD" == "1" ]]; then
+  rebuild_reason="force_rebuild"
+elif [[ ! -d "$VAULT_DIR" || ! -f "$GROUND_TRUTH" ]]; then
+  rebuild_reason="missing_vault_or_ground_truth"
+else
+  rebuild_reason="$(python3 - <<PY
+import json
+from pathlib import Path
+gt = Path("$GROUND_TRUTH")
+try:
+    data = json.load(gt.open())
+except Exception:
+    print("invalid_ground_truth")
+    raise SystemExit
+build = data.get("build_config", {})
+if data.get("vault_mode") != "$MODE":
+    print("mode_mismatch")
+elif build.get("mode") not in (None, "$MODE"):
+    print("build_config_mode_mismatch")
+else:
+    print("")
+PY
+)"
+fi
+
+if [[ -n "$rebuild_reason" ]]; then
+  echo "Building LoCoMo vault (reason=$rebuild_reason, mode=$MODE)..."
   node "$SCRIPT_DIR/build-vault.js" --mode "$MODE"
 fi
 
-# Build balanced sample indices
 TOTAL_QUESTIONS=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['count'])")
 if [[ "$COUNT" -eq 0 || "$COUNT" -gt "$TOTAL_QUESTIONS" ]]; then
   COUNT=$TOTAL_QUESTIONS
 fi
 
-INDICES_FILE="$RESULTS_DIR/indices.json"
-mkdir -p "$RESULTS_DIR/raw"
+python3 - <<PY > "$RESULTS_DIR/run-config.json"
+import json, subprocess
+from datetime import datetime
+config = {
+    "dataset": "locomo10",
+    "generated": datetime.now().isoformat(),
+    "count": int("$COUNT"),
+    "mode": "$MODE",
+    "seed": int("$SEED"),
+    "model": "$MODEL",
+    "judge": bool(int("$JUDGE")),
+    "judge_model": "$JUDGE_MODEL",
+    "answer_extract": bool(int("$ANSWER_EXTRACT")),
+    "extract_model": "$EXTRACT_MODEL",
+    "thresholds": {
+        "max_tokens": int("$ANSWER_MAX_TOKENS"),
+        "max_chars": int("$ANSWER_MAX_CHARS"),
+        "max_sentences": int("$ANSWER_MAX_SENTENCES"),
+    },
+    "timeouts": {
+        "question": int("$QUESTION_TIMEOUT"),
+        "extract": int("$EXTRACT_TIMEOUT"),
+        "judge": int("$JUDGE_TIMEOUT"),
+    },
+    "resume": bool("${RESUME:+1}" != ""),
+    "force_rebuild": bool(int("$FORCE_REBUILD")),
+    "git_commit": subprocess.run(
+        ["git", "-C", "$REPO_DIR", "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout.strip() or "unknown",
+}
+print(json.dumps(config, indent=2))
+PY
 
-# Stratified sampling: equal per category, spread across conversations
+INDICES_FILE="$RESULTS_DIR/indices.json"
 if [[ -n "${RESUME:-}" ]] && [[ -f "$INDICES_FILE" ]]; then
   echo "Resuming — reusing existing indices"
-  python3 -c "
-import json
-from collections import Counter
-gt = json.load(open('$GROUND_TRUTH'))
-questions = gt['questions']
-indices = json.load(open('$INDICES_FILE'))
-print(f'Sampled {len(indices)} questions across {len(set(questions[i][\"category\"] for i in indices))} categories')
-dist = Counter(questions[i]['category'] for i in indices)
-for cat, n in sorted(dist.items()):
-    print(f'  {cat}: {n}')
-"
 else
-python3 -c "
+  python3 - <<PY
 import json, random
-random.seed(${SEED})
-gt = json.load(open('$GROUND_TRUTH'))
-questions = gt['questions']
-count = $COUNT
-
+random.seed(int("$SEED"))
+gt = json.load(open("$GROUND_TRUTH"))
+questions = gt["questions"]
+count = int("$COUNT")
 if count >= len(questions):
     indices = list(range(len(questions)))
 else:
-    # Group by category
     by_cat = {}
     for i, q in enumerate(questions):
-        cat = q['category']
-        by_cat.setdefault(cat, []).append(i)
-
-    # Shuffle within each category
-    for cat in by_cat:
-        random.shuffle(by_cat[cat])
-
-    # Round-robin across categories
-    indices = []
-    cats = sorted(by_cat.keys())
+        by_cat.setdefault(q["category"], []).append(i)
+    for cat in by_cat.values():
+        random.shuffle(cat)
+    cats = sorted(by_cat)
     per_cat = max(1, count // len(cats))
+    indices = []
     for cat in cats:
         indices.extend(by_cat[cat][:per_cat])
-    # Fill remainder from largest categories
     remaining = count - len(indices)
     for cat in cats:
         if remaining <= 0:
@@ -94,91 +139,101 @@ else:
         indices.extend(extra)
         remaining -= len(extra)
     indices = sorted(indices[:count])
-
-json.dump(indices, open('$INDICES_FILE', 'w'))
-print(f'Sampled {len(indices)} questions across {len(set(questions[i][\"category\"] for i in indices))} categories')
-# Show distribution
-from collections import Counter
-dist = Counter(questions[i]['category'] for i in indices)
-for cat, n in sorted(dist.items()):
-    print(f'  {cat}: {n}')
-"
+json.dump(indices, open("$INDICES_FILE", "w"))
+print(f"Sampled {len(indices)} questions")
+PY
 fi
 
 echo ""
 echo "=== LoCoMo End-to-End Benchmark ==="
-echo "Questions:     $COUNT / $TOTAL_QUESTIONS (balanced)"
+echo "Questions:     $COUNT / $TOTAL_QUESTIONS"
 echo "Model:         $MODEL"
 echo "Vault mode:    $MODE"
+echo "Judge:         $JUDGE ($JUDGE_MODEL)"
+echo "Extract:       $ANSWER_EXTRACT ($EXTRACT_MODEL)"
 echo "Results:       $RESULTS_DIR"
 echo ""
 
-# MCP config — default preset (search, memory, brief tools for conversational memory)
 mcp_config=$(cat <<EOF
 {"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$VAULT_DIR"}}}}
 EOF
 )
 
-# Pre-warm: ensure vault is fully indexed + embeddings built before questions start
-# Uses full preset (health_check, refresh_index, init_semantic) for bootstrap
 warmup_config=$(cat <<EOF
 {"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$VAULT_DIR","FLYWHEEL_TOOLS":"full,memory"}}}}
 EOF
 )
 
 if [[ -n "${RESUME:-}" ]] && [[ -f "$RESULTS_DIR/warmup.jsonl" ]]; then
-  echo "Resuming — skipping warmup (already done)"
+  echo "Resuming — skipping warmup"
 else
-echo "Pre-warming vault: index + auto-link + embeddings..."
-if claude -p "Bootstrap this vault for benchmarking. Run these steps in order:
-1. Call health_check — report entity_count and note_count.
-2. Call vault_init with mode='enrich' and dry_run=false to auto-link all notes with wikilinks.
-3. Call refresh_index to re-index with the new wikilinks.
-4. Call init_semantic to build embeddings. Wait for completion.
-5. Call health_check — confirm fts5_ready=true and embeddings_ready=true.
-Report final status with entity_count, note_count, and embeddings_ready." \
-  --output-format stream-json \
-  --no-session-persistence \
-  --permission-mode bypassPermissions \
-  --mcp-config <(echo "$warmup_config") \
-  --strict-mcp-config \
-  --model haiku \
-  > "$RESULTS_DIR/warmup.jsonl" 2>"$RESULTS_DIR/warmup.stderr"; then
-  echo "Vault pre-warmed (index + auto-link + embeddings)"
-else
-  echo "WARNING: Pre-warm failed (exit $?) — continuing anyway"
-fi
+  echo "Pre-warming vault: index + auto-link + embeddings..."
+  if claude -p "Bootstrap this vault for benchmarking. Run these steps in order:
+1. Call health_check and report entity_count and note_count.
+2. Call vault_init with mode='enrich' and dry_run=false.
+3. Call refresh_index.
+4. Call init_semantic and wait for completion.
+5. Call health_check and confirm fts5_ready=true and embeddings_ready=true.
+Report final status." \
+    --output-format stream-json \
+    --no-session-persistence \
+    --permission-mode bypassPermissions \
+    --mcp-config <(echo "$warmup_config") \
+    --strict-mcp-config \
+    --model haiku \
+    > "$RESULTS_DIR/warmup.jsonl" 2>"$RESULTS_DIR/warmup.stderr"; then
+    echo "Vault pre-warmed"
+  else
+    echo "ERROR: Pre-warm failed. See $RESULTS_DIR/warmup.stderr"
+    exit 1
+  fi
 fi
 echo ""
 
-# Read indices
 INDICES=$(python3 -c "import json; print(' '.join(str(i) for i in json.load(open('$INDICES_FILE'))))")
-QNUM=0
 
 for i in $INDICES; do
   padded=$(printf "%04d" "$i")
-  question=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['questions'][$i]['question'])")
-  category=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['questions'][$i]['category'])")
+  raw_path="$RAW_DIR/q${padded}.jsonl"
+  stderr_path="$RAW_DIR/q${padded}.stderr"
+  answer_path="$ANSWERS_DIR/q${padded}.json"
 
-  echo -n "  q${padded} [${category}]: "
-
-  # Resume support: skip questions with >1 line in JSONL (i.e., already answered)
-  existing="$RESULTS_DIR/raw/q${padded}.jsonl"
-  if [[ -f "$existing" ]] && [[ $(wc -l < "$existing") -gt 1 ]]; then
-    echo "skip (exists)"
+  if [[ -f "$answer_path" ]] && python3 - <<PY
+import json, sys
+data = json.load(open("$answer_path"))
+ok = data.get("generation_status") == "completed"
+if int("$JUDGE"):
+    ok = ok and data.get("judge_status") == "scored"
+sys.exit(0 if ok else 1)
+PY
+  then
+    echo "  q${padded}: skip (artifact complete)"
     continue
   fi
 
-  if timeout 180 claude -p "You are answering questions about conversations stored in this vault.
+  question=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['questions'][$i]['question'])")
+  category=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['questions'][$i]['category'])")
+  answer=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['questions'][$i]['answer'])")
+  category_num=$(python3 -c "import json; print(json.load(open('$GROUND_TRUTH'))['questions'][$i]['category_num'])")
+
+  echo -n "  q${padded} [${category}]: "
+
+  if timeout "$QUESTION_TIMEOUT" claude -p "You are answering questions about conversations stored in this vault.
 Each note is one session of a multi-session conversation between two people.
-Use the Flywheel MCP tools (search, get_note_structure, get_section_content, find_sections).
-After searching, read relevant session notes with get_note_structure to find evidence.
-For multi-hop questions, search again using details from what you've read.
+Use the Flywheel MCP tools search, get_note_structure, get_section_content, and find_sections.
+After searching, read relevant session notes with get_note_structure to verify evidence.
+For multi-hop questions, search again using details from the first note.
 
 Question: $question
 
-Answer concisely — just the facts, in one or two sentences.
-If the information is not in the vault, say so." \
+Return exactly one final line in this format:
+ANSWER: <short answer>
+
+Rules:
+- Output the shortest standalone answer possible.
+- Do not include any explanation before or after the ANSWER line.
+- If the information is not supported by the vault, reply exactly:
+ANSWER: Not stated in the vault." \
     --output-format stream-json \
     --no-session-persistence \
     --permission-mode bypassPermissions \
@@ -186,10 +241,33 @@ If the information is not in the vault, say so." \
     --strict-mcp-config \
     --disallowedTools "ToolSearch,Agent,Bash,Glob,Grep,Read,WebSearch,WebFetch" \
     --model "$MODEL" \
-    > "$RESULTS_DIR/raw/q${padded}.jsonl" 2>"$RESULTS_DIR/raw/q${padded}.stderr"; then
-    echo "done"
+    > "$raw_path" 2>"$stderr_path"; then
+    echo "generated"
   else
-    echo "FAILED (exit $?)"
+    echo "FAILED generation"
+  fi
+
+  if python3 "$LIB_DIR/answer_layer.py" process \
+    --dataset locomo10 \
+    --jsonl "$raw_path" \
+    --output "$answer_path" \
+    --question "$question" \
+    --ground-truth "$answer" \
+    --category "$category" \
+    --category-num "$category_num" \
+    --answer-extract "$ANSWER_EXTRACT" \
+    --extract-model "$EXTRACT_MODEL" \
+    --judge "$JUDGE" \
+    --judge-model "$JUDGE_MODEL" \
+    --answer-max-tokens "$ANSWER_MAX_TOKENS" \
+    --answer-max-chars "$ANSWER_MAX_CHARS" \
+    --answer-max-sentences "$ANSWER_MAX_SENTENCES" \
+    --extract-timeout "$EXTRACT_TIMEOUT" \
+    --judge-timeout "$JUDGE_TIMEOUT" \
+    > /dev/null 2>"$ANSWERS_DIR/q${padded}.process.stderr"; then
+    :
+  else
+    echo "  q${padded}: answer-layer processing failed"
   fi
 done
 
@@ -197,8 +275,4 @@ echo ""
 echo "=== All questions complete ==="
 echo ""
 
-# Run analysis
-if [[ -f "$SCRIPT_DIR/analyze-benchmark.py" ]]; then
-  echo "Running analysis..."
-  python3 "$SCRIPT_DIR/analyze-benchmark.py" "$RESULTS_DIR" "$GROUND_TRUTH"
-fi
+python3 "$SCRIPT_DIR/analyze-benchmark.py" "$RESULTS_DIR" "$GROUND_TRUTH"

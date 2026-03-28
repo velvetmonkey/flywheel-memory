@@ -5,14 +5,9 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['test/**/*.test.ts'],
-    // Forks isolate each test file in its own process. Prevents better-sqlite3
-    // native addon from segfaulting on Windows during process teardown (0xC0000005).
+    // Run one fork at a time to avoid better-sqlite3 teardown crashes on Windows.
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+    maxWorkers: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

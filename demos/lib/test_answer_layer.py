@@ -242,33 +242,57 @@ class TestParseRawAnswer:
 class TestExtractConcise:
     def test_short_answer_no_extraction(self):
         """Answers within threshold are returned as-is."""
-        final, mode = extract_concise('ANSWER: 2022', 'What year?')
+        final, mode, err = extract_concise('ANSWER: 2022', 'What year?')
         assert final == '2022'
         assert mode == 'prompt_contract'
+        assert err is None
 
     def test_short_fallback_no_extraction(self):
-        final, mode = extract_concise('2022', 'What year?')
+        final, mode, err = extract_concise('2022', 'What year?')
         assert final == '2022'
         assert mode == 'parser_fallback'
+        assert err is None
 
     @patch('answer_layer.subprocess.run')
     def test_verbose_triggers_extraction(self, mock_run):
         """Verbose answers should trigger LLM extraction."""
         mock_run.return_value = MagicMock(stdout='2022', returncode=0)
         verbose = 'Based on my thorough search of the vault I found that the relevant information indicates the year was 2022'
-        final, mode = extract_concise(verbose, 'What year?')
+        final, mode, err = extract_concise(verbose, 'What year?')
         assert final == '2022'
         assert mode == 'llm_extract'
+        assert err is None
         mock_run.assert_called_once()
 
     @patch('answer_layer.subprocess.run')
-    def test_extraction_failure_returns_parsed(self, mock_run):
-        """If LLM extraction fails, return the parsed answer."""
-        mock_run.side_effect = Exception('timeout')
+    def test_extraction_failure_returns_parsed_with_error(self, mock_run):
+        """If LLM extraction fails, return the parsed answer with error detail."""
+        mock_run.side_effect = Exception('connection refused')
         verbose = 'Based on my thorough search of the vault I found that the relevant information indicates the year was 2022'
-        final, mode = extract_concise(verbose, 'What year?')
+        final, mode, err = extract_concise(verbose, 'What year?', retries=0)
         assert final == verbose.strip()
         assert mode == 'parser_fallback'
+        assert 'connection refused' in err
+
+    @patch('answer_layer.subprocess.run')
+    def test_extraction_retries_on_failure(self, mock_run):
+        """Should retry once on failure then succeed."""
+        mock_run.side_effect = [Exception('timeout'), MagicMock(stdout='2022', returncode=0)]
+        verbose = 'Based on my thorough search of the vault I found that the relevant information indicates the year was 2022'
+        final, mode, err = extract_concise(verbose, 'What year?', retries=1)
+        assert final == '2022'
+        assert mode == 'llm_extract'
+        assert err is None
+        assert mock_run.call_count == 2
+
+    @patch('answer_layer.subprocess.run')
+    def test_extraction_empty_response_has_error(self, mock_run):
+        """Empty extraction response should report error."""
+        mock_run.return_value = MagicMock(stdout='', stderr='', returncode=0)
+        verbose = 'Based on my thorough search of the vault I found that the relevant information indicates the year was 2022'
+        final, mode, err = extract_concise(verbose, 'What year?', retries=0)
+        assert final == verbose.strip()
+        assert 'empty response' in err
 
 
 # ---------------------------------------------------------------------------
@@ -355,4 +379,19 @@ class TestProcessQuestion:
         assert artifact['normalized'] is True
         assert artifact['raw_token_count'] > BREVITY_THRESHOLD
         assert artifact['final_token_count'] == 1
+        assert 'extract_error' not in artifact
+        Path(path).unlink()
+
+    @patch('answer_layer.subprocess.run')
+    def test_failed_extraction_has_error_in_artifact(self, mock_run):
+        mock_run.side_effect = Exception('connection refused')
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.jsonl', delete=False) as f:
+            verbose = 'Based on my thorough search of the vault I found that the relevant information indicates the year was 2022'
+            f.write(json.dumps({'type': 'result', 'result': verbose}) + '\n')
+            path = f.name
+
+        artifact = process_question(path, 'What year?', 42, 'multi_hop')
+        assert artifact['extraction_mode'] == 'parser_fallback'
+        assert 'extract_error' in artifact
+        assert 'connection refused' in artifact['extract_error']
         Path(path).unlink()

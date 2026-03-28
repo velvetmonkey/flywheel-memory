@@ -196,11 +196,11 @@ def parse_contracted_answer(text):
 # Extraction / compression
 # ---------------------------------------------------------------------------
 
-def extract_concise(raw_answer, question, model='haiku'):
+def extract_concise(raw_answer, question, model='haiku', retries=1):
     """Compress a verbose answer into a concise factual statement.
 
     Only runs LLM extraction when the answer exceeds BREVITY_THRESHOLD tokens.
-    Returns (final_answer, extraction_mode).
+    Returns (final_answer, extraction_mode, extract_error).
     """
     # First try contract parsing
     parsed, mode = parse_contracted_answer(raw_answer)
@@ -208,7 +208,7 @@ def extract_concise(raw_answer, question, model='haiku'):
     # Check if already concise
     token_count = len(normalize_answer(parsed).split())
     if token_count <= BREVITY_THRESHOLD:
-        return parsed, mode
+        return parsed, mode, None
 
     # LLM extraction for verbose answers
     prompt = f"""Extract ONLY the factual answer from this response. Reply with just the fact, nothing else.
@@ -218,19 +218,30 @@ Response: {parsed[:500]}
 
 Factual answer:"""
 
-    try:
-        result = subprocess.run(
-            ['claude', '-p', prompt, '--model', model, '--no-session-persistence'],
-            capture_output=True, text=True, timeout=15
-        )
-        extracted = result.stdout.strip()
-        if extracted:
-            return extracted, 'llm_extract'
-    except Exception:
-        pass
+    last_error = None
+    for attempt in range(1 + retries):
+        try:
+            result = subprocess.run(
+                ['claude', '-p', prompt, '--model', model, '--no-session-persistence'],
+                capture_output=True, text=True, timeout=30
+            )
+            extracted = result.stdout.strip()
+            if extracted:
+                return extracted, 'llm_extract', None
+            last_error = f'empty response (exit {result.returncode})'
+            if result.stderr.strip():
+                last_error += f': {result.stderr.strip()[:200]}'
+        except subprocess.TimeoutExpired:
+            last_error = f'timeout on attempt {attempt + 1}'
+        except Exception as e:
+            last_error = f'{type(e).__name__}: {e}'
 
-    # Extraction failed — return parsed as-is
-    return parsed, mode
+        if attempt < retries:
+            print(f'  extract retry {attempt + 1}/{retries}: {last_error}', file=sys.stderr)
+
+    # Extraction failed — return parsed as-is with error detail
+    print(f'  extract failed ({token_count} tokens kept): {last_error}', file=sys.stderr)
+    return parsed, mode, last_error
 
 
 # ---------------------------------------------------------------------------
@@ -285,12 +296,14 @@ def process_question(jsonl_path, question, index, category, model='haiku'):
     Returns the answer artifact dict.
     """
     raw_answer = parse_raw_answer(jsonl_path)
-    final_answer, extraction_mode = extract_concise(raw_answer, question, model=model)
+    final_answer, extraction_mode, extract_error = extract_concise(
+        raw_answer, question, model=model
+    )
 
     raw_tokens = normalize_answer(raw_answer).split()
     final_tokens = normalize_answer(final_answer).split()
 
-    return {
+    artifact = {
         'index': index,
         'category': category,
         'question': question,
@@ -301,6 +314,9 @@ def process_question(jsonl_path, question, index, category, model='haiku'):
         'final_token_count': len(final_tokens),
         'normalized': raw_answer != final_answer,
     }
+    if extract_error:
+        artifact['extract_error'] = extract_error
+    return artifact
 
 
 # ---------------------------------------------------------------------------

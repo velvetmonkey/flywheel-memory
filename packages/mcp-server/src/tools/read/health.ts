@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
-import { resolveTarget, getBacklinksForNote, findSimilarEntity, getIndexState, getIndexProgress, getIndexError, type IndexState } from '../../core/read/graph.js';
+import { resolveTarget, getBacklinksForNote, findSimilarEntity, getIndexState, getIndexProgress, getIndexError, normalizeTarget, type IndexState } from '../../core/read/graph.js';
 import { detectPeriodicNotes } from './periodic.js';
 import { getActivitySummary } from './temporal.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
@@ -431,7 +431,7 @@ export function registerHealthTools(
         // Orphan ratio: notes with 0 backlinks (excluding periodic notes)
         let orphanCount = 0;
         for (const note of index.notes.values()) {
-          const bl = index.backlinks.get(note.title.toLowerCase());
+          const bl = index.backlinks.get(normalizeTarget(note.path));
           if (!bl || bl.length === 0) orphanCount++;
         }
         const orphanRatio = 1 - (orphanCount / noteCount);

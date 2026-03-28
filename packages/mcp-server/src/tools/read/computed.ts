@@ -8,6 +8,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import matter from 'gray-matter';
 import type { VaultIndex } from '../../core/read/types.js';
+import { normalizeTarget } from '../../core/read/graph.js';
 
 // =============================================================================
 // TYPES
@@ -182,7 +183,7 @@ export async function computeFrontmatter(
       }
 
       case 'backlink_count': {
-        const backlinks = index.backlinks.get(note?.title.toLowerCase() ?? '');
+        const backlinks = index.backlinks.get(normalizeTarget(note?.path ?? ''));
         value = backlinks?.length ?? 0;
         method = 'backlink_index';
         break;

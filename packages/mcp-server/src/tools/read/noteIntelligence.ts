@@ -134,8 +134,8 @@ export function registerNoteIntelligenceTools(
                 if (m.similarity < 0.3) return false;
                 // Filter out entities whose backing notes have excluded tags
                 if (excludeTags.size > 0) {
-                  const entityNote = index.notes.get(m.entityName.toLowerCase() + '.md')
-                    ?? [...index.notes.values()].find(n => n.title.toLowerCase() === m.entityName.toLowerCase());
+                  const entityPath = index.entities.get(m.entityName.toLowerCase());
+                  const entityNote = entityPath ? index.notes.get(entityPath) : [...index.notes.values()].find(n => n.title.toLowerCase() === m.entityName.toLowerCase());
                   if (entityNote) {
                     const noteTags = Object.keys(entityNote.frontmatter)
                       .filter(k => k === 'tags')

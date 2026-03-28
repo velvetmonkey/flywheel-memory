@@ -62,6 +62,10 @@ export function registerSemanticTools(
       if (!force) {
         const diagnosis = diagnoseEmbeddings(vaultPath);
         if (diagnosis.healthy) {
+          // Repair stale embeddings_state (diagnoseEmbeddings checks content
+          // health only, not the state flag — it can be healthy while state
+          // is stuck at building_* from a crash)
+          setEmbeddingsBuildState('complete');
           return {
             content: [{
               type: 'text' as const,

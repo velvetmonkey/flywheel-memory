@@ -10,6 +10,7 @@ import {
   getEntityByName,
   type StateDb,
 } from '@velvetmonkey/vault-core';
+import { getInboundTargetsForNote } from './identity.js';
 import { getContentPreview } from './fts5.js';
 
 export const TOP_LINKS = 10;
@@ -122,15 +123,19 @@ export function rankBacklinks(
   stateDb: StateDb | null,
   maxLinks: number = TOP_LINKS,
 ): Array<Record<string, unknown>> {
-  const stem = notePath.replace(/\.md$/, '').split('/').pop()?.toLowerCase() ?? '';
+  const targets = getInboundTargetsForNote(stateDb, notePath);
 
   const weightMap = new Map<string, number>();
-  if (stateDb && stem) {
+  if (stateDb && targets.length > 0) {
     try {
+      const placeholders = targets.map(() => '?').join(',');
       const rows = stateDb.db.prepare(
-        'SELECT note_path, weight FROM note_links WHERE target = ?'
-      ).all(stem) as Array<{ note_path: string; weight: number }>;
-      for (const row of rows) weightMap.set(row.note_path, row.weight);
+        `SELECT note_path, weight FROM note_links WHERE target IN (${placeholders})`
+      ).all(...targets) as Array<{ note_path: string; weight: number }>;
+      for (const row of rows) {
+        const existing = weightMap.get(row.note_path) ?? 0;
+        weightMap.set(row.note_path, Math.max(existing, row.weight));
+      }
     } catch { /* best-effort */ }
   }
 

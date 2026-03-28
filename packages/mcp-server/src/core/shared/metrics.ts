@@ -99,13 +99,11 @@ export function computeMetrics(index: VaultIndex, stateDb?: StateDb): Record<Met
     for (const bl of backlinks) {
       connectedNotes.add(bl.source);
     }
-    // Also mark the target as connected if it exists
-    // Find the note path from the normalized target
-    for (const note of index.notes.values()) {
-      const normalizedTitle = note.title.toLowerCase();
-      if (normalizedTitle === target.toLowerCase() || note.path.toLowerCase() === target.toLowerCase()) {
-        connectedNotes.add(note.path);
-      }
+    // Resolve target to note path via entities map (O(1) lookup)
+    // Backlink keys are already normalized by graph build
+    const targetPath = index.entities.get(target);
+    if (targetPath && index.notes.has(targetPath)) {
+      connectedNotes.add(targetPath);
     }
   }
 

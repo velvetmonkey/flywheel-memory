@@ -120,6 +120,42 @@ describe('vault_growth', () => {
       expect(metrics.avg_links_per_note).toBe(0.75);
       expect(metrics.connected_ratio).toBeGreaterThan(0);
     });
+
+    it('should not count nested backlink targets as orphans', () => {
+      // Nested note with backlinks should be connected, not an orphan
+      const notes = [
+        makeNote('daily/2026-01-01.md', [{ target: 'Flywheel' }]),
+        makeNote('tech/flywheel/Flywheel.md', []),  // no outlinks, but has backlinks
+      ];
+
+      const backlinks = new Map<string, Backlink[]>();
+      // Key is normalizeNotePath(targetPath) = "tech/flywheel/flywheel"
+      backlinks.set('tech/flywheel/flywheel', [{ source: 'daily/2026-01-01.md', line: 1 }]);
+
+      const index = buildIndex(notes, backlinks);
+      // buildIndex maps title "Flywheel" (lowercased) -> path, and
+      // normalizeNotePath -> path. The backlink key should resolve.
+      // Also add the path-based entity entry
+      index.entities.set('tech/flywheel/flywheel', 'tech/flywheel/Flywheel.md');
+
+      const metrics = computeMetrics(index);
+
+      // daily note has outlinks -> connected
+      // Flywheel has backlinks -> connected (NOT an orphan)
+      expect(metrics.orphan_count).toBe(0);
+    });
+
+    it('should still count truly disconnected notes as orphans', () => {
+      const notes = [
+        makeNote('connected.md', [{ target: 'other' }]),
+        makeNote('orphan.md', []),
+      ];
+
+      const index = buildIndex(notes);
+      const metrics = computeMetrics(index);
+
+      expect(metrics.orphan_count).toBe(1);
+    });
   });
 
   // --------------------------------------------------------

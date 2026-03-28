@@ -1163,7 +1163,22 @@ if (process.argv.includes('--init-semantic')) {
   });
 }
 
-// Cleanup on exit
+// Graceful shutdown on signals (beforeExit does NOT fire on SIGTERM/SIGINT)
+function gracefulShutdown(signal: string) {
+  console.error(`[Memory] Received ${signal}, shutting down...`);
+  try { watcherInstance?.stop(); } catch {}
+  stopSweepTimer();
+  flushLogs()
+    .catch(() => {})
+    .finally(() => process.exit(0));
+  // Force exit after 2s if flushLogs hangs
+  setTimeout(() => process.exit(0), 2000).unref();
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Cleanup on natural event-loop drain
 process.on('beforeExit', async () => {
   stopSweepTimer();
   await flushLogs();

@@ -466,7 +466,12 @@ export class PipelineRunner {
           // Don't let embedding errors affect watcher
         }
       }
-      const orphansRemoved = removeOrphanedNoteEmbeddings();
+      let orphansRemoved = 0;
+      try {
+        orphansRemoved = removeOrphanedNoteEmbeddings();
+      } catch {
+        // Don't let orphan cleanup errors affect watcher
+      }
       tracker.end({ updated: embUpdated, removed: embRemoved, orphans_removed: orphansRemoved });
       serverLog('watcher', `Note embeddings: ${embUpdated} updated, ${embRemoved} removed, ${orphansRemoved} orphans cleaned`);
     } else {
@@ -1149,9 +1154,15 @@ export class PipelineRunner {
     }
 
     p.sd.db.pragma('incremental_vacuum');
-    p.sd.db.pragma('wal_checkpoint(TRUNCATE)');
-    p.sd.setMetadataValue.run('last_incremental_vacuum', String(Date.now()));
-    serverLog('watcher', 'Incremental vacuum + WAL checkpoint completed');
-    return { vacuumed: true, wal_checkpointed: true };
+    const walResult = p.sd.db.pragma('wal_checkpoint(TRUNCATE)') as Array<{ busy: number; log: number; checkpointed: number }>;
+    const checkpointed = walResult?.[0]?.busy === 0;
+
+    if (checkpointed) {
+      p.sd.setMetadataValue.run('last_incremental_vacuum', String(Date.now()));
+      serverLog('watcher', 'Incremental vacuum + WAL checkpoint completed');
+    } else {
+      serverLog('watcher', 'Incremental vacuum done, WAL checkpoint skipped (busy readers)');
+    }
+    return { vacuumed: true, wal_checkpointed: checkpointed };
   }
 }

@@ -899,7 +899,7 @@ export function diagnoseEmbeddings(vaultPath: string): EmbeddingDiagnosis {
       checks.push({ name: 'entity_orphans', status: 'ok', detail: '0 orphaned' });
     }
   } catch {
-    checks.push({ name: 'entity_orphans', status: 'ok', detail: 'No entity embeddings table' });
+    checks.push({ name: 'entity_orphans', status: 'warning', detail: 'Could not check entity embeddings' });
   }
 
   // Check 6: Integrity (NaN/Inf sample)

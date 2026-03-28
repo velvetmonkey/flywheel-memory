@@ -510,7 +510,7 @@ async function main() {
   const startTime = Date.now();
 
   // Parse multi-vault config
-  const vaultConfigs = _earlyVaultConfigs;
+  const vaultConfigs = parseVaultConfig();
 
   // ── Phase 1: Initialize primary vault (StateDb only — fast) ──
   if (vaultConfigs) {

@@ -145,8 +145,11 @@ import {
 // Configuration
 // ============================================================================
 
-// Auto-detect vault root, with PROJECT_PATH as override
-const vaultPath: string = process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot();
+// Auto-detect vault root: FLYWHEEL_VAULTS primary > PROJECT_PATH > VAULT_PATH > auto-detect
+const _earlyVaultConfigs = parseVaultConfig();
+const vaultPath: string = _earlyVaultConfigs
+  ? _earlyVaultConfigs[0].path
+  : (process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot());
 let resolvedVaultPath: string;
 try { resolvedVaultPath = realpathSync(vaultPath).replace(/\\/g, '/'); } catch { resolvedVaultPath = vaultPath.replace(/\\/g, '/'); }
 
@@ -507,7 +510,7 @@ async function main() {
   const startTime = Date.now();
 
   // Parse multi-vault config
-  const vaultConfigs = parseVaultConfig();
+  const vaultConfigs = _earlyVaultConfigs;
 
   // ── Phase 1: Initialize primary vault (StateDb only — fast) ──
   if (vaultConfigs) {

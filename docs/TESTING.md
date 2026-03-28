@@ -179,12 +179,12 @@ End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/)
 
 | Metric | Score |
 |---|---|
-| Document Recall | **91.7%** (917/1000 supporting docs found) |
-| Full Recall (both docs found) | **83.6%** (418/500) |
-| Partial Recall (≥1 doc found) | **99.8%** (499/500) |
-| Bridge (multi-hop) | 90.9% |
+| Document Recall | **92.4%** (924/1000 supporting docs found) |
+| Full Recall (both docs found) | **85.2%** (426/500) |
+| Partial Recall (≥1 doc found) | **99.6%** (498/500) |
+| Bridge (multi-hop) | 91.7% |
 | Comparison | 95.0% |
-| Cost | $0.058/question |
+| Cost | $0.074/question |
 
 ### How Flywheel compares
 
@@ -192,7 +192,7 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 
 | System | Type | Retrieval Recall | Approach | Notes |
 |---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **91.7%** | BM25 + entity search + 2-hop backfill + query expansion | General-purpose, zero training, 500 questions end-to-end via Claude |
+| **Flywheel** | MCP vault tool | **92.4%** | BM25 + entity search + 2-hop backfill + query expansion | General-purpose, zero training, 500 questions end-to-end via Claude |
 | BM25 baseline | IR baseline | ~70-75% | TF-IDF keyword matching | Standard academic baseline |
 | [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | IR baseline | ~80% | TF-IDF with named entity overlap | Original HotpotQA paper baseline |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Multi-hop dense retrieval (iterative) | Facebook, 2021. Trained on HotpotQA. Two-hop BERT encoder |
@@ -205,7 +205,7 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 - **Training data.** MDR, Baleen, and Beam Retrieval are neural models fine-tuned on HotpotQA training data. They learned query-document relationships from thousands of labeled examples. Flywheel has seen zero HotpotQA training data.
 - **Test setting.** Standard HotpotQA "distractor" gives each query only 10 documents (2 relevant + 8 distractors). "Fullwiki" searches 5M+ documents. Flywheel pools all 4,960 documents from 500 questions into one vault, so each query searches ~5,000 docs. This is harder than distractor but far easier than fullwiki. The numbers are not directly comparable to either setting.
 - **Sample size.** Flywheel: 500 questions. Academic baselines typically use the full dev set (7,405 questions). Our confidence intervals are tighter than our earlier 200-question run but still wider than the full set.
-- **What's real.** Flywheel's 91.7% beats the standard BM25 baseline (~75%) by +17pp, attributable to 2-hop backfill, query expansion, and FTS5 OR-mode with BM25 ranking. Flywheel exceeds MDR (~88%) and approaches Beam Retrieval (~93%) despite zero training data, purpose-built architectures, and a harder retrieval setting (5,000 docs vs 10).
+- **What's real.** Flywheel's 92.4% beats the standard BM25 baseline (~75%) by +17pp, attributable to 2-hop backfill, query expansion, and FTS5 OR-mode with BM25 ranking. Flywheel exceeds MDR (~88%) and approaches Beam Retrieval (~93%) despite zero training data, purpose-built architectures, and a harder retrieval setting (5,000 docs vs 10). Run-to-run variance of ~1pp is expected due to LLM non-determinism.
 
 ### Comparison with other MCP/vault tools
 
@@ -215,9 +215,9 @@ Source: [`demos/hotpotqa/`](../demos/hotpotqa/) | [`packages/mcp-server/test/ret
 
 ### CI Regression Gate
 
-The CI test ([`hotpotqa-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/hotpotqa-bench.test.ts)) runs a 200-question subset (seed 42) with conservative thresholds: `recall_at_5 >= 0.3` and `mrr >= 0.2`. These are designed to catch catastrophic retrieval regressions (e.g., a broken index or missing search path), not to enforce the headline 91.7% recall. The 200-question sample has wider confidence intervals than the full 500-question run, and CI thresholds are set low enough to avoid false failures from normal variance.
+The CI test ([`hotpotqa-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/hotpotqa-bench.test.ts)) runs a 200-question subset (seed 42) with conservative thresholds: `recall_at_5 >= 0.3` and `mrr >= 0.2`. These are designed to catch catastrophic retrieval regressions (e.g., a broken index or missing search path), not to enforce the headline 92.4% recall. The 200-question sample has wider confidence intervals than the full 500-question run, and CI thresholds are set low enough to avoid false failures from normal variance.
 
-The published 91.7% comes from the full 500-question benchmark run documented above, which is run manually before releases that touch retrieval code.
+The published 92.4% comes from the full 500-question benchmark run documented above, which is run manually before releases that touch retrieval code.
 
 ---
 
@@ -324,7 +324,7 @@ Competitors report answer accuracy via GPT-4o judge but do not report evidence r
 
 - **Metrics differ.** Flywheel reports evidence recall and LLM-as-judge accuracy (Claude Haiku). Competitors report answer accuracy via GPT-4o judge. Judge methodology is comparable; judge model differs.
 - **Vault mode.** Flywheel uses dialog mode (raw conversation turns) — the most keyword-rich representation. Summary mode scores ~1-2pp lower on retrieval. Competitors may use different representations.
-- **Vault enrichment.** HotpotQA notes have minimal frontmatter (heuristic-inferred `type:` only). LoCoMo notes include temporal metadata (`date`, `time`), speaker arrays, session numbers, and entity stubs — closer to a real vault. Both are generated by the harness `build-vault.js`, not present in the source datasets. HotpotQA's 91.7% recall with near-zero metadata is closer to pure search engine performance.
+- **Vault enrichment.** HotpotQA notes have minimal frontmatter (heuristic-inferred `type:` only). LoCoMo notes include temporal metadata (`date`, `time`), speaker arrays, session numbers, and entity stubs — closer to a real vault. Both are generated by the harness `build-vault.js`, not present in the source datasets. HotpotQA's 92.4% recall with near-zero metadata is closer to pure search engine performance.
 - **What each benchmark measures.** HotpotQA measures retrieval only (did the agent's tool calls access the right documents?). LoCoMo measures retrieval *and* answer quality. Each LoCoMo question requires a Sonnet answer session, and conversational questions typically need more tool calls to piece together answers from multi-session dialog. This is why LoCoMo costs ~60% more per question ($0.095 vs $0.058).
 - **Prompt.** Claude is told the vault structure (notes are conversation sessions) but is not given a retrieval strategy.
 
@@ -412,7 +412,7 @@ We are not aware of any other MCP server that publishes live AI test results.
 | **Per-tool coverage** | Claude discovers and uses each of 69 individual tools | 69 | **100% adoption** | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
 | **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
 | **Sequential workflow** | 7-beat workflow where each beat builds on previous vault state | 7 beats | 7/7 passed | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
-| **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 500 questions | 91.7% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
+| **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 500 questions | 92.4% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
 | **LoCoMo benchmark** | Retrieval + answer accuracy on long-term conversational memory (5 categories) | 759 questions | 84.9% recall, 58.8% accuracy | [`locomo/run-benchmark.sh`](../demos/locomo/run-benchmark.sh) |
 
 ### Why This Matters

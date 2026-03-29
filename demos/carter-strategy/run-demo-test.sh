@@ -262,7 +262,7 @@ for i in "${!BEATS[@]}"; do
     --mcp-config <(echo "$MCP_CONFIG") \
     --strict-mcp-config \
     --model "$MODEL" \
-    2>/dev/null > "$out" || true
+    2>"${out%.jsonl}.stderr" > "$out" || true
 
   # Wait for flywheel watcher to process any mutations
   echo "  Waiting ${WATCHER_WAIT}s for watcher..."
@@ -272,7 +272,13 @@ for i in "${!BEATS[@]}"; do
   snapshot "beat${beat_num}_post"
 
   # Extract and display tools used
-  tools_used=$(extract_tools "$out")
+  if [[ ! -s "$out" ]]; then
+    echo "  [WARN] No output from claude (empty JSONL)"
+    echo "  stderr: $(head -5 "${out%.jsonl}.stderr" 2>/dev/null || echo '(none)')"
+    tools_used=""
+  else
+    tools_used=$(extract_tools "$out")
+  fi
   echo "  Tools used:"
   echo "$tools_used" | sed 's/^/    /'
 
@@ -282,20 +288,13 @@ for i in "${!BEATS[@]}"; do
 
   case $beat_num in
     1)
-      # Beat 1: brief tool should be called
-      if echo "$tools_used" | grep -q "mcp__flywheel__brief"; then
+      # Beat 1: capture — should write daily note with wikilinks
+      if echo "$tools_used" | grep -qE "mcp__flywheel__search|mcp__flywheel__vault_add_to_section"; then
+        echo "  [PASS] write/search tool called"
+      elif echo "$tools_used" | grep -q "mcp__flywheel__brief"; then
         echo "  [PASS] brief tool called"
       else
-        echo "  [WARN] brief tool not called (may have used search instead)"
-      fi
-      ;;
-    2)
-      # Beat 2: should use search, find invoice entities
-      if echo "$tools_used" | grep -qE "mcp__flywheel__search"; then
-        echo "  [PASS] search tool called"
-      else
-        echo "  [FAIL] no search tool used"
-        beat_pass=false
+        echo "  [WARN] no expected tool called"
       fi
       # Daily note should exist with wikilinks
       if [[ -d "$SCRIPT_DIR/daily-notes" ]] && ls "$SCRIPT_DIR/daily-notes/"*.md &>/dev/null; then

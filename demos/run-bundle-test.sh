@@ -89,7 +89,11 @@ EOF
       --mcp-config <(echo "$mcp_config") \
       --strict-mcp-config \
       --model "$MODEL" \
-      2>/dev/null > "$out" || true
+      2>"${out%.jsonl}.stderr" > "$out" || true
+
+    if [[ ! -s "$out" ]]; then
+      echo "  WARN: empty output for $name run $run — check ${out%.jsonl}.stderr"
+    fi
 
     # Reset vault for write bundles
     if [[ "$resets" == "yes" ]]; then
@@ -105,7 +109,9 @@ done
 echo ""
 echo "All runs complete. Analyzing..."
 
-python3 "$SCRIPT_DIR/analyze-bundle-test.py" "$RESULTS_DIR"
-
-echo ""
-echo "Report: $RESULTS_DIR/report.md"
+if python3 "$SCRIPT_DIR/analyze-bundle-test.py" "$RESULTS_DIR"; then
+  echo ""
+  echo "Report: $RESULTS_DIR/report.md"
+else
+  echo "WARN: Analysis failed — raw results at $RESULTS_DIR/raw/"
+fi

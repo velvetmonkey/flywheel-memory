@@ -26,7 +26,7 @@ export function registerActivityTools(
     {
       title: 'Vault Activity',
       description:
-        'Track tool usage patterns and session activity. Modes:\n' +
+        'What tools have been used and what notes accessed? Tracks tool usage patterns and session activity. Modes:\n' +
         '- "session": Current session summary (tools called, notes accessed)\n' +
         '- "sessions": List of recent sessions\n' +
         '- "note_access": Notes ranked by query frequency\n' +

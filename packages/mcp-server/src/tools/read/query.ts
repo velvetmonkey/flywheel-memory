@@ -544,7 +544,7 @@ export function registerQueryTools(
       folder: z.string().optional().describe('Filter results to a folder. Prefer searching without folder first, then add folder to narrow.'),
       title_contains: z.string().optional().describe('Filter to notes whose title contains this text (case-insensitive)'),
 
-      // Date filters (absorbs temporal tools)
+      // Date filters (find notes by modification date — for pattern analysis use temporal tools)
       modified_after: z.string().optional().describe('Only notes modified after this date (YYYY-MM-DD)'),
       modified_before: z.string().optional().describe('Only notes modified before this date (YYYY-MM-DD)'),
 

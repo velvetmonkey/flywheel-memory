@@ -20,6 +20,7 @@ TOOL_CATEGORY = {
     "get_forward_links": "graph", "get_connection_strength": "graph", "list_entities": "graph",
     "get_link_path": "graph", "get_common_neighbors": "graph", "get_weighted_links": "graph",
     "get_strong_connections": "graph",
+    "export_graph": "graph",
     "vault_schema": "schema", "schema_conventions": "schema", "schema_validate": "schema",
     "note_intelligence": "schema", "rename_field": "schema", "migrate_field_values": "schema",
     "rename_tag": "schema",
@@ -42,6 +43,10 @@ TOOL_CATEGORY = {
     "flywheel_config": "diagnostics", "server_log": "diagnostics",
     "suggest_entity_merges": "diagnostics", "dismiss_merge_suggestion": "diagnostics",
     "vault_init": "diagnostics", "flywheel_doctor": "diagnostics",
+    "pipeline_status": "diagnostics",
+    "flywheel_trust_report": "diagnostics", "flywheel_benchmark": "diagnostics",
+    "vault_session_history": "diagnostics", "vault_entity_history": "diagnostics",
+    "flywheel_learning_report": "diagnostics", "flywheel_calibration_export": "diagnostics",
 }
 
 # Category display order

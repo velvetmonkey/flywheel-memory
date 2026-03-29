@@ -28,8 +28,8 @@ BUNDLES=(
   'tasks|default|What are all my open tasks across the vault?|no'
   'memory|default,memory|Brief me on the current state of this vault|no'
   'note-ops|default,note-ops|Rename '\''Quarterly Review Q4 2025'\'' to '\''Q4 2025 Quarterly Review'\''|yes'
-  'temporal|default,temporal|What'\''s changed in this vault recently? Any stale notes?|no'
-  'diagnostics|default,diagnostics|Run a health check on this vault and show me the stats|no'
+  'temporal|default,temporal|How has Acme Corp changed over time in this vault?|no'
+  'diagnostics|default,diagnostics|Is anything broken in this vault? Run comprehensive diagnostics, not just a health summary.|no'
 )
 
 # Pre-flight checks

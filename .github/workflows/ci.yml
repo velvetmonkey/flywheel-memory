@@ -10,6 +10,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,7 +19,13 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
       - name: Install dependencies
-        run: npm ci
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - name: Build (required for workspace type resolution)
         run: npm run build
       - name: Type check
@@ -27,6 +34,8 @@ jobs:
   audit:
     name: Security Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,13 +44,20 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
       - name: Install dependencies
-        run: npm ci
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - name: npm audit (high + critical)
         run: npm audit --audit-level=high
 
   build:
     name: Build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -50,7 +66,13 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
       - name: Install dependencies
-        run: npm ci
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - name: Build
         run: npm run build
 
@@ -61,6 +83,7 @@ jobs:
   test-core:
     name: "Test: core (vault-core)"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -68,7 +91,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - run: npm run build
       - name: Run core tests
         run: npm test -w @velvetmonkey/vault-core
@@ -76,6 +106,7 @@ jobs:
   test-read:
     name: "Test: read tools"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -83,7 +114,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - run: npm run build
       - name: Run read tests
         working-directory: packages/mcp-server
@@ -92,6 +130,7 @@ jobs:
   test-write-core:
     name: "Test: write core"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -99,7 +138,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - run: npm run build
       - name: Run write core tests
         working-directory: packages/mcp-server
@@ -108,6 +154,7 @@ jobs:
   test-write-tools:
     name: "Test: write tools & workflows"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -115,7 +162,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - run: npm run build
       - name: Run write tools tests
         working-directory: packages/mcp-server
@@ -124,6 +178,7 @@ jobs:
   test-write-security:
     name: "Test: write security"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -131,7 +186,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - run: npm run build
       - name: Run security tests
         working-directory: packages/mcp-server
@@ -140,6 +202,7 @@ jobs:
   test-write-stress:
     name: "Test: write stress & battle-hardening"
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -147,7 +210,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - run: npm run build
       - name: Run stress tests
         working-directory: packages/mcp-server
@@ -156,6 +226,7 @@ jobs:
   test-platform:
     name: "Test: platform & publish"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -163,7 +234,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - run: npm run build
       - name: Run platform tests
         working-directory: packages/mcp-server
@@ -172,6 +250,7 @@ jobs:
   test-graph-quality:
     name: "Test: graph quality"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -179,7 +258,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - run: npm run build
       - name: Run graph quality tests
         working-directory: packages/mcp-server
@@ -192,6 +278,7 @@ jobs:
   test-bench:
     name: "Test: bench"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -199,7 +286,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - run: npm run build
       - name: Run bench tests
         run: npm test -w @velvetmonkey/flywheel-bench
@@ -211,6 +305,7 @@ jobs:
   test-full-matrix:
     name: "Test: full (Node ${{ matrix.node }} / ${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -224,7 +319,14 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
       - name: Install dependencies
-        run: npm ci
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
       - name: Build (required for workspace imports)
         run: npm run build
       - name: Run vault-core tests
@@ -232,4 +334,3 @@ jobs:
       - name: Run mcp-server tests (excludes retrieval benchmarks)
         working-directory: packages/mcp-server
         run: npx vitest run --exclude 'test/retrieval-bench/**'
-

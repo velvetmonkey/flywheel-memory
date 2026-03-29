@@ -144,7 +144,7 @@ Vault root detection order:
 | Preset | Tools | Use case |
 |--------|-------|----------|
 | `default` (default) | 18 | Note-taking essentials + memory — search, read, write, tasks, memory |
-| `full` | 75 | Everything (all 12 categories) |
+| `full` | 76 | Everything (all 12 categories, with tiered visibility by default) |
 
 The fewer tools you load, the less context Claude needs to pick the right one.
 
@@ -171,11 +171,18 @@ Start with `default`, then add what you need:
 | `default` | 18 | search, read, write, tasks, memory |
 | `default,graph` | 29 | default + graph analysis, semantic analysis, paths, hubs |
 | `default,graph,wikilinks` | 36 | + link suggestions, validation |
-| `full` | 75 | All 12 categories |
+| `full` | 76 | All 12 categories |
 
 #### How It Works
 
 Set `FLYWHEEL_TOOLS` to a preset, one or more bundles, individual categories, or any combination — comma-separated. Bundles expand to their constituent categories, and duplicates are deduplicated automatically.
+
+When `FLYWHEEL_TOOLS=full`, Flywheel uses tiered exposure by default:
+- Tier 1 stays visible at startup: the 18 tools from `default`
+- Tier 2 unlocks when the conversation clearly shifts into graph, wikilink, correction, temporal, or diagnostics work
+- Tier 3 stays on-demand for explicit schema operations, note operations, and deep diagnostics
+
+Use `flywheel_config({ mode: "set", key: "tool_tier_override", value: "full" })` to reveal everything immediately, or `"minimal"` to keep only tier-1 tools advertised.
 
 ```json
 {
@@ -523,6 +530,7 @@ Sets a single key and returns the updated config.
 | `proactive_min_score` | number | `20` | Minimum suggestion score for proactive linking. Higher values mean fewer but more confident auto-links. The default of 20 is well above the balanced threshold (10), ensuring only strong matches are applied automatically. |
 | `proactive_max_per_file` | number | `5` | Maximum number of wikilinks the watcher will proactively insert per file per drain cycle. The daily cap (`proactive_max_per_day`) is the primary safety net. |
 | `proactive_max_per_day` | number | `10` | Maximum number of wikilinks the watcher will proactively insert per file per day. Prevents accumulated queue drains from flooding a single note over time. |
+| `tool_tier_override` | `"auto"` \| `"full"` \| `"minimal"` | `"auto"` | Controls tiered tool visibility when `FLYWHEEL_TOOLS=full`. `auto` keeps tiered exposure, `full` reveals all tools, `minimal` keeps only tier-1 tools visible. |
 | `custom_categories` | object | `{}` | Define custom entity categories from frontmatter `type:` values. Keys are the type strings; values have optional `type_boost` (scoring weight, default 0). See [Custom Categories](#custom-categories) below. |
 
 #### Custom Categories

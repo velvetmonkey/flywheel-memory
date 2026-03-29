@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.
  *
- * 75 tools across 12 categories
+ * 76 tools across 12 categories
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -131,8 +131,11 @@ import { setActiveScope, getActiveScopeOrNull, type VaultScope } from './vault-s
 
 // Config (tool categories, presets, instructions)
 import {
+  ALL_CATEGORIES,
   parseEnabledCategories,
   generateInstructions,
+  type ToolCategory,
+  type ToolTier,
 } from './config.js';
 
 // Tool registration and gating
@@ -140,6 +143,9 @@ import {
   applyToolGating,
   registerAllTools,
   type ToolRegistryContext,
+  type ToolTierController,
+  type ToolTierMode,
+  type ToolTierOverride,
   type VaultActivationCallbacks,
 } from './tool-registry.js';
 
@@ -185,6 +191,33 @@ export function getWatcherStatus(): WatcherStatus | null {
 }
 
 const enabledCategories = parseEnabledCategories();
+const rawToolPreset = (process.env.FLYWHEEL_TOOLS ?? process.env.FLYWHEEL_PRESET ?? '').trim().toLowerCase();
+const toolTierMode: ToolTierMode = rawToolPreset === 'full' ? 'tiered' : 'off';
+let runtimeToolTierOverride: ToolTierOverride = 'auto';
+let runtimeActiveCategoryTiers = new Map<ToolCategory, ToolTier>();
+let primaryToolTierController: ToolTierController | null = null;
+
+function getInstructionActiveCategories(): Set<ToolCategory> | undefined {
+  if (toolTierMode !== 'tiered') return undefined;
+  if (runtimeToolTierOverride === 'full') {
+    return new Set(enabledCategories);
+  }
+  return new Set(runtimeActiveCategoryTiers.keys());
+}
+
+function syncRuntimeTierState(controller: ToolTierController): void {
+  runtimeToolTierOverride = controller.getOverride();
+  runtimeActiveCategoryTiers = new Map(controller.getActivatedCategoryTiers());
+}
+
+function handleTierStateChange(controller: ToolTierController): void {
+  syncRuntimeTierState(controller);
+  invalidateHttpPool();
+}
+
+function getConfigToolTierOverride(config: FlywheelConfig): ToolTierOverride {
+  return config.tool_tier_override ?? 'auto';
+}
 
 // ============================================================================
 // Tool Registration Helpers
@@ -216,11 +249,25 @@ function buildVaultCallbacks(): VaultActivationCallbacks {
 function createConfiguredServer(): McpServer {
   const s = new McpServer(
     { name: 'flywheel-memory', version: pkg.version },
-    { instructions: generateInstructions(enabledCategories, vaultRegistry) },
+    { instructions: generateInstructions(enabledCategories, vaultRegistry, getInstructionActiveCategories()) },
   );
   const ctx = buildRegistryContext();
-  applyToolGating(s, enabledCategories, ctx.getStateDb, vaultRegistry, ctx.getVaultPath, buildVaultCallbacks());
+  const toolTierController = applyToolGating(
+    s,
+    enabledCategories,
+    ctx.getStateDb,
+    vaultRegistry,
+    ctx.getVaultPath,
+    buildVaultCallbacks(),
+    toolTierMode,
+    handleTierStateChange,
+  );
   registerAllTools(s, ctx);
+  toolTierController.setOverride(runtimeToolTierOverride);
+  for (const [category, tier] of runtimeActiveCategoryTiers) {
+    toolTierController.activateCategory(category, tier);
+  }
+  toolTierController.finalizeRegistration();
   return s;
 }
 
@@ -272,12 +319,24 @@ export function invalidateHttpPool(): void {
 
 const server = new McpServer(
   { name: 'flywheel-memory', version: pkg.version },
-  { instructions: generateInstructions(enabledCategories, vaultRegistry) },
+  { instructions: generateInstructions(enabledCategories, vaultRegistry, getInstructionActiveCategories()) },
 );
 
 const _registryCtx = buildRegistryContext();
-const _gatingResult = applyToolGating(server, enabledCategories, _registryCtx.getStateDb, vaultRegistry, _registryCtx.getVaultPath, buildVaultCallbacks());
+const _gatingResult = applyToolGating(
+  server,
+  enabledCategories,
+  _registryCtx.getStateDb,
+  vaultRegistry,
+  _registryCtx.getVaultPath,
+  buildVaultCallbacks(),
+  toolTierMode,
+  handleTierStateChange,
+);
 registerAllTools(server, _registryCtx);
+_gatingResult.finalizeRegistration();
+primaryToolTierController = _gatingResult;
+syncRuntimeTierState(_gatingResult);
 
 const categoryList = Array.from(enabledCategories).sort().join(', ');
 serverLog('server', `Tool categories: ${categoryList}`);
@@ -437,6 +496,11 @@ function updateVaultIndex(index: VaultIndex): void {
 function updateFlywheelConfig(config: FlywheelConfig): void {
   flywheelConfig = config;
   setWikilinkConfig(config);
+  if (toolTierMode === 'tiered' && primaryToolTierController) {
+    primaryToolTierController.setOverride(getConfigToolTierOverride(config));
+    syncRuntimeTierState(primaryToolTierController);
+    invalidateHttpPool();
+  }
   const ctx = getActiveVaultContext();
   if (ctx) {
     ctx.flywheelConfig = config;

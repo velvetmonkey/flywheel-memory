@@ -8,6 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
+import { PRESETS, TOOL_CATEGORY, TOOL_TIER } from '../../../src/config.js';
 import { VALID_CONFIG_KEYS } from '../../../src/tools/write/config.js';
 
 const TOOLS_DIR = path.join(__dirname, '../../../src/tools');
@@ -370,5 +371,35 @@ describe('Tool Gating Invariants', () => {
         `TOOL_CATEGORY has entry for "${tool}" but no server.tool() call found in source`
       ).toBe(true);
     }
+  });
+
+  it('TOOL_TIER covers exactly the same tools as TOOL_CATEGORY', () => {
+    const categoryTools = Object.keys(TOOL_CATEGORY).sort();
+    const tierTools = Object.keys(TOOL_TIER).sort();
+
+    expect(tierTools).toEqual(categoryTools);
+  });
+
+  it('tier-1 tools exactly match the default preset tool set', () => {
+    const defaultCategories = new Set(PRESETS.default);
+    const defaultPresetTools = Object.entries(TOOL_CATEGORY)
+      .filter(([, category]) => defaultCategories.has(category))
+      .map(([tool]) => tool)
+      .sort();
+    const tierOneTools = Object.entries(TOOL_TIER)
+      .filter(([, tier]) => tier === 1)
+      .map(([tool]) => tool)
+      .sort();
+
+    expect(tierOneTools).toEqual(defaultPresetTools);
+    expect(tierOneTools).toHaveLength(18);
+  });
+
+  it('tier counts match the expected 18/58 split', () => {
+    const tierOneCount = Object.values(TOOL_TIER).filter((tier) => tier === 1).length;
+    const higherTierCount = Object.values(TOOL_TIER).filter((tier) => tier > 1).length;
+
+    expect(tierOneCount).toBe(18);
+    expect(higherTierCount).toBe(Object.keys(TOOL_TIER).length - 18);
   });
 });

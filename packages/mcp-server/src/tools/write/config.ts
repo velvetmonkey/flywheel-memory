@@ -27,6 +27,7 @@ export const VALID_CONFIG_KEYS: Record<string, z.ZodType> = {
   proactive_min_score: z.number(),
   proactive_max_per_file: z.number(),
   proactive_max_per_day: z.number(),
+  tool_tier_override: z.enum(['auto', 'full', 'minimal']),
   custom_categories: z.record(z.string(), z.object({
     type_boost: z.number().optional(),
   })),

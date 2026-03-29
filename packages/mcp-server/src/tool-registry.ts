@@ -13,7 +13,8 @@ import { dirname, join } from 'path';
 import { statSync, readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { z } from 'zod';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { McpServer, RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { CallToolRequestSchema, ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 
 const __trFilename = fileURLToPath(import.meta.url);
 const __trDirname = dirname(__trFilename);
@@ -26,7 +27,7 @@ import type { PipelineActivity } from './core/read/watch/pipeline.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getSessionId } from '@velvetmonkey/vault-core';
 
-import { TOOL_CATEGORY, type ToolCategory } from './config.js';
+import { PRESETS, TOOL_CATEGORY, TOOL_TIER, type ToolCategory, type ToolTier } from './config.js';
 import { applySandwichOrdering } from './tools/read/query.js';
 import { VaultRegistry, type VaultContext } from './vault-registry.js';
 import { runInVaultScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
@@ -104,6 +105,78 @@ export interface VaultActivationCallbacks {
   buildVaultScope: (ctx: VaultContext) => VaultScope;
 }
 
+export type ToolTierMode = 'off' | 'tiered';
+export type ToolTierOverride = 'auto' | 'full' | 'minimal';
+
+export interface ToolTierController {
+  readonly mode: ToolTierMode;
+  readonly registered: number;
+  readonly skipped: number;
+  readonly activeCategories: Set<ToolCategory>;
+  getOverride(): ToolTierOverride;
+  finalizeRegistration(): void;
+  activateCategory(category: ToolCategory, tier?: ToolTier): void;
+  enableTierCategory(category: ToolCategory): void;
+  enableAllTiers(): void;
+  setOverride(override: ToolTierOverride): void;
+  getActivatedCategoryTiers(): ReadonlyMap<ToolCategory, ToolTier>;
+  getRegisteredTools(): ReadonlyMap<string, RegisteredTool>;
+}
+
+const ACTIVATION_PATTERNS: Array<{ category: ToolCategory; tier: ToolTier; patterns: RegExp[] }> = [
+  {
+    category: 'graph',
+    tier: 2,
+    patterns: [/\b(backlinks?|forward links?|connections?|link path|paths?|hubs?|orphans?|dead ends?|clusters?|bridges?)\b/i],
+  },
+  {
+    category: 'wikilinks',
+    tier: 2,
+    patterns: [/\b(wikilinks?|link suggestions?|stubs?|unlinked mentions?|aliases?)\b/i],
+  },
+  {
+    category: 'corrections',
+    tier: 2,
+    patterns: [/\b(corrections?|wrong links?|bad links?|mistakes?|fix(es|ing)?|errors?)\b/i],
+  },
+  {
+    category: 'temporal',
+    tier: 2,
+    patterns: [/\b(history|timeline|timelines|evolution|stale notes?|around date|weekly review|monthly review|quarterly review)\b/i],
+  },
+  {
+    category: 'diagnostics',
+    tier: 2,
+    patterns: [/\b(health|doctor|diagnostics?|status|config|configuration|pipeline|refresh index|reindex|logs?)\b/i],
+  },
+  {
+    category: 'schema',
+    tier: 3,
+    patterns: [/\b(schema|schemas|frontmatter|metadata|conventions?|rename field|rename tag|migrate)\b/i],
+  },
+  {
+    category: 'note-ops',
+    tier: 3,
+    patterns: [/\b(delete note|move note|rename note|merge entities|merge notes?)\b/i],
+  },
+];
+
+function getActivationSignals(toolName: string, params: unknown): Array<{ category: ToolCategory; tier: ToolTier }> {
+  if (toolName !== 'search' && toolName !== 'brief') return [];
+  if (!params || typeof params !== 'object') return [];
+
+  const raw = [
+    typeof (params as Record<string, unknown>).query === 'string' ? (params as Record<string, string>).query : '',
+    typeof (params as Record<string, unknown>).focus === 'string' ? (params as Record<string, string>).focus : '',
+  ].filter(Boolean).join(' ');
+
+  if (!raw) return [];
+
+  return ACTIVATION_PATTERNS
+    .filter(({ patterns }) => patterns.some((pattern) => pattern.test(raw)))
+    .map(({ category, tier }) => ({ category, tier }));
+}
+
 // ============================================================================
 // Tool Gating
 // ============================================================================
@@ -125,9 +198,15 @@ export function applyToolGating(
   registry?: VaultRegistry | null,
   getVaultPath?: () => string,
   vaultCallbacks?: VaultActivationCallbacks,
-): { registered: number; skipped: number } {
+  tierMode: ToolTierMode = 'off',
+  onTierStateChange?: (controller: ToolTierController) => void,
+): ToolTierController {
   let _registered = 0;
   let _skipped = 0;
+  let tierOverride: ToolTierOverride = 'auto';
+  const toolHandles = new Map<string, RegisteredTool>();
+  const activatedCategoryTiers = new Map<ToolCategory, ToolTier>();
+  let controllerRef: ToolTierController | null = null;
 
   function gate(name: string): boolean {
     const category = TOOL_CATEGORY[name];
@@ -143,6 +222,59 @@ export function applyToolGating(
     }
     _registered++;
     return true;
+  }
+
+  function enableCategory(category: ToolCategory, tier: ToolTier): void {
+    if (!categories.has(category)) return;
+    const previousTier = activatedCategoryTiers.get(category) ?? 0;
+    if (tier > previousTier) {
+      activatedCategoryTiers.set(category, tier);
+    }
+    refreshToolVisibility();
+  }
+
+  function shouldEnableTool(toolName: string): boolean {
+    const tier = TOOL_TIER[toolName];
+    const category = TOOL_CATEGORY[toolName];
+    if (!tier || !category) return true;
+    if (!categories.has(category)) return false;
+    if (tierMode === 'off') return true;
+    if (tierOverride === 'full') return true;
+    if (tier === 1) return true;
+    if (tierOverride === 'minimal') return false;
+    const activatedTier = activatedCategoryTiers.get(category) ?? 0;
+    return activatedTier >= tier;
+  }
+
+  function refreshToolVisibility(): void {
+    for (const [name, handle] of toolHandles) {
+      const enabled = shouldEnableTool(name);
+      if (enabled && !handle.enabled) {
+        handle.enable();
+      } else if (!enabled && handle.enabled) {
+        handle.disable();
+      }
+    }
+    if (controllerRef) {
+      onTierStateChange?.(controllerRef);
+    }
+  }
+
+  function maybeActivateFromContext(toolName: string, params: unknown): void {
+    if (tierMode !== 'tiered' || tierOverride === 'full') return;
+    for (const { category, tier } of getActivationSignals(toolName, params)) {
+      enableCategory(category, tier);
+    }
+  }
+
+  function ensureToolEnabledForDirectCall(toolName: string): void {
+    if (tierMode !== 'tiered') return;
+    const handle = toolHandles.get(toolName);
+    if (!handle || handle.enabled) return;
+    const category = TOOL_CATEGORY[toolName];
+    const tier = TOOL_TIER[toolName];
+    if (!category || !tier) return;
+    enableCategory(category, tier);
   }
 
   function wrapWithTracking(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
@@ -163,6 +295,7 @@ export function applyToolGating(
       }
       try {
         result = await handler(...args);
+        maybeActivateFromContext(toolName, params);
         return result;
       } catch (err) {
         success = false;
@@ -387,7 +520,9 @@ export function applyToolGating(
       handler = wrapWithVaultActivation(name, handler);
       args[args.length - 1] = wrapWithTracking(name, handler);
     }
-    return origTool(name, ...args);
+    const registered = origTool(name, ...args) as RegisteredTool;
+    toolHandles.set(name, registered);
+    return registered;
   };
 
   const origRegisterTool = (targetServer as any).registerTool?.bind(targetServer);
@@ -400,11 +535,98 @@ export function applyToolGating(
         handler = wrapWithVaultActivation(name, handler);
         args[args.length - 1] = wrapWithTracking(name, handler);
       }
-      return origRegisterTool(name, ...args);
+      const registered = origRegisterTool(name, ...args) as RegisteredTool;
+      toolHandles.set(name, registered);
+      return registered;
     };
   }
 
-  return { get registered() { return _registered; }, get skipped() { return _skipped; } };
+  function installTieredCallHandler(): void {
+    if (tierMode !== 'tiered') return;
+    const serverAny = targetServer as any;
+    serverAny.server.setRequestHandler(CallToolRequestSchema, async (request: any, extra: any) => {
+      try {
+        const tool = serverAny._registeredTools[request.params.name];
+        if (!tool) {
+          throw new McpError(ErrorCode.InvalidParams, `Tool ${request.params.name} not found`);
+        }
+        if (!tool.enabled) {
+          ensureToolEnabledForDirectCall(request.params.name);
+        }
+        if (!tool.enabled) {
+          throw new McpError(ErrorCode.InvalidParams, `Tool ${request.params.name} disabled`);
+        }
+        const isTaskRequest = !!request.params.task;
+        const taskSupport = tool.execution?.taskSupport;
+        const isTaskHandler = 'createTask' in tool.handler;
+        if ((taskSupport === 'required' || taskSupport === 'optional') && !isTaskHandler) {
+          throw new McpError(ErrorCode.InternalError, `Tool ${request.params.name} has taskSupport '${taskSupport}' but was not registered with registerToolTask`);
+        }
+        if (taskSupport === 'required' && !isTaskRequest) {
+          throw new McpError(ErrorCode.MethodNotFound, `Tool ${request.params.name} requires task augmentation (taskSupport: 'required')`);
+        }
+        if (taskSupport === 'optional' && !isTaskRequest && isTaskHandler) {
+          return await serverAny.handleAutomaticTaskPolling(tool, request, extra);
+        }
+        const args = await serverAny.validateToolInput(tool, request.params.arguments, request.params.name);
+        const result = await serverAny.executeToolHandler(tool, args, extra);
+        if (isTaskRequest) {
+          return result;
+        }
+        await serverAny.validateToolOutput(tool, result, request.params.name);
+        return result;
+      } catch (error) {
+        if (error instanceof McpError && error.code === ErrorCode.UrlElicitationRequired) {
+          throw error;
+        }
+        return serverAny.createToolError(error instanceof Error ? error.message : String(error));
+      }
+    });
+  }
+
+  const controller: ToolTierController = {
+    mode: tierMode,
+    get registered() {
+      return _registered;
+    },
+    get skipped() {
+      return _skipped;
+    },
+    get activeCategories() {
+      return new Set(activatedCategoryTiers.keys());
+    },
+    getOverride() {
+      return tierOverride;
+    },
+    finalizeRegistration() {
+      refreshToolVisibility();
+      installTieredCallHandler();
+    },
+    activateCategory(category: ToolCategory, tier: ToolTier = 2) {
+      enableCategory(category, tier);
+    },
+    enableTierCategory(category: ToolCategory) {
+      enableCategory(category, 2);
+    },
+    enableAllTiers() {
+      tierOverride = 'full';
+      refreshToolVisibility();
+    },
+    setOverride(override: ToolTierOverride) {
+      tierOverride = override;
+      refreshToolVisibility();
+    },
+    getActivatedCategoryTiers() {
+      return new Map(activatedCategoryTiers);
+    },
+    getRegisteredTools() {
+      return toolHandles;
+    },
+  };
+
+  controllerRef = controller;
+
+  return controller;
 }
 
 // ============================================================================

@@ -2334,9 +2334,12 @@ export async function applyProactiveSuggestions(
   for (const candidate of candidates) {
     if (stateDb && isSuppressed(stateDb, candidate.entity)) continue;
 
-    // Look up entity in stateDb to get aliases
+    // Look up entity in stateDb to get aliases and category
     if (stateDb) {
       const entityObj = getEntityByName(stateDb, candidate.entity);
+      // Defense-in-depth: skip common-word false positives
+      const category = entityObj?.category ?? 'other';
+      if (isCommonWordFalsePositive(candidate.entity, content, category)) continue;
       if (entityObj) {
         entityObjects.push({
           name: entityObj.name,

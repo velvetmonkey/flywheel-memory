@@ -1,6 +1,6 @@
 ---
 type: proposal
-status: draft
+status: in-review
 client: "[[Acme Corp]]"
 value: 35000
 submitted: null
@@ -10,7 +10,7 @@ tags:
   - proposal
   - sales
   - analytics
-  - draft
+  - in-review
 ---
 # [[Acme Analytics Add-on]] Proposal
 
@@ -22,7 +22,7 @@ tags:
 **Contact**: [[Sarah Mitchell]]
 **Value**: $35,000
 **Duration**: 6 weeks
-**Status**: Draft - not yet submitted
+**Status**: In review — circulating with Acme finance team (good reception)
 
 ## Background
 
@@ -77,4 +77,4 @@ tags:
 
 ---
 
-*Draft - awaiting client feedback*
+*In review — circulating with Acme finance team. Scoping call with [[Emily Chen]] + data team planned post-cutover; [[Priya Kapoor]] flagged for requirements gathering. Updated 2026-03-29.*

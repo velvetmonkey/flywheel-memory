@@ -5,8 +5,7 @@
 # capturing tool usage per beat for verification.
 #
 # Usage:
-#   demos/run-demo-test.sh                  # default: opus model
-#   MODEL=sonnet demos/run-demo-test.sh     # override model
+#   demos/run-demo-test.sh                  # pinned: sonnet model
 
 set -euo pipefail
 
@@ -14,7 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 DEMO_DIR="$REPO_DIR/demos/carter-strategy"
 MCP_SERVER="$REPO_DIR/packages/mcp-server/dist/index.js"
-MODEL="${MODEL:-opus}"
+MODEL="sonnet"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="$REPO_DIR/demos/test-results/demo-$TIMESTAMP"
 SLEEP_BETWEEN="${SLEEP_BETWEEN:-5}"

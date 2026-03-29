@@ -7,7 +7,7 @@
 # Usage:
 #   demos/locomo/run-benchmark.sh                              # default: all questions, sonnet, dialog mode
 #   COUNT=50 demos/locomo/run-benchmark.sh                     # subset of questions
-#   MODEL=opus MODE=summary demos/locomo/run-benchmark.sh      # use opus, summary vault mode
+#   MODE=summary demos/locomo/run-benchmark.sh                 # summary vault mode
 
 set -euo pipefail
 
@@ -16,7 +16,7 @@ REPO_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 MCP_SERVER="$REPO_DIR/packages/mcp-server/dist/index.js"
 VAULT_DIR="$SCRIPT_DIR/vault"
 GROUND_TRUTH="$SCRIPT_DIR/ground-truth.json"
-MODEL="${MODEL:-sonnet}"
+MODEL="sonnet"
 COUNT="${COUNT:-695}"  # Default: 695 balanced questions (matches Mem0 competition paper)
 MODE="${MODE:-dialog}"
 SEED="${SEED:-42}"

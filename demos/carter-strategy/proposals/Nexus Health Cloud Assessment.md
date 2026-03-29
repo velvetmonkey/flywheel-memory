@@ -1,6 +1,6 @@
 ---
 type: proposal
-status: draft
+status: verbal
 client: '[[Nexus Health]]'
 value: 22000
 submitted: null
@@ -23,7 +23,7 @@ AWS infrastructure audit and HIPAA compliance gap analysis for [[Nexus Health]],
 **Contact**: [[Dr. Anika Patel]] (CPO), [[Tom Huang]] (VP Engineering)
 **Value**: $22,000
 **Duration**: 4 weeks
-**Status**: Draft — following up after discovery call
+**Status**: Verbal — [[Tom Huang]] confirmed proceeding 2026-03-29
 **Decision expected**: 2026-04-01
 
 ## Background
@@ -123,4 +123,4 @@ AWS infrastructure audit and HIPAA compliance gap analysis for [[Nexus Health]],
 
 ---
 
-*Draft — pending client confirmation and team availability*
+*Verbal — confirmed 2026-03-29; finalise proposal and confirm [[Leila Farouk]] availability*

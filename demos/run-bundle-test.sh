@@ -3,7 +3,7 @@
 #
 # Usage:
 #   demos/run-bundle-test.sh                  # default: 3 runs, sonnet model
-#   RUNS=5 MODEL=opus demos/run-bundle-test.sh
+#   RUNS=5 demos/run-bundle-test.sh
 
 set -euo pipefail
 
@@ -12,7 +12,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 MCP_SERVER="$REPO_ROOT/packages/mcp-server/dist/index.js"
 DEMO_DIR="$SCRIPT_DIR/carter-strategy"
 RUNS=${RUNS:-3}
-MODEL=${MODEL:-sonnet}
+MODEL="sonnet"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="$SCRIPT_DIR/test-results/bundle-$TIMESTAMP"
 

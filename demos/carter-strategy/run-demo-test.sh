@@ -16,7 +16,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 MCP_SERVER="$REPO_ROOT/packages/mcp-server/dist/index.js"
-MODEL=${MODEL:-sonnet}
+MODEL="sonnet"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="$SCRIPT_DIR/test-results/$TIMESTAMP"
 WATCHER_WAIT=${WATCHER_WAIT:-5}  # seconds to wait for flywheel watcher

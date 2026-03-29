@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 MCP_SERVER="$REPO_ROOT/packages/mcp-server/dist/index.js"
 RUNS=${RUNS:-3}
-MODEL=${MODEL:-sonnet}
+MODEL="sonnet"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="$SCRIPT_DIR/test-results/$TIMESTAMP"
 

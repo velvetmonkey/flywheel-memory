@@ -3,7 +3,7 @@
 #
 # Usage:
 #   demos/run-coverage-test.sh                        # default: 1 run, sonnet
-#   RUNS=2 MODEL=opus demos/run-coverage-test.sh
+#   RUNS=2 demos/run-coverage-test.sh
 #   SKIP_TO=30 demos/run-coverage-test.sh             # resume from tool #30
 
 set -euo pipefail
@@ -13,7 +13,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 MCP_SERVER="$REPO_ROOT/packages/mcp-server/dist/index.js"
 DEMO_DIR="$SCRIPT_DIR/carter-strategy"
 RUNS=${RUNS:-1}
-MODEL=${MODEL:-sonnet}
+MODEL="sonnet"
 SKIP_TO=${SKIP_TO:-1}
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="$SCRIPT_DIR/test-results/coverage-$TIMESTAMP"

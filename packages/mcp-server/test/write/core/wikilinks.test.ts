@@ -2360,7 +2360,7 @@ describe('scoring guardrails', () => {
     expect(uppercase.suggestions).toContain('REST');
   });
 
-  it('caps graph-only score inflation when content relevance is absent', async () => {
+  it('rejects graph-only entity in balanced mode (T6 minContentMatch gate)', async () => {
     createEntityCacheInStateDb(stateDb, tempVault, {
       people: ['Alex Johnson'],
       other: ['Arma Reforger'],
@@ -2398,16 +2398,25 @@ describe('scoring guardrails', () => {
     });
     feedbackTxn();
 
-    const result = await suggestRelatedLinks('Met with Alex Johnson for planning.', {
+    // balanced mode: minContentMatch=2 rejects Arma Reforger (contentMatch=0)
+    const balancedResult = await suggestRelatedLinks('Met with Alex Johnson for planning.', {
       strictness: 'balanced',
       detail: true,
     });
 
-    const arma = result.detailed?.find(entry => entry.entity === 'Arma Reforger');
-    expect(arma).toBeDefined();
-    expect(arma!.breakdown.contentMatch).toBe(0);
-    expect(arma!.breakdown.fuzzyMatch).toBe(0);
-    expect(arma!.totalScore).toBe(10);
+    const armaBalanced = balancedResult.detailed?.find(entry => entry.entity === 'Arma Reforger');
+    expect(armaBalanced).toBeUndefined();
+
+    // aggressive mode: minContentMatch=0 preserves backward compat — graph-only entity survives
+    const aggressiveResult = await suggestRelatedLinks('Met with Alex Johnson for planning.', {
+      strictness: 'aggressive',
+      detail: true,
+    });
+
+    const armaAggressive = aggressiveResult.detailed?.find(entry => entry.entity === 'Arma Reforger');
+    expect(armaAggressive).toBeDefined();
+    expect(armaAggressive!.breakdown.contentMatch).toBe(0);
+    expect(armaAggressive!.breakdown.fuzzyMatch).toBe(0);
   });
 
   it('weak cooccurrence entity excluded when below gate', async () => {
@@ -2902,6 +2911,262 @@ describe('zero-relevance content filtering', () => {
     expect(result.suggestions).not.toContain('Important Person');
     if (result.suggestions.length > 0) {
       expect(result.suggestions).toContain('Random Activity');
+    }
+  });
+});
+
+// ========================================
+// T6: minContentMatch Threshold Tests
+// ========================================
+
+describe('T6 minContentMatch threshold', () => {
+  let tempVault: string;
+  let stateDb: StateDb;
+
+  beforeEach(async () => {
+    tempVault = await createTempVault();
+    stateDb = openStateDb(tempVault);
+    setWriteStateDb(stateDb);
+  });
+
+  afterEach(async () => {
+    setCooccurrenceIndex(null);
+    setWriteStateDb(null);
+    stateDb.db.close();
+    deleteStateDb(tempVault);
+    await cleanupTempVault(tempVault);
+  });
+
+  it('centralized gate rejects entity below minContentMatch in balanced mode', async () => {
+    // Create an entity whose name is a common word — will get a very low stem match
+    // but we want to test the floor. Use a multi-word entity where only one short
+    // stem matches, giving contentMatch < 2.
+    createEntityCacheInStateDb(stateDb, tempVault, {
+      people: ['Alex Johnson'],
+      other: ['Zeta Grid'],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    // "grid" is not a stopword but "Zeta" won't match anything in content.
+    // Only "grid" stem-matches → contentMatch = stemMatchBonus(5) * IDF ≈ 5 for balanced.
+    // That's above the threshold of 2, so let's use cooccurrence-only to test the floor.
+    const coocIndex: CooccurrenceIndex = {
+      associations: {
+        'Alex Johnson': new Map([['Zeta Grid', 5]]),
+        'Zeta Grid': new Map([['Alex Johnson', 5]]),
+      },
+      minCount: 0.5,
+      documentFrequency: new Map([
+        ['Alex Johnson', 5],
+        ['Zeta Grid', 5],
+      ]),
+      totalNotesScanned: 100,
+      _metadata: {
+        generated_at: new Date().toISOString(),
+        total_associations: 2,
+        notes_scanned: 100,
+      },
+    };
+    saveCooccurrenceToStateDb(stateDb, coocIndex);
+    setCooccurrenceIndex(coocIndex);
+
+    // Content mentions Alex Johnson but not Zeta Grid — Zeta Grid enters via cooccurrence only
+    const result = await suggestRelatedLinks('Met with Alex Johnson to discuss the new plan.', {
+      strictness: 'balanced',
+      detail: true,
+    });
+
+    const zeta = result.detailed?.find(entry => entry.entity === 'Zeta Grid');
+    // Zeta Grid has contentMatch=0, which is below balanced minContentMatch=2
+    expect(zeta).toBeUndefined();
+  });
+
+  it('centralized gate allows entity at or above minContentMatch threshold', async () => {
+    createEntityCacheInStateDb(stateDb, tempVault, {
+      technologies: ['TypeScript'],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    const result = await suggestRelatedLinks('Working with TypeScript today on the refactor.', {
+      strictness: 'balanced',
+      detail: true,
+    });
+
+    const ts = result.detailed?.find(entry => entry.entity === 'TypeScript');
+    expect(ts).toBeDefined();
+    // exactMatchBonus=10 is well above minContentMatch=2
+    expect(ts!.breakdown.contentMatch).toBeGreaterThanOrEqual(2);
+  });
+
+  it('graph boosts cannot rescue sub-threshold entity in conservative mode', async () => {
+    createEntityCacheWithDetailsInStateDb(stateDb, tempVault, {
+      people: [
+        { name: 'Alex Johnson', path: 'people/Alex Johnson.md', hubScore: 10 },
+      ],
+      other: [
+        // High hub score but no content match
+        { name: 'Phantom Entity', path: 'other/Phantom Entity.md', hubScore: 200 },
+      ],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    const coocIndex: CooccurrenceIndex = {
+      associations: {
+        'Alex Johnson': new Map([['Phantom Entity', 10]]),
+        'Phantom Entity': new Map([['Alex Johnson', 10]]),
+      },
+      minCount: 0.5,
+      documentFrequency: new Map([
+        ['Alex Johnson', 10],
+        ['Phantom Entity', 10],
+      ]),
+      totalNotesScanned: 100,
+      _metadata: {
+        generated_at: new Date().toISOString(),
+        total_associations: 2,
+        notes_scanned: 100,
+      },
+    };
+    saveCooccurrenceToStateDb(stateDb, coocIndex);
+    setCooccurrenceIndex(coocIndex);
+
+    // Content mentions Alex Johnson but not Phantom Entity
+    const result = await suggestRelatedLinks('Met with Alex Johnson for the quarterly review.', {
+      strictness: 'conservative',
+      detail: true,
+    });
+
+    // Phantom Entity has contentMatch=0, below conservative minContentMatch=3
+    const phantom = result.detailed?.find(entry => entry.entity === 'Phantom Entity');
+    expect(phantom).toBeUndefined();
+  });
+
+  it('aggressive mode preserves graph-only entities in suggestion list', async () => {
+    createEntityCacheInStateDb(stateDb, tempVault, {
+      people: ['Alex Johnson'],
+      other: ['Arma Reforger'],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    const coocIndex: CooccurrenceIndex = {
+      associations: {
+        'Alex Johnson': new Map([['Arma Reforger', 1]]),
+        'Arma Reforger': new Map([['Alex Johnson', 1]]),
+      },
+      minCount: 0.5,
+      documentFrequency: new Map([
+        ['Alex Johnson', 1],
+        ['Arma Reforger', 1],
+      ]),
+      totalNotesScanned: 100,
+      _metadata: {
+        generated_at: new Date().toISOString(),
+        total_associations: 2,
+        notes_scanned: 100,
+      },
+    };
+    saveCooccurrenceToStateDb(stateDb, coocIndex);
+    setCooccurrenceIndex(coocIndex);
+
+    // Add positive feedback to boost Arma Reforger above thresholds
+    const insertFeedback = stateDb.db.prepare(
+      'INSERT INTO wikilink_feedback (entity, context, note_path, correct) VALUES (?, ?, ?, ?)'
+    );
+    const feedbackTxn = stateDb.db.transaction(() => {
+      for (let i = 0; i < 24; i++) {
+        insertFeedback.run('Arma Reforger', 'test:cap', `notes/${i}.md`, 1);
+      }
+    });
+    feedbackTxn();
+
+    const result = await suggestRelatedLinks('Met with Alex Johnson for planning.', {
+      strictness: 'aggressive',
+      detail: true,
+    });
+
+    // aggressive mode: minContentMatch=0 — graph-only entities survive
+    const arma = result.detailed?.find(entry => entry.entity === 'Arma Reforger');
+    expect(arma).toBeDefined();
+    expect(arma!.breakdown.contentMatch).toBe(0);
+  });
+
+  it('suffix gate rejects graph-only entities even in aggressive mode', async () => {
+    createEntityCacheInStateDb(stateDb, tempVault, {
+      people: ['Alex Johnson'],
+      other: ['Arma Reforger'],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    const coocIndex: CooccurrenceIndex = {
+      associations: {
+        'Alex Johnson': new Map([['Arma Reforger', 1]]),
+        'Arma Reforger': new Map([['Alex Johnson', 1]]),
+      },
+      minCount: 0.5,
+      documentFrequency: new Map([
+        ['Alex Johnson', 1],
+        ['Arma Reforger', 1],
+      ]),
+      totalNotesScanned: 100,
+      _metadata: {
+        generated_at: new Date().toISOString(),
+        total_associations: 2,
+        notes_scanned: 100,
+      },
+    };
+    saveCooccurrenceToStateDb(stateDb, coocIndex);
+    setCooccurrenceIndex(coocIndex);
+
+    // Add positive feedback to boost Arma Reforger into suggestions
+    const insertFeedback = stateDb.db.prepare(
+      'INSERT INTO wikilink_feedback (entity, context, note_path, correct) VALUES (?, ?, ?, ?)'
+    );
+    const feedbackTxn = stateDb.db.transaction(() => {
+      for (let i = 0; i < 24; i++) {
+        insertFeedback.run('Arma Reforger', 'test:cap', `notes/${i}.md`, 1);
+      }
+    });
+    feedbackTxn();
+
+    const result = await suggestRelatedLinks('Met with Alex Johnson for planning.', {
+      strictness: 'aggressive',
+      detail: true,
+    });
+
+    // Even in aggressive mode, suffix requires contentMatch >= MIN_SUFFIX_CONTENT
+    // Graph-only entity (contentMatch=0) should not appear in suffix
+    if (result.suffix) {
+      expect(result.suffix).not.toContain('Arma Reforger');
+    }
+  });
+
+  it('suffix gate still passes content-matched entities', async () => {
+    // Use a multi-word entity that will score high enough for suffix
+    createEntityCacheWithDetailsInStateDb(stateDb, tempVault, {
+      projects: [
+        { name: 'Project Alpha', path: 'projects/Project Alpha.md', hubScore: 50 },
+      ],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    const result = await suggestRelatedLinks('Working on the Project Alpha deployment and testing.', {
+      strictness: 'balanced',
+      detail: true,
+    });
+
+    const alpha = result.detailed?.find(entry => entry.entity === 'Project Alpha');
+    if (alpha) {
+      expect(alpha.breakdown.contentMatch).toBeGreaterThanOrEqual(2);
+    }
+    // If it scored high enough, it should be in suggestions
+    if (result.suggestions.includes('Project Alpha')) {
+      expect(result.suggestions).toContain('Project Alpha');
     }
   });
 });

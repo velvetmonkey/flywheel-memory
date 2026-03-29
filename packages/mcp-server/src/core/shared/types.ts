@@ -168,6 +168,8 @@ export interface SuggestionConfig {
   noRelevanceCap: number;
   /** Minimum cooccurrence boost required for graph-only entities (no content overlap) to qualify */
   minCooccurrenceGate: number;
+  /** Hard floor for contentMatch (exact+stem only). Entities below this are excluded from final results. 0 = disabled. */
+  minContentMatch: number;
 }
 
 /**

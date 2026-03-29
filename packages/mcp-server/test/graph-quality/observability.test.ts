@@ -341,18 +341,22 @@ describe('Pillar 6: Pipeline Observability', () => {
 
     it('entities that did not pass threshold have passed=0', () => {
       const filteredRows = vault.stateDb.db.prepare(
-        'SELECT entity, total_score, threshold, passed FROM suggestion_events WHERE passed = 0'
+        'SELECT entity, total_score, threshold, passed, breakdown_json FROM suggestion_events WHERE passed = 0'
       ).all() as Array<{
         entity: string;
         total_score: number;
         threshold: number;
         passed: number;
+        breakdown_json: string;
       }>;
 
-      // There should be some filtered entities (below threshold)
-      // If none, the test still passes since that is a valid state
+      // Entities with passed=0 either:
+      // 1. Scored below the adaptive threshold, OR
+      // 2. Were rejected by the minContentMatch gate (T6) despite meeting the score threshold
       for (const row of filteredRows) {
-        expect(row.total_score).toBeLessThan(row.threshold);
+        const breakdown = JSON.parse(row.breakdown_json);
+        const rejectedByContentFloor = (breakdown.contentMatch ?? 0) < 2; // balanced minContentMatch=2
+        expect(row.total_score < row.threshold || rejectedByContentFloor).toBe(true);
       }
     });
   });

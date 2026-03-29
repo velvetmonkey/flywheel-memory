@@ -4,10 +4,16 @@ Flywheel learns from how you use your vault. Every accepted link, every removal,
 
 - [What's tracked and why](#whats-tracked-and-why)
 - [What's safe to share](#whats-safe-to-share)
+  - [`flywheel_calibration_export` (recommended)](#flywheel_calibration_export-recommended)
+  - [Also safe](#also-safe)
+  - [Review before sharing](#review-before-sharing)
+  - [Never share](#never-share)
 - [How to export](#how-to-export)
 - [How to share](#how-to-share)
 - [Why share](#why-share)
 - [Privacy architecture](#privacy-architecture)
+
+---
 
 ## What's tracked and why
 

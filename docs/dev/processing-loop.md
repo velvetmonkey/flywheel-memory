@@ -1,6 +1,46 @@
 # Processing Loop — Developer Reference
 
+[← Back to docs](../README.md)
+
 Code-level reference for the flywheel processing loop, scoring engine, and feedback system.
+
+- [Entry Point](#entry-point)
+- [Pipeline Steps](#pipeline-steps)
+  - [1. index_rebuild (~line 990)](#1-index_rebuild-line-990)
+  - [2. note_moves (~line 1014)](#2-note_moves-line-1014)
+  - [3. entity_scan (~line 1031)](#3-entity_scan-line-1031)
+  - [4. hub_scores (~line 1065)](#4-hub_scores-line-1065)
+  - [5. recency (~line 1079)](#5-recency-line-1079)
+  - [6. cooccurrence (~line 1099)](#6-cooccurrence-line-1099)
+  - [7. edge_weights (~line 1122)](#7-edge_weights-line-1122)
+  - [8. note_embeddings (~line 1152)](#8-note_embeddings-line-1152)
+  - [9. entity_embeddings (~line 1177)](#9-entity_embeddings-line-1177)
+  - [10. index_cache (~line 1207)](#10-index_cache-line-1207)
+  - [11. task_cache (~line 1221)](#11-task_cache-line-1221)
+  - [12. forward_links (~line 1241)](#12-forward_links-line-1241)
+  - [13. wikilink_check (~line 1367)](#13-wikilink_check-line-1367)
+  - [14. implicit_feedback (~line 1437)](#14-implicit_feedback-line-1437)
+  - [15. tag_scan (~line 1475)](#15-tag_scan-line-1475)
+- [Scoring Engine](#scoring-engine)
+  - [Layer 0: Suppression filter](#layer-0-suppression-filter)
+  - [Layers 1a-1b: Length + article filter](#layers-1a-1b-length--article-filter)
+  - [Layers 2-3: Content matching](#layers-2-3-content-matching)
+  - [Layer 4: Co-occurrence](#layer-4-co-occurrence)
+  - [Layer 5: Type boost](#layer-5-type-boost)
+  - [Layer 6: Context boost](#layer-6-context-boost)
+  - [Layer 7: Recency](#layer-7-recency)
+  - [Layer 8: Cross-folder](#layer-8-cross-folder)
+  - [Layer 9: Hub boost](#layer-9-hub-boost)
+  - [Layer 10: Feedback](#layer-10-feedback)
+  - [Layer 11: Semantic](#layer-11-semantic)
+  - [Layer 12: Edge weight](#layer-12-edge-weight)
+- [Feedback System](#feedback-system)
+  - [Key functions](#key-functions)
+  - [Tier thresholds (FEEDBACK_BOOST_TIERS)](#tier-thresholds-feedback_boost_tiers)
+  - [Suppression thresholds](#suppression-thresholds)
+- [Database Tables](#database-tables)
+
+---
 
 ## Entry Point
 

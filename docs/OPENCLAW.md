@@ -14,6 +14,7 @@ Use this when you want Flywheel to be the vault-memory layer behind an OpenClaw 
 - [Hooks vs Agent Turns](#hooks-vs-agent-turns)
 - [ACP Note](#acp-note)
 - [Complete Example](#complete-example)
+- [References](#references)
 
 ---
 

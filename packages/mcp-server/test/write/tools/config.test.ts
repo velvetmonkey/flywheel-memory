@@ -21,6 +21,8 @@ describe('VALID_CONFIG_KEYS', () => {
       'proactive_linking',
       'proactive_min_score',
       'proactive_max_per_file',
+      'proactive_max_per_day',
+      'tool_tier_override',
     ];
 
     for (const key of expectedKeys) {
@@ -62,11 +64,19 @@ describe('VALID_CONFIG_KEYS', () => {
   });
 
   it('should validate number config keys', () => {
-    for (const key of ['proactive_min_score', 'proactive_max_per_file']) {
+    for (const key of ['proactive_min_score', 'proactive_max_per_file', 'proactive_max_per_day']) {
       const schema = VALID_CONFIG_KEYS[key];
       expect(schema.safeParse(20).success, `${key} should accept number`).toBe(true);
       expect(schema.safeParse('20').success, `${key} should reject string`).toBe(false);
     }
+  });
+
+  it('should validate tool_tier_override values', () => {
+    const schema = VALID_CONFIG_KEYS['tool_tier_override'];
+    expect(schema.safeParse('auto').success).toBe(true);
+    expect(schema.safeParse('full').success).toBe(true);
+    expect(schema.safeParse('minimal').success).toBe(true);
+    expect(schema.safeParse('invalid').success).toBe(false);
   });
 
   it('should validate vault_name as string', () => {

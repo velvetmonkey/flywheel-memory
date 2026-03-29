@@ -60,6 +60,8 @@ export interface FlywheelConfig {
   proactive_max_per_file?: number;
   /** Maximum proactive insertions per file per day (default: 10) */
   proactive_max_per_day?: number;
+  /** Tool exposure override for tiered full preset sessions */
+  tool_tier_override?: 'auto' | 'full' | 'minimal';
   /**
    * Custom entity categories. Keys are frontmatter `type:` values.
    * Entities with matching frontmatter types get categorized under that key

@@ -15,7 +15,7 @@ import type { VaultRegistry } from './vault-registry.js';
 //
 // Presets:
 //   default    - Note-taking essentials: search, read, write, tasks, memory (18 tools)
-//   full       - All tools, all categories (75 tools)
+//   full       - All tools, all categories (76 tools, tiered visibility)
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic + export (11 tools)
@@ -44,6 +44,8 @@ export type ToolCategory =
   | 'graph' | 'schema' | 'wikilinks' | 'corrections'
   | 'tasks' | 'memory' | 'note-ops'
   | 'temporal' | 'diagnostics';
+
+export type ToolTier = 1 | 2 | 3;
 
 export const ALL_CATEGORIES: ToolCategory[] = [
   'search', 'read', 'write',
@@ -253,12 +255,124 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
 };
 
+export const TOOL_TIER: Record<string, ToolTier> = {
+  // Tier 1 — always visible (= default preset, 18 tools)
+  search: 1,
+  init_semantic: 1,
+  find_similar: 1,
+  get_note_structure: 1,
+  get_section_content: 1,
+  find_sections: 1,
+  vault_add_to_section: 1,
+  vault_remove_from_section: 1,
+  vault_replace_in_section: 1,
+  vault_update_frontmatter: 1,
+  vault_create_note: 1,
+  vault_undo_last_mutation: 1,
+  policy: 1,
+  tasks: 1,
+  vault_toggle_task: 1,
+  vault_add_task: 1,
+  memory: 1,
+  brief: 1,
+
+  // Tier 2 — context-triggered categories + core diagnostics (33 tools)
+  graph_analysis: 2,
+  semantic_analysis: 2,
+  get_backlinks: 2,
+  get_forward_links: 2,
+  get_connection_strength: 2,
+  list_entities: 2,
+  get_link_path: 2,
+  get_common_neighbors: 2,
+  get_weighted_links: 2,
+  get_strong_connections: 2,
+  export_graph: 2,
+  suggest_wikilinks: 2,
+  validate_links: 2,
+  wikilink_feedback: 2,
+  discover_stub_candidates: 2,
+  discover_cooccurrence_gaps: 2,
+  suggest_entity_aliases: 2,
+  unlinked_mentions_report: 2,
+  vault_record_correction: 2,
+  vault_list_corrections: 2,
+  vault_resolve_correction: 2,
+  absorb_as_alias: 2,
+  get_context_around_date: 2,
+  predict_stale_notes: 2,
+  track_concept_evolution: 2,
+  temporal_summary: 2,
+  health_check: 2,
+  pipeline_status: 2,
+  get_vault_stats: 2,
+  refresh_index: 2,
+  flywheel_config: 2,
+  server_log: 2,
+  flywheel_doctor: 2,
+
+  // Tier 3 — explicit or advanced operations (25 tools)
+  vault_schema: 3,
+  schema_conventions: 3,
+  schema_validate: 3,
+  note_intelligence: 3,
+  rename_field: 3,
+  migrate_field_values: 3,
+  rename_tag: 3,
+  vault_delete_note: 3,
+  vault_move_note: 3,
+  vault_rename_note: 3,
+  merge_entities: 3,
+  get_folder_structure: 3,
+  get_all_entities: 3,
+  get_unlinked_mentions: 3,
+  vault_growth: 3,
+  vault_activity: 3,
+  suggest_entity_merges: 3,
+  dismiss_merge_suggestion: 3,
+  vault_init: 3,
+  flywheel_trust_report: 3,
+  flywheel_benchmark: 3,
+  vault_session_history: 3,
+  vault_entity_history: 3,
+  flywheel_learning_report: 3,
+  flywheel_calibration_export: 3,
+};
+
+function assertToolTierCoverage(): void {
+  const categoryKeys = Object.keys(TOOL_CATEGORY).sort();
+  const tierKeys = Object.keys(TOOL_TIER).sort();
+  const missingTier = categoryKeys.filter((key) => !(key in TOOL_TIER));
+  const missingCategory = tierKeys.filter((key) => !(key in TOOL_CATEGORY));
+
+  if (missingTier.length > 0 || missingCategory.length > 0 || categoryKeys.length !== tierKeys.length) {
+    throw new Error(
+      `TOOL_TIER must cover exactly the same tools as TOOL_CATEGORY. ` +
+      `missing tier entries: ${missingTier.join(', ') || 'none'}; ` +
+      `missing category entries: ${missingCategory.join(', ') || 'none'}`
+    );
+  }
+}
+
+assertToolTierCoverage();
+
 // ============================================================================
 // Server Instructions (dynamic, based on enabled categories)
 // ============================================================================
 
-export function generateInstructions(categories: Set<ToolCategory>, registry?: VaultRegistry | null): string {
+export function generateInstructions(
+  categories: Set<ToolCategory>,
+  registry?: VaultRegistry | null,
+  activeTierCategories?: Set<ToolCategory>,
+): string {
   const parts: string[] = [];
+  const tieringActive = activeTierCategories !== undefined;
+  const isCategoryVisible = (category: ToolCategory): boolean => {
+    if (!categories.has(category)) return false;
+    if (!tieringActive) return true;
+    if (PRESETS.default.includes(category)) return true;
+    return activeTierCategories.has(category);
+  };
 
   // Base instruction (always present)
   parts.push(`Flywheel provides tools to search, read, and write an Obsidian vault's knowledge graph.
@@ -303,7 +417,7 @@ This server manages multiple vaults. Every tool has an optional "vault" paramete
 Good frontmatter is the highest-leverage action for improving suggestions, search, and link quality.`);
 
   // Read category instructions
-  if (categories.has('read')) {
+  if (isCategoryVisible('read')) {
     parts.push(`
 ## Read
 
@@ -313,7 +427,7 @@ Escalation: "search" (enriched metadata + content preview) → "get_note_structu
   }
 
   // Write category instructions
-  if (categories.has('write')) {
+  if (isCategoryVisible('write')) {
     parts.push(`
 ## Write
 
@@ -353,7 +467,7 @@ you say "run the weekly review for this week".`);
   }
 
   // Memory category instructions
-  if (categories.has('memory')) {
+  if (isCategoryVisible('memory')) {
     parts.push(`
 ## Memory
 
@@ -364,7 +478,7 @@ user preferences, project status).`);
   }
 
   // Graph category instructions
-  if (categories.has('graph')) {
+  if (isCategoryVisible('graph')) {
     parts.push(`
 ## Graph
 
@@ -375,9 +489,13 @@ Use "get_connection_strength" to measure link strength between two entities.
 Use "get_link_path" to trace the shortest path between any two entities or notes.
 Use "get_strong_connections" to find the strongest or most-connected relationships for an entity.`);
   }
+  else if (tieringActive && categories.has('graph')) {
+    parts.push(`
+**More tools available:** Ask about graph connections, backlinks, hubs, clusters, or paths to unlock graph analysis tools.`);
+  }
 
   // Note-ops category instructions
-  if (categories.has('note-ops')) {
+  if (isCategoryVisible('note-ops')) {
     parts.push(`
 ## Note Operations
 
@@ -388,7 +506,7 @@ Use "merge_entities" to consolidate two entity notes into one — adds aliases, 
   }
 
   // Tasks category instructions
-  if (categories.has('tasks')) {
+  if (isCategoryVisible('tasks')) {
     parts.push(`
 ## Tasks
 
@@ -396,7 +514,7 @@ Use "tasks" to query tasks across the vault (filter by status, due date, path). 
   }
 
   // Schema category instructions
-  if (categories.has('schema')) {
+  if (isCategoryVisible('schema')) {
     parts.push(`
 ## Schema
 
@@ -404,6 +522,63 @@ Use "vault_schema" before bulk operations to understand field types, values, and
 Use "schema_conventions" to infer frontmatter conventions from folder usage patterns, find notes with incomplete metadata, or suggest field values.
 Use "schema_validate" to validate frontmatter against explicit rules or find notes missing expected fields by folder.
 Use "note_intelligence" for per-note analysis (completeness, quality, suggestions).`);
+  }
+  else if (tieringActive && categories.has('schema')) {
+    parts.push(`
+**Advanced tools:** Ask to unlock schema tools for conventions, validation, migrations, and bulk metadata analysis.`);
+  }
+
+  if (isCategoryVisible('wikilinks')) {
+    parts.push(`
+## Wikilinks
+
+Use "suggest_wikilinks" to analyze draft text for existing entities that should be linked.
+Use "validate_links" to find broken or suspicious wikilinks.
+Use "discover_stub_candidates", "discover_cooccurrence_gaps", and "unlinked_mentions_report" to surface missing concept notes and high-ROI linking opportunities.`);
+  }
+  else if (tieringActive && categories.has('wikilinks')) {
+    parts.push(`
+**More tools available:** Ask about wikilinks, suggestions, stubs, or unlinked mentions to unlock wikilink tools.`);
+  }
+
+  if (isCategoryVisible('corrections')) {
+    parts.push(`
+## Corrections
+
+Use "vault_record_correction" to store a persistent correction when Flywheel made a bad link or edit.
+Use "vault_list_corrections" and "vault_resolve_correction" to review or close correction records.
+Use "absorb_as_alias" when two names should resolve to the same entity without merging note bodies.`);
+  }
+  else if (tieringActive && categories.has('corrections')) {
+    parts.push(`
+**More tools available:** Ask about errors, wrong links, or fixes to unlock correction tools.`);
+  }
+
+  if (isCategoryVisible('temporal')) {
+    parts.push(`
+## Temporal
+
+Use "get_context_around_date" to reconstruct vault activity around a specific date.
+Use "predict_stale_notes" to identify important notes that likely need review.
+Use "track_concept_evolution" and "temporal_summary" for history, momentum, and review-period summaries.`);
+  }
+  else if (tieringActive && categories.has('temporal')) {
+    parts.push(`
+**More tools available:** Ask about time, history, evolution, or stale notes to unlock temporal tools.`);
+  }
+
+  if (isCategoryVisible('diagnostics')) {
+    parts.push(`
+## Diagnostics
+
+Use "health_check", "flywheel_doctor", and "pipeline_status" to inspect server and indexing health.
+Use "get_vault_stats", "refresh_index", and "server_log" for operational visibility.
+Use "flywheel_config" to inspect runtime configuration and set "tool_tier_override" to "auto", "full", or "minimal" for this vault.`);
+  }
+  else if (tieringActive && categories.has('diagnostics')) {
+    parts.push(`
+**More tools available:** Ask about vault health, indexing, status, or configuration to unlock diagnostic tools.
+**Advanced tools:** Ask to unlock note operations or deep diagnostics for note mutations, benchmarks, history, graph exports, and learning reports.`);
   }
 
   return parts.join('\n');

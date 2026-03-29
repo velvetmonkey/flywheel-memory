@@ -92,6 +92,7 @@ for i in "${!BEAT_NAMES[@]}"; do
   echo "Expected tools: $expected"
 
   # Run claude with the prompt
+  mkdir -p "$RESULTS_DIR/raw"
   if claude -p "$prompt" \
     --output-format stream-json \
     --no-session-persistence \
@@ -130,5 +131,5 @@ echo ""
 # Run analysis if script exists
 if [ -f "$SCRIPT_DIR/analyze-demo-test.py" ]; then
   echo "Running analysis..."
-  python3 "$SCRIPT_DIR/analyze-demo-test.py" "$RESULTS_DIR"
+  python3 "$SCRIPT_DIR/analyze-demo-test.py" "$RESULTS_DIR" || echo "WARN: analysis failed — raw results at $RESULTS_DIR/raw/"
 fi

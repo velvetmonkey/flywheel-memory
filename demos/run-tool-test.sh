@@ -73,7 +73,11 @@ EOF
       --mcp-config <(echo "$mcp_config") \
       --strict-mcp-config \
       --model "$MODEL" \
-      2>/dev/null > "$out" || true
+      2>"${out%.jsonl}.stderr" > "$out" || true
+
+    if [[ ! -s "$out" ]]; then
+      echo "  WARN: empty output for $name run $run — check ${out%.jsonl}.stderr"
+    fi
 
     sleep 3  # rate limiting buffer
   done
@@ -82,8 +86,10 @@ done
 echo ""
 echo "All runs complete. Analyzing..."
 
-python3 "$SCRIPT_DIR/analyze-tool-test.py" "$RESULTS_DIR" > "$RESULTS_DIR/report.md"
-
-echo "Report: $RESULTS_DIR/report.md"
-echo ""
-cat "$RESULTS_DIR/report.md"
+if python3 "$SCRIPT_DIR/analyze-tool-test.py" "$RESULTS_DIR" > "$RESULTS_DIR/report.md" 2>&1; then
+  echo "Report: $RESULTS_DIR/report.md"
+  echo ""
+  cat "$RESULTS_DIR/report.md"
+else
+  echo "WARN: Analysis script failed — raw results at $RESULTS_DIR/raw/"
+fi

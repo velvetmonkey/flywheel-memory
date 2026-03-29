@@ -9,9 +9,17 @@ Flywheel Memory is that infrastructure.
 - [The State of Knowledge Work](#the-state-of-knowledge-work)
 - [How It Works in Practice](#how-it-works-in-practice)
 - [The Flywheel Effect](#the-flywheel-effect)
+  - [Density Drives Quality](#density-drives-quality)
 - [The Principles](#the-principles)
+  - [Local-first: your trust guarantee](#local-first-your-trust-guarantee)
+  - [Markdown is truth: zero lock-in](#markdown-is-truth-zero-lock-in)
+  - [Zero config: using it in 30 seconds](#zero-config-using-it-in-30-seconds)
+  - [Deterministic: every suggestion is verifiable](#deterministic-every-suggestion-is-verifiable)
 - [Who Builds With Flywheel](#who-builds-with-flywheel)
 - [The Ecosystem](#the-ecosystem)
+  - [Flywheel Memory](#flywheel-memory)
+  - [Vault-Core](#vault-core)
+  - [MCP](#mcp)
 
 ---
 

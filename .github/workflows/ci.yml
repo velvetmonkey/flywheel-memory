@@ -320,6 +320,7 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         timeout-minutes: 5
+        shell: bash
         run: |
           for i in 1 2 3; do
             npm ci && break

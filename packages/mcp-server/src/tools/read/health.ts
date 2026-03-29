@@ -927,8 +927,7 @@ export function registerHealthTools(
     {
       title: 'Flywheel Doctor',
       description:
-        'Run comprehensive vault diagnostics and produce a one-page report. ' +
-        'Actively checks for problems (unlike health_check which reports status). ' +
+        'Is anything broken? Actively checks for problems (unlike health_check which reports status) ' +
         'Checks: schema version, index freshness, embedding coverage, suppression health, ' +
         'cache freshness, FTS5 integrity, watcher state, and disk usage.',
       inputSchema: {},
@@ -1194,7 +1193,7 @@ export function registerHealthTools(
     {
       title: 'Flywheel Trust Report',
       description:
-        'Auditable manifest of what this server can do and what it has done. ' +
+        'What can this server do and what has it done? ' +
         'Returns active config/preset, enabled tool categories, transport mode, ' +
         'recent write operations, and enforced boundaries. ' +
         'Supports the cognitive sovereignty thesis with verifiable transparency.',
@@ -1285,7 +1284,7 @@ export function registerHealthTools(
     {
       title: 'Flywheel Benchmark',
       description:
-        'Run, record, and trend longitudinal performance benchmarks. ' +
+        'Is the server getting slower? Runs, records, and trends longitudinal performance benchmarks. ' +
         'Modes: "run" executes live benchmarks (search latency, entity lookup, index/watcher timing) and records results; ' +
         '"history" shows past benchmark results; "trends" shows regression/improvement analysis over time.',
       inputSchema: {

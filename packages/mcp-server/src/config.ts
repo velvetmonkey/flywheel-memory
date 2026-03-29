@@ -378,15 +378,19 @@ export function generateInstructions(
   parts.push(`Flywheel provides tools to search, read, and write an Obsidian vault's knowledge graph.
 
 Tool selection:
-  1. "search" is the primary tool. One call searches notes, entities, and memories.
-     Each result carries: type (note/entity/memory), frontmatter, tags, aliases,
-     backlinks (ranked by edge weight × recency), outlinks (existence-checked),
-     section provenance, extracted dates, entity bridges, confidence scores,
-     content snippet or preview, entity category, hub score, and timestamps.
+  1. "search" is the primary tool for content lookup. One call searches notes,
+     entities, and memories. Each result carries: type (note/entity/memory),
+     frontmatter, tags, aliases, backlinks (ranked by edge weight × recency),
+     outlinks (existence-checked), section provenance, extracted dates, entity
+     bridges, confidence scores, content snippet or preview, entity category,
+     hub score, and timestamps.
      This is a decision surface — usually enough to answer without reading any files.
-  2. Escalate to "get_note_structure" only when you need the full markdown content
+  2. For structural, temporal, wikilink, or diagnostic questions, use the
+     specialized tools in those categories instead of search with filters.
+     See the category sections below.
+  3. Escalate to "get_note_structure" only when you need the full markdown content
      or word count. Use "get_section_content" to read one section by heading name.
-  3. Start with a broad search: just query text, no filters. Only add folder, tag,
+  4. Start with a broad search: just query text, no filters. Only add folder, tag,
      or frontmatter filters to narrow a second search if needed.`);
 
   // Onboarding hint: nudge init_semantic if embeddings aren't built
@@ -532,9 +536,15 @@ Use "note_intelligence" for per-note analysis (completeness, quality, suggestion
     parts.push(`
 ## Wikilinks
 
-Use "suggest_wikilinks" to analyze draft text for existing entities that should be linked.
-Use "validate_links" to find broken or suspicious wikilinks.
-Use "discover_stub_candidates", "discover_cooccurrence_gaps", and "unlinked_mentions_report" to surface missing concept notes and high-ROI linking opportunities.`);
+Link quality and discovery — not for finding content (use search for that).
+
+- "What should be linked?" → unlinked_mentions_report (vault-wide linking opportunities)
+- "Suggest links for this note" → suggest_wikilinks (per-note entity mention analysis)
+- "Are any links broken?" → validate_links (dead links + fix suggestions)
+- "What topics need their own notes?" → discover_stub_candidates (frequently-linked but non-existent)
+- "What entities appear together?" → discover_cooccurrence_gaps (co-occurring but unlinked pairs)
+- "Was that link correct?" → wikilink_feedback (accept/reject, improves future suggestions)
+- "What aliases am I missing?" → suggest_entity_aliases (acronyms, short forms, alternate names)`);
   }
   else if (tieringActive && categories.has('wikilinks')) {
     parts.push(`
@@ -545,8 +555,11 @@ Use "discover_stub_candidates", "discover_cooccurrence_gaps", and "unlinked_ment
     parts.push(`
 ## Corrections
 
-Use "vault_record_correction" to store a persistent correction when Flywheel made a bad link or edit.
-Use "vault_list_corrections" and "vault_resolve_correction" to review or close correction records.
+When the user says something is wrong — a bad link, wrong entity, wrong category:
+
+"vault_record_correction" persists a correction for future sessions.
+"vault_list_corrections" shows pending/applied/dismissed corrections.
+"vault_resolve_correction" marks a correction as applied or dismissed.
 Use "absorb_as_alias" when two names should resolve to the same entity without merging note bodies.`);
   }
   else if (tieringActive && categories.has('corrections')) {
@@ -558,9 +571,15 @@ Use "absorb_as_alias" when two names should resolve to the same entity without m
     parts.push(`
 ## Temporal
 
-Use "get_context_around_date" to reconstruct vault activity around a specific date.
-Use "predict_stale_notes" to identify important notes that likely need review.
-Use "track_concept_evolution" and "temporal_summary" for history, momentum, and review-period summaries.`);
+Search date filters (modified_after/modified_before) find content within a date range.
+Temporal tools analyze *patterns and changes* over time — use them for "what changed" not "what exists":
+
+- "What happened last week/month?" → temporal_summary (activity + entity momentum + maintenance alerts)
+- "How has X changed/evolved?" → track_concept_evolution (entity timeline: links, feedback, category shifts)
+- "What was I working on around March 15?" → get_context_around_date (notes, entities, activity in a window)
+- "What notes need attention?" → predict_stale_notes (importance × staleness → archive/update/review)
+
+temporal_summary composes the other three — use it for weekly/monthly reviews.`);
   }
   else if (tieringActive && categories.has('temporal')) {
     parts.push(`
@@ -571,8 +590,13 @@ Use "track_concept_evolution" and "temporal_summary" for history, momentum, and 
     parts.push(`
 ## Diagnostics
 
-Use "health_check", "flywheel_doctor", and "pipeline_status" to inspect server and indexing health.
-Use "get_vault_stats", "refresh_index", and "server_log" for operational visibility.
+ - Triage: "health_check" (quick status) → "flywheel_doctor" (active problem detection) → "server_log" (event timeline)
+ - Stats: "get_vault_stats" (counts), "vault_growth" (trends over time), "get_folder_structure" (organization)
+ - Activity: "vault_activity" (tool usage), "vault_session_history" (session detail), "vault_entity_history" (entity timeline)
+ - System: "flywheel_trust_report" (config + boundaries), "flywheel_benchmark" (performance), "flywheel_learning_report" (auto-linking effectiveness)
+ - Entities: "suggest_entity_merges" (duplicates), "get_all_entities" (full list), "get_unlinked_mentions" (linking opportunities)
+ - Maintenance: "refresh_index" (rebuild), "flywheel_config" (settings), "vault_init" (first-time setup)
+
 Use "flywheel_config" to inspect runtime configuration and set "tool_tier_override" to "auto", "full", or "minimal" for this vault.`);
   }
   else if (tieringActive && categories.has('diagnostics')) {

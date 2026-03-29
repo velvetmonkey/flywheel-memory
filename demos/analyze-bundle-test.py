@@ -28,7 +28,7 @@ TOOL_CATEGORY = {
     "vault_create_note": "write",
     "vault_undo_last_mutation": "write",
     "policy": "write",
-    # graph (10 tools)
+    # graph (11 tools)
     "graph_analysis": "graph",
     "semantic_analysis": "graph",
     "get_backlinks": "graph",
@@ -39,6 +39,7 @@ TOOL_CATEGORY = {
     "get_common_neighbors": "graph",
     "get_weighted_links": "graph",
     "get_strong_connections": "graph",
+    "export_graph": "graph",
     # schema (7 tools)
     "vault_schema": "schema",
     "schema_conventions": "schema",
@@ -77,7 +78,7 @@ TOOL_CATEGORY = {
     "predict_stale_notes": "temporal",
     "track_concept_evolution": "temporal",
     "temporal_summary": "temporal",
-    # diagnostics (20 tools)
+    # diagnostics (21 tools)
     "health_check": "diagnostics",
     "get_vault_stats": "diagnostics",
     "get_folder_structure": "diagnostics",
@@ -92,6 +93,13 @@ TOOL_CATEGORY = {
     "dismiss_merge_suggestion": "diagnostics",
     "vault_init": "diagnostics",
     "flywheel_doctor": "diagnostics",
+    "flywheel_trust_report": "diagnostics",
+    "flywheel_benchmark": "diagnostics",
+    "pipeline_status": "diagnostics",
+    "vault_session_history": "diagnostics",
+    "vault_entity_history": "diagnostics",
+    "flywheel_learning_report": "diagnostics",
+    "flywheel_calibration_export": "diagnostics",
 }
 
 # Reverse: category → list of tools

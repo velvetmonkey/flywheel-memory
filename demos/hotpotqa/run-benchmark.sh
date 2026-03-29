@@ -7,7 +7,6 @@
 # Usage:
 #   demos/hotpotqa/run-benchmark.sh                    # default: 50 questions, sonnet
 #   COUNT=20 demos/hotpotqa/run-benchmark.sh           # fewer questions (faster/cheaper)
-#   MODEL=opus demos/hotpotqa/run-benchmark.sh         # use opus
 
 set -euo pipefail
 
@@ -16,7 +15,7 @@ REPO_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 MCP_SERVER="$REPO_DIR/packages/mcp-server/dist/index.js"
 VAULT_DIR="$SCRIPT_DIR/vault"
 GROUND_TRUTH="$SCRIPT_DIR/ground-truth.json"
-MODEL="${MODEL:-sonnet}"
+MODEL="sonnet"
 COUNT="${COUNT:-50}"
 SEED="${SEED:-42}"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)

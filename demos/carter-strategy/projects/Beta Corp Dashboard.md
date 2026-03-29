@@ -28,7 +28,7 @@ Analytics dashboard for Beta Corp's operations team. Design complete, developmen
 
 **Phase**: Development (60% complete)
 **Health**: On Track
-**Client demo**: Scheduled 2026-03-26
+**Client demo**: Rescheduled — 2026-04-01
 
 ### Completed Modules
 1. Overview Dashboard ✅
@@ -53,7 +53,7 @@ Analytics dashboard for Beta Corp's operations team. Design complete, developmen
 | Requirements | Dec 2025 | ✅ Complete |
 | Design | Jan 2026 | ✅ Complete |
 | Development | Mar 2026 | 🔄 60% (3/5 modules) |
-| Client Demo | 2026-03-26 | ⏳ Scheduled |
+| Client Demo | 2026-04-01 | ⏳ Rescheduled |
 | Deployment | Apr 2026 | ⏳ Planned |
 
 ## Financial
@@ -66,16 +66,16 @@ Analytics dashboard for Beta Corp's operations team. Design complete, developmen
 
 ## Tasks
 
-- [ ] [[Dan Oliveira]] to demo Pipeline module to [[Stacy Thompson]] 📅 2026-03-21
+- [ ] [[Dan Oliveira]] to demo Pipeline module to [[Stacy Thompson]] 📅 2026-03-31
 - [ ] Complete Team Utilization module 📅 2026-03-24
-- [ ] Client demo preparation 📅 2026-03-25
-- [ ] Client demo 📅 2026-03-26
+- [ ] Client demo preparation 📅 2026-03-31
+- [ ] Client demo 📅 2026-04-01
 - [ ] Complete Client Health module 📅 2026-04-04
 
 ## Notes
 
 - [[Dan Oliveira]] finished Pipeline module, wants to demo to [[Stacy Thompson]] before client presentation
-- Client demo next Wednesday (2026-03-26)
+- Client demo next Wednesday (2026-04-01)
 - [[Stacy Thompson]] handling frontend/UX, [[Dan Oliveira]] on backend/API
 
 ## Related
@@ -86,4 +86,4 @@ Analytics dashboard for Beta Corp's operations team. Design complete, developmen
 
 ---
 
-*Last updated: 2026-03-20*
+*Last updated: 2026-03-29*

@@ -89,7 +89,7 @@ bash demos/run-tool-test.sh
 
 Options:
 - `RUNS=5` — runs per demo (default: 3)
-- `MODEL=opus` — model to test (default: sonnet)
+- Claude test runners are pinned to `sonnet`
 
 Results are saved to `demos/test-results/<timestamp>/`:
 - `report.md` — aggregate tool-usage metrics

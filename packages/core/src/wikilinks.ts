@@ -308,7 +308,7 @@ function shouldExcludeEntity(entity: string, isAlias = false): boolean {
  * Words that are always capitalized in English — case-sensitive matching
  * cannot distinguish proper-noun vs common usage for these.
  */
-const ALWAYS_CAPITALIZED = new Set([
+export const ALWAYS_CAPITALIZED = new Set([
   // Day names
   'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
   // Month names
@@ -326,7 +326,7 @@ const ALWAYS_CAPITALIZED = new Set([
  * These terms are allowed through exclusion but matched case-sensitively.
  * e.g. "REST" (common word "rest") → match only "REST" in content, not "rest"
  */
-function isCommonWordEntity(entity: string): boolean {
+export function isCommonWordEntity(entity: string): boolean {
   const lower = entity.toLowerCase();
   if (!getMergedExcludeWords().has(lower)) return false;
   if (entity === lower) return false; // all-lowercase → stay excluded

@@ -11,7 +11,7 @@ import { resolveTarget } from '../../core/read/graph.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { suggestRelatedLinks, getCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { countFTS5Mentions } from '../../core/read/fts5.js';
-import { detectImplicitEntities, COMMON_ENGLISH_WORDS } from '@velvetmonkey/vault-core';
+import { detectImplicitEntities, COMMON_ENGLISH_WORDS, isCommonWordEntity } from '@velvetmonkey/vault-core';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD, isAiConfigEntity, AI_CONFIG_PRIOR_ALPHA } from '../../core/write/wikilinkFeedback.js';
 
@@ -48,7 +48,7 @@ interface ProspectMatch {
  * - Avoids matching inside HTML tags and comments
  * - Matches longest entities first (e.g., "Claude Code" before "Claude")
  */
-function findEntityMatches(text: string, entities: Map<string, string>): EntityMatch[] {
+function findEntityMatches(text: string, entities: Map<string, string>, commonWordKeys: Set<string> = new Set()): EntityMatch[] {
   const matches: EntityMatch[] = [];
 
   // Build list of entities sorted by length (longest first)
@@ -159,6 +159,13 @@ function findEntityMatches(text: string, entities: Map<string, string>): EntityM
       if (isWordBoundaryBefore && isWordBoundaryAfter && !shouldSkip(pos, end)) {
         // Get the original case from the text
         const originalText = text.substring(pos, end);
+
+        // Common-word entities require case-sensitive matching
+        // e.g., "rest" in text should not match REST entity, but "REST" or "Rest" should
+        if (commonWordKeys.has(entityLower) && originalText === originalText.toLowerCase()) {
+          searchStart = pos + 1;
+          continue;
+        }
 
         matches.push({
           entity: originalText,
@@ -275,7 +282,21 @@ export function registerWikilinkTools(
       const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
       requireIndex();
       const index = getIndex();
-      const allMatches = findEntityMatches(text, index.entities);
+
+      // Build set of entity keys that are common words requiring case-sensitive match
+      const commonWordKeys = new Set<string>();
+      for (const note of index.notes.values()) {
+        if (isCommonWordEntity(note.title)) {
+          commonWordKeys.add(note.title.toLowerCase());
+        }
+        for (const alias of note.aliases) {
+          if (isCommonWordEntity(alias)) {
+            commonWordKeys.add(alias.toLowerCase());
+          }
+        }
+      }
+
+      const allMatches = findEntityMatches(text, index.entities, commonWordKeys);
       const matches = allMatches.slice(offset, offset + limit);
 
       // Build set of already-linked entities for exclusion

@@ -294,6 +294,58 @@ describe('Wikilink Suggestion Tool', () => {
       expect(data.suggestions.length).toBeGreaterThan(0);
     });
   });
+
+  describe('Common-word entity matching', () => {
+    test('lowercase rest does NOT appear in suggestions', async () => {
+      const result = await client.callTool('suggest_wikilinks', {
+        text: 'I need to rest after work.',
+      });
+
+      const data = JSON.parse(result.content[0].text);
+      const restMatch = data.suggestions.find(
+        (s: { entity: string }) => s.entity.toLowerCase() === 'rest'
+      );
+      expect(restMatch).toBeUndefined();
+    });
+
+    test('uppercase REST DOES appear in suggestions', async () => {
+      const result = await client.callTool('suggest_wikilinks', {
+        text: 'The REST API endpoint handles authentication.',
+      });
+
+      const data = JSON.parse(result.content[0].text);
+      const restMatch = data.suggestions.find(
+        (s: { entity: string }) => s.entity === 'REST'
+      );
+      expect(restMatch).toBeDefined();
+      expect(restMatch.target).toMatch(/REST\.md$/);
+    });
+
+    test('mixed text: only uppercase instance matches', async () => {
+      const result = await client.callTool('suggest_wikilinks', {
+        text: 'I need to rest. The REST API works great.',
+      });
+
+      const data = JSON.parse(result.content[0].text);
+      const restMatches = data.suggestions.filter(
+        (s: { entity: string }) => s.entity.toLowerCase() === 'rest'
+      );
+      expect(restMatches).toHaveLength(1);
+      expect(restMatches[0].entity).toBe('REST');
+    });
+
+    test('alias RESTful matches case-insensitively', async () => {
+      const result = await client.callTool('suggest_wikilinks', {
+        text: 'We designed a RESTful architecture for the service.',
+      });
+
+      const data = JSON.parse(result.content[0].text);
+      const match = data.suggestions.find(
+        (s: { entity: string }) => s.entity.toLowerCase() === 'restful'
+      );
+      expect(match).toBeDefined();
+    });
+  });
 });
 
 describe('Link Validation Tool', () => {

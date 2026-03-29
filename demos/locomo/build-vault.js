@@ -72,6 +72,20 @@ function parseDateTime(str) {
   };
 }
 
+function formatSessionDateText(isoDate) {
+  if (!isoDate) return '';
+  const months = {
+    '01':'January','02':'February','03':'March','04':'April',
+    '05':'May','06':'June','07':'July','08':'August',
+    '09':'September','10':'October','11':'November','12':'December',
+  };
+  const [year, month, day] = isoDate.split('-');
+  const monthName = months[month] || month;
+  const dayNum = parseInt(day, 10);
+  return `Session date: ${monthName} ${dayNum}, ${year} (${isoDate}, ${monthName} ${year})`;
+}
+
+
 function buildDialogNote(session, speakerA, speakerB) {
   const { date, time } = parseDateTime(session.date_time);
   const pad = String(session.session_num).padStart(2, '0');
@@ -81,6 +95,8 @@ function buildDialogNote(session, speakerA, speakerB) {
   lines.push(`speakers: [${speakerA}, ${speakerB}]`, `session: ${session.session_num}`, '---', '');
   lines.push(`# Session ${pad} — ${speakerA} & ${speakerB}`, '');
   if (session.date_time) lines.push(`*${session.date_time}*`, '');
+  const dateText = formatSessionDateText(date);
+  if (dateText) lines.push(dateText, '');
   for (const turn of session.turns) {
     lines.push(`**${turn.speaker}:** ${turn.text}`, '');
   }
@@ -96,6 +112,8 @@ function buildObservationNote(session, speakerA, speakerB, entry) {
   if (time) lines.push(`time: "${time}"`);
   lines.push(`speakers: [${speakerA}, ${speakerB}]`, `session: ${session.session_num}`, 'type: observation', '---', '');
   lines.push(`# Session ${pad} — Observations`, '');
+  const dateText = formatSessionDateText(date);
+  if (dateText) lines.push(dateText, '');
 
   const obs = entry.observation;
   const obsKey = `${sessionKey}_observation`;
@@ -135,6 +153,8 @@ function buildSummaryNote(session, speakerA, speakerB, entry) {
   if (time) lines.push(`time: "${time}"`);
   lines.push(`speakers: [${speakerA}, ${speakerB}]`, `session: ${session.session_num}`, 'type: summary', '---', '');
   lines.push(`# Session ${pad} Summary`, '');
+  const dateText = formatSessionDateText(date);
+  if (dateText) lines.push(dateText, '');
 
   const summaries = entry.session_summary;
   if (summaries && summaries[sessionKey]) {

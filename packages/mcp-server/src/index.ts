@@ -22,6 +22,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { performance } from 'node:perf_hooks';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -160,6 +161,18 @@ let watcherInstance: VaultWatcher | null = null;
 // Multi-vault registry (populated in main())
 let vaultRegistry: VaultRegistry | null = null;
 
+/** HTTP listener handle for graceful shutdown */
+let httpListener: ReturnType<typeof import('net').createServer> | null = null;
+
+/** Watchdog self-ping timer */
+let watchdogTimer: ReturnType<typeof setInterval> | null = null;
+
+/** True once primary vault boot completes */
+let serverReady = false;
+
+/** Set during graceful shutdown to suppress watchdog exit */
+let shutdownRequested = false;
+
 /** Current watcher status (live — reads state at call time, not a stale snapshot). */
 export function getWatcherStatus(): WatcherStatus | null {
   if (vaultRegistry) {
@@ -209,6 +222,48 @@ function createConfiguredServer(): McpServer {
   applyToolGating(s, enabledCategories, ctx.getStateDb, vaultRegistry, ctx.getVaultPath, buildVaultCallbacks());
   registerAllTools(s, ctx);
   return s;
+}
+
+// ============================================================================
+// HTTP McpServer Pool
+// ============================================================================
+
+const HTTP_POOL_SIZE = 4;
+const httpServerPool: McpServer[] = [];
+let httpRequestCount = 0;
+let httpServerCreateCount = 0;
+let httpServerReuseCount = 0;
+let httpServerDiscardCount = 0;
+
+function acquireHttpServer(): McpServer {
+  const pooled = httpServerPool.pop();
+  if (pooled) {
+    httpServerReuseCount++;
+    return pooled;
+  }
+  httpServerCreateCount++;
+  return createConfiguredServer();
+}
+
+function releaseHttpServer(s: McpServer): void {
+  if (httpServerPool.length < HTTP_POOL_SIZE) {
+    httpServerPool.push(s);
+  }
+  // else silently discard — pool is full
+}
+
+function discardHttpServer(_s: McpServer): void {
+  httpServerDiscardCount++;
+  // Do not requeue — instance may be in a bad state
+}
+
+/** Invalidate all pooled servers (e.g. after secondary vault registration). */
+export function invalidateHttpPool(): void {
+  const count = httpServerPool.length;
+  httpServerPool.length = 0;
+  if (count > 0) {
+    serverLog('http', `Pool invalidated: discarded ${count} cached server(s)`);
+  }
 }
 
 // ============================================================================
@@ -557,24 +612,67 @@ async function main() {
 
     const app = createMcpExpressApp({ host: httpHost });
 
-    // Stateless HTTP — per-request McpServer + StreamableHTTPServerTransport
+    // HTTP — pooled McpServer + per-request StreamableHTTPServerTransport
     app.post('/mcp', async (req: any, res: any) => {
-      const httpServer = createConfiguredServer();
+      const t0 = performance.now();
+      const httpServer = acquireHttpServer();
+      const acquireMs = performance.now() - t0;
+
       const httpTransport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
-      await httpServer.connect(httpTransport);
-      await httpTransport.handleRequest(req, res, req.body);
-      res.on('close', () => { httpTransport.close(); httpServer.close(); });
+      let cleanExit = false;
+      try {
+        await httpServer.connect(httpTransport);
+        const connectMs = performance.now() - t0;
+        httpRequestCount++;
+        await httpTransport.handleRequest(req, res, req.body);
+        cleanExit = true;
+        const totalMs = performance.now() - t0;
+        if (totalMs > 25 || acquireMs > 5 || (connectMs - acquireMs) > 5) {
+          serverLog('http', `request: acquire=${acquireMs.toFixed(1)}ms connect=${(connectMs - acquireMs).toFixed(1)}ms total=${totalMs.toFixed(1)}ms`);
+        }
+      } catch (err) {
+        serverLog('http', `request error: ${err instanceof Error ? err.message : err}`, 'error');
+      } finally {
+        try { await httpTransport.close(); } catch { /* best-effort */ }
+        try { await httpServer.close(); } catch { /* best-effort */ }
+        if (cleanExit) {
+          releaseHttpServer(httpServer);
+        } else {
+          discardHttpServer(httpServer);
+        }
+      }
     });
 
     app.get('/health', (_req: any, res: any) => {
-      const health: Record<string, unknown> = { status: 'ok', version: pkg.version, vault: vaultPath };
+      const mem = process.memoryUsage();
+      const health: Record<string, unknown> = {
+        status: 'ok',
+        version: pkg.version,
+        vault: vaultPath,
+        ready: serverReady,
+        uptime_s: Math.round(process.uptime()),
+        memory: {
+          rss_mb: Math.round(mem.rss / 1048576),
+          heap_used_mb: Math.round(mem.heapUsed / 1048576),
+          heap_total_mb: Math.round(mem.heapTotal / 1048576),
+          external_mb: Math.round(mem.external / 1048576),
+        },
+        http: {
+          requests: httpRequestCount,
+          pool_available: httpServerPool.length,
+          pool_max: HTTP_POOL_SIZE,
+          servers_created: httpServerCreateCount,
+          servers_reused: httpServerReuseCount,
+          servers_discarded: httpServerDiscardCount,
+        },
+      };
       if (vaultRegistry?.isMultiVault) {
         health.vaults = vaultRegistry.getVaultNames();
       }
       res.json(health);
     });
 
-    app.listen(httpPort, httpHost, () => {
+    httpListener = app.listen(httpPort, httpHost, () => {
       serverLog('server', `HTTP transport on ${httpHost}:${httpPort}`);
     });
   }
@@ -587,6 +685,60 @@ async function main() {
   // Re-activate after boot so fallback scope reflects post-boot state (config, index, etc.)
   activateVault(primaryCtx);
 
+  serverReady = true;
+
+  // ── Optional watchdog self-ping ──
+  const watchdogInterval = parseInt(process.env.FLYWHEEL_WATCHDOG_INTERVAL ?? '0', 10);
+  if (watchdogInterval > 0 && (transportMode === 'http' || transportMode === 'both')) {
+    let consecutiveFailures = 0;
+    const httpPort = parseInt(process.env.FLYWHEEL_HTTP_PORT ?? '3111', 10);
+    const http = await import('http');
+    watchdogTimer = setInterval(() => {
+      if (shutdownRequested) return;
+      const req = http.get(`http://127.0.0.1:${httpPort}/health`, { timeout: 5000 }, (res) => {
+        let body = '';
+        res.on('data', (chunk: Buffer) => { body += chunk; });
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(body);
+            if (res.statusCode === 200 && parsed.status === 'ok' && parsed.ready === true) {
+              consecutiveFailures = 0;
+            } else {
+              consecutiveFailures++;
+              serverLog('watchdog', `Health check degraded (${consecutiveFailures}/3): status=${parsed.status} ready=${parsed.ready}`, 'warn');
+            }
+          } catch {
+            consecutiveFailures++;
+            serverLog('watchdog', `Health check parse error (${consecutiveFailures}/3)`, 'warn');
+          }
+          if (consecutiveFailures >= 3) {
+            serverLog('watchdog', `3 consecutive health check failures — exiting for systemd restart`, 'error');
+            process.exit(1);
+          }
+        });
+      });
+      req.on('error', () => {
+        consecutiveFailures++;
+        serverLog('watchdog', `Health check failed (${consecutiveFailures}/3): request error`, 'warn');
+        if (consecutiveFailures >= 3) {
+          serverLog('watchdog', `3 consecutive health check failures — exiting for systemd restart`, 'error');
+          process.exit(1);
+        }
+      });
+      req.on('timeout', () => {
+        req.destroy();
+        consecutiveFailures++;
+        serverLog('watchdog', `Health check timeout (${consecutiveFailures}/3)`, 'warn');
+        if (consecutiveFailures >= 3) {
+          serverLog('watchdog', `3 consecutive health check failures — exiting for systemd restart`, 'error');
+          process.exit(1);
+        }
+      });
+    }, watchdogInterval);
+    watchdogTimer.unref();
+    serverLog('watchdog', `Self-ping watchdog started (interval=${watchdogInterval}ms)`);
+  }
+
   // ── Phase 4: Initialize + boot secondary vaults (background) ──
   if (vaultConfigs && vaultConfigs.length > 1) {
     const secondaryConfigs = vaultConfigs.slice(1);
@@ -596,6 +748,7 @@ async function main() {
         try {
           const ctx = await initializeVault(vc.name, vc.path);
           vaultRegistry!.addContext(ctx);
+          invalidateHttpPool();
           loadVaultCooccurrence(ctx);
           activateVault(ctx);
           await bootVault(ctx, startTime);
@@ -1204,7 +1357,10 @@ if (process.argv.includes('--init-semantic')) {
 
 // Graceful shutdown on signals (beforeExit does NOT fire on SIGTERM/SIGINT)
 function gracefulShutdown(signal: string) {
+  shutdownRequested = true;
   console.error(`[Memory] Received ${signal}, shutting down...`);
+  if (watchdogTimer) clearInterval(watchdogTimer);
+  if (httpListener) httpListener.close();
   try { watcherInstance?.stop(); } catch {}
   stopSweepTimer();
   flushLogs()

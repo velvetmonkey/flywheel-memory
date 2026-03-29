@@ -60,6 +60,8 @@ export {
   suggestWikilinks,
   detectImplicitEntities,
   findEntityMatches,
+  isCommonWordEntity,
+  ALWAYS_CAPITALIZED,
   IMPLICIT_EXCLUDE_WORDS,
 } from './wikilinks.js';
 

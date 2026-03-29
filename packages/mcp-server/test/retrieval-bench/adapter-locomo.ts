@@ -16,6 +16,14 @@ import { mkdtemp } from 'fs/promises';
 import { openStateDb, deleteStateDb } from '@velvetmonkey/vault-core';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { buildFTS5Index, searchFTS5, setFTS5Database } from '../../src/core/read/fts5.js';
+import {
+  setEmbeddingsDatabase,
+  initEmbeddings,
+  buildEmbeddingsIndex,
+  semanticSearch,
+  hasEmbeddingsIndex,
+  reciprocalRankFusion,
+} from '../../src/core/read/embeddings.js';
 import { setWriteStateDb } from '../../src/core/write/wikilinks.js';
 import { setRecencyStateDb } from '../../src/core/shared/recency.js';
 import type { LoCoMoEntry, LoCoMoSession } from './dataset-locomo.js';
@@ -76,6 +84,25 @@ export function parseSessionDateTime(dateTimeStr: string): { date: string; time:
 }
 
 /**
+ * Format an ISO date and raw datetime string into a human-readable
+ * session date line with multiple search-friendly forms.
+ * E.g. "Session date: May 8, 2023 (2023-05-08, May 2023)"
+ */
+function formatSessionDateText(isoDate: string, rawDateTime: string): string {
+  if (!isoDate) return '';
+  const months: Record<string, string> = {
+    '01': 'January', '02': 'February', '03': 'March', '04': 'April',
+    '05': 'May', '06': 'June', '07': 'July', '08': 'August',
+    '09': 'September', '10': 'October', '11': 'November', '12': 'December',
+  };
+  const [year, month, day] = isoDate.split('-');
+  const monthName = months[month] || month;
+  const dayNum = parseInt(day, 10);
+  return `Session date: ${monthName} ${dayNum}, ${year} (${isoDate}, ${monthName} ${year})`;
+}
+
+
+/**
  * Build a session note in dialog mode (raw conversation turns).
  */
 function buildDialogNote(
@@ -98,6 +125,12 @@ function buildDialogNote(
   lines.push('');
   if (session.date_time) {
     lines.push(`*${session.date_time}*`);
+    lines.push('');
+  }
+
+  const dateText = formatSessionDateText(date, session.date_time);
+  if (dateText) {
+    lines.push(dateText);
     lines.push('');
   }
 
@@ -134,6 +167,12 @@ function buildObservationNote(
   lines.push('');
   lines.push(`# Session ${padded} — Observations`);
   lines.push('');
+
+  const dateText = formatSessionDateText(date, session.date_time);
+  if (dateText) {
+    lines.push(dateText);
+    lines.push('');
+  }
 
   // Try to find observations for this session
   // LoCoMo keys observations as session_N_observation -> speaker -> [items]
@@ -197,6 +236,12 @@ function buildSummaryNote(
   lines.push(`# Session ${padded} Summary`);
   lines.push('');
 
+  const dateText = formatSessionDateText(date, session.date_time);
+  if (dateText) {
+    lines.push(dateText);
+    lines.push('');
+  }
+
   // Try to find summary for this session
   const summaries = entry.session_summary;
   if (summaries && summaries[sessionKey]) {
@@ -223,10 +268,12 @@ export async function buildLoCoMoVault(
   opts?: {
     mode?: VaultMode;
     includeEntityNotes?: boolean;
+    semantic?: boolean;
   },
 ): Promise<LoCoMoVault> {
   const mode = opts?.mode ?? 'dialog';
   const includeEntityNotes = opts?.includeEntityNotes ?? true;
+  const buildSemantic = opts?.semantic ?? false;
 
   const vaultPath = await mkdtemp(path.join(os.tmpdir(), 'flywheel-locomo-'));
   const diaIdToPath = new Map<string, string>();
@@ -295,10 +342,18 @@ export async function buildLoCoMoVault(
   setFTS5Database(stateDb.db);
   await buildFTS5Index(vaultPath);
 
+  // Optional: build semantic embeddings for hybrid search
+  if (buildSemantic) {
+    setEmbeddingsDatabase(stateDb.db);
+    await initEmbeddings();
+    await buildEmbeddingsIndex(vaultPath);
+  }
+
   const cleanup = async () => {
     setWriteStateDb(null);
     setRecencyStateDb(null);
     setFTS5Database(null);
+    setEmbeddingsDatabase(null as any);
     stateDb.close();
     deleteStateDb(vaultPath);
     await rm(vaultPath, { recursive: true, force: true });
@@ -344,6 +399,122 @@ export function runQuery(vaultPath: string, query: string, maxResults: number = 
   } catch {
     return [];
   }
+}
+
+/**
+ * Run a multi-hop retrieval query: initial FTS5, then search within the
+ * same conversation folders for additional evidence.
+ *
+ * Multi-hop LoCoMo questions typically reference a person and a topic.
+ * Evidence is often spread across sessions in the same conversation folder.
+ * After the first FTS5 pass, we extract the conversation folder(s) from
+ * top results and run a second FTS5 pass restricted to those folders.
+ */
+export function runMultiHopQuery(vaultPath: string, query: string, maxResults: number = 20): string[] {
+  // First hop: standard FTS5
+  const words = query.toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(w => w.length >= 3)
+    .filter(w => !STOP_WORDS.has(w));
+
+  if (words.length === 0) return [];
+
+  const fts5Query = words.join(' OR ');
+  let firstResults: Array<{ path: string; snippet?: string; title?: string }>;
+  try {
+    firstResults = searchFTS5(vaultPath, fts5Query, maxResults);
+  } catch {
+    return [];
+  }
+
+  const firstPaths = firstResults.map(r => r.path);
+  if (firstResults.length === 0) return firstPaths;
+
+  // Extract conversation folders from top results
+  const convFolders = new Set<string>();
+  for (const r of firstResults.slice(0, 5)) {
+    const match = r.path.match(/^(conversations\/[^/]+)\//);
+    if (match) convFolders.add(match[1]);
+  }
+
+  if (convFolders.size === 0) return firstPaths;
+
+  // Build a broader query: use all content words (not just FTS5-filtered)
+  // plus try individual key terms to catch sessions that discuss the topic
+  // without using the exact question phrasing
+  const keyTerms = words.filter(w => w.length >= 4);
+  if (keyTerms.length === 0) return firstPaths;
+
+  // Second hop: search each conversation folder with individual key terms
+  // This catches sessions where the topic is discussed but the person name
+  // might not appear (e.g., the other speaker recounts what they said)
+  const seen = new Set(firstPaths);
+  const merged = [...firstPaths];
+
+  for (const folder of convFolders) {
+    for (const term of keyTerms.slice(0, 4)) {
+      try {
+        const results = searchFTS5(vaultPath, term, maxResults * 2);
+        for (const r of results) {
+          if (!seen.has(r.path) && r.path.startsWith(folder + '/')) {
+            merged.push(r.path);
+            seen.add(r.path);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  return merged.slice(0, maxResults);
+}
+
+/**
+ * Run a hybrid retrieval query: FTS5 + semantic search merged via RRF.
+ * Requires the vault to have been built with { semantic: true }.
+ */
+export async function runHybridQuery(vaultPath: string, query: string, maxResults: number = 20): Promise<string[]> {
+  // FTS5 leg
+  const words = query.toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(w => w.length >= 3)
+    .filter(w => !STOP_WORDS.has(w));
+
+  let fts5Results: Array<{ path: string }> = [];
+  if (words.length > 0) {
+    const fts5Query = words.join(' OR ');
+    try {
+      fts5Results = searchFTS5(vaultPath, fts5Query, maxResults * 2);
+    } catch {
+      // FTS5 failure — proceed with semantic only
+    }
+  }
+
+  // Semantic leg
+  let semResults: Array<{ path: string }> = [];
+  if (hasEmbeddingsIndex()) {
+    try {
+      semResults = await semanticSearch(query, maxResults * 2);
+    } catch {
+      // Semantic failure — proceed with FTS5 only
+    }
+  }
+
+  if (fts5Results.length === 0 && semResults.length === 0) return [];
+
+  // Merge via Reciprocal Rank Fusion
+  const rrfScores = reciprocalRankFusion(fts5Results, semResults);
+
+  // Sort by RRF score descending
+  const sorted = Array.from(rrfScores.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, maxResults)
+    .map(([path]) => path);
+
+  return sorted;
 }
 
 const STOP_WORDS = new Set([

@@ -10,7 +10,8 @@ export type LogLevel = 'info' | 'warn' | 'error';
 export type LogComponent =
   | 'server' | 'index' | 'fts5' | 'semantic'
   | 'tasks' | 'watcher' | 'statedb' | 'config'
-  | 'git' | 'hints' | 'policy' | 'sweep' | 'backup';
+  | 'git' | 'hints' | 'policy' | 'sweep' | 'backup' | 'http'
+  | 'watchdog';
 
 export interface LogEntry {
   ts: number;

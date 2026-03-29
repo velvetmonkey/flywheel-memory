@@ -22,6 +22,11 @@ export interface PipelineStep {
   skip_reason?: string;
 }
 
+/** Tagged result from a step function used by runStep(). */
+export type StepRunResult =
+  | { kind: 'done'; output: Record<string, unknown> }
+  | { kind: 'skipped'; reason: string; output?: Record<string, unknown> };
+
 export function createStepTracker() {
   const steps: PipelineStep[] = [];
   let current: { name: string; input: Record<string, unknown>; startTime: number } | null = null;
@@ -33,6 +38,19 @@ export function createStepTracker() {
     end(output: Record<string, unknown>) {
       if (!current) return;
       steps.push({ name: current.name, duration_ms: Date.now() - current.startTime, input: current.input, output });
+      current = null;
+    },
+    /** Close an already-started step as skipped without leaving current dangling. */
+    skipCurrent(reason: string, output?: Record<string, unknown>) {
+      if (!current) return;
+      steps.push({
+        name: current.name,
+        duration_ms: Date.now() - current.startTime,
+        input: current.input,
+        output: output ?? {},
+        skipped: true,
+        skip_reason: reason,
+      });
       current = null;
     },
     skip(name: string, reason: string) {

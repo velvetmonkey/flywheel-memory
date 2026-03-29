@@ -1079,7 +1079,9 @@ export function getDashboardData(stateDb: StateDb): DashboardData {
 /** Score breakdown per layer (mirrors ScoreBreakdown from types.ts) */
 export interface SuggestionBreakdown {
   contentMatch: number;
+  fuzzyMatch: number;
   cooccurrenceBoost: number;
+  rarityAdjustment: number;
   typeBoost: number;
   contextBoost: number;
   recencyBoost: number;
@@ -1147,7 +1149,9 @@ export interface EntityJourney {
 function getTopContributingLayer(breakdown: SuggestionBreakdown): string {
   const layers: Array<[string, number]> = [
     ['content_match', breakdown.contentMatch],
+    ['fuzzy_match', breakdown.fuzzyMatch ?? 0],
     ['cooccurrence', breakdown.cooccurrenceBoost],
+    ['rarity', breakdown.rarityAdjustment ?? 0],
     ['type_boost', breakdown.typeBoost],
     ['context_boost', breakdown.contextBoost],
     ['recency', breakdown.recencyBoost],
@@ -1427,7 +1431,9 @@ export function getLayerContributionTimeseries(
     const breakdown = JSON.parse(row.breakdown_json) as SuggestionBreakdown;
     const layerMap: Record<string, number> = {
       contentMatch: breakdown.contentMatch,
+      fuzzyMatch: breakdown.fuzzyMatch ?? 0,
       cooccurrenceBoost: breakdown.cooccurrenceBoost,
+      rarityAdjustment: breakdown.rarityAdjustment ?? 0,
       typeBoost: breakdown.typeBoost,
       contextBoost: breakdown.contextBoost,
       recencyBoost: breakdown.recencyBoost,
@@ -1498,8 +1504,9 @@ export function getExtendedDashboardData(stateDb: StateDb): ExtendedDashboardDat
 
   const layerSums: Record<string, { sum: number; count: number }> = {};
   const LAYER_NAMES = [
-    'contentMatch', 'cooccurrenceBoost', 'typeBoost', 'contextBoost',
-    'recencyBoost', 'crossFolderBoost', 'hubBoost', 'feedbackAdjustment', 'semanticBoost',
+    'contentMatch', 'fuzzyMatch', 'cooccurrenceBoost', 'rarityAdjustment',
+    'typeBoost', 'contextBoost', 'recencyBoost', 'crossFolderBoost',
+    'hubBoost', 'feedbackAdjustment', 'semanticBoost',
   ];
   for (const name of LAYER_NAMES) {
     layerSums[name] = { sum: 0, count: 0 };

@@ -206,4 +206,78 @@ describe('PipelineRunner', () => {
     expect(moveStep).toBeDefined();
     expect(moveStep.output.renames).toHaveLength(1);
   }, 30000);
+
+  it('records note_embeddings and entity_embeddings via runStep', async () => {
+    const ctx: VaultContext = {
+      name: 'test',
+      vaultPath: tempVault,
+      stateDb,
+      vaultIndex,
+      flywheelConfig: {},
+      watcher: null,
+      cooccurrenceIndex: null,
+      embeddingsBuilding: false,
+      indexState: 'ready',
+      indexError: null,
+      lastCooccurrenceRebuildAt: 0,
+      lastEdgeWeightRebuildAt: 0,
+    };
+
+    const pctx: PipelineContext = {
+      vp: tempVault,
+      sd: stateDb,
+      ctx,
+      events: [{ type: 'upsert', path: 'people/Alice.md', originalEvents: [] }],
+      renames: [],
+      batch: { events: [{ type: 'upsert', path: 'people/Alice.md', originalEvents: [] }], renames: [], timestamp: Date.now() },
+      changedPaths: ['people/Alice.md'],
+      flywheelConfig: {},
+      updateIndexState: (state, error) => { ctx.indexState = state; if (error !== undefined) ctx.indexError = error ?? null; },
+      updateVaultIndex: (idx) => { vaultIndex = idx; ctx.vaultIndex = idx; },
+      updateEntitiesInStateDb: async (vp, sd) => {
+        if (!sd) return;
+        const entityIdx = await scanVaultEntities(vp ?? tempVault, { excludeFolders: [] });
+        sd.replaceAllEntities(entityIdx);
+      },
+      getVaultIndex: () => vaultIndex,
+      buildVaultIndex,
+    };
+
+    await new PipelineRunner(pctx).run();
+
+    const event = stateDb.db.prepare(
+      "SELECT steps FROM index_events WHERE trigger = 'watcher' ORDER BY id DESC LIMIT 1"
+    ).get() as { steps: string } | undefined;
+
+    expect(event).toBeDefined();
+    const steps = JSON.parse(event!.steps ?? '[]');
+    const stepNames = steps.map((s: { name: string }) => s.name);
+
+    // Both embedding steps should be recorded (as done or skipped)
+    expect(stepNames).toContain('note_embeddings');
+    expect(stepNames).toContain('entity_embeddings');
+
+    // Verify the embedding steps have proper output structure
+    const noteEmbStep = steps.find((s: { name: string }) => s.name === 'note_embeddings');
+    expect(noteEmbStep).toBeDefined();
+    // Should be skipped (no embeddings index in test) or done with output
+    if (noteEmbStep.skipped) {
+      expect(noteEmbStep.skip_reason).toBeTruthy();
+    } else {
+      expect(noteEmbStep.output).toHaveProperty('updated');
+      expect(noteEmbStep.output).toHaveProperty('removed');
+    }
+
+    const entEmbStep = steps.find((s: { name: string }) => s.name === 'entity_embeddings');
+    expect(entEmbStep).toBeDefined();
+    if (entEmbStep.skipped) {
+      expect(entEmbStep.skip_reason).toBeTruthy();
+    } else {
+      expect(entEmbStep.output).toHaveProperty('updated');
+    }
+
+    // Pipeline should have completed successfully — steps after embeddings should exist
+    const embIdx = stepNames.indexOf('note_embeddings');
+    expect(stepNames.length).toBeGreaterThan(embIdx + 2); // more steps after embeddings
+  }, 30000);
 });

@@ -99,8 +99,9 @@ export interface CalibrationExport {
 // =============================================================================
 
 const LAYER_KEYS = [
-  'contentMatch', 'cooccurrenceBoost', 'typeBoost', 'contextBoost',
-  'recencyBoost', 'crossFolderBoost', 'hubBoost', 'feedbackAdjustment',
+  'contentMatch', 'fuzzyMatch', 'cooccurrenceBoost', 'rarityAdjustment',
+  'typeBoost', 'contextBoost', 'recencyBoost', 'crossFolderBoost',
+  'hubBoost', 'feedbackAdjustment',
   'suppressionPenalty', 'semanticBoost', 'edgeWeightBoost',
 ];
 
@@ -323,7 +324,7 @@ function queryCooccurrenceAnalysis(stateDb: StateDb, startMs: number, startIso: 
     totalCount++;
     coocSum += bd.cooccurrenceBoost ?? 0;
 
-    if ((bd.contentMatch ?? 0) === 0 && (bd.cooccurrenceBoost ?? 0) > 0) {
+    if ((bd.contentMatch ?? 0) === 0 && (bd.fuzzyMatch ?? 0) === 0 && (bd.cooccurrenceBoost ?? 0) > 0) {
       coocOnlyCount++;
       if (r.status != null) {
         coocOnlyApplied++;

@@ -56,6 +56,7 @@ import {
   mineCooccurrences,
   getCooccurrenceBoost,
   tokenIdf,
+  entityRarity,
   serializeCooccurrenceIndex,
   deserializeCooccurrenceIndex,
   type CooccurrenceIndex,
@@ -70,6 +71,7 @@ import {
 } from '../shared/recency.js';
 import { embedTextCached, findSemanticallySimilarEntities, hasEntityEmbeddingsIndex } from '../read/embeddings.js';
 import { getEntityEdgeWeightMap } from './edgeWeights.js';
+import { scoreFuzzyMatch, buildCollapsedContentTerms, normalizeFuzzyTerm } from '../shared/levenshtein.js';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /**
@@ -837,6 +839,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     requireMultipleMatches: true, // Single-word entities need multiple content matches
     stemMatchBonus: 3,         // Lower bonus for stem-only matches
     exactMatchBonus: 10,       // Standard bonus for exact matches
+    fuzzyMatchBonus: 2,        // Low fuzzy bonus — supplementary signal only
   },
   balanced: {
     minWordLength: 3,
@@ -845,6 +848,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     requireMultipleMatches: false,
     stemMatchBonus: 5,         // Standard bonus for stem matches
     exactMatchBonus: 10,       // Standard bonus for exact matches
+    fuzzyMatchBonus: 4,        // Moderate fuzzy bonus
   },
   aggressive: {
     minWordLength: 3,
@@ -853,6 +857,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     requireMultipleMatches: false,
     stemMatchBonus: 6,         // Higher bonus for stem matches
     exactMatchBonus: 10,       // Standard bonus for exact matches
+    fuzzyMatchBonus: 5,        // Higher fuzzy bonus — discovery mode
   },
 };
 
@@ -1107,23 +1112,38 @@ const FULL_ALIAS_MATCH_BONUS = 8;
  * @param coocIndex - Optional co-occurrence index for IDF weighting
  * @returns Object with score, matchedWords, and exactMatches
  */
+interface LexicalScoreResult {
+  exactScore: number;
+  stemScore: number;
+  lexicalScore: number;
+  matchedWords: number;
+  exactMatches: number;
+  totalTokens: number;
+  nameTokens: string[];
+  unmatchedTokenIndices: number[];
+}
+
 function scoreNameAgainstContent(
   name: string,
   contentTokens: Set<string>,
   contentStems: Set<string>,
   config: SuggestionConfig,
   coocIndex?: CooccurrenceIndex | null,
-): { score: number; matchedWords: number; exactMatches: number; totalTokens: number } {
+  disableExact?: boolean,
+  disableStem?: boolean,
+): LexicalScoreResult {
   const nameTokens = tokenize(name);
   if (nameTokens.length === 0) {
-    return { score: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0 };
+    return { exactScore: 0, stemScore: 0, lexicalScore: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0, nameTokens: [], unmatchedTokenIndices: [] };
   }
 
   const nameStems = nameTokens.map(t => stem(t));
 
-  let score = 0;
+  let exactScore = 0;
+  let stemScore = 0;
   let matchedWords = 0;
   let exactMatches = 0;
+  const unmatchedTokenIndices: number[] = [];
 
   for (let i = 0; i < nameTokens.length; i++) {
     const token = nameTokens[i];
@@ -1132,22 +1152,23 @@ function scoreNameAgainstContent(
     // IDF weight: informative tokens contribute more than common ones
     const idfWeight = coocIndex ? tokenIdf(token, coocIndex) : 1.0;
 
-    if (contentTokens.has(token)) {
+    if (!disableExact && contentTokens.has(token)) {
       // Exact word match - highest confidence, IDF-weighted
-      score += config.exactMatchBonus * idfWeight;
+      exactScore += config.exactMatchBonus * idfWeight;
       matchedWords++;
       exactMatches++;
-    } else if (contentStems.has(nameStem)) {
+    } else if (!disableStem && contentStems.has(nameStem)) {
       // Stem match only - medium confidence, IDF-weighted
-      score += config.stemMatchBonus * idfWeight;
+      stemScore += config.stemMatchBonus * idfWeight;
       matchedWords++;
+    } else {
+      unmatchedTokenIndices.push(i);
     }
   }
 
-  // Round to avoid floating point noise in comparisons
-  score = Math.round(score * 10) / 10;
+  const lexicalScore = Math.round((exactScore + stemScore) * 10) / 10;
 
-  return { score, matchedWords, exactMatches, totalTokens: nameTokens.length };
+  return { exactScore, stemScore, lexicalScore, matchedWords, exactMatches, totalTokens: nameTokens.length, nameTokens, unmatchedTokenIndices };
 }
 
 /**
@@ -1166,44 +1187,83 @@ function scoreNameAgainstContent(
  * @param config - Scoring configuration from strictness mode
  * @returns Score (higher = more relevant), 0 if doesn't meet threshold
  */
+interface EntityScoreResult {
+  contentMatch: number;  // exact + stem only
+  fuzzyMatch: number;    // fuzzy layer only
+  totalLexical: number;  // contentMatch + fuzzyMatch
+  matchedWords: number;
+  exactMatches: number;
+  totalTokens: number;
+}
+
 function scoreEntity(
   entity: Entity,
   contentTokens: Set<string>,
   contentStems: Set<string>,
+  collapsedContentTerms: Set<string>,
   config: SuggestionConfig,
+  disabled: Set<ScoringLayer>,
   coocIndex?: CooccurrenceIndex | null,
-): number {
+  tokenFuzzyCache?: Map<string, number>,
+): EntityScoreResult {
+  const zero: EntityScoreResult = { contentMatch: 0, fuzzyMatch: 0, totalLexical: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0 };
   const entityName = getEntityName(entity);
   const aliases = getEntityAliases(entity);
+  const disableExact = disabled.has('exact_match');
+  const disableStem = disabled.has('stem_match');
+  const disableFuzzy = disabled.has('fuzzy_match');
 
-  // Score the primary name
-  const nameResult = scoreNameAgainstContent(entityName, contentTokens, contentStems, config, coocIndex);
+  const cache = tokenFuzzyCache ?? new Map<string, number>();
+  const idfFn = (token: string) => coocIndex ? tokenIdf(token, coocIndex) : 1.0;
+
+  // Score the primary name (exact + stem)
+  const nameResult = scoreNameAgainstContent(entityName, contentTokens, contentStems, config, coocIndex, disableExact, disableStem);
 
   // Score each alias and take the best match
-  let bestAliasResult = { score: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0 };
+  let bestAliasResult: LexicalScoreResult = { exactScore: 0, stemScore: 0, lexicalScore: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0, nameTokens: [], unmatchedTokenIndices: [] };
   for (const alias of aliases) {
-    const aliasResult = scoreNameAgainstContent(alias, contentTokens, contentStems, config, coocIndex);
-    if (aliasResult.score > bestAliasResult.score) {
+    const aliasResult = scoreNameAgainstContent(alias, contentTokens, contentStems, config, coocIndex, disableExact, disableStem);
+    if (aliasResult.lexicalScore > bestAliasResult.lexicalScore) {
       bestAliasResult = aliasResult;
     }
   }
 
   // Use the best score between name and aliases
-  const bestResult = nameResult.score >= bestAliasResult.score ? nameResult : bestAliasResult;
-  let { score, matchedWords, exactMatches, totalTokens } = bestResult;
+  const bestResult = nameResult.lexicalScore >= bestAliasResult.lexicalScore ? nameResult : bestAliasResult;
+  let { lexicalScore, matchedWords, exactMatches, totalTokens, nameTokens, unmatchedTokenIndices } = bestResult;
+  // Use name for whole-term fuzzy (entity name, not alias — the alias may be short)
+  const fuzzyTargetName = nameResult.lexicalScore >= bestAliasResult.lexicalScore ? entityName : (aliases[0] ?? entityName);
 
-  if (totalTokens === 0) return 0;
+  if (totalTokens === 0) return zero;
 
   // Bonus for single-word aliases that exactly match a content token
-  // This ensures "production" alias matches "production" in content in conservative mode
-  for (const alias of aliases) {
-    const aliasLower = alias.toLowerCase();
-    // Single-word alias (4+ chars) that matches a content token exactly
-    if (aliasLower.length >= 3 &&
-        !/\s/.test(aliasLower) &&
-        contentTokens.has(aliasLower)) {
-      score += FULL_ALIAS_MATCH_BONUS;
-      break;  // Only apply bonus once
+  if (!disableExact) {
+    for (const alias of aliases) {
+      const aliasLower = alias.toLowerCase();
+      if (aliasLower.length >= 3 &&
+          !/\s/.test(aliasLower) &&
+          contentTokens.has(aliasLower)) {
+        lexicalScore += FULL_ALIAS_MATCH_BONUS;
+        break;
+      }
+    }
+  }
+
+  // Fuzzy matching (Layer 3.5) — only for unmatched tokens
+  let fuzzyScore = 0;
+  let fuzzyMatchedWords = 0;
+  if (!disableFuzzy && unmatchedTokenIndices.length > 0) {
+    const fuzzyResult = scoreFuzzyMatch(
+      nameTokens, unmatchedTokenIndices, contentTokens, collapsedContentTerms,
+      fuzzyTargetName, config.fuzzyMatchBonus, idfFn, cache,
+    );
+    fuzzyScore = fuzzyResult.fuzzyScore;
+    fuzzyMatchedWords = fuzzyResult.fuzzyMatchedWords;
+    if (fuzzyResult.isWholeTermMatch) {
+      // Whole-term match: count all tokens as matched for ratio check
+      matchedWords = totalTokens;
+    } else {
+      matchedWords += fuzzyMatchedWords;
     }
   }
 
@@ -1211,21 +1271,28 @@ function scoreEntity(
   if (totalTokens > 1) {
     const matchRatio = matchedWords / totalTokens;
     if (matchRatio < config.minMatchRatio) {
-      return 0;
+      return zero;
     }
   }
 
   // For conservative mode: single-word entities need multiple content word matches
-  // This prevents "Complete" matching just because content has "completed"
   if (config.requireMultipleMatches && totalTokens === 1) {
-    // Check if the entity word appears multiple times or has strong context
-    // For single-word entities, require at least one exact match
-    if (exactMatches === 0) {
-      return 0;
+    if (exactMatches === 0 && fuzzyMatchedWords === 0) {
+      return zero;
     }
   }
 
-  return score;
+  const contentMatch = Math.round(lexicalScore * 10) / 10;
+  const fuzzyMatch = Math.round(fuzzyScore * 10) / 10;
+
+  return {
+    contentMatch,
+    fuzzyMatch,
+    totalLexical: Math.round((contentMatch + fuzzyMatch) * 10) / 10,
+    matchedWords,
+    exactMatches,
+    totalTokens,
+  };
 }
 
 /**
@@ -1333,6 +1400,15 @@ export async function suggestRelatedLinks(
     return emptyResult;
   }
 
+  // Precompute collapsed content terms for whole-term fuzzy matching
+  // Adjacent windows of 1-3 tokens, normalized (lowercased, non-alpha stripped)
+  const collapsedContentTerms = disabled.has('fuzzy_match')
+    ? new Set<string>()
+    : buildCollapsedContentTerms([...contentTokens].map(normalizeFuzzyTerm));
+
+  // Per-note fuzzy cache: avoids rescanning the same fuzzy candidate sets
+  const tokenFuzzyCache = new Map<string, number>();
+
   // Get already-linked entities
   const linkedEntities = excludeLinked ? extractLinkedEntities(content) : new Set<string>();
 
@@ -1389,14 +1465,29 @@ export async function suggestRelatedLinks(
       if (paths.has(notePath)) continue;
     }
 
-    // Layers 2+3: Exact match, stem match, and alias matching (bonuses depend on strictness)
-    const contentScore = (disabled.has('exact_match') && disabled.has('stem_match'))
-      ? 0
-      : scoreEntity(entity, contentTokens, contentStems, config, cooccurrenceIndex);
-    let score = contentScore;
+    // Layers 2+3+3.5: Exact match, stem match, fuzzy match, and alias matching
+    const entityScore = (disabled.has('exact_match') && disabled.has('stem_match') && disabled.has('fuzzy_match'))
+      ? { contentMatch: 0, fuzzyMatch: 0, totalLexical: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0 }
+      : scoreEntity(entity, contentTokens, contentStems, collapsedContentTerms, config, disabled, cooccurrenceIndex, tokenFuzzyCache);
+    const contentScore = entityScore.contentMatch;
+    const fuzzyMatchScore = entityScore.fuzzyMatch;
+    const hasLexicalEvidence = entityScore.totalLexical > 0;
 
-    // Track entities with actual content matches
-    if (contentScore > 0) {
+    // Layer 4.5: Rarity adjustment — boost rare entities, no penalty for common ones.
+    // Only positive adjustments: common entities score as before, rare entities get a lift.
+    // Capped at +5 to prevent dominating the total score.
+    let layerRarityAdjustment = 0;
+    if (hasLexicalEvidence && !disabled.has('rarity')) {
+      const multiplier = entityRarity(entityName, cooccurrenceIndex);
+      if (multiplier > 1.0) {
+        const raw = entityScore.totalLexical * (multiplier - 1);
+        layerRarityAdjustment = Math.round(Math.min(5, raw) * 10) / 10;
+      }
+    }
+    let score = entityScore.totalLexical + layerRarityAdjustment;
+
+    // Track entities with actual lexical matches (content + fuzzy)
+    if (hasLexicalEvidence) {
       entitiesWithContentMatch.add(entityName);
     }
 
@@ -1429,9 +1520,9 @@ export async function suggestRelatedLinks(
     score += layerEdgeWeightBoost;
 
     // Add to directlyMatchedEntities BEFORE suppression penalty
-    // Only content-matched entities should seed co-occurrence lookups;
-    // entities with only type/hub/recency boosts (no content match) are noise seeds.
-    if (contentScore > 0) {
+    // Only lexically-matched entities should seed co-occurrence lookups;
+    // entities with only type/hub/recency boosts (no lexical evidence) are noise seeds.
+    if (hasLexicalEvidence) {
       directlyMatchedEntities.add(entityName);
     }
 
@@ -1440,9 +1531,9 @@ export async function suggestRelatedLinks(
     score += layerSuppressionPenalty;
 
     // Minimum threshold (adaptive based on content length)
-    // Require content match — entities with only type/hub/recency boosts are
+    // Require lexical evidence — entities with only type/hub/recency boosts are
     // discovered via the co-occurrence loop below if they're graph-connected.
-    if (contentScore > 0 && score >= adaptiveMinScore) {
+    if (hasLexicalEvidence && score >= adaptiveMinScore) {
       scoredEntities.push({
         name: entityName,
         path: entity.path || '',
@@ -1450,7 +1541,9 @@ export async function suggestRelatedLinks(
         category,
         breakdown: {
           contentMatch: contentScore,
+          fuzzyMatch: fuzzyMatchScore,
           cooccurrenceBoost: 0,
+          rarityAdjustment: layerRarityAdjustment,
           typeBoost: layerTypeBoost,
           contextBoost: layerContextBoost,
           recencyBoost: layerRecencyBoost,
@@ -1576,7 +1669,9 @@ export async function suggestRelatedLinks(
               category,
               breakdown: {
                 contentMatch: 0,
+                fuzzyMatch: 0,
                 cooccurrenceBoost: boost,
+                rarityAdjustment: 0,
                 typeBoost,
                 contextBoost,
                 recencyBoost: recencyBoostVal,
@@ -1658,7 +1753,9 @@ export async function suggestRelatedLinks(
               category,
               breakdown: {
                 contentMatch: 0,
+                fuzzyMatch: 0,
                 cooccurrenceBoost: 0,
+                rarityAdjustment: 0,
                 typeBoost: layerTypeBoost,
                 contextBoost: layerContextBoost,
                 recencyBoost: 0,

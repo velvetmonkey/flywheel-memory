@@ -140,7 +140,9 @@ describe('Pillar 6: Pipeline Observability', () => {
     it('formatActionReason produces valid reason string for "suggested"', () => {
       const breakdown: SuggestionBreakdown = {
         contentMatch: 15,
+        fuzzyMatch: 0,
         cooccurrenceBoost: 3,
+        rarityAdjustment: 0,
         typeBoost: 2,
         contextBoost: 1,
         recencyBoost: 0,
@@ -165,7 +167,9 @@ describe('Pillar 6: Pipeline Observability', () => {
     it('formatActionReason produces valid reason string for "filtered"', () => {
       const breakdown: SuggestionBreakdown = {
         contentMatch: 3,
+        fuzzyMatch: 0,
         cooccurrenceBoost: 0,
+        rarityAdjustment: 0,
         typeBoost: 0,
         contextBoost: 0,
         recencyBoost: 0,
@@ -288,7 +292,9 @@ describe('Pillar 6: Pipeline Observability', () => {
 
         // Verify all required ScoreBreakdown fields are present and numeric
         expect(typeof breakdown.contentMatch).toBe('number');
+        expect(typeof breakdown.fuzzyMatch).toBe('number');
         expect(typeof breakdown.cooccurrenceBoost).toBe('number');
+        expect(typeof breakdown.rarityAdjustment).toBe('number');
         expect(typeof breakdown.typeBoost).toBe('number');
         expect(typeof breakdown.contextBoost).toBe('number');
         expect(typeof breakdown.recencyBoost).toBe('number');

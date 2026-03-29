@@ -160,17 +160,21 @@ export interface SuggestionConfig {
   stemMatchBonus: number;
   /** Bonus points for exact matches (default: 10 for all modes) */
   exactMatchBonus: number;
+  /** Bonus points for fuzzy matches (default: 2 for conservative, 4 for balanced, 5 for aggressive) */
+  fuzzyMatchBonus: number;
 }
 
 /**
  * Scoring layers that can be individually disabled for ablation testing.
  *
- * There are 13 scoring layers used in suggestRelatedLinks():
+ * There are 15 scoring layers used in suggestRelatedLinks():
  * - 1a: length_filter (>25 chars)
  * - 1b: article_filter (article-like titles)
  * - 2: exact_match (verbatim token match)
  * - 3: stem_match (porter stemmer match)
+ * - 3.5: fuzzy_match (typo-tolerant + delimiter-normalized matching)
  * - 4: cooccurrence (co-appearing entities)
+ * - 4.5: rarity (entity-level rarity weighting on lexical evidence)
  * - 5: type_boost (entity category priority)
  * - 6: context_boost (note context relevance)
  * - 7: recency (recently-mentioned entities)
@@ -186,8 +190,8 @@ export interface SuggestionConfig {
  */
 export type ScoringLayer =
   | 'length_filter' | 'article_filter'
-  | 'exact_match' | 'stem_match'
-  | 'cooccurrence'
+  | 'exact_match' | 'stem_match' | 'fuzzy_match'
+  | 'cooccurrence' | 'rarity'
   | 'type_boost' | 'context_boost'
   | 'recency' | 'cross_folder'
   | 'hub_boost' | 'feedback' | 'semantic'
@@ -204,17 +208,19 @@ export interface SuggestOptions {
 }
 
 export interface ScoreBreakdown {
-  contentMatch: number;       // Layers 2+3
-  cooccurrenceBoost: number;  // Layer 4
-  typeBoost: number;          // Layer 5
-  contextBoost: number;       // Layer 6
-  recencyBoost: number;       // Layer 7
-  crossFolderBoost: number;   // Layer 8
-  hubBoost: number;           // Layer 9
-  feedbackAdjustment: number; // Layer 10
+  contentMatch: number;        // Layers 2+3 (exact + stem only)
+  fuzzyMatch: number;          // Layer 3.5 (typo-tolerant + delimiter-normalized)
+  cooccurrenceBoost: number;   // Layer 4
+  rarityAdjustment: number;    // Layer 4.5 (entity-level rarity on lexical evidence)
+  typeBoost: number;           // Layer 5
+  contextBoost: number;        // Layer 6
+  recencyBoost: number;        // Layer 7
+  crossFolderBoost: number;    // Layer 8
+  hubBoost: number;            // Layer 9
+  feedbackAdjustment: number;  // Layer 10
   suppressionPenalty?: number; // Layer 0 (soft, proportional to Beta-Binomial posterior)
-  semanticBoost?: number;     // Layer 11
-  edgeWeightBoost?: number;   // Layer 12
+  semanticBoost?: number;      // Layer 11
+  edgeWeightBoost?: number;    // Layer 12
 }
 
 export type ConfidenceLevel = 'high' | 'medium' | 'low';

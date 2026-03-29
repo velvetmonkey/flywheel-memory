@@ -206,7 +206,9 @@ export function registerWikilinkTools(
 
   const ScoreBreakdownSchema = z.object({
     contentMatch: z.coerce.number(),
+    fuzzyMatch: z.coerce.number(),
     cooccurrenceBoost: z.coerce.number(),
+    rarityAdjustment: z.coerce.number(),
     typeBoost: z.coerce.number(),
     contextBoost: z.coerce.number(),
     recencyBoost: z.coerce.number(),

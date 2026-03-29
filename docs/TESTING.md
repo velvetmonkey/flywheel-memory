@@ -146,16 +146,16 @@ Source: [`packages/mcp-server/test/write/coldstart/`](../packages/mcp-server/tes
 
 ## Read-Side Testing
 
-The read path is where users interact most. These tests verify that the index, search, graph, and [[watcher]] work correctly under realistic conditions.
+The read path is where users interact most. These tests verify that the index, search, graph, and watcher work correctly under realistic conditions.
 
-- **FTS5 search** -- Full-text search queries across vault content, frontmatter, and tags. Tests cover ranking, phrase matching, prefix search, and edge cases like empty queries and special characters. Source: [`fts5.test.ts`](../packages/mcp-server/test/read/core/fts5.test.ts)
-- **Entity search** -- Entity index queries, category filtering, alias resolution. Source: [`entity-search.test.ts`](../packages/mcp-server/test/read/core/entity-search.test.ts)
-- **Graph operations** -- Backlinks, forward links, graph analysis modes (hubs, bridges, clusters), connection strength, link paths. Source: [`graph.test.ts`](../packages/mcp-server/test/read/core/graph.test.ts)
-- **Embeddings & semantic** -- Embedding generation, similarity search, hybrid ranking (BM25 + semantic via RRF). Source: [`embeddings.test.ts`](../packages/mcp-server/test/read/core/embeddings.test.ts)
+- **FTS5 search** -- Full-text search queries across vault content, frontmatter, and tags. Tests cover ranking, phrase matching, prefix search, and edge cases like empty queries and special characters. Source: [`fts5.test.ts`](../packages/mcp-server/test/read/tools/fts5.test.ts)
+- **Entity search** -- Entity index queries, category filtering, alias resolution. Source: [`entity-search.test.ts`](../packages/mcp-server/test/read/tools/entity-search.test.ts)
+- **Graph operations** -- Backlinks, forward links, graph analysis modes (hubs, bridges, clusters), connection strength, link paths. Source: [`graph.test.ts`](../packages/mcp-server/test/read/tools/graph.test.ts)
+- **Embeddings & semantic** -- Embedding generation, similarity search, hybrid ranking (BM25 + semantic via RRF). Source: [`embeddings.test.ts`](../packages/mcp-server/test/read/tools/embeddings.test.ts)
 - **File watcher** -- Change detection, rename detection (delete+upsert pairs within 5s), batch processing, graceful recovery from watcher errors. WSL-specific watcher tests for Windows path translation. Sources: [`watch.test.ts`](../packages/mcp-server/test/read/core/watch.test.ts), [`wsl-watcher.test.ts`](../packages/mcp-server/test/read/platform/wsl-watcher.test.ts)
-- **Multi-vault isolation** -- Per-request vault scoping via AsyncLocalStorage. Interleaved operations across two vaults never cross-contaminate. Source: [`multi-vault-isolation.test.ts`](../packages/mcp-server/test/read/core/multi-vault-isolation.test.ts)
-- **Co-occurrence & edge weights** -- NPMI scoring, retrieval co-occurrence, edge weight accumulation and staleness gating. Sources: [`cooccurrence.test.ts`](../packages/mcp-server/test/read/core/cooccurrence.test.ts), [`edgeWeights.test.ts`](../packages/mcp-server/test/read/core/edgeWeights.test.ts)
-- **Recency** -- Time-bucketed entity recency, watcher step integration. Source: [`recency.test.ts`](../packages/mcp-server/test/read/core/recency.test.ts)
+- **Multi-vault isolation** -- Per-request vault scoping via AsyncLocalStorage. Interleaved operations across two vaults never cross-contaminate. Source: [`multi-vault-isolation.test.ts`](../packages/mcp-server/test/write/core/multi-vault-isolation.test.ts)
+- **Co-occurrence & edge weights** -- NPMI scoring, retrieval co-occurrence, edge weight accumulation and staleness gating. Sources: [`cooccurrence.test.ts`](../packages/mcp-server/test/write/core/cooccurrence.test.ts), [`edgeWeights.test.ts`](../packages/mcp-server/test/write/core/edgeWeights.test.ts)
+- **Recency** -- Time-bucketed entity recency, watcher step integration. Source: [`recency.test.ts`](../packages/mcp-server/test/write/core/recency.test.ts)
 - **Read tool integration** -- MCP tool handlers for search, primitives, graph analysis, schema, notes, wikilinks, temporal, and health. Each tool tested with realistic vault fixtures. Source: [`packages/mcp-server/test/read/tools/`](../packages/mcp-server/test/read/tools/)
 
 ---

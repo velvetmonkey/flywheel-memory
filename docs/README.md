@@ -5,6 +5,7 @@
 - [Getting Started](#getting-started)
 - [Document Guide](#document-guide)
 - [Demo Vaults](#demo-vaults)
+- [Developer References](#developer-references)
 - [Contributing](#contributing)
 - [FAQ](#faq)
 
@@ -61,6 +62,14 @@ Every demo is a real test fixture. If it works in the README, it passes in CI.
 git clone https://github.com/velvetmonkey/flywheel-memory.git
 cd flywheel-memory/demos/carter-strategy && claude
 ```
+
+---
+
+## Developer References
+
+| Document | Description | Key Question |
+|----------|-------------|--------------|
+| [dev/processing-loop.md](dev/processing-loop.md) | Code-level walkthrough of the watcher pipeline, scoring loop, and feedback flow | "What happens internally when Flywheel processes file changes?" |
 
 ---
 

@@ -6,6 +6,10 @@ Flywheel's HTTP transport (`FLYWHEEL_TRANSPORT=http`) has **no built-in authenti
 
 > **Do not expose the HTTP transport to the network without a reverse proxy providing TLS and authentication.** Any client that can reach the port can call every tool — including write operations.
 
+- [nginx](#nginx)
+- [Caddy](#caddy)
+- [Before you deploy](#before-you-deploy)
+
 ---
 
 ## nginx

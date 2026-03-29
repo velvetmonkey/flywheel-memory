@@ -4,7 +4,10 @@
 
 After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian vault.
 
+- **Fastest path:** add Flywheel to your client config, point it at your vault, run the first 5 commands, then enable semantic search later if you want it.
+
 - [Prerequisites](#prerequisites)
+- [Startup Times](#startup-times)
 - [Windows](#windows)
 - [Step 1: Configure Your Client](#step-1-configure-your-client)
 - [Step 2: First 5 Commands to Try](#step-2-first-5-commands-to-try)
@@ -27,7 +30,7 @@ After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian v
 
 ## Startup Times
 
-Flywheel connects to your MCP client immediately, then builds indexes in the background. Most [[TOOLS]] work within seconds; semantic search takes longer on first run.
+Flywheel connects to your MCP client immediately, then builds indexes in the background. Most tools work within seconds; semantic search takes longer on first run.
 
 | Scenario | MCP handshake | Full index ready |
 |----------|--------------|-----------------|

@@ -47,7 +47,7 @@ No `FLYWHEEL_TOOLS` needed — defaults to `default` (18 tools). Add it only to 
 }
 ```
 
-Note: Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. [[Claude Code]] auto-detects the vault root from the working directory.
+Note: Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. `Claude Code` auto-detects the vault root from the working directory.
 
 ---
 
@@ -106,7 +106,7 @@ Vault root detection order:
 | `default` (default) | 18 | Note-taking essentials + memory — search, read, write, tasks, memory |
 | `full` | 75 | Everything (all 12 categories) |
 
-The fewer [[TOOLS]] you load, the less context Claude needs to pick the right one.
+The fewer tools you load, the less context Claude needs to pick the right one.
 
 #### Composable Bundles
 
@@ -286,7 +286,7 @@ The first vault in the list is the **primary**. Tools without a `vault` paramete
 }
 ```
 
-**Team [[SETUP]]** (3 vaults):
+**Team setup** (3 vaults):
 
 ```json
 {

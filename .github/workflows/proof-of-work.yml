@@ -17,6 +17,7 @@ on:
 jobs:
   proof-of-work:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,7 +29,13 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            echo "::warning::npm ci attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
 
       - name: Build packages
         run: npm run build

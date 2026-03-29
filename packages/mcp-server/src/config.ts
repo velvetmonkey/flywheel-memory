@@ -536,9 +536,15 @@ Use "note_intelligence" for per-note analysis (completeness, quality, suggestion
     parts.push(`
 ## Wikilinks
 
-Use "suggest_wikilinks" to analyze draft text for existing entities that should be linked.
-Use "validate_links" to find broken or suspicious wikilinks.
-Use "discover_stub_candidates", "discover_cooccurrence_gaps", and "unlinked_mentions_report" to surface missing concept notes and high-ROI linking opportunities.`);
+Link quality and discovery — not for finding content (use search for that).
+
+- "What should be linked?" → unlinked_mentions_report (vault-wide linking opportunities)
+- "Suggest links for this note" → suggest_wikilinks (per-note entity mention analysis)
+- "Are any links broken?" → validate_links (dead links + fix suggestions)
+- "What topics need their own notes?" → discover_stub_candidates (frequently-linked but non-existent)
+- "What entities appear together?" → discover_cooccurrence_gaps (co-occurring but unlinked pairs)
+- "Was that link correct?" → wikilink_feedback (accept/reject, improves future suggestions)
+- "What aliases am I missing?" → suggest_entity_aliases (acronyms, short forms, alternate names)`);
   }
   else if (tieringActive && categories.has('wikilinks')) {
     parts.push(`
@@ -549,8 +555,11 @@ Use "discover_stub_candidates", "discover_cooccurrence_gaps", and "unlinked_ment
     parts.push(`
 ## Corrections
 
-Use "vault_record_correction" to store a persistent correction when Flywheel made a bad link or edit.
-Use "vault_list_corrections" and "vault_resolve_correction" to review or close correction records.
+When the user says something is wrong — a bad link, wrong entity, wrong category:
+
+"vault_record_correction" persists a correction for future sessions.
+"vault_list_corrections" shows pending/applied/dismissed corrections.
+"vault_resolve_correction" marks a correction as applied or dismissed.
 Use "absorb_as_alias" when two names should resolve to the same entity without merging note bodies.`);
   }
   else if (tieringActive && categories.has('corrections')) {
@@ -559,34 +568,6 @@ Use "absorb_as_alias" when two names should resolve to the same entity without m
   }
 
   if (isCategoryVisible('temporal')) {
-    parts.push(`
-## Temporal
-
-Use "get_context_around_date" to reconstruct vault activity around a specific date.
-Use "predict_stale_notes" to identify important notes that likely need review.
-Use "track_concept_evolution" and "temporal_summary" for history, momentum, and review-period summaries.`);
-  }
-  else if (tieringActive && categories.has('temporal')) {
-    parts.push(`
-**More tools available:** Ask about time, history, evolution, or stale notes to unlock temporal tools.`);
-  }
-
-  if (isCategoryVisible('diagnostics')) {
-    parts.push(`
-## Diagnostics
-
-Use "health_check", "flywheel_doctor", and "pipeline_status" to inspect server and indexing health.
-Use "get_vault_stats", "refresh_index", and "server_log" for operational visibility.
-Use "flywheel_config" to inspect runtime configuration and set "tool_tier_override" to "auto", "full", or "minimal" for this vault.`);
-  }
-  else if (tieringActive && categories.has('diagnostics')) {
-    parts.push(`
-**More tools available:** Ask about vault health, indexing, status, or configuration to unlock diagnostic tools.
-**Advanced tools:** Ask to unlock note operations or deep diagnostics for note mutations, benchmarks, history, graph exports, and learning reports.`);
-  }
-
-  // Temporal category instructions
-  if (categories.has('temporal')) {
     parts.push(`
 ## Temporal
 
@@ -600,47 +581,28 @@ Temporal tools analyze *patterns and changes* over time — use them for "what c
 
 temporal_summary composes the other three — use it for weekly/monthly reviews.`);
   }
-
-  // Wikilinks category instructions
-  if (categories.has('wikilinks')) {
+  else if (tieringActive && categories.has('temporal')) {
     parts.push(`
-## Wikilinks
-
-Link quality and discovery — not for finding content (use search for that).
-
-- "What should be linked?" → unlinked_mentions_report (vault-wide linking opportunities)
-- "Suggest links for this note" → suggest_wikilinks (per-note entity mention analysis)
-- "Are any links broken?" → validate_links (dead links + fix suggestions)
-- "What topics need their own notes?" → discover_stub_candidates (frequently-linked but non-existent)
-- "What entities appear together?" → discover_cooccurrence_gaps (co-occurring but unlinked pairs)
-- "Was that link correct?" → wikilink_feedback (accept/reject, improves future suggestions)
-- "What aliases am I missing?" → suggest_entity_aliases (acronyms, short forms, alternate names)`);
+**More tools available:** Ask about time, history, evolution, or stale notes to unlock temporal tools.`);
   }
 
-  // Corrections category instructions
-  if (categories.has('corrections')) {
-    parts.push(`
-## Corrections
-
-When the user says something is wrong — a bad link, wrong entity, wrong category:
-
-"vault_record_correction" persists a correction for future sessions.
-"vault_list_corrections" shows pending/applied/dismissed corrections.
-"vault_resolve_correction" marks a correction as applied or dismissed.
-"absorb_as_alias" fixes a duplicate by absorbing one name as an alias of another (rewrites all links).`);
-  }
-
-  // Diagnostics category instructions
-  if (categories.has('diagnostics')) {
+  if (isCategoryVisible('diagnostics')) {
     parts.push(`
 ## Diagnostics
 
-- Triage: "health_check" (quick status) → "flywheel_doctor" (active problem detection) → "server_log" (event timeline)
-- Stats: "get_vault_stats" (counts), "vault_growth" (trends over time), "get_folder_structure" (organization)
-- Activity: "vault_activity" (tool usage), "vault_session_history" (session detail), "vault_entity_history" (entity timeline)
-- System: "flywheel_trust_report" (config + boundaries), "flywheel_benchmark" (performance), "flywheel_learning_report" (auto-linking effectiveness)
-- Entities: "suggest_entity_merges" (duplicates), "get_all_entities" (full list), "get_unlinked_mentions" (linking opportunities)
-- Maintenance: "refresh_index" (rebuild), "flywheel_config" (settings), "vault_init" (first-time setup)`);
+ - Triage: "health_check" (quick status) → "flywheel_doctor" (active problem detection) → "server_log" (event timeline)
+ - Stats: "get_vault_stats" (counts), "vault_growth" (trends over time), "get_folder_structure" (organization)
+ - Activity: "vault_activity" (tool usage), "vault_session_history" (session detail), "vault_entity_history" (entity timeline)
+ - System: "flywheel_trust_report" (config + boundaries), "flywheel_benchmark" (performance), "flywheel_learning_report" (auto-linking effectiveness)
+ - Entities: "suggest_entity_merges" (duplicates), "get_all_entities" (full list), "get_unlinked_mentions" (linking opportunities)
+ - Maintenance: "refresh_index" (rebuild), "flywheel_config" (settings), "vault_init" (first-time setup)
+
+Use "flywheel_config" to inspect runtime configuration and set "tool_tier_override" to "auto", "full", or "minimal" for this vault.`);
+  }
+  else if (tieringActive && categories.has('diagnostics')) {
+    parts.push(`
+**More tools available:** Ask about vault health, indexing, status, or configuration to unlock diagnostic tools.
+**Advanced tools:** Ask to unlock note operations or deep diagnostics for note mutations, benchmarks, history, graph exports, and learning reports.`);
   }
 
   return parts.join('\n');

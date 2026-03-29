@@ -13,6 +13,7 @@ import type { VaultWatcher } from './core/read/watch/index.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import type { CooccurrenceIndex } from './core/shared/cooccurrence.js';
 import type { IndexState } from './core/read/graph.js';
+import type { PipelineActivity } from './core/read/watch/pipeline.js';
 
 export interface VaultContext {
   name: string;
@@ -39,6 +40,8 @@ export interface VaultContext {
   lastHubScoreRebuildAt: number;
   /** Per-vault timestamp: last index cache save */
   lastIndexCacheSaveAt: number;
+  /** Per-vault live watcher pipeline activity */
+  pipelineActivity: PipelineActivity;
 }
 
 export class VaultRegistry {

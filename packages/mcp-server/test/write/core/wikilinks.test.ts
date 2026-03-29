@@ -2923,6 +2923,38 @@ describe('processWikilinks alias resolution', () => {
   });
 });
 
+describe('fuzzy collapsed matching', () => {
+  let tempVault: string;
+  let stateDb: StateDb;
+
+  beforeEach(async () => {
+    tempVault = await createTempVault();
+    stateDb = openStateDb(tempVault);
+    setWriteStateDb(stateDb);
+  });
+
+  afterEach(async () => {
+    setWriteStateDb(null);
+    stateDb.db.close();
+    deleteStateDb(tempVault);
+    await cleanupTempVault(tempVault);
+  });
+
+  it('preserves ordered token windows for whole-term fuzzy matches', async () => {
+    createEntityCacheInStateDb(stateDb, tempVault, {
+      technologies: ['TurboPump'],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    const result = await suggestRelatedLinks('Debugging the turbo test turbo pump today', {
+      strictness: 'aggressive',
+    });
+
+    expect(result.suggestions).toContain('TurboPump');
+  });
+});
+
 describe('sanitizeWikilinks', () => {
   // Import sanitizer directly for unit testing
   let sanitizeWikilinks: typeof import('../../../src/core/write/wikilinks.js').sanitizeWikilinks;

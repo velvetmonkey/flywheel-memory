@@ -91,23 +91,21 @@ export interface PipelineActivity {
   last_completed_steps: string[];
 }
 
-const pipelineActivity: PipelineActivity = {
-  busy: false,
-  trigger: null,
-  started_at: null,
-  current_step: null,
-  completed_steps: 0,
-  total_steps: PIPELINE_TOTAL_STEPS,
-  pending_events: 0,
-  last_completed_at: null,
-  last_completed_trigger: null,
-  last_completed_duration_ms: null,
-  last_completed_files: null,
-  last_completed_steps: [],
-};
-
-export function getPipelineActivity(): Readonly<PipelineActivity> {
-  return pipelineActivity;
+export function createEmptyPipelineActivity(): PipelineActivity {
+  return {
+    busy: false,
+    trigger: null,
+    started_at: null,
+    current_step: null,
+    completed_steps: 0,
+    total_steps: PIPELINE_TOTAL_STEPS,
+    pending_events: 0,
+    last_completed_at: null,
+    last_completed_trigger: null,
+    last_completed_duration_ms: null,
+    last_completed_files: null,
+    last_completed_steps: [],
+  };
 }
 
 // Re-exported from index.ts — these are module-level functions that update both globals and VaultContext
@@ -186,6 +184,7 @@ async function runStep(
 export class PipelineRunner {
   private tracker: StepTracker;
   private batchStart: number;
+  private activity: PipelineActivity;
 
   // Shared state between steps
   private entitiesAfter: EntitySearchResult[] = [];
@@ -198,25 +197,26 @@ export class PipelineRunner {
   private suggestionResults: Array<{ file: string; top: Array<{ entity: string; score: number; confidence: string }> }> = [];
 
   constructor(private p: PipelineContext) {
+    this.activity = p.ctx.pipelineActivity;
     const baseTracker = createStepTracker();
     // Wrap tracker to update pipeline activity on every step transition
     this.tracker = {
       steps: baseTracker.steps,
-      start(name: string, input: Record<string, unknown>) {
-        pipelineActivity.current_step = name;
+      start: (name: string, input: Record<string, unknown>) => {
+        this.activity.current_step = name;
         baseTracker.start(name, input);
       },
-      end(output: Record<string, unknown>) {
+      end: (output: Record<string, unknown>) => {
         baseTracker.end(output);
-        pipelineActivity.completed_steps = baseTracker.steps.length;
+        this.activity.completed_steps = baseTracker.steps.length;
       },
-      skipCurrent(reason: string, output?: Record<string, unknown>) {
+      skipCurrent: (reason: string, output?: Record<string, unknown>) => {
         baseTracker.skipCurrent(reason, output);
-        pipelineActivity.completed_steps = baseTracker.steps.length;
+        this.activity.completed_steps = baseTracker.steps.length;
       },
-      skip(name: string, reason: string) {
+      skip: (name: string, reason: string) => {
         baseTracker.skip(name, reason);
-        pipelineActivity.completed_steps = baseTracker.steps.length;
+        this.activity.completed_steps = baseTracker.steps.length;
       },
     };
     this.batchStart = Date.now();
@@ -226,13 +226,13 @@ export class PipelineRunner {
     const { p, tracker } = this;
 
     // Set pipeline activity to busy
-    pipelineActivity.busy = true;
-    pipelineActivity.trigger = 'watcher';
-    pipelineActivity.started_at = this.batchStart;
-    pipelineActivity.current_step = null;
-    pipelineActivity.completed_steps = 0;
-    pipelineActivity.total_steps = PIPELINE_TOTAL_STEPS;
-    pipelineActivity.pending_events = p.events.length;
+    this.activity.busy = true;
+    this.activity.trigger = 'watcher';
+    this.activity.started_at = this.batchStart;
+    this.activity.current_step = null;
+    this.activity.completed_steps = 0;
+    this.activity.total_steps = PIPELINE_TOTAL_STEPS;
+    this.activity.pending_events = p.events.length;
 
     try {
       // Step 0.5: Drain deferred proactive queue (before any file processing)
@@ -282,13 +282,13 @@ export class PipelineRunner {
       }
 
       // Update pipeline activity — mark completed
-      pipelineActivity.busy = false;
-      pipelineActivity.current_step = null;
-      pipelineActivity.last_completed_at = Date.now();
-      pipelineActivity.last_completed_trigger = 'watcher';
-      pipelineActivity.last_completed_duration_ms = duration;
-      pipelineActivity.last_completed_files = p.events.length;
-      pipelineActivity.last_completed_steps = tracker.steps.map(s => s.name);
+      this.activity.busy = false;
+      this.activity.current_step = null;
+      this.activity.last_completed_at = Date.now();
+      this.activity.last_completed_trigger = 'watcher';
+      this.activity.last_completed_duration_ms = duration;
+      this.activity.last_completed_files = p.events.length;
+      this.activity.last_completed_steps = tracker.steps.map(s => s.name);
 
       serverLog('watcher', `Batch complete: ${p.events.length} files, ${duration}ms, ${tracker.steps.length} steps`);
     } catch (err) {
@@ -307,13 +307,13 @@ export class PipelineRunner {
       }
 
       // Update pipeline activity — mark completed (with failure)
-      pipelineActivity.busy = false;
-      pipelineActivity.current_step = null;
-      pipelineActivity.last_completed_at = Date.now();
-      pipelineActivity.last_completed_trigger = 'watcher';
-      pipelineActivity.last_completed_duration_ms = duration;
-      pipelineActivity.last_completed_files = p.events.length;
-      pipelineActivity.last_completed_steps = tracker.steps.map(s => s.name);
+      this.activity.busy = false;
+      this.activity.current_step = null;
+      this.activity.last_completed_at = Date.now();
+      this.activity.last_completed_trigger = 'watcher';
+      this.activity.last_completed_duration_ms = duration;
+      this.activity.last_completed_files = p.events.length;
+      this.activity.last_completed_steps = tracker.steps.map(s => s.name);
 
       serverLog('watcher', `Failed to rebuild index: ${err instanceof Error ? err.message : err}`, 'error');
     }

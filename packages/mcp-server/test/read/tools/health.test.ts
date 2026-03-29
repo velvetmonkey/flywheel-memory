@@ -72,4 +72,21 @@ describe('health_check', () => {
     // so status should NOT be 'unhealthy' on a valid test vault
     expect(data.status).not.toBe('unhealthy');
   });
+
+  test('summary mode omits full-scan dead-link fields', async () => {
+    const result = await client.callTool('health_check', { mode: 'summary' });
+    const data = JSON.parse(result.content[0].text);
+
+    expect(data).not.toHaveProperty('dead_link_count');
+    expect(data).not.toHaveProperty('top_dead_link_targets');
+  });
+
+  test('full mode includes dead-link fields', async () => {
+    const result = await client.callTool('health_check', { mode: 'full' });
+    const data = JSON.parse(result.content[0].text);
+
+    expect(data).toHaveProperty('dead_link_count');
+    expect(data).toHaveProperty('top_dead_link_targets');
+    expect(Array.isArray(data.top_dead_link_targets)).toBe(true);
+  });
 });

@@ -45,7 +45,7 @@ import {
   type VaultWatcher,
   type WatcherStatus,
 } from './core/read/watch/index.js';
-import { PipelineRunner } from './core/read/watch/pipeline.js';
+import { PipelineRunner, createEmptyPipelineActivity } from './core/read/watch/pipeline.js';
 import { exportHubScores } from './core/shared/hubExport.js';
 import { initializeLogger as initializeReadLogger, getLogger } from './core/read/logging.js';
 
@@ -183,6 +183,7 @@ function buildRegistryContext(): ToolRegistryContext {
     getStateDb: () => getActiveScopeOrNull()?.stateDb ?? stateDb,
     getFlywheelConfig: () => getActiveScopeOrNull()?.flywheelConfig ?? flywheelConfig,
     getWatcherStatus,
+    getPipelineActivity: () => getActiveScopeOrNull()?.pipelineActivity ?? null,
     updateVaultIndex,
     updateFlywheelConfig,
   };
@@ -261,6 +262,7 @@ async function initializeVault(name: string, vaultPathArg: string): Promise<Vaul
     lastEntityScanAt: 0,
     lastHubScoreRebuildAt: 0,
     lastIndexCacheSaveAt: 0,
+    pipelineActivity: createEmptyPipelineActivity(),
   };
 
   try {
@@ -312,6 +314,7 @@ function buildVaultScope(ctx: VaultContext): VaultScope {
     indexError: ctx.indexError,
     embeddingsBuilding: ctx.embeddingsBuilding,
     entityEmbeddingsMap: getEntityEmbeddingsMap(),
+    pipelineActivity: ctx.pipelineActivity,
   };
 }
 

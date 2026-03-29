@@ -48,6 +48,56 @@ import { tokenize } from '../../core/shared/stemmer.js';
 import { searchMemories, type Memory } from '../../core/write/memory.js';
 import { getSectionContent } from './structure.js';
 
+
+/**
+ * Determine whether multi-hop backfill should run for a query + result set.
+ *
+ * Triggers on:
+ * - Sparse results (< 3, existing behavior)
+ * - Bridge structure: top results reference entities absent from the query
+ * - Low diversity: top results cluster in the same folder/conversation
+ */
+function shouldRunMultiHop(
+  query: string,
+  results: Array<Record<string, unknown>>,
+  index: VaultIndex,
+): boolean {
+  // Always run when results are sparse
+  if (results.length < 3) return true;
+
+  // Skip if already have many results — backfill won't help
+  if (results.length >= 8) return false;
+
+  // Check for bridge structure: do top results reference entities
+  // that the query doesn't mention?
+  const queryLower = query.toLowerCase();
+  const topResults = results.slice(0, 5);
+  let bridgeSignals = 0;
+  for (const r of topResults) {
+    const outlinks = r.outlink_names as string[] | undefined;
+    if (!outlinks) continue;
+    for (const name of outlinks) {
+      if (name.length >= 3 && !queryLower.includes(name.toLowerCase())) {
+        bridgeSignals++;
+      }
+    }
+  }
+  if (bridgeSignals >= 3) return true;
+
+  // Check for low diversity: all top results in the same folder
+  const folders = new Set<string>();
+  for (const r of topResults) {
+    const p = r.path as string;
+    if (p) {
+      const folder = p.split('/').slice(0, -1).join('/');
+      folders.add(folder);
+    }
+  }
+  if (folders.size === 1 && topResults.length >= 3) return true;
+
+  return false;
+}
+
 /**
  * Apply graph signal re-ranking to search results.
  * Adds cooccurrence, recency, feedback, and edge weight boosts,
@@ -132,7 +182,7 @@ export function applySandwichOrdering(results: Array<Record<string, unknown>>): 
 function applyEntityBridging(
   results: Array<Record<string, unknown>>,
   stateDb: StateDb | null,
-  maxBridgesPerResult: number = 3,
+  maxBridgesPerResult: number = 5,
 ): void {
   if (!stateDb || results.length < 2) return;
 
@@ -739,8 +789,8 @@ export function registerQueryTools(
               in_entity: item.in_entity,
             }));
 
-            // Multi-hop backfill — only when primary results are sparse
-            if (results.length < 3) {
+            // Multi-hop backfill — when results suggest bridge structure
+            if (shouldRunMultiHop(query, results, index)) {
               const hopResults = multiHopBackfill(results, index, stateDb, { maxBackfill: limit });
               const expansionTerms = extractExpansionTerms(results, query, index);
               const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
@@ -796,8 +846,8 @@ export function registerQueryTools(
             ...('in_fts5' in item ? { in_fts5: true } : { in_entity: true }),
           }));
 
-          // Multi-hop backfill — only when primary results are sparse
-          if (results.length < 3) {
+          // Multi-hop backfill — when results suggest bridge structure
+          if (shouldRunMultiHop(query, results, index)) {
             const hopResults = multiHopBackfill(results, index, stateDb, { maxBackfill: limit });
             const expansionTerms = extractExpansionTerms(results, query, index);
             const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDb);
@@ -829,8 +879,8 @@ export function registerQueryTools(
         const fts5Filtered = applyFolderFilter(fts5Results);
         const results: Array<Record<string, unknown>> = fts5Filtered.map(r => ({ ...enrichResultCompact({ path: r.path, title: r.title, snippet: r.snippet }, index, stateDbFts), in_fts5: true }));
 
-        // Multi-hop backfill — only when primary results are sparse
-        if (results.length < 3) {
+        // Multi-hop backfill — when results suggest bridge structure
+        if (shouldRunMultiHop(query, results, index)) {
           const hopResults = multiHopBackfill(results, index, stateDbFts, { maxBackfill: limit });
           const expansionTerms = extractExpansionTerms(results, query, index);
           const expansionResults = expandQuery(expansionTerms, [...results, ...hopResults], index, stateDbFts);

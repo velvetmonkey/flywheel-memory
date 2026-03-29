@@ -34,6 +34,7 @@
 import type Database from 'better-sqlite3';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
+import type { EntityWithType } from '@velvetmonkey/vault-core';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 import * as path from 'path';
 import { scanVault } from './vault.js';
@@ -68,6 +69,12 @@ interface EntityEmbeddingRow {
 export interface EntitySimilarityResult {
   entityName: string;
   similarity: number;
+}
+
+export interface InferredCategory {
+  entityName: string;
+  category: string;
+  confidence: number;
 }
 
 // =============================================================================
@@ -126,6 +133,7 @@ const EMBEDDING_CACHE_MAX = 500;
 
 /** In-memory entity embeddings for fast cosine search */
 const entityEmbeddingsMap = new Map<string, Float32Array>();
+let inferredCategoriesMap = new Map<string, InferredCategory>();
 
 /** Resolve DB handle: ALS scope first, fallback to module-level. */
 function getDb(): Database.Database | null {
@@ -1185,6 +1193,164 @@ export function getEntityEmbeddingsMap(): Map<string, Float32Array> {
   return entityEmbeddingsMap;
 }
 
+export function getInferredCategory(entityName: string): InferredCategory | undefined {
+  return inferredCategoriesMap.get(entityName);
+}
+
+function ensureInferredCategoriesTable(): void {
+  const db = getDb();
+  if (!db) return;
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS inferred_categories (
+      entity_name TEXT PRIMARY KEY,
+      category TEXT NOT NULL,
+      confidence REAL NOT NULL,
+      source TEXT NOT NULL DEFAULT 'centroid',
+      updated_at INTEGER NOT NULL
+    )
+  `);
+}
+
+export function loadInferredCategories(): Map<string, InferredCategory> {
+  const db = getDb();
+  inferredCategoriesMap = new Map();
+  if (!db) return inferredCategoriesMap;
+
+  try {
+    ensureInferredCategoriesTable();
+    const rows = db.prepare(`
+      SELECT entity_name, category, confidence
+      FROM inferred_categories
+      WHERE source = 'centroid'
+    `).all() as Array<{ entity_name: string; category: string; confidence: number }>;
+
+    for (const row of rows) {
+      inferredCategoriesMap.set(row.entity_name, {
+        entityName: row.entity_name,
+        category: row.category,
+        confidence: row.confidence,
+      });
+    }
+  } catch {
+    inferredCategoriesMap = new Map();
+  }
+
+  return inferredCategoriesMap;
+}
+
+export function saveInferredCategories(categories: Map<string, InferredCategory>): void {
+  const db = getDb();
+  inferredCategoriesMap = new Map(categories);
+  if (!db) return;
+
+  ensureInferredCategoriesTable();
+  const now = Date.now();
+  const clearStmt = db.prepare(`DELETE FROM inferred_categories WHERE source = 'centroid'`);
+  const insertStmt = db.prepare(`
+    INSERT OR REPLACE INTO inferred_categories
+      (entity_name, category, confidence, source, updated_at)
+    VALUES (?, ?, ?, 'centroid', ?)
+  `);
+
+  const txn = db.transaction(() => {
+    clearStmt.run();
+    for (const inferred of categories.values()) {
+      insertStmt.run(
+        inferred.entityName,
+        inferred.category,
+        inferred.confidence,
+        now,
+      );
+    }
+  });
+  txn();
+}
+
+function normalizeVector(vector: Float32Array): Float32Array {
+  let magnitude = 0;
+  for (let i = 0; i < vector.length; i++) {
+    magnitude += vector[i] * vector[i];
+  }
+
+  if (magnitude === 0) return vector;
+
+  const normalized = new Float32Array(vector.length);
+  const scale = 1 / Math.sqrt(magnitude);
+  for (let i = 0; i < vector.length; i++) {
+    normalized[i] = vector[i] * scale;
+  }
+  return normalized;
+}
+
+export function classifyUncategorizedEntities(
+  entitiesWithTypes: EntityWithType[],
+  threshold = 0.45,
+): Map<string, InferredCategory> {
+  const embeddings = getEmbMap();
+  const categoryEmbeddings = new Map<string, Float32Array[]>();
+
+  for (const { entity, category } of entitiesWithTypes) {
+    if (category === 'other') continue;
+    const embedding = embeddings.get(entity.name);
+    if (!embedding) continue;
+
+    const existing = categoryEmbeddings.get(category) ?? [];
+    existing.push(embedding);
+    categoryEmbeddings.set(category, existing);
+  }
+
+  const centroids = new Map<string, Float32Array>();
+  for (const [category, vectors] of categoryEmbeddings.entries()) {
+    if (vectors.length < 3) continue;
+
+    const centroid = new Float32Array(vectors[0].length);
+    for (const vector of vectors) {
+      for (let i = 0; i < vector.length; i++) {
+        centroid[i] += vector[i];
+      }
+    }
+    for (let i = 0; i < centroid.length; i++) {
+      centroid[i] /= vectors.length;
+    }
+    centroids.set(category, normalizeVector(centroid));
+  }
+
+  const inferred = new Map<string, InferredCategory>();
+  if (centroids.size === 0) {
+    inferredCategoriesMap = inferred;
+    return inferred;
+  }
+
+  for (const { entity, category } of entitiesWithTypes) {
+    if (category !== 'other') continue;
+    const embedding = embeddings.get(entity.name);
+    if (!embedding) continue;
+
+    let bestCategory: string | null = null;
+    let bestSimilarity = -1;
+
+    for (const [candidateCategory, centroid] of centroids.entries()) {
+      const similarity = cosineSimilarity(embedding, centroid);
+      if (similarity > bestSimilarity) {
+        bestSimilarity = similarity;
+        bestCategory = candidateCategory;
+      }
+    }
+
+    if (bestCategory && bestSimilarity >= threshold) {
+      inferred.set(entity.name, {
+        entityName: entity.name,
+        category: bestCategory,
+        confidence: Math.round(bestSimilarity * 1000) / 1000,
+      });
+    }
+  }
+
+  inferredCategoriesMap = inferred;
+  return inferred;
+}
+
 /**
  * Load all entity embeddings from DB into memory for fast cosine search.
  */
@@ -1211,6 +1377,8 @@ export function loadEntityEmbeddingsToMemory(): void {
   } catch {
     // Table might not exist yet
   }
+
+  loadInferredCategories();
 }
 
 /**

@@ -11,6 +11,8 @@ import {
   buildEmbeddingsIndex,
   buildEntityEmbeddingsIndex,
   loadEntityEmbeddingsToMemory,
+  classifyUncategorizedEntities,
+  saveInferredCategories,
   setEmbeddingsBuildState,
   getEntityEmbeddingsCount,
   getStoredEmbeddingModel,
@@ -133,6 +135,16 @@ export function registerSemanticTools(
             }
           });
           loadEntityEmbeddingsToMemory();
+          saveInferredCategories(classifyUncategorizedEntities(
+            allEntities.map(entity => ({
+              entity: {
+                name: entity.name,
+                path: entity.path,
+                aliases: entity.aliases,
+              },
+              category: entity.category,
+            }))
+          ));
         }
       } catch (err) {
         console.error('[Semantic] Entity embeddings failed:', err instanceof Error ? err.message : err);

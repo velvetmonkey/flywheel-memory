@@ -70,6 +70,8 @@ import {
   getEntityEmbeddingsMap,
   getStoredTextVersion,
   clearEmbeddingsForRebuild,
+  classifyUncategorizedEntities,
+  saveInferredCategories,
   EMBEDDING_TEXT_VERSION,
 } from './core/read/embeddings.js';
 import {
@@ -818,6 +820,21 @@ async function runPostIndexWork(ctx: VaultContext) {
       // Everything current — skip model load, just load entity embeddings to memory
       serverLog('semantic', 'Embeddings up-to-date, skipping build');
       loadEntityEmbeddingsToMemory();
+      if (sd) {
+        const entities = getAllEntitiesFromDb(sd);
+        if (entities.length > 0) {
+          saveInferredCategories(classifyUncategorizedEntities(
+            entities.map(entity => ({
+              entity: {
+                name: entity.name,
+                path: entity.path,
+                aliases: entity.aliases,
+              },
+              category: entity.category,
+            }))
+          ));
+        }
+      }
     } else {
       // Something needs updating — model load required
       if (modelChanged) {
@@ -863,6 +880,21 @@ async function runPostIndexWork(ctx: VaultContext) {
           }
           activateVault(ctx);
           loadEntityEmbeddingsToMemory();
+          if (sd) {
+            const entities = getAllEntitiesFromDb(sd);
+            if (entities.length > 0) {
+              saveInferredCategories(classifyUncategorizedEntities(
+                entities.map(entity => ({
+                  entity: {
+                    name: entity.name,
+                    path: entity.path,
+                    aliases: entity.aliases,
+                  },
+                  category: entity.category,
+                }))
+              ));
+            }
+          }
           setEmbeddingsBuildState('complete');
           serverLog('semantic', 'Embeddings ready — searches now use hybrid ranking');
         } catch (err) {

@@ -16,6 +16,7 @@ import {
   extractLinkedEntities,
   isLikelyArticleTitle,
   setWriteStateDb,
+  setCooccurrenceIndex,
 } from '../../../src/core/write/wikilinks.js';
 import {
   createTempVault,
@@ -32,7 +33,14 @@ import {
 } from '../helpers/testUtils.js';
 import { mkdir, writeFile, readFile } from 'fs/promises';
 import path from 'path';
-import { ENTITY_CACHE_VERSION } from '@velvetmonkey/vault-core';
+import { ENTITY_CACHE_VERSION, getAllEntitiesWithTypes } from '@velvetmonkey/vault-core';
+import { saveCooccurrenceToStateDb, type CooccurrenceIndex } from '../../../src/core/shared/cooccurrence.js';
+import {
+  classifyUncategorizedEntities,
+  loadEntityEmbeddingsToMemory,
+  saveInferredCategories,
+  setEmbeddingsDatabase,
+} from '../../../src/core/read/embeddings.js';
 
 // ========================================
 // Entity Index State Tests
@@ -2311,6 +2319,140 @@ describe('combined scoring formula', () => {
     if (result.suggestions.length >= 2) {
       expect(result.suggestions[0]).toBe('Alex Johnson');
     }
+  });
+});
+
+describe('scoring guardrails', () => {
+  let tempVault: string;
+  let stateDb: StateDb;
+
+  beforeEach(async () => {
+    tempVault = await createTempVault();
+    stateDb = openStateDb(tempVault);
+    setWriteStateDb(stateDb);
+    setEmbeddingsDatabase(stateDb.db);
+  });
+
+  afterEach(async () => {
+    setCooccurrenceIndex(null);
+    saveInferredCategories(new Map());
+    setWriteStateDb(null);
+    stateDb.db.close();
+    deleteStateDb(tempVault);
+    await cleanupTempVault(tempVault);
+  });
+
+  it('does not suggest acronym entities for lowercase common-word usage', async () => {
+    createEntityCacheInStateDb(stateDb, tempVault, {
+      acronyms: ['REST'],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    const lowercase = await suggestRelatedLinks('Taking a rest day after the trip.', {
+      strictness: 'balanced',
+    });
+    expect(lowercase.suggestions).not.toContain('REST');
+
+    const uppercase = await suggestRelatedLinks('Building a REST API for the service.', {
+      strictness: 'balanced',
+    });
+    expect(uppercase.suggestions).toContain('REST');
+  });
+
+  it('caps graph-only score inflation when content relevance is absent', async () => {
+    createEntityCacheInStateDb(stateDb, tempVault, {
+      people: ['Alex Johnson'],
+      other: ['Arma Reforger'],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    const coocIndex: CooccurrenceIndex = {
+      associations: {
+        'Alex Johnson': new Map([['Arma Reforger', 1]]),
+        'Arma Reforger': new Map([['Alex Johnson', 1]]),
+      },
+      minCount: 0.5,
+      documentFrequency: new Map([
+        ['Alex Johnson', 1],
+        ['Arma Reforger', 1],
+      ]),
+      totalNotesScanned: 100,
+      _metadata: {
+        generated_at: new Date().toISOString(),
+        total_associations: 2,
+        notes_scanned: 100,
+      },
+    };
+    saveCooccurrenceToStateDb(stateDb, coocIndex);
+    setCooccurrenceIndex(coocIndex);
+
+    const insertFeedback = stateDb.db.prepare(
+      'INSERT INTO wikilink_feedback (entity, context, note_path, correct) VALUES (?, ?, ?, ?)'
+    );
+    const feedbackTxn = stateDb.db.transaction(() => {
+      for (let i = 0; i < 24; i++) {
+        insertFeedback.run('Arma Reforger', 'test:cap', `notes/${i}.md`, 1);
+      }
+    });
+    feedbackTxn();
+
+    const result = await suggestRelatedLinks('Met with Alex Johnson for planning.', {
+      strictness: 'balanced',
+      detail: true,
+    });
+
+    const arma = result.detailed?.find(entry => entry.entity === 'Arma Reforger');
+    expect(arma).toBeDefined();
+    expect(arma!.breakdown.contentMatch).toBe(0);
+    expect(arma!.breakdown.fuzzyMatch).toBe(0);
+    expect(arma!.totalScore).toBe(15);
+  });
+
+  it('uses inferred categories to boost uncategorized entities', async () => {
+    createEntityCacheInStateDb(stateDb, tempVault, {
+      people: ['Ava', 'Mia', 'Zoe'],
+      other: ['Nova'],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    stateDb.db.exec(`
+      CREATE TABLE IF NOT EXISTS entity_embeddings (
+        entity_name TEXT PRIMARY KEY,
+        embedding BLOB NOT NULL,
+        source_hash TEXT NOT NULL,
+        model TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    `);
+
+    const insertEmbedding = stateDb.db.prepare(`
+      INSERT OR REPLACE INTO entity_embeddings (entity_name, embedding, source_hash, model, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+    const makeEmbedding = (values: number[]) => {
+      const vector = new Float32Array(values);
+      return Buffer.from(vector.buffer, vector.byteOffset, vector.byteLength);
+    };
+    const now = Date.now();
+    for (const name of ['Ava', 'Mia', 'Zoe', 'Nova']) {
+      insertEmbedding.run(name, makeEmbedding([1, 0, 0]), `hash-${name}`, 'test-model', now);
+    }
+
+    loadEntityEmbeddingsToMemory();
+    saveInferredCategories(classifyUncategorizedEntities(getAllEntitiesWithTypes(getEntityIndex()!)));
+
+    const result = await suggestRelatedLinks('Nova', {
+      strictness: 'balanced',
+      detail: true,
+    });
+
+    const nova = result.detailed?.find(entry => entry.entity === 'Nova');
+    expect(nova).toBeDefined();
+    expect(nova!.breakdown.typeBoost).toBe(5);
+    expect(nova!.totalScore).toBe(15);
   });
 });
 

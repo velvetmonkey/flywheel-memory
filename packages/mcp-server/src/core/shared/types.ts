@@ -162,6 +162,10 @@ export interface SuggestionConfig {
   exactMatchBonus: number;
   /** Bonus points for fuzzy matches (default: 2 for conservative, 4 for balanced, 5 for aggressive) */
   fuzzyMatchBonus: number;
+  /** Minimum direct content relevance required before graph/popularity boosts are fully uncapped */
+  contentRelevanceFloor: number;
+  /** Maximum score allowed when content relevance stays below the configured floor */
+  noRelevanceCap: number;
 }
 
 /**

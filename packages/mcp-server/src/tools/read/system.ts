@@ -17,7 +17,15 @@ import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { countFTS5Mentions } from '../../core/read/fts5.js';
 import { recomputeEdgeWeights } from '../../core/write/edgeWeights.js';
-import { hasEmbeddingsIndex, buildEmbeddingsIndex, buildEntityEmbeddingsIndex, hasEntityEmbeddingsIndex, loadEntityEmbeddingsToMemory } from '../../core/read/embeddings.js';
+import {
+  hasEmbeddingsIndex,
+  buildEmbeddingsIndex,
+  buildEntityEmbeddingsIndex,
+  hasEntityEmbeddingsIndex,
+  loadEntityEmbeddingsToMemory,
+  classifyUncategorizedEntities,
+  saveInferredCategories,
+} from '../../core/read/embeddings.js';
 import { initializeEntityIndex, setCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { exportHubScores } from '../../core/shared/hubExport.js';
 import { computeGraphMetrics, recordGraphSnapshot } from '../../core/shared/graphSnapshots.js';
@@ -306,6 +314,16 @@ export function registerSystemTools(
               }]));
               entityEmbeddingsRefreshed = await buildEntityEmbeddingsIndex(vaultPath, entityMap);
               loadEntityEmbeddingsToMemory();
+              saveInferredCategories(classifyUncategorizedEntities(
+                entities.map(entity => ({
+                  entity: {
+                    name: entity.name,
+                    path: entity.path,
+                    aliases: entity.aliases,
+                  },
+                  category: entity.category,
+                }))
+              ));
               tracker.end({ refreshed: entityEmbeddingsRefreshed });
               if (entityEmbeddingsRefreshed > 0) {
                 console.error(`[Flywheel] Entity embeddings: ${entityEmbeddingsRefreshed} updated`);

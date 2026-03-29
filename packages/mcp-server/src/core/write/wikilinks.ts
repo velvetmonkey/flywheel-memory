@@ -41,6 +41,8 @@ import {
   type StateDb,
   type EntitySearchResult,
   STOPWORDS_EN,
+  IMPLICIT_EXCLUDE_WORDS,
+  COMMON_ENGLISH_WORDS,
 } from '@velvetmonkey/vault-core';
 import { isSuppressed, getAllFeedbackBoosts, getAllSuppressionPenalties, getEntityStats, trackWikilinkApplications } from './wikilinkFeedback.js';
 import { getCorrectedEntityNotePairs } from './corrections.js';
@@ -69,7 +71,12 @@ import {
   saveRecencyToStateDb,
   type RecencyIndex,
 } from '../shared/recency.js';
-import { embedTextCached, findSemanticallySimilarEntities, hasEntityEmbeddingsIndex } from '../read/embeddings.js';
+import {
+  embedTextCached,
+  findSemanticallySimilarEntities,
+  getInferredCategory,
+  hasEntityEmbeddingsIndex,
+} from '../read/embeddings.js';
 import { getEntityEdgeWeightMap } from './edgeWeights.js';
 import { scoreFuzzyMatch, buildCollapsedContentTerms, normalizeFuzzyTerm } from '../shared/levenshtein.js';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
@@ -840,6 +847,8 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     stemMatchBonus: 3,         // Lower bonus for stem-only matches
     exactMatchBonus: 10,       // Standard bonus for exact matches
     fuzzyMatchBonus: 2,        // Low fuzzy bonus — supplementary signal only
+    contentRelevanceFloor: 5,
+    noRelevanceCap: 12,
   },
   balanced: {
     minWordLength: 3,
@@ -849,6 +858,8 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     stemMatchBonus: 5,         // Standard bonus for stem matches
     exactMatchBonus: 10,       // Standard bonus for exact matches
     fuzzyMatchBonus: 4,        // Moderate fuzzy bonus
+    contentRelevanceFloor: 5,
+    noRelevanceCap: 15,
   },
   aggressive: {
     minWordLength: 3,
@@ -858,6 +869,8 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     stemMatchBonus: 6,         // Higher bonus for stem matches
     exactMatchBonus: 10,       // Standard bonus for exact matches
     fuzzyMatchBonus: 5,        // Higher fuzzy bonus — discovery mode
+    contentRelevanceFloor: 3,
+    noRelevanceCap: 18,
   },
 };
 
@@ -897,11 +910,46 @@ const TYPE_BOOST: Record<string, number> = {
 function getTypeBoost(
   category: string,
   customCategories?: Record<string, { type_boost?: number }>,
+  entityName?: string,
 ): number {
   if (customCategories?.[category]?.type_boost != null) {
     return customCategories[category].type_boost!;
   }
+  if (category === 'other' && entityName) {
+    const inferred = getInferredCategory(entityName);
+    if (inferred) {
+      return TYPE_BOOST[inferred.category] || 0;
+    }
+  }
   return TYPE_BOOST[category] || 0;
+}
+
+function isCommonWordFalsePositive(
+  entityName: string,
+  rawContent: string,
+  category: string,
+): boolean {
+  const nameTokens = tokenize(entityName);
+  if (nameTokens.length !== 1) return false;
+
+  const EXEMPT_CATEGORIES = new Set(['people', 'animals', 'projects', 'organizations']);
+  if (EXEMPT_CATEGORIES.has(category)) return false;
+
+  const lowerName = entityName.toLowerCase();
+  if (!IMPLICIT_EXCLUDE_WORDS.has(lowerName) && !COMMON_ENGLISH_WORDS.has(lowerName)) return false;
+
+  return !rawContent.includes(entityName);
+}
+
+function capScoreWithoutContentRelevance(
+  score: number,
+  contentRelevance: number,
+  config: SuggestionConfig,
+): number {
+  if (contentRelevance < config.contentRelevanceFloor) {
+    return Math.min(score, config.noRelevanceCap);
+  }
+  return score;
 }
 
 /**
@@ -1447,6 +1495,7 @@ export async function suggestRelatedLinks(
     // Get entity name
     const entityName = entity.name;
     if (!entityName) continue;
+    if (isCommonWordFalsePositive(entityName, content, category)) continue;
 
     // Layer 1a: Length filter - skip article titles, clippings (>25 chars)
     if (!disabled.has('length_filter') && entityName.length > MAX_ENTITY_LENGTH) {
@@ -1496,7 +1545,7 @@ export async function suggestRelatedLinks(
     }
 
     // Layer 5: Type boost - prioritize people, projects over common technologies
-    const layerTypeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories);
+    const layerTypeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories, entityName);
     score += layerTypeBoost;
 
     // Layer 6: Context boost - boost types relevant to note context
@@ -1533,6 +1582,7 @@ export async function suggestRelatedLinks(
     // Layer 0: Soft suppression penalty (proportional to Beta-Binomial posterior)
     const layerSuppressionPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(entityName) ?? 0);
     score += layerSuppressionPenalty;
+    score = capScoreWithoutContentRelevance(score, contentScore + fuzzyMatchScore, config);
 
     // Minimum threshold (adaptive based on content length)
     // Require lexical evidence — entities with only type/hub/recency boosts are
@@ -1600,6 +1650,7 @@ export async function suggestRelatedLinks(
     for (const { entity, category } of entitiesWithTypes) {
       const entityName = entity.name;
       if (!entityName) continue;
+      if (isCommonWordFalsePositive(entityName, content, category)) continue;
 
       // Skip if already scored, already linked, too long, or article-like
       if (!disabled.has('length_filter') && entityName.length > MAX_ENTITY_LENGTH) continue;
@@ -1617,6 +1668,8 @@ export async function suggestRelatedLinks(
         if (existing) {
           existing.score += boost;
           existing.breakdown.cooccurrenceBoost += boost;
+          const existingContentRelevance = existing.breakdown.contentMatch + existing.breakdown.fuzzyMatch + (existing.breakdown.semanticBoost ?? 0);
+          existing.score = capScoreWithoutContentRelevance(existing.score, existingContentRelevance, config);
         } else {
           // Require minimal content overlap for co-occurrence suggestions,
           // UNLESS the entity has strong co-occurrence with multiple content-matched entities.
@@ -1643,7 +1696,7 @@ export async function suggestRelatedLinks(
           // For purely co-occurrence-based suggestions, add relevant boosts.
           // Recency is omitted for graph-only entities — it's a "recently seen" signal
           // that shouldn't inflate scores for entities absent from the note's text.
-          const typeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories);
+          const typeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories, entityName);
           const contextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
           const recencyBoostVal = hasContentOverlap && !disabled.has('recency')
             ? (recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0)
@@ -1657,7 +1710,9 @@ export async function suggestRelatedLinks(
           const feedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
           const edgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
           const suppPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(entityName) ?? 0);
-          const totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj + edgeWeightBoost + suppPenalty;
+          let totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj + edgeWeightBoost + suppPenalty;
+          const coocContentRelevance = hasContentOverlap ? 5 : 0;
+          totalBoost = capScoreWithoutContentRelevance(totalBoost, coocContentRelevance, config);
 
           // Graph-only suggestions (no content overlap) need a higher score floor
           const effectiveMinScore = !hasContentOverlap
@@ -1716,6 +1771,12 @@ export async function suggestRelatedLinks(
       for (const match of semanticMatches) {
         if (match.similarity < SEMANTIC_MIN_SIMILARITY) continue;
 
+        const semanticEntityWithType = entitiesWithTypes.find(
+          et => et.entity.name === match.entityName
+        );
+        if (!semanticEntityWithType) continue;
+        if (isCommonWordFalsePositive(match.entityName, content, semanticEntityWithType.category)) continue;
+
         const boost = match.similarity * SEMANTIC_MAX_BOOST * semanticStrictnessMultiplier;
 
         // Check if entity already has a score
@@ -1727,19 +1788,14 @@ export async function suggestRelatedLinks(
           // NEW entity not in scored list and not already linked
 
           // Look up the entity in the entity index
-          const entityWithType = entitiesWithTypes.find(
-            et => et.entity.name === match.entityName
-          );
-          if (!entityWithType) continue;
-
           // Skip length/article filters (same as main loop)
           if (!disabled.has('length_filter') && match.entityName.length > MAX_ENTITY_LENGTH) continue;
           if (!disabled.has('article_filter') && isLikelyArticleTitle(match.entityName)) continue;
 
-          const { entity, category } = entityWithType;
+          const { entity, category } = semanticEntityWithType;
 
           // Reuse existing layer logic for base boosts
-          const layerTypeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories);
+          const layerTypeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories, match.entityName);
           const layerContextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
           const layerHubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
           const layerCrossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
@@ -1780,6 +1836,14 @@ export async function suggestRelatedLinks(
     } catch {
       // Semantic scoring failure never breaks suggestions
     }
+  }
+
+  for (const entry of scoredEntities) {
+    const contentRelevance =
+      entry.breakdown.contentMatch +
+      entry.breakdown.fuzzyMatch +
+      (entry.breakdown.semanticBoost ?? 0);
+    entry.score = capScoreWithoutContentRelevance(entry.score, contentRelevance, config);
   }
 
   // Filter to only entities with actual content matches

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-03-26T16:27:18.538Z",
+  "generated": "2026-03-29T00:53:28.904Z",
   "dataset": "locomo10",
   "total_conversations": 10,
   "total_questions": 1986,
@@ -71,24 +71,6 @@
       "precision_at_5": 0.203,
       "mrr": 0.746,
       "ndcg_at_10": 0.762
-    }
-  },
-  "pipeline_comparison": {
-    "fts5_only": {
-      "total_queries": 1531,
-      "recall_at_5": 0.848,
-      "recall_at_10": 0.904,
-      "precision_at_5": 0.208,
-      "mrr": 0.767,
-      "ndcg_at_10": 0.782
-    },
-    "full_pipeline": {
-      "total_queries": 1531,
-      "recall_at_5": 0.835,
-      "recall_at_10": 0.904,
-      "precision_at_5": 0.205,
-      "mrr": 0.769,
-      "ndcg_at_10": 0.785
     }
   }
 }

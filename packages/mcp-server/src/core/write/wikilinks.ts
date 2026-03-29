@@ -850,6 +850,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     contentRelevanceFloor: 5,
     noRelevanceCap: 12,
     minCooccurrenceGate: 6,
+    minContentMatch: 3,
   },
   balanced: {
     minWordLength: 3,
@@ -862,6 +863,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     contentRelevanceFloor: 5,
     noRelevanceCap: 10,
     minCooccurrenceGate: 5,
+    minContentMatch: 2,
   },
   aggressive: {
     minWordLength: 3,
@@ -874,6 +876,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     contentRelevanceFloor: 3,
     noRelevanceCap: 18,
     minCooccurrenceGate: 3,
+    minContentMatch: 0,
   },
 };
 
@@ -1491,8 +1494,8 @@ export async function suggestRelatedLinks(
   }
   const scoredEntities: ScoredEntry[] = [];
   const directlyMatchedEntities = new Set<string>();
-  // Track entities that have actual content matches (not just boosts)
-  const entitiesWithContentMatch = new Set<string>();
+  // Track entities admitted by any scoring path (lexical, cooccurrence, semantic) — minContentMatch gate applied later
+  const entitiesWithAnyScoringPath = new Set<string>();
 
   for (const { entity, category } of entitiesWithTypes) {
     // Get entity name
@@ -1544,7 +1547,7 @@ export async function suggestRelatedLinks(
 
     // Track entities with actual lexical matches (content + fuzzy)
     if (hasLexicalEvidence) {
-      entitiesWithContentMatch.add(entityName);
+      entitiesWithAnyScoringPath.add(entityName);
     }
 
     // Layer 5: Type boost - prioritize people, projects over common technologies
@@ -1692,7 +1695,7 @@ export async function suggestRelatedLinks(
           // Entity passed content overlap or strong co-occurrence check —
           // qualify it for final results
           if (hasContentOverlap || strongCooccurrence) {
-            entitiesWithContentMatch.add(entityName);
+            entitiesWithAnyScoringPath.add(entityName);
           }
 
           // For purely co-occurrence-based suggestions, add relevant boosts.
@@ -1830,8 +1833,8 @@ export async function suggestRelatedLinks(
               },
             });
 
-            // Add to content match set so it passes the gate below
-            entitiesWithContentMatch.add(match.entityName);
+            // Add to scoring-path set — semantic admission; minContentMatch applied at final filter
+            entitiesWithAnyScoringPath.add(match.entityName);
           }
         }
       }
@@ -1848,11 +1851,13 @@ export async function suggestRelatedLinks(
     entry.score = capScoreWithoutContentRelevance(entry.score, contentRelevance, config);
   }
 
-  // Filter to only entities with actual content matches
+  // Filter to entities admitted by a scoring path, then enforce minContentMatch floor
   // This prevents popularity-based suggestions (high hub score, recency) for unrelated content
-  const relevantEntities = scoredEntities.filter(e =>
-    entitiesWithContentMatch.has(e.name)
-  );
+  const relevantEntities = scoredEntities.filter(e => {
+    if (!entitiesWithAnyScoringPath.has(e.name)) return false;
+    if (config.minContentMatch > 0 && e.breakdown.contentMatch < config.minContentMatch) return false;
+    return true;
+  });
 
   // If no content matches at all, return empty rather than popularity-based suggestions
   if (relevantEntities.length === 0) {
@@ -1899,7 +1904,7 @@ export async function suggestRelatedLinks(
         }
         // Also persist entities that were scored but didn't meet threshold
         for (const e of scoredEntities) {
-          if (!entitiesWithContentMatch.has(e.name)) continue;
+          if (!entitiesWithAnyScoringPath.has(e.name)) continue;
           if (relevantEntities.some(r => r.name === e.name)) continue;
           insertStmt.run(
             now,
@@ -1949,9 +1954,7 @@ export async function suggestRelatedLinks(
   // Per-file fatigue: count existing suffix appearances for each entity
   const suffixCandidates = topEntries.filter(e => {
     if (e.score < MIN_SUFFIX_SCORE) return false;
-    if (!(e.breakdown.contentMatch >= MIN_SUFFIX_CONTENT ||
-          e.breakdown.cooccurrenceBoost >= MIN_SUFFIX_CONTENT ||
-          (e.breakdown.semanticBoost ?? 0) >= MIN_SUFFIX_CONTENT)) return false;
+    if (e.breakdown.contentMatch < MIN_SUFFIX_CONTENT) return false;
 
     // Count how many times this entity already appears in → suffix lines
     if (!disabled.has('fatigue')) {

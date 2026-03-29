@@ -1,7 +1,7 @@
 {
   "suite": "parameter-sweep-report",
-  "timestamp": "2026-03-28T00:28:41.347Z",
-  "duration_ms": 6953,
+  "timestamp": "2026-03-29T00:55:29.789Z",
+  "duration_ms": 5991,
   "summary": {
     "best_f1": 0.539,
     "best_maxSuggestions": 5,

@@ -39,8 +39,8 @@ const STRICTNESS_MODES: StrictnessMode[] = ['conservative', 'balanced', 'aggress
 
 const SCORING_LAYERS: ScoringLayer[] = [
   'length_filter', 'article_filter',
-  'exact_match', 'stem_match',
-  'cooccurrence',
+  'exact_match', 'stem_match', 'fuzzy_match',
+  'cooccurrence', 'rarity',
   'type_boost', 'context_boost',
   'recency', 'cross_folder',
   'hub_boost', 'feedback', 'semantic',

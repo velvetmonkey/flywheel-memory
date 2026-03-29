@@ -47,6 +47,7 @@ describe('Competitive Baselines', () => {
     beforeAll(async () => {
       // Disable all non-text layers
       const disabledLayers: ScoringLayer[] = [
+        'fuzzy_match', 'rarity',
         'cooccurrence',
         'type_boost', 'context_boost',
         'recency', 'cross_folder',
@@ -74,7 +75,7 @@ describe('Competitive Baselines', () => {
     beforeAll(async () => {
       // Disable everything except hub_boost (and keep filters)
       const disabledLayers: ScoringLayer[] = [
-        'exact_match', 'stem_match',
+        'exact_match', 'stem_match', 'fuzzy_match', 'rarity',
         'cooccurrence',
         'type_boost', 'context_boost',
         'recency', 'cross_folder',
@@ -95,13 +96,14 @@ describe('Competitive Baselines', () => {
 
     beforeAll(async () => {
       const textDisabled: ScoringLayer[] = [
+        'fuzzy_match', 'rarity',
         'cooccurrence',
         'type_boost', 'context_boost',
         'recency', 'cross_folder',
         'hub_boost', 'feedback', 'semantic',
       ];
       const hubDisabled: ScoringLayer[] = [
-        'exact_match', 'stem_match',
+        'exact_match', 'stem_match', 'fuzzy_match', 'rarity',
         'cooccurrence',
         'type_boost', 'context_boost',
         'recency', 'cross_folder',

@@ -385,6 +385,26 @@ export function tokenIdf(
 }
 
 /**
+ * Compute entity-level rarity multiplier from document frequency.
+ *
+ * Uses entity-level DF (not token-level IDF) so "API" the entity
+ * is treated differently from "OpenAI API" the entity.
+ *
+ * Returns:
+ *   - 1.0 when no co-occurrence index exists (neutral)
+ *   - 1.3 when entity is absent from DF but index exists (unknown = moderately rare)
+ *   - [0.7, 1.8] scaled by entity rarity in the vault
+ */
+export function entityRarity(entityName: string, coocIndex: CooccurrenceIndex | null): number {
+  if (!coocIndex || coocIndex.totalNotesScanned === 0) return 1.0;
+  const df = coocIndex.documentFrequency.get(entityName);
+  if (df === undefined) return 1.3;
+  const N = coocIndex.totalNotesScanned;
+  const rarity = Math.log((N + 1) / (df + 1)) / Math.log(N + 1);
+  return Math.max(0.7, Math.min(1.8, 0.7 + rarity * 1.1));
+}
+
+/**
  * Serialize co-occurrence index to JSON-compatible format
  */
 export function serializeCooccurrenceIndex(

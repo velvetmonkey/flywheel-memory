@@ -103,6 +103,25 @@ describe('Pillar 2: Scoring Layer Isolation', () => {
     }, 30000);
   });
 
+  describe('Layer 3.5: Fuzzy match', () => {
+    it('disabling does not crash and produces valid results', async () => {
+      const result = await ablateLayer('fuzzy_match');
+      // Fuzzy match is supplementary — disabling may or may not change F1
+      // On synthetic vaults with correct spelling, delta should be ~0
+      expect(result.ablatedReport).toBeDefined();
+      expect(result.ablatedReport.totalSuggestions).toBeGreaterThan(0);
+    }, 30000);
+  });
+
+  describe('Layer 4.5: Rarity', () => {
+    it('disabling does not crash and produces valid results', async () => {
+      const result = await ablateLayer('rarity');
+      // Rarity adjusts lexical scores — effect depends on entity frequency distribution
+      expect(result.ablatedReport).toBeDefined();
+      expect(result.ablatedReport.totalSuggestions).toBeGreaterThan(0);
+    }, 30000);
+  });
+
   describe('Layer 4: Co-occurrence', () => {
     it('contributes measurable signal', async () => {
       const result = await ablateLayer('cooccurrence');

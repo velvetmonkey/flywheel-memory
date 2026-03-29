@@ -31,7 +31,7 @@ import type { IndexState } from '../graph.js';
 
 // Shared modules
 import { serverLog } from '../../shared/serverLog.js';
-import { createStepTracker, recordIndexEvent, computeEntityDiff, type IndexEventTrigger } from '../../shared/indexActivity.js';
+import { createStepTracker, recordIndexEvent, computeEntityDiff, type IndexEventTrigger, type StepRunResult } from '../../shared/indexActivity.js';
 import { exportHubScores } from '../../shared/hubExport.js';
 import { buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from '../../shared/recency.js';
 import { mineCooccurrences, saveCooccurrenceToStateDb } from '../../shared/cooccurrence.js';
@@ -144,17 +144,27 @@ export interface PipelineContext {
 
 type StepTracker = ReturnType<typeof createStepTracker>;
 
-/** Non-critical step wrapper: try-catch + tracker.start/end */
+/** Non-critical step wrapper: try-catch + tracker.start/end. Supports StepRunResult for skip semantics. */
 async function runStep(
   name: string,
   tracker: StepTracker,
   meta: Record<string, unknown>,
-  fn: () => Promise<Record<string, unknown>>,
+  fn: () => Promise<Record<string, unknown> | StepRunResult>,
 ): Promise<void> {
   tracker.start(name, meta);
   try {
     const result = await fn();
-    tracker.end(result);
+    // Handle tagged StepRunResult
+    if (result && 'kind' in result) {
+      const tagged = result as StepRunResult;
+      if (tagged.kind === 'skipped') {
+        tracker.skipCurrent(tagged.reason, tagged.output);
+      } else {
+        tracker.end(tagged.output);
+      }
+    } else {
+      tracker.end(result);
+    }
   } catch (e) {
     tracker.end({ error: String(e) });
     serverLog('watcher', `${name}: failed: ${e}`, 'error');
@@ -200,6 +210,10 @@ export class PipelineRunner {
         baseTracker.end(output);
         pipelineActivity.completed_steps = baseTracker.steps.length;
       },
+      skipCurrent(reason: string, output?: Record<string, unknown>) {
+        baseTracker.skipCurrent(reason, output);
+        pipelineActivity.completed_steps = baseTracker.steps.length;
+      },
       skip(name: string, reason: string) {
         baseTracker.skip(name, reason);
         pipelineActivity.completed_steps = baseTracker.steps.length;
@@ -237,8 +251,8 @@ export class PipelineRunner {
       if (p.sd) {
         await runStep('edge_weights', tracker, {}, () => this.edgeWeights());
       }
-      await this.noteEmbeddings();
-      await this.entityEmbeddings();
+      await runStep('note_embeddings', tracker, { files: p.events.length }, () => this.noteEmbeddings());
+      await runStep('entity_embeddings', tracker, { files: p.events.length }, () => this.entityEmbeddings());
       await this.indexCache();
       await this.taskCache();
       await runStep('forward_links', tracker, { files: p.events.length }, () => this.forwardLinks());
@@ -532,75 +546,71 @@ export class PipelineRunner {
 
   // ── Step 4: Note embeddings ───────────────────────────────────────
 
-  private async noteEmbeddings(): Promise<void> {
-    const { p, tracker } = this;
-    if (hasEmbeddingsIndex()) {
-      tracker.start('note_embeddings', { files: p.events.length });
-      let embUpdated = 0;
-      let embRemoved = 0;
-      for (const event of p.events) {
-        try {
-          if (event.type === 'delete') {
-            removeEmbedding(event.path);
-            embRemoved++;
-          } else if (event.path.endsWith('.md')) {
-            const absPath = path.join(p.vp, event.path);
-            await updateEmbedding(event.path, absPath);
-            embUpdated++;
-          }
-        } catch {
-          // Don't let embedding errors affect watcher
-        }
-      }
-      let orphansRemoved = 0;
-      try {
-        orphansRemoved = removeOrphanedNoteEmbeddings();
-      } catch (e) {
-        serverLog('watcher', `Note embedding orphan cleanup failed: ${e}`, 'error');
-      }
-      tracker.end({ updated: embUpdated, removed: embRemoved, orphans_removed: orphansRemoved });
-      serverLog('watcher', `Note embeddings: ${embUpdated} updated, ${embRemoved} removed, ${orphansRemoved} orphans cleaned`);
-    } else {
-      tracker.skip('note_embeddings', 'not built');
+  private async noteEmbeddings(): Promise<StepRunResult> {
+    const { p } = this;
+    if (!hasEmbeddingsIndex()) {
+      return { kind: 'skipped', reason: 'not built' };
     }
+    let embUpdated = 0;
+    let embRemoved = 0;
+    for (const event of p.events) {
+      try {
+        if (event.type === 'delete') {
+          removeEmbedding(event.path);
+          embRemoved++;
+        } else if (event.path.endsWith('.md')) {
+          const absPath = path.join(p.vp, event.path);
+          await updateEmbedding(event.path, absPath);
+          embUpdated++;
+        }
+      } catch {
+        // Don't let per-event embedding errors affect watcher
+      }
+    }
+    let orphansRemoved = 0;
+    try {
+      orphansRemoved = removeOrphanedNoteEmbeddings();
+    } catch (e) {
+      serverLog('watcher', `Note embedding orphan cleanup failed: ${e}`, 'error');
+    }
+    serverLog('watcher', `Note embeddings: ${embUpdated} updated, ${embRemoved} removed, ${orphansRemoved} orphans cleaned`);
+    return { kind: 'done', output: { updated: embUpdated, removed: embRemoved, orphans_removed: orphansRemoved } };
   }
 
   // ── Step 5: Entity embeddings ─────────────────────────────────────
 
-  private async entityEmbeddings(): Promise<void> {
-    const { p, tracker } = this;
-    if (hasEntityEmbeddingsIndex() && p.sd) {
-      tracker.start('entity_embeddings', { files: p.events.length });
-      let entEmbUpdated = 0;
-      let entEmbOrphansRemoved = 0;
-      const entEmbNames: string[] = [];
-      try {
-        const allEntities = getAllEntitiesFromDb(p.sd);
-        for (const event of p.events) {
-          if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
-          const matching = allEntities.filter(e => e.path === event.path);
-          for (const entity of matching) {
-            await updateEntityEmbedding(entity.name, {
-              name: entity.name,
-              path: entity.path,
-              category: entity.category,
-              aliases: entity.aliases,
-            }, p.vp);
-            entEmbUpdated++;
-            entEmbNames.push(entity.name);
-          }
-        }
-        // Clean up embeddings for entities no longer in the database
-        const currentNames = new Set(allEntities.map(e => e.name));
-        entEmbOrphansRemoved = removeOrphanedEntityEmbeddings(currentNames);
-      } catch (e) {
-        serverLog('watcher', `Entity embedding update/orphan cleanup failed: ${e}`, 'error');
-      }
-      tracker.end({ updated: entEmbUpdated, updated_entities: entEmbNames.slice(0, 10), orphans_removed: entEmbOrphansRemoved });
-      serverLog('watcher', `Entity embeddings: ${entEmbUpdated} updated, ${entEmbOrphansRemoved} orphans cleaned`);
-    } else {
-      tracker.skip('entity_embeddings', !p.sd ? 'no sd' : 'not built');
+  private async entityEmbeddings(): Promise<StepRunResult> {
+    const { p } = this;
+    if (!hasEntityEmbeddingsIndex() || !p.sd) {
+      return { kind: 'skipped', reason: !p.sd ? 'no sd' : 'not built' };
     }
+    let entEmbUpdated = 0;
+    let entEmbOrphansRemoved = 0;
+    const entEmbNames: string[] = [];
+    try {
+      const allEntities = getAllEntitiesFromDb(p.sd);
+      for (const event of p.events) {
+        if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+        const matching = allEntities.filter(e => e.path === event.path);
+        for (const entity of matching) {
+          await updateEntityEmbedding(entity.name, {
+            name: entity.name,
+            path: entity.path,
+            category: entity.category,
+            aliases: entity.aliases,
+          }, p.vp);
+          entEmbUpdated++;
+          entEmbNames.push(entity.name);
+        }
+      }
+      // Clean up embeddings for entities no longer in the database
+      const currentNames = new Set(allEntities.map(e => e.name));
+      entEmbOrphansRemoved = removeOrphanedEntityEmbeddings(currentNames);
+    } catch (e) {
+      serverLog('watcher', `Entity embedding update/orphan cleanup failed: ${e}`, 'error');
+    }
+    serverLog('watcher', `Entity embeddings: ${entEmbUpdated} updated, ${entEmbOrphansRemoved} orphans cleaned`);
+    return { kind: 'done', output: { updated: entEmbUpdated, updated_entities: entEmbNames.slice(0, 10), orphans_removed: entEmbOrphansRemoved } };
   }
 
   // ── Step 6: Index cache ───────────────────────────────────────────

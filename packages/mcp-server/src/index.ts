@@ -160,6 +160,18 @@ let watcherInstance: VaultWatcher | null = null;
 // Multi-vault registry (populated in main())
 let vaultRegistry: VaultRegistry | null = null;
 
+/** HTTP listener handle for graceful shutdown */
+let httpListener: ReturnType<typeof import('net').createServer> | null = null;
+
+/** Watchdog self-ping timer */
+let watchdogTimer: ReturnType<typeof setInterval> | null = null;
+
+/** True once primary vault boot completes */
+let serverReady = false;
+
+/** Set during graceful shutdown to suppress watchdog exit */
+let shutdownRequested = false;
+
 /** Current watcher status (live — reads state at call time, not a stale snapshot). */
 export function getWatcherStatus(): WatcherStatus | null {
   if (vaultRegistry) {
@@ -567,14 +579,14 @@ async function main() {
     });
 
     app.get('/health', (_req: any, res: any) => {
-      const health: Record<string, unknown> = { status: 'ok', version: pkg.version, vault: vaultPath };
+      const health: Record<string, unknown> = { status: 'ok', version: pkg.version, vault: vaultPath, ready: serverReady };
       if (vaultRegistry?.isMultiVault) {
         health.vaults = vaultRegistry.getVaultNames();
       }
       res.json(health);
     });
 
-    app.listen(httpPort, httpHost, () => {
+    httpListener = app.listen(httpPort, httpHost, () => {
       serverLog('server', `HTTP transport on ${httpHost}:${httpPort}`);
     });
   }
@@ -586,6 +598,60 @@ async function main() {
   await bootVault(primaryCtx, startTime);
   // Re-activate after boot so fallback scope reflects post-boot state (config, index, etc.)
   activateVault(primaryCtx);
+
+  serverReady = true;
+
+  // ── Optional watchdog self-ping ──
+  const watchdogInterval = parseInt(process.env.FLYWHEEL_WATCHDOG_INTERVAL ?? '0', 10);
+  if (watchdogInterval > 0 && (transportMode === 'http' || transportMode === 'both')) {
+    let consecutiveFailures = 0;
+    const httpPort = parseInt(process.env.FLYWHEEL_HTTP_PORT ?? '3111', 10);
+    const http = await import('http');
+    watchdogTimer = setInterval(() => {
+      if (shutdownRequested) return;
+      const req = http.get(`http://127.0.0.1:${httpPort}/health`, { timeout: 5000 }, (res) => {
+        let body = '';
+        res.on('data', (chunk: Buffer) => { body += chunk; });
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(body);
+            if (res.statusCode === 200 && parsed.status === 'ok' && parsed.ready === true) {
+              consecutiveFailures = 0;
+            } else {
+              consecutiveFailures++;
+              serverLog('watchdog', `Health check degraded (${consecutiveFailures}/3): status=${parsed.status} ready=${parsed.ready}`, 'warn');
+            }
+          } catch {
+            consecutiveFailures++;
+            serverLog('watchdog', `Health check parse error (${consecutiveFailures}/3)`, 'warn');
+          }
+          if (consecutiveFailures >= 3) {
+            serverLog('watchdog', `3 consecutive health check failures — exiting for systemd restart`, 'error');
+            process.exit(1);
+          }
+        });
+      });
+      req.on('error', () => {
+        consecutiveFailures++;
+        serverLog('watchdog', `Health check failed (${consecutiveFailures}/3): request error`, 'warn');
+        if (consecutiveFailures >= 3) {
+          serverLog('watchdog', `3 consecutive health check failures — exiting for systemd restart`, 'error');
+          process.exit(1);
+        }
+      });
+      req.on('timeout', () => {
+        req.destroy();
+        consecutiveFailures++;
+        serverLog('watchdog', `Health check timeout (${consecutiveFailures}/3)`, 'warn');
+        if (consecutiveFailures >= 3) {
+          serverLog('watchdog', `3 consecutive health check failures — exiting for systemd restart`, 'error');
+          process.exit(1);
+        }
+      });
+    }, watchdogInterval);
+    watchdogTimer.unref();
+    serverLog('watchdog', `Self-ping watchdog started (interval=${watchdogInterval}ms)`);
+  }
 
   // ── Phase 4: Initialize + boot secondary vaults (background) ──
   if (vaultConfigs && vaultConfigs.length > 1) {
@@ -1204,7 +1270,10 @@ if (process.argv.includes('--init-semantic')) {
 
 // Graceful shutdown on signals (beforeExit does NOT fire on SIGTERM/SIGINT)
 function gracefulShutdown(signal: string) {
+  shutdownRequested = true;
   console.error(`[Memory] Received ${signal}, shutting down...`);
+  if (watchdogTimer) clearInterval(watchdogTimer);
+  if (httpListener) httpListener.close();
   try { watcherInstance?.stop(); } catch {}
   stopSweepTimer();
   flushLogs()

@@ -1,8 +1,8 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Local-first memory for Obsidian that helps AI search, write, and reuse what your vault already knows.</strong><br/>
-  75 MCP tools. Local indexes. Markdown in, markdown out.</p>
+  <p><strong>Local-first memory for Obsidian.</strong><br/>
+  Give AI clients structured access to your vault for search, writing, tasks, and graph-aware context.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
@@ -11,27 +11,13 @@
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-92.4%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-84.3%25%20evidence%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 
-**[See It Work](#see-it-work)** · **[Try It](#try-it)** · **[What Makes It Different](#what-makes-flywheel-different)** · **[Benchmarked](#benchmarked)** · **[Tested](#tested)** · **[Docs](#documentation)** · **[License](#license)**
+**[See It Work](#see-it-work)** · **[Get Started](#get-started)** · **[Why Flywheel](#why-flywheel)** · **[Benchmarks](#benchmarks)** · **[Testing](#testing)** · **[Documentation](#documentation)** · **[License](#license)**
 
-Flywheel gives AI clients structured access to your vault: search results come back with frontmatter, backlinks, outlinks, snippets, and section context; writes can auto-link entities; memory and graph tools stay local to your files and SQLite state.
+Flywheel is an MCP server for Obsidian vaults. It indexes your markdown locally and exposes tools that help AI clients search notes, write safely, query tasks, follow links, and reuse context across sessions.
 
-<details>
-<summary><strong>How this compares to not using Flywheel</strong></summary>
+Search results include more than filenames: Flywheel returns frontmatter, backlinks, outlinks, snippets, and section context so the model can often answer from one call instead of opening file after file. Writes can add wikilinks, use structured section edits, and optionally create auditable git commits.
 
-| | Without | With Flywheel |
-|---|---|---|
-| Your data | Leaves your machine | Stays local. No sync, no upload, no account |
-| Model choice | Locked to one provider | Model-agnostic via MCP. Swap anytime |
-| As models improve | Migration or vendor upgrade | Same tools, better reasoning. Your graph improves the model, not the other way around |
-| Tokens per question | Read files until the answer emerges | One search returns a decision surface — metadata, graph context, and section content |
-| "What's overdue?" | Read every file | Structured task queries with due dates, tags, and path filters |
-| "What links here?" | Grep the vault, flat list | Weighted backlinks + outlinks, ranked by edge strength and recency |
-| "Add a meeting note" | Raw write, no linking | Structured mutations that auto-link entities and densify the graph |
-| "What should I link?" | Not possible | 13-layer scoring engine + semantic search |
-| Your graph | Owned by the platform | Yours to [export](https://en.wikipedia.org/wiki/GraphML), analyse, or delete |
-| Tool calls | Hidden behind abstractions | Traceable, auditable, opt-in git commits |
-
-</details>
+Flywheel runs on your machine, against your files, with SQLite state stored locally in the vault. It does not replace Obsidian; it sits alongside it and makes the vault usable through MCP.
 
 ## See It Work
 
@@ -41,52 +27,40 @@ From the [carter-strategy](demos/carter-strategy/) demo: a consultant vault with
 
 <video src="https://github.com/user-attachments/assets/ec1b51a7-cb30-4c49-a35f-aa82c31ec976" autoplay loop muted playsinline width="100%"></video>
 
-One search call returned a decision surface: frontmatter with amounts and status, backlink lists, outlink lists, and full section content around each match. Zero follow-up reads needed. The graph did the joining, not the AI reading files one by one.
+In this demo, a single search returns the invoice and client context needed to answer the question: frontmatter with amounts and status, related links, and the surrounding section content. The graph is doing the joining, so the model does not need a chain of follow-up reads to piece the answer together.
 
-### Write: Auto-wikilinks on every mutation
+### Write: Auto-wikilinks on mutation
 
-```
-❯ Log that Stacy reviewed the security checklist before the Beta Corp kickoff
+```text
+> Log that Stacy reviewed the security checklist before the Beta Corp kickoff
 
-● flywheel › vault_add_to_section
+flywheel -> vault_add_to_section
   path: "daily-notes/2026-01-04.md"
   section: "Log"
   suggestOutgoingLinks: true
   content: "[[Stacy Thompson|Stacy]] reviewed the [[API Security Checklist|security checklist]]
             before the [[Beta Corp Dashboard|Beta Corp]] kickoff
-            → [[GlobalBank API Audit]], [[Acme Data Migration]]"
-            ↑ 3 known entities auto-linked ("Stacy" resolved via alias, 100% precision)
-            → 2 suggested links: entities co-occurring with Stacy + security across past notes
+            -> [[GlobalBank API Audit]], [[Acme Data Migration]]"
 ```
 
-You typed a plain sentence. Flywheel recognized three entities and linked them: entity names, aliases, and fuzzy matches scored across [13 dimensions](docs/ALGORITHM.md). Links you keep strengthen future scoring; links you edit out get suppressed.
+You type a normal sentence. Flywheel can resolve known entities, add wikilinks, and suggest related links based on aliases, co-occurrence, graph structure, and semantic context. Suggested outgoing links are optional and off by default. Enable them where you want the graph to grow naturally, such as daily notes, meeting logs, or voice capture. [Configuration guide ->](docs/CONFIGURATION.md)
 
-`→` suggestions are off by default. Enable with `suggestOutgoingLinks: true` for daily notes, meeting logs, and voice capture. Anywhere you want the graph to grow organically. [Configuration guide →](docs/CONFIGURATION.md)
+### Boundaries
 
-### Boundaries in action
+Flywheel is designed to be explicit about what it does.
 
-```
-You: "Log that I reviewed the security audit with Sarah before the Beta Corp deadline"
+- Writes happen through visible tool calls.
+- Changes stay within the vault unless you explicitly point a tool somewhere else.
+- Git commits are opt-in.
+- Proactive linking can be disabled.
 
-Flywheel:
-  → vault_add_to_section("daily-notes/2026-03-24.md", "Log", ...)
-  → Auto-links: [[Sarah Mitchell|Sarah]], [[Security Audit|security audit]], [[Beta Corp]]
-  → Suggests: → [[GlobalBank API Audit]], [[Compliance Matrix]]
-  → Git commit: 1 file changed, 1 insertion
-
-What happened                         What didn't
-✓ One explicit tool call              ✗ No hidden tool chains
-✓ Every link visible before write     ✗ No files touched outside vault
-✓ One reversible git commit           ✗ Nothing sent to cloud
-```
-
-> **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/carter-strategy/run-demo-test.sh) script that runs all five beats end-to-end via `claude -p`, verifying tool usage and vault state between each step.
+> **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/carter-strategy/run-demo-test.sh) script that runs the full sequence end to end with `claude -p`, checking tool usage and vault state between steps.
 
 ---
 
-## Try It
+## Get Started
 
-### Quick start (60 seconds)
+### Quick start
 
 ```bash
 git clone https://github.com/velvetmonkey/flywheel-memory.git
@@ -121,117 +95,90 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Flywheel does not replace Obsidian. It runs alongside as a background index, watches for changes, and makes the graph available to MCP clients. No proprietary format. Delete `.flywheel/state.db` and it rebuilds from scratch.
+Flywheel watches the vault, maintains local indexes, and serves the graph to MCP clients. Your source of truth stays in markdown. If you delete `.flywheel/state.db`, Flywheel rebuilds from the vault.
 
-### Configure your tools
+### Tool presets
 
 | Preset | Tools | What you get |
 |--------|-------|--------------|
 | `default` | 18 | search, read, write, tasks, memory |
-| `full` | 75 | Everything (all 12 categories) |
+| `full` | 75 | all tool categories |
 
-Start with `default` — it includes search, read, write, tasks, and memory. Add bundles as you need them: `graph` (includes GraphML export for Gephi/Cytoscape), `schema`, `wikilinks`, `temporal`, `diagnostics`.
+Start with `default`. Add bundles when you need them, such as `graph`, `schema`, `wikilinks`, `temporal`, or `diagnostics`.
 
 ```json
 { "env": { "FLYWHEEL_TOOLS": "default,graph" } }
 ```
 
-[Browse all 75 tools →](docs/TOOLS.md) | [Preset recipes →](docs/CONFIGURATION.md)
+[Browse all 75 tools ->](docs/TOOLS.md) | [Preset recipes ->](docs/CONFIGURATION.md)
 
 <details>
-<summary><strong>Windows users - read this before you start</strong></summary>
+<summary><strong>Windows users</strong></summary>
 
-Three things differ from macOS/Linux:
-1. **`cmd /c npx`** instead of `npx`: Windows installs npx as a `.cmd` batch script that can't be spawned directly
-2. **`VAULT_PATH`**: set this to your vault's Windows path
-3. **`FLYWHEEL_WATCH_POLL: "true"`**: **required**. Without this, Flywheel won't pick up changes you make in Obsidian.
+Three things differ from macOS and Linux:
 
-See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full config example.
+1. Use **`cmd /c npx`** instead of `npx`. On Windows, `npx` is installed as a `.cmd` script and cannot be spawned directly.
+2. Set **`VAULT_PATH`** to your vault's Windows path.
+3. Set **`FLYWHEEL_WATCH_POLL: "true"`**. Without polling, Flywheel will not reliably pick up changes made from Obsidian on Windows.
+
+See [docs/CONFIGURATION.md#windows](docs/CONFIGURATION.md#windows) for the full example.
 </details>
 
-**Using Cursor, Windsurf, VS Code, OpenClaw, or another client?** See [docs/SETUP.md](docs/SETUP.md) for client config. For OpenClaw, use the dedicated [OpenClaw integration guide](docs/OPENCLAW.md).
-
----
+If you use Cursor, Windsurf, VS Code, OpenClaw, or another client, see [docs/SETUP.md](docs/SETUP.md) for client-specific configuration. For OpenClaw, use the dedicated [OpenClaw integration guide](docs/OPENCLAW.md).
 
 ### Who this is for
 
-**For** people who want their vault to be usable by AI without turning it into a hosted product: developers, researchers, solo operators, and anyone who treats notes as working infrastructure. It also works as persistent memory for bots and agents through MCP.
+Flywheel is for people who want AI to work against their vault without handing the vault over to a hosted product: developers, researchers, solo operators, and anyone who treats notes as working infrastructure. It also works as persistent memory for bots and agents through MCP.
 
-**Not for** people who want a hosted service. Flywheel runs on your machine, on your files. If you want cloud-managed knowledge, this isn't it.
+If you want a managed cloud knowledge product, Flywheel is probably the wrong fit. It is intentionally local-first.
 
 ---
 
-## What Makes Flywheel Different
+## Why Flywheel
 
-- **Search** — One call returns a decision surface: section provenance, extracted dates, entity bridges, confidence scores, and full section content. Multi-hop queries can surface the client note and the related invoices, projects, and people in one pass.
-- **Write** — Every mutation auto-links entities across your vault. Voice dump a meeting debrief and Flywheel wikilinks names, projects, and relationships automatically. [13 scoring layers](docs/ALGORITHM.md), zero manual curation.
-- **Remember** — `brief` delivers startup context, `memory` persists observations across sessions, and `search` retrieves across all three in one call.
+- **Structured search:** Search results include section content, metadata, dates, and graph context, so the model can reason with fewer follow-up reads.
+- **Safer writes:** Mutations operate on markdown structure such as headings, frontmatter, and sections. Entity linking and suggestions are available, but explicit writes remain the default.
+- **Persistent memory:** `brief`, `memory`, and search tools let clients reuse context across sessions without inventing a proprietary storage layer on top of the vault.
+- **Portable graph:** `export_graph` produces [GraphML](https://en.wikipedia.org/wiki/GraphML) that you can inspect in external graph tools such as Gephi or Cytoscape.
+- **Auditable behavior:** Core indexing and graph operations run locally. Writes can be committed to git with a single flag, and background behavior is configurable.
 
-All local. No cloud. No account. No sync.
+### Link scoring
 
-### Every link has a reason
+Flywheel scores suggested links across multiple signals, including exact matches, aliases, co-occurrence, type information, recent usage, graph structure, user feedback, and semantic similarity. The goal is not to hide the logic but to make it inspectable and tunable. [How scoring works ->](docs/ALGORITHM.md)
 
-```
-Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Feedback  Semantic  Edge
----------------------------------------------------------------------------------------------------
-Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
-```
+### Policies and workflows
 
-13 scoring layers, every number traceable to vault usage. [How scoring works →](docs/ALGORITHM.md)
+Complex vault workflows can be expressed as YAML policies. Structured parsing keeps edits aware of headings, frontmatter, and code blocks, and rollback support keeps multi-step operations predictable. [Architecture ->](docs/ARCHITECTURE.md)
 
-### The flywheel effect
+### Graph export
 
-Every sentence you write makes your graph denser — better search results, richer backlinks, sharper suggestions.
-
-- **Proactive linking:** edit a note in Obsidian and Flywheel links it in the background. Tune thresholds or disable entirely.
-- **Co-occurrence** builds over time. Links that survive edits gain influence.
-- **Suppression** learns. Remove a wikilink enough times and Flywheel stops suggesting it.
-
-Day 100 suggestions are informed by everything you've written since day 1. This is [measured](docs/TESTING.md#graph-quality-266-tests-31-files), not hand-waved. All learning data is local SQLite. [What's tracked →](docs/SHARING.md)
-
-### Agentic policies
-
-Complex vault workflows become deterministic YAML policies. All steps succeed or all roll back. Commit with one flag. Every write uses structured parsing that understands headings, frontmatter, and code blocks as structure. [Architecture →](docs/ARCHITECTURE.md)
-
-### Portable knowledge graph
-
-One call to `export_graph` and your entire vault (or any entity's neighborhood) becomes a [GraphML](https://en.wikipedia.org/wiki/GraphML) file. Open it in any graph tool, run community detection, find bottlenecks, or just see what's connected to what.
+One call to `export_graph` can turn the whole vault, or a selected neighborhood around one entity, into a [GraphML](https://en.wikipedia.org/wiki/GraphML) file.
 
 ![Acme Corp ego network](demos/carter-strategy/carter-strategy-acme-graph.png)
 
-*"Show me everything connected to Acme Corp." One call: `export_graph({ center_entity: "Acme Corp" })`. Sarah Mitchell is the single contact linking 3 projects to the client. The Data Migration Playbook bridges two engagements. Seven invoices, two team members, one proposal. All from plain markdown. [Try it yourself →](demos/carter-strategy/carter-strategy-acme.graphml)*
+The [carter-strategy demo graph](demos/carter-strategy/carter-strategy-acme.graphml) shows the neighborhood around Acme Corp: linked contacts, proposals, invoices, projects, and bridging notes derived from plain markdown.
 
-### System guarantees
+### Operational guarantees
 
-These are rules, not preferences:
+These are product constraints, not conventions:
 
-- **No surprise writes.** Tool-initiated mutations require explicit calls. Proactive linking (the only background write) is auditable and can be disabled entirely.
-- **No hidden tool execution.** Every tool call is visible, scoped, and logged.
-- **No required cloud dependency.** Core indexing, search, and graph run locally. No account, no sync, no phone-home.
-- **All actions are auditable.** Every write can be a git commit — one parameter. Every change is reversible.
-- **No silent data exfiltration.** Your vault content is never sent anywhere except the AI model you chose to connect.
-
-### How Flywheel compares
-
-| | SaaS copilots | Agent frameworks | Flywheel |
-|---|---|---|---|
-| Execution | Guess, act silently | Chain tools opaquely | Explicit commands, scoped to vault |
-| Data | Cloud-first | Cloud or hybrid | Local only. Your machine, your files |
-| Trust model | "Trust us" | Trust the sandbox | Trust the constraint |
-| Auditability | Opaque | Partial | Opt-in git commits. One flag, full audit trail |
-| Model lock-in | Total | Varies | None. MCP is model-agnostic |
+- **No surprise tool writes.** Tool-initiated mutations require explicit calls.
+- **No hidden execution.** Tool usage is visible and scoped.
+- **No required cloud service.** Core indexing, search, and graph features run locally.
+- **Auditable changes.** Git commits are optional, but supported directly.
+- **Configurable background behavior.** Proactive linking is auditable and can be disabled.
 
 ---
 
-## Benchmarked
+## Benchmarks
 
 Latest checked-in benchmark artifacts:
 
-- **HotpotQA full end-to-end**: **92.4% document recall** on **500 questions / 4,960 docs**. Latest artifact: **March 28, 2026**. Cost in that run: **$0.074/question**.
-- **LoCoMo full end-to-end**: **84.3% evidence recall** and **58.7% answer accuracy** on **695 scored questions / 272 sessions**. Latest artifact: **March 28, 2026**. Final token F1: **0.483**.
-- **LoCoMo unit retrieval**: **84.8% Recall@5** and **90.4% Recall@10** on the full non-adversarial retrieval set.
+- **HotpotQA full end to end:** **92.4% document recall** on **500 questions / 4,960 docs**. Latest artifact: **March 28, 2026**. Cost in that run: **$0.074/question**.
+- **LoCoMo full end to end:** **84.3% evidence recall** and **58.7% answer accuracy** on **695 scored questions / 272 sessions**. Latest artifact: **March 28, 2026**. Final token F1: **0.483**.
+- **LoCoMo unit retrieval:** **84.8% Recall@5** and **90.4% Recall@10** on the full non-adversarial retrieval set.
 
-Every number below is tied to a checked-in report or reproducible harness in the repo.
+Every number below ties back to a checked-in report or reproducible harness in the repo.
 
 **Multi-hop retrieval vs. academic baselines** (HotpotQA, 500 questions, 4,960 documents):
 
@@ -254,44 +201,42 @@ Every number below is tied to a checked-in report or reproducible harness in the
 | Multi-hop | 58.1% | 72.7% |
 | Temporal | 56.9% | 67.4% |
 
-E2E with Claude Sonnet (latest checked-in 695-question run): **97.4%** single-hop evidence recall, **73.7%** multi-hop evidence recall, **84.3%** overall evidence recall, and **58.7%** answer accuracy (Claude Haiku judge). [Full methodology and caveats →](docs/TESTING.md#retrieval-benchmark-locomo)
+E2E with Claude Sonnet (latest checked-in 695-question run): **97.4%** single-hop evidence recall, **73.7%** multi-hop evidence recall, **84.3%** overall evidence recall, and **58.7%** answer accuracy (Claude Haiku judge). [Full methodology and caveats ->](docs/TESTING.md#retrieval-benchmark-locomo)
 
-> **Directional, not apples-to-apples.** Different test settings, sample sizes, retrieval pools, and metrics. Flywheel searches 4,960 pooled docs (harder than HotpotQA distractor setting of 10, easier than fullwiki 5M+). Academic retrievers train on the benchmark; Flywheel has zero training data. Run-to-run variance of ~1pp is expected due to LLM non-determinism. [Full caveats →](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+> **Directional, not apples-to-apples.** Test settings, sample sizes, retrieval pools, and metrics differ. Flywheel searches 4,960 pooled docs, which is harder than the standard HotpotQA distractor setting of 10 docs and much smaller than fullwiki. Academic retrievers are trained on the benchmark; Flywheel uses no benchmark training data. Expect about 1 percentage point of run-to-run variance from LLM non-determinism. [Full caveats ->](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 
-[`demos/hotpotqa/`](demos/hotpotqa/) · [`demos/locomo/`](demos/locomo/) · [Full methodology →](docs/TESTING.md)
+[`demos/hotpotqa/`](demos/hotpotqa/) · [`demos/locomo/`](demos/locomo/) · [Full methodology ->](docs/TESTING.md)
 
 ---
 
-## Tested
+## Testing
 
-2,760 defined tests across 142 test files and ~54.7k lines of test code. CI runs focused jobs on Ubuntu, plus a full matrix on Ubuntu and Windows across Node 22 and 24.
+2,760 defined tests across 142 test files and about 54.7k lines of test code. CI runs focused jobs on Ubuntu, plus a full matrix on Ubuntu and Windows across Node 22 and 24.
 
-- **Graph quality:** latest generated report shows balanced-mode **40.2% precision / 71.7% recall / 51.5% F1** on the primary synthetic vault, plus multi-generation, archetype, chaos, and regression tests. [Report →](docs/QUALITY_REPORT.md)
-- **Live AI testing:** real `claude -p` sessions verify tool adoption end-to-end, not just handler logic
-- **Write safety:** git-backed conflict detection, atomic rollback, 100 parallel writes with zero corruption
-- **Security:** SQL injection, path traversal, Unicode normalization, permission bypass
+- **Graph quality:** Latest generated report shows balanced-mode **40.2% precision / 71.7% recall / 51.5% F1** on the primary synthetic vault, along with multi-generation, archetype, chaos, and regression coverage. [Report ->](docs/QUALITY_REPORT.md)
+- **Live AI testing:** Real `claude -p` sessions verify tool adoption end to end, not just handler logic.
+- **Write safety:** Git-backed conflict detection, atomic rollback, and 100 parallel writes with zero corruption in the checked-in test suite.
+- **Security:** Coverage includes SQL injection, path traversal, Unicode normalization, and permission bypass cases.
 
-[Full methodology and results →](docs/TESTING.md)
+[Full methodology and results ->](docs/TESTING.md)
 
 ---
 
 ## Documentation
 
-| Doc | Why read this |
+| Doc | Why read it |
 |---|---|
-| [PROVE-IT.md](docs/PROVE-IT.md) | **Start here.** See it working in 5 minutes |
-| [TOOLS.md](docs/TOOLS.md) | All 75 tools documented |
+| [PROVE-IT.md](docs/PROVE-IT.md) | Start here to see the project working quickly |
+| [TOOLS.md](docs/TOOLS.md) | Full reference for all 75 tools |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](docs/SETUP.md) | Full setup guide for your vault |
-| [CONFIGURATION.md](docs/CONFIGURATION.md) | Env vars, presets, custom tool sets |
-| [ALGORITHM.md](docs/ALGORITHM.md) | How the scoring works |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Index strategy, graph, auto-wikilinks |
-| [TESTING.md](docs/TESTING.md) | Test methodology and benchmarks |
-| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Error recovery and diagnostics |
-| [SHARING.md](docs/SHARING.md) | What's tracked, privacy guarantees, sharing stats |
-| [VISION.md](docs/VISION.md) | Where this is going |
-
----
+| [CONFIGURATION.md](docs/CONFIGURATION.md) | Environment variables, presets, and custom tool sets |
+| [ALGORITHM.md](docs/ALGORITHM.md) | Link scoring and search ranking details |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Indexing, graph, and auto-wikilink design |
+| [TESTING.md](docs/TESTING.md) | Benchmarks, methodology, and test coverage |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Diagnostics and recovery |
+| [SHARING.md](docs/SHARING.md) | Privacy notes, tracked data, and shareable stats |
+| [VISION.md](docs/VISION.md) | Project direction and longer-term goals |
 
 ## License
 

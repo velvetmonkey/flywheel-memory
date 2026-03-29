@@ -12,6 +12,14 @@ import { mkdtemp } from 'fs/promises';
 import { openStateDb, deleteStateDb } from '@velvetmonkey/vault-core';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { buildFTS5Index, searchFTS5, setFTS5Database } from '../../src/core/read/fts5.js';
+import {
+  setEmbeddingsDatabase,
+  initEmbeddings,
+  buildEmbeddingsIndex,
+  semanticSearch,
+  hasEmbeddingsIndex,
+  reciprocalRankFusion,
+} from '../../src/core/read/embeddings.js';
 import { setWriteStateDb } from '../../src/core/write/wikilinks.js';
 import { setRecencyStateDb } from '../../src/core/shared/recency.js';
 
@@ -44,7 +52,8 @@ export interface TempBenchVault {
  * Build a temporary vault from benchmark questions.
  * Each context document becomes a markdown note.
  */
-export async function buildBenchmarkVault(questions: BenchmarkQuestion[]): Promise<TempBenchVault> {
+export async function buildBenchmarkVault(questions: BenchmarkQuestion[], opts?: { semantic?: boolean }): Promise<TempBenchVault> {
+  const buildSemantic = opts?.semantic ?? false;
   const vaultPath = await mkdtemp(path.join(os.tmpdir(), 'flywheel-bench-'));
   const docPathMap = new Map<string, string>();
 
@@ -79,10 +88,18 @@ export async function buildBenchmarkVault(questions: BenchmarkQuestion[]): Promi
   setFTS5Database(stateDb.db);
   await buildFTS5Index(vaultPath);
 
+  // Optional: build semantic embeddings for hybrid search
+  if (buildSemantic) {
+    setEmbeddingsDatabase(stateDb.db);
+    await initEmbeddings();
+    await buildEmbeddingsIndex(vaultPath);
+  }
+
   const cleanup = async () => {
     setWriteStateDb(null);
     setRecencyStateDb(null);
     setFTS5Database(null);
+    setEmbeddingsDatabase(null as any);
     stateDb.close();
     deleteStateDb(vaultPath);
     await rm(vaultPath, { recursive: true, force: true });
@@ -114,6 +131,41 @@ export function runQuery(vaultPath: string, query: string, maxResults: number = 
   } catch {
     return [];
   }
+}
+
+/**
+ * Run a hybrid retrieval query: FTS5 + semantic search merged via RRF.
+ * Requires the vault to have been built with { semantic: true }.
+ */
+export async function runHybridQuery(vaultPath: string, query: string, maxResults: number = 20): Promise<string[]> {
+  const words = query.toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(w => w.length >= 3)
+    .filter(w => !STOP_WORDS.has(w));
+
+  let fts5Results: Array<{ path: string }> = [];
+  if (words.length > 0) {
+    const fts5Query = words.join(' OR ');
+    try {
+      fts5Results = searchFTS5(vaultPath, fts5Query, maxResults * 2);
+    } catch { /* proceed with semantic only */ }
+  }
+
+  let semResults: Array<{ path: string }> = [];
+  if (hasEmbeddingsIndex()) {
+    try {
+      semResults = await semanticSearch(query, maxResults * 2);
+    } catch { /* proceed with FTS5 only */ }
+  }
+
+  if (fts5Results.length === 0 && semResults.length === 0) return [];
+
+  const rrfScores = reciprocalRankFusion(fts5Results, semResults);
+  return Array.from(rrfScores.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, maxResults)
+    .map(([path]) => path);
 }
 
 const STOP_WORDS = new Set([

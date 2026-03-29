@@ -2,6 +2,13 @@
 
 Flywheel learns from how you use your vault. Every accepted link, every removal, every edit that survives — it all feeds back into scoring. This page explains what's tracked, what's safe to share, and how sharing helps everyone.
 
+- [What's tracked and why](#whats-tracked-and-why)
+- [What's safe to share](#whats-safe-to-share)
+- [How to export](#how-to-export)
+- [How to share](#how-to-share)
+- [Why share](#why-share)
+- [Privacy architecture](#privacy-architecture)
+
 ## What's tracked and why
 
 All data lives in `.flywheel/state.db` on your machine. Zero network calls (enforced by [CI test](../SECURITY.md)).

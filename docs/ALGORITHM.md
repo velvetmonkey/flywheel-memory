@@ -373,7 +373,7 @@ The minimum score adjusts based on content length:
 | Medium (50-200 chars) | `baseScore` (unchanged) |
 | Long (> 200 chars) | `floor(baseScore * 1.2)` |
 
-Short content (a quick note, a task) gets a lower [[bar]] because there are fewer words to match against. Long content gets a higher bar because there are more words, so matches are more likely to be coincidental.
+Short content (a quick note, a task) gets a lower bar because there are fewer words to match against. Long content gets a higher bar because there are more words, so matches are more likely to be coincidental.
 
 ---
 

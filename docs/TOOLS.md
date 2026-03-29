@@ -322,7 +322,7 @@ Deep analysis of a single note:
 
 ## Corrections
 
-Record mistakes that should persist across sessions. Flywheel [[processes]] these into feedback that improves future suggestions.
+Record mistakes that should persist across sessions. Flywheel processes these into feedback that improves future suggestions.
 
 | Tool | What it does |
 |------|-------------|

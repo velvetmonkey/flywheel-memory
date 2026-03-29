@@ -298,7 +298,7 @@ describe('vault_growth', () => {
       const index = buildIndex([makeNote('note.md')]);
 
       // Create a suppressed entity (25 negatives)
-      // Posterior: Beta(8, 26) = 8/34 = 0.235 < 0.35, totalObs=34 >= 20
+      // Posterior: Beta(4, 26) = 4/30 = 0.133 < 0.45, totalObs=30 >= 15
       for (let i = 0; i < 25; i++) {
         recordFeedback(stateDb, 'Go', `fp ${i}`, `note${i}.md`, false);
       }

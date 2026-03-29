@@ -30,6 +30,11 @@ import {
   computeFeedbackWeight,
   getWeightedEntityStats,
   FEEDBACK_DECAY_HALF_LIFE_DAYS,
+  computePosteriorMean,
+  getAllSuppressionPenalties,
+  isAiConfigEntity,
+  AI_CONFIG_PRIOR_ALPHA,
+  PRIOR_ALPHA,
 } from '../../../src/core/write/wikilinkFeedback.js';
 
 describe('wikilink_feedback', () => {
@@ -132,7 +137,7 @@ describe('wikilink_feedback', () => {
   // --------------------------------------------------------
   describe('suppression', () => {
     it('should NOT suppress entity with < 5 feedback entries', () => {
-      // Only 3 entries, all incorrect
+      // Only 3 entries, all incorrect — totalObs = 4+0+1+3 = 8 < 15
       for (let i = 0; i < 3; i++) {
         recordFeedback(stateDb, 'Java', `false positive ${i}`, `note${i}.md`, false);
       }
@@ -143,8 +148,8 @@ describe('wikilink_feedback', () => {
 
     it('should suppress entity with low Beta-Binomial posterior mean', () => {
       // 22 entries: 2 correct, 20 incorrect
-      // Posterior: Beta(8+2, 1+20) = Beta(10, 21), mean = 10/31 = 0.323 < 0.35
-      // totalObs = 8+2+1+20 = 31 >= 20
+      // Posterior: Beta(4+2, 1+20) = Beta(6, 21), mean = 6/27 = 0.222 < 0.45
+      // totalObs = 4+2+1+20 = 27 >= 15
       for (let i = 0; i < 2; i++) {
         recordFeedback(stateDb, 'Java', `correct ${i}`, `note${i}.md`, true);
       }
@@ -158,7 +163,8 @@ describe('wikilink_feedback', () => {
     });
 
     it('should NOT suppress entity with < 30% false positive rate', () => {
-      // 10 entries: 8 correct, 2 incorrect (20% FP rate — below 30% threshold)
+      // 10 entries: 8 correct, 2 incorrect (20% FP rate)
+      // Posterior: Beta(4+8, 1+2) = Beta(12, 3), mean = 12/15 = 0.800 > 0.45
       for (let i = 0; i < 8; i++) {
         recordFeedback(stateDb, 'TypeScript', `correct ${i}`, `note${i}.md`, true);
       }
@@ -172,7 +178,7 @@ describe('wikilink_feedback', () => {
 
     it('should remove suppression when posterior rises above threshold', () => {
       // First: 22 entries with high FP → suppressed
-      // 2 correct + 20 incorrect → posterior = Beta(10,21) = 10/31 = 0.323 < 0.35
+      // 2 correct + 20 incorrect → posterior = Beta(6,21) = 6/27 = 0.222 < 0.45
       for (let i = 0; i < 2; i++) {
         recordFeedback(stateDb, 'Spring', `correct ${i}`, `note${i}.md`, true);
       }
@@ -182,7 +188,7 @@ describe('wikilink_feedback', () => {
       updateSuppressionList(stateDb);
       expect(isSuppressed(stateDb, 'Spring')).toBe(true);
 
-      // Add 15 more correct entries → posterior = Beta(10+15, 21) = Beta(25, 21) = 25/46 = 0.543 > 0.35
+      // Add 15 more correct entries → posterior = Beta(6+15, 21) = Beta(21, 21) = 21/42 = 0.500 > 0.45
       for (let i = 0; i < 15; i++) {
         recordFeedback(stateDb, 'Spring', `correct extra ${i}`, `note${i + 22}.md`, true);
       }
@@ -192,11 +198,11 @@ describe('wikilink_feedback', () => {
 
     it('should return suppressed entities list', () => {
       // Create two entities that should be suppressed
-      // Go: 20 negatives → posterior = Beta(8, 21) = 8/29 = 0.276 < 0.35, totalObs=29 >= 20
+      // Go: 20 negatives → posterior = Beta(4, 21) = 4/25 = 0.160 < 0.45, totalObs=25 >= 15
       for (let i = 0; i < 20; i++) {
         recordFeedback(stateDb, 'Go', `fp ${i}`, `note${i}.md`, false);
       }
-      // Rust: 2 correct, 20 negative → posterior = Beta(10, 21) = 10/31 = 0.323 < 0.35
+      // Rust: 2 correct, 20 negative → posterior = Beta(6, 21) = 6/27 = 0.222 < 0.45
       for (let i = 0; i < 2; i++) {
         recordFeedback(stateDb, 'Rust', `correct ${i}`, `note${i}.md`, true);
       }
@@ -211,6 +217,62 @@ describe('wikilink_feedback', () => {
 
       const goEntry = suppressed.find(s => s.entity === 'Go');
       expect(goEntry).toBeDefined();
+    });
+
+    it('should suppress entity with 46% accuracy / 58% FP rate (CLAUDE.md scenario)', () => {
+      // 5 correct, 15 FP → posterior = Beta(4+5, 1+15) = 9/25 = 0.360 < 0.45
+      // totalObs = 4+5+1+15 = 25 >= 15
+      for (let i = 0; i < 5; i++) {
+        recordFeedback(stateDb, 'ConfigFile', `correct ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 15; i++) {
+        recordFeedback(stateDb, 'ConfigFile', `fp ${i}`, `note${i + 5}.md`, false);
+      }
+
+      updateSuppressionList(stateDb);
+      expect(isSuppressed(stateDb, 'ConfigFile')).toBe(true);
+    });
+
+    it('should NOT suppress entity with >70% accuracy', () => {
+      // 8 correct, 2 FP → posterior = Beta(4+8, 1+2) = 12/15 = 0.800 > 0.45
+      for (let i = 0; i < 8; i++) {
+        recordFeedback(stateDb, 'GoodEntity', `correct ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 2; i++) {
+        recordFeedback(stateDb, 'GoodEntity', `fp ${i}`, `note${i + 8}.md`, false);
+      }
+
+      updateSuppressionList(stateDb);
+      expect(isSuppressed(stateDb, 'GoodEntity')).toBe(false);
+    });
+
+    it('should apply soft penalty for borderline entities (posterior 0.45-0.55)', () => {
+      // 4 correct, 6 FP → posterior = Beta(4+4, 1+6) = 8/15 = 0.533
+      // 0.45 <= 0.533 < 0.55 → soft penalty zone
+      for (let i = 0; i < 4; i++) {
+        recordFeedback(stateDb, 'BorderlineEntity', `correct ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 6; i++) {
+        recordFeedback(stateDb, 'BorderlineEntity', `fp ${i}`, `note${i + 4}.md`, false);
+      }
+
+      const penalties = getAllSuppressionPenalties(stateDb);
+      expect(penalties.get('BorderlineEntity')).toBe(-5);
+    });
+
+    it('should suppress AI config entities more readily due to lower prior', () => {
+      // CLAUDE.md with 4 correct, 11 FP → AI config prior Beta(2,1)
+      // posterior = (2+4)/(2+4+1+11) = 6/18 = 0.333 < 0.45
+      // totalObs = 2+4+1+11 = 18 >= 15
+      for (let i = 0; i < 4; i++) {
+        recordFeedback(stateDb, 'CLAUDE.md', `correct ${i}`, `note${i}.md`, true);
+      }
+      for (let i = 0; i < 11; i++) {
+        recordFeedback(stateDb, 'CLAUDE.md', `fp ${i}`, `note${i + 4}.md`, false);
+      }
+
+      updateSuppressionList(stateDb);
+      expect(isSuppressed(stateDb, 'CLAUDE.md')).toBe(true);
     });
   });
 
@@ -360,7 +422,7 @@ describe('wikilink_feedback', () => {
     it('should suppress entity only in specific folder', () => {
       // Entity: all correct in tech/, all wrong in daily/
       // 12 correct in tech + 15 incorrect in daily
-      // Global posteriorMean = (8+12)/(8+12+1+15) = 20/36 = 0.556 → not suppressed
+      // Global posteriorMean = (4+12)/(4+12+1+15) = 16/32 = 0.500 → not suppressed
       for (let i = 0; i < 12; i++) {
         recordFeedback(stateDb, 'Spring', `correct ${i}`, `tech/note${i}.md`, true);
       }
@@ -368,11 +430,11 @@ describe('wikilink_feedback', () => {
         recordFeedback(stateDb, 'Spring', `wrong ${i}`, `daily/note${i}.md`, false);
       }
 
-      // Not globally suppressed (posteriorMean 0.556 > 0.35)
+      // Not globally suppressed (posteriorMean 0.500 > 0.45)
       expect(isSuppressed(stateDb, 'Spring')).toBe(false);
 
-      // Suppressed in daily/ folder (15 entries, 100% FP, totalObs=8+0+1+15=24 >= 20)
-      // posteriorMean = 8/24 = 0.333 < 0.35
+      // Suppressed in daily/ folder (15 entries, 100% FP, totalObs=4+0+1+15=20 >= 15)
+      // posteriorMean = 4/20 = 0.200 < 0.45
       expect(isSuppressed(stateDb, 'Spring', 'daily')).toBe(true);
 
       // Not suppressed in tech/ folder (12 entries, 0% FP)
@@ -716,8 +778,8 @@ describe('wikilink_feedback', () => {
       }
 
       // Weighted correct: 5*0.25 = 1.25, weighted FP: 18*1.0 = 18.0
-      // Posterior: alpha = 8+1.25 = 9.25, beta = 1+18 = 19, mean = 9.25/28.25 = 0.327 < 0.35
-      // totalObs = 28.25 >= 20 ✓
+      // Posterior: alpha = 4+1.25 = 5.25, beta = 1+18 = 19, mean = 5.25/24.25 = 0.216 < 0.45
+      // totalObs = 24.25 >= 15 ✓
       updateSuppressionList(stateDb, now);
       expect(isSuppressed(stateDb, 'BadEntity')).toBe(true);
     });
@@ -748,7 +810,7 @@ describe('wikilink_feedback', () => {
       }
 
       // At first (shortly after), it's suppressed
-      // Posterior: alpha=8, beta=1+25=26, mean=8/34=0.235<0.35, totalObs=34>=20
+      // Posterior: alpha=4, beta=1+25=26, mean=4/30=0.133<0.45, totalObs=30>=15
       const earlyNow = new Date('2026-01-02T00:00:00Z');
       updateSuppressionList(stateDb, earlyNow);
       expect(isSuppressed(stateDb, 'FadingEntity')).toBe(true);
@@ -760,8 +822,8 @@ describe('wikilink_feedback', () => {
 
       // 90 days later: old FPs have weight ≈ 0.125 each
       // Weighted FP = 25*0.125 = 3.125, weighted correct = 8*1.0 = 8.0
-      // totalObs = 8+8+1+3.125 = 20.125 >= 20 ✓
-      // Posterior: alpha=8+8=16, beta=1+3.125=4.125, mean=16/20.125=0.795>0.35 → unsuppressed
+      // totalObs = 4+8+1+3.125 = 16.125 >= 15 ✓
+      // Posterior: alpha=4+8=12, beta=1+3.125=4.125, mean=12/16.125=0.744>0.45 → unsuppressed
       const lateNow = new Date('2026-04-01T00:00:00Z');
       updateSuppressionList(stateDb, lateNow);
       expect(isSuppressed(stateDb, 'FadingEntity')).toBe(false);
@@ -791,5 +853,53 @@ describe('wikilink_feedback', () => {
       expect(entry!.weightedFp).toBeGreaterThan(entry!.weightedCorrect);
       expect(entry!.weightedFpRate).toBeGreaterThan(0.7); // mostly recent FPs
     });
+  });
+});
+
+describe('isAiConfigEntity', () => {
+  it('should identify AI config file entities', () => {
+    expect(isAiConfigEntity('CLAUDE.md')).toBe(true);
+    expect(isAiConfigEntity('claude.md')).toBe(true);
+    expect(isAiConfigEntity('.cursorrules')).toBe(true);
+    expect(isAiConfigEntity('CURSOR.md')).toBe(true);
+    expect(isAiConfigEntity('AGENTS.md')).toBe(true);
+    expect(isAiConfigEntity('.windsurfrules')).toBe(true);
+    expect(isAiConfigEntity('.aiderignore')).toBe(true);
+    expect(isAiConfigEntity('codex.md')).toBe(true);
+    expect(isAiConfigEntity('copilot-instructions.md')).toBe(true);
+  });
+
+  it('should not match regular entity names', () => {
+    expect(isAiConfigEntity('TypeScript')).toBe(false);
+    expect(isAiConfigEntity('React')).toBe(false);
+    expect(isAiConfigEntity('Claude')).toBe(false);
+    expect(isAiConfigEntity('my-agents')).toBe(false);
+  });
+
+  it('should match path-suffixed AI config files', () => {
+    expect(isAiConfigEntity('.github/copilot-instructions.md')).toBe(true);
+    expect(isAiConfigEntity('project/CLAUDE.md')).toBe(true);
+  });
+});
+
+describe('computePosteriorMean with custom priors', () => {
+  it('should use default priors when not specified', () => {
+    // Beta(4,1) default: (4+5)/(4+5+1+15) = 9/25 = 0.36
+    const result = computePosteriorMean(5, 15);
+    expect(result).toBeCloseTo(0.36, 2);
+  });
+
+  it('should use AI config prior when specified', () => {
+    // Beta(2,1): (2+5)/(2+5+1+15) = 7/23 ≈ 0.304
+    const result = computePosteriorMean(5, 15, AI_CONFIG_PRIOR_ALPHA);
+    expect(result).toBeCloseTo(0.304, 2);
+  });
+
+  it('should show AI config entities suppress faster than regular', () => {
+    // Same data: 4 correct, 8 FP
+    const regular = computePosteriorMean(4, 8); // Beta(4,1): 8/17 = 0.471
+    const aiConfig = computePosteriorMean(4, 8, AI_CONFIG_PRIOR_ALPHA); // Beta(2,1): 6/15 = 0.400
+    expect(regular).toBeGreaterThan(0.45); // Not suppressed
+    expect(aiConfig).toBeLessThan(0.45);   // Suppressed
   });
 });

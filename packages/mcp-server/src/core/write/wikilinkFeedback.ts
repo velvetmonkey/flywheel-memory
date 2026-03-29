@@ -68,18 +68,54 @@ export interface DashboardData {
 // CONSTANTS
 // =============================================================================
 
-/** Beta-Binomial prior parameters (benefit of doubt: Beta(8,1) → 89% prior mean) */
-export const PRIOR_ALPHA = 8;   // Prior "correct" observations (strong noise resistance)
+/** Beta-Binomial prior parameters (benefit of doubt: Beta(4,1) → 80% prior mean) */
+export const PRIOR_ALPHA = 4;   // Prior "correct" observations (moderate noise resistance)
 export const PRIOR_BETA = 1;    // Prior "incorrect" observations
 
 /** Posterior mean threshold for suppression (suppress when posteriorMean < this) */
-export const SUPPRESSION_POSTERIOR_THRESHOLD = 0.35;
+export const SUPPRESSION_POSTERIOR_THRESHOLD = 0.45;
 
 /** Minimum total posterior observations (alpha + beta) before considering suppression */
-export const SUPPRESSION_MIN_OBSERVATIONS = 20;
+export const SUPPRESSION_MIN_OBSERVATIONS = 15;
 
 /** Maximum suppression penalty (strongly demotes but allows excellent content matches to survive) */
 const MAX_SUPPRESSION_PENALTY = -15;
+
+/** Soft penalty for borderline entities (posterior between suppression and soft threshold) */
+const SOFT_PENALTY_THRESHOLD = 0.55;
+const SOFT_PENALTY = -5;
+
+/**
+ * Known AI platform config filenames. These are tool configuration files,
+ * not knowledge entities — structurally unlikely to be good wikilink targets.
+ * Matched case-insensitively against entity names.
+ */
+export const AI_CONFIG_PATTERNS: ReadonlyArray<string> = [
+  'claude.md',
+  'cursor.md',
+  '.cursorrules',
+  'copilot-instructions.md',
+  'agents.md',
+  '.windsurfrules',
+  '.aiderignore',
+  '.aider.conf.yml',
+  'cline_docs',
+  'codex.md',
+];
+
+/** Weaker prior for AI config file entities (suppresses faster) */
+export const AI_CONFIG_PRIOR_ALPHA = 2;
+
+/** Check if an entity name matches a known AI platform config file */
+export function isAiConfigEntity(entityName: string): boolean {
+  const lower = entityName.toLowerCase();
+  return AI_CONFIG_PATTERNS.some(p => lower === p || lower.endsWith('/' + p));
+}
+
+/** Get the effective prior alpha for an entity (lower for AI config files) */
+function getEffectiveAlpha(entity: string): number {
+  return isAiConfigEntity(entity) ? AI_CONFIG_PRIOR_ALPHA : PRIOR_ALPHA;
+}
 
 /** Minimum feedback entries before applying feedback boost */
 export const FEEDBACK_BOOST_MIN_SAMPLES = 3;
@@ -100,13 +136,18 @@ const WEIGHTED_MIN_TOTAL = 3.0;
 /**
  * Compute Beta-Binomial posterior mean.
  * posteriorMean = alpha / (alpha + beta) where:
- *   alpha = PRIOR_ALPHA + weightedCorrect
- *   beta = PRIOR_BETA + weightedFp
+ *   alpha = priorAlpha + weightedCorrect
+ *   beta = priorBeta + weightedFp
  * Returns the probability that the entity is correct (higher = better).
  */
-export function computePosteriorMean(weightedCorrect: number, weightedFp: number): number {
-  const alpha = PRIOR_ALPHA + weightedCorrect;
-  const beta_ = PRIOR_BETA + weightedFp;
+export function computePosteriorMean(
+  weightedCorrect: number,
+  weightedFp: number,
+  priorAlpha: number = PRIOR_ALPHA,
+  priorBeta: number = PRIOR_BETA,
+): number {
+  const alpha = priorAlpha + weightedCorrect;
+  const beta_ = priorBeta + weightedFp;
   return alpha / (alpha + beta_);
 }
 
@@ -391,8 +432,9 @@ export function updateSuppressionList(stateDb: StateDb, now?: Date): number {
     ).run(SUPPRESSION_TTL_DAYS);
 
     for (const stat of weightedStats) {
-      const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp);
-      const totalObs = PRIOR_ALPHA + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
+      const effectiveAlpha = getEffectiveAlpha(stat.entity);
+      const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp, effectiveAlpha);
+      const totalObs = effectiveAlpha + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
 
       // Don't touch entities without enough observations
       if (totalObs < SUPPRESSION_MIN_OBSERVATIONS) {
@@ -456,8 +498,9 @@ export function isSuppressed(stateDb: StateDb, entity: string, folder?: string, 
     const stats = getWeightedFolderStats(stateDb, entity, folder, now);
     if (stats.rawTotal >= FOLDER_SUPPRESSION_MIN_COUNT) {
       const folderCorrect = stats.weightedTotal - stats.weightedFp;
-      const posteriorMean = computePosteriorMean(folderCorrect, stats.weightedFp);
-      const totalObs = PRIOR_ALPHA + folderCorrect + PRIOR_BETA + stats.weightedFp;
+      const effectiveAlpha = getEffectiveAlpha(entity);
+      const posteriorMean = computePosteriorMean(folderCorrect, stats.weightedFp, effectiveAlpha);
+      const totalObs = effectiveAlpha + folderCorrect + PRIOR_BETA + stats.weightedFp;
       if (totalObs >= SUPPRESSION_MIN_OBSERVATIONS && posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD) {
         return true;
       }
@@ -655,14 +698,20 @@ export function getAllSuppressionPenalties(stateDb: StateDb, now?: Date): Map<st
   const weightedStats = getWeightedEntityStats(stateDb, now);
 
   for (const stat of weightedStats) {
-    const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp);
-    const totalObs = PRIOR_ALPHA + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
+    const effectiveAlpha = getEffectiveAlpha(stat.entity);
+    const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp, effectiveAlpha);
+    const totalObs = effectiveAlpha + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
 
-    if (totalObs >= SUPPRESSION_MIN_OBSERVATIONS && posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD) {
-      // Proportional: barely suppressed (0.35) → ~0, fully bad (0.0) → MAX_SUPPRESSION_PENALTY
-      const penalty = Math.round(MAX_SUPPRESSION_PENALTY * (1 - posteriorMean / SUPPRESSION_POSTERIOR_THRESHOLD));
-      if (penalty < 0) {
-        penalties.set(stat.entity, penalty);
+    if (totalObs >= SUPPRESSION_MIN_OBSERVATIONS) {
+      if (posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD) {
+        // Proportional: barely suppressed → ~0, fully bad (0.0) → MAX_SUPPRESSION_PENALTY
+        const penalty = Math.round(MAX_SUPPRESSION_PENALTY * (1 - posteriorMean / SUPPRESSION_POSTERIOR_THRESHOLD));
+        if (penalty < 0) {
+          penalties.set(stat.entity, penalty);
+        }
+      } else if (posteriorMean < SOFT_PENALTY_THRESHOLD) {
+        // Soft penalty: borderline entity, mild demotion
+        penalties.set(stat.entity, SOFT_PENALTY);
       }
     }
   }
@@ -726,13 +775,18 @@ export function getPerAliasPenalties(stateDb: StateDb, now?: Date): Map<string, 
     // Skip if matched_term IS the entity name (handled by entity-level penalties)
     if (stats.entity.toLowerCase() === stats.term.toLowerCase()) continue;
 
-    const posteriorMean = computePosteriorMean(stats.weightedCorrect, stats.weightedFp);
-    const totalObs = PRIOR_ALPHA + stats.weightedCorrect + PRIOR_BETA + stats.weightedFp;
+    const effectiveAlpha = getEffectiveAlpha(stats.entity);
+    const posteriorMean = computePosteriorMean(stats.weightedCorrect, stats.weightedFp, effectiveAlpha);
+    const totalObs = effectiveAlpha + stats.weightedCorrect + PRIOR_BETA + stats.weightedFp;
 
-    if (totalObs >= SUPPRESSION_MIN_OBSERVATIONS && posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD) {
-      const penalty = Math.round(MAX_SUPPRESSION_PENALTY * (1 - posteriorMean / SUPPRESSION_POSTERIOR_THRESHOLD));
-      if (penalty < 0) {
-        penalties.set(key, penalty);
+    if (totalObs >= SUPPRESSION_MIN_OBSERVATIONS) {
+      if (posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD) {
+        const penalty = Math.round(MAX_SUPPRESSION_PENALTY * (1 - posteriorMean / SUPPRESSION_POSTERIOR_THRESHOLD));
+        if (penalty < 0) {
+          penalties.set(key, penalty);
+        }
+      } else if (posteriorMean < SOFT_PENALTY_THRESHOLD) {
+        penalties.set(key, SOFT_PENALTY);
       }
     }
   }

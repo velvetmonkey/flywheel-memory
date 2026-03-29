@@ -13,7 +13,7 @@ import { suggestRelatedLinks, getCooccurrenceIndex } from '../../core/write/wiki
 import { countFTS5Mentions } from '../../core/read/fts5.js';
 import { detectImplicitEntities, COMMON_ENGLISH_WORDS } from '@velvetmonkey/vault-core';
 import type { StateDb } from '@velvetmonkey/vault-core';
-import { getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD } from '../../core/write/wikilinkFeedback.js';
+import { getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD, isAiConfigEntity, AI_CONFIG_PRIOR_ALPHA } from '../../core/write/wikilinkFeedback.js';
 
 /**
  * Match entity in text, avoiding existing wikilinks and code blocks
@@ -375,8 +375,9 @@ export function registerWikilinkTools(
               for (const suggestion of scored.detailed) {
                 const stat = statsMap.get(suggestion.entity.toLowerCase());
                 if (stat) {
-                  const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp);
-                  const totalObs = PRIOR_ALPHA + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
+                  const effectiveAlpha = isAiConfigEntity(suggestion.entity) ? AI_CONFIG_PRIOR_ALPHA : PRIOR_ALPHA;
+                  const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp, effectiveAlpha);
+                  const totalObs = effectiveAlpha + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
                   suggestion.suppressionContext = {
                     posteriorMean: Math.round(posteriorMean * 1000) / 1000,
                     totalObservations: Math.round(totalObs * 10) / 10,

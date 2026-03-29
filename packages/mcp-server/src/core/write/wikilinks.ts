@@ -849,6 +849,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     fuzzyMatchBonus: 2,        // Low fuzzy bonus — supplementary signal only
     contentRelevanceFloor: 5,
     noRelevanceCap: 12,
+    minCooccurrenceGate: 6,
   },
   balanced: {
     minWordLength: 3,
@@ -859,7 +860,8 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     exactMatchBonus: 10,       // Standard bonus for exact matches
     fuzzyMatchBonus: 4,        // Moderate fuzzy bonus
     contentRelevanceFloor: 5,
-    noRelevanceCap: 15,
+    noRelevanceCap: 10,
+    minCooccurrenceGate: 5,
   },
   aggressive: {
     minWordLength: 3,
@@ -871,6 +873,7 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
     fuzzyMatchBonus: 5,        // Higher fuzzy bonus — discovery mode
     contentRelevanceFloor: 3,
     noRelevanceCap: 18,
+    minCooccurrenceGate: 3,
   },
 };
 
@@ -1679,9 +1682,8 @@ export async function suggestRelatedLinks(
             contentTokens.has(token) || contentStems.has(stem(token))
           );
 
-          // Strong co-occurrence: boost ≥ 4 means at least 2 distinct co-occurring
-          // partners in the current note (each partner capped at ~3 boost)
-          const strongCooccurrence = boost >= 3;
+          // Requires stronger graph signal to admit entities with no content overlap
+          const strongCooccurrence = boost >= config.minCooccurrenceGate;
 
           if (!hasContentOverlap && !strongCooccurrence) {
             continue;  // Skip entities with zero content relevance and weak co-occurrence

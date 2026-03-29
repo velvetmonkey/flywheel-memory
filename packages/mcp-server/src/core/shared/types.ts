@@ -242,7 +242,7 @@ export interface ScoredSuggestion {
   suppressionContext?: {
     posteriorMean: number;       // Beta-Binomial posterior (0-1)
     totalObservations: number;   // weighted observation count
-    isSuppressed: boolean;       // posteriorMean < 0.35 && totalObs >= 20
+    isSuppressed: boolean;       // posteriorMean < 0.45 && totalObs >= 15
     falsePositiveRate: number;   // weighted FP / weighted total
   };
 }

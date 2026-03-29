@@ -26,7 +26,7 @@ import type { VaultRegistry } from './vault-registry.js';
 //   memory      - Session memory + brief (2 tools)
 //   note-ops    - File management: delete, move, rename, merge (4 tools)
 //   temporal    - Time-based vault intelligence (4 tools)
-//   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export (20 tools)
+//   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status (21 tools)
 //
 // Examples:
 //   FLYWHEEL_TOOLS=default                    # 18 tools
@@ -228,8 +228,9 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   track_concept_evolution: 'temporal',
   temporal_summary: 'temporal',
 
-  // diagnostics (20 tools) -- vault health, stats, config, activity, merges, doctor, trust, benchmark, history, learning report, calibration export
+  // diagnostics (21 tools) -- vault health, stats, config, activity, merges, doctor, trust, benchmark, history, learning report, calibration export, pipeline status
   health_check: 'diagnostics',
+  pipeline_status: 'diagnostics',
   get_vault_stats: 'diagnostics',
   get_folder_structure: 'diagnostics',
   refresh_index: 'diagnostics',

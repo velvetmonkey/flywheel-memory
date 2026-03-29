@@ -11,7 +11,8 @@ import { detectPeriodicNotes } from './periodic.js';
 import { getActivitySummary } from './temporal.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
 import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
-import { getRecentIndexEvents, getRecentPipelineEvent, type PipelineStep } from '../../core/shared/indexActivity.js';
+import { getRecentIndexEvents, getRecentPipelineEvent, getLastSuccessfulEvent, getLastEventByTrigger, type PipelineStep } from '../../core/shared/indexActivity.js';
+import { getPipelineActivity } from '../../core/read/watch/pipeline.js';
 import { getFTS5State } from '../../core/read/fts5.js';
 import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount, getActiveModelId, diagnoseEmbeddings } from '../../core/read/embeddings.js';
 import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache.js';
@@ -135,6 +136,21 @@ export function registerHealthTools(
       .describe('Current file watcher state'),
     watcher_pending: z.coerce.number().optional()
       .describe('Number of pending file events in the watcher queue'),
+    last_index_activity_at: z.number().optional()
+      .describe('Epoch ms of latest successful index event (any trigger)'),
+    last_index_activity_ago_seconds: z.coerce.number().optional()
+      .describe('Seconds since last successful index event'),
+    last_full_rebuild_at: z.number().optional()
+      .describe('Epoch ms of latest startup_build or manual_refresh event'),
+    last_watcher_batch_at: z.number().optional()
+      .describe('Epoch ms of latest watcher batch event'),
+    pipeline_activity: z.object({
+      busy: z.boolean(),
+      current_step: z.string().nullable(),
+      started_at: z.number().nullable(),
+      progress: z.string().nullable(),
+      last_completed_ago_seconds: z.number().nullable(),
+    }).optional().describe('Live pipeline activity state'),
     dead_link_count: z.coerce.number().describe('Total number of broken/dead wikilinks across the vault'),
     top_dead_link_targets: z.array(z.object({
       target: z.string().describe('The dead link target'),
@@ -222,6 +238,17 @@ export function registerHealthTools(
     tasks_building: boolean;
     watcher_state?: 'starting' | 'ready' | 'rebuilding' | 'dirty' | 'error';
     watcher_pending?: number;
+    last_index_activity_at?: number;
+    last_index_activity_ago_seconds?: number;
+    last_full_rebuild_at?: number;
+    last_watcher_batch_at?: number;
+    pipeline_activity?: {
+      busy: boolean;
+      current_step: string | null;
+      started_at: number | null;
+      progress: string | null;
+      last_completed_ago_seconds: number | null;
+    };
     dead_link_count: number;
     top_dead_link_targets: Array<{ target: string; mention_count: number }>;
     sweep?: SweepResults;
@@ -233,14 +260,19 @@ export function registerHealthTools(
     {
       title: 'Health Check',
       description:
-        'Check MCP server health status. Returns vault accessibility, index freshness, and recommendations. Use at session start to verify MCP is working correctly.',
-      inputSchema: {},
+        'Check MCP server health status. Returns vault accessibility, index freshness, and recommendations. Use at session start to verify MCP is working correctly. ' +
+        'Pass mode="summary" (default) for lightweight polling or mode="full" for complete diagnostics.',
+      inputSchema: {
+        mode: z.enum(['summary', 'full']).optional().default('summary')
+          .describe('Output mode: "summary" omits config, periodic notes, dead links, sweep, and recent pipelines; "full" returns everything'),
+      },
       outputSchema: HealthCheckOutputSchema,
     },
-    async (): Promise<{
+    async ({ mode = 'summary' }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
       structuredContent: HealthCheckOutput;
     }> => {
+      const isFull = mode === 'full';
       const index = getIndex();
       const vaultPath = getVaultPath();
       const recommendations: string[] = [];
@@ -279,8 +311,27 @@ export function registerHealthTools(
 
       // Check index status
       const indexBuilt = indexState === 'ready' && index !== undefined && index.notes !== undefined;
-      const indexAge = indexBuilt && index.builtAt
-        ? Math.floor((Date.now() - index.builtAt.getTime()) / 1000)
+
+      // Canonical timestamps from index_events
+      let lastIndexActivityAt: number | undefined;
+      let lastFullRebuildAt: number | undefined;
+      let lastWatcherBatchAt: number | undefined;
+      if (stateDb) {
+        try {
+          const lastAny = getLastSuccessfulEvent(stateDb);
+          if (lastAny) lastIndexActivityAt = lastAny.timestamp;
+          const lastBuild = getLastEventByTrigger(stateDb, 'startup_build');
+          const lastManual = getLastEventByTrigger(stateDb, 'manual_refresh');
+          lastFullRebuildAt = Math.max(lastBuild?.timestamp ?? 0, lastManual?.timestamp ?? 0) || undefined;
+          const lastWatcher = getLastEventByTrigger(stateDb, 'watcher');
+          if (lastWatcher) lastWatcherBatchAt = lastWatcher.timestamp;
+        } catch { /* ignore */ }
+      }
+
+      // Use last index activity for freshness (not builtAt which may lag)
+      const freshnessTimestamp = lastIndexActivityAt ?? (indexBuilt && index.builtAt ? index.builtAt.getTime() : undefined);
+      const indexAge = freshnessTimestamp
+        ? Math.floor((Date.now() - freshnessTimestamp) / 1000)
         : -1;
       const indexStale = indexBuilt && indexAge > STALE_THRESHOLD_SECONDS;
 
@@ -318,9 +369,9 @@ export function registerHealthTools(
         status = 'healthy';
       }
 
-      // Detect periodic note conventions (only when index is ready)
+      // Detect periodic note conventions (only when index is ready, full mode only)
       let periodicNotes: PeriodicNoteInfo[] | undefined;
-      if (indexBuilt) {
+      if (isFull && indexBuilt) {
         const types = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'] as const;
         periodicNotes = types.map(type => {
           const result = detectPeriodicNotes(index, type);
@@ -335,11 +386,14 @@ export function registerHealthTools(
         }).filter(p => p.detected);
       }
 
-      // Include config info
-      const config = getConfig();
-      const configInfo = Object.keys(config).length > 0
-        ? config as unknown as Record<string, unknown>
-        : undefined;
+      // Include config info (full mode only)
+      let configInfo: Record<string, unknown> | undefined;
+      if (isFull) {
+        const config = getConfig();
+        configInfo = Object.keys(config).length > 0
+          ? config as unknown as Record<string, unknown>
+          : undefined;
+      }
 
       // Get last rebuild event from StateDb
       let lastRebuild: HealthCheckOutput['last_rebuild'];
@@ -380,32 +434,35 @@ export function registerHealthTools(
           // Ignore errors reading pipeline data
         }
 
-        // Recent pipeline events (last 5 with steps)
-        try {
-          const events = getRecentIndexEvents(stateDb, 10)
-            .filter(e => e.steps && e.steps.length > 0)
-            .slice(0, 5);
-          if (events.length > 0) {
-            recentPipelines = events.map(e => ({
-              timestamp: e.timestamp,
-              trigger: e.trigger,
-              duration_ms: e.duration_ms,
-              files_changed: e.files_changed,
-              changed_paths: e.changed_paths,
-              steps: e.steps!,
-            }));
+        // Recent pipeline events (last 5 with steps) — full mode only
+        if (isFull) {
+          try {
+            const events = getRecentIndexEvents(stateDb, 10)
+              .filter(e => e.steps && e.steps.length > 0)
+              .slice(0, 5);
+            if (events.length > 0) {
+              recentPipelines = events.map(e => ({
+                timestamp: e.timestamp,
+                trigger: e.trigger,
+                duration_ms: e.duration_ms,
+                files_changed: e.files_changed,
+                changed_paths: e.changed_paths,
+                steps: e.steps!,
+              }));
+            }
+          } catch {
+            // Ignore errors reading recent pipeline data
           }
-        } catch {
-          // Ignore errors reading recent pipeline data
         }
       }
 
       const ftsState = getFTS5State();
 
-      // Dead link scan — lightweight, uses already-parsed index outlinks
+      // Dead link scan — full mode only (iterates all outlinks)
       let deadLinkCount = 0;
-      const deadTargetCounts = new Map<string, number>();
-      if (indexBuilt) {
+      let topDeadLinkTargets: Array<{ target: string; mention_count: number }> = [];
+      if (isFull && indexBuilt) {
+        const deadTargetCounts = new Map<string, number>();
         for (const note of index.notes.values()) {
           for (const link of note.outlinks) {
             if (!resolveTarget(index, link.target)) {
@@ -415,11 +472,11 @@ export function registerHealthTools(
             }
           }
         }
+        topDeadLinkTargets = Array.from(deadTargetCounts.entries())
+          .map(([target, mention_count]) => ({ target, mention_count }))
+          .sort((a, b) => b.mention_count - a.mention_count)
+          .slice(0, 5);
       }
-      const topDeadLinkTargets = Array.from(deadTargetCounts.entries())
-        .map(([target, mention_count]) => ({ target, mention_count }))
-        .sort((a, b) => b.mention_count - a.mention_count)
-        .slice(0, 5);
 
       // Compute vault health score (0-100)
       let vault_health_score = 0;
@@ -469,6 +526,20 @@ export function registerHealthTools(
         );
       }
 
+      // Pipeline activity (always included — lightweight process-local read)
+      const activity = getPipelineActivity();
+      const pipelineActivity = {
+        busy: activity.busy,
+        current_step: activity.current_step,
+        started_at: activity.started_at,
+        progress: activity.busy && activity.total_steps > 0
+          ? `${activity.completed_steps}/${activity.total_steps} steps`
+          : null,
+        last_completed_ago_seconds: activity.last_completed_at
+          ? Math.floor((Date.now() - activity.last_completed_at) / 1000)
+          : null,
+      };
+
       const output: HealthCheckOutput = {
         status,
         vault_health_score,
@@ -496,14 +567,20 @@ export function registerHealthTools(
         embeddings_ready: hasEmbeddingsIndex(),
         embeddings_count: getEmbeddingsCount(),
         embedding_model: hasEmbeddingsIndex() ? getActiveModelId() : undefined,
-        embedding_diagnosis: hasEmbeddingsIndex() ? diagnoseEmbeddings(vaultPath) : undefined,
+        embedding_diagnosis: isFull && hasEmbeddingsIndex() ? diagnoseEmbeddings(vaultPath) : undefined,
         tasks_ready: isTaskCacheReady(),
         tasks_building: isTaskCacheBuilding(),
         watcher_state: getWatcherStatus()?.state,
         watcher_pending: getWatcherStatus()?.pendingEvents,
+        last_index_activity_at: lastIndexActivityAt,
+        last_index_activity_ago_seconds: lastIndexActivityAt
+          ? Math.floor((Date.now() - lastIndexActivityAt) / 1000) : undefined,
+        last_full_rebuild_at: lastFullRebuildAt,
+        last_watcher_batch_at: lastWatcherBatchAt,
+        pipeline_activity: pipelineActivity,
         dead_link_count: deadLinkCount,
         top_dead_link_targets: topDeadLinkTargets,
-        sweep: getSweepResults() ?? undefined,
+        sweep: isFull ? (getSweepResults() ?? undefined) : undefined,
         recommendations,
       };
 
@@ -515,6 +592,69 @@ export function registerHealthTools(
           },
         ],
         structuredContent: output,
+      };
+    }
+  );
+
+  // pipeline_status — live pipeline activity surface
+  server.registerTool(
+    'pipeline_status',
+    {
+      title: 'Pipeline Status',
+      description:
+        'Live pipeline activity: whether a batch is running, current step, and recent completions. ' +
+        'Lightweight process-local read — no DB queries unless detail=true.',
+      inputSchema: {
+        detail: z.boolean().optional().default(false)
+          .describe('Include per-step timings for recent runs'),
+      },
+    },
+    async ({ detail = false }): Promise<{
+      content: Array<{ type: 'text'; text: string }>;
+    }> => {
+      const activity = getPipelineActivity();
+      const now = Date.now();
+
+      const output: Record<string, unknown> = {
+        busy: activity.busy,
+        trigger: activity.trigger,
+        started_at: activity.started_at,
+        age_ms: activity.busy && activity.started_at ? now - activity.started_at : null,
+        current_step: activity.current_step,
+        progress: activity.busy && activity.total_steps > 0
+          ? `${activity.completed_steps}/${activity.total_steps} steps`
+          : null,
+        pending_events: activity.pending_events,
+        last_completed: activity.last_completed_at ? {
+          at: activity.last_completed_at,
+          ago_seconds: Math.floor((now - activity.last_completed_at) / 1000),
+          trigger: activity.last_completed_trigger,
+          duration_ms: activity.last_completed_duration_ms,
+          files: activity.last_completed_files,
+          steps: activity.last_completed_steps,
+        } : null,
+      };
+
+      if (detail) {
+        const stateDb = getStateDb();
+        if (stateDb) {
+          try {
+            const events = getRecentIndexEvents(stateDb, 10)
+              .filter(e => e.steps && e.steps.length > 0)
+              .slice(0, 5);
+            output.recent_runs = events.map(e => ({
+              timestamp: e.timestamp,
+              trigger: e.trigger,
+              duration_ms: e.duration_ms,
+              files_changed: e.files_changed,
+              steps: e.steps,
+            }));
+          } catch { /* ignore */ }
+        }
+      }
+
+      return {
+        content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
       };
     }
   );
@@ -819,22 +959,33 @@ export function registerHealthTools(
         checks.push({ name: 'vault_access', status: 'error', detail: `Vault not accessible at ${vaultPath}`, fix: 'Check PROJECT_PATH environment variable and directory permissions' });
       }
 
-      // 3. Index state
+      // 3. Index activity freshness (uses index_events, not builtAt)
       const indexState = getIndexState();
       const indexBuilt = indexState === 'ready' && index?.notes !== undefined;
       if (indexState === 'ready' && indexBuilt) {
-        const age = Math.floor((Date.now() - index.builtAt.getTime()) / 1000);
-        if (age > STALE_THRESHOLD_SECONDS) {
-          checks.push({ name: 'index_freshness', status: 'warning', detail: `Index is ${Math.floor(age / 60)} minutes old`, fix: 'Run refresh_index to rebuild' });
-        } else {
-          checks.push({ name: 'index_freshness', status: 'ok', detail: `Index built ${age}s ago, ${index.notes.size} notes, ${index.entities.size} entities` });
+        let activityAge: number | null = null;
+        if (stateDb) {
+          try {
+            const lastEvt = getLastSuccessfulEvent(stateDb);
+            if (lastEvt) activityAge = Math.floor((Date.now() - lastEvt.timestamp) / 1000);
+          } catch { /* ignore */ }
         }
+        // Fall back to builtAt if no events recorded yet
+        const age = activityAge ?? Math.floor((Date.now() - index.builtAt.getTime()) / 1000);
+        if (age > STALE_THRESHOLD_SECONDS) {
+          checks.push({ name: 'index_activity', status: 'warning', detail: `Last index activity ${Math.floor(age / 60)} minutes ago`, fix: 'Run refresh_index to rebuild' });
+        } else {
+          checks.push({ name: 'index_activity', status: 'ok', detail: `Last activity ${age}s ago, ${index.notes.size} notes, ${index.entities.size} entities` });
+        }
+        // Separate snapshot age check (informational only)
+        const snapshotAge = Math.floor((Date.now() - index.builtAt.getTime()) / 1000);
+        checks.push({ name: 'index_snapshot_age', status: 'ok', detail: `In-memory snapshot built ${snapshotAge}s ago` });
       } else if (indexState === 'building') {
         const progress = getIndexProgress();
-        checks.push({ name: 'index_freshness', status: 'warning', detail: `Index building (${progress.parsed}/${progress.total} files)` });
+        checks.push({ name: 'index_activity', status: 'warning', detail: `Index building (${progress.parsed}/${progress.total} files)` });
       } else {
         const err = getIndexError();
-        checks.push({ name: 'index_freshness', status: 'error', detail: `Index in ${indexState} state${err ? ': ' + err.message : ''}`, fix: 'Run refresh_index' });
+        checks.push({ name: 'index_activity', status: 'error', detail: `Index in ${indexState} state${err ? ': ' + err.message : ''}`, fix: 'Run refresh_index' });
       }
 
       // 4. Embedding coverage

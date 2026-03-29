@@ -183,6 +183,26 @@ export function computeEntityDiff(
 }
 
 /**
+ * Get most recent successful index event of any trigger type
+ */
+export function getLastSuccessfulEvent(stateDb: StateDb): IndexEvent | null {
+  const row = stateDb.db.prepare(
+    'SELECT * FROM index_events WHERE success = 1 ORDER BY timestamp DESC LIMIT 1'
+  ).get() as RawEventRow | undefined;
+  return row ? rowToEvent(row) : null;
+}
+
+/**
+ * Get most recent event of a specific trigger type
+ */
+export function getLastEventByTrigger(stateDb: StateDb, trigger: IndexEventTrigger): IndexEvent | null {
+  const row = stateDb.db.prepare(
+    'SELECT * FROM index_events WHERE trigger = ? AND success = 1 ORDER BY timestamp DESC LIMIT 1'
+  ).get(trigger) as RawEventRow | undefined;
+  return row ? rowToEvent(row) : null;
+}
+
+/**
  * Get recent index events
  */
 export function getRecentIndexEvents(stateDb: StateDb, limit: number = 20): IndexEvent[] {

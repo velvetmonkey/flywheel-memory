@@ -31,7 +31,7 @@ import type { IndexState } from '../graph.js';
 
 // Shared modules
 import { serverLog } from '../../shared/serverLog.js';
-import { createStepTracker, recordIndexEvent, computeEntityDiff } from '../../shared/indexActivity.js';
+import { createStepTracker, recordIndexEvent, computeEntityDiff, type IndexEventTrigger } from '../../shared/indexActivity.js';
 import { exportHubScores } from '../../shared/hubExport.js';
 import { buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from '../../shared/recency.js';
 import { mineCooccurrences, saveCooccurrenceToStateDb } from '../../shared/cooccurrence.js';
@@ -71,6 +71,45 @@ import {
 } from '../../write/wikilinkFeedback.js';
 import { processPendingCorrections } from '../../write/corrections.js';
 import { recomputeEdgeWeights } from '../../write/edgeWeights.js';
+// ── Pipeline Activity (process-local runtime status) ────────────────
+
+/** Total number of steps in the pipeline (used for progress reporting) */
+const PIPELINE_TOTAL_STEPS = 22;
+
+export interface PipelineActivity {
+  busy: boolean;
+  trigger: IndexEventTrigger | null;
+  started_at: number | null;
+  current_step: string | null;
+  completed_steps: number;
+  total_steps: number;
+  pending_events: number;
+  last_completed_at: number | null;
+  last_completed_trigger: IndexEventTrigger | null;
+  last_completed_duration_ms: number | null;
+  last_completed_files: number | null;
+  last_completed_steps: string[];
+}
+
+const pipelineActivity: PipelineActivity = {
+  busy: false,
+  trigger: null,
+  started_at: null,
+  current_step: null,
+  completed_steps: 0,
+  total_steps: PIPELINE_TOTAL_STEPS,
+  pending_events: 0,
+  last_completed_at: null,
+  last_completed_trigger: null,
+  last_completed_duration_ms: null,
+  last_completed_files: null,
+  last_completed_steps: [],
+};
+
+export function getPipelineActivity(): Readonly<PipelineActivity> {
+  return pipelineActivity;
+}
+
 // Re-exported from index.ts — these are module-level functions that update both globals and VaultContext
 export type IndexStateUpdater = (state: IndexState, error?: Error | null) => void;
 export type VaultIndexUpdater = (index: VaultIndex) => void;
@@ -149,12 +188,37 @@ export class PipelineRunner {
   private suggestionResults: Array<{ file: string; top: Array<{ entity: string; score: number; confidence: string }> }> = [];
 
   constructor(private p: PipelineContext) {
-    this.tracker = createStepTracker();
+    const baseTracker = createStepTracker();
+    // Wrap tracker to update pipeline activity on every step transition
+    this.tracker = {
+      steps: baseTracker.steps,
+      start(name: string, input: Record<string, unknown>) {
+        pipelineActivity.current_step = name;
+        baseTracker.start(name, input);
+      },
+      end(output: Record<string, unknown>) {
+        baseTracker.end(output);
+        pipelineActivity.completed_steps = baseTracker.steps.length;
+      },
+      skip(name: string, reason: string) {
+        baseTracker.skip(name, reason);
+        pipelineActivity.completed_steps = baseTracker.steps.length;
+      },
+    };
     this.batchStart = Date.now();
   }
 
   async run(): Promise<void> {
     const { p, tracker } = this;
+
+    // Set pipeline activity to busy
+    pipelineActivity.busy = true;
+    pipelineActivity.trigger = 'watcher';
+    pipelineActivity.started_at = this.batchStart;
+    pipelineActivity.current_step = null;
+    pipelineActivity.completed_steps = 0;
+    pipelineActivity.total_steps = PIPELINE_TOTAL_STEPS;
+    pipelineActivity.pending_events = p.events.length;
 
     try {
       // Step 0.5: Drain deferred proactive queue (before any file processing)
@@ -202,6 +266,16 @@ export class PipelineRunner {
           steps: tracker.steps,
         });
       }
+
+      // Update pipeline activity — mark completed
+      pipelineActivity.busy = false;
+      pipelineActivity.current_step = null;
+      pipelineActivity.last_completed_at = Date.now();
+      pipelineActivity.last_completed_trigger = 'watcher';
+      pipelineActivity.last_completed_duration_ms = duration;
+      pipelineActivity.last_completed_files = p.events.length;
+      pipelineActivity.last_completed_steps = tracker.steps.map(s => s.name);
+
       serverLog('watcher', `Batch complete: ${p.events.length} files, ${duration}ms, ${tracker.steps.length} steps`);
     } catch (err) {
       p.updateIndexState('error', err instanceof Error ? err : new Error(String(err)));
@@ -217,6 +291,16 @@ export class PipelineRunner {
           steps: tracker.steps,
         });
       }
+
+      // Update pipeline activity — mark completed (with failure)
+      pipelineActivity.busy = false;
+      pipelineActivity.current_step = null;
+      pipelineActivity.last_completed_at = Date.now();
+      pipelineActivity.last_completed_trigger = 'watcher';
+      pipelineActivity.last_completed_duration_ms = duration;
+      pipelineActivity.last_completed_files = p.events.length;
+      pipelineActivity.last_completed_steps = tracker.steps.map(s => s.name);
+
       serverLog('watcher', `Failed to rebuild index: ${err instanceof Error ? err.message : err}`, 'error');
     }
   }
@@ -240,6 +324,8 @@ export class PipelineRunner {
       };
       const batchResult = await processBatch(vaultIndex, p.vp, absoluteBatch);
       this.hasEntityRelevantChanges = batchResult.hasEntityRelevantChanges;
+      // Update builtAt so freshness checks reflect the incremental update
+      vaultIndex.builtAt = new Date();
       serverLog('watcher', `Incremental: ${batchResult.successful}/${batchResult.total} files in ${batchResult.durationMs}ms`);
     }
     p.updateIndexState('ready');

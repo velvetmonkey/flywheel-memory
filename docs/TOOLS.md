@@ -1,6 +1,6 @@
 # Tools
 
-75 tools. Most questions only need one: **search**.
+76 tools. Most questions only need one: **search**.
 
 > **Start here:** Most vaults only need `default` (18 tools). Add bundles as you need them — `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`. See [CONFIGURATION.md](CONFIGURATION.md) for preset recipes.
 
@@ -36,7 +36,7 @@
 | [Move, rename, or merge notes](#organize-notes) | `vault_move_note` | 4 |
 | [Persistent memory](#session-memory) | `memory`, `brief` | 2 |
 | [Analyze temporal patterns](#temporal-analysis) | `get_context_around_date` | 4 |
-| [Check vault health](#vault-health) | `health_check` | 20 |
+| [Check vault health](#vault-health) | `health_check` | 21 |
 | [Automate workflows](#automation) | `policy` | 2 |
 
 ---
@@ -392,7 +392,8 @@ Monitor, configure, and maintain your vault.
 
 | Tool | What it does |
 |------|-------------|
-| `health_check` | Is the server healthy? Vault accessibility, index freshness, recommendations. |
+| `health_check` | Is the server healthy? Vault accessibility, index freshness, recommendations. Pass `mode="summary"` for lightweight polling, `mode="full"` for complete diagnostics. |
+| `pipeline_status` | Live pipeline activity: whether a batch is running, current step, progress, and recent completions. |
 | `get_vault_stats` | How big is your vault? Notes, links, tags, orphans, recent activity. |
 | `get_folder_structure` | Folder tree with note counts. |
 | `refresh_index` | Force a full index rebuild without restarting. |

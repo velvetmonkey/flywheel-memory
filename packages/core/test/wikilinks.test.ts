@@ -1348,6 +1348,72 @@ describe('noise reduction', () => {
     });
   });
 
+  describe("T2b: context-aware common-word entity linking", () => {
+    // REST
+    it("\"rest day\" must NOT link to REST.md", () => {
+      const result = applyWikilinks("Need a rest day tomorrow", [{ name: "REST", path: "REST.md", aliases: [] }]);
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it("\"REST API endpoint\" MUST link to REST.md", () => {
+      const result = applyWikilinks("The REST API endpoint returns JSON", [{ name: "REST", path: "REST.md", aliases: [] }]);
+      expect(result.content).toContain("[[REST]]");
+      expect(result.linksAdded).toBe(1);
+    });
+
+    // Go
+    it("\"go to the store\" must NOT link to Go.md", () => {
+      const result = applyWikilinks("I need to go to the store", [{ name: "Go", path: "Go.md", aliases: [] }]);
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it("\"learning Go basics\" MUST link to Go.md", () => {
+      const result = applyWikilinks("Started learning Go basics today", [{ name: "Go", path: "Go.md", aliases: [] }]);
+      expect(result.content).toContain("[[Go]]");
+      expect(result.linksAdded).toBe(1);
+    });
+
+    // Rust
+    it("\"the car started to rust\" must NOT link to Rust.md", () => {
+      const result = applyWikilinks("The car started to rust in the rain", [{ name: "Rust", path: "Rust.md", aliases: [] }]);
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it("\"Rust compiler is fast\" MUST link to Rust.md", () => {
+      const result = applyWikilinks("The Rust compiler is fast", [{ name: "Rust", path: "Rust.md", aliases: [] }]);
+      expect(result.content).toContain("[[Rust]]");
+      expect(result.linksAdded).toBe(1);
+    });
+
+    // Swift
+    it("\"swift action taken\" must NOT link to Swift.md", () => {
+      const result = applyWikilinks("They took swift action on the issue", [{ name: "Swift", path: "Swift.md", aliases: [] }]);
+      expect(result.linksAdded).toBe(0);
+    });
+
+    it("\"Swift playground\" MUST link to Swift.md", () => {
+      const result = applyWikilinks("Open the Swift playground to test", [{ name: "Swift", path: "Swift.md", aliases: [] }]);
+      expect(result.content).toContain("[[Swift]]");
+      expect(result.linksAdded).toBe(1);
+    });
+
+    // Aliases: common-word alias with distinctive casing
+    it("alias \"REST\" on multi-word entity should link when casing matches", () => {
+      const result = applyWikilinks("Built a REST endpoint yesterday", [
+        { name: "REST API Conventions", path: "REST API Conventions.md", aliases: ["REST"] },
+      ]);
+      expect(result.content).toContain("[[REST API Conventions|REST]]");
+      expect(result.linksAdded).toBe(1);
+    });
+
+    it("alias \"rest\" (lowercase) on multi-word entity must NOT link", () => {
+      const result = applyWikilinks("Time to rest after work", [
+        { name: "REST API Conventions", path: "REST API Conventions.md", aliases: ["rest"] },
+      ]);
+      expect(result.linksAdded).toBe(0);
+    });
+  });
+
   describe('T3: cross-line matching prevention', () => {
     it('should not match proper nouns across newlines', () => {
       const result = detectImplicitEntities('Cover\nVandalism promise');

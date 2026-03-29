@@ -2407,7 +2407,52 @@ describe('scoring guardrails', () => {
     expect(arma).toBeDefined();
     expect(arma!.breakdown.contentMatch).toBe(0);
     expect(arma!.breakdown.fuzzyMatch).toBe(0);
-    expect(arma!.totalScore).toBe(15);
+    expect(arma!.totalScore).toBe(10);
+  });
+
+  it('weak cooccurrence entity excluded when below gate', async () => {
+    createEntityCacheInStateDb(stateDb, tempVault, {
+      people: ['Alex Johnson'],
+      other: ['Zen Internet'],
+    });
+
+    await initializeEntityIndex(tempVault);
+
+    // Craft cooccurrence with NPMI ~0.31 -> boost = round(0.31 * 12) = 4
+    // This passes old gate (>= 3) but fails new gate (>= 5 in balanced)
+    const coocIndex: CooccurrenceIndex = {
+      associations: {
+        'Alex Johnson': new Map([['Zen Internet', 3]]),
+        'Zen Internet': new Map([['Alex Johnson', 3]]),
+      },
+      minCount: 0.5,
+      documentFrequency: new Map([
+        ['Alex Johnson', 10],
+        ['Zen Internet', 10],
+      ]),
+      totalNotesScanned: 100,
+      _metadata: {
+        generated_at: new Date().toISOString(),
+        total_associations: 2,
+        notes_scanned: 100,
+      },
+    };
+    saveCooccurrenceToStateDb(stateDb, coocIndex);
+    setCooccurrenceIndex(coocIndex);
+
+    const result = await suggestRelatedLinks('Met with Alex Johnson to discuss the project.', {
+      strictness: 'balanced',
+      detail: true,
+    });
+
+    // Content-matched entity should be suggested with score above noRelevanceCap
+    const alex = result.detailed?.find(e => e.entity === 'Alex Johnson');
+    expect(alex).toBeDefined();
+    expect(alex!.breakdown.contentMatch).toBeGreaterThan(0);
+    expect(alex!.totalScore).toBeGreaterThan(10);
+
+    // Weak cooccurrence entity (boost ~4 < gate 5) should be excluded entirely
+    expect(result.suggestions).not.toContain('Zen Internet');
   });
 
   it('uses inferred categories to boost uncategorized entities', async () => {

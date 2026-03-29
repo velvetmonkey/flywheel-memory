@@ -166,6 +166,8 @@ export interface SuggestionConfig {
   contentRelevanceFloor: number;
   /** Maximum score allowed when content relevance stays below the configured floor */
   noRelevanceCap: number;
+  /** Minimum cooccurrence boost required for graph-only entities (no content overlap) to qualify */
+  minCooccurrenceGate: number;
 }
 
 /**

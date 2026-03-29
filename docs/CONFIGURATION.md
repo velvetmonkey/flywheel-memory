@@ -122,7 +122,7 @@ Start with `default`, then add what you need:
 | `memory` | 2 | Session memory + brief |
 | `note-ops` | 4 | Delete, move, rename notes, merge entities |
 | `temporal` | 4 | Time-based vault intelligence: get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
-| `diagnostics` | 20 | Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export |
+| `diagnostics` | 21 | Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status |
 
 #### Recipes
 
@@ -162,7 +162,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | `memory` | 2 | memory, brief |
 | `note-ops` | 4 | vault_delete_note, vault_move_note, vault_rename_note, merge_entities |
 | `temporal` | 4 | get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
-| `diagnostics` | 20 | health_check, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest_entity_merges, dismiss_merge_suggestion, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export |
+| `diagnostics` | 21 | health_check, pipeline_status, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest_entity_merges, dismiss_merge_suggestion, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export |
 
 Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work — they resolve to current category names.
 
@@ -181,8 +181,8 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 | corrections | 4 | | Yes |
 | note-ops | 4 | | Yes |
 | temporal | 4 | | Yes |
-| diagnostics | 20 | | Yes |
-| **Total** | **75** | **18** | **75** |
+| diagnostics | 21 | | Yes |
+| **Total** | **76** | **18** | **76** |
 
 ### Semantic Embeddings
 

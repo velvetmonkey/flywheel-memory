@@ -99,7 +99,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 
 **Presets:**
 - **`default`** — 18 tools: search, read, write, tasks, memory
-- **`full`** — All categories (75 tools)
+- **`full`** — All categories (76 tools)
 
 **Composable bundles** (add to presets or each other):
 - **`graph`** — structural analysis, semantic analysis, paths, [[Hub|hubs]], connections, export (11 tools)
@@ -110,7 +110,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`memory`** — session memory + brief (2 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
 - **`temporal`** — time-based vault intelligence (4 tools)
-- **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export (20 tools)
+- **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status (21 tools)
 **Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `temporal`, `diagnostics`
 
 ---

@@ -730,7 +730,7 @@ export function registerTemporalAnalysisTools(
     {
       title: 'Context Around Date',
       description:
-        'Reconstruct what was happening in the vault around a specific date. ' +
+        'What was happening around a specific date? ' +
         'Shows modified/created notes, active entities, wikilink activity, and file moves within a time window.',
       inputSchema: {
         date: z.string().describe('Center date in YYYY-MM-DD format'),
@@ -751,7 +751,7 @@ export function registerTemporalAnalysisTools(
     {
       title: 'Predict Stale Notes',
       description:
-        'Multi-signal staleness prediction. Scores notes by importance (backlinks, hub score, tasks, status) ' +
+        'Which notes need attention? Scores notes by importance (backlinks, hub score, tasks, status) ' +
         'and staleness risk (age, entity disconnect, task urgency). Returns concrete recommendations: ' +
         'archive, update, review, or low_priority.',
       inputSchema: {
@@ -779,7 +779,7 @@ export function registerTemporalAnalysisTools(
     {
       title: 'Track Concept Evolution',
       description:
-        'Timeline of how an entity has evolved: link additions/removals, feedback events, category changes, ' +
+        'How has an entity changed over time? Timeline of link additions/removals, feedback events, category changes, ' +
         'co-occurrence shifts. Shows current state, chronological event history, link durability stats, ' +
         'and top co-occurrence neighbors.',
       inputSchema: {
@@ -802,7 +802,7 @@ export function registerTemporalAnalysisTools(
     {
       title: 'Temporal Summary',
       description:
-        'Generate a vault pulse report for a time period. Composes context, staleness prediction, ' +
+        'Summarize vault activity for a time period (week, month, quarter). Composes context, staleness prediction, ' +
         'and concept evolution into a single summary. Shows activity snapshot, entity momentum, ' +
         'and maintenance alerts. Use for weekly/monthly/quarterly reviews.',
       inputSchema: {

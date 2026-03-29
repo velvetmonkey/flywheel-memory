@@ -25,6 +25,7 @@ import {
   loadEntityEmbeddingsToMemory,
   classifyUncategorizedEntities,
   saveInferredCategories,
+  getInferredCategory,
 } from '../../core/read/embeddings.js';
 import { initializeEntityIndex, setCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { exportHubScores } from '../../core/shared/hubExport.js';
@@ -822,6 +823,18 @@ export function registerSystemTools(
         if (Array.isArray(arr)) {
           for (const entity of arr) {
             entity.isSuppressed = suppressedSet.has(entity.name.toLowerCase());
+          }
+        }
+      }
+
+      // Annotate "other" entities with inferred categories (best-effort)
+      const otherArr = (entityIndex as any).other;
+      if (Array.isArray(otherArr)) {
+        for (const entity of otherArr) {
+          const inferred = getInferredCategory(entity.name);
+          if (inferred) {
+            entity.inferredCategory = inferred.category;
+            entity.inferredConfidence = inferred.confidence;
           }
         }
       }

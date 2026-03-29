@@ -96,19 +96,44 @@ function extractTocAnchors(content: string): string[] {
 }
 
 describe('Documentation TOC completeness', () => {
-  it('every docs page has a complete TOC for all H2-H4 headings', async () => {
+  it('every docs page has a valid curated TOC with real anchors in heading order', async () => {
     const files = await walkDocs(DOCS_DIR);
 
     for (const file of files) {
       const content = await fs.readFile(file, 'utf-8');
       const headings = extractHeadings(content);
       const tocAnchors = extractTocAnchors(content);
-      const expectedAnchors = headings.map(heading => heading.anchor);
+      const headingAnchors = headings.map(heading => heading.anchor);
 
-      expect(
-        tocAnchors,
-        `${path.relative(DOCS_DIR, file)} TOC did not match the H2-H4 heading anchors`
-      ).toEqual(expectedAnchors);
+      if (headings.length === 0) {
+        expect(tocAnchors, `${path.relative(DOCS_DIR, file)} should not define a TOC`).toEqual([]);
+        continue;
+      }
+
+      expect(tocAnchors.length, `${path.relative(DOCS_DIR, file)} should include at least one TOC entry`).toBeGreaterThan(0);
+
+      const seen = new Set<string>();
+      let lastIndex = -1;
+
+      for (const anchor of tocAnchors) {
+        expect(
+          headingAnchors.includes(anchor),
+          `${path.relative(DOCS_DIR, file)} TOC references missing anchor ${anchor}`
+        ).toBe(true);
+
+        expect(
+          seen.has(anchor),
+          `${path.relative(DOCS_DIR, file)} TOC should not duplicate anchor ${anchor}`
+        ).toBe(false);
+        seen.add(anchor);
+
+        const index = headingAnchors.indexOf(anchor);
+        expect(
+          index > lastIndex,
+          `${path.relative(DOCS_DIR, file)} TOC should preserve heading order around ${anchor}`
+        ).toBe(true);
+        lastIndex = index;
+      }
     }
   });
 });

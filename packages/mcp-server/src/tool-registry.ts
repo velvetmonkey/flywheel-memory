@@ -22,6 +22,7 @@ const trPkg = JSON.parse(readFileSync(join(__trDirname, '../package.json'), 'utf
 import type { VaultIndex } from './core/read/types.js';
 import type { FlywheelConfig } from './core/read/config.js';
 import type { WatcherStatus } from './core/read/watch/index.js';
+import type { PipelineActivity } from './core/read/watch/pipeline.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getSessionId } from '@velvetmonkey/vault-core';
 
@@ -92,6 +93,7 @@ export interface ToolRegistryContext {
   getStateDb: () => StateDb | null;
   getFlywheelConfig: () => FlywheelConfig;
   getWatcherStatus: () => WatcherStatus | null;
+  getPipelineActivity: () => Readonly<PipelineActivity> | null;
   updateVaultIndex: (index: VaultIndex) => void;
   updateFlywheelConfig: (config: FlywheelConfig) => void;
 }
@@ -421,7 +423,7 @@ export function registerAllTools(
   const { getVaultPath: gvp, getVaultIndex: gvi, getStateDb: gsd, getFlywheelConfig: gcf } = ctx;
 
   // Read tools
-  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, ctx.getWatcherStatus, () => trPkg.version);
+  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, ctx.getWatcherStatus, () => trPkg.version, ctx.getPipelineActivity);
   registerReadSystemTools(
     targetServer,
     gvi,

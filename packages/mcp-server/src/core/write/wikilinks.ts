@@ -1402,9 +1402,13 @@ export async function suggestRelatedLinks(
 
   // Precompute collapsed content terms for whole-term fuzzy matching
   // Adjacent windows of 1-3 tokens, normalized (lowercased, non-alpha stripped)
+  const orderedContentTokens = [...rawTokens]
+    .filter(token => token.length >= config.minWordLength && !STOPWORDS_EN.has(token))
+    .map(normalizeFuzzyTerm)
+    .filter(token => token.length > 0);
   const collapsedContentTerms = disabled.has('fuzzy_match')
     ? new Set<string>()
-    : buildCollapsedContentTerms([...contentTokens].map(normalizeFuzzyTerm));
+    : buildCollapsedContentTerms(orderedContentTokens);
 
   // Per-note fuzzy cache: avoids rescanning the same fuzzy candidate sets
   const tokenFuzzyCache = new Map<string, number>();

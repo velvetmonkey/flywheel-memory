@@ -21,7 +21,7 @@ import { setFTS5Database } from '../../../src/core/read/fts5.js';
 import { setRecencyStateDb } from '../../../src/core/shared/recency.js';
 import { setTaskCacheDatabase } from '../../../src/core/read/taskCache.js';
 import { setEmbeddingsDatabase } from '../../../src/core/read/embeddings.js';
-import { PipelineRunner, type PipelineContext } from '../../../src/core/read/watch/pipeline.js';
+import { PipelineRunner, createEmptyPipelineActivity, type PipelineContext } from '../../../src/core/read/watch/pipeline.js';
 
 let tempVault: string;
 let stateDb: StateDb;
@@ -79,6 +79,10 @@ describe('PipelineRunner', () => {
       indexError: null,
       lastCooccurrenceRebuildAt: 0,
       lastEdgeWeightRebuildAt: 0,
+      lastEntityScanAt: 0,
+      lastHubScoreRebuildAt: 0,
+      lastIndexCacheSaveAt: 0,
+      pipelineActivity: createEmptyPipelineActivity(),
     };
 
     const pctx: PipelineContext = {
@@ -138,6 +142,10 @@ describe('PipelineRunner', () => {
       indexError: null,
       lastCooccurrenceRebuildAt: 0,
       lastEdgeWeightRebuildAt: 0,
+      lastEntityScanAt: 0,
+      lastHubScoreRebuildAt: 0,
+      lastIndexCacheSaveAt: 0,
+      pipelineActivity: createEmptyPipelineActivity(),
     };
 
     const pctx: PipelineContext = {
@@ -173,6 +181,10 @@ describe('PipelineRunner', () => {
       indexError: null,
       lastCooccurrenceRebuildAt: 0,
       lastEdgeWeightRebuildAt: 0,
+      lastEntityScanAt: 0,
+      lastHubScoreRebuildAt: 0,
+      lastIndexCacheSaveAt: 0,
+      pipelineActivity: createEmptyPipelineActivity(),
     };
 
     const pctx: PipelineContext = {
@@ -221,6 +233,10 @@ describe('PipelineRunner', () => {
       indexError: null,
       lastCooccurrenceRebuildAt: 0,
       lastEdgeWeightRebuildAt: 0,
+      lastEntityScanAt: 0,
+      lastHubScoreRebuildAt: 0,
+      lastIndexCacheSaveAt: 0,
+      pipelineActivity: createEmptyPipelineActivity(),
     };
 
     const pctx: PipelineContext = {
@@ -279,5 +295,59 @@ describe('PipelineRunner', () => {
     // Pipeline should have completed successfully — steps after embeddings should exist
     const embIdx = stepNames.indexOf('note_embeddings');
     expect(stepNames.length).toBeGreaterThan(embIdx + 2); // more steps after embeddings
+  }, 30000);
+
+  it('tracks pipeline activity per vault context', async () => {
+    const ctxA: VaultContext = {
+      name: 'vault-a',
+      vaultPath: tempVault,
+      stateDb,
+      vaultIndex,
+      flywheelConfig: {},
+      watcher: null,
+      cooccurrenceIndex: null,
+      embeddingsBuilding: false,
+      indexState: 'ready',
+      indexError: null,
+      lastCooccurrenceRebuildAt: 0,
+      lastEdgeWeightRebuildAt: 0,
+      lastEntityScanAt: 0,
+      lastHubScoreRebuildAt: 0,
+      lastIndexCacheSaveAt: 0,
+      pipelineActivity: createEmptyPipelineActivity(),
+    };
+    const ctxB: VaultContext = {
+      ...ctxA,
+      name: 'vault-b',
+      pipelineActivity: createEmptyPipelineActivity(),
+    };
+
+    const pctx: PipelineContext = {
+      vp: tempVault,
+      sd: stateDb,
+      ctx: ctxA,
+      events: [{ type: 'upsert', path: 'people/Alice.md', originalEvents: [] }],
+      renames: [],
+      batch: { events: [{ type: 'upsert', path: 'people/Alice.md', originalEvents: [] }], renames: [], timestamp: Date.now() },
+      changedPaths: ['people/Alice.md'],
+      flywheelConfig: {},
+      updateIndexState: (state, error) => { ctxA.indexState = state; if (error !== undefined) ctxA.indexError = error ?? null; },
+      updateVaultIndex: (idx) => { vaultIndex = idx; ctxA.vaultIndex = idx; },
+      updateEntitiesInStateDb: async (vp, sd) => {
+        if (!sd) return;
+        const entityIdx = await scanVaultEntities(vp ?? tempVault, { excludeFolders: [] });
+        sd.replaceAllEntities(entityIdx);
+      },
+      getVaultIndex: () => vaultIndex,
+      buildVaultIndex,
+    };
+
+    await new PipelineRunner(pctx).run();
+
+    expect(ctxA.pipelineActivity.last_completed_at).not.toBeNull();
+    expect(ctxA.pipelineActivity.last_completed_trigger).toBe('watcher');
+    expect(ctxA.pipelineActivity.last_completed_steps.length).toBeGreaterThan(0);
+    expect(ctxB.pipelineActivity.last_completed_at).toBeNull();
+    expect(ctxB.pipelineActivity.last_completed_steps).toEqual([]);
   }, 30000);
 });

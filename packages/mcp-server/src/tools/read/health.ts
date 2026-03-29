@@ -12,7 +12,7 @@ import { getActivitySummary } from './temporal.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
 import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
 import { getRecentIndexEvents, getRecentPipelineEvent, getLastSuccessfulEvent, getLastEventByTrigger, type PipelineStep } from '../../core/shared/indexActivity.js';
-import { getPipelineActivity } from '../../core/read/watch/pipeline.js';
+import type { PipelineActivity } from '../../core/read/watch/pipeline.js';
 import { getFTS5State } from '../../core/read/fts5.js';
 import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount, getActiveModelId, diagnoseEmbeddings } from '../../core/read/embeddings.js';
 import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache.js';
@@ -39,7 +39,8 @@ export function registerHealthTools(
   getConfig: () => FlywheelConfig = () => ({}),
   getStateDb: () => StateDb | null = () => null,
   getWatcherStatus: () => WatcherStatus | null = () => null,
-  getVersion: () => string = () => 'unknown'
+  getVersion: () => string = () => 'unknown',
+  getPipelineActivityState: () => Readonly<PipelineActivity> | null = () => null,
 ): void {
   // health_check - MCP server health status + periodic note detection + config
   const IndexProgressSchema = z.object({
@@ -151,11 +152,11 @@ export function registerHealthTools(
       progress: z.string().nullable(),
       last_completed_ago_seconds: z.number().nullable(),
     }).optional().describe('Live pipeline activity state'),
-    dead_link_count: z.coerce.number().describe('Total number of broken/dead wikilinks across the vault'),
+    dead_link_count: z.coerce.number().optional().describe('Total number of broken/dead wikilinks across the vault (full mode only)'),
     top_dead_link_targets: z.array(z.object({
       target: z.string().describe('The dead link target'),
       mention_count: z.coerce.number().describe('How many notes reference this dead target'),
-    })).describe('Top 5 most-referenced dead link targets (highest-ROI candidates to create)'),
+    })).optional().describe('Top 5 most-referenced dead link targets (highest-ROI candidates to create, full mode only)'),
     sweep: z.object({
       last_sweep_at: z.number().describe('When the last background sweep completed (ms epoch)'),
       sweep_duration_ms: z.number().describe('How long the last sweep took'),
@@ -249,8 +250,8 @@ export function registerHealthTools(
       progress: string | null;
       last_completed_ago_seconds: number | null;
     };
-    dead_link_count: number;
-    top_dead_link_targets: Array<{ target: string; mention_count: number }>;
+    dead_link_count?: number;
+    top_dead_link_targets?: Array<{ target: string; mention_count: number }>;
     sweep?: SweepResults;
     recommendations: string[];
   };
@@ -527,15 +528,15 @@ export function registerHealthTools(
       }
 
       // Pipeline activity (always included — lightweight process-local read)
-      const activity = getPipelineActivity();
+      const activity = getPipelineActivityState();
       const pipelineActivity = {
-        busy: activity.busy,
-        current_step: activity.current_step,
-        started_at: activity.started_at,
-        progress: activity.busy && activity.total_steps > 0
+        busy: activity?.busy ?? false,
+        current_step: activity?.current_step ?? null,
+        started_at: activity?.started_at ?? null,
+        progress: activity && activity.busy && activity.total_steps > 0
           ? `${activity.completed_steps}/${activity.total_steps} steps`
           : null,
-        last_completed_ago_seconds: activity.last_completed_at
+        last_completed_ago_seconds: activity?.last_completed_at
           ? Math.floor((Date.now() - activity.last_completed_at) / 1000)
           : null,
       };
@@ -578,8 +579,8 @@ export function registerHealthTools(
         last_full_rebuild_at: lastFullRebuildAt,
         last_watcher_batch_at: lastWatcherBatchAt,
         pipeline_activity: pipelineActivity,
-        dead_link_count: deadLinkCount,
-        top_dead_link_targets: topDeadLinkTargets,
+        dead_link_count: isFull ? deadLinkCount : undefined,
+        top_dead_link_targets: isFull ? topDeadLinkTargets : undefined,
         sweep: isFull ? (getSweepResults() ?? undefined) : undefined,
         recommendations,
       };
@@ -612,20 +613,20 @@ export function registerHealthTools(
     async ({ detail = false }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
     }> => {
-      const activity = getPipelineActivity();
+      const activity = getPipelineActivityState();
       const now = Date.now();
 
       const output: Record<string, unknown> = {
-        busy: activity.busy,
-        trigger: activity.trigger,
-        started_at: activity.started_at,
-        age_ms: activity.busy && activity.started_at ? now - activity.started_at : null,
-        current_step: activity.current_step,
-        progress: activity.busy && activity.total_steps > 0
+        busy: activity?.busy ?? false,
+        trigger: activity?.trigger ?? null,
+        started_at: activity?.started_at ?? null,
+        age_ms: activity?.busy && activity.started_at ? now - activity.started_at : null,
+        current_step: activity?.current_step ?? null,
+        progress: activity && activity.busy && activity.total_steps > 0
           ? `${activity.completed_steps}/${activity.total_steps} steps`
           : null,
-        pending_events: activity.pending_events,
-        last_completed: activity.last_completed_at ? {
+        pending_events: activity?.pending_events ?? 0,
+        last_completed: activity?.last_completed_at ? {
           at: activity.last_completed_at,
           ago_seconds: Math.floor((now - activity.last_completed_at) / 1000),
           trigger: activity.last_completed_trigger,

@@ -20,6 +20,7 @@ import { registerSemanticAnalysisTools } from '../../../src/tools/read/semanticA
 import { registerNoteIntelligenceTools } from '../../../src/tools/read/noteIntelligence.js';
 import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
 import { setFTS5Database } from '../../../src/core/read/fts5.js';
+import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
 
 export interface TestServerContext {
   stateDb: StateDb | null;
@@ -57,6 +58,7 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
 
   // Mutable reference for system tools to update
   let currentIndex = vaultIndex;
+  const pipelineActivity = createEmptyPipelineActivity();
 
   // Register all tools
   registerGraphTools(
@@ -74,7 +76,12 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
   registerHealthTools(
     server,
     () => currentIndex,
-    () => vaultPath
+    () => vaultPath,
+    () => ({}),
+    () => stateDb,
+    () => null,
+    () => '1.0.0-test',
+    () => pipelineActivity,
   );
 
   registerQueryTools(

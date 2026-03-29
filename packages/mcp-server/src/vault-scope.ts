@@ -16,6 +16,7 @@ import type { CooccurrenceIndex } from './core/shared/cooccurrence.js';
 import type { FlywheelConfig } from './core/read/config.js';
 import type { IndexState } from './core/read/graph.js';
 import type { VaultIndex } from './core/shared/types.js';
+import type { PipelineActivity } from './core/read/watch/pipeline.js';
 
 export interface VaultScope {
   readonly name: string;
@@ -28,6 +29,7 @@ export interface VaultScope {
   indexError: Error | null;
   embeddingsBuilding: boolean;
   entityEmbeddingsMap: Map<string, Float32Array>;
+  pipelineActivity: PipelineActivity;
 }
 
 const vaultAls = new AsyncLocalStorage<VaultScope>();

@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import { connectTestClient, type TestClient, createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
+import { recordIndexEvent } from '../../../src/core/shared/indexActivity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
@@ -88,5 +89,44 @@ describe('health_check', () => {
     expect(data).toHaveProperty('dead_link_count');
     expect(data).toHaveProperty('top_dead_link_targets');
     expect(Array.isArray(data.top_dead_link_targets)).toBe(true);
+  });
+
+  test('uses the last full rebuild for freshness instead of watcher activity', async () => {
+    expect(context.stateDb).toBeTruthy();
+    const stateDb = context.stateDb!;
+    const now = Date.now();
+    const rebuildAgoSeconds = 800;
+    const watcherAgoSeconds = 30;
+
+    stateDb.db.prepare('DELETE FROM index_events').run();
+
+    recordIndexEvent(stateDb, {
+      trigger: 'startup_build',
+      duration_ms: 1200,
+      success: true,
+      note_count: context.vaultIndex.notes.size,
+    });
+    stateDb.db.prepare('UPDATE index_events SET timestamp = ? WHERE trigger = ?')
+      .run(now - rebuildAgoSeconds * 1000, 'startup_build');
+
+    recordIndexEvent(stateDb, {
+      trigger: 'watcher',
+      duration_ms: 80,
+      success: true,
+      files_changed: 1,
+      changed_paths: ['daily/2026-01-01.md'],
+    });
+    stateDb.db.prepare('UPDATE index_events SET timestamp = ? WHERE trigger = ?')
+      .run(now - watcherAgoSeconds * 1000, 'watcher');
+
+    const result = await client.callTool('health_check', {});
+    const data = JSON.parse(result.content[0].text);
+
+    expect(data.index_age_seconds).toBeGreaterThanOrEqual(rebuildAgoSeconds - 5);
+    expect(data.index_age_seconds).toBeLessThanOrEqual(rebuildAgoSeconds + 5);
+    expect(data.last_rebuild.trigger).toBe('startup_build');
+    expect(data.last_rebuild.ago_seconds).toBeGreaterThanOrEqual(rebuildAgoSeconds - 5);
+    expect(data.last_rebuild.ago_seconds).toBeLessThanOrEqual(rebuildAgoSeconds + 5);
+    expect(Math.abs(data.last_rebuild.ago_seconds - data.index_age_seconds)).toBeLessThanOrEqual(1);
   });
 });

@@ -172,7 +172,7 @@ const EXCLUDE_WORDS_BASE = new Set([
   'read', 'realize', 'receive', 'recognize', 'recommend', 'record',
   'reduce', 'reflect', 'refuse', 'regard', 'reject', 'relate', 'release',
   'rely', 'remain', 'remember', 'remove', 'repeat', 'replace', 'report',
-  'represent', 'request', 'require', 'respond', 'rest', 'restore', 'result',
+  'represent', 'request', 'require', 'respond', 'rest', 'restore', 'result', 'rust',
   'retain', 'retire', 'return', 'reveal', 'review', 'ring', 'rise', 'risk',
   'roll', 'run', 'rush', 'save', 'say', 'search', 'seek', 'seem',
   'select', 'sell', 'send', 'serve', 'set', 'settle', 'shake', 'shape',
@@ -305,6 +305,37 @@ function shouldExcludeEntity(entity: string, isAlias = false): boolean {
 }
 
 /**
+ * Words that are always capitalized in English — case-sensitive matching
+ * cannot distinguish proper-noun vs common usage for these.
+ */
+const ALWAYS_CAPITALIZED = new Set([
+  // Day names
+  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  // Month names
+  'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august',
+  'september', 'october', 'november', 'december',
+  // Nationalities / demonyms
+  'american', 'british', 'french', 'german', 'chinese', 'japanese',
+  'indian', 'russian', 'australian', 'canadian', 'italian', 'spanish',
+  'dutch', 'swiss', 'irish', 'scottish', 'welsh', 'english',
+]);
+
+/**
+ * True when entity's lowercase form is a common word but its casing is distinctive
+ * AND the word is not always-capitalized in English (like Monday, January, American).
+ * These terms are allowed through exclusion but matched case-sensitively.
+ * e.g. "REST" (common word "rest") → match only "REST" in content, not "rest"
+ */
+function isCommonWordEntity(entity: string): boolean {
+  const lower = entity.toLowerCase();
+  if (!getMergedExcludeWords().has(lower)) return false;
+  if (entity === lower) return false; // all-lowercase → stay excluded
+  if (lower.includes(' ')) return false; // multi-word phrases → stay excluded
+  if (ALWAYS_CAPITALIZED.has(lower)) return false; // always capitalized in English
+  return true;
+}
+
+/**
  * Find all matches of an entity in content with word boundaries
  */
 const BRACKET_CHARS = new Set(['(', ')', '[', ']', '{', '}']);
@@ -384,15 +415,21 @@ export function applyWikilinks(
 
   // Build search terms from all entities (names + aliases)
   // Each term maps back to its canonical entity name
-  const allSearchTerms: Array<{ term: string; entityName: string; isAlias: boolean }> = [];
+  const allSearchTerms: Array<{ term: string; entityName: string; isAlias: boolean; needsCasingCheck: boolean }> = [];
   for (const entity of entities) {
     const terms = getSearchTerms(entity);
     for (const t of terms) {
       // Skip ambiguous aliases (shared by multiple entities)
       if (t.isAlias && ambiguousAliases.has(t.term.toLowerCase())) continue;
-      if (!shouldExcludeEntity(t.term, t.isAlias)) {
-        allSearchTerms.push(t);
+      if (shouldExcludeEntity(t.term, t.isAlias)) {
+        // Rescue common-word entities with distinctive casing (REST, Go, Rust, Swift)
+        // They will be matched case-sensitively to avoid false positives
+        if (isCommonWordEntity(t.term)) {
+          allSearchTerms.push({ ...t, needsCasingCheck: true });
+        }
+        continue;
       }
+      allSearchTerms.push({ ...t, needsCasingCheck: false });
     }
   }
 
@@ -414,13 +451,15 @@ export function applyWikilinks(
     // First, collect ALL valid matches for each entity (name + aliases combined)
     const entityAllMatches = new Map<string, Array<{ term: string; match: { start: number; end: number; matched: string } }>>();
 
-    for (const { term, entityName, isAlias } of allSearchTerms) {
+    for (const { term, entityName, isAlias, needsCasingCheck } of allSearchTerms) {
       const entityKey = entityName.toLowerCase();
 
       // Short uppercase aliases (≤4 chars, all-caps) match case-sensitively
       // so "CI" matches "CI" but not "ci" or "Ci"
       const useCaseInsensitive = !(isAlias && term.length <= 4 && term === term.toUpperCase());
-      const matches = findEntityMatches(result, term, useCaseInsensitive ? caseInsensitive : false);
+      // Common-word entities (REST, Go, Rust, Swift) always match case-sensitively
+      const effectiveCaseInsensitive = needsCasingCheck ? false : (useCaseInsensitive ? caseInsensitive : false);
+      const matches = findEntityMatches(result, term, effectiveCaseInsensitive);
 
       // Filter out matches in protected zones
       const validMatches = matches.filter(
@@ -586,9 +625,11 @@ export function applyWikilinks(
     }
   } else {
     // For all occurrences mode, process each term
-    for (const { term, entityName } of allSearchTerms) {
+    for (const { term, entityName, needsCasingCheck } of allSearchTerms) {
       // Find all matches of the search term
-      const matches = findEntityMatches(result, term, caseInsensitive);
+      // Common-word entities (REST, Go, Rust, Swift) always match case-sensitively
+      const effectiveCaseInsensitive = needsCasingCheck ? false : caseInsensitive;
+      const matches = findEntityMatches(result, term, effectiveCaseInsensitive);
 
       // Filter out matches in protected zones
       const validMatches = matches.filter(
@@ -673,13 +714,17 @@ export function suggestWikilinks(
 
   // Build search terms from all entities (names + aliases)
   // Each term maps back to its canonical entity name
-  const allSearchTerms: Array<{ term: string; entityName: string; isAlias: boolean }> = [];
+  const allSearchTerms: Array<{ term: string; entityName: string; isAlias: boolean; needsCasingCheck: boolean }> = [];
   for (const entity of entities) {
     const terms = getSearchTerms(entity);
     for (const t of terms) {
-      if (!shouldExcludeEntity(t.term, t.isAlias)) {
-        allSearchTerms.push(t);
+      if (shouldExcludeEntity(t.term, t.isAlias)) {
+        if (isCommonWordEntity(t.term)) {
+          allSearchTerms.push({ ...t, needsCasingCheck: true });
+        }
+        continue;
       }
+      allSearchTerms.push({ ...t, needsCasingCheck: false });
     }
   }
 
@@ -694,10 +739,11 @@ export function suggestWikilinks(
     // for each entity, similar to applyWikilinks behavior
     const entityAllMatches = new Map<string, Array<{ match: { start: number; end: number }; entityName: string }>>();
 
-    for (const { term, entityName, isAlias } of allSearchTerms) {
+    for (const { term, entityName, isAlias, needsCasingCheck } of allSearchTerms) {
       const entityKey = entityName.toLowerCase();
       const useCaseInsensitive = !(isAlias && term.length <= 4 && term === term.toUpperCase());
-      const matches = findEntityMatches(content, term, useCaseInsensitive ? caseInsensitive : false);
+      const effectiveCaseInsensitive = needsCasingCheck ? false : (useCaseInsensitive ? caseInsensitive : false);
+      const matches = findEntityMatches(content, term, effectiveCaseInsensitive);
 
       // Filter out matches in protected zones
       const validMatches = matches.filter(
@@ -740,8 +786,9 @@ export function suggestWikilinks(
   }
 
   // For all occurrences mode, process each term
-  for (const { term, entityName } of allSearchTerms) {
-    const matches = findEntityMatches(content, term, caseInsensitive);
+  for (const { term, entityName, needsCasingCheck } of allSearchTerms) {
+    const effectiveCaseInsensitive = needsCasingCheck ? false : caseInsensitive;
+    const matches = findEntityMatches(content, term, effectiveCaseInsensitive);
 
     for (const match of matches) {
       // Skip if in protected zone

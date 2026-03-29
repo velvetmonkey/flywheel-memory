@@ -22,6 +22,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { performance } from 'node:perf_hooks';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -221,6 +222,48 @@ function createConfiguredServer(): McpServer {
   applyToolGating(s, enabledCategories, ctx.getStateDb, vaultRegistry, ctx.getVaultPath, buildVaultCallbacks());
   registerAllTools(s, ctx);
   return s;
+}
+
+// ============================================================================
+// HTTP McpServer Pool
+// ============================================================================
+
+const HTTP_POOL_SIZE = 4;
+const httpServerPool: McpServer[] = [];
+let httpRequestCount = 0;
+let httpServerCreateCount = 0;
+let httpServerReuseCount = 0;
+let httpServerDiscardCount = 0;
+
+function acquireHttpServer(): McpServer {
+  const pooled = httpServerPool.pop();
+  if (pooled) {
+    httpServerReuseCount++;
+    return pooled;
+  }
+  httpServerCreateCount++;
+  return createConfiguredServer();
+}
+
+function releaseHttpServer(s: McpServer): void {
+  if (httpServerPool.length < HTTP_POOL_SIZE) {
+    httpServerPool.push(s);
+  }
+  // else silently discard — pool is full
+}
+
+function discardHttpServer(_s: McpServer): void {
+  httpServerDiscardCount++;
+  // Do not requeue — instance may be in a bad state
+}
+
+/** Invalidate all pooled servers (e.g. after secondary vault registration). */
+export function invalidateHttpPool(): void {
+  const count = httpServerPool.length;
+  httpServerPool.length = 0;
+  if (count > 0) {
+    serverLog('http', `Pool invalidated: discarded ${count} cached server(s)`);
+  }
 }
 
 // ============================================================================
@@ -569,17 +612,60 @@ async function main() {
 
     const app = createMcpExpressApp({ host: httpHost });
 
-    // Stateless HTTP — per-request McpServer + StreamableHTTPServerTransport
+    // HTTP — pooled McpServer + per-request StreamableHTTPServerTransport
     app.post('/mcp', async (req: any, res: any) => {
-      const httpServer = createConfiguredServer();
+      const t0 = performance.now();
+      const httpServer = acquireHttpServer();
+      const acquireMs = performance.now() - t0;
+
       const httpTransport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
-      await httpServer.connect(httpTransport);
-      await httpTransport.handleRequest(req, res, req.body);
-      res.on('close', () => { httpTransport.close(); httpServer.close(); });
+      let cleanExit = false;
+      try {
+        await httpServer.connect(httpTransport);
+        const connectMs = performance.now() - t0;
+        httpRequestCount++;
+        await httpTransport.handleRequest(req, res, req.body);
+        cleanExit = true;
+        const totalMs = performance.now() - t0;
+        if (totalMs > 25 || acquireMs > 5 || (connectMs - acquireMs) > 5) {
+          serverLog('http', `request: acquire=${acquireMs.toFixed(1)}ms connect=${(connectMs - acquireMs).toFixed(1)}ms total=${totalMs.toFixed(1)}ms`);
+        }
+      } catch (err) {
+        serverLog('http', `request error: ${err instanceof Error ? err.message : err}`, 'error');
+      } finally {
+        try { await httpTransport.close(); } catch { /* best-effort */ }
+        try { await httpServer.close(); } catch { /* best-effort */ }
+        if (cleanExit) {
+          releaseHttpServer(httpServer);
+        } else {
+          discardHttpServer(httpServer);
+        }
+      }
     });
 
     app.get('/health', (_req: any, res: any) => {
-      const health: Record<string, unknown> = { status: 'ok', version: pkg.version, vault: vaultPath, ready: serverReady };
+      const mem = process.memoryUsage();
+      const health: Record<string, unknown> = {
+        status: 'ok',
+        version: pkg.version,
+        vault: vaultPath,
+        ready: serverReady,
+        uptime_s: Math.round(process.uptime()),
+        memory: {
+          rss_mb: Math.round(mem.rss / 1048576),
+          heap_used_mb: Math.round(mem.heapUsed / 1048576),
+          heap_total_mb: Math.round(mem.heapTotal / 1048576),
+          external_mb: Math.round(mem.external / 1048576),
+        },
+        http: {
+          requests: httpRequestCount,
+          pool_available: httpServerPool.length,
+          pool_max: HTTP_POOL_SIZE,
+          servers_created: httpServerCreateCount,
+          servers_reused: httpServerReuseCount,
+          servers_discarded: httpServerDiscardCount,
+        },
+      };
       if (vaultRegistry?.isMultiVault) {
         health.vaults = vaultRegistry.getVaultNames();
       }
@@ -662,6 +748,7 @@ async function main() {
         try {
           const ctx = await initializeVault(vc.name, vc.path);
           vaultRegistry!.addContext(ctx);
+          invalidateHttpPool();
           loadVaultCooccurrence(ctx);
           activateVault(ctx);
           await bootVault(ctx, startTime);

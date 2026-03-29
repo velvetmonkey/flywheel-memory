@@ -287,12 +287,14 @@ describe('Suite 2: Learning Curve', () => {
     expect(finalRound.feedbackLayerAvgContribution).toBeGreaterThanOrEqual(0);
   });
 
-  it('suppression count at final round is below 20', () => {
+  it('suppression count at final round is below 25', () => {
     const finalRound = roundMetrics[TOTAL_ROUNDS - 1];
-    // With 15% feedback noise over 20 rounds, ~15 genuine FPs get correctly
+    // With 15% feedback noise over 20 rounds, ~15-21 genuine FPs get correctly
     // suppressed (F1 keeps improving, confirming suppressions are helping).
+    // PR #136 lowered prior Beta(8,1)→Beta(4,1) and raised threshold 0.35→0.45,
+    // so more entities are correctly suppressed. Ceiling raised 20→25.
     // Guard against runaway suppression; 60% ceiling assertion handles the rest.
-    expect(finalRound.suppressionCount).toBeLessThanOrEqual(20);
+    expect(finalRound.suppressionCount).toBeLessThanOrEqual(25);
   });
 
   it('T1 recall >= 0.8 at final round', () => {

@@ -17,6 +17,8 @@ import type { LoCoMoEntry, LoCoMoBenchmarkQuestion } from './dataset-locomo.js';
 import {
   buildLoCoMoVault,
   runQuery,
+  runMultiHopQuery,
+  runHybridQuery,
   getRelevantPaths,
   type LoCoMoVault,
   type VaultMode,
@@ -143,6 +145,35 @@ describe('LoCoMo Retrieval Benchmark', { timeout: 300_000 }, () => {
   }, 300_000);
 
 
+  it('should compare single-hop vs multi-hop retrieval for multi_hop questions', () => {
+    const multiHopQuestions = questions.filter(q => q.category === 'multi_hop');
+    
+    const singleHopResults: Array<{ retrieved: string[]; relevant: Set<string> }> = [];
+    const multiHopResults: Array<{ retrieved: string[]; relevant: Set<string> }> = [];
+    
+    for (const q of multiHopQuestions) {
+      const relevant = getRelevantPaths(q, vault);
+      if (relevant.size === 0) continue;
+      
+      const singleRetrieved = runQuery(vault.vaultPath, q.question, 10);
+      const multiRetrieved = runMultiHopQuery(vault.vaultPath, q.question, 10);
+      
+      singleHopResults.push({ retrieved: singleRetrieved, relevant });
+      multiHopResults.push({ retrieved: multiRetrieved, relevant });
+    }
+    
+    const singleMetrics = aggregateMetrics(singleHopResults);
+    const multiMetrics = aggregateMetrics(multiHopResults);
+    
+    console.log('\n=== Multi-Hop Retrieval Comparison (multi_hop category) ===');
+    console.log(`  Single-hop: Recall@5=${(singleMetrics.recall_at_5 * 100).toFixed(1)}% Recall@10=${(singleMetrics.recall_at_10 * 100).toFixed(1)}% MRR=${singleMetrics.mrr.toFixed(3)}`);
+    console.log(`  Multi-hop:  Recall@5=${(multiMetrics.recall_at_5 * 100).toFixed(1)}% Recall@10=${(multiMetrics.recall_at_10 * 100).toFixed(1)}% MRR=${multiMetrics.mrr.toFixed(3)}`);
+    console.log(`  Delta:      Recall@5=${((multiMetrics.recall_at_5 - singleMetrics.recall_at_5) * 100).toFixed(1)}pp Recall@10=${((multiMetrics.recall_at_10 - singleMetrics.recall_at_10) * 100).toFixed(1)}pp`);
+    
+    // Multi-hop should not regress vs single-hop
+    expect(multiMetrics.recall_at_5).toBeGreaterThanOrEqual(singleMetrics.recall_at_5 - 0.02);
+  });
+
 });
 
 // --- Helpers ---
@@ -220,3 +251,87 @@ function printMetrics(label: string, m: AggregateMetrics) {
     `MRR=${m.mrr.toFixed(3)} NDCG@10=${m.ndcg_at_10.toFixed(3)} Prec@5=${(m.precision_at_5 * 100).toFixed(1)}%`,
   );
 }
+
+
+// --- Opt-in Hybrid Benchmark (env: FLYWHEEL_BENCH_SEMANTIC=1) ---
+
+const runHybrid = process.env.FLYWHEEL_BENCH_SEMANTIC === '1';
+
+describe.skipIf(!runHybrid)('LoCoMo Hybrid Retrieval', { timeout: 600_000 }, () => {
+  let hybridEntries: LoCoMoEntry[];
+  let hybridQuestions: LoCoMoBenchmarkQuestion[];
+  let hybridVault: LoCoMoVault;
+
+  beforeAll(async () => {
+    hybridEntries = await loadLoCoMo();
+    hybridQuestions = flattenQuestions(hybridEntries);
+    hybridVault = await buildLoCoMoVault(hybridEntries, { mode: 'dialog', semantic: true });
+  }, 600_000);
+
+  afterAll(async () => {
+    if (hybridVault) await hybridVault.cleanup();
+  });
+
+  it('should compare BM25 vs hybrid recall across all categories', async () => {
+    const testQuestions = hybridQuestions.filter(q => q.category !== 'adversarial');
+
+    const byCategory: Record<string, {
+      bm25: Array<{ retrieved: string[]; relevant: Set<string> }>;
+      hybrid: Array<{ retrieved: string[]; relevant: Set<string> }>;
+    }> = {};
+
+    for (const q of testQuestions) {
+      const relevant = getRelevantPaths(q, hybridVault);
+      if (relevant.size === 0) continue;
+
+      const bm25Retrieved = runQuery(hybridVault.vaultPath, q.question, 10);
+      const hybridRetrieved = await runHybridQuery(hybridVault.vaultPath, q.question, 10);
+
+      const cat = q.category;
+      (byCategory[cat] ??= { bm25: [], hybrid: [] });
+      byCategory[cat].bm25.push({ retrieved: bm25Retrieved, relevant });
+      byCategory[cat].hybrid.push({ retrieved: hybridRetrieved, relevant });
+    }
+
+    console.log('\n=== BM25 vs Hybrid Retrieval Comparison ===');
+    for (const [cat, { bm25, hybrid }] of Object.entries(byCategory).sort()) {
+      const bm25m = aggregateMetrics(bm25);
+      const hybm = aggregateMetrics(hybrid);
+      const delta5 = ((hybm.recall_at_5 - bm25m.recall_at_5) * 100).toFixed(1);
+      const delta10 = ((hybm.recall_at_10 - bm25m.recall_at_10) * 100).toFixed(1);
+      console.log(`  ${cat} (n=${bm25.length}):`);
+      console.log(`    BM25:   Recall@5=${(bm25m.recall_at_5 * 100).toFixed(1)}% Recall@10=${(bm25m.recall_at_10 * 100).toFixed(1)}% MRR=${bm25m.mrr.toFixed(3)}`);
+      console.log(`    Hybrid: Recall@5=${(hybm.recall_at_5 * 100).toFixed(1)}% Recall@10=${(hybm.recall_at_10 * 100).toFixed(1)}% MRR=${hybm.mrr.toFixed(3)}`);
+      console.log(`    Delta:  Recall@5=${delta5}pp Recall@10=${delta10}pp`);
+    }
+
+    // Overall comparison
+    const allBm25 = Object.values(byCategory).flatMap(c => c.bm25);
+    const allHybrid = Object.values(byCategory).flatMap(c => c.hybrid);
+    const overallBm25 = aggregateMetrics(allBm25);
+    const overallHybrid = aggregateMetrics(allHybrid);
+    console.log(`\n  Overall:`);
+    console.log(`    BM25:   Recall@5=${(overallBm25.recall_at_5 * 100).toFixed(1)}% Recall@10=${(overallBm25.recall_at_10 * 100).toFixed(1)}%`);
+    console.log(`    Hybrid: Recall@5=${(overallHybrid.recall_at_5 * 100).toFixed(1)}% Recall@10=${(overallHybrid.recall_at_10 * 100).toFixed(1)}%`);
+
+    // Write hybrid report
+    const reportDir = join(__dirname, 'reports');
+    mkdirSync(reportDir, { recursive: true });
+    const hybridReport: Record<string, any> = {
+      generated: new Date().toISOString(),
+      dataset: 'locomo10',
+      method: 'hybrid_comparison',
+    };
+    for (const [cat, { bm25, hybrid }] of Object.entries(byCategory)) {
+      hybridReport[cat] = {
+        bm25: aggregateMetrics(bm25),
+        hybrid: aggregateMetrics(hybrid),
+      };
+    }
+    hybridReport.overall = {
+      bm25: overallBm25,
+      hybrid: overallHybrid,
+    };
+    writeFileSync(join(reportDir, 'locomo-hybrid.json'), JSON.stringify(hybridReport, null, 2));
+  });
+});

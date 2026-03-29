@@ -317,20 +317,22 @@ export function registerHealthTools(
       let lastIndexActivityAt: number | undefined;
       let lastFullRebuildAt: number | undefined;
       let lastWatcherBatchAt: number | undefined;
+      let lastBuild: ReturnType<typeof getLastEventByTrigger> | undefined;
+      let lastManual: ReturnType<typeof getLastEventByTrigger> | undefined;
       if (stateDb) {
         try {
           const lastAny = getLastSuccessfulEvent(stateDb);
           if (lastAny) lastIndexActivityAt = lastAny.timestamp;
-          const lastBuild = getLastEventByTrigger(stateDb, 'startup_build');
-          const lastManual = getLastEventByTrigger(stateDb, 'manual_refresh');
+          lastBuild = getLastEventByTrigger(stateDb, 'startup_build') ?? undefined;
+          lastManual = getLastEventByTrigger(stateDb, 'manual_refresh') ?? undefined;
           lastFullRebuildAt = Math.max(lastBuild?.timestamp ?? 0, lastManual?.timestamp ?? 0) || undefined;
           const lastWatcher = getLastEventByTrigger(stateDb, 'watcher');
           if (lastWatcher) lastWatcherBatchAt = lastWatcher.timestamp;
         } catch { /* ignore */ }
       }
 
-      // Use last index activity for freshness (not builtAt which may lag)
-      const freshnessTimestamp = lastIndexActivityAt ?? (indexBuilt && index.builtAt ? index.builtAt.getTime() : undefined);
+      // Use last full rebuild for freshness, not watcher activity
+      const freshnessTimestamp = lastFullRebuildAt ?? (indexBuilt && index.builtAt ? index.builtAt.getTime() : undefined);
       const indexAge = freshnessTimestamp
         ? Math.floor((Date.now() - freshnessTimestamp) / 1000)
         : -1;
@@ -400,14 +402,15 @@ export function registerHealthTools(
       let lastRebuild: HealthCheckOutput['last_rebuild'];
       if (stateDb) {
         try {
-          const events = getRecentIndexEvents(stateDb, 1);
-          if (events.length > 0) {
-            const event = events[0];
+          const rebuildEvent = (lastBuild && lastManual)
+            ? (lastBuild.timestamp >= lastManual.timestamp ? lastBuild : lastManual)
+            : (lastBuild ?? lastManual);
+          if (rebuildEvent) {
             lastRebuild = {
-              trigger: event.trigger,
-              timestamp: event.timestamp,
-              duration_ms: event.duration_ms,
-              ago_seconds: Math.floor((Date.now() - event.timestamp) / 1000),
+              trigger: rebuildEvent.trigger,
+              timestamp: rebuildEvent.timestamp,
+              duration_ms: rebuildEvent.duration_ms,
+              ago_seconds: Math.floor((Date.now() - rebuildEvent.timestamp) / 1000),
             };
           }
         } catch {

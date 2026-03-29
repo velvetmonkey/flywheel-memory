@@ -13,9 +13,10 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { mkdirSync } from 'fs';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
-import { buildBenchmarkVault, runQuery, type TempBenchVault } from './adapter.js';
+import { buildBenchmarkVault, runQuery, runHybridQuery, type TempBenchVault } from './adapter.js';
 import { loadHotpotQA } from './dataset-hotpotqa.js';
 import { aggregateMetrics, type AggregateMetrics } from './metrics.js';
 import type { BenchmarkQuestion } from './adapter.js';
@@ -148,3 +149,62 @@ function printMetrics(label: string, m: AggregateMetrics) {
     `MRR=${m.mrr.toFixed(3)} NDCG@10=${m.ndcg_at_10.toFixed(3)} Prec@5=${(m.precision_at_5 * 100).toFixed(1)}%`
   );
 }
+
+
+// --- Opt-in Hybrid Benchmark (env: FLYWHEEL_BENCH_SEMANTIC=1) ---
+
+const runHybridBench = process.env.FLYWHEEL_BENCH_SEMANTIC === '1';
+
+describe.skipIf(!runHybridBench)('HotpotQA Hybrid Retrieval', { timeout: 600_000 }, () => {
+  let hybridVault: TempBenchVault;
+  let hybridQuestions: BenchmarkQuestion[];
+
+  beforeAll(async () => {
+    hybridQuestions = await loadHotpotQA({ count: 200, seed: 42 });
+    hybridVault = await buildBenchmarkVault(hybridQuestions, { semantic: true });
+  }, 600_000);
+
+  afterAll(async () => {
+    if (hybridVault) await hybridVault.cleanup();
+  });
+
+  it('should compare BM25 vs hybrid recall', async () => {
+    const bm25Results: Array<{ retrieved: string[]; relevant: Set<string> }> = [];
+    const hybridResults: Array<{ retrieved: string[]; relevant: Set<string> }> = [];
+
+    for (const q of hybridQuestions) {
+      const relevant = new Set(
+        q.supporting_docs
+          .map(t => hybridVault.docPathMap.get(t))
+          .filter(Boolean) as string[]
+      );
+
+      const bm25Retrieved = runQuery(hybridVault.vaultPath, q.question, 10);
+      const hybridRetrieved = await runHybridQuery(hybridVault.vaultPath, q.question, 10);
+
+      bm25Results.push({ retrieved: bm25Retrieved, relevant });
+      hybridResults.push({ retrieved: hybridRetrieved, relevant });
+    }
+
+    const bm25m = aggregateMetrics(bm25Results);
+    const hybm = aggregateMetrics(hybridResults);
+
+    console.log('\n=== BM25 vs Hybrid Retrieval ===');
+    console.log(`  BM25:   Recall@5=${(bm25m.recall_at_5 * 100).toFixed(1)}% Recall@10=${(bm25m.recall_at_10 * 100).toFixed(1)}% MRR=${bm25m.mrr.toFixed(3)}`);
+    console.log(`  Hybrid: Recall@5=${(hybm.recall_at_5 * 100).toFixed(1)}% Recall@10=${(hybm.recall_at_10 * 100).toFixed(1)}% MRR=${hybm.mrr.toFixed(3)}`);
+    console.log(`  Delta:  Recall@5=${((hybm.recall_at_5 - bm25m.recall_at_5) * 100).toFixed(1)}pp Recall@10=${((hybm.recall_at_10 - bm25m.recall_at_10) * 100).toFixed(1)}pp`);
+
+    // Write hybrid report
+    const reportPath = join(__dirname, 'reports', 'hotpotqa-hybrid.json');
+    try {
+      mkdirSync(join(__dirname, 'reports'), { recursive: true });
+      writeFileSync(reportPath, JSON.stringify({
+        generated: new Date().toISOString(),
+        dataset: 'hotpot_dev_distractor_v1',
+        questions: hybridQuestions.length,
+        bm25: bm25m,
+        hybrid: hybm,
+      }, null, 2));
+    } catch { /* ignore */ }
+  });
+});

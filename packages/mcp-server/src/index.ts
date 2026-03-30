@@ -660,7 +660,7 @@ async function main() {
 
   // ── Phase 1c: Load effectiveness snapshots for T15b routing ──
   if (stateDb) {
-    const vaultName = vaultRegistry?.primary ?? 'default';
+    const vaultName = vaultRegistry?.primaryName ?? 'default';
     const scores = getToolEffectivenessScores(stateDb);
     loadEffectivenessSnapshot(vaultName, scores);
   }

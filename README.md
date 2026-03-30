@@ -54,7 +54,7 @@ Flywheel is designed to be explicit about what it does.
 - Git commits are opt-in.
 - Proactive linking can be disabled.
 
-> **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/carter-strategy/run-demo-test.sh) script that runs the full sequence end to end with `claude -p`, checking tool usage and vault state between steps.
+> **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/run-demo-test.sh) script that runs the full sequence end to end with `claude -p`, checking tool usage and vault state between steps.
 
 ---
 

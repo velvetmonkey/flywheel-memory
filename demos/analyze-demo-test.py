@@ -28,7 +28,7 @@ TOOL_CATEGORY = {
     "vault_create_note": "write",
     "vault_undo_last_mutation": "write",
     "policy": "write",
-    # graph (10 tools)
+    # graph (11 tools)
     "graph_analysis": "graph",
     "semantic_analysis": "graph",
     "get_backlinks": "graph",
@@ -39,6 +39,7 @@ TOOL_CATEGORY = {
     "get_common_neighbors": "graph",
     "get_weighted_links": "graph",
     "get_strong_connections": "graph",
+    "export_graph": "graph",
     # schema (7 tools)
     "vault_schema": "schema",
     "schema_conventions": "schema",
@@ -77,7 +78,7 @@ TOOL_CATEGORY = {
     "predict_stale_notes": "temporal",
     "track_concept_evolution": "temporal",
     "temporal_summary": "temporal",
-    # diagnostics (20 tools)
+    # diagnostics (22 tools)
     "health_check": "diagnostics",
     "get_vault_stats": "diagnostics",
     "get_folder_structure": "diagnostics",
@@ -92,30 +93,43 @@ TOOL_CATEGORY = {
     "dismiss_merge_suggestion": "diagnostics",
     "vault_init": "diagnostics",
     "flywheel_doctor": "diagnostics",
+    "flywheel_trust_report": "diagnostics",
+    "flywheel_benchmark": "diagnostics",
+    "vault_session_history": "diagnostics",
+    "vault_entity_history": "diagnostics",
+    "flywheel_learning_report": "diagnostics",
+    "flywheel_calibration_export": "diagnostics",
+    "pipeline_status": "diagnostics",
+    "tool_selection_feedback": "diagnostics",
 }
 
-# Expected tools per beat (any of these counts as a pass)
+# Expected tools per beat (any of these counts as a pass).
+# The runner's exit status is authoritative; this analyzer is reporting-only.
 EXPECTED_TOOLS = {
-    "beat1-brief": {"brief"},
-    "beat2-billing": {"search"},
-    "beat3-tasks": {"policy", "vault_add_task"},
-    "beat4-showstopper": {"vault_add_to_section"},
-    "beat5-assign": {"vault_update_frontmatter"},
-    "beat6-meeting": {"vault_create_note"},
-    "beat7-pipeline": {"policy", "search"},
+    "beat1_brief": {"brief"},
+    "beat2_billing": {"search"},
+    "beat3_capture1": {"vault_add_to_section"},
+    "beat4_reject": {"wikilink_feedback"},
+    "beat5_accept": {"wikilink_feedback"},
+    "beat6_capture2": {"vault_add_to_section"},
+    "beat7_assign": {"vault_update_frontmatter", "vault_add_task"},
+    "beat8_dashboard": {"wikilink_feedback"},
+    "beat9_pipeline": {"policy", "search"},
 }
 
 
 # Baseline files per beat: what you'd read without Flywheel to answer the same question.
 # Globs are resolved relative to the demo vault directory.
 BASELINE_FILES = {
-    "beat1-brief": ["daily-notes/*.md", "weekly-notes/*.md"],
-    "beat2-billing": ["clients/*.md", "invoices/*.md"],
-    "beat3-tasks": [],       # write-only
-    "beat4-showstopper": [], # write-only
-    "beat5-assign": ["team/*.md", "proposals/*.md"],
-    "beat6-meeting": [],     # write-only
-    "beat7-pipeline": ["clients/*.md", "projects/*.md", "proposals/*.md",
+    "beat1_brief": ["daily-notes/*.md", "weekly-notes/*.md"],
+    "beat2_billing": ["clients/*.md", "invoices/*.md"],
+    "beat3_capture1": [],    # write-only
+    "beat4_reject": [],      # feedback-only
+    "beat5_accept": [],      # feedback-only
+    "beat6_capture2": [],    # write-only
+    "beat7_assign": ["team/*.md", "proposals/*.md"],
+    "beat8_dashboard": [],   # read-only dashboard
+    "beat9_pipeline": ["clients/*.md", "projects/*.md", "proposals/*.md",
                         "invoices/*.md", "team/*.md"],
 }
 
@@ -343,7 +357,7 @@ def main():
 
     # Coverage
     flywheel_used = {t for t in all_tools_used if t in TOOL_CATEGORY}
-    lines.append(f"**Coverage:** {len(flywheel_used)}/69 flywheel tools used")
+    lines.append(f"**Coverage:** {len(flywheel_used)}/{len(TOOL_CATEGORY)} flywheel tools used")
     lines.append("")
 
     # Token Economics

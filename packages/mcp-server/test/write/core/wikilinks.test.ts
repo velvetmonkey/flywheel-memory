@@ -37,6 +37,7 @@ import { ENTITY_CACHE_VERSION, getAllEntitiesWithTypes } from '@velvetmonkey/vau
 import { saveCooccurrenceToStateDb, type CooccurrenceIndex } from '../../../src/core/shared/cooccurrence.js';
 import {
   classifyUncategorizedEntities,
+  getEntityEmbeddingsMap,
   loadEntityEmbeddingsToMemory,
   saveInferredCategories,
   setEmbeddingsDatabase,
@@ -2336,6 +2337,8 @@ describe('scoring guardrails', () => {
   afterEach(async () => {
     setCooccurrenceIndex(null);
     saveInferredCategories(new Map());
+    getEntityEmbeddingsMap().clear();
+    setEmbeddingsDatabase(null);
     setWriteStateDb(null);
     stateDb.db.close();
     deleteStateDb(tempVault);

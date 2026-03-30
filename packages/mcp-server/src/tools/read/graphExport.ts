@@ -137,6 +137,7 @@ export function buildGraphData(
 
     for (const row of rows) {
       const sourceId = xmlId('note', row.note_path);
+      if (!noteIds.has(sourceId)) continue;
       const targetLower = row.target.toLowerCase();
       // Target is a lowercased entity/note name or alias — try to resolve
       let targetId: string | undefined;

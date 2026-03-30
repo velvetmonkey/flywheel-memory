@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 36;
+export const SCHEMA_VERSION = 37;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -488,4 +488,44 @@ CREATE TABLE IF NOT EXISTS tool_selection_feedback (
 );
 CREATE INDEX IF NOT EXISTS idx_tsf_tool ON tool_selection_feedback(tool_name);
 CREATE INDEX IF NOT EXISTS idx_tsf_ts ON tool_selection_feedback(timestamp);
+
+-- Prospect ledger (v37): day-grain sightings for pre-entity pattern accumulation
+CREATE TABLE IF NOT EXISTS prospect_ledger (
+  term TEXT NOT NULL,
+  display_name TEXT NOT NULL,
+  note_path TEXT NOT NULL,
+  seen_day TEXT NOT NULL,
+  source TEXT NOT NULL,
+  pattern TEXT,
+  confidence TEXT NOT NULL DEFAULT 'low',
+  backlink_count INTEGER DEFAULT 0,
+  score REAL DEFAULT 0,
+  first_seen_at INTEGER NOT NULL,
+  last_seen_at INTEGER NOT NULL,
+  sighting_count INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (term, note_path, seen_day)
+);
+CREATE INDEX IF NOT EXISTS idx_prospect_term ON prospect_ledger(term);
+CREATE INDEX IF NOT EXISTS idx_prospect_last_seen ON prospect_ledger(last_seen_at);
+
+-- Prospect summary (v37): materialized aggregate for fast scoring
+CREATE TABLE IF NOT EXISTS prospect_summary (
+  term TEXT PRIMARY KEY,
+  display_name TEXT NOT NULL,
+  note_count INTEGER NOT NULL DEFAULT 0,
+  day_count INTEGER NOT NULL DEFAULT 0,
+  total_sightings INTEGER NOT NULL DEFAULT 0,
+  backlink_max INTEGER NOT NULL DEFAULT 0,
+  cooccurring_entities TEXT,
+  best_source TEXT NOT NULL DEFAULT 'implicit',
+  best_confidence TEXT NOT NULL DEFAULT 'low',
+  best_score REAL NOT NULL DEFAULT 0,
+  first_seen_at INTEGER NOT NULL,
+  last_seen_at INTEGER NOT NULL,
+  promotion_score REAL NOT NULL DEFAULT 0,
+  promoted_at INTEGER,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_prospect_summary_score ON prospect_summary(promotion_score DESC);
+
 `;

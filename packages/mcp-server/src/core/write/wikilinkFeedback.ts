@@ -1143,6 +1143,8 @@ export interface SuggestionBreakdown {
   hubBoost: number;
   feedbackAdjustment: number;
   semanticBoost?: number;
+  edgeWeightBoost?: number;
+  prospectBoost?: number;
 }
 
 /** Recent suggestion event from suggestion_events table */

@@ -127,7 +127,8 @@ export function assertCrossLayerConsistency(mcp: McpSnapshot, db: DbSnapshot): v
   }
 
   // Forward link targets in MCP should match DB note_links for each note
-  for (const [notePath, mcpTargets] of Object.entries(mcp.forwardLinks)) {
+  for (const [notePath, mcpTargetsRaw] of Object.entries(mcp.forwardLinks)) {
+    const mcpTargets = [...new Set(mcpTargetsRaw)].sort();
     const dbTargets = db.noteLinks
       .filter(r => r.source === notePath)
       .map(r => r.target)
@@ -158,4 +159,142 @@ export function assertInvariants(mcp: McpSnapshot): void {
       // Dead links (target not in inventory) are expected to lack backlinks — skip
     }
   }
+}
+
+// ── Phase-2 helpers ─────────────────────────────────────────────
+
+/** Vault-wide inventory — no folder filter. For phase-2 tests with multi-folder layouts. */
+export async function searchInventoryAll(client: TestClient): Promise<string[]> {
+  const data = await callJsonTool(client, "search", {
+    where: {},
+    limit: 200,
+    sort_by: "title",
+    order: "asc",
+  });
+  const items: Array<{ path: string }> = data.notes ?? data.results ?? [];
+  return items.map(r => r.path).sort();
+}
+
+/** Snapshot using vault-wide inventory (no folder filter). */
+export async function snapshotMcpStateAll(
+  client: TestClient,
+  paths: string[],
+): Promise<McpSnapshot> {
+  const inventory = await searchInventoryAll(client);
+
+  const backlinks: Record<string, string[]> = {};
+  const forwardLinks: Record<string, string[]> = {};
+  const structures: Record<string, any> = {};
+
+  for (const p of paths) {
+    try {
+      const bl = await callJsonTool(client, "get_backlinks", { path: p });
+      backlinks[p] = (bl.backlinks ?? []).map((b: any) => b.source).sort();
+    } catch {
+      backlinks[p] = [];
+    }
+
+    try {
+      const fl = await callJsonTool(client, "get_forward_links", { path: p });
+      forwardLinks[p] = (fl.forward_links ?? []).map((l: any) =>
+        (l.target ?? "").toLowerCase()
+      ).sort();
+    } catch {
+      forwardLinks[p] = [];
+    }
+
+    try {
+      structures[p] = await callJsonTool(client, "get_note_structure", { path: p });
+    } catch {
+      structures[p] = null;
+    }
+  }
+
+  return { inventory, backlinks, forwardLinks, structures };
+}
+
+// ── Extended DB snapshot ───────────────────────────────────────
+
+export interface ExtendedDbSnapshot extends DbSnapshot {
+  liveMemoryCount: number;
+  correctionCount: number;
+}
+
+export function snapshotExtendedDbState(stateDb: StateDb): ExtendedDbSnapshot {
+  const base = snapshotDbState(stateDb);
+
+  let liveMemoryCount = 0;
+  try {
+    const row = stateDb.db
+      .prepare("SELECT COUNT(*) as cnt FROM memories WHERE superseded_by IS NULL")
+      .get() as { cnt: number } | undefined;
+    liveMemoryCount = row?.cnt ?? 0;
+  } catch { /* table may not exist yet */ }
+
+  let correctionCount = 0;
+  try {
+    const row = stateDb.db
+      .prepare("SELECT COUNT(*) as cnt FROM corrections")
+      .get() as { cnt: number } | undefined;
+    correctionCount = row?.cnt ?? 0;
+  } catch { /* table may not exist yet */ }
+
+  return { ...base, liveMemoryCount, correctionCount };
+}
+
+// ── Convenience read helpers ──────────────────────────────────
+
+/** Get content under a specific heading */
+export async function getSectionContent(
+  client: TestClient,
+  path: string,
+  section: string,
+): Promise<string> {
+  const data = await callJsonTool(client, "get_section_content", { path, heading: section });
+  return data.content ?? "";
+}
+
+/** Query tasks across the vault */
+export async function getTasks(
+  client: TestClient,
+  opts: { path?: string; status?: string } = {},
+): Promise<any[]> {
+  const data = await callJsonTool(client, "tasks", { ...opts, limit: 100 });
+  return data.tasks ?? [];
+}
+
+/** Run graph_analysis with a specific mode */
+export async function getGraphAnalysis(
+  client: TestClient,
+  mode: string,
+): Promise<any> {
+  return callJsonTool(client, "graph_analysis", { analysis: mode });
+}
+
+/** Get folder structure */
+export async function getFolderStructure(client: TestClient): Promise<any> {
+  return callJsonTool(client, "get_folder_structure", {});
+}
+
+/** Get vault stats */
+export async function getVaultStats(client: TestClient): Promise<any> {
+  return callJsonTool(client, "get_vault_stats", {});
+}
+
+/** Get health check */
+export async function getHealthCheck(client: TestClient): Promise<any> {
+  return callJsonTool(client, "health_check", {});
+}
+
+/** List all entities across all categories */
+export async function listEntities(client: TestClient): Promise<{ entities: any[]; raw: any }> {
+  const data = await callJsonTool(client, "list_entities", {});
+  // EntityIndex has category keys (people, projects, other, etc.) + _metadata
+  const all: any[] = [];
+  for (const [key, val] of Object.entries(data)) {
+    if (key !== '_metadata' && Array.isArray(val)) {
+      all.push(...val);
+    }
+  }
+  return { entities: all, raw: data };
 }

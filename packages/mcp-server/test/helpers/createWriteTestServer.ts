@@ -25,6 +25,7 @@ export interface WriteTestServerContext {
   vaultPath: string;
   stateDb: StateDb;
   flywheelConfig: FlywheelConfig;
+  getIndex: () => VaultIndex;
   cleanup: () => Promise<void>;
 }
 
@@ -91,6 +92,7 @@ export async function createWriteTestServer(
     vaultPath: actualVaultPath,
     stateDb,
     flywheelConfig,
+    getIndex: () => currentIndex,
     cleanup: async () => {
       // Clear module-level singletons to avoid cross-test contamination
       setWriteStateDb(null);

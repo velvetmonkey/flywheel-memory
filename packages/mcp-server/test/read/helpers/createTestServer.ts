@@ -28,6 +28,7 @@ export interface TestServerContext {
   server: McpServer;
   vaultIndex: VaultIndex;
   vaultPath: string;
+  getIndex: () => VaultIndex;
 }
 
 /**
@@ -146,6 +147,7 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     vaultIndex,
     vaultPath,
     stateDb,
+    getIndex: () => currentIndex,
   };
 }
 

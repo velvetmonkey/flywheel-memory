@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { ALL_CATEGORIES, TOOL_CATEGORY, TOOL_TIER, generateInstructions } from '../src/config.js';
 import { applyToolGating } from '../src/tool-registry.js';
+import type { ToolTierController } from '../src/tool-registry.js';
 
 function createTieredServer() {
   const server = new McpServer({ name: 'test', version: '0.0.0' });
@@ -728,5 +729,300 @@ describe('full preset reachability', () => {
       expect(result.isError, `${toolName} should not error`).not.toBe(true);
       expect(result.content[0].text, `${toolName} response mismatch`).toBe(`${toolName} ok`);
     }
+  });
+});
+
+// ============================================================================
+// T18 — Session behaviour tests
+// ============================================================================
+
+function createTieredServerWithCallback(onTierStateChange: (controller: ToolTierController) => void) {
+  const server = new McpServer({ name: 'test-cb', version: '0.0.0' });
+  const controller = applyToolGating(
+    server,
+    new Set(ALL_CATEGORIES),
+    () => null,
+    null,
+    undefined,
+    undefined,
+    'tiered',
+    onTierStateChange,
+  );
+
+  server.tool('search', { query: z.string().optional(), focus: z.string().optional() }, async () => ({
+    content: [{ type: 'text' as const, text: 'search ok' }],
+  }));
+  server.tool('brief', { focus: z.string().optional() }, async () => ({
+    content: [{ type: 'text' as const, text: 'brief ok' }],
+  }));
+  server.tool('graph_analysis', async () => ({
+    content: [{ type: 'text' as const, text: 'graph ok' }],
+  }));
+  server.tool('vault_schema', async () => ({
+    content: [{ type: 'text' as const, text: 'schema ok' }],
+  }));
+  server.tool('health_check', async () => ({
+    content: [{ type: 'text' as const, text: 'health ok' }],
+  }));
+  server.tool('merge_entities', async () => ({
+    content: [{ type: 'text' as const, text: 'merge ok' }],
+  }));
+  server.tool('suggest_wikilinks', async () => ({
+    content: [{ type: 'text' as const, text: 'wikilinks ok' }],
+  }));
+  server.tool('vault_record_correction', async () => ({
+    content: [{ type: 'text' as const, text: 'correction ok' }],
+  }));
+  server.tool('get_context_around_date', async () => ({
+    content: [{ type: 'text' as const, text: 'temporal ok' }],
+  }));
+
+  controller.finalizeRegistration();
+  return { server, controller };
+}
+
+// ============================================================================
+// onTierStateChange callback
+// ============================================================================
+
+describe('onTierStateChange callback', () => {
+  it('fires when a category activates via search signal', async () => {
+    const cb = vi.fn();
+    const { server } = createTieredServerWithCallback(cb);
+    cb.mockClear();
+
+    await callTool(server, 'search', { query: 'show me backlinks' });
+
+    expect(cb).toHaveBeenCalled();
+    const ctrl: ToolTierController = cb.mock.calls[cb.mock.calls.length - 1][0];
+    expect(ctrl.activeCategories.has('graph')).toBe(true);
+  });
+
+  it('fires when enableTierCategory is called directly', () => {
+    const cb = vi.fn();
+    const { controller } = createTieredServerWithCallback(cb);
+    cb.mockClear();
+
+    controller.enableTierCategory('graph');
+
+    expect(cb).toHaveBeenCalled();
+    const ctrl: ToolTierController = cb.mock.calls[cb.mock.calls.length - 1][0];
+    expect(ctrl.activeCategories.has('graph')).toBe(true);
+  });
+
+  it('fires on setOverride with matching override state', () => {
+    const cb = vi.fn();
+    const { controller } = createTieredServerWithCallback(cb);
+    cb.mockClear();
+
+    controller.setOverride('full');
+    expect(cb).toHaveBeenCalledTimes(1);
+    expect(cb.mock.calls[0][0].getOverride()).toBe('full');
+
+    controller.setOverride('auto');
+    expect(cb).toHaveBeenCalledTimes(2);
+    expect(cb.mock.calls[1][0].getOverride()).toBe('auto');
+  });
+
+  it('no error when callback is undefined (existing helper)', async () => {
+    const { server, controller } = createTieredServer();
+
+    await callTool(server, 'search', { query: 'show backlinks' });
+
+    expect(controller.activeCategories.has('graph')).toBe(true);
+  });
+});
+
+// ============================================================================
+// Activation suppression in full override
+// ============================================================================
+
+describe('activation suppression in full override', () => {
+  it('full override suppresses activation map updates', async () => {
+    const { server, controller } = createTieredServer();
+
+    controller.setOverride('full');
+
+    await callTool(server, 'search', { query: 'backlinks and schema' });
+
+    expect(controller.getActivatedCategoryTiers().size).toBe(0);
+  });
+
+  it('categories activated before full survive full→auto; unactivated re-lock', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    await callTool(server, 'search', { query: 'show backlinks' });
+    expect(controller.activeCategories.has('graph')).toBe(true);
+
+    controller.setOverride('full');
+    expect(tools.vault_schema.enabled).toBe(true);
+
+    controller.setOverride('auto');
+    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.vault_schema.enabled).toBe(false);
+  });
+
+  it('signals during full do not leak into auto mode', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    controller.setOverride('full');
+
+    await callTool(server, 'search', { query: 'schema backlinks' });
+
+    controller.setOverride('auto');
+
+    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.vault_schema.enabled).toBe(false);
+  });
+});
+
+// ============================================================================
+// Controller tier-state (getActivatedCategoryTiers)
+// ============================================================================
+
+describe('getActivatedCategoryTiers() public API', () => {
+  it('returns empty map when no categories activated', () => {
+    const { controller } = createTieredServer();
+    expect(controller.getActivatedCategoryTiers().size).toBe(0);
+  });
+
+  it('returns a defensive copy — mutation does not affect internal state', () => {
+    const { controller } = createTieredServer();
+    controller.activateCategory('graph', 2);
+
+    const map = controller.getActivatedCategoryTiers() as Map<string, number>;
+    map.set('schema', 3);
+
+    expect(controller.getActivatedCategoryTiers().has('schema')).toBe(false);
+  });
+
+  it('accumulates entries as categories activate', () => {
+    const { controller } = createTieredServer();
+
+    controller.activateCategory('graph', 2);
+    controller.activateCategory('schema', 3);
+
+    const map = controller.getActivatedCategoryTiers();
+    expect(map.get('graph')).toBe(2);
+    expect(map.get('schema')).toBe(3);
+    expect(map.size).toBe(2);
+  });
+
+  it('tier upgrade: activateCategory at higher tier replaces lower', () => {
+    const { controller } = createTieredServer();
+
+    controller.activateCategory('schema', 2);
+    expect(controller.getActivatedCategoryTiers().get('schema')).toBe(2);
+
+    controller.activateCategory('schema', 3);
+    expect(controller.getActivatedCategoryTiers().get('schema')).toBe(3);
+  });
+
+  it('tier downgrade rejected: lower tier does not demote', () => {
+    const { controller } = createTieredServer();
+
+    controller.activateCategory('graph', 3);
+    controller.activateCategory('graph', 2);
+
+    expect(controller.getActivatedCategoryTiers().get('graph')).toBe(3);
+  });
+});
+
+// ============================================================================
+// Minimal-to-auto state transitions
+// ============================================================================
+
+describe('minimal-to-auto state transitions', () => {
+  it('direct call in minimal records activation but tool stays disabled', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    controller.setOverride('minimal');
+
+    const result = await callTool(server, 'graph_analysis');
+
+    expect(result.isError).toBe(true);
+    expect(controller.getActivatedCategoryTiers().has('graph')).toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(false);
+  });
+
+  it('switching from minimal to auto reveals categories activated during minimal', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    controller.setOverride('minimal');
+    await callTool(server, 'graph_analysis');
+    expect(tools.graph_analysis.enabled).toBe(false);
+
+    controller.setOverride('auto');
+    expect(tools.graph_analysis.enabled).toBe(true);
+  });
+
+  it('search signal in minimal records activation for later auto restore', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    controller.setOverride('minimal');
+
+    await callTool(server, 'search', { query: 'show backlinks' });
+
+    expect(controller.getActivatedCategoryTiers().has('graph')).toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(false);
+
+    controller.setOverride('auto');
+    expect(tools.graph_analysis.enabled).toBe(true);
+  });
+});
+
+// ============================================================================
+// Concurrent activation & finalizeRegistration idempotency
+// ============================================================================
+
+describe('concurrent activation and finalization', () => {
+  it('concurrent searches activating different categories both succeed', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    await Promise.all([
+      callTool(server, 'search', { query: 'backlinks' }),
+      callTool(server, 'search', { query: 'schema' }),
+    ]);
+
+    expect(controller.activeCategories.has('graph')).toBe(true);
+    expect(controller.activeCategories.has('schema')).toBe(true);
+    expect(controller.getActivatedCategoryTiers().get('graph')).toBe(2);
+    expect(controller.getActivatedCategoryTiers().get('schema')).toBe(3);
+    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.vault_schema.enabled).toBe(true);
+  });
+
+  it('concurrent searches activating the same category produce a single entry', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    await Promise.all([
+      callTool(server, 'search', { query: 'backlinks' }),
+      callTool(server, 'search', { query: 'connections and hubs' }),
+    ]);
+
+    expect(controller.activeCategories.has('graph')).toBe(true);
+    expect(controller.getActivatedCategoryTiers().get('graph')).toBe(2);
+    expect(tools.graph_analysis.enabled).toBe(true);
+  });
+
+  it('calling finalizeRegistration twice does not throw or break tools', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    expect(() => controller.finalizeRegistration()).not.toThrow();
+
+    await callTool(server, 'search', { query: 'show backlinks' });
+    expect(controller.activeCategories.has('graph')).toBe(true);
+
+    const result = await callTool(server, 'graph_analysis');
+    expect(result.isError).not.toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(true);
   });
 });

@@ -257,6 +257,7 @@ Any HuggingFace Transformers-compatible model can be used — unknown models aut
 | `FLYWHEEL_SKIP_FTS5` | `false` | Skip FTS5 full-text search index build at startup. Useful for testing. |
 | `FLYWHEEL_SKIP_EMBEDDINGS` | `false` | Skip automatic embedding rebuild at startup |
 | `FLYWHEEL_AGENT_ID` | — | Agent identifier for multi-agent memory provenance. When set, memories stored via the `memory` tool are tagged with this ID. |
+| `FLYWHEEL_TOOL_ROUTING` | `hybrid` | Tool activation routing mode. `pattern` = regex-only (T13 behavior), `hybrid` = regex + semantic embedding signals, `semantic` = semantic-only for hybrid search calls (regex fallback elsewhere). Default is `hybrid` when tiered exposure is active, `pattern` otherwise. Semantic activation only fires on search calls that use the hybrid search path (requires `init_semantic`). Custom `EMBEDDING_MODEL` users fall back to `pattern` unless the manifest was regenerated for that model. |
 
 ### Transport
 

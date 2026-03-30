@@ -28,6 +28,7 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 import { getSessionId } from '@velvetmonkey/vault-core';
 
 import { PRESETS, TOOL_CATEGORY, TOOL_TIER, type ToolCategory, type ToolTier } from './config.js';
+import { getSemanticActivations, getToolRoutingMode, hasToolRouting, type SemanticActivation } from './core/read/toolRouting.js';
 import { applySandwichOrdering } from './tools/read/query.js';
 import { VaultRegistry, type VaultContext } from './vault-registry.js';
 import { runInVaultScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
@@ -161,7 +162,19 @@ const ACTIVATION_PATTERNS: Array<{ category: ToolCategory; tier: ToolTier; patte
   },
 ];
 
-function getActivationSignals(toolName: string, params: unknown): Array<{ category: ToolCategory; tier: ToolTier }> {
+function getPatternSignals(raw: string): Array<{ category: ToolCategory; tier: ToolTier }> {
+  if (!raw) return [];
+  return ACTIVATION_PATTERNS
+    .filter(({ patterns }) => patterns.some((pattern) => pattern.test(raw)))
+    .map(({ category, tier }) => ({ category, tier }));
+}
+
+async function getActivationSignals(
+  toolName: string,
+  params: unknown,
+  searchMethod?: string,
+  toolTierMode: ToolTierMode = 'off',
+): Promise<Array<{ category: ToolCategory; tier: ToolTier }>> {
   if (toolName !== 'search' && toolName !== 'brief') return [];
   if (!params || typeof params !== 'object') return [];
 
@@ -172,9 +185,53 @@ function getActivationSignals(toolName: string, params: unknown): Array<{ catego
 
   if (!raw) return [];
 
-  return ACTIVATION_PATTERNS
-    .filter(({ patterns }) => patterns.some((pattern) => pattern.test(raw)))
-    .map(({ category, tier }) => ({ category, tier }));
+  const routingMode = getToolRoutingMode(toolTierMode);
+
+  // Pattern-based signals (T13 regex activation)
+  const patternSignals = routingMode !== 'semantic' ? getPatternSignals(raw) : [];
+
+  // Semantic signals (T14 embedding-based activation)
+  let semanticSignals: SemanticActivation[] = [];
+  if (
+    routingMode !== 'pattern' &&
+    searchMethod === 'hybrid' &&
+    hasToolRouting()
+  ) {
+    semanticSignals = await getSemanticActivations(raw);
+  }
+
+  // In 'semantic' mode with non-hybrid search, fall back to pattern signals
+  if (routingMode === 'semantic' && searchMethod !== 'hybrid') {
+    return getPatternSignals(raw);
+  }
+
+  // Union: dedupe by category, keep highest tier per category
+  const categoryBest = new Map<ToolCategory, ToolTier>();
+  for (const { category, tier } of [...patternSignals, ...semanticSignals]) {
+    const existing = categoryBest.get(category);
+    if (!existing || tier > existing) {
+      categoryBest.set(category, tier);
+    }
+  }
+
+  return Array.from(categoryBest.entries()).map(([category, tier]) => ({ category, tier }));
+}
+
+/**
+ * Extract the search method from an MCP tool result payload.
+ * The search tool returns JSON with a 'method' field ('hybrid', 'fts5', 'cross_vault', etc.).
+ */
+function extractSearchMethod(result: unknown): string | undefined {
+  if (!result || typeof result !== 'object') return undefined;
+  const content = (result as { content?: unknown[] }).content;
+  if (!Array.isArray(content) || content.length === 0) return undefined;
+  const first = content[0] as { type?: string; text?: string };
+  if (first?.type !== 'text' || typeof first.text !== 'string') return undefined;
+  try {
+    const parsed = JSON.parse(first.text);
+    if (typeof parsed.method === 'string') return parsed.method;
+  } catch { /* not JSON or no method field */ }
+  return undefined;
 }
 
 // ============================================================================
@@ -260,9 +317,9 @@ export function applyToolGating(
     }
   }
 
-  function maybeActivateFromContext(toolName: string, params: unknown): void {
+  async function maybeActivateFromContext(toolName: string, params: unknown, searchMethod?: string): Promise<void> {
     if (tierMode !== 'tiered' || tierOverride === 'full') return;
-    for (const { category, tier } of getActivationSignals(toolName, params)) {
+    for (const { category, tier } of await getActivationSignals(toolName, params, searchMethod, tierMode)) {
       enableCategory(category, tier);
     }
   }
@@ -295,7 +352,9 @@ export function applyToolGating(
       }
       try {
         result = await handler(...args);
-        maybeActivateFromContext(toolName, params);
+        // Extract search method from result for semantic routing gating
+        const searchMethod = extractSearchMethod(result);
+        await maybeActivateFromContext(toolName, params, searchMethod);
         return result;
       } catch (err) {
         success = false;

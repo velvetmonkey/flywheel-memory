@@ -42,6 +42,7 @@ After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian v
   - ["Vault not found"](#vault-not-found)
   - ["Too many tools" / Claude picks the wrong tool](#too-many-tools--claude-picks-the-wrong-tool)
   - ["Permission denied" on file writes](#permission-denied-on-file-writes)
+  - [Server silently fails on Windows](#server-silently-fails-on-windows)
   - [Stale search results](#stale-search-results)
   - [Git-related errors](#git-related-errors)
 - [Git Integration (Optional)](#git-integration-optional)
@@ -86,6 +87,8 @@ Flywheel connects to your MCP client immediately, then builds indexes in the bac
 ## Windows
 
 On Windows, the MCP config differs from macOS/Linux in three ways:
+
+> **If you're on Windows, read this before configuring your client below.** The three differences here cause silent failures if missed.
 
 1. **`cmd /c` wrapper** — use `"command": "cmd"` with `"args": ["/c", "npx", ...]` instead of `"command": "npx"`. Windows installs npx as a batch script (`npx.cmd`) which MCP clients can't execute directly — without this wrapper the server silently fails.
 2. **`VAULT_PATH`** — set to your vault's Windows path (e.g. `C:\Users\you\obsidian\MyVault`)
@@ -132,6 +135,8 @@ Create `.mcp.json` in your vault root:
 }
 ```
 
+> **Windows?** Use `"command": "cmd"` with `"args": ["/c", "npx", "-y", "@velvetmonkey/flywheel-memory"]` and add `"FLYWHEEL_WATCH_POLL": "true"` to `env`. [Full example →](CONFIGURATION.md#windows)
+
 Launch:
 
 ```bash
@@ -174,6 +179,8 @@ Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
 }
 ```
 
+> **Windows?** Use `"command": "cmd"` with `"args": ["/c", "npx", "-y", "@velvetmonkey/flywheel-memory"]`, set `VAULT_PATH` to a backslash-escaped Windows path (e.g. `C:\\Users\\you\\obsidian\\MyVault`), and add `"FLYWHEEL_WATCH_POLL": "true"`. [Full example →](CONFIGURATION.md#windows)
+
 Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. Claude Code auto-detects the vault root from the working directory.
 
 **Multi-vault** — replace `VAULT_PATH` with `FLYWHEEL_VAULTS`:
@@ -215,6 +222,8 @@ Add this to `~/.openclaw/openclaw.json`:
   }
 }
 ```
+
+> **Windows?** Use `"command": "cmd"` with `"args": ["/c", "npx", "-y", "@velvetmonkey/flywheel-memory"]`, set `VAULT_PATH` to a backslash-escaped Windows path (e.g. `C:\\Users\\you\\obsidian\\MyVault`), and add `"FLYWHEEL_WATCH_POLL": "true"`. [Full example →](CONFIGURATION.md#windows)
 
 Restart OpenClaw. Flywheel appears as an MCP server with search, read, write, and memory tools.
 
@@ -614,12 +623,20 @@ Reduce the tool set. Switch from `full` to `agent` or a specific bundle combinat
 
 Flywheel writes to files in your vault directory and creates `.flywheel/` for its index. Make sure the user running Claude has write access to the vault folder.
 
+### Server silently fails on Windows
+
+Windows installs `npx` as a batch script (`npx.cmd`) which MCP clients can't execute directly via `spawn()`. The server process exits immediately with no error message — the client typically reports "Connection closed" or simply never lists Flywheel.
+
+**Fix:** Use `"command": "cmd"` with `"args": ["/c", "npx", ...]` instead of `"command": "npx"`. Also add `"FLYWHEEL_WATCH_POLL": "true"` to `env` — without it, edits you make in Obsidian won't appear in search results. See the [Windows section](#windows) or [CONFIGURATION.md](CONFIGURATION.md#windows) for the full config.
+
 ### Stale search results
 
 The index rebuilds automatically via file watcher, but if results seem stale:
 
 1. Ask Claude to "refresh the index" (uses the `refresh_index` tool)
 2. Or delete `.flywheel/` and restart -- it rebuilds in seconds
+
+**Windows:** Make sure `FLYWHEEL_WATCH_POLL=true` is set — native file events are unreliable on Windows. See [Windows](#windows).
 
 ### Git-related errors
 

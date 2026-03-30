@@ -18,6 +18,11 @@ All examples assume Flywheel is connected to your vault. See [SETUP.md](SETUP.md
   - [Find hubs](#find-hubs)
   - [Track graph evolution](#track-graph-evolution)
   - [Visualize your knowledge graph](#visualize-your-knowledge-graph)
+- [Multi-Vault](#multi-vault)
+  - [Search across all vaults](#search-across-all-vaults)
+  - [Search one vault](#search-one-vault)
+  - [Target a specific vault for writes](#target-a-specific-vault-for-writes)
+  - [Identify which vault a result came from](#identify-which-vault-a-result-came-from)
 - [Semantic Search](#semantic-search)
   - [Enable hybrid search](#enable-hybrid-search)
   - [Search by concept](#search-by-concept)
@@ -145,6 +150,40 @@ Export your vault as a graph file and open it in professional visualization tool
 **What's in the export:**
 - **Nodes**: Every note (title, modified date, tags, frontmatter type) + every entity (category, hub score, aliases)
 - **Edges**: Wikilinks (note→note), weighted connections (from feedback learning), co-occurrence relationships (entity↔entity)
+
+---
+
+## Multi-Vault
+
+When Flywheel is configured with `FLYWHEEL_VAULTS`, all tools gain an optional `vault` parameter. These examples assume a two-vault setup: `personal` and `work`.
+
+### Search across all vaults
+
+> "Find all notes about quarterly planning"
+
+When `vault` is omitted, `search` automatically queries every configured vault and merges the results. Each result includes a `vault` field so you can see where it came from.
+
+### Search one vault
+
+> "Search my work vault for notes about the API redesign"
+
+> "Find notes tagged #meeting in my personal vault only"
+
+Passing `vault: "work"` or `vault: "personal"` restricts the search to that vault.
+
+### Target a specific vault for writes
+
+> "Add a task to today's daily note in my work vault: Follow up on the deployment issue"
+
+> "Create a new project note in my personal vault at projects/Garden Redesign.md"
+
+Non-search tools default to the primary vault (first in the list). Pass `vault: "work"` to target a different one.
+
+### Identify which vault a result came from
+
+> "Search for 'budget review' and tell me which vault each result is from"
+
+Cross-vault search results include a `vault` field on every result. Ask Claude to surface it when you need to disambiguate.
 
 ---
 

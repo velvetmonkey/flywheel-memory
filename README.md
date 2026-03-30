@@ -13,7 +13,7 @@
 
 **[See It Work](#see-it-work)** · **[Get Started](#get-started)** · **[Why Flywheel](#why-flywheel)** · **[Benchmarks](#benchmarks)** · **[Testing](#testing)** · **[Documentation](#documentation)** · **[License](#license)**
 
-Flywheel is an MCP server for Obsidian vaults. It indexes your markdown locally and exposes tools that help AI clients search notes, write safely, query tasks, follow links, and reuse context across sessions.
+Flywheel is an MCP server for Obsidian vaults. It indexes your markdown locally and exposes tools that help AI clients search notes, write safely, query tasks, follow links, and reuse context across sessions. One server can serve multiple vaults with isolated state and cross-vault search.
 
 Search results include more than filenames: Flywheel returns frontmatter, backlinks, outlinks, snippets, and section context so the model can often answer from one call instead of opening file after file. Writes can add wikilinks, use structured section edits, and optionally create auditable git commits.
 
@@ -112,6 +112,22 @@ Start with `default`. Add bundles when you need them, such as `graph`, `schema`,
 
 [Browse all 75 tools ->](docs/TOOLS.md) | [Preset recipes ->](docs/CONFIGURATION.md)
 
+### Multiple vaults
+
+Serve more than one vault from a single Flywheel instance with `FLYWHEEL_VAULTS`:
+
+```json
+{
+  "env": {
+    "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work"
+  }
+}
+```
+
+Search automatically spans all vaults and tags each result with its source vault. Other tools default to the primary vault (first in the list) unless you pass a `vault` parameter. Each vault gets fully isolated state — separate indexes, graph, file watcher, and config.
+
+[Full multi-vault configuration ->](docs/CONFIGURATION.md#multi-vault) | [Client setup examples ->](docs/SETUP.md#multi-vault)
+
 <details>
 <summary><strong>Windows users</strong></summary>
 
@@ -140,6 +156,7 @@ If you want a managed cloud knowledge product, Flywheel is probably the wrong fi
 - **Safer writes:** Mutations operate on markdown structure such as headings, frontmatter, and sections. Entity linking and suggestions are available, but explicit writes remain the default.
 - **Persistent memory:** `brief`, `memory`, and search tools let clients reuse context across sessions without inventing a proprietary storage layer on top of the vault.
 - **Portable graph:** `export_graph` produces [GraphML](https://en.wikipedia.org/wiki/GraphML) that you can inspect in external graph tools such as Gephi or Cytoscape.
+- **Multi-vault:** Serve personal, work, and client vaults from a single server instance. Search spans all vaults by default; other tools target the primary vault unless you specify one. Each vault gets its own index, graph, and config. [Multi-vault setup ->](docs/CONFIGURATION.md#multi-vault)
 - **Auditable behavior:** Core indexing and graph operations run locally. Writes can be committed to git with a single flag, and background behavior is configurable.
 
 ### Link scoring

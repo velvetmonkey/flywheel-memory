@@ -1,6 +1,6 @@
 # Tools
 
-76 tools. Most questions only need one: **search**.
+77 tools. Most questions only need one: **search**.
 
 > **Start here:** Most vaults only need `default` (18 tools). Add bundles as you need them — `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`. See [CONFIGURATION.md](CONFIGURATION.md) for preset recipes.
 

@@ -132,7 +132,13 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const entries = Array.from(catalog.values()).sort((a, b) => a.name.localeCompare(b.name));
+  // Meta-diagnostics tools excluded from semantic routing — they should not be
+  // activated by T14 embedding similarity.
+  const ROUTING_EXCLUDE = new Set(['tool_selection_feedback']);
+
+  const entries = Array.from(catalog.values())
+    .filter((e) => !ROUTING_EXCLUDE.has(e.name))
+    .sort((a, b) => a.name.localeCompare(b.name));
   const toolEntries: ManifestToolEntry[] = [];
 
   console.log(`Embedding ${entries.length} tool descriptions...`);

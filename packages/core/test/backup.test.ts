@@ -337,7 +337,7 @@ describe('Backup & Recovery', () => {
   // Extended salvage scenarios
   // ===========================================================================
   describe('salvageFeedbackTables (extended)', () => {
-    it('salvages all 9 SALVAGE_TABLES when populated', () => {
+    it('salvages all 10 SALVAGE_TABLES when populated', () => {
       const sourceDb = openStateDb(testVaultPath);
       const now = Date.now();
 
@@ -369,6 +369,9 @@ describe('Backup & Recovery', () => {
       sourceDb.db.prepare(
         `INSERT INTO corrections (correction_type, description, source) VALUES (?, ?, ?)`
       ).run('wrong_link', 'test correction', 'user');
+      sourceDb.db.prepare(
+        `INSERT INTO tool_selection_feedback (timestamp, tool_name, correct, source) VALUES (?, ?, ?, ?)`
+      ).run(now, 'search', 1, 'explicit');
       sourceDb.close();
 
       const backupPath = `${dbPath}.full-salvage`;
@@ -382,7 +385,7 @@ describe('Backup & Recovery', () => {
 
       try {
         const results = salvageFeedbackTables(targetDb.db, backupPath);
-        // All 9 tables should have been salvaged
+        // All 10 tables should have been salvaged
         for (const table of SALVAGE_TABLES) {
           expect(results[table]).toBeGreaterThanOrEqual(1);
         }

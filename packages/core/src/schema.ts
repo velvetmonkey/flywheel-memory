@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 35;
+export const SCHEMA_VERSION = 36;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -208,7 +208,8 @@ CREATE TABLE IF NOT EXISTS tool_invocations (
   duration_ms INTEGER,
   success INTEGER NOT NULL DEFAULT 1,
   response_tokens INTEGER,
-  baseline_tokens INTEGER
+  baseline_tokens INTEGER,
+  query_context TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_tool_inv_ts ON tool_invocations(timestamp);
 CREATE INDEX IF NOT EXISTS idx_tool_inv_tool ON tool_invocations(tool_name, timestamp);
@@ -468,4 +469,23 @@ CREATE TABLE IF NOT EXISTS performance_benchmarks (
 );
 CREATE INDEX IF NOT EXISTS idx_perf_bench_ts ON performance_benchmarks(timestamp);
 CREATE INDEX IF NOT EXISTS idx_perf_bench_name ON performance_benchmarks(benchmark, timestamp);
+
+-- Tool selection feedback (v36: tool selection quality tracking)
+CREATE TABLE IF NOT EXISTS tool_selection_feedback (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp INTEGER NOT NULL,
+  tool_invocation_id INTEGER,
+  tool_name TEXT NOT NULL,
+  query_context TEXT,
+  expected_tool TEXT,
+  expected_category TEXT,
+  correct INTEGER,
+  source TEXT NOT NULL DEFAULT 'explicit',
+  rule_id TEXT,
+  rule_version INTEGER,
+  session_id TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_tsf_tool ON tool_selection_feedback(tool_name);
+CREATE INDEX IF NOT EXISTS idx_tsf_ts ON tool_selection_feedback(timestamp);
 `;

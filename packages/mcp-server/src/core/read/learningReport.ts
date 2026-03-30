@@ -7,6 +7,7 @@
  */
 
 import type { StateDb } from '@velvetmonkey/vault-core';
+import { getToolSelectionReport, type ToolSelectionReport } from '../shared/toolSelectionFeedback.js';
 
 // =============================================================================
 // TYPES
@@ -26,6 +27,7 @@ export interface LearningReport {
     survival_rate: number | null;
   };
   graph: { link_count: number; entity_count: number };
+  tool_selection?: ToolSelectionReport;
   comparison?: {
     previous_period: { start: string; end: string };
     applications_delta: number;
@@ -199,6 +201,12 @@ export function getLearningReport(
     funnel: queryFunnel(stateDb, bounds.start, bounds.end, bounds.startMs, bounds.endMs),
     graph: { link_count: linkCount, entity_count: entityCount },
   };
+
+  // Tool selection feedback — only include when data exists
+  const toolSelection = getToolSelectionReport(stateDb, daysBack);
+  if (toolSelection) {
+    report.tool_selection = toolSelection;
+  }
 
   if (compare) {
     const prevEnd = new Date(now);

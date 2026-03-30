@@ -28,6 +28,7 @@ export const SALVAGE_TABLES = [
   'memories',
   'session_summaries',
   'corrections',
+  'tool_selection_feedback',
 ] as const;
 
 // =============================================================================
@@ -395,6 +396,19 @@ export function initSchema(db: Database.Database): void {
       }
 
       db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(35);
+    }
+
+
+    // v36: tool_selection_feedback table + query_context on tool_invocations
+    if (currentVersion < 36) {
+      const hasQueryContext = db.prepare(
+        `SELECT COUNT(*) as cnt FROM pragma_table_info('tool_invocations') WHERE name = 'query_context'`
+      ).get() as { cnt: number };
+      if (hasQueryContext.cnt === 0) {
+        db.exec('ALTER TABLE tool_invocations ADD COLUMN query_context TEXT');
+      }
+
+      db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(36);
     }
 
     db.prepare(

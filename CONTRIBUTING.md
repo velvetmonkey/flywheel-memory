@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js >= 18.0.0
+- Node.js >= 22.0.0
 - [[npmjs|npm]] >= 9.0.0
 
 ## Development Setup

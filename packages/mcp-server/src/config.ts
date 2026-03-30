@@ -372,7 +372,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   server_log: 2,
   flywheel_doctor: 2,
 
-  // Tier 3 — explicit or advanced operations (25 tools)
+  // Tier 3 — explicit or advanced operations (26 tools)
   vault_schema: 3,
   schema_conventions: 3,
   schema_validate: 3,

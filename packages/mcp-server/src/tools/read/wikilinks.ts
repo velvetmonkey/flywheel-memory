@@ -14,6 +14,7 @@ import { countFTS5Mentions } from '../../core/read/fts5.js';
 import { detectImplicitEntities, COMMON_ENGLISH_WORDS, isCommonWordEntity } from '@velvetmonkey/vault-core';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD, isAiConfigEntity, AI_CONFIG_PRIOR_ALPHA } from '../../core/write/wikilinkFeedback.js';
+import { recordProspectSightings, refreshProspectSummaries, getPromotionCandidates, getProspectSampleNotes, PROMOTION_THRESHOLD, type ProspectSighting } from '../../core/shared/prospects.js';
 
 /**
  * Match entity in text, avoiding existing wikilinks and code blocks
@@ -35,6 +36,12 @@ interface ProspectMatch {
   source: 'dead_link' | 'implicit' | 'both';  // How it was detected
   confidence: 'high' | 'medium' | 'low';      // Confidence level
   backlink_count?: number;  // Number of backlinks (for dead link targets)
+  pattern?: string;         // Implicit pattern type
+  ledger_source?: 'implicit' | 'dead_link' | 'high_score';  // Best historical source
+  ledger_note_count?: number;   // Distinct notes from ledger
+  ledger_day_count?: number;    // Distinct days from ledger
+  effective_score?: number;     // Decay-adjusted promotion score
+  promotion_ready?: boolean;    // effective_score >= promotion threshold
 }
 
 /**
@@ -209,6 +216,12 @@ export function registerWikilinkTools(
     source: z.enum(['dead_link', 'implicit', 'both']).describe('How the prospect was detected'),
     confidence: z.enum(['high', 'medium', 'low']).describe('Confidence level'),
     backlink_count: z.coerce.number().optional().describe('Number of backlinks (for dead link targets)'),
+    pattern: z.string().optional().describe('Implicit pattern type (proper-nouns, camel-case, etc.)'),
+    ledger_source: z.enum(['implicit', 'dead_link', 'high_score']).optional().describe('Best historical source from the prospect ledger'),
+    ledger_note_count: z.coerce.number().optional().describe('Distinct notes from prospect ledger'),
+    ledger_day_count: z.coerce.number().optional().describe('Distinct days from prospect ledger'),
+    effective_score: z.coerce.number().optional().describe('Decay-adjusted promotion score'),
+    promotion_ready: z.boolean().optional().describe('True when effective_score >= promotion threshold'),
   });
 
   const ScoreBreakdownSchema = z.object({
@@ -225,6 +238,7 @@ export function registerWikilinkTools(
     suppressionPenalty: z.coerce.number().optional(),
     semanticBoost: z.coerce.number().optional(),
     edgeWeightBoost: z.coerce.number().optional(),
+    prospectBoost: z.coerce.number().optional(),
   });
 
   const ScoredSuggestionSchema = z.object({
@@ -269,13 +283,14 @@ export function registerWikilinkTools(
         'Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases.',
       inputSchema: {
         text: z.string().describe('The text to analyze for potential wikilinks'),
+        note_path: z.string().optional().describe('Vault-relative note path. When provided, prospect sightings are persisted to the ledger'),
         limit: z.coerce.number().default(50).describe('Maximum number of suggestions to return'),
         offset: z.coerce.number().default(0).describe('Number of suggestions to skip (for pagination)'),
         detail: z.boolean().default(false).describe('Include per-layer score breakdown for each suggestion'),
       },
       outputSchema: SuggestWikilinksOutputSchema,
     },
-    async ({ text, limit: requestedLimit, offset, detail }): Promise<{
+    async ({ text, note_path, limit: requestedLimit, offset, detail }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
       structuredContent: SuggestWikilinksOutput;
     }> => {
@@ -366,6 +381,42 @@ export function registerWikilinkTools(
           source: 'implicit',
           confidence: 'low',
         });
+      }
+
+      // Persist prospect sightings to ledger when note_path is provided
+      if (note_path && prospects.length > 0) {
+        const sightings: ProspectSighting[] = prospects.map(p => ({
+          term: p.entity.toLowerCase(),
+          displayName: p.entity,
+          notePath: note_path,
+          source: p.source === 'both' ? 'dead_link' as const : (p.source === 'dead_link' ? 'dead_link' as const : 'implicit' as const),
+          confidence: p.confidence,
+          backlinkCount: p.backlink_count,
+        }));
+        recordProspectSightings(sightings);
+        const affectedTerms = [...new Set(sightings.map(s => s.term))];
+        refreshProspectSummaries(affectedTerms);
+      }
+
+      // Enrich prospects with ledger data when available
+      const stateDb = getStateDb();
+      if (stateDb && prospects.length > 0) {
+        try {
+          for (const prospect of prospects) {
+            const row = stateDb.db.prepare(
+              'SELECT note_count, day_count, best_source, best_score, promotion_score, last_seen_at FROM prospect_summary WHERE term = ?'
+            ).get(prospect.entity.toLowerCase()) as { note_count: number; day_count: number; best_source: string; best_score: number; promotion_score: number; last_seen_at: number } | undefined;
+            if (row) {
+              prospect.ledger_source = row.best_source as 'implicit' | 'dead_link' | 'high_score';
+              prospect.ledger_note_count = row.note_count;
+              prospect.ledger_day_count = row.day_count;
+              const decay = Math.exp(-(Math.LN2 / 60) * (Date.now() - row.last_seen_at) / (24 * 60 * 60 * 1000));
+              const effective = Math.round(row.promotion_score * decay * 10) / 10;
+              prospect.effective_score = effective;
+              prospect.promotion_ready = effective >= PROMOTION_THRESHOLD;
+            }
+          }
+        } catch { /* ledger enrichment unavailable */ }
       }
 
       const output: SuggestWikilinksOutput = {
@@ -651,7 +702,31 @@ export function registerWikilinkTools(
       const limit = Math.min(requestedLimit ?? 20, 100);
       const minFreq = min_frequency ?? 5;
 
-      // Collect all dead link targets with their sources
+      // Try prospect ledger first (richer data from accumulated sightings)
+      const prospectCandidates = getPromotionCandidates(limit * 2);
+      if (prospectCandidates.length > 0) {
+        const filtered = prospectCandidates
+          .filter(c => c.backlinkMax >= minFreq)
+          .slice(0, limit)
+          .map(c => ({
+            term: c.displayName,
+            wikilink_references: c.backlinkMax,
+            content_mentions: countFTS5Mentions(c.term),
+            sample_notes: getProspectSampleNotes(c.term, 3),
+            effective_score: c.effectiveScore,
+            promotion_ready: c.promotionReady,
+          }));
+
+        return {
+          content: [{ type: 'text', text: JSON.stringify({
+            total_dead_targets: prospectCandidates.length,
+            candidates_above_threshold: filtered.length,
+            candidates: filtered,
+          }, null, 2) }],
+        };
+      }
+
+      // Fallback: compute from vault index (no prospect ledger data available)
       const targetMap = new Map<string, { count: number; sources: Set<string> }>();
       for (const note of index.notes.values()) {
         for (const link of note.outlinks) {
@@ -668,29 +743,23 @@ export function registerWikilinkTools(
         }
       }
 
-      // Also check FTS5 for additional plain-text mentions of each dead target
       const candidates = Array.from(targetMap.entries())
         .filter(([, data]) => data.count >= minFreq)
-        .map(([target, data]) => {
-          const fts5Mentions = countFTS5Mentions(target);
-          return {
-            term: target,
-            wikilink_references: data.count,
-            content_mentions: fts5Mentions,
-            sample_notes: Array.from(data.sources),
-          };
-        })
+        .map(([target, data]) => ({
+          term: target,
+          wikilink_references: data.count,
+          content_mentions: countFTS5Mentions(target),
+          sample_notes: Array.from(data.sources),
+        }))
         .sort((a, b) => b.wikilink_references - a.wikilink_references)
         .slice(0, limit);
 
-      const output = {
-        total_dead_targets: targetMap.size,
-        candidates_above_threshold: candidates.length,
-        candidates,
-      };
-
       return {
-        content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
+        content: [{ type: 'text', text: JSON.stringify({
+          total_dead_targets: targetMap.size,
+          candidates_above_threshold: candidates.length,
+          candidates,
+        }, null, 2) }],
       };
     }
   );

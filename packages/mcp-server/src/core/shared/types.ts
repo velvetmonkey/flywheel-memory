@@ -191,6 +191,7 @@ export interface SuggestionConfig {
  * - 10: feedback (historical accuracy adjustment)
  * - 11: semantic (embedding similarity)
  * - 12: edge_weight (high-quality incoming link boost)
+ * - 14: prospect_boost (accumulated pre-entity evidence from prospect ledger)
  *
  * `fatigue` is included in this union so it can be disabled via `disabledLayers`
  * for ablation testing, but it is a per-file suffix-repetition guard, not a
@@ -204,6 +205,7 @@ export type ScoringLayer =
   | 'recency' | 'cross_folder'
   | 'hub_boost' | 'feedback' | 'semantic'
   | 'edge_weight'
+  | 'prospect_boost'
   | 'fatigue';
 
 export interface SuggestOptions {
@@ -229,6 +231,7 @@ export interface ScoreBreakdown {
   suppressionPenalty?: number; // Layer 0 (soft, proportional to Beta-Binomial posterior)
   semanticBoost?: number;      // Layer 11
   edgeWeightBoost?: number;    // Layer 12
+  prospectBoost?: number;       // Layer 14 (pre-entity prospect evidence)
 }
 
 export type ConfidenceLevel = 'high' | 'medium' | 'low';

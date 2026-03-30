@@ -38,7 +38,8 @@ import { mineCooccurrences, saveCooccurrenceToStateDb } from '../../shared/coocc
 import { setCooccurrenceIndex, suggestRelatedLinks, applyProactiveSuggestions } from '../../write/wikilinks.js';
 import { enqueueProactiveSuggestions, drainProactiveQueue, type QueueEntry } from '../../write/proactiveQueue.js';
 import { mineRetrievalCooccurrence } from '../../shared/retrievalCooccurrence.js';
-import { updateFTS5Incremental } from '../fts5.js';
+import { updateFTS5Incremental, countFTS5Mentions } from '../fts5.js';
+import { recordProspectSightings, refreshProspectSummaries, cleanStaleProspects, type ProspectSighting } from '../../shared/prospects.js';
 
 // Read modules
 import { getForwardLinksForNote } from '../graph.js';
@@ -1040,6 +1041,40 @@ export class PipelineRunner {
       const implicitCount = prospectResults.reduce((s, p) => s + p.implicit.length, 0);
       const deadCount = prospectResults.reduce((s, p) => s + p.deadLinkMatches.length, 0);
       serverLog('watcher', `Prospect scan: ${implicitCount} implicit entities, ${deadCount} dead link matches across ${prospectResults.length} files`);
+
+      // Persist prospect sightings to ledger
+      const sightings: ProspectSighting[] = [];
+      for (const result of prospectResults) {
+        for (const name of result.implicit) {
+          sightings.push({
+            term: name.toLowerCase(),
+            displayName: name,
+            notePath: result.file,
+            source: 'implicit',
+            confidence: 'low',
+          });
+        }
+        for (const target of result.deadLinkMatches) {
+          const backlinkCount = vaultIndex.backlinks.get(target)?.length ?? 0;
+          const ftsCount = countFTS5Mentions(target);
+          const isHighScore = backlinkCount >= 3 && ftsCount >= 3;
+          sightings.push({
+            term: target.toLowerCase(),
+            displayName: target,
+            notePath: result.file,
+            source: isHighScore ? 'high_score' : 'dead_link',
+            confidence: backlinkCount >= 3 ? 'high' : 'medium',
+            backlinkCount,
+            score: isHighScore ? ftsCount : 0,
+          });
+        }
+      }
+      if (sightings.length > 0) {
+        recordProspectSightings(sightings);
+        const affectedTerms = [...new Set(sightings.map(s => s.term))];
+        refreshProspectSummaries(affectedTerms);
+      }
+      cleanStaleProspects();
     }
     return { prospects: prospectResults };
   }

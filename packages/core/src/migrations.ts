@@ -29,6 +29,8 @@ export const SALVAGE_TABLES = [
   'session_summaries',
   'corrections',
   'tool_selection_feedback',
+  'prospect_ledger',
+  'prospect_summary',
 ] as const;
 
 // =============================================================================
@@ -410,6 +412,9 @@ export function initSchema(db: Database.Database): void {
 
       db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(36);
     }
+
+    // v37: prospect_ledger + prospect_summary tables (pre-entity pattern accumulation)
+    // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'

@@ -116,6 +116,7 @@ import { updateSuppressionList } from './core/write/wikilinkFeedback.js';
 
 // Core imports - Recency
 import { setRecencyStateDb } from './core/shared/recency.js';
+import { setProspectStateDb } from './core/shared/prospects.js';
 
 // Core imports - Co-occurrence
 import { loadCooccurrenceFromStateDb } from './core/shared/cooccurrence.js';
@@ -450,6 +451,7 @@ function activateVault(ctx: VaultContext): void {
     setWriteStateDb(ctx.stateDb);
     setFTS5Database(ctx.stateDb.db);
     setRecencyStateDb(ctx.stateDb);
+    setProspectStateDb(ctx.stateDb);
     setTaskCacheDatabase(ctx.stateDb.db);
     setEmbeddingsDatabase(ctx.stateDb.db);
     loadEntityEmbeddingsToMemory();

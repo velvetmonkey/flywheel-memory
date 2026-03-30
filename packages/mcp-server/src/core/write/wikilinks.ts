@@ -54,6 +54,7 @@ import * as fs from 'fs/promises';
 import type { FlywheelConfig } from '../read/config.js';
 import type { SuggestOptions, SuggestResult, SuggestionConfig, StrictnessMode, NoteContext, ScoreBreakdown, ScoredSuggestion, ConfidenceLevel, ScoringLayer } from './types.js';
 import { stem, tokenize } from '../shared/stemmer.js';
+import { getProspectBoostMap } from '../shared/prospects.js';
 import {
   mineCooccurrences,
   getCooccurrenceBoost,
@@ -1484,6 +1485,9 @@ export async function suggestRelatedLinks(
   // Load edge weight map once (Layer 12)
   const edgeWeightMap = stateDb ? getEntityEdgeWeightMap(stateDb) : new Map<string, number>();
 
+  // Load prospect boost map (Layer 14)
+  const prospectBoosts = disabled.has('prospect_boost') ? new Map<string, number>() : getProspectBoostMap();
+
   // First pass: Score entities and track which ones matched directly
   interface ScoredEntry {
     name: string;
@@ -1578,6 +1582,10 @@ export async function suggestRelatedLinks(
     const layerEdgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
     score += layerEdgeWeightBoost;
 
+    // Layer 14: Prospect boost — accumulated pre-entity evidence (exact name/alias match only)
+    const layerProspectBoost = disabled.has('prospect_boost') ? 0 : (prospectBoosts.get(entityName.toLowerCase()) ?? 0);
+    score += layerProspectBoost;
+
     // Add to directlyMatchedEntities BEFORE suppression penalty
     // Only lexically-matched entities should seed co-occurrence lookups;
     // entities with only type/hub/recency boosts (no lexical evidence) are noise seeds.
@@ -1612,6 +1620,7 @@ export async function suggestRelatedLinks(
           feedbackAdjustment: layerFeedbackAdj,
           suppressionPenalty: layerSuppressionPenalty,
           edgeWeightBoost: layerEdgeWeightBoost,
+          prospectBoost: layerProspectBoost,
         },
       });
     }
@@ -1714,8 +1723,9 @@ export async function suggestRelatedLinks(
           const crossFolderBoost = hasContentOverlap ? rawCrossFolderBoost : Math.min(rawCrossFolderBoost, 2);
           const feedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
           const edgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
+          const prospectBoost = disabled.has('prospect_boost') ? 0 : (prospectBoosts.get(entityName.toLowerCase()) ?? 0);
           const suppPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(entityName) ?? 0);
-          let totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj + edgeWeightBoost + suppPenalty;
+          let totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj + edgeWeightBoost + prospectBoost + suppPenalty;
           const coocContentRelevance = hasContentOverlap ? 5 : 0;
           totalBoost = capScoreWithoutContentRelevance(totalBoost, coocContentRelevance, config);
 
@@ -1744,6 +1754,7 @@ export async function suggestRelatedLinks(
                 feedbackAdjustment: feedbackAdj,
                 suppressionPenalty: suppPenalty,
                 edgeWeightBoost,
+                prospectBoost,
               },
             });
           }
@@ -1806,9 +1817,10 @@ export async function suggestRelatedLinks(
           const layerCrossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
           const layerFeedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(match.entityName) ?? 0);
           const layerEdgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(match.entityName, edgeWeightMap);
+          const layerProspectBoost = disabled.has('prospect_boost') ? 0 : (prospectBoosts.get(match.entityName.toLowerCase()) ?? 0);
           const layerSuppPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(match.entityName) ?? 0);
 
-          const totalScore = boost + layerTypeBoost + layerContextBoost + layerHubBoost + layerCrossFolderBoost + layerFeedbackAdj + layerEdgeWeightBoost + layerSuppPenalty;
+          const totalScore = boost + layerTypeBoost + layerContextBoost + layerHubBoost + layerCrossFolderBoost + layerFeedbackAdj + layerEdgeWeightBoost + layerProspectBoost + layerSuppPenalty;
 
           if (totalScore >= adaptiveMinScore) {
             scoredEntities.push({
@@ -1830,6 +1842,7 @@ export async function suggestRelatedLinks(
                 suppressionPenalty: layerSuppPenalty,
                 semanticBoost: boost,
                 edgeWeightBoost: layerEdgeWeightBoost,
+                prospectBoost: layerProspectBoost,
               },
             });
 

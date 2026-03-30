@@ -21,6 +21,7 @@ import type { MutationResult, ValidationWarning, OutputIssue, ScopingMetadata } 
 import { injectMutationMetadata } from './writer.js';
 import { getWriteStateDb } from './wikilinks.js';
 import { processImplicitFeedback } from './wikilinkFeedback.js';
+import { getPoliciesDir } from './policy/policyPaths.js';
 
 /**
  * Context provided to mutation operations
@@ -180,12 +181,12 @@ export async function handleGitCommit(
 }
 
 /**
- * Check if saved policies exist in the vault's .claude/policies/ directory.
+ * Check if saved policies exist in the vault's .flywheel/policies/ directory.
  * Returns a hint string if policies are available, or empty string if not.
  */
 async function getPolicyHint(vaultPath: string): Promise<string> {
   try {
-    const policiesDir = path.join(vaultPath, '.claude', 'policies');
+    const policiesDir = getPoliciesDir(vaultPath);
     const files = await fs.readdir(policiesDir);
     const yamlFiles = files.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
     if (yamlFiles.length > 0) {

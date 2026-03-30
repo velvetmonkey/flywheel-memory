@@ -9,6 +9,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import type { PolicyDefinition, PolicyValidationResult } from './types.js';
 import { validatePolicySchema } from './schema.js';
+import { getPoliciesDir, ensureMigrated } from './policyPaths.js';
 
 /**
  * Parse YAML content to a policy object
@@ -70,13 +71,14 @@ export async function loadPolicyFile(filePath: string): Promise<PolicyValidation
 }
 
 /**
- * Load a policy by name from the vault's .claude/policies directory
+ * Load a policy by name from the vault's .flywheel/policies directory
  */
 export async function loadPolicy(
   vaultPath: string,
   policyName: string
 ): Promise<PolicyValidationResult> {
-  const policiesDir = path.join(vaultPath, '.claude', 'policies');
+  await ensureMigrated(vaultPath);
+  const policiesDir = getPoliciesDir(vaultPath);
   const policyPath = path.join(policiesDir, `${policyName}.yaml`);
 
   // Also try .yml extension

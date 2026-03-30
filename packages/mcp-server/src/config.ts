@@ -524,7 +524,7 @@ Key capabilities:
   - **Atomicity** — failure at any step rolls back all changes. One policy = one git commit.
 
 Example: ask "create a policy that generates a weekly review note, pulls open tasks, and updates
-project frontmatter" — Claude authors the YAML, saves it to .claude/policies/, and runs it whenever
+project frontmatter" — Claude authors the YAML, saves it to .flywheel/policies/, and runs it whenever
 you say "run the weekly review for this week".`);
   }
 

@@ -660,9 +660,13 @@ async function main() {
 
   // ── Phase 1c: Load effectiveness snapshots for T15b routing ──
   if (stateDb) {
-    const vaultName = vaultRegistry?.primaryName ?? 'default';
-    const scores = getToolEffectivenessScores(stateDb);
-    loadEffectivenessSnapshot(vaultName, scores);
+    try {
+      const vaultName = vaultRegistry?.primaryName ?? 'default';
+      const scores = getToolEffectivenessScores(stateDb);
+      loadEffectivenessSnapshot(vaultName, scores);
+    } catch {
+      // Table may not exist yet on older databases — safe to skip
+    }
   }
 
     // ── Phase 2: Connect transports BEFORE heavy work ──
@@ -933,11 +937,13 @@ function runPeriodicMaintenance(db: StateDb): void {
   pruneSupersededMemories(db, 90);
 
   // Refresh effectiveness snapshot for active vault (T15b)
-  const vaultName = getActiveScopeOrNull()?.name;
-  if (vaultName) {
-    const scores = getToolEffectivenessScores(db);
-    loadEffectivenessSnapshot(vaultName, scores);
-  }
+  try {
+    const vaultName = getActiveScopeOrNull()?.name;
+    if (vaultName) {
+      const scores = getToolEffectivenessScores(db);
+      loadEffectivenessSnapshot(vaultName, scores);
+    }
+  } catch { /* table may not exist on older DBs */ }
 
   // Purges — run once per day
   const now = Date.now();

@@ -176,6 +176,12 @@ export function getToolSelectionStats(
   stateDb: StateDb,
   daysBack: number = 30,
 ): ToolSelectionStats[] {
+  // Guard against table not existing (older databases before schema v36)
+  const tableExists = stateDb.db.prepare(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='tool_selection_feedback'"
+  ).get();
+  if (!tableExists) return [];
+
   const cutoff = Date.now() - daysBack * 24 * 60 * 60 * 1000;
 
   const rows = stateDb.db.prepare(`

@@ -4,7 +4,7 @@
 
 Your vault is your second brain. You don't hand it to software you can't trust.
 
-**2,760 defined tests | 142 test files | 54,700+ lines of test code**
+**3,025 defined tests | 156 test files | 60,300+ lines of test code**
 
 - [Test Philosophy](#test-philosophy)
 - [CI Pipeline](#ci-pipeline)

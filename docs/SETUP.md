@@ -20,6 +20,7 @@ After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian v
     - [VS Code + GitHub Copilot (HTTP)](#vs-code--github-copilot-http)
     - [Continue (HTTP)](#continue-http)
     - [Other HTTP Clients](#other-http-clients)
+- [Multi-Vault](#multi-vault)
 - [Step 2: First 5 Commands to Try](#step-2-first-5-commands-to-try)
   - [1. Search your vault](#1-search-your-vault)
   - [2. Explore connections](#2-explore-connections)
@@ -140,6 +141,25 @@ Launch:
 cd /path/to/your/vault && claude
 ```
 
+**Multi-vault** — serve two or more vaults from one server:
+
+```json
+{
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "env": {
+        "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work",
+        "FLYWHEEL_TOOLS": "default"
+      }
+    }
+  }
+}
+```
+
+The first vault in the list is the **primary**. `search` spans all vaults by default; other tools operate on the primary vault unless you pass `vault: "work"`. See [CONFIGURATION.md](CONFIGURATION.md#multi-vault) for details.
+
 ### Claude Desktop (stdio)
 
 Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
@@ -160,6 +180,23 @@ Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
 ```
 
 Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. Claude Code auto-detects the vault root from the working directory.
+
+**Multi-vault** — replace `VAULT_PATH` with `FLYWHEEL_VAULTS`:
+
+```json
+{
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "env": {
+        "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work",
+        "FLYWHEEL_TOOLS": "default"
+      }
+    }
+  }
+}
+```
 
 Restart Claude Desktop after editing the config. Flywheel appears in the MCP server list.
 
@@ -339,6 +376,27 @@ On first run, Flywheel creates a `.flywheel/` directory containing its SQLite in
 > ```
 >
 > See [CONFIGURATION.md](CONFIGURATION.md#custom-categories) for details.
+
+---
+
+## Multi-Vault
+
+All client configs above show a single vault. To serve multiple vaults from one Flywheel instance, replace `VAULT_PATH` with `FLYWHEEL_VAULTS`:
+
+```
+FLYWHEEL_VAULTS="name1:/path/to/vault1,name2:/path/to/vault2"
+```
+
+The first vault is the **primary**. Key behaviors:
+
+| Behavior | `vault` specified | `vault` omitted |
+|----------|-------------------|-----------------|
+| `search` | Searches that vault only | Searches **all** vaults, merges results |
+| All other tools | Operates on that vault | Operates on primary vault |
+
+Each vault gets fully isolated state: separate `.flywheel/state.db`, graph index, file watcher, and runtime config.
+
+Multi-vault examples appear inline in the [Claude Code](#claude-code-stdio) and [Claude Desktop](#claude-desktop-stdio) sections above. For HTTP clients, see the [HTTP multi-vault example](#other-http-clients). Full reference: [CONFIGURATION.md](CONFIGURATION.md#multi-vault).
 
 ---
 

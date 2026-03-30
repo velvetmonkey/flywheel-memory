@@ -9,7 +9,6 @@
 import { describe, test, beforeAll, afterAll, expect } from 'vitest';
 import { createWriteTestServer, type WriteTestServerContext } from '../helpers/createWriteTestServer.js';
 import { connectTestClient, type TestClient } from '../read/helpers/createTestServer.js';
-import { registerMoveNoteTools } from '../../src/tools/write/move-notes.js';
 import {
   callJsonTool,
   searchInventory,
@@ -36,7 +35,6 @@ describe('Clock Test — T16', () => {
 
   beforeAll(async () => {
     ctx = await createWriteTestServer();
-    registerMoveNoteTools(ctx.server, () => ctx.vaultPath);
     client = connectTestClient(ctx.server);
   }, 30_000);
 

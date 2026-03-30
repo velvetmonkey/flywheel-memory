@@ -312,26 +312,38 @@ Hub scores are computed using **eigenvector centrality** — a power-iteration a
 
 ## Auto-Wikilinks
 
-When Claude writes content through any mutation tool (`vault_add_to_section`, `vault_create_note`, `vault_add_task`, `vault_replace_in_section`), Flywheel automatically scans the text for mentions of known entities and wraps them in `[[wikilinks]]`.
+When Claude writes content through any mutation tool (`vault_add_to_section`, `vault_create_note`, `vault_add_task`, `vault_replace_in_section`), Flywheel automatically scans the text for mentions of both known entities and prospective entities, and wraps them in `[[wikilinks]]`.
 
 ### How It Works
 
-1. **Entity index:** At startup, the vault is scanned for all note titles and frontmatter aliases. These become the entity list.
+1. **Entity index:** At startup, the vault is scanned for all note titles and frontmatter aliases. These become the known entity list.
 2. **Protected zones:** Before linking, the engine identifies regions to skip: existing wikilinks, code blocks, frontmatter, headings, URLs, HTML, footnotes.
 3. **Matching:** Entities are sorted longest-first to prevent partial matches. Case-insensitive word-boundary matching finds all occurrences.
 4. **First-occurrence mode (default):** Only the first mention of each entity is linked, to avoid over-linking.
 5. **Alias resolution:** If content matches an alias, the link resolves to the canonical entity name: `[[Entity Name|alias text]]`.
 6. **Zone updates:** After each link insertion, protected zone positions are shifted to account for the added characters.
+7. **Implicit entity detection:** Pattern-based detection links prospective entities that don't have existing notes (see below).
 
 ### Implicit Entity Detection
 
-Optional pattern-based detection for entities that don't have existing files:
+Pattern-based detection for prospective entities — on by default as the final stage of write-time auto-linking. Six configurable patterns:
 
-- **Multi-word proper nouns** (e.g., "[[Marcus Johnson]]", "Project Alpha")
+- **Multi-word proper nouns** (e.g., "Marcus Johnson", "Project Alpha")
+- **Single capitalized words** after lowercase text (e.g., "discussed with Marcus yesterday")
+- **CamelCase compounds** (e.g., TypeScript, HuggingFace)
+- **Acronyms** — 3–5 letter ALL-CAPS tokens (e.g., LLM, API)
 - **Quoted terms** (e.g., `"Turbopump"` becomes `[[Turbopump]]`)
-- **Single capitalized words** after lowercase text (opt-in)
+- **Ticket references** (e.g., FW-123, PROJ-456)
 
-Common words, sentence starters, and technical terms are excluded to minimize false positives.
+Common words, sentence starters, and technical terms are excluded to minimize false positives. Implicit detection is suppressed for prose-heavy content (>500 words) and can be toggled via `implicit_detection` or filtered by pattern via `implicit_patterns` in the flywheel config.
+
+### Read-Side Prospect Discovery
+
+Separately from write-time auto-linking, the `suggest_wikilinks` tool surfaces prospective entities through additional analysis:
+
+- **Dead-link target matching:** Entities referenced by existing `[[wikilinks]]` in the vault but with no backing note. Targets with ≥3 backlinks are marked `confidence: 'high'`; those with 2 are `'medium'`.
+- **Cross-reference boost:** When an implicit pattern match coincides with a dead-link target, confidence is elevated to `'high'` and source is marked `'both'`.
+- **Scored suggestions:** With `detail: true`, `suggest_wikilinks` returns a per-layer scoring breakdown including Layer 3.5 fuzzy matching — token-level Levenshtein (≥80% similarity, ≥4 chars) and whole-term collapsed matching (`"turbo-pump"` = `"turbopump"` = `"turbo pump"`). Strictness modes (conservative / balanced / aggressive) control fuzzy bonus weights.
 
 ### Outgoing Link Suggestions
 
@@ -473,7 +485,7 @@ Every write tool follows the same pipeline:
 3. **Section finding** -- Locates target section by heading text
 4. **Input validation** -- Checks for common issues (double timestamps, non-markdown bullets)
 5. **Normalization** -- Auto-fixes issues (replace `*` with `-`, trim whitespace)
-6. **Auto-wikilinks** -- Applies `[[wikilinks]]` to known entities
+6. **Auto-wikilinks** -- Applies `[[wikilinks]]` to known and prospective entities
 6a. **Heading level bumping** -- `bumpHeadingLevels()` adjusts heading levels in inserted content to nest under the target section's level
 7. **Outgoing link suggestions** -- Appends suggested related links based on content (disabled by default, opt-in via `suggestOutgoingLinks: true`)
 8. **Content formatting** -- Applies format (plain, bullet, task, numbered, timestamp-bullet)

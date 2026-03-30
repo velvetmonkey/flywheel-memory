@@ -179,7 +179,7 @@ When search gives you the right note but you need more detail. Search already re
 
 ## Write & Edit
 
-Every write auto-links known entities as wikilinks. Every write can be previewed with `dry_run: true` and auto-committed to git.
+Every write auto-links entities as wikilinks — both known entities (notes and aliases in the vault) and prospective entities detected via pattern matching (proper nouns, CamelCase, acronyms, quoted terms, ticket references). Every write can be previewed with `dry_run: true` and auto-committed to git.
 
 | Tool | What it does |
 |------|-------------|

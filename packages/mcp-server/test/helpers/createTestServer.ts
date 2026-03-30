@@ -18,6 +18,7 @@ import { registerComputedTools } from '../../src/tools/read/computed.js';
 import { registerMigrationTools } from '../../src/tools/read/migrations.js';
 import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
 import { createEmptyPipelineActivity } from '../../src/core/read/watch/pipeline.js';
+import { setProspectStateDb } from '../../src/core/shared/prospects.js';
 
 export interface TestServerContext {
   stateDb: StateDb | null;
@@ -41,6 +42,7 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
   let stateDb: StateDb | null = null;
   try {
     stateDb = openStateDb(vaultPath);
+    setProspectStateDb(stateDb);
   } catch (err) {
     console.error('Failed to open StateDb:', err);
   }
@@ -65,7 +67,8 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
   registerWikilinkTools(
     server,
     () => currentIndex,
-    () => vaultPath
+    () => vaultPath,
+    () => stateDb
   );
 
   registerHealthTools(

@@ -453,4 +453,339 @@ describe('Prospect Ledger', () => {
       expect(second).toBe(0);
     });
   });
+
+  // ===========================================================================
+  // Multi-day Accumulation
+  // ===========================================================================
+
+  describe('multi-day accumulation', () => {
+    it('promotion_score, note_count, and day_count grow across 1→2→3 days', () => {
+      const now = Date.now();
+      const day1 = now - 2 * 24 * 60 * 60 * 1000;
+      const day2 = now - 1 * 24 * 60 * 60 * 1000;
+
+      // Day 1: one note
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('alpha protocol', 'Alpha Protocol', 'a.md', '2026-03-28', 'dead_link', NULL, 'medium', 2, 0, ${day1}, ${day1}, 1);
+      `);
+      refreshProspectSummaries(['alpha protocol']);
+      const s1 = stateDb.db.prepare('SELECT note_count, day_count, promotion_score FROM prospect_summary WHERE term = ?').get('alpha protocol') as any;
+      expect(s1.note_count).toBe(1);
+      expect(s1.day_count).toBe(1);
+
+      // Day 2: second note, second day
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('alpha protocol', 'Alpha Protocol', 'b.md', '2026-03-29', 'dead_link', NULL, 'medium', 2, 0, ${day2}, ${day2}, 1);
+      `);
+      refreshProspectSummaries(['alpha protocol']);
+      const s2 = stateDb.db.prepare('SELECT note_count, day_count, promotion_score FROM prospect_summary WHERE term = ?').get('alpha protocol') as any;
+      expect(s2.note_count).toBe(2);
+      expect(s2.day_count).toBe(2);
+      expect(s2.promotion_score).toBeGreaterThan(s1.promotion_score);
+
+      // Day 3: third note, third day
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('alpha protocol', 'Alpha Protocol', 'c.md', '2026-03-30', 'dead_link', NULL, 'medium', 3, 0, ${now}, ${now}, 1);
+      `);
+      refreshProspectSummaries(['alpha protocol']);
+      const s3 = stateDb.db.prepare('SELECT note_count, day_count, promotion_score FROM prospect_summary WHERE term = ?').get('alpha protocol') as any;
+      expect(s3.note_count).toBe(3);
+      expect(s3.day_count).toBe(3);
+      expect(s3.promotion_score).toBeGreaterThan(s2.promotion_score);
+    });
+
+    it('same-day repeat sightings roll into total_sightings after summary refresh', () => {
+      recordProspectSightings([
+        { term: 'stripe', displayName: 'Stripe', notePath: 'a.md', source: 'implicit', confidence: 'low' },
+      ]);
+      recordProspectSightings([
+        { term: 'stripe', displayName: 'Stripe', notePath: 'a.md', source: 'implicit', confidence: 'low' },
+      ]);
+      recordProspectSightings([
+        { term: 'stripe', displayName: 'Stripe', notePath: 'a.md', source: 'implicit', confidence: 'low' },
+      ]);
+
+      refreshProspectSummaries(['stripe']);
+
+      const summary = stateDb.db.prepare(
+        'SELECT total_sightings FROM prospect_summary WHERE term = ?'
+      ).get('stripe') as { total_sightings: number };
+      expect(summary.total_sightings).toBe(3);
+    });
+  });
+
+  // ===========================================================================
+  // Boost Map Filtering
+  // ===========================================================================
+
+  describe('boost map filtering', () => {
+    it('excludes prospects with effective score <= 5', () => {
+      const now = Date.now();
+      // effective = 8 * 1.0 = 8 > 5 → included
+      stateDb.db.exec(`
+        INSERT INTO prospect_summary
+          (term, display_name, note_count, day_count, total_sightings, backlink_max, best_source, best_confidence, best_score, first_seen_at, last_seen_at, promotion_score, updated_at)
+        VALUES
+          ('included', 'Included', 3, 2, 5, 1, 'implicit', 'low', 0, ${now}, ${now}, 8, ${now})
+      `);
+      // effective = 4 * 1.0 = 4 <= 5 → excluded
+      stateDb.db.exec(`
+        INSERT INTO prospect_summary
+          (term, display_name, note_count, day_count, total_sightings, backlink_max, best_source, best_confidence, best_score, first_seen_at, last_seen_at, promotion_score, updated_at)
+        VALUES
+          ('excluded', 'Excluded', 2, 1, 2, 0, 'implicit', 'low', 0, ${now}, ${now}, 4, ${now})
+      `);
+
+      const map = getProspectBoostMap();
+      expect(map.has('included')).toBe(true);
+      expect(map.has('excluded')).toBe(false);
+    });
+  });
+
+  // ===========================================================================
+  // Term Normalization
+  // ===========================================================================
+
+  describe('term normalization', () => {
+    it('case-insensitive across record, refresh, boost-map, and candidate lookup', () => {
+      const now = Date.now();
+      recordProspectSightings([
+        { term: 'Marcus Johnson', displayName: 'Marcus Johnson', notePath: 'a.md', source: 'dead_link', confidence: 'medium', backlinkCount: 4 },
+      ]);
+      // Second sighting with different case
+      recordProspectSightings([
+        { term: 'MARCUS JOHNSON', displayName: 'MARCUS JOHNSON', notePath: 'b.md', source: 'dead_link', confidence: 'medium', backlinkCount: 4 },
+      ]);
+
+      refreshProspectSummaries(['marcus johnson']);
+
+      const summary = stateDb.db.prepare(
+        'SELECT term, note_count FROM prospect_summary WHERE term = ?'
+      ).get('marcus johnson') as any;
+      expect(summary).toBeTruthy();
+      expect(summary.note_count).toBe(2);
+
+      // Boost map uses lowercased key
+      const boostMap = getProspectBoostMap();
+      if (boostMap.has('marcus johnson')) {
+        expect(boostMap.get('MARCUS JOHNSON')).toBeUndefined();
+      }
+
+      // Candidates use lowercased term
+      const candidates = getPromotionCandidates(10);
+      if (candidates.length > 0) {
+        expect(candidates[0].term).toBe('marcus johnson');
+      }
+    });
+
+    it('mixed-case inputs merge into same ledger row for same note+day', () => {
+      recordProspectSightings([
+        { term: 'Global API', displayName: 'Global API', notePath: 'a.md', source: 'implicit', confidence: 'low' },
+      ]);
+      recordProspectSightings([
+        { term: 'global api', displayName: 'global api', notePath: 'a.md', source: 'implicit', confidence: 'low' },
+      ]);
+      recordProspectSightings([
+        { term: 'GLOBAL API', displayName: 'GLOBAL API', notePath: 'a.md', source: 'implicit', confidence: 'low' },
+      ]);
+
+      const row = stateDb.db.prepare(
+        'SELECT sighting_count FROM prospect_ledger WHERE term = ? AND note_path = ?'
+      ).get('global api', 'a.md') as { sighting_count: number };
+      expect(row.sighting_count).toBe(3);
+    });
+  });
+
+  // ===========================================================================
+  // Cooccurring Entities JSON
+  // ===========================================================================
+
+  describe('cooccurring_entities JSON handling', () => {
+    it('NULL cooccurring_entities produces empty array in candidates', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO prospect_summary VALUES ('orphan', 'Orphan', 3, 2, 5, 2, NULL, 'dead_link', 'medium', 0, ${now}, ${now}, 20, NULL, ${now});
+      `);
+
+      const candidates = getPromotionCandidates(10);
+      const orphan = candidates.find(c => c.term === 'orphan');
+      expect(orphan).toBeTruthy();
+      expect(orphan!.cooccurringEntities).toEqual([]);
+    });
+
+    it('valid JSON array is parsed correctly in candidates', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO prospect_summary VALUES ('linked', 'Linked', 5, 3, 10, 3, '["Entity A","Entity B"]', 'dead_link', 'high', 0, ${now}, ${now}, 30, NULL, ${now});
+      `);
+
+      const candidates = getPromotionCandidates(10);
+      const linked = candidates.find(c => c.term === 'linked');
+      expect(linked).toBeTruthy();
+      expect(linked!.cooccurringEntities).toEqual(['Entity A', 'Entity B']);
+    });
+  });
+
+  // ===========================================================================
+  // Entity Exclusion Lifecycle
+  // ===========================================================================
+
+  describe('entity exclusion lifecycle', () => {
+    it('entity-name match is excluded from candidates', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO entities (name, name_lower, path, category) VALUES ('Alpha Protocol', 'alpha protocol', 'alpha-protocol.md', 'general');
+        INSERT INTO prospect_summary VALUES ('alpha protocol', 'Alpha Protocol', 5, 5, 10, 3, NULL, 'dead_link', 'high', 0, ${now}, ${now}, 60, NULL, ${now});
+      `);
+
+      const candidates = getPromotionCandidates(10);
+      expect(candidates.find(c => c.term === 'alpha protocol')).toBeUndefined();
+    });
+
+    it('alias match is excluded from candidates', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO entities (name, name_lower, path, category, aliases_json) VALUES ('Alpha Protocol Project', 'alpha protocol project', 'app.md', 'general', '["AP"]');
+        INSERT INTO prospect_summary VALUES ('ap', 'AP', 4, 3, 8, 2, NULL, 'dead_link', 'medium', 0, ${now}, ${now}, 25, NULL, ${now});
+      `);
+
+      const candidates = getPromotionCandidates(10);
+      expect(candidates.find(c => c.term === 'ap')).toBeUndefined();
+    });
+
+    it('removing entity makes prospect visible again', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO entities (name, name_lower, path, category) VALUES ('Beta System', 'beta system', 'beta.md', 'general');
+        INSERT INTO prospect_summary VALUES ('beta system', 'Beta System', 5, 5, 10, 3, NULL, 'dead_link', 'high', 0, ${now}, ${now}, 60, NULL, ${now});
+      `);
+
+      // Initially excluded
+      expect(getPromotionCandidates(10).find(c => c.term === 'beta system')).toBeUndefined();
+
+      // Delete entity
+      stateDb.db.exec(`DELETE FROM entities WHERE name_lower = 'beta system'`);
+
+      // Now visible
+      const candidates = getPromotionCandidates(10);
+      expect(candidates.find(c => c.term === 'beta system')).toBeTruthy();
+    });
+  });
+
+  // ===========================================================================
+  // promoted_at
+  // ===========================================================================
+
+  describe('promoted_at', () => {
+    it('is set when entity exists during refreshProspectSummaries', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO entities (name, name_lower, path, category) VALUES ('Gamma Tool', 'gamma tool', 'gamma.md', 'general');
+        INSERT INTO prospect_ledger VALUES ('gamma tool', 'Gamma Tool', 'a.md', '2026-03-30', 'dead_link', NULL, 'medium', 2, 0, ${now}, ${now}, 1);
+      `);
+
+      refreshProspectSummaries(['gamma tool']);
+
+      const summary = stateDb.db.prepare(
+        'SELECT promoted_at FROM prospect_summary WHERE term = ?'
+      ).get('gamma tool') as { promoted_at: number | null };
+      expect(summary.promoted_at).not.toBeNull();
+    });
+
+    it('is null when no matching entity exists', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('delta tool', 'Delta Tool', 'a.md', '2026-03-30', 'implicit', NULL, 'low', 0, 0, ${now}, ${now}, 1);
+      `);
+
+      refreshProspectSummaries(['delta tool']);
+
+      const summary = stateDb.db.prepare(
+        'SELECT promoted_at FROM prospect_summary WHERE term = ?'
+      ).get('delta tool') as { promoted_at: number | null };
+      expect(summary.promoted_at).toBeNull();
+    });
+  });
+
+  // ===========================================================================
+  // Stale Cleanup Boundary
+  // ===========================================================================
+
+  describe('stale cleanup boundary', () => {
+    it('row exactly at 210-day boundary survives (strict < comparison)', () => {
+      const now = Date.now();
+      const exactBoundary = now - 210 * 24 * 60 * 60 * 1000;
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('boundary', 'Boundary', 'a.md', '2025-09-01', 'implicit', NULL, 'low', 0, 0, ${exactBoundary}, ${exactBoundary}, 1);
+      `);
+
+      const deleted = cleanStaleProspects();
+      expect(deleted).toBe(0);
+
+      const count = stateDb.db.prepare('SELECT COUNT(*) as cnt FROM prospect_ledger WHERE term = ?').get('boundary') as { cnt: number };
+      expect(count.cnt).toBe(1);
+    });
+
+    it('orphaned summaries are pruned when all ledger rows are deleted', () => {
+      const now = Date.now();
+      const veryOld = now - 220 * 24 * 60 * 60 * 1000;
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('prunable', 'Prunable', 'a.md', '2025-07-01', 'implicit', NULL, 'low', 0, 0, ${veryOld}, ${veryOld}, 1);
+        INSERT INTO prospect_summary VALUES ('prunable', 'Prunable', 1, 1, 1, 0, NULL, 'implicit', 'low', 0, ${veryOld}, ${veryOld}, 5, NULL, ${veryOld});
+      `);
+
+      cleanStaleProspects();
+
+      const summaryCount = stateDb.db.prepare('SELECT COUNT(*) as cnt FROM prospect_summary WHERE term = ?').get('prunable') as { cnt: number };
+      expect(summaryCount.cnt).toBe(0);
+    });
+  });
+
+  // ===========================================================================
+  // Zero / Boundary Scores
+  // ===========================================================================
+
+  describe('zero and boundary scores', () => {
+    it('promotion_score=0 is excluded from both boost map and candidates', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO prospect_summary VALUES ('zero', 'Zero', 1, 1, 1, 0, NULL, 'implicit', 'low', 0, ${now}, ${now}, 0, NULL, ${now});
+      `);
+
+      expect(getProspectBoostMap().has('zero')).toBe(false);
+      expect(getPromotionCandidates(10).find(c => c.term === 'zero')).toBeUndefined();
+    });
+
+    it('larger batch insert with mixed sources does not violate integrity', () => {
+      const sightings: ProspectSighting[] = [];
+      const sources: Array<'implicit' | 'dead_link' | 'high_score'> = ['implicit', 'dead_link', 'high_score'];
+      const confidences: Array<'low' | 'medium' | 'high'> = ['low', 'medium', 'high'];
+
+      for (let t = 0; t < 10; t++) {
+        for (let n = 0; n < 5; n++) {
+          sightings.push({
+            term: `batch-term-${t}`,
+            displayName: `Batch Term ${t}`,
+            notePath: `notes/note-${n}.md`,
+            source: sources[t % 3],
+            confidence: confidences[t % 3],
+            backlinkCount: t,
+            score: t % 3 === 2 ? t : 0,
+          });
+        }
+      }
+
+      recordProspectSightings(sightings);
+
+      const ledgerCount = stateDb.db.prepare('SELECT COUNT(*) as cnt FROM prospect_ledger').get() as { cnt: number };
+      expect(ledgerCount.cnt).toBe(50);
+
+      const terms = Array.from({ length: 10 }, (_, i) => `batch-term-${i}`);
+      refreshProspectSummaries(terms);
+
+      const summaryCount = stateDb.db.prepare('SELECT COUNT(*) as cnt FROM prospect_summary').get() as { cnt: number };
+      expect(summaryCount.cnt).toBe(10);
+    });
+  });
+
 });

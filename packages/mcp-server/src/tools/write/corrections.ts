@@ -82,7 +82,7 @@ export function registerCorrectionTools(
 
   server.tool(
     'vault_resolve_correction',
-    'Resolve a correction by marking it as applied or dismissed.',
+    'Resolve a recorded correction by marking it as applied or dismissed. Returns the updated correction.',
     {
       correction_id: z.number().describe('ID of the correction to resolve'),
       status: z.enum(['applied', 'dismissed']).describe('New status'),

@@ -117,7 +117,7 @@ export function registerPrimitiveTools(
     'get_section_content',
     {
       title: 'Get Section Content',
-      description: 'Get the content under a specific heading in a note.',
+      description: 'Get the raw markdown content under a specific heading in a note. Returns text between the heading and the next same-or-higher-level heading.',
       inputSchema: {
         path: z.string().describe('Path to the note'),
         heading: z.string().describe('Heading text to find'),
@@ -150,7 +150,7 @@ export function registerPrimitiveTools(
     'find_sections',
     {
       title: 'Find Sections',
-      description: 'Find all sections across vault matching a heading pattern.',
+      description: 'Find all sections across the vault whose heading matches a regex pattern. Returns note paths, heading text, and heading level.',
       inputSchema: {
         pattern: z.string().describe('Regex pattern to match heading text'),
         folder: z.string().optional().describe('Limit to notes in this folder'),
@@ -326,7 +326,7 @@ export function registerPrimitiveTools(
     'get_link_path',
     {
       title: 'Get Link Path',
-      description: 'Find the shortest path of links between two notes. Use weighted=true to penalize hub nodes for more meaningful paths.',
+      description: 'Find the shortest path of links between two notes. Set weighted=true to penalize hub nodes and surface more meaningful, specific paths.',
       inputSchema: {
         from: z.string().describe('Starting note path'),
         to: z.string().describe('Target note path'),
@@ -355,7 +355,7 @@ export function registerPrimitiveTools(
     'get_common_neighbors',
     {
       title: 'Get Common Neighbors',
-      description: 'Find notes that both specified notes link to.',
+      description: 'Find notes that both specified notes link to. Returns shared neighbor paths, useful for identifying conceptual bridges between topics.',
       inputSchema: {
         note_a: z.string().describe('First note path'),
         note_b: z.string().describe('Second note path'),
@@ -381,7 +381,7 @@ export function registerPrimitiveTools(
     'get_connection_strength',
     {
       title: 'Get Connection Strength',
-      description: 'Calculate the connection strength between two notes based on various factors.',
+      description: 'Calculate the connection strength between two notes based on link reciprocity, shared neighbors, co-access patterns, and edge weight.',
       inputSchema: {
         note_a: z.string().describe('First note path'),
         note_b: z.string().describe('Second note path'),

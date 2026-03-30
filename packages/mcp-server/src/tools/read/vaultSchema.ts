@@ -42,11 +42,7 @@ export function registerVaultSchemaTools(
     {
       title: 'Vault Schema',
       description:
-        'Inspect vault frontmatter schema.\n' +
-        '- "overview": Schema of all frontmatter fields across the vault\n' +
-        '- "field_values": All unique values for a specific field (requires field param)\n' +
-        '- "inconsistencies": Fields with multiple types across notes\n' +
-        '- "contradictions": Conflicting frontmatter values across notes referencing the same entity (optional: entity param)',
+        'Inspect vault frontmatter schema. Modes: overview (all fields across vault), field_values (unique values for a field, requires field param), inconsistencies (fields with multiple types across notes), contradictions (conflicting values across notes referencing the same entity). Returns field metadata with types, frequencies, and examples.',
       inputSchema: {
         analysis: z.enum(['overview', 'field_values', 'inconsistencies', 'contradictions']).describe('Type of schema inspection'),
         field: z.string().optional().describe('Field name (required for field_values)'),
@@ -118,10 +114,7 @@ export function registerVaultSchemaTools(
     {
       title: 'Schema Conventions',
       description:
-        'Infer and analyze frontmatter conventions from vault usage patterns.\n' +
-        '- "conventions": Auto-detect metadata conventions for a folder\n' +
-        '- "incomplete": Find notes missing expected fields (inferred from folder peers)\n' +
-        '- "suggest_values": Suggest values for a field based on usage patterns',
+        'Infer and analyze frontmatter conventions from vault usage patterns. Modes: conventions (auto-detect metadata conventions for a folder), incomplete (find notes missing expected fields inferred from folder peers), suggest_values (suggest values for a field based on usage patterns). Returns convention rules with confidence scores.',
       inputSchema: {
         analysis: z.enum(['conventions', 'incomplete', 'suggest_values']).describe('Type of convention analysis'),
         folder: z.string().optional().describe('Folder to scope analysis to'),
@@ -191,9 +184,7 @@ export function registerVaultSchemaTools(
     {
       title: 'Schema Validate',
       description:
-        'Check frontmatter compliance against explicit rules or folder expectations.\n' +
-        '- "validate": Check notes against a provided schema definition (required_fields, allowed_values, field_types)\n' +
-        '- "missing": Find notes that are missing expected frontmatter fields compared to their folder peers',
+        'Check frontmatter compliance against explicit rules or folder expectations. Modes: validate (check notes against a provided schema definition with required_fields, allowed_values, field_types), missing (find notes missing expected frontmatter fields compared to folder peers). Returns violations with note paths and details.',
       inputSchema: {
         analysis: z.enum(['validate', 'missing']).describe('Type of validation'),
         schema: z.record(z.object({

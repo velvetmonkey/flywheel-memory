@@ -39,7 +39,7 @@ export function registerNoteTools(
   // ========================================
   server.tool(
     'vault_create_note',
-    'Create a new note in the vault. Always include frontmatter with at least type, aliases, and description — these drive entity categorization, search, and link suggestions.\n\nExample: vault_create_note({ path: "people/Jane Smith.md", content: "# Jane Smith\\n\\nProduct manager at Acme.", frontmatter: { type: "person", aliases: ["Jane"], description: "Product manager at Acme", company: "Acme" } })',
+    'Create a new note in the vault. Always include frontmatter with at least type, aliases, and description — these drive entity categorization, search, and link suggestions. Returns the created note path and applied wikilink suggestions.',
     {
       path: z.string().describe('Vault-relative path for the new note (e.g., "daily-notes/2026-01-28.md")'),
       content: z.string().default('').describe('Initial content for the note'),

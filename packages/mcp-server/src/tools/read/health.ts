@@ -927,9 +927,7 @@ export function registerHealthTools(
     {
       title: 'Flywheel Doctor',
       description:
-        'Is anything broken? Actively checks for problems (unlike health_check which reports status) ' +
-        'Checks: schema version, index freshness, embedding coverage, suppression health, ' +
-        'cache freshness, FTS5 integrity, watcher state, and disk usage.',
+        'Is anything broken? Actively checks for problems (unlike health_check which reports status). Checks: schema version, index freshness, embedding coverage, suppression health, cache freshness, FTS5 integrity, watcher state, and disk usage.',
       inputSchema: {},
     },
     async (): Promise<{

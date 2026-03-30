@@ -14,6 +14,7 @@ import { registerAllTools, type ToolRegistryContext } from '../tool-registry.js'
 export interface CatalogEntry {
   name: string;
   description: string;      // normalized: trimmed, whitespace-collapsed
+  rawDescription: string;   // original description string, for validation only
   category: ToolCategory;
   tier: ToolTier;
   descriptionHash: string;  // sha256 of normalized description, first 16 chars
@@ -117,6 +118,7 @@ export function collectToolCatalog(): Map<string, CatalogEntry> {
 
     const description = normalizeDescription(rawDescription);
     catalog.set(name, {
+      rawDescription,
       name,
       description,
       category,

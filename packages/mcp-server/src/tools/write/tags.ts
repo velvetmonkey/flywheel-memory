@@ -21,7 +21,7 @@ export function registerTagTools(
     {
       title: 'Rename Tag',
       description:
-        'Bulk rename a tag across all notes (frontmatter and inline). Supports hierarchical rename (#project → #work also transforms #project/active → #work/active). Dry-run by default (preview only). Handles deduplication when new tag already exists.',
+        'Bulk rename a tag across all notes (frontmatter and inline). Supports hierarchical rename (e.g. project → work also transforms project/active → work/active). Dry-run by default (preview only). Handles deduplication when the new tag already exists.',
       inputSchema: {
         old_tag: z.string().describe('Tag to rename (without #, e.g., "project")'),
         new_tag: z.string().describe('New tag name (without #, e.g., "work")'),

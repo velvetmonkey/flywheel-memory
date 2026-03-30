@@ -33,7 +33,7 @@ export function registerMergeTools(
 ): void {
   server.tool(
     'merge_entities',
-    'Merge a source entity note into a target entity note: adds alias, appends content, updates wikilinks, deletes source',
+    'Merge a source entity note into a target entity note: adds alias, appends content, updates wikilinks, deletes source.',
     {
       source_path: z.string().describe('Vault-relative path of the note to merge FROM (will be deleted)'),
       target_path: z.string().describe('Vault-relative path of the note to merge INTO (receives alias + content)'),

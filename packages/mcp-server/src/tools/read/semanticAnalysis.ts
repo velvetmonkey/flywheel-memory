@@ -25,9 +25,7 @@ export function registerSemanticAnalysisTools(
     {
       title: 'Semantic Analysis',
       description:
-        'Analyze vault using note embeddings. Requires init_semantic first.\n' +
-        '- "clusters": Group notes by embedding similarity (greedy clustering)\n' +
-        '- "bridges": Find semantically similar but unlinked notes (highest-value link suggestions)',
+        'Analyze vault using note embeddings. Requires init_semantic first. Modes: clusters (group notes by embedding similarity via greedy clustering), bridges (find semantically similar but unlinked notes for highest-value link suggestions). Returns scored note groups with similarity metrics.',
       inputSchema: {
         type: z.enum(['clusters', 'bridges']).describe('Type of semantic analysis'),
         limit: z.coerce.number().default(50).describe('Maximum number of results to return'),

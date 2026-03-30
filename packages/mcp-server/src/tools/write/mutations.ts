@@ -155,7 +155,7 @@ export function registerMutationTools(
   // ========================================
   server.tool(
     'vault_add_to_section',
-    'Add content to a specific section in a markdown note. Set create_if_missing=true to auto-create the note from template if it doesn\'t exist (enables 1-call daily capture).\n\nExample: vault_add_to_section({ path: "daily/2026-02-15.md", section: "Log", content: "Met with team about Q1", format: "timestamp-bullet", create_if_missing: true })',
+    'Add content to a specific section in a markdown note. Set create_if_missing=true to auto-create the note from template if it does not exist (enables 1-call daily capture). Returns the updated section content.',
     {
       path: z.string().describe('Vault-relative path to the note (e.g., "daily-notes/2026-01-28.md")'),
       section: z.string().describe('Heading text to add to (e.g., "Log" or "## Log")'),
@@ -305,7 +305,7 @@ export function registerMutationTools(
   // ========================================
   server.tool(
     'vault_remove_from_section',
-    'Remove content from a specific section in a markdown note',
+    'Remove content from a specific section in a markdown note. Matches content by substring and removes the first match. Returns the updated section content.',
     {
       path: z.string().describe('Vault-relative path to the note'),
       section: z.string().describe('Heading text to remove from (e.g., "Log" or "## Log")'),
@@ -360,7 +360,7 @@ export function registerMutationTools(
   // ========================================
   server.tool(
     'vault_replace_in_section',
-    'Replace content in a specific section in a markdown note',
+    'Replace content in a specific section in a markdown note. Matches old_content by substring and replaces with new_content. Returns the updated section content.',
     {
       path: z.string().describe('Vault-relative path to the note'),
       section: z.string().describe('Heading text to search in (e.g., "Log" or "## Log")'),

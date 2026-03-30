@@ -280,7 +280,7 @@ export function registerWikilinkTools(
     {
       title: 'Suggest Wikilinks',
       description:
-        'Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases.',
+        'Suggest wikilinks for plain-text entity mentions in a note. Matches entity titles and aliases, detects dead-link targets, and identifies implicit entities (proper nouns, CamelCase). When note_path is provided, persists prospect sightings to the ledger. Returns scored suggestions ranked by multi-layer confidence.',
       inputSchema: {
         text: z.string().describe('The text to analyze for potential wikilinks'),
         note_path: z.string().optional().describe('Vault-relative note path. When provided, prospect sightings are persisted to the ledger'),

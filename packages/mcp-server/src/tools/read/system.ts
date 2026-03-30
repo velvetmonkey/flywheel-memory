@@ -488,7 +488,7 @@ export function registerSystemTools(
     {
       title: 'Get All Entities',
       description:
-        'Get all linkable entities in the vault (note titles and aliases). Useful for understanding what can be linked to.',
+        'Get all linkable entities in the vault (note titles and aliases). Returns a flat list of entity names with their source note paths.',
       inputSchema: {
         include_aliases: z
           .boolean()
@@ -729,7 +729,7 @@ export function registerSystemTools(
     {
       title: 'Get Folder Structure',
       description:
-        'Get the folder structure of the vault with note counts. Useful for understanding vault organization.',
+        'Get the folder structure of the vault. Returns a tree of folders with note counts per folder and total depth.',
       inputSchema: {},
       outputSchema: GetFolderStructureOutputSchema,
     },

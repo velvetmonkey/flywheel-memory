@@ -91,16 +91,7 @@ export function registerGraphAnalysisTools(
     {
       title: 'Graph Analysis',
       description:
-        'Analyze vault link graph structure. Use analysis to pick the mode:\n' +
-        '- "orphans": Notes with no backlinks (params: folder, limit, offset)\n' +
-        '- "dead_ends": Notes with backlinks but no outgoing links (params: folder, min_backlinks, limit, offset)\n' +
-        '- "sources": Notes with outgoing links but no backlinks (params: folder, min_outlinks, limit, offset)\n' +
-        '- "hubs": Highly connected notes (params: min_links, limit, offset)\n' +
-        '- "stale": Important notes not recently modified (params: days [required], min_backlinks, limit, offset)\n' +
-        '- "immature": Notes scored by maturity (params: folder, limit, offset)\n' +
-        '- "emerging_hubs": Entities growing fastest in connection count (params: days, limit, offset)\n' +
-        '- "centrality": Degree, betweenness, and closeness centrality metrics (params: limit, offset)\n' +
-        '- "cycles": Detect circular link chains in the vault (params: limit)',
+        'Analyze vault link graph structure. Modes: orphans (no backlinks), dead_ends (backlinks but no outgoing), sources (outgoing but no backlinks), hubs (highly connected), stale (important but not recently modified, days required), immature (maturity score), emerging_hubs (fastest-growing connections), centrality (degree/betweenness/closeness metrics), cycles (circular link chains). Returns scored note lists with pagination.',
       inputSchema: {
         analysis: z.enum(['orphans', 'dead_ends', 'sources', 'hubs', 'stale', 'immature', 'emerging_hubs', 'centrality', 'cycles']).describe('Type of graph analysis to perform'),
         folder: z.string().optional().describe('Limit to notes in this folder (orphans, dead_ends, sources, immature)'),

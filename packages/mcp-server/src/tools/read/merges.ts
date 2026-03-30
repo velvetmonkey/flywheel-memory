@@ -37,7 +37,7 @@ export function registerMergeTools(
 ): void {
   server.tool(
     'suggest_entity_merges',
-    'Find potential duplicate entities that could be merged based on name similarity',
+    'Find potential duplicate entities that could be merged based on name similarity.',
     {
       limit: z.number().optional().default(50).describe('Maximum number of suggestions to return'),
     },
@@ -170,7 +170,7 @@ export function registerMergeTools(
 
   server.tool(
     'dismiss_merge_suggestion',
-    'Permanently dismiss a merge suggestion so it never reappears',
+    'Permanently dismiss a merge suggestion so it never reappears. Returns confirmation of the dismissal.',
     {
       source_path: z.string().describe('Path of the source entity'),
       target_path: z.string().describe('Path of the target entity'),

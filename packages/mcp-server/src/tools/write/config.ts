@@ -47,11 +47,7 @@ export function registerConfigTools(
     {
       title: 'Flywheel Config',
       description:
-        'Read or update Flywheel configuration.\n' +
-        '- "get": Returns the current FlywheelConfig\n' +
-        '- "set": Updates a single config key and returns the updated config\n\n' +
-        'Example: flywheel_config({ mode: "get" })\n' +
-        'Example: flywheel_config({ mode: "set", key: "exclude", value: ["#habit", "#daily", "walk", "vitamins"] })',
+        'Read or update Flywheel configuration. Modes: get (returns the current FlywheelConfig), set (updates a single config key and returns the updated config). Returns the full config object after any changes.',
       inputSchema: {
         mode: z.enum(['get', 'set']).describe('Operation mode'),
         key: z.string().optional().describe('Config key to update (required for set mode)'),

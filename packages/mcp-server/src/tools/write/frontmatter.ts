@@ -23,7 +23,7 @@ export function registerFrontmatterTools(
   // ========================================
   server.tool(
     'vault_update_frontmatter',
-    'Update frontmatter fields in a note (merge with existing). Use this to backfill type, aliases, and description on notes missing them — these fields are critical for search and link quality. Set only_if_missing=true to only add fields that don\'t already exist (absorbed vault_add_frontmatter_field).\n\nExample: vault_update_frontmatter({ path: "projects/alpha.md", frontmatter: { status: "active", priority: 1 }, only_if_missing: true })',
+    'Update frontmatter fields in a note (merge with existing). Use this to backfill type, aliases, and description on notes missing them — these fields are critical for search and link quality. Set only_if_missing=true to only add fields that do not already exist. Returns the updated frontmatter object.',
     {
       path: z.string().describe('Vault-relative path to the note'),
       frontmatter: z.record(z.any()).describe('Frontmatter fields to update (JSON object)'),

@@ -68,6 +68,42 @@ describe('tool catalog collector', () => {
   });
 });
 
+
+// ============================================================================
+// Description Quality Contract Tests (T21 audit)
+// ============================================================================
+
+describe('description quality contracts', () => {
+  const catalog = collectToolCatalog();
+
+  it('no raw newlines in descriptions', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.rawDescription.includes('\n'), `${name} has raw newlines in description`).toBe(false);
+    }
+  });
+
+  it('normalized description length within bounds (>=60, <=500; tier 1 <=800)', () => {
+    for (const [name, entry] of catalog) {
+      const tier = TOOL_TIER[name];
+      const maxLen = tier === 1 ? 800 : 500;
+      expect(entry.description.length, `${name} too short (${entry.description.length} chars)`).toBeGreaterThanOrEqual(60);
+      expect(entry.description.length, `${name} too long (${entry.description.length} chars, max ${maxLen})`).toBeLessThanOrEqual(maxLen);
+    }
+  });
+
+  it('every description ends with a period', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.description.endsWith('.'), `${name} description should end with a period`).toBe(true);
+    }
+  });
+
+  it('no markdown formatting in descriptions', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.description, `${name} has markdown characters`).not.toMatch(/[#*`]/);
+    }
+  });
+});
+
 // ============================================================================
 // Manifest Freshness Tests
 // ============================================================================

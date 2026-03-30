@@ -99,18 +99,18 @@ Flywheel watches the vault, maintains local indexes, and serves the graph to MCP
 
 ### Tool presets
 
-| Preset | Tools | What you get |
-|--------|-------|--------------|
-| `default` | 18 | search, read, write, tasks, memory |
-| `full` | 75 | all tool categories |
+| Preset | Behaviour |
+|--------|-----------|
+| `full` (default) | All capabilities, progressively disclosed as your queries need them |
+| `agent` | Fixed reduced set — search, read, write, tasks, memory |
 
-Start with `default`. Add bundles when you need them, such as `graph`, `schema`, `wikilinks`, `temporal`, or `diagnostics`.
+Out of the box, Flywheel progressively surfaces specialised tools as the conversation needs them. For a fixed reduced set, use `agent`. Compose bundles for custom configurations.
 
 ```json
-{ "env": { "FLYWHEEL_TOOLS": "default,graph" } }
+{ "env": { "FLYWHEEL_TOOLS": "agent,graph" } }
 ```
 
-[Browse all 75 tools ->](docs/TOOLS.md) | [Preset recipes ->](docs/CONFIGURATION.md)
+[Browse all tools ->](docs/TOOLS.md) | [Preset recipes ->](docs/CONFIGURATION.md)
 
 ### Multiple vaults
 
@@ -165,6 +165,8 @@ If you want a managed cloud knowledge product, Flywheel is probably the wrong fi
 **Hybrid search** — Keyword search (BM25) finds what you said. Semantic search finds what you meant. Both fused via Reciprocal Rank Fusion, running locally. Nothing leaves your machine.
 
 **Multi-vault** — One server, multiple vaults, isolated state. Search without a vault filter queries all vaults and merges results.
+
+**Adaptive tool loading** — Under `full`, specialised tools surface when the conversation needs them. The default context stays focused; graph, schema, and temporal capabilities appear on demand.
 
 **Auditable writes** — Every mutation is git-committed, conflict-detected (SHA-256 content hash), and policy-governed. One undo reverts any change.
 
@@ -253,7 +255,7 @@ E2E with Claude Sonnet (latest checked-in 695-question run): **97.4%** single-ho
 | Doc | Why read it |
 |---|---|
 | [PROVE-IT.md](docs/PROVE-IT.md) | Start here to see the project working quickly |
-| [TOOLS.md](docs/TOOLS.md) | Full reference for all 75 tools |
+| [TOOLS.md](docs/TOOLS.md) | Full tool reference |
 | [COOKBOOK.md](docs/COOKBOOK.md) | Example prompts by use case |
 | [SETUP.md](docs/SETUP.md) | Full setup guide for your vault |
 | [CONFIGURATION.md](docs/CONFIGURATION.md) | Environment variables, presets, and custom tool sets |

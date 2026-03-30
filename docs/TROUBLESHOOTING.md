@@ -288,12 +288,12 @@ The write tools detect when the content would be identical after the operation a
 
 ### "Too many tools" warning from Claude
 
-You're loading more tools than Claude needs. Switch to a smaller preset:
+You're loading more tools than Claude needs. Switch to the `agent` preset, which exposes a fixed reduced set:
 
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "default"
+    "FLYWHEEL_TOOLS": "agent"
   }
 }
 ```

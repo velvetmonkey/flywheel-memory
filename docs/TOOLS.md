@@ -1,8 +1,8 @@
 # Tools
 
-77 tools. Most questions only need one: **search**.
+Start with `search`. Specialised tools surface automatically when the query calls for them.
 
-> **Progressive disclosure:** All 77 tools are available by default, but only the core 18 are visible at startup. The rest surface automatically when your queries signal a need for graph analysis, temporal tools, schema intelligence, etc. Use `FLYWHEEL_TOOLS=agent` if you prefer a fixed 18-tool set.
+> **Start here:** `full` (the default) progressively discloses tools as needed. Use `agent` for a fixed reduced set. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
 
 - [At a Glance](#at-a-glance)
 - [Find Anything](#find-anything)
@@ -41,21 +41,21 @@
 
 ## At a Glance
 
-| I want to... | Start here | Tools |
-|---|---|--:|
-| [Ask my vault a question](#find-anything) | `search` | 3 |
-| [Read a specific note](#read-deeper) | `get_note_structure` | 3 |
-| [Write or edit content](#write--edit) | `vault_add_to_section` | 5 |
-| [Work with tasks](#tasks) | `tasks` | 3 |
-| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis`, `semantic_analysis` | 11 |
-| [Improve my wikilinks](#wikilinks--linking) | `suggest_wikilinks` | 7 |
-| [Clean up my schema](#schema--consistency) | `vault_schema`, `schema_conventions`, `schema_validate` | 7 |
-| [Record corrections](#corrections) | `vault_record_correction` | 4 |
-| [Move, rename, or merge notes](#organize-notes) | `vault_move_note` | 4 |
-| [Persistent memory](#session-memory) | `memory`, `brief` | 2 |
-| [Analyze temporal patterns](#temporal-analysis) | `get_context_around_date` | 4 |
-| [Check vault health](#vault-health) | `health_check` | 21 |
-| [Automate workflows](#automation) | `policy` | 2 |
+| I want to... | Start here |
+|---|---|
+| [Ask my vault a question](#find-anything) | `search` |
+| [Read a specific note](#read-deeper) | `get_note_structure` |
+| [Write or edit content](#write--edit) | `vault_add_to_section` |
+| [Work with tasks](#tasks) | `tasks` |
+| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis`, `semantic_analysis` |
+| [Improve my wikilinks](#wikilinks--linking) | `suggest_wikilinks` |
+| [Clean up my schema](#schema--consistency) | `vault_schema`, `schema_conventions`, `schema_validate` |
+| [Record corrections](#corrections) | `vault_record_correction` |
+| [Move, rename, or merge notes](#organize-notes) | `vault_move_note` |
+| [Persistent memory](#session-memory) | `memory`, `brief` |
+| [Analyze temporal patterns](#temporal-analysis) | `get_context_around_date` |
+| [Check vault health](#vault-health) | `health_check` |
+| [Automate workflows](#automation) | `policy` |
 
 ---
 
@@ -366,7 +366,7 @@ Move, rename, delete, or merge — all backlinks update automatically.
 
 ## Session Memory
 
-Persistent working memory across sessions. Included in the default preset.
+Persistent working memory across sessions. Included in the `agent` preset and always visible under `full`.
 
 ### `memory`
 
@@ -385,7 +385,7 @@ Store and retrieve facts, preferences, and observations. Each memory has a key, 
 
 Cold-start context for any session. Builds a token-budgeted summary of recent sessions, active entities, stored memories, pending corrections, and vault pulse — so an agent can pick up where it left off without reading the whole vault.
 
-Available in the `default` preset via the `memory` category.
+Available in the `agent` preset via the `memory` category.
 
 **Parameters:** `max_tokens`, `focus`
 
@@ -431,6 +431,51 @@ Monitor, configure, and maintain your vault.
 | `vault_entity_history` | Unified entity timeline across all tables: applications, feedback, suggestions, edge weights, metadata changes, memories, corrections. |
 | `flywheel_learning_report` | Narrative report of auto-linking learning progress: applications by day, feedback split, survival rate, top rejected entities, suggestion funnel, graph growth. Supports period-over-period comparison. |
 | `flywheel_calibration_export` | Anonymized aggregate scoring data for cross-vault algorithm calibration. No entity names or paths. Includes: funnel, per-layer contributions, survival by category, score distribution, suppression stats, threshold sweep. |
+| `tool_selection_feedback` | Report and query tool selection quality. Modes: report (record correct/wrong), list (recent feedback), stats (per-tool posterior accuracy via Beta-Binomial), misroutes (heuristic advisory). |
+
+---
+
+## Tool Selection Intelligence
+
+Under `full` (the default preset), Flywheel progressively discloses tools across three tiers rather than advertising the entire catalogue at once:
+
+| Tier | Visibility | Categories |
+|------|-----------|------------|
+| 1 | Always visible | search, read, write, tasks, memory |
+| 2 | Context-triggered | graph, wikilinks, temporal, corrections, diagnostics |
+| 3 | On-demand | schema, note-ops, deep diagnostics |
+
+Under `agent`, all tools in the preset are always visible with no tier gating.
+
+### How activation works
+
+When you run `search` or `brief`, Flywheel scans the query for activation signals using two methods:
+
+- **Pattern routing** — regex patterns detect intent keywords. A query mentioning "backlinks" or "hubs" activates the graph category; "schema" or "rename field" activates schema tools.
+- **Semantic routing** — the query is embedded and compared against a pre-generated tool description manifest (cosine similarity ≥ 0.30). At most three categories are activated per query.
+
+Both signal types are combined. The highest tier per category wins. Tools become visible for the remainder of the session once activated.
+
+The routing mode is controlled by `FLYWHEEL_TOOL_ROUTING`:
+
+| Mode | Behaviour |
+|------|-----------|
+| `pattern` | Regex activation only |
+| `hybrid` (default under `full`) | Regex + semantic signals combined |
+| `semantic` | Semantic-only for hybrid search calls; regex fallback elsewhere |
+
+Semantic routing requires `init_semantic` to have been run. Custom `EMBEDDING_MODEL` users fall back to `pattern` unless the tool manifest was regenerated for that model.
+
+### Feedback
+
+`tool_selection_feedback` records whether the right tool was picked for a given query. Over time, this builds per-tool accuracy scores (Beta-Binomial posterior) that can inform routing adjustments.
+
+| Mode | What it does |
+|------|-------------|
+| `report` | Record whether a tool selection was correct or wrong |
+| `list` | Recent feedback entries |
+| `stats` | Per-tool posterior accuracy from explicit feedback |
+| `misroutes` | Heuristic-detected advisory misroutes |
 
 ---
 

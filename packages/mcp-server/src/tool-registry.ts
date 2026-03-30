@@ -61,6 +61,7 @@ import { registerSystemTools as registerWriteSystemTools } from './tools/write/s
 import { registerPolicyTools } from './tools/write/policy.js';
 import { registerTagTools } from './tools/write/tags.js';
 import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
+import { registerToolSelectionFeedbackTools } from './tools/write/toolSelectionFeedback.js';
 import { registerCorrectionTools } from './tools/write/corrections.js';
 import { registerMemoryTools } from './tools/write/memory.js';
 // recall removed — entity/memory search merged into search (uber search)
@@ -334,6 +335,34 @@ export function applyToolGating(
     enableCategory(category, tier);
   }
 
+
+  /** Max length for stored query context */
+  const MAX_QUERY_CONTEXT_LENGTH = 500;
+
+  /** Strict allowlist of intent-bearing param fields */
+  const QUERY_CONTEXT_FIELDS = ['query', 'focus', 'analysis', 'entity', 'heading', 'field', 'date', 'concept'] as const;
+
+  /**
+   * Extract user-intent query context from tool params.
+   * Strict allowlist — excludes content, description, frontmatter, yaml, policy, key, value, mode.
+   */
+  function extractQueryContext(params: unknown): string | undefined {
+    if (!params || typeof params !== 'object') return undefined;
+    const p = params as Record<string, unknown>;
+    const parts: string[] = [];
+    for (const field of QUERY_CONTEXT_FIELDS) {
+      const val = p[field];
+      if (typeof val === 'string' && val.trim()) {
+        parts.push(val.trim());
+      }
+    }
+    if (parts.length === 0) return undefined;
+    const joined = parts.join(' | ').replace(/\s+/g, ' ');
+    return joined.length > MAX_QUERY_CONTEXT_LENGTH
+      ? joined.slice(0, MAX_QUERY_CONTEXT_LENGTH)
+      : joined;
+  }
+
   function wrapWithTracking(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
     return async (...args: any[]) => {
       const start = Date.now();
@@ -399,6 +428,7 @@ export function applyToolGating(
               success,
               response_tokens: responseTokens,
               baseline_tokens: baselineTokens,
+              query_context: extractQueryContext(params),
             });
           } catch {
             // Never let tracking errors affect tool execution
@@ -764,6 +794,7 @@ export function registerAllTools(
   });
   registerTagTools(targetServer, gvi, gvp);
   registerWikilinkFeedbackTools(targetServer, gsd);
+  registerToolSelectionFeedbackTools(targetServer, gsd);
   registerCorrectionTools(targetServer, gsd);
   registerInitTools(targetServer, gvp, gsd);
   registerConfigTools(

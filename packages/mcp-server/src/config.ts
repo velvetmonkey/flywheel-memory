@@ -26,7 +26,7 @@ import type { VaultRegistry } from './vault-registry.js';
 //   memory      - Session memory + brief (2 tools)
 //   note-ops    - File management: delete, move, rename, merge (4 tools)
 //   temporal    - Time-based vault intelligence (4 tools)
-//   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status (21 tools)
+//   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback (22 tools)
 //
 // Examples:
 //   FLYWHEEL_TOOLS=default                    # 18 tools
@@ -230,7 +230,7 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   track_concept_evolution: 'temporal',
   temporal_summary: 'temporal',
 
-  // diagnostics (21 tools) -- vault health, stats, config, activity, merges, doctor, trust, benchmark, history, learning report, calibration export, pipeline status
+  // diagnostics (22 tools) -- vault health, stats, config, activity, merges, doctor, trust, benchmark, history, learning report, calibration export, pipeline status, tool selection feedback
   health_check: 'diagnostics',
   pipeline_status: 'diagnostics',
   get_vault_stats: 'diagnostics',
@@ -252,6 +252,7 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_entity_history: 'diagnostics',
   flywheel_learning_report: 'diagnostics',
   flywheel_calibration_export: 'diagnostics',
+  tool_selection_feedback: 'diagnostics',
 
 };
 
@@ -337,6 +338,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   vault_entity_history: 3,
   flywheel_learning_report: 3,
   flywheel_calibration_export: 3,
+  tool_selection_feedback: 3,
 };
 
 function assertToolTierCoverage(): void {

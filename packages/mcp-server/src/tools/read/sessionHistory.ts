@@ -51,12 +51,14 @@ export function registerSessionHistoryTools(
           content: [{ type: 'text' as const, text: JSON.stringify({
             ...detail.summary,
             invocations: detail.invocations.map(inv => ({
+              invocation_id: inv.id,
               tool: inv.tool_name,
               timestamp: inv.timestamp,
               session_id: inv.session_id,
               note_paths: inv.note_paths,
               duration_ms: inv.duration_ms,
               success: inv.success,
+              query_context: inv.query_context,
             })),
           }, null, 2) }],
         };

@@ -218,6 +218,7 @@ describe('Tool Count Verification', () => {
         'flywheel_learning_report',
         'flywheel_calibration_export',
         'export_graph',
+        'tool_selection_feedback',
         'pipeline_status',
       ]);
 

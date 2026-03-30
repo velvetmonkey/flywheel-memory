@@ -2,7 +2,7 @@
  * Tool Invocation Tracking
  *
  * Records and queries tool usage events.
- * Stored in StateDb tool_invocations table (schema v7).
+ * Stored in StateDb tool_invocations table (schema v7, query_context added v36).
  */
 
 import type { StateDb } from '@velvetmonkey/vault-core';
@@ -21,6 +21,7 @@ export interface ToolInvocation {
   success: boolean;
   response_tokens: number | null;
   baseline_tokens: number | null;
+  query_context: string | null;
 }
 
 export interface ToolUsageSummary {
@@ -52,7 +53,8 @@ export interface SessionSummary {
 // =============================================================================
 
 /**
- * Record a tool invocation to StateDb
+ * Record a tool invocation to StateDb.
+ * Returns the inserted row ID so callers can reference it (e.g. for feedback).
  */
 export function recordToolInvocation(
   stateDb: StateDb,
@@ -64,11 +66,12 @@ export function recordToolInvocation(
     success?: boolean;
     response_tokens?: number;
     baseline_tokens?: number;
+    query_context?: string;
   }
-): void {
-  stateDb.db.prepare(
-    `INSERT INTO tool_invocations (timestamp, tool_name, session_id, note_paths, duration_ms, success, response_tokens, baseline_tokens)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+): number {
+  const result = stateDb.db.prepare(
+    `INSERT INTO tool_invocations (timestamp, tool_name, session_id, note_paths, duration_ms, success, response_tokens, baseline_tokens, query_context)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     Date.now(),
     event.tool_name,
@@ -78,7 +81,9 @@ export function recordToolInvocation(
     event.success !== false ? 1 : 0,
     event.response_tokens ?? null,
     event.baseline_tokens ?? null,
+    event.query_context ?? null,
   );
+  return Number(result.lastInsertRowid);
 }
 
 // =============================================================================
@@ -95,6 +100,7 @@ interface RawInvocationRow {
   success: number;
   response_tokens: number | null;
   baseline_tokens: number | null;
+  query_context: string | null;
 }
 
 function rowToInvocation(row: RawInvocationRow): ToolInvocation {
@@ -108,6 +114,7 @@ function rowToInvocation(row: RawInvocationRow): ToolInvocation {
     success: row.success === 1,
     response_tokens: row.response_tokens,
     baseline_tokens: row.baseline_tokens,
+    query_context: row.query_context,
   };
 }
 

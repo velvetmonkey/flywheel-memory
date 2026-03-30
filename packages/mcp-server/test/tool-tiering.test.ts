@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { ALL_CATEGORIES, generateInstructions } from '../src/config.js';
+import { ALL_CATEGORIES, TOOL_CATEGORY, TOOL_TIER, generateInstructions } from '../src/config.js';
 import { applyToolGating } from '../src/tool-registry.js';
 
 function createTieredServer() {
@@ -50,6 +50,40 @@ function createTieredServer() {
   return { server, controller };
 }
 
+
+/** Server with ALL declared tools registered as stubs — mirrors the full preset */
+function createFullPresetServer() {
+  const server = new McpServer({ name: 'full-preset-test', version: '0.0.0' });
+  const controller = applyToolGating(
+    server,
+    new Set(ALL_CATEGORIES),
+    () => null,
+    null,
+    undefined,
+    undefined,
+    'tiered',
+  );
+
+  for (const toolName of Object.keys(TOOL_CATEGORY)) {
+    if (toolName === 'search') {
+      server.tool(toolName, { query: z.string().optional(), focus: z.string().optional() }, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    } else if (toolName === 'brief') {
+      server.tool(toolName, { focus: z.string().optional() }, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    } else {
+      server.tool(toolName, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    }
+  }
+
+  controller.finalizeRegistration();
+  return { server, controller };
+}
+
 /** Helper to invoke a tool via the MCP tools/call handler */
 async function callTool(server: McpServer, name: string, args: Record<string, unknown> = {}) {
   const handler = (server as any).server._requestHandlers.get('tools/call');
@@ -57,6 +91,13 @@ async function callTool(server: McpServer, name: string, args: Record<string, un
     { method: 'tools/call', params: { name, arguments: args } },
     {},
   );
+}
+
+/** Helper to list tool names via the MCP tools/list handler */
+async function listToolNames(server: McpServer): Promise<Set<string>> {
+  const handler = (server as any).server._requestHandlers.get('tools/list');
+  const result = await handler({ method: 'tools/list' }, {});
+  return new Set(result.tools.map((t: { name: string }) => t.name));
 }
 
 describe('tool tiering', () => {
@@ -602,5 +643,90 @@ describe('generateInstructions integration with controller state', () => {
     // Unactivated categories still show hints
     expect(instructions).toContain('Ask to unlock schema tools');
     expect(instructions).toContain('Ask about time, history, evolution, or stale notes');
+  });
+});
+
+// ============================================================================
+// Full preset reachability
+// ============================================================================
+
+describe('full preset reachability', () => {
+  it('tier metadata matches expected split', () => {
+    const tiers = Object.values(TOOL_TIER);
+    expect(tiers.filter(t => t === 1).length).toBe(18);
+    expect(tiers.filter(t => t === 2).length).toBe(33);
+    expect(tiers.filter(t => t === 3).length).toBe(26);
+    expect(Object.keys(TOOL_CATEGORY).length).toBe(77);
+  });
+
+  it('full helper registers every declared tool', () => {
+    const { controller } = createFullPresetServer();
+    expect(controller.getRegisteredTools().size).toBe(Object.keys(TOOL_CATEGORY).length);
+    expect(controller.registered).toBe(Object.keys(TOOL_CATEGORY).length);
+  });
+
+  it('tiered mode initially lists only tier-1 tools', async () => {
+    const { server } = createFullPresetServer();
+    const names = await listToolNames(server);
+
+    const tier1Tools = new Set(
+      Object.entries(TOOL_TIER).filter(([, t]) => t === 1).map(([name]) => name),
+    );
+    const tier2Tools = new Set(
+      Object.entries(TOOL_TIER).filter(([, t]) => t === 2).map(([name]) => name),
+    );
+    const tier3Tools = new Set(
+      Object.entries(TOOL_TIER).filter(([, t]) => t === 3).map(([name]) => name),
+    );
+
+    expect(names).toEqual(tier1Tools);
+
+    for (const t of tier2Tools) {
+      expect(names, `tier-2 tool "${t}" should NOT be listed`).not.toContain(t);
+    }
+    for (const t of tier3Tools) {
+      expect(names, `tier-3 tool "${t}" should NOT be listed`).not.toContain(t);
+    }
+  });
+
+  it('enableAllTiers exposes the full catalog in tools/list', async () => {
+    const { server, controller } = createFullPresetServer();
+
+    controller.enableAllTiers();
+
+    const names = await listToolNames(server);
+    const allDeclared = new Set(Object.keys(TOOL_CATEGORY));
+
+    expect(names).toEqual(allDeclared);
+  });
+
+  it('enableAllTiers makes every declared tool callable', async () => {
+    const { server, controller } = createFullPresetServer();
+
+    controller.enableAllTiers();
+
+    for (const toolName of Object.keys(TOOL_CATEGORY)) {
+      const result = await callTool(server, toolName);
+      expect(result.isError, `${toolName} should not error`).not.toBe(true);
+      expect(result.content[0].text, `${toolName} response mismatch`).toBe(`${toolName} ok`);
+    }
+  });
+
+  it('setOverride(\'full\') also exposes and executes the full catalog', async () => {
+    const { server, controller } = createFullPresetServer();
+
+    controller.setOverride('full');
+
+    // Listing
+    const names = await listToolNames(server);
+    const allDeclared = new Set(Object.keys(TOOL_CATEGORY));
+    expect(names).toEqual(allDeclared);
+
+    // Calling
+    for (const toolName of Object.keys(TOOL_CATEGORY)) {
+      const result = await callTool(server, toolName);
+      expect(result.isError, `${toolName} should not error`).not.toBe(true);
+      expect(result.content[0].text, `${toolName} response mismatch`).toBe(`${toolName} ok`);
+    }
   });
 });

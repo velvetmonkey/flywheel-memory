@@ -1,3 +1,7 @@
+> **Superseded.** This document predates the learning-loop reframing. See [DEMO-VIDEO-SCRIPT.md](DEMO-VIDEO-SCRIPT.md) for the canonical demo.
+
+---
+
 # Demo: Voice/PKM - Solo Consultant Workflow
 
 **Audience**: PKM enthusiasts using Whisper/voice transcription, Obsidian power users

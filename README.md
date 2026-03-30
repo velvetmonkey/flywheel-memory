@@ -12,7 +12,7 @@
 
 **[What It Does](#what-it-does)** · **[See It Work](#see-it-work)** · **[Get Started](#get-started)** · **[Benchmarks](#benchmarks)** · **[Testing](#testing)** · **[Documentation](#documentation)** · **[License](#license)**
 
-Flywheel is a local-first MCP server for Obsidian vaults — 77 tools across 12 categories. It indexes your markdown and gives AI clients structured access for search, safe writes, tasks, graph traversal, and session memory. One server can serve multiple vaults with isolated state and cross-vault search.
+Flywheel is a local-first MCP server for Obsidian vaults. It indexes your markdown and gives AI clients 12 categories of tools for search, safe writes, tasks, graph traversal, and session memory. One server can serve multiple vaults with isolated state and cross-vault search.
 
 Search returns a *decision surface* — frontmatter, backlinks, outlinks, snippets, section context, extracted dates, entity bridges, and confidence scores — so the model can reason from one call instead of opening file after file. Every write auto-links entities through a deterministic 13-layer scoring algorithm. Links you keep get stronger; links you remove get suppressed. This is the *flywheel effect*: use compounds into structure, structure into intelligence, intelligence into more use.
 
@@ -118,8 +118,8 @@ Under `full` (the default), specialised tools surface progressively as the conve
 
 | Preset | Behaviour |
 |--------|-----------|
-| `full` (default) | All 77 tools, progressively disclosed as your queries need them |
-| `agent` | Fixed set — search, read, write, tasks, memory (18 tools) |
+| `full` (default) | All capabilities, progressively disclosed as your queries need them |
+| `agent` | Fixed set — search, read, write, tasks, memory |
 
 Compose bundles for custom configurations:
 

@@ -346,7 +346,7 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 
 ### Demo Beat Coverage
 
-7-beat sequential demo with all 69 tools available.
+7-beat sequential demo with all 77 tools available.
 
 <!-- BEGIN DEMO TEST RESULTS -->
 Run `bash demos/run-demo-test.sh` to populate.

@@ -24,7 +24,7 @@ if [[ ! -f "$MCP_SERVER" ]]; then
   exit 1
 fi
 
-# Build MCP config with all 69 tools available
+# Build MCP config with all 77 tools available
 mcp_config=$(cat <<EOF
 {"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$DEMO_DIR","FLYWHEEL_TOOLS":"full,memory"}}}}
 EOF
@@ -33,7 +33,7 @@ EOF
 echo "=== Demo Beat Test Runner ==="
 echo "Demo:    carter-strategy"
 echo "Model:   $MODEL"
-echo "Tools:   full,memory (69 tools)"
+echo "Tools:   full,memory (77 tools)"
 echo "Results: $RESULTS_DIR"
 echo ""
 

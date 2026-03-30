@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js >= 18.0.0
+- Node.js >= 22.0.0
 - [[npmjs|npm]] >= 9.0.0
 
 ## Development Setup
@@ -32,7 +32,7 @@ npm test
 ```
 packages/
   core/         # @velvetmonkey/vault-core -- shared utilities (entity scanning, wikilinks, SQLite)
-  mcp-server/   # @velvetmonkey/flywheel-memory -- the MCP server (75 tools)
+  mcp-server/   # @velvetmonkey/flywheel-memory -- the MCP server (77 tools)
   bench/        # @velvetmonkey/flywheel-bench -- benchmark infrastructure and vault generation
   demos/        # Demo vault fixtures (also used as test fixtures in CI)
 ```

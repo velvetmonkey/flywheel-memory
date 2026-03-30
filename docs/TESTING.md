@@ -627,20 +627,20 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 ## Overall
 
 - **Bundles adopted:** 12/12
-- **Distinct flywheel tools used:** 20/69
+- **Distinct flywheel tools used:** 20/77
 
 <!-- END BUNDLE TEST RESULTS -->
 
 ### Per-Tool Coverage
 
-Each of 69 tools tested with a targeted prompt against carter-strategy vault.
+Each of 77 tools tested with a targeted prompt against carter-strategy vault.
 
 <!-- BEGIN COVERAGE TEST RESULTS -->
 # Tool Coverage Test Report
 
 **Date:** 2026-03-20 16:40  
 **Runs/tool:** 1  
-**Tools tested:** 69  
+**Tools tested:** 77  
 **Total runs:** 69  
 **Results dir:** `coverage-20260320T153941`
 
@@ -776,7 +776,7 @@ Each of 69 tools tested with a targeted prompt against carter-strategy vault.
 
 ## Summary
 
-**Coverage: 64/69 tools adopted (92%)**
+**Coverage: 64/77 tools adopted (83%)**
 
 ### Tools Never Adopted
 
@@ -807,7 +807,7 @@ Each of 69 tools tested with a targeted prompt against carter-strategy vault.
 
 ### Demo Beat Coverage
 
-7-beat sequential demo with all 69 tools available.
+7-beat sequential demo with all 77 tools available.
 
 <!-- BEGIN DEMO TEST RESULTS -->
 # Demo Beat Analysis

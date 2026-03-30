@@ -220,7 +220,7 @@ def update_docs(report_content, docs_path):
 
 ### Per-Tool Coverage
 
-Each of 69 tools tested with a targeted prompt against carter-strategy vault.
+Each of 77 tools tested with a targeted prompt against carter-strategy vault.
 
 {begin}
 {report_content}

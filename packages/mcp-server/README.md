@@ -4,11 +4,11 @@
   <p><strong>MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.</strong><br/>All local. All yours. A few lines of config.</p>
 </div>
 
-**Search** — One call returns section provenance, extracted dates, entity bridges, and confidence scores. Your AI decides what to read next without opening any files.
+Flywheel is a local-first MCP server for Obsidian vaults. It indexes your markdown and gives AI clients tools to search notes, write safely, query tasks, follow links, and carry context across sessions. One server can serve multiple vaults with isolated state and cross-vault search.
 
-**Write** — Every mutation auto-links entities across your vault. Names, projects, and relationships wikilinked in real time.
+Search returns a *decision surface* — frontmatter, backlinks, outlinks, snippets, section context, extracted dates, entity bridges, and confidence scores — so the model can reason from one call instead of opening file after file.
 
-**Remember** — Links you keep get stronger. Links you remove get suppressed. The graph compounds with use.
+Every write auto-links entities through a deterministic *13-layer scoring algorithm* where every suggestion has a traceable receipt. *Proactive linking* means edits made in Obsidian are scored too — the graph grows whether you're using Claude or not. Links you keep get stronger; links you remove get suppressed. This is the *flywheel effect*: use compounds into structure, structure into intelligence, intelligence into more use.
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet.svg)](https://modelcontextprotocol.io/)
@@ -23,7 +23,7 @@
 | "What's overdue?" | Grep + read matches (~500-2,000 tokens) | Indexed metadata query (~50-200 tokens) |
 | "What links here?" | Grep for note name (flat list, no graph) | Pre-indexed backlink graph (<10ms) |
 | "Add a meeting note" | Raw write, no linking | Structured write + auto-wikilink |
-| "What should I link?" | Not possible | 10-dimension scoring + semantic search |
+| "What should I link?" | Not possible | 13-layer scoring + semantic search |
 | Hubs, orphans, paths? | Not possible | Pre-indexed graph analysis |
 
 75 tools across 12 categories. 6-line config. Zero cloud dependencies.
@@ -97,15 +97,9 @@ Try it yourself: `cd demos/carter-strategy && claude`
 
 ## What Makes Flywheel Different
 
-### 1. Hybrid Search
+**Decision surface** — Search returns frontmatter, backlinks, outlinks, section context, dates, entity bridges, and confidence in one call. The model reasons across structured metadata instead of opening files.
 
-Search "authentication" -- exact matches. Search "login security" -- same notes, plus every note about auth that never uses the word.
-
-Keyword search finds what you said. Semantic search finds what you meant. Flywheel runs both, fuses the results via Reciprocal Rank Fusion, and U-shaped interleaves them so the best results land at attention peaks. Top results include the full section content around each match -- a decision surface, not a list of filenames. Runs locally on a 23 MB model with contextual embedding prefixes. Nothing leaves your machine.
-
-### 2. Every Suggestion Has a Receipt
-
-Ask why Flywheel suggested `[[Marcus Johnson]]`:
+**Deterministic linking** — A 13-layer scoring algorithm produces a traceable receipt for every suggestion. Same input, same output. See [docs/ALGORITHM.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/ALGORITHM.md) for the full specification.
 
 ```
 Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Feedback  Semantic  Edge
@@ -113,54 +107,29 @@ Entity              Score  Match  Co-oc  Type  Context  Recency  Cross  Hub  Fee
 Marcus Johnson        34    +10     +3    +5     +5       +5      +3    +1     +2         0       0
 ```
 
-10 scoring dimensions, every number traceable to vault usage. Recency came from what you last wrote. Co-occurrence came from notes you've written before. Hub came from how many other notes link there. The score learns as you use it.
+**Self-improving graph** — Proactive linking scores edits made anywhere — Obsidian, synced files, external tools. Links you keep accumulate weight; links you remove get suppressed. The graph compounds with use. We prove it: 100% entity precision, stable F1 over 50 generations of noisy feedback. See [Graph Quality](#graph-quality) below.
 
-See [docs/ALGORITHM.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/ALGORITHM.md) for how scoring works.
+**Brief + memory** — `brief` assembles a token-budgeted cold-start summary: recent sessions, active entities, stored memories, corrections, vault pulse. `memory` persists observations with confidence decay. The AI picks up where it left off.
 
-### 3. The Self-Improving Loop
+**Policies** — Repeatable vault workflows defined in YAML — parameterized steps, conditions, variable substitution, optional atomic git commits. Author, preview, validate, execute. See [docs/POLICY_EXAMPLES.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/POLICY_EXAMPLES.md).
 
-**Every interaction is a graph-building operation — and a learning signal.**
+**Hybrid search** — Keyword search (BM25) finds what you said. Semantic search finds what you meant. Both fused via Reciprocal Rank Fusion, running locally. Nothing leaves your machine.
 
-When you write a note, entities are auto-linked — creating edges. When you keep a `[[link]]` through 10 edits, that edge gains weight. When two entities appear together in 20 notes, they build a co-occurrence bond (NPMI — a measure of how strongly two things associate beyond chance). When you read frequently, recent entities surface in suggestions. When you remove a bad link, the system learns what to stop suggesting (it tracks accept/reject ratios per entity and gradually suppresses low-quality matches).
+**Multi-vault** — One server, multiple vaults, isolated state. Search without a vault filter queries all vaults and merges results.
 
-This is the uncontested gap — no competitor has a feedback loop that learns from knowledge management actions.
+**Auditable writes** — Every mutation is git-committed, conflict-detected (SHA-256 content hash), and policy-governed. One undo reverts any change.
 
-We prove it: auto-linked entities achieve 100% entity precision (never suggests a non-existent entity), 51% strict precision, and the system finds 72–82% of links it should (recall) — stable over 50 generations of noisy feedback. See [Graph Quality](#graph-quality) below.
-
-Result: a queryable graph. "What's the shortest path between AlphaFold and my docking experiment?" Backlinks, forward links, hubs, orphans, shortest paths — every query leverages hundreds of accumulated connections. Denser graphs make every query more precise.
-
-### 4. Semantic Understanding
-
-Content about "deployment automation" suggests `[[CI/CD]]` — no keyword match needed. Entity-level embeddings mean your knowledge graph understands meaning, not just words.
-
-- **Semantic bridges**: Discovers high-value missing links between conceptually related but unlinked notes
-- **Semantic clusters**: Groups notes by meaning instead of folder structure
-- **Semantic wikilinks**: Suggestions based on what you *mean*, not just what you typed
-
-Build once with `init_semantic`. Each note is embedded with a contextual prefix (title + tags) so the vector carries document identity alongside content meaning. Everything upgrades automatically. Configurable model via `EMBEDDING_MODEL` env var.
-
-### 5. Agentic Memory
-
-The system remembers context across sessions. No more starting from scratch.
-
-- **`brief`** assembles startup context: recent sessions, active entities, stored memories, corrections, vault pulse — token-budgeted
-- **`search`** retrieves across all knowledge channels: notes, entities, and memories in one call — returns a decision surface with section content, bridges, and confidence scores
-- **`memory`** stores observations with confidence decay, TTL, and lifecycle management
-
-Your AI picks up where it left off.
-
-### How It Compares to Other Approaches
+### How It Compares
 
 | | Pure Vector Search | Pure Keyword Search | Flywheel |
 |---|---|---|---|
-| "Why was this suggested?" | "Embeddings are close" | "Term frequency" | "10 + 3 + 5 + 5 + 3 + 1 = 34" |
-| Semantic wikilinks | No | No | Yes (semantic) |
-| Finds synonyms/concepts? | Yes | No | Yes (semantic search) |
+| "Why was this suggested?" | "Embeddings are close" | "Term frequency" | 13-layer score breakdown |
+| Finds synonyms/concepts? | Yes | No | Yes (hybrid search) |
 | Exact phrase matching? | Weak | Yes | Yes |
 | Same input → same output? | Not guaranteed | Always | Always |
 | Runs offline? | Often not | Yes | Yes (local embeddings) |
 | Learns from usage? | Retraining | No | Implicit feedback loop |
-| Agent memory | No | No | Yes (brief + search + memory) |
+| Agent memory | No | No | Yes (brief + memory) |
 
 ---
 
@@ -247,7 +216,7 @@ Measured against a 96-note/61-entity ground truth vault.
 
 - **50-generation stress test** — suggest → accept/reject (85% correct, 15% noise) → mutate vault → rebuild index → repeat. F1 holds steady — the feedback loop doesn't degrade under realistic noise.
 - **7 vault archetypes** — hub-and-spoke, hierarchical, dense-mesh, sparse-orphan, bridge-network, small-world, chaos
-- **13 pipeline stages** (10 scoring dimensions + filters + suppression) individually ablated, contribution measured
+- **13 pipeline stages** (scoring layers + filters + suppression) individually ablated, contribution measured
 - **Regression gate** — CI fails if any mode's F1/precision/recall drops >5pp from baseline
 
 See [docs/TESTING.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/TESTING.md) for full methodology. Auto-generated report: [docs/QUALITY_REPORT.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/QUALITY_REPORT.md).

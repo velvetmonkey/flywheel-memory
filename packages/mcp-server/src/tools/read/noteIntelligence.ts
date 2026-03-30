@@ -38,16 +38,7 @@ export function registerNoteIntelligenceTools(
     {
       title: 'Note Intelligence',
       description:
-        'Analyze a note for patterns, suggestions, and consistency. Use analysis to pick the mode:\n' +
-        '- "prose_patterns": Find "Key: Value" or "Key: [[wikilink]]" patterns in prose\n' +
-        '- "suggest_frontmatter": Suggest YAML frontmatter from detected prose patterns\n' +
-        '- "suggest_wikilinks": Find frontmatter values that could be wikilinks\n' +
-        '- "compute": Auto-compute derived fields (word_count, link_count, etc.)\n' +
-        '- "semantic_links": Find semantically related entities not currently linked in the note (requires init_semantic)\n' +
-        '- "all": Run all analyses and return combined result\n\n' +
-        'Example: note_intelligence({ path: "projects/alpha.md", analysis: "wikilinks" })\n' +
-        'Example: note_intelligence({ path: "projects/alpha.md", analysis: "compute", fields: ["word_count", "link_count"] })\n' +
-        'Example: note_intelligence({ path: "projects/alpha.md", analysis: "semantic_links" })',
+        'Use when analyzing a single note for quality, completeness, and improvement opportunities. Produces per-note analysis covering prose patterns, link density, frontmatter gaps, and section structure. Returns analysis results for the selected mode. Does not modify the note — read-only intelligence.',
       inputSchema: {
         analysis: z.enum([
           'prose_patterns', 'suggest_frontmatter', 'suggest_wikilinks',

@@ -25,7 +25,7 @@ export function registerSystemTools(
   // ========================================
   server.tool(
     'vault_undo_last_mutation',
-    'Undo the last git commit (typically the last Flywheel mutation). Performs a soft reset.',
+    'Use when the last vault write was wrong and needs reverting. Produces a git soft reset of the most recent Flywheel commit. Returns the reverted commit info. Does not undo manual edits or non-Flywheel commits.',
     {
       confirm: z.boolean().default(false).describe('Must be true to confirm undo operation'),
       hash: z.string().optional().describe('Expected commit hash. If provided, undo only proceeds if HEAD matches this hash. Prevents accidentally undoing the wrong commit.'),

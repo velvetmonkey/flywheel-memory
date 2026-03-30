@@ -31,7 +31,7 @@ export function registerMetricsTools(
     {
       title: 'Vault Growth',
       description:
-        'How is the vault growing? Tracks vault growth over time. Modes: "current" (live snapshot), "history" (time series), "trends" (deltas vs N days ago), "index_activity" (rebuild history). Tracks 11 metrics: note_count, link_count, orphan_count, tag_count, entity_count, avg_links_per_note, link_density, connected_ratio, wikilink_accuracy, wikilink_feedback_volume, wikilink_suppressed_count.',
+        'Use when tracking how the vault is growing over time. Produces vault metrics in current, history, trends, or index activity modes. Returns numeric growth data with time-series comparisons. Does not modify vault content — measures and records metric snapshots only.',
       inputSchema: {
         mode: z.enum(['current', 'history', 'trends', 'index_activity']).describe('Query mode: current snapshot, historical time series, trend analysis, or index rebuild activity'),
         metric: z.string().optional().describe('Filter to specific metric (e.g., "note_count"). Omit for all metrics.'),

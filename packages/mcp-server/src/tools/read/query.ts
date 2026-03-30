@@ -531,7 +531,7 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Search everything — notes, entities, and memories — in one call. Returns a decision surface with three sections: note results (with section provenance, full section content, dates, bridges, confidence), matching entity profiles, and relevant memories.\n\nTop note results carry full metadata (frontmatter, scored backlinks/outlinks, snippets) plus section_content — the complete ## section around the match (up to 2,500 chars). Start with just a query, no filters. Narrow with filters only if needed. Between snippet, section_content, and frontmatter, most questions can be answered without follow-up reads.\n\nSearches note content (FTS5 + hybrid semantic with contextual embeddings), entity profiles (people, projects, technologies), and stored memories. Hybrid results included automatically when embeddings are built (via init_semantic).\n\nExample: search({ query: "quarterly review", limit: 5 })\nExample: search({ where: { type: "project", status: "active" } })\n\nMulti-vault: omitting `vault` searches all vaults and merges results. Pass `vault` to search a specific vault.',
+    'Use when looking up vault content by keyword, entity, or concept. Produces ranked results with frontmatter, backlinks, outlinks, section provenance, dates, and confidence scores. Returns a decision surface of notes, entities, and memories in one call. Does not read full note bodies — use get_note_structure or get_section_content for full text.',
     {
       query: z.string().optional().describe('Search query text. Required unless using metadata filters (where, has_tag, folder, etc.)'),
 

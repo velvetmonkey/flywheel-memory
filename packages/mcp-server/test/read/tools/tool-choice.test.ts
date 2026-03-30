@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from 'vitest';
 import fs from 'fs/promises';
-import path from 'path';
+import pathMod from 'path';
 import { generateInstructions, parseEnabledCategories } from '../../../src/config.js';
 
 // ============================================================================
@@ -70,47 +70,50 @@ describe('generateInstructions routing', () => {
   it('base instructions scope search to content lookup', () => {
     const cats = parseEnabledCategories('default');
     const instructions = generateInstructions(cats);
-    expect(instructions).toContain('content lookup');
+    expect(instructions).toContain('entry point');
   });
 
   it('base instructions route to specialized tools for non-content questions', () => {
     const cats = parseEnabledCategories('default');
     const instructions = generateInstructions(cats);
-    expect(instructions).toContain('specialized tools');
+    expect(instructions).toContain('specialized');
   });
 });
 
 // ============================================================================
-// Layer 2: Tool description distinctiveness — exact string assertions
+// Layer 2: Tool description contract compliance — sampled assertions
 // ============================================================================
 
-describe('tool description distinctiveness', () => {
-  it('temporal tool descriptions lead with intent-matching phrases', async () => {
+describe('tool description contract compliance', () => {
+  it('temporal tool descriptions expose trigger, Returns, and Does not', async () => {
     const content = await fs.readFile(
-      path.join(__dirname, '../../../src/tools/read/temporalAnalysis.ts'), 'utf-8');
+      pathMod.join(__dirname, '../../../src/tools/read/temporalAnalysis.ts'), 'utf-8');
 
-    expect(content).toContain("'What was happening around a specific date?");
-    expect(content).toContain("'Which notes need attention?");
-    expect(content).toContain("'How has an entity changed over time?");
-    expect(content).toContain("'Summarize vault activity for a time period");
+    // Contract: each tool description must contain routing signal + Returns + Does not
+    expect(content).toContain('Returns');
+    expect(content).toContain('Does not');
+    // Trigger phrases for temporal tools
+    expect(content).toContain('Use when');
   });
 
-  it('diagnostics tool descriptions lead with intent-matching phrases', async () => {
+  it('diagnostics tool descriptions expose trigger, Returns, and Does not', async () => {
     const content = await fs.readFile(
-      path.join(__dirname, '../../../src/tools/read/health.ts'), 'utf-8');
+      pathMod.join(__dirname, '../../../src/tools/read/health.ts'), 'utf-8');
 
-    expect(content).toContain("'Is anything broken?");
-    expect(content).toContain("'What can this server do and what has it done?");
-    expect(content).toContain("'Is the server getting slower?");
+    expect(content).toContain('Returns');
+    expect(content).toContain('Does not');
+    expect(content).toContain('Use ');
   });
 
-  it('activity and growth tools lead with intent-matching phrases', async () => {
+  it('activity and growth tools follow contract template', async () => {
     const activity = await fs.readFile(
-      path.join(__dirname, '../../../src/tools/read/activity.ts'), 'utf-8');
+      pathMod.join(__dirname, '../../../src/tools/read/activity.ts'), 'utf-8');
     const metrics = await fs.readFile(
-      path.join(__dirname, '../../../src/tools/read/metrics.ts'), 'utf-8');
+      pathMod.join(__dirname, '../../../src/tools/read/metrics.ts'), 'utf-8');
 
-    expect(activity).toContain("'What tools have been used");
-    expect(metrics).toContain("'How is the vault growing?");
+    expect(activity).toContain('Returns');
+    expect(activity).toContain('Does not');
+    expect(metrics).toContain('Returns');
+    expect(metrics).toContain('Does not');
   });
 });

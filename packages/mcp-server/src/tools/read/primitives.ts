@@ -53,7 +53,7 @@ export function registerPrimitiveTools(
     'get_note_structure',
     {
       title: 'Get Note Structure',
-      description: 'Read the structure of a specific note. Use after search identifies a note you need more detail on. Returns headings, frontmatter, tags, word count. Set include_content: true to get the full markdown.',
+      description: 'Use after search identifies a note you need detail on. Produces heading tree, frontmatter, tags, word count, backlink and outlink counts, and optionally full section content. Returns enriched note structure with entity metadata when available. Does not search — requires an exact path from a prior search result.',
       inputSchema: {
         path: z.string().describe('Path to the note'),
         include_content: z.boolean().default(true).describe('Include the text content under each top-level section. Set false to get structure only.'),
@@ -117,7 +117,7 @@ export function registerPrimitiveTools(
     'get_section_content',
     {
       title: 'Get Section Content',
-      description: 'Get the content under a specific heading in a note.',
+      description: 'Use when you need the text under one heading in a known note. Produces the markdown body of a single section with optional subheadings. Returns section content, heading level, and line range. Does not return other sections — use get_note_structure for full outline.',
       inputSchema: {
         path: z.string().describe('Path to the note'),
         heading: z.string().describe('Heading text to find'),
@@ -150,7 +150,7 @@ export function registerPrimitiveTools(
     'find_sections',
     {
       title: 'Find Sections',
-      description: 'Find all sections across vault matching a heading pattern.',
+      description: 'Use when scanning for a heading pattern across many notes. Produces a list of matching sections with note path, heading text, and level. Returns total count and paginated results. Does not return section body text — follow up with get_section_content for content.',
       inputSchema: {
         pattern: z.string().describe('Regex pattern to match heading text'),
         folder: z.string().optional().describe('Limit to notes in this folder'),
@@ -185,7 +185,7 @@ export function registerPrimitiveTools(
     'tasks',
     {
       title: 'Tasks',
-      description: 'Query tasks from the vault. Use path to scope to a single note. Use status to filter (default: "open"). Use has_due_date to find tasks with due dates.',
+      description: 'Use when listing, filtering, or counting tasks across the vault. Produces task items with status, text, due date, path, and line number. Returns total and per-status counts with paginated results. Does not toggle or create tasks — use vault_toggle_task or vault_add_task to mutate.',
       inputSchema: {
         path: z.string().optional().describe('Scope to tasks from this specific note path'),
         status: z.enum(['open', 'completed', 'cancelled']).default('open').describe('Filter by task status'),
@@ -326,7 +326,7 @@ export function registerPrimitiveTools(
     'get_link_path',
     {
       title: 'Get Link Path',
-      description: 'Find the shortest path of links between two notes. Use weighted=true to penalize hub nodes for more meaningful paths.',
+      description: 'Use when tracing how two notes connect through the link graph. Produces the shortest chain of wikilinks between source and target. Returns an ordered path array with intermediate notes. Does not consider semantic similarity — only follows explicit wikilinks.',
       inputSchema: {
         from: z.string().describe('Starting note path'),
         to: z.string().describe('Target note path'),
@@ -355,7 +355,7 @@ export function registerPrimitiveTools(
     'get_common_neighbors',
     {
       title: 'Get Common Neighbors',
-      description: 'Find notes that both specified notes link to.',
+      description: 'Use when finding shared context between two notes. Produces a list of notes that both specified notes link to or are linked from. Returns common neighbor paths and directions. Does not compute similarity scores — pair with get_connection_strength for numeric measures.',
       inputSchema: {
         note_a: z.string().describe('First note path'),
         note_b: z.string().describe('Second note path'),
@@ -381,7 +381,7 @@ export function registerPrimitiveTools(
     'get_connection_strength',
     {
       title: 'Get Connection Strength',
-      description: 'Calculate the connection strength between two notes based on various factors.',
+      description: 'Use when measuring how strongly two notes relate. Produces a composite score from direct links, shared neighbors, co-occurrence, and path distance. Returns a numeric strength value with factor breakdown. Does not list individual connections — use get_common_neighbors for detail.',
       inputSchema: {
         note_a: z.string().describe('First note path'),
         note_b: z.string().describe('Second note path'),

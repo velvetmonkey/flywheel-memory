@@ -229,7 +229,7 @@ export function registerBriefTools(
 ): void {
   server.tool(
     'brief',
-    'Get a startup context briefing: recent sessions, active entities, memories, pending corrections, and vault stats. Call at conversation start.',
+    'Use at conversation start for session context. Produces a startup briefing with recent sessions, active entities, stored memories, pending corrections, and vault stats. Returns a compact context payload. Does not search or read individual notes — use search to find specific content.',
     {
       max_tokens: z.number().optional().describe('Token budget (lower-priority sections truncated first)'),
       focus: z.string().optional().describe('Focus entity or topic (filters content)'),

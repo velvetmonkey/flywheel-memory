@@ -38,7 +38,7 @@ export function registerPolicyTools(
 ): void {
   server.tool(
     'policy',
-    'Manage vault policies. Actions: "list" (list all policies), "validate" (validate YAML), "preview" (dry-run), "execute" (run policy), "author" (generate policy YAML), "revise" (modify existing policy).',
+    'Use when running or authoring repeatable vault workflows. Produces deterministic multi-step operations (sections, notes, frontmatter, tasks) committed atomically. Returns execution results or authored YAML. Does not execute arbitrary code — only chains vault tools with variables, conditions, and templates.',
     {
       action: z.enum(['list', 'validate', 'preview', 'execute', 'author', 'revise'])
         .describe('Action to perform'),

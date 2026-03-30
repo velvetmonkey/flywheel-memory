@@ -17,7 +17,7 @@ export function registerEntityHistoryTools(
 ): void {
   server.tool(
     'vault_entity_history',
-    'Get a unified timeline of everything about an entity: when it was linked, feedback received, suggestion scores, edge weight changes, metadata mutations, memories, and corrections. Sorted chronologically with pagination.',
+    'Use when tracing the full history of a specific entity. Produces a unified timeline of link events, feedback, suggestion scores, and edge weight changes. Returns chronological entity events with timestamps. Does not modify the entity — read-only historical data.',
     {
       entity_name: z.string().describe('Entity name to query (case-insensitive)'),
       event_types: z.array(z.enum([

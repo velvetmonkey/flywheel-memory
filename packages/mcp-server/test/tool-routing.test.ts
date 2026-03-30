@@ -68,6 +68,74 @@ describe('tool catalog collector', () => {
   });
 });
 
+
+// ============================================================================
+// Raw Description Contract Tests (T21)
+// ============================================================================
+
+describe('raw description contract (T21)', () => {
+  const catalog = collectToolCatalog();
+
+  it('every rawDescription is defined and non-empty', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.rawDescription, `${name} rawDescription undefined`).toBeDefined();
+      expect(entry.rawDescription.length, `${name} rawDescription empty`).toBeGreaterThan(0);
+    }
+  });
+
+  it('no rawDescription contains newline characters', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.rawDescription, `${name} has newline`).not.toContain('\n');
+    }
+  });
+
+  it('no rawDescription contains Example: or Examples: headers', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.rawDescription, `${name} has Example:`).not.toMatch(/Examples?:/);
+    }
+  });
+
+  it('no rawDescription contains fenced code blocks', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.rawDescription, `${name} has code fence`).not.toMatch(/```/);
+    }
+  });
+
+  it('no rawDescription contains bold markers', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.rawDescription, `${name} has bold`).not.toMatch(/\*\*[^*]+\*\*/);
+    }
+  });
+
+  it('no rawDescription contains wikilink markers', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.rawDescription, `${name} has wikilink`).not.toMatch(/\[\[[^\]]+\]\]/);
+    }
+  });
+
+  it('every rawDescription is 80-500 characters', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.rawDescription.length, `${name} too short (${entry.rawDescription.length})`).toBeGreaterThanOrEqual(80);
+      expect(entry.rawDescription.length, `${name} too long (${entry.rawDescription.length})`).toBeLessThanOrEqual(500);
+    }
+  });
+
+  it('tier-1 rawDescriptions are at most 350 characters', () => {
+    for (const [name, entry] of catalog) {
+      if (entry.tier === 1) {
+        expect(entry.rawDescription.length, `${name} tier-1 too long (${entry.rawDescription.length})`).toBeLessThanOrEqual(350);
+      }
+    }
+  });
+
+  it('every rawDescription contains Returns and Does not (rewrite completeness)', () => {
+    for (const [name, entry] of catalog) {
+      expect(entry.rawDescription, `${name} missing "Returns"`).toContain('Returns');
+      expect(entry.rawDescription, `${name} missing "Does not"`).toContain('Does not');
+    }
+  });
+});
+
 // ============================================================================
 // Manifest Freshness Tests
 // ============================================================================

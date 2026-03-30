@@ -107,7 +107,17 @@ Flywheel watches the vault, maintains local indexes, and serves the graph to MCP
 Out of the box, Flywheel progressively surfaces specialised tools as the conversation needs them. For a fixed reduced set, use `agent`. Compose bundles for custom configurations.
 
 ```json
-{ "env": { "FLYWHEEL_TOOLS": "agent,graph" } }
+{
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "env": {
+        "FLYWHEEL_TOOLS": "agent,graph"
+      }
+    }
+  }
+}
 ```
 
 [Browse all tools ->](docs/TOOLS.md) | [Preset recipes ->](docs/CONFIGURATION.md)
@@ -118,8 +128,14 @@ Serve more than one vault from a single Flywheel instance with `FLYWHEEL_VAULTS`
 
 ```json
 {
-  "env": {
-    "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work"
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "env": {
+        "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work"
+      }
+    }
   }
 }
 ```

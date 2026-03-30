@@ -43,7 +43,7 @@ flywheel -> vault_add_to_section
             -> [[GlobalBank API Audit]], [[Acme Data Migration]]"
 ```
 
-You type a normal sentence. Flywheel can resolve known entities, add wikilinks, and suggest related links based on aliases, co-occurrence, graph structure, and semantic context. Suggested outgoing links are optional and off by default. Enable them where you want the graph to grow naturally, such as daily notes, meeting logs, or voice capture. [Configuration guide ->](docs/CONFIGURATION.md)
+You type a normal sentence. Flywheel resolves known entities, detects prospective entities (proper nouns, acronyms, CamelCase terms), and adds wikilinks and suggests related links based on aliases, co-occurrence, graph structure, and semantic context. Suggested outgoing links are optional and off by default. Enable them where you want the graph to grow naturally, such as daily notes, meeting logs, or voice capture. [Configuration guide ->](docs/CONFIGURATION.md)
 
 ### Boundaries
 

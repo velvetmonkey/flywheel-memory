@@ -448,7 +448,7 @@ export function registerInitTools(
 ): void {
   server.tool(
     'vault_init',
-    'Initialize vault for Flywheel. Modes: "status" (check what\'s ready/missing), "run" (execute missing init steps), "enrich" (scan notes with zero wikilinks and apply entity links).',
+    'Use when setting up a vault for Flywheel for the first time. Produces initialization steps for missing config, folders, and templates. Returns status of each init step or executes missing ones. Does not overwrite existing configuration — safe to run on already-initialized vaults.',
     {
       mode: z.enum(['status', 'run', 'enrich']).default('status').describe('Operation mode (default: status)'),
       dry_run: z.boolean().default(true).describe('For enrich mode: preview without modifying files (default: true)'),

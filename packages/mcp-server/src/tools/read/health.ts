@@ -261,8 +261,7 @@ export function registerHealthTools(
     {
       title: 'Health Check',
       description:
-        'Check MCP server health status. Returns vault accessibility, index freshness, and recommendations. Use at session start to verify MCP is working correctly. ' +
-        'Pass mode="summary" (default) for lightweight polling or mode="full" for complete diagnostics.',
+        'Use at session start or when diagnosing problems to check server status. Produces vault accessibility, index freshness, pipeline state, and configuration summary. Returns a health report with status flags and recommendations. Does not fix problems — use flywheel_doctor for active problem detection.',
       inputSchema: {
         mode: z.enum(['summary', 'full']).optional().default('summary')
           .describe('Output mode: "summary" omits config, periodic notes, dead links, sweep, and recent pipelines; "full" returns everything'),
@@ -606,8 +605,7 @@ export function registerHealthTools(
     {
       title: 'Pipeline Status',
       description:
-        'Live pipeline activity: whether a batch is running, current step, and recent completions. ' +
-        'Lightweight process-local read — no DB queries unless detail=true.',
+        'Use when checking whether the indexing pipeline is running. Produces live process status with current step, batch progress, and recent completions. Returns a lightweight status snapshot. Does not trigger a reindex — use refresh_index for that.',
       inputSchema: {
         detail: z.boolean().optional().default(false)
           .describe('Include per-step timings for recent runs'),
@@ -758,7 +756,7 @@ export function registerHealthTools(
     {
       title: 'Get Vault Statistics',
       description:
-        'Get comprehensive statistics about the vault: note counts, link metrics, tag usage, and folder distribution.',
+        'Use when you need quick vault metrics. Produces note counts, link density, tag usage, and folder distribution. Returns a compact stats object. Does not diagnose issues — use health_check for status assessment.',
       inputSchema: {},
       outputSchema: GetVaultStatsOutputSchema,
     },
@@ -891,7 +889,7 @@ export function registerHealthTools(
     {
       title: 'Server Activity Log',
       description:
-        'Query the server activity log. Returns timestamped entries for startup stages, indexing progress, errors, and runtime events. Useful for diagnosing startup issues or checking what the server has been doing.',
+        'Use when debugging server behavior or checking startup and indexing events. Produces timestamped log entries filtered by level and time range. Returns log entry array with timestamps and messages. Does not modify server state — read-only access to the activity log.',
       inputSchema: {
         since: z.coerce.number().optional().describe('Only return entries after this Unix timestamp (ms)'),
         component: z.string().optional().describe('Filter by component (server, index, fts5, semantic, tasks, watcher, statedb, config)'),
@@ -927,9 +925,7 @@ export function registerHealthTools(
     {
       title: 'Flywheel Doctor',
       description:
-        'Is anything broken? Actively checks for problems (unlike health_check which reports status) ' +
-        'Checks: schema version, index freshness, embedding coverage, suppression health, ' +
-        'cache freshness, FTS5 integrity, watcher state, and disk usage.',
+        'Use when something seems broken and you need active problem detection. Produces diagnostic checks for schema version, index health, stale data, and configuration issues. Returns problem descriptions with severity and suggested fixes. Does not fix problems automatically — follow the suggested remediation steps.',
       inputSchema: {},
     },
     async (): Promise<{
@@ -1193,10 +1189,7 @@ export function registerHealthTools(
     {
       title: 'Flywheel Trust Report',
       description:
-        'What can this server do and what has it done? ' +
-        'Returns active config/preset, enabled tool categories, transport mode, ' +
-        'recent write operations, and enforced boundaries. ' +
-        'Supports the cognitive sovereignty thesis with verifiable transparency.',
+        'Use when auditing what the server can do and what it has done. Produces a trust report with active config, enabled tools, transport mode, and recent activity summary. Returns a structured capabilities and activity overview. Does not modify configuration.',
       inputSchema: {},
     },
     async (): Promise<{
@@ -1285,9 +1278,7 @@ export function registerHealthTools(
     {
       title: 'Flywheel Benchmark',
       description:
-        'Is the server getting slower? Runs, records, and trends longitudinal performance benchmarks. ' +
-        'Modes: "run" executes live benchmarks (search latency, entity lookup, index/watcher timing) and records results; ' +
-        '"history" shows past benchmark results; "trends" shows regression/improvement analysis over time.',
+        'Use when checking if the server is getting slower over time. Produces longitudinal performance benchmarks with run, history, and trend modes. Returns timing data with comparison to previous runs. Does not modify vault data — only measures and records performance.',
       inputSchema: {
         mode: z.enum(['run', 'history', 'trends']).default('run')
           .describe('run = execute benchmarks, history = past results, trends = regression analysis'),

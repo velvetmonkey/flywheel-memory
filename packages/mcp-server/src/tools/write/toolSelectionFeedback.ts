@@ -28,11 +28,7 @@ export function registerToolSelectionFeedbackTools(
     {
       title: 'Tool Selection Feedback',
       description:
-        'Report and query tool selection quality. Tracks whether the right tool was picked for a given query. ' +
-        'Modes: "report" (record feedback — was the tool pick correct or wrong?), ' +
-        '"list" (recent feedback entries), ' +
-        '"stats" (per-tool posterior accuracy from explicit feedback), ' +
-        '"misroutes" (heuristic-detected advisory misroutes — T15b placeholder).',
+        'Use when reporting whether the right tool was picked for a query. Produces a feedback record tracking tool selection quality over time. Returns confirmation with feedback stats and accuracy history. Does not change tool routing — only records the signal for analysis.',
       inputSchema: {
         mode: z.enum(['report', 'list', 'stats', 'misroutes']).describe('Operation mode'),
         correct: z.boolean().optional().describe('Was the tool selection correct? (required for report mode)'),

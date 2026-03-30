@@ -21,7 +21,7 @@ export function registerCalibrationExportTools(
 ): void {
   server.tool(
     'flywheel_calibration_export',
-    'Export anonymized aggregate scoring data for cross-vault algorithm calibration. No entity names, note paths, or content — safe to share. Includes: suggestion funnel, per-layer contribution averages, survival rates by entity category, score distribution, suppression stats, recency/co-occurrence effectiveness, and threshold sweep.',
+    'Use when exporting scoring data for cross-vault algorithm calibration. Produces anonymized aggregate statistics with no entity names, note paths, or content. Returns calibration metrics for external analysis. Does not expose vault content — fully anonymized output only.',
     {
       days_back: z.number().min(1).max(365).optional()
         .describe('Analysis window in days (default: 30)'),

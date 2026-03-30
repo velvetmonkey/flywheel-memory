@@ -111,7 +111,7 @@ The demo vaults in this repo cover these personas with production-realistic data
 
 ### Flywheel Memory
 
-The MCP server. tools across 12 categories give Claude structured access to Obsidian vaults: search, graph queries, schema intelligence, content mutations, task management, agent memory, and policy automation. Published as `@velvetmonkey/flywheel-memory`.
+The MCP server. Tools across 12 categories give Claude structured access to Obsidian vaults: search, graph queries, schema intelligence, content mutations, task management, agent memory, and policy automation. Published as `@velvetmonkey/flywheel-memory`.
 
 ### Vault-Core
 

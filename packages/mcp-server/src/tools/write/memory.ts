@@ -24,7 +24,7 @@ export function registerMemoryTools(
 ): void {
   server.tool(
     'memory',
-    'Store, retrieve, search, and manage agent working memory. Actions: store, get, search, list, forget, summarize_session.',
+    'Use when storing, retrieving, or managing persistent agent observations across sessions. Produces durable key-value memory entries for facts, preferences, and decisions. Returns stored or retrieved memory content. Does not search vault notes — use search for note content lookup.',
     {
       action: z.enum(['store', 'get', 'search', 'list', 'forget', 'summarize_session']).describe('Action to perform'),
       // store params

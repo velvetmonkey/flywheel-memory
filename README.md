@@ -69,7 +69,7 @@ Flywheel is designed to be explicit about what it does.
 - Git commits are opt-in.
 - Proactive linking can be disabled.
 
-> **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/carter-strategy/run-demo-test.sh) script that runs the full sequence end to end with `claude -p`, checking tool usage and vault state between steps.
+> **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/run-demo-test.sh) script that runs the full sequence end to end with `claude -p`, checking tool usage and vault state between steps.
 
 ---
 
@@ -210,7 +210,7 @@ E2E with Claude Sonnet (latest checked-in 695-question run): **97.4%** single-ho
 
 ## Testing
 
-2,760 defined tests across 145 test files and about 54.7k lines of test code. CI runs focused jobs on Ubuntu, plus a full matrix on Ubuntu and Windows across Node 22 and 24.
+3,025 defined tests across 156 test files and about 60.4k lines of test code. CI runs focused jobs on Ubuntu, plus a full matrix on Ubuntu and Windows across Node 22 and 24.
 
 - **Graph quality:** Latest generated report shows balanced-mode **40.2% precision / 71.7% recall / 51.5% F1** on the primary synthetic vault, along with multi-generation, archetype, chaos, and regression coverage. [Report ->](docs/QUALITY_REPORT.md)
 - **Live AI testing:** Real `claude -p` sessions verify tool adoption end to end, not just handler logic.

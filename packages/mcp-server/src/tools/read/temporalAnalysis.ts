@@ -730,8 +730,7 @@ export function registerTemporalAnalysisTools(
     {
       title: 'Context Around Date',
       description:
-        'What was happening around a specific date? ' +
-        'Shows modified/created notes, active entities, wikilink activity, and file moves within a time window.',
+        'Use when exploring what was happening around a specific date. Produces a snapshot of modified notes, created notes, active entities, and file activity in a time window. Returns dated context with note paths and entity names. Does not summarize — use temporal_summary for narrative digests.',
       inputSchema: {
         date: z.string().describe('Center date in YYYY-MM-DD format'),
         window_days: z.coerce.number().default(3).describe('Days before and after the center date (default 3 = 7-day window)'),
@@ -751,9 +750,7 @@ export function registerTemporalAnalysisTools(
     {
       title: 'Predict Stale Notes',
       description:
-        'Which notes need attention? Scores notes by importance (backlinks, hub score, tasks, status) ' +
-        'and staleness risk (age, entity disconnect, task urgency). Returns concrete recommendations: ' +
-        'archive, update, review, or low_priority.',
+        'Use when finding notes that need attention based on importance and age. Produces a prioritized list scoring notes by backlinks, hub score, tasks, and staleness risk. Returns ranked note entries with action recommendations (archive, update, review). Does not modify notes — only identifies candidates.',
       inputSchema: {
         days: z.coerce.number().default(30).describe('Notes not modified in this many days (default 30)'),
         min_importance: z.coerce.number().default(0).describe('Filter by minimum importance score 0-100 (default 0)'),
@@ -779,9 +776,7 @@ export function registerTemporalAnalysisTools(
     {
       title: 'Track Concept Evolution',
       description:
-        'How has an entity changed over time? Timeline of link additions/removals, feedback events, category changes, ' +
-        'co-occurrence shifts. Shows current state, chronological event history, link durability stats, ' +
-        'and top co-occurrence neighbors.',
+        'Use when tracing how an entity changed over time. Produces a timeline of link additions, removals, feedback events, category changes, and co-occurrence shifts. Returns chronological evolution entries with dates and event types. Does not modify the entity — only reads historical data.',
       inputSchema: {
         entity: z.string().describe('Entity name (case-insensitive)'),
         days_back: z.coerce.number().default(90).describe('How far back to look (default 90 days)'),
@@ -802,9 +797,7 @@ export function registerTemporalAnalysisTools(
     {
       title: 'Temporal Summary',
       description:
-        'Summarize vault activity for a time period (week, month, quarter). Composes context, staleness prediction, ' +
-        'and concept evolution into a single summary. Shows activity snapshot, entity momentum, ' +
-        'and maintenance alerts. Use for weekly/monthly/quarterly reviews.',
+        'Use when reviewing vault activity for a period like a week, month, or quarter. Produces a composed digest of context, staleness predictions, and concept evolution. Returns narrative summary sections with activity highlights and maintenance alerts. Does not modify notes — composes read-only temporal analysis.',
       inputSchema: {
         start_date: z.string().describe('Start of period in YYYY-MM-DD format'),
         end_date: z.string().describe('End of period in YYYY-MM-DD format'),

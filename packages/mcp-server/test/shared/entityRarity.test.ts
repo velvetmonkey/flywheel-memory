@@ -40,8 +40,8 @@ describe('entityRarity', () => {
 
   it('returns high multiplier (~1.8) for very rare entities', () => {
     // Entity appears in only 1 out of 1000 notes
-    const index = makeCoocIndex(new Map([['Fartimus', 1]]), 1000);
-    const rarity = entityRarity('Fartimus', index);
+    const index = makeCoocIndex(new Map([['Zorbatix', 1]]), 1000);
+    const rarity = entityRarity('Zorbatix', index);
     expect(rarity).toBeGreaterThan(1.5);
     expect(rarity).toBeLessThanOrEqual(1.8);
   });
@@ -64,8 +64,8 @@ describe('entityRarity', () => {
   });
 
   it('rare entity scores higher than common entity', () => {
-    const df = new Map([['API', 200], ['Fartimus', 3]]);
+    const df = new Map([['API', 200], ['Zorbatix', 3]]);
     const index = makeCoocIndex(df, 1000);
-    expect(entityRarity('Fartimus', index)).toBeGreaterThan(entityRarity('API', index));
+    expect(entityRarity('Zorbatix', index)).toBeGreaterThan(entityRarity('API', index));
   });
 });

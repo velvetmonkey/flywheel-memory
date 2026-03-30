@@ -274,7 +274,7 @@ export interface PolicyMetadata {
   name: string;
   /** Policy description */
   description: string;
-  /** File path relative to .claude/policies/ */
+  /** File path relative to .flywheel/policies/ */
   path: string;
   /** Last modified date */
   lastModified: Date;

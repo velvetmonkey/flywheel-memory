@@ -22,6 +22,7 @@ const IGNORED_DIRECTORIES: Set<string> = new Set([
   '__pycache__',
   '.cache',
   '.claude',
+  '.flywheel',
 ]);
 
 /**

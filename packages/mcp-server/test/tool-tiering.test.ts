@@ -527,3 +527,80 @@ describe('progressive disclosure session persistence', () => {
     expect(updatedNames).toContain('search');
   });
 });
+
+// ============================================================================
+// Activation edge cases
+// ============================================================================
+
+describe('activation edge cases', () => {
+  it.each([
+    { label: 'empty string', args: { query: '' } },
+    { label: 'whitespace only', args: { query: '   ' } },
+    { label: 'missing query', args: {} },
+  ])('$label does not activate any category', async ({ args }) => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    await callTool(server, 'search', args);
+
+    expect(controller.activeCategories.size).toBe(0);
+    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.suggest_wikilinks.enabled).toBe(false);
+    expect(tools.vault_schema.enabled).toBe(false);
+  });
+
+  it.each([
+    { query: 'BACKLINKS', category: 'graph', tool: 'graph_analysis' },
+    { query: 'Schema', category: 'schema', tool: 'vault_schema' },
+  ])('case-insensitive: "$query" activates $category', async ({ query, category, tool }) => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    await callTool(server, 'search', { query });
+
+    expect(controller.activeCategories.has(category)).toBe(true);
+    expect(tools[tool].enabled).toBe(true);
+  });
+});
+
+// ============================================================================
+// generateInstructions integration with controller state
+// ============================================================================
+
+describe('generateInstructions integration with controller state', () => {
+  it('instructions evolve as categories activate via tool calls', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    const getInstructions = () =>
+      generateInstructions(new Set(ALL_CATEGORIES), null, controller.activeCategories);
+
+    // Initial: escalation hints present, full sections absent
+    let instructions = getInstructions();
+    expect(instructions).toContain('Ask about graph connections, backlinks, hubs, clusters, or paths');
+    expect(instructions).toContain('Ask about wikilinks, suggestions, stubs, or unlinked mentions');
+    expect(instructions).not.toContain('## Graph');
+    expect(instructions).not.toContain('## Wikilinks');
+
+    // Activate graph via search signal
+    await callTool(server, 'search', { query: 'show backlinks' });
+    expect(controller.activeCategories.has('graph')).toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(true);
+
+    instructions = getInstructions();
+    expect(instructions).toContain('## Graph');
+    expect(instructions).not.toContain('Ask about graph connections, backlinks, hubs, clusters, or paths');
+
+    // Activate wikilinks via search signal
+    await callTool(server, 'search', { query: 'check wikilinks' });
+    expect(controller.activeCategories.has('wikilinks')).toBe(true);
+    expect(tools.suggest_wikilinks.enabled).toBe(true);
+
+    instructions = getInstructions();
+    expect(instructions).toContain('## Graph');
+    expect(instructions).toContain('## Wikilinks');
+    // Unactivated categories still show hints
+    expect(instructions).toContain('Ask to unlock schema tools');
+    expect(instructions).toContain('Ask about time, history, evolution, or stale notes');
+  });
+});

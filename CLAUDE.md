@@ -98,8 +98,8 @@ packages/mcp-server/src/
 Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`default`** — 18 tools: search, read, write, tasks, memory
-- **`full`** — All categories (76 tools)
+- **`full`** — All categories (77 tools, tiered progressive disclosure) — **this is the default**
+- **`agent`** — 18 tools: search, read, write, tasks, memory
 
 **Composable bundles** (add to presets or each other):
 - **`graph`** — structural analysis, semantic analysis, paths, [[Hub|hubs]], connections, export (11 tools)
@@ -110,7 +110,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`memory`** — session memory + brief (2 tools)
 - **`note-ops`** — delete, move, rename, merge (4 tools)
 - **`temporal`** — time-based vault intelligence (4 tools)
-- **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status (21 tools)
+- **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback (22 tools)
 **Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `temporal`, `diagnostics`
 
 ---

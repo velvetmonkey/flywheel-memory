@@ -438,8 +438,8 @@ Flywheel auto-links any mentions of existing notes. If your vault has `Stacy Tho
 
 ## Step 3: Choose a Tool Preset
 
-Flywheel defaults to the `default` preset (18 tools: search, read, write, tasks, memory).
-For all tools, use `"full"`. Add bundles for graph analysis, wikilinks, or other capabilities:
+Flywheel defaults to the `full` preset (77 tools with tiered progressive disclosure).
+Use `"agent"` for a minimal 18-tool set (search, read, write, tasks, memory). Add bundles for graph analysis, wikilinks, or other capabilities:
 
 ```json
 {

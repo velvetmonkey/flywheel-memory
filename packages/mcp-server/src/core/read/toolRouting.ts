@@ -16,6 +16,7 @@
 import type { ToolCategory, ToolTier } from '../../config.js';
 import type { ToolTierMode } from '../../tool-registry.js';
 import { cosineSimilarity, embedTextCached, getActiveModelId } from './embeddings.js';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 // ---------------------------------------------------------------------------
 // Manifest types (exported for test seam)
@@ -70,6 +71,10 @@ const MIN_QUERY_CHARS = 12;  // non-space chars
 let routingIndex: ToolEmbeddingRecord[] | null = null;
 let manifestModel: string | null = null;
 
+// Per-vault effectiveness snapshots (T15b)
+const effectivenessSnapshots = new Map<string, ReadonlyMap<string, number>>();
+const EFFECTIVENESS_PRIOR_MEAN = 0.8;
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -95,7 +100,9 @@ export async function initToolRouting(): Promise<boolean> {
  * Test seam: create a routing context from an injected manifest.
  * Returns a self-contained object with its own getSemanticActivations().
  */
-export function createToolRoutingIndex(manifest: ToolEmbeddingsManifest): {
+export function createToolRoutingIndex(manifest: ToolEmbeddingsManifest, options?: {
+  effectivenessScores?: ReadonlyMap<string, number>;
+}): {
   getSemanticActivations: (query: string, embedFn?: (text: string) => Promise<Float32Array>) => Promise<SemanticActivation[]>;
   hasToolRouting: () => boolean;
 } {
@@ -122,7 +129,7 @@ export function createToolRoutingIndex(manifest: ToolEmbeddingsManifest): {
   return {
     hasToolRouting: () => valid,
     getSemanticActivations: (query, embedFn) =>
-      rankAndCollapse(query, records, valid, manifest?.model ?? '', embedFn),
+      rankAndCollapse(query, records, valid, manifest?.model ?? '', embedFn, options?.effectivenessScores ?? null),
   };
 }
 
@@ -149,6 +156,38 @@ export async function getSemanticActivations(
   query: string,
 ): Promise<SemanticActivation[]> {
   return rankAndCollapse(query, routingIndex, hasToolRouting(), manifestModel ?? '');
+}
+
+
+/**
+ * Load an effectiveness snapshot for a vault.
+ * Scores are posterior accuracy from explicit feedback (T15a).
+ */
+export function loadEffectivenessSnapshot(vaultName: string, scores: Map<string, number>): void {
+  if (scores.size > 0) {
+    effectivenessSnapshots.set(vaultName, scores);
+  } else {
+    effectivenessSnapshots.delete(vaultName);
+  }
+}
+
+/**
+ * Clear effectiveness snapshot(s).
+ * Without vaultName, clears all snapshots.
+ */
+export function clearEffectivenessSnapshot(vaultName?: string): void {
+  if (vaultName) {
+    effectivenessSnapshots.delete(vaultName);
+  } else {
+    effectivenessSnapshots.clear();
+  }
+}
+
+/** Get the active vault's effectiveness snapshot, or null. */
+function getActiveEffectivenessSnapshot(): ReadonlyMap<string, number> | null {
+  const scope = getActiveScopeOrNull();
+  if (!scope?.name) return null;
+  return effectivenessSnapshots.get(scope.name) ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -215,6 +254,7 @@ async function rankAndCollapse(
   isValid: boolean,
   model: string,
   embedFn?: (text: string) => Promise<Float32Array>,
+  injectedEffectiveness?: ReadonlyMap<string, number> | null,
 ): Promise<SemanticActivation[]> {
   if (!isValid || !index || index.length === 0) return [];
 
@@ -236,17 +276,28 @@ async function rankAndCollapse(
   const queryEmbedding = await embed(query);
 
   // Score all non-tier-1 tools
+  const effectivenessSnapshot = injectedEffectiveness ?? getActiveEffectivenessSnapshot();
   const scored: Array<{ name: string; category: ToolCategory; tier: ToolTier; score: number }> = [];
   for (const record of index) {
     if (record.tier === 1) continue;  // tier-1 always visible, skip
 
-    const score = cosineSimilarity(queryEmbedding, record.embedding);
-    if (score >= MIN_COSINE) {
+    const cosine = cosineSimilarity(queryEmbedding, record.embedding);
+
+    // Penalty-only effectiveness adjustment (T15b)
+    let adjustedScore = cosine;
+    if (effectivenessSnapshot) {
+      const eff = effectivenessSnapshot.get(record.name);
+      if (eff !== undefined && eff < EFFECTIVENESS_PRIOR_MEAN) {
+        adjustedScore = cosine * (eff / EFFECTIVENESS_PRIOR_MEAN);
+      }
+    }
+
+    if (adjustedScore >= MIN_COSINE) {
       scored.push({
         name: record.name,
         category: record.category,
         tier: record.tier,
-        score: Math.round(score * 1000) / 1000,
+        score: Math.round(adjustedScore * 1000) / 1000,
       });
     }
   }

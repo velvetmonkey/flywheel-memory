@@ -14,8 +14,8 @@ import type { VaultRegistry } from './vault-registry.js';
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
 // Presets:
-//   default    - Note-taking essentials: search, read, write, tasks, memory (18 tools)
-//   full       - All tools, all categories (76 tools, tiered visibility)
+//   full       - All tools, all categories (77 tools, tiered progressive disclosure) — DEFAULT
+//   agent      - Note-taking essentials: search, read, write, tasks, memory (18 tools)
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic + export (11 tools)
@@ -29,9 +29,9 @@ import type { VaultRegistry } from './vault-registry.js';
 //   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback (22 tools)
 //
 // Examples:
-//   FLYWHEEL_TOOLS=default                    # 18 tools
-//   FLYWHEEL_TOOLS=default,graph              # 29 tools
-//   FLYWHEEL_TOOLS=default,graph,wikilinks    # 36 tools
+//   (no env)                                  # 77 tools, tiered (default = full)
+//   FLYWHEEL_TOOLS=agent                      # 18 tools, no tiering
+//   FLYWHEEL_TOOLS=agent,graph                # 29 tools, no tiering
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
 // Categories (12):
@@ -56,8 +56,8 @@ export const ALL_CATEGORIES: ToolCategory[] = [
 
 export const PRESETS: Record<string, ToolCategory[]> = {
   // Presets
-  default: ['search', 'read', 'write', 'tasks', 'memory'],
   full: [...ALL_CATEGORIES],
+  agent: ['search', 'read', 'write', 'tasks', 'memory'],
 
   // Composable bundles (one per category)
   graph: ['graph'],
@@ -71,14 +71,14 @@ export const PRESETS: Record<string, ToolCategory[]> = {
   diagnostics: ['diagnostics'],
 };
 
-export const DEFAULT_PRESET = 'default';
+export const DEFAULT_PRESET = 'full';
 
 // Deprecated aliases -- old names -> new category/preset names
 export const DEPRECATED_ALIASES: Record<string, string> = {
-  agent: 'default',      // agent merged into default — memory now included
-  minimal: 'default',
-  writer: 'default',     // writer was default+tasks, now default includes tasks
-  researcher: 'default', // use default,graph for graph exploration
+  default: 'full',       // default is now an alias for full
+  minimal: 'agent',
+  writer: 'agent',       // writer was agent+tasks, agent now includes tasks
+  researcher: 'agent',   // use agent,graph for graph exploration
   backlinks: 'graph',     // get_backlinks moved to graph
   structure: 'read',
   append: 'write',
@@ -147,6 +147,66 @@ export function parseEnabledCategories(envValue?: string): Set<ToolCategory> {
   }
 
   return categories;
+}
+
+
+// =============================================================================
+// Shared Resolver
+// =============================================================================
+
+export interface ToolConfig {
+  categories: Set<ToolCategory>;
+  preset: string | null;
+  isFullToolset: boolean;
+}
+
+/**
+ * Resolve tool configuration from env value.
+ * Single source of truth for preset parsing, tiering decisions, and reporting.
+ */
+export function resolveToolConfig(envValue?: string): ToolConfig {
+  const raw = (envValue ?? process.env.FLYWHEEL_TOOLS ?? process.env.FLYWHEEL_PRESET)?.trim();
+
+  if (!raw) {
+    return {
+      categories: new Set(PRESETS[DEFAULT_PRESET]),
+      preset: DEFAULT_PRESET,
+      isFullToolset: true,
+    };
+  }
+
+  const lowerValue = raw.toLowerCase();
+
+  // Direct preset match
+  if (PRESETS[lowerValue]) {
+    const cats = new Set(PRESETS[lowerValue]);
+    return {
+      categories: cats,
+      preset: lowerValue,
+      isFullToolset: cats.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => cats.has(c)),
+    };
+  }
+
+  // Deprecated alias (single value)
+  if (DEPRECATED_ALIASES[lowerValue]) {
+    const resolved = DEPRECATED_ALIASES[lowerValue];
+    if (PRESETS[resolved]) {
+      const cats = new Set(PRESETS[resolved]);
+      return {
+        categories: cats,
+        preset: resolved,
+        isFullToolset: cats.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => cats.has(c)),
+      };
+    }
+  }
+
+  // Comma-separated categories — delegate to parseEnabledCategories
+  const categories = parseEnabledCategories(raw);
+  return {
+    categories,
+    preset: null,
+    isFullToolset: categories.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => categories.has(c)),
+  };
 }
 
 // Per-tool category mapping (tool name -> category).
@@ -257,7 +317,7 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
 };
 
 export const TOOL_TIER: Record<string, ToolTier> = {
-  // Tier 1 — always visible (= default preset, 18 tools)
+  // Tier 1 — always visible (= agent preset, 18 tools)
   search: 1,
   init_semantic: 1,
   find_similar: 1,
@@ -372,7 +432,7 @@ export function generateInstructions(
   const isCategoryVisible = (category: ToolCategory): boolean => {
     if (!categories.has(category)) return false;
     if (!tieringActive) return true;
-    if (PRESETS.default.includes(category)) return true;
+    if (PRESETS.agent.includes(category)) return true;
     return activeTierCategories.has(category);
   };
 

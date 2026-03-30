@@ -177,8 +177,8 @@ Start with `default`, then add what you need:
 
 Set `FLYWHEEL_TOOLS` to a preset, one or more bundles, individual categories, or any combination — comma-separated. Bundles expand to their constituent categories, and duplicates are deduplicated automatically.
 
-When `FLYWHEEL_TOOLS=full`, Flywheel uses tiered exposure by default:
-- Tier 1 stays visible at startup: the 18 tools from `default`
+Flywheel uses tiered exposure by default when all categories are enabled (the `full` preset):
+- Tier 1 stays visible at startup: the 18 tools from the `agent` core
 - Tier 2 unlocks when the conversation clearly shifts into graph, wikilink, correction, temporal, or diagnostics work
 - Tier 3 stays on-demand for explicit schema operations, note operations, and deep diagnostics
 

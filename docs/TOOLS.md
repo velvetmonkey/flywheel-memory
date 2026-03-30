@@ -2,7 +2,7 @@
 
 77 tools. Most questions only need one: **search**.
 
-> **Start here:** Most vaults only need `default` (18 tools). Add bundles as you need them — `graph`, `schema`, `wikilinks`, `temporal`, `diagnostics`. See [CONFIGURATION.md](CONFIGURATION.md) for preset recipes.
+> **Progressive disclosure:** All 77 tools are available by default, but only the core 18 are visible at startup. The rest surface automatically when your queries signal a need for graph analysis, temporal tools, schema intelligence, etc. Use `FLYWHEEL_TOOLS=agent` if you prefer a fixed 18-tool set.
 
 - [At a Glance](#at-a-glance)
 - [Find Anything](#find-anything)

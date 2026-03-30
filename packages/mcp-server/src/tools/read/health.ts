@@ -21,7 +21,7 @@ import { getSweepResults, type SweepResults } from '../../core/read/sweep.js';
 import { getSuppressedCount, getEntityStats, getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD } from '../../core/write/wikilinkFeedback.js';
 import { getEntityEmbeddingsCount } from '../../core/read/embeddings.js';
 import type { WatcherStatus } from '../../core/read/watch/types.js';
-import { TOOL_CATEGORY, parseEnabledCategories, ALL_CATEGORIES } from '../../config.js';
+import { TOOL_CATEGORY, parseEnabledCategories, resolveToolConfig, ALL_CATEGORIES } from '../../config.js';
 import { getRecentInvocations } from '../../core/shared/toolTracking.js';
 import { searchFTS5 } from '../../core/read/fts5.js';
 import { recordBenchmark, getBenchmarkHistory, getBenchmarkTrends } from '../../core/shared/benchmarks.js';
@@ -1213,8 +1213,9 @@ export function registerHealthTools(
       const httpHost = transportMode !== 'stdio' ? (process.env.FLYWHEEL_HTTP_HOST ?? '127.0.0.1') : undefined;
 
       // Preset & categories
-      const presetEnv = process.env.FLYWHEEL_TOOLS || process.env.FLYWHEEL_PRESET || 'default';
-      const enabledCategories = parseEnabledCategories(presetEnv);
+      const toolConfig = resolveToolConfig();
+      const enabledCategories = toolConfig.categories;
+      const presetEnv = toolConfig.preset ?? 'custom';
       const disabledCategories = ALL_CATEGORIES.filter(c => !enabledCategories.has(c));
 
       // Tool count

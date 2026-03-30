@@ -16,6 +16,8 @@ import { createWriteTestServer, type WriteTestServerContext } from '../../helper
 import { connectTestClient, type TestClient } from '../../read/helpers/createTestServer.js';
 import { createTestNote } from '../helpers/testUtils.js';
 import { snap } from './helpers/snapshotTools.js';
+import { writeFile } from 'fs/promises';
+import path from 'path';
 
 /**
  * After vault_undo_last_mutation (soft reset), restore working tree
@@ -42,6 +44,7 @@ describe('undo traces', () => {
       await git.init();
       await git.addConfig('user.email', 'test@test.com');
       await git.addConfig('user.name', 'Test');
+      await writeFile(path.join(ctx.vaultPath, '.gitignore'), '.flywheel/\n');
 
       // Seed vault with one note
       await createTestNote(ctx.vaultPath, 'notes/existing.md', [
@@ -106,6 +109,7 @@ describe('undo traces', () => {
       await git.init();
       await git.addConfig('user.email', 'test@test.com');
       await git.addConfig('user.name', 'Test');
+      await writeFile(path.join(ctx.vaultPath, '.gitignore'), '.flywheel/\n');
 
       // Seed vault
       await createTestNote(ctx.vaultPath, 'notes/sectioned.md', [
@@ -176,6 +180,7 @@ describe('undo traces', () => {
       await git.init();
       await git.addConfig('user.email', 'test@test.com');
       await git.addConfig('user.name', 'Test');
+      await writeFile(path.join(ctx.vaultPath, '.gitignore'), '.flywheel/\n');
 
       // Seed vault with a person note
       await createTestNote(ctx.vaultPath, 'people/robo.md', [

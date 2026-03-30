@@ -62,6 +62,7 @@ import { registerPolicyTools } from './tools/write/policy.js';
 import { registerTagTools } from './tools/write/tags.js';
 import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
 import { registerToolSelectionFeedbackTools } from './tools/write/toolSelectionFeedback.js';
+import { detectMisroute, recordHeuristicMisroute } from './core/shared/misrouteDetection.js';
 import { registerCorrectionTools } from './tools/write/corrections.js';
 import { registerMemoryTools } from './tools/write/memory.js';
 // recall removed — entity/memory search merged into search (uber search)
@@ -420,7 +421,8 @@ export function applyToolGating(
               if (totalBytes > 0) baselineTokens = Math.ceil(totalBytes / 4);
             }
 
-            recordToolInvocation(db, {
+            const queryContext = extractQueryContext(params);
+            const invocationId = recordToolInvocation(db, {
               tool_name: toolName,
               session_id: sessionId,
               note_paths: notePaths,
@@ -428,8 +430,18 @@ export function applyToolGating(
               success,
               response_tokens: responseTokens,
               baseline_tokens: baselineTokens,
-              query_context: extractQueryContext(params),
+              query_context: queryContext,
             });
+
+            // Heuristic misroute detection (T15b)
+            if (queryContext) {
+              try {
+                const misroute = detectMisroute(toolName, queryContext);
+                if (misroute) {
+                  recordHeuristicMisroute(db, invocationId, misroute);
+                }
+              } catch { /* never let heuristic errors affect tool execution */ }
+            }
           } catch {
             // Never let tracking errors affect tool execution
           }

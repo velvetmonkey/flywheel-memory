@@ -10,7 +10,11 @@ import {
   recordToolSelectionFeedback,
   getToolSelectionList,
   getToolSelectionStats,
+  getHeuristicMisroutes,
+  getToolEffectivenessScores,
 } from '../../core/shared/toolSelectionFeedback.js';
+import { loadEffectivenessSnapshot } from '../../core/read/toolRouting.js';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /**
  * Register tool selection feedback tools
@@ -73,6 +77,15 @@ export function registerToolSelectionFeedbackTools(
             correct: args.correct,
           });
 
+          // Refresh effectiveness snapshot for active vault (T15b)
+          try {
+            const vaultName = getActiveScopeOrNull()?.name;
+            if (vaultName) {
+              const scores = getToolEffectivenessScores(stateDb);
+              loadEffectivenessSnapshot(vaultName, scores);
+            }
+          } catch { /* non-critical */ }
+
           return {
             content: [{ type: 'text' as const, text: JSON.stringify({
               recorded: true,
@@ -107,11 +120,20 @@ export function registerToolSelectionFeedbackTools(
         }
 
         case 'misroutes': {
-          // T15b placeholder — heuristic misroute detection not yet implemented
+          const misroutes = getHeuristicMisroutes(stateDb, args.limit ?? 50);
           return {
             content: [{ type: 'text' as const, text: JSON.stringify({
-              message: 'Heuristic misroute detection not yet implemented (T15b). Use report mode to record explicit feedback.',
-              misroutes: [],
+              count: misroutes.length,
+              misroutes: misroutes.map(m => ({
+                id: m.id,
+                timestamp: m.timestamp,
+                tool_invocation_id: m.tool_invocation_id,
+                tool_name: m.tool_name,
+                query_context: m.query_context,
+                expected_category: m.expected_category,
+                rule_id: m.rule_id,
+                rule_version: m.rule_version,
+              })),
             }, null, 2) }],
           };
         }

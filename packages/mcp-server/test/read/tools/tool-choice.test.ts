@@ -26,7 +26,7 @@ describe('generateInstructions routing', () => {
   });
 
   it('includes diagnostics routing when diagnostics enabled', () => {
-    const cats = parseEnabledCategories('default,diagnostics');
+    const cats = parseEnabledCategories('agent,diagnostics');
     const instructions = generateInstructions(cats);
     expect(instructions).toContain('## Diagnostics');
     expect(instructions).toContain('flywheel_doctor');
@@ -34,21 +34,21 @@ describe('generateInstructions routing', () => {
   });
 
   it('includes wikilinks routing when wikilinks enabled', () => {
-    const cats = parseEnabledCategories('default,wikilinks');
+    const cats = parseEnabledCategories('agent,wikilinks');
     const instructions = generateInstructions(cats);
     expect(instructions).toContain('## Wikilinks');
     expect(instructions).toContain('unlinked_mentions_report');
   });
 
   it('includes corrections routing when corrections enabled', () => {
-    const cats = parseEnabledCategories('default,corrections');
+    const cats = parseEnabledCategories('agent,corrections');
     const instructions = generateInstructions(cats);
     expect(instructions).toContain('## Corrections');
     expect(instructions).toContain('vault_record_correction');
   });
 
   it('omits category blocks when not enabled', () => {
-    const cats = parseEnabledCategories('default');
+    const cats = parseEnabledCategories('agent');
     const instructions = generateInstructions(cats);
     expect(instructions).not.toContain('## Temporal');
     expect(instructions).not.toContain('## Wikilinks');

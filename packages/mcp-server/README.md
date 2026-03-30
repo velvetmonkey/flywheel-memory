@@ -321,7 +321,7 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Defaults to the `default` preset (18 tools). Add bundles as needed. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all options.
+Defaults to the `full` preset (77 tools, tiered progressive disclosure). Use `agent` for a minimal 18-tool set. See [docs/CONFIGURATION.md](https://github.com/velvetmonkey/flywheel-memory/blob/main/docs/CONFIGURATION.md) for all options.
 
 > **Works with any MCP client.** Primarily tested with [[CLAUDE]]. See [Transport Options](#transport-options) for HTTP setup (Cursor, Windsurf, Aider, LangGraph, Ollama, etc.).
 

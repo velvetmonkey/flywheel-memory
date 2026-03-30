@@ -176,6 +176,12 @@ export function getToolSelectionStats(
   stateDb: StateDb,
   daysBack: number = 30,
 ): ToolSelectionStats[] {
+  // Guard against table not existing (older databases before schema v36)
+  const tableExists = stateDb.db.prepare(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='tool_selection_feedback'"
+  ).get();
+  if (!tableExists) return [];
+
   const cutoff = Date.now() - daysBack * 24 * 60 * 60 * 1000;
 
   const rows = stateDb.db.prepare(`
@@ -227,6 +233,50 @@ export function getToolEffectivenessScores(
     }
   }
   return scores;
+}
+
+
+/**
+ * Get recent heuristic advisory misroute rows.
+ * Only returns unresolved heuristic rows (correct IS NULL, source='heuristic').
+ */
+export function getHeuristicMisroutes(
+  stateDb: StateDb,
+  limit: number = 50,
+): ToolSelectionFeedbackEntry[] {
+  const rows = stateDb.db.prepare(
+    `SELECT * FROM tool_selection_feedback
+     WHERE source = 'heuristic' AND correct IS NULL
+     ORDER BY timestamp DESC LIMIT ?`
+  ).all(limit) as Array<{
+    id: number;
+    timestamp: number;
+    tool_invocation_id: number | null;
+    tool_name: string;
+    query_context: string | null;
+    expected_tool: string | null;
+    expected_category: string | null;
+    correct: number | null;
+    source: string;
+    rule_id: string | null;
+    rule_version: number | null;
+    session_id: string | null;
+  }>;
+
+  return rows.map(r => ({
+    id: r.id,
+    timestamp: r.timestamp,
+    tool_invocation_id: r.tool_invocation_id,
+    tool_name: r.tool_name,
+    query_context: r.query_context,
+    expected_tool: r.expected_tool,
+    expected_category: r.expected_category,
+    correct: null,
+    source: 'heuristic' as const,
+    rule_id: r.rule_id,
+    rule_version: r.rule_version,
+    session_id: r.session_id,
+  }));
 }
 
 /**

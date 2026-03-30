@@ -83,7 +83,8 @@ import {
   updateTaskCacheForFile,
   removeTaskCacheForFile,
 } from './core/read/taskCache.js';
-import { initToolRouting } from './core/read/toolRouting.js';
+import { initToolRouting, loadEffectivenessSnapshot } from './core/read/toolRouting.js';
+import { getToolEffectivenessScores } from './core/shared/toolSelectionFeedback.js';
 
 // Vault-core shared imports
 import { openStateDb, scanVaultEntities, getAllEntitiesFromDb, loadContentHashes, saveContentHashBatch, renameContentHash, checkDbIntegrity, safeBackupAsync, preserveCorruptedDb, deleteStateDbFiles, attemptSalvage, type StateDb } from '@velvetmonkey/vault-core';
@@ -134,6 +135,7 @@ import { setActiveScope, getActiveScopeOrNull, type VaultScope } from './vault-s
 import {
   ALL_CATEGORIES,
   parseEnabledCategories,
+  resolveToolConfig,
   generateInstructions,
   type ToolCategory,
   type ToolTier,
@@ -191,9 +193,9 @@ export function getWatcherStatus(): WatcherStatus | null {
   return watcherInstance?.status ?? null;
 }
 
-const enabledCategories = parseEnabledCategories();
-const rawToolPreset = (process.env.FLYWHEEL_TOOLS ?? process.env.FLYWHEEL_PRESET ?? '').trim().toLowerCase();
-const toolTierMode: ToolTierMode = rawToolPreset === 'full' ? 'tiered' : 'off';
+const toolConfig = resolveToolConfig();
+const enabledCategories = toolConfig.categories;
+const toolTierMode: ToolTierMode = toolConfig.isFullToolset ? 'tiered' : 'off';
 let runtimeToolTierOverride: ToolTierOverride = 'auto';
 let runtimeActiveCategoryTiers = new Map<ToolCategory, ToolTier>();
 let primaryToolTierController: ToolTierController | null = null;
@@ -656,6 +658,17 @@ async function main() {
   // ── Phase 1b: Load tool routing manifest (non-blocking) ──
   await initToolRouting();
 
+  // ── Phase 1c: Load effectiveness snapshots for T15b routing ──
+  if (stateDb) {
+    try {
+      const vaultName = vaultRegistry?.primaryName ?? 'default';
+      const scores = getToolEffectivenessScores(stateDb);
+      loadEffectivenessSnapshot(vaultName, scores);
+    } catch {
+      // Table may not exist yet on older databases — safe to skip
+    }
+  }
+
     // ── Phase 2: Connect transports BEFORE heavy work ──
   // Tools use lazy getters — they'll return "StateDb not available" until boot
   // completes, but the MCP handshake completes in <1s instead of 60s+.
@@ -922,6 +935,15 @@ function runPeriodicMaintenance(db: StateDb): void {
   sweepExpiredMemories(db);
   decayMemoryConfidence(db);
   pruneSupersededMemories(db, 90);
+
+  // Refresh effectiveness snapshot for active vault (T15b)
+  try {
+    const vaultName = getActiveScopeOrNull()?.name;
+    if (vaultName) {
+      const scores = getToolEffectivenessScores(db);
+      loadEffectivenessSnapshot(vaultName, scores);
+    }
+  } catch { /* table may not exist on older DBs */ }
 
   // Purges — run once per day
   const now = Date.now();

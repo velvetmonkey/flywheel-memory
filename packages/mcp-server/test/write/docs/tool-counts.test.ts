@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
-import { PRESETS, TOOL_CATEGORY, TOOL_TIER } from '../../../src/config.js';
+import { PRESETS, TOOL_CATEGORY, TOOL_TIER, ALL_CATEGORIES } from '../../../src/config.js';
 import { VALID_CONFIG_KEYS } from '../../../src/tools/write/config.js';
 
 const TOOLS_DIR = path.join(__dirname, '../../../src/tools');
@@ -337,8 +337,10 @@ describe('Documentation Contracts', () => {
   it('preset compositions match source', async () => {
     const presets = await parsePresetsFromSource();
 
-    expect(presets['default']).toEqual(['search', 'read', 'write', 'tasks', 'memory']);
-    // agent preset removed — deprecated alias to default
+    // full uses [...ALL_CATEGORIES] spread, so regex parser won't capture it — verify via runtime import
+    expect(PRESETS.full.length).toBe(ALL_CATEGORIES.length);
+    expect(presets['agent']).toEqual(['search', 'read', 'write', 'tasks', 'memory']);
+    // default is now a deprecated alias to full
   });
 });
 
@@ -381,8 +383,8 @@ describe('Tool Gating Invariants', () => {
     expect(tierTools).toEqual(categoryTools);
   });
 
-  it('tier-1 tools exactly match the default preset tool set', () => {
-    const defaultCategories = new Set(PRESETS.default);
+  it('tier-1 tools exactly match the agent preset tool set', () => {
+    const defaultCategories = new Set(PRESETS.agent);
     const defaultPresetTools = Object.entries(TOOL_CATEGORY)
       .filter(([, category]) => defaultCategories.has(category))
       .map(([tool]) => tool)

@@ -409,3 +409,121 @@ describe('tool routing mode integration', () => {
     expect(getToolRoutingMode('off')).toBe('pattern');
   });
 });
+
+// ============================================================================
+// Session Persistence Tests (T15b — progressive disclosure contract)
+// ============================================================================
+
+describe('progressive disclosure session persistence', () => {
+  it('activated categories persist across subsequent tool calls', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    // Initial: graph hidden
+    expect(tools.graph_analysis.enabled).toBe(false);
+
+    // Query 1: activate graph
+    await callTool(server, 'search', { query: 'show me backlinks and connections' });
+    expect(controller.activeCategories.has('graph')).toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(true);
+
+    // Query 2: unrelated search
+    await callTool(server, 'search', { query: 'cooking recipes for dinner' });
+
+    // Graph should still be active — categories never deactivate
+    expect(controller.activeCategories.has('graph')).toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(true);
+
+    // Query 3: another unrelated search
+    await callTool(server, 'search', { query: 'project status update' });
+
+    // Still active
+    expect(controller.activeCategories.has('graph')).toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(true);
+  });
+
+  it('sequential queries accumulate categories without conflict', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    // Step 1: activate graph
+    await callTool(server, 'search', { query: 'show me backlinks' });
+    expect(controller.activeCategories.has('graph')).toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(true);
+
+    // Step 2: activate temporal
+    await callTool(server, 'search', { query: 'show me the timeline and history' });
+    expect(controller.activeCategories.has('temporal')).toBe(true);
+    expect(tools.get_context_around_date.enabled).toBe(true);
+
+    // Step 3: activate schema (tier 3)
+    await callTool(server, 'search', { query: 'what does the schema look like' });
+    expect(controller.activeCategories.has('schema')).toBe(true);
+    expect(tools.vault_schema.enabled).toBe(true);
+
+    // All three should coexist
+    expect(controller.activeCategories.has('graph')).toBe(true);
+    expect(controller.activeCategories.has('temporal')).toBe(true);
+    expect(controller.activeCategories.has('schema')).toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.get_context_around_date.enabled).toBe(true);
+    expect(tools.vault_schema.enabled).toBe(true);
+  });
+
+  it('direct tool call persists — subsequent calls succeed without re-activation', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    // Direct call to hidden tool — should auto-enable
+    const result1 = await callTool(server, 'graph_analysis');
+    expect(result1.isError).not.toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(true);
+
+    // Second call should work without any new activation
+    const result2 = await callTool(server, 'graph_analysis');
+    expect(result2.isError).not.toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(true);
+  });
+
+  it('override mode persists across calls', async () => {
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    controller.setOverride('full');
+    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.vault_schema.enabled).toBe(true);
+
+    // Multiple calls don't reset the override
+    await callTool(server, 'search', { query: 'simple search' });
+    await callTool(server, 'search', { query: 'another search' });
+
+    expect(controller.getOverride()).toBe('full');
+    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.vault_schema.enabled).toBe(true);
+  });
+
+  it('listTools reflects tier state — hidden tools not listed, activated tools listed', async () => {
+    const { server, controller } = createTieredServer();
+
+    // Get tool list via MCP handler
+    const listHandler = (server as any).server._requestHandlers.get('tools/list');
+    const initialList = await listHandler({ method: 'tools/list' }, {});
+    const initialNames = initialList.tools.map((t: { name: string }) => t.name);
+
+    // tier-1 visible
+    expect(initialNames).toContain('search');
+    // tier-2 hidden
+    expect(initialNames).not.toContain('graph_analysis');
+
+    // Activate graph
+    controller.activateCategory('graph', 2);
+
+    const updatedList = await listHandler({ method: 'tools/list' }, {});
+    const updatedNames = updatedList.tools.map((t: { name: string }) => t.name);
+
+    // Now graph_analysis should appear
+    expect(updatedNames).toContain('graph_analysis');
+    // search still there
+    expect(updatedNames).toContain('search');
+  });
+});

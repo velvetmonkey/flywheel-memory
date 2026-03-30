@@ -124,7 +124,17 @@ Under `full` (the default), specialised tools surface progressively as the conve
 Compose bundles for custom configurations:
 
 ```json
-{ "env": { "FLYWHEEL_TOOLS": "agent,graph" } }
+{
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "env": {
+        "FLYWHEEL_TOOLS": "agent,graph"
+      }
+    }
+  }
+}
 ```
 
 [Browse all tools ->](docs/TOOLS.md) | [Preset recipes ->](docs/CONFIGURATION.md)
@@ -135,8 +145,14 @@ Serve more than one vault from a single Flywheel instance with `FLYWHEEL_VAULTS`
 
 ```json
 {
-  "env": {
-    "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work"
+  "mcpServers": {
+    "flywheel": {
+      "command": "npx",
+      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "env": {
+        "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work"
+      }
+    }
   }
 }
 ```

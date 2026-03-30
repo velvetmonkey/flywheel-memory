@@ -13,11 +13,11 @@
 
 **[See It Work](#see-it-work)** · **[Get Started](#get-started)** · **[Why Flywheel](#why-flywheel)** · **[Benchmarks](#benchmarks)** · **[Testing](#testing)** · **[Documentation](#documentation)** · **[License](#license)**
 
-Flywheel is an MCP server for Obsidian vaults. It indexes your markdown locally and exposes tools that help AI clients search notes, write safely, query tasks, follow links, and reuse context across sessions. One server can serve multiple vaults with isolated state and cross-vault search.
+Flywheel is a local-first MCP server for Obsidian vaults. It indexes your markdown and gives AI clients tools to search notes, write safely, query tasks, follow links, and carry context across sessions. One server can serve multiple vaults with isolated state and cross-vault search.
 
-Search results include more than filenames: Flywheel returns frontmatter, backlinks, outlinks, snippets, and section context so the model can often answer from one call instead of opening file after file. Writes can add wikilinks, use structured section edits, and optionally create auditable git commits.
+Search returns a *decision surface* — frontmatter, backlinks, outlinks, snippets, section context, extracted dates, entity bridges, and confidence scores — so the model can reason from one call instead of opening file after file.
 
-Flywheel runs on your machine, against your files, with SQLite state stored locally in the vault. It does not replace Obsidian; it sits alongside it and makes the vault usable through MCP.
+Every write auto-links entities through a deterministic *13-layer scoring algorithm* where every suggestion has a traceable receipt. *Proactive linking* means edits made in Obsidian are scored too — the graph grows whether you're using Claude or not. Links you keep get stronger; links you remove get suppressed. This is the *flywheel effect*: use compounds into structure, structure into intelligence, intelligence into more use.
 
 ## See It Work
 
@@ -152,20 +152,29 @@ If you want a managed cloud knowledge product, Flywheel is probably the wrong fi
 
 ## Why Flywheel
 
-- **Structured search:** Search results include section content, metadata, dates, and graph context, so the model can reason with fewer follow-up reads.
-- **Safer writes:** Mutations operate on markdown structure such as headings, frontmatter, and sections. Entity linking and suggestions are available, but explicit writes remain the default.
-- **Persistent memory:** `brief`, `memory`, and search tools let clients reuse context across sessions without inventing a proprietary storage layer on top of the vault.
-- **Portable graph:** `export_graph` produces [GraphML](https://en.wikipedia.org/wiki/GraphML) that you can inspect in external graph tools such as Gephi or Cytoscape.
-- **Multi-vault:** Serve personal, work, and client vaults from a single server instance. Search spans all vaults by default; other tools target the primary vault unless you specify one. Each vault gets its own index, graph, and config. [Multi-vault setup ->](docs/CONFIGURATION.md#multi-vault)
-- **Auditable behavior:** Core indexing and graph operations run locally. Writes can be committed to git with a single flag, and background behavior is configurable.
+**Decision surface** — Search returns frontmatter, backlinks, outlinks, section context, dates, entity bridges, and confidence in one call. The model reasons across structured metadata instead of opening files.
+
+**Deterministic linking** — A 13-layer scoring algorithm produces a traceable receipt for every suggestion. Same input, same output. See [docs/ALGORITHM.md](docs/ALGORITHM.md) for the full specification.
+
+**Self-improving graph** — Proactive linking scores edits made anywhere — Obsidian, synced files, external tools. Links you keep accumulate weight; links you remove get suppressed. The graph compounds with use.
+
+**Brief + memory** — `brief` assembles a token-budgeted cold-start summary. `memory` persists observations with confidence decay. The AI picks up where it left off.
+
+**Policies** — Repeatable vault workflows defined in YAML — parameterized steps, conditions, variable substitution, optional atomic git commits. [Examples ->](docs/POLICY_EXAMPLES.md)
+
+**Hybrid search** — Keyword search (BM25) finds what you said. Semantic search finds what you meant. Both fused via Reciprocal Rank Fusion, running locally. Nothing leaves your machine.
+
+**Multi-vault** — One server, multiple vaults, isolated state. Search without a vault filter queries all vaults and merges results.
+
+**Auditable writes** — Every mutation is git-committed, conflict-detected (SHA-256 content hash), and policy-governed. One undo reverts any change.
 
 ### Link scoring
 
-Flywheel scores suggested links across multiple signals, including exact matches, aliases, co-occurrence, type information, recent usage, graph structure, user feedback, and semantic similarity. The goal is not to hide the logic but to make it inspectable and tunable. [How scoring works ->](docs/ALGORITHM.md)
+Flywheel's deterministic 13-layer scoring algorithm produces a traceable receipt for every link suggestion — covering exact matches, aliases, co-occurrence, type information, recent usage, graph structure, user feedback, and semantic similarity. The goal is not to hide the logic but to make it inspectable and tunable. [How scoring works ->](docs/ALGORITHM.md)
 
 ### Policies and workflows
 
-Complex vault workflows can be expressed as YAML policies. Structured parsing keeps edits aware of headings, frontmatter, and code blocks, and rollback support keeps multi-step operations predictable. [Architecture ->](docs/ARCHITECTURE.md)
+Vault workflows expressed as YAML policies — parameterized steps, conditions, variable substitution, atomic git commits. [Examples ->](docs/POLICY_EXAMPLES.md) | [Architecture ->](docs/ARCHITECTURE.md)
 
 ### Graph export
 

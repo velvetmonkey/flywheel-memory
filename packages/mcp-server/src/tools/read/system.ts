@@ -30,7 +30,7 @@ import {
 import { initializeEntityIndex, setCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { exportHubScores } from '../../core/shared/hubExport.js';
 import { computeGraphMetrics, recordGraphSnapshot } from '../../core/shared/graphSnapshots.js';
-import { updateSuppressionList } from '../../core/write/wikilinkFeedback.js';
+import { updateSuppressionList, updateStoredNoteLinks } from '../../core/write/wikilinkFeedback.js';
 import { buildTaskCache } from '../../core/read/taskCache.js';
 import { buildRecencyIndex, saveRecencyToStateDb } from '../../core/shared/recency.js';
 import { mineCooccurrences, saveCooccurrenceToStateDb } from '../../core/shared/cooccurrence.js';
@@ -53,6 +53,7 @@ export function registerSystemTools(
     entities_count: z.number().describe('Number of entities (titles + aliases)'),
     fts5_notes: z.number().describe('Number of notes in FTS5 search index'),
     edges_recomputed: z.number().optional().describe('Number of edges with recomputed weights'),
+    note_links_synced: z.number().optional().describe('Number of notes whose note_links were synced'),
     hub_scores: z.number().optional().describe('Number of hub scores exported'),
     graph_snapshot: z.boolean().optional().describe('Whether graph topology snapshot was recorded'),
     suppression_list: z.boolean().optional().describe('Whether wikilink suppression list was updated'),
@@ -71,6 +72,7 @@ export function registerSystemTools(
     entities_count: number;
     fts5_notes: number;
     edges_recomputed?: number;
+    note_links_synced?: number;
     hub_scores?: number;
     graph_snapshot?: boolean;
     suppression_list?: boolean;
@@ -161,6 +163,35 @@ export function registerSystemTools(
           console.error('[Flywheel] FTS5 rebuild failed:', err);
         }
 
+
+        // Step 4b: Sync note_links from rebuilt VaultIndex
+        let noteLinksSynced = 0;
+        if (stateDb) {
+          tracker.start('note_links_sync', {});
+          try {
+            const indexPaths = new Set<string>();
+            for (const [notePath, note] of newIndex.notes) {
+              indexPaths.add(notePath);
+              const targets = new Set(note.outlinks.map(link => link.target.toLowerCase()));
+              updateStoredNoteLinks(stateDb, notePath, targets);
+              noteLinksSynced++;
+            }
+            // Remove stale source rows for notes no longer in the index
+            const dbSourcePaths = stateDb.db.prepare(
+              'SELECT DISTINCT note_path FROM note_links'
+            ).all() as Array<{ note_path: string }>;
+            for (const row of dbSourcePaths) {
+              if (!indexPaths.has(row.note_path)) {
+                stateDb.db.prepare('DELETE FROM note_links WHERE note_path = ?').run(row.note_path);
+              }
+            }
+            tracker.end({ notes: noteLinksSynced });
+            console.error(`[Flywheel] note_links synced for ${noteLinksSynced} notes`);
+          } catch (err) {
+            tracker.end({ error: String(err) });
+            console.error('[Flywheel] note_links sync failed:', err);
+          }
+        }
         // Step 5: Recompute edge weights
         let edgesRecomputed = 0;
         if (stateDb) {
@@ -370,6 +401,7 @@ export function registerSystemTools(
           entities_count: newIndex.entities.size,
           fts5_notes: fts5Notes,
           edges_recomputed: edgesRecomputed,
+          note_links_synced: noteLinksSynced || undefined,
           hub_scores: hubScoresExported || undefined,
           graph_snapshot: graphSnapshotRecorded || undefined,
           suppression_list: suppressionUpdated || undefined,

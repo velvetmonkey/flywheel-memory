@@ -22,6 +22,11 @@ Error recovery and diagnostics for Flywheel Memory.
   - [Git Lock Contention: Symptoms](#symptoms-1)
   - [Git Lock Contention: Recovery](#recovery-1)
   - [Git Lock Contention: Prevention](#prevention-1)
+- [Windows](#windows)
+  - [Server silently fails to start](#server-silently-fails-to-start)
+  - [Edits in Obsidian don't appear in search](#edits-in-obsidian-dont-appear-in-search)
+  - [VAULT_PATH on Windows vs WSL](#vault_path-on-windows-vs-wsl)
+  - [Multi-vault drive letter paths](#multi-vault-drive-letter-paths)
 - [Index Rebuild](#index-rebuild)
   - [When to use `refresh_index`](#when-to-use-refresh_index)
   - [What it does](#what-it-does)
@@ -201,6 +206,66 @@ rm /path/to/your/vault/.git/index.lock
 
 - Avoid force-killing Claude Code or the MCP server during write operations
 - If you see this error frequently, check if another tool (Obsidian git plugin, cron job, etc.) is running git commands on the same vault
+
+---
+
+## Windows
+
+### Server silently fails to start
+
+**Symptom:** MCP client shows "Connection closed" or Flywheel never appears in the server list. No error message.
+
+**Cause:** Windows installs `npx` as `npx.cmd` (a batch script). MCP clients use `spawn()` which cannot execute `.cmd` files directly.
+
+**Fix:** Use `cmd /c` as the command wrapper:
+
+```json
+{
+  "command": "cmd",
+  "args": ["/c", "npx", "-y", "@velvetmonkey/flywheel-memory"],
+  "env": {
+    "VAULT_PATH": "C:\\Users\\you\\obsidian\\MyVault",
+    "FLYWHEEL_WATCH_POLL": "true"
+  }
+}
+```
+
+See [CONFIGURATION.md](CONFIGURATION.md#windows) for the full client config.
+
+### Edits in Obsidian don't appear in search
+
+**Symptom:** Flywheel starts successfully and initial searches work, but notes you edit or create in Obsidian don't appear in search results until you restart the server.
+
+**Cause:** Native Windows file system events (`ReadDirectoryChangesW`) are unreliable. Flywheel's file watcher misses changes.
+
+**Fix:** Add `"FLYWHEEL_WATCH_POLL": "true"` to your MCP config `env` block. This switches to polling mode, which reliably detects changes with a small delay (~10 seconds by default, configurable via `FLYWHEEL_POLL_INTERVAL`).
+
+### VAULT_PATH on Windows vs WSL
+
+| Context | Path format | Example |
+|---------|------------|---------|
+| Native Windows | Windows backslash path | `C:\\Users\\you\\obsidian\\MyVault` |
+| Flywheel inside WSL | Linux path | `/home/you/obsidian/MyVault` |
+| Windows Obsidian opening a WSL vault | `\\wsl$\\...` (for Obsidian/Explorer only — not for `VAULT_PATH`) | `\\wsl$\Ubuntu\home\you\obsidian\MyVault` |
+
+The `\\wsl$` network share lets Windows Obsidian access files on the WSL filesystem, but Flywheel running inside WSL must use the native Linux path. See [SETUP.md > WSL2](SETUP.md#wsl2-keep-your-vault-on-the-linux-filesystem) for the recommended setup.
+
+### Multi-vault drive letter paths
+
+Windows drive letters create ambiguity with the `name:path` separator in `FLYWHEEL_VAULTS`. A single-character vault name followed by `:\` looks like a drive letter:
+
+```
+# Ambiguous — is "C" a vault name or a drive letter?
+FLYWHEEL_VAULTS="C:\Users\you\obsidian\MyVault"
+```
+
+**Fix:** Always use descriptive vault names:
+
+```
+FLYWHEEL_VAULTS="personal:C:\Users\you\obsidian\Personal,work:D:\Users\you\obsidian\Work"
+```
+
+See [CONFIGURATION.md](CONFIGURATION.md#multi-vault) for all multi-vault options.
 
 ---
 

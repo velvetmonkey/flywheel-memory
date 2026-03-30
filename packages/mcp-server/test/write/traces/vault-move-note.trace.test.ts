@@ -1,0 +1,102 @@
+/**
+ * Trace test: vault_move_note
+ *
+ * Verifies that moving a note updates the index, preserves forward links,
+ * and updates referring notes to point to the new path.
+ */
+
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { createWriteTestServer, type WriteTestServerContext } from '../../helpers/createWriteTestServer.js';
+import { connectTestClient, type TestClient } from '../../read/helpers/createTestServer.js';
+import { createTestNote } from '../helpers/testUtils.js';
+import { snap } from './helpers/snapshotTools.js';
+
+describe('vault_move_note trace', () => {
+  let ctx: WriteTestServerContext;
+  let client: TestClient;
+
+  beforeAll(async () => {
+    ctx = await createWriteTestServer();
+    client = connectTestClient(ctx.server);
+
+    // Setup: people/Alice.md with forward link to Alpha
+    await createTestNote(ctx.vaultPath, 'people/Alice.md', [
+      '---',
+      'type: person',
+      '---',
+      '',
+      '# Alice',
+      '',
+      'Working on [[Alpha]] project.',
+    ].join('\n'));
+
+    // Setup: projects/Alpha.md
+    await createTestNote(ctx.vaultPath, 'projects/Alpha.md', [
+      '---',
+      'type: project',
+      '---',
+      '',
+      '# Alpha',
+      '',
+      'A key project.',
+    ].join('\n'));
+
+    // Setup: daily/2026-01-01.md with backlink to Alice
+    await createTestNote(ctx.vaultPath, 'daily/2026-01-01.md', [
+      '---',
+      'type: daily',
+      '---',
+      '',
+      '# 2026-01-01',
+      '',
+      'Met with [[Alice]] today.',
+    ].join('\n'));
+
+    // Build initial index
+    await snap(client, 'refresh_index');
+
+    // Perform the move
+    await snap(client, 'vault_move_note', {
+      oldPath: 'people/Alice.md',
+      newPath: 'team/Alice.md',
+    });
+
+    // Refresh after move
+    await snap(client, 'refresh_index');
+  }, 30_000);
+
+  afterAll(async () => {
+    await ctx?.cleanup();
+  });
+
+  it('findable at new path', async () => {
+    const result = await snap(client, 'search', { query: 'Alice' });
+    const paths = result.results.map((r: any) => r.path);
+    expect(paths).toContain('team/Alice.md');
+  });
+
+  it('referring note resolves to new path', async () => {
+    const result = await snap(client, 'get_forward_links', { path: 'daily/2026-01-01.md' });
+    const aliceLink = result.forward_links.find((l: any) =>
+      l.target === 'Alice' || l.resolved_path?.includes('Alice')
+    );
+    expect(aliceLink).toBeDefined();
+    expect(aliceLink.resolved_path).toContain('team/Alice.md');
+    expect(aliceLink.exists).toBe(true);
+  });
+
+  it('forward links preserved', async () => {
+    const result = await snap(client, 'get_forward_links', { path: 'team/Alice.md' });
+    const alphaLink = result.forward_links.find((l: any) =>
+      l.target === 'Alpha' || l.resolved_path?.includes('Alpha')
+    );
+    expect(alphaLink).toBeDefined();
+    expect(alphaLink.exists).toBe(true);
+  });
+
+  it('old path absent from search', async () => {
+    const result = await snap(client, 'search', { query: 'Alice' });
+    const paths = result.results.map((r: any) => r.path);
+    expect(paths).not.toContain('people/Alice.md');
+  });
+});

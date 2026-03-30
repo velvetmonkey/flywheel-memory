@@ -1,30 +1,42 @@
 /**
- * Test helper to create a configured MCP server with write tools for testing.
- * Wraps createTestServer and adds write tool registration.
+ * Test helper to create a fully-configured MCP server with ALL tools for testing.
+ *
+ * Builds a fresh server using registerAllTools (the production registration path)
+ * rather than manually mirroring individual tool registrations. This eliminates
+ * drift between test and production tool sets.
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { createTestServer, type TestServerContext } from '../read/helpers/createTestServer.js';
-import { createTempVault, cleanupTempVault } from '../write/helpers/testUtils.js';
-import { setWriteStateDb } from '../../src/core/write/wikilinks.js';
-import { openStateDb, deleteStateDb, type StateDb } from '@velvetmonkey/vault-core';
+import { buildVaultIndex, setIndexState } from '../../src/core/read/graph.js';
+import { setFTS5Database } from '../../src/core/read/fts5.js';
+import { setTaskCacheDatabase } from '../../src/core/read/taskCache.js';
+import { setRecencyStateDb } from '../../src/core/shared/recency.js';
+import { setWriteStateDb, setWikilinkConfig } from '../../src/core/write/wikilinks.js';
 import { loadConfig, type FlywheelConfig } from '../../src/core/read/config.js';
+import { createEmptyPipelineActivity } from '../../src/core/read/watch/pipeline.js';
+import { registerAllTools } from '../../src/tool-registry.js';
+import { createTempVault, cleanupTempVault } from '../write/helpers/testUtils.js';
+import { openStateDb, deleteStateDb, type StateDb } from '@velvetmonkey/vault-core';
+import type { VaultIndex } from '../../src/core/read/types.js';
 
-import { registerMutationTools } from '../../src/tools/write/mutations.js';
-import { registerNoteTools } from '../../src/tools/write/notes.js';
-import { registerFrontmatterTools } from '../../src/tools/write/frontmatter.js';
-import { registerTaskTools } from '../../src/tools/write/tasks.js';
-import { registerSystemTools as registerWriteSystemTools } from '../../src/tools/write/system.js';
-import { registerConfigTools } from '../../src/tools/write/config.js';
-
-export interface WriteTestServerContext extends TestServerContext {
-  cleanup: () => Promise<void>;
+export interface WriteTestServerContext {
+  server: McpServer;
+  vaultIndex: VaultIndex;
+  vaultPath: string;
+  stateDb: StateDb;
   flywheelConfig: FlywheelConfig;
+  cleanup: () => Promise<void>;
 }
 
 /**
- * Creates a fully configured MCP server with both read and write tools for testing.
- * If no vaultPath is provided, creates a temporary vault.
+ * Creates a fully configured MCP server with ALL read and write tools for testing.
+ * Uses registerAllTools from tool-registry.ts — the same registration path as production.
+ *
+ * Wires all required singletons:
+ * - FTS5 (search), TaskCache (tasks), Recency (recency index)
+ * - WriteStateDb + WikilinkConfig (wikilink suggestions, enrichment)
+ *
+ * If no vaultPath is provided, creates a temporary vault that is cleaned up automatically.
  */
 export async function createWriteTestServer(
   vaultPath?: string,
@@ -33,43 +45,59 @@ export async function createWriteTestServer(
   const isTemp = !vaultPath;
   const actualVaultPath = vaultPath ?? await createTempVault();
 
-  // Set up read-side via existing helper
-  const readCtx = await createTestServer(actualVaultPath);
+  // Build vault index
+  let currentIndex = await buildVaultIndex(actualVaultPath);
+  setIndexState('ready');
 
-  // Open a dedicated StateDb for write tools
-  let writeStateDb: StateDb;
-  try {
-    writeStateDb = readCtx.stateDb ?? openStateDb(actualVaultPath);
-  } catch {
-    writeStateDb = openStateDb(actualVaultPath);
-  }
+  // Open StateDb
+  const stateDb = openStateDb(actualVaultPath);
 
-  // Inject StateDb into write module
-  setWriteStateDb(writeStateDb);
+  // Load config, merge overrides
+  let flywheelConfig: FlywheelConfig = { ...loadConfig(stateDb), ...config };
 
-  // Load config from StateDb, merge overrides
-  let flywheelConfig: FlywheelConfig = { ...loadConfig(writeStateDb), ...config };
+  // Wire all singletons BEFORE registerAllTools
+  setFTS5Database(stateDb.db);
+  setTaskCacheDatabase(stateDb.db);
+  setRecencyStateDb(stateDb);
+  setWriteStateDb(stateDb);
+  setWikilinkConfig(flywheelConfig);
 
-  // Register write tools
-  registerMutationTools(readCtx.server, () => actualVaultPath, () => flywheelConfig);
-  registerNoteTools(readCtx.server, () => actualVaultPath, () => readCtx.vaultIndex);
-  registerFrontmatterTools(readCtx.server, () => actualVaultPath);
-  registerTaskTools(readCtx.server, () => actualVaultPath);
-  registerWriteSystemTools(readCtx.server, () => actualVaultPath);
-  registerConfigTools(
-    readCtx.server,
-    () => flywheelConfig,
-    (newConfig) => { flywheelConfig = newConfig; },
-    () => writeStateDb,
-  );
+  // Create pipeline activity stub
+  const pipelineActivity = createEmptyPipelineActivity();
+
+  // Build fresh server with ALL tools via production registration path
+  const server = new McpServer({
+    name: 'flywheel-write-test',
+    version: '1.0.0-test',
+  });
+
+  registerAllTools(server, {
+    getVaultPath: () => actualVaultPath,
+    getVaultIndex: () => currentIndex,
+    getStateDb: () => stateDb,
+    getFlywheelConfig: () => flywheelConfig,
+    getWatcherStatus: () => null,
+    getPipelineActivity: () => pipelineActivity,
+    updateVaultIndex: (idx) => { currentIndex = idx; },
+    updateFlywheelConfig: (cfg) => {
+      flywheelConfig = cfg;
+      setWikilinkConfig(cfg);
+    },
+  });
 
   return {
-    ...readCtx,
-    stateDb: writeStateDb,
+    server,
+    vaultIndex: currentIndex,
+    vaultPath: actualVaultPath,
+    stateDb,
     flywheelConfig,
     cleanup: async () => {
+      // Clear module-level singletons to avoid cross-test contamination
       setWriteStateDb(null);
-      try { writeStateDb.close(); } catch { /* already closed */ }
+      setRecencyStateDb(null);
+      setFTS5Database(null as any);
+      setTaskCacheDatabase(null as any);
+      try { stateDb.close(); } catch { /* already closed */ }
       try { deleteStateDb(actualVaultPath); } catch { /* ignore */ }
       if (isTemp) {
         await cleanupTempVault(actualVaultPath);

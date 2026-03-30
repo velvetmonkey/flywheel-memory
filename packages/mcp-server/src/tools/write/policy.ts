@@ -85,7 +85,7 @@ export function registerPolicyTools(
         .describe('Conditions for conditional execution (for "author")'),
       // author, revise
       save: z.boolean().optional()
-        .describe('If true, save to .claude/policies/ (for "author", "revise")'),
+        .describe('If true, save to .flywheel/policies/ (for "author", "revise")'),
       // revise
       changes: z.object({
         description: z.string().optional().describe('New description'),

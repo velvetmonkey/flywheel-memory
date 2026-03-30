@@ -1,11 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const VAULT_MARKERS = ['.obsidian', '.claude'];
+const VAULT_MARKERS = ['.obsidian', '.flywheel', '.claude'];
 
 /**
  * Find vault root by walking up the directory tree.
- * Looks for .obsidian or .claude folder as markers.
+ * Looks for .obsidian, .flywheel, or .claude folder as markers.
  */
 export function findVaultRoot(startPath?: string): string {
   let current = path.resolve(startPath || process.cwd());

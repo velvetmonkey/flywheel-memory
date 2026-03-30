@@ -1,33 +1,20 @@
 /**
  * Policy storage utilities
  *
- * Manages policies stored in .claude/policies/ directory.
+ * Manages policies stored in .flywheel/policies/ directory.
  */
 
 import fs from 'fs/promises';
 import path from 'path';
 import type { PolicyMetadata, PolicyDefinition } from './types.js';
 import { extractPolicyMetadata, parsePolicyString, serializePolicyToYaml } from './parser.js';
-
-/**
- * Get the policies directory path for a vault
- */
-export function getPoliciesDir(vaultPath: string): string {
-  return path.join(vaultPath, '.claude', 'policies');
-}
-
-/**
- * Ensure the policies directory exists
- */
-export async function ensurePoliciesDir(vaultPath: string): Promise<void> {
-  const dir = getPoliciesDir(vaultPath);
-  await fs.mkdir(dir, { recursive: true });
-}
+import { getPoliciesDir, ensurePoliciesDir, ensureMigrated } from './policyPaths.js';
 
 /**
  * List all policies in the vault
  */
 export async function listPolicies(vaultPath: string): Promise<PolicyMetadata[]> {
+  await ensureMigrated(vaultPath);
   const dir = getPoliciesDir(vaultPath);
   const policies: PolicyMetadata[] = [];
 
@@ -70,6 +57,7 @@ export async function listPolicies(vaultPath: string): Promise<PolicyMetadata[]>
  * Check if a policy exists
  */
 export async function policyExists(vaultPath: string, policyName: string): Promise<boolean> {
+  await ensureMigrated(vaultPath);
   const dir = getPoliciesDir(vaultPath);
 
   // Try both extensions
@@ -93,6 +81,7 @@ export async function policyExists(vaultPath: string, policyName: string): Promi
  * Get the full path to a policy file
  */
 export async function getPolicyPath(vaultPath: string, policyName: string): Promise<string | null> {
+  await ensureMigrated(vaultPath);
   const dir = getPoliciesDir(vaultPath);
 
   const yamlPath = path.join(dir, `${policyName}.yaml`);
@@ -119,6 +108,7 @@ export async function savePolicy(
   policy: PolicyDefinition,
   overwrite: boolean = false
 ): Promise<{ success: boolean; path: string; message: string }> {
+  await ensureMigrated(vaultPath);
   const dir = getPoliciesDir(vaultPath);
   await ensurePoliciesDir(vaultPath);
 
@@ -157,6 +147,7 @@ export async function deletePolicy(
   vaultPath: string,
   policyName: string
 ): Promise<{ success: boolean; message: string }> {
+  await ensureMigrated(vaultPath);
   const policyPath = await getPolicyPath(vaultPath, policyName);
 
   if (!policyPath) {
@@ -181,6 +172,7 @@ export async function readPolicyRaw(
   vaultPath: string,
   policyName: string
 ): Promise<{ success: boolean; content?: string; message: string }> {
+  await ensureMigrated(vaultPath);
   const policyPath = await getPolicyPath(vaultPath, policyName);
 
   if (!policyPath) {
@@ -208,6 +200,7 @@ export async function writePolicyRaw(
   content: string,
   overwrite: boolean = false
 ): Promise<{ success: boolean; path: string; message: string }> {
+  await ensureMigrated(vaultPath);
   const dir = getPoliciesDir(vaultPath);
   await ensurePoliciesDir(vaultPath);
 
@@ -337,6 +330,7 @@ export async function exportPolicy(
   vaultPath: string,
   policyName: string
 ): Promise<{ success: boolean; content?: string; message: string }> {
+  await ensureMigrated(vaultPath);
   return readPolicyRaw(vaultPath, policyName);
 }
 
@@ -348,6 +342,7 @@ export async function importPolicy(
   content: string,
   overwrite: boolean = false
 ): Promise<{ success: boolean; policyName?: string; message: string }> {
+  await ensureMigrated(vaultPath);
   // Parse and validate
   const validation = parsePolicyString(content);
 

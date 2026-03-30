@@ -1,5 +1,6 @@
 # Ephemeral state (rebuilt automatically)
-.flywheel/
+.flywheel/*
+!.flywheel/policies/
 
 # Daily notes created during demo/test runs
 daily-notes/

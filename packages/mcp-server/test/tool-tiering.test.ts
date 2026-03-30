@@ -52,8 +52,8 @@ function createTieredServer() {
 }
 
 
-/** Server with ALL declared tools registered as stubs — mirrors the full preset */
-function createFullPresetServer() {
+/** Server with ALL declared tools registered as stubs — mirrors the full preset catalog */
+function createFullPresetServer(options: { startupOverride?: 'auto' | 'full' | 'minimal' } = {}) {
   const server = new McpServer({ name: 'full-preset-test', version: '0.0.0' });
   const controller = applyToolGating(
     server,
@@ -81,6 +81,10 @@ function createFullPresetServer() {
     }
   }
 
+  if (options.startupOverride) {
+    controller.setOverride(options.startupOverride);
+  }
+
   controller.finalizeRegistration();
   return { server, controller };
 }
@@ -96,9 +100,14 @@ async function callTool(server: McpServer, name: string, args: Record<string, un
 
 /** Helper to list tool names via the MCP tools/list handler */
 async function listToolNames(server: McpServer): Promise<Set<string>> {
-  const handler = (server as any).server._requestHandlers.get('tools/list');
-  const result = await handler({ method: 'tools/list' }, {});
+  const result = await listTools(server);
   return new Set(result.tools.map((t: { name: string }) => t.name));
+}
+
+/** Helper to list raw tool payloads via the MCP tools/list handler */
+async function listTools(server: McpServer): Promise<{ tools: Array<{ name: string; inputSchema: { type?: string } }> }> {
+  const handler = (server as any).server._requestHandlers.get('tools/list');
+  return handler({ method: 'tools/list' }, {});
 }
 
 describe('tool tiering', () => {
@@ -666,7 +675,7 @@ describe('full preset reachability', () => {
     expect(controller.registered).toBe(Object.keys(TOOL_CATEGORY).length);
   });
 
-  it('tiered mode initially lists only tier-1 tools', async () => {
+  it('pure tiered/auto mode initially lists only tier-1 tools', async () => {
     const { server } = createFullPresetServer();
     const names = await listToolNames(server);
 
@@ -729,6 +738,59 @@ describe('full preset reachability', () => {
       expect(result.isError, `${toolName} should not error`).not.toBe(true);
       expect(result.content[0].text, `${toolName} response mismatch`).toBe(`${toolName} ok`);
     }
+  });
+
+  it('startup full override exposes the full catalog immediately', async () => {
+    const { server } = createFullPresetServer({ startupOverride: 'full' });
+    const names = await listToolNames(server);
+
+    expect(names).toEqual(new Set(Object.keys(TOOL_CATEGORY)));
+  });
+});
+
+// ============================================================================
+// Non-Claude client simulation (listTools-only discovery)
+// ============================================================================
+
+describe('non-Claude client simulation (listTools-only discovery)', () => {
+  it('flywheel_doctor is absent from listTools() in tiered/auto mode', async () => {
+    const { server } = createFullPresetServer();
+    const names = await listToolNames(server);
+
+    expect(names).not.toContain('flywheel_doctor');
+  });
+
+  it('flywheel_doctor appears in listTools() after setOverride(\'full\')', async () => {
+    const { server, controller } = createFullPresetServer();
+
+    controller.setOverride('full');
+
+    const names = await listToolNames(server);
+    expect(names).toContain('flywheel_doctor');
+  });
+
+  it('lists exactly 18 tools in tiered/auto mode', async () => {
+    const { server } = createFullPresetServer();
+    const names = await listToolNames(server);
+
+    expect(names.size).toBe(18);
+  });
+
+  it('lists all 77 tools after setOverride(\'full\')', async () => {
+    const { server, controller } = createFullPresetServer();
+
+    controller.setOverride('full');
+
+    const names = await listToolNames(server);
+    expect(names.size).toBe(Object.keys(TOOL_CATEGORY).length);
+  });
+
+  it('full preset startup exposes all 77 tools to listTools()-only clients', async () => {
+    const { server } = createFullPresetServer({ startupOverride: 'full' });
+    const names = await listToolNames(server);
+
+    expect(names).toContain('flywheel_doctor');
+    expect(names.size).toBe(Object.keys(TOOL_CATEGORY).length);
   });
 });
 
@@ -830,6 +892,117 @@ describe('onTierStateChange callback', () => {
     await callTool(server, 'search', { query: 'show backlinks' });
 
     expect(controller.activeCategories.has('graph')).toBe(true);
+  });
+});
+
+// ============================================================================
+// T18 — session behaviour (progressive disclosure)
+// ============================================================================
+
+describe('T18 — session behaviour (progressive disclosure)', () => {
+  it('keeps activated graph tools visible across unrelated follow-up searches', async () => {
+    const { server } = createTieredServer();
+
+    await callTool(server, 'search', { query: 'show me backlinks' });
+    let names = await listToolNames(server);
+    expect(names).toContain('graph_analysis');
+    expect(names).toContain('search');
+
+    await callTool(server, 'search', { query: 'cooking recipes' });
+    names = await listToolNames(server);
+    expect(names).toContain('graph_analysis');
+  });
+
+  it('accumulates graph, schema, and wikilinks tools across sequential activations', async () => {
+    const { server } = createTieredServer();
+
+    await callTool(server, 'search', { query: 'backlinks' });
+    await callTool(server, 'search', { query: 'schema' });
+    await callTool(server, 'search', { query: 'wikilinks' });
+
+    const names = await listToolNames(server);
+    expect(names).toContain('graph_analysis');
+    expect(names).toContain('vault_schema');
+    expect(names).toContain('suggest_wikilinks');
+  });
+
+  it('listTools() count grows monotonically as categories activate', async () => {
+    const { server } = createTieredServer();
+
+    const counts: number[] = [];
+
+    counts.push((await listToolNames(server)).size);
+    await callTool(server, 'search', { query: 'backlinks' });
+    counts.push((await listToolNames(server)).size);
+    await callTool(server, 'search', { query: 'schema' });
+    counts.push((await listToolNames(server)).size);
+    await callTool(server, 'search', { query: 'wikilinks' });
+    counts.push((await listToolNames(server)).size);
+
+    expect(counts).toEqual([
+      counts[0],
+      counts[0] + 1,
+      counts[0] + 2,
+      counts[0] + 3,
+    ]);
+  });
+
+  it('generateInstructions() and listTools() stay aligned after activation', async () => {
+    const { server, controller } = createTieredServer();
+
+    await callTool(server, 'search', { query: 'backlinks and wikilinks' });
+
+    const instructions = generateInstructions(new Set(ALL_CATEGORIES), null, controller.activeCategories);
+    const names = await listToolNames(server);
+
+    expect(instructions).toContain('## Graph');
+    expect(instructions).toContain('## Wikilinks');
+    expect(instructions).not.toContain('## Schema');
+    expect(names).toContain('graph_analysis');
+    expect(names).toContain('suggest_wikilinks');
+    expect(names).not.toContain('vault_schema');
+  });
+});
+
+// ============================================================================
+// MCP protocol-level listTools tests
+// ============================================================================
+
+describe('MCP protocol-level tools/list behaviour', () => {
+  it('all visible tools expose object JSON Schema in full mode', async () => {
+    const { server } = createFullPresetServer({ startupOverride: 'full' });
+    const result = await listTools(server);
+
+    expect(result.tools).toHaveLength(Object.keys(TOOL_CATEGORY).length);
+    for (const tool of result.tools) {
+      expect(tool.inputSchema?.type, `${tool.name} should expose object schema`).toBe('object');
+    }
+  });
+
+  it('tools/list contains no duplicate tool names', async () => {
+    const { server } = createFullPresetServer({ startupOverride: 'full' });
+    const result = await listTools(server);
+    const names = result.tools.map(tool => tool.name);
+
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it('tools/list payload stays within a reasonable size budget', async () => {
+    const { server } = createFullPresetServer({ startupOverride: 'full' });
+    const result = await listTools(server);
+    const payloadSize = JSON.stringify(result).length;
+
+    expect(payloadSize).toBeGreaterThan(0);
+    expect(payloadSize).toBeLessThan(100_000);
+  });
+
+  it('tools/list ordering is deterministic across repeated calls', async () => {
+    const { server } = createFullPresetServer({ startupOverride: 'full' });
+
+    const first = await listTools(server);
+    const second = await listTools(server);
+
+    expect(second.tools.map(tool => tool.name)).toEqual(first.tools.map(tool => tool.name));
   });
 });
 

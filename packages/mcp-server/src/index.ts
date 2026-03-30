@@ -196,7 +196,7 @@ export function getWatcherStatus(): WatcherStatus | null {
 const toolConfig = resolveToolConfig();
 const enabledCategories = toolConfig.categories;
 const toolTierMode: ToolTierMode = toolConfig.isFullToolset ? 'tiered' : 'off';
-let runtimeToolTierOverride: ToolTierOverride = 'auto';
+let runtimeToolTierOverride: ToolTierOverride = toolConfig.preset === 'full' ? 'full' : 'auto';
 let runtimeActiveCategoryTiers = new Map<ToolCategory, ToolTier>();
 let primaryToolTierController: ToolTierController | null = null;
 
@@ -337,6 +337,7 @@ const _gatingResult = applyToolGating(
   handleTierStateChange,
 );
 registerAllTools(server, _registryCtx);
+_gatingResult.setOverride(runtimeToolTierOverride);
 _gatingResult.finalizeRegistration();
 primaryToolTierController = _gatingResult;
 syncRuntimeTierState(_gatingResult);

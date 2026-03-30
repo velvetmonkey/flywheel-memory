@@ -607,7 +607,7 @@ export async function semanticSearch(
     throw new Error('Embeddings database not initialized. Call setEmbeddingsDatabase() first.');
   }
 
-  const queryEmbedding = await embedText(query);
+  const queryEmbedding = await embedTextCached(query);
 
   // Load all embeddings
   const rows = db.prepare('SELECT path, embedding FROM note_embeddings').all() as EmbeddingRow[];

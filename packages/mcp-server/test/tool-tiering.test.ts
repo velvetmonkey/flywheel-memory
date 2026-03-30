@@ -114,3 +114,38 @@ describe('tool tiering', () => {
     expect(instructions).not.toContain('Ask about graph connections, backlinks, hubs, clusters, or paths');
   });
 });
+
+// ============================================================================
+// T14 Routing Mode Integration Tests
+// ============================================================================
+
+describe('tool routing mode integration', () => {
+  it('pattern mode matches current T13 behavior (regex only)', () => {
+    process.env.FLYWHEEL_TOOL_ROUTING = 'pattern';
+    const { server, controller } = createTieredServer();
+    const tools = (server as any)._registeredTools;
+
+    // Register a search tool that returns a hybrid result
+    // In pattern mode, regex activation should still work
+    expect(tools.search.enabled).toBe(true);
+    expect(tools.graph_analysis.enabled).toBe(false);
+
+    // Regex-based activation should still enable categories
+    controller.activateCategory('graph', 2);
+    expect(tools.graph_analysis.enabled).toBe(true);
+
+    delete process.env.FLYWHEEL_TOOL_ROUTING;
+  });
+
+  it('FLYWHEEL_TOOL_ROUTING defaults to hybrid when tiered', async () => {
+    delete process.env.FLYWHEEL_TOOL_ROUTING;
+    const { getToolRoutingMode } = await import('../src/core/read/toolRouting.js');
+    expect(getToolRoutingMode('tiered')).toBe('hybrid');
+  });
+
+  it('FLYWHEEL_TOOL_ROUTING defaults to pattern when not tiered', async () => {
+    delete process.env.FLYWHEEL_TOOL_ROUTING;
+    const { getToolRoutingMode } = await import('../src/core/read/toolRouting.js');
+    expect(getToolRoutingMode('off')).toBe('pattern');
+  });
+});

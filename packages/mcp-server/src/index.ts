@@ -83,6 +83,7 @@ import {
   updateTaskCacheForFile,
   removeTaskCacheForFile,
 } from './core/read/taskCache.js';
+import { initToolRouting } from './core/read/toolRouting.js';
 
 // Vault-core shared imports
 import { openStateDb, scanVaultEntities, getAllEntitiesFromDb, loadContentHashes, saveContentHashBatch, renameContentHash, checkDbIntegrity, safeBackupAsync, preserveCorruptedDb, deleteStateDbFiles, attemptSalvage, type StateDb } from '@velvetmonkey/vault-core';
@@ -652,7 +653,10 @@ async function main() {
     activateVault(ctx);
   }
 
-  // ── Phase 2: Connect transports BEFORE heavy work ──
+  // ── Phase 1b: Load tool routing manifest (non-blocking) ──
+  await initToolRouting();
+
+    // ── Phase 2: Connect transports BEFORE heavy work ──
   // Tools use lazy getters — they'll return "StateDb not available" until boot
   // completes, but the MCP handshake completes in <1s instead of 60s+.
   const transportMode = (process.env.FLYWHEEL_TRANSPORT ?? 'stdio').toLowerCase();

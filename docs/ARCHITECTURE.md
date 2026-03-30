@@ -2,7 +2,7 @@
 
 [← Back to docs](README.md)
 
-Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes 75 tools for search, graph queries, and mutations.
+Flywheel Memory is a single MCP server that gives AI agents full read/write access to Obsidian vaults. It builds an in-memory index of every note, then exposes tools for search, graph queries, and mutations.
 
 - [Source Structure](#source-structure)
 - [Startup Flow](#startup-flow)
@@ -42,6 +42,13 @@ Flywheel Memory is a single MCP server that gives AI agents full read/write acce
   - [What's recorded](#whats-recorded)
   - [How to inspect](#how-to-inspect)
   - [Network access model](#network-access-model)
+- [Tool Selection & Routing](#tool-selection--routing)
+  - [Tiered Visibility](#tiered-visibility)
+  - [Pattern Routing](#pattern-routing)
+  - [Semantic Routing](#semantic-routing)
+  - [Routing Modes](#routing-modes)
+  - [Tool Invocation Tracking](#tool-invocation-tracking)
+  - [Feedback Loop](#feedback-loop)
 - [Module-Level State Isolation](#module-level-state-isolation)
   - [The Rule](#the-rule)
   - [Modules following this pattern](#modules-following-this-pattern)
@@ -57,9 +64,12 @@ packages/
 ├── mcp-server/                  # The MCP server (published as @velvetmonkey/flywheel-memory)
 │   └── src/
 │       ├── index.ts             # Entry point, tool preset gating, startup
+│       ├── config.ts            # Tool categories, tiers, presets, instruction generation
+│       ├── tool-registry.ts     # Tool gating, tiering, activation tracking
 │       ├── vault-registry.ts    # Multi-vault context management (VaultRegistry, parseVaultConfig)
 │       ├── vault-scope.ts       # Per-request vault isolation via AsyncLocalStorage
 │       ├── tools/
+│       │   ├── toolCatalog.ts   # Tool metadata collection for embedding manifest
 │       │   ├── read/            # Read tool registrations
 │       │   │   ├── query.ts     # search (unified: metadata + content + entities)
 │       │   │   ├── graph.ts     # get_backlinks (+ bidirectional), get_forward_links
@@ -84,59 +94,63 @@ packages/
 │       │       ├── system.ts    # vault_undo_last_mutation
 │       │       ├── policy.ts    # policy (unified: list, validate, preview, execute, author, revise)
 │       │       ├── memory.ts    # memory (agent working memory)
-│       │       └── config.ts    # flywheel_config (runtime configuration)
-│       └── core/
-│           ├── read/            # Read-side core logic
-│           │   ├── graph.ts     # Index building, backlinks, hubs, orphans, path finding
-│           │   ├── vault.ts     # Vault scanner (find all .md files)
-│           │   ├── parser.ts    # Note parser (frontmatter, outlinks, tags)
-│           │   ├── fts5.ts      # FTS5 full-text search
-│           │   ├── embeddings.ts # Embedding generation (all-MiniLM-L6-v2)
-│           │   ├── similarity.ts # Semantic similarity search
-│           │   ├── semantic.ts  # Hybrid search (BM25 + semantic via RRF)
-│           │   ├── config.ts    # Config inference and storage
-│           │   ├── types.ts     # VaultIndex, VaultNote, Backlink types
-│           │   ├── constants.ts # MAX_LIMIT and other constants
-│           │   ├── indexGuard.ts # Require-index-ready guard
-│           │   └── watch/       # File watcher subsystem
-│           │       ├── index.ts          # Vault watcher factory
-│           │       ├── eventQueue.ts     # Per-path debouncing
-│           │       ├── batchProcessor.ts # Event coalescing
-│           │       ├── incrementalIndex.ts # Incremental index updates
-│           │       ├── pathFilter.ts     # Path filtering (.obsidian, .git, etc.)
-│           │       └── selfHeal.ts       # Error recovery
-│           ├── write/           # Write-side core logic
-│           │   ├── writer.ts    # File read/write, section finding, content insertion
-│           │   ├── wikilinks.ts # Auto-wikilink application on writes
-│           │   ├── git.ts       # Git commit, undo, diff
-│           │   ├── validator.ts # Input validation and normalization
-│           │   ├── hints.ts     # Mutation hints
-│           │   ├── mutation-helpers.ts # Shared helpers (withVaultFile, error handling)
-│           │   └── policy/      # Policy execution engine
-│           │       ├── executor.ts  # Policy runner
-│           │       ├── parser.ts    # YAML policy parser
-│           │       ├── schema.ts    # Policy schema validation
-│           │       ├── conditions.ts # Conditional execution
-│           │       ├── template.ts  # Variable templating
-│           │       ├── storage.ts   # Policy file storage
-│           │       └── types.ts     # Policy types
-│           │   ├── memory.ts    # Agent memory lifecycle (store, search, brief)
-│           │   ├── corrections.ts # Pending correction processing
-│           │   ├── edgeWeights.ts # Edge weight computation
-│           │   └── wikilinkFeedback.ts # Wikilink feedback tracking
-│           └── shared/          # Shared between read/write
-│               ├── recency.ts   # Entity recency tracking
-│               ├── cooccurrence.ts # Co-occurrence analysis
-│               ├── hubExport.ts # Hub score export to StateDb
-│               ├── stemmer.ts   # Porter stemming
-│               ├── edgeWeights.ts # Edge weight scoring and persistence
-│               ├── taskCache.ts # Task cache for fast queries
-│               ├── toolTracking.ts # Tool invocation tracking
-│               ├── indexActivity.ts # Index rebuild activity logging
-│               ├── graphSnapshots.ts # Graph topology snapshots
-│               ├── retrievalCooccurrence.ts # Retrieval co-occurrence scoring (Adamic-Adar)
-│               ├── levenshtein.ts # Levenshtein distance for fuzzy matching
-│               └── metrics.ts    # Vault growth metrics
+│       │       ├── config.ts    # flywheel_config (runtime configuration)
+│       │       └── toolSelectionFeedback.ts # tool_selection_feedback
+│       ├── core/
+│       │   ├── read/            # Read-side core logic
+│       │   │   ├── graph.ts     # Index building, backlinks, hubs, orphans, path finding
+│       │   │   ├── vault.ts     # Vault scanner (find all .md files)
+│       │   │   ├── parser.ts    # Note parser (frontmatter, outlinks, tags)
+│       │   │   ├── fts5.ts      # FTS5 full-text search
+│       │   │   ├── embeddings.ts # Embedding generation (all-MiniLM-L6-v2)
+│       │   │   ├── similarity.ts # Semantic similarity search
+│       │   │   ├── semantic.ts  # Hybrid search (BM25 + semantic via RRF)
+│       │   │   ├── toolRouting.ts # Semantic tool routing, manifest loading
+│       │   │   ├── config.ts    # Config inference and storage
+│       │   │   ├── types.ts     # VaultIndex, VaultNote, Backlink types
+│       │   │   ├── constants.ts # MAX_LIMIT and other constants
+│       │   │   ├── indexGuard.ts # Require-index-ready guard
+│       │   │   └── watch/       # File watcher subsystem
+│       │   │       ├── index.ts          # Vault watcher factory
+│       │   │       ├── eventQueue.ts     # Per-path debouncing
+│       │   │       ├── batchProcessor.ts # Event coalescing
+│       │   │       ├── incrementalIndex.ts # Incremental index updates
+│       │   │       ├── pathFilter.ts     # Path filtering (.obsidian, .git, etc.)
+│       │   │       └── selfHeal.ts       # Error recovery
+│       │   ├── write/           # Write-side core logic
+│       │   │   ├── writer.ts    # File read/write, section finding, content insertion
+│       │   │   ├── wikilinks.ts # Auto-wikilink application on writes
+│       │   │   ├── git.ts       # Git commit, undo, diff
+│       │   │   ├── validator.ts # Input validation and normalization
+│       │   │   ├── hints.ts     # Mutation hints
+│       │   │   ├── mutation-helpers.ts # Shared helpers (withVaultFile, error handling)
+│       │   │   └── policy/      # Policy execution engine
+│       │   │       ├── executor.ts  # Policy runner
+│       │   │       ├── parser.ts    # YAML policy parser
+│       │   │       ├── schema.ts    # Policy schema validation
+│       │   │       ├── conditions.ts # Conditional execution
+│       │   │       ├── template.ts  # Variable templating
+│       │   │       ├── storage.ts   # Policy file storage
+│       │   │       └── types.ts     # Policy types
+│       │   │   ├── memory.ts    # Agent memory lifecycle (store, search, brief)
+│       │   │   ├── corrections.ts # Pending correction processing
+│       │   │   ├── edgeWeights.ts # Edge weight computation
+│       │   │   └── wikilinkFeedback.ts # Wikilink feedback tracking
+│       │   └── shared/          # Shared between read/write
+│       │       ├── recency.ts   # Entity recency tracking
+│       │       ├── cooccurrence.ts # Co-occurrence analysis
+│       │       ├── hubExport.ts # Hub score export to StateDb
+│       │       ├── stemmer.ts   # Porter stemming
+│       │       ├── edgeWeights.ts # Edge weight scoring and persistence
+│       │       ├── taskCache.ts # Task cache for fast queries
+│       │       ├── toolTracking.ts # Tool invocation and selection feedback tracking
+│       │       ├── indexActivity.ts # Index rebuild activity logging
+│       │       ├── graphSnapshots.ts # Graph topology snapshots
+│       │       ├── retrievalCooccurrence.ts # Retrieval co-occurrence scoring (Adamic-Adar)
+│       │       ├── levenshtein.ts # Levenshtein distance for fuzzy matching
+│       │       └── metrics.ts    # Vault growth metrics
+│       └── generated/
+│           └── tool-embeddings.generated.ts  # Pre-computed tool embedding manifest (checked in)
 ├── core/                        # Shared library (@velvetmonkey/vault-core)
 │   └── src/
 │       ├── sqlite.ts            # SQLite StateDb (consolidated state)
@@ -440,6 +454,12 @@ New tables are added directly to `SCHEMA_SQL` with `CREATE TABLE IF NOT EXISTS`,
 | v28 | Added `content_hashes` table (write conflict detection) |
 | v29 | Added `idx_wl_feedback_note_path` index on `wikilink_feedback(note_path)` for temporal analysis queries |
 | v30 | Added `response_tokens`/`baseline_tokens` on `tool_invocations` (token economics) + `retrieval_cooccurrence` table |
+| v31 | Added `proactive_queue` table (deferred proactive linking) |
+| v32 | Recreated `entity_changes` with rowid PK (drops composite PK that caused UNIQUE constraint crashes) |
+| v33 | Added `performance_benchmarks` table (longitudinal tracking) |
+| v34 | Rebuilt `entities_fts` as contentless FTS5 (fixes aliases column mismatch) |
+| v35 | Added `matched_term` column on `wikilink_feedback` and `wikilink_applications` (per-alias feedback tracking) |
+| v36 | Added `tool_selection_feedback` table + `query_context` column on `tool_invocations` |
 
 ---
 
@@ -525,6 +545,73 @@ Core indexing, search, graph analysis, and all write operations run with **zero 
 This is enforced by CI tests in `test/write/security/sovereignty.test.ts` that scan all production source files for network call patterns. Any new network call site must be added to an explicit allowlist with documentation.
 
 No telemetry. No analytics. No phone-home. No remote git operations.
+
+---
+
+## Tool Selection & Routing
+
+When `FLYWHEEL_TOOLS=full` (the default), tools are progressively disclosed across three tiers rather than registered all at once. The `tool-registry.ts` module manages this via `applyToolGating()`, which monkey-patches `server.tool()` to track registrations and control visibility through a `ToolTierController`.
+
+### Tiered Visibility
+
+| Tier | Visibility | Categories |
+|------|-----------|------------|
+| 1 | Always visible | search, read, write, tasks, memory |
+| 2 | Context-triggered | graph, wikilinks, corrections, temporal, diagnostics |
+| 3 | On-demand | schema, note-ops, deep diagnostics |
+
+Under `agent`, all tools in the preset are always visible with no tier gating.
+
+### Pattern Routing
+
+Seven `ACTIVATION_PATTERNS` in `tool-registry.ts` match query text from `search` and `brief` calls:
+
+- **Tier 2:** graph (backlinks, connections, hubs, paths), wikilinks (stubs, unlinked mentions), corrections (wrong links, mistakes), temporal (history, evolution, stale notes), diagnostics (health, config, pipeline)
+- **Tier 3:** schema (frontmatter, conventions, rename field), note-ops (delete note, move note, merge)
+
+### Semantic Routing
+
+A pre-generated embedding manifest (`generated/tool-embeddings.generated.ts`) contains 384-dimensional vectors for each tool description, computed with `Xenova/all-MiniLM-L6-v2`. At query time, `toolRouting.ts` embeds the query and scores it against the manifest:
+
+- Minimum query length: 2 tokens and 12 non-space characters
+- Cosine similarity threshold: 0.30
+- Tier-1 tools are skipped (always visible)
+- Collapses to one activation per category (highest-scoring tool's tier)
+- Returns at most 3 category/tier pairs
+
+Semantic routing fires only on hybrid search calls (requires `init_semantic`).
+
+### Routing Modes
+
+Controlled by `FLYWHEEL_TOOL_ROUTING`:
+
+| Mode | Behaviour |
+|------|-----------|
+| `pattern` | Regex activation only |
+| `hybrid` | Pattern + semantic signals combined (default when `full`) |
+| `semantic` | Semantic-only for hybrid search; regex fallback elsewhere |
+
+Both signal types are unioned. Per category, the highest tier from either signal wins.
+
+### Tool Invocation Tracking
+
+Every tool call is recorded by `recordToolInvocation()` in `core/shared/toolTracking.ts`:
+
+- Timestamp, tool name, session ID, affected note paths, duration, success/failure
+- `query_context`: extracted from a strict parameter allowlist (`query`, `focus`, `analysis`, `entity`, `heading`, `field`, `date`, `concept`), max 500 characters
+- Token estimates: `response_tokens` (from response size) and `baseline_tokens` (from file sizes)
+
+Invocations are stored in the `tool_invocations` table and purged after 90 days.
+
+### Feedback Loop
+
+The `tool_selection_feedback` table (schema v36) stores explicit feedback on whether the right tool was selected:
+
+- `tool_invocation_id` links to the original call (hydrates tool name, query context, session)
+- `correct` (boolean) drives accuracy scoring
+- `source`: `explicit` (user feedback) or `heuristic` (automated advisory, `correct = NULL`)
+
+Accuracy is computed as a Beta-Binomial posterior with prior α=4, β=1: `posterior = (α + correct_count) / (α + β + total_count)`. Tools need at least 15 observations before scores are reported.
 
 ---
 

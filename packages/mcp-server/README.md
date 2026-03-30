@@ -7,7 +7,7 @@
 | Doc | What |
 |-----|------|
 | [README](../../README.md) | Overview, demos, get started |
-| [TOOLS.md](../../docs/TOOLS.md) | All 75 tools |
+| [TOOLS.md](../../docs/TOOLS.md) | All tools |
 | [ALGORITHM.md](../../docs/ALGORITHM.md) | Link scoring |
 | [CONFIGURATION.md](../../docs/CONFIGURATION.md) | Env vars, presets |
 | [SETUP.md](../../docs/SETUP.md) | Client setup |

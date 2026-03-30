@@ -1,8 +1,9 @@
 /**
- * Tool Count Verification Tests
+ * Tool Registration & Documentation Contract Tests
  *
- * Ensures documentation tool counts match actual implementation.
- * Prevents documentation from becoming stale.
+ * Source invariants: tool registrations match TOOL_CATEGORY, TOOL_TIER,
+ * and PRESETS. Documentation wording contracts: user-facing docs describe
+ * presets and routing correctly and contain no stale count-based language.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -13,6 +14,7 @@ import { VALID_CONFIG_KEYS } from '../../../src/tools/write/config.js';
 
 const TOOLS_DIR = path.join(__dirname, '../../../src/tools');
 const DOCS_DIR = path.join(__dirname, '../../../../../docs');
+const ROOT_DIR = path.join(__dirname, '../../../../..');
 const CONFIG_PATH = path.join(__dirname, '../../../src/config.ts');
 
 /**
@@ -54,198 +56,139 @@ async function countToolsInSource(): Promise<{
 }
 
 /**
- * Extract claimed tool count from documentation
+ * Strip fenced code blocks from markdown content for prose-only scanning.
  */
-async function extractDocToolCount(docPath: string): Promise<number | null> {
-  try {
-    const content = await fs.readFile(docPath, 'utf-8');
-
-    // Look for patterns like "11 tools" or "51 query tools"
-    const matches = content.match(/(\d+)\s+(?:mutation\s+)?tools?/gi);
-    if (matches) {
-      // Return the first match's number
-      const firstMatch = matches[0].match(/(\d+)/);
-      return firstMatch ? parseInt(firstMatch[1], 10) : null;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
+function stripFencedCode(content: string): string {
+  return content.replace(/```[\s\S]*?```/g, '');
 }
 
-describe('Tool Count Verification', () => {
-  describe('flywheel-memory tools', () => {
-    it('should have the expected number of mutation tools', async () => {
-      const { total, byFile, toolNames } = await countToolsInSource();
+/**
+ * Read a doc file relative to the repo root.
+ */
+async function readDoc(relativePath: string): Promise<string> {
+  return fs.readFile(path.join(ROOT_DIR, relativePath), 'utf-8');
+}
 
-      // Log for debugging
-      console.log('Tools by file:', byFile);
-      console.log('Total tools:', total);
-      console.log('Tool names:', toolNames);
+// Files subject to stale-copy scanning (excludes CLAUDE.md and docs/TESTING.md)
+const SCANNED_DOCS = [
+  'README.md',
+  'docs/TOOLS.md',
+  'docs/CONFIGURATION.md',
+  'docs/ARCHITECTURE.md',
+  'docs/SETUP.md',
+  'docs/PROVE-IT.md',
+  'docs/VISION.md',
+  'docs/OPENCLAW.md',
+  'docs/TROUBLESHOOTING.md',
+  'docs/SHARING.md',
+  'docs/README.md',
+  'packages/mcp-server/README.md',
+];
 
-      // The exact count depends on implementation
-      // Core mutation tools: add, remove, replace (3)
-      // Task tools: toggle, add (2)
-      // Frontmatter tools: update, add (2)
-      // Note tools: create, delete (2)
-      // System tools: list_sections, undo (2)
-      // Move tools: move, rename (2)
-      // Policy tools: 9
+// =============================================================================
+// Tool Registration Verification
+// =============================================================================
 
-      // Total should be around 22 based on grep results
-      expect(total).toBeGreaterThanOrEqual(10);
-    });
-
-    it('should have all core mutation tools registered', async () => {
-      const { toolNames } = await countToolsInSource();
-      const toolSet = new Set(toolNames);
-
-      // Core mutation tools that should always exist
-      const coreMutationTools = [
-        'vault_add_to_section',
-        'vault_remove_from_section',
-        'vault_replace_in_section',
-      ];
-
-      for (const tool of coreMutationTools) {
-        expect(toolSet.has(tool), `Missing core tool: ${tool}`).toBe(true);
-      }
-    });
-
-    it('should have all task tools registered', async () => {
-      const { toolNames } = await countToolsInSource();
-      const toolSet = new Set(toolNames);
-
-      const taskTools = [
-        'vault_toggle_task',
-        'vault_add_task',
-      ];
-
-      for (const tool of taskTools) {
-        expect(toolSet.has(tool), `Missing task tool: ${tool}`).toBe(true);
-      }
-    });
-
-    it('should have all frontmatter tools registered', async () => {
-      const { toolNames } = await countToolsInSource();
-      const toolSet = new Set(toolNames);
-
-      const frontmatterTools = [
-        'vault_update_frontmatter',
-      ];
-
-      for (const tool of frontmatterTools) {
-        expect(toolSet.has(tool), `Missing frontmatter tool: ${tool}`).toBe(true);
-      }
-    });
-
-    it('should have all note management tools registered', async () => {
-      const { toolNames } = await countToolsInSource();
-      const toolSet = new Set(toolNames);
-
-      const noteTools = [
-        'vault_create_note',
-        'vault_delete_note',
-      ];
-
-      for (const tool of noteTools) {
-        expect(toolSet.has(tool), `Missing note tool: ${tool}`).toBe(true);
-      }
-    });
-
-    it('should have all system tools registered', async () => {
-      const { toolNames } = await countToolsInSource();
-      const toolSet = new Set(toolNames);
-
-      const systemTools = [
-        'vault_undo_last_mutation',
-      ];
-
-      for (const tool of systemTools) {
-        expect(toolSet.has(tool), `Missing system tool: ${tool}`).toBe(true);
-      }
-    });
+describe('Tool Registration Verification', () => {
+  it('should have at least 10 mutation tools', async () => {
+    const { total } = await countToolsInSource();
+    expect(total).toBeGreaterThanOrEqual(10);
   });
 
-  describe('documentation accuracy', () => {
-    it('should have key tools documented in TOOLS.md', async () => {
-      const toolsPath = path.join(DOCS_DIR, 'TOOLS.md');
-      const content = await fs.readFile(toolsPath, 'utf-8');
+  it('should have all core mutation tools registered', async () => {
+    const { toolNames } = await countToolsInSource();
+    const toolSet = new Set(toolNames);
 
-      // TOOLS.md should mention key tools
-      expect(content).toContain('vault_add_to_section');
-      expect(content).toContain('vault_toggle_task');
-    });
-
-    it('should document config keys in CONFIGURATION.md', async () => {
-      const configPath = path.join(DOCS_DIR, 'CONFIGURATION.md');
-      const content = await fs.readFile(configPath, 'utf-8');
-
-      // All settable config keys should be documented
-      expect(content).toContain('wikilink_strictness');
-      expect(content).toContain('exclude_entities');
-      expect(content).toContain('exclude_entity_folders');
-      expect(content).toContain('implicit_detection');
-
-      // paths/templates should be documented as read-only
-      expect(content).toContain('read-only');
-    });
+    for (const tool of [
+      'vault_add_to_section',
+      'vault_remove_from_section',
+      'vault_replace_in_section',
+    ]) {
+      expect(toolSet.has(tool), `Missing core tool: ${tool}`).toBe(true);
+    }
   });
 
-  describe('tool naming conventions', () => {
-    it('should use valid prefixes or known standalone names', async () => {
-      const { toolNames } = await countToolsInSource();
+  it('should have all task tools registered', async () => {
+    const { toolNames } = await countToolsInSource();
+    const toolSet = new Set(toolNames);
 
-      // Some consolidated tools use short, non-prefixed names
-      const ALLOWED_STANDALONE = new Set([
-        'search', 'tasks', 'graph_analysis', 'vault_schema', 'schema_conventions', 'schema_validate',
-        'semantic_analysis', 'note_intelligence', 'policy',
-        'health_check', 'refresh_index', 'suggest_wikilinks', 'validate_links',
-        'rename_field', 'migrate_field_values',
-        'rename_tag', 'wikilink_feedback',
-        'init_semantic',
-        'list_entities', 'flywheel_config',
-        'server_log',
-        'suggest_entity_merges', 'dismiss_merge_suggestion',
-        'suggest_entity_aliases', 'merge_entities', 'absorb_as_alias',
-        'unlinked_mentions_report', 'discover_stub_candidates', 'discover_cooccurrence_gaps',
-        'memory', 'brief',
-        'predict_stale_notes', 'track_concept_evolution', 'temporal_summary',
-        'flywheel_doctor',
-        'flywheel_trust_report',
-        'flywheel_benchmark',
-        'flywheel_learning_report',
-        'flywheel_calibration_export',
-        'export_graph',
-        'tool_selection_feedback',
-        'pipeline_status',
-      ]);
+    for (const tool of ['vault_toggle_task', 'vault_add_task']) {
+      expect(toolSet.has(tool), `Missing task tool: ${tool}`).toBe(true);
+    }
+  });
 
-      for (const tool of toolNames) {
-        const hasValidPrefix = tool.startsWith('vault_') || tool.startsWith('policy_') || tool.startsWith('get_') || tool.startsWith('find_') || ALLOWED_STANDALONE.has(tool);
-        expect(hasValidPrefix, `Tool ${tool} should start with vault_ or policy_ or be an allowed standalone name`).toBe(true);
-      }
-    });
+  it('should have all frontmatter tools registered', async () => {
+    const { toolNames } = await countToolsInSource();
+    const toolSet = new Set(toolNames);
+    expect(toolSet.has('vault_update_frontmatter'), 'Missing frontmatter tool').toBe(true);
+  });
 
-    it('should use snake_case for tool names', async () => {
-      const { toolNames } = await countToolsInSource();
+  it('should have all note management tools registered', async () => {
+    const { toolNames } = await countToolsInSource();
+    const toolSet = new Set(toolNames);
 
-      for (const tool of toolNames) {
-        // Should not have camelCase humps (capital letters)
-        const hasCamelCase = /[A-Z]/.test(tool);
-        expect(hasCamelCase, `Tool ${tool} should use snake_case`).toBe(false);
+    for (const tool of ['vault_create_note', 'vault_delete_note']) {
+      expect(toolSet.has(tool), `Missing note tool: ${tool}`).toBe(true);
+    }
+  });
 
-        // Should only contain lowercase letters and underscores
-        const validPattern = /^[a-z_]+$/;
-        expect(validPattern.test(tool), `Tool ${tool} should only contain lowercase letters and underscores`).toBe(true);
-      }
-    });
+  it('should have all system tools registered', async () => {
+    const { toolNames } = await countToolsInSource();
+    const toolSet = new Set(toolNames);
+    expect(toolSet.has('vault_undo_last_mutation'), 'Missing system tool').toBe(true);
   });
 });
 
 // =============================================================================
-// Documentation Contract Tests
+// Tool Naming Conventions
+// =============================================================================
+
+describe('Tool Naming Conventions', () => {
+  it('should use valid prefixes or known standalone names', async () => {
+    const { toolNames } = await countToolsInSource();
+
+    const ALLOWED_STANDALONE = new Set([
+      'search', 'tasks', 'graph_analysis', 'vault_schema', 'schema_conventions', 'schema_validate',
+      'semantic_analysis', 'note_intelligence', 'policy',
+      'health_check', 'refresh_index', 'suggest_wikilinks', 'validate_links',
+      'rename_field', 'migrate_field_values',
+      'rename_tag', 'wikilink_feedback',
+      'init_semantic',
+      'list_entities', 'flywheel_config',
+      'server_log',
+      'suggest_entity_merges', 'dismiss_merge_suggestion',
+      'suggest_entity_aliases', 'merge_entities', 'absorb_as_alias',
+      'unlinked_mentions_report', 'discover_stub_candidates', 'discover_cooccurrence_gaps',
+      'memory', 'brief',
+      'predict_stale_notes', 'track_concept_evolution', 'temporal_summary',
+      'flywheel_doctor',
+      'flywheel_trust_report',
+      'flywheel_benchmark',
+      'flywheel_learning_report',
+      'flywheel_calibration_export',
+      'export_graph',
+      'tool_selection_feedback',
+      'pipeline_status',
+    ]);
+
+    for (const tool of toolNames) {
+      const hasValidPrefix = tool.startsWith('vault_') || tool.startsWith('policy_') || tool.startsWith('get_') || tool.startsWith('find_') || ALLOWED_STANDALONE.has(tool);
+      expect(hasValidPrefix, `Tool ${tool} should start with vault_ or policy_ or be an allowed standalone name`).toBe(true);
+    }
+  });
+
+  it('should use snake_case for tool names', async () => {
+    const { toolNames } = await countToolsInSource();
+
+    for (const tool of toolNames) {
+      expect(/[A-Z]/.test(tool), `Tool ${tool} should use snake_case`).toBe(false);
+      expect(/^[a-z_]+$/.test(tool), `Tool ${tool} should only contain lowercase letters and underscores`).toBe(true);
+    }
+  });
+});
+
+// =============================================================================
+// Documentation Contracts — Source Invariants
 // =============================================================================
 
 /**
@@ -271,7 +214,6 @@ async function parsePresetsFromSource(): Promise<Record<string, string[]>> {
   const match = source.match(/const PRESETS[^{]*\{([\s\S]*?)\n\};/);
   if (!match) throw new Error('Could not find PRESETS in config.ts');
   const result: Record<string, string[]> = {};
-  // Match lines like: default: ['search', 'read', 'write', 'tasks'],
   const presetLines = [...match[1].matchAll(/^\s*(\w[\w-]*):\s*\[([^\]]*)\]/gm)];
   for (const [, name, categoriesStr] of presetLines) {
     const categories = [...categoriesStr.matchAll(/'([\w-]+)'/g)].map(m => m[1]);
@@ -282,29 +224,7 @@ async function parsePresetsFromSource(): Promise<Record<string, string[]>> {
   return result;
 }
 
-describe('Documentation Contracts', () => {
-  it('CONFIGURATION.md category counts match TOOL_CATEGORY source', async () => {
-    const byCategory = await parseToolCategoryFromSource();
-    const configContent = await fs.readFile(path.join(DOCS_DIR, 'CONFIGURATION.md'), 'utf-8');
-
-    // Parse the composable bundles table: | `category` | N |
-    const bundleRows = [...configContent.matchAll(/\|\s*`(\w[\w-]*)`\s*\|\s*(\d+)\s*\|/g)];
-    const docCounts: Record<string, number> = {};
-    for (const [, cat, count] of bundleRows) {
-      // Only track categories that exist in TOOL_CATEGORY
-      if (byCategory[cat]) {
-        docCounts[cat] = parseInt(count, 10);
-      }
-    }
-
-    // Every category in source should appear in doc with correct count
-    for (const [cat, tools] of Object.entries(byCategory)) {
-      if (docCounts[cat] !== undefined) {
-        expect(docCounts[cat], `CONFIGURATION.md claims ${cat} has ${docCounts[cat]} tools, source has ${tools.length}`).toBe(tools.length);
-      }
-    }
-  });
-
+describe('Documentation Contracts — Source Invariants', () => {
   it('CONFIGURATION.md settable keys match VALID_CONFIG_KEYS', async () => {
     const configContent = await fs.readFile(path.join(DOCS_DIR, 'CONFIGURATION.md'), 'utf-8');
 
@@ -312,40 +232,28 @@ describe('Documentation Contracts', () => {
       expect(configContent, `VALID_CONFIG_KEYS key "${key}" not documented in CONFIGURATION.md`).toContain(key);
     }
 
-    // paths and templates should NOT be in VALID_CONFIG_KEYS
     expect(VALID_CONFIG_KEYS['paths']).toBeUndefined();
     expect(VALID_CONFIG_KEYS['templates']).toBeUndefined();
-
-    // Doc should mention read-only
     expect(configContent).toContain('read-only');
   });
 
-  it('TOOLS.md total tool count matches source', async () => {
-    const byCategory = await parseToolCategoryFromSource();
+  it('TOOLS.md documents key tools', async () => {
     const toolsContent = await fs.readFile(path.join(DOCS_DIR, 'TOOLS.md'), 'utf-8');
-
-    const totalInSource = Object.values(byCategory).reduce((sum, tools) => sum + tools.length, 0);
-
-    // TOOLS.md total should match TOOL_CATEGORY count
-    const match = toolsContent.match(/(\d+)\s+tools/);
-    expect(match, 'TOOLS.md should contain a tool count').toBeTruthy();
-
-    const docTotal = parseInt(match![1], 10);
-    expect(docTotal, `TOOLS.md claims ${docTotal} tools, source has ${totalInSource}`).toBe(totalInSource);
+    expect(toolsContent).toContain('vault_add_to_section');
+    expect(toolsContent).toContain('vault_toggle_task');
   });
 
   it('preset compositions match source', async () => {
     const presets = await parsePresetsFromSource();
 
-    // full uses [...ALL_CATEGORIES] spread, so regex parser won't capture it — verify via runtime import
+    // full uses [...ALL_CATEGORIES] spread — verify via runtime import
     expect(PRESETS.full.length).toBe(ALL_CATEGORIES.length);
     expect(presets['agent']).toEqual(['search', 'read', 'write', 'tasks', 'memory']);
-    // default is now a deprecated alias to full
   });
 });
 
 // =============================================================================
-// Tool Gating Invariants (T11)
+// Tool Gating Invariants
 // =============================================================================
 
 describe('Tool Gating Invariants', () => {
@@ -384,9 +292,9 @@ describe('Tool Gating Invariants', () => {
   });
 
   it('tier-1 tools exactly match the agent preset tool set', () => {
-    const defaultCategories = new Set(PRESETS.agent);
-    const defaultPresetTools = Object.entries(TOOL_CATEGORY)
-      .filter(([, category]) => defaultCategories.has(category))
+    const agentCategories = new Set(PRESETS.agent);
+    const agentPresetTools = Object.entries(TOOL_CATEGORY)
+      .filter(([, category]) => agentCategories.has(category))
       .map(([tool]) => tool)
       .sort();
     const tierOneTools = Object.entries(TOOL_TIER)
@@ -394,15 +302,141 @@ describe('Tool Gating Invariants', () => {
       .map(([tool]) => tool)
       .sort();
 
-    expect(tierOneTools).toEqual(defaultPresetTools);
+    expect(tierOneTools).toEqual(agentPresetTools);
     expect(tierOneTools).toHaveLength(18);
   });
 
-  it('tier counts match the expected 18/58 split', () => {
+  it('tier counts match the expected 18/remainder split', () => {
     const tierOneCount = Object.values(TOOL_TIER).filter((tier) => tier === 1).length;
     const higherTierCount = Object.values(TOOL_TIER).filter((tier) => tier > 1).length;
 
     expect(tierOneCount).toBe(18);
     expect(higherTierCount).toBe(Object.keys(TOOL_TIER).length - 18);
+  });
+});
+
+// =============================================================================
+// Documentation Wording Contracts
+// =============================================================================
+
+describe('Documentation Wording Contracts', () => {
+  it('TOOLS.md describes progressive disclosure', async () => {
+    const content = await readDoc('docs/TOOLS.md');
+    expect(content).toMatch(/progressively/i);
+  });
+
+  it('TOOLS.md documents tool_selection_feedback', async () => {
+    const content = await readDoc('docs/TOOLS.md');
+    expect(content).toContain('tool_selection_feedback');
+  });
+
+  it('CONFIGURATION.md documents FLYWHEEL_TOOL_ROUTING', async () => {
+    const content = await readDoc('docs/CONFIGURATION.md');
+    expect(content).toContain('FLYWHEEL_TOOL_ROUTING');
+  });
+
+  it('docs describe full as the default adaptive preset', async () => {
+    const tools = await readDoc('docs/TOOLS.md');
+    const config = await readDoc('docs/CONFIGURATION.md');
+    const combined = tools + config;
+
+    // Must mention full as default somewhere
+    expect(combined).toMatch(/`full`[^`]*default|default[^`]*`full`/i);
+  });
+
+  it('docs describe agent as the fixed reduced preset', async () => {
+    const tools = await readDoc('docs/TOOLS.md');
+    const config = await readDoc('docs/CONFIGURATION.md');
+    const combined = tools + config;
+
+    expect(combined).toMatch(/`agent`[^`]*fixed|fixed[^`]*`agent`/i);
+  });
+});
+
+// =============================================================================
+// Stale Copy Detection
+// =============================================================================
+
+describe('Stale Copy Detection', () => {
+  describe('prose scan (fenced code stripped)', () => {
+    it('no user-facing "N tools" phrasing in prose', async () => {
+      const failures: string[] = [];
+
+      for (const docPath of SCANNED_DOCS) {
+        try {
+          const raw = await readDoc(docPath);
+          const prose = stripFencedCode(raw);
+          const matches = prose.match(/(?<!tier-)\b\d+\s+tools\b/gi);
+          if (matches) {
+            failures.push(`${docPath}: ${matches.join(', ')}`);
+          }
+        } catch {
+          // File may not exist in all configurations
+        }
+      }
+
+      expect(failures, `Stale "N tools" phrasing found:\n${failures.join('\n')}`).toHaveLength(0);
+    });
+
+    it('no "Start with default" recommendations in prose', async () => {
+      const failures: string[] = [];
+
+      for (const docPath of SCANNED_DOCS) {
+        try {
+          const raw = await readDoc(docPath);
+          const prose = stripFencedCode(raw);
+          const matches = prose.match(/Start with.*\bdefault\b/gi);
+          if (matches) {
+            failures.push(`${docPath}: ${matches.join(', ')}`);
+          }
+        } catch {
+          // skip missing files
+        }
+      }
+
+      expect(failures, `Stale "Start with default" found:\n${failures.join('\n')}`).toHaveLength(0);
+    });
+
+    it('no "Included in the default preset" in prose', async () => {
+      const failures: string[] = [];
+
+      for (const docPath of SCANNED_DOCS) {
+        try {
+          const raw = await readDoc(docPath);
+          const prose = stripFencedCode(raw);
+          if (prose.includes('Included in the default preset')) {
+            failures.push(docPath);
+          }
+        } catch {
+          // skip missing files
+        }
+      }
+
+      expect(failures, `Stale "Included in the default preset" found:\n${failures.join('\n')}`).toHaveLength(0);
+    });
+  });
+
+  describe('raw scan (includes code blocks)', () => {
+    it('no FLYWHEEL_TOOLS or FLYWHEEL_PRESET set to "default" in examples', async () => {
+      const failures: string[] = [];
+
+      for (const docPath of SCANNED_DOCS) {
+        try {
+          const raw = await readDoc(docPath);
+          // Match "FLYWHEEL_TOOLS": "default" or "FLYWHEEL_PRESET": "default"
+          if (/(?:"FLYWHEEL_TOOLS"|"FLYWHEEL_PRESET")\s*:\s*"default"/.test(raw)) {
+            failures.push(`${docPath}: JSON example sets FLYWHEEL_TOOLS/PRESET to "default"`);
+          }
+          // Match FLYWHEEL_TOOLS=default (not followed by comma — that would be default,something)
+          if (/FLYWHEEL_TOOLS=default(?:[^,\w]|$)/.test(raw)) {
+            failures.push(`${docPath}: env example sets FLYWHEEL_TOOLS=default`);
+          }
+        } catch {
+          // skip missing files
+        }
+      }
+
+      expect(failures, `Stale default preset examples:\n${failures.join('\n')}`).toHaveLength(0);
+    });
   });
 });

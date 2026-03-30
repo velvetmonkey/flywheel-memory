@@ -59,8 +59,7 @@ Add Flywheel to `~/.openclaw/openclaw.json`:
         "command": "npx",
         "args": ["-y", "@velvetmonkey/flywheel-memory"],
         "env": {
-          "VAULT_PATH": "/path/to/your/vault",
-          "FLYWHEEL_TOOLS": "default"
+          "VAULT_PATH": "/path/to/your/vault"
         }
       }
     }
@@ -71,7 +70,7 @@ Add Flywheel to `~/.openclaw/openclaw.json`:
 This is the minimum useful integration:
 
 - `VAULT_PATH` points Flywheel at the Obsidian vault you want the bot to use
-- `FLYWHEEL_TOOLS` chooses how much of Flywheel's tool surface OpenClaw sees
+- Flywheel defaults to the full tool surface. Set `FLYWHEEL_TOOLS` to restrict it (see Step 4).
 
 Restart OpenClaw after editing the config.
 
@@ -146,13 +145,13 @@ OpenClaw's `bindings[]` model is the right place to decide which conversations g
 
 | Preset | When to use it | What you get |
 |--------|----------------|--------------|
-| `default` | Best starting point for most OpenClaw bots | search, read, write, tasks, memory |
-| `full` | When the bot should be able to use the entire vault surface | all 75 Flywheel tools |
-| `default,graph,wikilinks` | Good middle ground for assistant-style bots that need richer graph context | default plus graph and linking tools |
+| `agent` | Best starting point for most OpenClaw bots | search, read, write, tasks, memory |
+| `full` | When the bot should be able to use the entire vault surface | all Flywheel tools, progressively disclosed |
+| `agent,graph,wikilinks` | Good middle ground for assistant-style bots that need richer graph context | agent plus graph and linking tools |
 
 Recommended starting point:
 
-- Start with `default` for note capture, search, task updates, and general vault Q&A.
+- Start with `agent` for note capture, search, task updates, and general vault Q&A.
 - Move to `full` when you want graph analysis, schema tools, diagnostics, temporal tools, or policy authoring without revisiting the config.
 - Use explicit bundles if you know exactly what the bot should and should not be able to touch.
 
@@ -241,8 +240,7 @@ That matters for Codex, Claude Code, and other ACP-backed sessions launched from
         "command": "npx",
         "args": ["-y", "@velvetmonkey/flywheel-memory"],
         "env": {
-          "VAULT_PATH": "/home/you/obsidian/WorkVault",
-          "FLYWHEEL_TOOLS": "default"
+          "VAULT_PATH": "/home/you/obsidian/WorkVault"
         }
       }
     }

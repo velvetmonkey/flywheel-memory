@@ -126,10 +126,7 @@ Create `.mcp.json` in your vault root:
   "mcpServers": {
     "flywheel": {
       "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
-      "env": {
-        "FLYWHEEL_TOOLS": "default"
-      }
+      "args": ["-y", "@velvetmonkey/flywheel-memory"]
     }
   }
 }
@@ -150,8 +147,7 @@ cd /path/to/your/vault && claude
       "command": "npx",
       "args": ["-y", "@velvetmonkey/flywheel-memory"],
       "env": {
-        "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work",
-        "FLYWHEEL_TOOLS": "default"
+        "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work"
       }
     }
   }
@@ -171,8 +167,7 @@ Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
       "command": "npx",
       "args": ["-y", "@velvetmonkey/flywheel-memory"],
       "env": {
-        "VAULT_PATH": "/path/to/your/vault",
-        "FLYWHEEL_TOOLS": "default"
+        "VAULT_PATH": "/path/to/your/vault"
       }
     }
   }
@@ -190,8 +185,7 @@ Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault di
       "command": "npx",
       "args": ["-y", "@velvetmonkey/flywheel-memory"],
       "env": {
-        "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work",
-        "FLYWHEEL_TOOLS": "default"
+        "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work"
       }
     }
   }
@@ -214,8 +208,7 @@ Add this to `~/.openclaw/openclaw.json`:
         "command": "npx",
         "args": ["-y", "@velvetmonkey/flywheel-memory"],
         "env": {
-          "VAULT_PATH": "/path/to/your/vault",
-          "FLYWHEEL_TOOLS": "default"
+          "VAULT_PATH": "/path/to/your/vault"
         }
       }
     }
@@ -225,14 +218,14 @@ Add this to `~/.openclaw/openclaw.json`:
 
 Restart OpenClaw. Flywheel appears as an MCP server with search, read, write, and memory tools.
 
-The `default` preset includes search, read, write, tasks, and memory. For everything, use `"full"`.
+Flywheel defaults to the full tool surface. Use `"FLYWHEEL_TOOLS": "agent"` for a reduced set (search, read, write, tasks, memory).
 
 Recommended next step: read the dedicated [OpenClaw integration guide](OPENCLAW.md). It covers the pattern that works best in practice:
 
 - configure Flywheel on the OpenClaw gateway/agent
 - route the right channels to a dedicated OpenClaw agent
 - keep OpenClaw workspace and Obsidian vault separate unless you intentionally want them combined
-- choose `FLYWHEEL_TOOLS` based on whether you want basic note memory (`default`) or the full vault surface (`full`)
+- choose `FLYWHEEL_TOOLS` based on whether you want the full vault surface (default) or a reduced set (`agent`)
 
 OpenClaw connects via stdio here, same as Claude Desktop. For HTTP transport (e.g., running Flywheel as a shared service), see the [HTTP Clients](#http-clients-cursor-windsurf-vs-code-continue) section below.
 
@@ -438,13 +431,13 @@ Flywheel auto-links any mentions of existing notes. If your vault has `Stacy Tho
 
 ## Step 3: Choose a Tool Preset
 
-Flywheel defaults to the `full` preset (77 tools with tiered progressive disclosure).
-Use `"agent"` for a minimal 18-tool set (search, read, write, tasks, memory). Add bundles for graph analysis, wikilinks, or other capabilities:
+Flywheel defaults to the `full` preset (adaptive progressive disclosure).
+Use `"agent"` for a fixed reduced set (search, read, write, tasks, memory). Add bundles for graph analysis, wikilinks, or other capabilities:
 
 ```json
 {
   "env": {
-    "FLYWHEEL_TOOLS": "default,graph,tasks"
+    "FLYWHEEL_TOOLS": "agent,graph"
   }
 }
 ```
@@ -615,7 +608,7 @@ Flywheel looks for a vault root by walking up from the working directory, checki
 
 ### "Too many tools" / Claude picks the wrong tool
 
-Reduce the tool set. Switch from `full` to `default` or a specific bundle combination. Fewer tools = better tool selection by Claude.
+Reduce the tool set. Switch from `full` to `agent` or a specific bundle combination. Fewer tools = better tool selection by Claude.
 
 ### "Permission denied" on file writes
 
@@ -666,6 +659,6 @@ All vault operations work without git. You just won't have undo or commit histor
 ## Next Steps
 
 - **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full reference for all 75 tools
+- **[TOOLS.md](TOOLS.md)** -- Full tool reference
 - **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics

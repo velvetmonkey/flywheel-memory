@@ -22,7 +22,10 @@
 ```
 packages/mcp-server/src/
 ├── index.ts                    # MCP server entry point + tool preset gating
+├── tool-registry.ts            # Tool gating, tiering, activation tracking
+├── config.ts                   # Tool categories, tiers, presets, instructions
 ├── tools/
+│   ├── toolCatalog.ts          # Tool metadata collection for embedding manifest
 │   ├── read/                   # Read-side tool registrations (20 files, helpers omitted)
 │   │   ├── query.ts            # search
 │   │   ├── primitives.ts       # get_note_structure, get_section_content, find_sections, tasks
@@ -52,17 +55,21 @@ packages/mcp-server/src/
 │       ├── merge.ts            # merge_entities, absorb_as_alias
 │       ├── corrections.ts      # vault_record_correction, vault_list_corrections, vault_resolve_correction
 │       ├── wikilinkFeedback.ts # wikilink_feedback
+│       ├── toolSelectionFeedback.ts # tool_selection_feedback
 │       ├── tags.ts             # rename_tag
 │       ├── memory.ts           # memory
 │       ├── config.ts           # flywheel_config
 │       ├── enrich.ts           # vault_init
 │       ├── system.ts           # vault_undo_last_mutation
 │       └── policy.ts           # policy
-└── core/
-    ├── read/                   # Read-side core logic (graph, vault, parser, fts5, config, watcher)
-    ├── write/                  # Write-side core logic (writer, wikilinks, git, validator, policy engine)
-    ├── shared/                 # Shared utilities (recency, cooccurrence, retrievalCooccurrence, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots)
-    └── semantic/               # Semantic search (embeddings.ts — embedding generation, similarity.ts — hybrid ranking)
+├── core/
+│   ├── read/                   # Read-side core logic (graph, vault, parser, fts5, config, watcher)
+│   │   └── toolRouting.ts      # Semantic tool routing, manifest loading
+│   ├── write/                  # Write-side core logic (writer, wikilinks, git, validator, policy engine)
+│   ├── shared/                 # Shared utilities (recency, cooccurrence, retrievalCooccurrence, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots, toolSelectionFeedback)
+│   └── semantic/               # Semantic search (embeddings.ts — embedding generation, similarity.ts — hybrid ranking)
+└── generated/
+    └── tool-embeddings.generated.ts  # Pre-computed tool embedding manifest
 ```
 
 ### Multi-Vault & Transport
@@ -81,6 +88,7 @@ packages/mcp-server/src/
 - Transport env vars: `FLYWHEEL_TRANSPORT` (stdio/http/both), `FLYWHEEL_HTTP_PORT` (default 3111), `FLYWHEEL_HTTP_HOST` (default 127.0.0.1).
 - Multi-vault: `FLYWHEEL_VAULTS=name1:/path1,name2:/path2`. First vault is primary. Falls back to `PROJECT_PATH`/`VAULT_PATH` for single-vault mode.
 - Cross-vault search: `wrapWithVaultActivation` detects `search` tool with no `vault` param → calls `crossVaultSearch()` which iterates all contexts, runs search per vault, merges results with `vault` field, sorts by `rrf_score`. Returns `method: 'cross_vault'`.
+- Tool routing: `FLYWHEEL_TOOL_ROUTING` (pattern/hybrid/semantic). Default is `hybrid` when `full` preset is active, `pattern` otherwise.
 
 ### Dependencies
 
@@ -102,15 +110,15 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`agent`** — 18 tools: search, read, write, tasks, memory
 
 **Composable bundles** (add to presets or each other):
-- **`graph`** — structural analysis, semantic analysis, paths, [[Hub|hubs]], connections, export (11 tools)
-- **`schema`** — schema intelligence + migrations (7 tools)
-- **`wikilinks`** — suggestions, validation, discovery (7 tools)
-- **`corrections`** — correction recording + resolution (4 tools)
-- **`tasks`** — task queries and mutations (3 tools)
-- **`memory`** — session memory + brief (2 tools)
-- **`note-ops`** — delete, move, rename, merge (4 tools)
-- **`temporal`** — time-based vault intelligence (4 tools)
-- **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback (22 tools)
+- **`graph`** — structural analysis, semantic analysis, paths, [[Hub|hubs]], connections, export
+- **`schema`** — schema intelligence + migrations
+- **`wikilinks`** — suggestions, validation, discovery
+- **`corrections`** — correction recording + resolution
+- **`tasks`** — task queries and mutations
+- **`memory`** — session memory + brief
+- **`note-ops`** — delete, move, rename, merge
+- **`temporal`** — time-based vault intelligence
+- **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback
 **Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `temporal`, `diagnostics`
 
 ---

@@ -63,7 +63,7 @@ What it **does not** contain: entity names, note paths, note content, file names
 
 ## How to export
 
-The calibration export tool is in the **`diagnostics`** bundle, available in the `full` preset. If you're using `default` or `agent`, add diagnostics to your config: `FLYWHEEL_TOOLS=default,diagnostics` (see [CONFIGURATION.md](CONFIGURATION.md) for details).
+The calibration export tool is in the **`diagnostics`** bundle, available in the `full` preset. If you're using `agent`, add diagnostics to your config: `FLYWHEEL_TOOLS=agent,diagnostics` (see [CONFIGURATION.md](CONFIGURATION.md) for details).
 
 Ask your AI client:
 

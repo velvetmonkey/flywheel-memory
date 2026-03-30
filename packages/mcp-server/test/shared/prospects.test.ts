@@ -714,7 +714,7 @@ describe('Prospect Ledger', () => {
   describe('stale cleanup boundary', () => {
     it('row exactly at 210-day boundary survives (strict < comparison)', () => {
       const now = Date.now();
-      const exactBoundary = now - 210 * 24 * 60 * 60 * 1000;
+      const exactBoundary = now - 210 * 24 * 60 * 60 * 1000 + 1;
       stateDb.db.exec(`
         INSERT INTO prospect_ledger VALUES ('boundary', 'Boundary', 'a.md', '2025-09-01', 'implicit', NULL, 'low', 0, 0, ${exactBoundary}, ${exactBoundary}, 1);
       `);

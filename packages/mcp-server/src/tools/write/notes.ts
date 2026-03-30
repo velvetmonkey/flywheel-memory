@@ -39,7 +39,7 @@ export function registerNoteTools(
   // ========================================
   server.tool(
     'vault_create_note',
-    'Create a new note in the vault. Always include frontmatter with at least type, aliases, and description — these drive entity categorization, search, and link suggestions.\n\nExample: vault_create_note({ path: "people/Jane Smith.md", content: "# Jane Smith\\n\\nProduct manager at Acme.", frontmatter: { type: "person", aliases: ["Jane"], description: "Product manager at Acme", company: "Acme" } })',
+    'Use when a new entity, document, or periodic note needs to exist. Produces a markdown file with frontmatter, auto-wikilinks, and optional template expansion. Returns mutation result with path, alias warnings, and suggested outgoing links. Does not overwrite existing notes unless overwrite flag is set.',
     {
       path: z.string().describe('Vault-relative path for the new note (e.g., "daily-notes/2026-01-28.md")'),
       content: z.string().default('').describe('Initial content for the note'),
@@ -232,7 +232,7 @@ export function registerNoteTools(
   // ========================================
   server.tool(
     'vault_delete_note',
-    'Permanently delete a note file from the vault. Use this when a note should be removed entirely (not moved or renamed).',
+    'Use when permanently removing a note from the vault. Produces a file deletion with optional git commit. Returns deletion confirmation with path. Does not update backlinks in other notes — orphaned references may remain.',
     {
       path: z.string().describe('Vault-relative path to the note to delete'),
       confirm: z.boolean().default(false).describe('Must be true to confirm deletion'),

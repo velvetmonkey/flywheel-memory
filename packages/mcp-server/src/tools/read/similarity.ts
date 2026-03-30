@@ -24,9 +24,7 @@ export function registerSimilarityTools(
     {
       title: 'Find Similar Notes',
       description:
-        'Find notes similar to a given note using FTS5 keyword matching. ' +
-        'When embeddings have been built (via init_semantic), automatically uses hybrid ranking (BM25 + embedding similarity via Reciprocal Rank Fusion). ' +
-        'Already-linked notes are automatically excluded.',
+        'Use when finding notes related to a specific note by content overlap. Produces a ranked list of similar notes using FTS5 keyword matching and optional semantic similarity. Returns note paths with similarity scores and shared terms. Does not search by arbitrary query text — use search for free-text queries.',
       inputSchema: {
         path: z.string().describe('Path to the source note (relative to vault root, e.g. "projects/alpha.md")'),
         limit: z.number().optional().describe('Maximum number of similar notes to return (default: 10)'),

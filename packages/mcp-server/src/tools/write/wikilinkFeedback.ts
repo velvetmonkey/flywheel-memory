@@ -34,7 +34,7 @@ export function registerWikilinkFeedbackTools(
     {
       title: 'Wikilink Feedback',
       description:
-        'Report and query wikilink accuracy feedback. Modes: "report" (record feedback), "list" (view recent feedback), "stats" (entity accuracy statistics), "dashboard" (full feedback loop data), "entity_timeline" (score history for an entity), "layer_timeseries" (per-layer contribution over time), "snapshot_diff" (compare two graph snapshots).',
+        'Use when reporting whether a wikilink suggestion was correct or incorrect. Produces a feedback record that trains future suggestion scoring. Returns confirmation with feedback stats. Does not modify note content — only records the accuracy signal for the scoring engine.',
       inputSchema: {
         mode: z.enum(['report', 'list', 'stats', 'dashboard', 'entity_timeline', 'layer_timeseries', 'snapshot_diff', 'suppress', 'unsuppress']).describe('Operation mode'),
         entity: z.string().optional().describe('Entity name (required for report and entity_timeline modes, optional filter for list/stats)'),

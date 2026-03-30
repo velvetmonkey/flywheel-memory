@@ -293,7 +293,7 @@ export function registerMigrationTools(
     {
       title: 'Rename Field',
       description:
-        'Bulk rename a frontmatter field across notes. Dry-run by default (preview only). Detects conflicts where new field name already exists.',
+        'Use when bulk-renaming a frontmatter field across notes. Produces a dry-run preview by default showing affected notes and conflict detection. Returns rename results with before/after field names per note. Does not write changes unless dry_run is false.',
       inputSchema: {
         old_name: z.string().describe('Current field name to rename'),
         new_name: z.string().describe('New field name'),
@@ -326,7 +326,7 @@ export function registerMigrationTools(
     {
       title: 'Migrate Field Values',
       description:
-        'Transform field values in bulk using a mapping (e.g., "high" -> 1). Dry-run by default.',
+        'Use when transforming frontmatter field values in bulk using a mapping. Produces a dry-run preview by default showing value transformations. Returns migration results with before/after values per note. Does not write changes unless dry_run is false.',
       inputSchema: {
         field: z.string().describe('Field to migrate values for'),
         mapping: z.record(z.unknown()).describe('Mapping of old values to new values (e.g., {"high": 1, "medium": 2, "low": 3})'),

@@ -280,7 +280,7 @@ export function registerWikilinkTools(
     {
       title: 'Suggest Wikilinks',
       description:
-        'Analyze text and suggest where wikilinks could be added. Finds mentions of existing note titles and aliases.',
+        'Use when analyzing a note for places where entity mentions could become wikilinks. Produces scored suggestions matching note titles and aliases in the text. Returns suggestion entries with entity name, position, and confidence. Does not apply the links — use wikilink_feedback to accept or reject.',
       inputSchema: {
         text: z.string().describe('The text to analyze for potential wikilinks'),
         note_path: z.string().optional().describe('Vault-relative note path. When provided, prospect sightings are persisted to the ledger'),
@@ -545,7 +545,7 @@ export function registerWikilinkTools(
     {
       title: 'Validate Links',
       description:
-        'Check wikilinks in a note (or all notes) and report broken links. Optionally suggests fixes.',
+        'Use when checking for broken wikilinks in a note or across the vault. Produces a dead-link report with the broken target and optional fix suggestions. Returns broken link entries with source path, line, and suggested replacement. Does not fix links automatically — apply fixes with vault_replace_in_section.',
       inputSchema: {
         path: z
           .string()
@@ -688,7 +688,7 @@ export function registerWikilinkTools(
     {
       title: 'Discover Stub Candidates',
       description:
-        'Find terms referenced via dead wikilinks across the vault that have no backing note. These are "invisible concepts" — topics your vault considers important enough to link to but that don\'t have their own notes yet. Ranked by reference frequency.',
+        'Use when finding terms referenced by dead wikilinks that have no backing note. Produces a list of frequently-linked but non-existent concepts. Returns stub entries with reference count and source notes. Does not create the missing notes — use vault_create_note to fill the gaps.',
       inputSchema: {
         min_frequency: z.coerce.number().default(5).describe('Minimum number of references to include (default 5)'),
         limit: z.coerce.number().default(20).describe('Maximum candidates to return (default 20)'),
@@ -770,7 +770,7 @@ export function registerWikilinkTools(
     {
       title: 'Discover Co-occurrence Gaps',
       description:
-        'Find entity pairs that frequently co-occur across vault notes but where one or both entities lack a backing note. These represent relationship patterns worth making explicit with hub notes or links.',
+        'Use when finding entity pairs that co-occur in notes but lack a connecting link or backing note. Produces gap entries with co-occurrence count and sample sources. Returns entity pair suggestions ranked by frequency. Does not create links or notes — identifies opportunities only.',
       inputSchema: {
         min_cooccurrence: z.coerce.number().default(10).describe('Minimum co-occurrence count to include (default 10)'),
         limit: z.coerce.number().default(20).describe('Maximum gaps to return (default 20)'),

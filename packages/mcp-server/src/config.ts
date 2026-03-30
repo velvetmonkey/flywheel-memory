@@ -372,7 +372,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   server_log: 2,
   flywheel_doctor: 2,
 
-  // Tier 3 — explicit or advanced operations (25 tools)
+  // Tier 3 — explicit or advanced operations (26 tools)
   vault_schema: 3,
   schema_conventions: 3,
   schema_validate: 3,
@@ -439,21 +439,17 @@ export function generateInstructions(
   // Base instruction (always present)
   parts.push(`Flywheel provides tools to search, read, and write an Obsidian vault's knowledge graph.
 
-Tool selection:
-  1. "search" is the primary tool for content lookup. One call searches notes,
-     entities, and memories. Each result carries: type (note/entity/memory),
-     frontmatter, tags, aliases, backlinks (ranked by edge weight × recency),
-     outlinks (existence-checked), section provenance, extracted dates, entity
-     bridges, confidence scores, content snippet or preview, entity category,
-     hub score, and timestamps.
-     This is a decision surface — usually enough to answer without reading any files.
-  2. For structural, temporal, wikilink, or diagnostic questions, use the
-     specialized tools in those categories instead of search with filters.
-     See the category sections below.
-  3. Escalate to "get_note_structure" only when you need the full markdown content
-     or word count. Use "get_section_content" to read one section by heading name.
-  4. Start with a broad search: just query text, no filters. Only add folder, tag,
-     or frontmatter filters to narrow a second search if needed.`);
+Tool routing:
+  1. "search" is the primary entry point — one call returns a decision surface of
+     notes, entities, and memories with frontmatter, backlinks, outlinks, section
+     provenance, dates, entity bridges, and confidence scores. Usually enough to
+     answer without reading full files.
+  2. For structural, temporal, wikilink, or diagnostic goals, use the specialized
+     tools in those categories — they return targeted contracts, not broad results.
+  3. Escalate to "get_note_structure" for full markdown content or word count.
+     Use "get_section_content" for a single section by heading name.
+  4. Start with a broad search: just query text, no filters. Narrow with folder,
+     tag, or frontmatter filters only on a second pass.`);
 
   // Onboarding hint: nudge init_semantic if embeddings aren't built
   if (!hasEmbeddingsIndex()) {

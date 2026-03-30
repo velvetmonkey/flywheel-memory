@@ -90,7 +90,7 @@ export function registerSystemTools(
     {
       title: 'Refresh Index',
       description:
-        'Rebuild the vault index and FTS5 search index without restarting the server. Use after making changes to notes in Obsidian or if search results seem stale.',
+        'Use when the vault index seems stale or after bulk external edits. Produces a full rebuild of the vault index and FTS5 search database. Returns rebuild duration and note count. Does not restart the server — only rebuilds the in-memory index.',
       inputSchema: {},
       outputSchema: RefreshIndexOutputSchema,
     },
@@ -488,7 +488,7 @@ export function registerSystemTools(
     {
       title: 'Get All Entities',
       description:
-        'Get all linkable entities in the vault (note titles and aliases). Useful for understanding what can be linked to.',
+        'Use when listing every linkable entity in the vault. Produces a complete entity list with titles, aliases, categories, and hub scores. Returns the full entity array from the index. Does not search note content — only returns entity metadata.',
       inputSchema: {
         include_aliases: z
           .boolean()
@@ -595,7 +595,7 @@ export function registerSystemTools(
     {
       title: 'Get Unlinked Mentions',
       description:
-        'Find places where an entity (note title or alias) is mentioned in text but not linked. Useful for finding linking opportunities.',
+        'Use when finding places where an entity name appears in text but is not wikilinked. Produces mention locations with note paths and line numbers. Returns unlinked mention entries for a specific entity. Does not apply links — use suggest_wikilinks for batch suggestions.',
       inputSchema: {
         entity: z
           .string()
@@ -729,7 +729,7 @@ export function registerSystemTools(
     {
       title: 'Get Folder Structure',
       description:
-        'Get the folder structure of the vault with note counts. Useful for understanding vault organization.',
+        'Use when exploring vault organization. Produces a folder tree with note counts and subfolder counts per directory. Returns hierarchical folder data sorted by depth. Does not list individual note files — use search with folder filter for that.',
       inputSchema: {},
       outputSchema: GetFolderStructureOutputSchema,
     },
@@ -815,7 +815,7 @@ export function registerSystemTools(
     {
       title: 'List Entities',
       description:
-        'Get all entities grouped by category with aliases and hub scores. Returns the full EntityIndex from StateDb.',
+        'Use when listing all linkable entities grouped by category. Produces the full entity index from the state database with names, aliases, hub scores, and categories. Returns an array of entity profiles. Does not search note content — only returns entity metadata from the index.',
       inputSchema: {
         category: z
           .string()
@@ -904,7 +904,7 @@ export function registerSystemTools(
     {
       title: 'Suggest Entity Aliases',
       description:
-        'Generate alias suggestions for entities in a folder based on acronyms and short forms, validated against vault content.',
+        'Use when generating alias suggestions for entities based on acronyms and short forms. Produces alias candidates validated against vault content. Returns suggested aliases per entity with evidence. Does not apply aliases — use vault_update_frontmatter to add them.',
       inputSchema: {
         folder: z.string().optional().describe('Folder path to scope suggestions to'),
         limit: z.number().default(20).describe('Max suggestions to return'),
@@ -940,7 +940,7 @@ export function registerSystemTools(
     {
       title: 'Unlinked Mentions Report',
       description:
-        'Find which entities have the most unlinked mentions across the vault — highest-ROI linking opportunities. Uses FTS5 to count mentions and subtracts known wikilinks.',
+        'Use when finding the highest-ROI linking opportunities across the vault. Produces a ranked report of entities with the most unlinked text mentions. Returns entity names with unlinked mention counts and sample locations. Does not apply links — use suggest_wikilinks on individual notes.',
       inputSchema: {
         limit: z.coerce.number().default(20).describe('Maximum entities to return (default 20)'),
       },

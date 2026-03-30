@@ -97,7 +97,9 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     (newIndex) => {
       currentIndex = newIndex;
     },
-    () => vaultPath
+    () => vaultPath,
+    undefined,
+    () => stateDb
   );
 
   registerPrimitiveTools(

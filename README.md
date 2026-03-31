@@ -115,11 +115,12 @@ Flywheel watches the vault, maintains local indexes, and serves the graph to MCP
 
 ### Tool presets
 
-Under `full` (the default), specialised tools surface progressively as the conversation needs them — the default context stays focused while graph, schema, and temporal capabilities appear on demand.
+The `full` preset (default) shows all tools immediately. Use `auto` for progressive disclosure, which surfaces specialised tools as the conversation needs them — keeping the default context focused while graph, schema, and temporal capabilities appear on demand.
 
 | Preset | Behaviour |
 |--------|-----------|
-| `full` (default) | All capabilities, progressively disclosed as your queries need them |
+| `full` (default) | All tools visible at startup |
+| `auto` | Progressive disclosure — tools activate as your queries need them |
 | `agent` | Fixed set — search, read, write, tasks, memory |
 
 Compose bundles for custom configurations:

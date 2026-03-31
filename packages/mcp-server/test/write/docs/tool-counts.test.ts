@@ -336,7 +336,7 @@ describe('Documentation Wording Contracts', () => {
     expect(content).toContain('FLYWHEEL_TOOL_ROUTING');
   });
 
-  it('docs describe full as the default adaptive preset', async () => {
+  it('docs describe full as the default preset', async () => {
     const tools = await readDoc('docs/TOOLS.md');
     const config = await readDoc('docs/CONFIGURATION.md');
     const combined = tools + config;

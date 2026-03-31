@@ -146,7 +146,7 @@ OpenClaw's `bindings[]` model is the right place to decide which conversations g
 | Preset | When to use it | What you get |
 |--------|----------------|--------------|
 | `agent` | Best starting point for most OpenClaw bots | search, read, write, tasks, memory |
-| `full` | When the bot should be able to use the entire vault surface | all Flywheel tools, progressively disclosed |
+| `full` | When the bot should be able to use the entire vault surface | all Flywheel tools visible |
 | `agent,graph,wikilinks` | Good middle ground for assistant-style bots that need richer graph context | agent plus graph and linking tools |
 
 Recommended starting point:

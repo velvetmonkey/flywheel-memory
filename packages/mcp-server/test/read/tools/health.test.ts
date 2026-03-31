@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import { connectTestClient, type TestClient, createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
 import { recordIndexEvent } from '../../../src/core/shared/indexActivity.js';
+import { setEmbeddingsDatabase, setEmbeddingsBuildState } from '../../../src/core/read/embeddings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
@@ -128,5 +129,71 @@ describe('health_check', () => {
     expect(data.last_rebuild.ago_seconds).toBeGreaterThanOrEqual(rebuildAgoSeconds - 5);
     expect(data.last_rebuild.ago_seconds).toBeLessThanOrEqual(rebuildAgoSeconds + 5);
     expect(Math.abs(data.last_rebuild.ago_seconds - data.index_age_seconds)).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('flywheel_doctor', () => {
+  let context: TestServerContext;
+  let client: TestClient;
+
+  beforeAll(async () => {
+    context = await createTestServer(FIXTURES_PATH);
+    client = connectTestClient(context.server);
+    // Inject embeddings DB handle so getEntityEmbeddingsCount() can query
+    setEmbeddingsDatabase(context.stateDb!.db);
+    // Mark embeddings as built so the doctor check includes entity_embedding_coverage
+    setEmbeddingsBuildState('complete');
+  });
+
+  afterAll(() => {
+    setEmbeddingsBuildState('none');
+    setEmbeddingsDatabase(null as any);
+    const flywheelDir = path.join(FIXTURES_PATH, '.flywheel');
+    try {
+      if (fs.existsSync(flywheelDir)) {
+        fs.rmSync(flywheelDir, { recursive: true });
+      }
+    } catch { /* cleanup best-effort */ }
+  });
+
+  test('entity_embedding_coverage denominator uses canonical entity count from DB', async () => {
+    const stateDb = context.stateDb!;
+
+    // Seed some canonical entities in the DB so the check has a nonzero denominator.
+    // The fixture vault's entities table may be empty since the pipeline hasn't run.
+    const insertEntity = stateDb.db.prepare(
+      `INSERT OR IGNORE INTO entities (name, name_lower, path, category) VALUES (?, ?, ?, ?)`
+    );
+    insertEntity.run('Alice', 'alice', 'people/Alice.md', 'person');
+    insertEntity.run('Bob', 'bob', 'people/Bob.md', 'person');
+    insertEntity.run('Acme', 'acme', 'orgs/Acme.md', 'organization');
+
+    // Get the canonical entity count directly from the DB
+    const dbEntityCount = (stateDb.db.prepare('SELECT COUNT(*) as cnt FROM entities').get() as { cnt: number }).cnt;
+    expect(dbEntityCount).toBeGreaterThan(0);
+
+    // Get the linkable surface count from the in-memory index
+    const indexEntitySize = context.getIndex().entities.size;
+
+    const result = await client.callTool('flywheel_doctor', {});
+    const data = JSON.parse(result.content[0].text);
+    const check = data.checks.find((c: any) => c.name === 'entity_embedding_coverage');
+
+    // The check should exist (we set embeddings state to 'complete' and seeded entities)
+    expect(check).toBeDefined();
+
+    // Parse the denominator from the detail string (format: "N/M canonical entities embedded (P%)")
+    const match = check.detail.match(/(\d+)\/(\d+)/);
+    expect(match).toBeTruthy();
+    const denominator = parseInt(match![2], 10);
+
+    // Denominator must match canonical entity count from DB
+    expect(denominator).toBe(dbEntityCount);
+
+    // Denominator must NOT match the linkable target surface (which includes aliases + paths)
+    // This only holds when there are aliases/paths expanding the surface beyond canonical count
+    if (indexEntitySize !== dbEntityCount) {
+      expect(denominator).not.toBe(indexEntitySize);
+    }
   });
 });

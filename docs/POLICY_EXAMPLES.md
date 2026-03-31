@@ -1,8 +1,23 @@
 # Policy Examples
 
-[← Back to docs](README.md)
+[← Back to docs](README.md) | [Policies guide](POLICIES.md)
+
+> **New to policies?** Start with the [Policies guide](POLICIES.md) for concepts, data flow, and walkthroughs. This page is the runnable examples catalog.
 
 Ready-to-run policy examples for common vault workflows. Save any of these as `.flywheel/policies/<name>.yaml` in your vault, then use `policy action=execute` to run.
+
+### Start here
+
+| Pattern | Example | Key feature |
+|---------|---------|-------------|
+| Scaffold/create | [Project Setup](#example-2-project-setup) | Create multiple notes from a template |
+| Append/log | [Daily Standup](#example-3-daily-standup-log) | Add structured content to existing notes |
+| Read→write | [Overdue Invoice Chaser](#example-5-overdue-invoice-chaser) | `vault_search` feeds results into write steps |
+| Read→write | [Team Utilization Report](#example-6-team-utilization-report) | Search + aggregate into a report note |
+| Conditional | [Weekly Review](#example-1-weekly-review) | Create-if-not-exists with conditions |
+| Processing | [Inbox Processing](#example-4-inbox-processing) | Search + frontmatter update loop |
+
+**Note:** Policy steps use internal tool names like `vault_search` and `vault_add_to_section`. These are the same tools available at the MCP level but referenced by their policy schema names.
 
 - [Quick Reference](#quick-reference)
 - [Template Syntax](#template-syntax)

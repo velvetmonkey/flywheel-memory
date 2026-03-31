@@ -27,11 +27,11 @@ One call returns everything the model needs to answer: frontmatter, scored backl
 
 ### Write safely
 
-Every mutation is git-committed, conflict-detected (SHA-256 content hash), and reversible with one undo. Auto-wikilinks resolve entities through a deterministic 13-layer scoring algorithm where every suggestion has a traceable receipt. Proactive linking scores edits made anywhere — Obsidian, synced files, external tools — so the graph grows whether you're using Claude or not. Proactive linking is auditable and can be disabled. [How scoring works ->](docs/ALGORITHM.md)
+Every mutation is git-committed, conflict-detected (SHA-256 content hash), and reversible with one undo. Auto-wikilinks resolve entities through a deterministic 13-layer scoring algorithm where every suggestion has a traceable receipt. For one-off edits, use the direct write tools. For repeatable workflows that need to search the vault and then act on the results, use **policies** — saved YAML workflows that can read vault state, branch on conditions, and drive multiple write steps as a single atomic operation. [How scoring works ->](docs/ALGORITHM.md) | [Policies guide ->](docs/POLICIES.md)
 
 ### Build context over time
 
-`brief` assembles a token-budgeted cold-start summary so the AI picks up where it left off. `memory` persists observations with confidence decay. Vault workflows expressed as YAML policies run parameterized steps with variable substitution and optional atomic git commits. The graph compounds with use. [Policies ->](docs/POLICY_EXAMPLES.md) | [Configuration ->](docs/CONFIGURATION.md)
+`brief` assembles a token-budgeted cold-start summary so the AI picks up where it left off. `memory` persists observations with confidence decay. The graph compounds with use. [Configuration ->](docs/CONFIGURATION.md)
 
 ---
 
@@ -60,6 +60,30 @@ flywheel -> vault_add_to_section
 ```
 
 You type a normal sentence. Flywheel resolves known entities, detects prospective entities (proper nouns, acronyms, CamelCase terms), and adds wikilinks and suggests related links based on aliases, co-occurrence, graph structure, and semantic context. Suggested outgoing links are optional and off by default. Enable them where you want the graph to grow naturally, such as daily notes, meeting logs, or voice capture. [Configuration guide ->](docs/CONFIGURATION.md)
+
+### Policy: Search the vault, then act on it
+
+```text
+> Create a policy that finds overdue invoices and logs follow-up tasks in today's daily note
+
+flywheel -> policy action=author
+  description: "Find invoices with status:sent, create follow-up task list in daily note"
+  ✓ Saved to .flywheel/policies/overdue-invoice-chaser.yaml
+
+> Preview the overdue-invoice-chaser policy
+
+flywheel -> policy action=preview name=overdue-invoice-chaser
+  Step 1: vault_search — query "type:invoice status:sent" in invoices/ — 3 results
+  Step 2: vault_add_to_section — would append to daily-notes/2026-03-31.md#Tasks
+  (no changes made — preview only)
+
+> Execute it
+
+flywheel -> policy action=execute name=overdue-invoice-chaser
+  ✓ 2 steps executed, 1 note modified, committed as single git commit
+```
+
+Policies search the vault, then write back. Author them in plain language, preview before running, and undo with one call if needed. [Policies guide ->](docs/POLICIES.md) | [Examples ->](docs/POLICY_EXAMPLES.md)
 
 ### Boundaries
 

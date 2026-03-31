@@ -37,7 +37,8 @@
 | [PROVE-IT.md](PROVE-IT.md) | Clone it, run it, see it in 5 minutes | "Can I try this right now?" |
 | [SHARING.md](SHARING.md) | What's tracked, privacy guarantees, calibration data | "What does Flywheel record and is it safe to share?" |
 | [BENCHMARKS.md](BENCHMARKS.md) | Performance characteristics at various vault sizes | "How fast is it and how does it scale?" |
-| [POLICY_EXAMPLES.md](POLICY_EXAMPLES.md) | Ready-to-run policy YAML examples | "What can policies do?" |
+| [POLICIES.md](POLICIES.md) | Guide to safe multi-step workflows that search the vault and write back | "How do I build repeatable vault workflows?" |
+| [POLICY_EXAMPLES.md](POLICY_EXAMPLES.md) | Ready-to-run policy YAML examples | "What do concrete policies look like?" |
 | [QUALITY_REPORT.md](QUALITY_REPORT.md) | Graph quality metrics and regression tracking | "How accurate are the suggestions?" |
 
 ---

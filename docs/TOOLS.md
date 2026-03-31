@@ -483,7 +483,15 @@ Semantic routing requires `init_semantic` to have been run. Custom `EMBEDDING_MO
 
 ### `policy`
 
-Define repeatable workflows as YAML policies, then execute them.
+Policies are for repeatable read→write workflows. Direct write tools handle one-off edits; `policy` handles structured multi-step operations that can search the vault and act on the results.
+
+**Use this when:**
+- You need to gather information from the vault and then create or update notes based on what you find
+- You want a repeatable workflow you can run with different parameters (weekly reviews, invoice chasers, project scaffolds)
+- You want to preview what would happen before committing any changes
+- You need multiple writes to execute atomically (all succeed or all roll back)
+
+Policies can include `vault_search` steps that query the vault mid-execution. Results are available to subsequent steps via `{{steps.<step_id>.results}}`. See the [Policies guide](POLICIES.md) for data flow details and walkthroughs.
 
 | Action | What it does |
 |--------|-------------|
@@ -493,6 +501,8 @@ Define repeatable workflows as YAML policies, then execute them.
 | `execute` | Run a policy with variables. |
 | `author` | Generate policy YAML from a description. |
 | `revise` | Modify an existing policy. |
+
+[Policies guide ->](POLICIES.md) | [Examples catalog ->](POLICY_EXAMPLES.md)
 
 ### `vault_undo_last_mutation`
 

@@ -410,21 +410,21 @@ describe('semantic routing (synthetic manifest)', () => {
 describe('getToolRoutingMode', () => {
   // getToolRoutingMode is already imported at the top
 
-  it('defaults to hybrid when tiered', () => {
+  it('defaults to hybrid when full toolset', () => {
     delete process.env.FLYWHEEL_TOOL_ROUTING;
-    expect(getToolRoutingMode('tiered')).toBe('hybrid');
+    expect(getToolRoutingMode(true)).toBe('hybrid');
   });
 
-  it('defaults to pattern when not tiered', () => {
+  it('defaults to pattern when not full toolset', () => {
     delete process.env.FLYWHEEL_TOOL_ROUTING;
-    expect(getToolRoutingMode('off')).toBe('pattern');
+    expect(getToolRoutingMode(false)).toBe('pattern');
   });
 
   it('respects explicit env var', () => {
     process.env.FLYWHEEL_TOOL_ROUTING = 'semantic';
-    expect(getToolRoutingMode('tiered')).toBe('semantic');
+    expect(getToolRoutingMode(true)).toBe('semantic');
     process.env.FLYWHEEL_TOOL_ROUTING = 'pattern';
-    expect(getToolRoutingMode('tiered')).toBe('pattern');
+    expect(getToolRoutingMode(true)).toBe('pattern');
     delete process.env.FLYWHEEL_TOOL_ROUTING;
   });
 });

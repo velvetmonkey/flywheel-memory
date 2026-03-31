@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { ALL_CATEGORIES, INITIAL_TIER_OVERRIDE, TOOL_CATEGORY, TOOL_TIER, TOTAL_TOOL_COUNT, TIER_1_TOOL_COUNT, TIER_2_TOOL_COUNT, TIER_3_TOOL_COUNT, generateInstructions, resolveToolConfig } from '../src/config.js';
+import { ALL_CATEGORIES, INITIAL_TIER_OVERRIDE, PRESETS, TOOL_CATEGORY, TOOL_TIER, TOTAL_TOOL_COUNT, TIER_1_TOOL_COUNT, TIER_2_TOOL_COUNT, TIER_3_TOOL_COUNT, DISCLOSURE_ONLY_TOOLS, generateInstructions, resolveToolConfig } from '../src/config.js';
 import type { ToolCategory, ToolTier, ToolTierOverride } from '../src/config.js';
 import { applyToolGating } from '../src/tool-registry.js';
 import type { ToolTierController, ToolTierMode } from '../src/tool-registry.js';
@@ -453,13 +453,13 @@ describe('tool routing mode integration', () => {
   it('FLYWHEEL_TOOL_ROUTING defaults to hybrid when tiered', async () => {
     delete process.env.FLYWHEEL_TOOL_ROUTING;
     const { getToolRoutingMode } = await import('../src/core/read/toolRouting.js');
-    expect(getToolRoutingMode('tiered')).toBe('hybrid');
+    expect(getToolRoutingMode(true)).toBe('hybrid');
   });
 
-  it('FLYWHEEL_TOOL_ROUTING defaults to pattern when not tiered', async () => {
+  it('FLYWHEEL_TOOL_ROUTING defaults to pattern when not full toolset', async () => {
     delete process.env.FLYWHEEL_TOOL_ROUTING;
     const { getToolRoutingMode } = await import('../src/core/read/toolRouting.js');
-    expect(getToolRoutingMode('off')).toBe('pattern');
+    expect(getToolRoutingMode(false)).toBe('pattern');
   });
 });
 
@@ -1422,7 +1422,7 @@ describe('startup tier override policy', () => {
 function createServerLikeIndexTs(envOverride?: string) {
   const toolConfig = resolveToolConfig(envOverride);
   const enabledCategories = toolConfig.categories;
-  const toolTierMode: ToolTierMode = toolConfig.isFullToolset ? 'tiered' : 'off';
+  const toolTierMode: ToolTierMode = toolConfig.enableProgressiveDisclosure ? 'tiered' : 'off';
   const runtimeToolTierOverride: ToolTierOverride = INITIAL_TIER_OVERRIDE;
 
   const server = new McpServer({ name: 'init-sim', version: '0.0.0' });
@@ -1437,6 +1437,8 @@ function createServerLikeIndexTs(envOverride?: string) {
   );
 
   for (const toolName of Object.keys(TOOL_CATEGORY)) {
+    // disclosure-only tools only registered in tiered mode
+    if (DISCLOSURE_ONLY_TOOLS.has(toolName) && toolTierMode !== 'tiered') continue;
     if (toolName === 'search') {
       server.tool(toolName, { query: z.string().optional(), focus: z.string().optional() }, async () => ({
         content: [{ type: 'text' as const, text: `${toolName} ok` }],
@@ -1468,10 +1470,11 @@ function createServerLikeIndexTs(envOverride?: string) {
 function createHttpPoolServerSim(
   runtimeOverride: ToolTierOverride = INITIAL_TIER_OVERRIDE,
   runtimeActiveTiers: Map<ToolCategory, ToolTier> = new Map(),
+  envOverride?: string,
 ) {
-  const toolConfig = resolveToolConfig();
+  const toolConfig = resolveToolConfig(envOverride);
   const enabledCategories = toolConfig.categories;
-  const toolTierMode: ToolTierMode = toolConfig.isFullToolset ? 'tiered' : 'off';
+  const toolTierMode: ToolTierMode = toolConfig.enableProgressiveDisclosure ? 'tiered' : 'off';
 
   const server = new McpServer({ name: 'http-pool-sim', version: '0.0.0' });
   const controller = applyToolGating(
@@ -1485,6 +1488,7 @@ function createHttpPoolServerSim(
   );
 
   for (const toolName of Object.keys(TOOL_CATEGORY)) {
+    if (DISCLOSURE_ONLY_TOOLS.has(toolName) && toolTierMode !== 'tiered') continue;
     if (toolName === 'search') {
       server.tool(toolName, { query: z.string().optional(), focus: z.string().optional() }, async () => ({
         content: [{ type: 'text' as const, text: `${toolName} ok` }],
@@ -1510,7 +1514,7 @@ function createHttpPoolServerSim(
 }
 
 describe('index.ts initialization simulation (d42835a regression guard)', () => {
-  it('default resolveToolConfig() yields isFullToolset=true and tiered mode', () => {
+  it('default resolveToolConfig() yields isFullToolset=true, no progressive disclosure', () => {
     vi.stubEnv('FLYWHEEL_TOOLS', '');
     vi.stubEnv('FLYWHEEL_PRESET', '');
 
@@ -1518,13 +1522,21 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
       const config = resolveToolConfig();
       expect(config.isFullToolset).toBe(true);
       expect(config.preset).toBe('full');
+      expect(config.enableProgressiveDisclosure).toBe(false);
       expect(config.categories.size).toBe(ALL_CATEGORIES.length);
 
-      const tierMode: ToolTierMode = config.isFullToolset ? 'tiered' : 'off';
-      expect(tierMode).toBe('tiered');
+      const tierMode: ToolTierMode = config.enableProgressiveDisclosure ? 'tiered' : 'off';
+      expect(tierMode).toBe('off');
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+
+  it('auto preset yields isFullToolset=true with progressive disclosure', () => {
+    const config = resolveToolConfig('auto');
+    expect(config.isFullToolset).toBe(true);
+    expect(config.enableProgressiveDisclosure).toBe(true);
+    expect(config.categories.size).toBe(ALL_CATEGORIES.length);
   });
 
   it('primary server simulation lists exactly tier-1 tools', async () => {
@@ -1532,55 +1544,64 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
     vi.stubEnv('FLYWHEEL_PRESET', '');
 
     try {
-      const { server, toolTierMode, runtimeToolTierOverride } = createServerLikeIndexTs();
+      const { server, toolTierMode } = createServerLikeIndexTs();
 
-      expect(toolTierMode).toBe('tiered');
-      expect(runtimeToolTierOverride).toBe('auto');
+      // full preset: no disclosure, all tools visible
+      expect(toolTierMode).toBe('off');
 
       const names = await listToolNames(server);
-      expect(names.size).toBe(TIER_1_TOOL_COUNT);
-
-      const expectedTier1 = new Set(
-        Object.entries(TOOL_TIER).filter(([, t]) => t === 1).map(([name]) => name),
+      // All tools except discover_tools (disclosure-only)
+      const expectedAll = new Set(
+        Object.keys(TOOL_CATEGORY).filter(n => !DISCLOSURE_ONLY_TOOLS.has(n)),
       );
-      expect(names).toEqual(expectedTier1);
+      expect(names).toEqual(expectedAll);
     } finally {
       vi.unstubAllEnvs();
     }
   });
 
-  it('HTTP pool server simulation with auto override lists tier-1 tools', async () => {
+  it('auto preset simulation lists tier-1 tools plus discover_tools', async () => {
+    const { server, toolTierMode } = createServerLikeIndexTs('auto');
+
+    expect(toolTierMode).toBe('tiered');
+
+    const names = await listToolNames(server);
+    expect(names).toContain('discover_tools');
+    expect(names).toContain('search');
+    expect(names).not.toContain('health_check');
+    expect(names.size).toBe(TIER_1_TOOL_COUNT);
+  });
+
+  it('HTTP pool server simulation with full preset lists all tools', async () => {
     vi.stubEnv('FLYWHEEL_TOOLS', '');
     vi.stubEnv('FLYWHEEL_PRESET', '');
 
     try {
       const { server } = createHttpPoolServerSim(INITIAL_TIER_OVERRIDE);
       const names = await listToolNames(server);
-      expect(names.size).toBe(TIER_1_TOOL_COUNT);
+      // full preset: all tools except discover_tools
+      const expectedAll = new Set(
+        Object.keys(TOOL_CATEGORY).filter(n => !DISCLOSURE_ONLY_TOOLS.has(n)),
+      );
+      expect(names).toEqual(expectedAll);
     } finally {
       vi.unstubAllEnvs();
     }
   });
 
-  it('HTTP pool server simulation preserves activated categories from primary', async () => {
-    vi.stubEnv('FLYWHEEL_TOOLS', '');
-    vi.stubEnv('FLYWHEEL_PRESET', '');
+  it('HTTP pool server simulation preserves activated categories (auto preset)', async () => {
+    const activatedTiers = new Map<ToolCategory, ToolTier>([['graph', 2]]);
+    const { server } = createHttpPoolServerSim(INITIAL_TIER_OVERRIDE, activatedTiers, 'auto');
 
-    try {
-      const activatedTiers = new Map<ToolCategory, ToolTier>([['graph', 2]]);
-      const { server } = createHttpPoolServerSim(INITIAL_TIER_OVERRIDE, activatedTiers);
+    const names = await listToolNames(server);
 
-      const names = await listToolNames(server);
-
-      const graphTier2Count = Object.entries(TOOL_TIER)
-        .filter(([name, tier]) => tier === 2 && TOOL_CATEGORY[name] === 'graph')
-        .length;
-      expect(names.size).toBe(TIER_1_TOOL_COUNT + graphTier2Count);
-      expect(names).toContain('graph_analysis');
-      expect(names).toContain('search');
-    } finally {
-      vi.unstubAllEnvs();
-    }
+    const graphTier2Count = Object.entries(TOOL_TIER)
+      .filter(([name, tier]) => tier === 2 && TOOL_CATEGORY[name] === 'graph')
+      .length;
+    expect(names.size).toBe(TIER_1_TOOL_COUNT + graphTier2Count);
+    expect(names).toContain('graph_analysis');
+    expect(names).toContain('search');
+    expect(names).toContain('discover_tools');
   });
 
   it('agent preset yields off mode with no progressive disclosure', async () => {
@@ -1589,9 +1610,12 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
     expect(toolTierMode).toBe('off');
 
     const names = await listToolNames(server);
-    // Agent preset: search(3) + read(3) + write(7) + tasks(3) + memory(2) = 18
-    // All visible because tierMode is 'off' — no progressive disclosure
-    expect(names.size).toBe(TIER_1_TOOL_COUNT);
+    // Agent preset: all tools from agent categories, minus disclosure-only tools
+    const agentToolCount = Object.entries(TOOL_CATEGORY)
+      .filter(([name, cat]) => PRESETS.agent.includes(cat as ToolCategory) && !DISCLOSURE_ONLY_TOOLS.has(name))
+      .length;
+    expect(names.size).toBe(agentToolCount);
+    expect(names).not.toContain('discover_tools');
   });
 });
 

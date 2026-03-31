@@ -39,7 +39,7 @@ const HEADING_REGEX = /^(#{1,6})\s+(.+)$/;
  * Extract all headings from markdown content
  */
 function extractHeadings(content: string): Heading[] {
-  const lines = content.split('\n');
+  const lines = content.replace(/\r\n/g, '\n').split('\n');
   const headings: Heading[] = [];
 
   let inCodeBlock = false;
@@ -126,6 +126,7 @@ export async function getNoteStructure(
     return null;
   }
 
+  content = content.replace(/\r\n/g, '\n');
   const lines = content.split('\n');
   const headings = extractHeadings(content);
   const sections = buildSections(headings, lines.length);
@@ -194,6 +195,7 @@ export async function getSectionContent(
     return null;
   }
 
+  content = content.replace(/\r\n/g, '\n');
   const lines = content.split('\n');
   const headings = extractHeadings(content);
 

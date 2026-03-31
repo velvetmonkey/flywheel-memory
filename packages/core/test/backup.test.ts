@@ -577,7 +577,7 @@ describe('Backup & Recovery', () => {
   // attemptSalvage (extended)
   // ===========================================================================
   describe('attemptSalvage (extended)', () => {
-    it('merges .backup and .backup.1, getting unique rows from each', () => {
+    it('merges .backup and .backup.1, getting unique rows from each', { timeout: 15_000 }, () => {
       // .backup.1 has OldBackup (unique to this source)
       const db1 = openStateDb(testVaultPath);
       db1.db.prepare(

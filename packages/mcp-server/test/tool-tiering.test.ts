@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { ALL_CATEGORIES, INITIAL_TIER_OVERRIDE, TOOL_CATEGORY, TOOL_TIER, generateInstructions, resolveToolConfig } from '../src/config.js';
+import { ALL_CATEGORIES, INITIAL_TIER_OVERRIDE, TOOL_CATEGORY, TOOL_TIER, TOTAL_TOOL_COUNT, TIER_1_TOOL_COUNT, TIER_2_TOOL_COUNT, TIER_3_TOOL_COUNT, generateInstructions, resolveToolConfig } from '../src/config.js';
 import type { ToolCategory, ToolTier, ToolTierOverride } from '../src/config.js';
 import { applyToolGating } from '../src/tool-registry.js';
 import type { ToolTierController, ToolTierMode } from '../src/tool-registry.js';
@@ -664,10 +664,10 @@ describe('generateInstructions integration with controller state', () => {
 describe('full preset reachability', () => {
   it('tier metadata matches expected split', () => {
     const tiers = Object.values(TOOL_TIER);
-    expect(tiers.filter(t => t === 1).length).toBe(18);
-    expect(tiers.filter(t => t === 2).length).toBe(33);
-    expect(tiers.filter(t => t === 3).length).toBe(26);
-    expect(Object.keys(TOOL_CATEGORY).length).toBe(77);
+    expect(tiers.filter(t => t === 1).length).toBe(TIER_1_TOOL_COUNT);
+    expect(tiers.filter(t => t === 2).length).toBe(TIER_2_TOOL_COUNT);
+    expect(tiers.filter(t => t === 3).length).toBe(TIER_3_TOOL_COUNT);
+    expect(Object.keys(TOOL_CATEGORY).length).toBe(TOTAL_TOOL_COUNT);
   });
 
   it('full helper registers every declared tool', () => {
@@ -770,14 +770,14 @@ describe('non-Claude client simulation (listTools-only discovery)', () => {
     expect(names).toContain('flywheel_doctor');
   });
 
-  it('lists exactly 18 tools in tiered/auto mode', async () => {
+  it('lists exactly tier-1 tools in tiered/auto mode', async () => {
     const { server } = createFullPresetServer();
     const names = await listToolNames(server);
 
-    expect(names.size).toBe(18);
+    expect(names.size).toBe(TIER_1_TOOL_COUNT);
   });
 
-  it('lists all 77 tools after setOverride(\'full\')', async () => {
+  it('lists all tools after setOverride(\'full\')', async () => {
     const { server, controller } = createFullPresetServer();
 
     controller.setOverride('full');
@@ -786,7 +786,7 @@ describe('non-Claude client simulation (listTools-only discovery)', () => {
     expect(names.size).toBe(Object.keys(TOOL_CATEGORY).length);
   });
 
-  it('full preset startup exposes all 77 tools to listTools()-only clients', async () => {
+  it('full preset startup exposes all tools to listTools()-only clients', async () => {
     const { server } = createFullPresetServer({ startupOverride: 'full' });
     const names = await listToolNames(server);
 
@@ -1538,7 +1538,7 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
       expect(runtimeToolTierOverride).toBe('auto');
 
       const names = await listToolNames(server);
-      expect(names.size).toBe(18);
+      expect(names.size).toBe(TIER_1_TOOL_COUNT);
 
       const expectedTier1 = new Set(
         Object.entries(TOOL_TIER).filter(([, t]) => t === 1).map(([name]) => name),
@@ -1549,14 +1549,14 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
     }
   });
 
-  it('HTTP pool server simulation with auto override lists 18 tools', async () => {
+  it('HTTP pool server simulation with auto override lists tier-1 tools', async () => {
     vi.stubEnv('FLYWHEEL_TOOLS', '');
     vi.stubEnv('FLYWHEEL_PRESET', '');
 
     try {
       const { server } = createHttpPoolServerSim(INITIAL_TIER_OVERRIDE);
       const names = await listToolNames(server);
-      expect(names.size).toBe(18);
+      expect(names.size).toBe(TIER_1_TOOL_COUNT);
     } finally {
       vi.unstubAllEnvs();
     }
@@ -1591,7 +1591,7 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
     const names = await listToolNames(server);
     // Agent preset: search(3) + read(3) + write(7) + tasks(3) + memory(2) = 18
     // All visible because tierMode is 'off' — no progressive disclosure
-    expect(names.size).toBe(18);
+    expect(names.size).toBe(TIER_1_TOOL_COUNT);
   });
 });
 

@@ -284,13 +284,13 @@ export function applyToolGating(
     return true;
   }
 
-  function enableCategory(category: ToolCategory, tier: ToolTier): void {
-    if (!categories.has(category)) return;
+  function enableCategory(category: ToolCategory, tier: ToolTier): string[] {
+    if (!categories.has(category)) return [];
     const previousTier = activatedCategoryTiers.get(category) ?? 0;
     if (tier > previousTier) {
       activatedCategoryTiers.set(category, tier);
     }
-    refreshToolVisibility();
+    return refreshToolVisibility();
   }
 
   function shouldEnableTool(toolName: string): boolean {
@@ -306,30 +306,35 @@ export function applyToolGating(
     return activatedTier >= tier;
   }
 
-  function refreshToolVisibility(): void {
-    let changed = false;
+  /** Returns names of tools that were newly enabled (empty if no change). */
+  function refreshToolVisibility(): string[] {
+    const newlyEnabled: string[] = [];
     for (const [name, handle] of toolHandles) {
       const enabled = shouldEnableTool(name);
       if (enabled !== handle.enabled) {
         // Set directly to avoid per-tool sendToolListChanged() notifications
         handle.enabled = enabled;
-        changed = true;
+        if (enabled) newlyEnabled.push(name);
       }
     }
-    if (changed) {
+    if (newlyEnabled.length > 0) {
       targetServer.sendToolListChanged();
     }
     // Always fire callback — override state may have changed even if no tools flipped
     if (controllerRef) {
       onTierStateChange?.(controllerRef);
     }
+    return newlyEnabled;
   }
 
-  async function maybeActivateFromContext(toolName: string, params: unknown, searchMethod?: string): Promise<void> {
-    if (tierMode !== 'tiered' || tierOverride === 'full') return;
+  /** Returns names of tools newly activated (empty if none). */
+  async function maybeActivateFromContext(toolName: string, params: unknown, searchMethod?: string): Promise<string[]> {
+    if (tierMode !== 'tiered' || tierOverride === 'full') return [];
+    const newlyEnabled: string[] = [];
     for (const { category, tier } of await getActivationSignals(toolName, params, searchMethod, tierMode)) {
-      enableCategory(category, tier);
+      newlyEnabled.push(...enableCategory(category, tier));
     }
+    return newlyEnabled;
   }
 
   function ensureToolEnabledForDirectCall(toolName: string): void {
@@ -390,7 +395,15 @@ export function applyToolGating(
         result = await handler(...args);
         // Extract search method from result for semantic routing gating
         const searchMethod = extractSearchMethod(result);
-        await maybeActivateFromContext(toolName, params, searchMethod);
+        const newlyActivated = await maybeActivateFromContext(toolName, params, searchMethod);
+        // Append activation notice to response so HTTP clients learn about new tools
+        // (sendToolListChanged notifications are lost over stateless HTTP transport)
+        if (newlyActivated.length > 0 && result?.content && Array.isArray(result.content)) {
+          result.content.push({
+            type: 'text' as const,
+            text: `\n[Progressive disclosure: ${newlyActivated.length} new tools activated: ${newlyActivated.join(', ')}. Call tools/list to refresh.]`,
+          });
+        }
         return result;
       } catch (err) {
         success = false;

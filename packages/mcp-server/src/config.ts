@@ -13,9 +13,9 @@ import type { VaultRegistry } from './vault-registry.js';
 // ============================================================================
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
-// Presets:
-//   full       - All tools, all categories (77 tools, tiered progressive disclosure) — DEFAULT
-//   agent      - Note-taking essentials: search, read, write, tasks, memory (18 tools)
+// Presets (tool counts derived at runtime — see TOTAL_TOOL_COUNT, TIER_1_TOOL_COUNT):
+//   full       - All tools, all categories (tiered progressive disclosure) — DEFAULT
+//   agent      - Note-taking essentials: search, read, write, tasks, memory
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic + export (11 tools)
@@ -29,8 +29,8 @@ import type { VaultRegistry } from './vault-registry.js';
 //   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback (22 tools)
 //
 // Examples:
-//   (no env)                                  # 77 tools, tiered (default = full)
-//   FLYWHEEL_TOOLS=agent                      # 18 tools, no tiering
+//   (no env)                                  # all tools, tiered (default = full)
+//   FLYWHEEL_TOOLS=agent                      # agent preset, no tiering
 //   FLYWHEEL_TOOLS=agent,graph                # 29 tools, no tiering
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
@@ -325,7 +325,7 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
 };
 
 export const TOOL_TIER: Record<string, ToolTier> = {
-  // Tier 1 — always visible (= agent preset, 18 tools)
+  // Tier 1 — always visible (= agent preset, see TIER_1_TOOL_COUNT)
   search: 1,
   init_semantic: 1,
   find_similar: 1,
@@ -345,7 +345,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   memory: 1,
   brief: 1,
 
-  // Tier 2 — context-triggered categories + core diagnostics (33 tools)
+  // Tier 2 — context-triggered categories + core diagnostics (see TIER_2_TOOL_COUNT)
   graph_analysis: 2,
   semantic_analysis: 2,
   get_backlinks: 2,
@@ -380,7 +380,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   server_log: 2,
   flywheel_doctor: 2,
 
-  // Tier 3 — explicit or advanced operations (26 tools)
+  // Tier 3 — explicit or advanced operations (see TIER_3_TOOL_COUNT)
   vault_schema: 3,
   schema_conventions: 3,
   schema_validate: 3,
@@ -425,6 +425,12 @@ function assertToolTierCoverage(): void {
 }
 
 assertToolTierCoverage();
+
+// Computed constants — derived from TOOL_CATEGORY and TOOL_TIER, never hardcode these numbers
+export const TOTAL_TOOL_COUNT = Object.keys(TOOL_CATEGORY).length;
+export const TIER_1_TOOL_COUNT = Object.values(TOOL_TIER).filter(t => t === 1).length;
+export const TIER_2_TOOL_COUNT = Object.values(TOOL_TIER).filter(t => t === 2).length;
+export const TIER_3_TOOL_COUNT = Object.values(TOOL_TIER).filter(t => t === 3).length;
 
 // ============================================================================
 // Server Instructions (dynamic, based on enabled categories)

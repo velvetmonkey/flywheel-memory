@@ -18,6 +18,8 @@ import {
   PRESETS,
   TOOL_CATEGORY,
   TOOL_TIER,
+  TOTAL_TOOL_COUNT,
+  TIER_1_TOOL_COUNT,
   resolveToolConfig,
   type ToolCategory,
   type ToolTier,
@@ -252,7 +254,7 @@ describe('per-preset tool registration via registerAllTools()', () => {
 
   it.each([
     { label: 'full', env: 'full', expected: TOTAL_TOOLS },
-    { label: 'agent', env: 'agent', expected: 18 },
+    { label: 'agent', env: 'agent', expected: TIER_1_TOOL_COUNT },
     { label: 'agent,graph', env: 'agent,graph', expected: 29 },
     { label: 'graph', env: 'graph', expected: 11 },
     { label: 'schema', env: 'schema', expected: 7 },
@@ -348,7 +350,7 @@ describe('category gating correctness', () => {
     expect(registeredNames.has('health_check')).toBe(false);
   });
 
-  it('full preset: all 77 tools present in _registeredTools', () => {
+  it('full preset: all tools present in _registeredTools', () => {
     const { server } = createServerForConfig('full');
     const registered = (server as any)._registeredTools;
     const registeredNames = new Set(Object.keys(registered));
@@ -375,7 +377,7 @@ describe('category gating correctness', () => {
 // ============================================================================
 
 describe('tiered full preset — client visibility', () => {
-  it('initially exposes exactly the 18 tier-1 tools', async () => {
+  it('initially exposes exactly the tier-1 tools', async () => {
     const { server } = createServerForConfig('full', 'tiered');
     const names = await listToolNames(server);
 
@@ -385,10 +387,10 @@ describe('tiered full preset — client visibility', () => {
         .map(([name]) => name),
     );
     expect(names).toEqual(tier1Tools);
-    expect(names.size).toBe(18);
+    expect(names.size).toBe(TIER_1_TOOL_COUNT);
   });
 
-  it('setOverride("full") exposes all 77 tools', async () => {
+  it('setOverride("full") exposes all tools', async () => {
     const { server, controller } = createServerForConfig('full', 'tiered');
 
     controller.setOverride('full');

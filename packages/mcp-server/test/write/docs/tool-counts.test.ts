@@ -9,7 +9,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
-import { PRESETS, TOOL_CATEGORY, TOOL_TIER, ALL_CATEGORIES } from '../../../src/config.js';
+import { PRESETS, TOOL_CATEGORY, TOOL_TIER, ALL_CATEGORIES, TIER_1_TOOL_COUNT } from '../../../src/config.js';
 import { VALID_CONFIG_KEYS } from '../../../src/tools/write/config.js';
 
 const TOOLS_DIR = path.join(__dirname, '../../../src/tools');
@@ -303,15 +303,15 @@ describe('Tool Gating Invariants', () => {
       .sort();
 
     expect(tierOneTools).toEqual(agentPresetTools);
-    expect(tierOneTools).toHaveLength(18);
+    expect(tierOneTools).toHaveLength(TIER_1_TOOL_COUNT);
   });
 
-  it('tier counts match the expected 18/remainder split', () => {
+  it('tier counts match the expected tier-1/remainder split', () => {
     const tierOneCount = Object.values(TOOL_TIER).filter((tier) => tier === 1).length;
     const higherTierCount = Object.values(TOOL_TIER).filter((tier) => tier > 1).length;
 
-    expect(tierOneCount).toBe(18);
-    expect(higherTierCount).toBe(Object.keys(TOOL_TIER).length - 18);
+    expect(tierOneCount).toBe(TIER_1_TOOL_COUNT);
+    expect(higherTierCount).toBe(Object.keys(TOOL_TIER).length - TIER_1_TOOL_COUNT);
   });
 });
 

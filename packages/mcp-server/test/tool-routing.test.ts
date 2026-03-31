@@ -8,7 +8,7 @@
 
 import { describe, it, expect, afterEach } from 'vitest';
 import { collectToolCatalog, getCatalogSourceHash } from '../src/tools/toolCatalog.js';
-import { TOOL_CATEGORY, TOOL_TIER } from '../src/config.js';
+import { TOOL_CATEGORY, TOOL_TIER, TOTAL_TOOL_COUNT } from '../src/config.js';
 import {
   createToolRoutingIndex,
   getToolRoutingMode,
@@ -25,8 +25,8 @@ import {
 describe('tool catalog collector', () => {
   const catalog = collectToolCatalog();
 
-  it('collects exactly 77 tools', () => {
-    expect(catalog.size).toBe(77);
+  it('collects exactly TOTAL_TOOL_COUNT tools', () => {
+    expect(catalog.size).toBe(TOTAL_TOOL_COUNT);
   });
 
   it('tool names match TOOL_CATEGORY keys', () => {

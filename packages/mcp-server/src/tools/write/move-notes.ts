@@ -177,7 +177,7 @@ export function registerMoveNoteTools(
   // ========================================
   server.tool(
     'vault_move_note',
-    'Move a note to a new vault location and update all backlinks across the vault',
+    'Use when relocating a note to a different folder. Produces a file move with automatic backlink updates across the vault. Returns new path and updated backlink count. Does not rename the note — use vault_rename_note for title changes.',
     {
       oldPath: z.string().describe('Vault-relative path to move from (e.g., "inbox/note.md")'),
       newPath: z.string().describe('Vault-relative path to move to (e.g., "projects/note.md")'),
@@ -372,7 +372,7 @@ export function registerMoveNoteTools(
   // ========================================
   server.tool(
     'vault_rename_note',
-    'Rename a note in place and update all backlinks across the vault',
+    'Use when changing a note title in place. Produces a file rename with automatic backlink updates across the vault. Returns new path and updated backlink count. Does not move the note to another folder — use vault_move_note for that.',
     {
       path: z.string().describe('Vault-relative path to the note to rename'),
       newTitle: z.string().describe('New title for the note (without .md extension)'),

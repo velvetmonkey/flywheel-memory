@@ -318,9 +318,7 @@ export function registerGraphExportTools(
 ): void {
   server.tool(
     'export_graph',
-    'Export the vault knowledge graph as GraphML (for Gephi/yEd/Cytoscape) or JSON. ' +
-    'Includes notes, entities, wikilinks, edge weights, and co-occurrence relationships. ' +
-    'Use center_entity + depth for focused ego-network exports (e.g., "everything within 2 hops of Acme Corp").',
+    'Use when exporting the vault knowledge graph for visualization in external tools. Produces GraphML or JSON with notes, entities, wikilinks, and edge weights. Returns the serialized graph data. Does not render or display the graph — import the output into Gephi, yEd, or Cytoscape.',
     {
       format: z.enum(['graphml', 'json']).default('graphml')
         .describe('Output format: "graphml" for graph tools (Gephi, yEd, Cytoscape), "json" for programmatic use'),

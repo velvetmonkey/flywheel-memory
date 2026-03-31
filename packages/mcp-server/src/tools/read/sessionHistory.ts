@@ -17,7 +17,7 @@ export function registerSessionHistoryTools(
 ): void {
   server.tool(
     'vault_session_history',
-    'View session history. Without session_id: lists recent sessions. With session_id: returns chronological tool invocations, notes accessed, and timing. Hierarchical sessions supported (parent ID includes child sessions).',
+    'Use when reviewing past agent sessions. Produces session summaries or detailed tool invocation timelines. Returns session list or chronological tool calls with parameters and results. Does not modify session records — read-only access.',
     {
       session_id: z.string().optional().describe('Session ID for detail view. Omit for recent sessions list.'),
       include_children: z.boolean().optional().describe('Include child sessions (default: true)'),

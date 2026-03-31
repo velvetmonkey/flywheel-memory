@@ -33,7 +33,7 @@ export function registerMergeTools(
 ): void {
   server.tool(
     'merge_entities',
-    'Merge a source entity note into a target entity note: adds alias, appends content, updates wikilinks, deletes source',
+    'Use when consolidating two entity notes into one. Produces alias addition, content append, wikilink rewiring, and source note deletion. Returns merge result with updated link count. Does not preserve the source note — it is deleted after merge.',
     {
       source_path: z.string().describe('Vault-relative path of the note to merge FROM (will be deleted)'),
       target_path: z.string().describe('Vault-relative path of the note to merge INTO (receives alias + content)'),
@@ -218,7 +218,7 @@ export function registerMergeTools(
   // ========================================
   server.tool(
     'absorb_as_alias',
-    'Absorb an entity name as an alias of a target note: adds alias to target frontmatter, rewrites all [[source]] links to [[target|source]], and deletes the source note if it exists. Lighter than merge_entities — no source note required, no content append.',
+    'Use when two entity names should resolve to the same note without merging content. Produces an alias addition on the target note and rewrites all source links. Returns rewritten link count and updated frontmatter. Does not merge note bodies — use merge_entities for full content merge.',
     {
       source_name: z.string().describe('The entity name to absorb (e.g. "Foo")'),
       target_path: z.string().describe('Vault-relative path of the target entity note (e.g. "entities/Bar.md")'),

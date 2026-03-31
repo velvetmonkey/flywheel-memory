@@ -20,6 +20,7 @@ import { registerSemanticAnalysisTools } from '../../../src/tools/read/semanticA
 import { registerNoteIntelligenceTools } from '../../../src/tools/read/noteIntelligence.js';
 import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
 import { setFTS5Database } from '../../../src/core/read/fts5.js';
+import { setProspectStateDb } from '../../../src/core/shared/prospects.js';
 import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
 
 export interface TestServerContext {
@@ -27,6 +28,7 @@ export interface TestServerContext {
   server: McpServer;
   vaultIndex: VaultIndex;
   vaultPath: string;
+  getIndex: () => VaultIndex;
 }
 
 /**
@@ -46,6 +48,7 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     stateDb = openStateDb(vaultPath);
     // Inject StateDb handle for FTS5 content search
     setFTS5Database(stateDb.db);
+    setProspectStateDb(stateDb);
   } catch (err) {
     console.error('Failed to open StateDb:', err);
   }
@@ -70,7 +73,8 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
   registerWikilinkTools(
     server,
     () => currentIndex,
-    () => vaultPath
+    () => vaultPath,
+    () => stateDb
   );
 
   registerHealthTools(
@@ -143,6 +147,7 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     vaultIndex,
     vaultPath,
     stateDb,
+    getIndex: () => currentIndex,
   };
 }
 

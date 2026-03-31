@@ -4,7 +4,7 @@
 
 Your vault is your second brain. You don't hand it to software you can't trust.
 
-**2,760 defined tests | 142 test files | 54,700+ lines of test code**
+**3,025 defined tests | 156 test files | 60,300+ lines of test code**
 
 - [Test Philosophy](#test-philosophy)
 - [CI Pipeline](#ci-pipeline)
@@ -458,7 +458,7 @@ This kind of test is valuable because it measures actual tool selection and comp
 |---|---|---|---|---|
 | **Per-tool coverage** | Claude discovers and uses each of 69 individual tools | 69 | **100% adoption** | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
 | **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
-| **Sequential workflow** | 7-beat workflow where each beat builds on previous vault state | 7 beats | 7/7 passed | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
+| **Sequential workflow** | 9-beat workflow (retrieval + learning loop + operational) where each beat builds on previous vault state | 9 beats | — | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
 | **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 500 questions | 92.4% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
 | **LoCoMo benchmark** | Retrieval + answer accuracy on long-term conversational memory (5 categories) | 695 scored questions | 84.3% evidence recall, 58.7% accuracy | [`locomo/run-benchmark.sh`](../demos/locomo/run-benchmark.sh) |
 
@@ -807,7 +807,7 @@ Each of 69 tools tested with a targeted prompt against carter-strategy vault.
 
 ### Demo Beat Coverage
 
-7-beat sequential demo with all 69 tools available.
+9-beat sequential demo across retrieval, learning loop, and operational beats.
 
 <!-- BEGIN DEMO TEST RESULTS -->
 # Demo Beat Analysis

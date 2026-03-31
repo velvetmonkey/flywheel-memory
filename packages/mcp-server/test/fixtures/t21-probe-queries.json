@@ -1,0 +1,92 @@
+[
+  {
+    "query": "What was I working on last week?",
+    "expectedPrimaryTool": "temporal_summary",
+    "expectedActivatedCategory": "temporal",
+    "notes": "Clear temporal intent \u2014 should route to temporal_summary over search"
+  },
+  {
+    "query": "Find notes about React hooks",
+    "expectedPrimaryTool": "search",
+    "expectedActivatedCategory": null,
+    "notes": "Basic keyword search \u2014 Tier 1, always available"
+  },
+  {
+    "query": "Show me the structure of my project planning note",
+    "expectedPrimaryTool": "get_note_structure",
+    "expectedActivatedCategory": null,
+    "notes": "Explicit structure request \u2014 Tier 1 read tool"
+  },
+  {
+    "query": "Are there any broken links in my vault?",
+    "expectedPrimaryTool": "validate_links",
+    "expectedActivatedCategory": "wikilinks",
+    "notes": "Link validation intent \u2014 wikilinks category"
+  },
+  {
+    "query": "What entities are connected to the React project?",
+    "expectedPrimaryTool": null,
+    "expectedActivatedCategory": "graph",
+    "notes": "Graph exploration \u2014 could be get_strong_connections, get_forward_links, or graph_analysis"
+  },
+  {
+    "query": "Remember that I prefer dark mode for code blocks",
+    "expectedPrimaryTool": "memory",
+    "expectedActivatedCategory": null,
+    "notes": "Memory store intent \u2014 Tier 1"
+  },
+  {
+    "query": "Create a new meeting note for the standup",
+    "expectedPrimaryTool": "vault_create_note",
+    "expectedActivatedCategory": null,
+    "notes": "Note creation \u2014 Tier 1 write tool"
+  },
+  {
+    "query": "Which notes need attention or are going stale?",
+    "expectedPrimaryTool": "predict_stale_notes",
+    "expectedActivatedCategory": "temporal",
+    "notes": "Staleness detection \u2014 temporal category"
+  },
+  {
+    "query": "What frontmatter fields are used across my vault?",
+    "expectedPrimaryTool": "vault_schema",
+    "expectedActivatedCategory": "schema",
+    "notes": "Schema inspection \u2014 schema category"
+  },
+  {
+    "query": "That wikilink suggestion was wrong, the entity is incorrect",
+    "expectedPrimaryTool": "vault_record_correction",
+    "expectedActivatedCategory": "corrections",
+    "notes": "Correction recording \u2014 corrections category"
+  },
+  {
+    "query": "How has the API Design entity evolved over time?",
+    "expectedPrimaryTool": "track_concept_evolution",
+    "expectedActivatedCategory": "temporal",
+    "notes": "Entity timeline \u2014 temporal category"
+  },
+  {
+    "query": "Is the server healthy? Check if everything is working",
+    "expectedPrimaryTool": "health_check",
+    "expectedActivatedCategory": "diagnostics",
+    "notes": "Health check intent \u2014 diagnostics category"
+  },
+  {
+    "query": "Where could I add more wikilinks in my vault?",
+    "expectedPrimaryTool": null,
+    "expectedActivatedCategory": "wikilinks",
+    "notes": "Link discovery \u2014 could be suggest_wikilinks, unlinked_mentions_report, or discover_cooccurrence_gaps"
+  },
+  {
+    "query": "Show me the shortest path between Note A and Note B",
+    "expectedPrimaryTool": "get_link_path",
+    "expectedActivatedCategory": "graph",
+    "notes": "Graph path finding \u2014 specific graph tool"
+  },
+  {
+    "query": "Give me a summary to start this session",
+    "expectedPrimaryTool": "brief",
+    "expectedActivatedCategory": null,
+    "notes": "Session startup \u2014 Tier 1 brief tool"
+  }
+]

@@ -21,7 +21,7 @@ export function registerCorrectionTools(
 ): void {
   server.tool(
     'vault_record_correction',
-    'Record a persistent correction (e.g., "that link is wrong", "undo that"). Survives across sessions.',
+    'Use when the user says something is wrong — a bad link, wrong entity, or wrong category. Produces a persistent correction record that survives across sessions. Returns the saved correction with ID and timestamp. Does not apply the fix — use vault_resolve_correction after fixing.',
     {
       correction_type: z.enum(['wrong_link', 'wrong_entity', 'wrong_category', 'general']).describe('Type of correction'),
       description: z.string().describe('What went wrong and what should be done'),
@@ -52,7 +52,7 @@ export function registerCorrectionTools(
 
   server.tool(
     'vault_list_corrections',
-    'List recorded corrections, optionally filtered by status or entity.',
+    'Use when checking for pending, applied, or dismissed corrections. Produces a filtered list of correction records with status and entity. Returns correction entries with type, description, and timestamps. Does not resolve or dismiss — use vault_resolve_correction for that.',
     {
       status: z.enum(['pending', 'applied', 'dismissed']).optional().describe('Filter by status'),
       entity: z.string().optional().describe('Filter by entity name'),
@@ -82,7 +82,7 @@ export function registerCorrectionTools(
 
   server.tool(
     'vault_resolve_correction',
-    'Resolve a correction by marking it as applied or dismissed.',
+    'Use when marking a correction as applied or dismissed after addressing it. Produces an updated correction record with resolution status. Returns confirmation with the resolved correction ID. Does not undo the fix — only updates the correction tracking record.',
     {
       correction_id: z.number().describe('ID of the correction to resolve'),
       status: z.enum(['applied', 'dismissed']).describe('New status'),

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Full tool coverage test — one targeted prompt per flywheel tool (69 tools).
+# Full tool coverage test — one targeted prompt per flywheel tool (77 tools).
 #
 # Usage:
 #   demos/run-coverage-test.sh                        # default: 1 run, sonnet

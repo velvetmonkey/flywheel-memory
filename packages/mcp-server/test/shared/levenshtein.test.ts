@@ -49,15 +49,15 @@ describe('fuzzySimilarity', () => {
   });
 
   it('returns correct similarity for close strings', () => {
-    // fartimus vs fartmus: distance=1, maxLen=8 → 1 - 1/8 = 0.875
-    const sim = fuzzySimilarity('fartimus', 'fartmus');
+    // zorbatix vs zorbatx: distance=1, maxLen=8 → 1 - 1/8 = 0.875
+    const sim = fuzzySimilarity('zorbatix', 'zorbatx');
     expect(sim).toBeCloseTo(0.875, 2);
   });
 });
 
 describe('fuzzyMatchScore', () => {
   it('returns similarity when above threshold', () => {
-    const score = fuzzyMatchScore('fartimus', 'fartmus', 0.80);
+    const score = fuzzyMatchScore('zorbatix', 'zorbatx', 0.80);
     expect(score).toBeCloseTo(0.875, 2);
   });
 
@@ -74,8 +74,8 @@ describe('fuzzyMatchScore', () => {
 
 describe('bestFuzzyMatch', () => {
   it('finds best match above threshold from candidates', () => {
-    const candidates = new Set(['fartmus', 'hello', 'world', 'fartimus']);
-    const best = bestFuzzyMatch('fartimus', candidates, 0.80);
+    const candidates = new Set(['zorbatx', 'hello', 'world', 'zorbatix']);
+    const best = bestFuzzyMatch('zorbatix', candidates, 0.80);
     expect(best).toBe(1); // exact match in candidates
   });
 
@@ -91,7 +91,7 @@ describe('bestFuzzyMatch', () => {
 
   it('returns 0 when no candidates match', () => {
     const candidates = new Set(['completely', 'different', 'words']);
-    expect(bestFuzzyMatch('fartimus', candidates, 0.80)).toBe(0);
+    expect(bestFuzzyMatch('zorbatix', candidates, 0.80)).toBe(0);
   });
 });
 
@@ -139,7 +139,7 @@ describe('scoreFuzzyMatch', () => {
   it('matches token-level typos for unmatched tokens', () => {
     const cache2 = new Map<string, number>();
     const result = scoreFuzzyMatch(
-      ['fartimus'], [0], new Set(['fartmus', 'hello', 'world']), new Set(), 'Fartimus', 4, idfFn, cache2,
+      ['zorbatix'], [0], new Set(['zorbatx', 'hello', 'world']), new Set(), 'Zorbatix', 4, idfFn, cache2,
     );
     expect(result.fuzzyScore).toBeGreaterThan(0);
     expect(result.fuzzyMatchedWords).toBe(1);
@@ -160,13 +160,13 @@ describe('scoreFuzzyMatch', () => {
 
   it('uses cache for repeated token lookups', () => {
     const cache2 = new Map<string, number>();
-    const contentTokens = new Set(['fartmus', 'hello']);
+    const contentTokens = new Set(['zorbatx', 'hello']);
 
-    scoreFuzzyMatch(['fartimus'], [0], contentTokens, new Set(), 'Fartimus', 4, idfFn, cache2);
-    expect(cache2.has('fartimus')).toBe(true);
+    scoreFuzzyMatch(['zorbatix'], [0], contentTokens, new Set(), 'Zorbatix', 4, idfFn, cache2);
+    expect(cache2.has('zorbatix')).toBe(true);
 
     // Second call should use cache
-    const result2 = scoreFuzzyMatch(['fartimus'], [0], contentTokens, new Set(), 'Fartimus', 4, idfFn, cache2);
+    const result2 = scoreFuzzyMatch(['zorbatix'], [0], contentTokens, new Set(), 'Zorbatix', 4, idfFn, cache2);
     expect(result2.fuzzyScore).toBeGreaterThan(0);
   });
 });

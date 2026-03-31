@@ -26,11 +26,7 @@ export function registerActivityTools(
     {
       title: 'Vault Activity',
       description:
-        'What tools have been used and what notes accessed? Tracks tool usage patterns and session activity. Modes:\n' +
-        '- "session": Current session summary (tools called, notes accessed)\n' +
-        '- "sessions": List of recent sessions\n' +
-        '- "note_access": Notes ranked by query frequency\n' +
-        '- "tool_usage": Tool usage patterns (most-used tools, avg duration)',
+        'Use when checking what tools have been used and what notes have been accessed. Produces tool invocation records with session context and note paths. Returns activity entries filtered by tool name, session, or time range. Does not modify tracking data — read-only activity log.',
       inputSchema: {
         mode: z.enum(['session', 'sessions', 'note_access', 'tool_usage']).describe('Activity query mode'),
         session_id: z.string().optional().describe('Specific session ID (for session mode, defaults to current)'),

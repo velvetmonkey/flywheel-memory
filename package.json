@@ -2,7 +2,7 @@
   "name": "flywheel-memory-monorepo",
   "version": "2.0.154",
   "private": true,
-  "description": "Local-first memory for AI agents. Select from 77 tools. No cloud. Everything connects.",
+  "description": "MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 77 tools, local-first, no cloud.",
   "workspaces": [
     "packages/*"
   ],

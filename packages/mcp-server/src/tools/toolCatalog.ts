@@ -13,6 +13,7 @@ import { registerAllTools, type ToolRegistryContext } from '../tool-registry.js'
 
 export interface CatalogEntry {
   name: string;
+  rawDescription: string;   // exact string from tool registration
   description: string;      // normalized: trimmed, whitespace-collapsed
   category: ToolCategory;
   tier: ToolTier;
@@ -118,6 +119,7 @@ export function collectToolCatalog(): Map<string, CatalogEntry> {
     const description = normalizeDescription(rawDescription);
     catalog.set(name, {
       name,
+      rawDescription,
       description,
       category,
       tier,

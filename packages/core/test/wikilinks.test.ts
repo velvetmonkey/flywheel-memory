@@ -1302,8 +1302,8 @@ Machine Learning is great outside the comment`;
 
 describe('noise reduction', () => {
   describe('T1: minimum alias length guard', () => {
-    it('should not match single-char aliases like "I" for Ben', () => {
-      const result = applyWikilinks('I went to the store', [{ name: 'Ben', aliases: ['I'] }]);
+    it('should not match single-char aliases like "I" for Max', () => {
+      const result = applyWikilinks('I went to the store', [{ name: 'Max', aliases: ['I'] }]);
       expect(result.content).toBe('I went to the store');
       expect(result.linksAdded).toBe(0);
     });
@@ -1311,7 +1311,7 @@ describe('noise reduction', () => {
     it('should not match two-char common-word aliases like "us" and "me"', () => {
       const result = applyWikilinks('Tell us about me', [
         { name: 'USA', aliases: ['us'] },
-        { name: 'Ben', aliases: ['me'] },
+        { name: 'Max', aliases: ['me'] },
       ]);
       expect(result.content).toBe('Tell us about me');
       expect(result.linksAdded).toBe(0);
@@ -1438,21 +1438,21 @@ describe('noise reduction', () => {
 
   describe('T4: sentence starter trimming', () => {
     it('should trim "So" from proper noun matches', () => {
-      const result = detectImplicitEntities('So Fartimus Venturi is here');
+      const result = detectImplicitEntities('So Nadia Kovalenko is here');
       const names = result.map(m => m.text);
-      expect(names).not.toContain('So Fartimus Venturi');
+      expect(names).not.toContain('So Nadia Kovalenko');
     });
 
     it('should trim "Hello" from proper noun matches', () => {
-      const result = detectImplicitEntities('Hello Ben Smith arrived');
+      const result = detectImplicitEntities('Hello Max Torres arrived');
       const names = result.map(m => m.text);
-      expect(names).not.toContain('Hello Ben Smith');
+      expect(names).not.toContain('Hello Max Torres');
     });
 
     it('should trim "Mr" from proper noun matches', () => {
-      const result = detectImplicitEntities('Mr Ben Cassie signed');
+      const result = detectImplicitEntities('Mr Max Torres signed');
       const names = result.map(m => m.text);
-      expect(names).not.toContain('Mr Ben Cassie');
+      expect(names).not.toContain('Mr Max Torres');
     });
 
     it('should trim "How" and keep multi-word remainder', () => {

@@ -19,7 +19,7 @@ export function registerLearningReportTools(
 ): void {
   server.tool(
     'flywheel_learning_report',
-    'Get a narrative report of the flywheel auto-linking system\'s learning progress. Shows: applications by day, feedback (positive/negative), survival rate, top rejected entities, suggestion funnel (evaluations → applications → survivals), and graph growth. Use compare=true for period-over-period deltas.',
+    'Use when assessing the auto-linking learning system effectiveness. Produces a narrative report of applications by day, feedback ratios, accuracy trends, and per-entity performance. Returns learning progress metrics and trend analysis. Does not modify scoring weights — read-only reporting.',
     {
       days_back: z.number().min(1).max(365).optional()
         .describe('Analysis window in days (default: 7). Use 1 for today, 2 for last 48h, etc.'),

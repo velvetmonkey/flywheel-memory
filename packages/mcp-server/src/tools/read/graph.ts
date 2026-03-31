@@ -93,7 +93,7 @@ export function registerGraphTools(
     'get_backlinks',
     {
       title: 'Get Backlinks',
-      description: 'Get all notes that link TO the specified note. Returns the source file paths and line numbers where links appear.',
+      description: 'Use when finding which notes reference a given note. Produces a list of incoming links with source file paths and surrounding line context. Returns backlink entries ranked by edge weight. Does not return outgoing links — use get_forward_links for that.',
       inputSchema: {
         path: z.string().describe('Path to the note (e.g., "daily/2024-01-15.md" or just "My Note")'),
         include_context: z.boolean().default(true).describe('Include surrounding text for context'),
@@ -205,7 +205,7 @@ export function registerGraphTools(
     'get_forward_links',
     {
       title: 'Get Forward Links',
-      description: 'Get all notes that this note links TO. Returns the target paths and whether they exist.',
+      description: 'Use when listing which notes a given note links to. Produces outgoing wikilink targets with resolved paths and existence status. Returns forward link entries with alias text. Does not return incoming links — use get_backlinks for that.',
       inputSchema: {
         path: z.string().describe('Path to the note (e.g., "daily/2024-01-15.md" or just "My Note")'),
       },
@@ -259,7 +259,7 @@ export function registerGraphTools(
   // get_weighted_links - Get outgoing links with edge weights
   server.tool(
     'get_weighted_links',
-    'Get outgoing links from a note ranked by edge weight. Weights reflect link survival, co-session access, and source activity. Time decay is applied at query time.',
+    'Use when ranking outgoing links from a note by relationship strength. Produces weighted link entries reflecting edge survival, co-session access, and source activity. Returns ranked outgoing links with weight scores. Does not include incoming links — use get_strong_connections for bidirectional.',
     {
       path: z.string().describe('Path to the note (e.g., "daily/2026-02-24.md")'),
       min_weight: z.number().default(1.0).describe('Minimum weight threshold (default 1.0)'),
@@ -314,7 +314,7 @@ export function registerGraphTools(
   // get_strong_connections - Bidirectional connections ranked by combined weight
   server.tool(
     'get_strong_connections',
-    'Get bidirectional connections for a note ranked by combined edge weight. Returns both outgoing and incoming links.',
+    'Use when finding the most important relationships for a note in both directions. Produces bidirectional connections ranked by combined edge weight. Returns both incoming and outgoing links sorted by strength. Does not compute path distances — use get_link_path for shortest paths.',
     {
       path: z.string().describe('Path to the note (e.g., "daily/2026-02-24.md")'),
       limit: z.number().default(20).describe('Maximum number of results to return'),

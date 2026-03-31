@@ -35,9 +35,7 @@ export function registerSemanticTools(
     {
       title: 'Initialize Semantic Search',
       description:
-        'Download the embedding model and build semantic search index for this vault. ' +
-        'After running, search and find_similar automatically use hybrid ranking (BM25 + semantic). ' +
-        'Run once per vault — subsequent calls verify health and skip already-embedded notes unless force=true.',
+        'Run once to build vector embeddings for hybrid search. Produces an embedding index over all notes and entities. Returns embedding count and build duration. Does not run automatically — must be invoked explicitly. After building, search and find_similar automatically use semantic matching alongside BM25.',
       inputSchema: {
         force: z.boolean().optional().describe(
           'Clear and rebuild all embeddings from scratch (default: false)'

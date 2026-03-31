@@ -18,6 +18,8 @@ import {
   PRESETS,
   TOOL_CATEGORY,
   TOOL_TIER,
+  TOTAL_TOOL_COUNT,
+  TIER_1_TOOL_COUNT,
   resolveToolConfig,
   type ToolCategory,
   type ToolTier,
@@ -65,7 +67,7 @@ function createServerForConfig(
     undefined,
     tierMode,
   );
-  registerAllTools(server, createStubRegistryContext());
+  registerAllTools(server, createStubRegistryContext(), controller);
   controller.finalizeRegistration();
   return { server, controller, resolved };
 }
@@ -85,7 +87,7 @@ function createServerForCategories(
     undefined,
     tierMode,
   );
-  registerAllTools(server, createStubRegistryContext());
+  registerAllTools(server, createStubRegistryContext(), controller);
   controller.finalizeRegistration();
   return { server, controller };
 }
@@ -252,20 +254,20 @@ describe('per-preset tool registration via registerAllTools()', () => {
 
   it.each([
     { label: 'full', env: 'full', expected: TOTAL_TOOLS },
-    { label: 'agent', env: 'agent', expected: 18 },
-    { label: 'agent,graph', env: 'agent,graph', expected: 29 },
-    { label: 'graph', env: 'graph', expected: 11 },
-    { label: 'schema', env: 'schema', expected: 7 },
-    { label: 'wikilinks', env: 'wikilinks', expected: 7 },
-    { label: 'corrections', env: 'corrections', expected: 4 },
-    { label: 'tasks', env: 'tasks', expected: 3 },
-    { label: 'memory', env: 'memory', expected: 2 },
-    { label: 'note-ops', env: 'note-ops', expected: 4 },
-    { label: 'temporal', env: 'temporal', expected: 4 },
-    { label: 'diagnostics', env: 'diagnostics', expected: 22 },
-    { label: 'search', env: 'search', expected: 3 },
-    { label: 'read', env: 'read', expected: 3 },
-    { label: 'write', env: 'write', expected: 7 },
+    { label: 'agent', env: 'agent', expected: TIER_1_TOOL_COUNT },
+    { label: 'agent,graph', env: 'agent,graph', expected: TIER_1_TOOL_COUNT + CATEGORY_COUNTS.graph },
+    { label: 'graph', env: 'graph', expected: CATEGORY_COUNTS.graph },
+    { label: 'schema', env: 'schema', expected: CATEGORY_COUNTS.schema },
+    { label: 'wikilinks', env: 'wikilinks', expected: CATEGORY_COUNTS.wikilinks },
+    { label: 'corrections', env: 'corrections', expected: CATEGORY_COUNTS.corrections },
+    { label: 'tasks', env: 'tasks', expected: CATEGORY_COUNTS.tasks },
+    { label: 'memory', env: 'memory', expected: CATEGORY_COUNTS.memory },
+    { label: 'note-ops', env: 'note-ops', expected: CATEGORY_COUNTS['note-ops'] },
+    { label: 'temporal', env: 'temporal', expected: CATEGORY_COUNTS.temporal },
+    { label: 'diagnostics', env: 'diagnostics', expected: CATEGORY_COUNTS.diagnostics },
+    { label: 'search', env: 'search', expected: CATEGORY_COUNTS.search },
+    { label: 'read', env: 'read', expected: CATEGORY_COUNTS.read },
+    { label: 'write', env: 'write', expected: CATEGORY_COUNTS.write },
   ])('$label registers $expected tools', ({ env, expected }) => {
     const { controller } = createServerForConfig(env);
 
@@ -348,7 +350,7 @@ describe('category gating correctness', () => {
     expect(registeredNames.has('health_check')).toBe(false);
   });
 
-  it('full preset: all 77 tools present in _registeredTools', () => {
+  it('full preset: all tools present in _registeredTools', () => {
     const { server } = createServerForConfig('full');
     const registered = (server as any)._registeredTools;
     const registeredNames = new Set(Object.keys(registered));
@@ -375,7 +377,7 @@ describe('category gating correctness', () => {
 // ============================================================================
 
 describe('tiered full preset — client visibility', () => {
-  it('initially exposes exactly the 18 tier-1 tools', async () => {
+  it('initially exposes exactly the tier-1 tools', async () => {
     const { server } = createServerForConfig('full', 'tiered');
     const names = await listToolNames(server);
 
@@ -385,10 +387,10 @@ describe('tiered full preset — client visibility', () => {
         .map(([name]) => name),
     );
     expect(names).toEqual(tier1Tools);
-    expect(names.size).toBe(18);
+    expect(names.size).toBe(TIER_1_TOOL_COUNT);
   });
 
-  it('setOverride("full") exposes all 77 tools', async () => {
+  it('setOverride("full") exposes all tools', async () => {
     const { server, controller } = createServerForConfig('full', 'tiered');
 
     controller.setOverride('full');

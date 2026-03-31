@@ -82,6 +82,7 @@ import { registerSessionHistoryTools } from './tools/read/sessionHistory.js';
 import { registerEntityHistoryTools } from './tools/read/entityHistory.js';
 import { registerLearningReportTools } from './tools/read/learningReport.js';
 import { registerCalibrationExportTools } from './tools/read/calibrationExport.js';
+import { registerDiscoveryTools } from './tools/read/discovery.js';
 
 // Resources
 import { registerVaultResources } from './resources/vault.js';
@@ -165,11 +166,23 @@ const ACTIVATION_PATTERNS: Array<{ category: ToolCategory; tier: ToolTier; patte
   },
 ];
 
-function getPatternSignals(raw: string): Array<{ category: ToolCategory; tier: ToolTier }> {
+export function getPatternSignals(raw: string): Array<{ category: ToolCategory; tier: ToolTier }> {
   if (!raw) return [];
   return ACTIVATION_PATTERNS
     .filter(({ patterns }) => patterns.some((pattern) => pattern.test(raw)))
     .map(({ category, tier }) => ({ category, tier }));
+}
+
+/** Deduplicate activation signals by category, keeping the highest tier per category. */
+export function unionSignalsByCategory(
+  signals: Array<{ category: ToolCategory; tier: ToolTier }>,
+): Array<{ category: ToolCategory; tier: ToolTier }> {
+  const best = new Map<ToolCategory, ToolTier>();
+  for (const { category, tier } of signals) {
+    const existing = best.get(category);
+    if (!existing || tier > existing) best.set(category, tier);
+  }
+  return Array.from(best.entries()).map(([category, tier]) => ({ category, tier }));
 }
 
 async function getActivationSignals(
@@ -208,16 +221,7 @@ async function getActivationSignals(
     return getPatternSignals(raw);
   }
 
-  // Union: dedupe by category, keep highest tier per category
-  const categoryBest = new Map<ToolCategory, ToolTier>();
-  for (const { category, tier } of [...patternSignals, ...semanticSignals]) {
-    const existing = categoryBest.get(category);
-    if (!existing || tier > existing) {
-      categoryBest.set(category, tier);
-    }
-  }
-
-  return Array.from(categoryBest.entries()).map(([category, tier]) => ({ category, tier }));
+  return unionSignalsByCategory([...patternSignals, ...semanticSignals]);
 }
 
 /**
@@ -284,13 +288,13 @@ export function applyToolGating(
     return true;
   }
 
-  function enableCategory(category: ToolCategory, tier: ToolTier): void {
-    if (!categories.has(category)) return;
+  function enableCategory(category: ToolCategory, tier: ToolTier): string[] {
+    if (!categories.has(category)) return [];
     const previousTier = activatedCategoryTiers.get(category) ?? 0;
     if (tier > previousTier) {
       activatedCategoryTiers.set(category, tier);
     }
-    refreshToolVisibility();
+    return refreshToolVisibility();
   }
 
   function shouldEnableTool(toolName: string): boolean {
@@ -306,30 +310,35 @@ export function applyToolGating(
     return activatedTier >= tier;
   }
 
-  function refreshToolVisibility(): void {
-    let changed = false;
+  /** Returns names of tools that were newly enabled (empty if no change). */
+  function refreshToolVisibility(): string[] {
+    const newlyEnabled: string[] = [];
     for (const [name, handle] of toolHandles) {
       const enabled = shouldEnableTool(name);
       if (enabled !== handle.enabled) {
         // Set directly to avoid per-tool sendToolListChanged() notifications
         handle.enabled = enabled;
-        changed = true;
+        if (enabled) newlyEnabled.push(name);
       }
     }
-    if (changed) {
+    if (newlyEnabled.length > 0) {
       targetServer.sendToolListChanged();
     }
     // Always fire callback — override state may have changed even if no tools flipped
     if (controllerRef) {
       onTierStateChange?.(controllerRef);
     }
+    return newlyEnabled;
   }
 
-  async function maybeActivateFromContext(toolName: string, params: unknown, searchMethod?: string): Promise<void> {
-    if (tierMode !== 'tiered' || tierOverride === 'full') return;
+  /** Returns names of tools newly activated (empty if none). */
+  async function maybeActivateFromContext(toolName: string, params: unknown, searchMethod?: string): Promise<string[]> {
+    if (tierMode !== 'tiered' || tierOverride === 'full') return [];
+    const newlyEnabled: string[] = [];
     for (const { category, tier } of await getActivationSignals(toolName, params, searchMethod, tierMode)) {
-      enableCategory(category, tier);
+      newlyEnabled.push(...enableCategory(category, tier));
     }
+    return newlyEnabled;
   }
 
   function ensureToolEnabledForDirectCall(toolName: string): void {
@@ -390,7 +399,15 @@ export function applyToolGating(
         result = await handler(...args);
         // Extract search method from result for semantic routing gating
         const searchMethod = extractSearchMethod(result);
-        await maybeActivateFromContext(toolName, params, searchMethod);
+        const newlyActivated = await maybeActivateFromContext(toolName, params, searchMethod);
+        // Append activation notice to response so HTTP clients learn about new tools
+        // (sendToolListChanged notifications are lost over stateless HTTP transport)
+        if (newlyActivated.length > 0 && result?.content && Array.isArray(result.content)) {
+          result.content.push({
+            type: 'text' as const,
+            text: `\n[Progressive disclosure: ${newlyActivated.length} new tools activated: ${newlyActivated.join(', ')}. Call tools/list to refresh.]`,
+          });
+        }
         return result;
       } catch (err) {
         success = false;
@@ -748,6 +765,7 @@ export function applyToolGating(
 export function registerAllTools(
   targetServer: McpServer,
   ctx: ToolRegistryContext,
+  controller?: ToolTierController | null,
 ): void {
   const { getVaultPath: gvp, getVaultIndex: gvi, getStateDb: gsd, getFlywheelConfig: gcf } = ctx;
 
@@ -839,6 +857,11 @@ export function registerAllTools(
   // recall removed — entity/memory search merged into search (uber search)
   // registerRecallTools(targetServer, gsd, gvp, () => gvi() ?? null);
   registerBriefTools(targetServer, gsd);
+
+  // Discovery tool (progressive disclosure meta-tool)
+  if (controller) {
+    registerDiscoveryTools(targetServer, controller);
+  }
 
   // Resources (always registered, not gated by tool presets)
   registerVaultResources(targetServer, () => gvi() ?? null);

@@ -13,9 +13,9 @@ import type { VaultRegistry } from './vault-registry.js';
 // ============================================================================
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
-// Presets:
-//   full       - All tools, all categories (77 tools, tiered progressive disclosure) — DEFAULT
-//   agent      - Note-taking essentials: search, read, write, tasks, memory (18 tools)
+// Presets (tool counts derived at runtime — see TOTAL_TOOL_COUNT, TIER_1_TOOL_COUNT):
+//   full       - All tools, all categories (tiered progressive disclosure) — DEFAULT
+//   agent      - Note-taking essentials: search, read, write, tasks, memory
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic + export (11 tools)
@@ -29,8 +29,8 @@ import type { VaultRegistry } from './vault-registry.js';
 //   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback (22 tools)
 //
 // Examples:
-//   (no env)                                  # 77 tools, tiered (default = full)
-//   FLYWHEEL_TOOLS=agent                      # 18 tools, no tiering
+//   (no env)                                  # all tools, tiered (default = full)
+//   FLYWHEEL_TOOLS=agent                      # agent preset, no tiering
 //   FLYWHEEL_TOOLS=agent,graph                # 29 tools, no tiering
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
@@ -221,10 +221,11 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
 // This is the single source of truth for tool count: Object.keys(TOOL_CATEGORY).length.
 // Every tool MUST have an entry — gate() throws on startup if one is missing.
 export const TOOL_CATEGORY: Record<string, ToolCategory> = {
-  // search (3 tools)
+  // search
   search: 'search',
   init_semantic: 'search',
   find_similar: 'search',
+  discover_tools: 'search',
 
   // read (3 tools) -- note reading
   get_note_structure: 'read',
@@ -325,10 +326,11 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
 };
 
 export const TOOL_TIER: Record<string, ToolTier> = {
-  // Tier 1 — always visible (= agent preset, 18 tools)
+  // Tier 1 — always visible (= agent preset, see TIER_1_TOOL_COUNT)
   search: 1,
   init_semantic: 1,
   find_similar: 1,
+  discover_tools: 1,
   get_note_structure: 1,
   get_section_content: 1,
   find_sections: 1,
@@ -345,7 +347,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   memory: 1,
   brief: 1,
 
-  // Tier 2 — context-triggered categories + core diagnostics (33 tools)
+  // Tier 2 — context-triggered categories + core diagnostics (see TIER_2_TOOL_COUNT)
   graph_analysis: 2,
   semantic_analysis: 2,
   get_backlinks: 2,
@@ -380,7 +382,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   server_log: 2,
   flywheel_doctor: 2,
 
-  // Tier 3 — explicit or advanced operations (26 tools)
+  // Tier 3 — explicit or advanced operations (see TIER_3_TOOL_COUNT)
   vault_schema: 3,
   schema_conventions: 3,
   schema_validate: 3,
@@ -425,6 +427,12 @@ function assertToolTierCoverage(): void {
 }
 
 assertToolTierCoverage();
+
+// Computed constants — derived from TOOL_CATEGORY and TOOL_TIER, never hardcode these numbers
+export const TOTAL_TOOL_COUNT = Object.keys(TOOL_CATEGORY).length;
+export const TIER_1_TOOL_COUNT = Object.values(TOOL_TIER).filter(t => t === 1).length;
+export const TIER_2_TOOL_COUNT = Object.values(TOOL_TIER).filter(t => t === 2).length;
+export const TIER_3_TOOL_COUNT = Object.values(TOOL_TIER).filter(t => t === 3).length;
 
 // ============================================================================
 // Server Instructions (dynamic, based on enabled categories)
@@ -560,8 +568,7 @@ Use "get_link_path" to trace the shortest path between any two entities or notes
 Use "get_strong_connections" to find the strongest or most-connected relationships for an entity.`);
   }
   else if (tieringActive && categories.has('graph')) {
-    parts.push(`
-**More tools available:** Ask about graph connections, backlinks, hubs, clusters, or paths to unlock graph analysis tools.`);
+    // Escalation hint handled by unified discover_tools guidance below
   }
 
   // Note-ops category instructions
@@ -594,8 +601,7 @@ Use "schema_validate" to validate frontmatter against explicit rules or find not
 Use "note_intelligence" for per-note analysis (completeness, quality, suggestions).`);
   }
   else if (tieringActive && categories.has('schema')) {
-    parts.push(`
-**Advanced tools:** Ask to unlock schema tools for conventions, validation, migrations, and bulk metadata analysis.`);
+    // Escalation hint handled by unified discover_tools guidance below
   }
 
   if (isCategoryVisible('wikilinks')) {
@@ -613,8 +619,7 @@ Link quality and discovery — not for finding content (use search for that).
 - "What aliases am I missing?" → suggest_entity_aliases (acronyms, short forms, alternate names)`);
   }
   else if (tieringActive && categories.has('wikilinks')) {
-    parts.push(`
-**More tools available:** Ask about wikilinks, suggestions, stubs, or unlinked mentions to unlock wikilink tools.`);
+    // Escalation hint handled by unified discover_tools guidance below
   }
 
   if (isCategoryVisible('corrections')) {
@@ -629,8 +634,7 @@ When the user says something is wrong — a bad link, wrong entity, wrong catego
 Use "absorb_as_alias" when two names should resolve to the same entity without merging note bodies.`);
   }
   else if (tieringActive && categories.has('corrections')) {
-    parts.push(`
-**More tools available:** Ask about errors, wrong links, or fixes to unlock correction tools.`);
+    // Escalation hint handled by unified discover_tools guidance below
   }
 
   if (isCategoryVisible('temporal')) {
@@ -648,8 +652,7 @@ Temporal tools analyze *patterns and changes* over time — use them for "what c
 temporal_summary composes the other three — use it for weekly/monthly reviews.`);
   }
   else if (tieringActive && categories.has('temporal')) {
-    parts.push(`
-**More tools available:** Ask about time, history, evolution, or stale notes to unlock temporal tools.`);
+    // Escalation hint handled by unified discover_tools guidance below
   }
 
   if (isCategoryVisible('diagnostics')) {
@@ -666,9 +669,13 @@ temporal_summary composes the other three — use it for weekly/monthly reviews.
 Use "flywheel_config" to inspect runtime configuration and set "tool_tier_override" to "auto", "full", or "minimal" for this vault.`);
   }
   else if (tieringActive && categories.has('diagnostics')) {
+    // Escalation hint handled by unified discover_tools guidance below
+  }
+
+  // Unified discover_tools guidance (replaces per-category escalation hints)
+  if (tieringActive) {
     parts.push(`
-**More tools available:** Ask about vault health, indexing, status, or configuration to unlock diagnostic tools.
-**Advanced tools:** Ask to unlock note operations or deep diagnostics for note mutations, benchmarks, history, graph exports, and learning reports.`);
+**More tools available:** Call \`discover_tools({ query: "your need" })\` to find and activate specialized tools for graph analysis, wikilinks, diagnostics, schema, temporal analysis, note operations, and more. Returns tool names, descriptions, and input schemas.`);
   }
 
   return parts.join('\n');

@@ -9,7 +9,7 @@
 import crypto from 'crypto';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { TOOL_CATEGORY, TOOL_TIER, type ToolCategory, type ToolTier } from '../config.js';
-import { registerAllTools, type ToolRegistryContext } from '../tool-registry.js';
+import { registerAllTools, type ToolRegistryContext, type ToolTierController } from '../tool-registry.js';
 
 export interface CatalogEntry {
   name: string;
@@ -98,11 +98,29 @@ function createStubContext(): ToolRegistryContext {
  *
  * @throws Error if a captured tool is missing from TOOL_CATEGORY or TOOL_TIER
  */
+/** Minimal stub controller for catalog collection — never executes tool logic. */
+function createStubController(): ToolTierController {
+  return {
+    mode: 'tiered',
+    registered: 0,
+    skipped: 0,
+    activeCategories: new Set(),
+    getOverride: () => 'auto',
+    finalizeRegistration: () => {},
+    activateCategory: () => {},
+    enableTierCategory: () => {},
+    enableAllTiers: () => {},
+    setOverride: () => {},
+    getActivatedCategoryTiers: () => new Map(),
+    getRegisteredTools: () => new Map(),
+  };
+}
+
 export function collectToolCatalog(): Map<string, CatalogEntry> {
   const { server, captured } = createCaptureServer();
   const ctx = createStubContext();
 
-  registerAllTools(server, ctx);
+  registerAllTools(server, ctx, createStubController());
 
   const catalog = new Map<string, CatalogEntry>();
   const missingCategory: string[] = [];

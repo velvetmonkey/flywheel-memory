@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 77 [[TOOLS]] across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 70+ [[TOOLS]] across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -106,8 +106,8 @@ packages/mcp-server/src/
 Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`full`** — All categories (77 tools, tiered progressive disclosure) — **this is the default**
-- **`agent`** — 18 tools: search, read, write, tasks, memory
+- **`full`** — All categories (tiered progressive disclosure) — **this is the default**
+- **`agent`** — Core tools: search, read, write, tasks, memory
 
 **Composable bundles** (add to presets or each other):
 - **`graph`** — structural analysis, semantic analysis, paths, [[Hub|hubs]], connections, export

@@ -367,9 +367,17 @@ Manage vault-wide changes.
 
 > "List available policies"
 
+> "Create a policy that finds all notes tagged #meeting from this week and creates a summary in today's daily note"
+
 > "Create a policy that adds a 'reviewed' date to all project notes that are marked as complete"
 
 > "Preview what the weekly-review policy would do, then execute it"
+
+> "Revise the overdue-invoice-chaser policy to also update each invoice's frontmatter with a chased_at date"
+
+> "Run the weekly-review policy for week 2026-W14"
+
+> "Instead of doing these three write calls every morning, save them as a policy I can reuse"
 
 ---
 

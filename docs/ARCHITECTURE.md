@@ -43,8 +43,8 @@ Flywheel Memory is a single MCP server that gives AI agents full read/write acce
   - [How to inspect](#how-to-inspect)
   - [Network access model](#network-access-model)
 - [Tool Selection & Routing](#tool-selection--routing)
-  - [Tiered Visibility](#tiered-visibility)
-  - [Pattern Routing](#pattern-routing)
+  - [Tiered Visibility (auto preset)](#tiered-visibility-auto-preset)
+  - [Pattern Routing (auto preset)](#pattern-routing-auto-preset)
   - [Semantic Routing](#semantic-routing)
   - [Routing Modes](#routing-modes)
   - [Tool Invocation Tracking](#tool-invocation-tracking)
@@ -562,21 +562,25 @@ No telemetry. No analytics. No phone-home. No remote git operations.
 
 ## Tool Selection & Routing
 
-When `FLYWHEEL_TOOLS=full` (the default), tools are progressively disclosed across three tiers rather than registered all at once. The `tool-registry.ts` module manages this via `applyToolGating()`, which monkey-patches `server.tool()` to track registrations and control visibility through a `ToolTierController`.
+The `tool-registry.ts` module manages tool visibility via `applyToolGating()`, which monkey-patches `server.tool()` to track registrations and control visibility through a `ToolTierController`.
 
-### Tiered Visibility
+Under `full` (the default), all tools are visible at startup with no tiering. Under `agent`, only the fixed reduced surface is visible (search, read, write, tasks, memory).
+
+### Tiered Visibility (auto preset)
+
+When `FLYWHEEL_TOOLS=auto`, tools are progressively disclosed across three tiers:
 
 | Tier | Visibility | Categories |
 |------|-----------|------------|
-| 1 | Always visible | search, read, write, tasks, memory |
+| 1 | Always visible | search, read, write, tasks, memory, discover_tools |
 | 2 | Context-triggered | graph, wikilinks, corrections, temporal, diagnostics |
 | 3 | On-demand | schema, note-ops, deep diagnostics |
 
-Under `agent`, all tools in the preset are always visible with no tier gating.
+The `discover_tools` meta-tool (tier 1, auto-only) lets the LLM explicitly find and activate specialised tools by natural-language query.
 
-### Pattern Routing
+### Pattern Routing (auto preset)
 
-Seven `ACTIVATION_PATTERNS` in `tool-registry.ts` match query text from `search` and `brief` calls:
+Seven `ACTIVATION_PATTERNS` in `tool-registry.ts` match query text from `search`, `brief`, and `discover_tools` calls:
 
 - **Tier 2:** graph (backlinks, connections, hubs, paths), wikilinks (stubs, unlinked mentions), corrections (wrong links, mistakes), temporal (history, evolution, stale notes), diagnostics (health, config, pipeline)
 - **Tier 3:** schema (frontmatter, conventions, rename field), note-ops (delete note, move note, merge)
@@ -600,7 +604,7 @@ Controlled by `FLYWHEEL_TOOL_ROUTING`:
 | Mode | Behaviour |
 |------|-----------|
 | `pattern` | Regex activation only |
-| `hybrid` | Pattern + semantic signals combined (default when `full`) |
+| `hybrid` | Pattern + semantic signals combined (default when all categories loaded — `full` or `auto`) |
 | `semantic` | Semantic-only for hybrid search; regex fallback elsewhere |
 
 Both signal types are unioned. Per category, the highest tier from either signal wins.

@@ -1,6 +1,6 @@
 # Tools
 
-The `full` preset (default) starts with `search` and progressively discloses specialised tools as the query calls for them. Use `agent` for a fixed reduced set. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
+The `full` preset (default) shows all tools immediately. Use `auto` for progressive disclosure, which activates specialised tools as the conversation calls for them via `discover_tools`. Use `agent` for a fixed reduced set. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
 
 - [At a Glance](#at-a-glance)
 - [Find Anything](#find-anything)
@@ -435,15 +435,17 @@ Monitor, configure, and maintain your vault.
 
 ## Tool Selection Intelligence
 
-Under `full` (the default preset), Flywheel progressively discloses tools across three tiers rather than advertising the entire catalogue at once:
+Under `full` (the default), all tools are visible at startup. Under `agent`, only the fixed reduced surface is shown (search, read, write, tasks, memory).
+
+Under `auto`, Flywheel progressively discloses tools across three tiers via `discover_tools`:
 
 | Tier | Visibility | Categories |
 |------|-----------|------------|
-| 1 | Always visible | search, read, write, tasks, memory |
+| 1 | Always visible | search, read, write, tasks, memory, discover_tools |
 | 2 | Context-triggered | graph, wikilinks, temporal, corrections, diagnostics |
 | 3 | On-demand | schema, note-ops, deep diagnostics |
 
-Under `agent`, all tools in the preset are always visible with no tier gating.
+`discover_tools` is only available in `auto` mode — call it with a natural-language query to find and activate specialised tools.
 
 ### How activation works
 
@@ -459,7 +461,7 @@ The routing mode is controlled by `FLYWHEEL_TOOL_ROUTING`:
 | Mode | Behaviour |
 |------|-----------|
 | `pattern` | Regex activation only |
-| `hybrid` (default under `full`) | Regex + semantic signals combined |
+| `hybrid` (default when all categories loaded — `full` or `auto`) | Regex + semantic signals combined |
 | `semantic` | Semantic-only for hybrid search calls; regex fallback elsewhere |
 
 Semantic routing requires `init_semantic` to have been run. Custom `EMBEDDING_MODEL` users fall back to `pattern` unless the tool manifest was regenerated for that model.
@@ -481,7 +483,15 @@ Semantic routing requires `init_semantic` to have been run. Custom `EMBEDDING_MO
 
 ### `policy`
 
-Define repeatable workflows as YAML policies, then execute them.
+Policies are for repeatable read→write workflows. Direct write tools handle one-off edits; `policy` handles structured multi-step operations that can search the vault and act on the results.
+
+**Use this when:**
+- You need to gather information from the vault and then create or update notes based on what you find
+- You want a repeatable workflow you can run with different parameters (weekly reviews, invoice chasers, project scaffolds)
+- You want to preview what would happen before committing any changes
+- You need multiple writes to execute atomically (all succeed or all roll back)
+
+Policies can include `vault_search` steps that query the vault mid-execution. Results are available to subsequent steps via `{{steps.<step_id>.results}}`. See the [Policies guide](POLICIES.md) for data flow details and walkthroughs.
 
 | Action | What it does |
 |--------|-------------|
@@ -491,6 +501,8 @@ Define repeatable workflows as YAML policies, then execute them.
 | `execute` | Run a policy with variables. |
 | `author` | Generate policy YAML from a description. |
 | `revise` | Modify an existing policy. |
+
+[Policies guide ->](POLICIES.md) | [Examples catalog ->](POLICY_EXAMPLES.md)
 
 ### `vault_undo_last_mutation`
 

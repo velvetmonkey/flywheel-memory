@@ -69,7 +69,7 @@ Two layers of configuration: **environment variables** set in your MCP config (s
 }
 ```
 
-No `FLYWHEEL_TOOLS` needed — defaults to `full` (adaptive progressive loading). Add it only to override.
+No `FLYWHEEL_TOOLS` needed — defaults to `full` (all tools visible). Add it only to override.
 
 ### Claude Desktop (`claude_desktop_config.json`)
 
@@ -143,7 +143,8 @@ Vault root detection order:
 
 | Preset | Behaviour |
 |--------|-----------|
-| `full` (default) | All capabilities with progressive disclosure — tools surface as needed |
+| `full` (default) | All tools visible at startup |
+| `auto` | Progressive disclosure — tools activate as your queries need them |
 | `agent` | Fixed reduced set — search, read, write, tasks, memory |
 
 #### Composable Bundles
@@ -169,23 +170,26 @@ Start with `agent`, then add what you need:
 | `agent` | search, read, write, tasks, memory |
 | `agent,graph` | agent + graph analysis, semantic analysis, paths, hubs |
 | `agent,graph,wikilinks` | + link suggestions, validation |
-| `full` | All categories, progressively disclosed |
+| `full` | All categories, all tools visible |
+| `auto` | All categories, progressive disclosure |
 
 #### How It Works
 
 Set `FLYWHEEL_TOOLS` to a preset, one or more bundles, individual categories, or any combination — comma-separated. Bundles expand to their constituent categories, and duplicates are deduplicated automatically.
 
-`full` is the default. With no `FLYWHEEL_TOOLS` set, all categories are enabled and tools are progressively disclosed across three tiers:
+`full` is the default — all categories are enabled and all tools are visible at startup. This is the safe choice for clients that don't support dynamic tool list updates (e.g. Claude Code).
 
-- **Tier 1** stays visible at startup: the core tools from `agent` (search, read, write, tasks, memory)
+`auto` enables progressive disclosure via `discover_tools` across three tiers:
+
+- **Tier 1** stays visible at startup: the core tools from `agent` (search, read, write, tasks, memory) plus `discover_tools`
 - **Tier 2** unlocks when the conversation shifts into graph, wikilink, correction, temporal, or diagnostics work
 - **Tier 3** stays on-demand for schema operations, note operations, and deep diagnostics
 
-`agent` is the fixed alternative — all tools in the preset are always visible, with no tier gating.
+`agent` is a fixed reduced set — search, read, write, tasks, memory. No progressive disclosure.
 
 `default` is a deprecated alias for `full`, retained for backward compatibility.
 
-Use `flywheel_config({ mode: "set", key: "tool_tier_override", value: "full" })` to reveal everything immediately, or `"minimal"` to keep only tier-1 tools advertised.
+In `auto` mode, use `flywheel_config({ mode: "set", key: "tool_tier_override", value: "full" })` to reveal everything immediately, or `"minimal"` to keep only tier-1 tools advertised. This setting has no effect in `full` or `agent` mode.
 
 ```json
 {
@@ -204,7 +208,7 @@ Unknown names are ignored with a warning. If nothing valid is found, falls back 
 | Mode | Behaviour |
 |------|-----------|
 | `pattern` | Regex-only activation from query keywords |
-| `hybrid` (default under `full`) | Regex + semantic embedding signals combined |
+| `hybrid` (default when all categories loaded — `full` or `auto`) | Regex + semantic embedding signals combined |
 | `semantic` | Semantic-only for hybrid search calls; regex fallback elsewhere |
 
 Semantic activation fires only on `search` and `brief` calls that use the hybrid search path (requires `init_semantic`). The query is embedded and compared against a pre-generated tool description manifest. Hits with cosine similarity ≥ 0.30 activate the corresponding category, up to three categories per query. Both pattern and semantic signals are combined; the highest tier per category wins.
@@ -547,7 +551,7 @@ Sets a single key and returns the updated config.
 | `proactive_min_score` | number | `20` | Minimum suggestion score for proactive linking. Higher values mean fewer but more confident auto-links. The default of 20 is well above the balanced threshold (10), ensuring only strong matches are applied automatically. |
 | `proactive_max_per_file` | number | `5` | Maximum number of wikilinks the watcher will proactively insert per file per drain cycle. The daily cap (`proactive_max_per_day`) is the primary safety net. |
 | `proactive_max_per_day` | number | `10` | Maximum number of wikilinks the watcher will proactively insert per file per day. Prevents accumulated queue drains from flooding a single note over time. |
-| `tool_tier_override` | `"auto"` \| `"full"` \| `"minimal"` | `"auto"` | Controls tiered tool visibility when `FLYWHEEL_TOOLS=full`. `auto` keeps tiered exposure, `full` reveals all tools, `minimal` keeps only tier-1 tools visible. |
+| `tool_tier_override` | `"auto"` \| `"full"` \| `"minimal"` | `"auto"` | Controls tiered tool visibility when `FLYWHEEL_TOOLS=auto`. `auto` keeps tiered exposure, `full` reveals all tools, `minimal` keeps only tier-1 tools visible. Has no effect in `full` or `agent` mode. |
 | `custom_categories` | object | `{}` | Define custom entity categories from frontmatter `type:` values. Keys are the type strings; values have optional `type_boost` (scoring weight, default 0). See [Custom Categories](#custom-categories) below. |
 
 #### Custom Categories

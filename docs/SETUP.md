@@ -440,8 +440,8 @@ Flywheel auto-links any mentions of existing notes. If your vault has `Stacy Tho
 
 ## Step 3: Choose a Tool Preset
 
-Flywheel defaults to the `full` preset (adaptive progressive disclosure).
-Use `"agent"` for a fixed reduced set (search, read, write, tasks, memory). Add bundles for graph analysis, wikilinks, or other capabilities:
+Flywheel defaults to the `full` preset (all tools visible).
+Use `"auto"` for progressive disclosure, `"agent"` for a fixed reduced set (search, read, write, tasks, memory). Add bundles for graph analysis, wikilinks, or other capabilities:
 
 ```json
 {

@@ -197,7 +197,7 @@ export function getWatcherStatus(): WatcherStatus | null {
 
 const toolConfig = resolveToolConfig();
 const enabledCategories = toolConfig.categories;
-const toolTierMode: ToolTierMode = toolConfig.isFullToolset ? 'tiered' : 'off';
+const toolTierMode: ToolTierMode = toolConfig.enableProgressiveDisclosure ? 'tiered' : 'off';
 let runtimeToolTierOverride: ToolTierOverride = INITIAL_TIER_OVERRIDE;
 let runtimeActiveCategoryTiers = new Map<ToolCategory, ToolTier>();
 let primaryToolTierController: ToolTierController | null = null;
@@ -266,6 +266,7 @@ function createConfiguredServer(): McpServer {
     buildVaultCallbacks(),
     toolTierMode,
     handleTierStateChange,
+    toolConfig.isFullToolset,
   );
   registerAllTools(s, ctx, toolTierController);
   toolTierController.setOverride(runtimeToolTierOverride);
@@ -337,6 +338,7 @@ const _gatingResult = applyToolGating(
   buildVaultCallbacks(),
   toolTierMode,
   handleTierStateChange,
+  toolConfig.isFullToolset,
 );
 registerAllTools(server, _registryCtx, _gatingResult);
 _gatingResult.setOverride(runtimeToolTierOverride);

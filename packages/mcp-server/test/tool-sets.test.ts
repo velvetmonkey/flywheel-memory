@@ -20,6 +20,7 @@ import {
   TOOL_TIER,
   TOTAL_TOOL_COUNT,
   TIER_1_TOOL_COUNT,
+  DISCLOSURE_ONLY_TOOLS,
   resolveToolConfig,
   type ToolCategory,
   type ToolTier,
@@ -93,10 +94,10 @@ function createServerForCategories(
 }
 
 /** Derive expected tool names for a set of categories from TOOL_CATEGORY. */
-function expectedToolsForCategories(categories: Set<ToolCategory>): Set<string> {
+function expectedToolsForCategories(categories: Set<ToolCategory>, includeDisclosureTools = true): Set<string> {
   return new Set(
     Object.entries(TOOL_CATEGORY)
-      .filter(([, cat]) => categories.has(cat as ToolCategory))
+      .filter(([name, cat]) => categories.has(cat as ToolCategory) && (includeDisclosureTools || !DISCLOSURE_ONLY_TOOLS.has(name)))
       .map(([name]) => name),
   );
 }
@@ -139,8 +140,10 @@ async function listToolNames(server: McpServer): Promise<Set<string>> {
   return new Set(result.tools.map((t: { name: string }) => t.name));
 }
 
-/** Total declared tools. */
+/** Total declared tools (including disclosure-only tools like discover_tools). */
 const TOTAL_TOOLS = Object.keys(TOOL_CATEGORY).length;
+/** Tools actually registered when disclosure is off (full/agent/custom). */
+const TOTAL_TOOLS_NO_DISCLOSURE = TOTAL_TOOLS - DISCLOSURE_ONLY_TOOLS.size;
 
 // ============================================================================
 // resolveToolConfig() unit tests
@@ -247,40 +250,31 @@ describe('resolveToolConfig()', () => {
 // ============================================================================
 
 describe('per-preset tool registration via registerAllTools()', () => {
+  // Category counts excluding disclosure-only tools (since these tests use tierMode: 'off')
   const CATEGORY_COUNTS: Record<ToolCategory, number> = {} as any;
   for (const cat of ALL_CATEGORIES) {
-    CATEGORY_COUNTS[cat] = Object.values(TOOL_CATEGORY).filter(c => c === cat).length;
+    CATEGORY_COUNTS[cat] = Object.entries(TOOL_CATEGORY)
+      .filter(([name, c]) => c === cat && !DISCLOSURE_ONLY_TOOLS.has(name))
+      .length;
   }
 
-  it.each([
-    { label: 'full', env: 'full', expected: TOTAL_TOOLS },
-    { label: 'agent', env: 'agent', expected: TIER_1_TOOL_COUNT },
-    { label: 'agent,graph', env: 'agent,graph', expected: TIER_1_TOOL_COUNT + CATEGORY_COUNTS.graph },
-    { label: 'graph', env: 'graph', expected: CATEGORY_COUNTS.graph },
-    { label: 'schema', env: 'schema', expected: CATEGORY_COUNTS.schema },
-    { label: 'wikilinks', env: 'wikilinks', expected: CATEGORY_COUNTS.wikilinks },
-    { label: 'corrections', env: 'corrections', expected: CATEGORY_COUNTS.corrections },
-    { label: 'tasks', env: 'tasks', expected: CATEGORY_COUNTS.tasks },
-    { label: 'memory', env: 'memory', expected: CATEGORY_COUNTS.memory },
-    { label: 'note-ops', env: 'note-ops', expected: CATEGORY_COUNTS['note-ops'] },
-    { label: 'temporal', env: 'temporal', expected: CATEGORY_COUNTS.temporal },
-    { label: 'diagnostics', env: 'diagnostics', expected: CATEGORY_COUNTS.diagnostics },
-    { label: 'search', env: 'search', expected: CATEGORY_COUNTS.search },
-    { label: 'read', env: 'read', expected: CATEGORY_COUNTS.read },
-    { label: 'write', env: 'write', expected: CATEGORY_COUNTS.write },
-  ])('$label registers $expected tools', ({ env, expected }) => {
-    const { controller } = createServerForConfig(env);
+  it.each(
+    ['full', 'agent', 'agent,graph', 'graph', 'schema', 'wikilinks', 'corrections',
+     'tasks', 'memory', 'note-ops', 'temporal', 'diagnostics', 'search', 'read', 'write'],
+  )('%s registers the expected tool count', (env) => {
+    // disclosure-only tools (discover_tools) not registered in off mode
+    const { controller, resolved } = createServerForConfig(env);
+    const expected = expectedToolsForCategories(resolved.categories, false).size;
 
     expect(controller.registered).toBe(expected);
-    expect(controller.skipped).toBe(TOTAL_TOOLS - expected);
-    expect(controller.registered + controller.skipped).toBe(TOTAL_TOOLS);
+    expect(controller.registered + controller.skipped).toBe(TOTAL_TOOLS_NO_DISCLOSURE);
   });
 
   it('registered count matches expectedToolsForCategories() for every config', () => {
     for (const presetName of ['full', 'agent'] as const) {
       const cats = new Set(PRESETS[presetName]);
       const { controller } = createServerForCategories(cats);
-      expect(controller.registered).toBe(expectedToolsForCategories(cats).size);
+      expect(controller.registered).toBe(expectedToolsForCategories(cats, false).size);
     }
   });
 });
@@ -297,7 +291,8 @@ describe('per-bundle listTools() contract', () => {
   ] as const)('%s: listTools returns exactly the expected tool names', async (env) => {
     const { server, resolved } = createServerForConfig(env);
     const names = await listToolNames(server);
-    const expected = expectedToolsForCategories(resolved.categories);
+    // disclosure-only tools not registered in off mode
+    const expected = expectedToolsForCategories(resolved.categories, false);
 
     expect(names).toEqual(expected);
   });
@@ -309,7 +304,7 @@ describe('per-bundle listTools() contract', () => {
   ])('$label: listTools returns the union of component categories', async ({ env }) => {
     const { server, resolved } = createServerForConfig(env);
     const names = await listToolNames(server);
-    const expected = expectedToolsForCategories(resolved.categories);
+    const expected = expectedToolsForCategories(resolved.categories, false);
 
     expect(names).toEqual(expected);
   });
@@ -355,8 +350,9 @@ describe('category gating correctness', () => {
     const registered = (server as any)._registeredTools;
     const registeredNames = new Set(Object.keys(registered));
 
-    expect(registeredNames.size).toBe(TOTAL_TOOLS);
+    expect(registeredNames.size).toBe(TOTAL_TOOLS_NO_DISCLOSURE);
     for (const toolName of Object.keys(TOOL_CATEGORY)) {
+      if (DISCLOSURE_ONLY_TOOLS.has(toolName)) continue;
       expect(registeredNames.has(toolName), `missing: ${toolName}`).toBe(true);
     }
   });
@@ -366,7 +362,7 @@ describe('category gating correctness', () => {
     const registered = (server as any)._registeredTools;
     const registeredNames = new Set(Object.keys(registered));
 
-    const expectedGraphTools = expectedToolsForCategories(new Set(['graph' as ToolCategory]));
+    const expectedGraphTools = expectedToolsForCategories(new Set(['graph' as ToolCategory]), false);
     expect(registeredNames).toEqual(expectedGraphTools);
     expect(controller.registered).toBe(expectedGraphTools.size);
   });

@@ -189,7 +189,7 @@ async function getActivationSignals(
   toolName: string,
   params: unknown,
   searchMethod?: string,
-  toolTierMode: ToolTierMode = 'off',
+  isFullToolset: boolean = false,
 ): Promise<Array<{ category: ToolCategory; tier: ToolTier }>> {
   if (toolName !== 'search' && toolName !== 'brief') return [];
   if (!params || typeof params !== 'object') return [];
@@ -201,7 +201,7 @@ async function getActivationSignals(
 
   if (!raw) return [];
 
-  const routingMode = getToolRoutingMode(toolTierMode);
+  const routingMode = getToolRoutingMode(isFullToolset);
 
   // Pattern-based signals (T13 regex activation)
   const patternSignals = routingMode !== 'semantic' ? getPatternSignals(raw) : [];
@@ -264,6 +264,7 @@ export function applyToolGating(
   vaultCallbacks?: VaultActivationCallbacks,
   tierMode: ToolTierMode = 'off',
   onTierStateChange?: (controller: ToolTierController) => void,
+  isFullToolset: boolean = false,
 ): ToolTierController {
   let _registered = 0;
   let _skipped = 0;
@@ -335,7 +336,7 @@ export function applyToolGating(
   async function maybeActivateFromContext(toolName: string, params: unknown, searchMethod?: string): Promise<string[]> {
     if (tierMode !== 'tiered' || tierOverride === 'full') return [];
     const newlyEnabled: string[] = [];
-    for (const { category, tier } of await getActivationSignals(toolName, params, searchMethod, tierMode)) {
+    for (const { category, tier } of await getActivationSignals(toolName, params, searchMethod, isFullToolset)) {
       newlyEnabled.push(...enableCategory(category, tier));
     }
     return newlyEnabled;
@@ -858,8 +859,8 @@ export function registerAllTools(
   // registerRecallTools(targetServer, gsd, gvp, () => gvi() ?? null);
   registerBriefTools(targetServer, gsd);
 
-  // Discovery tool (progressive disclosure meta-tool)
-  if (controller) {
+  // Discovery tool (progressive disclosure meta-tool — only in auto/tiered mode)
+  if (controller && controller.mode === 'tiered') {
     registerDiscoveryTools(targetServer, controller);
   }
 

@@ -14,8 +14,9 @@ import type { VaultRegistry } from './vault-registry.js';
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
 // Presets (tool counts derived at runtime — see TOTAL_TOOL_COUNT, TIER_1_TOOL_COUNT):
-//   full       - All tools, all categories (tiered progressive disclosure) — DEFAULT
-//   agent      - Note-taking essentials: search, read, write, tasks, memory
+//   full       - All tools visible, all categories, hybrid routing — DEFAULT
+//   auto       - Progressive disclosure via discover_tools, all categories, hybrid routing
+//   agent      - Note-taking essentials: search, read, write, tasks, memory, pattern routing
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic + export (11 tools)
@@ -29,8 +30,9 @@ import type { VaultRegistry } from './vault-registry.js';
 //   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback (22 tools)
 //
 // Examples:
-//   (no env)                                  # all tools, tiered (default = full)
-//   FLYWHEEL_TOOLS=agent                      # agent preset, no tiering
+//   (no env)                                  # all tools visible (default = full)
+//   FLYWHEEL_TOOLS=auto                       # progressive disclosure via discover_tools
+//   FLYWHEEL_TOOLS=agent                      # core tools only, no disclosure
 //   FLYWHEEL_TOOLS=agent,graph                # 29 tools, no tiering
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
 //
@@ -65,6 +67,7 @@ export const ALL_CATEGORIES: ToolCategory[] = [
 export const PRESETS: Record<string, ToolCategory[]> = {
   // Presets
   full: [...ALL_CATEGORIES],
+  auto: [...ALL_CATEGORIES],
   agent: ['search', 'read', 'write', 'tasks', 'memory'],
 
   // Composable bundles (one per category)
@@ -166,6 +169,7 @@ export interface ToolConfig {
   categories: Set<ToolCategory>;
   preset: string | null;
   isFullToolset: boolean;
+  enableProgressiveDisclosure: boolean;
 }
 
 /**
@@ -180,6 +184,7 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
       categories: new Set(PRESETS[DEFAULT_PRESET]),
       preset: DEFAULT_PRESET,
       isFullToolset: true,
+      enableProgressiveDisclosure: false,
     };
   }
 
@@ -188,10 +193,12 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
   // Direct preset match
   if (PRESETS[lowerValue]) {
     const cats = new Set(PRESETS[lowerValue]);
+    const isFullToolset = cats.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => cats.has(c));
     return {
       categories: cats,
       preset: lowerValue,
-      isFullToolset: cats.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => cats.has(c)),
+      isFullToolset,
+      enableProgressiveDisclosure: lowerValue === 'auto',
     };
   }
 
@@ -204,6 +211,7 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
         categories: cats,
         preset: resolved,
         isFullToolset: cats.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => cats.has(c)),
+        enableProgressiveDisclosure: resolved === 'auto',
       };
     }
   }
@@ -214,6 +222,7 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
     categories,
     preset: null,
     isFullToolset: categories.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => categories.has(c)),
+    enableProgressiveDisclosure: false,
   };
 }
 
@@ -427,6 +436,9 @@ function assertToolTierCoverage(): void {
 }
 
 assertToolTierCoverage();
+
+/** Tools only registered when progressive disclosure is active (auto preset). */
+export const DISCLOSURE_ONLY_TOOLS = new Set(['discover_tools']);
 
 // Computed constants — derived from TOOL_CATEGORY and TOOL_TIER, never hardcode these numbers
 export const TOTAL_TOOL_COUNT = Object.keys(TOOL_CATEGORY).length;

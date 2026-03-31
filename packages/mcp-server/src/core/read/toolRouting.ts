@@ -14,7 +14,6 @@
  */
 
 import type { ToolCategory, ToolTier } from '../../config.js';
-import type { ToolTierMode } from '../../tool-registry.js';
 import { cosineSimilarity, embedTextCached, getActiveModelId } from './embeddings.js';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 
@@ -140,12 +139,13 @@ export function hasToolRouting(): boolean {
 
 /**
  * Resolve routing mode from env var.
- * Default: 'hybrid' when toolTierMode === 'tiered', otherwise 'pattern'.
+ * Default: 'hybrid' when all categories are loaded (full toolset), otherwise 'pattern'.
+ * Decoupled from tiering — both 'full' and 'auto' presets get hybrid routing.
  */
-export function getToolRoutingMode(toolTierMode: ToolTierMode): ToolRoutingMode {
+export function getToolRoutingMode(isFullToolset: boolean): ToolRoutingMode {
   const env = process.env.FLYWHEEL_TOOL_ROUTING?.trim().toLowerCase();
   if (env === 'pattern' || env === 'hybrid' || env === 'semantic') return env;
-  return toolTierMode === 'tiered' ? 'hybrid' : 'pattern';
+  return isFullToolset ? 'hybrid' : 'pattern';
 }
 
 /**

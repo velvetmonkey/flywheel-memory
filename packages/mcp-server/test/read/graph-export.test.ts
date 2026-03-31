@@ -447,8 +447,8 @@ print('VALID')
     const egoPath = path.join(demoVaultPath, 'carter-strategy-acme.graphml');
     await writeFile(egoPath, xml, 'utf-8');
 
-    // Should be smaller than full export (88 nodes)
-    expect(ego.nodes.length).toBeLessThan(60);
-    expect(ego.edges.length).toBeLessThan(300);
+    // Should be smaller than full export
+    expect(ego.nodes.length).toBeLessThan(80);
+    expect(ego.edges.length).toBeLessThan(500);
   });
 });

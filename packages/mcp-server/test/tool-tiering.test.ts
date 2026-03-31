@@ -2,9 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { ALL_CATEGORIES, INITIAL_TIER_OVERRIDE, TOOL_CATEGORY, TOOL_TIER, generateInstructions } from '../src/config.js';
+import { ALL_CATEGORIES, INITIAL_TIER_OVERRIDE, TOOL_CATEGORY, TOOL_TIER, generateInstructions, resolveToolConfig } from '../src/config.js';
+import type { ToolCategory, ToolTier, ToolTierOverride } from '../src/config.js';
 import { applyToolGating } from '../src/tool-registry.js';
-import type { ToolTierController } from '../src/tool-registry.js';
+import type { ToolTierController, ToolTierMode } from '../src/tool-registry.js';
 
 function createTieredServer() {
   const server = new McpServer({ name: 'test', version: '0.0.0' });
@@ -1403,6 +1404,194 @@ describe('startup tier override policy', () => {
     // Regression guard: the bug was `preset === 'full' ? 'full' : 'auto'`
     // which bypassed all tier filtering for the default preset.
     expect(INITIAL_TIER_OVERRIDE).toBe('auto');
+  });
+});
+
+// ============================================================================
+// index.ts initialization simulation (d42835a regression guard)
+// ============================================================================
+
+/**
+ * Simulate index.ts primary server initialization using real config constants.
+ * Mirrors the composition at index.ts lines 198–345 without importing the module.
+ *
+ * If you change the startup wiring in index.ts, update this helper to match.
+ * The point is to catch composition bugs — if this drifts from index.ts,
+ * it stops being a useful regression guard.
+ */
+function createServerLikeIndexTs(envOverride?: string) {
+  const toolConfig = resolveToolConfig(envOverride);
+  const enabledCategories = toolConfig.categories;
+  const toolTierMode: ToolTierMode = toolConfig.isFullToolset ? 'tiered' : 'off';
+  const runtimeToolTierOverride: ToolTierOverride = INITIAL_TIER_OVERRIDE;
+
+  const server = new McpServer({ name: 'init-sim', version: '0.0.0' });
+  const controller = applyToolGating(
+    server,
+    enabledCategories,
+    () => null,
+    null,
+    undefined,
+    undefined,
+    toolTierMode,
+  );
+
+  for (const toolName of Object.keys(TOOL_CATEGORY)) {
+    if (toolName === 'search') {
+      server.tool(toolName, { query: z.string().optional(), focus: z.string().optional() }, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    } else if (toolName === 'brief') {
+      server.tool(toolName, { focus: z.string().optional() }, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    } else {
+      server.tool(toolName, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    }
+  }
+
+  controller.setOverride(runtimeToolTierOverride);
+  controller.finalizeRegistration();
+
+  return { server, controller, toolConfig, toolTierMode, runtimeToolTierOverride };
+}
+
+/**
+ * Simulate createConfiguredServer() HTTP pool path (index.ts lines 254–277).
+ * Takes runtime state that would be inherited from the primary server.
+ *
+ * Keep in sync with createConfiguredServer() in index.ts — same wiring,
+ * same order. Drift here weakens the regression guard.
+ */
+function createHttpPoolServerSim(
+  runtimeOverride: ToolTierOverride = INITIAL_TIER_OVERRIDE,
+  runtimeActiveTiers: Map<ToolCategory, ToolTier> = new Map(),
+) {
+  const toolConfig = resolveToolConfig();
+  const enabledCategories = toolConfig.categories;
+  const toolTierMode: ToolTierMode = toolConfig.isFullToolset ? 'tiered' : 'off';
+
+  const server = new McpServer({ name: 'http-pool-sim', version: '0.0.0' });
+  const controller = applyToolGating(
+    server,
+    enabledCategories,
+    () => null,
+    null,
+    undefined,
+    undefined,
+    toolTierMode,
+  );
+
+  for (const toolName of Object.keys(TOOL_CATEGORY)) {
+    if (toolName === 'search') {
+      server.tool(toolName, { query: z.string().optional(), focus: z.string().optional() }, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    } else if (toolName === 'brief') {
+      server.tool(toolName, { focus: z.string().optional() }, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    } else {
+      server.tool(toolName, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    }
+  }
+
+  controller.setOverride(runtimeOverride);
+  for (const [category, tier] of runtimeActiveTiers) {
+    controller.activateCategory(category, tier);
+  }
+  controller.finalizeRegistration();
+
+  return { server, controller };
+}
+
+describe('index.ts initialization simulation (d42835a regression guard)', () => {
+  it('default resolveToolConfig() yields isFullToolset=true and tiered mode', () => {
+    vi.stubEnv('FLYWHEEL_TOOLS', '');
+    vi.stubEnv('FLYWHEEL_PRESET', '');
+
+    try {
+      const config = resolveToolConfig();
+      expect(config.isFullToolset).toBe(true);
+      expect(config.preset).toBe('full');
+      expect(config.categories.size).toBe(ALL_CATEGORIES.length);
+
+      const tierMode: ToolTierMode = config.isFullToolset ? 'tiered' : 'off';
+      expect(tierMode).toBe('tiered');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('primary server simulation lists exactly 18 tier-1 tools', async () => {
+    vi.stubEnv('FLYWHEEL_TOOLS', '');
+    vi.stubEnv('FLYWHEEL_PRESET', '');
+
+    try {
+      const { server, toolTierMode, runtimeToolTierOverride } = createServerLikeIndexTs();
+
+      expect(toolTierMode).toBe('tiered');
+      expect(runtimeToolTierOverride).toBe('auto');
+
+      const names = await listToolNames(server);
+      expect(names.size).toBe(18);
+
+      const expectedTier1 = new Set(
+        Object.entries(TOOL_TIER).filter(([, t]) => t === 1).map(([name]) => name),
+      );
+      expect(names).toEqual(expectedTier1);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('HTTP pool server simulation with auto override lists 18 tools', async () => {
+    vi.stubEnv('FLYWHEEL_TOOLS', '');
+    vi.stubEnv('FLYWHEEL_PRESET', '');
+
+    try {
+      const { server } = createHttpPoolServerSim(INITIAL_TIER_OVERRIDE);
+      const names = await listToolNames(server);
+      expect(names.size).toBe(18);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('HTTP pool server simulation preserves activated categories from primary', async () => {
+    vi.stubEnv('FLYWHEEL_TOOLS', '');
+    vi.stubEnv('FLYWHEEL_PRESET', '');
+
+    try {
+      const activatedTiers = new Map<ToolCategory, ToolTier>([['graph', 2]]);
+      const { server } = createHttpPoolServerSim(INITIAL_TIER_OVERRIDE, activatedTiers);
+
+      const names = await listToolNames(server);
+
+      const graphTier2Count = Object.entries(TOOL_TIER)
+        .filter(([name, tier]) => tier === 2 && TOOL_CATEGORY[name] === 'graph')
+        .length;
+      expect(names.size).toBe(18 + graphTier2Count);
+      expect(names).toContain('graph_analysis');
+      expect(names).toContain('search');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('agent preset yields off mode with no progressive disclosure', async () => {
+    const { server, toolTierMode } = createServerLikeIndexTs('agent');
+
+    expect(toolTierMode).toBe('off');
+
+    const names = await listToolNames(server);
+    // Agent preset: search(3) + read(3) + write(7) + tasks(3) + memory(2) = 18
+    // All visible because tierMode is 'off' — no progressive disclosure
+    expect(names.size).toBe(18);
   });
 });
 

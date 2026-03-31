@@ -1,8 +1,6 @@
 # Tools
 
-Start with `search`. Specialised tools surface automatically when the query calls for them.
-
-> **Start here:** `full` (the default) progressively discloses tools as needed. Use `agent` for a fixed reduced set. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
+The `full` preset (default) starts with `search` and progressively discloses specialised tools as the query calls for them. Use `agent` for a fixed reduced set. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
 
 - [At a Glance](#at-a-glance)
 - [Find Anything](#find-anything)

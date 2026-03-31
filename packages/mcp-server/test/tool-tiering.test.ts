@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { ALL_CATEGORIES, TOOL_CATEGORY, TOOL_TIER, generateInstructions } from '../src/config.js';
+import { ALL_CATEGORIES, INITIAL_TIER_OVERRIDE, TOOL_CATEGORY, TOOL_TIER, generateInstructions } from '../src/config.js';
 import { applyToolGating } from '../src/tool-registry.js';
 import type { ToolTierController } from '../src/tool-registry.js';
 
@@ -1391,5 +1391,57 @@ describe('concurrent activation and finalization', () => {
     const result = await callTool(server, 'graph_analysis');
     expect(result.isError).not.toBe(true);
     expect(tools.graph_analysis.enabled).toBe(true);
+  });
+});
+
+// ============================================================================
+// T30 — Startup tier override policy
+// ============================================================================
+
+describe('startup tier override policy', () => {
+  it('INITIAL_TIER_OVERRIDE is auto, not full', () => {
+    // Regression guard: the bug was `preset === 'full' ? 'full' : 'auto'`
+    // which bypassed all tier filtering for the default preset.
+    expect(INITIAL_TIER_OVERRIDE).toBe('auto');
+  });
+});
+
+// ============================================================================
+// T30 — Notification batching
+// ============================================================================
+
+describe('notification batching in refreshToolVisibility', () => {
+  it('emits exactly one sendToolListChanged when activating a multi-tool category', () => {
+    const { server, controller } = createFullPresetServer();
+
+    // Attach spy AFTER createFullPresetServer() returns (registration-time notifications already fired)
+    const spy = vi.spyOn(server, 'sendToolListChanged');
+
+    controller.enableTierCategory('graph');
+
+    // Multiple graph tools should now be enabled
+    const graphTools = Object.entries(TOOL_TIER)
+      .filter(([name, tier]) => tier === 2 && TOOL_CATEGORY[name] === 'graph')
+      .map(([name]) => name);
+    expect(graphTools.length).toBeGreaterThan(1);
+    for (const name of graphTools) {
+      expect((server as any)._registeredTools[name]?.enabled).toBe(true);
+    }
+
+    // But only one notification should have been sent
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not emit sendToolListChanged when no tools change state', () => {
+    const { server, controller } = createFullPresetServer();
+
+    // Activate graph first
+    controller.enableTierCategory('graph');
+
+    const spy = vi.spyOn(server, 'sendToolListChanged');
+
+    // Activating graph again should not change any tool state
+    controller.enableTierCategory('graph');
+    expect(spy).not.toHaveBeenCalled();
   });
 });

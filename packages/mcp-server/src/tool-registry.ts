@@ -27,7 +27,7 @@ import type { PipelineActivity } from './core/read/watch/pipeline.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getSessionId } from '@velvetmonkey/vault-core';
 
-import { PRESETS, TOOL_CATEGORY, TOOL_TIER, type ToolCategory, type ToolTier } from './config.js';
+import { PRESETS, TOOL_CATEGORY, TOOL_TIER, type ToolCategory, type ToolTier, type ToolTierOverride } from './config.js';
 import { getSemanticActivations, getToolRoutingMode, hasToolRouting, type SemanticActivation } from './core/read/toolRouting.js';
 import { applySandwichOrdering } from './tools/read/query.js';
 import { VaultRegistry, type VaultContext } from './vault-registry.js';
@@ -109,7 +109,8 @@ export interface VaultActivationCallbacks {
 }
 
 export type ToolTierMode = 'off' | 'tiered';
-export type ToolTierOverride = 'auto' | 'full' | 'minimal';
+// ToolTierOverride re-exported from config.ts (side-effect-free for testing)
+export type { ToolTierOverride } from './config.js';
 
 export interface ToolTierController {
   readonly mode: ToolTierMode;
@@ -306,14 +307,19 @@ export function applyToolGating(
   }
 
   function refreshToolVisibility(): void {
+    let changed = false;
     for (const [name, handle] of toolHandles) {
       const enabled = shouldEnableTool(name);
-      if (enabled && !handle.enabled) {
-        handle.enable();
-      } else if (!enabled && handle.enabled) {
-        handle.disable();
+      if (enabled !== handle.enabled) {
+        // Set directly to avoid per-tool sendToolListChanged() notifications
+        handle.enabled = enabled;
+        changed = true;
       }
     }
+    if (changed) {
+      targetServer.sendToolListChanged();
+    }
+    // Always fire callback — override state may have changed even if no tools flipped
     if (controllerRef) {
       onTierStateChange?.(controllerRef);
     }

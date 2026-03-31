@@ -138,6 +138,7 @@ import {
   parseEnabledCategories,
   resolveToolConfig,
   generateInstructions,
+  INITIAL_TIER_OVERRIDE,
   type ToolCategory,
   type ToolTier,
 } from './config.js';
@@ -197,7 +198,7 @@ export function getWatcherStatus(): WatcherStatus | null {
 const toolConfig = resolveToolConfig();
 const enabledCategories = toolConfig.categories;
 const toolTierMode: ToolTierMode = toolConfig.isFullToolset ? 'tiered' : 'off';
-let runtimeToolTierOverride: ToolTierOverride = toolConfig.preset === 'full' ? 'full' : 'auto';
+let runtimeToolTierOverride: ToolTierOverride = INITIAL_TIER_OVERRIDE;
 let runtimeActiveCategoryTiers = new Map<ToolCategory, ToolTier>();
 let primaryToolTierController: ToolTierController | null = null;
 

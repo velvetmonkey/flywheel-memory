@@ -1000,10 +1000,15 @@ export function registerHealthTools(
         }
         // Entity embeddings
         const entityEmbCount = getEntityEmbeddingsCount();
-        const entityCount = indexBuilt ? index.entities.size : 0;
+        const entityCount = (() => {
+          if (!stateDb) return 0;
+          try {
+            return (stateDb.db.prepare('SELECT COUNT(*) as cnt FROM entities').get() as { cnt: number })?.cnt ?? 0;
+          } catch { return 0; }
+        })();
         if (entityCount > 0) {
           const entityCoverage = Math.round((entityEmbCount / entityCount) * 100);
-          checks.push({ name: 'entity_embedding_coverage', status: entityCoverage < 50 ? 'warning' : 'ok', detail: `${entityEmbCount}/${entityCount} entities embedded (${entityCoverage}%)` });
+          checks.push({ name: 'entity_embedding_coverage', status: entityCoverage < 50 ? 'warning' : 'ok', detail: `${entityEmbCount}/${entityCount} canonical entities embedded (${entityCoverage}%)` });
         }
       } else if (!embReady) {
         checks.push({ name: 'embedding_coverage', status: 'warning', detail: 'Semantic embeddings not built', fix: 'Run init_semantic to enable hybrid search' });

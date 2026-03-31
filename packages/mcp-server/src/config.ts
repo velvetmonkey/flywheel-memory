@@ -46,6 +46,14 @@ export type ToolCategory =
   | 'temporal' | 'diagnostics';
 
 export type ToolTier = 1 | 2 | 3;
+export type ToolTierOverride = 'auto' | 'full' | 'minimal';
+
+/**
+ * Default tier override for fresh sessions.
+ * 'auto' enables progressive disclosure (tier-1 visible, tier-2/3 activated by context).
+ * Users can override to 'full' via flywheel_config at runtime.
+ */
+export const INITIAL_TIER_OVERRIDE: ToolTierOverride = 'auto';
 
 export const ALL_CATEGORIES: ToolCategory[] = [
   'search', 'read', 'write',

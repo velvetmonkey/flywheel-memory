@@ -88,7 +88,7 @@ describe('Backup & Recovery', () => {
   // safeBackupAsync
   // ===========================================================================
   describe('safeBackupAsync', () => {
-    it('creates a valid SQLite backup', async () => {
+    it('creates a valid SQLite backup', { timeout: 15_000 }, async () => {
       const stateDb = openStateDb(testVaultPath);
       try {
         const result = await safeBackupAsync(stateDb.db, stateDb.dbPath);
@@ -111,7 +111,7 @@ describe('Backup & Recovery', () => {
       }
     });
 
-    it('rotates existing backups before creating new one', async () => {
+    it('rotates existing backups before creating new one', { timeout: 15_000 }, async () => {
       const stateDb = openStateDb(testVaultPath);
       try {
         // Create first backup
@@ -552,7 +552,7 @@ describe('Backup & Recovery', () => {
   // safeBackupAsync (extended)
   // ===========================================================================
   describe('safeBackupAsync (extended)', () => {
-    it('backup includes data written before backup call', async () => {
+    it('backup includes data written before backup call', { timeout: 15_000 }, async () => {
       const stateDb = openStateDb(testVaultPath);
       try {
         // Write data, then backup

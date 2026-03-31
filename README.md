@@ -1,8 +1,8 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Local-first memory for Obsidian.</strong><br/>
-  Give AI clients structured access to your vault for search, writing, tasks, and graph-aware context.</p>
+  <p><strong>Local-first MCP server — AI search, safe writes, and auto-linking for Obsidian vaults.</strong><br/>
+  77 tools. Every edit is auditable. Every link has a receipt.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)

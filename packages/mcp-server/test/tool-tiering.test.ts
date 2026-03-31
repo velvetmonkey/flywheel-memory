@@ -6,6 +6,7 @@ import { ALL_CATEGORIES, INITIAL_TIER_OVERRIDE, TOOL_CATEGORY, TOOL_TIER, TOTAL_
 import type { ToolCategory, ToolTier, ToolTierOverride } from '../src/config.js';
 import { applyToolGating } from '../src/tool-registry.js';
 import type { ToolTierController, ToolTierMode } from '../src/tool-registry.js';
+import { registerDiscoveryTools } from '../src/tools/read/discovery.js';
 
 function createTieredServer() {
   const server = new McpServer({ name: 'test', version: '0.0.0' });
@@ -161,9 +162,9 @@ describe('tool tiering', () => {
   it('generateInstructions shows escalation hints for inactive tiered categories', () => {
     const instructions = generateInstructions(new Set(ALL_CATEGORIES), null, new Set());
 
-    expect(instructions).toContain('Ask about graph connections, backlinks, hubs, clusters, or paths');
-    expect(instructions).toContain('Ask about wikilinks, suggestions, stubs, or unlinked mentions');
-    expect(instructions).toContain('Ask to unlock schema tools');
+    expect(instructions).toContain('discover_tools');
+    expect(instructions).toContain('specialized tools');
+    expect(instructions).toContain('graph analysis');
   });
 
   it('generateInstructions shows full category guidance once activated', () => {
@@ -629,8 +630,8 @@ describe('generateInstructions integration with controller state', () => {
 
     // Initial: escalation hints present, full sections absent
     let instructions = getInstructions();
-    expect(instructions).toContain('Ask about graph connections, backlinks, hubs, clusters, or paths');
-    expect(instructions).toContain('Ask about wikilinks, suggestions, stubs, or unlinked mentions');
+    expect(instructions).toContain('discover_tools');
+    expect(instructions).toContain('specialized tools');
     expect(instructions).not.toContain('## Graph');
     expect(instructions).not.toContain('## Wikilinks');
 
@@ -651,9 +652,8 @@ describe('generateInstructions integration with controller state', () => {
     instructions = getInstructions();
     expect(instructions).toContain('## Graph');
     expect(instructions).toContain('## Wikilinks');
-    // Unactivated categories still show hints
-    expect(instructions).toContain('Ask to unlock schema tools');
-    expect(instructions).toContain('Ask about time, history, evolution, or stale notes');
+    // Unified discover_tools hint still present for unactivated categories
+    expect(instructions).toContain('discover_tools');
   });
 });
 
@@ -1527,7 +1527,7 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
     }
   });
 
-  it('primary server simulation lists exactly 18 tier-1 tools', async () => {
+  it('primary server simulation lists exactly tier-1 tools', async () => {
     vi.stubEnv('FLYWHEEL_TOOLS', '');
     vi.stubEnv('FLYWHEEL_PRESET', '');
 
@@ -1575,7 +1575,7 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
       const graphTier2Count = Object.entries(TOOL_TIER)
         .filter(([name, tier]) => tier === 2 && TOOL_CATEGORY[name] === 'graph')
         .length;
-      expect(names.size).toBe(18 + graphTier2Count);
+      expect(names.size).toBe(TIER_1_TOOL_COUNT + graphTier2Count);
       expect(names).toContain('graph_analysis');
       expect(names).toContain('search');
     } finally {
@@ -1592,6 +1592,107 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
     // Agent preset: search(3) + read(3) + write(7) + tasks(3) + memory(2) = 18
     // All visible because tierMode is 'off' — no progressive disclosure
     expect(names.size).toBe(TIER_1_TOOL_COUNT);
+  });
+});
+
+// ============================================================================
+// discover_tools meta-tool
+// ============================================================================
+
+/** Create a tiered server with the real discover_tools handler + stubs for everything else. */
+function createServerWithDiscovery() {
+  const server = new McpServer({ name: 'discovery-test', version: '0.0.0' });
+  const controller = applyToolGating(
+    server,
+    new Set(ALL_CATEGORIES),
+    () => null,
+    null,
+    undefined,
+    undefined,
+    'tiered',
+  );
+
+  // Register stub tools for everything except discover_tools
+  for (const toolName of Object.keys(TOOL_CATEGORY)) {
+    if (toolName === 'discover_tools') continue;
+    if (toolName === 'search') {
+      server.tool(toolName, { query: z.string().optional(), focus: z.string().optional() }, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    } else if (toolName === 'brief') {
+      server.tool(toolName, { focus: z.string().optional() }, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    } else {
+      server.tool(toolName, async () => ({
+        content: [{ type: 'text' as const, text: `${toolName} ok` }],
+      }));
+    }
+  }
+
+  // Register real discover_tools handler
+  registerDiscoveryTools(server, controller);
+
+  controller.finalizeRegistration();
+  return { server, controller };
+}
+
+describe('discover_tools meta-tool', () => {
+  it('activates diagnostics and returns tools with schemas for "vault health"', async () => {
+    const { server, controller } = createServerWithDiscovery();
+
+    expect(controller.activeCategories.has('diagnostics')).toBe(false);
+
+    const result = await callTool(server, 'discover_tools', { query: 'vault health' });
+    const data = JSON.parse(result.content[0].text);
+
+    expect(data.matched_categories).toContain('diagnostics');
+    expect(data.newly_activated_categories).toContain('diagnostics');
+    expect(data.tools.some((t: any) => t.name === 'health_check')).toBe(true);
+    // Input schemas are included
+    expect(data.tools.find((t: any) => t.name === 'health_check').inputSchema).toBeDefined();
+    expect(controller.activeCategories.has('diagnostics')).toBe(true);
+  });
+
+  it('activates graph for "backlinks" query', async () => {
+    const { server, controller } = createServerWithDiscovery();
+
+    const result = await callTool(server, 'discover_tools', { query: 'backlinks and connections' });
+    const data = JSON.parse(result.content[0].text);
+
+    expect(data.matched_categories).toContain('graph');
+    expect(data.tools.some((t: any) => t.name === 'graph_analysis')).toBe(true);
+    expect(controller.activeCategories.has('graph')).toBe(true);
+  });
+
+  it('returns no tools and hints for unrecognized query', async () => {
+    const { server, controller } = createServerWithDiscovery();
+
+    const result = await callTool(server, 'discover_tools', { query: 'xyzzy nonsense query' });
+    const data = JSON.parse(result.content[0].text);
+
+    expect(data.matched_categories).toHaveLength(0);
+    expect(data.newly_activated_categories).toHaveLength(0);
+    expect(data.tools).toHaveLength(0);
+    expect(data.hint).toContain('No tools matched');
+    expect(data.hint).toContain('Available categories');
+    expect(controller.activeCategories.size).toBe(0);
+  });
+
+  it('returns tools without re-activating already-active category', async () => {
+    const { server, controller } = createServerWithDiscovery();
+
+    // Pre-activate graph
+    controller.activateCategory('graph', 2);
+    expect(controller.activeCategories.has('graph')).toBe(true);
+
+    const result = await callTool(server, 'discover_tools', { query: 'backlinks' });
+    const data = JSON.parse(result.content[0].text);
+
+    expect(data.matched_categories).toContain('graph');
+    expect(data.newly_activated_categories).not.toContain('graph');
+    // Tools are still returned even though category was already active
+    expect(data.tools.some((t: any) => t.name === 'graph_analysis')).toBe(true);
   });
 });
 

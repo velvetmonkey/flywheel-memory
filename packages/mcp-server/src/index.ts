@@ -267,7 +267,7 @@ function createConfiguredServer(): McpServer {
     toolTierMode,
     handleTierStateChange,
   );
-  registerAllTools(s, ctx);
+  registerAllTools(s, ctx, toolTierController);
   toolTierController.setOverride(runtimeToolTierOverride);
   for (const [category, tier] of runtimeActiveCategoryTiers) {
     toolTierController.activateCategory(category, tier);
@@ -338,7 +338,7 @@ const _gatingResult = applyToolGating(
   toolTierMode,
   handleTierStateChange,
 );
-registerAllTools(server, _registryCtx);
+registerAllTools(server, _registryCtx, _gatingResult);
 _gatingResult.setOverride(runtimeToolTierOverride);
 _gatingResult.finalizeRegistration();
 primaryToolTierController = _gatingResult;

@@ -82,6 +82,7 @@ import { registerSessionHistoryTools } from './tools/read/sessionHistory.js';
 import { registerEntityHistoryTools } from './tools/read/entityHistory.js';
 import { registerLearningReportTools } from './tools/read/learningReport.js';
 import { registerCalibrationExportTools } from './tools/read/calibrationExport.js';
+import { registerDiscoveryTools } from './tools/read/discovery.js';
 
 // Resources
 import { registerVaultResources } from './resources/vault.js';
@@ -165,11 +166,23 @@ const ACTIVATION_PATTERNS: Array<{ category: ToolCategory; tier: ToolTier; patte
   },
 ];
 
-function getPatternSignals(raw: string): Array<{ category: ToolCategory; tier: ToolTier }> {
+export function getPatternSignals(raw: string): Array<{ category: ToolCategory; tier: ToolTier }> {
   if (!raw) return [];
   return ACTIVATION_PATTERNS
     .filter(({ patterns }) => patterns.some((pattern) => pattern.test(raw)))
     .map(({ category, tier }) => ({ category, tier }));
+}
+
+/** Deduplicate activation signals by category, keeping the highest tier per category. */
+export function unionSignalsByCategory(
+  signals: Array<{ category: ToolCategory; tier: ToolTier }>,
+): Array<{ category: ToolCategory; tier: ToolTier }> {
+  const best = new Map<ToolCategory, ToolTier>();
+  for (const { category, tier } of signals) {
+    const existing = best.get(category);
+    if (!existing || tier > existing) best.set(category, tier);
+  }
+  return Array.from(best.entries()).map(([category, tier]) => ({ category, tier }));
 }
 
 async function getActivationSignals(
@@ -208,16 +221,7 @@ async function getActivationSignals(
     return getPatternSignals(raw);
   }
 
-  // Union: dedupe by category, keep highest tier per category
-  const categoryBest = new Map<ToolCategory, ToolTier>();
-  for (const { category, tier } of [...patternSignals, ...semanticSignals]) {
-    const existing = categoryBest.get(category);
-    if (!existing || tier > existing) {
-      categoryBest.set(category, tier);
-    }
-  }
-
-  return Array.from(categoryBest.entries()).map(([category, tier]) => ({ category, tier }));
+  return unionSignalsByCategory([...patternSignals, ...semanticSignals]);
 }
 
 /**
@@ -761,6 +765,7 @@ export function applyToolGating(
 export function registerAllTools(
   targetServer: McpServer,
   ctx: ToolRegistryContext,
+  controller?: ToolTierController | null,
 ): void {
   const { getVaultPath: gvp, getVaultIndex: gvi, getStateDb: gsd, getFlywheelConfig: gcf } = ctx;
 
@@ -852,6 +857,11 @@ export function registerAllTools(
   // recall removed — entity/memory search merged into search (uber search)
   // registerRecallTools(targetServer, gsd, gvp, () => gvi() ?? null);
   registerBriefTools(targetServer, gsd);
+
+  // Discovery tool (progressive disclosure meta-tool)
+  if (controller) {
+    registerDiscoveryTools(targetServer, controller);
+  }
 
   // Resources (always registered, not gated by tool presets)
   registerVaultResources(targetServer, () => gvi() ?? null);

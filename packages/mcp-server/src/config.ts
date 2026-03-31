@@ -221,10 +221,11 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
 // This is the single source of truth for tool count: Object.keys(TOOL_CATEGORY).length.
 // Every tool MUST have an entry — gate() throws on startup if one is missing.
 export const TOOL_CATEGORY: Record<string, ToolCategory> = {
-  // search (3 tools)
+  // search
   search: 'search',
   init_semantic: 'search',
   find_similar: 'search',
+  discover_tools: 'search',
 
   // read (3 tools) -- note reading
   get_note_structure: 'read',
@@ -329,6 +330,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   search: 1,
   init_semantic: 1,
   find_similar: 1,
+  discover_tools: 1,
   get_note_structure: 1,
   get_section_content: 1,
   find_sections: 1,
@@ -566,8 +568,7 @@ Use "get_link_path" to trace the shortest path between any two entities or notes
 Use "get_strong_connections" to find the strongest or most-connected relationships for an entity.`);
   }
   else if (tieringActive && categories.has('graph')) {
-    parts.push(`
-**More tools available:** Ask about graph connections, backlinks, hubs, clusters, or paths to unlock graph analysis tools.`);
+    // Escalation hint handled by unified discover_tools guidance below
   }
 
   // Note-ops category instructions
@@ -600,8 +601,7 @@ Use "schema_validate" to validate frontmatter against explicit rules or find not
 Use "note_intelligence" for per-note analysis (completeness, quality, suggestions).`);
   }
   else if (tieringActive && categories.has('schema')) {
-    parts.push(`
-**Advanced tools:** Ask to unlock schema tools for conventions, validation, migrations, and bulk metadata analysis.`);
+    // Escalation hint handled by unified discover_tools guidance below
   }
 
   if (isCategoryVisible('wikilinks')) {
@@ -619,8 +619,7 @@ Link quality and discovery — not for finding content (use search for that).
 - "What aliases am I missing?" → suggest_entity_aliases (acronyms, short forms, alternate names)`);
   }
   else if (tieringActive && categories.has('wikilinks')) {
-    parts.push(`
-**More tools available:** Ask about wikilinks, suggestions, stubs, or unlinked mentions to unlock wikilink tools.`);
+    // Escalation hint handled by unified discover_tools guidance below
   }
 
   if (isCategoryVisible('corrections')) {
@@ -635,8 +634,7 @@ When the user says something is wrong — a bad link, wrong entity, wrong catego
 Use "absorb_as_alias" when two names should resolve to the same entity without merging note bodies.`);
   }
   else if (tieringActive && categories.has('corrections')) {
-    parts.push(`
-**More tools available:** Ask about errors, wrong links, or fixes to unlock correction tools.`);
+    // Escalation hint handled by unified discover_tools guidance below
   }
 
   if (isCategoryVisible('temporal')) {
@@ -654,8 +652,7 @@ Temporal tools analyze *patterns and changes* over time — use them for "what c
 temporal_summary composes the other three — use it for weekly/monthly reviews.`);
   }
   else if (tieringActive && categories.has('temporal')) {
-    parts.push(`
-**More tools available:** Ask about time, history, evolution, or stale notes to unlock temporal tools.`);
+    // Escalation hint handled by unified discover_tools guidance below
   }
 
   if (isCategoryVisible('diagnostics')) {
@@ -672,9 +669,13 @@ temporal_summary composes the other three — use it for weekly/monthly reviews.
 Use "flywheel_config" to inspect runtime configuration and set "tool_tier_override" to "auto", "full", or "minimal" for this vault.`);
   }
   else if (tieringActive && categories.has('diagnostics')) {
+    // Escalation hint handled by unified discover_tools guidance below
+  }
+
+  // Unified discover_tools guidance (replaces per-category escalation hints)
+  if (tieringActive) {
     parts.push(`
-**More tools available:** Ask about vault health, indexing, status, or configuration to unlock diagnostic tools.
-**Advanced tools:** Ask to unlock note operations or deep diagnostics for note mutations, benchmarks, history, graph exports, and learning reports.`);
+**More tools available:** Call \`discover_tools({ query: "your need" })\` to find and activate specialized tools for graph analysis, wikilinks, diagnostics, schema, temporal analysis, note operations, and more. Returns tool names, descriptions, and input schemas.`);
   }
 
   return parts.join('\n');

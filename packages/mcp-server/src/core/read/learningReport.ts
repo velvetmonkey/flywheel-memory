@@ -27,6 +27,13 @@ export interface LearningReport {
     survival_rate: number | null;
   };
   graph: { link_count: number; entity_count: number };
+  source_breakdown?: Array<{
+    source: string;
+    total_applied: number;
+    survived: number;
+    removed: number;
+    survival_rate: number | null;
+  }>;
   tool_selection?: ToolSelectionReport;
   comparison?: {
     previous_period: { start: string; end: string };
@@ -201,6 +208,32 @@ export function getLearningReport(
     funnel: queryFunnel(stateDb, bounds.start, bounds.end, bounds.startMs, bounds.endMs),
     graph: { link_count: linkCount, entity_count: entityCount },
   };
+
+  // Source breakdown — only include when source column has non-default data
+  const sourceRows = stateDb.db.prepare(`
+    SELECT source,
+      COUNT(*) as total_applied,
+      SUM(CASE WHEN status = 'applied' THEN 1 ELSE 0 END) as survived,
+      SUM(CASE WHEN status = 'removed' THEN 1 ELSE 0 END) as removed
+    FROM wikilink_applications
+    WHERE applied_at >= ? AND applied_at <= ?
+    GROUP BY source
+    ORDER BY total_applied DESC
+  `).all(bounds.start, bounds.end) as Array<{
+    source: string;
+    total_applied: number;
+    survived: number;
+    removed: number;
+  }>;
+  if (sourceRows.length > 0) {
+    report.source_breakdown = sourceRows.map(r => ({
+      source: r.source,
+      total_applied: r.total_applied,
+      survived: r.survived,
+      removed: r.removed,
+      survival_rate: r.total_applied > 0 ? r.survived / r.total_applied : null,
+    }));
+  }
 
   // Tool selection feedback — only include when data exists
   const toolSelection = getToolSelectionReport(stateDb, daysBack);

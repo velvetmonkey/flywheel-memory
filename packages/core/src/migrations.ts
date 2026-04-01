@@ -416,6 +416,18 @@ export function initSchema(db: Database.Database): void {
     // v37: prospect_ledger + prospect_summary tables (pre-entity pattern accumulation)
     // (created by SCHEMA_SQL above via CREATE TABLE IF NOT EXISTS)
 
+    // v38: source column on wikilink_applications (proactive linking observability)
+    // Tracks who most recently applied each link: tool, proactive, enrichment, manual_detected
+    if (currentVersion < 38) {
+      const hasSource = db.prepare(
+        `SELECT COUNT(*) as cnt FROM pragma_table_info('wikilink_applications') WHERE name = 'source'`
+      ).get() as { cnt: number };
+      if (hasSource.cnt === 0) {
+        db.exec(`ALTER TABLE wikilink_applications ADD COLUMN source TEXT NOT NULL DEFAULT 'tool'`);
+      }
+      db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(38);
+    }
+
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
     ).run(SCHEMA_VERSION);

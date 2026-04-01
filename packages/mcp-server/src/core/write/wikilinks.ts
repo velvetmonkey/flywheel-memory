@@ -2392,7 +2392,7 @@ export async function applyProactiveSuggestions(
 
   // Track applications for feedback loop
   if (stateDb) {
-    trackWikilinkApplications(stateDb, filePath, result.linkedEntities);
+    trackWikilinkApplications(stateDb, filePath, result.linkedEntities, 'proactive');
 
     // Mark as applied in suggestion_events
     try {

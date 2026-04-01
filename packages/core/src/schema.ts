@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 37;
+export const SCHEMA_VERSION = 38;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -172,14 +172,15 @@ CREATE TABLE IF NOT EXISTS wikilink_suppressions (
   updated_at TEXT DEFAULT (datetime('now'))
 );
 
--- Wikilink applications tracking (v5: implicit feedback)
+-- Wikilink applications tracking (v5: implicit feedback, v38: source provenance)
 CREATE TABLE IF NOT EXISTS wikilink_applications (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   entity TEXT NOT NULL,
   note_path TEXT NOT NULL,
   matched_term TEXT,
   applied_at TEXT DEFAULT (datetime('now')),
-  status TEXT DEFAULT 'applied'
+  status TEXT DEFAULT 'applied',
+  source TEXT NOT NULL DEFAULT 'tool'
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_wl_apps_unique ON wikilink_applications(entity COLLATE NOCASE, note_path);
 

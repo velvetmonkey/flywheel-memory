@@ -123,7 +123,7 @@ export async function drainProactiveQueue(
   const todayStr = todayMidnight.toISOString().slice(0, 10); // YYYY-MM-DD
 
   const countTodayApplied = stateDb.db.prepare(
-    `SELECT COUNT(*) as cnt FROM wikilink_applications WHERE note_path = ? AND applied_at >= ?`,
+    `SELECT COUNT(*) as cnt FROM wikilink_applications WHERE note_path = ? AND applied_at >= ? AND source = 'proactive'`,
   );
 
   // 4. Process each file

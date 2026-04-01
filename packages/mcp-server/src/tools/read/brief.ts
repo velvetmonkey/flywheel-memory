@@ -13,6 +13,7 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 import { getRecentSessionSummaries, listMemories, findContradictions } from '../../core/write/memory.js';
 import { getSessionHistory } from '../../core/shared/toolTracking.js';
 import { listCorrections } from '../../core/write/corrections.js';
+import { getProactiveLinkingSummary } from '../../core/shared/proactiveLinkingStats.js';
 
 // =============================================================================
 // Section builders
@@ -219,6 +220,27 @@ function buildVaultPulseSection(stateDb: StateDb): BriefSection {
   };
 }
 
+function buildProactiveLinkingSection(stateDb: StateDb): BriefSection | null {
+  const summary = getProactiveLinkingSummary(stateDb, 1);
+  if (summary.total_applied === 0) return null;
+
+  const content = {
+    summary: `${summary.total_applied} ${summary.total_applied === 1 ? 'link' : 'links'} applied across ${summary.files_touched} ${summary.files_touched === 1 ? 'note' : 'notes'} (${summary.survived} survived, ${summary.survival_rate !== null ? Math.round(summary.survival_rate * 100) + '%' : 'n/a'} rate)`,
+    total_applied_24h: summary.total_applied,
+    survived_24h: summary.survived,
+    removed_24h: summary.removed,
+    files_24h: summary.files_touched,
+    recent: summary.recent,
+  };
+
+  return {
+    name: 'proactive_linking',
+    priority: 6,
+    content,
+    estimated_tokens: estimateTokens(content),
+  };
+}
+
 // =============================================================================
 // Tool Registration
 // =============================================================================
@@ -249,7 +271,8 @@ export function registerBriefTools(
         buildActiveMemoriesSection(stateDb, 20),
         buildCorrectionsSection(stateDb, 10),
         buildVaultPulseSection(stateDb),
-      ];
+        buildProactiveLinkingSection(stateDb),
+      ].filter((s): s is BriefSection => s !== null);
 
       // Token budgeting: if max_tokens specified, truncate low-priority sections
       if (args.max_tokens) {

@@ -18,6 +18,7 @@ import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount, getActive
 import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache.js';
 import { getServerLog, type LogEntry } from '../../core/shared/serverLog.js';
 import { getSweepResults, type SweepResults } from '../../core/read/sweep.js';
+import { getProactiveLinkingSummary, getProactiveLinkingOneLiner } from '../../core/shared/proactiveLinkingStats.js';
 import { getSuppressedCount, getEntityStats, getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD } from '../../core/write/wikilinkFeedback.js';
 import { getEntityEmbeddingsCount } from '../../core/read/embeddings.js';
 import type { WatcherStatus } from '../../core/read/watch/types.js';
@@ -172,6 +173,15 @@ export function registerHealthTools(
         unlinked_mentions: z.number(),
       })).describe('Entities with the most unlinked plain-text mentions'),
     }).optional().describe('Background sweep results (graph hygiene metrics, updated every 5 min)'),
+    proactive_linking: z.object({
+      enabled: z.boolean().describe('Whether proactive linking is enabled in config'),
+      queue_pending: z.number().describe('Number of queued proactive suggestions awaiting drain'),
+      summary: z.string().nullable().describe('One-liner: "12 links applied across 8 notes (11 survived, 92% rate)"'),
+      total_applied_24h: z.number().describe('Total proactive applications in last 24h'),
+      survived_24h: z.number().describe('Proactive links still present'),
+      removed_24h: z.number().describe('Proactive links removed by user'),
+      files_24h: z.number().describe('Distinct files touched by proactive linking'),
+    }).optional().describe('Proactive linking observability (full mode only)'),
     recommendations: z.array(z.string()).describe('Suggested actions if any issues detected'),
   };
 
@@ -253,6 +263,15 @@ export function registerHealthTools(
     dead_link_count?: number;
     top_dead_link_targets?: Array<{ target: string; mention_count: number }>;
     sweep?: SweepResults;
+    proactive_linking?: {
+      enabled: boolean;
+      queue_pending: number;
+      summary: string | null;
+      total_applied_24h: number;
+      survived_24h: number;
+      removed_24h: number;
+      files_24h: number;
+    };
     recommendations: string[];
   };
 
@@ -584,6 +603,24 @@ export function registerHealthTools(
         dead_link_count: isFull ? deadLinkCount : undefined,
         top_dead_link_targets: isFull ? topDeadLinkTargets : undefined,
         sweep: isFull ? (getSweepResults() ?? undefined) : undefined,
+        proactive_linking: isFull && stateDb ? (() => {
+          const config = getConfig();
+          const enabled = config.proactive_linking !== false;
+          const queuePending = stateDb.db.prepare(
+            `SELECT COUNT(*) as cnt FROM proactive_queue WHERE status = 'pending'`,
+          ).get() as { cnt: number };
+          const summary = getProactiveLinkingSummary(stateDb, 1);
+          const oneLiner = getProactiveLinkingOneLiner(stateDb, 1);
+          return {
+            enabled,
+            queue_pending: queuePending.cnt,
+            summary: oneLiner,
+            total_applied_24h: summary.total_applied,
+            survived_24h: summary.survived,
+            removed_24h: summary.removed,
+            files_24h: summary.files_touched,
+          };
+        })() : undefined,
         recommendations,
       };
 

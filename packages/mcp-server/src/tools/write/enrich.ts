@@ -401,7 +401,7 @@ async function executeEnrich(
 
       // Record applications in wikilink_applications table
       if (stateDb) {
-        trackWikilinkApplications(stateDb, relativePath, entities);
+        trackWikilinkApplications(stateDb, relativePath, entities, 'enrichment');
 
         // Update note_links table
         const newLinks = extractLinkedEntities(result.content);

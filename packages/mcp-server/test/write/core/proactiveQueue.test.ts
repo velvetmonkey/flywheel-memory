@@ -173,11 +173,11 @@ describe('proactiveQueue', () => {
       const oldTime = new Date(Date.now() - 120_000);
       fs.utimesSync(cappedPath, oldTime, oldTime);
 
-      // Seed wikilink_applications to simulate 10 already applied today
+      // Seed wikilink_applications to simulate 10 already applied today (proactive source)
       const today = new Date().toISOString().slice(0, 10);
       for (let i = 0; i < 10; i++) {
         stateDb.db.prepare(
-          `INSERT OR IGNORE INTO wikilink_applications (entity, note_path, applied_at) VALUES (?, 'capped.md', ?)`,
+          `INSERT OR IGNORE INTO wikilink_applications (entity, note_path, applied_at, source) VALUES (?, 'capped.md', ?, 'proactive')`,
         ).run(`Entity${i}`, `${today} 12:00:00`);
       }
 

@@ -12,6 +12,9 @@ import { extractLinkedEntities } from './wikilinks.js';
 // TYPES
 // =============================================================================
 
+/** Who most recently applied a wikilink to a note */
+export type WikilinkApplicationSource = 'tool' | 'proactive' | 'enrichment' | 'manual_detected';
+
 export interface FeedbackEntry {
   id: number;
   entity: string;
@@ -806,14 +809,16 @@ export function trackWikilinkApplications(
   stateDb: StateDb,
   notePath: string,
   entities: string[] | Array<{ entity: string; matchedTerm?: string }>,
+  source: WikilinkApplicationSource = 'tool',
 ): void {
   const upsert = stateDb.db.prepare(`
-    INSERT INTO wikilink_applications (entity, note_path, matched_term, applied_at, status)
-    VALUES (?, ?, ?, datetime('now'), 'applied')
+    INSERT INTO wikilink_applications (entity, note_path, matched_term, applied_at, status, source)
+    VALUES (?, ?, ?, datetime('now'), 'applied', ?)
     ON CONFLICT(entity, note_path) DO UPDATE SET
       matched_term = COALESCE(?, matched_term),
       applied_at = datetime('now'),
-      status = 'applied'
+      status = 'applied',
+      source = ?
   `);
   const lookupCanonical = stateDb.db.prepare(
     `SELECT name FROM entities WHERE LOWER(name) = LOWER(?) LIMIT 1`
@@ -826,7 +831,7 @@ export function trackWikilinkApplications(
       const matchedTerm = typeof item === 'string' ? null : (item.matchedTerm ?? null);
       const row = lookupCanonical.get(entityName) as { name: string } | undefined;
       const canonicalName = row?.name ?? entityName;
-      upsert.run(canonicalName, notePath, matchedTerm, matchedTerm);
+      upsert.run(canonicalName, notePath, matchedTerm, source, matchedTerm, source);
     }
   });
 

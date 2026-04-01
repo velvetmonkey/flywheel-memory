@@ -939,7 +939,7 @@ export class PipelineRunner {
         }
         // Track applications so removal detection works on subsequent edits
         if (newlyTracked.length > 0) {
-          trackWikilinkApplications(p.sd, diff.file, newlyTracked);
+          trackWikilinkApplications(p.sd, diff.file, newlyTracked, 'manual_detected');
         }
       }
     }

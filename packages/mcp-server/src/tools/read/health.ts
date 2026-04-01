@@ -11,7 +11,7 @@ import { detectPeriodicNotes } from './periodic.js';
 import { getActivitySummary } from './temporal.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
 import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
-import { getRecentIndexEvents, getRecentPipelineEvent, getLastSuccessfulEvent, getLastEventByTrigger, type PipelineStep } from '../../core/shared/indexActivity.js';
+import { getRecentIndexEvents, getRecentPipelineEvent, getLastSuccessfulEvent, getLastEventByTrigger, compactPipelineRun, compactStep, type PipelineStep, type CompactStep, type CompactPipelineRun } from '../../core/shared/indexActivity.js';
 import type { PipelineActivity } from '../../core/read/watch/pipeline.js';
 import { getFTS5State } from '../../core/read/fts5.js';
 import { hasEmbeddingsIndex, isEmbeddingsBuilding, getEmbeddingsCount, getActiveModelId, diagnoseEmbeddings } from '../../core/read/embeddings.js';
@@ -87,31 +87,33 @@ export function registerHealthTools(
       trigger: z.string(),
       duration_ms: z.number(),
       files_changed: z.number().nullable(),
-      changed_paths: z.array(z.string()).nullable(),
+      changed_paths_total: z.number().describe('Total number of changed files'),
+      changed_paths_sample: z.array(z.string()).describe('Up to 3 sample changed paths'),
+      step_count: z.number().describe('Number of pipeline steps'),
       steps: z.array(z.object({
         name: z.string(),
         duration_ms: z.number(),
-        input: z.record(z.unknown()),
-        output: z.record(z.unknown()),
         skipped: z.boolean().optional(),
         skip_reason: z.string().optional(),
-      })),
-    }).optional().describe('Most recent watcher pipeline run with per-step timing'),
+        summary: z.record(z.union([z.number(), z.boolean(), z.string()])),
+      })).optional().describe('Compact step summaries (full mode only)'),
+    }).optional().describe('Most recent watcher pipeline run'),
     recent_pipelines: z.array(z.object({
       timestamp: z.number(),
       trigger: z.string(),
       duration_ms: z.number(),
       files_changed: z.number().nullable(),
-      changed_paths: z.array(z.string()).nullable(),
+      changed_paths_total: z.number(),
+      changed_paths_sample: z.array(z.string()),
+      step_count: z.number(),
       steps: z.array(z.object({
         name: z.string(),
         duration_ms: z.number(),
-        input: z.record(z.unknown()),
-        output: z.record(z.unknown()),
         skipped: z.boolean().optional(),
         skip_reason: z.string().optional(),
+        summary: z.record(z.union([z.number(), z.boolean(), z.string()])),
       })),
-    })).optional().describe('Up to 5 most recent pipeline runs with steps data'),
+    })).optional().describe('Up to 5 most recent pipeline runs with compact step summaries (full mode only)'),
     fts5_ready: z.boolean().describe('Whether the FTS5 keyword search index is ready'),
     fts5_building: z.boolean().describe('Whether the FTS5 keyword search index is currently building'),
     embeddings_building: z.boolean().describe('Whether semantic embeddings are currently building'),
@@ -223,17 +225,12 @@ export function registerHealthTools(
       trigger: string;
       duration_ms: number;
       files_changed: number | null;
-      changed_paths: string[] | null;
-      steps: PipelineStep[];
+      changed_paths_total: number;
+      changed_paths_sample: string[];
+      step_count: number;
+      steps?: CompactStep[];
     };
-    recent_pipelines?: Array<{
-      timestamp: number;
-      trigger: string;
-      duration_ms: number;
-      files_changed: number | null;
-      changed_paths: string[] | null;
-      steps: PipelineStep[];
-    }>;
+    recent_pipelines?: CompactPipelineRun[];
     fts5_ready: boolean;
     fts5_building: boolean;
     embeddings_building: boolean;
@@ -443,34 +440,28 @@ export function registerHealthTools(
         try {
           const evt = getRecentPipelineEvent(stateDb);
           if (evt && evt.steps && evt.steps.length > 0) {
-            lastPipeline = {
-              timestamp: evt.timestamp,
-              trigger: evt.trigger,
-              duration_ms: evt.duration_ms,
-              files_changed: evt.files_changed,
-              changed_paths: evt.changed_paths,
-              steps: evt.steps,
-            };
+            const compact = compactPipelineRun(evt);
+            if (isFull) {
+              // Full mode: include compact step summaries
+              lastPipeline = compact;
+            } else {
+              // Summary mode: metadata only, no steps array
+              const { steps: _steps, ...metadataOnly } = compact;
+              lastPipeline = metadataOnly;
+            }
           }
         } catch {
           // Ignore errors reading pipeline data
         }
 
-        // Recent pipeline events (last 5 with steps) — full mode only
+        // Recent pipeline events (last 5 with compact steps) — full mode only
         if (isFull) {
           try {
             const events = getRecentIndexEvents(stateDb, 10)
               .filter(e => e.steps && e.steps.length > 0)
               .slice(0, 5);
             if (events.length > 0) {
-              recentPipelines = events.map(e => ({
-                timestamp: e.timestamp,
-                trigger: e.trigger,
-                duration_ms: e.duration_ms,
-                files_changed: e.files_changed,
-                changed_paths: e.changed_paths,
-                steps: e.steps!,
-              }));
+              recentPipelines = events.map(e => compactPipelineRun(e));
             }
           } catch {
             // Ignore errors reading recent pipeline data
@@ -681,13 +672,7 @@ export function registerHealthTools(
             const events = getRecentIndexEvents(stateDb, 10)
               .filter(e => e.steps && e.steps.length > 0)
               .slice(0, 5);
-            output.recent_runs = events.map(e => ({
-              timestamp: e.timestamp,
-              trigger: e.trigger,
-              duration_ms: e.duration_ms,
-              files_changed: e.files_changed,
-              steps: e.steps,
-            }));
+            output.recent_runs = events.map(e => compactPipelineRun(e));
           } catch { /* ignore */ }
         }
       }

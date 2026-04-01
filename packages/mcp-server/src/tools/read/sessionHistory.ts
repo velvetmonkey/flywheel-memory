@@ -21,7 +21,7 @@ export function registerSessionHistoryTools(
     {
       session_id: z.string().optional().describe('Session ID for detail view. Omit for recent sessions list.'),
       include_children: z.boolean().optional().describe('Include child sessions (default: true)'),
-      limit: z.number().min(1).max(500).optional().describe('Max invocations to return in detail view (default: 200)'),
+      limit: z.number().min(1).max(500).optional().describe('Max invocations to return in detail view (default: 50)'),
     },
     async (args) => {
       const stateDb = getStateDb();

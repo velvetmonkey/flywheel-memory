@@ -66,7 +66,7 @@ export interface GrowthResult {
   recorded_at?: number;
   index_activity?: {
     summary: import('./indexActivity.js').IndexActivitySummary;
-    recent_events: import('./indexActivity.js').IndexEvent[];
+    recent_events: Array<Record<string, unknown>>;
   };
 }
 

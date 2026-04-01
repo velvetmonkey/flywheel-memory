@@ -823,8 +823,8 @@ export function registerSystemTools(
           .describe('Filter to a specific category (e.g. "people", "technologies")'),
         limit: z.coerce
           .number()
-          .default(2000)
-          .describe('Maximum entities per category'),
+          .default(200)
+          .describe('Maximum entities per category (default 200; pass higher for full hydration)'),
       },
     },
     async ({

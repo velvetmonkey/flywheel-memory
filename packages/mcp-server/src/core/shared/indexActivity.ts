@@ -72,6 +72,197 @@ export interface IndexEvent {
   steps: PipelineStep[] | null;
 }
 
+// =============================================================================
+// COMPACT STEP / PIPELINE SHAPES (for MCP response-size hardening)
+// =============================================================================
+
+/**
+ * Compact step shape for MCP responses.
+ * Contains only step name, timing, and a step-specific summary with scalar fields.
+ * No raw input/output objects, no per-file arrays, no entity-name lists.
+ */
+export interface CompactStep {
+  name: string;
+  duration_ms: number;
+  skipped?: boolean;
+  skip_reason?: string;
+  summary: Record<string, number | boolean | string>;
+}
+
+/**
+ * Compact pipeline run shape for MCP responses.
+ * Replaces raw IndexEvent with bounded metadata + compact steps.
+ */
+export interface CompactPipelineRun {
+  timestamp: number;
+  trigger: string;
+  duration_ms: number;
+  files_changed: number | null;
+  changed_paths_total: number;
+  changed_paths_sample: string[];
+  step_count: number;
+  steps: CompactStep[];
+}
+
+/**
+ * Extract step-specific summary from a PipelineStep.
+ * Each step gets only its canonical scalar fields — no arrays, no nested objects.
+ */
+export function compactStep(step: PipelineStep): CompactStep {
+  const out = step.output ?? {};
+  let summary: Record<string, number | boolean | string>;
+
+  switch (step.name) {
+    case 'entity_scan':
+      summary = {
+        entity_count: asNum(out.entity_count),
+        added_count: asArrayLen(out.added),
+        removed_count: asArrayLen(out.removed),
+        alias_change_count: asArrayLen(out.alias_changes),
+        category_change_count: asArrayLen(out.category_changes),
+      };
+      break;
+    case 'hub_scores':
+      summary = {
+        updated: asNum(out.updated),
+        diff_count: asArrayLen(out.diffs),
+      };
+      break;
+    case 'forward_links':
+      summary = {
+        total_resolved: asNum(out.total_resolved),
+        total_dead: asNum(out.total_dead),
+        new_dead_count: asArrayLen(out.new_dead_links),
+        diff_count: asArrayLen(out.link_diffs),
+      };
+      break;
+    case 'wikilink_check':
+      summary = {
+        tracked_count: asArrayLen(out.tracked),
+        mention_count: asArrayLen(out.mentions),
+      };
+      break;
+    case 'prospect_scan': {
+      const prospects = Array.isArray(out.prospects) ? out.prospects : [];
+      summary = {
+        implicit_count: prospects.reduce((s: number, p: any) => s + (Array.isArray(p.implicit) ? p.implicit.length : 0), 0),
+        dead_match_count: prospects.reduce((s: number, p: any) => s + (Array.isArray(p.deadLinkMatches) ? p.deadLinkMatches.length : 0), 0),
+      };
+      break;
+    }
+    case 'suggestion_scoring':
+      summary = { scored_files: asNum(out.scored_files) };
+      break;
+    case 'implicit_feedback':
+      summary = {
+        removal_count: asArrayLen(out.removals),
+        addition_count: asArrayLen(out.additions),
+        suppressed_count: asArrayLen(out.newly_suppressed),
+      };
+      break;
+    case 'note_embeddings':
+      summary = { updated: asNum(out.updated), removed: asNum(out.removed) };
+      break;
+    case 'entity_embeddings':
+      summary = { updated: asNum(out.updated) };
+      break;
+    case 'fts5_incremental':
+      summary = { updated: asNum(out.updated), removed: asNum(out.removed) };
+      break;
+    case 'index_rebuild':
+      summary = {
+        note_count: asNum(out.note_count),
+        entity_count: asNum(out.entity_count),
+        tag_count: asNum(out.tag_count),
+      };
+      break;
+    case 'index_cache':
+      summary = { saved: asBool(out.saved) };
+      break;
+    case 'task_cache':
+      summary = { updated: asNum(out.updated), removed: asNum(out.removed) };
+      break;
+    case 'tag_scan':
+      summary = { added_count: asNum(out.total_added), removed_count: asNum(out.total_removed) };
+      break;
+    case 'drain_proactive_queue':
+      summary = {
+        total_applied: asNum(out.total_applied),
+        expired: asNum(out.expired),
+        skipped_mtime: asNum(out.skipped_mtime),
+        skipped_daily_cap: asNum(out.skipped_daily_cap),
+      };
+      break;
+    case 'proactive_enqueue':
+      summary = { enqueued: asNum(out.enqueued), total_candidates: asNum(out.total_candidates) };
+      break;
+    case 'recency':
+    case 'cooccurrence':
+    case 'edge_weights':
+      summary = { rebuilt: asBool(out.rebuilt) };
+      break;
+    case 'incremental_recency':
+      summary = { entities_updated: asNum(out.entities_updated) };
+      break;
+    case 'corrections':
+      summary = { processed: asNum(out.processed) };
+      break;
+    case 'retrieval_cooccurrence':
+      summary = { pairs_inserted: asNum(out.pairs_inserted) };
+      break;
+    case 'integrity_check':
+    case 'maintenance':
+      summary = {
+        ...(out.skipped != null ? { skipped: asBool(out.skipped) } : {}),
+        ...(typeof out.reason === 'string' ? { reason: out.reason } : {}),
+      };
+      break;
+    case 'note_moves':
+      summary = { count: asNum(out.count ?? (Array.isArray(out.renames) ? out.renames.length : 0)) };
+      break;
+    default:
+      // Fallback: extract only scalar values
+      summary = {};
+      for (const [k, v] of Object.entries(out)) {
+        if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'string') {
+          summary[k] = v;
+        }
+      }
+      break;
+  }
+
+  return {
+    name: step.name,
+    duration_ms: step.duration_ms,
+    ...(step.skipped ? { skipped: true, skip_reason: step.skip_reason } : {}),
+    summary,
+  };
+}
+
+/**
+ * Compact a full IndexEvent into a bounded pipeline run for MCP responses.
+ */
+export function compactPipelineRun(event: IndexEvent): CompactPipelineRun {
+  const paths = event.changed_paths ?? [];
+  return {
+    timestamp: event.timestamp,
+    trigger: event.trigger,
+    duration_ms: event.duration_ms,
+    files_changed: event.files_changed,
+    changed_paths_total: event.files_changed ?? paths.length,
+    changed_paths_sample: paths.slice(0, 3),
+    step_count: event.steps?.length ?? 0,
+    steps: (event.steps ?? []).map(compactStep),
+  };
+}
+
+// Helpers for safe field extraction
+function asNum(v: unknown): number { return typeof v === 'number' ? v : 0; }
+function asBool(v: unknown): boolean { return typeof v === 'boolean' ? v : false; }
+function asArrayLen(v: unknown): number { return Array.isArray(v) ? v.length : 0; }
+
+// =============================================================================
+
 export interface IndexActivitySummary {
   total_rebuilds: number;
   last_rebuild: IndexEvent | null;

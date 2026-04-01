@@ -9,9 +9,11 @@ import argparse
 from collections import defaultdict
 from datetime import datetime
 
-# Full tool -> category mapping mirroring packages/mcp-server/src/index.ts:345-438
+# Full tool -> category mapping — canonical source is packages/mcp-server/src/config.ts (TOOL_CATEGORY).
+# Keep this dict in sync when tools are added or removed.
 TOOL_CATEGORY = {
     "search": "search", "init_semantic": "search", "find_similar": "search",
+    "discover_tools": "search",
     "get_note_structure": "read", "get_section_content": "read", "find_sections": "read",
     "vault_add_to_section": "write", "vault_remove_from_section": "write",
     "vault_replace_in_section": "write", "vault_update_frontmatter": "write",
@@ -47,6 +49,7 @@ TOOL_CATEGORY = {
     "flywheel_trust_report": "diagnostics", "flywheel_benchmark": "diagnostics",
     "vault_session_history": "diagnostics", "vault_entity_history": "diagnostics",
     "flywheel_learning_report": "diagnostics", "flywheel_calibration_export": "diagnostics",
+    "tool_selection_feedback": "diagnostics",
 }
 
 # Category display order

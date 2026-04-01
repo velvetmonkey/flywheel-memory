@@ -13,7 +13,7 @@
 
 ## Getting Started
 
-- **Install** — see [Try It](../README.md#try-it) in the main README
+- **Install** — see [Get Started](../README.md#get-started) in the main README
 - **First query** — see [See It Work](../README.md#see-it-work) for a walkthrough
 - **Demo vaults** — jump to [Demo Vaults](#demo-vaults) below
 
@@ -96,7 +96,7 @@ No. Flywheel runs entirely on your machine. No cloud services, no API keys (beyo
 CI benchmarks test 100,000-line file mutations and 2,500-entity indexes. The bench package can generate very large synthetic vaults. See [BENCHMARKS.md](BENCHMARKS.md) and [TESTING.md](TESTING.md) for the scoped measurements that are actually checked in.
 
 **Will it corrupt my vault?**
-The repo currently defines 3,025 tests across 156 test files. The suite includes 100 parallel write operations with zero corruption in the stress tests, property-based fuzzing, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
+The repo currently defines 3,292 tests across 185 test files. The suite includes 100 parallel write operations with zero corruption in the stress tests, property-based fuzzing, and dedicated security tests for injection attacks and path traversal. See [TESTING.md](TESTING.md).
 
 **How much does it cost in tokens?**
 It depends on the dataset, model, and task. The checked-in benchmark artifacts currently show about **$0.074/question** for the latest HotpotQA 500-question run and **$0.122/question** for the latest 695-question LoCoMo E2E run. See [TESTING.md](TESTING.md) for the exact scope and dates.

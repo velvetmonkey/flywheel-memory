@@ -1,8 +1,7 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Local-first MCP server — AI search, safe writes, and auto-linking for Obsidian vaults.</strong><br/>
-  Every edit is auditable. Every link has a receipt.</p>
+  <p><strong>Flywheel turns an Obsidian vault into a graph-aware workspace for AI agents — fast to query, safe to write, and fully local.</strong></p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
@@ -11,11 +10,11 @@
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-92.4%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-84.3%25%20evidence%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 
-**[What It Does](#what-it-does)** · **[See It Work](#see-it-work)** · **[Get Started](#get-started)** · **[Benchmarks](#benchmarks)** · **[Testing](#testing)** · **[Documentation](#documentation)** · **[License](#license)**
+**[What It Does](#what-it-does)** · **[See It Work](#see-it-work)** · **[Skills + Flywheel](#skills--flywheel)** · **[Get Started](#get-started)** · **[Benchmarks](#benchmarks)** · **[Testing](#testing)** · **[Documentation](#documentation)** · **[License](#license)**
 
-Flywheel is a local-first MCP server for Obsidian vaults. It indexes your markdown and gives AI clients 12 categories of tools for search, safe writes, tasks, graph traversal, and session memory. One server can serve multiple vaults with isolated state and cross-vault search.
+Flywheel is a local MCP server that gives AI agents structured access to an Obsidian vault. Search returns a *decision surface* — frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence — so the model reasons from one call instead of opening file after file. Writes are git-committed, conflict-detected, and reversible. Auto-wikilinks resolve entities through a deterministic scoring algorithm where every suggestion has a traceable receipt. The graph compounds with use: links you keep get stronger, links you remove get suppressed, and every edit enriches the context for the next read.
 
-Search returns a *decision surface* — frontmatter, backlinks, outlinks, snippets, section context, extracted dates, entity bridges, and confidence scores — so the model can reason from one call instead of opening file after file. Every write auto-links entities through a deterministic 13-layer scoring algorithm. Links you keep get stronger; links you remove get suppressed. This is the *flywheel effect*: use compounds into structure, structure into intelligence, intelligence into more use.
+Everything runs on your machine. Nothing leaves your disk. Every action is bounded, inspectable, and reversible.
 
 ---
 
@@ -23,15 +22,15 @@ Search returns a *decision surface* — frontmatter, backlinks, outlinks, snippe
 
 ### Search your vault
 
-One call returns everything the model needs to answer: frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. Keyword search (BM25) finds what you said. Semantic search finds what you meant. Both fused via Reciprocal Rank Fusion, running locally. Nothing leaves your machine. [How search works ->](docs/ARCHITECTURE.md)
+One call returns everything the model needs to answer: frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. Keyword search (BM25) finds what you said. Semantic search finds what you meant. Both fused via Reciprocal Rank Fusion, running locally. [How search works ->](docs/ARCHITECTURE.md)
 
 ### Write safely
 
-Every mutation is git-committed, conflict-detected (SHA-256 content hash), and reversible with one undo. Auto-wikilinks resolve entities through a deterministic 13-layer scoring algorithm where every suggestion has a traceable receipt. For one-off edits, use the direct write tools. For repeatable workflows that need to search the vault and then act on the results, use **policies** — saved YAML workflows that can read vault state, branch on conditions, and drive multiple write steps as a single atomic operation. [How scoring works ->](docs/ALGORITHM.md) | [Policies guide ->](docs/POLICIES.md)
+Every mutation is git-committed, conflict-detected (SHA-256 content hash), and reversible with one undo. Writes preserve markdown structure — tables, callouts, code blocks, frontmatter, links, comments, and math are never corrupted by an edit to surrounding text. Auto-wikilinks resolve entities through a deterministic 13-layer scoring algorithm where every suggestion has a traceable receipt. For one-off edits, use the direct write tools. For repeatable workflows that search the vault and act on the results, use **policies** — saved YAML workflows that read vault state, branch on conditions, and drive multiple write steps as a single atomic operation. [How scoring works ->](docs/ALGORITHM.md) | [Policies guide ->](docs/POLICIES.md)
 
 ### Build context over time
 
-`brief` assembles a token-budgeted cold-start summary so the AI picks up where it left off. `memory` persists observations with confidence decay. The graph compounds with use. [Configuration ->](docs/CONFIGURATION.md)
+Every accepted link strengthens the graph. Every rejected link trains the scorer. Every write enriches the context for the next read. `brief` assembles a token-budgeted cold-start summary so the AI picks up where it left off. `memory` persists observations with confidence decay. This is the flywheel effect: use compounds into structure, structure into intelligence, intelligence into more use. [Configuration ->](docs/CONFIGURATION.md)
 
 ---
 
@@ -61,7 +60,17 @@ flywheel -> vault_add_to_section
 
 You type a normal sentence. Flywheel resolves known entities, detects prospective entities (proper nouns, acronyms, CamelCase terms), and adds wikilinks and suggests related links based on aliases, co-occurrence, graph structure, and semantic context. Suggested outgoing links are optional and off by default. Enable them where you want the graph to grow naturally, such as daily notes, meeting logs, or voice capture. [Configuration guide ->](docs/CONFIGURATION.md)
 
-### Policy: Search the vault, then act on it
+### Boundaries
+
+- Writes happen through visible tool calls.
+- Changes stay within the vault unless you explicitly point a tool somewhere else.
+- Git commits are opt-in.
+- Proactive linking can be disabled.
+
+> **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/run-demo-test.sh) script that runs the full sequence end to end with `claude -p`, checking tool usage and vault state between steps.
+
+<details>
+<summary><strong>Policy example: Search the vault, then act on it</strong></summary>
 
 ```text
 > Create a policy that finds overdue invoices and logs follow-up tasks in today's daily note
@@ -85,16 +94,22 @@ flywheel -> policy action=execute name=overdue-invoice-chaser
 
 Policies search the vault, then write back. Author them in plain language, preview before running, and undo with one call if needed. [Policies guide ->](docs/POLICIES.md) | [Examples ->](docs/POLICY_EXAMPLES.md)
 
-### Boundaries
+</details>
 
-Flywheel is designed to be explicit about what it does.
+---
 
-- Writes happen through visible tool calls.
-- Changes stay within the vault unless you explicitly point a tool somewhere else.
-- Git commits are opt-in.
-- Proactive linking can be disabled.
+## Skills + Flywheel
 
-> **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/run-demo-test.sh) script that runs the full sequence end to end with `claude -p`, checking tool usage and vault state between steps.
+Skills encode methodology — how to do something. Flywheel encodes knowledge — what you know. They are complementary layers:
+
+| Layer | What it provides | Example |
+|---|---|---|
+| Skills | Procedures, templates, reasoning frameworks | "How to write a client proposal" |
+| Flywheel | Entities, relationships, history, context | "Everything you know about this client" |
+
+An agent calling a proposal-writing skill works better when it can also search your vault for the client's history, past invoices, project notes, and team relationships. Skills tell agents how to work. Flywheel tells them what you know.
+
+[OpenClaw](https://github.com/openclaw) skills and Flywheel connect through MCP. OpenClaw routes intent and manages session flow; Flywheel provides the structured context and safe writes that make responses accurate. [Integration guide ->](docs/OPENCLAW.md)
 
 ---
 
@@ -203,17 +218,9 @@ If you use Cursor, Windsurf, VS Code, OpenClaw, or another client, see [docs/SET
 
 ---
 
-## Skills + Flywheel
-
-[OpenClaw](https://github.com/openclaw) skills and Flywheel serve complementary layers. Skills own the chat surface — channels, routing, session state, and safety. Flywheel owns the vault surface — indexing, retrieval, graph mutations, and persistent memory. Skills route conversations; Flywheel grounds them in your knowledge.
-
-Use both: OpenClaw routes intent and manages session flow, Flywheel provides the structured context and safe writes that make responses accurate. [Integration guide ->](docs/OPENCLAW.md)
-
----
-
 ## Benchmarks
 
-Latest checked-in benchmark artifacts:
+Agent-first tools should prove their claims. Flywheel ships with reproducible benchmarks against academic retrieval standards:
 
 - **HotpotQA full end to end:** **92.4% document recall** on **500 questions / 4,960 docs**. Latest artifact: **March 28, 2026**. Cost in that run: **$0.074/question**.
 - **LoCoMo full end to end:** **84.3% evidence recall** and **58.7% answer accuracy** on **695 scored questions / 272 sessions**. Latest artifact: **March 28, 2026**. Final token F1: **0.483**.
@@ -252,7 +259,7 @@ E2E with Claude Sonnet (latest checked-in 695-question run): **97.4%** single-ho
 
 ## Testing
 
-3,025 defined tests across 156 test files and about 60.4k lines of test code. CI runs focused jobs on Ubuntu, plus a full matrix on Ubuntu and Windows across Node 22 and 24.
+3,292 defined tests across 185 test files and about 64.4k lines of test code. CI runs focused jobs on Ubuntu, plus a full matrix on Ubuntu and Windows across Node 22 and 24.
 
 - **Graph quality:** Latest generated report shows balanced-mode **40.2% precision / 71.7% recall / 51.5% F1** on the primary synthetic vault, along with multi-generation, archetype, chaos, and regression coverage. [Report ->](docs/QUALITY_REPORT.md)
 - **Live AI testing:** Real `claude -p` sessions verify tool adoption end to end, not just handler logic.

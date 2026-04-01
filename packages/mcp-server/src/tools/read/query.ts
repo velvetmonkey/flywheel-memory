@@ -568,7 +568,8 @@ export function registerQueryTools(
     async ({ query, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note, consumer }) => {
       requireIndex();
       const limit = Math.min(requestedLimit ?? 10, MAX_LIMIT);
-      const detailN = Math.min(requestedDetailCount ?? 5, limit, 8);
+      const enrichN = Math.min(requestedDetailCount ?? 5, limit);
+      const expandN = Math.min(enrichN, 8);
       const index = getIndex();
       const vaultPath = getVaultPath();
 
@@ -635,7 +636,7 @@ export function registerQueryTools(
 
         const stateDb = getStateDb();
         const notes = limitedNotes.map((note, i) =>
-          (i < detailN ? enrichResult : enrichResultLight)({ path: note.path, title: note.title }, index, stateDb)
+          (i < enrichN ? enrichResult : enrichResultLight)({ path: note.path, title: note.title }, index, stateDb)
         );
 
         return { content: [{ type: 'text' as const, text: JSON.stringify({
@@ -803,7 +804,7 @@ export function registerQueryTools(
             await enhanceSnippets(results, query, vaultPath);
             if (consumer === 'llm') {
               applySandwichOrdering(results);
-              await expandToSections(results, index, vaultPath, detailN);
+              await expandToSections(results, index, vaultPath, expandN);
               stripInternalFields(results);
             }
 
@@ -860,7 +861,7 @@ export function registerQueryTools(
           await enhanceSnippets(results, query, vaultPath);
           if (consumer === 'llm') {
             applySandwichOrdering(results);
-            await expandToSections(results, index, vaultPath, detailN);
+            await expandToSections(results, index, vaultPath, expandN);
             stripInternalFields(results);
           }
 
@@ -893,7 +894,7 @@ export function registerQueryTools(
         await enhanceSnippets(results, query, vaultPath);
         if (consumer === 'llm') {
           applySandwichOrdering(results);
-          await expandToSections(results, index, vaultPath, detailN);
+          await expandToSections(results, index, vaultPath, expandN);
           stripInternalFields(results);
         }
 

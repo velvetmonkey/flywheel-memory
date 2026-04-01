@@ -10,12 +10,14 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
-# Full tool → category mapping mirroring packages/mcp-server/src/index.ts:345-438
+# Full tool → category mapping — canonical source is packages/mcp-server/src/config.ts (TOOL_CATEGORY).
+# Keep this dict in sync when tools are added or removed.
 TOOL_CATEGORY = {
-    # search (3 tools)
+    # search (4 tools)
     "search": "search",
     "init_semantic": "search",
     "find_similar": "search",
+    "discover_tools": "search",
     # read (3 tools)
     "get_note_structure": "read",
     "get_section_content": "read",
@@ -78,7 +80,7 @@ TOOL_CATEGORY = {
     "predict_stale_notes": "temporal",
     "track_concept_evolution": "temporal",
     "temporal_summary": "temporal",
-    # diagnostics (21 tools)
+    # diagnostics (22 tools)
     "health_check": "diagnostics",
     "get_vault_stats": "diagnostics",
     "get_folder_structure": "diagnostics",
@@ -100,6 +102,7 @@ TOOL_CATEGORY = {
     "vault_entity_history": "diagnostics",
     "flywheel_learning_report": "diagnostics",
     "flywheel_calibration_export": "diagnostics",
+    "tool_selection_feedback": "diagnostics",
 }
 
 # Reverse: category → list of tools

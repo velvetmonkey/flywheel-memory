@@ -40,7 +40,7 @@ npm install
 npm test
 ```
 
-Your output will reflect the current Vitest totals in this checkout. As of **March 30, 2026**, the repo defines **3,025 tests across 156 test files**.
+Your output will reflect the current Vitest totals in this checkout. The repo currently defines **3,292 tests across 185 test files**.
 
 No mocks of external services -- these are real SQLite queries, real file parsing, real graph traversals against real vaults.
 
@@ -208,7 +208,7 @@ npm test
 
 - A successful `vitest` run across all three workspace packages
 - Totals that match the current checkout
-- As of **March 30, 2026**: **3,025 defined tests across 156 test files**
+- Current checkout: **3,292 defined tests across 185 test files**
 
 `npm test` runs `vitest run` across all three workspace packages (`vault-core`, `flywheel-memory`, `flywheel-bench`). The mcp-server package contains the vast majority of tests. No network access, no API keys, no Docker -- just Node and SQLite.
 
@@ -353,7 +353,7 @@ This runs 30 questions in ~15 minutes for ~$2.50.
 
 ## What You Just Proved
 
-1. **The test corpus is substantial** -- 3,025 defined tests in the current checkout, against real data
+1. **The test corpus is substantial** -- 3,292 defined tests in the current checkout, against real data
 2. **Graph queries work** -- backlinks + metadata, no file reads
 3. **Auto-wikilinks work** -- plain text in, linked text out
 4. **The algorithm is transparent** -- scores with explanations, not black boxes

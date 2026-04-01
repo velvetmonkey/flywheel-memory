@@ -10,12 +10,14 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
-# Full tool -> category mapping mirroring packages/mcp-server/src/index.ts:345-438
+# Full tool -> category mapping — canonical source is packages/mcp-server/src/config.ts (TOOL_CATEGORY).
+# Keep this dict in sync when tools are added or removed.
 TOOL_CATEGORY = {
-    # search (3 tools)
+    # search (4 tools)
     "search": "search",
     "init_semantic": "search",
     "find_similar": "search",
+    "discover_tools": "search",
     # read (3 tools)
     "get_note_structure": "read",
     "get_section_content": "read",

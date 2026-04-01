@@ -4,7 +4,7 @@
 
 Your vault is your second brain. You don't hand it to software you can't trust.
 
-**3,025 defined tests | 156 test files | 60,300+ lines of test code**
+**3,292 defined tests | 185 test files | 64,400+ lines of test code**
 
 - [Test Philosophy](#test-philosophy)
 - [CI Pipeline](#ci-pipeline)
@@ -456,7 +456,7 @@ This kind of test is valuable because it measures actual tool selection and comp
 
 | Test Suite | What it proves | Sessions | Result | Script |
 |---|---|---|---|---|
-| **Per-tool coverage** | Claude discovers and uses each of 69 individual tools | 69 | **100% adoption** | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
+| **Per-tool coverage** | Claude discovers and uses each default-visible tool | 77 | See [latest results](#per-tool-coverage) | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
 | **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
 | **Sequential workflow** | 9-beat workflow (retrieval + learning loop + operational) where each beat builds on previous vault state | 9 beats | — | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
 | **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 500 questions | 92.4% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
@@ -627,13 +627,13 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 ## Overall
 
 - **Bundles adopted:** 12/12
-- **Distinct flywheel tools used:** 20/69
+- **Distinct flywheel tools used:** 20/77
 
 <!-- END BUNDLE TEST RESULTS -->
 
 ### Per-Tool Coverage
 
-Each of 69 tools tested with a targeted prompt against carter-strategy vault.
+Each default-visible tool tested with a targeted prompt against the carter-strategy vault. The coverage surface is the 77 tools visible in the `full` preset (`discover_tools` is disclosure-only and excluded). Results below are from the last coverage run — rerun `demos/run-coverage-test.sh` to regenerate.
 
 <!-- BEGIN COVERAGE TEST RESULTS -->
 # Tool Coverage Test Report
@@ -776,7 +776,7 @@ Each of 69 tools tested with a targeted prompt against carter-strategy vault.
 
 ## Summary
 
-**Coverage: 64/69 tools adopted (92%)**
+**Coverage: 64/69 tools adopted (92%)** — from a 69-tool run prior to diagnostics expansion. The current coverage surface is 77 default-visible tools; rerun to get updated numbers.
 
 ### Tools Never Adopted
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Full tool coverage test — one targeted prompt per flywheel tool (77 tools).
+# Full tool coverage test — one targeted prompt per default-visible flywheel tool (77 visible).
+# Canonical tool source: packages/mcp-server/src/config.ts (TOOL_CATEGORY).
+# discover_tools is disclosure-only and excluded from this coverage surface.
 #
 # Usage:
 #   demos/run-coverage-test.sh                        # default: 1 run, sonnet
@@ -19,7 +21,7 @@ TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 RESULTS_DIR="$SCRIPT_DIR/test-results/coverage-$TIMESTAMP"
 
 # Tool definitions: tool_name|FLYWHEEL_TOOLS|prompt|resets(yes/no)
-# One entry per flywheel tool (69 total), organized by category.
+# One entry per default-visible flywheel tool, organized by category.
 TOOLS=(
   # --- search (3) ---
   'search|default|How much have I billed Acme Corp?|no'
@@ -40,7 +42,7 @@ TOOLS=(
   'vault_undo_last_mutation|default|Add a test line to the Notes section of Acme Corp, then immediately undo that last change|yes'
   'policy|default|Create and execute a policy that adds a Review Notes section to every client note in the clients folder|yes'
 
-  # --- graph (10) ---
+  # --- graph (11) ---
   'graph_analysis|default,graph|Analyze the overall graph structure of this vault and show me clusters, bridges, and hub nodes|no'
   'semantic_analysis|default,graph|Run a semantic analysis on this vault to find topic clusters and conceptual bridges between notes|no'
   'get_backlinks|default,graph|What notes link back to the Acme Corp note? Show me all backlinks.|no'
@@ -51,6 +53,7 @@ TOOLS=(
   'get_common_neighbors|default,graph|What are the common neighbors shared between Acme Corp and Data Migration in the vault graph?|no'
   'get_weighted_links|default,graph|Show me the weighted links for the Acme Corp entity with their weights|no'
   'get_strong_connections|default,graph|What are the strongest entity connections in this vault? Rank them by weight.|no'
+  'export_graph|default,graph|Export the full vault graph as JSON so I can visualize it externally|no'
 
   # --- schema (7) ---
   'vault_schema|default,schema|Show me the frontmatter schema used across this vault - what fields exist and their types|no'
@@ -98,7 +101,7 @@ TOOLS=(
   'track_concept_evolution|default,temporal|How has the concept of Data Migration evolved over time in this vault?|no'
   'temporal_summary|default,temporal|Give me a temporal summary of recent changes and activity in this vault|no'
 
-  # --- diagnostics (14) ---
+  # --- diagnostics (22) ---
   'health_check|default,diagnostics|Run a health check on this vault and report any issues|no'
   'get_vault_stats|default,diagnostics|Show me detailed statistics about this vault - note counts, link density, entity counts|no'
   'get_folder_structure|default,diagnostics|Show me the complete folder structure of this vault|no'
@@ -113,6 +116,14 @@ TOOLS=(
   'dismiss_merge_suggestion|default,diagnostics|Check for entity merge suggestions, then dismiss any that are not relevant|no'
   'vault_init|default,diagnostics|Initialize this vault with flywheel enrichment and wikilinks|yes'
   'flywheel_doctor|default,diagnostics|Run the flywheel doctor diagnostic to check for any issues with this vault|no'
+  'pipeline_status|default,diagnostics|Show me the current pipeline status for this vault|no'
+  'flywheel_trust_report|default,diagnostics|Generate a trust report for this vault showing scoring reliability and safety metrics|no'
+  'flywheel_benchmark|default,diagnostics|Run a benchmark test on this vault to measure search and scoring performance|no'
+  'vault_session_history|default,diagnostics|Show me the session history for this vault - what queries and operations have been run|no'
+  'vault_entity_history|default,diagnostics|Show me the history of the Acme Corp entity - how it has changed over time|no'
+  'flywheel_learning_report|default,diagnostics|Generate a learning report showing how the scoring system has improved over time|no'
+  'flywheel_calibration_export|default,diagnostics|Export the calibration data for this vault so I can analyze scoring patterns|no'
+  'tool_selection_feedback|default,diagnostics|Record feedback that the search tool was the right choice for a billing lookup query|no'
 )
 
 # Pre-flight checks

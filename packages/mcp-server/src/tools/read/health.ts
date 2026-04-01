@@ -225,17 +225,12 @@ export function registerHealthTools(
       trigger: string;
       duration_ms: number;
       files_changed: number | null;
-      changed_paths: string[] | null;
-      steps: PipelineStep[];
+      changed_paths_total: number;
+      changed_paths_sample: string[];
+      step_count: number;
+      steps?: CompactStep[];
     };
-    recent_pipelines?: Array<{
-      timestamp: number;
-      trigger: string;
-      duration_ms: number;
-      files_changed: number | null;
-      changed_paths: string[] | null;
-      steps: PipelineStep[];
-    }>;
+    recent_pipelines?: CompactPipelineRun[];
     fts5_ready: boolean;
     fts5_building: boolean;
     embeddings_building: boolean;

@@ -16,6 +16,7 @@ import {
 import {
   getRecentIndexEvents,
   getIndexActivitySummary,
+  compactPipelineRun,
 } from '../../core/shared/indexActivity.js';
 
 /**
@@ -96,7 +97,20 @@ export function registerMetricsTools(
           const recentEvents = getRecentIndexEvents(stateDb, eventLimit ?? 20);
           result = {
             mode: 'index_activity',
-            index_activity: { summary, recent_events: recentEvents },
+            index_activity: {
+              summary,
+              recent_events: recentEvents.map(e => ({
+                id: e.id,
+                timestamp: e.timestamp,
+                trigger: e.trigger,
+                duration_ms: e.duration_ms,
+                success: e.success,
+                note_count: e.note_count,
+                files_changed: e.files_changed,
+                error: e.error,
+                ...(e.steps ? compactPipelineRun(e) : {}),
+              })),
+            },
           };
           break;
         }

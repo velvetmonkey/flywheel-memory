@@ -56,10 +56,11 @@ export function registerPrimitiveTools(
       description: 'Use after search identifies a note you need detail on. Produces heading tree, frontmatter, tags, word count, backlink and outlink counts, and optionally full section content. Returns enriched note structure with entity metadata when available. Does not search — requires an exact path from a prior search result.',
       inputSchema: {
         path: z.string().describe('Path to the note'),
-        include_content: z.boolean().default(true).describe('Include the text content under each top-level section. Set false to get structure only.'),
+        include_content: z.boolean().default(false).describe('Include the text content under each top-level section. Default false for structure only.'),
+        max_content_chars: z.number().default(20000).describe('Max total chars of section content to include. Sections are truncated at paragraph boundaries.'),
       },
     },
-    async ({ path, include_content }) => {
+    async ({ path, include_content, max_content_chars }) => {
       const index = getIndex();
       const vaultPath = getVaultPath();
       const result = await getNoteStructure(index, path, vaultPath);
@@ -70,12 +71,28 @@ export function registerPrimitiveTools(
         };
       }
 
-      // Optionally include section content
+      // Optionally include section content with cumulative char budget
+      let totalChars = 0;
+      let truncated = false;
       if (include_content) {
         for (const section of result.sections) {
+          if (totalChars >= max_content_chars) {
+            truncated = true;
+            break;
+          }
           const sectionResult = await getSectionContent(index, path, section.heading.text, vaultPath, true);
           if (sectionResult) {
-            (section as any).content = sectionResult.content;
+            let content = sectionResult.content;
+            const remaining = max_content_chars - totalChars;
+            if (content.length > remaining) {
+              // Truncate at last paragraph boundary within budget
+              const sliced = content.slice(0, remaining);
+              const lastBreak = sliced.lastIndexOf('\n\n');
+              content = lastBreak > 0 ? sliced.slice(0, lastBreak) : sliced;
+              truncated = true;
+            }
+            (section as any).content = content;
+            totalChars += content.length;
           }
         }
       }
@@ -106,6 +123,11 @@ export function registerPrimitiveTools(
         } catch { /* entity lookup is best-effort */ }
       }
 
+      if (include_content) {
+        enriched.truncated = truncated;
+        enriched.returned_chars = totalChars;
+      }
+
       return {
         content: [{ type: 'text' as const, text: JSON.stringify(enriched, null, 2) }],
       };
@@ -122,9 +144,10 @@ export function registerPrimitiveTools(
         path: z.string().describe('Path to the note'),
         heading: z.string().describe('Heading text to find'),
         include_subheadings: z.boolean().default(true).describe('Include content under subheadings'),
+        max_content_chars: z.number().default(10000).describe('Max chars of section content. Truncated at paragraph boundaries.'),
       },
     },
-    async ({ path, heading, include_subheadings }) => {
+    async ({ path, heading, include_subheadings, max_content_chars }) => {
       const index = getIndex();
       const vaultPath = getVaultPath();
       const result = await getSectionContent(index, path, heading, vaultPath, include_subheadings);
@@ -139,8 +162,16 @@ export function registerPrimitiveTools(
         };
       }
 
+      let truncated = false;
+      if (result.content.length > max_content_chars) {
+        const sliced = result.content.slice(0, max_content_chars);
+        const lastBreak = sliced.lastIndexOf('\n\n');
+        result.content = lastBreak > 0 ? sliced.slice(0, lastBreak) : sliced;
+        truncated = true;
+      }
+
       return {
-        content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        content: [{ type: 'text' as const, text: JSON.stringify({ ...result, truncated }, null, 2) }],
       };
     }
   );

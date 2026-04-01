@@ -330,13 +330,31 @@ export function registerGraphExportTools(
         .describe('Center the export on this entity (ego network). Only includes nodes within `depth` hops.'),
       depth: z.number().default(1)
         .describe('Hops from center_entity to include (default 1). Ignored without center_entity.'),
+      max_nodes: z.number().default(500)
+        .describe('Maximum nodes in export when no center_entity. Pass higher for full vault exports.'),
     },
-    async ({ format, include_cooccurrence, min_edge_weight, center_entity, depth }) => {
+    async ({ format, include_cooccurrence, min_edge_weight, center_entity, depth, max_nodes }) => {
       requireIndex();
       const index = getIndex();
       const stateDb = getStateDb?.() ?? null;
 
       const data = buildGraphData(index, stateDb, { include_cooccurrence, min_edge_weight, center_entity, depth });
+
+      // Guard against vault-scale dumps when no center_entity
+      if (!center_entity && data.nodes.length > max_nodes) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              error: `Graph has ${data.nodes.length} nodes and ${data.edges.length} edges, exceeding max_nodes=${max_nodes}. Use center_entity to scope, or pass a higher max_nodes.`,
+              node_count: data.nodes.length,
+              edge_count: data.edges.length,
+              max_nodes,
+            }),
+          }],
+          isError: true,
+        };
+      }
 
       let output: string;
       if (format === 'json') {

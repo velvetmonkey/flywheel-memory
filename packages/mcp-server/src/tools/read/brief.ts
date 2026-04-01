@@ -274,25 +274,38 @@ export function registerBriefTools(
         buildProactiveLinkingSection(stateDb),
       ].filter((s): s is BriefSection => s !== null);
 
-      // Token budgeting: if max_tokens specified, truncate low-priority sections
+      // Token budgeting: if max_tokens specified, enforce as a hard cap
       if (args.max_tokens) {
         let totalTokens = 0;
         // Sort by priority (ascending = higher priority first)
         sections.sort((a, b) => a.priority - b.priority);
 
+        // Filter to sections that fit, truncating the first partial one
+        const kept: BriefSection[] = [];
         for (const section of sections) {
-          totalTokens += section.estimated_tokens;
-          if (totalTokens > args.max_tokens) {
-            // Truncate this section's content
-            if (Array.isArray(section.content)) {
-              const remaining = Math.max(0, args.max_tokens - (totalTokens - section.estimated_tokens));
-              const itemTokens = section.estimated_tokens / Math.max(1, (section.content as unknown[]).length);
-              const keepCount = Math.max(1, Math.floor(remaining / itemTokens));
-              section.content = (section.content as unknown[]).slice(0, keepCount);
-              section.estimated_tokens = estimateTokens(section.content);
-            }
+          if (totalTokens >= args.max_tokens) {
+            // Budget exhausted — omit remaining sections entirely
+            break;
           }
+          if (totalTokens + section.estimated_tokens <= args.max_tokens) {
+            // Fits entirely
+            totalTokens += section.estimated_tokens;
+            kept.push(section);
+          } else if (Array.isArray(section.content)) {
+            // Partially fits — truncate array content
+            const remaining = args.max_tokens - totalTokens;
+            const itemTokens = section.estimated_tokens / Math.max(1, (section.content as unknown[]).length);
+            const keepCount = Math.max(1, Math.floor(remaining / itemTokens));
+            section.content = (section.content as unknown[]).slice(0, keepCount);
+            section.estimated_tokens = estimateTokens(section.content);
+            totalTokens += section.estimated_tokens;
+            kept.push(section);
+            break; // Budget consumed after partial section
+          }
+          // Non-array section that doesn't fit — skip it
         }
+        sections.length = 0;
+        sections.push(...kept);
       }
 
       // Build response

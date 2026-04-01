@@ -286,7 +286,7 @@ export function getSessionDetail(
   sessionId: string,
   options: { include_children?: boolean; limit?: number } = {},
 ): { summary: SessionSummary; invocations: ToolInvocation[] } | null {
-  const { include_children = true, limit = 200 } = options;
+  const { include_children = true, limit = 50 } = options;
 
   const rows = include_children
     ? stateDb.db.prepare(`

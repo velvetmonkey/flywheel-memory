@@ -22,7 +22,7 @@ Everything runs on your machine. Nothing leaves your disk. Every action is bound
 
 ### Search your vault
 
-One call returns frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. Entities give the system stable identity, the graph provides structural links between notes, and semantic search fills in cases where meaning exists without an explicit link. Keyword search (BM25) and semantic search are fused locally via Reciprocal Rank Fusion. [How search works ->](docs/ARCHITECTURE.md)
+One call returns everything the model needs to answer: frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. Under the hood, entities give the system stable identity, the graph gives it load-bearing structure, and semantic search bridges the gaps when meaning exists without an explicit link. Keyword search (BM25) finds what you said. Semantic search finds what you meant. Both are fused via Reciprocal Rank Fusion, running locally. [How search works ->](docs/ARCHITECTURE.md)
 
 ### Write safely
 

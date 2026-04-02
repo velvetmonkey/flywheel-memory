@@ -154,13 +154,13 @@ Flywheel watches the vault, maintains local indexes, and serves the graph to MCP
 
 ### Tool presets
 
-The `full` preset (default) shows all tools immediately. Use `auto` for progressive disclosure if you want specialised tools to appear only when the conversation needs them.
+The `full` preset (default) shows the 65-tool default-visible surface immediately. Use `auto` for progressive disclosure if you want the full 66-tool surface, including `discover_tools`, to appear as the conversation needs it.
 
 | Preset | Behaviour |
 |--------|-----------|
-| `full` (default) | All tools visible at startup |
-| `auto` | Progressive disclosure; tools activate as your queries need them |
-| `agent` | Fixed set: search, read, write, tasks, memory |
+| `full` (default) | 65 tools visible at startup |
+| `auto` | Progressive disclosure across the full 66-tool surface |
+| `agent` | Fixed set of 18 tools: search, read, write, tasks, memory |
 
 Compose bundles for custom configurations:
 

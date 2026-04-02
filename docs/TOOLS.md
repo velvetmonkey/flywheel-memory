@@ -1,6 +1,6 @@
 # Tools
 
-The `full` preset (default) shows all tools immediately. Use `auto` for progressive disclosure, which activates specialised tools as the conversation calls for them via `discover_tools`. Use `agent` for a fixed reduced set. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
+The `full` preset (default) shows the 65-tool default-visible surface immediately. Use `auto` for progressive disclosure, which activates the full 66-tool surface via `discover_tools`. Use `agent` for a fixed reduced set of 18 tools. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
 
 - [At a Glance](#at-a-glance)
 - [Find Anything](#find-anything)

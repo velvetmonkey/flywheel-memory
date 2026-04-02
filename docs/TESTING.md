@@ -456,7 +456,7 @@ This kind of test is valuable because it measures actual tool selection and comp
 
 | Test Suite | What it proves | Sessions | Result | Script |
 |---|---|---|---|---|
-| **Per-tool coverage** | Claude discovers and uses each default-visible tool | 65 | See [latest results](#per-tool-coverage) | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
+| **Per-tool coverage** | Claude discovers and uses each tool in the current `full` preset surface | 65 | See [latest results](#per-tool-coverage) | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
 | **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
 | **Sequential workflow** | 9-beat workflow (retrieval + learning loop + operational) where each beat builds on previous vault state | 9 beats |  --  | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
 | **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 500 questions | 92.4% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
@@ -483,6 +483,13 @@ These are product quality signals that no amount of handler unit testing can det
 ### Tool Adoption Results
 
 Results from live testing (2026-03-22). Claude discovers and uses flywheel tools when enabled.
+
+Current tool surface reference from `packages/mcp-server/src/config.ts`:
+- Total registered tools: 66 across 12 categories
+- `full` preset surface: 65 tools visible (`discover_tools` is `auto`-only)
+- `agent` preset surface: 18 tools
+
+The embedded reports below are historical artifacts from runs on older tool surfaces. Keep the dated report numbers as historical evidence, but use the current counts above for the live product surface.
 
 #### Bundle Adoption
 
@@ -633,7 +640,7 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 
 ### Per-Tool Coverage
 
-Each default-visible tool tested with a targeted prompt against the carter-strategy vault. The coverage surface is the 65 tools visible in the `full` preset (`discover_tools` is disclosure-only and excluded). Results below are from the last coverage run (pre-T31 rationalization)  --  rerun `demos/run-coverage-test.sh` to regenerate with the current 65-tool surface.
+Each default-visible tool tested with a targeted prompt against the carter-strategy vault. The current coverage surface is the 65 tools visible in the `full` preset (`discover_tools` is disclosure-only and excluded). The embedded report below is from an older 69-tool run; rerun `demos/run-coverage-test.sh` to regenerate a current report for the 65-tool surface.
 
 <!-- BEGIN COVERAGE TEST RESULTS -->
 # Tool Coverage Test Report
@@ -776,7 +783,7 @@ Each default-visible tool tested with a targeted prompt against the carter-strat
 
 ## Summary
 
-**Coverage: 64/69 tools adopted (92%)**  --  from a 69-tool run prior to diagnostics expansion. The current coverage surface is 65 default-visible tools (post-T31 rationalization); rerun to get updated numbers.
+**Historical coverage: 64/69 tools adopted (92%)**  --  from a dated pre-rationalization run. The current coverage surface is 65 default-visible tools; rerun to get a current coverage number.
 
 ### Tools Never Adopted
 

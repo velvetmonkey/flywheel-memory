@@ -104,7 +104,7 @@ packages/mcp-server/src/
 Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
 **Presets:**
-- **`full`** — All tools visible, all categories, hybrid routing — **this is the default**
+- **`full`** — 65-tool default-visible surface, all categories, hybrid routing — **this is the default**
 - **`auto`** — Progressive disclosure via `discover_tools`, all categories, hybrid routing
 - **`agent`** — Core tools: search, read, write, tasks, memory, pattern routing
 

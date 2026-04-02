@@ -29,15 +29,15 @@ TOOLS=(
   'find_similar|default|Find notes that are similar to the Acme Corp client note|no'
 
   # --- read (3) ---
-  'get_note_structure|default|Show me the full structure and content of the Acme Corp client note|no'
+  'get_note_structure|default|Show me the full structure and content of the note at clients/Acme Corp.md|no'
   'get_section_content|default|Show me just the content of the Notes section in the Acme Corp file|no'
   'find_sections|default|Find all sections with Status in the heading across every note in the vault|no'
 
   # --- write (7) ---
   'vault_add_to_section|default|Add a line saying Reviewed Q1 billing with Sarah under the Notes section in the Acme Corp file|yes'
-  'vault_remove_from_section|default|Remove the last line from the Notes section of the Acme Corp client note|yes'
+  'vault_remove_from_section|default|Remove the line saying "This is a test line." from the Notes section of clients/Acme Corp.md|yes'
   'vault_replace_in_section|default|Replace the entire Status section content in the Data Migration project note with Phase 3 - UAT Complete|yes'
-  'vault_update_frontmatter|default|Set the frontmatter status field to reviewed in the Acme Corp client note|yes'
+  'vault_update_frontmatter|default|Set the frontmatter status field to reviewed in clients/Acme Corp.md|yes'
   'vault_create_note|default|Create a new meeting note called Weekly Standup 2026-03-21 in the meetings folder with agenda items for billing review and project updates|yes'
   'vault_undo_last_mutation|default|Add a test line to the Notes section of Acme Corp, then immediately undo that last change|yes'
   'policy|default|Create and execute a policy that adds a Review Notes section to every client note in the clients folder|yes'
@@ -77,7 +77,7 @@ TOOLS=(
   # --- tasks (3) ---
   'tasks|default|Show me all open tasks across every note in the vault|no'
   'vault_add_task|default|Add a task to the Acme Corp note saying Follow up with Sarah about Q1 billing, due next Wednesday|yes'
-  'vault_toggle_task|default|Mark the first open task in the Acme Corp note as complete|yes'
+  'vault_toggle_task|default|Mark the task "Final production environment access" as complete in projects/Acme Data Migration.md|yes'
 
   # --- memory (3) ---
   'memory|default,memory|Use the vault memory tool to store an observation: the Acme Data Migration cutover is confirmed for March 28-29 and all UAT has passed|yes'
@@ -85,9 +85,9 @@ TOOLS=(
   'brief|default,memory|Brief me on the current state of this vault - what is happening, what needs attention|no'
 
   # --- note-ops (4) ---
-  'vault_delete_note|default,note-ops|Delete the note called Quarterly Review Q4 2025 from the vault|yes'
-  'vault_move_note|default,note-ops|Move the Cloud Strategy Template note from the projects folder into the knowledge folder|yes'
-  'vault_rename_note|default,note-ops|Rename the note Quarterly Review Q4 2025 to Q4 2025 Quarterly Review|yes'
+  'vault_delete_note|default,note-ops|Delete the note at admin/Business Goals 2026.md from the vault|yes'
+  'vault_move_note|default,note-ops|Move the note at projects/Cloud Strategy Template.md to knowledge/Cloud Strategy Engagement Template.md|yes'
+  'vault_rename_note|default,note-ops|Rename the note at admin/Business Goals 2026.md to 2026 Business Goals|yes'
   'merge_entities|default,note-ops|The Cloud Strategy Template note is really about the Acme Data Migration. Merge Cloud Strategy Template into Acme Data Migration.|yes'
 
   # --- temporal (3) ---
@@ -111,7 +111,7 @@ TOOLS=(
   'vault_entity_history|default,diagnostics|Show me the history of the Acme Corp entity - how it has changed over time|no'
   'flywheel_learning_report|default,diagnostics|Generate a learning report showing how the scoring system has improved over time|no'
   'flywheel_calibration_export|default,diagnostics|Export the calibration data for this vault so I can analyze scoring patterns|no'
-  'tool_selection_feedback|default,diagnostics|Record feedback that the search tool was the right choice for a billing lookup query|no'
+  'tool_selection_feedback|default,diagnostics|Record positive tool selection feedback: the search tool was correctly chosen, mode report, tool_name search, correct true|no'
 )
 
 # Pre-flight checks

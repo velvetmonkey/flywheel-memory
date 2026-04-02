@@ -69,7 +69,7 @@ Two layers of configuration: **environment variables** set in your MCP config (s
 }
 ```
 
-No `FLYWHEEL_TOOLS` needed — defaults to `full` (all tools visible). Add it only to override.
+No `FLYWHEEL_TOOLS` needed — defaults to `full` (the 65-tool default-visible surface). Add it only to override.
 
 ### Claude Desktop (`claude_desktop_config.json`)
 
@@ -143,9 +143,9 @@ Vault root detection order:
 
 | Preset | Behaviour |
 |--------|-----------|
-| `full` (default) | All tools visible at startup |
-| `auto` | Progressive disclosure — tools activate as your queries need them |
-| `agent` | Fixed reduced set — search, read, write, tasks, memory |
+| `full` (default) | 65 tools visible at startup |
+| `auto` | Progressive disclosure across the full 66-tool surface via `discover_tools` |
+| `agent` | Fixed reduced set of 18 tools — search, read, write, tasks, memory |
 
 #### Composable Bundles
 
@@ -153,15 +153,15 @@ Start with `agent`, then add what you need:
 
 | Bundle | What it adds |
 |--------|--------------|
-| `graph` | Structural analysis, semantic analysis, backlinks, forward links, hubs, paths, connections, graph export |
+| `graph` | 6 tools: structural analysis, semantic analysis, entity lists, paths, neighbor overlap, connection strength |
 | `schema` | Schema inspection, conventions, validation, note intelligence, migrations, tag rename |
 | `wikilinks` | Link suggestions, validation, feedback, discovery |
 | `corrections` | Correction recording + resolution |
 | `tasks` | Task queries and mutations (already included in `agent`) |
 | `memory` | Session memory + brief |
 | `note-ops` | Delete, move, rename notes, merge entities |
-| `temporal` | Time-based vault intelligence: get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
-| `diagnostics` | Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status |
+| `temporal` | 3 tools: get_context_around_date, predict_stale_notes, track_concept_evolution |
+| `diagnostics` | 16 tools: vault health, config, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status |
 
 #### Recipes
 
@@ -170,22 +170,22 @@ Start with `agent`, then add what you need:
 | `agent` | search, read, write, tasks, memory |
 | `agent,graph` | agent + graph analysis, semantic analysis, paths, hubs |
 | `agent,graph,wikilinks` | + link suggestions, validation |
-| `full` | All categories, all tools visible |
+| `full` | All categories, 65 tools visible immediately |
 | `auto` | All categories, progressive disclosure |
 
 #### How It Works
 
 Set `FLYWHEEL_TOOLS` to a preset, one or more bundles, individual categories, or any combination — comma-separated. Bundles expand to their constituent categories, and duplicates are deduplicated automatically.
 
-`full` is the default — all categories are enabled and all tools are visible at startup. This is the safe choice for clients that don't support dynamic tool list updates (e.g. Claude Code).
+`full` is the default — all categories are enabled and the 65-tool default-visible surface is advertised at startup. This is the safe choice for clients that don't support dynamic tool list updates (e.g. Claude Code).
 
 `auto` enables progressive disclosure via `discover_tools` across three tiers:
 
-- **Tier 1** stays visible at startup: the core tools from `agent` (search, read, write, tasks, memory) plus `discover_tools`
+- **Tier 1** stays visible at startup: 19 core tools from `agent` plus `discover_tools`
 - **Tier 2** unlocks when the conversation shifts into graph, wikilink, correction, temporal, or diagnostics work
 - **Tier 3** stays on-demand for schema operations, note operations, and deep diagnostics
 
-`agent` is a fixed reduced set — search, read, write, tasks, memory. No progressive disclosure.
+`agent` is a fixed reduced set of 18 tools — search, read, write, tasks, memory. No progressive disclosure.
 
 `default` is a deprecated alias for `full`, retained for backward compatibility.
 
@@ -219,18 +219,18 @@ Custom `EMBEDDING_MODEL` users fall back to `pattern` unless the tool manifest w
 
 | Category | What's included |
 |----------|-----------------|
-| `search` | search, init_semantic, find_similar |
+| `search` | search, init_semantic, find_similar, discover_tools (`auto` only) |
 | `read` | get_note_structure, get_section_content, find_sections |
 | `write` | vault_add_to_section, vault_remove_from_section, vault_replace_in_section, vault_update_frontmatter, vault_create_note, vault_undo_last_mutation, policy |
-| `graph` | graph_analysis, semantic_analysis, get_backlinks, get_forward_links, get_connection_strength, list_entities, get_link_path, get_common_neighbors, get_weighted_links, get_strong_connections, export_graph |
+| `graph` | graph_analysis, semantic_analysis, get_connection_strength, list_entities, get_link_path, get_common_neighbors |
 | `schema` | vault_schema, schema_conventions, schema_validate, note_intelligence, rename_field, migrate_field_values, rename_tag |
 | `wikilinks` | suggest_wikilinks, validate_links, wikilink_feedback, discover_stub_candidates, discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report |
 | `corrections` | vault_record_correction, vault_list_corrections, vault_resolve_correction, absorb_as_alias |
 | `tasks` | tasks, vault_toggle_task, vault_add_task |
 | `memory` | memory, brief |
 | `note-ops` | vault_delete_note, vault_move_note, vault_rename_note, merge_entities |
-| `temporal` | get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary |
-| `diagnostics` | health_check, pipeline_status, get_vault_stats, get_folder_structure, refresh_index, get_all_entities, get_unlinked_mentions, vault_growth, vault_activity, flywheel_config, server_log, suggest_entity_merges, dismiss_merge_suggestion, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export, tool_selection_feedback |
+| `temporal` | get_context_around_date, predict_stale_notes, track_concept_evolution |
+| `diagnostics` | pipeline_status, refresh_index, vault_growth, flywheel_config, server_log, suggest_entity_merges, dismiss_merge_suggestion, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export, tool_selection_feedback |
 
 Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work — they resolve to current category names.
 

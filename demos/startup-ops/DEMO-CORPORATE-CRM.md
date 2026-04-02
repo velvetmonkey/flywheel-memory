@@ -84,14 +84,14 @@ const customers = await flywheel.search_notes({
 });
 
 for (const customer of customers) {
-  const backlinks = await flywheel.get_backlinks({ path: customer.path });
-  const metadata = await flywheel.get_note_metadata({ path: customer.path });
+  // search returns backlinks, outlinks, and frontmatter in each result
+  const detail = await flywheel.search({ query: customer.name, limit: 1 });
 
   console.log(`${customer.name}:`);
-  console.log(`  - MRR: ${metadata.mrr}`);
-  console.log(`  - Last contact: ${metadata.last_contact}`);
-  console.log(`  - Backlink count: ${backlinks.length}`);
-  console.log(`  - Recent mentions: ${backlinks.slice(0,3).map(b => b.title)}`);
+  console.log(`  - MRR: ${detail.frontmatter.mrr}`);
+  console.log(`  - Last contact: ${detail.frontmatter.last_contact}`);
+  console.log(`  - Backlink count: ${detail.backlink_count}`);
+  console.log(`  - Recent mentions: ${detail.backlinks.slice(0,3).map(b => b.title)}`);
 }
 ```
 
@@ -271,7 +271,7 @@ Day 2 check-in successful. 3 team members now active on platform. [[Sarah Johnso
 **Scenario**: "When did we last discuss API access with DataDriven?"
 
 **Traditional CRM**: Search notes, grep emails, ask around
-**Flywheel Query**: `get_backlinks([[API Access]])` → Shows all mentions, including DataDriven meeting, with dates
+**Flywheel Query**: `search("API Access")` → Returns backlinks showing all mentions, including DataDriven meeting, with dates
 
 **Scenario**: "Which customers are at similar stage to DataDriven?"
 

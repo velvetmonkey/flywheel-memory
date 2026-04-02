@@ -342,7 +342,7 @@ describe('category gating correctness', () => {
     expect(registeredNames.has('graph_analysis')).toBe(false);
     expect(registeredNames.has('vault_schema')).toBe(false);
     expect(registeredNames.has('suggest_wikilinks')).toBe(false);
-    expect(registeredNames.has('health_check')).toBe(false);
+    expect(registeredNames.has('flywheel_doctor')).toBe(false);
   });
 
   it('full preset: all tools present in _registeredTools', () => {

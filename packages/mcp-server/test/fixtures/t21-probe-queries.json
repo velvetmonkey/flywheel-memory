@@ -1,9 +1,9 @@
 [
   {
     "query": "What was I working on last week?",
-    "expectedPrimaryTool": "temporal_summary",
+    "expectedPrimaryTool": "track_concept_evolution",
     "expectedActivatedCategory": "temporal",
-    "notes": "Clear temporal intent \u2014 should route to temporal_summary over search"
+    "notes": "Clear temporal intent \u2014 should route to track_concept_evolution over search"
   },
   {
     "query": "Find notes about React hooks",
@@ -27,7 +27,7 @@
     "query": "What entities are connected to the React project?",
     "expectedPrimaryTool": null,
     "expectedActivatedCategory": "graph",
-    "notes": "Graph exploration \u2014 could be get_strong_connections, get_forward_links, or graph_analysis"
+    "notes": "Graph exploration \u2014 could be get_connection_strength, get_link_path, or graph_analysis"
   },
   {
     "query": "Remember that I prefer dark mode for code blocks",
@@ -67,7 +67,7 @@
   },
   {
     "query": "Is the server healthy? Check if everything is working",
-    "expectedPrimaryTool": "health_check",
+    "expectedPrimaryTool": "flywheel_doctor",
     "expectedActivatedCategory": "diagnostics",
     "notes": "Health check intent \u2014 diagnostics category"
   },

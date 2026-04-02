@@ -97,32 +97,25 @@ describe('cross-tool consistency traces', () => {
   });
 
   it('backlink count matches vault_stats most_linked_notes', async () => {
-    const stats = await snap(client, 'get_vault_stats', {});
+    const stats = await snap(client, 'flywheel_doctor', { report: 'stats' });
     const topEntries = stats.most_linked_notes.slice(0, 2);
 
     for (const entry of topEntries) {
-      const backlinks = await snap(client, 'get_backlinks', { path: entry.path });
-      expect(backlinks.backlink_count).toBe(entry.backlinks);
+      const basename = entry.path.replace(/\.md$/, '').split('/').pop() ?? entry.path;
+      const searchResult = await snap(client, 'search', { query: basename });
+      const results = searchResult.results ?? searchResult.notes ?? [];
+      const noteResult = results.find((r: any) => r.path === entry.path);
+      expect(noteResult?.backlink_count ?? 0).toBe(entry.backlinks);
     }
   });
 
   it('forward link existence matches disk', async () => {
     // notes/orphan.md has a link to NonExistent (doesn't exist)
-    const fwd = await snap(client, 'get_forward_links', { path: 'notes/orphan.md' });
-
-    for (const link of fwd.forward_links) {
-      if (link.exists) {
-        // If the tool says it exists, the file should be on disk
-        expect(
-          existsSync(path.join(ctx.vaultPath, link.resolved_path ?? link.target))
-        ).toBe(true);
-      } else {
-        // If the tool says it doesn't exist, verify no matching file
-        const candidate = path.join(ctx.vaultPath, `${link.target}.md`);
-        const candidateDir = path.join(ctx.vaultPath, link.target, 'index.md');
-        expect(existsSync(candidate) || existsSync(candidateDir)).toBe(false);
-      }
-    }
+    // validate_links should report the dangling link
+    const validation = await snap(client, 'validate_links', {});
+    expect(validation.broken_links).toBeGreaterThanOrEqual(1);
+    const targets = validation.broken.map((b: any) => b.target);
+    expect(targets).toContain('NonExistent');
   });
 
   it('search paths are valid files on disk', async () => {

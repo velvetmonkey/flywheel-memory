@@ -43,21 +43,6 @@ describe('Graph Query Performance Benchmarks', () => {
       console.log(`search_notes latency: ${elapsed.toFixed(2)}ms`);
     });
 
-    it('get_backlinks completes in <2 seconds', async () => {
-
-      const start = performance.now();
-      const result = await client.callTool('get_backlinks', {
-        path: 'people/Marcus Johnson.md',
-        include_context: true,
-      });
-      const elapsed = performance.now() - start;
-
-      expect(result.content[0].text).toBeDefined();
-      expect(elapsed).toBeLessThan(4000);
-
-      console.log(`get_backlinks latency: ${elapsed.toFixed(2)}ms`);
-    });
-
     it('search metadata completes in <500ms', async () => {
 
       const start = performance.now();
@@ -76,22 +61,17 @@ describe('Graph Query Performance Benchmarks', () => {
     it('combined meeting prep query completes in <2 seconds', async () => {
 
       // Simulate the README "meeting prep" scenario:
-      // search + backlinks + metadata
+      // search returns backlinks + outlinks + frontmatter in a single call
 
       const start = performance.now();
 
-      // Step 1: Search
-      await client.callTool('search_notes', {
+      // Step 1: Search (returns enriched decision surface including backlinks)
+      await client.callTool('search', {
         query: 'Marcus Johnson',
         limit: 10,
       });
 
-      // Step 2: Get backlinks
-      await client.callTool('get_backlinks', {
-        path: 'people/Marcus Johnson.md',
-      });
-
-      // Step 3: Search metadata
+      // Step 2: Search metadata
       await client.callTool('search', {
         title_contains: 'Marcus Johnson',
         limit: 1,
@@ -106,21 +86,6 @@ describe('Graph Query Performance Benchmarks', () => {
   });
 
   describe('response token efficiency', () => {
-    it('get_backlinks response is efficient (<300 tokens)', async () => {
-
-      const result = await client.callTool('get_backlinks', {
-        path: 'people/Marcus Johnson.md',
-      });
-
-      const responseText = result.content[0].text;
-      const estimatedTokens = Math.ceil(responseText.length / 4);
-
-      // Backlinks return structured list, not file content
-      expect(estimatedTokens).toBeLessThan(300);
-
-      console.log(`get_backlinks response: ${responseText.length} chars (~${estimatedTokens} tokens)`);
-    });
-
     it('search metadata response is efficient (<500 tokens)', async () => {
 
       const result = await client.callTool('search', {
@@ -148,20 +113,15 @@ describe('Graph Query Performance Benchmarks', () => {
        * not including any verbosity in JSON formatting.
        */
 
-      // Measure what graph queries return
-      const backlinks = await client.callTool('get_backlinks', {
-        path: 'people/Marcus Johnson.md',
-      });
+      // Measure what search returns (includes backlinks, outlinks, frontmatter)
       const metadata = await client.callTool('search', {
-        title_contains: 'Marcus Johnson',
+        query: 'Marcus Johnson',
         limit: 1,
       });
 
-      const graphTokens =
-        Math.ceil(backlinks.content[0].text.length / 4) +
-        Math.ceil(metadata.content[0].text.length / 4);
+      const graphTokens = Math.ceil(metadata.content[0].text.length / 4);
 
-      console.log(`Graph query tokens (backlinks + search metadata): ~${graphTokens}`);
+      console.log(`Search query tokens (enriched decision surface): ~${graphTokens}`);
       console.log(`README claim: ~200 tokens for essential data`);
       console.log(`Traditional approach: ~6,000 tokens (reading 12 full files)`);
       console.log(`Efficiency ratio: ${Math.round(6000 / graphTokens)}x savings`);

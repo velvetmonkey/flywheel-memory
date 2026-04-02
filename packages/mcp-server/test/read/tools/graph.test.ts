@@ -23,94 +23,7 @@ describe('Graph Tools via MCP', () => {
     client = connectTestClient(context.server);
   });
 
-  describe('get_backlinks', () => {
-    test('returns backlinks for a note', async () => {
-      const result = await client.callTool('get_backlinks', {
-        path: 'another-note.md',
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      expect(data.note).toBeDefined();
-      expect(data.backlinks).toBeDefined();
-      expect(data.backlink_count).toBeDefined();
-    });
-
-    test('returns empty for note with no backlinks', async () => {
-      const result = await client.callTool('get_backlinks', {
-        path: 'orphan-note.md',
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      expect(data.backlink_count).toBe(0);
-    });
-
-    test('handles non-existent note', async () => {
-      const result = await client.callTool('get_backlinks', {
-        path: 'does-not-exist.md',
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      expect(data.backlinks).toHaveLength(0);
-    });
-
-    test('includes context when requested', async () => {
-      const result = await client.callTool('get_backlinks', {
-        path: 'another-note.md',
-        include_context: true,
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      // Context may or may not be present depending on implementation
-      expect(data).toBeDefined();
-    });
-
-    test('respects limit and offset', async () => {
-      const result = await client.callTool('get_backlinks', {
-        path: 'another-note.md',
-        limit: 1,
-        offset: 0,
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      expect(data.backlinks.length).toBeLessThanOrEqual(1);
-    });
-  });
-
-  describe('get_forward_links', () => {
-    test('returns forward links for a note', async () => {
-      const result = await client.callTool('get_forward_links', {
-        path: 'normal-note.md',
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      expect(data.forward_links).toBeDefined();
-      expect(data.forward_link_count).toBeGreaterThan(0);
-    });
-
-    test('identifies broken forward links', async () => {
-      const result = await client.callTool('get_forward_links', {
-        path: 'normal-note.md',
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      // normal-note links to "Does Not Exist"
-      const brokenLink = data.forward_links.find(
-        (l: { exists: boolean }) => l.exists === false
-      );
-      if (data.forward_links.some((l: { target: string }) => l.target === 'Does Not Exist')) {
-        expect(brokenLink).toBeDefined();
-      }
-    });
-
-    test('handles non-existent note', async () => {
-      const result = await client.callTool('get_forward_links', {
-        path: 'does-not-exist.md',
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      expect(data.forward_link_count).toBe(0);
-    });
-  });
+  // get_backlinks, get_forward_links retired — backlink/outlink data available via search results
 
   describe('graph_analysis: orphans', () => {
     test('finds notes with no backlinks', async () => {
@@ -272,28 +185,6 @@ describe('Advanced Graph Tools via MCP', () => {
 
       const data = JSON.parse(result.content[0].text);
       expect(data.common_count).toBe(0);
-    });
-  });
-
-  describe('get_backlinks with include_bidirectional', () => {
-    test('finds bidirectional pairs when requested', async () => {
-      const result = await client.callTool('get_backlinks', {
-        path: 'normal-note.md',
-        include_bidirectional: true,
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      expect(data.bidirectional_pairs).toBeDefined();
-      expect(data.bidirectional_count).toBeDefined();
-    });
-
-    test('does not include bidirectional by default', async () => {
-      const result = await client.callTool('get_backlinks', {
-        path: 'normal-note.md',
-      });
-
-      const data = JSON.parse(result.content[0].text);
-      expect(data.bidirectional_pairs).toBeUndefined();
     });
   });
 

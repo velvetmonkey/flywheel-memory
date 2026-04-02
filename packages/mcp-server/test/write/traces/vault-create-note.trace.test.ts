@@ -62,8 +62,11 @@ describe('vault_create_note traces', () => {
     await snap(client, 'refresh_index');
 
     // Capture before-state
-    statsBefore = await snap(client, 'get_vault_stats', {});
-    backlinksBefore = await snap(client, 'get_backlinks', { path: 'projects/alpha.md' });
+    statsBefore = await snap(client, 'flywheel_doctor', { report: 'stats' });
+    backlinksBefore = await snap(client, 'search', { query: 'Alpha' }).then((r: any) => {
+      const note = (r.results ?? []).find((n: any) => n.path === 'projects/alpha.md');
+      return { backlink_count: note?.backlink_count ?? 0 };
+    });
   }, 30_000);
 
   afterAll(async () => {
@@ -85,26 +88,30 @@ describe('vault_create_note traces', () => {
   });
 
   it('creates backlink on target note', async () => {
-    const after = await snap(client, 'get_backlinks', { path: 'projects/alpha.md' });
+    const after = await snap(client, 'search', { query: 'Alpha' }).then((r: any) => {
+      const note = (r.results ?? []).find((n: any) => n.path === 'projects/alpha.md');
+      return { backlink_count: note?.backlink_count ?? 0 };
+    });
     expect(after.backlink_count).toBeGreaterThan(backlinksBefore.backlink_count);
-    const sources = after.backlinks.map((b: any) => b.source);
-    expect(sources).toContain('people/bob.md');
   });
 
   it('appears in forward links', async () => {
-    const fwd = await snap(client, 'get_forward_links', { path: 'people/bob.md' });
-    expect(fwd.forward_link_count).toBeGreaterThanOrEqual(1);
-    const existingLinks = fwd.forward_links.filter((l: any) => l.exists);
-    expect(existingLinks.length).toBeGreaterThanOrEqual(1);
+    const result = await snap(client, 'search', { query: 'Bob' });
+    const note = (result.results ?? []).find((n: any) => n.path === 'people/bob.md');
+    expect(note).toBeDefined();
+    const outlinkNames: string[] = note?.outlink_names ?? [];
+    expect(outlinkNames.length).toBeGreaterThanOrEqual(1);
+    // Alpha should be in outlink_names (case-insensitive)
+    expect(outlinkNames.some((n: string) => n.toLowerCase() === 'alpha')).toBe(true);
   });
 
   it('increases vault_stats total_notes by 1', async () => {
-    const after = await snap(client, 'get_vault_stats', {});
+    const after = await snap(client, 'flywheel_doctor', { report: 'stats' });
     expect(after.total_notes).toBe(statsBefore.total_notes + 1);
   });
 
   it('increases vault_stats total_links', async () => {
-    const after = await snap(client, 'get_vault_stats', {});
+    const after = await snap(client, 'flywheel_doctor', { report: 'stats' });
     expect(after.total_links).toBeGreaterThan(statsBefore.total_links);
   });
 

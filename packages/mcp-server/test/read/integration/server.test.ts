@@ -33,17 +33,14 @@ describe('MCP Server Integration', () => {
       const toolNames = result.tools.map((t: { name: string }) => t.name);
 
       // Graph tools
-      expect(toolNames).toContain('get_backlinks');
-      expect(toolNames).toContain('get_forward_links');
       expect(toolNames).toContain('graph_analysis');
 
       // Wikilink tools
       expect(toolNames).toContain('suggest_wikilinks');
       expect(toolNames).toContain('validate_links');
 
-      // Health tools
-      expect(toolNames).toContain('health_check');
-      expect(toolNames).toContain('get_vault_stats');
+      // Health tools (health_check + get_vault_stats merged into flywheel_doctor)
+      expect(toolNames).toContain('flywheel_doctor');
 
       // Query tools (unified search)
       expect(toolNames).toContain('search');
@@ -76,16 +73,16 @@ describe('MCP Server Integration', () => {
   });
 
   describe('Tool Invocation', () => {
-    test('health_check returns valid response', async () => {
-      const result = await client.callTool('health_check', {});
+    test('flywheel_doctor report=health returns valid response', async () => {
+      const result = await client.callTool('flywheel_doctor', { report: 'health' });
 
       expect(result.content).toBeDefined();
       expect(result.content.length).toBeGreaterThan(0);
       expect(result.content[0].type).toBe('text');
     });
 
-    test('get_vault_stats returns statistics', async () => {
-      const result = await client.callTool('get_vault_stats', {});
+    test('flywheel_doctor report=stats returns statistics', async () => {
+      const result = await client.callTool('flywheel_doctor', { report: 'stats' });
 
       expect(result.content).toBeDefined();
       const stats = JSON.parse(result.content[0].text);
@@ -101,15 +98,6 @@ describe('MCP Server Integration', () => {
       expect(data.notes.length).toBeGreaterThan(0);
     });
 
-    test('get_backlinks handles missing note gracefully', async () => {
-      const result = await client.callTool('get_backlinks', {
-        path: 'does-not-exist.md',
-      });
-
-      expect(result.content).toBeDefined();
-      // Should return empty results or error, not crash
-    });
-
     test('suggest_wikilinks processes text', async () => {
       const result = await client.callTool('suggest_wikilinks', {
         text: 'This mentions Alex Johnson and Acme Corp.',
@@ -122,16 +110,6 @@ describe('MCP Server Integration', () => {
   });
 
   describe('Error Handling', () => {
-    test('handles missing required parameters', async () => {
-      // get_backlinks requires 'path' parameter
-      try {
-        await client.callTool('get_backlinks', {});
-        // If we get here, the tool should return an error in content
-      } catch {
-        // Expected - invalid parameters
-      }
-    });
-
     test('handles invalid path gracefully', async () => {
       const result = await client.callTool('get_note_structure', {
         path: '../../../etc/passwd',

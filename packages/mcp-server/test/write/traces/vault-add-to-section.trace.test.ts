@@ -68,8 +68,9 @@ describe('vault_add_to_section traces', () => {
     });
     await snap(client, 'refresh_index');
 
-    const backlinks = await snap(client, 'get_backlinks', { path: 'people/Alice.md' });
-    const sources = backlinks.backlinks.map((b: any) => b.source);
-    expect(sources).toContain('journal/entry.md');
+    const result = await snap(client, 'search', { query: 'Alice' });
+    const note = (result.results ?? []).find((n: any) => n.path === 'people/Alice.md');
+    expect(note).toBeDefined();
+    expect(note.backlink_count).toBeGreaterThanOrEqual(1);
   });
 });

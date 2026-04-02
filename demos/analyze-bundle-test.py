@@ -30,18 +30,13 @@ TOOL_CATEGORY = {
     "vault_create_note": "write",
     "vault_undo_last_mutation": "write",
     "policy": "write",
-    # graph (11 tools)
+    # graph (6 tools)
     "graph_analysis": "graph",
     "semantic_analysis": "graph",
-    "get_backlinks": "graph",
-    "get_forward_links": "graph",
     "get_connection_strength": "graph",
     "list_entities": "graph",
     "get_link_path": "graph",
     "get_common_neighbors": "graph",
-    "get_weighted_links": "graph",
-    "get_strong_connections": "graph",
-    "export_graph": "graph",
     # schema (7 tools)
     "vault_schema": "schema",
     "schema_conventions": "schema",
@@ -75,20 +70,13 @@ TOOL_CATEGORY = {
     "vault_move_note": "note-ops",
     "vault_rename_note": "note-ops",
     "merge_entities": "note-ops",
-    # temporal (4 tools)
+    # temporal (3 tools)
     "get_context_around_date": "temporal",
     "predict_stale_notes": "temporal",
     "track_concept_evolution": "temporal",
-    "temporal_summary": "temporal",
-    # diagnostics (22 tools)
-    "health_check": "diagnostics",
-    "get_vault_stats": "diagnostics",
-    "get_folder_structure": "diagnostics",
+    # diagnostics (16 tools)
     "refresh_index": "diagnostics",
-    "get_all_entities": "diagnostics",
-    "get_unlinked_mentions": "diagnostics",
     "vault_growth": "diagnostics",
-    "vault_activity": "diagnostics",
     "flywheel_config": "diagnostics",
     "server_log": "diagnostics",
     "suggest_entity_merges": "diagnostics",
@@ -317,7 +305,7 @@ def generate_report(bundles, results_dir):
     lines.append("## Overall")
     lines.append("")
     lines.append(f"- **Bundles adopted:** {total_adopted}/{len(bundles)}")
-    lines.append(f"- **Flywheel tools used:** {len(flywheel_tools_used)}/69")
+    lines.append(f"- **Flywheel tools used:** {len(flywheel_tools_used)}/{len(TOOL_CATEGORY)}")
     lines.append("")
 
     return "\n".join(lines)

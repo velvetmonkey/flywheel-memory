@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 78 declared [[TOOLS]] across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 66 declared [[TOOLS]] across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -29,18 +29,16 @@ packages/mcp-server/src/
 │   ├── read/                   # Read-side tool registrations (20 files, helpers omitted)
 │   │   ├── query.ts            # search
 │   │   ├── primitives.ts       # get_note_structure, get_section_content, find_sections, tasks
-│   │   ├── graph.ts            # get_backlinks, get_forward_links
 │   │   ├── graphAnalysis.ts    # graph_analysis (7 modes), list_entities, get_connection_strength,
-│   │   │                       #   get_link_path, get_common_neighbors, get_weighted_links, get_strong_connections
+│   │   │                       #   get_link_path, get_common_neighbors
 │   │   ├── semanticAnalysis.ts # semantic_analysis (clusters, bridges)
-│   │   ├── system.ts           # refresh_index, get_all_entities, get_unlinked_mentions
-│   │   ├── health.ts           # health_check, get_vault_stats, get_folder_structure, server_log
+│   │   ├── system.ts           # refresh_index, suggest_entity_aliases, unlinked_mentions_report
+│   │   ├── health.ts           # flywheel_doctor, pipeline_status, server_log
 │   │   ├── vaultSchema.ts      # vault_schema, schema_conventions, schema_validate
 │   │   ├── noteIntelligence.ts # note_intelligence
 │   │   ├── wikilinks.ts        # suggest_wikilinks, validate_links, discover_stub_candidates,
 │   │   │                       #   discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report
 │   │   ├── migrations.ts       # rename_field, migrate_field_values
-│   │   ├── activity.ts         # vault_activity
 │   │   ├── metrics.ts          # vault_growth
 │   │   ├── merges.ts           # suggest_entity_merges, dismiss_merge_suggestion
 │   │   ├── similarity.ts       # find_similar
@@ -111,7 +109,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`agent`** — Core tools: search, read, write, tasks, memory, pattern routing
 
 **Composable bundles** (add to presets or each other):
-- **`graph`** — structural analysis, semantic analysis, paths, [[Hub|hubs]], connections, export
+- **`graph`** — structural analysis, semantic analysis, paths, [[Hub|hubs]], connections
 - **`schema`** — schema intelligence + migrations
 - **`wikilinks`** — suggestions, validation, discovery
 - **`corrections`** — correction recording + resolution
@@ -119,7 +117,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 - **`memory`** — session memory + brief
 - **`note-ops`** — delete, move, rename, merge
 - **`temporal`** — time-based vault intelligence
-- **`diagnostics`** — vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback
+- **`diagnostics`** — vault config, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback
 **Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `temporal`, `diagnostics`
 
 ---

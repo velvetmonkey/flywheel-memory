@@ -70,18 +70,14 @@ export async function snapshotMcpState(
   const forwardLinks: Record<string, string[]> = {};
   const structures: Record<string, any> = {};
 
+  // First pass: collect forward links and structures for all paths
   for (const p of paths) {
     try {
-      const bl = await callJsonTool(client, 'get_backlinks', { path: p });
-      backlinks[p] = (bl.backlinks ?? []).map((b: any) => b.source).sort();
-    } catch {
-      backlinks[p] = [];
-    }
-
-    try {
-      const fl = await callJsonTool(client, 'get_forward_links', { path: p });
-      forwardLinks[p] = (fl.forward_links ?? []).map((l: any) =>
-        (l.target ?? '').toLowerCase()
+      const sr = await callJsonTool(client, 'search', { query: p.replace('.md', '').split('/').pop() ?? p, limit: 5 });
+      const items: any[] = sr.results ?? sr.notes ?? [];
+      const note = items.find((n: any) => n.path === p);
+      forwardLinks[p] = (note?.outlink_names ?? []).map((name: string) =>
+        name.toLowerCase()
       ).sort();
     } catch {
       forwardLinks[p] = [];
@@ -92,6 +88,24 @@ export async function snapshotMcpState(
     } catch {
       structures[p] = null;
     }
+  }
+
+  // Derive backlinks from forward links: if source has forward link to target basename, target gets backlink from source
+  for (const p of paths) {
+    const basename = p.replace(/\.md$/, '').split('/').pop()!.toLowerCase();
+    const sources: string[] = [];
+    for (const [source, targets] of Object.entries(forwardLinks)) {
+      if (source === p) continue;
+      if (targets.includes(basename)) {
+        sources.push(source);
+      }
+    }
+    // Also check inventory notes not in paths — search for notes linking to this basename
+    for (const invPath of inventory) {
+      if (invPath === p || paths.includes(invPath)) continue;
+      // For non-tracked paths, we don't have forward links — skip
+    }
+    backlinks[p] = sources.sort();
   }
 
   return { inventory, backlinks, forwardLinks, structures };
@@ -186,18 +200,14 @@ export async function snapshotMcpStateAll(
   const forwardLinks: Record<string, string[]> = {};
   const structures: Record<string, any> = {};
 
+  // First pass: collect forward links and structures for all paths
   for (const p of paths) {
     try {
-      const bl = await callJsonTool(client, "get_backlinks", { path: p });
-      backlinks[p] = (bl.backlinks ?? []).map((b: any) => b.source).sort();
-    } catch {
-      backlinks[p] = [];
-    }
-
-    try {
-      const fl = await callJsonTool(client, "get_forward_links", { path: p });
-      forwardLinks[p] = (fl.forward_links ?? []).map((l: any) =>
-        (l.target ?? "").toLowerCase()
+      const sr = await callJsonTool(client, "search", { query: p.replace('.md', '').split('/').pop() ?? p, limit: 5 });
+      const items: any[] = sr.results ?? sr.notes ?? [];
+      const note = items.find((n: any) => n.path === p);
+      forwardLinks[p] = (note?.outlink_names ?? []).map((name: string) =>
+        name.toLowerCase()
       ).sort();
     } catch {
       forwardLinks[p] = [];
@@ -208,6 +218,19 @@ export async function snapshotMcpStateAll(
     } catch {
       structures[p] = null;
     }
+  }
+
+  // Derive backlinks from forward links: if source has forward link to target basename, target gets backlink from source
+  for (const p of paths) {
+    const basename = p.replace(/\.md$/, '').split('/').pop()!.toLowerCase();
+    const sources: string[] = [];
+    for (const [source, targets] of Object.entries(forwardLinks)) {
+      if (source === p) continue;
+      if (targets.includes(basename)) {
+        sources.push(source);
+      }
+    }
+    backlinks[p] = sources.sort();
   }
 
   return { inventory, backlinks, forwardLinks, structures };
@@ -271,19 +294,19 @@ export async function getGraphAnalysis(
   return callJsonTool(client, "graph_analysis", { analysis: mode });
 }
 
-/** Get folder structure */
+/** Get folder structure (via flywheel_doctor report=stats) */
 export async function getFolderStructure(client: TestClient): Promise<any> {
-  return callJsonTool(client, "get_folder_structure", {});
+  return callJsonTool(client, "flywheel_doctor", { report: "stats" });
 }
 
 /** Get vault stats */
 export async function getVaultStats(client: TestClient): Promise<any> {
-  return callJsonTool(client, "get_vault_stats", {});
+  return callJsonTool(client, "flywheel_doctor", { report: "stats" });
 }
 
 /** Get health check */
 export async function getHealthCheck(client: TestClient): Promise<any> {
-  return callJsonTool(client, "health_check", {});
+  return callJsonTool(client, "flywheel_doctor", { report: "health" });
 }
 
 /** List all entities across all categories */

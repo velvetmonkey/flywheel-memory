@@ -57,7 +57,7 @@ describe('merge_entities trace', () => {
     await snap(client, 'refresh_index');
 
     // Capture total notes before merge
-    const statsBefore = await snap(client, 'get_vault_stats');
+    const statsBefore = await snap(client, 'flywheel_doctor', { report: 'stats' });
     totalNotesBefore = statsBefore.total_notes;
 
     // Perform merge: Robert → Bob
@@ -88,13 +88,15 @@ describe('merge_entities trace', () => {
   });
 
   it('backlinks transferred', async () => {
-    const result = await snap(client, 'get_backlinks', { path: 'people/Bob.md' });
-    const backlinkPaths = result.backlinks.map((b: any) => b.source);
-    expect(backlinkPaths).toContain('daily/2026-01-01.md');
+    const result = await snap(client, 'search', { query: 'Bob' });
+    const note = (result.results ?? []).find((n: any) => n.path === 'people/Bob.md');
+    expect(note).toBeDefined();
+    // After merge, Bob should have at least the backlink that was on Robert
+    expect(note.backlink_count).toBeGreaterThanOrEqual(1);
   });
 
   it('vault_stats total decreased by 1', async () => {
-    const statsAfter = await snap(client, 'get_vault_stats');
+    const statsAfter = await snap(client, 'flywheel_doctor', { report: 'stats' });
     expect(statsAfter.total_notes).toBe(totalNotesBefore - 1);
   });
 });

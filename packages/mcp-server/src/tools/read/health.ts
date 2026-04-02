@@ -272,360 +272,347 @@ export function registerHealthTools(
     recommendations: string[];
   };
 
-  server.registerTool(
-    'health_check',
-    {
-      title: 'Health Check',
-      description:
-        'Use at session start or when diagnosing problems to check server status. Produces vault accessibility, index freshness, pipeline state, and configuration summary. Returns a health report with status flags and recommendations. Does not fix problems — use flywheel_doctor for active problem detection.',
-      inputSchema: {
-        mode: z.enum(['summary', 'full']).optional().default('summary')
-          .describe('Output mode: "summary" omits config, periodic notes, dead links, sweep, and recent pipelines; "full" returns everything'),
-      },
-      outputSchema: HealthCheckOutputSchema,
-    },
-    async ({ mode = 'summary' }): Promise<{
-      content: Array<{ type: 'text'; text: string }>;
-      structuredContent: HealthCheckOutput;
-    }> => {
-      const isFull = mode === 'full';
-      const index = getIndex();
-      const vaultPath = getVaultPath();
-      const recommendations: string[] = [];
+  async function runHealthCheck(detail: 'summary' | 'full' = 'summary'): Promise<{
+    content: Array<{ type: 'text'; text: string }>;
+    structuredContent: HealthCheckOutput;
+  }> {
+    const isFull = detail === 'full';
+    const index = getIndex();
+    const vaultPath = getVaultPath();
+    const recommendations: string[] = [];
 
-      // Get index state info
-      const indexState = getIndexState();
-      const indexProgress = getIndexProgress();
-      const indexErrorObj = getIndexError();
+    // Get index state info
+    const indexState = getIndexState();
+    const indexProgress = getIndexProgress();
+    const indexErrorObj = getIndexError();
 
-      // Check vault accessibility
-      let vaultAccessible = false;
-      try {
-        fs.accessSync(vaultPath, fs.constants.R_OK);
-        vaultAccessible = true;
-      } catch {
-        vaultAccessible = false;
-        recommendations.push('Vault path is not accessible. Check PROJECT_PATH environment variable.');
-      }
-
-      // Check database integrity
-      let dbIntegrityFailed = false;
-      const stateDb = getStateDb();
-      if (stateDb) {
-        try {
-          const result = stateDb.db.pragma('quick_check') as Array<Record<string, string>>;
-          const ok = result.length === 1 && Object.values(result[0])[0] === 'ok';
-          if (!ok) {
-            dbIntegrityFailed = true;
-            recommendations.push(`Database integrity check failed: ${Object.values(result[0])[0] ?? 'unknown error'}`);
-          }
-        } catch (err) {
-          dbIntegrityFailed = true;
-          recommendations.push(`Database integrity check error: ${err instanceof Error ? err.message : err}`);
-        }
-      }
-
-      // Check index status
-      const indexBuilt = indexState === 'ready' && index !== undefined && index.notes !== undefined;
-
-      // Canonical timestamps from index_events
-      let lastIndexActivityAt: number | undefined;
-      let lastFullRebuildAt: number | undefined;
-      let lastWatcherBatchAt: number | undefined;
-      let lastBuild: ReturnType<typeof getLastEventByTrigger> | undefined;
-      let lastManual: ReturnType<typeof getLastEventByTrigger> | undefined;
-      if (stateDb) {
-        try {
-          const lastAny = getLastSuccessfulEvent(stateDb);
-          if (lastAny) lastIndexActivityAt = lastAny.timestamp;
-          lastBuild = getLastEventByTrigger(stateDb, 'startup_build') ?? undefined;
-          lastManual = getLastEventByTrigger(stateDb, 'manual_refresh') ?? undefined;
-          lastFullRebuildAt = Math.max(lastBuild?.timestamp ?? 0, lastManual?.timestamp ?? 0) || undefined;
-          const lastWatcher = getLastEventByTrigger(stateDb, 'watcher');
-          if (lastWatcher) lastWatcherBatchAt = lastWatcher.timestamp;
-        } catch { /* ignore */ }
-      }
-
-      // Use last full rebuild for freshness, not watcher activity
-      const freshnessTimestamp = lastFullRebuildAt ?? (indexBuilt && index.builtAt ? index.builtAt.getTime() : undefined);
-      const indexAge = freshnessTimestamp
-        ? Math.floor((Date.now() - freshnessTimestamp) / 1000)
-        : -1;
-      const indexStale = indexBuilt && indexAge > STALE_THRESHOLD_SECONDS;
-
-      // Add state-specific recommendations
-      if (indexState === 'building') {
-        const { parsed, total } = indexProgress;
-        const progress = total > 0 ? ` (${parsed}/${total} files)` : '';
-        recommendations.push(`Index is building${progress}. Some tools may not be available yet.`);
-      } else if (indexState === 'error') {
-        recommendations.push(`Index failed to build: ${indexErrorObj?.message || 'unknown error'}`);
-      } else if (indexStale) {
-        recommendations.push(`Index is ${Math.floor(indexAge / 60)} minutes old. Consider running refresh_index.`);
-      }
-
-      // Count metrics (only if index is ready)
-      const noteCount = indexBuilt ? index.notes.size : 0;
-      const entityCount = indexBuilt ? index.entities.size : 0;
-      const tagCount = indexBuilt ? index.tags.size : 0;
-      let linkCount = 0;
-      if (indexBuilt) {
-        for (const note of index.notes.values()) linkCount += note.outlinks.length;
-      }
-
-      if (indexBuilt && noteCount === 0 && vaultAccessible) {
-        recommendations.push('No notes found in vault. Is PROJECT_PATH pointing to a markdown vault?');
-      }
-
-      // Determine overall status
-      let status: 'healthy' | 'degraded' | 'unhealthy';
-      if (!vaultAccessible || indexState === 'error' || dbIntegrityFailed) {
-        status = 'unhealthy';
-      } else if (indexState === 'building' || indexStale || recommendations.length > 0) {
-        status = 'degraded';
-      } else {
-        status = 'healthy';
-      }
-
-      // Detect periodic note conventions (only when index is ready, full mode only)
-      let periodicNotes: PeriodicNoteInfo[] | undefined;
-      if (isFull && indexBuilt) {
-        const types = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'] as const;
-        periodicNotes = types.map(type => {
-          const result = detectPeriodicNotes(index, type);
-          return {
-            type: result.type,
-            detected: result.detected,
-            folder: result.folder,
-            pattern: result.pattern,
-            today_path: result.today_path,
-            today_exists: result.today_exists,
-          };
-        }).filter(p => p.detected);
-      }
-
-      // Include config info (full mode only)
-      let configInfo: Record<string, unknown> | undefined;
-      if (isFull) {
-        const config = getConfig();
-        configInfo = Object.keys(config).length > 0
-          ? config as unknown as Record<string, unknown>
-          : undefined;
-      }
-
-      // Get last rebuild event from StateDb
-      let lastRebuild: HealthCheckOutput['last_rebuild'];
-      if (stateDb) {
-        try {
-          const rebuildEvent = (lastBuild && lastManual)
-            ? (lastBuild.timestamp >= lastManual.timestamp ? lastBuild : lastManual)
-            : (lastBuild ?? lastManual);
-          if (rebuildEvent) {
-            lastRebuild = {
-              trigger: rebuildEvent.trigger,
-              timestamp: rebuildEvent.timestamp,
-              duration_ms: rebuildEvent.duration_ms,
-              ago_seconds: Math.floor((Date.now() - rebuildEvent.timestamp) / 1000),
-            };
-          }
-        } catch {
-          // Ignore errors reading index events
-        }
-      }
-
-      // Get last pipeline run (most recent event with steps data — survives restarts)
-      let lastPipeline: HealthCheckOutput['last_pipeline'];
-      let recentPipelines: HealthCheckOutput['recent_pipelines'];
-      if (stateDb) {
-        try {
-          const evt = getRecentPipelineEvent(stateDb);
-          if (evt && evt.steps && evt.steps.length > 0) {
-            const compact = compactPipelineRun(evt);
-            if (isFull) {
-              // Full mode: include compact step summaries
-              lastPipeline = compact;
-            } else {
-              // Summary mode: metadata only, no steps array
-              const { steps: _steps, ...metadataOnly } = compact;
-              lastPipeline = metadataOnly;
-            }
-          }
-        } catch {
-          // Ignore errors reading pipeline data
-        }
-
-        // Recent pipeline events (last 5 with compact steps) — full mode only
-        if (isFull) {
-          try {
-            const events = getRecentIndexEvents(stateDb, 10)
-              .filter(e => e.steps && e.steps.length > 0)
-              .slice(0, 5);
-            if (events.length > 0) {
-              recentPipelines = events.map(e => compactPipelineRun(e));
-            }
-          } catch {
-            // Ignore errors reading recent pipeline data
-          }
-        }
-      }
-
-      const ftsState = getFTS5State();
-
-      // Dead link scan — full mode only (iterates all outlinks)
-      let deadLinkCount = 0;
-      let topDeadLinkTargets: Array<{ target: string; mention_count: number }> = [];
-      if (isFull && indexBuilt) {
-        const deadTargetCounts = new Map<string, number>();
-        for (const note of index.notes.values()) {
-          for (const link of note.outlinks) {
-            if (!resolveTarget(index, link.target)) {
-              deadLinkCount++;
-              const key = link.target.toLowerCase();
-              deadTargetCounts.set(key, (deadTargetCounts.get(key) || 0) + 1);
-            }
-          }
-        }
-        topDeadLinkTargets = Array.from(deadTargetCounts.entries())
-          .map(([target, mention_count]) => ({ target, mention_count }))
-          .sort((a, b) => b.mention_count - a.mention_count)
-          .slice(0, 5);
-      }
-
-      // Compute vault health score (0-100)
-      let vault_health_score = 0;
-      if (indexBuilt && noteCount > 0) {
-        // Link density: avg outlinks per note, target 3+
-        const avgOutlinks = linkCount / noteCount;
-        const linkDensity = Math.min(1, avgOutlinks / 3);
-
-        // Orphan ratio: notes with 0 backlinks (excluding periodic notes)
-        let orphanCount = 0;
-        for (const note of index.notes.values()) {
-          const bl = index.backlinks.get(normalizeTarget(note.path));
-          if (!bl || bl.length === 0) orphanCount++;
-        }
-        const orphanRatio = 1 - (orphanCount / noteCount);
-
-        // Dead link ratio
-        const totalLinks = linkCount > 0 ? linkCount : 1;
-        const deadLinkRatio = 1 - (deadLinkCount / totalLinks);
-
-        // Frontmatter coverage
-        let notesWithFm = 0;
-        for (const note of index.notes.values()) {
-          if (Object.keys(note.frontmatter).length > 0) notesWithFm++;
-        }
-        const fmCoverage = notesWithFm / noteCount;
-
-        // Freshness: notes modified in last 90 days
-        const freshCutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
-        let freshCount = 0;
-        for (const note of index.notes.values()) {
-          if (note.modified && note.modified.getTime() > freshCutoff) freshCount++;
-        }
-        const freshness = freshCount / noteCount;
-
-        // Entity coverage: target 1 entity per 2 notes
-        const entityCoverage = Math.min(1, entityCount / (noteCount * 0.5));
-
-        // Weighted composite
-        vault_health_score = Math.round(
-          (linkDensity * 25 +
-           orphanRatio * 20 +
-           deadLinkRatio * 15 +
-           fmCoverage * 15 +
-           freshness * 15 +
-           entityCoverage * 10)
-        );
-      }
-
-      // Pipeline activity (always included — lightweight process-local read)
-      const activity = getPipelineActivityState();
-      const pipelineActivity = {
-        busy: activity?.busy ?? false,
-        current_step: activity?.current_step ?? null,
-        started_at: activity?.started_at ?? null,
-        progress: activity && activity.busy && activity.total_steps > 0
-          ? `${activity.completed_steps}/${activity.total_steps} steps`
-          : null,
-        last_completed_ago_seconds: activity?.last_completed_at
-          ? Math.floor((Date.now() - activity.last_completed_at) / 1000)
-          : null,
-      };
-
-      const output: HealthCheckOutput = {
-        status,
-        vault_health_score,
-        schema_version: SCHEMA_VERSION,
-        vault_accessible: vaultAccessible,
-        vault_path: vaultPath,
-        index_state: indexState,
-        index_progress: indexState === 'building' ? indexProgress : undefined,
-        index_error: indexState === 'error' && indexErrorObj ? indexErrorObj.message : undefined,
-        index_built: indexBuilt,
-        index_age_seconds: indexAge,
-        index_stale: indexStale,
-        note_count: noteCount,
-        entity_count: entityCount,
-        tag_count: tagCount,
-        link_count: linkCount,
-        periodic_notes: periodicNotes && periodicNotes.length > 0 ? periodicNotes : undefined,
-        config: configInfo,
-        last_rebuild: lastRebuild,
-        last_pipeline: lastPipeline,
-        recent_pipelines: recentPipelines,
-        fts5_ready: ftsState.ready,
-        fts5_building: ftsState.building,
-        embeddings_building: isEmbeddingsBuilding(),
-        embeddings_ready: hasEmbeddingsIndex(),
-        embeddings_count: getEmbeddingsCount(),
-        embedding_model: hasEmbeddingsIndex() ? getActiveModelId() : undefined,
-        embedding_diagnosis: isFull && hasEmbeddingsIndex() ? diagnoseEmbeddings(vaultPath) : undefined,
-        tasks_ready: isTaskCacheReady(),
-        tasks_building: isTaskCacheBuilding(),
-        watcher_state: getWatcherStatus()?.state,
-        watcher_pending: getWatcherStatus()?.pendingEvents,
-        last_index_activity_at: lastIndexActivityAt,
-        last_index_activity_ago_seconds: lastIndexActivityAt
-          ? Math.floor((Date.now() - lastIndexActivityAt) / 1000) : undefined,
-        last_full_rebuild_at: lastFullRebuildAt,
-        last_watcher_batch_at: lastWatcherBatchAt,
-        pipeline_activity: pipelineActivity,
-        dead_link_count: isFull ? deadLinkCount : undefined,
-        top_dead_link_targets: isFull ? topDeadLinkTargets : undefined,
-        sweep: isFull ? (getSweepResults() ?? undefined) : undefined,
-        proactive_linking: isFull && stateDb ? (() => {
-          const config = getConfig();
-          const enabled = config.proactive_linking !== false;
-          const queuePending = stateDb.db.prepare(
-            `SELECT COUNT(*) as cnt FROM proactive_queue WHERE status = 'pending'`,
-          ).get() as { cnt: number };
-          const summary = getProactiveLinkingSummary(stateDb, 1);
-          const oneLiner = getProactiveLinkingOneLiner(stateDb, 1);
-          return {
-            enabled,
-            queue_pending: queuePending.cnt,
-            summary: oneLiner,
-            total_applied_24h: summary.total_applied,
-            survived_24h: summary.survived,
-            removed_24h: summary.removed,
-            files_24h: summary.files_touched,
-          };
-        })() : undefined,
-        recommendations,
-      };
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(output, null, 2),
-          },
-        ],
-        structuredContent: output,
-      };
+    // Check vault accessibility
+    let vaultAccessible = false;
+    try {
+      fs.accessSync(vaultPath, fs.constants.R_OK);
+      vaultAccessible = true;
+    } catch {
+      vaultAccessible = false;
+      recommendations.push('Vault path is not accessible. Check PROJECT_PATH environment variable.');
     }
-  );
+
+    // Check database integrity
+    let dbIntegrityFailed = false;
+    const stateDb = getStateDb();
+    if (stateDb) {
+      try {
+        const result = stateDb.db.pragma('quick_check') as Array<Record<string, string>>;
+        const ok = result.length === 1 && Object.values(result[0])[0] === 'ok';
+        if (!ok) {
+          dbIntegrityFailed = true;
+          recommendations.push(`Database integrity check failed: ${Object.values(result[0])[0] ?? 'unknown error'}`);
+        }
+      } catch (err) {
+        dbIntegrityFailed = true;
+        recommendations.push(`Database integrity check error: ${err instanceof Error ? err.message : err}`);
+      }
+    }
+
+    // Check index status
+    const indexBuilt = indexState === 'ready' && index !== undefined && index.notes !== undefined;
+
+    // Canonical timestamps from index_events
+    let lastIndexActivityAt: number | undefined;
+    let lastFullRebuildAt: number | undefined;
+    let lastWatcherBatchAt: number | undefined;
+    let lastBuild: ReturnType<typeof getLastEventByTrigger> | undefined;
+    let lastManual: ReturnType<typeof getLastEventByTrigger> | undefined;
+    if (stateDb) {
+      try {
+        const lastAny = getLastSuccessfulEvent(stateDb);
+        if (lastAny) lastIndexActivityAt = lastAny.timestamp;
+        lastBuild = getLastEventByTrigger(stateDb, 'startup_build') ?? undefined;
+        lastManual = getLastEventByTrigger(stateDb, 'manual_refresh') ?? undefined;
+        lastFullRebuildAt = Math.max(lastBuild?.timestamp ?? 0, lastManual?.timestamp ?? 0) || undefined;
+        const lastWatcher = getLastEventByTrigger(stateDb, 'watcher');
+        if (lastWatcher) lastWatcherBatchAt = lastWatcher.timestamp;
+      } catch { /* ignore */ }
+    }
+
+    // Use last full rebuild for freshness, not watcher activity
+    const freshnessTimestamp = lastFullRebuildAt ?? (indexBuilt && index.builtAt ? index.builtAt.getTime() : undefined);
+    const indexAge = freshnessTimestamp
+      ? Math.floor((Date.now() - freshnessTimestamp) / 1000)
+      : -1;
+    const indexStale = indexBuilt && indexAge > STALE_THRESHOLD_SECONDS;
+
+    // Add state-specific recommendations
+    if (indexState === 'building') {
+      const { parsed, total } = indexProgress;
+      const progress = total > 0 ? ` (${parsed}/${total} files)` : '';
+      recommendations.push(`Index is building${progress}. Some tools may not be available yet.`);
+    } else if (indexState === 'error') {
+      recommendations.push(`Index failed to build: ${indexErrorObj?.message || 'unknown error'}`);
+    } else if (indexStale) {
+      recommendations.push(`Index is ${Math.floor(indexAge / 60)} minutes old. Consider running refresh_index.`);
+    }
+
+    // Count metrics (only if index is ready)
+    const noteCount = indexBuilt ? index.notes.size : 0;
+    const entityCount = indexBuilt ? index.entities.size : 0;
+    const tagCount = indexBuilt ? index.tags.size : 0;
+    let linkCount = 0;
+    if (indexBuilt) {
+      for (const note of index.notes.values()) linkCount += note.outlinks.length;
+    }
+
+    if (indexBuilt && noteCount === 0 && vaultAccessible) {
+      recommendations.push('No notes found in vault. Is PROJECT_PATH pointing to a markdown vault?');
+    }
+
+    // Determine overall status
+    let status: 'healthy' | 'degraded' | 'unhealthy';
+    if (!vaultAccessible || indexState === 'error' || dbIntegrityFailed) {
+      status = 'unhealthy';
+    } else if (indexState === 'building' || indexStale || recommendations.length > 0) {
+      status = 'degraded';
+    } else {
+      status = 'healthy';
+    }
+
+    // Detect periodic note conventions (only when index is ready, full mode only)
+    let periodicNotes: PeriodicNoteInfo[] | undefined;
+    if (isFull && indexBuilt) {
+      const types = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'] as const;
+      periodicNotes = types.map(type => {
+        const result = detectPeriodicNotes(index, type);
+        return {
+          type: result.type,
+          detected: result.detected,
+          folder: result.folder,
+          pattern: result.pattern,
+          today_path: result.today_path,
+          today_exists: result.today_exists,
+        };
+      }).filter(p => p.detected);
+    }
+
+    // Include config info (full mode only)
+    let configInfo: Record<string, unknown> | undefined;
+    if (isFull) {
+      const config = getConfig();
+      configInfo = Object.keys(config).length > 0
+        ? config as unknown as Record<string, unknown>
+        : undefined;
+    }
+
+    // Get last rebuild event from StateDb
+    let lastRebuild: HealthCheckOutput['last_rebuild'];
+    if (stateDb) {
+      try {
+        const rebuildEvent = (lastBuild && lastManual)
+          ? (lastBuild.timestamp >= lastManual.timestamp ? lastBuild : lastManual)
+          : (lastBuild ?? lastManual);
+        if (rebuildEvent) {
+          lastRebuild = {
+            trigger: rebuildEvent.trigger,
+            timestamp: rebuildEvent.timestamp,
+            duration_ms: rebuildEvent.duration_ms,
+            ago_seconds: Math.floor((Date.now() - rebuildEvent.timestamp) / 1000),
+          };
+        }
+      } catch {
+        // Ignore errors reading index events
+      }
+    }
+
+    // Get last pipeline run (most recent event with steps data — survives restarts)
+    let lastPipeline: HealthCheckOutput['last_pipeline'];
+    let recentPipelines: HealthCheckOutput['recent_pipelines'];
+    if (stateDb) {
+      try {
+        const evt = getRecentPipelineEvent(stateDb);
+        if (evt && evt.steps && evt.steps.length > 0) {
+          const compact = compactPipelineRun(evt);
+          if (isFull) {
+            // Full mode: include compact step summaries
+            lastPipeline = compact;
+          } else {
+            // Summary mode: metadata only, no steps array
+            const { steps: _steps, ...metadataOnly } = compact;
+            lastPipeline = metadataOnly;
+          }
+        }
+      } catch {
+        // Ignore errors reading pipeline data
+      }
+
+      // Recent pipeline events (last 5 with compact steps) — full mode only
+      if (isFull) {
+        try {
+          const events = getRecentIndexEvents(stateDb, 10)
+            .filter(e => e.steps && e.steps.length > 0)
+            .slice(0, 5);
+          if (events.length > 0) {
+            recentPipelines = events.map(e => compactPipelineRun(e));
+          }
+        } catch {
+          // Ignore errors reading recent pipeline data
+        }
+      }
+    }
+
+    const ftsState = getFTS5State();
+
+    // Dead link scan — full mode only (iterates all outlinks)
+    let deadLinkCount = 0;
+    let topDeadLinkTargets: Array<{ target: string; mention_count: number }> = [];
+    if (isFull && indexBuilt) {
+      const deadTargetCounts = new Map<string, number>();
+      for (const note of index.notes.values()) {
+        for (const link of note.outlinks) {
+          if (!resolveTarget(index, link.target)) {
+            deadLinkCount++;
+            const key = link.target.toLowerCase();
+            deadTargetCounts.set(key, (deadTargetCounts.get(key) || 0) + 1);
+          }
+        }
+      }
+      topDeadLinkTargets = Array.from(deadTargetCounts.entries())
+        .map(([target, mention_count]) => ({ target, mention_count }))
+        .sort((a, b) => b.mention_count - a.mention_count)
+        .slice(0, 5);
+    }
+
+    // Compute vault health score (0-100)
+    let vault_health_score = 0;
+    if (indexBuilt && noteCount > 0) {
+      // Link density: avg outlinks per note, target 3+
+      const avgOutlinks = linkCount / noteCount;
+      const linkDensity = Math.min(1, avgOutlinks / 3);
+
+      // Orphan ratio: notes with 0 backlinks (excluding periodic notes)
+      let orphanCount = 0;
+      for (const note of index.notes.values()) {
+        const bl = index.backlinks.get(normalizeTarget(note.path));
+        if (!bl || bl.length === 0) orphanCount++;
+      }
+      const orphanRatio = 1 - (orphanCount / noteCount);
+
+      // Dead link ratio
+      const totalLinks = linkCount > 0 ? linkCount : 1;
+      const deadLinkRatio = 1 - (deadLinkCount / totalLinks);
+
+      // Frontmatter coverage
+      let notesWithFm = 0;
+      for (const note of index.notes.values()) {
+        if (Object.keys(note.frontmatter).length > 0) notesWithFm++;
+      }
+      const fmCoverage = notesWithFm / noteCount;
+
+      // Freshness: notes modified in last 90 days
+      const freshCutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+      let freshCount = 0;
+      for (const note of index.notes.values()) {
+        if (note.modified && note.modified.getTime() > freshCutoff) freshCount++;
+      }
+      const freshness = freshCount / noteCount;
+
+      // Entity coverage: target 1 entity per 2 notes
+      const entityCoverage = Math.min(1, entityCount / (noteCount * 0.5));
+
+      // Weighted composite
+      vault_health_score = Math.round(
+        (linkDensity * 25 +
+         orphanRatio * 20 +
+         deadLinkRatio * 15 +
+         fmCoverage * 15 +
+         freshness * 15 +
+         entityCoverage * 10)
+      );
+    }
+
+    // Pipeline activity (always included — lightweight process-local read)
+    const activity = getPipelineActivityState();
+    const pipelineActivity = {
+      busy: activity?.busy ?? false,
+      current_step: activity?.current_step ?? null,
+      started_at: activity?.started_at ?? null,
+      progress: activity && activity.busy && activity.total_steps > 0
+        ? `${activity.completed_steps}/${activity.total_steps} steps`
+        : null,
+      last_completed_ago_seconds: activity?.last_completed_at
+        ? Math.floor((Date.now() - activity.last_completed_at) / 1000)
+        : null,
+    };
+
+    const output: HealthCheckOutput = {
+      status,
+      vault_health_score,
+      schema_version: SCHEMA_VERSION,
+      vault_accessible: vaultAccessible,
+      vault_path: vaultPath,
+      index_state: indexState,
+      index_progress: indexState === 'building' ? indexProgress : undefined,
+      index_error: indexState === 'error' && indexErrorObj ? indexErrorObj.message : undefined,
+      index_built: indexBuilt,
+      index_age_seconds: indexAge,
+      index_stale: indexStale,
+      note_count: noteCount,
+      entity_count: entityCount,
+      tag_count: tagCount,
+      link_count: linkCount,
+      periodic_notes: periodicNotes && periodicNotes.length > 0 ? periodicNotes : undefined,
+      config: configInfo,
+      last_rebuild: lastRebuild,
+      last_pipeline: lastPipeline,
+      recent_pipelines: recentPipelines,
+      fts5_ready: ftsState.ready,
+      fts5_building: ftsState.building,
+      embeddings_building: isEmbeddingsBuilding(),
+      embeddings_ready: hasEmbeddingsIndex(),
+      embeddings_count: getEmbeddingsCount(),
+      embedding_model: hasEmbeddingsIndex() ? getActiveModelId() : undefined,
+      embedding_diagnosis: isFull && hasEmbeddingsIndex() ? diagnoseEmbeddings(vaultPath) : undefined,
+      tasks_ready: isTaskCacheReady(),
+      tasks_building: isTaskCacheBuilding(),
+      watcher_state: getWatcherStatus()?.state,
+      watcher_pending: getWatcherStatus()?.pendingEvents,
+      last_index_activity_at: lastIndexActivityAt,
+      last_index_activity_ago_seconds: lastIndexActivityAt
+        ? Math.floor((Date.now() - lastIndexActivityAt) / 1000) : undefined,
+      last_full_rebuild_at: lastFullRebuildAt,
+      last_watcher_batch_at: lastWatcherBatchAt,
+      pipeline_activity: pipelineActivity,
+      dead_link_count: isFull ? deadLinkCount : undefined,
+      top_dead_link_targets: isFull ? topDeadLinkTargets : undefined,
+      sweep: isFull ? (getSweepResults() ?? undefined) : undefined,
+      proactive_linking: isFull && stateDb ? (() => {
+        const config = getConfig();
+        const enabled = config.proactive_linking !== false;
+        const queuePending = stateDb.db.prepare(
+          `SELECT COUNT(*) as cnt FROM proactive_queue WHERE status = 'pending'`,
+        ).get() as { cnt: number };
+        const summary = getProactiveLinkingSummary(stateDb, 1);
+        const oneLiner = getProactiveLinkingOneLiner(stateDb, 1);
+        return {
+          enabled,
+          queue_pending: queuePending.cnt,
+          summary: oneLiner,
+          total_applied_24h: summary.total_applied,
+          survived_24h: summary.survived,
+          removed_24h: summary.removed,
+          files_24h: summary.files_touched,
+        };
+      })() : undefined,
+      recommendations,
+    };
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(output, null, 2),
+        },
+      ],
+      structuredContent: output,
+    };
+  }
 
   // pipeline_status — live pipeline activity surface
   server.registerTool(
@@ -773,120 +760,110 @@ export function registerHealthTools(
     return patterns.some(p => p.test(nameWithoutExt)) || periodicFolders.includes(folder);
   }
 
-  server.registerTool(
-    'get_vault_stats',
-    {
-      title: 'Get Vault Statistics',
-      description:
-        'Use when you need quick vault metrics. Produces note counts, link density, tag usage, and folder distribution. Returns a compact stats object. Does not diagnose issues — use health_check for status assessment.',
-      inputSchema: {},
-      outputSchema: GetVaultStatsOutputSchema,
-    },
-    async (): Promise<{
-      content: Array<{ type: 'text'; text: string }>;
-      structuredContent: VaultStatsOutput;
-    }> => {
-      const index = getIndex();
+  async function runVaultStats(): Promise<{
+    content: Array<{ type: 'text'; text: string }>;
+    structuredContent: VaultStatsOutput;
+  }> {
+    const index = getIndex();
 
-      // Count totals
-      const totalNotes = index.notes.size;
-      let totalLinks = 0;
-      let brokenLinks = 0;
-      let orphanTotal = 0;
-      let orphanPeriodic = 0;
-      let orphanContent = 0;
+    // Count totals
+    const totalNotes = index.notes.size;
+    let totalLinks = 0;
+    let brokenLinks = 0;
+    let orphanTotal = 0;
+    let orphanPeriodic = 0;
+    let orphanContent = 0;
 
-      // Count links and broken links (only count as broken if similar entity exists)
-      for (const note of index.notes.values()) {
-        totalLinks += note.outlinks.length;
+    // Count links and broken links (only count as broken if similar entity exists)
+    for (const note of index.notes.values()) {
+      totalLinks += note.outlinks.length;
 
-        for (const link of note.outlinks) {
-          if (!resolveTarget(index, link.target)) {
-            // Only count as broken if there's a similar entity (typo detection)
-            const similar = findSimilarEntity(index, link.target);
-            if (similar) {
-              brokenLinks++;
-            }
+      for (const link of note.outlinks) {
+        if (!resolveTarget(index, link.target)) {
+          // Only count as broken if there's a similar entity (typo detection)
+          const similar = findSimilarEntity(index, link.target);
+          if (similar) {
+            brokenLinks++;
           }
         }
       }
-
-      // Count orphans, separating periodic notes from content notes
-      for (const note of index.notes.values()) {
-        const backlinks = getBacklinksForNote(index, note.path);
-        if (backlinks.length === 0) {
-          orphanTotal++;
-          if (isPeriodicNote(note.path)) {
-            orphanPeriodic++;
-          } else {
-            orphanContent++;
-          }
-        }
-      }
-
-      // Calculate most linked notes
-      const linkCounts: Array<{ path: string; backlinks: number }> = [];
-      for (const note of index.notes.values()) {
-        const backlinks = getBacklinksForNote(index, note.path);
-        if (backlinks.length > 0) {
-          linkCounts.push({ path: note.path, backlinks: backlinks.length });
-        }
-      }
-      linkCounts.sort((a, b) => b.backlinks - a.backlinks);
-      const mostLinkedNotes = linkCounts.slice(0, 10);
-
-      // Calculate top tags
-      const tagStats: Array<{ tag: string; count: number }> = [];
-      for (const [tag, notes] of index.tags) {
-        tagStats.push({ tag, count: notes.size });
-      }
-      tagStats.sort((a, b) => b.count - a.count);
-      const topTags = tagStats.slice(0, 20);
-
-      // Calculate folder distribution
-      const folderCounts = new Map<string, number>();
-      for (const note of index.notes.values()) {
-        const parts = note.path.split('/');
-        const folder = parts.length > 1 ? parts[0] : '(root)';
-
-        folderCounts.set(folder, (folderCounts.get(folder) || 0) + 1);
-      }
-
-      const folders = Array.from(folderCounts.entries())
-        .map(([folder, count]) => ({ folder, note_count: count }))
-        .sort((a, b) => b.note_count - a.note_count);
-
-      // Get recent activity summary (last 7 days)
-      const recentActivity = getActivitySummary(index, 7);
-
-      const output: VaultStatsOutput = {
-        total_notes: totalNotes,
-        total_links: totalLinks,
-        total_tags: index.tags.size,
-        orphan_notes: {
-          total: orphanTotal,
-          periodic: orphanPeriodic,
-          content: orphanContent,
-        },
-        broken_links: brokenLinks,
-        average_links_per_note: totalNotes > 0 ? Math.round((totalLinks / totalNotes) * 100) / 100 : 0,
-        most_linked_notes: mostLinkedNotes,
-        top_tags: topTags,
-        folders,
-        recent_activity: recentActivity,
-      };
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(output, null, 2),
-          },
-        ],
-        structuredContent: output,
-      };
     }
-  );
+
+    // Count orphans, separating periodic notes from content notes
+    for (const note of index.notes.values()) {
+      const backlinks = getBacklinksForNote(index, note.path);
+      if (backlinks.length === 0) {
+        orphanTotal++;
+        if (isPeriodicNote(note.path)) {
+          orphanPeriodic++;
+        } else {
+          orphanContent++;
+        }
+      }
+    }
+
+    // Calculate most linked notes
+    const linkCounts: Array<{ path: string; backlinks: number }> = [];
+    for (const note of index.notes.values()) {
+      const backlinks = getBacklinksForNote(index, note.path);
+      if (backlinks.length > 0) {
+        linkCounts.push({ path: note.path, backlinks: backlinks.length });
+      }
+    }
+    linkCounts.sort((a, b) => b.backlinks - a.backlinks);
+    const mostLinkedNotes = linkCounts.slice(0, 10);
+
+    // Calculate top tags
+    const tagStats: Array<{ tag: string; count: number }> = [];
+    for (const [tag, notes] of index.tags) {
+      tagStats.push({ tag, count: notes.size });
+    }
+    tagStats.sort((a, b) => b.count - a.count);
+    const topTags = tagStats.slice(0, 20);
+
+    // Calculate folder distribution
+    const folderCounts = new Map<string, number>();
+    for (const note of index.notes.values()) {
+      const parts = note.path.split('/');
+      const folder = parts.length > 1 ? parts[0] : '(root)';
+
+      folderCounts.set(folder, (folderCounts.get(folder) || 0) + 1);
+    }
+
+    const folders = Array.from(folderCounts.entries())
+      .map(([folder, count]) => ({ folder, note_count: count }))
+      .sort((a, b) => b.note_count - a.note_count);
+
+    // Get recent activity summary (last 7 days)
+    const recentActivity = getActivitySummary(index, 7);
+
+    const output: VaultStatsOutput = {
+      total_notes: totalNotes,
+      total_links: totalLinks,
+      total_tags: index.tags.size,
+      orphan_notes: {
+        total: orphanTotal,
+        periodic: orphanPeriodic,
+        content: orphanContent,
+      },
+      broken_links: brokenLinks,
+      average_links_per_note: totalNotes > 0 ? Math.round((totalLinks / totalNotes) * 100) / 100 : 0,
+      most_linked_notes: mostLinkedNotes,
+      top_tags: topTags,
+      folders,
+      recent_activity: recentActivity,
+    };
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(output, null, 2),
+        },
+      ],
+      structuredContent: output,
+    };
+  }
 
   // server_log — Query the in-memory activity log
   const LogEntrySchema = z.object({
@@ -941,18 +918,33 @@ export function registerHealthTools(
     }
   );
 
-  // flywheel_doctor — Comprehensive diagnostic report
+  // flywheel_doctor — Comprehensive diagnostic report (absorbs health_check + get_vault_stats)
   server.registerTool(
     'flywheel_doctor',
     {
       title: 'Flywheel Doctor',
       description:
-        'Use when something seems broken and you need active problem detection. Produces diagnostic checks for schema version, index health, stale data, and configuration issues. Returns problem descriptions with severity and suggested fixes. Does not fix problems automatically — follow the suggested remediation steps.',
-      inputSchema: {},
+        'Use when something seems broken, when you need a health check, or when you need vault metrics. Report "diagnosis" (default) runs problem detection with severity and fixes. Report "health" produces vault accessibility, index freshness, and config summary. Report "stats" produces note counts, link density, tag usage, and folder distribution. Returns diagnostic checks, health status, or vault metrics. Does not fix problems automatically — follow the suggested remediation steps.',
+      inputSchema: {
+        report: z.enum(['diagnosis', 'health', 'stats']).default('diagnosis')
+          .describe('Which report to run: "diagnosis" for problem detection, "health" for server/vault status, "stats" for vault metrics'),
+        detail: z.enum(['summary', 'full']).optional().default('summary')
+          .describe('Detail level for report=health (ignored for other reports)'),
+      },
     },
-    async (): Promise<{
+    async ({ report = 'diagnosis', detail = 'summary' }: { report?: 'diagnosis' | 'health' | 'stats'; detail?: 'summary' | 'full' }): Promise<{
       content: Array<{ type: 'text'; text: string }>;
+      structuredContent?: HealthCheckOutput | VaultStatsOutput;
     }> => {
+      // Dispatch to absorbed tools
+      if (report === 'health') {
+        return runHealthCheck(detail);
+      }
+      if (report === 'stats') {
+        return runVaultStats();
+      }
+
+      // report === 'diagnosis' — original flywheel_doctor logic
       const checks: Array<{
         name: string;
         status: 'ok' | 'warning' | 'error';

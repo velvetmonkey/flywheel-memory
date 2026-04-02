@@ -1,7 +1,7 @@
 /**
  * Temporal Analysis tools - time-based vault intelligence
  *
- * Tools: get_context_around_date, predict_stale_notes, track_concept_evolution, temporal_summary
+ * Tools: get_context_around_date, predict_stale_notes, track_concept_evolution
  */
 
 import { z } from 'zod';
@@ -730,7 +730,7 @@ export function registerTemporalAnalysisTools(
     {
       title: 'Context Around Date',
       description:
-        'Use when exploring what was happening around a specific date. Produces a snapshot of modified notes, created notes, active entities, and file activity in a time window. Returns dated context with note paths and entity names. Does not summarize — use temporal_summary for narrative digests.',
+        'Use when exploring what was happening around a specific date. Produces a snapshot of notes modified, notes created, and entities active within a time window. Returns dated context with note paths and entity names. Answers: "What was going on in the vault last Tuesday?" Use track_concept_evolution mode=summary for a composed narrative digest of a date range.',
       inputSchema: {
         date: z.string().describe('Center date in YYYY-MM-DD format'),
         window_days: z.coerce.number().default(3).describe('Days before and after the center date (default 3 = 7-day window)'),
@@ -770,43 +770,49 @@ export function registerTemporalAnalysisTools(
     },
   );
 
-  // Tool 3: track_concept_evolution
+  // Tool 3: track_concept_evolution (absorbs former temporal_summary via mode param)
   server.registerTool(
     'track_concept_evolution',
     {
       title: 'Track Concept Evolution',
       description:
-        'Use when tracing how an entity changed over time. Produces a timeline of link additions, removals, feedback events, category changes, and co-occurrence shifts. Returns chronological evolution entries with dates and event types. Does not modify the entity — only reads historical data.',
+        'Use when tracing how an entity changed over time, or when reviewing vault activity for a period. Mode "evolution" (default) produces a timeline of link additions, removals, feedback events, category changes, and co-occurrence shifts for a single entity. Mode "summary" produces a composed digest of context, staleness predictions, and concept evolution for a date range. Returns chronological evolution entries or a composed period digest. Does not modify notes — only reads historical data.',
       inputSchema: {
-        entity: z.string().describe('Entity name (case-insensitive)'),
-        days_back: z.coerce.number().default(90).describe('How far back to look (default 90 days)'),
-        include_cooccurrence: z.boolean().default(true).describe('Include co-occurrence neighbors (default true)'),
+        mode: z.enum(['evolution', 'summary']).default('evolution').describe('Mode: "evolution" traces one entity over time (requires entity); "summary" digests a date range (requires start_date and end_date)'),
+        entity: z.string().optional().describe('Entity name (case-insensitive). Required for mode=evolution.'),
+        days_back: z.coerce.number().default(90).describe('How far back to look (default 90 days). Used in mode=evolution.'),
+        include_cooccurrence: z.boolean().default(true).describe('Include co-occurrence neighbors (default true). Used in mode=evolution.'),
+        start_date: z.string().optional().describe('Start of period in YYYY-MM-DD format. Required for mode=summary.'),
+        end_date: z.string().optional().describe('End of period in YYYY-MM-DD format. Required for mode=summary.'),
+        focus_entities: z.array(z.string()).optional().describe('Specific entities to track evolution for in summary mode (default: top 5 active entities in period)'),
+        limit: z.coerce.number().default(50).describe('Maximum notes to include in context snapshot (mode=summary)'),
       },
     },
-    async ({ entity, days_back, include_cooccurrence }) => {
+    async ({ mode, entity, days_back, include_cooccurrence, start_date, end_date, focus_entities, limit: requestedLimit }) => {
       requireIndex();
-      return handleTrackConceptEvolution(
-        getIndex(), getStateDb(), entity, days_back ?? 90, include_cooccurrence ?? true,
-      );
-    },
-  );
+      const resolvedMode = mode ?? 'evolution';
 
-  // Tool 4: temporal_summary
-  server.registerTool(
-    'temporal_summary',
-    {
-      title: 'Temporal Summary',
-      description:
-        'Use when reviewing vault activity for a period like a week, month, or quarter. Produces a composed digest of context, staleness predictions, and concept evolution. Returns narrative summary sections with activity highlights and maintenance alerts. Does not modify notes — composes read-only temporal analysis.',
-      inputSchema: {
-        start_date: z.string().describe('Start of period in YYYY-MM-DD format'),
-        end_date: z.string().describe('End of period in YYYY-MM-DD format'),
-        focus_entities: z.array(z.string()).optional().describe('Specific entities to track evolution for (default: top 5 active entities in period)'),
-        limit: z.coerce.number().default(50).describe('Maximum notes to include in context snapshot'),
-      },
-    },
-    async ({ start_date, end_date, focus_entities, limit: requestedLimit }) => {
-      requireIndex();
+      if (resolvedMode === 'evolution') {
+        if (!entity) {
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify({
+              error: 'mode=evolution requires the "entity" parameter',
+            }, null, 2) }],
+          };
+        }
+        return handleTrackConceptEvolution(
+          getIndex(), getStateDb(), entity, days_back ?? 90, include_cooccurrence ?? true,
+        );
+      }
+
+      // mode === 'summary'
+      if (!start_date || !end_date) {
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify({
+            error: 'mode=summary requires both "start_date" and "end_date" parameters',
+          }, null, 2) }],
+        };
+      }
       const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
       return handleTemporalSummary(
         getIndex(), getStateDb(), start_date, end_date, focus_entities, limit,

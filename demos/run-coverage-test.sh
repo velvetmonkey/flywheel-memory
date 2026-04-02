@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Full tool coverage test — one targeted prompt per default-visible flywheel tool (77 visible).
+# Full tool coverage test — one targeted prompt per default-visible flywheel tool (65 visible).
 # Canonical tool source: packages/mcp-server/src/config.ts (TOOL_CATEGORY).
 # discover_tools is disclosure-only and excluded from this coverage surface.
 #
@@ -42,18 +42,13 @@ TOOLS=(
   'vault_undo_last_mutation|default|Add a test line to the Notes section of Acme Corp, then immediately undo that last change|yes'
   'policy|default|Create and execute a policy that adds a Review Notes section to every client note in the clients folder|yes'
 
-  # --- graph (11) ---
+  # --- graph (6) ---
   'graph_analysis|default,graph|Analyze the overall graph structure of this vault and show me clusters, bridges, and hub nodes|no'
   'semantic_analysis|default,graph|Run a semantic analysis on this vault to find topic clusters and conceptual bridges between notes|no'
-  'get_backlinks|default,graph|What notes link back to the Acme Corp note? Show me all backlinks.|no'
-  'get_forward_links|default,graph|What does the Acme Corp note link out to? Show me all forward links.|no'
   'get_connection_strength|default,graph|How strong is the connection between Acme Corp and Sarah Mitchell? Give me the strength score.|no'
   'list_entities|default,graph|List all entities in this vault with their categories|no'
   'get_link_path|default,graph|Find the shortest link path between Sarah Mitchell and TechStart Inc through the vault graph|no'
   'get_common_neighbors|default,graph|What are the common neighbors shared between Acme Corp and Data Migration in the vault graph?|no'
-  'get_weighted_links|default,graph|Show me the weighted links for the Acme Corp entity with their weights|no'
-  'get_strong_connections|default,graph|What are the strongest entity connections in this vault? Rank them by weight.|no'
-  'export_graph|default,graph|Export the full vault graph as JSON so I can visualize it externally|no'
 
   # --- schema (7) ---
   'vault_schema|default,schema|Show me the frontmatter schema used across this vault - what fields exist and their types|no'
@@ -95,21 +90,14 @@ TOOLS=(
   'vault_rename_note|default,note-ops|Rename the note Quarterly Review Q4 2025 to Q4 2025 Quarterly Review|yes'
   'merge_entities|default,note-ops|The Cloud Strategy Template note is really about the Acme Data Migration. Merge Cloud Strategy Template into Acme Data Migration.|yes'
 
-  # --- temporal (4) ---
+  # --- temporal (3) ---
   'get_context_around_date|default,temporal|What was happening in this vault around January 2026? Show me the context.|no'
   'predict_stale_notes|default,temporal|Which notes in this vault are most likely to be stale or outdated?|no'
   'track_concept_evolution|default,temporal|How has the concept of Data Migration evolved over time in this vault?|no'
-  'temporal_summary|default,temporal|Give me a temporal summary of recent changes and activity in this vault|no'
 
-  # --- diagnostics (22) ---
-  'health_check|default,diagnostics|Run a health check on this vault and report any issues|no'
-  'get_vault_stats|default,diagnostics|Show me detailed statistics about this vault - note counts, link density, entity counts|no'
-  'get_folder_structure|default,diagnostics|Show me the complete folder structure of this vault|no'
+  # --- diagnostics (16) ---
   'refresh_index|default,diagnostics|Refresh the vault index to make sure everything is up to date|no'
-  'get_all_entities|default,diagnostics|List every single entity in the vault with their categories and metadata|no'
-  'get_unlinked_mentions|default,diagnostics|Show me all unlinked entity mentions in the vault that could be wikilinked|no'
   'vault_growth|default,diagnostics|Show me how this vault has grown over time - note creation and link trends|no'
-  'vault_activity|default,diagnostics|What is the recent editing activity in this vault? Show me what changed recently.|no'
   'flywheel_config|default,diagnostics|Show me the current flywheel configuration settings for this vault|no'
   'server_log|default,diagnostics|Show me the recent flywheel server log entries|no'
   'suggest_entity_merges|default,diagnostics|Are there any duplicate or similar entities in this vault that should be merged?|no'

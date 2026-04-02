@@ -50,7 +50,7 @@ describe('Heuristic Misroute Detection', () => {
     });
 
     it('should NOT flag when tool category matches expected', () => {
-      const result = detectMisroute('temporal_summary', 'show me the timeline of Alice');
+      const result = detectMisroute('track_concept_evolution', 'show me the timeline of Alice');
       expect(result).toBeNull();
     });
 

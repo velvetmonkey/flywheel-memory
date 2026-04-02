@@ -143,9 +143,9 @@ Vault root detection order:
 
 | Preset | Behaviour |
 |--------|-----------|
-| `full` (default) | 65 tools visible at startup |
-| `auto` | Progressive disclosure across the full 66-tool surface via `discover_tools` |
-| `agent` | Fixed reduced set of 18 tools — search, read, write, tasks, memory |
+| `full` (default) | All tools visible at startup |
+| `auto` | Progressive disclosure across the full surface via `discover_tools` |
+| `agent` | Fixed reduced set — search, read, write, tasks, memory |
 
 #### Composable Bundles
 
@@ -153,15 +153,15 @@ Start with `agent`, then add what you need:
 
 | Bundle | What it adds |
 |--------|--------------|
-| `graph` | 6 tools: structural analysis, semantic analysis, entity lists, paths, neighbor overlap, connection strength |
+| `graph` | Structural analysis, semantic analysis, entity lists, paths, neighbor overlap, connection strength |
 | `schema` | Schema inspection, conventions, validation, note intelligence, migrations, tag rename |
 | `wikilinks` | Link suggestions, validation, feedback, discovery |
 | `corrections` | Correction recording + resolution |
 | `tasks` | Task queries and mutations (already included in `agent`) |
 | `memory` | Session memory + brief |
 | `note-ops` | Delete, move, rename notes, merge entities |
-| `temporal` | 3 tools: get_context_around_date, predict_stale_notes, track_concept_evolution |
-| `diagnostics` | 16 tools: vault health, config, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status |
+| `temporal` | get_context_around_date, predict_stale_notes, track_concept_evolution |
+| `diagnostics` | Vault health, config, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status |
 
 #### Recipes
 
@@ -170,7 +170,7 @@ Start with `agent`, then add what you need:
 | `agent` | search, read, write, tasks, memory |
 | `agent,graph` | agent + graph analysis, semantic analysis, paths, hubs |
 | `agent,graph,wikilinks` | + link suggestions, validation |
-| `full` | All categories, 65 tools visible immediately |
+| `full` | All categories, all tools visible immediately |
 | `auto` | All categories, progressive disclosure |
 
 #### How It Works
@@ -185,7 +185,7 @@ Set `FLYWHEEL_TOOLS` to a preset, one or more bundles, individual categories, or
 - **Tier 2** unlocks when the conversation shifts into graph, wikilink, correction, temporal, or diagnostics work
 - **Tier 3** stays on-demand for schema operations, note operations, and deep diagnostics
 
-`agent` is a fixed reduced set of 18 tools — search, read, write, tasks, memory. No progressive disclosure.
+`agent` is a fixed reduced set — search, read, write, tasks, memory. No progressive disclosure.
 
 `default` is a deprecated alias for `full`, retained for backward compatibility.
 

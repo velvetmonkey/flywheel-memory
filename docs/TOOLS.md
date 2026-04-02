@@ -1,12 +1,12 @@
 # Tools
 
-The `full` preset (default) shows the 65-tool default-visible surface immediately. Use `auto` for progressive disclosure, which activates the full 66-tool surface via `discover_tools`. Use `agent` for a fixed reduced set of 18 tools. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
+The `full` preset (default) shows the default-visible surface immediately. Use `auto` for progressive disclosure, which activates the full surface including `discover_tools`. Use `agent` for a fixed reduced set covering search, read, write, tasks, and memory. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
 
 - [At a Glance](#at-a-glance)
 - [Find Anything](#find-anything)
   - [`search`](#search)
-  - [`discover_tools`](#discover_tools)
   - [`find_similar`](#find_similar)
+  - [`discover_tools`](#discover_tools)
   - [`init_semantic`](#init_semantic)
 - [Read Deeper](#read-deeper)
 - [Write & Edit](#write--edit)
@@ -16,7 +16,6 @@ The `full` preset (default) shows the 65-tool default-visible surface immediatel
 - [Explore Connections](#explore-connections)
   - [`graph_analysis`](#graph_analysis)
   - [`semantic_analysis`](#semantic_analysis)
-  - [Link detail tools](#link-detail-tools)
   - [Other graph tools](#other-graph-tools)
 - [Wikilinks & Linking](#wikilinks--linking)
 - [Schema & Consistency](#schema--consistency)
@@ -427,7 +426,7 @@ Monitor, configure, and maintain your vault.
 
 ## Tool Selection Intelligence
 
-Under `full` (the default), the 65-tool default-visible surface is shown at startup. Under `agent`, only the fixed reduced surface is shown (18 tools across search, read, write, tasks, memory).
+Under `full` (the default), the default-visible surface is shown at startup. Under `agent`, only the fixed reduced surface is shown (search, read, write, tasks, memory).
 
 Under `auto`, Flywheel progressively discloses tools across three tiers via `discover_tools`:
 

@@ -5,6 +5,7 @@ The `full` preset (default) shows the 65-tool default-visible surface immediatel
 - [At a Glance](#at-a-glance)
 - [Find Anything](#find-anything)
   - [`search`](#search)
+  - [`discover_tools`](#discover_tools)
   - [`find_similar`](#find_similar)
   - [`init_semantic`](#init_semantic)
 - [Read Deeper](#read-deeper)
@@ -45,14 +46,14 @@ The `full` preset (default) shows the 65-tool default-visible surface immediatel
 | [Read a specific note](#read-deeper) | `get_note_structure` |
 | [Write or edit content](#write--edit) | `vault_add_to_section` |
 | [Work with tasks](#tasks) | `tasks` |
-| [Explore how notes connect](#explore-connections) | `get_backlinks`, `graph_analysis`, `semantic_analysis` |
+| [Explore how notes connect](#explore-connections) | `graph_analysis`, `get_connection_strength`, `get_link_path` |
 | [Improve my wikilinks](#wikilinks--linking) | `suggest_wikilinks` |
 | [Clean up my schema](#schema--consistency) | `vault_schema`, `schema_conventions`, `schema_validate` |
 | [Record corrections](#corrections) | `vault_record_correction` |
 | [Move, rename, or merge notes](#organize-notes) | `vault_move_note` |
 | [Persistent memory](#session-memory) | `memory`, `brief` |
 | [Analyze temporal patterns](#temporal-analysis) | `get_context_around_date` |
-| [Check vault health](#vault-health) | `health_check` |
+| [Check vault health](#vault-health) | `flywheel_doctor` |
 | [Automate workflows](#automation) | `policy` |
 
 ---
@@ -70,7 +71,7 @@ Every search result includes:
 | Field | What it is | Why it matters |
 |-------|-----------|----------------|
 | **frontmatter** | All YAML metadata (status, owner, amount, dates, etc.) | Answer "how much?" or "what status?" questions without opening the file. |
-| **backlinks** | Top 10 notes that link TO this one, ranked by edge weight × recency. `backlink_count` gives the total. | See what references this note — invoices pointing to a client, tickets pointing to a user. Use `get_backlinks` for the full list. |
+| **backlinks** | Top 10 notes that link TO this one, ranked by edge weight × recency. `backlink_count` gives the total. | See what references this note — invoices pointing to a client, tickets pointing to a user. |
 | **outlinks** | Top 10 notes this one links TO, ranked by edge weight × recency. Includes existence check. `outlink_count` gives the total. | See what this note references — and whether targets exist. |
 | **snippet** | Best-matching paragraph (~800 chars, section-aware) | See the relevant passage in context without reading the whole file. |
 | **section** | Which heading in the note contains the match | Skip the full read — go straight to the relevant section. |
@@ -155,6 +156,12 @@ The index uses Porter stemming, so "running" matches "run", "runs", and "ran". R
 
 **Parameters:** `path`, `limit`, `diversity`
 
+### `discover_tools`
+
+Only available in `auto`. Give it a natural-language task and it activates the specialised categories that match the request.
+
+Use this when the fixed default surface is not enough and you want Flywheel to reveal graph, schema, temporal, wikilink, or diagnostic tools on demand.
+
 ### `init_semantic`
 
 Builds a local embedding index for your vault. Once built, `search` and `find_similar` automatically upgrade to hybrid mode (keywords + meaning), and wikilink suggestions gain semantic scoring. Also unlocks `semantic_analysis` (clusters, bridges) and `semantic_links` in `note_intelligence`.
@@ -232,6 +239,8 @@ Run different analyses on your vault's link graph:
 | `stale` | Important notes (many backlinks) that haven't been updated recently. |
 | `immature` | Thin notes — low word count, few links, sparse frontmatter. |
 | `emerging_hubs` | Entities gaining connections fastest. |
+| `centrality` | Notes ranked by graph-centrality metrics. |
+| `cycles` | Cycles in the explicit wikilink graph. |
 
 ### `semantic_analysis`
 
@@ -242,13 +251,6 @@ Embedding-based vault analysis (requires `init_semantic`).
 | `clusters` | Groups of notes that are about similar topics. |
 | `bridges` | Notes that are semantically similar but have no link path between them. |
 
-### Link detail tools
-
-| Tool | When to use it |
-|------|---------------|
-| `get_backlinks` | Every note that links TO this one — with per-backlink surrounding text (reads source files). |
-| `get_forward_links` | Every note this one links TO — with resolved file paths and alias text. |
-
 ### Other graph tools
 
 | Tool | When to use it |
@@ -257,9 +259,6 @@ Embedding-based vault analysis (requires `init_semantic`).
 | `get_connection_strength` | How strongly are two notes connected? Considers links, shared neighbors, co-occurrence. |
 | `get_link_path` | Shortest path between two notes through the link graph. |
 | `get_common_neighbors` | Notes that both A and B link to — find what they have in common. |
-| `get_weighted_links` | Outgoing links ranked by connection strength. |
-| `get_strong_connections` | Bidirectional connections ranked by combined weight. |
-| `export_graph` | Export vault knowledge graph as GraphML (Gephi/yEd/Cytoscape) or JSON. Includes notes, entities, wikilinks, edge weights, and co-occurrence. Supports `min_edge_weight` filtering. |
 
 ---
 
@@ -397,8 +396,7 @@ Understand how your vault changes over time.
 |------|-------------|
 | `get_context_around_date` | Reconstruct vault activity around a specific date. Notes, entities, wikilinks, moves. |
 | `predict_stale_notes` | Multi-signal staleness prediction with importance scoring and recommendations. |
-| `track_concept_evolution` | Entity timeline: link additions, feedback, category changes, co-occurrence. |
-| `temporal_summary` | Period-based vault pulse report. Composes context + staleness + evolution into one summary. |
+| `track_concept_evolution` | Entity timeline (`mode: "evolution"`) or period digest (`mode: "summary"`). Covers link additions, feedback, category changes, co-occurrence, and dated summaries. |
 
 ---
 
@@ -408,21 +406,15 @@ Monitor, configure, and maintain your vault.
 
 | Tool | What it does |
 |------|-------------|
-| `health_check` | Is the server healthy? Vault accessibility, index freshness, recommendations. Pass `mode="summary"` for lightweight polling, `mode="full"` for complete diagnostics. |
 | `pipeline_status` | Live pipeline activity: whether a batch is running, current step, progress, and recent completions. |
-| `get_vault_stats` | How big is your vault? Notes, links, tags, orphans, recent activity. |
-| `get_folder_structure` | Folder tree with note counts. |
 | `refresh_index` | Force a full index rebuild without restarting. |
-| `get_all_entities` | Every linkable entity (note titles + aliases). |
-| `get_unlinked_mentions` | Where is an entity mentioned but not linked? |
 | `vault_growth` | Track vault size over time — snapshots, history, trends. |
-| `vault_activity` | Which tools are being called? Which notes get queried most? |
 | `flywheel_config` | Read or update Flywheel configuration. |
 | `server_log` | View recent server activity entries. |
 | `suggest_entity_merges` | Find duplicate entities by name similarity and shared backlinks. |
 | `dismiss_merge_suggestion` | "Those aren't duplicates" — dismiss a merge suggestion permanently. |
 | `vault_init` | First-time setup. Scans notes with zero wikilinks and applies entity links. Safe to re-run. |
-| `flywheel_doctor` | Run comprehensive diagnostics. 14 checks with ok/warning/error + fix suggestions. |
+| `flywheel_doctor` | Run diagnostics, health summaries, or vault stats with `report: "diagnosis" | "health" | "stats"`. |
 | `flywheel_trust_report` | Auditable manifest: active config, enabled categories, transport mode, recent writes, enforced boundaries. |
 | `flywheel_benchmark` | Run, record, and trend longitudinal performance benchmarks (search latency, index build, watcher batch). |
 | `vault_session_history` | View session history: recent sessions list or full chronological invocations for a session. Supports hierarchical sessions. |
@@ -435,7 +427,7 @@ Monitor, configure, and maintain your vault.
 
 ## Tool Selection Intelligence
 
-Under `full` (the default), all tools are visible at startup. Under `agent`, only the fixed reduced surface is shown (search, read, write, tasks, memory).
+Under `full` (the default), the 65-tool default-visible surface is shown at startup. Under `agent`, only the fixed reduced surface is shown (18 tools across search, read, write, tasks, memory).
 
 Under `auto`, Flywheel progressively discloses tools across three tiers via `discover_tools`:
 

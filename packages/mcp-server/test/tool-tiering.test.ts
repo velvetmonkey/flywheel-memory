@@ -33,8 +33,8 @@ function createTieredServer() {
   server.tool('vault_schema', async () => ({
     content: [{ type: 'text' as const, text: 'schema ok' }],
   }));
-  server.tool('health_check', async () => ({
-    content: [{ type: 'text' as const, text: 'health ok' }],
+  server.tool('pipeline_status', async () => ({
+    content: [{ type: 'text' as const, text: 'pipeline ok' }],
   }));
   server.tool('merge_entities', async () => ({
     content: [{ type: 'text' as const, text: 'merge ok' }],
@@ -120,7 +120,7 @@ describe('tool tiering', () => {
     expect(tools.search.enabled).toBe(true);
     expect(tools.graph_analysis.enabled).toBe(false);
     expect(tools.vault_schema.enabled).toBe(false);
-    expect(tools.health_check.enabled).toBe(false);
+    expect(tools.pipeline_status.enabled).toBe(false);
     expect(tools.merge_entities.enabled).toBe(false);
   });
 
@@ -132,7 +132,7 @@ describe('tool tiering', () => {
 
     expect(tools.graph_analysis.enabled).toBe(true);
     expect(tools.vault_schema.enabled).toBe(false);
-    expect(tools.health_check.enabled).toBe(false);
+    expect(tools.pipeline_status.enabled).toBe(false);
   });
 
   it('enableAllTiers reveals every registered tool', () => {
@@ -144,7 +144,7 @@ describe('tool tiering', () => {
     expect(tools.search.enabled).toBe(true);
     expect(tools.graph_analysis.enabled).toBe(true);
     expect(tools.vault_schema.enabled).toBe(true);
-    expect(tools.health_check.enabled).toBe(true);
+    expect(tools.pipeline_status.enabled).toBe(true);
     expect(tools.merge_entities.enabled).toBe(true);
   });
 
@@ -175,7 +175,7 @@ describe('tool tiering', () => {
     );
 
     expect(instructions).toContain('## Graph');
-    expect(instructions).toContain('Use "get_backlinks" for per-backlink surrounding text');
+    expect(instructions).toContain('Use "graph_analysis" for structural queries');
     expect(instructions).toContain('## Wikilinks');
     expect(instructions).not.toContain('Ask about graph connections, backlinks, hubs, clusters, or paths');
   });
@@ -345,7 +345,7 @@ describe('override modes', () => {
     expect(tools.search.enabled).toBe(true);
     expect(tools.graph_analysis.enabled).toBe(true);
     expect(tools.vault_schema.enabled).toBe(true);
-    expect(tools.health_check.enabled).toBe(true);
+    expect(tools.pipeline_status.enabled).toBe(true);
     expect(tools.merge_entities.enabled).toBe(true);
   });
 
@@ -824,8 +824,8 @@ function createTieredServerWithCallback(onTierStateChange: (controller: ToolTier
   server.tool('vault_schema', async () => ({
     content: [{ type: 'text' as const, text: 'schema ok' }],
   }));
-  server.tool('health_check', async () => ({
-    content: [{ type: 'text' as const, text: 'health ok' }],
+  server.tool('pipeline_status', async () => ({
+    content: [{ type: 'text' as const, text: 'pipeline ok' }],
   }));
   server.tool('merge_entities', async () => ({
     content: [{ type: 'text' as const, text: 'merge ok' }],
@@ -1568,7 +1568,7 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
     const names = await listToolNames(server);
     expect(names).toContain('discover_tools');
     expect(names).toContain('search');
-    expect(names).not.toContain('health_check');
+    expect(names).not.toContain('pipeline_status');
     expect(names.size).toBe(TIER_1_TOOL_COUNT);
   });
 
@@ -1672,9 +1672,9 @@ describe('discover_tools meta-tool', () => {
 
     expect(data.matched_categories).toContain('diagnostics');
     expect(data.newly_activated_categories).toContain('diagnostics');
-    expect(data.tools.some((t: any) => t.name === 'health_check')).toBe(true);
+    expect(data.tools.some((t: any) => t.name === 'flywheel_doctor')).toBe(true);
     // Input schemas are included
-    expect(data.tools.find((t: any) => t.name === 'health_check').inputSchema).toBeDefined();
+    expect(data.tools.find((t: any) => t.name === 'flywheel_doctor').inputSchema).toBeDefined();
     expect(controller.activeCategories.has('diagnostics')).toBe(true);
   });
 

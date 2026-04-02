@@ -37,8 +37,8 @@ import { runInVaultScope, getActiveScopeOrNull, type VaultScope } from './vault-
 import { recordToolInvocation } from './core/shared/toolTracking.js';
 
 // Read tool registrations
-import { registerGraphTools } from './tools/read/graph.js';
-import { registerGraphExportTools } from './tools/read/graphExport.js';
+// graph.ts retired — get_backlinks, get_forward_links, get_weighted_links, get_strong_connections removed
+// graphExport.ts retired — export_graph removed
 import { registerWikilinkTools } from './tools/read/wikilinks.js';
 import { registerHealthTools } from './tools/read/health.js';
 import { registerQueryTools } from './tools/read/query.js';
@@ -73,7 +73,7 @@ import { registerInitTools } from './tools/write/enrich.js';
 
 // Additional read tool registrations
 import { registerMetricsTools } from './tools/read/metrics.js';
-import { registerActivityTools } from './tools/read/activity.js';
+// activity.ts retired — vault_activity modes folded into vault_session_history
 import { registerSimilarityTools } from './tools/read/similarity.js';
 import { registerSemanticTools } from './tools/read/semantic.js';
 import { registerMergeTools as registerReadMergeTools } from './tools/read/merges.js';
@@ -780,8 +780,7 @@ export function registerAllTools(
     (newConfig) => { ctx.updateFlywheelConfig(newConfig); },
     gsd
   );
-  registerGraphTools(targetServer, gvi, gvp, gsd);
-  registerGraphExportTools(targetServer, gvi, gvp, gsd);
+  // graph.ts + graphExport.ts retired (8 tools removed)
   registerWikilinkTools(targetServer, gvi, gvp, gsd);
   registerQueryTools(targetServer, gvi, gvp, gsd);
   registerPrimitiveTools(targetServer, gvi, gvp, gcf, gsd);
@@ -843,12 +842,12 @@ export function registerAllTools(
 
   // Additional read tools
   registerMetricsTools(targetServer, gvi, gsd);
-  registerActivityTools(targetServer, gsd, () => { try { return getSessionId(); } catch { return null; } });
+  // vault_activity retired — modes folded into vault_session_history
   registerSimilarityTools(targetServer, gvi, gvp, gsd);
   registerSemanticTools(targetServer, gvp, gsd);
   registerReadMergeTools(targetServer, gsd);
   registerTemporalAnalysisTools(targetServer, gvi, gvp, gsd);
-  registerSessionHistoryTools(targetServer, gsd);
+  registerSessionHistoryTools(targetServer, gsd, () => { try { return getSessionId(); } catch { return null; } });
   registerEntityHistoryTools(targetServer, gsd);
   registerLearningReportTools(targetServer, gvi, gsd);
   registerCalibrationExportTools(targetServer, gvi, gsd, gcf);

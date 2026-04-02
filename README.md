@@ -1,7 +1,7 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Flywheel turns an Obsidian vault into a graph-aware workspace for AI agents — fast to query, safe to write, and fully local.</strong></p>
+  <p><strong>Flywheel turns an Obsidian vault into a local MCP workspace for AI agents: fast to query and safe to write.</strong></p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
@@ -12,7 +12,7 @@
 
 **[What It Does](#what-it-does)** · **[See It Work](#see-it-work)** · **[Skills + Flywheel](#skills--flywheel)** · **[Get Started](#get-started)** · **[Benchmarks](#benchmarks)** · **[Testing](#testing)** · **[Documentation](#documentation)** · **[License](#license)**
 
-Flywheel is a local MCP server that gives AI agents structured access to an Obsidian vault. Search returns a *decision surface* — frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence — so the model reasons from one call instead of opening file after file. Writes are git-committed, conflict-detected, and reversible. Auto-wikilinks resolve entities through a deterministic scoring algorithm where every suggestion has a traceable receipt. The graph compounds with use: links you keep get stronger, links you remove get suppressed, and every edit enriches the context for the next read.
+Flywheel is a local MCP server that gives AI agents structured access to an Obsidian vault. Search returns a *decision surface* with frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. In many cases that is enough context to answer without opening a chain of files. Writes are git-committed, conflict-detected, and reversible. Auto-wikilinks use a deterministic scoring algorithm, and every suggestion has a traceable receipt.
 
 Everything runs on your machine. Nothing leaves your disk. Every action is bounded, inspectable, and reversible.
 
@@ -26,11 +26,11 @@ One call returns everything the model needs to answer: frontmatter, scored backl
 
 ### Write safely
 
-Every mutation is git-committed, conflict-detected (SHA-256 content hash), and reversible with one undo. Writes preserve markdown structure — tables, callouts, code blocks, frontmatter, links, comments, and math are never corrupted by an edit to surrounding text. Auto-wikilinks resolve entities through a deterministic 13-layer scoring algorithm where every suggestion has a traceable receipt. For one-off edits, use the direct write tools. For repeatable workflows that search the vault and act on the results, use **policies** — saved YAML workflows that read vault state, branch on conditions, and drive multiple write steps as a single atomic operation. [How scoring works ->](docs/ALGORITHM.md) | [Policies guide ->](docs/POLICIES.md)
+Every mutation is git-committed, conflict-detected with a SHA-256 content hash, and reversible with one undo. Writes preserve markdown structure, so edits do not corrupt tables, callouts, code blocks, frontmatter, links, comments, or math. Auto-wikilinks use a deterministic 13-layer scoring algorithm where every suggestion has a traceable receipt. For one-off edits, use the direct write tools. For repeatable workflows that search the vault and act on the results, use **policies**, which are saved YAML workflows that branch on vault state and run multiple write steps as a single atomic operation. [How scoring works ->](docs/ALGORITHM.md) | [Policies guide ->](docs/POLICIES.md)
 
 ### Build context over time
 
-Every accepted link strengthens the graph. Every rejected link trains the scorer. Every write enriches the context for the next read. `brief` assembles a token-budgeted cold-start summary so the AI picks up where it left off. `memory` persists observations with confidence decay. This is the flywheel effect: use compounds into structure, structure into intelligence, intelligence into more use. [Configuration ->](docs/CONFIGURATION.md)
+Every accepted link strengthens the graph. Every rejected link updates the scorer. Every write adds more context for the next read. `brief` assembles a token-budgeted summary of recent activity, and `memory` persists observations with confidence decay. [Configuration ->](docs/CONFIGURATION.md)
 
 ---
 
@@ -82,9 +82,9 @@ flywheel -> policy action=author
 > Preview the overdue-invoice-chaser policy
 
 flywheel -> policy action=preview name=overdue-invoice-chaser
-  Step 1: vault_search — query "type:invoice status:sent" in invoices/ — 3 results
-  Step 2: vault_add_to_section — would append to daily-notes/2026-03-31.md#Tasks
-  (no changes made — preview only)
+  Step 1: vault_search: query "type:invoice status:sent" in invoices/ -> 3 results
+  Step 2: vault_add_to_section: would append to daily-notes/2026-03-31.md#Tasks
+  (no changes made; preview only)
 
 > Execute it
 
@@ -100,7 +100,7 @@ Policies search the vault, then write back. Author them in plain language, previ
 
 ## Skills + Flywheel
 
-Skills encode methodology — how to do something. Flywheel encodes knowledge — what you know. They are complementary layers:
+Skills encode methodology: how to do something. Flywheel encodes knowledge: what you know. They are complementary layers:
 
 | Layer | What it provides | Example |
 |---|---|---|
@@ -154,13 +154,13 @@ Flywheel watches the vault, maintains local indexes, and serves the graph to MCP
 
 ### Tool presets
 
-The `full` preset (default) shows all tools immediately. Use `auto` for progressive disclosure, which surfaces specialised tools as the conversation needs them — keeping the default context focused while graph, schema, and temporal capabilities appear on demand.
+The `full` preset (default) shows all tools immediately. Use `auto` for progressive disclosure if you want specialised tools to appear only when the conversation needs them.
 
 | Preset | Behaviour |
 |--------|-----------|
 | `full` (default) | All tools visible at startup |
-| `auto` | Progressive disclosure — tools activate as your queries need them |
-| `agent` | Fixed set — search, read, write, tasks, memory |
+| `auto` | Progressive disclosure; tools activate as your queries need them |
+| `agent` | Fixed set: search, read, write, tasks, memory |
 
 Compose bundles for custom configurations:
 
@@ -198,7 +198,7 @@ Serve more than one vault from a single Flywheel instance with `FLYWHEEL_VAULTS`
 }
 ```
 
-Search automatically spans all vaults and tags each result with its source vault. Each vault gets fully isolated state — separate indexes, graph, file watcher, and config.
+Search automatically spans all vaults and tags each result with its source vault. Each vault keeps separate indexes, graph state, file watchers, and config.
 
 [Full multi-vault configuration ->](docs/CONFIGURATION.md#multi-vault) | [Client setup examples ->](docs/SETUP.md#multi-vault)
 

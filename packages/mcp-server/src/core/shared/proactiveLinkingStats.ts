@@ -2,7 +2,7 @@
  * Proactive Linking Observability
  *
  * Queries wikilink_applications filtered to source='proactive' for
- * surfacing in brief, health_check, learning_report, and vault_activity.
+ * surfacing in brief, flywheel_doctor, learning_report, and vault_session_history.
  */
 
 import type { StateDb } from '@velvetmonkey/vault-core';

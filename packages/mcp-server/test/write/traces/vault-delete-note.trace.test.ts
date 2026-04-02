@@ -53,7 +53,7 @@ describe('vault_delete_note traces', () => {
     ].join('\n'));
 
     await snap(client, 'refresh_index');
-    statsBefore = await snap(client, 'get_vault_stats', {});
+    statsBefore = await snap(client, 'flywheel_doctor', { report: 'stats' });
   }, 30_000);
 
   afterAll(async () => {
@@ -69,15 +69,17 @@ describe('vault_delete_note traces', () => {
     expect(paths).not.toContain('people/Alice.md');
   });
 
-  it('forward link to deleted note shows exists: false', async () => {
-    const fwd = await snap(client, 'get_forward_links', { path: 'daily/2026-01-01.md' });
-    const aliceLink = fwd.forward_links.find((l: any) => l.target === 'Alice');
-    expect(aliceLink).toBeDefined();
-    expect(aliceLink.exists).toBe(false);
+  it('forward link to deleted note is a dangling reference', async () => {
+    // After deleting Alice, the daily note still has [[Alice]] in its content
+    // but Alice.md no longer exists. validate_links should report this.
+    const validation = await snap(client, 'validate_links', {});
+    expect(validation.broken_links).toBeGreaterThanOrEqual(1);
+    const targets = validation.broken.map((b: any) => b.target);
+    expect(targets).toContain('Alice');
   });
 
   it('vault_stats total_notes decreases by 1', async () => {
-    const after = await snap(client, 'get_vault_stats', {});
+    const after = await snap(client, 'flywheel_doctor', { report: 'stats' });
     expect(after.total_notes).toBe(statsBefore.total_notes - 1);
   });
 

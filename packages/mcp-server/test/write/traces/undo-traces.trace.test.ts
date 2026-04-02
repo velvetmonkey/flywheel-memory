@@ -69,7 +69,7 @@ describe('undo traces', () => {
     });
 
     it('undo restores total_notes to original count', async () => {
-      const statsBefore = await snap(client, 'get_vault_stats', {});
+      const statsBefore = await snap(client, 'flywheel_doctor', { report: 'stats' });
 
       // Create a note with commit (undo point)
       await snap(client, 'vault_create_note', {
@@ -80,7 +80,7 @@ describe('undo traces', () => {
       });
       await snap(client, 'refresh_index');
 
-      const statsAfter = await snap(client, 'get_vault_stats', {});
+      const statsAfter = await snap(client, 'flywheel_doctor', { report: 'stats' });
       expect(statsAfter.total_notes).toBe(statsBefore.total_notes + 1);
 
       // Undo (soft reset)
@@ -91,7 +91,7 @@ describe('undo traces', () => {
       await restoreWorkingTree(ctx.vaultPath);
       await snap(client, 'refresh_index');
 
-      const statsRestored = await snap(client, 'get_vault_stats', {});
+      const statsRestored = await snap(client, 'flywheel_doctor', { report: 'stats' });
       expect(statsRestored.total_notes).toBe(statsBefore.total_notes);
     });
   });

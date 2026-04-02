@@ -222,7 +222,7 @@ Honesty about coverage gaps:
 
 ## Retrieval Benchmark (HotpotQA)
 
-End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/) — a standard multi-hop question answering benchmark from CMU/Stanford. Real Claude + Flywheel via `claude -p`, no pre-processing, no cherry-picking.
+End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/)  --  a standard multi-hop question answering benchmark from CMU/Stanford. Real Claude + Flywheel via `claude -p`, no pre-processing, no cherry-picking.
 
 ### Results (500 hard questions, 4,960 documents)
 
@@ -237,7 +237,7 @@ End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/)
 
 ### How Flywheel compares
 
-HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/F1). The retrieval stage — finding the right documents — is what we measure. Most academic systems are purpose-built ML retrieval models trained specifically on HotpotQA; Flywheel is a general-purpose vault tool.
+HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/F1). The retrieval stage  --  finding the right documents  --  is what we measure. Most academic systems are purpose-built ML retrieval models trained specifically on HotpotQA; Flywheel is a general-purpose vault tool.
 
 | System | Type | Retrieval Recall | Approach | Notes |
 |---|---|---|---|---|
@@ -249,7 +249,7 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 | [ColBERTv2](https://arxiv.org/abs/2112.01488) | Trained retriever | ~90%+ | Late interaction dense retrieval | Stanford, 2022. Fine-tuned on MS MARCO |
 | [Beam Retrieval](https://arxiv.org/abs/2308.08973) | Trained retriever | ~93% | Beam search over retrieval paths | 2023. Trained end-to-end for multi-hop |
 
-**Not apples-to-apples — read this before comparing:**
+**Not apples-to-apples  --  read this before comparing:**
 
 - **Training data.** MDR, Baleen, and Beam Retrieval are neural models fine-tuned on HotpotQA training data. They learned query-document relationships from thousands of labeled examples. Flywheel has seen zero HotpotQA training data.
 - **Test setting.** Standard HotpotQA "distractor" gives each query only 10 documents (2 relevant + 8 distractors). "Fullwiki" searches 5M+ documents. Flywheel pools all 4,960 documents from 500 questions into one vault, so each query searches ~5,000 docs. This is harder than distractor but far easier than fullwiki. The numbers are not directly comparable to either setting.
@@ -268,7 +268,7 @@ The published 92.4% comes from the full 500-question benchmark run documented ab
 
 ## Retrieval Benchmark (LoCoMo)
 
-Retrieval quality measured on [LoCoMo](https://snap-research.github.io/locomo/) (Long-Term Conversational Memory) — a benchmark from Snap Research (ACL 2024) for evaluating memory over extended multi-session conversations. 10 conversations, each spanning 19-32 sessions over weeks/months, with 1,986 QA pairs across 5 categories.
+Retrieval quality measured on [LoCoMo](https://snap-research.github.io/locomo/) (Long-Term Conversational Memory)  --  a benchmark from Snap Research (ACL 2024) for evaluating memory over extended multi-session conversations. 10 conversations, each spanning 19-32 sessions over weeks/months, with 1,986 QA pairs across 5 categories.
 
 LoCoMo tests a different, more natural fit for Flywheel than HotpotQA: each conversation session becomes a vault note (like daily notes or meeting logs), and questions test whether the system can retrieve the right sessions when asked about events, facts, or temporal relationships.
 
@@ -292,8 +292,8 @@ LoCoMo provides three representations of the same conversations. Flywheel builds
 
 | Vault Mode | Recall@5 | Recall@10 | Notes |
 |---|---|---|---|
-| **Dialog** (raw turns) | **84.8%** | **90.4%** | Best — most keyword-rich |
-| Summary | 82.7% | 89.2% | Close second — concise but retains key facts |
+| **Dialog** (raw turns) | **84.8%** | **90.4%** | Best  --  most keyword-rich |
+| Summary | 82.7% | 89.2% | Close second  --  concise but retains key facts |
 | Observation | 76.9% | 84.5% | Shorter, less keyword overlap |
 
 ### How the E2E Benchmark Works
@@ -307,11 +307,11 @@ The benchmark measures whether a real Claude agent with Flywheel tools can answe
 - Output: 290 clean markdown files, zero wikilinks, no `.flywheel/` state
 
 **2. Pre-warm** (one Claude Haiku session with `full,memory` preset):
-- `health_check` → confirms FTS5 index built, entities scanned
+- `flywheel_doctor` → confirms FTS5 index built, entities scanned
 - `vault_init` mode='enrich' → auto-links all notes with wikilinks (same as production usage)
 - `refresh_index` → re-indexes with new wikilinks
 - `init_semantic` → builds semantic embeddings for hybrid search
-- `health_check` → confirms everything ready
+- `flywheel_doctor` → confirms everything ready
 
 This matches how a real vault works: Flywheel indexes it, auto-links it, and builds embeddings. The vault state after pre-warm is representative of production usage.
 
@@ -331,7 +331,7 @@ This matches how a real vault works: Flywheel indexes it, auto-links it, and bui
 - FTS5 content index (BM25 keyword search)
 - Entity index with categories (people detected from `people/` folder + frontmatter)
 - Semantic embeddings (hybrid BM25 + cosine similarity via RRF)
-- Auto-inserted wikilinks (from the enrich step — same as production auto-linking)
+- Auto-inserted wikilinks (from the enrich step  --  same as production auto-linking)
 - Co-occurrence and edge weight data (from the index rebuild after enrichment)
 
 This is deliberately not a cold-start test. It tests the system as it runs in production: indexed, linked, and embedding-warm.
@@ -349,7 +349,7 @@ This is deliberately not a cold-start test. It tests the system as it runs in pr
 | Temporal | 96 | 69.2% (108/156) | 53.1% | [43.2%, 62.8%] |
 | Adversarial | 182 | 98.9% (180/182) | 47.8% | [40.7%, 55.0%] |
 
-Cost: $84.58 total ($0.122/question). Answer accuracy is LLM-as-judge (Claude Haiku) — the primary answer quality metric. Token F1 (0.483 after extraction, 0.291 raw) is a diagnostic metric reported alongside. Both metrics are reported automatically on every benchmark run.
+Cost: $84.58 total ($0.122/question). Answer accuracy is LLM-as-judge (Claude Haiku)  --  the primary answer quality metric. Token F1 (0.483 after extraction, 0.291 raw) is a diagnostic metric reported alongside. Both metrics are reported automatically on every benchmark run.
 
 ### How Flywheel compares to other memory systems
 
@@ -358,28 +358,28 @@ Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.1941
 | System | Type | Evidence Recall | Single-hop Recall | Multi-hop Recall | Questions | Infrastructure |
 |---|---|---|---|---|---|---|
 | **Flywheel** | MCP vault tool | **84.3%** | **97.4%** | **73.7%** | 695 | Local (SQLite + markdown) |
-| Mem0 | Cloud memory | — | — | — | 695 | Redis + Qdrant |
-| Zep | Cloud memory | — | — | — | 695 | Cloud service |
-| LangMem | Memory framework | — | — | — | 695 | Varies |
-| MemGPT/Letta | Agent memory | — | — | — | 695 | Cloud/local |
+| Mem0 | Cloud memory |  --  |  --  |  --  | 695 | Redis + Qdrant |
+| Zep | Cloud memory |  --  |  --  |  --  | 695 | Cloud service |
+| LangMem | Memory framework |  --  |  --  |  --  | 695 | Varies |
+| MemGPT/Letta | Agent memory |  --  |  --  |  --  | 695 | Cloud/local |
 
 Competitors report answer accuracy via GPT-4o judge but do not report evidence recall. Flywheel reports evidence recall, LLM-as-judge accuracy (58.7%, Claude Haiku), and token F1 (diagnostic).
 
-**Methodology differences — read this before comparing:**
+**Methodology differences  --  read this before comparing:**
 
 - **Metrics differ.** Flywheel reports evidence recall (84.3%) and LLM-as-judge accuracy (58.7%, Claude Haiku). Competitors report answer accuracy via GPT-4o judge. Judge methodology is comparable; judge model differs.
-- **Vault mode.** Flywheel uses dialog mode (raw conversation turns) — the most keyword-rich representation. Summary mode scores ~1-2pp lower on retrieval. Competitors may use different representations.
-- **Vault enrichment.** HotpotQA notes have minimal frontmatter (heuristic-inferred `type:` only). LoCoMo notes include temporal metadata (`date`, `time`), speaker arrays, session numbers, and entity stubs — closer to a real vault. Both are generated by the harness `build-vault.js`, not present in the source datasets. HotpotQA's 92.4% recall with near-zero metadata is closer to pure search engine performance.
+- **Vault mode.** Flywheel uses dialog mode (raw conversation turns)  --  the most keyword-rich representation. Summary mode scores ~1-2pp lower on retrieval. Competitors may use different representations.
+- **Vault enrichment.** HotpotQA notes have minimal frontmatter (heuristic-inferred `type:` only). LoCoMo notes include temporal metadata (`date`, `time`), speaker arrays, session numbers, and entity stubs  --  closer to a real vault. Both are generated by the harness `build-vault.js`, not present in the source datasets. HotpotQA's 92.4% recall with near-zero metadata is closer to pure search engine performance.
 - **What each benchmark measures.** HotpotQA measures retrieval only (did the agent's tool calls access the right documents?). LoCoMo measures retrieval *and* answer quality. Each LoCoMo question requires a Sonnet answer session, and conversational questions typically need more tool calls to piece together answers from multi-session dialog. This is why LoCoMo costs roughly double per question ($0.12 vs $0.058).
 - **Prompt.** Claude is told the vault structure (notes are conversation sessions) but is not given a retrieval strategy.
 
 **What the numbers suggest:**
 
-- **Single-hop recall: 97.4%** — Flywheel finds the right note almost every time for direct questions. 77.0% answer accuracy.
-- **Multi-hop recall: 73.7%** — harder, requires chaining searches. 38.9% answer accuracy — the ceiling here is context assembly, not retrieval.
-- **Temporal recall: 69.2%** — requires precise date reasoning across sessions. 96 questions. 53.1% answer accuracy.
-- **Commonsense recall: 96.4%** — strongest category. 78.4% answer accuracy — high evidence recall translates well to correct answers.
-- **Adversarial recall: 98.9%** — system reliably finds relevant context even for trick questions. 47.8% accuracy on correctly refusing unanswerable questions.
+- **Single-hop recall: 97.4%**  --  Flywheel finds the right note almost every time for direct questions. 77.0% answer accuracy.
+- **Multi-hop recall: 73.7%**  --  harder, requires chaining searches. 38.9% answer accuracy  --  the ceiling here is context assembly, not retrieval.
+- **Temporal recall: 69.2%**  --  requires precise date reasoning across sessions. 96 questions. 53.1% answer accuracy.
+- **Commonsense recall: 96.4%**  --  strongest category. 78.4% answer accuracy  --  high evidence recall translates well to correct answers.
+- **Adversarial recall: 98.9%**  --  system reliably finds relevant context even for trick questions. 47.8% accuracy on correctly refusing unanswerable questions.
 - **Infrastructure.** Flywheel runs locally on markdown files with SQLite. Mem0 requires Redis + Qdrant. Zep requires a cloud service.
 
 Source: [`demos/locomo/`](../demos/locomo/) | [`packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/locomo-bench.test.ts)
@@ -440,15 +440,15 @@ To regenerate baselines: `npx tsx packages/mcp-server/test/graph-quality/generat
 
 ## Live AI Testing
 
-Unit tests prove handlers work. **Live AI tests prove the product works** — that an AI agent given a natural-language question and a vault of notes will discover the right tools, call them in the right order, and get the answer.
+Unit tests prove handlers work. **Live AI tests prove the product works**  --  that an AI agent given a natural-language question and a vault of notes will discover the right tools, call them in the right order, and get the answer.
 
 This is a fundamentally different claim than "the handler returns valid JSON." It tests:
-- **Tool descriptions** — is the description clear enough that Claude picks the right tool?
-- **Response shapes** — does the AI get enough information to answer without extra calls?
-- **Tool composition** — does Claude chain multiple tools correctly in a multi-step workflow?
-- **Regression detection** — if a code change makes Claude stop using a tool or pick a worse one, the test catches it
+- **Tool descriptions**  --  is the description clear enough that Claude picks the right tool?
+- **Response shapes**  --  does the AI get enough information to answer without extra calls?
+- **Tool composition**  --  does Claude chain multiple tools correctly in a multi-step workflow?
+- **Regression detection**  --  if a code change makes Claude stop using a tool or pick a worse one, the test catches it
 
-Every test is a real `claude -p` session against a demo vault. Claude gets `--strict-mcp-config` (no filesystem, no web — vault tools only). The output is captured as `stream-json` JSONL, and Python analyzers extract every `tool_use` event to compute adoption rates, tool sequences, and category breakdowns. Clean state between runs: StateDb deleted, write operations git-restored. Nothing is mocked.
+Every test is a real `claude -p` session against a demo vault. Claude gets `--strict-mcp-config` (no filesystem, no web  --  vault tools only). The output is captured as `stream-json` JSONL, and Python analyzers extract every `tool_use` event to compute adoption rates, tool sequences, and category breakdowns. Clean state between runs: StateDb deleted, write operations git-restored. Nothing is mocked.
 
 This kind of test is valuable because it measures actual tool selection and composition, not just handler correctness.
 
@@ -456,9 +456,9 @@ This kind of test is valuable because it measures actual tool selection and comp
 
 | Test Suite | What it proves | Sessions | Result | Script |
 |---|---|---|---|---|
-| **Per-tool coverage** | Claude discovers and uses each default-visible tool | 77 | See [latest results](#per-tool-coverage) | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
+| **Per-tool coverage** | Claude discovers and uses each default-visible tool | 65 | See [latest results](#per-tool-coverage) | [`run-coverage-test.sh`](../demos/run-coverage-test.sh) |
 | **Bundle adoption** | Claude finds the right tools for each of 12 bundles | 36 (12 × 3 runs) | 11/12 at 100% | [`run-bundle-test.sh`](../demos/run-bundle-test.sh) |
-| **Sequential workflow** | 9-beat workflow (retrieval + learning loop + operational) where each beat builds on previous vault state | 9 beats | — | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
+| **Sequential workflow** | 9-beat workflow (retrieval + learning loop + operational) where each beat builds on previous vault state | 9 beats |  --  | [`run-demo-test.sh`](../demos/run-demo-test.sh) |
 | **HotpotQA benchmark** | End-to-end retrieval quality on HotpotQA multi-hop questions | 500 questions | 92.4% recall | [`hotpotqa/run-benchmark.sh`](../demos/hotpotqa/run-benchmark.sh) |
 | **LoCoMo benchmark** | Retrieval + answer accuracy on long-term conversational memory (5 categories) | 695 scored questions | 84.3% evidence recall, 58.7% accuracy | [`locomo/run-benchmark.sh`](../demos/locomo/run-benchmark.sh) |
 
@@ -474,11 +474,11 @@ These are product quality signals that no amount of handler unit testing can det
 
 ### Design Decisions
 
-- **`--strict-mcp-config`** — prevents Claude from bypassing vault tools with raw filesystem access. If a tool can't answer the question, the test reveals it.
-- **`--no-session-persistence`** — each run starts fresh. No cached tool schemas from prior sessions.
-- **`--permission-mode bypassPermissions`** — avoids interactive approval for write operations.
-- **Seeded RNG** — HotpotQA benchmark uses `SEED=42` and a ground-truth file for reproducible comparisons across runs.
-- **Python analyzers** — `analyze-bundle-test.py`, `analyze-coverage-test.py`, `analyze-demo-test.py` parse JSONL and generate markdown reports with per-tool adoption rates, tool sequences, and category breakdowns.
+- **`--strict-mcp-config`**  --  prevents Claude from bypassing vault tools with raw filesystem access. If a tool can't answer the question, the test reveals it.
+- **`--no-session-persistence`**  --  each run starts fresh. No cached tool schemas from prior sessions.
+- **`--permission-mode bypassPermissions`**  --  avoids interactive approval for write operations.
+- **Seeded RNG**  --  HotpotQA benchmark uses `SEED=42` and a ground-truth file for reproducible comparisons across runs.
+- **Python analyzers**  --  `analyze-bundle-test.py`, `analyze-coverage-test.py`, `analyze-demo-test.py` parse JSONL and generate markdown reports with per-tool adoption rates, tool sequences, and category breakdowns.
 
 ### Tool Adoption Results
 
@@ -627,13 +627,13 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 ## Overall
 
 - **Bundles adopted:** 12/12
-- **Distinct flywheel tools used:** 20/77
+- **Distinct flywheel tools used:** 20/65
 
 <!-- END BUNDLE TEST RESULTS -->
 
 ### Per-Tool Coverage
 
-Each default-visible tool tested with a targeted prompt against the carter-strategy vault. The coverage surface is the 77 tools visible in the `full` preset (`discover_tools` is disclosure-only and excluded). Results below are from the last coverage run — rerun `demos/run-coverage-test.sh` to regenerate.
+Each default-visible tool tested with a targeted prompt against the carter-strategy vault. The coverage surface is the 65 tools visible in the `full` preset (`discover_tools` is disclosure-only and excluded). Results below are from the last coverage run (pre-T31 rationalization)  --  rerun `demos/run-coverage-test.sh` to regenerate with the current 65-tool surface.
 
 <!-- BEGIN COVERAGE TEST RESULTS -->
 # Tool Coverage Test Report
@@ -776,12 +776,11 @@ Each default-visible tool tested with a targeted prompt against the carter-strat
 
 ## Summary
 
-**Coverage: 64/69 tools adopted (92%)** — from a 69-tool run prior to diagnostics expansion. The current coverage surface is 77 default-visible tools; rerun to get updated numbers.
+**Coverage: 64/69 tools adopted (92%)**  --  from a 69-tool run prior to diagnostics expansion. The current coverage surface is 65 default-visible tools (post-T31 rationalization); rerun to get updated numbers.
 
 ### Tools Never Adopted
 
 - `get_link_path` (graph)
-- `get_strong_connections` (graph)
 - `memory` (memory)
 - `merge_entities` (note-ops)
 - `schema_conventions` (schema)

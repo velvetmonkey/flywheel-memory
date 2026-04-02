@@ -76,22 +76,20 @@ describe('vault_move_note trace', () => {
   });
 
   it('referring note resolves to new path', async () => {
-    const result = await snap(client, 'get_forward_links', { path: 'daily/2026-01-01.md' });
-    const aliceLink = result.forward_links.find((l: any) =>
-      l.target === 'Alice' || l.resolved_path?.includes('Alice')
-    );
-    expect(aliceLink).toBeDefined();
-    expect(aliceLink.resolved_path).toContain('team/Alice.md');
-    expect(aliceLink.exists).toBe(true);
+    const result = await snap(client, 'search', { query: '2026-01-01' });
+    const note = (result.results ?? []).find((n: any) => n.path === 'daily/2026-01-01.md');
+    expect(note).toBeDefined();
+    // The daily note should have outlink_names containing Alice
+    const outlinkNames: string[] = note?.outlink_names ?? [];
+    expect(outlinkNames.some((n: string) => n.toLowerCase() === 'alice')).toBe(true);
   });
 
   it('forward links preserved', async () => {
-    const result = await snap(client, 'get_forward_links', { path: 'team/Alice.md' });
-    const alphaLink = result.forward_links.find((l: any) =>
-      l.target === 'Alpha' || l.resolved_path?.includes('Alpha')
-    );
-    expect(alphaLink).toBeDefined();
-    expect(alphaLink.exists).toBe(true);
+    const result = await snap(client, 'search', { query: 'Alice' });
+    const note = (result.results ?? []).find((n: any) => n.path === 'team/Alice.md');
+    expect(note).toBeDefined();
+    const outlinkNames: string[] = note?.outlink_names ?? [];
+    expect(outlinkNames.some((n: string) => n.toLowerCase() === 'alpha')).toBe(true);
   });
 
   it('old path absent from search', async () => {

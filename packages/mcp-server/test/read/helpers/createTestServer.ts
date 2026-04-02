@@ -7,7 +7,6 @@ import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
 import type { VaultIndex } from '../../../src/core/read/types.js';
 import { buildVaultIndex, setIndexState } from '../../../src/core/read/graph.js';
-import { registerGraphTools } from '../../../src/tools/read/graph.js';
 import { registerWikilinkTools } from '../../../src/tools/read/wikilinks.js';
 import { registerHealthTools } from '../../../src/tools/read/health.js';
 import { registerQueryTools } from '../../../src/tools/read/query.js';
@@ -64,12 +63,6 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
   const pipelineActivity = createEmptyPipelineActivity();
 
   // Register all tools
-  registerGraphTools(
-    server,
-    () => currentIndex,
-    () => vaultPath
-  );
-
   registerWikilinkTools(
     server,
     () => currentIndex,

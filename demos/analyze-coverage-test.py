@@ -18,11 +18,9 @@ TOOL_CATEGORY = {
     "vault_add_to_section": "write", "vault_remove_from_section": "write",
     "vault_replace_in_section": "write", "vault_update_frontmatter": "write",
     "vault_create_note": "write", "vault_undo_last_mutation": "write", "policy": "write",
-    "graph_analysis": "graph", "semantic_analysis": "graph", "get_backlinks": "graph",
-    "get_forward_links": "graph", "get_connection_strength": "graph", "list_entities": "graph",
-    "get_link_path": "graph", "get_common_neighbors": "graph", "get_weighted_links": "graph",
-    "get_strong_connections": "graph",
-    "export_graph": "graph",
+    "graph_analysis": "graph", "semantic_analysis": "graph",
+    "get_connection_strength": "graph", "list_entities": "graph",
+    "get_link_path": "graph", "get_common_neighbors": "graph",
     "vault_schema": "schema", "schema_conventions": "schema", "schema_validate": "schema",
     "note_intelligence": "schema", "rename_field": "schema", "migrate_field_values": "schema",
     "rename_tag": "schema",
@@ -37,11 +35,9 @@ TOOL_CATEGORY = {
     "vault_delete_note": "note-ops", "vault_move_note": "note-ops",
     "vault_rename_note": "note-ops", "merge_entities": "note-ops",
     "get_context_around_date": "temporal", "predict_stale_notes": "temporal",
-    "track_concept_evolution": "temporal", "temporal_summary": "temporal",
-    "health_check": "diagnostics", "get_vault_stats": "diagnostics",
-    "get_folder_structure": "diagnostics", "refresh_index": "diagnostics",
-    "get_all_entities": "diagnostics", "get_unlinked_mentions": "diagnostics",
-    "vault_growth": "diagnostics", "vault_activity": "diagnostics",
+    "track_concept_evolution": "temporal",
+    "refresh_index": "diagnostics",
+    "vault_growth": "diagnostics",
     "flywheel_config": "diagnostics", "server_log": "diagnostics",
     "suggest_entity_merges": "diagnostics", "dismiss_merge_suggestion": "diagnostics",
     "vault_init": "diagnostics", "flywheel_doctor": "diagnostics",
@@ -223,7 +219,7 @@ def update_docs(report_content, docs_path):
 
 ### Per-Tool Coverage
 
-Each of 77 tools tested with a targeted prompt against carter-strategy vault.
+Each of 65 tools tested with a targeted prompt against carter-strategy vault.
 
 {begin}
 {report_content}

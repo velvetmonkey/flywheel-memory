@@ -77,7 +77,7 @@ describe('Tool Selection Feedback', () => {
       const id = recordToolSelectionFeedback(stateDb, {
         tool_name: 'search',
         correct: false,
-        expected_tool: 'temporal_summary',
+        expected_tool: 'track_concept_evolution',
         expected_category: 'temporal',
       });
       expect(id).toBeGreaterThan(0);
@@ -86,14 +86,14 @@ describe('Tool Selection Feedback', () => {
       expect(entries.length).toBeGreaterThan(0);
       expect(entries[0].tool_name).toBe('search');
       expect(entries[0].correct).toBe(false);
-      expect(entries[0].expected_tool).toBe('temporal_summary');
+      expect(entries[0].expected_tool).toBe('track_concept_evolution');
       expect(entries[0].source).toBe('explicit');
     });
 
     it('should hydrate from tool_invocation_id', () => {
       // First create an invocation
       const invId = recordToolInvocation(stateDb, {
-        tool_name: 'get_backlinks',
+        tool_name: 'graph_analysis',
         query_context: 'connections to Alice',
         session_id: 'hydrate-test',
       });
@@ -107,7 +107,7 @@ describe('Tool Selection Feedback', () => {
       const entries = getToolSelectionList(stateDb, 10);
       const entry = entries.find(e => e.id === feedbackId);
       expect(entry).toBeDefined();
-      expect(entry!.tool_name).toBe('get_backlinks');
+      expect(entry!.tool_name).toBe('graph_analysis');
       expect(entry!.query_context).toBe('connections to Alice');
       expect(entry!.session_id).toBe('hydrate-test');
       expect(entry!.correct).toBe(true);
@@ -230,7 +230,7 @@ describe('Tool Selection Feedback', () => {
       try {
         recordToolSelectionFeedback(reportDb, { tool_name: 'search', correct: true });
         recordToolSelectionFeedback(reportDb, { tool_name: 'search', correct: false });
-        recordToolSelectionFeedback(reportDb, { tool_name: 'get_backlinks', correct: false });
+        recordToolSelectionFeedback(reportDb, { tool_name: 'graph_analysis', correct: false });
 
         const report = getToolSelectionReport(reportDb, 7);
         expect(report).not.toBeNull();

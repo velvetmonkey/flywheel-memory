@@ -19,7 +19,6 @@ describe('generateInstructions routing', () => {
     const cats = parseEnabledCategories('default,temporal');
     const instructions = generateInstructions(cats);
     expect(instructions).toContain('## Temporal');
-    expect(instructions).toContain('temporal_summary');
     expect(instructions).toContain('track_concept_evolution');
     expect(instructions).toContain('get_context_around_date');
     expect(instructions).toContain('predict_stale_notes');
@@ -106,13 +105,13 @@ describe('tool description contract compliance', () => {
   });
 
   it('activity and growth tools follow contract template', async () => {
-    const activity = await fs.readFile(
-      pathMod.join(__dirname, '../../../src/tools/read/activity.ts'), 'utf-8');
+    const sessionHistory = await fs.readFile(
+      pathMod.join(__dirname, '../../../src/tools/read/sessionHistory.ts'), 'utf-8');
     const metrics = await fs.readFile(
       pathMod.join(__dirname, '../../../src/tools/read/metrics.ts'), 'utf-8');
 
-    expect(activity).toContain('Returns');
-    expect(activity).toContain('Does not');
+    expect(sessionHistory).toContain('Returns');
+    expect(sessionHistory).toContain('Does not');
     expect(metrics).toContain('Returns');
     expect(metrics).toContain('Does not');
   });

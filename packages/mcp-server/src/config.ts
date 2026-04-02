@@ -90,7 +90,7 @@ export const DEPRECATED_ALIASES: Record<string, string> = {
   minimal: 'agent',
   writer: 'agent',       // writer was agent+tasks, agent now includes tasks
   researcher: 'agent',   // use agent,graph for graph exploration
-  backlinks: 'graph',     // get_backlinks moved to graph
+  backlinks: 'graph',     // legacy alias
   structure: 'read',
   append: 'write',
   frontmatter: 'write',
@@ -250,18 +250,13 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_undo_last_mutation: 'write',
   policy: 'write',
 
-  // graph (11 tools) -- structural analysis + link detail + export
+  // graph (6 tools) -- structural analysis + link detail
   graph_analysis: 'graph',
   semantic_analysis: 'graph',
-  get_backlinks: 'graph',
-  get_forward_links: 'graph',
   get_connection_strength: 'graph',
   list_entities: 'graph',
   get_link_path: 'graph',
   get_common_neighbors: 'graph',
-  get_weighted_links: 'graph',
-  get_strong_connections: 'graph',
-  export_graph: 'graph',
 
   // schema (7 tools) -- schema intelligence + migrations
   vault_schema: 'schema',
@@ -302,22 +297,16 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_rename_note: 'note-ops',
   merge_entities: 'note-ops',
 
-  // temporal (4 tools) -- time-based vault intelligence
+  // temporal (3 tools) -- time-based vault intelligence (temporal_summary absorbed into track_concept_evolution)
   get_context_around_date: 'temporal',
   predict_stale_notes: 'temporal',
   track_concept_evolution: 'temporal',
-  temporal_summary: 'temporal',
 
-  // diagnostics (22 tools) -- vault health, stats, config, activity, merges, doctor, trust, benchmark, history, learning report, calibration export, pipeline status, tool selection feedback
-  health_check: 'diagnostics',
+  // diagnostics (16 tools) -- vault health, stats, config, merges, doctor, trust, benchmark, history, learning report, calibration export, pipeline status, tool selection feedback
+  // Retired: health_check, get_vault_stats (absorbed into flywheel_doctor), vault_activity (into vault_session_history), get_folder_structure, get_all_entities, get_unlinked_mentions
   pipeline_status: 'diagnostics',
-  get_vault_stats: 'diagnostics',
-  get_folder_structure: 'diagnostics',
   refresh_index: 'diagnostics',
-  get_all_entities: 'diagnostics',
-  get_unlinked_mentions: 'diagnostics',
   vault_growth: 'diagnostics',
-  vault_activity: 'diagnostics',
   flywheel_config: 'diagnostics',
   server_log: 'diagnostics',
   suggest_entity_merges: 'diagnostics',
@@ -359,15 +348,10 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   // Tier 2 — context-triggered categories + core diagnostics (see TIER_2_TOOL_COUNT)
   graph_analysis: 2,
   semantic_analysis: 2,
-  get_backlinks: 2,
-  get_forward_links: 2,
   get_connection_strength: 2,
   list_entities: 2,
   get_link_path: 2,
   get_common_neighbors: 2,
-  get_weighted_links: 2,
-  get_strong_connections: 2,
-  export_graph: 2,
   suggest_wikilinks: 2,
   validate_links: 2,
   wikilink_feedback: 2,
@@ -382,10 +366,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   get_context_around_date: 2,
   predict_stale_notes: 2,
   track_concept_evolution: 2,
-  temporal_summary: 2,
-  health_check: 2,
   pipeline_status: 2,
-  get_vault_stats: 2,
   refresh_index: 2,
   flywheel_config: 2,
   server_log: 2,
@@ -403,11 +384,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   vault_move_note: 3,
   vault_rename_note: 3,
   merge_entities: 3,
-  get_folder_structure: 3,
-  get_all_entities: 3,
-  get_unlinked_mentions: 3,
   vault_growth: 3,
-  vault_activity: 3,
   suggest_entity_merges: 3,
   dismiss_merge_suggestion: 3,
   vault_init: 3,
@@ -572,12 +549,10 @@ user preferences, project status).`);
     parts.push(`
 ## Graph
 
-Use "get_backlinks" for per-backlink surrounding text (reads source files).
-Use "get_forward_links" for resolved file paths and alias text.
 Use "graph_analysis" for structural queries (hubs, orphans, dead ends).
 Use "get_connection_strength" to measure link strength between two entities.
 Use "get_link_path" to trace the shortest path between any two entities or notes.
-Use "get_strong_connections" to find the strongest or most-connected relationships for an entity.`);
+Use "get_common_neighbors" to find shared connections between two entities.`);
   }
   else if (tieringActive && categories.has('graph')) {
     // Escalation hint handled by unified discover_tools guidance below
@@ -656,12 +631,9 @@ Use "absorb_as_alias" when two names should resolve to the same entity without m
 Search date filters (modified_after/modified_before) find content within a date range.
 Temporal tools analyze *patterns and changes* over time — use them for "what changed" not "what exists":
 
-- "What happened last week/month?" → temporal_summary (activity + entity momentum + maintenance alerts)
-- "How has X changed/evolved?" → track_concept_evolution (entity timeline: links, feedback, category shifts)
+- "How has X changed/evolved?" → track_concept_evolution (entity timeline: links, feedback, category shifts, activity + momentum)
 - "What was I working on around March 15?" → get_context_around_date (notes, entities, activity in a window)
-- "What notes need attention?" → predict_stale_notes (importance × staleness → archive/update/review)
-
-temporal_summary composes the other three — use it for weekly/monthly reviews.`);
+- "What notes need attention?" → predict_stale_notes (importance × staleness → archive/update/review)`);
   }
   else if (tieringActive && categories.has('temporal')) {
     // Escalation hint handled by unified discover_tools guidance below
@@ -671,11 +643,11 @@ temporal_summary composes the other three — use it for weekly/monthly reviews.
     parts.push(`
 ## Diagnostics
 
- - Triage: "health_check" (quick status) → "flywheel_doctor" (active problem detection) → "server_log" (event timeline)
- - Stats: "get_vault_stats" (counts), "vault_growth" (trends over time), "get_folder_structure" (organization)
- - Activity: "vault_activity" (tool usage), "vault_session_history" (session detail), "vault_entity_history" (entity timeline)
+ - Triage: "flywheel_doctor" (diagnosis, health status, or vault metrics via report param) → "server_log" (event timeline)
+ - Stats: "flywheel_doctor report=stats" (counts), "vault_growth" (trends over time)
+ - Activity: "vault_session_history" (session detail), "vault_entity_history" (entity timeline)
  - System: "flywheel_trust_report" (config + boundaries), "flywheel_benchmark" (performance), "flywheel_learning_report" (auto-linking effectiveness)
- - Entities: "suggest_entity_merges" (duplicates), "get_all_entities" (full list), "get_unlinked_mentions" (linking opportunities)
+ - Entities: "suggest_entity_merges" (duplicates), "list_entities" (full list)
  - Maintenance: "refresh_index" (rebuild), "flywheel_config" (settings), "vault_init" (first-time setup)
 
 Use "flywheel_config" to inspect runtime configuration and set "tool_tier_override" to "auto", "full", or "minimal" for this vault.`);

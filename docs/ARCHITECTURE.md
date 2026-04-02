@@ -72,19 +72,18 @@ packages/
 │       │   ├── toolCatalog.ts   # Tool metadata collection for embedding manifest
 │       │   ├── read/            # Read tool registrations
 │       │   │   ├── query.ts     # search (unified: metadata + content + entities)
-│       │   │   ├── graph.ts     # get_backlinks (+ bidirectional), get_forward_links
 │       │   │   ├── graphAdvanced.ts  # get_link_path, get_common_neighbors, get_connection_strength
 │       │   │   ├── graphAnalysis.ts  # graph_analysis (7 modes + centrality + cycles)
+│       │   │   ├── semanticAnalysis.ts # semantic_analysis (clusters, bridges)
 │       │   │   ├── vaultSchema.ts    # vault_schema (unified: overview, field_values, inconsistencies, validate, conventions, incomplete)
 │       │   │   ├── noteIntelligence.ts # note_intelligence (unified: prose_patterns, suggest_frontmatter, suggest_wikilinks, compute, semantic_links)
 │       │   │   ├── primitives.ts     # get_note_structure, get_section_content, find_sections, tasks
-│       │   │   ├── health.ts    # health_check, get_vault_stats, get_folder_structure, flywheel_doctor
-│       │   │   ├── system.ts    # refresh_index, get_all_entities, get_unlinked_mentions
+│       │   │   ├── health.ts    # flywheel_doctor, pipeline_status, server_log
+│       │   │   ├── system.ts    # refresh_index
 │       │   │   ├── wikilinks.ts # suggest_wikilinks, validate_links (+ typo detection)
 │       │   │   ├── migrations.ts # rename_field, migrate_field_values
-│       │   │   ├── temporalAnalysis.ts # temporal_summary, predict_stale_notes, track_concept_evolution, get_context_around_date
-│       │   │   ├── brief.ts         # brief (startup context assembly)
-│       │   │   └── query.ts         # search (unified knowledge retrieval)
+│       │   │   ├── temporalAnalysis.ts # predict_stale_notes, track_concept_evolution, get_context_around_date
+│       │   │   └── brief.ts         # brief (startup context assembly)
 │       │   └── write/           # Write tool registrations
 │       │       ├── mutations.ts # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
 │       │       ├── tasks.ts     # vault_toggle_task, vault_add_task
@@ -267,16 +266,16 @@ In addition to note-level embeddings, Flywheel builds entity-level embeddings fo
 
 **Storage:** `entity_embeddings` table in StateDb (path, name, vector, content hash).
 
-**Loading:** `loadEntityEmbeddingsToMemory()` loads all entity embeddings into an in-memory Map at startup. Layer 9 scoring queries this Map directly — no database access in the hot path (<1ms for 500 entities).
+**Loading:** `loadEntityEmbeddingsToMemory()` loads all entity embeddings into an in-memory Map at startup. Layer 9 scoring queries this Map directly  --  no database access in the hot path (<1ms for 500 entities).
 
 **Incremental updates:** The file watcher detects when an entity's backing note changes and regenerates its embedding. Entity additions and removals are handled on index rebuild.
 
 **Integration points:**
-- **Layer 9 scoring** in `suggestRelatedLinks()` — cosine similarity against in-memory entity embeddings
-- **Semantic analysis** — `semantic_analysis` tool (clusters, bridges)
-- **Semantic note intelligence** — `semantic_links` mode in `note_intelligence`
-- **Preflight duplicate detection** — `vault_create_note` checks semantic similarity before creation
-- **Broken link fallback** — `validate_links` uses embedding similarity to suggest corrections
+- **Layer 9 scoring** in `suggestRelatedLinks()`  --  cosine similarity against in-memory entity embeddings
+- **Semantic analysis**  --  `semantic_analysis` tool (clusters, bridges)
+- **Semantic note intelligence**  --  `semantic_links` mode in `note_intelligence`
+- **Preflight duplicate detection**  --  `vault_create_note` checks semantic similarity before creation
+- **Broken link fallback**  --  `validate_links` uses embedding similarity to suggest corrections
 
 ---
 
@@ -292,11 +291,11 @@ Every note's outlinks are parsed at index time. The backlink map inverts this: f
 
 ### Forward Links
 
-Each `VaultNote` stores its outlinks with: target string, optional alias, line number. The `get_forward_links` tool resolves each target against the entity map to determine if the target exists.
+Each `VaultNote` stores its outlinks with: target string, optional alias, line number. The graph index resolves each target against the entity map to determine if the target exists.
 
 ### Hub Detection
 
-Hub scores are computed using **eigenvector centrality** — a power-iteration algorithm (50 iterations) on the bidirectional wikilink graph. Scores are scaled 0–100 and stored in `entities.hub_score`. This replaces simple backlink counting: a note linked by other well-connected notes scores higher than one with many links from peripheral notes. Hub scores are exported to StateDb for use by the auto-wikilink scoring system (Layer 7).
+Hub scores are computed using **eigenvector centrality**  --  a power-iteration algorithm (50 iterations) on the bidirectional wikilink graph. Scores are scaled 0-100 and stored in `entities.hub_score`. This replaces simple backlink counting: a note linked by other well-connected notes scores higher than one with many links from peripheral notes. Hub scores are exported to StateDb for use by the auto-wikilink scoring system (Layer 7).
 
 ### Path Finding
 
@@ -326,12 +325,12 @@ When Claude writes content through any mutation tool (`vault_add_to_section`, `v
 
 ### Implicit Entity Detection
 
-Pattern-based detection for prospective entities — on by default as the final stage of write-time auto-linking. Six configurable patterns:
+Pattern-based detection for prospective entities  --  on by default as the final stage of write-time auto-linking. Six configurable patterns:
 
 - **Multi-word proper nouns** (e.g., "Marcus Johnson", "Project Alpha")
 - **Single capitalized words** after lowercase text (e.g., "discussed with Marcus yesterday")
 - **CamelCase compounds** (e.g., TypeScript, HuggingFace)
-- **Acronyms** — 3–5 letter ALL-CAPS tokens (e.g., LLM, API)
+- **Acronyms**  --  3-5 letter ALL-CAPS tokens (e.g., LLM, API)
 - **Quoted terms** (e.g., `"Turbopump"` becomes `[[Turbopump]]`)
 - **Ticket references** (e.g., FW-123, PROJ-456)
 
@@ -343,11 +342,11 @@ Separately from write-time auto-linking, the `suggest_wikilinks` tool surfaces p
 
 - **Dead-link target matching:** Entities referenced by existing `[[wikilinks]]` in the vault but with no backing note. Targets with ≥3 backlinks are marked `confidence: 'high'`; those with 2 are `'medium'`.
 - **Cross-reference boost:** When an implicit pattern match coincides with a dead-link target, confidence is elevated to `'high'` and source is marked `'both'`.
-- **Scored suggestions:** With `detail: true`, `suggest_wikilinks` returns a per-layer scoring breakdown including Layer 3.5 fuzzy matching — token-level Levenshtein (≥80% similarity, ≥4 chars) and whole-term collapsed matching (`"turbo-pump"` = `"turbopump"` = `"turbo pump"`). Strictness modes (conservative / balanced / aggressive) control fuzzy bonus weights.
+- **Scored suggestions:** With `detail: true`, `suggest_wikilinks` returns a per-layer scoring breakdown including Layer 3.5 fuzzy matching  --  token-level Levenshtein (≥80% similarity, ≥4 chars) and whole-term collapsed matching (`"turbo-pump"` = `"turbopump"` = `"turbo pump"`). Strictness modes (conservative / balanced / aggressive) control fuzzy bonus weights.
 
 ### Outgoing Link Suggestions
 
-Write tools can append suggested outgoing links when enabled (`suggestOutgoingLinks: true`). For example, after adding a note about "React migration", the tool might append: `→ [[React]], [[Migration Plan]]`. Suggestions are off by default — enable them for daily notes, journals, meeting logs, or any capture-heavy context where you want the graph to grow organically. Auto-wikilinks (inline `[[linking]]`) are always on regardless of this setting.
+Write tools can append suggested outgoing links when enabled (`suggestOutgoingLinks: true`). For example, after adding a note about "React migration", the tool might append: `→ [[React]], [[Migration Plan]]`. Suggestions are off by default  --  enable them for daily notes, journals, meeting logs, or any capture-heavy context where you want the graph to grow organically. Auto-wikilinks (inline `[[linking]]`) are always on regardless of this setting.
 
 ---
 
@@ -396,7 +395,7 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 
 ### Backup & Recovery
 
-Flywheel's backup system is designed to protect accumulated feedback data — the signals that take weeks to build and can't be regenerated from markdown alone.
+Flywheel's backup system is designed to protect accumulated feedback data  --  the signals that take weeks to build and can't be regenerated from markdown alone.
 
 **Rotated backups (3 copies):** After each successful startup, Flywheel creates a WAL-safe backup using SQLite's backup API (not `fs.copyFileSync`, which can copy inconsistent state during WAL writes). Existing backups are rotated: `.backup` → `.backup.1` → `.backup.2` → `.backup.3`. The oldest is dropped. This means you always have at least one backup that predates the current session.
 
@@ -406,7 +405,7 @@ Flywheel's backup system is designed to protect accumulated feedback data — th
 1. Preserves the corrupted file as `state.db.corrupt`
 2. Creates a fresh database
 3. Attempts to recover 9 high-value tables from all available sources (newest first): `.backup`, `.backup.1`, `.backup.2`, `.backup.3`, `.corrupt`
-4. Merges rows across all sources using `INSERT OR IGNORE` — each successive source fills in rows the previous ones didn't cover
+4. Merges rows across all sources using `INSERT OR IGNORE`  --  each successive source fills in rows the previous ones didn't cover
 
 The salvaged tables are: `wikilink_feedback`, `wikilink_applications`, `suggestion_events`, `wikilink_suppressions`, `note_links`, `note_link_history`, `memories`, `session_summaries`, `corrections`.
 
@@ -490,13 +489,13 @@ Every write tool follows the same pipeline:
 7. **Outgoing link suggestions** -- Appends suggested related links based on content (disabled by default, opt-in via `suggestOutgoingLinks: true`)
 8. **Content formatting** -- Applies format (plain, bullet, task, numbered, timestamp-bullet)
 9. **Section insertion** -- Inserts at position (append/prepend) with list nesting preservation
-10. **Guardrails** -- Output validation (warn/strict/off modes). Write errors use `DiagnosticError` for structured diagnostics — includes closest match to target section, per-line analysis of the content, and actionable fix suggestions on `MutationResult.diagnostic`
+10. **Guardrails** -- Output validation (warn/strict/off modes). Write errors use `DiagnosticError` for structured diagnostics  --  includes closest match to target section, per-line analysis of the content, and actionable fix suggestions on `MutationResult.diagnostic`
 11. **File write** -- Writes back with frontmatter via `gray-matter`
 12. **Git commit** -- Optional auto-commit with `[Flywheel:*]` prefix
 
 ### Content Hash Conflict Detection
 
-Every write path checks for concurrent edits using SHA-256 content hashes (truncated to 16 hex chars). The `content_hashes` table stores the last-known hash for each file. Before writing, the system compares the stored hash against the current file content. If they differ — indicating another process modified the file — the write succeeds but returns a `write_conflict` warning via `ValidationWarning[]` on `MutationResult.warnings`.
+Every write path checks for concurrent edits using SHA-256 content hashes (truncated to 16 hex chars). The `content_hashes` table stores the last-known hash for each file. Before writing, the system compares the stored hash against the current file content. If they differ  --  indicating another process modified the file  --  the write succeeds but returns a `write_conflict` warning via `ValidationWarning[]` on `MutationResult.warnings`.
 
 ### Move and Rename
 
@@ -604,7 +603,7 @@ Controlled by `FLYWHEEL_TOOL_ROUTING`:
 | Mode | Behaviour |
 |------|-----------|
 | `pattern` | Regex activation only |
-| `hybrid` | Pattern + semantic signals combined (default when all categories loaded — `full` or `auto`) |
+| `hybrid` | Pattern + semantic signals combined (default when all categories loaded  --  `full` or `auto`) |
 | `semantic` | Semantic-only for hybrid search; regex fallback elsewhere |
 
 Both signal types are unioned. Per category, the highest tier from either signal wins.
@@ -683,5 +682,5 @@ export function doWork(): void {
 
 ### Enforced by
 
-- `singleton-access.test.ts` — grep-based test that fails if module-level variables are accessed outside their getter/setter functions
-- `singleton-stress.test.ts` — concurrent interleaving test that detects cross-vault data bleed
+- `singleton-access.test.ts`  --  grep-based test that fails if module-level variables are accessed outside their getter/setter functions
+- `singleton-stress.test.ts`  --  concurrent interleaving test that detects cross-vault data bleed

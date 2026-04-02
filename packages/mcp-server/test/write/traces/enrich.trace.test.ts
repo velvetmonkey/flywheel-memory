@@ -81,7 +81,7 @@ describe('vault_init enrich trace', () => {
       console.warn('Enrichment did not apply wikilinks — entity matching threshold not met');
       return;
     }
-    const result = await snap(client, 'get_forward_links', { path: 'daily/2026-01-01.md' });
+    const result = await snap(client, 'search', { query: 'daily/2026-01-01.md' }).then((r: any) => ({ forward_links: r.notes?.[0]?.outlinks || [], forward_link_count: r.notes?.[0]?.outlink_count || 0 }));
     const aliceLink = result.forward_links.find((l: any) =>
       l.target === 'Alice' || l.resolved_path?.includes('Alice')
     );
@@ -94,7 +94,7 @@ describe('vault_init enrich trace', () => {
       console.warn('Enrichment did not apply wikilinks — entity matching threshold not met');
       return;
     }
-    const result = await snap(client, 'get_backlinks', { path: 'people/Alice.md' });
+    const result = await snap(client, 'search', { query: 'people/Alice.md' }).then((r: any) => ({ backlinks: (r.notes?.[0]?.backlinks || []).map((b: any) => ({ source: b.path || b.note, ...b })), backlink_count: r.notes?.[0]?.backlink_count || 0 }));
     const backlinkPaths = result.backlinks.map((b: any) => b.source);
     expect(backlinkPaths).toContain('daily/2026-01-01.md');
   });

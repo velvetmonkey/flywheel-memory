@@ -1,5 +1,5 @@
 /**
- * Tests for health_check — including unhealthy/degraded paths.
+ * Tests for flywheel_doctor report=health (formerly health_check) and report=diagnosis.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
@@ -13,7 +13,7 @@ import { setEmbeddingsDatabase, setEmbeddingsBuildState } from '../../../src/cor
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 
-describe('health_check', () => {
+describe('flywheel_doctor report=health (formerly health_check)', () => {
   let context: TestServerContext;
   let client: TestClient;
 
@@ -32,7 +32,7 @@ describe('health_check', () => {
   });
 
   test('returns healthy status on valid vault', async () => {
-    const result = await client.callTool('health_check', {});
+    const result = await client.callTool('flywheel_doctor', { report: 'health' });
     expect(result.content).toBeDefined();
     const data = JSON.parse(result.content[0].text);
     expect(data.status).toBeDefined();
@@ -42,7 +42,7 @@ describe('health_check', () => {
   });
 
   test('returns structured output with expected fields', async () => {
-    const result = await client.callTool('health_check', {});
+    const result = await client.callTool('flywheel_doctor', { report: 'health' });
     const data = JSON.parse(result.content[0].text);
     expect(data).toHaveProperty('status');
     expect(data).toHaveProperty('recommendations');
@@ -52,13 +52,13 @@ describe('health_check', () => {
 
   test('does not throw ReferenceError on database integrity check', async () => {
     // This test verifies the fix for the `overall` variable bug.
-    // The health_check handler should never throw a ReferenceError —
+    // The handler should never throw a ReferenceError —
     // even if the database integrity check fails, it should return
     // a structured response with status 'unhealthy'.
     //
     // We can't easily mock the SQLite pragma in this test setup,
     // but we verify the handler completes without throwing.
-    const result = await client.callTool('health_check', {});
+    const result = await client.callTool('flywheel_doctor', { report: 'health' });
     expect(result.content).toBeDefined();
     expect(result.isError).toBeFalsy();
 
@@ -68,23 +68,23 @@ describe('health_check', () => {
   });
 
   test('database integrity section exists in response', async () => {
-    const result = await client.callTool('health_check', {});
+    const result = await client.callTool('flywheel_doctor', { report: 'health' });
     const data = JSON.parse(result.content[0].text);
     // The database check ran without error (dbIntegrityFailed = false)
     // so status should NOT be 'unhealthy' on a valid test vault
     expect(data.status).not.toBe('unhealthy');
   });
 
-  test('summary mode omits full-scan dead-link fields', async () => {
-    const result = await client.callTool('health_check', { mode: 'summary' });
+  test('summary detail omits full-scan dead-link fields', async () => {
+    const result = await client.callTool('flywheel_doctor', { report: 'health', detail: 'summary' });
     const data = JSON.parse(result.content[0].text);
 
     expect(data).not.toHaveProperty('dead_link_count');
     expect(data).not.toHaveProperty('top_dead_link_targets');
   });
 
-  test('full mode includes dead-link fields', async () => {
-    const result = await client.callTool('health_check', { mode: 'full' });
+  test('full detail includes dead-link fields', async () => {
+    const result = await client.callTool('flywheel_doctor', { report: 'health', detail: 'full' });
     const data = JSON.parse(result.content[0].text);
 
     expect(data).toHaveProperty('dead_link_count');
@@ -120,7 +120,7 @@ describe('health_check', () => {
     stateDb.db.prepare('UPDATE index_events SET timestamp = ? WHERE trigger = ?')
       .run(now - watcherAgoSeconds * 1000, 'watcher');
 
-    const result = await client.callTool('health_check', {});
+    const result = await client.callTool('flywheel_doctor', { report: 'health' });
     const data = JSON.parse(result.content[0].text);
 
     expect(data.index_age_seconds).toBeGreaterThanOrEqual(rebuildAgoSeconds - 5);

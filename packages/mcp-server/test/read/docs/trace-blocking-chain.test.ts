@@ -49,17 +49,18 @@ describe('End-to-End Blocking Chain Trace', () => {
     console.log('Status:', propData.frontmatter?.status);
     console.log('Phase:', propData.frontmatter?.phase);
 
-    // Step 2: Get forward links from Propulsion System to find dependencies
-    console.log('\n--- STEP 2: Get forward links from Propulsion System ---');
-    const propForward = await client.callTool({
-      name: 'get_forward_links',
-      arguments: { path: 'systems/propulsion/Propulsion System.md' }
+    // Step 2: Search for Propulsion System to find dependencies via outlinks
+    console.log('\n--- STEP 2: Search for Propulsion System dependencies ---');
+    const propSearch = await client.callTool({
+      name: 'search',
+      arguments: { query: 'Propulsion System', limit: 1 }
     });
-    const propForwardData = JSON.parse((propForward.content as any)[0].text);
-    console.log('Forward links count:', propForwardData.links?.length || 0);
+    const propSearchData = JSON.parse((propSearch.content as any)[0].text);
+    const propNote = propSearchData.notes?.[0];
+    console.log('Outlinks count:', propNote?.outlink_count || 0);
 
-    // Find Turbopump in forward links
-    const turbopumpLink = propForwardData.links?.find((l: any) =>
+    // Check if Turbopump appears in outlinks
+    const turbopumpLink = propNote?.outlinks?.find((l: any) =>
       l.target?.includes('Turbopump') || l.path?.includes('Turbopump')
     );
     console.log('Links to Turbopump:', turbopumpLink ? 'YES' : 'NO');

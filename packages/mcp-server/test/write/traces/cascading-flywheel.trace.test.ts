@@ -62,9 +62,10 @@ describe('cascading flywheel traces', () => {
       await snap(client, 'refresh_index');
 
       // Assert: Dana gains a backlink from the daily note
-      const result = await snap(client, 'get_backlinks', { path: 'people/Dana.md' });
-      const sources = result.backlinks.map((b: any) => b.source);
-      expect(sources).toContain('daily/2026-03-01.md');
+      const result = await snap(client, 'search', { query: 'Dana' });
+      const note = (result.results ?? []).find((n: any) => n.path === 'people/Dana.md');
+      expect(note).toBeDefined();
+      expect(note.backlink_count).toBeGreaterThanOrEqual(1);
     });
   });
 

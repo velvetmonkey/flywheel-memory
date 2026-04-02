@@ -2,7 +2,7 @@
 /**
  * Flywheel Memory - MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.
  *
- * 78 declared tools across 12 categories (see TOTAL_TOOL_COUNT in config.ts)
+ * 66 declared tools across 12 categories (see TOTAL_TOOL_COUNT in config.ts)
  * - policy (unified: list, validate, preview, execute, author, revise)
  * - Temporal tools absorbed into search (modified_after/modified_before) + get_vault_stats (recent_activity)
  * - Dropped: policy_diff, policy_export, policy_import, get_contemporaneous_notes
@@ -12,7 +12,6 @@
  * - schema_conventions (extracted: conventions, incomplete, suggest_values)
  * - schema_validate (extracted: validate, missing)
  * - note_intelligence (unified: prose_patterns, suggest_frontmatter, wikilinks, compute, semantic_links)
- * - get_backlinks (absorbed find_bidirectional_links via include_bidirectional param)
  * - validate_links (absorbed find_broken_links via typos_only param)
  */
 

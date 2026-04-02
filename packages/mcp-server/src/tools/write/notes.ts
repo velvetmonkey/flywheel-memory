@@ -232,7 +232,7 @@ export function registerNoteTools(
   // ========================================
   server.tool(
     'vault_delete_note',
-    'Use when permanently removing a note from the vault. Produces a file deletion with optional git commit. Returns deletion confirmation with path. Does not update backlinks in other notes — orphaned references may remain.',
+    'Use when permanently removing a note. Produces a file deletion with optional git commit for undo. Returns deletion confirmation with path. Caution: does not clean up backlinks — orphaned [[references]] in other notes will remain as dead links.',
     {
       path: z.string().describe('Vault-relative path to the note to delete'),
       confirm: z.boolean().default(false).describe('Must be true to confirm deletion'),

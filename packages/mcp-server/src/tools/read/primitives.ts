@@ -181,7 +181,7 @@ export function registerPrimitiveTools(
     'find_sections',
     {
       title: 'Find Sections',
-      description: 'Use when scanning for a heading pattern across many notes. Produces a list of matching sections with note path, heading text, and level. Returns total count and paginated results. Does not return section body text — follow up with get_section_content for content.',
+      description: 'Use when scanning for headings across the entire vault. Produces a list of sections matching a regex pattern with note path, heading text, and level. Returns total count and paginated results. Answers: "Which notes have a Status section?" or "Find all ## TODO headings." Does not return section body text — follow up with get_section_content for content.',
       inputSchema: {
         pattern: z.string().describe('Regex pattern to match heading text'),
         folder: z.string().optional().describe('Limit to notes in this folder'),
@@ -357,7 +357,7 @@ export function registerPrimitiveTools(
     'get_link_path',
     {
       title: 'Get Link Path',
-      description: 'Use when tracing how two notes connect through the link graph. Produces the shortest chain of wikilinks between source and target. Returns an ordered path array with intermediate notes. Does not consider semantic similarity — only follows explicit wikilinks.',
+      description: 'Use when tracing how two notes connect. Produces the shortest chain of wikilinks from source to target, showing each intermediate note. Returns an ordered path array. Answers: "What\'s the connection chain between A and B?" Does not consider semantic similarity — only follows explicit wikilinks.',
       inputSchema: {
         from: z.string().describe('Starting note path'),
         to: z.string().describe('Target note path'),
@@ -386,7 +386,7 @@ export function registerPrimitiveTools(
     'get_common_neighbors',
     {
       title: 'Get Common Neighbors',
-      description: 'Use when finding shared context between two notes. Produces a list of notes that both specified notes link to or are linked from. Returns common neighbor paths and directions. Does not compute similarity scores — pair with get_connection_strength for numeric measures.',
+      description: 'Use when finding what two notes have in common. Produces shared backlinks and forward links between two specified notes — the notes they both link to or are both linked from. Returns common neighbor paths with link directions. Answers: "How are these two notes related through shared connections?"',
       inputSchema: {
         note_a: z.string().describe('First note path'),
         note_b: z.string().describe('Second note path'),

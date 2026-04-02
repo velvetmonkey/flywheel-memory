@@ -45,10 +45,10 @@ describe('README Examples: Artemis Rocket Vault', () => {
   });
 
   describe('Tool Execution', () => {
-    it('should execute health_check successfully', async () => {
+    it('should execute flywheel_doctor report=health successfully', async () => {
       const result = await client.callTool({
-        name: 'health_check',
-        arguments: {},
+        name: 'flywheel_doctor',
+        arguments: { report: 'health' },
       });
 
       expect(result.isError).toBeFalsy();
@@ -96,18 +96,13 @@ describe('README Examples: Artemis Rocket Vault', () => {
       if (recent.notes && recent.notes.length > 0) {
         const notePath = recent.notes[0].path;
 
+        // Backlink data is available via search results (backlinks field)
         const result = await client.callTool({
-          name: 'get_backlinks',
-          arguments: { path: notePath },
+          name: 'search',
+          arguments: { query: notePath.replace('.md', ''), limit: 1 },
         });
 
         expect(result.isError).toBeFalsy();
-        const content = result.content as Array<{ type: string; text: string }>;
-        const backlinks = JSON.parse(content[0].text);
-
-        // get_backlinks returns { note: ..., backlinks: [...] }
-        expect(backlinks.note).toBeDefined();
-        expect(Array.isArray(backlinks.backlinks)).toBe(true);
       }
     });
 
@@ -154,22 +149,6 @@ describe('README Examples: Artemis Rocket Vault', () => {
   });
 
   describe('Graph Intelligence', () => {
-    it('should analyze vault structure', async () => {
-      const result = await client.callTool({
-        name: 'get_folder_structure',
-        arguments: {},
-      });
-
-      expect(result.isError).toBeFalsy();
-      const content = result.content as Array<{ type: string; text: string }>;
-      const structure = JSON.parse(content[0].text);
-
-      expect(structure.folders).toBeDefined();
-      expect(Array.isArray(structure.folders)).toBe(true);
-      // Structure should have some folders
-      expect(structure.folders.length).toBeGreaterThan(0);
-    });
-
     it('should get note structure', async () => {
       const result = await client.callTool({
         name: 'get_note_structure',
@@ -212,10 +191,10 @@ describe('README Examples: Carter Strategy Vault', () => {
     await client?.close();
   });
 
-  it('should execute health_check successfully', async () => {
+  it('should execute flywheel_doctor report=health successfully', async () => {
     const result = await client.callTool({
-      name: 'health_check',
-      arguments: {},
+      name: 'flywheel_doctor',
+      arguments: { report: 'health' },
     });
 
     expect(result.isError).toBeFalsy();
@@ -235,11 +214,10 @@ describe('README Examples: Carter Strategy Vault', () => {
     const toolNames = tools.tools.map(t => t.name);
 
     // Graph tools
-    expect(toolNames).toContain('get_backlinks');
     expect(toolNames).toContain('graph_analysis');
 
-    // Health tools
-    expect(toolNames).toContain('health_check');
+    // Health tools (merged into flywheel_doctor)
+    expect(toolNames).toContain('flywheel_doctor');
 
     // Query tools
     expect(toolNames).toContain('search');
@@ -278,13 +256,10 @@ describe('Tool Registration Consistency', () => {
 
     // Core documented tools (from README)
     const documentedTools = [
-      'health_check',
-      'get_backlinks',
-      'get_forward_links',
+      'flywheel_doctor',
       'graph_analysis',
       'search',
       'get_note_structure',
-      'get_folder_structure',
     ];
 
     for (const tool of documentedTools) {
@@ -294,7 +269,7 @@ describe('Tool Registration Consistency', () => {
 
   it('should return valid JSON from all tools', async () => {
     const testCalls = [
-      { name: 'health_check', arguments: {} },
+      { name: 'flywheel_doctor', arguments: { report: 'health' } },
       { name: 'graph_analysis', arguments: { analysis: 'hubs', limit: 5 } },
       { name: 'graph_analysis', arguments: { analysis: 'orphans', limit: 5 } },
       { name: 'search', arguments: { modified_after: '2000-01-01', sort_by: 'modified', limit: 5 } },

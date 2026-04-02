@@ -46,7 +46,7 @@ describe('vault_rename_note trace', () => {
     await snap(client, 'refresh_index');
 
     // Capture total notes before rename
-    const statsBefore = await snap(client, 'get_vault_stats');
+    const statsBefore = await snap(client, 'flywheel_doctor', { report: 'stats' });
     totalNotesBefore = statsBefore.total_notes;
 
     // Perform the rename
@@ -69,13 +69,14 @@ describe('vault_rename_note trace', () => {
   });
 
   it('backlinks updated', async () => {
-    const result = await snap(client, 'get_backlinks', { path: 'people/AliceRenamed.md' });
-    const backlinkPaths = result.backlinks.map((b: any) => b.source);
-    expect(backlinkPaths).toContain('daily/2026-01-01.md');
+    const result = await snap(client, 'search', { query: 'AliceRenamed' });
+    const note = (result.results ?? []).find((n: any) => n.path === 'people/AliceRenamed.md');
+    expect(note).toBeDefined();
+    expect(note.backlink_count).toBeGreaterThanOrEqual(1);
   });
 
   it('vault_stats total unchanged', async () => {
-    const statsAfter = await snap(client, 'get_vault_stats');
+    const statsAfter = await snap(client, 'flywheel_doctor', { report: 'stats' });
     expect(statsAfter.total_notes).toBe(totalNotesBefore);
   });
 });

@@ -55,7 +55,7 @@ Error recovery and diagnostics for Flywheel Memory.
 
 **Fix:** Increase the client's startup timeout. See [Startup Times](SETUP.md#startup-times) for client-specific settings.
 
-**What happens to the server:** When a client times out, it closes the stdio pipes. The Flywheel process receives SIGPIPE (or EPIPE on the next write attempt) and terminates. No data is lost — `.flywheel/state.db` is always in a consistent state, and any partial index build is discarded and rebuilt on next startup.
+**What happens to the server:** When a client times out, it closes the stdio pipes. The Flywheel process receives SIGPIPE (or EPIPE on the next write attempt) and terminates. No data is lost  --  `.flywheel/state.db` is always in a consistent state, and any partial index build is discarded and rebuilt on next startup.
 
 **Prevention:** After the first successful startup, Flywheel caches the graph index in StateDb. Subsequent starts load from cache in <100ms, avoiding the timeout entirely.
 
@@ -103,19 +103,19 @@ git add -A && git commit -m "Initial vault snapshot"
 
 ## StateDb Corruption
 
-The StateDb at `.flywheel/state.db` stores everything Flywheel learns about your vault — feedback on which links are good/bad, suppression data, edge weights, agent memories, session summaries, and corrections. While notes and entities can be rebuilt from markdown in seconds, **these accumulated signals take weeks of use to develop and cannot be regenerated**. Protecting them is critical.
+The StateDb at `.flywheel/state.db` stores everything Flywheel learns about your vault  --  feedback on which links are good/bad, suppression data, edge weights, agent memories, session summaries, and corrections. While notes and entities can be rebuilt from markdown in seconds, **these accumulated signals take weeks of use to develop and cannot be regenerated**. Protecting them is critical.
 
 ### Automatic Protection
 
 Flywheel has four layers of protection:
 
-1. **Rotated WAL-safe backups** — After each successful startup (and every 6 hours during operation), Flywheel creates a backup using SQLite's backup API, which is safe even during active WAL writes. Three rotated copies are kept: `state.db.backup` (most recent), `.backup.1`, `.backup.2`, `.backup.3`. This means even if the most recent backup is bad, older ones are available.
+1. **Rotated WAL-safe backups**  --  After each successful startup (and every 6 hours during operation), Flywheel creates a backup using SQLite's backup API, which is safe even during active WAL writes. Three rotated copies are kept: `state.db.backup` (most recent), `.backup.1`, `.backup.2`, `.backup.3`. This means even if the most recent backup is bad, older ones are available.
 
-2. **Integrity checks** — `PRAGMA quick_check` runs after every startup and every 6 hours in the watcher pipeline. If corruption is detected, recovery triggers immediately.
+2. **Integrity checks**  --  `PRAGMA quick_check` runs after every startup and every 6 hours in the watcher pipeline. If corruption is detected, recovery triggers immediately.
 
-3. **Automatic feedback salvage** — When corruption forces a fresh database, Flywheel automatically recovers feedback data by merging rows from all available sources (newest first): `.backup`, `.backup.1`, `.backup.2`, `.backup.3`, `.corrupt`. Each source fills in rows the previous ones didn't cover. The 9 salvaged tables are: `wikilink_feedback`, `wikilink_applications`, `suggestion_events`, `wikilink_suppressions`, `note_links`, `note_link_history`, `memories`, `session_summaries`, `corrections`.
+3. **Automatic feedback salvage**  --  When corruption forces a fresh database, Flywheel automatically recovers feedback data by merging rows from all available sources (newest first): `.backup`, `.backup.1`, `.backup.2`, `.backup.3`, `.corrupt`. Each source fills in rows the previous ones didn't cover. The 9 salvaged tables are: `wikilink_feedback`, `wikilink_applications`, `suggestion_events`, `wikilink_suppressions`, `note_links`, `note_link_history`, `memories`, `session_summaries`, `corrections`.
 
-4. **Zero-byte guard** — If `state.db` is 0 bytes (e.g., native module compilation failure), it's deleted and rebuilt.
+4. **Zero-byte guard**  --  If `state.db` is 0 bytes (e.g., native module compilation failure), it's deleted and rebuilt.
 
 ### Files in `.flywheel/`
 
@@ -154,25 +154,24 @@ rm -f /path/to/vault/.flywheel/state.db-wal /path/to/vault/.flywheel/state.db-sh
 # Restart
 ```
 
-**Manual Option 2: Full rebuild** (last resort — loses learned signals)
+**Manual Option 2: Full rebuild** (last resort  --  loses learned signals)
 
 ```bash
 rm -rf /path/to/vault/.flywheel/
-# Restart — rebuilds everything from markdown files
+# Restart  --  rebuilds everything from markdown files
 ```
 
 This loses all accumulated signals. Only use if all backups are also corrupted.
 
 ### Diagnostics
 
-- **`health_check`** — Runs `PRAGMA quick_check` to verify database integrity. Reports `healthy`, `degraded`, or `unhealthy` with recommendations.
-- **`flywheel_doctor`** — Comprehensive 12-check diagnostic including database integrity, schema version, index freshness, and more.
+- **`flywheel_doctor`**  --  Comprehensive diagnostic including database integrity check (`PRAGMA quick_check`), schema version, index freshness, and more. Use `report="health"` for a quick status or `report="diagnosis"` for full diagnostics.
 
 ### Prevention
 
 - Don't modify `.flywheel/state.db` directly
 - If running multiple MCP clients pointing at the same vault, be aware of potential SQLite lock contention (WAL mode handles most concurrent reads, but simultaneous writes can conflict)
-- The `.flywheel/` directory is safe to add to `.gitignore` — it's entirely regenerable (but the backup files within it protect your accumulated data, so don't delete them unless you're doing a full reset)
+- The `.flywheel/` directory is safe to add to `.gitignore`  --  it's entirely regenerable (but the backup files within it protect your accumulated data, so don't delete them unless you're doing a full reset)
 
 ---
 
@@ -246,7 +245,7 @@ See [CONFIGURATION.md](CONFIGURATION.md#windows) for the full client config.
 |---------|------------|---------|
 | Native Windows | Windows backslash path | `C:\\Users\\you\\obsidian\\MyVault` |
 | Flywheel inside WSL | Linux path | `/home/you/obsidian/MyVault` |
-| Windows Obsidian opening a WSL vault | `\\wsl$\\...` (for Obsidian/Explorer only — not for `VAULT_PATH`) | `\\wsl$\Ubuntu\home\you\obsidian\MyVault` |
+| Windows Obsidian opening a WSL vault | `\\wsl$\\...` (for Obsidian/Explorer only  --  not for `VAULT_PATH`) | `\\wsl$\Ubuntu\home\you\obsidian\MyVault` |
 
 The `\\wsl$` network share lets Windows Obsidian access files on the WSL filesystem, but Flywheel running inside WSL must use the native Linux path. See [SETUP.md > WSL2](SETUP.md#wsl2-keep-your-vault-on-the-linux-filesystem) for the recommended setup.
 
@@ -255,7 +254,7 @@ The `\\wsl$` network share lets Windows Obsidian access files on the WSL filesys
 Windows drive letters create ambiguity with the `name:path` separator in `FLYWHEEL_VAULTS`. A single-character vault name followed by `:\` looks like a drive letter:
 
 ```
-# Ambiguous — is "C" a vault name or a drive letter?
+# Ambiguous  --  is "C" a vault name or a drive letter?
 FLYWHEEL_VAULTS="C:\Users\you\obsidian\MyVault"
 ```
 
@@ -373,13 +372,13 @@ See [CONFIGURATION.md](CONFIGURATION.md) for preset details.
 
 > "Run a health check"
 
-Returns: vault accessibility, index freshness, periodic note detection, configuration, and recommendations.
+Use `flywheel_doctor` with `report="health"` for a quick status (vault accessibility, index freshness, configuration) or `report="diagnosis"` for comprehensive diagnostics with recommendations.
 
 ### Vault stats
 
-> "Show me vault statistics"
+> "Show me vault stats"
 
-Returns: note count, link count, tag count, orphan count, folder structure, and 7-day activity summary.
+Use `flywheel_doctor` with `report="stats"` for note counts, link totals, most-linked notes, folder distribution, and tag frequency. This replaces the former `get_vault_stats` tool.
 
 ### Server logs
 

@@ -23,6 +23,9 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
   });
 
   afterAll(() => {
+    if (context.stateDb) {
+      context.stateDb.close();
+    }
     const flywheelDir = path.join(FIXTURES_PATH, '.flywheel');
     try {
       if (fs.existsSync(flywheelDir)) {
@@ -139,8 +142,11 @@ describe('flywheel_doctor', () => {
   beforeAll(async () => {
     context = await createTestServer(FIXTURES_PATH);
     client = connectTestClient(context.server);
+    if (!context.stateDb) {
+      throw new Error('stateDb is null — openStateDb failed during test setup');
+    }
     // Inject embeddings DB handle so getEntityEmbeddingsCount() can query
-    setEmbeddingsDatabase(context.stateDb!.db);
+    setEmbeddingsDatabase(context.stateDb.db);
     // Mark embeddings as built so the doctor check includes entity_embedding_coverage
     setEmbeddingsBuildState('complete');
   });
@@ -148,6 +154,9 @@ describe('flywheel_doctor', () => {
   afterAll(() => {
     setEmbeddingsBuildState('none');
     setEmbeddingsDatabase(null as any);
+    if (context.stateDb) {
+      context.stateDb.close();
+    }
     const flywheelDir = path.join(FIXTURES_PATH, '.flywheel');
     try {
       if (fs.existsSync(flywheelDir)) {

@@ -163,11 +163,11 @@ Zero file reads needed.
 
 ### Knowledge Graph Export
 
-The vault's knowledge graph, exported via `export_graph` and visualized with NetworkX + matplotlib:
+The vault's knowledge graph, exported as GraphML via `graph_analysis` and visualized with NetworkX + matplotlib:
 
-![Carter Strategy Knowledge Graph](carter-strategy-graph.png)
+![Acme Corp Knowledge Graph](carter-strategy-acme-graph.png)
 
-**88 nodes** (40 entities + 48 notes) and **434 edges** (wikilinks + weighted connections). People in blue, projects in green, documents in orange, invoices at the periphery. The hub structure shows Acme Corp's central role across the practice.
+Acme Corp subgraph — the largest client hub with its surrounding team members, invoices, projects, and daily notes. Node size reflects connection count; edge colors distinguish link types. The full vault graph and GraphML files are also included in this directory.
 
 **Download and explore yourself:**
 - [carter-strategy.graphml](carter-strategy.graphml) — open in [Gephi](https://gephi.org), [yEd](https://www.yworks.com/products/yed), or [Cytoscape](https://cytoscape.org)

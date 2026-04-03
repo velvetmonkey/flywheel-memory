@@ -11,12 +11,18 @@ tags:
 
 ## Log
 
-## Billable Summary
+## [[Billable Summary]]
 
 | Client | Hours | Rate | Amount |
 |--------|-------|------|--------|
 
 ## Tasks
+
+### Completed Today
+
+### In Progress
+
+### Upcoming
 
 ## Notes
 

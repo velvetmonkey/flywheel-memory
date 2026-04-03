@@ -1,22 +1,22 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-03-29T00:54:27.830Z",
-  "duration_ms": 20380,
+  "timestamp": "2026-04-03T12:48:03.504Z",
+  "duration_ms": 21474,
   "summary": {
-    "round0_f1": 0.515,
-    "roundN_f1": 0.543,
-    "f1_improvement": 0.028,
-    "total_suppressions": 10
+    "round0_f1": 0.491,
+    "roundN_f1": 0.551,
+    "f1_improvement": 0.06,
+    "total_suppressions": 19
   },
   "details": [
     {
       "round": 0,
-      "f1": 0.515,
-      "precision": 0.402,
+      "f1": 0.491,
+      "precision": 0.374,
       "recall": 0.717,
       "mrr": 0.655,
       "truePositives": 43,
-      "falsePositives": 64,
+      "falsePositives": 72,
       "falseNegatives": 17,
       "suppressionCount": 0,
       "feedbackLayerAvgContribution": 0,
@@ -65,20 +65,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -89,8 +89,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -121,32 +121,37 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [],
       "unresolvedLinks": [
         {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
+        {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -207,11 +212,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -223,15 +223,15 @@
     },
     {
       "round": 1,
-      "f1": 0.515,
-      "precision": 0.402,
+      "f1": 0.491,
+      "precision": 0.374,
       "recall": 0.717,
       "mrr": 0.655,
       "truePositives": 43,
-      "falsePositives": 64,
+      "falsePositives": 72,
       "falseNegatives": 17,
-      "suppressionCount": 0,
-      "feedbackLayerAvgContribution": 0,
+      "suppressionCount": 3,
+      "feedbackLayerAvgContribution": 0.0873,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -277,20 +277,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -301,8 +301,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -333,32 +333,41 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
-      "suppressedEntities": [],
+      "suppressedEntities": [
+        "clean-architecture",
+        "dataforge",
+        "mira-okonkwo"
+      ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -419,11 +428,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -435,15 +439,15 @@
     },
     {
       "round": 2,
-      "f1": 0.45,
-      "precision": 0.328,
+      "f1": 0.528,
+      "precision": 0.417,
       "recall": 0.717,
-      "mrr": 0.678,
+      "mrr": 0.659,
       "truePositives": 43,
-      "falsePositives": 88,
+      "falsePositives": 60,
       "falseNegatives": 17,
-      "suppressionCount": 0,
-      "feedbackLayerAvgContribution": 1.2427,
+      "suppressionCount": 6,
+      "feedbackLayerAvgContribution": 0.5077,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -489,20 +493,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -513,8 +517,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -545,32 +549,44 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
-      "suppressedEntities": [],
+      "suppressedEntities": [
+        "api-first",
+        "clean-architecture",
+        "dataforge",
+        "mira-okonkwo",
+        "owen-park",
+        "project-meridian"
+      ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -631,11 +647,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -647,15 +658,15 @@
     },
     {
       "round": 3,
-      "f1": 0.468,
-      "precision": 0.344,
-      "recall": 0.733,
-      "mrr": 0.667,
-      "truePositives": 44,
-      "falsePositives": 84,
-      "falseNegatives": 16,
-      "suppressionCount": 0,
-      "feedbackLayerAvgContribution": 1.8882,
+      "f1": 0.521,
+      "precision": 0.41,
+      "recall": 0.717,
+      "mrr": 0.655,
+      "truePositives": 43,
+      "falsePositives": 62,
+      "falseNegatives": 17,
+      "suppressionCount": 8,
+      "feedbackLayerAvgContribution": 1.2769,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -701,32 +712,32 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -757,8 +768,8 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
@@ -768,21 +779,35 @@
           "count": 15
         }
       },
-      "suppressedEntities": [],
+      "suppressedEntities": [
+        "api-first",
+        "clean-architecture",
+        "dataforge",
+        "meridian-labs",
+        "mira-okonkwo",
+        "prism-core",
+        "project-meridian",
+        "signal-patterns"
+      ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -826,6 +851,11 @@
           "tier": 3
         },
         {
+          "entity": "Swim",
+          "notePath": "daily-notes/2026-01-10.md",
+          "tier": 3
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-12.md",
           "tier": 3
@@ -838,11 +868,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -854,15 +879,15 @@
     },
     {
       "round": 4,
-      "f1": 0.486,
-      "precision": 0.368,
+      "f1": 0.528,
+      "precision": 0.417,
       "recall": 0.717,
       "mrr": 0.667,
       "truePositives": 43,
-      "falsePositives": 74,
+      "falsePositives": 60,
       "falseNegatives": 17,
-      "suppressionCount": 1,
-      "feedbackLayerAvgContribution": 1.534,
+      "suppressionCount": 10,
+      "feedbackLayerAvgContribution": 1.2314,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -908,20 +933,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -932,8 +957,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -964,34 +989,48 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "project-meridian"
+        "api-first",
+        "clean-architecture",
+        "dataforge",
+        "meridian-labs",
+        "mira-okonkwo",
+        "owen-park",
+        "prism-core",
+        "project-meridian",
+        "signal-patterns",
+        "tessa-liu"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -1052,11 +1091,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -1068,15 +1102,15 @@
     },
     {
       "round": 5,
-      "f1": 0.5,
-      "precision": 0.384,
+      "f1": 0.551,
+      "precision": 0.448,
       "recall": 0.717,
-      "mrr": 0.674,
+      "mrr": 0.659,
       "truePositives": 43,
-      "falsePositives": 69,
+      "falsePositives": 53,
       "falseNegatives": 17,
-      "suppressionCount": 0,
-      "feedbackLayerAvgContribution": 1.6098,
+      "suppressionCount": 11,
+      "feedbackLayerAvgContribution": 1.2794,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -1122,20 +1156,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -1146,8 +1180,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -1178,32 +1212,49 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
-      "suppressedEntities": [],
+      "suppressedEntities": [
+        "api-first",
+        "clean-architecture",
+        "dataforge",
+        "meridian-labs",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
+        "prism-core",
+        "project-meridian",
+        "signal-patterns",
+        "tessa-liu"
+      ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -1264,11 +1315,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -1280,15 +1326,15 @@
     },
     {
       "round": 6,
-      "f1": 0.509,
-      "precision": 0.394,
+      "f1": 0.551,
+      "precision": 0.448,
       "recall": 0.717,
-      "mrr": 0.674,
+      "mrr": 0.667,
       "truePositives": 43,
-      "falsePositives": 66,
+      "falsePositives": 53,
       "falseNegatives": 17,
-      "suppressionCount": 1,
-      "feedbackLayerAvgContribution": 1.0816,
+      "suppressionCount": 11,
+      "feedbackLayerAvgContribution": 1.1951,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -1334,20 +1380,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -1358,8 +1404,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -1390,34 +1436,49 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "project-meridian"
+        "api-first",
+        "clean-architecture",
+        "dataforge",
+        "meridian-labs",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
+        "prism-core",
+        "project-meridian",
+        "signal-patterns",
+        "tessa-liu"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -1478,11 +1539,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -1494,15 +1550,15 @@
     },
     {
       "round": 7,
-      "f1": 0.475,
-      "precision": 0.355,
+      "f1": 0.528,
+      "precision": 0.417,
       "recall": 0.717,
-      "mrr": 0.674,
+      "mrr": 0.689,
       "truePositives": 43,
-      "falsePositives": 78,
+      "falsePositives": 60,
       "falseNegatives": 17,
-      "suppressionCount": 1,
-      "feedbackLayerAvgContribution": 1.9412,
+      "suppressionCount": 11,
+      "feedbackLayerAvgContribution": 1.4862,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -1548,20 +1604,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -1572,8 +1628,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -1604,34 +1660,49 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "project-meridian"
+        "api-first",
+        "clean-architecture",
+        "dataforge",
+        "meridian-labs",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
+        "prism-core",
+        "project-meridian",
+        "signal-patterns",
+        "tessa-liu"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -1692,11 +1763,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -1708,15 +1774,15 @@
     },
     {
       "round": 8,
-      "f1": 0.506,
-      "precision": 0.391,
+      "f1": 0.555,
+      "precision": 0.453,
       "recall": 0.717,
-      "mrr": 0.674,
+      "mrr": 0.682,
       "truePositives": 43,
-      "falsePositives": 67,
+      "falsePositives": 52,
       "falseNegatives": 17,
-      "suppressionCount": 2,
-      "feedbackLayerAvgContribution": 1.139,
+      "suppressionCount": 12,
+      "feedbackLayerAvgContribution": 1.4857,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -1762,20 +1828,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -1786,8 +1852,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -1818,35 +1884,50 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
+        "api-first",
+        "architecture-rfc",
+        "clean-architecture",
+        "dataforge",
+        "meridian-labs",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
+        "prism-core",
         "project-meridian",
-        "yoga"
+        "signal-patterns",
+        "tessa-liu"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -1907,11 +1988,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -1923,15 +1999,15 @@
     },
     {
       "round": 9,
-      "f1": 0.515,
-      "precision": 0.402,
+      "f1": 0.562,
+      "precision": 0.462,
       "recall": 0.717,
-      "mrr": 0.674,
+      "mrr": 0.655,
       "truePositives": 43,
-      "falsePositives": 64,
+      "falsePositives": 50,
       "falseNegatives": 17,
-      "suppressionCount": 4,
-      "feedbackLayerAvgContribution": 1.0138,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 1.1917,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -1977,20 +2053,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -2001,8 +2077,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -2033,37 +2109,53 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
+        "api-first",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
+        "meridian-labs",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "prism-core",
         "project-meridian",
+        "q1-budget",
+        "q1-review",
+        "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -2124,11 +2216,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -2140,15 +2227,15 @@
     },
     {
       "round": 10,
-      "f1": 0.512,
-      "precision": 0.398,
+      "f1": 0.531,
+      "precision": 0.422,
       "recall": 0.717,
-      "mrr": 0.697,
+      "mrr": 0.674,
       "truePositives": 43,
-      "falsePositives": 65,
+      "falsePositives": 59,
       "falseNegatives": 17,
-      "suppressionCount": 5,
-      "feedbackLayerAvgContribution": 1.1986,
+      "suppressionCount": 19,
+      "feedbackLayerAvgContribution": 1.3952,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2194,20 +2281,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -2218,8 +2305,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -2250,38 +2337,57 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
+        "api-first",
+        "architecture-rfc",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
         "meridian-labs",
+        "microservices",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
+        "prism-core",
         "project-meridian",
+        "python",
+        "q1-budget",
+        "q1-review",
+        "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -2342,11 +2448,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -2358,15 +2459,15 @@
     },
     {
       "round": 11,
-      "f1": 0.521,
-      "precision": 0.41,
+      "f1": 0.555,
+      "precision": 0.453,
       "recall": 0.717,
-      "mrr": 0.674,
+      "mrr": 0.697,
       "truePositives": 43,
-      "falsePositives": 62,
+      "falsePositives": 52,
       "falseNegatives": 17,
-      "suppressionCount": 5,
-      "feedbackLayerAvgContribution": 1.3074,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 1.325,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2412,20 +2513,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -2436,8 +2537,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -2468,38 +2569,56 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
+        "api-first",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
         "meridian-labs",
+        "microservices",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
+        "prism-core",
         "project-meridian",
+        "python",
+        "q1-budget",
+        "q1-review",
+        "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -2560,11 +2679,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -2576,15 +2690,15 @@
     },
     {
       "round": 12,
-      "f1": 0.512,
-      "precision": 0.398,
+      "f1": 0.538,
+      "precision": 0.43,
       "recall": 0.717,
-      "mrr": 0.674,
+      "mrr": 0.697,
       "truePositives": 43,
-      "falsePositives": 65,
+      "falsePositives": 57,
       "falseNegatives": 17,
-      "suppressionCount": 6,
-      "feedbackLayerAvgContribution": 1.3425,
+      "suppressionCount": 18,
+      "feedbackLayerAvgContribution": 1.4435,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2630,20 +2744,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -2654,8 +2768,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -2686,39 +2800,56 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
+        "api-first",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
         "meridian-labs",
+        "microservices",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
         "prism-core",
         "project-meridian",
+        "python",
+        "q1-budget",
+        "q1-review",
+        "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -2779,11 +2910,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -2795,15 +2921,15 @@
     },
     {
       "round": 13,
-      "f1": 0.5,
-      "precision": 0.384,
+      "f1": 0.541,
+      "precision": 0.434,
       "recall": 0.717,
-      "mrr": 0.674,
+      "mrr": 0.697,
       "truePositives": 43,
-      "falsePositives": 69,
+      "falsePositives": 56,
       "falseNegatives": 17,
-      "suppressionCount": 7,
-      "feedbackLayerAvgContribution": 1.3333,
+      "suppressionCount": 19,
+      "feedbackLayerAvgContribution": 1.2131,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2849,20 +2975,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -2873,8 +2999,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -2905,40 +3031,57 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
+        "api-first",
+        "architecture-rfc",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
         "meridian-labs",
+        "microservices",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
         "prism-core",
         "project-meridian",
         "python",
+        "q1-budget",
+        "q1-review",
+        "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -2999,11 +3142,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -3015,15 +3153,15 @@
     },
     {
       "round": 14,
-      "f1": 0.509,
-      "precision": 0.389,
-      "recall": 0.733,
-      "mrr": 0.674,
-      "truePositives": 44,
-      "falsePositives": 69,
-      "falseNegatives": 16,
-      "suppressionCount": 7,
-      "feedbackLayerAvgContribution": 1.6785,
+      "f1": 0.534,
+      "precision": 0.426,
+      "recall": 0.717,
+      "mrr": 0.667,
+      "truePositives": 43,
+      "falsePositives": 58,
+      "falseNegatives": 17,
+      "suppressionCount": 19,
+      "feedbackLayerAvgContribution": 1.3466,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3069,32 +3207,32 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -3125,8 +3263,8 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
@@ -3137,28 +3275,45 @@
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
+        "api-first",
+        "architecture-rfc",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
         "meridian-labs",
+        "microservices",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
         "prism-core",
         "project-meridian",
         "python",
+        "q1-budget",
+        "q1-review",
+        "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -3202,6 +3357,11 @@
           "tier": 3
         },
         {
+          "entity": "Swim",
+          "notePath": "daily-notes/2026-01-10.md",
+          "tier": 3
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-12.md",
           "tier": 3
@@ -3214,11 +3374,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -3230,15 +3385,15 @@
     },
     {
       "round": 15,
-      "f1": 0.518,
-      "precision": 0.406,
+      "f1": 0.528,
+      "precision": 0.417,
       "recall": 0.717,
-      "mrr": 0.674,
+      "mrr": 0.667,
       "truePositives": 43,
-      "falsePositives": 63,
+      "falsePositives": 60,
       "falseNegatives": 17,
-      "suppressionCount": 7,
-      "feedbackLayerAvgContribution": 1.3034,
+      "suppressionCount": 19,
+      "feedbackLayerAvgContribution": 1.3307,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3284,20 +3439,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -3308,8 +3463,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -3340,40 +3495,57 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
+        "api-first",
+        "architecture-rfc",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
         "meridian-labs",
+        "microservices",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
         "prism-core",
         "project-meridian",
         "python",
+        "q1-budget",
+        "q1-review",
+        "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -3434,11 +3606,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -3450,15 +3617,15 @@
     },
     {
       "round": 16,
-      "f1": 0.518,
-      "precision": 0.406,
+      "f1": 0.548,
+      "precision": 0.443,
       "recall": 0.717,
-      "mrr": 0.667,
+      "mrr": 0.674,
       "truePositives": 43,
-      "falsePositives": 63,
+      "falsePositives": 54,
       "falseNegatives": 17,
-      "suppressionCount": 8,
-      "feedbackLayerAvgContribution": 1.3034,
+      "suppressionCount": 20,
+      "feedbackLayerAvgContribution": 1.3145,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3504,20 +3671,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -3528,8 +3695,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -3560,41 +3727,58 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
+        "api-first",
+        "architecture-rfc",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
         "meridian-labs",
+        "microservices",
+        "mira-okonkwo",
+        "nadia-reyes",
+        "owen-park",
         "prism-core",
         "project-meridian",
         "python",
+        "q1-budget",
         "q1-review",
+        "signal-patterns",
+        "staging",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -3655,11 +3839,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -3671,15 +3850,15 @@
     },
     {
       "round": 17,
-      "f1": 0.515,
-      "precision": 0.402,
+      "f1": 0.534,
+      "precision": 0.426,
       "recall": 0.717,
-      "mrr": 0.667,
+      "mrr": 0.64,
       "truePositives": 43,
-      "falsePositives": 64,
+      "falsePositives": 58,
       "falseNegatives": 17,
-      "suppressionCount": 9,
-      "feedbackLayerAvgContribution": 1.3939,
+      "suppressionCount": 20,
+      "feedbackLayerAvgContribution": 1.3466,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3725,20 +3904,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -3749,8 +3928,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -3781,42 +3960,58 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
+        "api-first",
+        "architecture-rfc",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
         "meridian-labs",
+        "microservices",
+        "mira-okonkwo",
         "nadia-reyes",
+        "owen-park",
         "prism-core",
         "project-meridian",
         "python",
+        "q1-budget",
         "q1-review",
+        "signal-patterns",
+        "staging",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -3877,11 +4072,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -3893,15 +4083,15 @@
     },
     {
       "round": 18,
-      "f1": 0.512,
-      "precision": 0.398,
+      "f1": 0.531,
+      "precision": 0.422,
       "recall": 0.717,
-      "mrr": 0.667,
+      "mrr": 0.64,
       "truePositives": 43,
-      "falsePositives": 65,
+      "falsePositives": 59,
       "falseNegatives": 17,
-      "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 1.4847,
+      "suppressionCount": 19,
+      "feedbackLayerAvgContribution": 1.3889,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3947,20 +4137,20 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
           "precision": 1,
-          "recall": 0.3333333333333333,
-          "f1": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -3971,8 +4161,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -4003,43 +4193,57 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8571428571428571,
-          "f1": 0.923076923076923,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
+        "api-first",
+        "architecture-rfc",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
         "meridian-labs",
+        "microservices",
+        "mira-okonkwo",
         "nadia-reyes",
+        "owen-park",
         "prism-core",
-        "production",
         "project-meridian",
         "python",
+        "q1-budget",
         "q1-review",
+        "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
         {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
           "tier": 2
         },
         {
-          "entity": "Expense Report",
-          "notePath": "daily-notes/2026-01-12.md",
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
-          "entity": "Pho Bowl",
-          "notePath": "daily-notes/2026-01-13.md",
+          "entity": "Expense Report",
+          "notePath": "daily-notes/2026-01-12.md",
           "tier": 2
         },
         {
@@ -4100,11 +4304,6 @@
         {
           "entity": "Pho Bowl",
           "notePath": "daily-notes/2026-01-14.md",
-          "tier": 3
-        },
-        {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
         },
         {
@@ -4116,15 +4315,15 @@
     },
     {
       "round": 19,
-      "f1": 0.543,
-      "precision": 0.431,
-      "recall": 0.733,
+      "f1": 0.551,
+      "precision": 0.448,
+      "recall": 0.717,
       "mrr": 0.667,
-      "truePositives": 44,
-      "falsePositives": 58,
-      "falseNegatives": 16,
-      "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 1.2778,
+      "truePositives": 43,
+      "falsePositives": 53,
+      "falseNegatives": 17,
+      "suppressionCount": 19,
+      "feedbackLayerAvgContribution": 1.2869,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -4170,8 +4369,8 @@
         },
         "events": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 1,
+          "f1": 1,
           "count": 2
         },
         "food": {
@@ -4182,8 +4381,8 @@
         },
         "acronyms": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
           "count": 3
         },
         "health": {
@@ -4194,8 +4393,8 @@
         },
         "locations": {
           "precision": 1,
-          "recall": 0.5,
-          "f1": 0.6666666666666666,
+          "recall": 0.25,
+          "f1": 0.4,
           "count": 4
         },
         "finance": {
@@ -4226,33 +4425,52 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.9047619047619048,
-          "f1": 0.9500000000000001,
+          "recall": 0.8095238095238095,
+          "f1": 0.8947368421052632,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.06666666666666667,
-          "f1": 0.125,
+          "recall": 0.13333333333333333,
+          "f1": 0.23529411764705882,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "amara-diallo",
         "api-first",
+        "architecture-rfc",
+        "clean-architecture",
+        "dataforge",
+        "dmitri-sokolov",
+        "machine-learning",
         "meridian-labs",
+        "microservices",
+        "mira-okonkwo",
         "nadia-reyes",
+        "owen-park",
         "prism-core",
         "project-meridian",
         "python",
+        "q1-budget",
         "q1-review",
+        "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
         {
+          "entity": "Production",
+          "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
+        {
           "entity": "Supplements",
           "notePath": "daily-notes/2026-01-08.md",
+          "tier": 2
+        },
+        {
+          "entity": "Portland",
+          "notePath": "daily-notes/2026-01-10.md",
           "tier": 2
         },
         {
@@ -4321,11 +4539,6 @@
           "tier": 3
         },
         {
-          "entity": "Hackathon Spring",
-          "notePath": "daily-notes/2026-01-15.md",
-          "tier": 3
-        },
-        {
           "entity": "Melbourne",
           "notePath": "daily-notes/2026-01-15.md",
           "tier": 3
@@ -4333,13 +4546,5 @@
       ]
     }
   ],
-  "tuning_recommendations": [
-    {
-      "parameter": "FEEDBACK_BOOST_MIN_SAMPLES",
-      "current_value": 5,
-      "suggested_value": 3,
-      "evidence": "F1 improvement over 20 rounds was only 2.8% (< 5%). Tightening feedback thresholds may help the system learn faster.",
-      "confidence": "medium"
-    }
-  ]
+  "tuning_recommendations": []
 }

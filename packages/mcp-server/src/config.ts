@@ -14,9 +14,9 @@ import type { VaultRegistry } from './vault-registry.js';
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
 // Presets (tool counts derived at runtime — see TOTAL_TOOL_COUNT, TIER_1_TOOL_COUNT):
-//   full       - All tools visible, all categories, hybrid routing — DEFAULT
+//   full       - All tools visible, all categories, hybrid routing
 //   auto       - Progressive disclosure via discover_tools, all categories, hybrid routing
-//   agent      - Note-taking essentials: search, read, write, tasks, memory, pattern routing
+//   agent      - Note-taking essentials: search, read, write, tasks, memory, pattern routing — DEFAULT
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic + export (11 tools)
@@ -30,7 +30,7 @@ import type { VaultRegistry } from './vault-registry.js';
 //   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback (22 tools)
 //
 // Examples:
-//   (no env)                                  # all tools visible (default = full)
+//   (no env)                                  # focused default preset (agent)
 //   FLYWHEEL_TOOLS=auto                       # progressive disclosure via discover_tools
 //   FLYWHEEL_TOOLS=agent                      # core tools only, no disclosure
 //   FLYWHEEL_TOOLS=agent,graph                # 29 tools, no tiering
@@ -82,11 +82,11 @@ export const PRESETS: Record<string, ToolCategory[]> = {
   diagnostics: ['diagnostics'],
 };
 
-export const DEFAULT_PRESET = 'full';
+export const DEFAULT_PRESET = 'agent';
 
 // Deprecated aliases -- old names -> new category/preset names
 export const DEPRECATED_ALIASES: Record<string, string> = {
-  default: 'full',       // default is now an alias for full
+  default: 'agent',      // default tracks DEFAULT_PRESET
   minimal: 'agent',
   writer: 'agent',       // writer was agent+tasks, agent now includes tasks
   researcher: 'agent',   // use agent,graph for graph exploration
@@ -180,10 +180,12 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
   const raw = (envValue ?? process.env.FLYWHEEL_TOOLS ?? process.env.FLYWHEEL_PRESET)?.trim();
 
   if (!raw) {
+    const cats = new Set(PRESETS[DEFAULT_PRESET]);
+    const isFullToolset = cats.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => cats.has(c));
     return {
-      categories: new Set(PRESETS[DEFAULT_PRESET]),
+      categories: cats,
       preset: DEFAULT_PRESET,
-      isFullToolset: true,
+      isFullToolset,
       enableProgressiveDisclosure: false,
     };
   }

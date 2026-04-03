@@ -157,11 +157,11 @@ describe('resolveToolConfig()', () => {
 
   it.each([
     {
-      label: 'undefined → full preset',
+      label: 'undefined → agent preset (default)',
       input: undefined,
-      preset: 'full',
-      isFullToolset: true,
-      categoryCount: ALL_CATEGORIES.length,
+      preset: 'agent',
+      isFullToolset: false,
+      categoryCount: PRESETS.agent.length,
     },
     {
       label: '"full" → full preset',
@@ -178,11 +178,11 @@ describe('resolveToolConfig()', () => {
       categoryCount: PRESETS.agent.length,
     },
     {
-      label: '"default" deprecated alias → full',
+      label: '"default" deprecated alias → agent',
       input: 'default',
-      preset: 'full',
-      isFullToolset: true,
-      categoryCount: ALL_CATEGORIES.length,
+      preset: 'agent',
+      isFullToolset: false,
+      categoryCount: PRESETS.agent.length,
     },
     {
       label: '"minimal" deprecated alias → agent',
@@ -233,9 +233,9 @@ describe('resolveToolConfig()', () => {
     expect(result.isFullToolset).toBe(false);
   });
 
-  it('"garbage" unknown → fallback to full', () => {
+  it('"garbage" unknown → fallback to agent (default)', () => {
     const result = resolveToolConfig('garbage');
-    expect(result.categories.size).toBe(ALL_CATEGORIES.length);
+    expect(result.categories.size).toBe(PRESETS.agent.length);
   });
 
   it('"agent,backlinks" mixed deprecated + preset → agent cats + graph', () => {

@@ -1514,16 +1514,16 @@ function createHttpPoolServerSim(
 }
 
 describe('index.ts initialization simulation (d42835a regression guard)', () => {
-  it('default resolveToolConfig() yields isFullToolset=true, no progressive disclosure', () => {
+  it('default resolveToolConfig() yields agent preset, no progressive disclosure', () => {
     vi.stubEnv('FLYWHEEL_TOOLS', '');
     vi.stubEnv('FLYWHEEL_PRESET', '');
 
     try {
       const config = resolveToolConfig();
-      expect(config.isFullToolset).toBe(true);
-      expect(config.preset).toBe('full');
+      expect(config.isFullToolset).toBe(false);
+      expect(config.preset).toBe('agent');
       expect(config.enableProgressiveDisclosure).toBe(false);
-      expect(config.categories.size).toBe(ALL_CATEGORIES.length);
+      expect(config.categories.size).toBe(PRESETS.agent.length);
 
       const tierMode: ToolTierMode = config.enableProgressiveDisclosure ? 'tiered' : 'off';
       expect(tierMode).toBe('off');
@@ -1539,22 +1539,22 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
     expect(config.categories.size).toBe(ALL_CATEGORIES.length);
   });
 
-  it('primary server simulation lists exactly tier-1 tools', async () => {
+  it('primary server simulation lists agent-category tools (default)', async () => {
     vi.stubEnv('FLYWHEEL_TOOLS', '');
     vi.stubEnv('FLYWHEEL_PRESET', '');
 
     try {
       const { server, toolTierMode } = createServerLikeIndexTs();
 
-      // full preset: no disclosure, all tools visible
+      // agent preset: no disclosure, only agent categories visible
       expect(toolTierMode).toBe('off');
 
       const names = await listToolNames(server);
-      // All tools except discover_tools (disclosure-only)
-      const expectedAll = new Set(
-        Object.keys(TOOL_CATEGORY).filter(n => !DISCLOSURE_ONLY_TOOLS.has(n)),
+      const agentCategories = new Set(PRESETS.agent);
+      const expectedAgent = new Set(
+        Object.keys(TOOL_CATEGORY).filter(n => agentCategories.has(TOOL_CATEGORY[n] as ToolCategory) && !DISCLOSURE_ONLY_TOOLS.has(n)),
       );
-      expect(names).toEqual(expectedAll);
+      expect(names).toEqual(expectedAgent);
     } finally {
       vi.unstubAllEnvs();
     }
@@ -1572,18 +1572,18 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
     expect(names.size).toBe(TIER_1_TOOL_COUNT);
   });
 
-  it('HTTP pool server simulation with full preset lists all tools', async () => {
+  it('HTTP pool server simulation with default (agent) preset lists agent tools', async () => {
     vi.stubEnv('FLYWHEEL_TOOLS', '');
     vi.stubEnv('FLYWHEEL_PRESET', '');
 
     try {
       const { server } = createHttpPoolServerSim(INITIAL_TIER_OVERRIDE);
       const names = await listToolNames(server);
-      // full preset: all tools except discover_tools
-      const expectedAll = new Set(
-        Object.keys(TOOL_CATEGORY).filter(n => !DISCLOSURE_ONLY_TOOLS.has(n)),
+      const agentCategories = new Set(PRESETS.agent);
+      const expectedAgent = new Set(
+        Object.keys(TOOL_CATEGORY).filter(n => agentCategories.has(TOOL_CATEGORY[n] as ToolCategory) && !DISCLOSURE_ONLY_TOOLS.has(n)),
       );
-      expect(names).toEqual(expectedAll);
+      expect(names).toEqual(expectedAgent);
     } finally {
       vi.unstubAllEnvs();
     }

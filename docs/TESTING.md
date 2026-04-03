@@ -640,7 +640,7 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 
 ### Per-Tool Coverage
 
-Each default-visible tool tested with a targeted prompt against the carter-strategy vault. The current coverage surface is the 65 tools visible in the `full` preset (`discover_tools` is disclosure-only and excluded). The embedded report below is from an older 69-tool run; rerun `demos/run-coverage-test.sh` to regenerate a current report for the 65-tool surface.
+Each tool tested with a targeted prompt against the carter-strategy vault. The current default-visible surface is the 18 tools in the `agent` preset. The embedded report below is a historical full-surface run from before preset rationalization; rerun `demos/run-coverage-test.sh` if you need a fresh report for the current default or full surface.
 
 <!-- BEGIN COVERAGE TEST RESULTS -->
 # Tool Coverage Test Report
@@ -783,7 +783,7 @@ Each default-visible tool tested with a targeted prompt against the carter-strat
 
 ## Summary
 
-**Historical coverage: 64/69 tools adopted (92%)**  --  from a dated pre-rationalization run. The current coverage surface is 65 default-visible tools; rerun to get a current coverage number.
+**Historical coverage: 64/69 tools adopted (92%)**  --  from a dated pre-rationalization run. The current default-visible surface is 18 `agent` tools; rerun to get a current coverage number for today's presets.
 
 ### Tools Never Adopted
 

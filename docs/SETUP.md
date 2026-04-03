@@ -227,14 +227,14 @@ Add this to `~/.openclaw/openclaw.json`:
 
 Restart OpenClaw. Flywheel appears as an MCP server with search, read, write, and memory tools.
 
-Flywheel defaults to the full tool surface. Use `"FLYWHEEL_TOOLS": "agent"` for a reduced set (search, read, write, tasks, memory).
+Flywheel defaults to the `agent` tool surface (search, read, write, tasks, memory). Use `"FLYWHEEL_TOOLS": "full"` for the complete 65-tool surface.
 
 Recommended next step: read the dedicated [OpenClaw integration guide](OPENCLAW.md). It covers the pattern that works best in practice:
 
 - configure Flywheel on the OpenClaw gateway/agent
 - route the right channels to a dedicated OpenClaw agent
 - keep OpenClaw workspace and Obsidian vault separate unless you intentionally want them combined
-- choose `FLYWHEEL_TOOLS` based on whether you want the full vault surface (default) or a reduced set (`agent`)
+- choose `FLYWHEEL_TOOLS` based on whether you want the agent surface (default) or the full vault surface (`FLYWHEEL_TOOLS=full`)
 
 OpenClaw connects via stdio here, same as Claude Desktop. For HTTP transport (e.g., running Flywheel as a shared service), see the [HTTP Clients](#http-clients-cursor-windsurf-vs-code-continue) section below.
 
@@ -440,8 +440,8 @@ Flywheel auto-links any mentions of existing notes. If your vault has `Stacy Tho
 
 ## Step 3: Choose a Tool Preset
 
-Flywheel defaults to the `full` preset (all tools visible at startup).
-Use `"auto"` for progressive disclosure, `"agent"` for a fixed reduced set (search, read, write, tasks, memory). Add bundles for graph analysis, wikilinks, or other capabilities:
+Flywheel defaults to the `agent` preset (search, read, write, tasks, memory).
+Use `"full"` for the complete tool surface, `"auto"` for progressive disclosure. Add bundles for graph analysis, wikilinks, or other capabilities:
 
 ```json
 {

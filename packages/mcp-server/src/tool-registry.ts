@@ -37,7 +37,7 @@ import { runInVaultScope, getActiveScopeOrNull, type VaultScope } from './vault-
 import { recordToolInvocation } from './core/shared/toolTracking.js';
 
 // Read tool registrations
-// graph.ts retired — get_backlinks, get_forward_links, get_weighted_links, get_strong_connections removed
+import { registerGraphTools } from './tools/read/graph.js';
 // graphExport.ts retired — export_graph removed
 import { registerWikilinkTools } from './tools/read/wikilinks.js';
 import { registerHealthTools } from './tools/read/health.js';
@@ -784,6 +784,7 @@ export function registerAllTools(
   registerWikilinkTools(targetServer, gvi, gvp, gsd);
   registerQueryTools(targetServer, gvi, gvp, gsd);
   registerPrimitiveTools(targetServer, gvi, gvp, gcf, gsd);
+  registerGraphTools(targetServer, gvi, gvp, gsd);
   registerGraphAnalysisTools(targetServer, gvi, gvp, gsd, gcf);
   registerSemanticAnalysisTools(targetServer, gvi, gvp);
   registerVaultSchemaTools(targetServer, gvi, gvp);

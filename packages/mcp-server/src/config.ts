@@ -252,13 +252,17 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   vault_undo_last_mutation: 'write',
   policy: 'write',
 
-  // graph (6 tools) -- structural analysis + link detail
+  // graph (9 tools) -- structural analysis + link detail
   graph_analysis: 'graph',
   semantic_analysis: 'graph',
   get_connection_strength: 'graph',
   list_entities: 'graph',
   get_link_path: 'graph',
   get_common_neighbors: 'graph',
+  get_backlinks: 'graph',
+  get_forward_links: 'graph',
+  get_weighted_links: 'graph',
+  get_strong_connections: 'graph',
 
   // schema (7 tools) -- schema intelligence + migrations
   vault_schema: 'schema',
@@ -354,6 +358,10 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   list_entities: 2,
   get_link_path: 2,
   get_common_neighbors: 2,
+  get_backlinks: 2,
+  get_forward_links: 2,
+  get_weighted_links: 2,
+  get_strong_connections: 2,
   suggest_wikilinks: 2,
   validate_links: 2,
   wikilink_feedback: 2,

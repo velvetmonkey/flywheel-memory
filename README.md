@@ -30,7 +30,7 @@ Every mutation is git-committed, conflict-detected with a SHA-256 content hash, 
 
 ### Build context over time
 
-Every accepted link strengthens the graph. Every rejected link updates the scorer. Every write adds more context for the next read. `brief` assembles a token-budgeted summary of recent activity, and `memory` persists observations with confidence decay. [Configuration ->](docs/CONFIGURATION.md)
+Every accepted link strengthens the graph. Every rejected link updates the scorer. Every write adds more context for the next read. `brief` assembles a token-budgeted summary of recent activity, and `memory` persists observations with confidence decay. The graph can be exported as GraphML for visualization in tools like [Gephi](https://gephi.org) or NetworkX — see the [carter-strategy demo](demos/carter-strategy/) for an example. [Configuration ->](docs/CONFIGURATION.md)
 
 ---
 

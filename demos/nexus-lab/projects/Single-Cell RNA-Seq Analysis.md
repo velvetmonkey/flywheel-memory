@@ -10,9 +10,9 @@ tags: [scrna-seq, stem-cells, development]
 
 # [[Single-Cell RNA-Seq Analysis]] [[Project]]
 
-## [[Overview
+## Overview
 
-Characterize]] cellular heterogeneity in mouse embryonic stem cell cultures [[Using]] single-cell transcriptomics. Map differentiation trajectories and [[Identify]] regulatory programs.
+Characterize cellular heterogeneity in mouse embryonic stem cell cultures [[Using]] single-cell transcriptomics. Map differentiation trajectories and [[Identify]] regulatory programs.
 
 ## Hypothesis
 

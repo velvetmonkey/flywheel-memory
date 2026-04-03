@@ -11,9 +11,9 @@ builds_on: [Experiment-2024-11-18]
 
 # [[Hub Protein Validation]] - [[CRISPR Knockout]] Screen
 
-## [[Objective
+## Objective
 
-Experimentally]] validate hub proteins from [[Experiment-2024-11-18]] [[PPI Network Analysis]]. [[Test]] essentiality in cancer [[Cell Lines]].
+Experimentally validate hub proteins from [[Experiment-2024-11-18]] [[PPI Network Analysis]]. [[Test]] essentiality in cancer [[Cell Lines]].
 
 ## Methods
 

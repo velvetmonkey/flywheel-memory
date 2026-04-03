@@ -84,8 +84,8 @@ RP-1 Tank → [[Fuel Tanks]] → [[Turbopump]] (fuel side) ───────
 - **[[Gimbal Mount]]**: 4-point gimbal for [[Thrust Vector Control]]
 - **[[Gimbal Range]]**: ±5° (pitch and yaw)
 
-### [[Turbopump
-See]] [[Turbopump]] for [[Full]] details.
+### Turbopump
+See [[Turbopump]] for [[Full]] details.
 
 - **Type**: Single-shaft, centrifugal pump (LOX and RP-1 on same shaft)
 - **Drive**: Gas generator turbine (single-stage)
@@ -143,8 +143,8 @@ See]] [[Turbopump]] for [[Full]] details.
 
 ## [[Thermal Management]]
 
-### [[Cooling System
-See]] [[Cooling System]] for full details.
+### Cooling System
+See [[Cooling System]] for full details.
 
 **[[Regenerative Cooling]]**:
 - RP-1 fuel flows through chamber wall channels before injection
@@ -191,8 +191,8 @@ See]] [[Cooling System]] for full details.
 
 ## [[Testing Status]]
 
-### [[Completed Tests
-See]] [[Engine Hot Fire Results]] for full [[Data]] and analysis.
+### Completed Tests
+See [[Engine Hot Fire Results]] for full [[Data]] and analysis.
 
 **Test 1** (2025-12-28): 30s burn - [[Ignition Sequence]] validation
 - [[Focus]]: [[Ignition Sequence]] reliability, startup transient
@@ -209,8 +209,8 @@ See]] [[Engine Hot Fire Results]] for full [[Data]] and analysis.
 - Result: ✅ Performance stable, no degradation observed
 - Key data: [[Thrust 44.2]] kN ±0.3 kN throughout burn, ISP 287s
 
-### [[Upcoming Tests
-See]] [[Upcoming Tests]] for schedule.
+### Upcoming Tests
+See [[Upcoming Tests]] for schedule.
 
 **Test 4** (2026-01-08): 180s burn - Mission-[[Like Duration]]
 - Focus: Approaching mission duration (240s target)
@@ -239,8 +239,8 @@ See]] [[Upcoming Tests]] for schedule.
 
 ## Risks & Issues
 
-### [[Active Risks
-See]] [[Risk Register]] for full analysis.
+### Active Risks
+See [[Risk Register]] for full analysis.
 
 **R-003: [[Turbopump]] [[Delivery Delay]]** (Score: 15, HIGH)
 - Flight turbopump delivery delayed from [[Jan 5]] → [[Jan 20]]

@@ -10,9 +10,9 @@ related_experiments: [Experiment-2024-11-18, Experiment-2024-11-22]
 
 # [[Drug-Target Prediction]] - [[Machine Learning Approach]]
 
-## [[Objective
+## Objective
 
-Build]] [[Machine Learning]] model to predict drug-protein binding. [[Use]] [[Validated]] hub proteins from [[Experiment-2024-11-18]] as [[High]]-[[Priority]] targets.
+Build [[Machine Learning]] model to predict drug-protein binding. [[Use]] [[Validated]] hub proteins from [[Experiment-2024-11-18]] as [[High]]-[[Priority]] targets.
 
 ## Methods
 
@@ -21,8 +21,8 @@ Build]] [[Machine Learning]] model to predict drug-protein binding. [[Use]] [[Va
 - **Negative examples**: 15,000 [[Random]] pairs (no known interaction)
 - **[[Validation]] set**: Hub proteins from [[Experiment-2024-11-18]]
 
-### [[Features
-Following]] [[Libbrecht2015-ML-Genomics]] [[Feature Engineering]]:
+### Features
+Following [[Libbrecht2015-ML-Genomics]] [[Feature Engineering]]:
 
 **Protein [[Features]]** (1,024 dim):
 - Sequence-[[Based]]: [[Composition]], motifs, domains

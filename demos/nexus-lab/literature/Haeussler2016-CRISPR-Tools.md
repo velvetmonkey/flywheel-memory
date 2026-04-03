@@ -11,9 +11,9 @@ impact: foundational
 
 # Evaluation of off-[[Target]] and on-target [[Scoring]] algorithms
 
-## [[Summary
+## Summary
 
-Systematic]] evaluation of CRISPR [[Guide RNA Design]] [[Tools]]. [[Established]] benchmarks for predicting on-target efficiency and off-target effects.
+Systematic evaluation of CRISPR [[Guide RNA Design]] [[Tools]]. [[Established]] benchmarks for predicting on-target efficiency and off-target effects.
 
 ## [[Key Findings]]
 
@@ -25,9 +25,9 @@ Systematic]] evaluation of CRISPR [[Guide RNA Design]] [[Tools]]. [[Established]
 
 [[Guide RNA Design]] algorithms [[Using]] [[Sequence Specificity Scoring]]. [[Machine Learning]] models trained on [[CRISPR Screen Data]].
 
-## Relevance to [[My Work
+## Relevance to My Work
 
-Informs]] [[Gene Knockout Validation]] experiments. Tools [[Used In]] [[sgRNA Design Workflow]].
+Informs [[Gene Knockout Validation]] experiments. Tools [[Used In]] [[sgRNA Design Workflow]].
 
 ## [[Applications]]
 

@@ -42,9 +42,9 @@ The Artemis [[Telemetry System]] collects, formats, logs, and transmits [[Vehicl
 - [[Turbopump]]: Speed (RPM), bearing temperature
 - [[Ignition Sequence]]: Igniter status, [[Chamber Pressure]]
 
-### [[Telemetry Packet Structure
+### Telemetry Packet Structure
 
-See]] [[ADR-005 Telemetry Protocol]] for [[Full]] specification
+See [[ADR-005 Telemetry Protocol]] for [[Full]] specification
 
 **[[Packet Format]]** (128 bytes [[Total]]):
 ```

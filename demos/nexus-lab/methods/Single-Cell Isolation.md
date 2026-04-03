@@ -8,9 +8,9 @@ platforms: [10x-Genomics, FACS, microfluidics]
 
 # [[Single-Cell Isolation]]
 
-## [[Overview
+## Overview
 
-Techniques]] for physically separating individual cells for downstream single-cell analysis.
+Techniques for physically separating individual cells for downstream single-cell analysis.
 
 ## Methods
 
@@ -36,11 +36,11 @@ Techniques]] for physically separating individual cells for downstream single-ce
 
 ## [[Applications]]
 
-### Single-Cell RNA-[[Seq
-Foundation]] for [[Single-Cell RNA-Seq Analysis]] [[Project]]. [[Protocol]] in [[Experiment-2024-11-15]].
+### Single-Cell RNA-Seq
+Foundation for [[Single-Cell RNA-Seq Analysis]] [[Project]]. [[Protocol]] in [[Experiment-2024-11-15]].
 
-### [[Cell Type Discovery
-Enables]] unbiased characterization of cellular heterogeneity.
+### Cell Type Discovery
+Enables unbiased characterization of cellular heterogeneity.
 
 ## Considerations
 

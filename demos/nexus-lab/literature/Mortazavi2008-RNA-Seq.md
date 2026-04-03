@@ -11,9 +11,9 @@ impact: foundational
 
 # Mapping and quantifying mammalian transcriptomes by RNA-Seq
 
-## [[Summary
+## Summary
 
-Introduced]] RNA-Seq methodology for comprehensive transcriptome analysis. [[Defined]] [[RPKM Normalization]] and [[Established]] [[Best Practices]] for gene expression quantification.
+Introduced RNA-Seq methodology for comprehensive transcriptome analysis. [[Defined]] [[RPKM Normalization]] and [[Established]] [[Best Practices]] for gene expression quantification.
 
 ## [[Key Findings]]
 
@@ -25,9 +25,9 @@ Introduced]] RNA-Seq methodology for comprehensive transcriptome analysis. [[Def
 
 [[High-Throughput Sequencing]] applied to [[cDNA Libraries]]. [[Developed]] [[RPKM Normalization]] method still used today.
 
-## Relevance to [[My Work
+## Relevance to My Work
 
-Core]] methodology for [[Single-Cell RNA-Seq Analysis]] experiments. [[RPKM Normalization]] [[Used In]] [[Experiment-2024-11-15]].
+Core methodology for [[Single-Cell RNA-Seq Analysis]] experiments. [[RPKM Normalization]] [[Used In]] [[Experiment-2024-11-15]].
 
 ## [[Related Work]]
 

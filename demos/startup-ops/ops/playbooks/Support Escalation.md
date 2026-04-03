@@ -9,9 +9,9 @@ tags:
   - support
   - escalation
 ---
-# [[Support Escalation
+# Support Escalation
 
-When]] and how to escalate customer issues
+When and how to escalate customer issues
 
 ## [[Severity Levels]]
 
@@ -46,8 +46,8 @@ When]] and how to escalate customer issues
 - Slow [[Performance]] (>10s load times)
 
 **Process:**
-1. [ ] Notify [[Alex Chen]] [[Via]] [[Slack
-2]]. [ ] Acknowledge to customer within 4 hours
+1. [ ] Notify [[Alex Chen]] [[Via]] Slack
+2. [ ] Acknowledge to customer within 4 hours
 3. [ ] [[Provide]] workaround if [[Available]]
 4. [ ] Daily updates until resolved
 

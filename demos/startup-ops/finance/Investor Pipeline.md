@@ -11,9 +11,9 @@ tags:
   - fundraising
   - investors
 ---
-# [[Investor Pipeline
+# Investor Pipeline
 
-Seed Round]] [[Fundraising Tracker]]
+Seed Round [[Fundraising Tracker]]
 
 **[[Target]]:** $500K at $3M post-money valuation
 **[[Timeline]]:** Feb - [[Jun 2026]]

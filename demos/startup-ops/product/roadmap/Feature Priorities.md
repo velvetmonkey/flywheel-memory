@@ -8,9 +8,9 @@ tags:
   - features
   - product
 ---
-# [[Feature Priorities
+# Feature Priorities
 
-Product]] backlog prioritization
+Product backlog prioritization
 
 Owner: [[Alex Chen]]
 [[Updated]]: Weekly [[Based]] on customer feedback

@@ -27,13 +27,13 @@ tags:
 - [[Tom Wilson]] ([[Sales Engineer]]) - [[Acme Aerospace]]
 - [[Jennifer Lee]] ([[Program Manager]]) - [[Acme Aerospace]]
 
-## [[Purpose
+## Purpose
 
-Quarterly]] business review with [[Acme Aerospace]], our primary structures supplier. Review [[Current]] orders, discuss schedule [[Alignment]], and plan future procurement for [[Structures System]] [[Components]].
+Quarterly business review with [[Acme Aerospace]], our primary structures supplier. Review [[Current]] orders, discuss schedule [[Alignment]], and plan future procurement for [[Structures System]] [[Components]].
 
-## [[Agenda
+## Agenda
 
-1]]. [[Current Order Status Review]]
+1. [[Current Order Status Review]]
 2. Quality and [[Delivery Performance]]
 3. [[Future Orders Planning]]
 4. [[Technical Support Discussion]]
@@ -393,8 +393,8 @@ Quarterly]] business review with [[Acme Aerospace]], our primary structures supp
 
 1. **[[Nov 20]]-30**: Exchange updated agreements and quotes
 2. **[[Dec 1]]**: Submit Q1 2026 purchase orders
-3. **[[Dec 15]]**: Execute 2026 Master Purchase [[Agreement
-4]]. **Jan-[[Feb 2026]]**: Acme delivers landing leg and fairing analysis
+3. **[[Dec 15]]**: Execute 2026 Master Purchase Agreement
+4. **Jan-[[Feb 2026]]**: Acme delivers landing leg and fairing analysis
 5. **Mar 2026**: Post-CDR, finalize flight [[Hardware Specifications]]
 6. **Next QBR**: [[February 2026]] ([[Quarterly]] business review)
 

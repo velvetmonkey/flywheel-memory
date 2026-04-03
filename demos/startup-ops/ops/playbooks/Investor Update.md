@@ -10,9 +10,9 @@ tags:
   - investors
   - reporting
 ---
-# [[Investor Update
+# Investor Update
 
-Monthly]] email to angel investors and advisors
+Monthly email to angel investors and advisors
 
 Owner: [[Jamie Patel]]
 [[Frequency]]: [[First]] Monday of [[Each]] [[Month]]

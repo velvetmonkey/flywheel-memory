@@ -20,7 +20,7 @@ tags:
 
 ## Overview
 
-Acme Corp]] is a mid-size manufacturing company undergoing digital transformation. They produce industrial equipment and are modernizing their legacy systems to compete in an increasingly digital marketplace.
+Acme Corp is a mid-size manufacturing company undergoing digital transformation. They produce industrial equipment and are modernizing their legacy systems to compete in an increasingly digital marketplace.
 
 **[[Primary Contact]]**: [[Sarah Mitchell]], VP of Technology
 **[[Company Size]]**: 2,500 employees

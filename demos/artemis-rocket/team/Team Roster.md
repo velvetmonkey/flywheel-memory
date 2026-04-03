@@ -368,9 +368,9 @@ Sarah Chen (Chief Engineer)
 - #testing - [[Test Campaign Overview]]
 - #random - Social
 
-## [[Onboarding
+## Onboarding
 
-New]] team members: See [[Onboarding Guide]] for first-week checklist and access setup.
+New team members: See [[Onboarding Guide]] for first-week checklist and access setup.
 
 ## [[Related Documents]]
 

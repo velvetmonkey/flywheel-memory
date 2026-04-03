@@ -14,9 +14,9 @@ tags:
 ---
 # [[Data Migration Playbook]]
 
-## [[Overview
+## Overview
 
-Standard]] methodology for enterprise data migration projects. This playbook has been refined through 8+ client engagements and covers the full lifecycle from discovery to post-migration support.
+Standard methodology for enterprise data migration projects. This playbook has been refined through 8+ client engagements and covers the full lifecycle from discovery to post-migration support.
 
 [[Last Reviewed]]: [[June 2024]] (needs update)
 **Version**: 2.1
@@ -44,8 +44,8 @@ This playbook applies when:
 - [ ] Stakeholder map
 - [ ] Risk register
 
-### [[Workshop Agenda
-Use]] [[Discovery Workshop Template]] for structured sessions:
+### Workshop Agenda
+Use [[Discovery Workshop Template]] for structured sessions:
 1. Current state walkthrough (2 hours)
 2. Pain points and goals (1 hour)
 3. Data flow mapping (2 hours)

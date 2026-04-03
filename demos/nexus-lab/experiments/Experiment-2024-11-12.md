@@ -9,9 +9,9 @@ methods: [Centrality-Measures, Network-Inference]
 
 # [[Gene Regulatory Network Construction]] - [[Embryonic Development]]
 
-## [[Objective
+## Objective
 
-Infer]] gene regulatory network for mouse early embryonic development [[Using]] single-cell RNA-Seq time course.
+Infer gene regulatory network for mouse early embryonic development [[Using]] single-cell RNA-Seq time course.
 
 ## Methods
 
@@ -60,9 +60,9 @@ Applied [[Centrality Measures]] to inferred network:
 - [[Module 3]]: Trophectoderm (Cdx2, Tfap2c)
 - [[Module 4]]: Primitive endoderm (Gata6, Sox17)
 
-## [[Discussion
+## Discussion
 
-Network]] inference [[Successfully]] identifies known developmental regulators. [[Centrality Measures]] from [[Barabasi2004-Network-Biology]] predict biological importance.
+Network inference [[Successfully]] identifies known developmental regulators. [[Centrality Measures]] from [[Barabasi2004-Network-Biology]] predict biological importance.
 
 ## [[Related Work]]
 

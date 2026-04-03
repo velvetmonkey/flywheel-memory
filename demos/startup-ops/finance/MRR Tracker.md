@@ -12,9 +12,9 @@ tags:
   - mrr
   - metrics
 ---
-# MRR [[Tracker
+# MRR Tracker
 
-Monthly Recurring Revenue]] tracking
+Monthly Recurring Revenue tracking
 
 [[Last Updated]]: 2026-01-07
 

@@ -8,9 +8,9 @@ tags:
   - runway
   - burn
 ---
-# [[Runway Calculator
+# Runway Calculator
 
-Cash]] runway and burn [[Rate]] tracking
+Cash runway and burn [[Rate]] tracking
 
 ## [[Current Status]] ([[Jan 2026]])
 

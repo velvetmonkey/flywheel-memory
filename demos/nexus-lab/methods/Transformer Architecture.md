@@ -8,9 +8,9 @@ applications: [protein-structure, sequence-analysis, nlp]
 
 # [[Transformer Architecture]]
 
-## [[Overview
+## Overview
 
-Self]]-attention mechanism for sequence [[Processing]]. [[Core]] of modern [[Deep Learning]] for biological sequences.
+Self-attention mechanism for sequence [[Processing]]. [[Core]] of modern [[Deep Learning]] for biological sequences.
 
 ## [[Key Components]]
 
@@ -20,11 +20,11 @@ Self]]-attention mechanism for sequence [[Processing]]. [[Core]] of modern [[Dee
 
 ## [[Biological Applications]]
 
-### [[Protein Structure Prediction
-Used]] in [[Jumper2021-AlphaFold]] for MSA processing. Attention learns evolutionary couplings.
+### Protein Structure Prediction
+Used in [[Jumper2021-AlphaFold]] for MSA processing. Attention learns evolutionary couplings.
 
-### [[Sequence Motif Discovery
-Applied]] to DNA/RNA sequences for regulatory element finding.
+### Sequence Motif Discovery
+Applied to DNA/RNA sequences for regulatory element finding.
 
 ## [[Implementation Notes]]
 

@@ -10,9 +10,9 @@ tags:
   - metrics
   - reporting
 ---
-# [[Weekly Metrics Review
+# Weekly Metrics Review
 
-Weekly]] business metrics check
+Weekly business metrics check
 
 Automation: [[Run]] every Monday 9am
 Duration: 15 minutes

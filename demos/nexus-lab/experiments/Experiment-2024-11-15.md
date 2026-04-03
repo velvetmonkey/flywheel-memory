@@ -10,9 +10,9 @@ related_experiments: [Experiment-2024-11-16]
 
 # Single-Cell RNA-Seq - [[Mouse Embryonic Stem Cells]]
 
-## [[Objective
+## Objective
 
-Profile]] transcriptional heterogeneity in mESC culture. [[Identify]] subpopulations and marker genes.
+Profile transcriptional heterogeneity in mESC culture. [[Identify]] subpopulations and marker genes.
 
 ## Methods
 

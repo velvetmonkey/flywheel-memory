@@ -8,9 +8,9 @@ tags:
   - competitors
   - market
 ---
-# [[Competitor Analysis
+# Competitor Analysis
 
-Competitive]] landscape for SMB analytics [[Tools]]
+Competitive landscape for SMB analytics [[Tools]]
 
 Owner: [[Jamie Patel]]
 [[Last Updated]]: 2025-12-20

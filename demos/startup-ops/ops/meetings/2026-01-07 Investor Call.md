@@ -12,17 +12,17 @@ tags:
   - fundraising
   - meeting
 ---
-# 2026-01-07 [[Investor Call
+# 2026-01-07 Investor Call
 
-Intro]] call with [[Velocity Ventures
+Intro call with Velocity Ventures
 
-Date]]: 2026-01-07 2:00pm [[PST
-Duration]]: 30 minutes
+Date: 2026-01-07 2:00pm PST
+Duration: 30 minutes
 Attendees: [[Jamie Patel]], [[Mike Johnson]] ([[Velocity Ventures]] - Associate)
 
-## [[Background
+## Background
 
-Velocity Ventures]]:
+Velocity Ventures:
 - $100M seed-stage fund
 - Focus: B2B SaaS, data infrastructure
 - Sweet spot: $250K-$500K checks at seed
@@ -87,9 +87,9 @@ A: Scaling technical infrastructure for larger customers. We learned this with [
 - Nice to [[Have]]: 1 case study with ROI metrics
 - Critical: Clearer competitive differentiation
 
-### [[Partner Meeting Details
+### Partner Meeting Details
 
-If]] we hit [[Milestones]]:
+If we hit [[Milestones]]:
 - Partner: [[Lisa Chen]] (focuses on data/analytics)
 - Format: 45-60 min [[Deep]] [[Dive]]
 - Attendees: [[Both]] founders (Alex + Jamie)
@@ -97,14 +97,14 @@ If]] we hit [[Milestones]]:
 
 **Decision [[Timeline]]:** 2-3 [[Weeks]] [[After]] partner meeting
 
-## [[Fundraising Strategy Adjustment
+## Fundraising Strategy Adjustment
 
-Based]] on [[This]] call:
+Based on [[This]] call:
 
 **Before raising:**
 1. Close [[GrowthStack]] trial → 2 paying customers
-2. [[Book 2]] more trials → aim for 3 paying by [[Feb
-3]]. Create [[DataDriven Co]] case study (savings: 8 hrs/week)
+2. [[Book 2]] more trials → aim for 3 paying by Feb
+3. Create [[DataDriven Co]] case study (savings: 8 hrs/week)
 4. Sharpen competitive positioning (speed + managed service)
 
 **Timeline impact:**
@@ -112,9 +112,9 @@ Based]] on [[This]] call:
 - Revised: Start raise in late Feb / early Mar
 - [[First Close Target]]: April (still [[On Track]] for [[Hiring Plan]])
 
-## [[Valuation Feedback
+## Valuation Feedback
 
-Mike]] suggested $3M post might be high. Comparable companies:
+Mike suggested $3M post might be high. Comparable companies:
 - Similar traction: $2M-$2.5M post
 - With 3-5 customers: $3M-$3.5M post
 
@@ -147,6 +147,6 @@ Thanks again for the intro from Tom!
 - Jamie
 ```
 
-## [[Handoff Note
+## Handoff Note
 
-Automation]]: [[Track]] this in [[Investor Pipeline]] - move Velocity to "[[Stage 2]]" (had call, sent deck)
+Automation: [[Track]] this in [[Investor Pipeline]] - move Velocity to "[[Stage 2]]" (had call, sent deck)

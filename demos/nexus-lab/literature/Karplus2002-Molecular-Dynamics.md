@@ -12,9 +12,9 @@ nobel_prize: 2013
 
 # Molecular dynamics simulations of biomolecules
 
-## [[Summary
+## Summary
 
-Foundational]] review of molecular dynamics (MD) for studying protein motion. [[Established]] MD as [[Essential]] tool for understanding protein function through dynamics.
+Foundational review of molecular dynamics (MD) for studying protein motion. [[Established]] MD as [[Essential]] tool for understanding protein function through dynamics.
 
 ## [[Key Concepts]]
 
@@ -26,9 +26,9 @@ Foundational]] review of molecular dynamics (MD) for studying protein motion. [[
 
 [[Newtonian Mechanics]] [[Integration]] for [[Protein Conformational Dynamics]]. [[Periodic Boundary Conditions]] for solvent simulation.
 
-## Relevance to [[My Work
+## Relevance to My Work
 
-Theoretical]] basis for [[Protein-Ligand Docking]] refinement. [[AMBER Force Field]] [[Used In]] [[Experiment-2024-11-22]].
+Theoretical basis for [[Protein-Ligand Docking]] refinement. [[AMBER Force Field]] [[Used In]] [[Experiment-2024-11-22]].
 
 ## [[Applications]]
 

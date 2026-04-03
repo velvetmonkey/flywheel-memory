@@ -8,9 +8,9 @@ applications: [variant-classification, drug-prediction, expression-analysis]
 
 # [[Random Forests]]
 
-## [[Overview
+## Overview
 
-Ensemble]] [[Learning]] method [[Building]] [[Multiple]] decision trees. Robust, interpretable, handles [[High]]-dimensional genomic [[Data]] well.
+Ensemble [[Learning]] method [[Building]] [[Multiple]] decision trees. Robust, interpretable, handles [[High]]-dimensional genomic [[Data]] well.
 
 ## [[Key Properties]]
 
@@ -29,14 +29,14 @@ From [[Libbrecht2015-ML-Genomics]]:
 
 ## [[Applications]]
 
-### Drug-[[Target Prediction
-Used]] in [[Experiment-2024-11-20]] for [[Drug-Target Prediction]] [[Project]].
+### Drug-Target Prediction
+Used in [[Experiment-2024-11-20]] for [[Drug-Target Prediction]] [[Project]].
 
-### [[Variant Effect Prediction
-Classify]] pathogenic vs benign variants [[Using]] sequence features.
+### Variant Effect Prediction
+Classify pathogenic vs benign variants [[Using]] sequence features.
 
-### [[Gene Expression Classification
-Predict]] cell types from expression profiles.
+### Gene Expression Classification
+Predict cell types from expression profiles.
 
 ## Implementation
 

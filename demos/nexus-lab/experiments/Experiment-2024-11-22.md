@@ -11,9 +11,9 @@ builds_on: [Experiment-2024-10-28, Experiment-2024-11-20]
 
 # [[Protein-Ligand Docking]] - EGFR [[Inhibitor Screening]]
 
-## [[Objective
+## Objective
 
-Validate]] [[Top]] 10 drug candidates from [[Experiment-2024-11-20]] [[ML]] predictions [[Using]] molecular docking and MD simulations.
+Validate [[Top]] 10 drug candidates from [[Experiment-2024-11-20]] [[ML]] predictions [[Using]] molecular docking and MD simulations.
 
 ## Methods
 
@@ -28,8 +28,8 @@ Validate]] [[Top]] 10 drug candidates from [[Experiment-2024-11-20]] [[ML]] pred
 - **Exhaustiveness**: 32
 - 10 drug candidates from [[Experiment-2024-11-20]]
 
-### MD [[Refinement
-Following]] [[Karplus2002-Molecular-Dynamics]] with [[AMBER Force Field]]:
+### MD Refinement
+Following [[Karplus2002-Molecular-Dynamics]] with [[AMBER Force Field]]:
 ```bash
 # Production MD
 pmemd.cuda -O -i prod.in -p complex.prmtop -c min.rst

@@ -371,8 +371,8 @@ See [[ADR-004 Test Campaign]] and [[Test Campaign Overview]] for full details.
 2. **[[Subsystem Testing]]** ([[Dec 2025]] - Jan 2026) - 🔄 In Progress (80% complete)
 3. **[[Hot Fire Testing]]** (Jan-Feb 2026) - ⏳ First test scheduled Jan 2026
 4. **Hardware-in-Loop** ([[Oct 2025]] - May 2026) - 🔄 In Progress (15/100 complete)
-5. **[[Integrated Testing]]** (Feb-May 2026) - ⏳ [[Planned
-6]]. **Environmental Testing** (Jun-Aug 2026) - ⏳ Facilities booked
+5. **[[Integrated Testing]]** (Feb-May 2026) - ⏳ Planned
+6. **Environmental Testing** (Jun-Aug 2026) - ⏳ Facilities booked
 
 **Budget**: $800K total (5.7% of program budget)
 - Spent to date: $325K (component + subsystem testing)

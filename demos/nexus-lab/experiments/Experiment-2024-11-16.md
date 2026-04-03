@@ -11,9 +11,9 @@ builds_on: [Experiment-2024-11-15]
 
 # [[Cell Type Marker Validation]] & [[Trajectory Analysis]]
 
-## [[Objective
+## Objective
 
-Validate]] marker genes from [[Experiment-2024-11-15]] and reconstruct differentiation trajectories.
+Validate marker genes from [[Experiment-2024-11-15]] and reconstruct differentiation trajectories.
 
 ## Methods
 

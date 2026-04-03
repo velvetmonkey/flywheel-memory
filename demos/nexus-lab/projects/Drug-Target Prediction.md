@@ -10,13 +10,13 @@ tags: [drug-discovery, machine-learning, network-biology]
 
 # Drug-[[Target Prediction Project]]
 
-## [[Overview
+## Overview
 
-Develop]] [[Machine Learning]] platform for predicting drug-protein interactions by integrating network biology, structural [[Data]], and chemical [[Features]].
+Develop [[Machine Learning]] platform for predicting drug-protein interactions by integrating network biology, structural [[Data]], and chemical [[Features]].
 
-## [[Hypothesis
+## Hypothesis
 
-Protein]] network centrality combined with structural and chemical features improves [[Drug-Target Prediction]] accuracy beyond sequence-[[Based]] methods alone.
+Protein network centrality combined with structural and chemical features improves [[Drug-Target Prediction]] accuracy beyond sequence-[[Based]] methods alone.
 
 ## Approach
 

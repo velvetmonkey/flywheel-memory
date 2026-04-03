@@ -10,18 +10,18 @@ tags:
   - pricing
   - strategy
 ---
-# [[Dec]]-001: [[Pricing Model
+# [[Dec]]-001: Pricing Model
 
-Decision]] on pricing tiers and structure
+Decision on pricing tiers and structure
 
 **[[Status]]:** Approved
 **Decided:** 2025-12-15
 **Owner:** [[Alex Chen]] + [[Jamie Patel]]
 **Impact:** Revenue [[Strategy]], customer segmentation
 
-## [[Context
+## Context
 
-Pre]]-[[Launch]], we [[Need]] to define pricing before [[First]] customer signs up.
+Pre-[[Launch]], we [[Need]] to define pricing before [[First]] customer signs up.
 
 **[[Key]] questions:**
 1. Usage-[[Based]] or seat-based pricing?

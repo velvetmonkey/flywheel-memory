@@ -27,9 +27,9 @@ tags:
 - [[James Park]] ([[Structures Lead]])
 - [[David Kim]] ([[Senior Propulsion Engineer]])
 
-## [[Agenda
+## Agenda
 
-1]]. [[Test 3]] [[Results Review]] (120-[[Second Burn]])
+1. [[Test 3]] [[Results Review]] (120-[[Second Burn]])
 2. [[Test 4]] planning ([[Restart Test]], [[Jan 15]])
 3. [[Avionics System]] [[Integration Status]]
 4. [[Structures System]] fabrication update

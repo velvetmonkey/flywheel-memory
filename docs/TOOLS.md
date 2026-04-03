@@ -1,6 +1,6 @@
 # Tools
 
-The `full` preset (default) shows the default-visible surface immediately. Use `auto` for progressive disclosure, which activates the full surface including `discover_tools`. Use `agent` for a fixed reduced set covering search, read, write, tasks, and memory. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
+The `agent` preset (default) provides search, read, write, tasks, and memory. Use `full` to expose the entire tool surface immediately, or `auto` for progressive disclosure including `discover_tools`. See [CONFIGURATION.md](CONFIGURATION.md) for presets.
 
 - [At a Glance](#at-a-glance)
 - [Find Anything](#find-anything)
@@ -426,7 +426,7 @@ Monitor, configure, and maintain your vault.
 
 ## Tool Selection Intelligence
 
-Under `full` (the default), the default-visible surface is shown at startup. Under `agent`, only the fixed reduced surface is shown (search, read, write, tasks, memory).
+Under `agent` (the default), only the fixed reduced surface is shown at startup (search, read, write, tasks, memory). Under `full`, the full surface is shown immediately.
 
 Under `auto`, Flywheel progressively discloses tools across three tiers via `discover_tools`:
 

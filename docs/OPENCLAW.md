@@ -70,7 +70,7 @@ Add Flywheel to `~/.openclaw/openclaw.json`:
 This is the minimum useful integration:
 
 - `VAULT_PATH` points Flywheel at the Obsidian vault you want the bot to use
-- Flywheel defaults to the full tool surface. Set `FLYWHEEL_TOOLS` to restrict it (see Step 4).
+- Flywheel defaults to the `agent` tool surface. Set `FLYWHEEL_TOOLS` to expand it (see Step 4).
 
 Restart OpenClaw after editing the config.
 
@@ -145,15 +145,15 @@ OpenClaw's `bindings[]` model is the right place to decide which conversations g
 
 | Preset | When to use it | What you get |
 |--------|----------------|--------------|
-| `agent` | Best starting point for most OpenClaw bots | search, read, write, tasks, memory |
-| `full` | When the bot should be able to use the default full vault surface immediately | All tools visible up front |
+| `agent` (default) | Best starting point for most OpenClaw bots | search, read, write, tasks, memory |
 | `agent,graph,wikilinks` | Good middle ground for assistant-style bots that need richer graph context | agent plus graph and linking tools |
+| `full` | When the bot needs the entire vault surface immediately | All tools visible up front |
 
 Recommended starting point:
 
-- Start with `agent` for note capture, search, task updates, and general vault Q&A.
-- Move to `full` when you want graph analysis, schema tools, diagnostics, temporal tools, or policy authoring without revisiting the config.
-- Use explicit bundles if you know exactly what the bot should and should not be able to touch.
+- The default (`agent`) covers note capture, search, task updates, and general vault Q&A.
+- Add bundles for specific capabilities (e.g. `agent,graph` for graph analysis).
+- Use `full` when you want graph analysis, schema tools, diagnostics, temporal tools, and policy authoring without revisiting the config.
 
 The important distinction:
 

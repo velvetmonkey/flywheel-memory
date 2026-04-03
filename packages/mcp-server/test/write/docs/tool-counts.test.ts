@@ -340,8 +340,8 @@ describe('Documentation Wording Contracts', () => {
     const config = await readDoc('docs/CONFIGURATION.md');
     const combined = tools + config;
 
-    // Must mention full as default somewhere
-    expect(combined).toMatch(/`full`[^`]*default|default[^`]*`full`/i);
+    // Must mention agent as default somewhere
+    expect(combined).toMatch(/`agent`[^`]*default|default[^`]*`agent`/i);
   });
 
   it('docs describe agent as the fixed reduced preset', async () => {

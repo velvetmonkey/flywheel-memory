@@ -563,7 +563,7 @@ No telemetry. No analytics. No phone-home. No remote git operations.
 
 The `tool-registry.ts` module manages tool visibility via `applyToolGating()`, which monkey-patches `server.tool()` to track registrations and control visibility through a `ToolTierController`.
 
-Under `full` (the default), all tools are visible at startup with no tiering. Under `agent`, only the fixed reduced surface is visible (search, read, write, tasks, memory).
+Under `agent` (the default), only the core surface is visible (search, read, write, tasks, memory). Under `full`, all tools are visible at startup with no tiering.
 
 ### Tiered Visibility (auto preset)
 

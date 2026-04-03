@@ -69,7 +69,7 @@ Two layers of configuration: **environment variables** set in your MCP config (s
 }
 ```
 
-No `FLYWHEEL_TOOLS` needed — defaults to `full` (the 65-tool default-visible surface). Add it only to override.
+No `FLYWHEEL_TOOLS` needed — defaults to `agent` (search, read, write, tasks, memory). Add it only to override.
 
 ### Claude Desktop (`claude_desktop_config.json`)
 
@@ -136,16 +136,16 @@ Vault root detection order:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `FLYWHEEL_TOOLS` | `full` | Preset, bundle, or comma-separated category list |
+| `FLYWHEEL_TOOLS` | `agent` | Preset, bundle, or comma-separated category list |
 | `FLYWHEEL_PRESET` | — | Alias for `FLYWHEEL_TOOLS` (either works) |
 
 #### Quick Start
 
 | Preset | Behaviour |
 |--------|-----------|
-| `full` (default) | All tools visible at startup |
+| `agent` (default) | Fixed set — search, read, write, tasks, memory |
+| `full` | All tools visible at startup |
 | `auto` | Progressive disclosure across the full surface via `discover_tools` |
-| `agent` | Fixed reduced set — search, read, write, tasks, memory |
 
 #### Composable Bundles
 
@@ -177,7 +177,9 @@ Start with `agent`, then add what you need:
 
 Set `FLYWHEEL_TOOLS` to a preset, one or more bundles, individual categories, or any combination — comma-separated. Bundles expand to their constituent categories, and duplicates are deduplicated automatically.
 
-`full` is the default — all categories are enabled and the 65-tool default-visible surface is advertised at startup. This is the safe choice for clients that don't support dynamic tool list updates (e.g. Claude Code).
+`agent` is the default — search, read, write, tasks, memory. No progressive disclosure. Compose with bundles for more capabilities (e.g. `agent,graph`).
+
+`full` enables all categories and advertises the 65-tool surface at startup. Use this when you want everything visible immediately.
 
 `auto` enables progressive disclosure via `discover_tools` across three tiers:
 
@@ -185,9 +187,7 @@ Set `FLYWHEEL_TOOLS` to a preset, one or more bundles, individual categories, or
 - **Tier 2** unlocks when the conversation shifts into graph, wikilink, correction, temporal, or diagnostics work
 - **Tier 3** stays on-demand for schema operations, note operations, and deep diagnostics
 
-`agent` is a fixed reduced set — search, read, write, tasks, memory. No progressive disclosure.
-
-`default` is a deprecated alias for `full`, retained for backward compatibility.
+`default` is a deprecated alias for `agent`, retained for backward compatibility.
 
 In `auto` mode, use `flywheel_config({ mode: "set", key: "tool_tier_override", value: "full" })` to reveal everything immediately, or `"minimal"` to keep only tier-1 tools advertised. This setting has no effect in `full` or `agent` mode.
 
@@ -199,7 +199,7 @@ In `auto` mode, use `flywheel_config({ mode: "set", key: "tool_tier_override", v
 }
 ```
 
-Unknown names are ignored with a warning. If nothing valid is found, falls back to `full`.
+Unknown names are ignored with a warning. If nothing valid is found, falls back to `agent`.
 
 #### Tool Routing
 

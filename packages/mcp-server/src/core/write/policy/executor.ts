@@ -339,7 +339,7 @@ async function executeCreateNote(
       // Template frontmatter as base, policy-provided overrides
       frontmatter = { ...(parsed.data || {}), ...frontmatter };
     } catch {
-      return { success: false, notePath, message: `Template not found: ${params.template}` };
+      return { success: false, path: notePath, message: `Template not found: ${params.template}` };
     }
   }
 

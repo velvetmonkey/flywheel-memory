@@ -18,9 +18,9 @@ tags:
 [[Test Budget]]: $800K (5.7% of $14M [[Total]] budget)
 [[Test Philosophy]]: Incremental build-up, fail early, learn fast
 
-## [[Test Strategy
+## Test Strategy
 
-Per]] [[ADR-004 Test Campaign]], the program uses an **[[Incremental Test Approach]]** with [[Hardware]]-in-[[Loop Simulation]]:
+Per [[ADR-004 Test Campaign]], the program uses an **[[Incremental Test Approach]]** with [[Hardware]]-in-[[Loop Simulation]]:
 
 ```
 Component Tests → Subsystem Tests → Hardware-in-Loop → Hot Fire → Integrated → Flight
@@ -424,9 +424,9 @@ Component Tests → Subsystem Tests → Hardware-in-Loop → Hot Fire → Integr
 
 ## [[Lessons Learned]]
 
-### [[Successes
+### Successes
 
-1]]. **Incremental approach validated**
+1. **Incremental approach validated**
    - Component tests caught issues early (fuel tank weld)
    - Subsystem tests validated integration (no surprises)
    - Hot fire tests [[Built]] confidence progressively
@@ -445,9 +445,9 @@ Component Tests → Subsystem Tests → Hardware-in-Loop → Hot Fire → Integr
    - Secured all test stand slots by booking 3 months ahead
    - Avoided schedule delays from facility conflicts
 
-### Areas for [[Improvement
+### Areas for Improvement
 
-1]]. **Component test thoroughness**
+1. **Component test thoroughness**
    - Fuel tank weld issue [[Found]] in pressure test ([[Good]] catch)
    - Recommend earlier NDT inspection in future programs
 

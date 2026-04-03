@@ -11,9 +11,9 @@ impact: foundational
 
 # mRNA-Seq whole-transcriptome analysis of a single cell
 
-## [[Summary
+## Summary
 
-First]] demonstration of RNA-Seq at single-cell resolution. Opened new field of single-cell transcriptomics revealing cell-to-cell heterogeneity.
+First demonstration of RNA-Seq at single-cell resolution. Opened new field of single-cell transcriptomics revealing cell-to-cell heterogeneity.
 
 ## [[Key Findings]]
 
@@ -21,13 +21,13 @@ First]] demonstration of RNA-Seq at single-cell resolution. Opened new field of 
 - **Sensitivity**: [[Detected 75]]% of known transcripts
 - **Heterogeneity**: Revealed expression variability in "identical" cells
 
-## [[Methodology
+## Methodology
 
-Builds]] on [[Mortazavi2008-RNA-Seq]] with [[Single-Cell Isolation]] and [[Whole Transcriptome Amplification]].
+Builds on [[Mortazavi2008-RNA-Seq]] with [[Single-Cell Isolation]] and [[Whole Transcriptome Amplification]].
 
-## Relevance to [[My Work
+## Relevance to My Work
 
-Core]] method for [[Single-Cell RNA-Seq Analysis]] [[Project]]. [[Protocol]] adapted in [[Experiment-2024-11-15]].
+Core method for [[Single-Cell RNA-Seq Analysis]] [[Project]]. [[Protocol]] adapted in [[Experiment-2024-11-15]].
 
 ## [[Related Work]]
 

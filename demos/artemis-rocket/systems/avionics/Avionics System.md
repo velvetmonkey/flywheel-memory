@@ -293,9 +293,9 @@ See [[Team Roster]] for full team details.
 
 See [[Project Roadmap]] for overall program schedule.
 
-## [[Risks
+## Risks
 
-See]] [[Risk Register]] for complete risk analysis.
+See [[Risk Register]] for complete risk analysis.
 
 **[[Medium Priority]]**:
 - R-007: [[Flight Software]] schedule (Score: 12)
@@ -348,9 +348,9 @@ See [[Budget Tracker]] for program-level budget.
 - [[Risk Register]]
 - [[Team Roster]]
 
-## [[Meeting Notes
+## Meeting Notes
 
-Recent]] discussions:
+Recent discussions:
 - [[2025-12-18 PDR Review]] - Avionics design review
 - [[2026-01-02 Sprint Planning]] - Q1 integration plan
 

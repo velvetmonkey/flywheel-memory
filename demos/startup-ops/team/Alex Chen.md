@@ -12,9 +12,9 @@ tags:
 ---
 # [[Alex Chen]]
 
-## [[Role
+## Role
 
-Co]]-Founder & CEO of [[MetricFlow]]
+Co-Founder & CEO of [[MetricFlow]]
 [[Focus]]: Product [[Strategy]], [[Engineering]] [[Leadership]]
 
 ## Background

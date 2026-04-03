@@ -10,9 +10,9 @@ related_experiments: [Experiment-2024-11-22]
 
 # [[AlphaFold]] [[Structure Prediction]] - EGFR [[Kinase Domain]]
 
-## [[Objective
+## Objective
 
-Generate]] [[High]]-confidence structure prediction for [[EGFR Kinase]] domain (residues 696-1022) for [[Use]] in drug docking studies.
+Generate [[High]]-confidence structure prediction for [[EGFR Kinase]] domain (residues 696-1022) for [[Use]] in drug docking studies.
 
 ## Methods
 
@@ -22,8 +22,8 @@ Generate]] [[High]]-confidence structure prediction for [[EGFR Kinase]] domain (
 - **Length**: 327 residues
 - **Known structures**: PDB 1M17, 2GS7 (for [[Validation]])
 
-### AlphaFold [[Setup
-Following]] [[Jumper2021-AlphaFold]] methodology:
+### AlphaFold Setup
+Following [[Jumper2021-AlphaFold]] methodology:
 - **MSA generation**: JackHMMER (5 iterations, UniRef90)
 - **Template search**: HHsearch against PDB70
 - **Model**: AlphaFold v2.3
@@ -54,9 +54,9 @@ Uses [[Transformer Architecture]] for structure module.
 - DFG motif (Asp855-Phe856-Gly857) in [[Active]] conformation
 - Activation loop (858-875) partially disordered
 
-## [[Discussion
+## Discussion
 
-High]]-confidence prediction validates AlphaFold for drug discovery [[Applications]]. Structure quality sufficient for molecular docking.
+High-confidence prediction validates AlphaFold for drug discovery [[Applications]]. Structure quality sufficient for molecular docking.
 
 **[[Next Steps]]**: Use in [[Experiment-2024-11-22]] for drug screening.
 

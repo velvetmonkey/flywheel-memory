@@ -9,9 +9,9 @@ tags:
   - interviews
   - customer-development
 ---
-# [[User Interview Synthesis
+# User Interview Synthesis
 
-Customer]] development interviews (Nov-[[Dec 2025]])
+Customer development interviews (Nov-[[Dec 2025]])
 
 Owner: [[Jamie Patel]]
 Interviews: 12 (8 prospects, 2 customers, 2 churned)
@@ -130,9 +130,9 @@ Interviewee: [[DataDriven Co]]
 
 **Insight:** Spreadsheet users easiest to convert, PowerBI switchers [[Good]] too
 
-## [[Feature Priority Ranking
+## Feature Priority Ranking
 
-Based]] on interview mentions:
+Based on interview mentions:
 
 | Feature | Mentions | Urgency | [[Status]] |
 |---------|----------|---------|--------|

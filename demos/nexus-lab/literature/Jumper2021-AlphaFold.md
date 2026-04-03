@@ -21,13 +21,13 @@ AlphaFold 2 [[Achieved]] near-experimental accuracy in protein structure predict
 - **Method**: Combines MSA [[Processing]] with structure module
 - **Impact**: [[Solved 50]]-year protein folding problem
 
-## [[Methodology
+## Methodology
 
-Uses]] [[Transformer Architecture]] for [[Multiple Sequence Alignment]] processing. Integrates [[Evolutionary Coupling]] signals with [[Spatial Graph Networks]].
+Uses [[Transformer Architecture]] for [[Multiple Sequence Alignment]] processing. Integrates [[Evolutionary Coupling]] signals with [[Spatial Graph Networks]].
 
-## Relevance to [[My Work
+## Relevance to My Work
 
-Foundation]] for [[Protein-Ligand Docking]] [[Project]]. Methods directly applicable to [[Structure-Based Drug Design]].
+Foundation for [[Protein-Ligand Docking]] [[Project]]. Methods directly applicable to [[Structure-Based Drug Design]].
 
 ## [[Related Papers]]
 

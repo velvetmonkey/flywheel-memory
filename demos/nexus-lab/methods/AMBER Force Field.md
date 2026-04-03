@@ -9,9 +9,9 @@ alternatives: [CHARMM, GROMOS, OPLS]
 
 # [[AMBER Force Field]]
 
-## [[Overview
+## Overview
 
-Assisted Model Building]] with [[Energy Refinement]] - empirical [[Force Field]] for biomolecular simulations.
+Assisted Model Building with [[Energy Refinement]] - empirical [[Force Field]] for biomolecular simulations.
 
 ## [[Energy Function]]
 
@@ -39,8 +39,8 @@ From [[Karplus2002-Molecular-Dynamics]]:
 ### [[Protein-Ligand Docking]]
 [[Used In]] [[Experiment-2024-11-22]] for binding affinity refinement.
 
-### [[Protein Folding
-Simulating]] conformational changes and stability.
+### Protein Folding
+Simulating conformational changes and stability.
 
 ## [[Software]]
 

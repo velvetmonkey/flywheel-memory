@@ -6,21 +6,21 @@ next_renewal: "2026-04-01"
 
 Our [[First]] paying customer!
 
-## [[Company Info
+## Company Info
 
-Industry]]: [[Manufacturing Analytics
-Size]]: 50 employees
+Industry: Manufacturing Analytics
+Size: 50 employees
 Website: www.[[DataDriven]].[[Example]].com
 
-## [[Contact
+## Contact
 
-Primary]]: [[Sarah Johnson]] (Head of Analytics)
+Primary: [[Sarah Johnson]] (Head of Analytics)
 Email: sarah@datadriven.example.com
 Phone: (555) 123-4567
 
-## [[Account Details
+## Account Details
 
-Status]]: [[Active]]
+Status: [[Active]]
 MRR: $499
 Owner: [[Alex Chen]]
 Signed: 2026-01-01

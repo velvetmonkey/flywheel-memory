@@ -39,10 +39,10 @@ Year-end review and retrospective for the [[Artemis Program]]. Celebrate accompl
 1. 2025 [[Year in Review]]
 2. [[Test Results Celebration]] ([[Tests 1]] & 2)
 3. [[Accomplishments by Subsystem]]
-4. Lessons [[Learned
-5]]. [[Budget & Schedule Review]]
-6. 2026 [[Priorities
-7]]. [[Team Feedback]] & Retrospective
+4. Lessons Learned
+5. [[Budget & Schedule Review]]
+6. 2026 Priorities
+7. [[Team Feedback]] & Retrospective
 
 ## 2025 [[Year in Review]]
 

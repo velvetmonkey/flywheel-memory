@@ -159,8 +159,8 @@ The Artemis Propulsion [[System]] is a liquid-fueled rocket [[Engine]] designed 
 
 ## [[Test Campaign]]
 
-### [[Completed Tests
-See]] [[Engine Hot Fire Results]] for full data.
+### Completed Tests
+See [[Engine Hot Fire Results]] for full data.
 
 **Test 1** (2025-12-28): [[Ignition Validation]]
 - Duration: 30s
@@ -177,8 +177,8 @@ See]] [[Engine Hot Fire Results]] for full data.
 - Objectives: Performance stability, vibration environment
 - Result: ✅ Steady-state performance validated
 
-### [[Upcoming Tests
-See]] [[Upcoming Tests]] for schedule.
+### Upcoming Tests
+See [[Upcoming Tests]] for schedule.
 
 **Test 4** (2026-01-08): Mission-[[Like Duration]]
 - Duration: 180s
@@ -247,9 +247,9 @@ See [[Team Roster]] for full team details.
 
 See [[Project Roadmap]] for overall program schedule.
 
-## [[Risks
+## Risks
 
-See]] [[Risk Register]] for complete risk analysis.
+See [[Risk Register]] for complete risk analysis.
 
 **[[High Priority]]**:
 - R-003: [[Turbopump]] delivery delay (Score: 15)
@@ -296,9 +296,9 @@ See [[Budget Tracker]] for program-level budget.
 - [[Risk Register]]
 - [[Team Roster]]
 
-## [[Meeting Notes
+## Meeting Notes
 
-Recent]] discussions:
+Recent discussions:
 - [[2025-12-23 Propulsion Standup]] - Test 2 planning
 - [[2025-12-30 Year End Review]] - Turbopump risk escalation
 - [[2026-01-02 Sprint Planning]] - Q1 test campaign

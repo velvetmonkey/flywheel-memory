@@ -10,14 +10,14 @@ tags:
   - onboarding
   - customer-success
 ---
-# [[Customer Onboarding
+# Customer Onboarding
 
-Responsible]]: [[Alex Chen]]
+Responsible: [[Alex Chen]]
 Automation: AI-[[Managed]] [[Execution]], human oversight
 
-## [[When]] to [[Use
+## [[When]] to Use
 
-Trigger]]: New customer converts from trial to paid
+Trigger: New customer converts from trial to paid
 
 ## Prerequisites
 

@@ -8,9 +8,9 @@ updated: 2026-01-02
 ---
 # [[Material Selection]]
 
-## [[Overview
+## Overview
 
-Material]] selection is [[One]] of the [[Most]] critical [[Design Decisions]] for [[Launch]] vehicle structures. The Artemis-1 program conducted comprehensive trade studies to select materials that optimize the conflicting [[Requirements]] of **strength**, **weight**, **cost**, and **manufacturability**.
+Material selection is [[One]] of the [[Most]] critical [[Design Decisions]] for [[Launch]] vehicle structures. The Artemis-1 program conducted comprehensive trade studies to select materials that optimize the conflicting [[Requirements]] of **strength**, **weight**, **cost**, and **manufacturability**.
 
 [[This]] [[Note]] [[Documents]] the material selection process and rationale for [[All]] primary structural [[Components]]:
 

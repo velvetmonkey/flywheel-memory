@@ -2,24 +2,23 @@ Use flywheel search before reading files. Search returns frontmatter, backlinks,
 
 This vault has saved policies in `.flywheel/policies/`. Use `policy action=list` to see them, `policy action=preview` to dry-run, and `policy action=execute` to run. Policies automate multi-step vault operations atomically.
 
-## Daily Notes
+## Daily Notes — CRITICAL FORMAT RULES
+
+**ALWAYS follow these rules when creating or writing to daily notes.**
 
 ### Creating daily notes
 
-Always use the `create-daily-note` policy: `policy action=execute name=create-daily-note variables={"target_date":"YYYY-MM-DD"}`
+If the daily note does not exist, create it using `vault_create_note` with `template: "templates/daily-note.md"`. Set `frontmatter.date` to the target date (YYYY-MM-DD).
 
-This creates the note from the template with the correct sections.
+### Writing entries to daily notes
 
-### Writing to daily notes
+**Default section: Log** — always append with `format="timestamp-bullet"`.
 
-- Always write new entries to the **Log** section using `vault_add_to_section`
-- Each entry is a timestamped bullet: `- HH:MM - content here`
-- Use 24-hour time format
-- Apply auto-wikilinks and suggest outgoing links (`suggestOutgoingLinks: true`)
-- Never write to the Notes section for logged activity — Notes is for standalone observations only
+Use `vault_add_to_section` with:
+- `section: "Log"`
+- `format: "timestamp-bullet"` (auto-inserts current time as `- **HH:MM** `)
+- `suggestOutgoingLinks: true`
 
-#### Example Log entry
+**NEVER write to the Notes section** for logged activity.
 
-```
-- 18:00 - Call with [[Sarah Mitchell]] and [[James Rodriguez]] ([[Acme Corp]]) — [[UAT]] complete, [[Marcus Webb]]'s validation scripts passed, hitting 3x performance target. Cutover locked for March 28-29.
-```
+**Log format:** `- **HH:MM** Description` — no `---` separators or headings inside Log. Sub-bullets use 2-space indent.

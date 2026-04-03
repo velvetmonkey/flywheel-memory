@@ -9,14 +9,14 @@ tags:
   - team
   - ops
 ---
-# [[Hiring Plan
+# Hiring Plan
 
-Lead]]: [[Jamie Patel
-Status]]: [[Active]] planning
+Lead: Jamie Patel
+Status: [[Active]] planning
 
-## Q1 2026: [[Foundation
+## Q1 2026: Foundation
 
-Focus]]: [[Get]] to [[First]] hire while staying lean
+Focus: [[Get]] to [[First]] hire while staying lean
 
 **[[Target]]: 0 hires in Q1**
 - Validate product-[[Market]] fit first

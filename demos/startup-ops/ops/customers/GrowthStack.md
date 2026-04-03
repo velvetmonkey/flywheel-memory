@@ -14,9 +14,9 @@ tags:
 
 [[High]]-potential trial customer
 
-## [[Company Info
+## Company Info
 
-Industry]]: SaaS ([[Project Management]])
+Industry: SaaS ([[Project Management]])
 Size: 120 employees
 Website: www.growthstack.[[Example]].com
 ARR: ~$5M
@@ -42,17 +42,17 @@ GrowthStack is a [[Project]] [[Management]] SaaS with 120 employees. [[They]] [[
 
 Currently [[Using]] a patchwork of [[Tools]] (Mixpanel + Tableau + [[Custom]] [[Scripts]]).
 
-## [[Decision Criteria
+## Decision Criteria
 
-Michael]]'s evaluation checklist:
+Michael's evaluation checklist:
 - [ ] [[API]] [[Integration]] with their Postgres warehouse ([[In Progress]])
 - [ ] Custom dashboard templates (Alex [[Working]] on it)
 - [ ] SSO / SAML auth (Q2 [[Feature]] for us)
 - [ ] Pricing negotiation (needs $800/mo, we're at $999)
 
-## [[Concerns
+## Concerns
 
-1]]. SSO requirement - we [[Don]]'t [[Have]] [[This]] yet (roadmap Q2)
+1. SSO requirement - we [[Don]]'t [[Have]] [[This]] yet (roadmap Q2)
 2. [[Price]] sensitivity - bootstrapped [[Company]]
 3. [[Technical]] complexity - need white-glove onboarding
 

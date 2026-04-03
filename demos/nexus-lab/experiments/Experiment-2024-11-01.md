@@ -9,9 +9,9 @@ methods: [Convolutional-Neural-Networks, Position-Weight-Matrices]
 
 # [[Transcription Factor Binding Site]] Prediction - [[CTCF Motifs]]
 
-## [[Objective
+## Objective
 
-Train]] CNN to predict CTCF binding sites from DNA sequence. Compare to [[Traditional]] PWM-[[Based]] methods.
+Train CNN to predict CTCF binding sites from DNA sequence. Compare to [[Traditional]] PWM-[[Based]] methods.
 
 ## Methods
 

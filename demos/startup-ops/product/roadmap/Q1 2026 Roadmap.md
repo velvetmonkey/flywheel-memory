@@ -10,9 +10,9 @@ tags:
   - product
   - strategy
 ---
-# Q1 2026 [[Roadmap
+# Q1 2026 Roadmap
 
-Product]] [[Priorities]] for January - [[March 2026]]
+Product [[Priorities]] for January - [[March 2026]]
 
 Owner: [[Alex Chen]]
 [[Review Frequency]]: Weekly (at [[Monday Standup Prep]])

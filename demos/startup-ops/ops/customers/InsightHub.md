@@ -39,9 +39,9 @@ Email: david@insighthub.example.com
 
 **Lifetime: 29 days paid**
 
-## [[Churn Reason
+## Churn Reason
 
-Primary]]: [[Performance]] issues with large datasets
+Primary: [[Performance]] issues with large datasets
 
 David's feedback:
 > "[[MetricFlow]] is great for small datasets, [[But]] our 10M+ row tables caused query timeouts. We [[Need]] [[Sub]]-second response times for our dashboards, and we were seeing 30+ second loads. Had to switch to a more robust solution."

@@ -313,11 +313,41 @@ async function executeCreateNote(
   vaultPath: string,
   context: PolicyContext
 ): Promise<MutationResult> {
+  const notePath = String(params.path || '');
+  let content = String(params.content || '');
+  let frontmatter = (params.frontmatter as Record<string, unknown>) || {};
+
+  // Template expansion — matches logic in tools/write/notes.ts
+  if (params.template) {
+    try {
+      const templatePath = path.join(vaultPath, String(params.template));
+      const raw = await fs.readFile(templatePath, 'utf-8');
+      const matter = (await import('gray-matter')).default;
+      const parsed = matter(raw);
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      const title = path.basename(notePath, '.md');
+      let templateContent = parsed.content
+        .replace(/\{\{date\}\}/g, dateStr)
+        .replace(/\{\{title\}\}/g, title);
+
+      if (content) {
+        templateContent = templateContent.trimEnd() + '\n\n' + content;
+      }
+      content = templateContent;
+
+      // Template frontmatter as base, policy-provided overrides
+      frontmatter = { ...(parsed.data || {}), ...frontmatter };
+    } catch {
+      return { success: false, notePath, message: `Template not found: ${params.template}` };
+    }
+  }
+
   const outcome = await executeCreateNoteCore({
     vaultPath,
-    notePath: String(params.path || ''),
-    content: String(params.content || ''),
-    frontmatter: (params.frontmatter as Record<string, unknown>) || {},
+    notePath,
+    content,
+    frontmatter,
     overwrite: Boolean(params.overwrite),
     skipWikilinks: Boolean(params.skipWikilinks),
   });

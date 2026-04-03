@@ -10,18 +10,18 @@ tags:
   - market
   - strategy
 ---
-# [[Dec]]-002: [[Target Market
+# [[Dec]]-002: Target Market
 
-Decision]] on ideal customer profile (ICP)
+Decision on ideal customer profile (ICP)
 
 **[[Status]]:** 1 (approved - [[Note]]: intentional number for schema demo)
 **Decided:** 2026-01-03
 **Owner:** [[Jamie Patel]] + [[Alex Chen]]
 **Impact:** Sales [[Focus]], product roadmap, marketing messaging
 
-## [[Context
+## Context
 
-After]] [[InsightHub]] churn (large dataset [[Performance]] issues), we [[Need]] to clarify who we serve [[Best]].
+After [[InsightHub]] churn (large dataset [[Performance]] issues), we [[Need]] to clarify who we serve [[Best]].
 
 **[[Key]] question:** [[What]]'s our ideal customer profile for [[Next]] 10 customers?
 
@@ -122,9 +122,9 @@ After]] [[InsightHub]] churn (large dataset [[Performance]] issues), we [[Need]]
 
 **Caveat:** Will take select mid-market deals (100-500 employees) if [[They]] fit data profile (<1M rows)
 
-### [[Rationale
+### Rationale
 
-1]]. **[[InsightHub]] lesson:** We're not [[Ready]] for high-volume data (yet). Don't compete there.
+1. **[[InsightHub]] lesson:** We're not [[Ready]] for high-volume data (yet). Don't compete there.
 2. **[[DataDriven Co]] success:** 50-200 employee companies [[Are]] perfect fit - simple needs, good budget
 3. **Time to [[Value]]:** SMBs decide fast ([[Weeks]], not months). We're founder-led sales.
 4. **Roadmap [[Alignment]]:** Q1-Q2 features (caching, alerts) serve SMB needs

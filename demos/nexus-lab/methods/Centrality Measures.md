@@ -8,23 +8,23 @@ applications: [ppi-networks, gene-networks, drug-targets]
 
 # [[Centrality Measures]]
 
-## [[Overview
+## Overview
 
-Graph]] metrics for identifying important nodes in biological networks. Foundation of network biology.
+Graph metrics for identifying important nodes in biological networks. Foundation of network biology.
 
 ## [[Key Metrics]]
 
-### [[Degree Centrality
-Number]] of connections. [[High]]-degree proteins [[Are]] often [[Essential]].
+### Degree Centrality
+Number of connections. [[High]]-degree proteins [[Are]] often [[Essential]].
 
-### [[Betweenness Centrality
-Nodes]] bridging network communities. Often regulatory proteins.
+### Betweenness Centrality
+Nodes bridging network communities. Often regulatory proteins.
 
-### [[Closeness Centrality
-Average]] distance to [[All]] nodes. [[Central]] information processors.
+### Closeness Centrality
+Average distance to [[All]] nodes. [[Central]] information processors.
 
-### [[Eigenvector Centrality
-Importance]] weighted by neighbor importance. Hub of hubs.
+### Eigenvector Centrality
+Importance weighted by neighbor importance. Hub of hubs.
 
 ## Biological Interpretation
 
@@ -35,11 +35,11 @@ From [[Barabasi2004-Network-Biology]]:
 
 ## [[Applications]]
 
-### [[Drug Target Identification
-Used]] in [[Experiment-2024-11-18]] for [[PPI Network Analysis]].
+### Drug Target Identification
+Used in [[Experiment-2024-11-18]] for [[PPI Network Analysis]].
 
-### [[Disease Gene Prediction
-Network]] position predicts disease involvement.
+### Disease Gene Prediction
+Network position predicts disease involvement.
 
 ## Implementation
 

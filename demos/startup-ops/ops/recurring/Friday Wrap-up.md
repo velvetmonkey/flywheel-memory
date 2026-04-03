@@ -25,9 +25,9 @@ Participants: [[Alex Chen]], [[Jamie Patel]]
 - [ ] Revenue change vs Monday?
 - [ ] [[Team Morale]] check
 
-## [[Auto]]-[[Summary Format
+## [[Auto]]-Summary Format
 
-Add]] to this week's weekly [[Note]] (e.g., Week: [[2026-W01]]):
+Add to this week's weekly [[Note]] (e.g., Week: [[2026-W01]]):
 
 ```markdown
 ## Friday Wrap (auto-generated)
@@ -57,9 +57,9 @@ Add]] to this week's weekly [[Note]] (e.g., Week: [[2026-W01]]):
 3. ${priority_3}
 ```
 
-## Questions to [[Discuss
+## Questions to Discuss
 
-1]]. **Did we move the needle on MRR?**
+1. **Did we move the needle on MRR?**
    - If [[Yes]]: What worked? Do more.
    - If no: What [[Blocked]] us? How to fix?
 
@@ -72,9 +72,9 @@ Add]] to this week's weekly [[Note]] (e.g., Week: [[2026-W01]]):
    - Product?
    - Sales approach?
 
-## [[Weekend Handoff
+## Weekend Handoff
 
-Before]] [[Logging]] off:
+Before [[Logging]] off:
 
 **Alex:**
 - [ ] Any P0/P1 tickets open? → Resolve or plan for Monday
@@ -86,9 +86,9 @@ Before]] [[Logging]] off:
 - [ ] Monday's sales calls confirmed?
 - [ ] Any urgent fundraising tasks?
 
-## [[Celebration Ritual
+## Celebration Ritual
 
-If]] [[Big]] win this week (new customer, [[Feature]] shipped, funding milestone):
+If [[Big]] win this week (new customer, [[Feature]] shipped, funding milestone):
 - 🎉 Call it out explicitly
 - Share with investors in next update
 - Document in [[Achievements]] (if major)

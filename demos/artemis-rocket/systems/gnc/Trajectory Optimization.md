@@ -302,9 +302,9 @@ On 1.5 GHz CPU: ~100 ms per solve (empirical)
 Dynamics: x[k+1] = A*x[k] + B*u[k]
 
 Constraint matrix:
-  [x[1]]   [A  B  0  0  0]   [x[0]]
-  [x[2]] = [0  A  B  0  0] * [u[0]]
-  [x[3]]   [0  0  A  B  0]   [x[1]]
+  [x[1   [A  B  0  0  0]   [x[0
+  [x[2 = [0  A  B  0  0] * [u[0
+  [x[3   [0  0  A  B  0]   [x[1
   ...                         ...
 
 Sparse matrix (90% zeros) → faster solve (50 ms instead of 100 ms)

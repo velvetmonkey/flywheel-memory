@@ -10,9 +10,9 @@ related_experiments: [Experiment-2024-11-19]
 
 # [[PPI Network Analysis]] - [[Cancer Signaling Pathways]]
 
-## [[Objective
+## Objective
 
-Map]] protein-protein interaction network for EGFR signaling pathway. [[Identify]] hub proteins and drug targets.
+Map protein-protein interaction network for EGFR signaling pathway. [[Identify]] hub proteins and drug targets.
 
 ## Methods
 
@@ -21,8 +21,8 @@ Map]] protein-protein interaction network for EGFR signaling pathway. [[Identify
 - Experimental [[Data]] [[Only]] (co-IP, Y2H)
 - 324 proteins, 1,892 interactions
 
-### [[Centrality Analysis
-Applied]] [[Centrality Measures]] from [[Barabasi2004-Network-Biology]]:
+### Centrality Analysis
+Applied [[Centrality Measures]] from [[Barabasi2004-Network-Biology]]:
 - Degree centrality (connectivity)
 - Betweenness centrality (bottlenecks)
 - Eigenvector centrality (hub of hubs)

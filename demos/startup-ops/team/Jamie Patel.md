@@ -12,9 +12,9 @@ tags:
 ---
 # [[Jamie Patel]]
 
-## [[Role
+## Role
 
-Co]]-Founder & COO of [[MetricFlow]]
+Co-Founder & COO of [[MetricFlow]]
 [[Focus]]: Sales, operations, finance, fundraising
 
 ## Background

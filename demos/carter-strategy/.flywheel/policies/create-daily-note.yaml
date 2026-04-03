@@ -11,19 +11,45 @@ variables:
     description: "Date in YYYY-MM-DD format"
 
 conditions:
-  note_exists:
-    check: file_exists
+  note_missing:
+    check: file_not_exists
     path: "daily-notes/{{variables.target_date}}.md"
 
 steps:
   - id: create_note
     tool: vault_create_note
-    when: "{{conditions.note_exists | negate}}"
+    when: "{{conditions.note_missing}}"
     params:
       path: "daily-notes/{{variables.target_date}}.md"
-      template: "templates/daily-note.md"
       frontmatter:
+        type: daily
         date: "{{variables.target_date}}"
+        billable_hours: 0
+        clients_worked: []
+        tags:
+          - daily
+          - work-log
+      content: |
+        # {{variables.target_date}}
+
+        ## Log
+
+        ## Billable Summary
+
+        | Client | Hours | Rate | Amount |
+        |--------|-------|------|--------|
+
+        ## Tasks
+
+        ### Completed Today
+
+        ### In Progress
+
+        ### Upcoming
+
+        ## Notes
+
+        ## Related
 
 output:
   summary: "Daily note for {{variables.target_date}} created"

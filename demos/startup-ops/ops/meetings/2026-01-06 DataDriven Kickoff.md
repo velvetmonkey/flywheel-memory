@@ -2,14 +2,14 @@
 
 [[Customer Onboarding]] kickoff call
 
-[[Date]]: 2026-01-06 10:00am [[PST
-Duration]]: 45 minutes
+[[Date]]: 2026-01-06 10:00am PST
+Duration: 45 minutes
 Client: [[DataDriven Co]]
 Attendees: [[Alex Chen]], [[Sarah Johnson]] (Head of Analytics), [[Tom Wilson]] ([[IT Lead]])
 
-## [[Agenda
+## Agenda
 
-1]]. Introductions (5 min)
+1. Introductions (5 min)
 2. [[DataDriven]]'s [[Use Case]] and goals (10 min)
 3. Live walkthrough: Connect [[First]] [[Data]] source (15 min)
 4. Create starter dashboard together (10 min)

@@ -25,9 +25,9 @@ Participants: [[Alex Chen]], [[Jamie Patel]]
 - [ ] Check [[Runway Calculator]] - any alerts?
 - [ ] List customer calls [[Scheduled]] [[This]] week
 
-## [[Output Format
+## Output Format
 
-Add]] to today's daily [[Note]]:
+Add to today's daily [[Note]]:
 
 ```markdown
 ## Standup (auto-generated)
@@ -49,9 +49,9 @@ Add]] to today's daily [[Note]]:
 - ${blocker_2}
 ```
 
-## [[Discussion Items
+## Discussion Items
 
-Auto]]-detected [[Based]] on metrics:
+Auto-detected [[Based]] on metrics:
 
 | Trigger | [[Discussion Item]] |
 |---------|-----------------|
@@ -61,9 +61,9 @@ Auto]]-detected [[Based]] on metrics:
 | Runway <9 months | Fundraise [[Timeline]] |
 | [[Feature]] request volume [[High]] | Roadmap [[Priority]] review |
 
-## [[Actions Template
+## Actions Template
 
-Based]] on last week's [[Performance]]:
+Based on last week's [[Performance]]:
 
 **If sales slowed:**
 - [ ] [[Book 10]]+ demos this week

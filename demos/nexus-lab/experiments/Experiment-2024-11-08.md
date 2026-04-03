@@ -9,9 +9,9 @@ methods: [AMBER-Force-Field, Periodic-Boundary-Conditions]
 
 # [[Molecular Dynamics Equilibration]] - [[Membrane Protein System]]
 
-## [[Objective
+## Objective
 
-Equilibrate]] GPCR embedded in lipid bilayer for [[Production]] MD simulations. Validate [[Force Field]] and simulation [[Protocol]].
+Equilibrate GPCR embedded in lipid bilayer for [[Production]] MD simulations. Validate [[Force Field]] and simulation [[Protocol]].
 
 ## Methods
 

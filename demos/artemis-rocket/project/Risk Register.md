@@ -143,8 +143,8 @@ tags:
 - Peak season (May-Sept) has highest [[Demand]]
 
 **Mitigation Strategy**:
-1. ✅ Reserved all [[Available]] primary windows through [[March
-2]]. 🔄 Identified backup facility ([[Vandenberg Test Site]])
+1. ✅ Reserved all [[Available]] primary windows through March
+2. 🔄 Identified backup facility ([[Vandenberg Test Site]])
 3. 🔄 Front-load critical tests to Jan-April [[When]] facility access guaranteed
 4. ⏳ Negotiate [[Priority]] access ([[Premium]] pricing)
 

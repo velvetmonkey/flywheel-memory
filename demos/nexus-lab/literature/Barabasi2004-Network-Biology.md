@@ -11,9 +11,9 @@ impact: foundational
 
 # Network biology: understanding the cell's functional organization
 
-## [[Summary
+## Summary
 
-Comprehensive]] review establishing network analysis as fundamental tool for understanding cellular [[Systems]]. Introduced scale-free network properties in biological contexts.
+Comprehensive review establishing network analysis as fundamental tool for understanding cellular [[Systems]]. Introduced scale-free network properties in biological contexts.
 
 ## [[Key Concepts]]
 
@@ -25,9 +25,9 @@ Comprehensive]] review establishing network analysis as fundamental tool for und
 
 [[Graph Theory]] applied to [[Protein-Protein Interaction Networks]]. Introduced [[Centrality Measures]] for biological importance.
 
-## Relevance to [[My Work
+## Relevance to My Work
 
-Theoretical]] foundation for [[PPI Network Analysis]]. [[Centrality Measures]] [[Implemented]] in [[Experiment-2024-11-18]].
+Theoretical foundation for [[PPI Network Analysis]]. [[Centrality Measures]] [[Implemented]] in [[Experiment-2024-11-18]].
 
 ## [[Applications]]
 

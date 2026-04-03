@@ -147,9 +147,9 @@ See [[Risk Register]] for full analysis. Top 5 risks by impact:
 
 [[See]] [[Budget Tracker]] for detailed breakdown.
 
-## [[Team Organization
+## Team Organization
 
-See]] [[Team Roster]] for [[Complete]] org chart and contact info.
+See [[Team Roster]] for [[Complete]] org chart and contact info.
 
 **[[Leadership]]**:
 - [[Chief Engineer]]: [[Sarah Chen]]

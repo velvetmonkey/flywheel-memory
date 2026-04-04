@@ -42,7 +42,7 @@ Every accepted link strengthens the graph. Every rejected link updates the score
 
 From the [carter-strategy](demos/carter-strategy/) demo: log a call by voice, watch wikilinks and suggestions appear, accept and reject a few, then log again — the suggestions improve immediately.
 
-https://github.com/velvetmonkey/flywheel-memory/raw/main/demos/carter-strategy/carter-strategy-demo.mp4
+https://github.com/user-attachments/assets/bfdae034-6217-426e-bb1d-ff8e2f0d4bc3
 
 ### Write: Auto-wikilinks on mutation
 

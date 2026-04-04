@@ -106,8 +106,12 @@ export function normalizePath(filePath: string): string {
  * Get relative path from vault root
  */
 export function getRelativePath(vaultPath: string, filePath: string): string {
-  const relative = path.relative(vaultPath, filePath);
-  return normalizePath(relative);
+  // Normalize both paths before computing relative — on Windows, path.relative
+  // fails when casing differs (e.g. C:\Users vs c:/users from chokidar)
+  const normalizedVault = normalizePath(vaultPath);
+  const normalizedFile = normalizePath(filePath);
+  const relative = path.posix.relative(normalizedVault, normalizedFile);
+  return relative;
 }
 
 /**

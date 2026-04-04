@@ -10,6 +10,8 @@
 [![HotpotQA](https://img.shields.io/badge/HotpotQA-92.4%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 [![LoCoMo](https://img.shields.io/badge/LoCoMo-84.3%25%20evidence%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 
+> **Part of the Flywheel suite** &mdash; Flywheel Memory is the MCP server. [**Flywheel Crank**](https://github.com/velvetmonkey/flywheel-crank) is the Obsidian plugin that visualizes it.
+
 **[What It Does](#what-it-does)** · **[See It Work](#see-it-work)** · **[Skills + Flywheel](#skills--flywheel)** · **[Get Started](#get-started)** · **[Benchmarks](#benchmarks)** · **[Testing](#testing)** · **[Documentation](#documentation)** · **[License](#license)**
 
 Flywheel is a local MCP server that gives AI agents structured access to an Obsidian vault. Search returns a *decision surface* with frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. In many cases that is enough context to answer without opening a chain of files. Writes are git-committed, conflict-detected, and reversible. Auto-wikilinks use a deterministic scoring algorithm, and every suggestion has a traceable receipt.

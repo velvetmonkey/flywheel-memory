@@ -42,7 +42,7 @@ Every accepted link strengthens the graph. Every rejected link updates the score
 
 From the [carter-strategy](demos/carter-strategy/) demo: log a call by voice, watch wikilinks and suggestions appear, accept and reject a few, then log again — the suggestions improve immediately.
 
-<video src="https://github.com/user-attachments/assets/88266c83-36f5-4631-91f7-f3bc6f4b04ed" autoplay loop muted playsinline width="100%"></video>
+<video src="https://github.com/user-attachments/assets/2ad3282a-ac53-43fe-84cf-eef4aab6b207" autoplay loop muted playsinline width="100%"></video>
 
 ### Read: "How much have I billed Acme Corp?"
 

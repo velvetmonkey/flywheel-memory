@@ -42,15 +42,7 @@ Every accepted link strengthens the graph. Every rejected link updates the score
 
 From the [carter-strategy](demos/carter-strategy/) demo: log a call by voice, watch wikilinks and suggestions appear, accept and reject a few, then log again — the suggestions improve immediately.
 
-<video src="https://github.com/user-attachments/assets/2ad3282a-ac53-43fe-84cf-eef4aab6b207" autoplay loop muted playsinline width="100%"></video>
-
-### Read: "How much have I billed Acme Corp?"
-
-From the [carter-strategy](demos/carter-strategy/) demo: a consultant vault with clients, invoices, projects, notes, and graph structure the model can query directly.
-
-<video src="https://github.com/user-attachments/assets/ec1b51a7-cb30-4c49-a35f-aa82c31ec976" autoplay loop muted playsinline width="100%"></video>
-
-In this demo, a single search returns the invoice and client context needed to answer the question: frontmatter with amounts and status, related links, and the surrounding section content. The graph is doing the joining, so the model does not need a chain of follow-up reads to piece the answer together.
+![Voice: The learning loop](demos/carter-strategy/carter-strategy-demo.mp4)
 
 ### Write: Auto-wikilinks on mutation
 

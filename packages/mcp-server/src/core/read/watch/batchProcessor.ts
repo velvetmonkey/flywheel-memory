@@ -98,7 +98,8 @@ export async function processBatch(
     // Process chunk concurrently
     const chunkResults = await Promise.allSettled(
       chunk.map(async (event) => {
-        const relativePath = getRelativePath(vaultPath, event.path);
+        // event.path is already vault-relative from the pipeline
+        const relativePath = event.path;
 
         if (event.type === 'delete') {
           return deleteNote(index, relativePath);
@@ -126,7 +127,6 @@ export async function processBatch(
       } else {
         failed++;
         const event = chunk[j];
-        const relativePath = getRelativePath(vaultPath, event.path);
         const error = result.reason instanceof Error
           ? result.reason
           : new Error(String(result.reason));
@@ -134,11 +134,11 @@ export async function processBatch(
         results.push({
           success: false,
           action: 'unchanged',
-          path: relativePath,
+          path: event.path,
           error,
         });
 
-        onError?.(relativePath, error);
+        onError?.(event.path, error);
       }
     }
 

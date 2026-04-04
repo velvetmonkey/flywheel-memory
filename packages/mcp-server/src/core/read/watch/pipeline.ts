@@ -333,11 +333,12 @@ export class PipelineRunner {
       this.hasEntityRelevantChanges = true; // full rebuild — entity state unknown
       serverLog('watcher', `Index rebuilt (full): ${rebuilt.notes.size} notes, ${rebuilt.entities.size} entities`);
     } else {
-      const absoluteBatch = {
+      // Pass events with relative paths directly — batchProcessor handles joining with vaultPath
+      const relativeBatch = {
         ...p.batch,
-        events: p.events.map(e => ({ ...e, path: path.join(p.vp, e.path) })),
+        events: p.events,
       };
-      const batchResult = await processBatch(vaultIndex, p.vp, absoluteBatch, {
+      const batchResult = await processBatch(vaultIndex, p.vp, relativeBatch, {
         onError: (filePath, error) => {
           serverLog('watcher', `File processing error: ${filePath}: ${error.message}`, 'error');
         },

@@ -260,11 +260,13 @@ export async function upsertNote(
       entityFieldChanged,
     };
   } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error(`[flywheel] upsertNote FAILED for ${notePath}: ${err.message}`);
     return {
       success: false,
       action: 'unchanged',
       path: notePath,
-      error: error instanceof Error ? error : new Error(String(error)),
+      error: err,
     };
   }
 }

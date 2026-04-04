@@ -337,7 +337,11 @@ export class PipelineRunner {
         ...p.batch,
         events: p.events.map(e => ({ ...e, path: path.join(p.vp, e.path) })),
       };
-      const batchResult = await processBatch(vaultIndex, p.vp, absoluteBatch);
+      const batchResult = await processBatch(vaultIndex, p.vp, absoluteBatch, {
+        onError: (filePath, error) => {
+          serverLog('watcher', `File processing error: ${filePath}: ${error.message}`, 'error');
+        },
+      });
       this.hasEntityRelevantChanges = batchResult.hasEntityRelevantChanges;
       // Update builtAt so freshness checks reflect the incremental update
       vaultIndex.builtAt = new Date();

@@ -36,6 +36,12 @@ Every accepted link strengthens the graph. Every rejected link updates the score
 
 ## See It Work
 
+### Voice: The learning loop
+
+From the [carter-strategy](demos/carter-strategy/) demo: log a call by voice, watch wikilinks and suggestions appear, accept and reject a few, then log again — the suggestions improve immediately.
+
+<video src="https://github.com/user-attachments/assets/88266c83-36f5-4631-91f7-f3bc6f4b04ed" autoplay loop muted playsinline width="100%"></video>
+
 ### Read: "How much have I billed Acme Corp?"
 
 From the [carter-strategy](demos/carter-strategy/) demo: a consultant vault with clients, invoices, projects, notes, and graph structure the model can query directly.

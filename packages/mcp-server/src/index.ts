@@ -126,6 +126,7 @@ import * as fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import type { CoalescedEvent, RenameEvent } from './core/read/watch/types.js';
 import type { BatchHandler } from './core/read/watch/index.js';
+import { normalizePath } from './core/read/watch/pathFilter.js';
 
 // Multi-vault
 import { VaultRegistry, parseVaultConfig, type VaultContext } from './vault-registry.js';
@@ -1186,12 +1187,12 @@ async function runPostIndexWork(ctx: VaultContext) {
         // Convert event paths from absolute to vault-relative
         // Handles symlink mismatches (e.g., WSL /mnt/c/ vs /home/user/ mounts)
         const vaultPrefixes = new Set([
-          vp.replace(/\\/g, '/'),
-          rvp,
+          normalizePath(vp),
+          normalizePath(rvp),
         ]);
         /** Normalize a single path from absolute to vault-relative */
         const normalizeEventPath = (rawPath: string): string => {
-          const normalized = rawPath.replace(/\\/g, '/');
+          const normalized = normalizePath(rawPath);
           for (const prefix of vaultPrefixes) {
             if (normalized.startsWith(prefix + '/')) {
               return normalized.slice(prefix.length + 1);

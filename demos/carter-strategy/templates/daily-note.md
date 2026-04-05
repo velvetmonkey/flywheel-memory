@@ -1,27 +1,22 @@
 ---
 type: daily
+date: '{{date}}'
 billable_hours: 0
 clients_worked: []
 tags:
   - daily
   - work-log
 ---
-# {{title}}
+# {{date}}
 
 ## Log
 
-## [[Billable Summary]]
+## Billable Summary
 
 | Client | Hours | Rate | Amount |
 |--------|-------|------|--------|
 
 ## Tasks
-
-### Completed Today
-
-### In Progress
-
-### Upcoming
 
 ## Notes
 

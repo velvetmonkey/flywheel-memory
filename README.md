@@ -44,6 +44,8 @@ From the [carter-strategy](demos/carter-strategy/) demo: log a call by voice, wa
 
 https://github.com/user-attachments/assets/bfdae034-6217-426e-bb1d-ff8e2f0d4bc3
 
+https://github.com/user-attachments/assets/4a0635ff-dd73-4fb1-933d-bf384822e2ce
+
 ### Write: Auto-wikilinks on mutation
 
 ```text

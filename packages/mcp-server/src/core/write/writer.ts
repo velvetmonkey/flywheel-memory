@@ -485,13 +485,14 @@ export function formatContent(content: string, format: FormatType): string {
       }
       // Sanitize structural elements that break list parsing (headings → bold, * → -)
       const sanitized = sanitizeForList(trimmed);
-      // Indent continuation lines with 2 spaces to align under "- " text
-      // Keep empty lines empty for proper markdown paragraphs
-      // Preserve structured blocks (code, tables, blockquotes) as-is
       const lines = sanitized.split('\n');
+      let inCodeBlock = false;
       return lines.map((line, i) => {
+        if (isCodeFenceLine(line)) inCodeBlock = !inCodeBlock;
         if (i === 0) return `- ${line}`;
-        if (line === '') return '  ';  // Maintain indent on blank lines to preserve list nesting
+        // Blank lines with only whitespace get stripped by Obsidian, breaking list nesting.
+        // Use an invisible HTML comment outside code blocks to keep the line non-empty.
+        if (line === '') return inCodeBlock ? '  ' : '  <!-- -->';
         return `  ${line}`;
       }).join('\n');
     }
@@ -501,11 +502,12 @@ export function formatContent(content: string, format: FormatType): string {
         return trimmed;
       }
       // Indent continuation lines with 6 spaces to align under "- [ ] " text
-      // Preserve structured blocks (code, tables, blockquotes) as-is
       const lines = trimmed.split('\n');
+      let inCodeBlock = false;
       return lines.map((line, i) => {
+        if (isCodeFenceLine(line)) inCodeBlock = !inCodeBlock;
         if (i === 0) return `- [ ] ${line}`;
-        if (line === '') return '      ';  // Maintain indent on blank lines to preserve list nesting
+        if (line === '') return inCodeBlock ? '      ' : '      <!-- -->';
         return `      ${line}`;
       }).join('\n');
     }
@@ -515,11 +517,12 @@ export function formatContent(content: string, format: FormatType): string {
         return trimmed;
       }
       // Indent continuation lines with 3 spaces to align under "1. " text
-      // Preserve structured blocks (code, tables, blockquotes) as-is
       const lines = trimmed.split('\n');
+      let inCodeBlock = false;
       return lines.map((line, i) => {
+        if (isCodeFenceLine(line)) inCodeBlock = !inCodeBlock;
         if (i === 0) return `1. ${line}`;
-        if (line === '') return '   ';  // Maintain indent on blank lines to preserve list nesting
+        if (line === '') return inCodeBlock ? '   ' : '   <!-- -->';
         return `   ${line}`;
       }).join('\n');
     }
@@ -538,9 +541,11 @@ export function formatContent(content: string, format: FormatType): string {
       // Indent continuation lines to align under the text after "- "
       // Preserve structured blocks (code, tables, blockquotes) as-is
       const indent = '  ';
+      let inCodeBlock = false;
       return lines.map((line, i) => {
+        if (isCodeFenceLine(line)) inCodeBlock = !inCodeBlock;
         if (i === 0) return `${prefix}${line}`;
-        if (line === '') return indent;  // Maintain indent on blank lines to preserve list nesting
+        if (line === '') return inCodeBlock ? indent : `${indent}<!-- -->`;
         return `${indent}${line}`;
       }).join('\n');
     }

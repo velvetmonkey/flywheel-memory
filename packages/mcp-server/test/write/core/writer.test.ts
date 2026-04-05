@@ -285,22 +285,22 @@ describe('formatContent', () => {
     it('should indent continuation lines for bullet format', () => {
       const content = 'First line\n\nSecond line\nThird line';
       const result = formatContent(content, 'bullet');
-      // Blank lines carry indent to preserve Obsidian list nesting
-      expect(result).toBe('- First line\n  \n  Second line\n  Third line');
+      // Blank lines use HTML comment to preserve Obsidian list nesting
+      expect(result).toBe('- First line\n  <!-- -->\n  Second line\n  Third line');
     });
 
     it('should indent continuation lines for task format', () => {
       const content = 'Task description\n\nMore details';
       const result = formatContent(content, 'task');
-      // Blank lines carry indent to preserve Obsidian list nesting
-      expect(result).toBe('- [ ] Task description\n      \n      More details');
+      // Blank lines use HTML comment to preserve Obsidian list nesting
+      expect(result).toBe('- [ ] Task description\n      <!-- -->\n      More details');
     });
 
     it('should indent continuation lines for numbered format', () => {
       const content = 'First line\n\nSecond line';
       const result = formatContent(content, 'numbered');
-      // Blank lines carry indent to preserve Obsidian list nesting
-      expect(result).toBe('1. First line\n   \n   Second line');
+      // Blank lines use HTML comment to preserve Obsidian list nesting
+      expect(result).toBe('1. First line\n   <!-- -->\n   Second line');
     });
 
     it('should indent continuation lines for timestamp-bullet format', () => {
@@ -309,7 +309,7 @@ describe('formatContent', () => {
       // Verify first line has timestamp prefix and continuation is indented
       const lines = result.split('\n');
       expect(lines[0]).toMatch(/^- \*\*\d{2}:\d{2}\*\* First line$/);
-      expect(lines[1]).toBe('  ');  // Blank line carries indent to preserve list nesting
+      expect(lines[1]).toBe('  <!-- -->');  // Blank line uses HTML comment to preserve list nesting
       expect(lines[2]).toBe('  Second line');  // Indented with 2 spaces
     });
 
@@ -321,14 +321,36 @@ describe('formatContent', () => {
     it('should handle content with multiple blank lines', () => {
       const content = 'Line 1\n\n\nLine 2';
       const result = formatContent(content, 'bullet');
-      // Blank lines carry indent to preserve Obsidian list nesting
-      expect(result).toBe('- Line 1\n  \n  \n  Line 2');
+      // Blank lines use HTML comment to preserve Obsidian list nesting
+      expect(result).toBe('- Line 1\n  <!-- -->\n  <!-- -->\n  Line 2');
     });
 
     it('should preserve indentation in continuation lines', () => {
       const content = 'Parent item\n  - Nested item\n  - Another nested';
       const result = formatContent(content, 'bullet');
       expect(result).toBe('- Parent item\n    - Nested item\n    - Another nested');
+    });
+
+    it('should keep raw indent for blank lines inside fenced code blocks', () => {
+      const content = 'Description\n```\nline 1\n\nline 2\n```';
+      const result = formatContent(content, 'bullet');
+      // Blank line inside code block stays as raw indent, not commentized
+      expect(result).toBe('- Description\n  ```\n  line 1\n  \n  line 2\n  ```');
+    });
+
+    it('should resume HTML comment after closing fence', () => {
+      const content = 'Before\n```\ncode\n```\n\nAfter';
+      const result = formatContent(content, 'bullet');
+      // Blank line after closing fence gets HTML comment
+      expect(result).toBe('- Before\n  ```\n  code\n  ```\n  <!-- -->\n  After');
+    });
+
+    it('should handle opening fence on first line for bullet', () => {
+      const content = '```js\n\ncode\n```\n\ntext';
+      const result = formatContent(content, 'bullet');
+      // First line is opening fence → blank line inside code block stays raw
+      // After closing fence, blank line gets HTML comment
+      expect(result).toBe('- ```js\n  \n  code\n  ```\n  <!-- -->\n  text');
     });
   });
 
@@ -469,7 +491,7 @@ describe('formatContent', () => {
     it('should convert headings to bold in bullet format', () => {
       const content = 'Summary\n\n### Key Points\n\nDetails here';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- Summary\n  \n  **Key Points**\n  \n  Details here');
+      expect(result).toBe('- Summary\n  <!-- -->\n  **Key Points**\n  <!-- -->\n  Details here');
     });
 
     it('should convert multiple heading levels to bold in bullet format', () => {
@@ -481,7 +503,7 @@ describe('formatContent', () => {
     it('should convert * bullets to - bullets in bullet format', () => {
       const content = 'List of things:\n\n* First item\n* Second item\n* Third item';
       const result = formatContent(content, 'bullet');
-      expect(result).toBe('- List of things:\n  \n  - First item\n  - Second item\n  - Third item');
+      expect(result).toBe('- List of things:\n  <!-- -->\n  - First item\n  - Second item\n  - Third item');
     });
 
     it('should convert horizontal rules to em-dash in bullet format', () => {

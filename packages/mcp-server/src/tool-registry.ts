@@ -318,7 +318,9 @@ export function applyToolGating(
     for (const [name, handle] of toolHandles) {
       const enabled = shouldEnableTool(name);
       if (enabled !== handle.enabled) {
-        // Set directly to avoid per-tool sendToolListChanged() notifications
+        // Set directly instead of enable()/disable() to avoid per-tool
+        // sendToolListChanged() notifications — we send one batch notification below.
+        // `enabled` is a public mutable property on RegisteredTool (SDK >=1.26.0).
         handle.enabled = enabled;
         if (enabled) newlyEnabled.push(name);
       }
@@ -668,12 +670,30 @@ export function applyToolGating(
     };
   }
 
+  /**
+   * Install a custom CallTool handler that adds auto-promotion for tiered tools.
+   *
+   * When a client calls a disabled tier-2 tool directly, this handler auto-promotes
+   * the tool's category before the SDK rejects the call. This can't be done via
+   * handler wrappers because the SDK checks `tool.enabled` before calling handlers.
+   *
+   * SDK internal access (documented for version audits):
+   *   - serverAny.server.setRequestHandler — replaces the tool call handler
+   *   - serverAny.validateToolInput — input schema validation
+   *   - serverAny.executeToolHandler — handler invocation
+   *   - serverAny.validateToolOutput — output schema validation
+   *   - serverAny.createToolError — error response construction
+   *   - serverAny.handleAutomaticTaskPolling — task support (optional mode)
+   *
+   * These are stable across SDK 1.25–1.26 but not part of the public API.
+   * TODO: Upstream a pre-call hook or middleware API to eliminate this coupling.
+   */
   function installTieredCallHandler(): void {
     if (tierMode !== 'tiered') return;
     const serverAny = targetServer as any;
     serverAny.server.setRequestHandler(CallToolRequestSchema, async (request: any, extra: any) => {
       try {
-        const tool = serverAny._registeredTools[request.params.name];
+        const tool = toolHandles.get(request.params.name);
         if (!tool) {
           throw new McpError(ErrorCode.InvalidParams, `Tool ${request.params.name} not found`);
         }

@@ -15,6 +15,8 @@ import {
   formatContent,
   insertInSection,
   validatePath,
+  validatePathSecure,
+  isWithinDirectory,
   readVaultFile,
   writeVaultFile,
 } from '../../../src/core/write/writer.js';
@@ -650,6 +652,119 @@ Character: \xFF \xFE \xFD
 
       const result = await readTestNote(tempVault, 'high-ascii.md');
       expect(result).toContain('Character:');
+    });
+  });
+
+  // ========================================
+  // Path Boundary Security (sibling-directory prefix attacks)
+  // ========================================
+
+  describe('Path boundary security', () => {
+    describe('isWithinDirectory', () => {
+      it('should reject sibling directory with shared prefix', () => {
+        // /tmp/vault vs /tmp/vault-sibling — the classic prefix attack
+        expect(isWithinDirectory('/tmp/vault-sibling/file.md', '/tmp/vault')).toBe(false);
+      });
+
+      it('should accept paths within the directory', () => {
+        expect(isWithinDirectory('/tmp/vault/notes/file.md', '/tmp/vault')).toBe(true);
+      });
+
+      it('should reject parent directory traversal', () => {
+        expect(isWithinDirectory('/tmp/vault/../evil/file.md', '/tmp/vault')).toBe(false);
+      });
+
+      it('should reject when child equals parent (allowEqual=false)', () => {
+        expect(isWithinDirectory('/tmp/vault', '/tmp/vault')).toBe(false);
+      });
+
+      it('should accept when child equals parent (allowEqual=true)', () => {
+        expect(isWithinDirectory('/tmp/vault', '/tmp/vault', true)).toBe(true);
+      });
+
+      it('should handle paths with trailing slashes', () => {
+        expect(isWithinDirectory('/tmp/vault/file.md', '/tmp/vault/')).toBe(true);
+        expect(isWithinDirectory('/tmp/vault-sibling/file.md', '/tmp/vault/')).toBe(false);
+      });
+    });
+
+    describe('validatePath — sibling directory attacks', () => {
+      it('should reject sibling directory with matching prefix', () => {
+        // Create a vault path and test a sibling
+        const vault = tempVault;
+        const siblingDir = tempVault + '-sibling';
+        // Construct a relative path that would resolve to the sibling
+        const relativePath = '../' + path.basename(siblingDir) + '/file.md';
+        expect(validatePath(vault, relativePath)).toBe(false);
+      });
+
+      it('should reject nested traversal to sibling', () => {
+        const vault = tempVault;
+        const siblingName = path.basename(tempVault) + '-sibling';
+        const traversal = `subdir/../../${siblingName}/file.md`;
+        expect(validatePath(vault, traversal)).toBe(false);
+      });
+
+      it('should accept valid paths within vault', () => {
+        expect(validatePath(tempVault, 'notes/file.md')).toBe(true);
+        expect(validatePath(tempVault, 'file.md')).toBe(true);
+        expect(validatePath(tempVault, 'deep/nested/path/file.md')).toBe(true);
+      });
+    });
+
+    describe('validatePathSecure — sibling directory attacks', () => {
+      it('should reject sibling directory with matching prefix', async () => {
+        const siblingName = path.basename(tempVault) + '-sibling';
+        const traversal = `../${siblingName}/file.md`;
+        const result = await validatePathSecure(tempVault, traversal);
+        expect(result.valid).toBe(false);
+      });
+
+      it('should reject nested traversal to sibling', async () => {
+        const siblingName = path.basename(tempVault) + '-sibling';
+        const traversal = `subdir/../../${siblingName}/file.md`;
+        const result = await validatePathSecure(tempVault, traversal);
+        expect(result.valid).toBe(false);
+      });
+
+      it('should allow filenames starting with triple dots', async () => {
+        // Regression: the old guard rejected any path starting with '..'
+        // which would block legitimate filenames like '...note.md'
+        const result = await validatePathSecure(tempVault, '...note.md');
+        expect(result.valid).toBe(true);
+      });
+
+      it('should still reject paths starting with ../', async () => {
+        const result = await validatePathSecure(tempVault, '../escape.md');
+        expect(result.valid).toBe(false);
+      });
+
+      it('should reject symlink escaping vault', async () => {
+        // Create a symlink inside vault pointing outside
+        const outsideDir = tempVault + '-outside';
+        await fs.mkdir(outsideDir, { recursive: true });
+        await fs.writeFile(path.join(outsideDir, 'secret.md'), '# Secret');
+
+        const symlinkPath = path.join(tempVault, 'escape-link');
+        try {
+          await fs.symlink(outsideDir, symlinkPath);
+        } catch {
+          // Symlinks may not be available (e.g., Windows without admin)
+          return;
+        }
+
+        const result = await validatePathSecure(tempVault, 'escape-link/secret.md');
+        expect(result.valid).toBe(false);
+        expect(result.reason).toContain('outside vault');
+
+        // Cleanup
+        await fs.rm(outsideDir, { recursive: true });
+      });
+
+      it('should accept valid paths within vault', async () => {
+        const result = await validatePathSecure(tempVault, 'notes/valid-file.md');
+        expect(result.valid).toBe(true);
+      });
     });
   });
 });

@@ -247,11 +247,13 @@ describe('Path Encoding Attack Prevention', () => {
 
   describe('Edge cases', () => {
     it('should handle empty path', () => {
-      expect(validatePath(tempVault, '')).toBe(true);
+      // Empty path resolves to vault directory itself — not a valid note path
+      expect(validatePath(tempVault, '')).toBe(false);
     });
 
     it('should handle single dot (.)', () => {
-      expect(validatePath(tempVault, '.')).toBe(true);
+      // '.' resolves to vault directory itself — not a valid note path
+      expect(validatePath(tempVault, '.')).toBe(false);
     });
 
     it('should handle double dot without slash (..)', () => {

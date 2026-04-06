@@ -16,7 +16,7 @@
 
 Flywheel is a local MCP server that gives AI agents structured access to an Obsidian vault. Search returns a *decision surface* with frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. In many cases that is enough context to answer without opening a chain of files. Writes are git-committed, conflict-detected, and reversible. Auto-wikilinks use a deterministic scoring algorithm, and every suggestion has a traceable receipt.
 
-Everything runs on your machine. Nothing leaves your disk. Every action is bounded, inspectable, and reversible.
+Everything runs on your machine. Nothing leaves your disk. Every action is bounded, inspectable, and reversible. Semantic search is optional — when enabled via `init_semantic`, a 23 MB embedding model ([all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2)) is downloaded once to `~/.cache/huggingface/` and runs locally. No content is sent to any external service.
 
 ---
 

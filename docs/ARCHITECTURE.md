@@ -471,6 +471,8 @@ New tables are added directly to `SCHEMA_SQL` with `CREATE TABLE IF NOT EXISTS`,
 | v34 | Rebuilt `entities_fts` as contentless FTS5 (fixes aliases column mismatch) |
 | v35 | Added `matched_term` column on `wikilink_feedback` and `wikilink_applications` (per-alias feedback tracking) |
 | v36 | Added `tool_selection_feedback` table + `query_context` column on `tool_invocations` |
+| v37 | Added `prospect_ledger` + `prospect_summary` tables (pre-entity pattern accumulation) |
+| v38 | Added `source` column on `wikilink_applications` (proactive linking observability) |
 
 ---
 

@@ -265,10 +265,10 @@ describe('Permission Bypass Prevention', () => {
     });
 
     it('should handle double-dot hidden files', async () => {
-      // ..filename (not traversal, just unusual naming)
+      // ..filename is NOT traversal — it resolves inside the vault as a
+      // legitimate filename. Only '..' and '../' are traversal.
       const result = await validatePathSecure(tempVault, '..weird-name.md');
-      // This resolves to parent, should be blocked as traversal
-      expect(result.valid).toBe(false);
+      expect(result.valid).toBe(true);
     });
 
     it('should handle hidden directories with sensitive files', () => {

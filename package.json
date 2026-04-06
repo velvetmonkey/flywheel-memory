@@ -1,6 +1,6 @@
 {
   "name": "flywheel-memory-monorepo",
-  "version": "2.0.154",
+  "version": "0.0.0-private",
   "private": true,
   "description": "MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. Local-first, no cloud.",
   "workspaces": [

@@ -4,6 +4,8 @@
 
 Two layers of configuration: **environment variables** set in your MCP config (startup-time), and **runtime config** adjustable via the `flywheel_config` tool (persisted in StateDb). No config files to manage.
 
+> **First time?** You only need the [MCP Config](#mcp-config) section — one JSON block, zero environment variables. Everything else is optional.
+
 - [MCP Config](#mcp-config)
   - [Claude Code (`.mcp.json` in vault root)](#claude-code-mcpjson-in-vault-root)
   - [Claude Desktop (`claude_desktop_config.json`)](#claude-desktop-claude_desktop_configjson)

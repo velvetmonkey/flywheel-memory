@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
-    "@modelcontextprotocol/sdk": "^1.25.1",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@velvetmonkey/vault-core": "^2.5.10",
     "better-sqlite3": "^12.0.0",
     "chokidar": "^4.0.0",

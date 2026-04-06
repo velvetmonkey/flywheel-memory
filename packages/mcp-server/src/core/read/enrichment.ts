@@ -16,7 +16,7 @@ import { getContentPreview } from './fts5.js';
 export const TOP_LINKS = 10;
 const RECALL_TOP_LINKS = 5;
 
-/** Time decay matching get_weighted_links pattern (graph.ts:288) */
+/** Time decay — 180-day half-life for edge weight recency */
 export function recencyDecay(modifiedDate: Date | undefined): number {
   if (!modifiedDate) return 0.5; // unknown → neutral
   const daysSince = (Date.now() - modifiedDate.getTime()) / (1000 * 60 * 60 * 24);

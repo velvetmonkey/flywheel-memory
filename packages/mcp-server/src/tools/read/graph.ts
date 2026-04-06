@@ -256,61 +256,6 @@ export function registerGraphTools(
     }
   );
 
-  // get_weighted_links - Get outgoing links with edge weights
-  server.tool(
-    'get_weighted_links',
-    'Use when ranking outgoing links from a note by relationship strength. Produces weighted link entries reflecting edge survival, co-session access, and source activity. Returns ranked outgoing links with weight scores. Does not include incoming links — use get_strong_connections for bidirectional.',
-    {
-      path: z.string().describe('Path to the note (e.g., "daily/2026-02-24.md")'),
-      min_weight: z.number().default(1.0).describe('Minimum weight threshold (default 1.0)'),
-      limit: z.number().default(20).describe('Maximum number of results to return'),
-    },
-    async ({ path: notePath, min_weight, limit: requestedLimit }) => {
-      const stateDb = getStateDb?.();
-      if (!stateDb) {
-        return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'StateDb not initialized' }) }] };
-      }
-
-      const limit = Math.min(requestedLimit ?? 20, MAX_LIMIT);
-      const now = Date.now();
-
-      const rows = stateDb.db.prepare(`
-        SELECT target, weight, weight_updated_at
-        FROM note_links
-        WHERE note_path = ?
-        ORDER BY weight DESC
-      `).all(notePath) as Array<{ target: string; weight: number; weight_updated_at: number | null }>;
-
-      const results = rows
-        .map(row => {
-          const daysSinceUpdated = row.weight_updated_at
-            ? (now - row.weight_updated_at) / (1000 * 60 * 60 * 24)
-            : 0;
-          const decayFactor = Math.max(0.1, 1.0 - daysSinceUpdated / 180);
-          const effectiveWeight = Math.round(row.weight * decayFactor * 1000) / 1000;
-          return {
-            target: row.target,
-            weight: row.weight,
-            weight_effective: effectiveWeight,
-            last_updated: row.weight_updated_at,
-          };
-        })
-        .filter(r => r.weight_effective >= min_weight)
-        .slice(0, limit);
-
-      return {
-        content: [{
-          type: 'text' as const,
-          text: JSON.stringify({
-            note: notePath,
-            count: results.length,
-            links: results,
-          }, null, 2),
-        }],
-      };
-    }
-  );
-
   // get_strong_connections - Bidirectional connections ranked by combined weight
   server.tool(
     'get_strong_connections',

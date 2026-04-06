@@ -485,8 +485,8 @@ These are product quality signals that no amount of handler unit testing can det
 Results from live testing (2026-03-22). Claude discovers and uses flywheel tools when enabled.
 
 Current tool surface reference from `packages/mcp-server/src/config.ts`:
-- Total registered tools: 66 across 12 categories
-- `full` preset surface: 65 tools visible (`discover_tools` is `auto`-only)
+- Total registered tools: 69 across 12 categories
+- `full` preset surface: 68 tools visible (`discover_tools` is `auto`-only)
 - `agent` preset surface: 18 tools
 
 The embedded reports below are historical artifacts from runs on older tool surfaces. Keep the dated report numbers as historical evidence, but use the current counts above for the live product surface.
@@ -525,7 +525,7 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 | 3 | get_vault_stats, health_check | builtin:1 | Yes | ToolSearch -> health_check -> get_vault_stats |
 
 ### graph
-> Category: `graph` (10 tools)
+> Category: `graph` (9 tools)
 
 | Run | Target Tools Used | Other Tools | Hit? | Sequence |
 |-----|-------------------|-------------|------|----------|
@@ -620,7 +620,7 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 |--------|---------------|---------------|-------------------|------------------|
 | corrections | 4 | 3/3 (100%) | 1/4 | absorb_as_alias, vault_list_corrections, vault_resolve_correction |
 | diagnostics | 14 | 3/3 (100%) | 2/14 | dismiss_merge_suggestion, flywheel_config, flywheel_doctor, get_all_entities, get_folder_structure, get_unlinked_mentions, refresh_index, server_log, suggest_entity_merges, vault_activity, vault_growth, vault_init |
-| graph | 10 | 3/3 (100%) | 2/10 | get_backlinks, get_common_neighbors, get_forward_links, get_strong_connections, get_weighted_links, graph_analysis, list_entities, semantic_analysis |
+| graph | 9 | 3/3 (100%) | 2/9 | get_backlinks, get_common_neighbors, get_forward_links, get_strong_connections, graph_analysis, list_entities, semantic_analysis |
 | memory | 2 | 3/3 (100%) | 1/2 | memory |
 | note-ops | 4 | 3/3 (100%) | 1/4 | merge_entities, vault_delete_note, vault_move_note |
 | read | 3 | 3/3 (100%) | 1/3 | find_sections, get_section_content |
@@ -690,8 +690,7 @@ Each tool tested with a targeted prompt against the carter-strategy vault. The c
 | get_connection_strength | 1/1 | PASS | get_connection_strength |
 | get_forward_links | 1/1 | PASS | get_forward_links |
 | get_link_path | 0/1 | FAIL | list_entities, search |
-| get_strong_connections | 0/1 | FAIL | get_connection_strength, get_weighted_links, graph_analysis |
-| get_weighted_links | 1/1 | PASS | get_weighted_links, search |
+| get_strong_connections | 0/1 | FAIL | get_connection_strength, graph_analysis |
 | graph_analysis | 1/1 | PASS | graph_analysis, semantic_analysis |
 | list_entities | 1/1 | PASS | list_entities |
 | semantic_analysis | 1/1 | PASS | semantic_analysis |

@@ -11,7 +11,7 @@ import type { StateDb, EntitySearchResult } from '@velvetmonkey/vault-core';
 // TYPES
 // =============================================================================
 
-export type IndexEventTrigger = 'startup_cache' | 'startup_build' | 'watcher' | 'manual_refresh';
+export type IndexEventTrigger = 'startup_cache' | 'startup_build' | 'watcher' | 'manual_refresh' | 'maintenance' | 'deferred';
 
 export interface PipelineStep {
   name: string;

@@ -72,6 +72,130 @@ import {
 } from '../../write/wikilinkFeedback.js';
 import { processPendingCorrections } from '../../write/corrections.js';
 import { recomputeEdgeWeights } from '../../write/edgeWeights.js';
+
+// ── Deferred Step Scheduler ───────────────────────────────────────────
+//
+// When the watcher pipeline throttles a step (e.g. "co-occurrence < 1hr old"),
+// the scheduler sets a timer to run that step at its TTL expiry. If another
+// watcher batch fires before the timer, the timer is cancelled and rescheduled.
+// This ensures throttled steps eventually run even when no more edits arrive.
+
+export type DeferredStepName = 'entity_scan' | 'hub_scores' | 'recency' | 'cooccurrence' | 'edge_weights';
+
+export interface DeferredStepExecutor {
+  ctx: VaultContext;
+  vp: string;
+  sd: StateDb | null;
+  getVaultIndex: () => VaultIndex;
+  updateEntitiesInStateDb: (vp: string, sd: StateDb | null) => Promise<void>;
+}
+
+export class DeferredStepScheduler {
+  private timers = new Map<DeferredStepName, ReturnType<typeof setTimeout>>();
+  private executor: DeferredStepExecutor | null = null;
+
+  /** Set the executor context (called once during watcher setup) */
+  setExecutor(exec: DeferredStepExecutor): void {
+    this.executor = exec;
+  }
+
+  /** Schedule a deferred step to run after delayMs. Cancels any existing timer for this step. */
+  schedule(step: DeferredStepName, delayMs: number): void {
+    this.cancel(step);
+    const timer = setTimeout(() => {
+      this.timers.delete(step);
+      this.executeStep(step);
+    }, delayMs);
+    timer.unref(); // Don't prevent process exit
+    this.timers.set(step, timer);
+    serverLog('deferred', `Scheduled ${step} in ${Math.round(delayMs / 1000)}s`);
+  }
+
+  /** Cancel a pending deferred step */
+  cancel(step: DeferredStepName): void {
+    const existing = this.timers.get(step);
+    if (existing) {
+      clearTimeout(existing);
+      this.timers.delete(step);
+    }
+  }
+
+  /** Cancel all pending deferred steps (called on shutdown) */
+  cancelAll(): void {
+    for (const timer of this.timers.values()) clearTimeout(timer);
+    this.timers.clear();
+  }
+
+  /** Check if any steps are pending */
+  get pendingCount(): number { return this.timers.size; }
+
+  private async executeStep(step: DeferredStepName): Promise<void> {
+    const exec = this.executor;
+    if (!exec) return;
+
+    // Don't run if pipeline is busy
+    if (exec.ctx.pipelineActivity.busy) {
+      serverLog('deferred', `Skipping ${step}: pipeline busy`);
+      return;
+    }
+
+    const start = Date.now();
+    try {
+      switch (step) {
+        case 'entity_scan': {
+          await exec.updateEntitiesInStateDb(exec.vp, exec.sd);
+          exec.ctx.lastEntityScanAt = Date.now();
+          if (exec.sd) {
+            await exportHubScores(exec.getVaultIndex(), exec.sd);
+            exec.ctx.lastHubScoreRebuildAt = Date.now();
+          }
+          break;
+        }
+        case 'hub_scores': {
+          await exportHubScores(exec.getVaultIndex(), exec.sd);
+          exec.ctx.lastHubScoreRebuildAt = Date.now();
+          break;
+        }
+        case 'recency': {
+          const entities = exec.sd ? getAllEntitiesFromDb(exec.sd) : [];
+          const entityInput = entities.map(e => ({ name: e.name, path: e.path, aliases: e.aliases }));
+          const recencyIndex = await buildRecencyIndex(exec.vp, entityInput);
+          saveRecencyToStateDb(recencyIndex, exec.sd ?? undefined);
+          break;
+        }
+        case 'cooccurrence': {
+          const entities = exec.sd ? getAllEntitiesFromDb(exec.sd) : [];
+          const entityNames = entities.map(e => e.name);
+          const cooccurrenceIdx = await mineCooccurrences(exec.vp, entityNames);
+          setCooccurrenceIndex(cooccurrenceIdx);
+          exec.ctx.lastCooccurrenceRebuildAt = Date.now();
+          exec.ctx.cooccurrenceIndex = cooccurrenceIdx;
+          if (exec.sd) saveCooccurrenceToStateDb(exec.sd, cooccurrenceIdx);
+          break;
+        }
+        case 'edge_weights': {
+          if (exec.sd) {
+            recomputeEdgeWeights(exec.sd);
+            exec.ctx.lastEdgeWeightRebuildAt = Date.now();
+          }
+          break;
+        }
+      }
+      const duration = Date.now() - start;
+      serverLog('deferred', `Completed ${step} in ${duration}ms`);
+      if (exec.sd) {
+        recordIndexEvent(exec.sd, {
+          trigger: 'deferred',
+          duration_ms: duration,
+          note_count: exec.getVaultIndex().notes.size,
+        });
+      }
+    } catch (err) {
+      serverLog('deferred', `Failed ${step}: ${err instanceof Error ? err.message : err}`, 'error');
+    }
+  }
+}
+
 // ── Pipeline Activity (process-local runtime status) ────────────────
 
 /** Total number of steps in the pipeline (used for progress reporting) */
@@ -139,6 +263,8 @@ export interface PipelineContext {
   getVaultIndex: () => VaultIndex;
   /** buildVaultIndex function */
   buildVaultIndex: (vaultPath: string) => Promise<VaultIndex>;
+  /** Deferred step scheduler (optional — set when watcher is active) */
+  deferredScheduler?: DeferredStepScheduler;
 }
 
 type StepTracker = ReturnType<typeof createStepTracker>;
@@ -409,6 +535,7 @@ export class PipelineRunner {
       tracker.skip('entity_scan', `cache valid (${Math.round(entityScanAgeMs / 1000)}s old)`);
       this.entitiesBefore = p.sd ? getAllEntitiesFromDb(p.sd) : [];
       this.entitiesAfter = this.entitiesBefore;
+      p.deferredScheduler?.schedule('entity_scan', 5 * 60 * 1000 - entityScanAgeMs);
       serverLog('watcher', `Entity scan: throttled (${Math.round(entityScanAgeMs / 1000)}s old)`);
       return;
     }
@@ -465,6 +592,7 @@ export class PipelineRunner {
     const hubAgeMs = p.ctx.lastHubScoreRebuildAt > 0
       ? Date.now() - p.ctx.lastHubScoreRebuildAt : Infinity;
     if (hubAgeMs < 5 * 60 * 1000) {
+      p.deferredScheduler?.schedule('hub_scores', 5 * 60 * 1000 - hubAgeMs);
       serverLog('watcher', `Hub scores: throttled (${Math.round(hubAgeMs / 1000)}s old)`);
       return { skipped: true, age_ms: hubAgeMs };
     }
@@ -497,6 +625,7 @@ export class PipelineRunner {
       serverLog('watcher', `Recency: rebuilt ${recencyIndex.lastMentioned.size} entities`);
       return { rebuilt: true, entities: recencyIndex.lastMentioned.size };
     }
+    p.deferredScheduler?.schedule('recency', 60 * 60 * 1000 - cacheAgeMs);
     serverLog('watcher', `Recency: cache valid (${Math.round(cacheAgeMs / 1000)}s old)`);
     return { rebuilt: false, cached_age_ms: cacheAgeMs };
   }
@@ -520,6 +649,7 @@ export class PipelineRunner {
       serverLog('watcher', `Co-occurrence: rebuilt ${cooccurrenceIdx._metadata.total_associations} associations`);
       return { rebuilt: true, associations: cooccurrenceIdx._metadata.total_associations };
     }
+    p.deferredScheduler?.schedule('cooccurrence', 60 * 60 * 1000 - cooccurrenceAgeMs);
     serverLog('watcher', `Co-occurrence: cache valid (${Math.round(cooccurrenceAgeMs / 1000)}s old)`);
     return { rebuilt: false, age_ms: cooccurrenceAgeMs };
   }
@@ -546,6 +676,7 @@ export class PipelineRunner {
         top_changes: result.top_changes,
       };
     }
+    p.deferredScheduler?.schedule('edge_weights', 60 * 60 * 1000 - edgeWeightAgeMs);
     serverLog('watcher', `Edge weights: cache valid (${Math.round(edgeWeightAgeMs / 1000)}s old)`);
     return { rebuilt: false, age_ms: edgeWeightAgeMs };
   }

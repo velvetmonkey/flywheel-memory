@@ -94,6 +94,10 @@ import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } 
 // Core imports - Sweep
 import { startSweepTimer, stopSweepTimer } from './core/read/sweep.js';
 
+// Core imports - Maintenance
+import { startMaintenanceTimer, stopMaintenanceTimer } from './core/read/watch/maintenance.js';
+import { DeferredStepScheduler } from './core/read/watch/pipeline.js';
+
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
 import { purgeOldBenchmarks } from './core/shared/benchmarks.js';
@@ -184,6 +188,15 @@ let serverReady = false;
 /** Set during graceful shutdown to suppress watchdog exit */
 let shutdownRequested = false;
 
+/** Timestamp of last MCP tool request (for idle-awareness) */
+let lastMcpRequestAt = 0;
+
+/** Timestamp of last full rebuild (startup_build or manual_refresh) */
+let lastFullRebuildAt = 0;
+
+/** Per-vault deferred step schedulers */
+let deferredScheduler: DeferredStepScheduler | null = null;
+
 /** Current watcher status (live — reads state at call time, not a stale snapshot). */
 export function getWatcherStatus(): WatcherStatus | null {
   if (vaultRegistry) {
@@ -267,6 +280,7 @@ function createConfiguredServer(): McpServer {
     toolTierMode,
     handleTierStateChange,
     toolConfig.isFullToolset,
+    () => { lastMcpRequestAt = Date.now(); },
   );
   registerAllTools(s, ctx, toolTierController);
   toolTierController.setOverride(runtimeToolTierOverride);
@@ -339,6 +353,7 @@ const _gatingResult = applyToolGating(
   toolTierMode,
   handleTierStateChange,
   toolConfig.isFullToolset,
+  () => { lastMcpRequestAt = Date.now(); },
 );
 registerAllTools(server, _registryCtx, _gatingResult);
 _gatingResult.setOverride(runtimeToolTierOverride);
@@ -580,6 +595,7 @@ async function bootVault(ctx: VaultContext, startTime: number): Promise<void> {
         note_count: cachedIndex.notes.size,
       });
     }
+    lastFullRebuildAt = Date.now();
     await runPostIndexWork(ctx);
   } else {
     serverLog('index', `[${ctx.name}] Cache miss: building from scratch`);
@@ -604,6 +620,7 @@ async function bootVault(ctx: VaultContext, startTime: number): Promise<void> {
           serverLog('index', `[${ctx.name}] Failed to save index cache: ${err instanceof Error ? err.message : err}`, 'error');
         }
       }
+      lastFullRebuildAt = Date.now();
       await runPostIndexWork(ctx);
     } catch (err) {
       updateIndexState('error', err instanceof Error ? err : new Error(String(err)));
@@ -1182,6 +1199,16 @@ async function runPostIndexWork(ctx: VaultContext) {
     }
     serverLog('watcher', `File watcher enabled (debounce: ${config.debounceMs}ms)`);
 
+    // Set up deferred step scheduler for throttled pipeline steps
+    deferredScheduler = new DeferredStepScheduler();
+    deferredScheduler.setExecutor({
+      ctx,
+      vp,
+      sd,
+      getVaultIndex: () => vaultIndex,
+      updateEntitiesInStateDb,
+    });
+
     // Define before createVaultWatcher so we can call it directly for catch-up
     const handleBatch: BatchHandler = async (batch) => {
         // Convert event paths from absolute to vault-relative
@@ -1341,6 +1368,7 @@ async function runPostIndexWork(ctx: VaultContext) {
           updateEntitiesInStateDb,
           getVaultIndex: () => vaultIndex,
           buildVaultIndex,
+          deferredScheduler: deferredScheduler ?? undefined,
         });
         await runner.run();
     };
@@ -1397,6 +1425,20 @@ async function runPostIndexWork(ctx: VaultContext) {
       if (sd) runPeriodicMaintenance(sd);
     });
     serverLog('server', 'Sweep timer started (5 min interval)');
+
+    // Start periodic maintenance for aggregate step refresh
+    const maintenanceIntervalMs = parseInt(process.env.FLYWHEEL_MAINTENANCE_INTERVAL_MINUTES ?? '120', 10) * 60 * 1000;
+    startMaintenanceTimer({
+      ctx,
+      vp,
+      sd,
+      getVaultIndex: () => ctx.vaultIndex,
+      updateEntitiesInStateDb,
+      updateFlywheelConfig,
+      getLastMcpRequestAt: () => lastMcpRequestAt,
+      getLastFullRebuildAt: () => lastFullRebuildAt,
+    }, maintenanceIntervalMs);
+    serverLog('server', `Maintenance timer started (~${Math.round(maintenanceIntervalMs / 60000)}min interval)`);
   }
 
   const postDuration = Date.now() - postStart;
@@ -1458,7 +1500,9 @@ function gracefulShutdown(signal: string) {
   if (watchdogTimer) clearInterval(watchdogTimer);
   if (httpListener) httpListener.close();
   try { watcherInstance?.stop(); } catch {}
+  try { deferredScheduler?.cancelAll(); } catch {}
   stopSweepTimer();
+  stopMaintenanceTimer();
   flushLogs()
     .catch(() => {})
     .finally(() => process.exit(0));

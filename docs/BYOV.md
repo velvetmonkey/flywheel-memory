@@ -1,6 +1,14 @@
 # BYOV (Bring Your Own Vault) Evaluation Guide
 
+[← Back to docs](README.md)
+
 Measure how well flywheel-memory retrieves information from your specific vault. This guide covers writing test questions, running the evaluation, and interpreting the results.
+
+- [Why evaluate on your own vault](#why-evaluate-on-your-own-vault)
+- [Question format](#question-format)
+- [Running the evaluation](#running-the-evaluation)
+- [Interpreting results](#interpreting-results)
+- [Tips for writing good test questions](#tips-for-writing-good-test-questions)
 
 ## Why evaluate on your own vault
 

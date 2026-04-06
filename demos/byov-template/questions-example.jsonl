@@ -1,0 +1,5 @@
+{"question": "How much have I billed Acme Corp?", "expected_notes": ["clients/acme-corp.md"], "expected_keywords": ["invoice", "billing"]}
+{"question": "What are my current project priorities?", "expected_notes": ["planning/priorities.md"], "expected_keywords": ["priority", "project"]}
+{"question": "What happened in my last client meeting?", "expected_notes": ["meetings/"], "expected_keywords": ["meeting", "client"]}
+{"question": "What is my consulting rate?", "expected_notes": ["admin/rates.md"], "expected_keywords": ["rate", "hourly"]}
+{"question": "What tasks are overdue?", "expected_notes": ["planning/"], "expected_keywords": ["task", "overdue"]}

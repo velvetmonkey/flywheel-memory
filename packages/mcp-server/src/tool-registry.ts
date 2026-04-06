@@ -265,6 +265,7 @@ export function applyToolGating(
   tierMode: ToolTierMode = 'off',
   onTierStateChange?: (controller: ToolTierController) => void,
   isFullToolset: boolean = false,
+  onToolCall?: () => void,
 ): ToolTierController {
   let _registered = 0;
   let _skipped = 0;
@@ -382,6 +383,7 @@ export function applyToolGating(
 
   function wrapWithTracking(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
     return async (...args: any[]) => {
+      onToolCall?.();
       const start = Date.now();
       let success = true;
       let notePaths: string[] | undefined;

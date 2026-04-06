@@ -11,7 +11,7 @@ export type LogComponent =
   | 'server' | 'index' | 'fts5' | 'semantic'
   | 'tasks' | 'watcher' | 'statedb' | 'config'
   | 'git' | 'hints' | 'policy' | 'sweep' | 'backup' | 'http'
-  | 'watchdog';
+  | 'watchdog' | 'maintenance' | 'deferred';
 
 export interface LogEntry {
   ts: number;

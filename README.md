@@ -24,7 +24,7 @@ Everything runs on your machine. Nothing leaves your disk. Every action is bound
 
 ### Search your vault
 
-One call returns everything the model needs to answer: frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. Under the hood, entities give the system stable identity, the graph gives it load-bearing structure, and semantic search bridges the gaps when meaning exists without an explicit link. Keyword search (BM25) finds what you said. Semantic search finds what you meant. Both are fused via Reciprocal Rank Fusion, running locally. [How search works ->](docs/ARCHITECTURE.md)
+One call returns everything the model needs to answer: frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. Under the hood, entities give the system stable identity, the graph gives it load-bearing structure, and semantic search surfaces related notes when no explicit link exists yet. Keyword search (BM25) finds what you said. Semantic search finds what you meant. Both are fused via Reciprocal Rank Fusion, running locally. [How search works ->](docs/ARCHITECTURE.md)
 
 ### Write safely
 
@@ -135,7 +135,7 @@ Then ask: *"How much have I billed Acme Corp?"*
 | [nexus-lab](demos/nexus-lab/) | PhD researcher | "How does AlphaFold connect to my experiment?" |
 | [zettelkasten](demos/zettelkasten/) | Zettelkasten student | "How does spaced repetition connect to active recall?" |
 
-### Install on your own vault
+### Your Vault in 2 Minutes
 
 Add `.mcp.json` to your vault root:
 
@@ -156,7 +156,7 @@ cd /path/to/your/vault && claude
 
 Flywheel watches the vault, maintains local indexes, and serves the graph to MCP clients. Your source of truth stays in markdown. If you delete `.flywheel/state.db`, Flywheel rebuilds from the vault.
 
-### Tool presets
+### Optional: Tool presets
 
 The `agent` preset (default) provides a focused set of core tools. Use `full` to expose the entire tool surface immediately, or `auto` for progressive disclosure via `discover_tools`.
 

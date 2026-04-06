@@ -122,7 +122,7 @@ describe('End-to-End Blocking Chain Trace', () => {
     console.log('\n--- STEP 7: Search for all blocked/delayed items ---');
     const blocked = await client.callTool({
       name: 'search',
-      arguments: { modified_after: '2000-01-01', limit: 50, detail_count: 50 }
+      arguments: { modified_after: '2000-01-01', limit: 100, detail_count: 100 }
     });
     const blockedData = JSON.parse((blocked.content as any)[0].text);
     const blockedItems = blockedData.notes.filter((n: any) =>

@@ -23,7 +23,9 @@ describe('Graph Tools via MCP', () => {
     client = connectTestClient(context.server);
   });
 
-  // get_backlinks, get_forward_links retired — backlink/outlink data available via search results
+  // Retired tools (data available via search results):
+  // get_backlinks, get_forward_links — kept for Crank plugin dependency
+  // get_weighted_links — retired (search returns edge-weight-ranked links)
 
   describe('graph_analysis: orphans', () => {
     test('finds notes with no backlinks', async () => {

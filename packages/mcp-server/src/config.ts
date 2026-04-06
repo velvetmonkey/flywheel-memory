@@ -261,7 +261,6 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   get_common_neighbors: 'graph',
   get_backlinks: 'graph',
   get_forward_links: 'graph',
-  get_weighted_links: 'graph',
   get_strong_connections: 'graph',
 
   // schema (7 tools) -- schema intelligence + migrations
@@ -360,7 +359,6 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   get_common_neighbors: 2,
   get_backlinks: 2,
   get_forward_links: 2,
-  get_weighted_links: 2,
   get_strong_connections: 2,
   suggest_wikilinks: 2,
   validate_links: 2,

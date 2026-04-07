@@ -201,6 +201,9 @@ async function buildVaultIndexInternal(
       console.error(`Parsed ${parsedCount}/${files.length} files (${elapsed}s)`);
       onProgress?.(parsedCount, files.length);
     }
+
+    // Yield to event loop so MCP transport can process handshake mid-build
+    await new Promise(resolve => setImmediate(resolve));
   }
 
   if (parseErrors.length > 0) {

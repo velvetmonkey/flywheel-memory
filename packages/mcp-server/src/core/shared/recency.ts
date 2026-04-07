@@ -237,9 +237,12 @@ export function saveRecencyToStateDb(index: RecencyIndex, explicitStateDb?: Stat
 
   console.error(`[Flywheel] saveRecencyToStateDb: Saving ${index.lastMentioned.size} entries...`);
   try {
-    for (const [entityNameLower, timestamp] of index.lastMentioned) {
-      recordEntityMention(stateDb, entityNameLower, new Date(timestamp));
-    }
+    const runInTransaction = stateDb.db.transaction(() => {
+      for (const [entityNameLower, timestamp] of index.lastMentioned) {
+        recordEntityMention(stateDb, entityNameLower, new Date(timestamp));
+      }
+    });
+    runInTransaction();
     const count = stateDb.db.prepare('SELECT COUNT(*) as cnt FROM recency').get() as { cnt: number };
     console.error(`[Flywheel] Saved recency: ${index.lastMentioned.size} entries → ${count.cnt} rows in table`);
   } catch (e) {

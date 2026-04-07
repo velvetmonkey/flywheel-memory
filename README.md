@@ -42,7 +42,7 @@ Every accepted link strengthens the graph. Every rejected link updates the score
 
 From the [carter-strategy](demos/carter-strategy/) demo: log a call by voice, watch wikilinks and suggestions appear, accept and reject a few, then log again — the suggestions improve immediately.
 
-https://github.com/user-attachments/assets/6da77945-ccea-405b-9995-30a07ab7c90e
+https://github.com/user-attachments/assets/cb9e4945-7f0b-410d-85ef-0c42ffc18c6e
 
 https://github.com/user-attachments/assets/bfdae034-6217-426e-bb1d-ff8e2f0d4bc3
 

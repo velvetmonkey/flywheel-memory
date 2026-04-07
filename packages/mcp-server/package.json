@@ -34,7 +34,7 @@
     "zettelkasten"
   ],
   "scripts": {
-    "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external && chmod +x dist/index.js",
+    "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external && npx esbuild src/core/read/embedding-worker.ts --bundle --platform=node --format=esm --outfile=dist/embedding-worker.js --packages=external && chmod +x dist/index.js",
     "dev": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external --watch",
     "test": "vitest run",
     "test:watch": "vitest",

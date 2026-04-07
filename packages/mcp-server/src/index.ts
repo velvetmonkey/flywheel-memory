@@ -194,6 +194,9 @@ let lastMcpRequestAt = 0;
 /** Timestamp of last full rebuild (startup_build or manual_refresh) */
 let lastFullRebuildAt = 0;
 
+/** Scanned vault files from bootVault — reused by startup catch-up to avoid duplicate filesystem walk */
+let startupScanFiles: import('./core/read/vault.js').VaultFile[] | null = null;
+
 /** Per-vault deferred step schedulers */
 let deferredScheduler: DeferredStepScheduler | null = null;
 
@@ -461,8 +464,11 @@ function buildVaultScope(ctx: VaultContext): VaultScope {
  * Activate a vault context by swapping all module-level singletons.
  * Also sets the fallback VaultScope for code outside ALS context.
  * Tool handlers additionally run inside runInVaultScope() for per-request isolation.
+ *
+ * @param skipEmbeddingLoad - Skip loading entity embeddings into memory (used during
+ *   early startup to avoid blocking the event loop before transport connects)
  */
-function activateVault(ctx: VaultContext): void {
+function activateVault(ctx: VaultContext, skipEmbeddingLoad = false): void {
   // Update module-level state
   (globalThis as any).__flywheel_active_vault = ctx.name;
 
@@ -473,7 +479,9 @@ function activateVault(ctx: VaultContext): void {
     setProspectStateDb(ctx.stateDb);
     setTaskCacheDatabase(ctx.stateDb.db);
     setEmbeddingsDatabase(ctx.stateDb.db);
-    loadEntityEmbeddingsToMemory();
+    if (!skipEmbeddingLoad) {
+      loadEntityEmbeddingsToMemory();
+    }
   }
 
   // Swap state that was previously not per-vault
@@ -573,6 +581,7 @@ async function bootVault(ctx: VaultContext, startTime: number): Promise<void> {
   if (sd) {
     try {
       const files = await scanVault(vp);
+      startupScanFiles = files;  // reused by startup catch-up to avoid duplicate walk
       const noteCount = files.length;
       serverLog('index', `[${ctx.name}] Found ${noteCount} markdown files`);
       const newestMtime = files.reduce((max, f) => f.modified > max ? f.modified : max, new Date(0));
@@ -669,13 +678,13 @@ async function main() {
     const primaryCtx = await initializeVault(vaultConfigs[0].name, vaultConfigs[0].path);
     vaultRegistry.addContext(primaryCtx);
     stateDb = primaryCtx.stateDb;
-    activateVault(primaryCtx);
+    activateVault(primaryCtx, true);  // skip embedding load — defer until after transport connects
   } else {
     vaultRegistry = new VaultRegistry('default');
     const ctx = await initializeVault('default', vaultPath);
     vaultRegistry.addContext(ctx);
     stateDb = ctx.stateDb;
-    activateVault(ctx);
+    activateVault(ctx, true);  // skip embedding load — defer until after transport connects
   }
 
   // ── Phase 1b: Load tool routing manifest (non-blocking) ──
@@ -903,42 +912,23 @@ async function updateEntitiesInStateDb(vp?: string, sd?: StateDb | null): Promis
 /**
  * Returns CoalescedEvents for vault .md files modified after sinceMs.
  * Used on startup to catch up on edits made while the server was offline.
+ *
+ * If preScannedFiles is provided (from the earlier scanVault call in bootVault),
+ * uses those instead of re-walking the filesystem.
  */
-async function buildStartupCatchupBatch(
+function buildStartupCatchupBatch(
   vaultPath: string,
-  sinceMs: number
-): Promise<CoalescedEvent[]> {
-  const events: CoalescedEvent[] = [];
-
-  async function scanDir(dir: string): Promise<void> {
-    let entries: import('fs').Dirent[];
-    try {
-      entries = await fs.readdir(dir, { withFileTypes: true }) as import('fs').Dirent[];
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
-        await scanDir(fullPath);
-      } else if (entry.isFile() && entry.name.endsWith('.md')) {
-        try {
-          const stat = await fs.stat(fullPath);
-          if (stat.mtimeMs > sinceMs) {
-            events.push({
-              type: 'upsert',
-              path: path.relative(vaultPath, fullPath),
-              originalEvents: [],
-            });
-          }
-        } catch { /* skip unreadable files */ }
-      }
-    }
+  sinceMs: number,
+  preScannedFiles: import('./core/read/vault.js').VaultFile[] | null
+): CoalescedEvent[] {
+  if (preScannedFiles) {
+    return preScannedFiles
+      .filter(f => f.modified.getTime() > sinceMs)
+      .map(f => ({ type: 'upsert' as const, path: f.path, originalEvents: [] }));
   }
 
-  await scanDir(vaultPath);
-  return events;
+  // Fallback: should not happen in normal startup, but kept for safety
+  return [];
 }
 
 // ============================================================================
@@ -1395,7 +1385,7 @@ async function runPostIndexWork(ctx: VaultContext) {
     if (sd) {
       const lastPipelineEvent = getRecentPipelineEvent(sd);
       if (lastPipelineEvent) {
-        const catchupEvents = await buildStartupCatchupBatch(vp, lastPipelineEvent.timestamp);
+        const catchupEvents = buildStartupCatchupBatch(vp, lastPipelineEvent.timestamp, startupScanFiles);
         if (catchupEvents.length > 0) {
           // eslint-disable-next-line no-console
           console.error(`[Flywheel] Startup catch-up: ${catchupEvents.length} file(s) modified while offline`);
@@ -1418,6 +1408,9 @@ async function runPostIndexWork(ctx: VaultContext) {
     watcher.start();
     serverLog('watcher', 'File watcher started');
   }
+
+  // Free startup scan files — no longer needed after catch-up
+  startupScanFiles = null;
 
   // Start periodic sweep for graph hygiene metrics (only when watcher is active)
   if (process.env.FLYWHEEL_WATCH !== 'false') {

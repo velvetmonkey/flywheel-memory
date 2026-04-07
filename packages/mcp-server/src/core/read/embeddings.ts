@@ -37,6 +37,8 @@ import * as fs from 'fs';
 import type { EntityWithType } from '@velvetmonkey/vault-core';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 import * as path from 'path';
+import { Worker } from 'node:worker_threads';
+import { fileURLToPath } from 'node:url';
 import { scanVault } from './vault.js';
 import { SYSTEM_EXCLUDED_DIRS } from '../shared/constants.js';
 
@@ -123,9 +125,15 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // =============================================================================
 
 let db: Database.Database | null = null;
-let pipeline: any = null;
-let initPromise: Promise<void> | null = null;
 let embeddingsBuilding = false;
+
+/** Embedding worker thread — owns model loading and inference */
+let worker: Worker | null = null;
+let workerReady = false;
+let workerDims = 0;
+let workerInitPromise: Promise<void> | null = null;
+let embedRequestId = 0;
+const pendingEmbeds = new Map<number, { resolve: (v: Float32Array) => void; reject: (e: Error) => void }>();
 
 /** LRU cache for embedText results (max 500 entries) */
 const embeddingCache = new Map<string, Float32Array>();
@@ -212,126 +220,146 @@ export function setEmbeddingsDatabase(database: Database.Database): void {
 }
 
 // =============================================================================
-// Lazy Initialization
+// Worker Lifecycle
 // =============================================================================
 
 /**
- * Delete the cached ONNX model files for a given model ID.
- * Handles the @huggingface/transformers cache which lives inside the package directory.
+ * Resolve the path to the embedding worker script.
+ * esbuild bundles both index.ts and embedding-worker.ts into dist/,
+ * so in production they're siblings: dist/index.js + dist/embedding-worker.js.
  */
-function clearModelCache(modelId: string): void {
-  try {
-    // @huggingface/transformers caches inside its package dir:
-    //   node_modules/@huggingface/transformers/.cache/<org>/<model>/
-    // Walk up from this file to find node_modules, or resolve from require
-    const candidates: string[] = [];
+function resolveWorkerPath(): string {
+  // import.meta.url points to the bundled output (dist/index.js)
+  const thisFile = typeof __filename !== 'undefined'
+    ? __filename
+    : fileURLToPath(import.meta.url);
+  const thisDir = path.dirname(thisFile);
 
-    // Try require.resolve (works in esbuild bundle)
-    try {
-      const transformersDir = path.dirname(require.resolve('@huggingface/transformers/package.json'));
-      candidates.push(path.join(transformersDir, '.cache', ...modelId.split('/')));
-    } catch { /* not resolvable */ }
+  // Both entry points land in the same dist/ directory
+  const workerPath = path.join(thisDir, 'embedding-worker.js');
+  if (fs.existsSync(workerPath)) return workerPath;
 
-    // Also check common npx cache locations
-    const home = process.env.HOME || process.env.USERPROFILE || '';
-    if (home) {
-      // npx caches under ~/.npm/_npx/*/node_modules/
-      const npxDir = path.join(home, '.npm', '_npx');
-      if (fs.existsSync(npxDir)) {
-        for (const hash of fs.readdirSync(npxDir)) {
-          const candidate = path.join(npxDir, hash, 'node_modules', '@huggingface', 'transformers', '.cache', ...modelId.split('/'));
-          if (fs.existsSync(candidate)) candidates.push(candidate);
-        }
-      }
-    }
+  // Fallback for unbundled development (e.g. vitest)
+  const devPath = path.resolve(thisDir, '..', '..', '..', 'dist', 'embedding-worker.js');
+  if (fs.existsSync(devPath)) return devPath;
 
-    for (const cacheDir of candidates) {
-      if (fs.existsSync(cacheDir)) {
-        fs.rmSync(cacheDir, { recursive: true, force: true });
-        console.error(`[Semantic] Deleted corrupted model cache: ${cacheDir}`);
-      }
-    }
-  } catch (e) {
-    console.error(`[Semantic] Could not clear model cache: ${e instanceof Error ? e.message : e}`);
-  }
+  throw new Error(
+    `Embedding worker not found at ${workerPath}. Run 'npm run build' to generate it.`
+  );
 }
 
 /**
- * Load the transformer model. Cached after first call.
- * Downloads ~23MB model on first use to ~/.cache/huggingface/
- * Retries up to 3 times on network/download failures.
+ * Spawn the embedding worker thread and wait for it to load the model.
+ * Cached after first call — subsequent calls return immediately.
+ * Worker failures are isolated from the main MCP server process.
  */
 export async function initEmbeddings(): Promise<void> {
-  if (pipeline) return;
-  if (initPromise) return initPromise;
+  if (workerReady && worker) return;
+  if (workerInitPromise) return workerInitPromise;
 
-  initPromise = (async () => {
-    const MAX_RETRIES = 3;
-    const RETRY_DELAYS = [2000, 5000, 10000]; // 2s, 5s, 10s
-    let cacheCleared = false;
+  workerInitPromise = new Promise<void>((resolve, reject) => {
+    try {
+      const workerPath = resolveWorkerPath();
+      console.error(`[Semantic] Spawning embedding worker: ${workerPath}`);
 
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        // Dynamic import — @huggingface/transformers is an optional dependency
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const transformers: any = await (Function('specifier', 'return import(specifier)')('@huggingface/transformers'));
+      worker = new Worker(workerPath);
 
-        console.error(`[Semantic] Loading model ${activeModelConfig.id} (~23MB, cached after first download)...`);
-        pipeline = await transformers.pipeline('feature-extraction', activeModelConfig.id, {
-          dtype: 'fp32',
-        });
-        console.error(`[Semantic] Model loaded successfully`);
+      worker.on('message', (msg: any) => {
+        switch (msg.type) {
+          case 'ready':
+            workerReady = true;
+            workerDims = msg.dims;
+            if (activeModelConfig.dims === 0) {
+              activeModelConfig.dims = msg.dims;
+              console.error(`[Semantic] Probed model ${activeModelConfig.id}: ${msg.dims} dims`);
+            }
+            console.error(`[Semantic] Worker ready (model: ${activeModelConfig.id}, dims: ${msg.dims})`);
+            resolve();
+            break;
 
-        // Probe dimensions for unknown models
-        if (activeModelConfig.dims === 0) {
-          const probe = await pipeline('test', { pooling: 'mean', normalize: true });
-          activeModelConfig.dims = probe.data.length;
-          console.error(`[Semantic] Probed model ${activeModelConfig.id}: ${activeModelConfig.dims} dims`);
+          case 'result': {
+            const pending = pendingEmbeds.get(msg.id);
+            if (pending) {
+              pendingEmbeds.delete(msg.id);
+              pending.resolve(new Float32Array(msg.embedding));
+            }
+            break;
+          }
+
+          case 'error': {
+            if (msg.fatal) {
+              // Fatal error during init — reject the init promise
+              console.error(`[Semantic] Worker fatal error: ${msg.message}`);
+              console.error(`[Semantic] Semantic search disabled. Keyword search (BM25) remains available.`);
+              terminateWorker();
+              workerInitPromise = null;
+              reject(new Error(msg.message));
+            } else if (msg.id != null) {
+              // Non-fatal error for a specific embed request
+              const pending = pendingEmbeds.get(msg.id);
+              if (pending) {
+                pendingEmbeds.delete(msg.id);
+                pending.reject(new Error(msg.message));
+              }
+            }
+            break;
+          }
         }
-        return; // Success — exit retry loop
-      } catch (err: unknown) {
-        // Missing dependency — no point retrying
-        if (err instanceof Error && (
-          err.message.includes('Cannot find package') ||
-          err.message.includes('MODULE_NOT_FOUND') ||
-          err.message.includes("Cannot find module") ||
-          err.message.includes('ERR_MODULE_NOT_FOUND')
-        )) {
-          initPromise = null;
-          throw new Error(
-            'Semantic search requires @huggingface/transformers. ' +
-            'Install it with: npm install @huggingface/transformers'
-          );
-        }
+      });
 
-        // Corrupted model cache — delete and retry once
-        const errMsg = err instanceof Error ? err.message : String(err);
-        if (!cacheCleared && (errMsg.includes('Protobuf parsing failed') || errMsg.includes('onnx'))) {
-          console.error(`[Semantic] Corrupted model cache detected: ${errMsg}`);
-          clearModelCache(activeModelConfig.id);
-          cacheCleared = true;
-          pipeline = null;
-          continue;
+      worker.on('error', (err) => {
+        console.error(`[Semantic] Worker error: ${err.message}`);
+        handleWorkerCrash();
+        if (!workerReady) {
+          workerInitPromise = null;
+          reject(err);
         }
+      });
 
-        // Retryable failure (network, download)
-        if (attempt < MAX_RETRIES) {
-          const delay = RETRY_DELAYS[attempt - 1];
-          console.error(`[Semantic] Model load failed (attempt ${attempt}/${MAX_RETRIES}): ${errMsg}`);
-          console.error(`[Semantic] Retrying in ${delay / 1000}s...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          pipeline = null; // Reset for retry
-        } else {
-          console.error(`[Semantic] Model load failed after ${MAX_RETRIES} attempts: ${err instanceof Error ? err.message : err}`);
-          console.error(`[Semantic] Semantic search disabled. Keyword search (BM25) remains available.`);
-          initPromise = null;
-          throw err;
+      worker.on('exit', (code) => {
+        if (code !== 0 && workerReady) {
+          console.error(`[Semantic] Worker exited with code ${code}`);
+          handleWorkerCrash();
         }
-      }
+      });
+
+      // Send init message
+      worker.postMessage({ type: 'init', modelId: activeModelConfig.id });
+
+    } catch (err) {
+      workerInitPromise = null;
+      reject(err);
     }
-  })();
+  });
 
-  return initPromise;
+  return workerInitPromise;
+}
+
+/**
+ * Handle unexpected worker termination. Rejects all pending embed requests
+ * and resets state so the next initEmbeddings() call will respawn.
+ */
+function handleWorkerCrash(): void {
+  for (const [id, pending] of pendingEmbeds) {
+    pending.reject(new Error('Embedding worker crashed'));
+    pendingEmbeds.delete(id);
+  }
+  worker = null;
+  workerReady = false;
+  workerInitPromise = null;
+}
+
+/**
+ * Gracefully terminate the worker thread.
+ * Call during server shutdown to clean up resources.
+ */
+export function terminateWorker(): void {
+  if (worker) {
+    try { worker.postMessage({ type: 'shutdown' }); } catch { /* already dead */ }
+    worker = null;
+  }
+  workerReady = false;
+  workerInitPromise = null;
 }
 
 // =============================================================================
@@ -339,19 +367,21 @@ export async function initEmbeddings(): Promise<void> {
 // =============================================================================
 
 /**
- * Generate embedding for a text string.
+ * Generate embedding for a text string via the worker thread.
  * Returns Float32Array of EMBEDDING_DIMS dimensions.
  */
 export async function embedText(text: string): Promise<Float32Array> {
   await initEmbeddings();
 
-  // Truncate to ~512 tokens worth of text (~2000 chars is a safe approximation)
-  const truncated = text.slice(0, 2000);
+  if (!worker) {
+    throw new Error('Embedding worker not available');
+  }
 
-  const result = await pipeline(truncated, { pooling: 'mean', normalize: true });
-
-  // result.data is a Float32Array
-  return new Float32Array(result.data);
+  const id = ++embedRequestId;
+  return new Promise<Float32Array>((resolve, reject) => {
+    pendingEmbeds.set(id, { resolve, reject });
+    worker!.postMessage({ type: 'embed', id, text });
+  });
 }
 
 /**

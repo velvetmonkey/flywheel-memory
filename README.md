@@ -265,7 +265,7 @@ E2E with Claude Sonnet (latest checked-in 695-question run): **97.4%** single-ho
 
 3,292 defined tests across 185 test files and about 64.4k lines of test code. CI runs focused jobs on Ubuntu, plus a full matrix on Ubuntu and Windows across Node 22 and 24.
 
-- **Graph quality:** Latest generated report shows balanced-mode **40.2% precision / 71.7% recall / 51.5% F1** on the primary synthetic vault, along with multi-generation, archetype, chaos, and regression coverage. [Report ->](docs/QUALITY_REPORT.md)
+- **Graph quality:** Latest generated report shows balanced-mode **50.6% precision / 66.7% recall / 57.6% F1** on the primary synthetic vault, along with multi-generation, archetype, chaos, and regression coverage. [Report ->](docs/QUALITY_REPORT.md)
 - **Live AI testing:** Real `claude -p` sessions verify tool adoption end to end, not just handler logic.
 - **Write safety:** Git-backed conflict detection, atomic rollback, and 100 parallel writes with zero corruption in the checked-in test suite.
 - **Security:** Coverage includes SQL injection, path traversal, Unicode normalization, and permission bypass cases.

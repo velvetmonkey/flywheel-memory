@@ -1,7 +1,7 @@
 {
   "suite": "topology-resilience",
-  "timestamp": "2026-04-03T12:48:59.784Z",
-  "duration_ms": 6871,
+  "timestamp": "2026-04-07T22:33:34.796Z",
+  "duration_ms": 4312,
   "summary": {
     "archetypes_tested": 6,
     "archetypes_recovered": 6,
@@ -15,9 +15,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 71,
       "postMutationNoteCount": 78,
-      "baselineF1": 0.393,
+      "baselineF1": 0.34,
       "postOrphanRate": 0.295,
-      "duration_ms": 634
+      "duration_ms": 613
     },
     {
       "archetype": "hierarchical",
@@ -26,9 +26,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 97,
       "postMutationNoteCount": 107,
-      "baselineF1": 0.272,
+      "baselineF1": 0.333,
       "postOrphanRate": 0.505,
-      "duration_ms": 2875
+      "duration_ms": 752
     },
     {
       "archetype": "dense-mesh",
@@ -37,9 +37,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 63,
       "postMutationNoteCount": 69,
-      "baselineF1": 0.254,
+      "baselineF1": 0.246,
       "postOrphanRate": 0.174,
-      "duration_ms": 728
+      "duration_ms": 610
     },
     {
       "archetype": "sparse-orphan",
@@ -48,9 +48,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 99,
       "postMutationNoteCount": 109,
-      "baselineF1": 0.69,
+      "baselineF1": 0.692,
       "postOrphanRate": 0.917,
-      "duration_ms": 775
+      "duration_ms": 695
     },
     {
       "archetype": "bridge-network",
@@ -59,9 +59,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 86,
       "postMutationNoteCount": 95,
-      "baselineF1": 0.464,
+      "baselineF1": 0.333,
       "postOrphanRate": 0.516,
-      "duration_ms": 858
+      "duration_ms": 716
     },
     {
       "archetype": "small-world",
@@ -70,9 +70,9 @@
       "suggestionsWork": true,
       "baselineNoteCount": 100,
       "postMutationNoteCount": 110,
-      "baselineF1": 0.217,
+      "baselineF1": 0.243,
       "postOrphanRate": 0.182,
-      "duration_ms": 1001
+      "duration_ms": 926
     }
   ],
   "tuning_recommendations": []

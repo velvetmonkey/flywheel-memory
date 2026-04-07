@@ -58,6 +58,7 @@ import { getProspectBoostMap } from '../shared/prospects.js';
 import {
   mineCooccurrences,
   getCooccurrenceBoost,
+  computeNpmi,
   tokenIdf,
   entityRarity,
   serializeCooccurrenceIndex,
@@ -856,14 +857,14 @@ const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
   balanced: {
     minWordLength: 3,
     minSuggestionScore: 10,    // Exact match (10) or two stem matches
-    minMatchRatio: 0.4,        // 40% of multi-word entity must match
+    minMatchRatio: 0.6,        // 60% of multi-word entity must match (blocks 1-of-2 token FPs)
     requireMultipleMatches: false,
     stemMatchBonus: 5,         // Standard bonus for stem matches
     exactMatchBonus: 10,       // Standard bonus for exact matches
     fuzzyMatchBonus: 4,        // Moderate fuzzy bonus
     contentRelevanceFloor: 5,
-    noRelevanceCap: 10,
-    minCooccurrenceGate: 5,
+    noRelevanceCap: 9,         // Below minSuggestionScore — graph-only entities can't reach threshold
+    minCooccurrenceGate: 6,    // Stronger graph signal for graph-only admission
     minContentMatch: 2,
   },
   aggressive: {
@@ -1697,13 +1698,32 @@ export async function suggestRelatedLinks(
           // Requires stronger graph signal to admit entities with no content overlap
           const strongCooccurrence = boost >= config.minCooccurrenceGate;
 
-          if (!hasContentOverlap && !strongCooccurrence) {
-            continue;  // Skip entities with zero content relevance and weak co-occurrence
+          // Graph-only entities need co-occurrence with ≥2 distinct content-matched seeds
+          // (skip this gate when minContentMatch=0, e.g. aggressive mode allows graph-only)
+          let multiSeedOK = true;
+          if (!hasContentOverlap && cooccurrenceIndex && config.minContentMatch > 0) {
+            let qualifyingSeedCount = 0;
+            for (const seed of cooccurrenceSeeds) {
+              const entityAssocs = cooccurrenceIndex.associations[seed];
+              if (!entityAssocs) continue;
+              const coocCount = entityAssocs.get(entityName) || 0;
+              if (coocCount < (cooccurrenceIndex.minCount ?? 2)) continue;
+              const dfEntity = cooccurrenceIndex.documentFrequency?.get(entityName) || 0;
+              const dfSeed = cooccurrenceIndex.documentFrequency?.get(seed) || 0;
+              if (dfEntity === 0 || dfSeed === 0) continue;
+              const npmi = computeNpmi(coocCount, dfEntity, dfSeed, cooccurrenceIndex.totalNotesScanned ?? 1);
+              if (npmi > 0) qualifyingSeedCount++;
+            }
+            multiSeedOK = qualifyingSeedCount >= 2;
+          }
+
+          if (!hasContentOverlap && !(strongCooccurrence && multiSeedOK)) {
+            continue;  // Skip entities with zero content relevance and weak/single-seed co-occurrence
           }
 
           // Entity passed content overlap or strong co-occurrence check —
           // qualify it for final results
-          if (hasContentOverlap || strongCooccurrence) {
+          if (hasContentOverlap || (strongCooccurrence && multiSeedOK)) {
             entitiesWithAnyScoringPath.add(entityName);
           }
 

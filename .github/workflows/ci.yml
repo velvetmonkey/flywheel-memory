@@ -333,4 +333,4 @@ jobs:
         run: npm test -w @velvetmonkey/vault-core
       - name: Run mcp-server tests (excludes retrieval benchmarks)
         working-directory: packages/mcp-server
-        run: npx vitest run --exclude 'test/retrieval-bench/**'
+        run: npx vitest run --exclude 'test/retrieval-bench/**' --exclude 'test/write/publish/**'

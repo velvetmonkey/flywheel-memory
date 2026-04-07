@@ -31,6 +31,8 @@ let nodeModulesPath = '';
 let testProjectDir = '';
 let testVaultDir = '';
 
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
 describe('Package Startup', () => {
   const packageDir = join(__dirname, '../../..');
   let tempDir: string;
@@ -38,8 +40,8 @@ describe('Package Startup', () => {
 
   beforeAll(() => {
     tempDir = mkdtempSync(join(tmpdir(), 'flywheel-memory-test-'));
-    execFileSync('npm', ['run', 'build'], { cwd: packageDir, stdio: 'pipe' });
-    const packOutput = execFileSync('npm', ['pack', '--pack-destination', tempDir], {
+    ensurePackageBuilt(packageDir);
+    const packOutput = execFileSync(npmCommand, ['pack', '--pack-destination', tempDir], {
       cwd: packageDir,
       encoding: 'utf-8',
     }).trim();
@@ -51,8 +53,8 @@ describe('Package Startup', () => {
     mkdirSync(join(testVaultDir, '.obsidian'), { recursive: true });
     writeFileSync(join(testVaultDir, 'Inbox.md'), '# Inbox\n\nSmoke test note.\n');
 
-    execFileSync('npm', ['init', '-y'], { cwd: testProjectDir, stdio: 'pipe' });
-    execFileSync('npm', ['install', tarballPath], {
+    execFileSync(npmCommand, ['init', '-y'], { cwd: testProjectDir, stdio: 'pipe' });
+    execFileSync(npmCommand, ['install', tarballPath], {
       cwd: testProjectDir,
       stdio: 'pipe',
       timeout: 600000,
@@ -208,4 +210,20 @@ async function connectInstalledPackage(): Promise<ClientConnection> {
 async function closeConnection(connection: ClientConnection): Promise<void> {
   await connection.client.close();
   await connection.transport.close();
+}
+
+function ensurePackageBuilt(packageDir: string): void {
+  const distIndexPath = join(packageDir, 'dist', 'index.js');
+  const distEmbeddingWorkerPath = join(packageDir, 'dist', 'embedding-worker.js');
+  const distIntegrityWorkerPath = join(packageDir, 'dist', 'integrity-worker.js');
+
+  if (
+    existsSync(distIndexPath) &&
+    existsSync(distEmbeddingWorkerPath) &&
+    existsSync(distIntegrityWorkerPath)
+  ) {
+    return;
+  }
+
+  execFileSync(npmCommand, ['run', 'build'], { cwd: packageDir, stdio: 'pipe' });
 }

@@ -78,6 +78,37 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
     expect(data.status).not.toBe('unhealthy');
   });
 
+  test('summary health does not run quick_check inline', async () => {
+    expect(context.stateDb).toBeTruthy();
+    const stateDb = context.stateDb!;
+    const originalPragma = stateDb.db.pragma.bind(stateDb.db);
+    let quickCheckCalls = 0;
+
+    (stateDb.db as any).pragma = ((sql: string, ...args: unknown[]) => {
+      if (typeof sql === 'string' && sql.includes('quick_check')) {
+        quickCheckCalls++;
+        throw new Error('quick_check should not run in summary health');
+      }
+      return originalPragma(sql as any, ...(args as any[]));
+    }) as typeof stateDb.db.pragma;
+
+    context.runtimeState.integrityState = 'checking';
+    context.runtimeState.integrityCheckInProgress = true;
+
+    try {
+      const result = await client.callTool('flywheel_doctor', { report: 'health', detail: 'summary' });
+      const data = JSON.parse(result.content[0].text);
+      expect(result.isError).toBeFalsy();
+      expect(quickCheckCalls).toBe(0);
+      expect(data.integrity_state).toBe('checking');
+      expect(data.integrity_check_in_progress).toBe(true);
+    } finally {
+      (stateDb.db as any).pragma = originalPragma;
+      context.runtimeState.integrityState = 'healthy';
+      context.runtimeState.integrityCheckInProgress = false;
+    }
+  });
+
   test('summary detail omits full-scan dead-link fields', async () => {
     const result = await client.callTool('flywheel_doctor', { report: 'health', detail: 'summary' });
     const data = JSON.parse(result.content[0].text);
@@ -93,6 +124,24 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
     expect(data).toHaveProperty('dead_link_count');
     expect(data).toHaveProperty('top_dead_link_targets');
     expect(Array.isArray(data.top_dead_link_targets)).toBe(true);
+  });
+
+  test('pipeline_status exposes boot and integrity state', async () => {
+    context.runtimeState.bootState = 'booting';
+    context.runtimeState.integrityState = 'checking';
+    context.runtimeState.integrityCheckInProgress = true;
+
+    try {
+      const result = await client.callTool('pipeline_status', {});
+      const data = JSON.parse(result.content[0].text);
+      expect(data.boot_state).toBe('booting');
+      expect(data.integrity_state).toBe('checking');
+      expect(data.integrity_check_in_progress).toBe(true);
+    } finally {
+      context.runtimeState.bootState = 'ready';
+      context.runtimeState.integrityState = 'healthy';
+      context.runtimeState.integrityCheckInProgress = false;
+    }
   });
 
   test('uses the last full rebuild for freshness instead of watcher activity', async () => {

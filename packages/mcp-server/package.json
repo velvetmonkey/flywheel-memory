@@ -34,7 +34,7 @@
     "zettelkasten"
   ],
   "scripts": {
-    "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external && npx esbuild src/core/read/embedding-worker.ts --bundle --platform=node --format=esm --outfile=dist/embedding-worker.js --packages=external && chmod +x dist/index.js",
+    "build": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external && npx esbuild src/core/read/embedding-worker.ts --bundle --platform=node --format=esm --outfile=dist/embedding-worker.js --packages=external && npx esbuild src/core/read/integrity-worker.ts --bundle --platform=node --format=esm --outfile=dist/integrity-worker.js --packages=external && chmod +x dist/index.js",
     "dev": "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -45,6 +45,7 @@
     "test:quality": "vitest run test/graph-quality/",
     "test:quality:report": "tsx test/graph-quality/generate-proof.ts",
     "generate:tool-embeddings": "tsx scripts/generate-tool-embeddings.ts",
+    "smoke:registry-latest": "node scripts/post-publish-codex-smoke.mjs latest",
     "test:coverage": "vitest run --coverage",
     "test:ci": "vitest run --reporter=github-actions",
     "lint": "tsc --noEmit",

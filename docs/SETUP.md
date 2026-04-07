@@ -11,6 +11,7 @@ After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian v
 - [Windows](#windows)
   - [WSL2: Keep Your Vault on the Linux Filesystem](#wsl2-keep-your-vault-on-the-linux-filesystem)
 - [Step 1: Configure Your Client](#step-1-configure-your-client)
+  - [Codex (stdio)](#codex-stdio)
   - [Claude Code (stdio)](#claude-code-stdio)
   - [Claude Desktop (stdio)](#claude-desktop-stdio)
   - [OpenClaw (stdio)](#openclaw-stdio)
@@ -119,6 +120,22 @@ To edit the vault from Windows Obsidian, open the WSL path directly: `\\wsl$\Ubu
 ---
 
 ## Step 1: Configure Your Client
+
+### Codex (stdio)
+
+Add Flywheel to `.codex/config.toml`:
+
+```toml
+[mcp_servers.flywheel]
+command = "npx"
+args = ["-y", "@velvetmonkey/flywheel-memory@latest"]
+cwd = "/path/to/project"
+startup_timeout_sec = 120
+tool_timeout_sec = 120
+env = { FLYWHEEL_VAULTS = "personal:/path/to/vault", FLYWHEEL_PRESET = "full" }
+```
+
+Codex reads `.codex/config.toml`, not `.mcp.json`. If you keep a `.mcp.json` nearby, treat it as a reference file for Claude/demo-vault workflows.
 
 ### Claude Code (stdio)
 

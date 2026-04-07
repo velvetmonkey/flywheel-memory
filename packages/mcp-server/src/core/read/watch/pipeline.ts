@@ -16,8 +16,6 @@ import {
   getProtectedZones,
   rangeOverlapsProtectedZone,
   detectImplicitEntities,
-  checkDbIntegrity,
-  safeBackupAsync,
   recordEntityMention,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
@@ -28,6 +26,7 @@ import { processBatch } from './batchProcessor.js';
 import type { FlywheelConfig } from '../config.js';
 import type { VaultContext } from '../../../vault-registry.js';
 import type { IndexState } from '../graph.js';
+import type { IntegrityWorkerResult } from '../integrity.js';
 
 // Shared modules
 import { serverLog } from '../../shared/serverLog.js';
@@ -265,6 +264,8 @@ export interface PipelineContext {
   buildVaultIndex: (vaultPath: string) => Promise<VaultIndex>;
   /** Deferred step scheduler (optional — set when watcher is active) */
   deferredScheduler?: DeferredStepScheduler;
+  /** Shared async integrity runner */
+  runIntegrityCheck: (ctx: VaultContext, source: string, options?: { force?: boolean }) => Promise<IntegrityWorkerResult>;
 }
 
 type StepTracker = ReturnType<typeof createStepTracker>;
@@ -351,6 +352,18 @@ export class PipelineRunner {
 
   async run(): Promise<void> {
     const { p, tracker } = this;
+
+    if (p.ctx.integrityState === 'failed') {
+      serverLog('watcher', `Skipping batch for ${p.ctx.name}: StateDb integrity failed`, 'warn');
+      this.activity.busy = false;
+      this.activity.current_step = null;
+      this.activity.last_completed_at = Date.now();
+      this.activity.last_completed_trigger = 'watcher';
+      this.activity.last_completed_duration_ms = 0;
+      this.activity.last_completed_files = p.events.length;
+      this.activity.last_completed_steps = [];
+      return;
+    }
 
     // Set pipeline activity to busy
     this.activity.busy = true;
@@ -1385,25 +1398,15 @@ export class PipelineRunner {
   private async integrityCheck(): Promise<Record<string, unknown>> {
     const { p } = this;
     if (!p.sd) return { skipped: true, reason: 'no statedb' };
-
-    const INTEGRITY_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
-    const lastCheckRow = p.sd.getMetadataValue.get('last_integrity_check') as { value: string } | undefined;
-    const lastCheck = lastCheckRow ? parseInt(lastCheckRow.value, 10) : 0;
-
-    if (Date.now() - lastCheck < INTEGRITY_CHECK_INTERVAL_MS) {
-      return { skipped: true, reason: 'checked recently' };
+    const result = await p.runIntegrityCheck(p.ctx, 'watcher');
+    if (result.status === 'healthy') {
+      return { integrity: 'ok', backed_up: result.backupCreated };
     }
-
-    const result = checkDbIntegrity(p.sd.db);
-    p.sd.setMetadataValue.run('last_integrity_check', String(Date.now()));
-
-    if (result.ok) {
-      await safeBackupAsync(p.sd.db, p.sd.dbPath);
-      return { integrity: 'ok', backed_up: true };
-    } else {
+    if (result.status === 'failed') {
       serverLog('watcher', `Integrity check FAILED: ${result.detail}`, 'error');
       return { integrity: 'failed', detail: result.detail };
     }
+    return { skipped: true, reason: result.detail ?? 'integrity runner unavailable' };
   }
 
   // ── Maintenance: periodic incremental vacuum ─────────────────────

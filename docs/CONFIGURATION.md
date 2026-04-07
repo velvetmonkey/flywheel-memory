@@ -4,9 +4,10 @@
 
 Two layers of configuration: **environment variables** set in your MCP config (startup-time), and **runtime config** adjustable via the `flywheel_config` tool (persisted in StateDb). No config files to manage.
 
-> **First time?** You only need the [MCP Config](#mcp-config) section — one JSON block, zero environment variables. Everything else is optional.
+> **First time?** You only need the [MCP Config](#mcp-config) section for your client. Claude clients use a JSON block; Codex uses a TOML block. Everything else is optional.
 
 - [MCP Config](#mcp-config)
+  - [Codex (`.codex/config.toml`)](#codex-codexconfigtoml)
   - [Claude Code (`.mcp.json` in vault root)](#claude-code-mcpjson-in-vault-root)
   - [Claude Desktop (`claude_desktop_config.json`)](#claude-desktop-claude_desktop_configjson)
 - [Windows](#windows)
@@ -57,6 +58,20 @@ Two layers of configuration: **environment variables** set in your MCP config (s
 ---
 
 ## MCP Config
+
+### Codex (`.codex/config.toml`)
+
+```toml
+[mcp_servers.flywheel]
+command = "npx"
+args = ["-y", "@velvetmonkey/flywheel-memory@latest"]
+cwd = "/path/to/project"
+startup_timeout_sec = 120
+tool_timeout_sec = 120
+env = { FLYWHEEL_VAULTS = "personal:/path/to/vault", FLYWHEEL_PRESET = "full" }
+```
+
+Codex does not read `.mcp.json`. Keep the Flywheel server in `.codex/config.toml`, and use `.mcp.json` only as a Claude/demo-vault reference artifact.
 
 ### Claude Code (`.mcp.json` in vault root)
 

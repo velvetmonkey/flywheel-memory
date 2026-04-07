@@ -99,6 +99,17 @@ export interface ToolRegistryContext {
   getFlywheelConfig: () => FlywheelConfig;
   getWatcherStatus: () => WatcherStatus | null;
   getPipelineActivity: () => Readonly<PipelineActivity> | null;
+  getVaultRuntimeState: () => {
+    bootState: string;
+    integrityState: string;
+    integrityCheckInProgress: boolean;
+    integrityStartedAt: number | null;
+    integritySource: string | null;
+    lastIntegrityCheckedAt: number | null;
+    lastIntegrityDurationMs: number | null;
+    lastIntegrityDetail: string | null;
+    lastBackupAt: number | null;
+  };
   updateVaultIndex: (index: VaultIndex) => void;
   updateFlywheelConfig: (config: FlywheelConfig) => void;
 }
@@ -165,6 +176,35 @@ const ACTIVATION_PATTERNS: Array<{ category: ToolCategory; tier: ToolTier; patte
     patterns: [/\b(delete note|move note|rename note|merge entities|merge notes?)\b/i],
   },
 ];
+
+const MUTATING_TOOL_NAMES = new Set([
+  'vault_add_to_section',
+  'vault_remove_from_section',
+  'vault_replace_in_section',
+  'vault_add_task',
+  'vault_toggle_task',
+  'vault_update_frontmatter',
+  'vault_create_note',
+  'vault_delete_note',
+  'vault_move_note',
+  'vault_rename_note',
+  'merge_entities',
+  'absorb_as_alias',
+  'vault_undo_last_mutation',
+  'policy',
+  'rename_tag',
+  'wikilink_feedback',
+  'tool_selection_feedback',
+  'vault_record_correction',
+  'vault_resolve_correction',
+  'memory',
+  'flywheel_config',
+  'vault_init',
+  'rename_field',
+  'migrate_field_values',
+  'refresh_index',
+  'init_semantic',
+]);
 
 export function getPatternSignals(raw: string): Array<{ category: ToolCategory; tier: ToolTier }> {
   if (!raw) return [];
@@ -480,6 +520,28 @@ export function applyToolGating(
 
   const isMultiVault = registry?.isMultiVault ?? false;
 
+  function getTargetVaultContext(params: Record<string, unknown> | undefined): VaultContext | null {
+    if (!registry) return null;
+    if (isMultiVault) {
+      const vaultName = typeof params?.vault === 'string' ? params.vault : undefined;
+      return registry.getContext(vaultName);
+    }
+    return registry.getContext();
+  }
+
+  function wrapWithIntegrityGate(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
+    if (!MUTATING_TOOL_NAMES.has(toolName)) return handler;
+    return async (...args: any[]) => {
+      const params = (args[0] && typeof args[0] === 'object') ? args[0] as Record<string, unknown> : undefined;
+      const vaultCtx = getTargetVaultContext(params);
+      const integrityState = vaultCtx?.integrityState ?? getActiveScopeOrNull()?.integrityState;
+      if (integrityState === 'failed') {
+        throw new Error('StateDb integrity failed; write operations are disabled until recovery/restart.');
+      }
+      return handler(...args);
+    };
+  }
+
   /**
    * Wrap a handler to activate the correct vault before execution (multi-vault).
    * Extracts the `vault` param, calls activateVault(), then forwards to the original handler.
@@ -647,6 +709,7 @@ export function applyToolGating(
     if (args.length > 0 && typeof args[args.length - 1] === 'function') {
       let handler = args[args.length - 1];
       handler = wrapWithVaultActivation(name, handler);
+      handler = wrapWithIntegrityGate(name, handler);
       args[args.length - 1] = wrapWithTracking(name, handler);
     }
     const registered = origTool(name, ...args) as RegisteredTool;
@@ -662,6 +725,7 @@ export function applyToolGating(
       if (args.length > 0 && typeof args[args.length - 1] === 'function') {
         let handler = args[args.length - 1];
         handler = wrapWithVaultActivation(name, handler);
+        handler = wrapWithIntegrityGate(name, handler);
         args[args.length - 1] = wrapWithTracking(name, handler);
       }
       const registered = origRegisterTool(name, ...args) as RegisteredTool;
@@ -793,7 +857,7 @@ export function registerAllTools(
   const { getVaultPath: gvp, getVaultIndex: gvi, getStateDb: gsd, getFlywheelConfig: gcf } = ctx;
 
   // Read tools
-  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, ctx.getWatcherStatus, () => trPkg.version, ctx.getPipelineActivity);
+  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, ctx.getWatcherStatus, () => trPkg.version, ctx.getPipelineActivity, ctx.getVaultRuntimeState);
   registerReadSystemTools(
     targetServer,
     gvi,

@@ -17,6 +17,7 @@ import type { FlywheelConfig } from './core/read/config.js';
 import type { IndexState } from './core/read/graph.js';
 import type { VaultIndex } from './core/shared/types.js';
 import type { PipelineActivity } from './core/read/watch/pipeline.js';
+import type { IntegrityState, VaultBootState } from './vault-registry.js';
 
 export interface VaultScope {
   readonly name: string;
@@ -30,6 +31,15 @@ export interface VaultScope {
   embeddingsBuilding: boolean;
   entityEmbeddingsMap: Map<string, Float32Array>;
   pipelineActivity: PipelineActivity;
+  bootState: VaultBootState;
+  integrityState: IntegrityState;
+  integrityCheckInProgress: boolean;
+  integrityStartedAt: number | null;
+  integritySource: string | null;
+  lastIntegrityCheckedAt: number | null;
+  lastIntegrityDurationMs: number | null;
+  lastIntegrityDetail: string | null;
+  lastBackupAt: number | null;
 }
 
 const vaultAls = new AsyncLocalStorage<VaultScope>();

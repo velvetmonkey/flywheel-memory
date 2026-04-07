@@ -384,8 +384,9 @@ function loadVaultCooccurrence(ctx: VaultContext): void {
 }
 
 /**
- * Initialize a vault: open StateDb, run integrity check.
+ * Initialize a vault: open StateDb (fast).
  * Returns a VaultContext with StateDb ready. Does NOT build indexes.
+ * Integrity check is deferred to after transport connects (see runIntegrityCheck).
  */
 async function initializeVault(name: string, vaultPathArg: string): Promise<VaultContext> {
   const ctx: VaultContext = {
@@ -410,24 +411,6 @@ async function initializeVault(name: string, vaultPathArg: string): Promise<Vaul
   try {
     ctx.stateDb = openStateDb(vaultPathArg);
     serverLog('statedb', `[${name}] StateDb initialized`);
-
-    // Post-open integrity check
-    const integrity = checkDbIntegrity(ctx.stateDb.db);
-    if (integrity.ok) {
-      // DB is healthy — create a safe rotated backup (non-blocking)
-      safeBackupAsync(ctx.stateDb.db, ctx.stateDb.dbPath).catch((err: unknown) => {
-        serverLog('backup', `[${name}] Safe backup failed: ${err}`, 'error');
-      });
-    } else {
-      // DB opened but has page-level corruption — nuke and rebuild
-      serverLog('statedb', `[${name}] Integrity check failed: ${integrity.detail} — recreating`, 'error');
-      const dbPath = ctx.stateDb.dbPath;
-      preserveCorruptedDb(dbPath);
-      ctx.stateDb.close();
-      deleteStateDbFiles(dbPath);
-      ctx.stateDb = openStateDb(vaultPathArg);
-      attemptSalvage(ctx.stateDb.db, dbPath);
-    }
 
     // Nudge if vault_init has never been run
     const vaultInitRow = ctx.stateDb.getMetadataValue.get('vault_init_last_run_at') as { value: string } | undefined;
@@ -790,8 +773,30 @@ async function main() {
     });
   }
 
-  // ── Phase 3: Load co-occurrence + boot primary vault ──
+  // ── Phase 2b: Deferred integrity check (after transport, before heavy boot) ──
+  // PRAGMA quick_check on a 1.4GB state.db takes ~16s — must not block transport connect.
   const primaryCtx = vaultRegistry.getContext();
+  if (primaryCtx.stateDb) {
+    const integrity = checkDbIntegrity(primaryCtx.stateDb.db);
+    if (integrity.ok) {
+      safeBackupAsync(primaryCtx.stateDb.db, primaryCtx.stateDb.dbPath).catch((err: unknown) => {
+        serverLog('backup', `[${primaryCtx.name}] Safe backup failed: ${err}`, 'error');
+      });
+    } else {
+      serverLog('statedb', `[${primaryCtx.name}] Integrity check failed: ${integrity.detail} — recreating`, 'error');
+      const dbPath = primaryCtx.stateDb.dbPath;
+      preserveCorruptedDb(dbPath);
+      primaryCtx.stateDb.close();
+      deleteStateDbFiles(dbPath);
+      primaryCtx.stateDb = openStateDb(primaryCtx.vaultPath);
+      attemptSalvage(primaryCtx.stateDb.db, dbPath);
+      stateDb = primaryCtx.stateDb;
+      activateVault(primaryCtx, true);
+    }
+    serverLog('statedb', `[${primaryCtx.name}] Integrity check passed in ${Date.now() - startTime}ms`);
+  }
+
+  // ── Phase 3: Load co-occurrence + boot primary vault ──
   loadVaultCooccurrence(primaryCtx);
   activateVault(primaryCtx);
   await bootVault(primaryCtx, startTime);

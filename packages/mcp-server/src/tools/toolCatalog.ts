@@ -87,6 +87,17 @@ function createStubContext(): ToolRegistryContext {
     getFlywheelConfig: () => ({}) as any,
     getWatcherStatus: () => null,
     getPipelineActivity: () => null,
+    getVaultRuntimeState: () => ({
+      bootState: 'ready',
+      integrityState: 'healthy',
+      integrityCheckInProgress: false,
+      integrityStartedAt: null,
+      integritySource: null,
+      lastIntegrityCheckedAt: null,
+      lastIntegrityDurationMs: null,
+      lastIntegrityDetail: null,
+      lastBackupAt: null,
+    }),
     updateVaultIndex: () => {},
     updateFlywheelConfig: () => {},
   };

@@ -28,6 +28,17 @@ export interface TestServerContext {
   vaultIndex: VaultIndex;
   vaultPath: string;
   getIndex: () => VaultIndex;
+  runtimeState: {
+    bootState: string;
+    integrityState: string;
+    integrityCheckInProgress: boolean;
+    integrityStartedAt: number | null;
+    integritySource: string | null;
+    lastIntegrityCheckedAt: number | null;
+    lastIntegrityDurationMs: number | null;
+    lastIntegrityDetail: string | null;
+    lastBackupAt: number | null;
+  };
 }
 
 /**
@@ -61,6 +72,17 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
   // Mutable reference for system tools to update
   let currentIndex = vaultIndex;
   const pipelineActivity = createEmptyPipelineActivity();
+  const runtimeState = {
+    bootState: 'ready',
+    integrityState: 'healthy',
+    integrityCheckInProgress: false,
+    integrityStartedAt: null,
+    integritySource: null,
+    lastIntegrityCheckedAt: null,
+    lastIntegrityDurationMs: null,
+    lastIntegrityDetail: null,
+    lastBackupAt: null,
+  };
 
   // Register all tools
   registerWikilinkTools(
@@ -79,6 +101,7 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     () => null,
     () => '1.0.0-test',
     () => pipelineActivity,
+    () => runtimeState,
   );
 
   registerQueryTools(
@@ -141,6 +164,7 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     vaultPath,
     stateDb,
     getIndex: () => currentIndex,
+    runtimeState,
   };
 }
 

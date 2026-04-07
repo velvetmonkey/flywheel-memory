@@ -84,9 +84,16 @@ import {
 } from './core/read/taskCache.js';
 import { initToolRouting, loadEffectivenessSnapshot } from './core/read/toolRouting.js';
 import { getToolEffectivenessScores } from './core/shared/toolSelectionFeedback.js';
+import {
+  INTEGRITY_BACKUP_INTERVAL_MS,
+  INTEGRITY_CHECK_INTERVAL_MS,
+  INTEGRITY_METADATA_KEYS,
+  runIntegrityWorker,
+  type IntegrityWorkerResult,
+} from './core/read/integrity.js';
 
 // Vault-core shared imports
-import { openStateDb, scanVaultEntities, getAllEntitiesFromDb, loadContentHashes, saveContentHashBatch, renameContentHash, checkDbIntegrity, safeBackupAsync, preserveCorruptedDb, deleteStateDbFiles, attemptSalvage, type StateDb } from '@velvetmonkey/vault-core';
+import { openStateDb, scanVaultEntities, getAllEntitiesFromDb, loadContentHashes, saveContentHashBatch, renameContentHash, type StateDb } from '@velvetmonkey/vault-core';
 
 // Memory lifecycle (used directly in index.ts for periodic maintenance)
 import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } from './core/write/memory.js';
@@ -133,7 +140,13 @@ import type { BatchHandler } from './core/read/watch/index.js';
 import { normalizePath } from './core/read/watch/pathFilter.js';
 
 // Multi-vault
-import { VaultRegistry, parseVaultConfig, type VaultContext } from './vault-registry.js';
+import {
+  VaultRegistry,
+  parseVaultConfig,
+  type IntegrityState,
+  type VaultBootState,
+  type VaultContext,
+} from './vault-registry.js';
 import { setActiveScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
 
 // Config (tool categories, presets, instructions)
@@ -199,6 +212,8 @@ let startupScanFiles: import('./core/read/vault.js').VaultFile[] | null = null;
 
 /** Per-vault deferred step schedulers */
 let deferredScheduler: DeferredStepScheduler | null = null;
+/** In-flight integrity checks keyed by vault name */
+const integrityRuns = new Map<string, Promise<IntegrityWorkerResult>>();
 
 /** Current watcher status (live — reads state at call time, not a stale snapshot). */
 export function getWatcherStatus(): WatcherStatus | null {
@@ -253,6 +268,20 @@ function buildRegistryContext(): ToolRegistryContext {
     getFlywheelConfig: () => getActiveScopeOrNull()?.flywheelConfig ?? flywheelConfig,
     getWatcherStatus,
     getPipelineActivity: () => getActiveScopeOrNull()?.pipelineActivity ?? null,
+    getVaultRuntimeState: () => {
+      const scope = getActiveScopeOrNull();
+      return {
+        bootState: scope?.bootState ?? 'booting',
+        integrityState: scope?.integrityState ?? 'unknown',
+        integrityCheckInProgress: scope?.integrityCheckInProgress ?? false,
+        integrityStartedAt: scope?.integrityStartedAt ?? null,
+        integritySource: scope?.integritySource ?? null,
+        lastIntegrityCheckedAt: scope?.lastIntegrityCheckedAt ?? null,
+        lastIntegrityDurationMs: scope?.lastIntegrityDurationMs ?? null,
+        lastIntegrityDetail: scope?.lastIntegrityDetail ?? null,
+        lastBackupAt: scope?.lastBackupAt ?? null,
+      };
+    },
     updateVaultIndex,
     updateFlywheelConfig,
   };
@@ -383,6 +412,134 @@ function loadVaultCooccurrence(ctx: VaultContext): void {
   }
 }
 
+function hydrateIntegrityMetadata(ctx: VaultContext): void {
+  if (!ctx.stateDb) return;
+  const checkedAtRow = ctx.stateDb.getMetadataValue.get(INTEGRITY_METADATA_KEYS.checkedAt) as { value: string } | undefined;
+  const statusRow = ctx.stateDb.getMetadataValue.get(INTEGRITY_METADATA_KEYS.status) as { value: string } | undefined;
+  const durationRow = ctx.stateDb.getMetadataValue.get(INTEGRITY_METADATA_KEYS.durationMs) as { value: string } | undefined;
+  const detailRow = ctx.stateDb.getMetadataValue.get(INTEGRITY_METADATA_KEYS.detail) as { value: string } | undefined;
+
+  ctx.lastIntegrityCheckedAt = checkedAtRow ? parseInt(checkedAtRow.value, 10) || null : null;
+  ctx.lastIntegrityDurationMs = durationRow ? parseInt(durationRow.value, 10) || null : null;
+  ctx.lastIntegrityDetail = detailRow?.value ? detailRow.value : null;
+
+  const status = statusRow?.value;
+  if (status === 'healthy' || status === 'failed' || status === 'error') {
+    ctx.integrityState = status;
+  }
+}
+
+function setBootState(ctx: VaultContext, state: VaultBootState): void {
+  ctx.bootState = state;
+  if ((globalThis as any).__flywheel_active_vault === ctx.name) {
+    setActiveScope(buildVaultScope(ctx));
+  }
+}
+
+function setIntegrityState(
+  ctx: VaultContext,
+  state: IntegrityState,
+  detail: string | null = ctx.lastIntegrityDetail,
+  durationMs: number | null = ctx.lastIntegrityDurationMs,
+): void {
+  ctx.integrityState = state;
+  ctx.lastIntegrityDetail = detail;
+  ctx.lastIntegrityDurationMs = durationMs;
+  if (state === 'failed') {
+    ctx.bootState = 'degraded';
+  }
+  if ((globalThis as any).__flywheel_active_vault === ctx.name) {
+    setActiveScope(buildVaultScope(ctx));
+  }
+}
+
+function persistIntegrityMetadata(ctx: VaultContext): void {
+  if (!ctx.stateDb || ctx.lastIntegrityCheckedAt == null) return;
+  ctx.stateDb.setMetadataValue.run(INTEGRITY_METADATA_KEYS.checkedAt, String(ctx.lastIntegrityCheckedAt));
+  ctx.stateDb.setMetadataValue.run(INTEGRITY_METADATA_KEYS.status, ctx.integrityState);
+  if (ctx.lastIntegrityDurationMs != null) {
+    ctx.stateDb.setMetadataValue.run(INTEGRITY_METADATA_KEYS.durationMs, String(ctx.lastIntegrityDurationMs));
+  }
+  if (ctx.lastIntegrityDetail) {
+    ctx.stateDb.setMetadataValue.run(INTEGRITY_METADATA_KEYS.detail, ctx.lastIntegrityDetail);
+  } else {
+    ctx.stateDb.setMetadataValue.run(INTEGRITY_METADATA_KEYS.detail, '');
+  }
+}
+
+function shouldRunBackup(ctx: VaultContext): boolean {
+  if (ctx.lastBackupAt == null) return true;
+  return Date.now() - ctx.lastBackupAt >= INTEGRITY_BACKUP_INTERVAL_MS;
+}
+
+async function runIntegrityCheck(
+  ctx: VaultContext,
+  source: string,
+  options: { force?: boolean } = {},
+): Promise<IntegrityWorkerResult> {
+  if (!ctx.stateDb) {
+    return { status: 'error', detail: 'StateDb not available', durationMs: 0, backupCreated: false };
+  }
+
+  if (!options.force && ctx.integrityState === 'healthy' && ctx.lastIntegrityCheckedAt != null) {
+    if (Date.now() - ctx.lastIntegrityCheckedAt < INTEGRITY_CHECK_INTERVAL_MS) {
+      return {
+        status: 'healthy',
+        detail: ctx.lastIntegrityDetail,
+        durationMs: ctx.lastIntegrityDurationMs ?? 0,
+        backupCreated: false,
+      };
+    }
+  }
+
+  const existing = integrityRuns.get(ctx.name);
+  if (existing) return existing;
+
+  ctx.integrityCheckInProgress = true;
+  ctx.integrityStartedAt = Date.now();
+  ctx.integritySource = source;
+  setIntegrityState(ctx, 'checking', ctx.lastIntegrityDetail, ctx.lastIntegrityDurationMs);
+  serverLog('statedb', `[${ctx.name}] Integrity check started (${source})`);
+
+  const promise = runIntegrityWorker({
+    dbPath: ctx.stateDb.dbPath,
+    runBackup: shouldRunBackup(ctx),
+    busyTimeoutMs: 5_000,
+  }).then((result) => {
+    ctx.integrityCheckInProgress = false;
+    ctx.integrityStartedAt = null;
+    ctx.integritySource = source;
+    ctx.lastIntegrityCheckedAt = Date.now();
+    ctx.lastIntegrityDurationMs = result.durationMs;
+    ctx.lastIntegrityDetail = result.detail;
+    if (result.backupCreated) {
+      ctx.lastBackupAt = Date.now();
+    }
+
+    if (result.status === 'healthy') {
+      setIntegrityState(ctx, 'healthy', result.detail, result.durationMs);
+      serverLog('statedb', `[${ctx.name}] Integrity check passed in ${result.durationMs}ms`);
+    } else if (result.status === 'failed') {
+      setIntegrityState(ctx, 'failed', result.detail, result.durationMs);
+      serverLog('statedb', `[${ctx.name}] Integrity check failed: ${result.detail}`, 'error');
+    } else {
+      setIntegrityState(ctx, 'error', result.detail, result.durationMs);
+      serverLog('statedb', `[${ctx.name}] Integrity check error: ${result.detail}`, 'warn');
+    }
+
+    persistIntegrityMetadata(ctx);
+    return result;
+  }).finally(() => {
+    integrityRuns.delete(ctx.name);
+    if ((globalThis as any).__flywheel_active_vault === ctx.name) {
+      setActiveScope(buildVaultScope(ctx));
+    }
+  });
+
+  integrityRuns.set(ctx.name, promise);
+  return promise;
+}
+
 /**
  * Initialize a vault: open StateDb (fast).
  * Returns a VaultContext with StateDb ready. Does NOT build indexes.
@@ -406,11 +563,21 @@ async function initializeVault(name: string, vaultPathArg: string): Promise<Vaul
     lastHubScoreRebuildAt: 0,
     lastIndexCacheSaveAt: 0,
     pipelineActivity: createEmptyPipelineActivity(),
+    bootState: 'booting',
+    integrityState: 'unknown',
+    integrityCheckInProgress: false,
+    integrityStartedAt: null,
+    integritySource: null,
+    lastIntegrityCheckedAt: null,
+    lastIntegrityDurationMs: null,
+    lastIntegrityDetail: null,
+    lastBackupAt: null,
   };
 
   try {
     ctx.stateDb = openStateDb(vaultPathArg);
     serverLog('statedb', `[${name}] StateDb initialized`);
+    hydrateIntegrityMetadata(ctx);
 
     // Nudge if vault_init has never been run
     const vaultInitRow = ctx.stateDb.getMetadataValue.get('vault_init_last_run_at') as { value: string } | undefined;
@@ -440,6 +607,15 @@ function buildVaultScope(ctx: VaultContext): VaultScope {
     embeddingsBuilding: ctx.embeddingsBuilding,
     entityEmbeddingsMap: getEntityEmbeddingsMap(),
     pipelineActivity: ctx.pipelineActivity,
+    bootState: ctx.bootState,
+    integrityState: ctx.integrityState,
+    integrityCheckInProgress: ctx.integrityCheckInProgress,
+    integrityStartedAt: ctx.integrityStartedAt,
+    integritySource: ctx.integritySource,
+    lastIntegrityCheckedAt: ctx.lastIntegrityCheckedAt,
+    lastIntegrityDurationMs: ctx.lastIntegrityDurationMs,
+    lastIntegrityDetail: ctx.lastIntegrityDetail,
+    lastBackupAt: ctx.lastBackupAt,
   };
 }
 
@@ -628,6 +804,10 @@ async function bootVault(ctx: VaultContext, startTime: number): Promise<void> {
       serverLog('index', `[${ctx.name}] Failed to build vault index: ${err instanceof Error ? err.message : err}`, 'error');
     }
   }
+
+  if (ctx.bootState !== 'degraded') {
+    setBootState(ctx, 'ready');
+  }
 }
 
 // ============================================================================
@@ -662,16 +842,19 @@ async function main() {
     vaultRegistry.addContext(primaryCtx);
     stateDb = primaryCtx.stateDb;
     activateVault(primaryCtx, true);  // skip embedding load — defer until after transport connects
+    serverLog('server', `[${primaryCtx.name}] stateDb_open=${Date.now() - startTime}ms`);
   } else {
     vaultRegistry = new VaultRegistry('default');
     const ctx = await initializeVault('default', vaultPath);
     vaultRegistry.addContext(ctx);
     stateDb = ctx.stateDb;
     activateVault(ctx, true);  // skip embedding load — defer until after transport connects
+    serverLog('server', `[${ctx.name}] stateDb_open=${Date.now() - startTime}ms`);
   }
 
   // ── Phase 1b: Load tool routing manifest (non-blocking) ──
   await initToolRouting();
+  serverLog('server', `tool_routing=${Date.now() - startTime}ms`);
 
   // ── Phase 1c: Load effectiveness snapshots for T15b routing ──
   if (stateDb) {
@@ -773,35 +956,20 @@ async function main() {
     });
   }
 
-  // ── Phase 2b: Deferred integrity check (after transport, before heavy boot) ──
-  // PRAGMA quick_check on a 1.4GB state.db takes ~16s — must not block transport connect.
   const primaryCtx = vaultRegistry.getContext();
-  if (primaryCtx.stateDb) {
-    const integrity = checkDbIntegrity(primaryCtx.stateDb.db);
-    if (integrity.ok) {
-      safeBackupAsync(primaryCtx.stateDb.db, primaryCtx.stateDb.dbPath).catch((err: unknown) => {
-        serverLog('backup', `[${primaryCtx.name}] Safe backup failed: ${err}`, 'error');
-      });
-    } else {
-      serverLog('statedb', `[${primaryCtx.name}] Integrity check failed: ${integrity.detail} — recreating`, 'error');
-      const dbPath = primaryCtx.stateDb.dbPath;
-      preserveCorruptedDb(dbPath);
-      primaryCtx.stateDb.close();
-      deleteStateDbFiles(dbPath);
-      primaryCtx.stateDb = openStateDb(primaryCtx.vaultPath);
-      attemptSalvage(primaryCtx.stateDb.db, dbPath);
-      stateDb = primaryCtx.stateDb;
-      activateVault(primaryCtx, true);
-    }
-    serverLog('statedb', `[${primaryCtx.name}] Integrity check passed in ${Date.now() - startTime}ms`);
-  }
+  setBootState(primaryCtx, 'transport_connected');
+  serverLog('server', `[${primaryCtx.name}] transport_connect=${Date.now() - startTime}ms`);
+  serverLog('server', `[${primaryCtx.name}] integrity_check_started=${Date.now() - startTime}ms`);
+  void runIntegrityCheck(primaryCtx, 'startup');
 
   // ── Phase 3: Load co-occurrence + boot primary vault ──
+  setBootState(primaryCtx, 'booting');
   loadVaultCooccurrence(primaryCtx);
   activateVault(primaryCtx);
   await bootVault(primaryCtx, startTime);
   // Re-activate after boot so fallback scope reflects post-boot state (config, index, etc.)
   activateVault(primaryCtx);
+  serverLog('server', `[${primaryCtx.name}] boot_complete=${Date.now() - startTime}ms`);
 
   serverReady = true;
 
@@ -867,6 +1035,9 @@ async function main() {
           const ctx = await initializeVault(vc.name, vc.path);
           vaultRegistry!.addContext(ctx);
           invalidateHttpPool();
+          setBootState(ctx, 'transport_connected');
+          void runIntegrityCheck(ctx, 'startup');
+          setBootState(ctx, 'booting');
           loadVaultCooccurrence(ctx);
           activateVault(ctx);
           await bootVault(ctx, startTime);
@@ -1364,6 +1535,7 @@ async function runPostIndexWork(ctx: VaultContext) {
           getVaultIndex: () => vaultIndex,
           buildVaultIndex,
           deferredScheduler: deferredScheduler ?? undefined,
+          runIntegrityCheck,
         });
         await runner.run();
     };

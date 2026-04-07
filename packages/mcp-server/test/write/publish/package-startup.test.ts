@@ -1,23 +1,35 @@
 /**
  * Package Startup Test
  *
- * Verifies the published package can be installed and started correctly.
- * This catches missing dependencies (like vault-core in v1.27.67) before publishing.
- *
- * How it works:
- * 1. Runs `npm pack` to create a tarball (exactly what gets published)
- * 2. Extracts to a temp directory
- * 3. Runs `npm install` (installs only declared dependencies)
- * 4. Dynamically imports the built module
- * 5. Verifies no ERR_MODULE_NOT_FOUND errors
+ * Verifies the published package can be installed and started the same way
+ * Codex starts it: a stdio MCP server launched from the shipped artifact.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { execSync } from 'child_process';
-import { mkdtempSync, mkdirSync, rmSync, existsSync, readdirSync, readFileSync } from 'fs';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { execFileSync } from 'child_process';
+import {
+  mkdtempSync,
+  mkdirSync,
+  rmSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+} from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { pathToFileURL } from 'url';
+
+type ClientConnection = {
+  client: Client;
+  stderr: string[];
+  transport: StdioClientTransport;
+};
+
+let nodeModulesPath = '';
+let testProjectDir = '';
+let testVaultDir = '';
 
 describe('Package Startup', () => {
   const packageDir = join(__dirname, '../../..');
@@ -25,19 +37,28 @@ describe('Package Startup', () => {
   let tarballPath: string;
 
   beforeAll(() => {
-    // Create temp directory
     tempDir = mkdtempSync(join(tmpdir(), 'flywheel-memory-test-'));
-
-    // Build the package first
-    execSync('npm run build', { cwd: packageDir, stdio: 'pipe' });
-
-    // Create tarball
-    const packOutput = execSync('npm pack --pack-destination ' + tempDir, {
+    execFileSync('npm', ['run', 'build'], { cwd: packageDir, stdio: 'pipe' });
+    const packOutput = execFileSync('npm', ['pack', '--pack-destination', tempDir], {
       cwd: packageDir,
       encoding: 'utf-8',
     }).trim();
-
     tarballPath = join(tempDir, packOutput);
+
+    testProjectDir = join(tempDir, 'test-project');
+    testVaultDir = join(tempDir, 'test-vault');
+    mkdirSync(testProjectDir, { recursive: true });
+    mkdirSync(join(testVaultDir, '.obsidian'), { recursive: true });
+    writeFileSync(join(testVaultDir, 'Inbox.md'), '# Inbox\n\nSmoke test note.\n');
+
+    execFileSync('npm', ['init', '-y'], { cwd: testProjectDir, stdio: 'pipe' });
+    execFileSync('npm', ['install', tarballPath], {
+      cwd: testProjectDir,
+      stdio: 'pipe',
+      timeout: 600000,
+    });
+
+    nodeModulesPath = join(testProjectDir, 'node_modules', '@velvetmonkey', 'flywheel-memory');
   }, 60000);
 
   afterAll(() => {
@@ -55,26 +76,9 @@ describe('Package Startup', () => {
     expect(tarballPath).toMatch(/\.tgz$/);
   });
 
-  it('package can be installed and imported without missing dependencies', async () => {
-    // Create a minimal test project
-    const testProjectDir = join(tempDir, 'test-project');
-    mkdirSync(testProjectDir, { recursive: true });
-
-    // Initialize with package.json
-    execSync('npm init -y', { cwd: testProjectDir, stdio: 'pipe' });
-
-    // Install from the tarball (simulates installing from npm)
-    execSync(`npm install ${tarballPath}`, {
-      cwd: testProjectDir,
-      stdio: 'pipe',
-      timeout: 600000,
-    });
-
-    // Verify node_modules contains the package
-    const nodeModulesPath = join(testProjectDir, 'node_modules', '@velvetmonkey', 'flywheel-memory');
+  it('package can be installed and imported without missing dependencies', () => {
     expect(existsSync(nodeModulesPath)).toBe(true);
 
-    // Verify all critical dependencies are installed
     const criticalDeps = [
       '@velvetmonkey/vault-core',
       '@modelcontextprotocol/sdk',
@@ -88,14 +92,8 @@ describe('Package Startup', () => {
       expect(existsSync(depPath), `Missing dependency: ${dep}`).toBe(true);
     }
 
-    // Try to dynamically import the package
-    // This will fail with ERR_MODULE_NOT_FOUND if dependencies are missing
     const distPath = join(nodeModulesPath, 'dist', 'index.js');
     expect(existsSync(distPath)).toBe(true);
-
-    // Use a subprocess to test the import in isolation
-    // This ensures we're not getting dependencies from the workspace
-    // Convert to proper file URL for cross-platform support (Windows paths have backslashes)
     const fileUrl = pathToFileURL(distPath).href;
 
     const testScript = `
@@ -111,25 +109,22 @@ describe('Package Startup', () => {
     `;
 
     try {
-      const result = execSync(`node --input-type=module -e "${testScript.replace(/"/g, '\\"').replace(/\n/g, ' ')}"`, {
+      const result = execFileSync('node', ['--input-type=module', '-e', testScript], {
         cwd: testProjectDir,
         encoding: 'utf-8',
         timeout: 30000,
         env: {
           ...process.env,
-          // Set PROJECT_PATH to prevent vault detection errors
           PROJECT_PATH: testProjectDir,
         },
       });
       expect(result).toContain('IMPORT_SUCCESS');
     } catch (error: unknown) {
       const execError = error as { stderr?: string; stdout?: string };
-      // If import fails, provide helpful error message
       const stderr = execError.stderr || '';
       const stdout = execError.stdout || '';
 
       if (stderr.includes('ERR_MODULE_NOT_FOUND')) {
-        // Extract the missing module name
         const match = stderr.match(/Cannot find package '([^']+)'/);
         const missingModule = match ? match[1] : 'unknown';
         throw new Error(
@@ -138,10 +133,25 @@ describe('Package Startup', () => {
             `Full error: ${stderr}`
         );
       }
-
       throw new Error(`Import failed: ${stderr || stdout}`);
     }
-  }, 660000); // 11 minute timeout — Windows npm install with native deps is very slow on Node 24
+  }, 30000);
+
+  it('packed artifact completes a stdio MCP handshake and exposes tools', async () => {
+    const connection = await connectInstalledPackage();
+    try {
+      const tools = await connection.client.listTools();
+      const toolNames = new Set(tools.tools.map((tool: { name: string }) => tool.name));
+
+      expect(toolNames.size).toBeGreaterThan(20);
+      expect(toolNames.has('search')).toBe(true);
+      expect(toolNames.has('vault_create_note')).toBe(true);
+      expect(toolNames.has('flywheel_doctor')).toBe(true);
+      expect(connection.stderr.join('')).toContain('Starting Flywheel Memory');
+    } finally {
+      await closeConnection(connection);
+    }
+  }, 30000);
 
   it('dist/index.js exists and is executable', () => {
     const distPath = join(packageDir, 'dist', 'index.js');
@@ -149,7 +159,7 @@ describe('Package Startup', () => {
   });
 
   it('package.json has all required fields for publishing', () => {
-    const pkg = require(join(packageDir, 'package.json'));
+    const pkg = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf-8'));
 
     expect(pkg.name).toBe('@velvetmonkey/flywheel-memory');
     expect(pkg.version).toBeDefined();
@@ -167,3 +177,35 @@ describe('Package Startup', () => {
     expect(existsSync(resolved), `bin entry ${binPath} not found`).toBe(true);
   });
 });
+
+async function connectInstalledPackage(): Promise<ClientConnection> {
+  const transport = new StdioClientTransport({
+    command: 'node',
+    args: [join(nodeModulesPath, 'bin', 'flywheel-memory.js')],
+    cwd: testProjectDir,
+    env: {
+      PROJECT_PATH: testVaultDir,
+      FLYWHEEL_PRESET: 'full',
+    },
+    stderr: 'pipe',
+  });
+  const stderr: string[] = [];
+  transport.stderr?.on('data', (chunk: Buffer | string) => {
+    stderr.push(chunk.toString());
+  });
+
+  const client = new Client({
+    name: 'publish-smoke-test',
+    version: '1.0.0',
+  }, {
+    capabilities: {},
+  });
+
+  await client.connect(transport);
+  return { client, stderr, transport };
+}
+
+async function closeConnection(connection: ClientConnection): Promise<void> {
+  await connection.client.close();
+  await connection.transport.close();
+}

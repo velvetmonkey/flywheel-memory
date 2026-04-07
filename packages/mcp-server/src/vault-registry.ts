@@ -15,6 +15,9 @@ import type { CooccurrenceIndex } from './core/shared/cooccurrence.js';
 import type { IndexState } from './core/read/graph.js';
 import type { PipelineActivity } from './core/read/watch/pipeline.js';
 
+export type VaultBootState = 'transport_connected' | 'booting' | 'ready' | 'degraded';
+export type IntegrityState = 'unknown' | 'checking' | 'healthy' | 'failed' | 'error';
+
 export interface VaultContext {
   name: string;
   vaultPath: string;
@@ -42,6 +45,24 @@ export interface VaultContext {
   lastIndexCacheSaveAt: number;
   /** Per-vault live watcher pipeline activity */
   pipelineActivity: PipelineActivity;
+  /** Per-vault boot lifecycle state */
+  bootState: VaultBootState;
+  /** Per-vault integrity status */
+  integrityState: IntegrityState;
+  /** True while an integrity check is in flight */
+  integrityCheckInProgress: boolean;
+  /** Current integrity check start time (epoch ms) */
+  integrityStartedAt: number | null;
+  /** Source of current/last integrity check */
+  integritySource: string | null;
+  /** Last completed integrity check time (epoch ms) */
+  lastIntegrityCheckedAt: number | null;
+  /** Last completed integrity duration (ms) */
+  lastIntegrityDurationMs: number | null;
+  /** Last integrity detail text */
+  lastIntegrityDetail: string | null;
+  /** Last successful backup time (epoch ms) */
+  lastBackupAt: number | null;
 }
 
 export class VaultRegistry {

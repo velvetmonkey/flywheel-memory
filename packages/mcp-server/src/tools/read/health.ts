@@ -42,6 +42,27 @@ export function registerHealthTools(
   getWatcherStatus: () => WatcherStatus | null = () => null,
   getVersion: () => string = () => 'unknown',
   getPipelineActivityState: () => Readonly<PipelineActivity> | null = () => null,
+  getVaultRuntimeState: () => {
+    bootState: string;
+    integrityState: string;
+    integrityCheckInProgress: boolean;
+    integrityStartedAt: number | null;
+    integritySource: string | null;
+    lastIntegrityCheckedAt: number | null;
+    lastIntegrityDurationMs: number | null;
+    lastIntegrityDetail: string | null;
+    lastBackupAt: number | null;
+  } = () => ({
+    bootState: 'booting',
+    integrityState: 'unknown',
+    integrityCheckInProgress: false,
+    integrityStartedAt: null,
+    integritySource: null,
+    lastIntegrityCheckedAt: null,
+    lastIntegrityDurationMs: null,
+    lastIntegrityDetail: null,
+    lastBackupAt: null,
+  }),
 ): void {
   // health_check - MCP server health status + periodic note detection + config
   const IndexProgressSchema = z.object({
@@ -245,6 +266,14 @@ export function registerHealthTools(
     tasks_ready: boolean;
     tasks_building: boolean;
     watcher_state?: 'starting' | 'ready' | 'rebuilding' | 'dirty' | 'error';
+    boot_state: string;
+    integrity_state: string;
+    integrity_check_in_progress: boolean;
+    integrity_started_at: number | null;
+    integrity_source: string | null;
+    integrity_last_checked_at: number | null;
+    integrity_duration_ms: number | null;
+    integrity_detail: string | null;
     watcher_pending?: number;
     last_index_activity_at?: number;
     last_index_activity_ago_seconds?: number;
@@ -299,18 +328,14 @@ export function registerHealthTools(
     // Check database integrity
     let dbIntegrityFailed = false;
     const stateDb = getStateDb();
-    if (stateDb) {
-      try {
-        const result = stateDb.db.pragma('quick_check') as Array<Record<string, string>>;
-        const ok = result.length === 1 && Object.values(result[0])[0] === 'ok';
-        if (!ok) {
-          dbIntegrityFailed = true;
-          recommendations.push(`Database integrity check failed: ${Object.values(result[0])[0] ?? 'unknown error'}`);
-        }
-      } catch (err) {
-        dbIntegrityFailed = true;
-        recommendations.push(`Database integrity check error: ${err instanceof Error ? err.message : err}`);
-      }
+    const runtimeState = getVaultRuntimeState();
+    if (runtimeState.integrityState === 'failed') {
+      dbIntegrityFailed = true;
+      recommendations.push(`Database integrity check failed: ${runtimeState.lastIntegrityDetail ?? 'unknown integrity failure'}`);
+    } else if (runtimeState.integrityState === 'error') {
+      recommendations.push(`Database integrity check error: ${runtimeState.lastIntegrityDetail ?? 'integrity runner error'}`);
+    } else if (runtimeState.integrityCheckInProgress) {
+      recommendations.push('Database integrity check is still running.');
     }
 
     // Check index status
@@ -572,6 +597,14 @@ export function registerHealthTools(
       tasks_ready: isTaskCacheReady(),
       tasks_building: isTaskCacheBuilding(),
       watcher_state: getWatcherStatus()?.state,
+      boot_state: runtimeState.bootState,
+      integrity_state: runtimeState.integrityState,
+      integrity_check_in_progress: runtimeState.integrityCheckInProgress,
+      integrity_started_at: runtimeState.integrityStartedAt,
+      integrity_source: runtimeState.integritySource,
+      integrity_last_checked_at: runtimeState.lastIntegrityCheckedAt,
+      integrity_duration_ms: runtimeState.lastIntegrityDurationMs,
+      integrity_detail: runtimeState.lastIntegrityDetail,
       watcher_pending: getWatcherStatus()?.pendingEvents,
       last_index_activity_at: lastIndexActivityAt,
       last_index_activity_ago_seconds: lastIndexActivityAt
@@ -631,6 +664,7 @@ export function registerHealthTools(
     }> => {
       const activity = getPipelineActivityState();
       const now = Date.now();
+      const runtimeState = getVaultRuntimeState();
 
       const output: Record<string, unknown> = {
         busy: activity?.busy ?? false,
@@ -642,6 +676,9 @@ export function registerHealthTools(
           ? `${activity.completed_steps}/${activity.total_steps} steps`
           : null,
         pending_events: activity?.pending_events ?? 0,
+        boot_state: runtimeState.bootState,
+        integrity_state: runtimeState.integrityState,
+        integrity_check_in_progress: runtimeState.integrityCheckInProgress,
         last_completed: activity?.last_completed_at ? {
           at: activity.last_completed_at,
           ago_seconds: Math.floor((now - activity.last_completed_at) / 1000),

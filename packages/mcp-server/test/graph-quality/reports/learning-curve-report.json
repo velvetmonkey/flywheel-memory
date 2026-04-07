@@ -1,23 +1,23 @@
 {
   "suite": "learning-curve-report",
-  "timestamp": "2026-04-03T12:48:03.504Z",
-  "duration_ms": 21474,
+  "timestamp": "2026-04-07T22:32:29.776Z",
+  "duration_ms": 15846,
   "summary": {
-    "round0_f1": 0.491,
-    "roundN_f1": 0.551,
-    "f1_improvement": 0.06,
-    "total_suppressions": 19
+    "round0_f1": 0.576,
+    "roundN_f1": 0.58,
+    "f1_improvement": 0.004,
+    "total_suppressions": 15
   },
   "details": [
     {
       "round": 0,
-      "f1": 0.491,
-      "precision": 0.374,
-      "recall": 0.717,
-      "mrr": 0.655,
-      "truePositives": 43,
-      "falsePositives": 72,
-      "falseNegatives": 17,
+      "f1": 0.576,
+      "precision": 0.506,
+      "recall": 0.667,
+      "mrr": 0.659,
+      "truePositives": 40,
+      "falsePositives": 39,
+      "falseNegatives": 20,
       "suppressionCount": 0,
       "feedbackLayerAvgContribution": 0,
       "byCategory": {
@@ -70,9 +70,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -106,9 +106,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -121,19 +121,24 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -155,6 +160,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -172,6 +182,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -223,15 +238,15 @@
     },
     {
       "round": 1,
-      "f1": 0.491,
-      "precision": 0.374,
-      "recall": 0.717,
-      "mrr": 0.655,
-      "truePositives": 43,
-      "falsePositives": 72,
-      "falseNegatives": 17,
-      "suppressionCount": 3,
-      "feedbackLayerAvgContribution": 0.0873,
+      "f1": 0.576,
+      "precision": 0.506,
+      "recall": 0.667,
+      "mrr": 0.682,
+      "truePositives": 40,
+      "falsePositives": 39,
+      "falseNegatives": 20,
+      "suppressionCount": 0,
+      "feedbackLayerAvgContribution": 0.1967,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -282,9 +297,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -318,9 +333,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -333,23 +348,24 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
-      "suppressedEntities": [
-        "clean-architecture",
-        "dataforge",
-        "mira-okonkwo"
-      ],
+      "suppressedEntities": [],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -371,6 +387,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -388,6 +409,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -439,15 +465,15 @@
     },
     {
       "round": 2,
-      "f1": 0.528,
-      "precision": 0.417,
-      "recall": 0.717,
-      "mrr": 0.659,
-      "truePositives": 43,
-      "falsePositives": 60,
-      "falseNegatives": 17,
-      "suppressionCount": 6,
-      "feedbackLayerAvgContribution": 0.5077,
+      "f1": 0.576,
+      "precision": 0.506,
+      "recall": 0.667,
+      "mrr": 0.682,
+      "truePositives": 40,
+      "falsePositives": 39,
+      "falseNegatives": 20,
+      "suppressionCount": 2,
+      "feedbackLayerAvgContribution": 0.6557,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -498,9 +524,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -534,9 +560,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -549,26 +575,27 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "clean-architecture",
-        "dataforge",
         "mira-okonkwo",
-        "owen-park",
-        "project-meridian"
+        "owen-park"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -590,6 +617,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -607,6 +639,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -658,15 +695,15 @@
     },
     {
       "round": 3,
-      "f1": 0.521,
-      "precision": 0.41,
-      "recall": 0.717,
-      "mrr": 0.655,
-      "truePositives": 43,
-      "falsePositives": 62,
-      "falseNegatives": 17,
-      "suppressionCount": 8,
-      "feedbackLayerAvgContribution": 1.2769,
+      "f1": 0.576,
+      "precision": 0.506,
+      "recall": 0.667,
+      "mrr": 0.659,
+      "truePositives": 40,
+      "falsePositives": 39,
+      "falseNegatives": 20,
+      "suppressionCount": 5,
+      "feedbackLayerAvgContribution": 0.9399,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -717,9 +754,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -753,9 +790,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -768,28 +805,30 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
-        "clean-architecture",
-        "dataforge",
-        "meridian-labs",
         "mira-okonkwo",
+        "owen-park",
         "prism-core",
-        "project-meridian",
-        "signal-patterns"
+        "project-meridian"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -811,6 +850,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -828,6 +872,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -879,15 +928,15 @@
     },
     {
       "round": 4,
-      "f1": 0.528,
-      "precision": 0.417,
-      "recall": 0.717,
-      "mrr": 0.667,
-      "truePositives": 43,
-      "falsePositives": 60,
-      "falseNegatives": 17,
-      "suppressionCount": 10,
-      "feedbackLayerAvgContribution": 1.2314,
+      "f1": 0.576,
+      "precision": 0.506,
+      "recall": 0.667,
+      "mrr": 0.689,
+      "truePositives": 40,
+      "falsePositives": 39,
+      "falseNegatives": 20,
+      "suppressionCount": 6,
+      "feedbackLayerAvgContribution": 1.8907,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -938,9 +987,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -974,9 +1023,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -989,30 +1038,31 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "clean-architecture",
-        "dataforge",
         "meridian-labs",
         "mira-okonkwo",
         "owen-park",
         "prism-core",
         "project-meridian",
-        "signal-patterns",
         "tessa-liu"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -1034,6 +1084,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -1051,6 +1106,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -1102,15 +1162,15 @@
     },
     {
       "round": 5,
-      "f1": 0.551,
-      "precision": 0.448,
-      "recall": 0.717,
-      "mrr": 0.659,
-      "truePositives": 43,
-      "falsePositives": 53,
-      "falseNegatives": 17,
-      "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 1.2794,
+      "f1": 0.576,
+      "precision": 0.506,
+      "recall": 0.667,
+      "mrr": 0.689,
+      "truePositives": 40,
+      "falsePositives": 39,
+      "falseNegatives": 20,
+      "suppressionCount": 7,
+      "feedbackLayerAvgContribution": 2.0437,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -1161,9 +1221,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -1197,9 +1257,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -1212,31 +1272,32 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "clean-architecture",
-        "dataforge",
         "meridian-labs",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
-        "signal-patterns",
         "tessa-liu"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -1258,6 +1319,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -1275,6 +1341,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -1326,15 +1397,15 @@
     },
     {
       "round": 6,
-      "f1": 0.551,
-      "precision": 0.448,
-      "recall": 0.717,
-      "mrr": 0.667,
-      "truePositives": 43,
-      "falsePositives": 53,
-      "falseNegatives": 17,
-      "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 1.1951,
+      "f1": 0.576,
+      "precision": 0.506,
+      "recall": 0.667,
+      "mrr": 0.689,
+      "truePositives": 40,
+      "falsePositives": 39,
+      "falseNegatives": 20,
+      "suppressionCount": 7,
+      "feedbackLayerAvgContribution": 2.0109,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -1385,9 +1456,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -1421,9 +1492,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -1436,31 +1507,32 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "clean-architecture",
-        "dataforge",
         "meridian-labs",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
-        "signal-patterns",
         "tessa-liu"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -1482,6 +1554,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -1499,6 +1576,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -1550,15 +1632,15 @@
     },
     {
       "round": 7,
-      "f1": 0.528,
-      "precision": 0.417,
-      "recall": 0.717,
+      "f1": 0.576,
+      "precision": 0.506,
+      "recall": 0.667,
       "mrr": 0.689,
-      "truePositives": 43,
-      "falsePositives": 60,
-      "falseNegatives": 17,
-      "suppressionCount": 11,
-      "feedbackLayerAvgContribution": 1.4862,
+      "truePositives": 40,
+      "falsePositives": 39,
+      "falseNegatives": 20,
+      "suppressionCount": 8,
+      "feedbackLayerAvgContribution": 3.082,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -1609,9 +1691,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -1645,9 +1727,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -1660,31 +1742,33 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
-        "clean-architecture",
-        "dataforge",
         "meridian-labs",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
-        "signal-patterns",
         "tessa-liu"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -1706,6 +1790,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -1723,6 +1812,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -1774,15 +1868,15 @@
     },
     {
       "round": 8,
-      "f1": 0.555,
-      "precision": 0.453,
-      "recall": 0.717,
-      "mrr": 0.682,
-      "truePositives": 43,
-      "falsePositives": 52,
-      "falseNegatives": 17,
-      "suppressionCount": 12,
-      "feedbackLayerAvgContribution": 1.4857,
+      "f1": 0.58,
+      "precision": 0.513,
+      "recall": 0.667,
+      "mrr": 0.689,
+      "truePositives": 40,
+      "falsePositives": 38,
+      "falseNegatives": 20,
+      "suppressionCount": 7,
+      "feedbackLayerAvgContribution": 3.0497,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -1833,9 +1927,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -1869,9 +1963,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -1884,32 +1978,32 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
-        "api-first",
-        "architecture-rfc",
-        "clean-architecture",
-        "dataforge",
         "meridian-labs",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
-        "signal-patterns",
         "tessa-liu"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -1931,6 +2025,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -1948,6 +2047,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -1999,15 +2103,15 @@
     },
     {
       "round": 9,
-      "f1": 0.562,
-      "precision": 0.462,
-      "recall": 0.717,
-      "mrr": 0.655,
-      "truePositives": 43,
-      "falsePositives": 50,
-      "falseNegatives": 17,
-      "suppressionCount": 15,
-      "feedbackLayerAvgContribution": 1.1917,
+      "f1": 0.576,
+      "precision": 0.506,
+      "recall": 0.667,
+      "mrr": 0.712,
+      "truePositives": 40,
+      "falsePositives": 39,
+      "falseNegatives": 20,
+      "suppressionCount": 13,
+      "feedbackLayerAvgContribution": 2.9945,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2058,9 +2162,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -2094,9 +2198,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -2109,35 +2213,38 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
         "mira-okonkwo",
         "nadia-reyes",
+        "owen-park",
         "prism-core",
         "project-meridian",
-        "q1-budget",
+        "python",
         "q1-review",
         "signal-patterns",
-        "tessa-liu",
-        "yoga"
+        "tessa-liu"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -2159,6 +2266,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -2176,6 +2288,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -2227,15 +2344,15 @@
     },
     {
       "round": 10,
-      "f1": 0.531,
-      "precision": 0.422,
-      "recall": 0.717,
-      "mrr": 0.674,
-      "truePositives": 43,
-      "falsePositives": 59,
-      "falseNegatives": 17,
-      "suppressionCount": 19,
-      "feedbackLayerAvgContribution": 1.3952,
+      "f1": 0.576,
+      "precision": 0.506,
+      "recall": 0.667,
+      "mrr": 0.712,
+      "truePositives": 40,
+      "falsePositives": 39,
+      "falseNegatives": 20,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 3.0929,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2286,9 +2403,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -2322,9 +2439,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -2337,39 +2454,39 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
-        "architecture-rfc",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
-        "microservices",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
         "python",
-        "q1-budget",
         "q1-review",
         "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -2391,6 +2508,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -2408,6 +2530,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -2459,15 +2586,15 @@
     },
     {
       "round": 11,
-      "f1": 0.555,
-      "precision": 0.453,
-      "recall": 0.717,
-      "mrr": 0.697,
-      "truePositives": 43,
-      "falsePositives": 52,
-      "falseNegatives": 17,
-      "suppressionCount": 18,
-      "feedbackLayerAvgContribution": 1.325,
+      "f1": 0.58,
+      "precision": 0.513,
+      "recall": 0.667,
+      "mrr": 0.72,
+      "truePositives": 40,
+      "falsePositives": 38,
+      "falseNegatives": 20,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 2.9438,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2518,9 +2645,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -2554,9 +2681,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -2569,38 +2696,39 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
-        "microservices",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
         "python",
-        "q1-budget",
         "q1-review",
         "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -2622,6 +2750,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -2639,6 +2772,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -2690,15 +2828,15 @@
     },
     {
       "round": 12,
-      "f1": 0.538,
-      "precision": 0.43,
-      "recall": 0.717,
-      "mrr": 0.697,
-      "truePositives": 43,
-      "falsePositives": 57,
-      "falseNegatives": 17,
-      "suppressionCount": 18,
-      "feedbackLayerAvgContribution": 1.4435,
+      "f1": 0.58,
+      "precision": 0.513,
+      "recall": 0.667,
+      "mrr": 0.72,
+      "truePositives": 40,
+      "falsePositives": 38,
+      "falseNegatives": 20,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 2.7753,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2749,9 +2887,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -2785,9 +2923,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -2800,38 +2938,39 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
-        "microservices",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
         "python",
-        "q1-budget",
         "q1-review",
         "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -2853,6 +2992,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -2870,6 +3014,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -2921,15 +3070,15 @@
     },
     {
       "round": 13,
-      "f1": 0.541,
-      "precision": 0.434,
-      "recall": 0.717,
+      "f1": 0.58,
+      "precision": 0.513,
+      "recall": 0.667,
       "mrr": 0.697,
-      "truePositives": 43,
-      "falsePositives": 56,
-      "falseNegatives": 17,
-      "suppressionCount": 19,
-      "feedbackLayerAvgContribution": 1.2131,
+      "truePositives": 40,
+      "falsePositives": 38,
+      "falseNegatives": 20,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 2.7528,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -2980,9 +3129,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -3016,9 +3165,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -3031,39 +3180,39 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
-        "architecture-rfc",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
-        "microservices",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
         "python",
-        "q1-budget",
         "q1-review",
         "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -3085,6 +3234,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -3102,6 +3256,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -3153,15 +3312,15 @@
     },
     {
       "round": 14,
-      "f1": 0.534,
-      "precision": 0.426,
-      "recall": 0.717,
-      "mrr": 0.667,
-      "truePositives": 43,
-      "falsePositives": 58,
-      "falseNegatives": 17,
-      "suppressionCount": 19,
-      "feedbackLayerAvgContribution": 1.3466,
+      "f1": 0.58,
+      "precision": 0.513,
+      "recall": 0.667,
+      "mrr": 0.697,
+      "truePositives": 40,
+      "falsePositives": 38,
+      "falseNegatives": 20,
+      "suppressionCount": 14,
+      "feedbackLayerAvgContribution": 3.0787,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3212,9 +3371,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -3248,9 +3407,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -3263,39 +3422,39 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
-        "architecture-rfc",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
-        "microservices",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
         "python",
-        "q1-budget",
         "q1-review",
         "signal-patterns",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -3317,6 +3476,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -3334,6 +3498,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -3385,15 +3554,15 @@
     },
     {
       "round": 15,
-      "f1": 0.528,
-      "precision": 0.417,
-      "recall": 0.717,
-      "mrr": 0.667,
-      "truePositives": 43,
-      "falsePositives": 60,
-      "falseNegatives": 17,
-      "suppressionCount": 19,
-      "feedbackLayerAvgContribution": 1.3307,
+      "f1": 0.58,
+      "precision": 0.513,
+      "recall": 0.667,
+      "mrr": 0.697,
+      "truePositives": 40,
+      "falsePositives": 38,
+      "falseNegatives": 20,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 3.2135,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3444,9 +3613,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -3480,9 +3649,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -3495,39 +3664,40 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
-        "architecture-rfc",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
-        "microservices",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
         "python",
-        "q1-budget",
         "q1-review",
         "signal-patterns",
+        "staging",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -3549,6 +3719,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -3566,6 +3741,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -3617,15 +3797,15 @@
     },
     {
       "round": 16,
-      "f1": 0.548,
-      "precision": 0.443,
-      "recall": 0.717,
-      "mrr": 0.674,
-      "truePositives": 43,
-      "falsePositives": 54,
-      "falseNegatives": 17,
-      "suppressionCount": 20,
-      "feedbackLayerAvgContribution": 1.3145,
+      "f1": 0.58,
+      "precision": 0.513,
+      "recall": 0.667,
+      "mrr": 0.72,
+      "truePositives": 40,
+      "falsePositives": 38,
+      "falseNegatives": 20,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 3.2135,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3676,9 +3856,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -3712,9 +3892,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -3727,33 +3907,28 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
-        "architecture-rfc",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
-        "microservices",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
         "python",
-        "q1-budget",
         "q1-review",
         "signal-patterns",
         "staging",
@@ -3761,6 +3936,11 @@
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -3782,6 +3962,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -3799,6 +3984,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -3850,15 +4040,15 @@
     },
     {
       "round": 17,
-      "f1": 0.534,
-      "precision": 0.426,
-      "recall": 0.717,
-      "mrr": 0.64,
-      "truePositives": 43,
-      "falsePositives": 58,
-      "falseNegatives": 17,
-      "suppressionCount": 20,
-      "feedbackLayerAvgContribution": 1.3466,
+      "f1": 0.58,
+      "precision": 0.513,
+      "recall": 0.667,
+      "mrr": 0.697,
+      "truePositives": 40,
+      "falsePositives": 38,
+      "falseNegatives": 20,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 3.2247,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -3909,9 +4099,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -3945,9 +4135,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -3960,33 +4150,28 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
-        "architecture-rfc",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
-        "microservices",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
         "python",
-        "q1-budget",
         "q1-review",
         "signal-patterns",
         "staging",
@@ -3994,6 +4179,11 @@
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -4015,6 +4205,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -4032,6 +4227,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -4083,15 +4283,15 @@
     },
     {
       "round": 18,
-      "f1": 0.531,
-      "precision": 0.422,
-      "recall": 0.717,
-      "mrr": 0.64,
-      "truePositives": 43,
-      "falsePositives": 59,
-      "falseNegatives": 17,
-      "suppressionCount": 19,
-      "feedbackLayerAvgContribution": 1.3889,
+      "f1": 0.58,
+      "precision": 0.513,
+      "recall": 0.667,
+      "mrr": 0.72,
+      "truePositives": 40,
+      "falsePositives": 38,
+      "falseNegatives": 20,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 3.2247,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -4142,9 +4342,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -4178,9 +4378,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -4193,39 +4393,40 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
-        "architecture-rfc",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
-        "microservices",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
         "python",
-        "q1-budget",
         "q1-review",
         "signal-patterns",
+        "staging",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -4247,6 +4448,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -4264,6 +4470,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -4315,15 +4526,15 @@
     },
     {
       "round": 19,
-      "f1": 0.551,
-      "precision": 0.448,
-      "recall": 0.717,
-      "mrr": 0.667,
-      "truePositives": 43,
-      "falsePositives": 53,
-      "falseNegatives": 17,
-      "suppressionCount": 19,
-      "feedbackLayerAvgContribution": 1.2869,
+      "f1": 0.58,
+      "precision": 0.513,
+      "recall": 0.667,
+      "mrr": 0.697,
+      "truePositives": 40,
+      "falsePositives": 38,
+      "falseNegatives": 20,
+      "suppressionCount": 15,
+      "feedbackLayerAvgContribution": 3.1573,
       "byCategory": {
         "people": {
           "precision": 1,
@@ -4374,9 +4585,9 @@
           "count": 2
         },
         "food": {
-          "precision": 1,
-          "recall": 0.6666666666666666,
-          "f1": 0.8,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 3
         },
         "acronyms": {
@@ -4410,9 +4621,9 @@
           "count": 1
         },
         "animals": {
-          "precision": 1,
-          "recall": 0.125,
-          "f1": 0.2222222222222222,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "count": 8
         }
       },
@@ -4425,39 +4636,40 @@
         },
         "2": {
           "precision": 1,
-          "recall": 0.8095238095238095,
-          "f1": 0.8947368421052632,
+          "recall": 0.7142857142857143,
+          "f1": 0.8333333333333333,
           "count": 21
         },
         "3": {
           "precision": 1,
-          "recall": 0.13333333333333333,
-          "f1": 0.23529411764705882,
+          "recall": 0.06666666666666667,
+          "f1": 0.125,
           "count": 15
         }
       },
       "suppressedEntities": [
         "api-first",
-        "architecture-rfc",
         "clean-architecture",
-        "dataforge",
-        "dmitri-sokolov",
         "machine-learning",
         "meridian-labs",
-        "microservices",
         "mira-okonkwo",
         "nadia-reyes",
         "owen-park",
         "prism-core",
         "project-meridian",
         "python",
-        "q1-budget",
         "q1-review",
         "signal-patterns",
+        "staging",
         "tessa-liu",
         "yoga"
       ],
       "unresolvedLinks": [
+        {
+          "entity": "Matcha Latte",
+          "notePath": "daily-notes/2026-01-05.md",
+          "tier": 2
+        },
         {
           "entity": "Production",
           "notePath": "daily-notes/2026-01-08.md",
@@ -4479,6 +4691,11 @@
           "tier": 2
         },
         {
+          "entity": "Pho Bowl",
+          "notePath": "daily-notes/2026-01-13.md",
+          "tier": 2
+        },
+        {
           "entity": "Luna",
           "notePath": "daily-notes/2026-01-01.md",
           "tier": 3
@@ -4496,6 +4713,11 @@
         {
           "entity": "Rex",
           "notePath": "daily-notes/2026-01-04.md",
+          "tier": 3
+        },
+        {
+          "entity": "Rex",
+          "notePath": "daily-notes/2026-01-06.md",
           "tier": 3
         },
         {
@@ -4546,5 +4768,13 @@
       ]
     }
   ],
-  "tuning_recommendations": []
+  "tuning_recommendations": [
+    {
+      "parameter": "FEEDBACK_BOOST_MIN_SAMPLES",
+      "current_value": 5,
+      "suggested_value": 3,
+      "evidence": "F1 improvement over 20 rounds was only 0.4% (< 5%). Tightening feedback thresholds may help the system learn faster.",
+      "confidence": "medium"
+    }
+  ]
 }

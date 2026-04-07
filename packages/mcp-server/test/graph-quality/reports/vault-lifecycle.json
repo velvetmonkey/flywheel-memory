@@ -1,14 +1,14 @@
 {
   "suite": "vault-lifecycle",
-  "timestamp": "2026-04-03T12:49:34.711Z",
-  "duration_ms": 29199,
+  "timestamp": "2026-04-07T22:31:48.645Z",
+  "duration_ms": 27383,
   "summary": {
     "total_epochs": 5,
     "genesis_entities": 216,
     "recovery_entities": 216,
-    "genesis_coverage": 0.965,
-    "min_coverage": 0.74,
-    "max_coverage": 0.965
+    "genesis_coverage": 0.949,
+    "min_coverage": 0.636,
+    "max_coverage": 0.949
   },
   "details": [
     {
@@ -30,37 +30,37 @@
         },
         "degreeCentralityStdDev": 1.492
       },
-      "suggestionCoverage": 0.965,
+      "suggestionCoverage": 0.949,
       "scoreDistribution": {
-        "mean": 32.7313,
-        "p50": 32.5,
+        "mean": 32.6479,
+        "p50": 32.4,
         "p90": 42.6,
-        "min": 12.1,
-        "max": 49
+        "min": 16,
+        "max": 50
       },
       "entityStats": {
         "totalEntities": 216,
         "categories": {
-          "technologies": 15,
+          "technologies": 7,
           "acronyms": 0,
-          "people": 20,
-          "projects": 105,
+          "people": 19,
+          "projects": 78,
           "organizations": 0,
           "locations": 0,
-          "concepts": 67,
+          "concepts": 49,
           "animals": 0,
           "media": 0,
-          "events": 0,
-          "documents": 0,
+          "events": 18,
+          "documents": 38,
           "vehicles": 0,
           "health": 0,
           "finance": 0,
           "food": 0,
           "hobbies": 0,
-          "other": 9
+          "other": 7
         }
       },
-      "duration_ms": 5055
+      "duration_ms": 4643
     },
     {
       "epoch": "growth",
@@ -81,37 +81,37 @@
         },
         "degreeCentralityStdDev": 3.586
       },
-      "suggestionCoverage": 0.764,
+      "suggestionCoverage": 0.752,
       "scoreDistribution": {
-        "mean": 32.1619,
+        "mean": 32.3099,
         "p50": 32.4,
         "p90": 43,
-        "min": 12.1,
-        "max": 49
+        "min": 16,
+        "max": 50
       },
       "entityStats": {
         "totalEntities": 216,
         "categories": {
-          "technologies": 15,
+          "technologies": 7,
           "acronyms": 0,
-          "people": 20,
-          "projects": 105,
+          "people": 19,
+          "projects": 78,
           "organizations": 0,
           "locations": 0,
-          "concepts": 67,
+          "concepts": 49,
           "animals": 0,
           "media": 0,
-          "events": 0,
-          "documents": 0,
+          "events": 18,
+          "documents": 38,
           "vehicles": 0,
           "health": 0,
           "finance": 0,
           "food": 0,
           "hobbies": 0,
-          "other": 9
+          "other": 7
         }
       },
-      "duration_ms": 5858
+      "duration_ms": 5285
     },
     {
       "epoch": "reorganization",
@@ -132,37 +132,37 @@
         },
         "degreeCentralityStdDev": 3.543
       },
-      "suggestionCoverage": 0.769,
+      "suggestionCoverage": 0.758,
       "scoreDistribution": {
-        "mean": 32.1311,
+        "mean": 32.3001,
         "p50": 32.4,
-        "p90": 42.6,
-        "min": 12.1,
-        "max": 49
+        "p90": 43,
+        "min": 16,
+        "max": 50
       },
       "entityStats": {
         "totalEntities": 216,
         "categories": {
-          "technologies": 15,
+          "technologies": 7,
           "acronyms": 0,
-          "people": 20,
-          "projects": 105,
+          "people": 19,
+          "projects": 78,
           "organizations": 0,
           "locations": 0,
-          "concepts": 67,
+          "concepts": 49,
           "animals": 0,
           "media": 0,
-          "events": 0,
-          "documents": 0,
+          "events": 18,
+          "documents": 38,
           "vehicles": 0,
           "health": 0,
           "finance": 0,
           "food": 0,
           "hobbies": 0,
-          "other": 9
+          "other": 7
         }
       },
-      "duration_ms": 5862
+      "duration_ms": 7675
     },
     {
       "epoch": "pruning",
@@ -183,37 +183,37 @@
         },
         "degreeCentralityStdDev": 3.403
       },
-      "suggestionCoverage": 0.74,
+      "suggestionCoverage": 0.727,
       "scoreDistribution": {
-        "mean": 31.3872,
-        "p50": 31.2,
+        "mean": 31.5562,
+        "p50": 32,
         "p90": 42.6,
-        "min": 12.1,
-        "max": 49
+        "min": 16,
+        "max": 50
       },
       "entityStats": {
         "totalEntities": 216,
         "categories": {
-          "technologies": 15,
+          "technologies": 7,
           "acronyms": 0,
-          "people": 20,
-          "projects": 105,
+          "people": 19,
+          "projects": 78,
           "organizations": 0,
           "locations": 0,
-          "concepts": 67,
+          "concepts": 49,
           "animals": 0,
           "media": 0,
-          "events": 0,
-          "documents": 0,
+          "events": 18,
+          "documents": 38,
           "vehicles": 0,
           "health": 0,
           "finance": 0,
           "food": 0,
           "hobbies": 0,
-          "other": 9
+          "other": 7
         }
       },
-      "duration_ms": 6877
+      "duration_ms": 4516
     },
     {
       "epoch": "recovery",
@@ -234,46 +234,46 @@
         },
         "degreeCentralityStdDev": 3.187
       },
-      "suggestionCoverage": 0.777,
+      "suggestionCoverage": 0.636,
       "scoreDistribution": {
-        "mean": 30.5308,
-        "p50": 31.1,
-        "p90": 41.2,
-        "min": 12.1,
-        "max": 49
+        "mean": 31.5048,
+        "p50": 32,
+        "p90": 42.6,
+        "min": 16,
+        "max": 50
       },
       "entityStats": {
         "totalEntities": 216,
         "categories": {
-          "technologies": 15,
+          "technologies": 7,
           "acronyms": 0,
-          "people": 20,
-          "projects": 105,
+          "people": 19,
+          "projects": 78,
           "organizations": 0,
           "locations": 0,
-          "concepts": 67,
+          "concepts": 49,
           "animals": 0,
           "media": 0,
-          "events": 0,
-          "documents": 0,
+          "events": 18,
+          "documents": 38,
           "vehicles": 0,
           "health": 0,
           "finance": 0,
           "food": 0,
           "hobbies": 0,
-          "other": 9
+          "other": 7
         }
       },
-      "duration_ms": 5547
+      "duration_ms": 5264
     }
   ],
   "tuning_recommendations": [
     {
       "parameter": "suggestion_coverage",
-      "current_value": 76,
-      "suggested_value": 97,
+      "current_value": 75,
+      "suggested_value": 95,
       "evidence": "growth epoch dropped coverage by 20% from genesis",
-      "confidence": "high"
+      "confidence": "medium"
     }
   ]
 }

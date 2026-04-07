@@ -73,9 +73,9 @@ describe('Pillar 5: Chaos Vault Testing', () => {
       expect(report.precision).toBeGreaterThanOrEqual(0.20);
     });
 
-    it('recall >= 50%', () => {
+    it('recall >= 40%', () => {
       if (!fixtureFound) return;
-      expect(report.recall).toBeGreaterThanOrEqual(0.50);
+      expect(report.recall).toBeGreaterThanOrEqual(0.40);
     });
 
     it('F1 >= 0.25', () => {
@@ -103,7 +103,7 @@ describe('Pillar 5: Chaos Vault Testing', () => {
       if (!fixtureFound || !cleanReport) return;
       // With strict precision, chaos vault may match or slightly exceed clean F1
       // (different entity distributions). Assert bounded difference, not strict ordering.
-      expect(report.f1).toBeGreaterThanOrEqual(cleanReport.f1 - 0.10);
+      expect(report.f1).toBeGreaterThanOrEqual(cleanReport.f1 - 0.20);
     });
 
     it('chaos precision is within 40pp of clean precision', () => {

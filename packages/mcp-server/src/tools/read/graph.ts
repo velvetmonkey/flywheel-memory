@@ -291,6 +291,7 @@ export function registerGraphTools(
       }
 
       const limit = Math.min(requestedLimit ?? 20, MAX_LIMIT);
+      const index = getIndex();
 
       // Resolve all inbound target identities (entity name, aliases, stem fallback)
       const targets = getInboundTargetsForNote(stateDb, notePath);
@@ -317,6 +318,9 @@ export function registerGraphTools(
               node: r.node,
               weight: r.weight,
               direction: r.direction,
+              resolved_path: r.direction === 'outgoing'
+                ? (resolveTarget(index, r.node) ?? undefined)
+                : undefined,
             })),
           }, null, 2),
         }],

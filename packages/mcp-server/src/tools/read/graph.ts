@@ -16,6 +16,7 @@ import {
 import { getInboundTargetsForNote } from '../../core/read/identity.js';
 import { findBidirectionalLinks } from './graphAdvanced.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
+import { parseNoteWithWarnings } from '../../core/read/parser.js';
 
 /**
  * Get surrounding context for a backlink
@@ -217,6 +218,7 @@ export function registerGraphTools(
     }> => {
       requireIndex();
       const index = getIndex();
+      const vaultPath = getVaultPath();
 
       // Try to resolve the path if it's just a title
       let resolvedPath = notePath;
@@ -230,7 +232,25 @@ export function registerGraphTools(
       }
 
       // Get forward links
-      const forwardLinks = getForwardLinksForNote(index, resolvedPath);
+      let forwardLinks = getForwardLinksForNote(index, resolvedPath);
+
+      // Fallback: if the index returned nothing, the note may not be indexed yet
+      // (created after last index build and watcher hasn't flushed) or may be stale.
+      // Parse the file live to avoid showing an empty graph.
+      if (forwardLinks.length === 0) {
+        try {
+          const absolutePath = path.join(vaultPath, resolvedPath);
+          const result = await parseNoteWithWarnings({ path: resolvedPath, absolutePath, modified: new Date() });
+          if (!result.skipped) {
+            forwardLinks = result.note.outlinks.map(link => {
+              const rp = resolveTarget(index, link.target);
+              return { target: link.target, alias: link.alias, line: link.line, resolvedPath: rp, exists: rp !== undefined };
+            });
+          }
+        } catch {
+          // File doesn't exist or can't be read — leave forwardLinks empty
+        }
+      }
 
       const output: GetForwardLinksOutput = {
         note: resolvedPath,

@@ -597,3 +597,54 @@ export function insertInSection(
 
   return lines.join('\n');
 }
+
+/**
+ * Convert Markdown task checkbox syntax to Unicode equivalents
+ * so Obsidian's Tasks plugin won't treat audit log entries as actionable tasks.
+ * NOTE: This intentionally NOT here — it stays in flywheel-engine as a domain rule.
+ */
+
+/**
+ * Indent continuation lines with 2 spaces so nested field values stay
+ * subordinate to their label inside a bullet. Blank lines outside code
+ * fences use an HTML comment so Obsidian doesn't collapse list nesting.
+ */
+export function indentContinuation(text: string): string {
+  const lines = text.split('\n');
+  if (lines.length <= 1) return text;
+  let inCodeBlock = false;
+  return lines.map((line, i) => {
+    if (/^\s*(```|~~~)/.test(line)) inCodeBlock = !inCodeBlock;
+    if (i === 0) return line;
+    if (line === '') return inCodeBlock ? '  ' : '  <!-- -->';
+    return `  ${line}`;
+  }).join('\n');
+}
+
+/**
+ * Escape characters in untrusted text that Obsidian's renderer
+ * would interpret as markup (HTML tags, blockquotes, tags, etc.).
+ * Fence-aware: transformations are skipped inside ``` or ~~~ blocks.
+ */
+export function sanitizeForObsidian(text: string): string {
+  const lines = text.split('\n');
+  let inFence = false;
+  return lines.map(line => {
+    if (/^\s*(```|~~~)/.test(line)) {
+      inFence = !inFence;
+      return line;
+    }
+    if (inFence) return line;
+    return line
+      // <word or <digit → &lt; (prevents unclosed HTML tag rendering)
+      .replace(/<(?=[A-Za-z0-9])/g, '&lt;')
+      // > at start of line (with optional indent) → &gt; (prevents blockquote)
+      .replace(/^(\s*)>/gm, '$1&gt;')
+      // %% → &#37;% (prevents Obsidian comment blocks hiding content)
+      .replace(/%%/g, '&#37;%')
+      // ==text== → &#61;=text&#61;= (prevents highlight rendering)
+      .replace(/==(.*?)==/g, '&#61;=$1&#61;=')
+      // #word after whitespace → &#35;word (prevents Obsidian tag creation)
+      .replace(/(?<=\s)#(?=[A-Za-z0-9])/g, '&#35;');
+  }).join('\n');
+}

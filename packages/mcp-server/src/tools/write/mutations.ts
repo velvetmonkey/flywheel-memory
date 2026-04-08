@@ -33,6 +33,7 @@ import {
   handleGitCommit,
 } from '../../core/write/mutation-helpers.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
+import { sanitizeForObsidian, indentContinuation } from '../../core/write/markdown-structure.js';
 
 /**
  * Create a note from template or minimal fallback.
@@ -169,13 +170,17 @@ export function registerMutationTools(
       commit: z.boolean().default(false).describe('If true, commit this change to git (creates undo point)'),
       skipWikilinks: z.boolean().default(false).describe('If true, skip auto-wikilink application (wikilinks are applied by default)'),
       suggestOutgoingLinks: z.boolean().default(false).describe('Suggest related outgoing wikilinks based on content (e.g., "→ [[AI]], [[Philosophy]]"). Off by default — set true for daily notes, journals, or capture-heavy contexts.'),
+      children: z.array(z.object({
+        label: z.string().describe('Bold label, e.g. "**Result:**"'),
+        content: z.string().describe('Pre-neutralized text; sanitized and indented by this tool'),
+      })).optional().describe('Labeled sub-bullets appended under the parent content line'),
       maxSuggestions: z.number().min(1).max(10).default(5).describe('Maximum number of suggested wikilinks (1-10, default: 5)'),
       linkedEntities: z.array(z.string()).optional().describe('Entity names already linked in the content. When skipWikilinks=true, these are tracked for feedback without re-processing the content.'),
       dry_run: z.boolean().optional().default(false).describe('Preview changes without writing to disk'),
       agent_id: z.string().optional().describe('Agent identifier for multi-agent scoping (e.g., "claude-opus", "planning-agent")'),
       session_id: z.string().optional().describe('Session identifier for conversation scoping (e.g., "sess-abc123")'),
     },
-    async ({ path: notePath, section, content, create_if_missing, position, format, commit, skipWikilinks, suggestOutgoingLinks, maxSuggestions, linkedEntities, dry_run, agent_id, session_id }) => {
+    async ({ path: notePath, section, content, create_if_missing, position, format, commit, skipWikilinks, suggestOutgoingLinks, children, maxSuggestions, linkedEntities, dry_run, agent_id, session_id }) => {
       const vaultPath = getVaultPath();
       const preserveListNesting = true;
       const bumpHeadings = true;
@@ -257,18 +262,49 @@ export function registerMutationTools(
             }
           }
 
+          // 2.5. If children are provided, assemble structured block and override format
+          // Build: top-level bullet with summary, nested child bullets with labels
+          let finalContent = processedContent;
+          let finalFormat: FormatType = format as FormatType;
+          let childTextsForLinks: string[] = [];
+
+          if (children && children.length > 0) {
+            const childBlocks = children.map(({ label, content: childContent }) => {
+              const sanitized = sanitizeForObsidian(childContent);
+              const processed = indentContinuation(sanitized);
+              const lines = processed.split('\n');
+              if (/^\s*(```|~~~)/.test(lines[0])) {
+                return [`  - ${label}`, ...lines.map(l => `  ${l}`)].join('\n');
+              }
+              return [`- ${label} ${lines[0]}`, ...lines.slice(1)].map(l => `  ${l}`).join('\n');
+            });
+            finalContent = `- ${processedContent}\n${childBlocks.join('\n')}`;
+            finalFormat = 'plain';
+            childTextsForLinks = children.map(c => c.content);
+          }
+
           // 3. Suggest outgoing links (enabled by default)
           let suggestInfo: string | undefined;
           if (suggestOutgoingLinks && !skipWikilinks) {
-            const result = await suggestRelatedLinks(processedContent, { maxSuggestions, notePath });
+            const suggestionText = childTextsForLinks.length > 0
+              ? childTextsForLinks.join(' ')
+              : processedContent;
+            const result = await suggestRelatedLinks(suggestionText, { maxSuggestions, notePath });
             if (result.suffix) {
-              processedContent = processedContent + ' ' + result.suffix;
+              // Only append suggestion suffix to the block that will be inserted
+              // If children present, add to end of the assembled finalContent; otherwise to processedContent
+              if (childTextsForLinks.length > 0) {
+                finalContent = finalContent + ' ' + result.suffix;
+              } else {
+                processedContent = processedContent + ' ' + result.suffix;
+                finalContent = processedContent;
+              }
               suggestInfo = `Suggested: ${result.suggestions.join(', ')}`;
             }
           }
 
           // 4. Format the content
-          const formattedContent = formatContent(processedContent, format as FormatType);
+          const formattedContent = formatContent(finalContent, finalFormat);
 
           // 5. Insert at position
           const updatedContent = insertInSection(

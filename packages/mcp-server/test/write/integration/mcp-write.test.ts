@@ -146,6 +146,147 @@ describe('MCP Write Integration', () => {
       const text = (result.content as Array<{ text: string }>)[0].text.toLowerCase();
       expect(text).toMatch(/sensitive|blocked|denied|protected|security|\.env/);
     });
+
+    describe('vault_add_to_section children', () => {
+      it('renders child labels as nested bullets', async () => {
+        await createTestNote(ctx.vaultPath, 'child.md', [
+          '# Test',
+          '',
+          '## Log',
+          '',
+        ].join('\n'));
+
+        const result = await client.callTool({
+          name: 'vault_add_to_section',
+          arguments: {
+            path: 'child.md',
+            section: 'Log',
+            content: 'Summary',
+            suggestOutgoingLinks: false,
+            children: [
+              { label: '**Result:**', content: 'Passed' },
+              { label: '**Owner:**', content: 'Jordan Smith' },
+            ],
+          },
+        });
+        expect(result.isError).toBeFalsy();
+
+        const fileContent = readFileSync(path.join(ctx.vaultPath, 'child.md'), 'utf-8');
+        expect(fileContent).toContain('- Summary');
+        expect(fileContent).toContain('  - **Result:** Passed');
+        expect(fileContent).toContain('  - **Owner:** Jordan Smith');
+      });
+
+      it('indents multi-line child content', async () => {
+        await createTestNote(ctx.vaultPath, 'child-indent.md', [
+          '# Test',
+          '',
+          '## Log',
+          '',
+        ].join('\n'));
+
+        const result = await client.callTool({
+          name: 'vault_add_to_section',
+          arguments: {
+            path: 'child-indent.md',
+            section: 'Log',
+            content: 'Update',
+            suggestOutgoingLinks: false,
+            children: [
+              { label: '**Notes:**', content: 'Line 1\nLine 2' },
+            ],
+          },
+        });
+        expect(result.isError).toBeFalsy();
+
+        const fileContent = readFileSync(path.join(ctx.vaultPath, 'child-indent.md'), 'utf-8');
+        // Child bullet line
+        expect(fileContent).toContain('  - **Notes:** Line 1');
+        // Continuation line is indented under child bullet
+        expect(fileContent).toContain('\n    Line 2');
+      });
+
+      it('sanitizes HTML in child content', async () => {
+        await createTestNote(ctx.vaultPath, 'child-sanitize.md', [
+          '# Test',
+          '',
+          '## Log',
+          '',
+        ].join('\n'));
+
+        await client.callTool({
+          name: 'vault_add_to_section',
+          arguments: {
+            path: 'child-sanitize.md',
+            section: 'Log',
+            content: 'Summary',
+            suggestOutgoingLinks: false,
+            children: [
+              { label: '**Details:**', content: '<div>raw</div> text #tag %%hide%% ==hl==' },
+            ],
+          },
+        });
+
+        const fileContent = readFileSync(path.join(ctx.vaultPath, 'child-sanitize.md'), 'utf-8');
+        expect(fileContent).toContain('&lt;div>raw</div>');
+        expect(fileContent).toContain('&#35;tag');
+        expect(fileContent).toContain('&#37;%hide&#37;%');
+        expect(fileContent).toContain('&#61;=hl&#61;=');
+      });
+
+      it('handles code fence edge case in child content', async () => {
+        await createTestNote(ctx.vaultPath, 'child-code.md', [
+          '# Test',
+          '',
+          '## Log',
+          '',
+        ].join('\n'));
+
+        await client.callTool({
+          name: 'vault_add_to_section',
+          arguments: {
+            path: 'child-code.md',
+            section: 'Log',
+            content: 'Snippet',
+            suggestOutgoingLinks: false,
+            children: [
+              { label: '**Code:**', content: '```js\nconsole.log(1)\n```' },
+            ],
+          },
+        });
+
+        const fileContent = readFileSync(path.join(ctx.vaultPath, 'child-code.md'), 'utf-8');
+        expect(fileContent).toContain('- Snippet');
+        // Label is its own child bullet
+        expect(fileContent).toContain('  - **Code:**');
+        // Code fence lines are indented, not collapsed
+        expect(fileContent).toContain('\n  ```js');
+        expect(fileContent).toContain('\n    console.log(1)');
+        expect(fileContent).toContain('\n  ```');
+      });
+
+      it('falls back to normal behavior when no children provided', async () => {
+        await createTestNote(ctx.vaultPath, 'child-none.md', [
+          '# Test',
+          '',
+          '## Log',
+          '',
+        ].join('\n'));
+
+        await client.callTool({
+          name: 'vault_add_to_section',
+          arguments: {
+            path: 'child-none.md',
+            section: 'Log',
+            content: 'Regular entry',
+          },
+        });
+
+        const fileContent = readFileSync(path.join(ctx.vaultPath, 'child-none.md'), 'utf-8');
+        expect(fileContent).toContain('Regular entry');
+        expect(fileContent).not.toContain('  - **');
+      });
+    });
   });
 
   // ==========================================================================

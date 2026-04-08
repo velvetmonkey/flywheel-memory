@@ -2027,3 +2027,70 @@ describe('ReDoS Protection', () => {
     });
   });
 });
+
+// ========================================
+// Obsidian-specific utilities
+// ========================================
+import { sanitizeForObsidian, indentContinuation } from '../../../src/core/write/markdown-structure.js';
+
+describe('indentContinuation', () => {
+  it('indents continuation lines and preserves first line', () => {
+    const input = 'First line\nSecond line\nThird line';
+    const output = indentContinuation(input);
+    expect(output).toBe('First line\n  Second line\n  Third line');
+  });
+
+  it('uses HTML comment for blank lines outside code fences', () => {
+    const input = 'First line\n\nThird line';
+    const output = indentContinuation(input);
+    expect(output).toBe('First line\n  <!-- -->\n  Third line');
+  });
+
+  it('preserves blank lines inside code fences without HTML comment', () => {
+    const input = 'Intro\n```js\n\nconst x = 1;\n\n```\nOutro';
+    const output = indentContinuation(input);
+    const lines = output.split('\n');
+    expect(lines[0]).toBe('Intro');
+    expect(lines[2]).toBe('  ');
+    expect(lines[4]).toBe('  ');
+    expect(lines[6]).toBe('  Outro');
+  });
+
+  it('returns input unchanged for single-line text', () => {
+    expect(indentContinuation('One liner')).toBe('One liner');
+  });
+});
+
+describe('sanitizeForObsidian', () => {
+  it('escapes HTML-like tags by replacing < before word/digit', () => {
+    const input = '<div>hello</div>';
+    const output = sanitizeForObsidian(input);
+    // Only the opening tag <d is escaped per rule (< before letter/digit)
+    expect(output).toBe('&lt;div>hello</div>');
+  });
+
+  it('escapes leading blockquote markers including indented', () => {
+    const input = '  > quote';
+    const output = sanitizeForObsidian(input);
+    expect(output).toBe('  &gt; quote');
+  });
+
+  it('neutralizes Obsidian comment and highlight markers', () => {
+    const input = 'text %%hidden%% and ==highlight==';
+    const output = sanitizeForObsidian(input);
+    expect(output).toBe('text &#37;%hidden&#37;% and &#61;=highlight&#61;=');
+  });
+
+  it('escapes tag markers (#word) only after whitespace', () => {
+    const input = 'Tag #word inside';
+    const output = sanitizeForObsidian(input);
+    expect(output).toBe('Tag &#35;word inside');
+  });
+
+  it('does not transform content inside code fences', () => {
+    const input = '```\n#tag\n<div>\n```\n After #tag and <div>';
+    const output = sanitizeForObsidian(input);
+    const expected = '```\n#tag\n<div>\n```\n After &#35;tag and &lt;div>';
+    expect(output).toBe(expected);
+  });
+});

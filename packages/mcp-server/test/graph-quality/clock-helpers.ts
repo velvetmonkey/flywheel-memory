@@ -22,17 +22,15 @@ export async function callJsonTool(
 
 // ── Inventory helpers ───────────────────────────────────────────
 
-/** Return sorted paths of all notes under the test/ folder.
- *  Metadata search (no query) returns { notes }, FTS search returns { results }. */
+/** Return sorted paths of all notes under the test/ folder. */
 export async function searchInventory(client: TestClient): Promise<string[]> {
-  const data = await callJsonTool(client, 'search', {
+  const data = await callJsonTool(client, 'find_notes', {
     folder: 'test',
     limit: 100,
     sort_by: 'title',
     order: 'asc',
   });
-  // Metadata search returns `notes`, not `results`
-  const items: Array<{ path: string }> = data.notes ?? data.results ?? [];
+  const items: Array<{ path: string }> = data.notes ?? [];
   return items.map(r => r.path).sort();
 }
 
@@ -179,13 +177,12 @@ export function assertInvariants(mcp: McpSnapshot): void {
 
 /** Vault-wide inventory — no folder filter. For phase-2 tests with multi-folder layouts. */
 export async function searchInventoryAll(client: TestClient): Promise<string[]> {
-  const data = await callJsonTool(client, "search", {
-    where: {},
+  const data = await callJsonTool(client, "find_notes", {
     limit: 200,
     sort_by: "title",
     order: "asc",
   });
-  const items: Array<{ path: string }> = data.notes ?? data.results ?? [];
+  const items: Array<{ path: string }> = data.notes ?? [];
   return items.map(r => r.path).sort();
 }
 

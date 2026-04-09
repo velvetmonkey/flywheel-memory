@@ -47,6 +47,7 @@ import { selectByMmr } from '../../core/read/mmr.js';
 import { tokenize } from '../../core/shared/stemmer.js';
 import { searchMemories, type Memory } from '../../core/write/memory.js';
 import { getSectionContent } from './structure.js';
+import { sortNotes } from './filters.js';
 
 
 /**
@@ -405,119 +406,6 @@ async function expandToSections(
 }
 
 /**
- * Check if a note matches frontmatter filters
- */
-function matchesFrontmatter(
-  note: VaultNote,
-  where: Record<string, unknown>
-): boolean {
-  for (const [key, value] of Object.entries(where)) {
-    const noteValue = note.frontmatter[key];
-
-    // Handle null/undefined
-    if (value === null || value === undefined) {
-      if (noteValue !== null && noteValue !== undefined) {
-        return false;
-      }
-      continue;
-    }
-
-    // Handle arrays - check if any value matches
-    if (Array.isArray(noteValue)) {
-      if (!noteValue.some((v) => String(v).toLowerCase() === String(value).toLowerCase())) {
-        return false;
-      }
-      continue;
-    }
-
-    // Handle string comparison (case-insensitive)
-    if (typeof value === 'string' && typeof noteValue === 'string') {
-      if (noteValue.toLowerCase() !== value.toLowerCase()) {
-        return false;
-      }
-      continue;
-    }
-
-    // Handle other types (exact match)
-    if (noteValue !== value) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
- * Check if a note has a specific tag.
- * When includeChildren is true, also matches child tags (e.g., "project" matches "project/active").
- */
-function hasTag(note: VaultNote, tag: string, includeChildren: boolean = false): boolean {
-  const normalizedTag = tag.replace(/^#/, '').toLowerCase();
-  return note.tags.some((t) => {
-    const normalizedNoteTag = t.toLowerCase();
-    if (normalizedNoteTag === normalizedTag) return true;
-    if (includeChildren && normalizedNoteTag.startsWith(normalizedTag + '/')) return true;
-    return false;
-  });
-}
-
-/**
- * Check if a note has any of the specified tags
- */
-function hasAnyTag(note: VaultNote, tags: string[], includeChildren: boolean = false): boolean {
-  return tags.some((tag) => hasTag(note, tag, includeChildren));
-}
-
-/**
- * Check if a note has all of the specified tags
- */
-function hasAllTags(note: VaultNote, tags: string[], includeChildren: boolean = false): boolean {
-  return tags.every((tag) => hasTag(note, tag, includeChildren));
-}
-
-/**
- * Check if a note is in a folder
- */
-function inFolder(note: VaultNote, folder: string): boolean {
-  const normalizedFolder = folder.endsWith('/') ? folder : folder + '/';
-  return note.path.startsWith(normalizedFolder) || note.path.split('/')[0] === folder.replace('/', '');
-}
-
-
-/**
- * Sort notes by a field
- */
-function sortNotes(
-  notes: VaultNote[],
-  sortBy: 'modified' | 'created' | 'title',
-  order: 'asc' | 'desc'
-): VaultNote[] {
-  const sorted = [...notes];
-
-  sorted.sort((a, b) => {
-    let comparison = 0;
-
-    switch (sortBy) {
-      case 'modified':
-        comparison = a.modified.getTime() - b.modified.getTime();
-        break;
-      case 'created':
-        const aCreated = a.created || a.modified;
-        const bCreated = b.created || b.modified;
-        comparison = aCreated.getTime() - bCreated.getTime();
-        break;
-      case 'title':
-        comparison = a.title.localeCompare(b.title);
-        break;
-    }
-
-    return order === 'desc' ? -comparison : comparison;
-  });
-
-  return sorted;
-}
-
-/**
  * Register query tools
  */
 export function registerQueryTools(
@@ -533,16 +421,7 @@ export function registerQueryTools(
     'search',
     'Use when looking up vault content by keyword, entity, or concept. Produces ranked results with frontmatter, backlinks, outlinks, section provenance, dates, and confidence scores. Returns a decision surface of notes, entities, and memories in one call. Does not read full note bodies — use get_note_structure or get_section_content for full text.',
     {
-      query: z.string().optional().describe('Search query text. Required unless using metadata filters (where, has_tag, folder, etc.)'),
-
-      // Metadata filters
-      where: z.record(z.unknown()).optional().describe('Frontmatter filters as key-value pairs. Example: { "type": "project", "status": "active" }'),
-      has_tag: z.string().optional().describe('Filter to notes with this tag'),
-      has_any_tag: z.array(z.string()).optional().describe('Filter to notes with any of these tags'),
-      has_all_tags: z.array(z.string()).optional().describe('Filter to notes with all of these tags'),
-      include_children: z.boolean().default(false).describe('When true, tag filters also match child tags (e.g., has_tag: "project" also matches "project/active")'),
-      folder: z.string().optional().describe('Filter results to a folder. Prefer searching without folder first, then add folder to narrow.'),
-      title_contains: z.string().optional().describe('Filter to notes whose title contains this text (case-insensitive)'),
+      query: z.string().optional().describe('Search query text. Required unless using date filters. For folder/tags/frontmatter enumeration, use find_notes.'),
 
       // Date filters (find notes by modification date — for pattern analysis use temporal tools)
       modified_after: z.string().optional().describe('Only notes modified after this date (YYYY-MM-DD)'),
@@ -565,7 +444,7 @@ export function registerQueryTools(
       // Consumer format
       consumer: z.enum(['llm', 'human']).default('llm').describe('Output format: "llm" applies sandwich ordering and strips scoring fields for context efficiency. "human" preserves score order and all scoring metadata for UI display.'),
     },
-    async ({ query, where, has_tag, has_any_tag, has_all_tags, include_children, folder, title_contains, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note, consumer }) => {
+    async ({ query, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note, consumer }) => {
       requireIndex();
       const limit = Math.min(requestedLimit ?? 10, MAX_LIMIT);
       const enrichN = Math.min(requestedDetailCount ?? 5, limit);
@@ -587,34 +466,10 @@ export function registerQueryTools(
         }
       }
 
-      // ---- METADATA SEARCH (no query, just filters) ----
-      const hasMetadataFilters = where || has_tag || has_any_tag || has_all_tags || title_contains || modified_after || modified_before;
-
-      if (!query && (hasMetadataFilters || folder)) {
+      // ---- DATE SEARCH (no query, just date window) ----
+      if (!query && (modified_after || modified_before)) {
         let matchingNotes: VaultNote[] = Array.from(index.notes.values());
 
-        // Apply frontmatter filters
-        if (where && Object.keys(where).length > 0) {
-          matchingNotes = matchingNotes.filter((note) => matchesFrontmatter(note, where));
-        }
-        if (has_tag) {
-          matchingNotes = matchingNotes.filter((note) => hasTag(note, has_tag, include_children));
-        }
-        if (has_any_tag && has_any_tag.length > 0) {
-          matchingNotes = matchingNotes.filter((note) => hasAnyTag(note, has_any_tag, include_children));
-        }
-        if (has_all_tags && has_all_tags.length > 0) {
-          matchingNotes = matchingNotes.filter((note) => hasAllTags(note, has_all_tags, include_children));
-        }
-        if (folder) {
-          matchingNotes = matchingNotes.filter((note) => inFolder(note, folder));
-        }
-        if (title_contains) {
-          const searchTerm = title_contains.toLowerCase();
-          matchingNotes = matchingNotes.filter((note) =>
-            note.title.toLowerCase().includes(searchTerm)
-          );
-        }
         // Date filters use local timezone — correct for Obsidian which stores file
         // modification times in the local filesystem's timezone
         if (modified_after) {
@@ -725,15 +580,6 @@ export function registerQueryTools(
           }
         }
 
-        // Helper: apply folder post-filter if specified
-        const applyFolderFilter = <T extends { path: string }>(items: T[]): T[] => {
-          if (!folder) return items;
-          return items.filter(item => {
-            const normalizedFolder = folder.endsWith('/') ? folder : folder + '/';
-            return item.path.startsWith(normalizedFolder) || item.path.split('/')[0] === folder.replace('/', '');
-          });
-        };
-
         // Hybrid merge with semantic when embeddings exist
         if (hasEmbeddingsIndex()) {
           try {
@@ -779,7 +625,7 @@ export function registerQueryTools(
             });
 
             scored.sort((a, b) => b.rrf_score - a.rrf_score);
-            const filtered = applyFolderFilter(scored);
+            const filtered = scored;
 
             const stateDb = getStateDb();
             const results: Array<Record<string, unknown>> = filtered.slice(0, limit).map(item => ({
@@ -839,7 +685,7 @@ export function registerQueryTools(
             const bExact = b.title.toLowerCase() === queryLower ? 2 : b.title.toLowerCase().startsWith(queryLower) ? 1 : 0;
             return bExact - aExact;
           });
-          const filtered = applyFolderFilter(mergedItems);
+          const filtered = mergedItems;
           const stateDb = getStateDb();
           const sliced = filtered.slice(0, limit);
           const results: Array<Record<string, unknown>> = sliced.map(item => ({
@@ -877,7 +723,7 @@ export function registerQueryTools(
         }
 
         const stateDbFts = getStateDb();
-        const fts5Filtered = applyFolderFilter(fts5Results);
+        const fts5Filtered = fts5Results;
         const results: Array<Record<string, unknown>> = fts5Filtered.map(r => ({ ...enrichResultCompact({ path: r.path, title: r.title, snippet: r.snippet }, index, stateDbFts), in_fts5: true }));
 
         // Multi-hop backfill — when results suggest bridge structure
@@ -909,8 +755,8 @@ export function registerQueryTools(
         }, null, 2) }] };
       }
 
-      // No query and no filters — return error
-      return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'Provide a query or metadata filters (where, has_tag, folder, etc.)' }, null, 2) }] };
+      // No query and no date filters — return error
+      return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'Provide a query or date filters (modified_after, modified_before). For structural enumeration use find_notes.' }, null, 2) }] };
     }
   );
 }

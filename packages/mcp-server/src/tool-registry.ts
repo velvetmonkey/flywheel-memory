@@ -42,6 +42,7 @@ import { registerGraphTools } from './tools/read/graph.js';
 import { registerWikilinkTools } from './tools/read/wikilinks.js';
 import { registerHealthTools } from './tools/read/health.js';
 import { registerQueryTools } from './tools/read/query.js';
+import { registerFindNotesTools } from './tools/read/find_notes.js';
 import { registerSystemTools as registerReadSystemTools } from './tools/read/system.js';
 import { registerPrimitiveTools } from './tools/read/primitives.js';
 import { registerMigrationTools } from './tools/read/migrations.js';
@@ -556,8 +557,8 @@ export function applyToolGating(
       if (params && 'vault' in params) {
         delete params.vault;
       }
-      // Cross-vault search: when no vault specified, search all vaults and merge
-      if (toolName === 'search' && !vaultName) {
+      // Cross-vault search/find: when no vault specified, query all vaults and merge
+      if ((toolName === 'search' || toolName === 'find_notes') && !vaultName) {
         return crossVaultSearch(registry!, vaultCallbacks!, handler, args);
       }
       const ctx = registry.getContext(vaultName);
@@ -869,6 +870,7 @@ export function registerAllTools(
   // graph.ts + graphExport.ts retired (8 tools removed)
   registerWikilinkTools(targetServer, gvi, gvp, gsd);
   registerQueryTools(targetServer, gvi, gvp, gsd);
+  registerFindNotesTools(targetServer, gvi, gsd);
   registerPrimitiveTools(targetServer, gvi, gvp, gcf, gsd);
   registerGraphTools(targetServer, gvi, gvp, gsd);
   registerGraphAnalysisTools(targetServer, gvi, gvp, gsd, gcf);

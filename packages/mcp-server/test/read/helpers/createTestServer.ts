@@ -10,6 +10,7 @@ import { buildVaultIndex, setIndexState } from '../../../src/core/read/graph.js'
 import { registerWikilinkTools } from '../../../src/tools/read/wikilinks.js';
 import { registerHealthTools } from '../../../src/tools/read/health.js';
 import { registerQueryTools } from '../../../src/tools/read/query.js';
+import { registerFindNotesTools } from '../../../src/tools/read/find_notes.js';
 import { registerSystemTools } from '../../../src/tools/read/system.js';
 import { registerPrimitiveTools } from '../../../src/tools/read/primitives.js';
 import { registerMigrationTools } from '../../../src/tools/read/migrations.js';
@@ -108,6 +109,12 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     server,
     () => currentIndex,
     () => vaultPath,
+    () => stateDb
+  );
+
+  registerFindNotesTools(
+    server,
+    () => currentIndex,
     () => stateDb
   );
 

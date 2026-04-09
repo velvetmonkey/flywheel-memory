@@ -5,6 +5,7 @@ The `agent` preset (default) provides search, read, write, tasks, and memory. Us
 - [At a Glance](#at-a-glance)
 - [Find Anything](#find-anything)
   - [`search`](#search)
+  - [`find_notes`](#find_notes)
   - [`find_similar`](#find_similar)
   - [`discover_tools`](#discover_tools)
   - [`init_semantic`](#init_semantic)
@@ -42,6 +43,7 @@ The `agent` preset (default) provides search, read, write, tasks, and memory. Us
 | I want to... | Start here |
 |---|---|
 | [Ask my vault a question](#find-anything) | `search` |
+| [List notes by folder, tag, or frontmatter](#find_notes) | `find_notes` |
 | [Read a specific note](#read-deeper) | `get_note_structure` |
 | [Write or edit content](#write--edit) | `vault_add_to_section` |
 | [Work with tasks](#tasks) | `tasks` |
@@ -95,11 +97,11 @@ The enrichment step is the same regardless of how a note matched — every resul
 
 **Routing:**
 
-- **Query present** → content search (FTS5 + semantic + entities, merged). Add `folder` to post-filter results.
-- **No query, filters only** → metadata search (frontmatter, tags, folder, dates).
+- **Query present** → content search (FTS5 + semantic + entities, merged).
+- **Structural/metadata enumeration** → use `find_notes` instead (folder, tags, frontmatter filters).
 - **`prefix: true` + query** → entity autocomplete.
 
-**Common parameters:** `query`, `where` (frontmatter filters), `has_tag`, `folder`, `modified_after`, `sort_by`, `limit`, `detail_count`, `context_note`
+**Parameters:** `query`, `modified_after`, `modified_before`, `limit`, `detail_count`, `sort_by`, `order`, `context_note`, `consumer`, `prefix`
 
 **Multi-vault behavior**
 
@@ -148,6 +150,37 @@ The full-text index stores every markdown file in the vault, excluding internal 
 - **content** — the entire markdown body after the frontmatter block
 
 The index uses Porter stemming, so "running" matches "run", "runs", and "ran". Rebuild happens automatically when the index is stale (>1 hour), or manually via `refresh_index`.
+
+### `find_notes`
+
+Enumerate notes by metadata — folder, tags, or frontmatter values. Use when you need a structural list, not relevance-ranked search. Returns lightweight note summaries (path, title, modified, frontmatter, tags). Does not perform full-text or semantic search — for concept search, use `search` instead.
+
+**When to use `find_notes` vs `search`:**
+
+| Goal | Tool |
+|------|------|
+| "What are all notes in folder X?" | `find_notes` |
+| "All notes tagged #invoice" | `find_notes` |
+| "Notes where status=active" | `find_notes` |
+| "Find notes about billing" | `search` |
+| "What does the vault say about Sarah?" | `search` |
+
+**Parameters:**
+
+| Parameter | Default | What it does |
+|-----------|---------|-------------|
+| `folder` | — | Restrict to a folder path (e.g. `"projects/"`) |
+| `where` | — | Frontmatter filters as key/value pairs (e.g. `{"status": "active"}`) |
+| `has_tag` | — | Notes must have this single tag |
+| `has_any_tag` | — | Notes with any of these tags |
+| `has_all_tags` | — | Notes with all of these tags |
+| `include_children` | `true` | Include subfolder notes when `folder` is set |
+| `title_contains` | — | Filter notes whose title contains this substring |
+| `modified_after` | — | Only notes modified after this date (ISO 8601) |
+| `modified_before` | — | Only notes modified before this date (ISO 8601) |
+| `sort_by` | `"modified"` | Sort field: `"modified"`, `"title"`, `"path"` |
+| `order` | `"desc"` | Sort order: `"asc"` or `"desc"` |
+| `limit` | `50` | Maximum results to return |
 
 ### `find_similar`
 

@@ -50,7 +50,9 @@ The policy schema uses the internal step name `vault_search` for read steps. Lat
 
 ### Step types
 
-**Read:** `vault_search` — query the vault index. Results are exposed to subsequent steps. No vault modifications.
+**Read:** `vault_search` — full-text and semantic query of the vault index. Results are exposed to subsequent steps. No vault modifications.
+
+**Read:** `vault_find_notes` — enumerate notes by folder, tags, or frontmatter values. Use instead of `vault_search` when you need a structural list (no query text). Same result contract, same template variables (`results`, `summary`, `count`).
 
 **Write:** `vault_add_to_section`, `vault_remove_from_section`, `vault_replace_in_section`, `vault_create_note`, `vault_delete_note`, `vault_toggle_task`, `vault_add_task`, `vault_update_frontmatter`, `vault_add_frontmatter_field`
 
@@ -94,7 +96,6 @@ steps:
     tool: vault_search
     params:
       query: "type:invoice status:sent"
-      folder: "invoices"
 
   - id: log_followups
     tool: vault_add_to_section
@@ -140,10 +141,10 @@ conditions:
 
 steps:
   - id: find_activity
-    tool: vault_search
+    tool: vault_find_notes
     params:
-      query: "modified this week"
       folder: "daily-notes"
+      modified_after: "{{builtins.week_start}}"
 
   - id: find_open_tasks
     tool: vault_search

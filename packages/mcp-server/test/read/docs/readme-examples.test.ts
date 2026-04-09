@@ -106,9 +106,9 @@ describe('README Examples: Artemis Rocket Vault', () => {
       }
     });
 
-    it('should search notes by title', async () => {
+    it('should find notes by title', async () => {
       const result = await client.callTool({
-        name: 'search',
+        name: 'find_notes',
         arguments: { title_contains: 'project', limit: 10 },
       });
 
@@ -116,7 +116,7 @@ describe('README Examples: Artemis Rocket Vault', () => {
       const content = result.content as Array<{ type: string; text: string }>;
       const searchResults = JSON.parse(content[0].text);
 
-      // search returns { notes: [...] }
+      // find_notes returns { notes: [...] }
       expect(Array.isArray(searchResults.notes)).toBe(true);
     });
 

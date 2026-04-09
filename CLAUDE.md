@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 70 declared [[TOOLS]] across 12 categories for search, graph analysis, schema intelligence, tasks, frontmatter, note mutations, temporal analysis, and memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 17 merged tools across 3 preset tiers (agent/power/full) for search, graph analysis, schema intelligence, tasks, note mutations, temporal analysis, and memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `doctor(action: init_semantic)`.
 
 ---
 
@@ -103,22 +103,27 @@ packages/mcp-server/src/
 
 Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
-**Presets:**
-- **`agent`** — Core tools: search, read, write, tasks, memory, pattern routing — **this is the default**
-- **`full`** — 65-tool surface, all categories, hybrid routing
-- **`auto`** — Progressive disclosure via `discover_tools`, all categories, hybrid routing
+**Presets (T43 — 3-tier collapsed surface):**
+- **`agent`** (default) — 8 tools: `search`, `read`, `edit_section`, `note`, `memory`, `tasks`, `doctor`, `policy`
+- **`power`** — 14 tools: agent + `find_notes`, `vault_update_frontmatter`, `link`, `correct`, `entity`, `schema`
+- **`full`** — 17 tools: power + `graph`, `insights`, `export_graph`
 
-**Composable bundles** (add to presets or each other):
-- **`graph`** — structural analysis, semantic analysis, paths, [[Hub|hubs]], connections
-- **`schema`** — schema intelligence + migrations
-- **`wikilinks`** — suggestions, validation, discovery
-- **`corrections`** — correction recording + resolution
-- **`tasks`** — task queries and mutations
-- **`memory`** — session memory + brief
-- **`note-ops`** — delete, move, rename, merge
-- **`temporal`** — time-based vault intelligence
-- **`diagnostics`** — vault config, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback
-**Categories (12):** `search`, `read`, `write`, `graph`, `schema`, `wikilinks`, `corrections`, `tasks`, `memory`, `note-ops`, `temporal`, `diagnostics`
+Switch preset at runtime: `doctor(action: config, key: tool_preset, value: agent|power|full)`
+
+**Merged tool → actions:**
+- `search` — text search; `action: similar` for similarity search
+- `read` — `path` (full note), `path+section` (section only), `pattern` (find headings)
+- `edit_section` — `action: add|remove|replace`
+- `note` — `action: create|move|rename|delete`
+- `memory` — `action: store|recall|brief` (brief = startup context)
+- `tasks` — `action: list|add|toggle`
+- `doctor` — `action: health|pipeline|config|refresh|log|init_semantic`
+- `link` — `action: suggest|feedback|unlinked|validate|stubs|dashboard|unsuppress|timeline|layer_timeseries|snapshot_diff`
+- `correct` — `action: record|list|resolve|undo`
+- `entity` — `action: list|alias|suggest_aliases|merge`
+- `schema` — `action: overview|conventions|folders|rename_field|rename_tag|migrate|validate`
+- `graph` — `action: analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps`
+- `insights` — `action: evolution|staleness|context|note_intelligence|growth`
 
 ---
 

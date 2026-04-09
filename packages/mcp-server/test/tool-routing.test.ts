@@ -164,8 +164,8 @@ describe('manifest freshness', () => {
   it('manifest tool count matches catalog minus routing-excluded tools', async () => {
     const mod = await import('../src/generated/tool-embeddings.generated.js');
     manifest = mod.TOOL_EMBEDDINGS_MANIFEST;
-    // tool_selection_feedback excluded from semantic routing (meta-tool)
-    const ROUTING_EXCLUDED = 1;
+    // tool_selection_feedback retired (T43) — no longer in catalog, no exclusions needed
+    const ROUTING_EXCLUDED = 0;
     expect(manifest.tools.length).toBe(catalog.size - ROUTING_EXCLUDED);
   });
 
@@ -174,8 +174,7 @@ describe('manifest freshness', () => {
     manifest = mod.TOOL_EMBEDDINGS_MANIFEST;
     const manifestNames = new Set(manifest.tools.map((t) => t.name));
     const catalogNames = new Set(catalog.keys());
-    // Meta-tool intentionally excluded from semantic routing
-    catalogNames.delete('tool_selection_feedback');
+    // tool_selection_feedback retired (T43) — already absent from catalog
     expect(manifestNames).toEqual(catalogNames);
   });
 

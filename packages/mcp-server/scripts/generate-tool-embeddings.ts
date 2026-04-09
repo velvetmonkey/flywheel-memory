@@ -132,9 +132,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Meta-diagnostics tools excluded from semantic routing — they should not be
-  // activated by T14 embedding similarity.
-  const ROUTING_EXCLUDE = new Set(['tool_selection_feedback']);
+  // No tools excluded from semantic routing (tool_selection_feedback retired T43).
+  const ROUTING_EXCLUDE = new Set<string>();
 
   const entries = Array.from(catalog.values())
     .filter((e) => !ROUTING_EXCLUDE.has(e.name))

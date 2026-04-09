@@ -169,6 +169,13 @@ describe('Tool Naming Conventions', () => {
       'tool_selection_feedback',
       'pipeline_status',
       'discover_tools',
+      'schema',
+      'graph',
+      'insights',
+      'note',
+      'link',
+      'correct',
+      'entity',
     ]);
 
     for (const tool of toolNames) {

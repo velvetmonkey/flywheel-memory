@@ -50,6 +50,9 @@ import { registerGraphAnalysisTools } from './tools/read/graphAnalysis.js';
 import { registerVaultSchemaTools } from './tools/read/vaultSchema.js';
 import { registerSemanticAnalysisTools } from './tools/read/semanticAnalysis.js';
 import { registerNoteIntelligenceTools } from './tools/read/noteIntelligence.js';
+import { registerSchemaTools } from './tools/read/schemaTools.js';
+import { registerGraphTools2 } from './tools/read/graphTools.js';
+import { registerInsightsTools } from './tools/read/insightsTools.js';
 
 // Write tool registrations
 import { registerMutationTools } from './tools/write/mutations.js';
@@ -63,6 +66,10 @@ import { registerPolicyTools } from './tools/write/policy.js';
 import { registerTagTools } from './tools/write/tags.js';
 import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
 import { registerToolSelectionFeedbackTools } from './tools/write/toolSelectionFeedback.js';
+import { registerCorrectTool } from './tools/write/correct.js';
+import { registerEntityTool } from './tools/write/entity.js';
+import { registerLinkTool } from './tools/write/link.js';
+import { registerNoteTool } from './tools/write/note.js';
 import { detectMisroute, recordHeuristicMisroute } from './core/shared/misrouteDetection.js';
 import { registerCorrectionTools } from './tools/write/corrections.js';
 import { registerMemoryTools } from './tools/write/memory.js';
@@ -77,7 +84,7 @@ import { registerMetricsTools } from './tools/read/metrics.js';
 // activity.ts retired — vault_activity modes folded into vault_session_history
 import { registerSimilarityTools } from './tools/read/similarity.js';
 import { registerSemanticTools } from './tools/read/semantic.js';
-import { registerMergeTools as registerReadMergeTools } from './tools/read/merges.js';
+// registerReadMergeTools retired (T43) — suggest_entity_merges/dismiss_merge_suggestion absorbed into entity tool
 import { registerTemporalAnalysisTools } from './tools/read/temporalAnalysis.js';
 import { registerSessionHistoryTools } from './tools/read/sessionHistory.js';
 import { registerEntityHistoryTools } from './tools/read/entityHistory.js';
@@ -874,10 +881,13 @@ export function registerAllTools(
   registerPrimitiveTools(targetServer, gvi, gvp, gcf, gsd);
   registerGraphTools(targetServer, gvi, gvp, gsd);
   registerGraphAnalysisTools(targetServer, gvi, gvp, gsd, gcf);
-  registerSemanticAnalysisTools(targetServer, gvi, gvp);
+  // registerSemanticAnalysisTools retired (T43) — semantic_analysis removed from surface
   registerVaultSchemaTools(targetServer, gvi, gvp);
   registerNoteIntelligenceTools(targetServer, gvi, gvp, gcf);
   registerMigrationTools(targetServer, gvi, gvp);
+  registerSchemaTools(targetServer, gvi, gvp);
+  registerGraphTools2(targetServer, gvi, gvp, gsd);
+  registerInsightsTools(targetServer, gvi, gvp, gsd, gcf);
 
   // Write tools
   registerMutationTools(targetServer, gvp, gcf);
@@ -919,9 +929,9 @@ export function registerAllTools(
   });
   registerTagTools(targetServer, gvi, gvp);
   registerWikilinkFeedbackTools(targetServer, gsd);
-  registerToolSelectionFeedbackTools(targetServer, gsd);
+  // registerToolSelectionFeedbackTools retired (T43) — tool_selection_feedback removed from surface
   registerCorrectionTools(targetServer, gsd);
-  registerInitTools(targetServer, gvp, gsd);
+  // registerInitTools retired (T43) — vault_init removed from surface
   registerConfigTools(
     targetServer,
     gcf,
@@ -934,18 +944,24 @@ export function registerAllTools(
   // vault_activity retired — modes folded into vault_session_history
   registerSimilarityTools(targetServer, gvi, gvp, gsd);
   registerSemanticTools(targetServer, gvp, gsd);
-  registerReadMergeTools(targetServer, gsd);
+  // registerReadMergeTools retired (T43) — suggest_merges/dismiss_merge now in entity tool
   registerTemporalAnalysisTools(targetServer, gvi, gvp, gsd);
-  registerSessionHistoryTools(targetServer, gsd, () => { try { return getSessionId(); } catch { return null; } });
-  registerEntityHistoryTools(targetServer, gsd);
-  registerLearningReportTools(targetServer, gvi, gsd);
-  registerCalibrationExportTools(targetServer, gvi, gsd, gcf);
+  // registerSessionHistoryTools retired (T43) — vault_session_history removed from surface
+  // registerEntityHistoryTools retired (T43) — vault_entity_history removed from surface
+  // registerLearningReportTools retired (T43) — flywheel_learning_report removed from surface
+  // registerCalibrationExportTools retired (T43) — flywheel_calibration_export removed from surface
 
   // Memory tools
   registerMemoryTools(targetServer, gsd);
   // recall removed — entity/memory search merged into search (uber search)
   // registerRecallTools(targetServer, gsd, gvp, () => gvi() ?? null);
   registerBriefTools(targetServer, gsd);
+
+  // T43 merged tools
+  registerNoteTool(targetServer, gvp, gvi);
+  registerLinkTool(targetServer, gvi, gvp, gsd);
+  registerCorrectTool(targetServer, gsd, gvp);
+  registerEntityTool(targetServer, gvp, gsd, gvi);
 
   // Discovery tool (progressive disclosure meta-tool — only in auto/tiered mode)
   if (controller && controller.mode === 'tiered') {

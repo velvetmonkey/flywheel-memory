@@ -142,7 +142,7 @@ describe('T13: HTTP Transport', () => {
       expect(toolNames).toContain('policy');
     });
 
-    it('registerInitTools accepts getVaultPath getter', () => {
+    it('registerInitTools is a no-op (vault_init retired T43)', () => {
       const server = new McpServer({ name: 'test', version: '0.0.0' });
       const toolNames: string[] = [];
       const origTool = server.tool.bind(server);
@@ -153,7 +153,9 @@ describe('T13: HTTP Transport', () => {
 
       registerInitTools(server, () => '/test/vault', () => null);
 
-      expect(toolNames).toContain('vault_init');
+      // vault_init retired (T43) — registerInitTools is now a no-op
+      expect(toolNames).not.toContain('vault_init');
+      expect(toolNames).toHaveLength(0);
     });
 
     it('getter is called at invocation time, not registration time', () => {
@@ -196,7 +198,8 @@ describe('T13: HTTP Transport', () => {
       registerInitTools(server, getter, () => null);
 
       // All 9 registration functions should register their tools
-      expect(allToolNames.length).toBeGreaterThanOrEqual(15);
+      // (vault_init retired T43, registerInitTools is now a no-op → 14 tools)
+      expect(allToolNames.length).toBeGreaterThanOrEqual(14);
 
       // Verify key tools are present
       const expectedTools = [
@@ -208,7 +211,6 @@ describe('T13: HTTP Transport', () => {
         'merge_entities', 'absorb_as_alias',
         'vault_undo_last_mutation',
         'policy',
-        'vault_init',
       ];
       for (const tool of expectedTools) {
         expect(allToolNames).toContain(tool);

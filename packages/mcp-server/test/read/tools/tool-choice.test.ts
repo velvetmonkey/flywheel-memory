@@ -19,9 +19,9 @@ describe('generateInstructions routing', () => {
     const cats = parseEnabledCategories('default,temporal');
     const instructions = generateInstructions(cats);
     expect(instructions).toContain('## Temporal');
-    expect(instructions).toContain('track_concept_evolution');
-    expect(instructions).toContain('get_context_around_date');
-    expect(instructions).toContain('predict_stale_notes');
+    expect(instructions).toContain('insights(action: evolution)');
+    expect(instructions).toContain('insights(action: context)');
+    expect(instructions).toContain('insights(action: staleness)');
   });
 
   it('includes diagnostics routing when diagnostics enabled', () => {
@@ -29,21 +29,21 @@ describe('generateInstructions routing', () => {
     const instructions = generateInstructions(cats);
     expect(instructions).toContain('## Diagnostics');
     expect(instructions).toContain('flywheel_doctor');
-    expect(instructions).toContain('vault_growth');
+    expect(instructions).toContain('insights');
   });
 
   it('includes wikilinks routing when wikilinks enabled', () => {
     const cats = parseEnabledCategories('agent,wikilinks');
     const instructions = generateInstructions(cats);
     expect(instructions).toContain('## Wikilinks');
-    expect(instructions).toContain('unlinked_mentions_report');
+    expect(instructions).toContain('link(action: unlinked)');
   });
 
   it('includes corrections routing when corrections enabled', () => {
     const cats = parseEnabledCategories('agent,corrections');
     const instructions = generateInstructions(cats);
     expect(instructions).toContain('## Corrections');
-    expect(instructions).toContain('vault_record_correction');
+    expect(instructions).toContain('correct');
   });
 
   it('omits category blocks when not enabled', () => {
@@ -105,13 +105,10 @@ describe('tool description contract compliance', () => {
   });
 
   it('activity and growth tools follow contract template', async () => {
-    const sessionHistory = await fs.readFile(
-      pathMod.join(__dirname, '../../../src/tools/read/sessionHistory.ts'), 'utf-8');
+    // sessionHistory.ts retired (T43) — only metrics.ts checked
     const metrics = await fs.readFile(
       pathMod.join(__dirname, '../../../src/tools/read/metrics.ts'), 'utf-8');
 
-    expect(sessionHistory).toContain('Returns');
-    expect(sessionHistory).toContain('Does not');
     expect(metrics).toContain('Returns');
     expect(metrics).toContain('Does not');
   });

@@ -361,10 +361,10 @@ for i in "${!BEAT_NAMES[@]}"; do
 
   case $beat_num in
     1) # brief
-      if echo "$tools_used" | grep -q "mcp__flywheel__brief"; then
-        echo "  [PASS] brief tool called"
+      if echo "$tools_used" | grep -q "mcp__flywheel__brief\|mcp__flywheel__memory"; then
+        echo "  [PASS] brief/memory tool called"
       else
-        echo "  [FAIL] brief tool not called"
+        echo "  [FAIL] brief/memory tool not called"
         beat_pass=false
       fi
       ;;
@@ -407,10 +407,13 @@ for i in "${!BEAT_NAMES[@]}"; do
       ;;
 
     4) # reject
-      if echo "$tools_used" | grep -q "mcp__flywheel__wikilink_feedback"; then
-        echo "  [PASS] wikilink_feedback called"
+      if echo "$tools_used" | grep -q "mcp__flywheel__wikilink_feedback\|mcp__flywheel__link"; then
+        echo "  [PASS] wikilink_feedback/link tool called"
         feedback_args=$(extract_tool_args "$out" "mcp__flywheel__wikilink_feedback")
-        negative_count=$(echo "$feedback_args" | grep -c '"correct".*false\|"correct": false' || true)
+        if [[ -z "$feedback_args" ]]; then
+          feedback_args=$(extract_tool_args "$out" "mcp__flywheel__link")
+        fi
+        negative_count=$(echo "$feedback_args" | grep -c '"correct".*false\|"correct": false\|"accepted".*false\|"accepted": false' || true)
         if [[ "$negative_count" -ge 2 ]]; then
           echo "  [PASS] negative feedback recorded for both entities ($negative_count calls)"
         elif [[ "$negative_count" -ge 1 ]]; then
@@ -419,16 +422,19 @@ for i in "${!BEAT_NAMES[@]}"; do
           echo "  [WARN] no explicit negative feedback detected in args"
         fi
       else
-        echo "  [FAIL] wikilink_feedback not called"
+        echo "  [FAIL] wikilink_feedback/link not called"
         beat_pass=false
       fi
       ;;
 
     5) # accept
-      if echo "$tools_used" | grep -q "mcp__flywheel__wikilink_feedback"; then
-        echo "  [PASS] wikilink_feedback called"
+      if echo "$tools_used" | grep -q "mcp__flywheel__wikilink_feedback\|mcp__flywheel__link"; then
+        echo "  [PASS] wikilink_feedback/link tool called"
         feedback_args=$(extract_tool_args "$out" "mcp__flywheel__wikilink_feedback")
-        positive_count=$(echo "$feedback_args" | grep -c '"correct".*true\|"correct": true' || true)
+        if [[ -z "$feedback_args" ]]; then
+          feedback_args=$(extract_tool_args "$out" "mcp__flywheel__link")
+        fi
+        positive_count=$(echo "$feedback_args" | grep -c '"correct".*true\|"correct": true\|"accepted".*true\|"accepted": true' || true)
         if [[ "$positive_count" -ge 2 ]]; then
           echo "  [PASS] positive feedback recorded for both entities ($positive_count calls)"
         elif [[ "$positive_count" -ge 1 ]]; then
@@ -437,7 +443,7 @@ for i in "${!BEAT_NAMES[@]}"; do
           echo "  [WARN] no explicit positive feedback detected in args"
         fi
       else
-        echo "  [FAIL] wikilink_feedback not called"
+        echo "  [FAIL] wikilink_feedback/link not called"
         beat_pass=false
       fi
       ;;
@@ -480,10 +486,10 @@ for i in "${!BEAT_NAMES[@]}"; do
         echo "  [FAIL] vault_update_frontmatter not called"
         local_pass=false
       fi
-      if echo "$tools_used" | grep -q "mcp__flywheel__vault_add_task"; then
-        echo "  [PASS] vault_add_task called"
+      if echo "$tools_used" | grep -q "mcp__flywheel__vault_add_task\|mcp__flywheel__tasks"; then
+        echo "  [PASS] vault_add_task/tasks tool called"
       else
-        echo "  [FAIL] vault_add_task not called"
+        echo "  [FAIL] vault_add_task/tasks not called"
         local_pass=false
       fi
       if ! $local_pass; then
@@ -492,16 +498,19 @@ for i in "${!BEAT_NAMES[@]}"; do
       ;;
 
     8) # dashboard
-      if echo "$tools_used" | grep -q "mcp__flywheel__wikilink_feedback"; then
-        echo "  [PASS] wikilink_feedback called"
+      if echo "$tools_used" | grep -q "mcp__flywheel__wikilink_feedback\|mcp__flywheel__link"; then
+        echo "  [PASS] wikilink_feedback/link tool called"
         feedback_args=$(extract_tool_args "$out" "mcp__flywheel__wikilink_feedback")
+        if [[ -z "$feedback_args" ]]; then
+          feedback_args=$(extract_tool_args "$out" "mcp__flywheel__link")
+        fi
         if echo "$feedback_args" | grep -qi '"dashboard"\|"mode".*"dashboard"\|"action".*"dashboard"'; then
           echo "  [PASS] dashboard mode detected"
         else
-          echo "  [WARN] wikilink_feedback called but mode may not be dashboard"
+          echo "  [WARN] feedback tool called but mode may not be dashboard"
         fi
       else
-        echo "  [WARN] wikilink_feedback not called (may have used alternative tool)"
+        echo "  [WARN] wikilink_feedback/link not called (may have used alternative tool)"
       fi
       ;;
 

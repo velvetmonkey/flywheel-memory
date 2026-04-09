@@ -175,7 +175,7 @@ describe('tool tiering', () => {
     );
 
     expect(instructions).toContain('## Graph');
-    expect(instructions).toContain('Use "graph_analysis" for structural queries');
+    expect(instructions).toContain('Use "graph" (action: analyse) for structural queries');
     expect(instructions).toContain('## Wikilinks');
     expect(instructions).not.toContain('Ask about graph connections, backlinks, hubs, clusters, or paths');
   });

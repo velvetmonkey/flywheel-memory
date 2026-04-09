@@ -308,7 +308,7 @@ export async function getHealthCheck(client: TestClient): Promise<any> {
 
 /** List all entities across all categories */
 export async function listEntities(client: TestClient): Promise<{ entities: any[]; raw: any }> {
-  const data = await callJsonTool(client, "list_entities", {});
+  const data = await callJsonTool(client, "entity", { action: "list" });
   // EntityIndex has category keys (people, projects, other, etc.) + _metadata
   const all: any[] = [];
   for (const [key, val] of Object.entries(data)) {

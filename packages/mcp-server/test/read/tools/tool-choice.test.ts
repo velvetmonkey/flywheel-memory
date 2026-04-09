@@ -105,13 +105,10 @@ describe('tool description contract compliance', () => {
   });
 
   it('activity and growth tools follow contract template', async () => {
-    const sessionHistory = await fs.readFile(
-      pathMod.join(__dirname, '../../../src/tools/read/sessionHistory.ts'), 'utf-8');
+    // sessionHistory.ts retired (T43) — only metrics.ts checked
     const metrics = await fs.readFile(
       pathMod.join(__dirname, '../../../src/tools/read/metrics.ts'), 'utf-8');
 
-    expect(sessionHistory).toContain('Returns');
-    expect(sessionHistory).toContain('Does not');
     expect(metrics).toContain('Returns');
     expect(metrics).toContain('Does not');
   });

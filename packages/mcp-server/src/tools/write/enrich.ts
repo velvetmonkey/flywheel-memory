@@ -441,43 +441,10 @@ async function executeEnrich(
 // Tool registration
 // =============================================================================
 
+// vault_init retired (T43) — registration removed from MCP surface.
+// Core logic (buildStatusReport, executeRun, executeEnrich) preserved above.
 export function registerInitTools(
-  server: McpServer,
-  getVaultPath: () => string,
-  getStateDb: () => StateDb | null,
-): void {
-  server.tool(
-    'vault_init',
-    'Use when setting up a vault for Flywheel for the first time. Produces initialization steps for missing config, folders, and templates. Returns status of each init step or executes missing ones. Does not overwrite existing configuration — safe to run on already-initialized vaults.',
-    {
-      mode: z.enum(['status', 'run', 'enrich']).default('status').describe('Operation mode (default: status)'),
-      dry_run: z.boolean().default(true).describe('For enrich mode: preview without modifying files (default: true)'),
-      batch_size: z.number().default(50).describe('For enrich mode: max notes per invocation (default: 50)'),
-      offset: z.number().default(0).describe('For enrich mode: skip this many eligible notes (for pagination)'),
-    },
-    async ({ mode, dry_run, batch_size, offset }) => {
-      const stateDb = getStateDb();
-      const vaultPath = getVaultPath();
-
-      switch (mode) {
-        case 'status': {
-          const report = buildStatusReport(stateDb, vaultPath);
-          return { content: [{ type: 'text' as const, text: JSON.stringify(report, null, 2) }] };
-        }
-
-        case 'run': {
-          const result = await executeRun(stateDb, vaultPath);
-          return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
-        }
-
-        case 'enrich': {
-          const result = await executeEnrich(stateDb, vaultPath, dry_run, batch_size, offset);
-          if (!result.success) {
-            return { content: [{ type: 'text' as const, text: JSON.stringify({ ...result, error: 'Entity index not ready' }, null, 2) }] };
-          }
-          return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
-        }
-      }
-    }
-  );
-}
+  _server: McpServer,
+  _getVaultPath: () => string,
+  _getStateDb: () => StateDb | null,
+): void {}

@@ -14,9 +14,10 @@ import type { VaultRegistry } from './vault-registry.js';
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
 // Presets (tool counts derived at runtime — see TOTAL_TOOL_COUNT, TIER_1_TOOL_COUNT):
-//   full       - All tools visible, all categories, hybrid routing
+//   agent      - Tier-1 tools: search, read, note, memory, tasks, policy + core write — DEFAULT (fixed reduced)
+//   power      - Tier 1+2: agent + wikilinks (link), corrections (correct), note-ops (entity), schema
+//   full       - Tier 1+2+3: power + graph, diagnostics, temporal
 //   auto       - Progressive disclosure via discover_tools, all categories, hybrid routing
-//   agent      - Note-taking essentials: search, read, write, tasks, memory, pattern routing — DEFAULT
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural analysis + link detail + semantic + export (11 tools)
@@ -65,10 +66,15 @@ export const ALL_CATEGORIES: ToolCategory[] = [
 ];
 
 export const PRESETS: Record<string, ToolCategory[]> = {
-  // Presets
-  full: [...ALL_CATEGORIES],
-  auto: [...ALL_CATEGORIES],
+  // Named presets (3-tier surface)
+  //   agent — tier-1 tools: search, read, note, memory, tasks, policy + core write/diagnostics
   agent: ['search', 'read', 'write', 'tasks', 'memory'],
+  //   power — tier 1+2: agent + wikilinks (link), corrections (correct), note-ops (entity), schema
+  power: ['search', 'read', 'write', 'tasks', 'memory', 'wikilinks', 'corrections', 'note-ops', 'schema'],
+  //   full — tier 1+2+3: power + graph + diagnostics + temporal
+  full: ['search', 'read', 'write', 'tasks', 'memory', 'wikilinks', 'corrections', 'note-ops', 'schema', 'graph', 'diagnostics', 'temporal'],
+  //   auto — progressive disclosure via discover_tools, all categories
+  auto: [...ALL_CATEGORIES],
 
   // Composable bundles (one per category)
   graph: ['graph'],
@@ -244,7 +250,8 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   find_sections: 'read',
   find_notes: 'read',
 
-  // write (7 tools) -- content mutations + frontmatter + note creation + undo + policy
+  // write (8 tools) -- content mutations + frontmatter + note creation + undo + policy
+  note: 'write',
   vault_add_to_section: 'write',
   vault_remove_from_section: 'write',
   vault_replace_in_section: 'write',
@@ -254,8 +261,8 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   policy: 'write',
 
   // graph (9 tools) -- structural analysis + link detail
+  graph: 'graph',
   graph_analysis: 'graph',
-  semantic_analysis: 'graph',
   get_connection_strength: 'graph',
   list_entities: 'graph',
   get_link_path: 'graph',
@@ -264,7 +271,8 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   get_forward_links: 'graph',
   get_strong_connections: 'graph',
 
-  // schema (7 tools) -- schema intelligence + migrations
+  // schema (8 tools) -- schema intelligence + migrations
+  schema: 'schema',
   vault_schema: 'schema',
   schema_conventions: 'schema',
   schema_validate: 'schema',
@@ -273,16 +281,17 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   migrate_field_values: 'schema',
   rename_tag: 'schema',
 
-  // wikilinks (7 tools) -- suggestions, validation, discovery
+  // wikilinks (7 tools) -- suggestions, validation, discovery (link merged tool + individual tools)
+  link: 'wikilinks',
   suggest_wikilinks: 'wikilinks',
   validate_links: 'wikilinks',
   wikilink_feedback: 'wikilinks',
   discover_stub_candidates: 'wikilinks',
   discover_cooccurrence_gaps: 'wikilinks',
   suggest_entity_aliases: 'wikilinks',
-  unlinked_mentions_report: 'wikilinks',
 
-  // corrections (4 tools)
+  // corrections (5 tools) -- correct merged tool + individual correction tools
+  correct: 'corrections',
   vault_record_correction: 'corrections',
   vault_list_corrections: 'corrections',
   vault_resolve_correction: 'corrections',
@@ -297,7 +306,8 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   memory: 'memory',
   brief: 'memory',
 
-  // note-ops (4 tools) -- file management
+  // note-ops (5 tools) -- file management + entity management
+  entity: 'note-ops',
   vault_delete_note: 'note-ops',
   vault_move_note: 'note-ops',
   vault_rename_note: 'note-ops',
@@ -308,24 +318,17 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   predict_stale_notes: 'temporal',
   track_concept_evolution: 'temporal',
 
-  // diagnostics (16 tools) -- vault health, stats, config, merges, doctor, trust, benchmark, history, learning report, calibration export, pipeline status, tool selection feedback
-  // Retired: health_check, get_vault_stats (absorbed into flywheel_doctor), vault_activity (into vault_session_history), get_folder_structure, get_all_entities, get_unlinked_mentions
+  // diagnostics (8 tools) -- vault health, stats, config, merges, doctor, pipeline status
+  // Retired: health_check, get_vault_stats (absorbed into flywheel_doctor), vault_activity, get_folder_structure, get_all_entities, get_unlinked_mentions (into link), vault_session_history, vault_entity_history, flywheel_trust_report, flywheel_benchmark, flywheel_learning_report, flywheel_calibration_export, tool_selection_feedback, semantic_analysis, vault_init
+  insights: 'diagnostics',
   pipeline_status: 'diagnostics',
   refresh_index: 'diagnostics',
   vault_growth: 'diagnostics',
   flywheel_config: 'diagnostics',
   server_log: 'diagnostics',
-  suggest_entity_merges: 'diagnostics',
-  dismiss_merge_suggestion: 'diagnostics',
-  vault_init: 'diagnostics',
+  // suggest_entity_merges retired (T43) — absorbed into entity tool as action: suggest_merges
+  // dismiss_merge_suggestion retired (T43) — absorbed into entity tool as action: dismiss_merge
   flywheel_doctor: 'diagnostics',
-  flywheel_trust_report: 'diagnostics',
-  flywheel_benchmark: 'diagnostics',
-  vault_session_history: 'diagnostics',
-  vault_entity_history: 'diagnostics',
-  flywheel_learning_report: 'diagnostics',
-  flywheel_calibration_export: 'diagnostics',
-  tool_selection_feedback: 'diagnostics',
 
 };
 
@@ -339,6 +342,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   get_section_content: 1,
   find_sections: 1,
   find_notes: 1,
+  note: 1,
   vault_add_to_section: 1,
   vault_remove_from_section: 1,
   vault_replace_in_section: 1,
@@ -353,8 +357,8 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   brief: 1,
 
   // Tier 2 — context-triggered categories + core diagnostics (see TIER_2_TOOL_COUNT)
+  schema: 2,
   graph_analysis: 2,
-  semantic_analysis: 2,
   get_connection_strength: 2,
   list_entities: 2,
   get_link_path: 2,
@@ -362,13 +366,14 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   get_backlinks: 2,
   get_forward_links: 2,
   get_strong_connections: 2,
+  link: 2,
   suggest_wikilinks: 2,
   validate_links: 2,
   wikilink_feedback: 2,
   discover_stub_candidates: 2,
   discover_cooccurrence_gaps: 2,
   suggest_entity_aliases: 2,
-  unlinked_mentions_report: 2,
+  correct: 2,
   vault_record_correction: 2,
   vault_list_corrections: 2,
   vault_resolve_correction: 2,
@@ -383,6 +388,8 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   flywheel_doctor: 2,
 
   // Tier 3 — explicit or advanced operations (see TIER_3_TOOL_COUNT)
+  graph: 3,
+  insights: 3,
   vault_schema: 3,
   schema_conventions: 3,
   schema_validate: 3,
@@ -390,21 +397,13 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   rename_field: 3,
   migrate_field_values: 3,
   rename_tag: 3,
+  entity: 3,
   vault_delete_note: 3,
   vault_move_note: 3,
   vault_rename_note: 3,
   merge_entities: 3,
   vault_growth: 3,
-  suggest_entity_merges: 3,
-  dismiss_merge_suggestion: 3,
-  vault_init: 3,
-  flywheel_trust_report: 3,
-  flywheel_benchmark: 3,
-  vault_session_history: 3,
-  vault_entity_history: 3,
-  flywheel_learning_report: 3,
-  flywheel_calibration_export: 3,
-  tool_selection_feedback: 3,
+  // suggest_entity_merges/dismiss_merge_suggestion retired (T43) — in entity tool
 };
 
 function assertToolTierCoverage(): void {

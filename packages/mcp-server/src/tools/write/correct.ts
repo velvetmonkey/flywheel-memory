@@ -32,7 +32,7 @@ export function registerCorrectTool(
 ): void {
   server.tool(
     'correct',
-    'Track corrections and undo mutations. action: record — log a correction for an entity in a note. action: list — view pending corrections. action: resolve — mark a correction as resolved. action: undo — reverse the last vault mutation (git revert). Returns correction record, list, or undo result. Does not modify note content directly — corrections are metadata for manual or batch application. Examples: { action:"record", path:"people/alice.md", entity:"Alice", note:"Wrong job title" } { action:"list" } { action:"undo" }',
+    'Track corrections and undo mutations. action: record — log correction. action: list — pending corrections. action: resolve — mark resolved. action: undo — reverse last mutation. Returns correction record, list, or undo result. Does not modify note content directly. e.g. { action:"record", path:"people/alice.md", entity:"Alice", note:"Wrong title" } { action:"undo" }',
     {
       action: z.enum(['record', 'list', 'resolve', 'undo']).describe('Operation to perform'),
 

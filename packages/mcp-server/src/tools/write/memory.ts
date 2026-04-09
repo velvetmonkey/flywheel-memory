@@ -24,7 +24,7 @@ export function registerMemoryTools(
 ): void {
   server.tool(
     'memory',
-    'Persistent key-value memory across sessions. action: store — save a fact, preference, or observation. action: get — retrieve by key. action: search — full-text search memories. action: list — browse all memories. action: forget — delete by key. action: summarize_session — store session summary. Returns stored/retrieved memory content. Does not search vault notes — use search tool instead. Examples: { action:"store", key:"user.pref.theme", value:"dark mode", type:"preference" } { action:"get", key:"user.pref.theme" } { action:"search", query:"deadline" }',
+    'Persistent key-value memory. action: store — save fact/preference. action: get — by key. action: search — full-text. action: list — browse. action: forget — delete. action: summarize_session — session summary. Returns stored/retrieved content. Does not search vault notes. e.g. { action:"store", key:"u.theme", value:"dark", type:"preference" }',
     {
       action: z.enum(['store', 'get', 'search', 'list', 'forget', 'summarize_session']).describe('Operation to perform'),
       key: z.string().optional().describe('[store|get|forget] Memory key (e.g., "user.pref.theme", "project.x.deadline")'),

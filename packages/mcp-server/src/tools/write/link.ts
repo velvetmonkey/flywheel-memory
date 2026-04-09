@@ -181,7 +181,7 @@ export function registerLinkTool(
     {
       title: 'Link',
       description:
-        'Manage wikilinks, suggestions, and link quality. action: suggest — wikilink suggestions for text. action: feedback — record accept/reject on a suggestion. action: unlinked — find unlinked entity mentions vault-wide. action: validate — check for broken links. action: stubs — find entities worth creating notes for. action: dashboard — wikilink feedback stats. action: unsuppress — re-enable a suppressed entity. action: timeline — entity score history. action: layer_timeseries — scoring layer contributions over time. action: snapshot_diff — compare graph snapshots. Returns suggestion lists, confirmations, mention reports, validation errors, stub candidates, or stats. Does not apply wikilinks to notes. Examples: { action:"suggest", text:"Claude is an AI assistant by Anthropic" } { action:"feedback", entity:"Claude", accepted:true } { action:"validate", typos_only:true }',
+        'Wikilink management. action: suggest — suggestions for text. action: feedback — accept/reject. action: unlinked — unlinked mentions. action: validate — broken links. action: stubs — stub candidates. action: dashboard — stats. action: unsuppress/timeline/layer_timeseries/snapshot_diff — advanced analytics. Returns suggestions, reports, or stats. Does not apply wikilinks. e.g. { action:"suggest", text:"Claude is an AI by Anthropic" } { action:"feedback", entity:"Claude", accepted:true }',
       inputSchema: {
         action: z.enum([
           'suggest', 'feedback', 'unlinked', 'validate', 'stubs',

@@ -36,7 +36,7 @@ export function registerGraphTools2(
     {
       title: 'Graph',
       description:
-        'Analyse vault graph structure and connections. action: analyse — hub/orphan/cluster summary. action: backlinks — notes linking to a note. action: forward_links — notes linked from a note. action: strong_connections — top connections by weight. action: path — shortest chain between two notes. action: neighbors — shared connections between two notes. action: strength — link weight between two notes. action: cooccurrence_gaps — entity pairs that co-occur but aren\'t linked. Returns graph metrics, link lists, paths, or gap candidates. Does not modify notes. Examples: { action:"backlinks", path:"people/alice.md" } { action:"path", from:"projects/x.md", to:"people/bob.md" }',
+        'Vault graph analysis. action: analyse — hubs/orphans/clusters. action: backlinks/forward_links — links to/from note. action: strong_connections — top links. action: path — shortest chain. action: neighbors — shared connections. action: strength — link weight. action: cooccurrence_gaps — unlinked co-occurring pairs. Returns metrics, links, paths, or gaps. Does not modify notes. e.g. { action:"backlinks", path:"people/alice.md" } { action:"path", from:"projects/x.md", to:"people/bob.md" }',
       inputSchema: {
         action: z.enum([
           'analyse',

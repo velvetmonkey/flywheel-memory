@@ -24,26 +24,22 @@ export function registerMemoryTools(
 ): void {
   server.tool(
     'memory',
-    'Use when storing, retrieving, or managing persistent agent observations across sessions. Produces durable key-value memory entries for facts, preferences, and decisions. Returns stored or retrieved memory content. Does not search vault notes — use search for note content lookup.',
+    'Persistent key-value memory across sessions. action: store — save a fact, preference, or observation. action: get — retrieve by key. action: search — full-text search memories. action: list — browse all memories. action: forget — delete by key. action: summarize_session — store session summary. Returns stored/retrieved memory content. Does not search vault notes — use search tool instead. Examples: { action:"store", key:"user.pref.theme", value:"dark mode", type:"preference" } { action:"get", key:"user.pref.theme" } { action:"search", query:"deadline" }',
     {
-      action: z.enum(['store', 'get', 'search', 'list', 'forget', 'summarize_session']).describe('Action to perform'),
-      // store params
-      key: z.string().optional().describe('Memory key (e.g., "user.pref.theme", "project.x.deadline")'),
-      value: z.string().optional().describe('The fact/preference/observation to store (up to 2000 chars)'),
-      type: z.enum(['fact', 'preference', 'observation', 'summary']).optional().describe('Memory type'),
-      entity: z.string().optional().describe('Primary entity association'),
-      confidence: z.number().min(0).max(1).optional().describe('Confidence level (0-1, default 1.0)'),
-      ttl_days: z.number().min(1).optional().describe('Time-to-live in days (null = permanent)'),
-      // search params
-      query: z.string().optional().describe('FTS5 search query'),
-      // list/search params
-      limit: z.number().min(1).max(200).optional().describe('Max results to return'),
-      // summarize_session params
-      session_id: z.string().optional().describe('Session ID for summarize_session'),
-      summary: z.string().optional().describe('Session summary text'),
-      topics: z.array(z.string()).optional().describe('Topics discussed in session'),
-      notes_modified: z.array(z.string()).optional().describe('Note paths modified during session'),
-      tool_count: z.number().optional().describe('Number of tool calls in session'),
+      action: z.enum(['store', 'get', 'search', 'list', 'forget', 'summarize_session']).describe('Operation to perform'),
+      key: z.string().optional().describe('[store|get|forget] Memory key (e.g., "user.pref.theme", "project.x.deadline")'),
+      value: z.string().optional().describe('[store] The fact/preference/observation to store (up to 2000 chars)'),
+      type: z.enum(['fact', 'preference', 'observation', 'summary']).optional().describe('[store|search] Memory type'),
+      entity: z.string().optional().describe('[store|search] Primary entity association'),
+      confidence: z.number().min(0).max(1).optional().describe('[store] Confidence level (0-1, default 1.0)'),
+      ttl_days: z.number().min(1).optional().describe('[store] Time-to-live in days (null = permanent)'),
+      query: z.string().optional().describe('[search] FTS5 search query'),
+      limit: z.number().min(1).max(200).optional().describe('[search|list] Max results to return'),
+      session_id: z.string().optional().describe('[summarize_session] Session ID'),
+      summary: z.string().optional().describe('[summarize_session] Session summary text'),
+      topics: z.array(z.string()).optional().describe('[summarize_session] Topics discussed'),
+      notes_modified: z.array(z.string()).optional().describe('[summarize_session] Note paths modified'),
+      tool_count: z.number().optional().describe('[summarize_session] Number of tool calls'),
     },
     async (args) => {
       const stateDb = getStateDb();

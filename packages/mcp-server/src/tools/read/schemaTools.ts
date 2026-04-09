@@ -35,36 +35,25 @@ export function registerSchemaTools(
     {
       title: 'Schema',
       description:
-        'Inspect and evolve vault schema. ' +
-        'action: overview — frontmatter field usage. action: conventions — naming rules for a folder. ' +
-        'action: folders — folder structure. action: rename_field/rename_tag — bulk rename. ' +
-        'action: migrate — bulk update field values. action: validate — check schema rules. ' +
-        'Returns field stats, conventions, rename counts, or validation errors. ' +
-        'Does not read note body content or affect wikilinks.',
+        'Inspect and evolve vault schema. action: overview — frontmatter field usage stats. action: conventions — naming/frontmatter rules for a folder. action: folders — folder structure and note counts. action: rename_field — bulk rename a frontmatter field. action: rename_tag — bulk rename a tag. action: migrate — bulk update field values. action: validate — check schema rules. Returns field stats, conventions, rename counts, or validation errors. Does not read note body content or affect wikilinks. Examples: { action:"overview" } { action:"conventions", folder:"people" } { action:"rename_tag", old_name:"wip", new_name:"in-progress", dry_run:true }',
       inputSchema: {
         action: z.enum(['overview', 'conventions', 'folders', 'rename_field', 'rename_tag', 'migrate', 'validate'])
           .describe('Schema operation to perform'),
 
-        // action: conventions
-        folder: z.string().optional().describe('Folder to scope conventions or validate to'),
+        folder: z.string().optional().describe('[conventions|validate] Folder to scope to'),
 
-        // action: rename_field
-        old_name: z.string().optional().describe('Current field or tag name (rename_field, rename_tag)'),
-        new_name: z.string().optional().describe('New field or tag name (rename_field, rename_tag)'),
+        old_name: z.string().optional().describe('[rename_field|rename_tag] Current field or tag name'),
+        new_name: z.string().optional().describe('[rename_field|rename_tag] New field or tag name'),
 
-        // action: rename_tag — extra option
-        rename_children: z.boolean().optional().describe('Also rename child tags e.g. project/active → work/active (rename_tag, default true)'),
+        rename_children: z.boolean().optional().describe('[rename_tag] Also rename child tags (default true)'),
 
-        // action: migrate
-        field: z.string().optional().describe('Field to migrate values for (migrate)'),
-        from_value: z.string().optional().describe('Old field value to replace (migrate)'),
-        to_value: z.string().optional().describe('New field value to set (migrate)'),
+        field: z.string().optional().describe('[migrate] Field to migrate values for'),
+        from_value: z.string().optional().describe('[migrate] Old field value to replace'),
+        to_value: z.string().optional().describe('[migrate] New field value to set'),
 
-        // shared mutation options
-        dry_run: z.boolean().optional().describe('Preview only, no changes applied (default true for rename/migrate)'),
+        dry_run: z.boolean().optional().describe('[rename_field|rename_tag|migrate] Preview only (default true)'),
 
-        // action: validate — validate a specific note or whole vault
-        path: z.string().optional().describe('Note path to validate (validate; omit for whole vault)'),
+        path: z.string().optional().describe('[validate] Note path to validate (omit for whole vault)'),
       },
     },
     async (params) => {

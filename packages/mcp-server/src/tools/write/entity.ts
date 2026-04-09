@@ -37,32 +37,25 @@ export function registerEntityTool(
 ): void {
   server.tool(
     'entity',
-    'Manage vault entities and their aliases. action: list — browse entities. action: alias — add alias to entity. action: suggest_aliases — alias suggestions. action: merge — absorb one entity into another. action: suggest_merges — find duplicate entity candidates by name similarity. action: dismiss_merge — permanently dismiss a merge suggestion. Returns entity list, mutation result, alias suggestions, or merge candidates. Does not create entity notes (use note with action:create).',
+    'Manage vault entities and their aliases. action: list — browse entities by category. action: alias — add alias to an entity note. action: suggest_aliases — get alias suggestions. action: merge — absorb one entity into another (rewires backlinks, merges content). action: suggest_merges — find duplicate entity candidates by name similarity. action: dismiss_merge — permanently dismiss a merge suggestion. Returns entity list, mutation result, alias suggestions, or merge candidates. Does not create entity notes — use note(action:"create"). Examples: { action:"list", category:"people" } { action:"alias", entity:"people/alice.md", alias:"Ali" } { action:"suggest_merges", limit:10 }',
     {
       action: z.enum(['list', 'alias', 'suggest_aliases', 'merge', 'suggest_merges', 'dismiss_merge']).describe('Operation to perform'),
 
-      // action: list
-      query: z.string().optional().describe('Filter entities by name (action: list)'),
-      category: z.string().optional().describe('Filter to a specific category (action: list or suggest_aliases)'),
-      limit: z.number().optional().describe('Maximum results to return (action: list or suggest_aliases)'),
+      query: z.string().optional().describe('[list] Filter entities by name substring'),
+      category: z.string().optional().describe('[list|suggest_aliases] Filter to a specific category'),
+      limit: z.number().optional().describe('[list|suggest_aliases|suggest_merges] Maximum results to return'),
 
-      // action: alias
-      entity: z.string().optional().describe('Entity to add alias to (action: alias) or get suggestions for (action: suggest_aliases)'),
-      alias: z.string().optional().describe('The alias to add (action: alias)'),
+      entity: z.string().optional().describe('[alias] Entity path to add alias to; [suggest_aliases] entity to get suggestions for'),
+      alias: z.string().optional().describe('[alias] The alias to add'),
 
-      // action: merge
-      primary: z.string().optional().describe('Entity path to keep (action: merge)'),
-      secondary: z.string().optional().describe('Entity path to absorb into primary (action: merge)'),
+      primary: z.string().optional().describe('[merge] Entity path to keep'),
+      secondary: z.string().optional().describe('[merge] Entity path to absorb into primary'),
 
-      // action: suggest_merges
-      // (uses limit from above)
-
-      // action: dismiss_merge
-      source_path: z.string().optional().describe('Source entity path (action: dismiss_merge)'),
-      target_path: z.string().optional().describe('Target entity path (action: dismiss_merge)'),
-      source_name: z.string().optional().describe('Source entity name (action: dismiss_merge)'),
-      target_name: z.string().optional().describe('Target entity name (action: dismiss_merge)'),
-      reason: z.string().optional().describe('Reason for the original suggestion (action: dismiss_merge)'),
+      source_path: z.string().optional().describe('[dismiss_merge] Source entity path'),
+      target_path: z.string().optional().describe('[dismiss_merge] Target entity path'),
+      source_name: z.string().optional().describe('[dismiss_merge] Source entity name'),
+      target_name: z.string().optional().describe('[dismiss_merge] Target entity name'),
+      reason: z.string().optional().describe('[dismiss_merge] Reason for the original suggestion'),
     },
     async ({ action, query, category, limit, entity, alias, primary, secondary, source_path, target_path, source_name, target_name, reason }) => {
       const stateDb = getStateDb();

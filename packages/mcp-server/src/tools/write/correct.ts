@@ -32,20 +32,17 @@ export function registerCorrectTool(
 ): void {
   server.tool(
     'correct',
-    'Track and apply corrections to vault content. action: record — log a correction for an entity in a note. action: list — view pending corrections (optionally filtered by note). action: resolve — mark a correction as resolved. action: undo — reverse the last vault mutation. Returns correction record, list, or mutation undo result. Does not modify note content directly — corrections are recorded for manual or batch application.',
+    'Track corrections and undo mutations. action: record — log a correction for an entity in a note. action: list — view pending corrections. action: resolve — mark a correction as resolved. action: undo — reverse the last vault mutation (git revert). Returns correction record, list, or undo result. Does not modify note content directly — corrections are metadata for manual or batch application. Examples: { action:"record", path:"people/alice.md", entity:"Alice", note:"Wrong job title" } { action:"list" } { action:"undo" }',
     {
       action: z.enum(['record', 'list', 'resolve', 'undo']).describe('Operation to perform'),
 
-      // action: record
-      path: z.string().optional().describe('Note path the correction applies to (action: record or list)'),
-      entity: z.string().optional().describe('Entity the correction applies to (action: record)'),
-      note: z.string().optional().describe('Description of the correction (action: record)'),
+      path: z.string().optional().describe('[record|list] Note path the correction applies to'),
+      entity: z.string().optional().describe('[record] Entity the correction applies to'),
+      note: z.string().optional().describe('[record] Description of the correction'),
 
-      // action: list
-      limit: z.number().optional().describe('Maximum corrections to return (action: list)'),
+      limit: z.number().optional().describe('[list] Maximum corrections to return'),
 
-      // action: resolve
-      correction_id: z.string().optional().describe('ID of the correction to mark resolved (action: resolve)'),
+      correction_id: z.string().optional().describe('[resolve] ID of the correction to mark resolved'),
     },
     async ({ action, path, entity, note, limit, correction_id }) => {
       // ---- action: record ----

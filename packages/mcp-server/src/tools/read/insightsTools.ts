@@ -97,33 +97,22 @@ export function registerInsightsTools(
     {
       title: 'Insights',
       description:
-        'Deep vault intelligence and temporal analysis. ' +
-        'action: evolution — how a concept changed over time. action: staleness — notes becoming outdated. ' +
-        'action: context — vault activity around a date. action: note_intelligence — rich single-note analysis. ' +
-        'action: growth — vault growth metrics. ' +
-        'Returns timelines, stale note lists, snapshots, note scores, or growth counts. ' +
-        'Does not modify notes or run semantic search.',
+        'Deep vault intelligence and temporal analysis. action: evolution — how a concept changed over time. action: staleness — notes becoming outdated (importance x age). action: context — vault activity around a date. action: note_intelligence — rich single-note analysis (quality, completeness, suggestions). action: growth — vault growth metrics over time. Returns timelines, stale note lists, snapshots, note scores, or growth counts. Does not modify notes. Examples: { action:"staleness", threshold_days:60 } { action:"context", date:"2026-03-15" } { action:"note_intelligence", path:"projects/flywheel.md" }',
       inputSchema: {
         action: z.enum(['evolution', 'staleness', 'context', 'note_intelligence', 'growth'])
           .describe('Insight operation to perform'),
 
-        // action: evolution
-        entity: z.string().optional().describe('Entity/concept name to trace over time (evolution)'),
+        entity: z.string().optional().describe('[evolution] Entity/concept name to trace over time'),
 
-        // action: staleness
-        threshold_days: z.coerce.number().optional().describe('Notes not modified in this many days (staleness, default 30)'),
+        threshold_days: z.coerce.number().optional().describe('[staleness] Notes not modified in this many days (default 30)'),
 
-        // action: context
-        date: z.string().optional().describe('Center date YYYY-MM-DD (context)'),
-        window_days: z.coerce.number().optional().describe('Days before/after center date (context, default 3)'),
+        date: z.string().optional().describe('[context] Center date YYYY-MM-DD'),
+        window_days: z.coerce.number().optional().describe('[context] Days before/after center date (default 3)'),
 
-        // action: note_intelligence
-        path: z.string().optional().describe('Note path to analyse (note_intelligence)'),
+        path: z.string().optional().describe('[note_intelligence] Note path to analyse'),
 
-        // action: growth
-        period: z.enum(['week', 'month', 'year']).optional().describe('Period for growth metrics (growth, default month)'),
+        period: z.enum(['week', 'month', 'year']).optional().describe('[growth] Period for metrics (default month)'),
 
-        // shared
         limit: z.coerce.number().optional().describe('Maximum results to return'),
       },
     },

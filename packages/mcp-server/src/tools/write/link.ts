@@ -181,43 +181,36 @@ export function registerLinkTool(
     {
       title: 'Link',
       description:
-        'Manage wikilinks, suggestions, and link quality. action: suggest — wikilink suggestions for a note. action: feedback — record accept/reject on a suggestion. action: unlinked — find unlinked entity mentions. action: validate — check for broken links. action: stubs — find entities worth creating notes for. action: dashboard — wikilink feedback stats. Returns suggestion lists, confirmations, mention reports, validation errors, stub candidates, or stats. Does not apply wikilinks to notes.',
+        'Manage wikilinks, suggestions, and link quality. action: suggest — wikilink suggestions for text. action: feedback — record accept/reject on a suggestion. action: unlinked — find unlinked entity mentions vault-wide. action: validate — check for broken links. action: stubs — find entities worth creating notes for. action: dashboard — wikilink feedback stats. action: unsuppress — re-enable a suppressed entity. action: timeline — entity score history. action: layer_timeseries — scoring layer contributions over time. action: snapshot_diff — compare graph snapshots. Returns suggestion lists, confirmations, mention reports, validation errors, stub candidates, or stats. Does not apply wikilinks to notes. Examples: { action:"suggest", text:"Claude is an AI assistant by Anthropic" } { action:"feedback", entity:"Claude", accepted:true } { action:"validate", typos_only:true }',
       inputSchema: {
         action: z.enum([
           'suggest', 'feedback', 'unlinked', 'validate', 'stubs',
           'dashboard', 'unsuppress', 'timeline', 'layer_timeseries', 'snapshot_diff',
         ]).describe('Operation to perform'),
 
-        // suggest
-        text: z.string().optional().describe('Text to analyze for wikilink suggestions (action: suggest)'),
-        note_path: z.string().optional().describe('Vault-relative note path (action: suggest — persists prospect sightings; action: feedback — where the link appeared; action: validate — validate specific note)'),
-        offset: z.coerce.number().optional().describe('Suggestions to skip for pagination (action: suggest)'),
-        detail: z.boolean().optional().describe('Include per-layer score breakdown (action: suggest)'),
+        text: z.string().optional().describe('[suggest] Text to analyze for wikilink suggestions'),
+        note_path: z.string().optional().describe('[suggest|feedback|validate] Vault-relative note path'),
+        offset: z.coerce.number().optional().describe('[suggest] Suggestions to skip for pagination'),
+        detail: z.boolean().optional().describe('[suggest] Include per-layer score breakdown'),
 
-        // feedback
-        entity: z.string().optional().describe('Entity name (action: feedback, unsuppress, timeline — required)'),
-        accepted: z.boolean().optional().describe('Whether the suggestion was accepted (action: feedback — required)'),
-        context: z.string().optional().describe('Surrounding text context (action: feedback)'),
-        skip_status_update: z.boolean().optional().describe('Skip marking application as removed (action: feedback)'),
+        entity: z.string().optional().describe('[feedback|unsuppress|timeline] Entity name (required)'),
+        accepted: z.boolean().optional().describe('[feedback] Whether the suggestion was accepted (required)'),
+        context: z.string().optional().describe('[feedback] Surrounding text context'),
+        skip_status_update: z.boolean().optional().describe('[feedback] Skip marking application as removed'),
 
-        // validate
-        typos_only: z.boolean().optional().describe('Only report broken links with a similar existing note (action: validate)'),
-        group_by_target: z.boolean().optional().describe('Aggregate dead links by target, ranked by frequency (action: validate)'),
-        fix: z.boolean().optional().describe('Reserved for future auto-fix support (action: validate)'),
+        typos_only: z.boolean().optional().describe('[validate] Only report broken links with a similar existing note'),
+        group_by_target: z.boolean().optional().describe('[validate] Aggregate dead links by target, ranked by frequency'),
+        fix: z.boolean().optional().describe('[validate] Reserved for future auto-fix support'),
 
-        // shared
         limit: z.number().optional().describe('Maximum items to return'),
 
-        // stubs / validate
-        min_frequency: z.coerce.number().optional().describe('Minimum reference count to include (action: stubs, default 5)'),
+        min_frequency: z.coerce.number().optional().describe('[stubs] Minimum reference count to include (default 5)'),
 
-        // timeline / layer_timeseries
-        days_back: z.number().optional().describe('Days to look back (action: timeline/layer_timeseries, default 30)'),
-        granularity: z.enum(['day', 'week']).optional().describe('Time bucket granularity (action: layer_timeseries, default: day)'),
+        days_back: z.number().optional().describe('[timeline|layer_timeseries] Days to look back (default 30)'),
+        granularity: z.enum(['day', 'week']).optional().describe('[layer_timeseries] Time bucket granularity (default: day)'),
 
-        // snapshot_diff
-        timestamp_before: z.number().optional().describe('Earlier timestamp for snapshot_diff'),
-        timestamp_after: z.number().optional().describe('Later timestamp for snapshot_diff'),
+        timestamp_before: z.number().optional().describe('[snapshot_diff] Earlier timestamp'),
+        timestamp_after: z.number().optional().describe('[snapshot_diff] Later timestamp'),
       },
     },
     async ({

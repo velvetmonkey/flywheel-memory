@@ -38,33 +38,28 @@ export function registerPolicyTools(
 ): void {
   server.tool(
     'policy',
-    'Use when running or authoring repeatable vault workflows. Produces deterministic multi-step operations (sections, notes, frontmatter, tasks) committed atomically. Returns execution results or authored YAML. Does not execute arbitrary code — only chains vault tools with variables, conditions, and templates.',
+    'Repeatable vault workflows with atomic execution. action: list — show saved policies. action: validate — check YAML syntax. action: preview — dry-run with variables. action: execute — run policy (all-or-nothing). action: author — generate policy YAML from description. action: revise — modify existing policy. Returns execution results or authored YAML. Does not execute arbitrary code — only chains vault tools. Examples: { action:"list" } { action:"execute", policy:"weekly-review", variables:{ week:"2026-W15" } }',
     {
       action: z.enum(['list', 'validate', 'preview', 'execute', 'author', 'revise'])
-        .describe('Action to perform'),
-      // validate
+        .describe('Operation to perform'),
       yaml: z.string().optional()
-        .describe('Policy YAML content (required for "validate")'),
-      // preview, execute, revise
+        .describe('[validate] Policy YAML content'),
       policy: z.string().optional()
-        .describe('Policy name or full YAML content (required for "preview", "execute", "revise")'),
-      // preview, execute
+        .describe('[preview|execute|revise] Policy name or full YAML content'),
       variables: z.record(z.unknown()).optional()
-        .describe('Variables to pass to the policy (for "preview", "execute")'),
-      // execute
+        .describe('[preview|execute] Variables to pass to the policy'),
       commit: z.boolean().optional()
-        .describe('If true, commit all changes with single atomic commit (for "execute")'),
-      // author
+        .describe('[execute] If true, commit all changes atomically'),
       name: z.string().optional()
-        .describe('Name for the policy (required for "author")'),
+        .describe('[author] Name for the policy'),
       description: z.string().optional()
-        .describe('Description of what the policy should do (required for "author")'),
+        .describe('[author] Description of what the policy should do'),
       steps: z.array(z.object({
-        tool: z.string().describe('Tool to call (e.g., vault_add_to_section)'),
+        tool: z.string().describe('Tool to call (e.g., edit_section)'),
         description: z.string().describe('What this step does'),
         params: z.record(z.unknown()).describe('Parameters for the tool'),
       })).optional()
-        .describe('Steps the policy should perform (required for "author")'),
+        .describe('[author] Steps the policy should perform'),
       authorVariables: z.array(z.object({
         name: z.string().describe('Variable name'),
         type: z.enum(['string', 'number', 'boolean', 'array', 'enum']).describe('Variable type'),
@@ -73,7 +68,7 @@ export function registerPolicyTools(
         enum: z.array(z.string()).optional().describe('Allowed values for enum type'),
         description: z.string().optional().describe('Variable description'),
       })).optional()
-        .describe('Variables the policy accepts (for "author")'),
+        .describe('[author] Variables the policy accepts'),
       conditions: z.array(z.object({
         id: z.string().describe('Condition ID'),
         check: z.string().describe('Condition type (file_exists, section_exists, etc.)'),
@@ -82,11 +77,9 @@ export function registerPolicyTools(
         field: z.string().optional().describe('Frontmatter field'),
         value: z.unknown().optional().describe('Expected value'),
       })).optional()
-        .describe('Conditions for conditional execution (for "author")'),
-      // author, revise
+        .describe('[author] Conditions for conditional execution'),
       save: z.boolean().optional()
-        .describe('If true, save to .flywheel/policies/ (for "author", "revise")'),
-      // revise
+        .describe('[author|revise] If true, save to .flywheel/policies/'),
       changes: z.object({
         description: z.string().optional().describe('New description'),
         addVariables: z.array(z.object({

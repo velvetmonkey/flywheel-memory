@@ -36,13 +36,7 @@ export function registerGraphTools2(
     {
       title: 'Graph',
       description:
-        'Analyse vault graph structure and connections. ' +
-        'action: analyse — hub/orphan/cluster summary. action: backlinks/forward_links — links to/from a note. ' +
-        'action: strong_connections — top connections. action: path — chain between two notes. ' +
-        'action: neighbors — shared connections. action: strength — link weight. ' +
-        'action: cooccurrence_gaps — unlinked entity pairs. ' +
-        'Returns graph metrics, link lists, paths, or gap candidates. ' +
-        'Does not modify notes or suggest new content.',
+        'Analyse vault graph structure and connections. action: analyse — hub/orphan/cluster summary. action: backlinks — notes linking to a note. action: forward_links — notes linked from a note. action: strong_connections — top connections by weight. action: path — shortest chain between two notes. action: neighbors — shared connections between two notes. action: strength — link weight between two notes. action: cooccurrence_gaps — entity pairs that co-occur but aren\'t linked. Returns graph metrics, link lists, paths, or gap candidates. Does not modify notes. Examples: { action:"backlinks", path:"people/alice.md" } { action:"path", from:"projects/x.md", to:"people/bob.md" }',
       inputSchema: {
         action: z.enum([
           'analyse',
@@ -55,22 +49,17 @@ export function registerGraphTools2(
           'cooccurrence_gaps',
         ]).describe('Graph operation to perform'),
 
-        // action: analyse — optional limit
-        limit: z.coerce.number().optional().describe('Maximum results to return (analyse, cooccurrence_gaps)'),
+        limit: z.coerce.number().optional().describe('[analyse|cooccurrence_gaps] Maximum results to return'),
 
-        // action: backlinks | forward_links | strong_connections
-        path: z.string().optional().describe('Note path (backlinks, forward_links, strong_connections)'),
+        path: z.string().optional().describe('[backlinks|forward_links|strong_connections] Note path'),
 
-        // action: path
-        from: z.string().optional().describe('Starting note path (path)'),
-        to: z.string().optional().describe('Target note path (path)'),
+        from: z.string().optional().describe('[path] Starting note path'),
+        to: z.string().optional().describe('[path] Target note path'),
 
-        // action: neighbors | strength
-        path_a: z.string().optional().describe('First note path (neighbors, strength)'),
-        path_b: z.string().optional().describe('Second note path (neighbors, strength)'),
+        path_a: z.string().optional().describe('[neighbors|strength] First note path'),
+        path_b: z.string().optional().describe('[neighbors|strength] Second note path'),
 
-        // action: cooccurrence_gaps
-        entity: z.string().optional().describe('Entity name to find co-occurrence gaps for (cooccurrence_gaps)'),
+        entity: z.string().optional().describe('[cooccurrence_gaps] Entity name to find gaps for'),
       },
     },
     async (params) => {

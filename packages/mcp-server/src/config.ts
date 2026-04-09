@@ -453,6 +453,10 @@ export function generateInstructions(
   // Base instruction (always present)
   parts.push(`Flywheel provides tools to search, read, and write an Obsidian vault's knowledge graph.
 
+**Action-based tools** require an \`action\` parameter that selects the operation.
+Each param description is tagged with its action(s) in [brackets] — only provide params for your chosen action.
+Wrong action or missing params → error with allowed actions and a corrected example.
+
 Tool routing:
   1. "search" is the primary entry point — one call returns a decision surface of
      notes, entities, and memories with frontmatter, backlinks, outlinks, section
@@ -515,10 +519,10 @@ raw write tools when one exists. Fall back to direct tools only when no policy f
 entity categorization, search ranking, and link suggestions. Notes without frontmatter are nearly invisible
 to the intelligence layer.
 
-Write to existing notes with "vault_add_to_section". Create new notes with "vault_create_note".
+Write to existing notes with "edit_section" (action: add/remove/replace). Create new notes with "note" (action: create).
 Update metadata with "vault_update_frontmatter". These are fallback tools — use them when no policy fits.
 All writes auto-link entities — no manual [[wikilinks]] needed.
-Use "vault_undo_last_mutation" to reverse the last write.
+Use "correct" (action: undo) to reverse the last write.
 
 ### Policies
 
@@ -547,10 +551,10 @@ you say "run the weekly review for this week".`);
     parts.push(`
 ## Memory
 
-"brief" delivers startup context (recent sessions, active entities, stored memories) — call it at
+"memory" (action: brief) delivers startup context (recent sessions, active entities, stored memories) — call it at
 conversation start. "search" finds everything — notes, entities, and memories in one call. "memory"
-with action "store" persists observations, facts, or preferences across sessions (e.g. key decisions,
-user preferences, project status).`);
+(action: store) persists observations, facts, or preferences across sessions (e.g. key decisions,
+user preferences, project status). "memory" (action: search/list/forget) for retrieval and cleanup.`);
   }
 
   // Graph category instructions
@@ -558,10 +562,11 @@ user preferences, project status).`);
     parts.push(`
 ## Graph
 
-Use "graph_analysis" for structural queries (hubs, orphans, dead ends).
-Use "get_connection_strength" to measure link strength between two entities.
-Use "get_link_path" to trace the shortest path between any two entities or notes.
-Use "get_common_neighbors" to find shared connections between two entities.`);
+Use "graph" (action: analyse) for structural queries (hubs, orphans, dead ends).
+Use "graph" (action: strength) to measure link weight between two notes.
+Use "graph" (action: path) to trace the shortest chain between notes.
+Use "graph" (action: neighbors) to find shared connections between two notes.
+Use "graph" (action: backlinks/forward_links) for link lists.`);
   }
   else if (tieringActive && categories.has('graph')) {
     // Escalation hint handled by unified discover_tools guidance below
@@ -572,10 +577,10 @@ Use "get_common_neighbors" to find shared connections between two entities.`);
     parts.push(`
 ## Note Operations
 
-Use "vault_delete_note" to permanently remove a note from the vault.
-Use "vault_move_note" to relocate a note to a different folder (updates all backlinks automatically).
-Use "vault_rename_note" to change a note's title in place (updates all backlinks automatically).
-Use "merge_entities" to consolidate two entity notes into one — adds aliases, merges content, rewires wikilinks, and deletes the source.`);
+Use "note" (action: delete) to permanently remove a note (requires confirm:true).
+Use "note" (action: move) to relocate a note (updates all backlinks automatically).
+Use "note" (action: rename) to change a note's title (updates all backlinks automatically).
+Use "entity" (action: merge) to consolidate two entity notes — adds aliases, merges content, rewires wikilinks.`);
   }
 
   // Tasks category instructions
@@ -583,7 +588,7 @@ Use "merge_entities" to consolidate two entity notes into one — adds aliases, 
     parts.push(`
 ## Tasks
 
-Use "tasks" to query tasks across the vault (filter by status, due date, path). Use "vault_add_task" to create tasks and "vault_toggle_task" to complete them.`);
+Use "tasks" to query tasks across the vault (filter by status, due date, path, folder, tag). Use "vault_add_task" to create tasks and "vault_toggle_task" to complete them.`);
   }
 
   // Schema category instructions
@@ -591,10 +596,11 @@ Use "tasks" to query tasks across the vault (filter by status, due date, path). 
     parts.push(`
 ## Schema
 
-Use "vault_schema" before bulk operations to understand field types, values, and note type distribution.
-Use "schema_conventions" to infer frontmatter conventions from folder usage patterns, find notes with incomplete metadata, or suggest field values.
-Use "schema_validate" to validate frontmatter against explicit rules or find notes missing expected fields by folder.
-Use "note_intelligence" for per-note analysis (completeness, quality, suggestions).`);
+Use "schema" (action: overview) before bulk operations to understand field types, values, and note type distribution.
+Use "schema" (action: conventions) to infer frontmatter conventions from folder usage patterns.
+Use "schema" (action: validate) to validate frontmatter against explicit rules.
+Use "schema" (action: rename_field/rename_tag/migrate) for bulk schema changes (preview with dry_run:true first).
+Use "insights" (action: note_intelligence) for per-note analysis (completeness, quality, suggestions).`);
   }
   else if (tieringActive && categories.has('schema')) {
     // Escalation hint handled by unified discover_tools guidance below
@@ -606,13 +612,12 @@ Use "note_intelligence" for per-note analysis (completeness, quality, suggestion
 
 Link quality and discovery — not for finding content (use search for that).
 
-- "What should be linked?" → unlinked_mentions_report (vault-wide linking opportunities)
-- "Suggest links for this note" → suggest_wikilinks (per-note entity mention analysis)
-- "Are any links broken?" → validate_links (dead links + fix suggestions)
-- "What topics need their own notes?" → discover_stub_candidates (frequently-linked but non-existent)
-- "What entities appear together?" → discover_cooccurrence_gaps (co-occurring but unlinked pairs)
-- "Was that link correct?" → wikilink_feedback (accept/reject, improves future suggestions)
-- "What aliases am I missing?" → suggest_entity_aliases (acronyms, short forms, alternate names)`);
+- "What should be linked?" → link(action: unlinked) — vault-wide unlinked entity mentions
+- "Suggest links for this note" → link(action: suggest) — per-note entity analysis
+- "Are any links broken?" → link(action: validate) — dead links + fix suggestions
+- "What topics need their own notes?" → link(action: stubs) — frequently-linked but non-existent
+- "Was that link correct?" → link(action: feedback) — accept/reject, improves future suggestions
+- "What aliases am I missing?" → entity(action: suggest_aliases)`);
   }
   else if (tieringActive && categories.has('wikilinks')) {
     // Escalation hint handled by unified discover_tools guidance below
@@ -624,10 +629,11 @@ Link quality and discovery — not for finding content (use search for that).
 
 When the user says something is wrong — a bad link, wrong entity, wrong category:
 
-"vault_record_correction" persists a correction for future sessions.
-"vault_list_corrections" shows pending/applied/dismissed corrections.
-"vault_resolve_correction" marks a correction as applied or dismissed.
-Use "absorb_as_alias" when two names should resolve to the same entity without merging note bodies.`);
+"correct" (action: record) persists a correction for future sessions.
+"correct" (action: list) shows pending/applied/dismissed corrections.
+"correct" (action: resolve) marks a correction as applied or dismissed.
+"correct" (action: undo) reverses the last vault mutation.
+Use "entity" (action: alias) when two names should resolve to the same entity without merging note bodies.`);
   }
   else if (tieringActive && categories.has('corrections')) {
     // Escalation hint handled by unified discover_tools guidance below
@@ -640,9 +646,9 @@ Use "absorb_as_alias" when two names should resolve to the same entity without m
 Search date filters (modified_after/modified_before) find content within a date range.
 Temporal tools analyze *patterns and changes* over time — use them for "what changed" not "what exists":
 
-- "How has X changed/evolved?" → track_concept_evolution (entity timeline: links, feedback, category shifts, activity + momentum)
-- "What was I working on around March 15?" → get_context_around_date (notes, entities, activity in a window)
-- "What notes need attention?" → predict_stale_notes (importance × staleness → archive/update/review)`);
+- "How has X changed/evolved?" → insights(action: evolution) — entity timeline with links, feedback, momentum
+- "What was I working on around March 15?" → insights(action: context) — notes, entities, activity in a window
+- "What notes need attention?" → insights(action: staleness) — importance × staleness → archive/update/review`);
   }
   else if (tieringActive && categories.has('temporal')) {
     // Escalation hint handled by unified discover_tools guidance below
@@ -653,11 +659,9 @@ Temporal tools analyze *patterns and changes* over time — use them for "what c
 ## Diagnostics
 
  - Triage: "flywheel_doctor" (diagnosis, health status, or vault metrics via report param) → "server_log" (event timeline)
- - Stats: "flywheel_doctor report=stats" (counts), "vault_growth" (trends over time)
- - Activity: "vault_session_history" (session detail), "vault_entity_history" (entity timeline)
- - System: "flywheel_trust_report" (config + boundaries), "flywheel_benchmark" (performance), "flywheel_learning_report" (auto-linking effectiveness)
- - Entities: "suggest_entity_merges" (duplicates), "list_entities" (full list)
- - Maintenance: "refresh_index" (rebuild), "flywheel_config" (settings), "vault_init" (first-time setup)
+ - Stats: "flywheel_doctor report=stats" (counts), "insights" (action: growth) for trends
+ - Entities: "entity" (action: suggest_merges) for duplicates, "entity" (action: list) for browsing
+ - Maintenance: "refresh_index" (rebuild), "flywheel_config" (settings)
 
 Use "flywheel_config" to inspect runtime configuration and set "tool_tier_override" to "auto", "full", or "minimal" for this vault.`);
   }

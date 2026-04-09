@@ -18,6 +18,7 @@ import { TOOL_CATEGORY, ALL_CATEGORIES } from '../../config.js';
 import type { ToolCategory } from '../../config.js';
 import { getPatternSignals, unionSignalsByCategory } from '../../tool-registry.js';
 import type { ToolTierController } from '../../tool-registry.js';
+import { getSemanticActivations, hasToolRouting } from '../../core/read/toolRouting.js';
 
 /** Convert a RegisteredTool's Zod inputSchema to JSON Schema for the response. */
 function toJsonSchema(inputSchema: unknown): object {
@@ -40,7 +41,22 @@ export function registerDiscoveryTools(
     },
     async ({ query }) => {
       // Pattern-based activation (deterministic, same logic as implicit search activation)
-      const signals = unionSignalsByCategory(getPatternSignals(query));
+      let signals = unionSignalsByCategory(getPatternSignals(query));
+
+      // Semantic fallback: when patterns return nothing and embeddings are available,
+      // use the semantic router to find relevant tool categories
+      let matchMethod: 'pattern' | 'semantic' = 'pattern';
+      if (signals.length === 0 && hasToolRouting()) {
+        try {
+          const semanticHits = await getSemanticActivations(query);
+          if (semanticHits.length > 0) {
+            signals = semanticHits.map(({ category, tier }) => ({ category, tier }));
+            matchMethod = 'semantic';
+          }
+        } catch {
+          // Semantic routing failed — continue with empty signals
+        }
+      }
 
       // Track matched and newly activated categories
       const matchedCategories: ToolCategory[] = [];
@@ -72,6 +88,7 @@ export function registerDiscoveryTools(
       const result = {
         matched_categories: matchedCategories,
         newly_activated_categories: newlyActivatedCategories,
+        match_method: matchMethod,
         tools,
         hint: tools.length === 0
           ? `No tools matched "${query}". Available categories: ${ALL_CATEGORIES.join(', ')}`

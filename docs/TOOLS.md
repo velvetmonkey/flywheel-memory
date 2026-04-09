@@ -443,17 +443,9 @@ Monitor, configure, and maintain your vault.
 | `vault_growth` | Track vault size over time — snapshots, history, trends. |
 | `flywheel_config` | Read or update Flywheel configuration. |
 | `server_log` | View recent server activity entries. |
-| `suggest_entity_merges` | Find duplicate entities by name similarity and shared backlinks. |
-| `dismiss_merge_suggestion` | "Those aren't duplicates" — dismiss a merge suggestion permanently. |
-| `vault_init` | First-time setup. Scans notes with zero wikilinks and applies entity links. Safe to re-run. |
 | `flywheel_doctor` | Run diagnostics, health summaries, or vault stats with `report: "diagnosis" | "health" | "stats"`. |
-| `flywheel_trust_report` | Auditable manifest: active config, enabled categories, transport mode, recent writes, enforced boundaries. |
-| `flywheel_benchmark` | Run, record, and trend longitudinal performance benchmarks (search latency, index build, watcher batch). |
-| `vault_session_history` | View session history: recent sessions list or full chronological invocations for a session. Supports hierarchical sessions. |
-| `vault_entity_history` | Unified entity timeline across all tables: applications, feedback, suggestions, edge weights, metadata changes, memories, corrections. |
-| `flywheel_learning_report` | Narrative report of auto-linking learning progress: applications by day, feedback split, survival rate, top rejected entities, suggestion funnel, graph growth. Supports period-over-period comparison. |
-| `flywheel_calibration_export` | Anonymized aggregate scoring data for cross-vault algorithm calibration. No entity names or paths. Includes: funnel, per-layer contributions, survival by category, score distribution, suppression stats, threshold sweep. |
-| `tool_selection_feedback` | Report and query tool selection quality. Modes: report (record correct/wrong), list (recent feedback), stats (per-tool posterior accuracy via Beta-Binomial), misroutes (heuristic advisory). |
+| `insights` | Vault intelligence and temporal analysis. `action: evolution\|staleness\|context\|note_intelligence\|growth`. |
+| `entity` | Manage entities and aliases. `action: list\|alias\|suggest_aliases\|merge\|suggest_merges\|dismiss_merge`. |
 
 ---
 
@@ -492,14 +484,7 @@ Semantic routing requires `init_semantic` to have been run. Custom `EMBEDDING_MO
 
 ### Feedback
 
-`tool_selection_feedback` records whether the right tool was picked for a given query. Over time, this builds per-tool accuracy scores (Beta-Binomial posterior) that can inform routing adjustments.
-
-| Mode | What it does |
-|------|-------------|
-| `report` | Record whether a tool selection was correct or wrong |
-| `list` | Recent feedback entries |
-| `stats` | Per-tool posterior accuracy from explicit feedback |
-| `misroutes` | Heuristic-detected advisory misroutes |
+`wikilink_feedback` records whether a wikilink suggestion was correct or wrong. Over time, this builds per-entity accuracy scores that inform suggestion ranking.
 
 ---
 

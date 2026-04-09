@@ -38,7 +38,7 @@ export function registerPolicyTools(
 ): void {
   server.tool(
     'policy',
-    'Atomic vault workflows. action: list — saved policies. action: validate — check YAML. action: preview — dry-run. action: execute — run all-or-nothing. action: author — generate YAML. action: revise — modify. Returns results or YAML. Does not run arbitrary code. e.g. { action:"list" } { action:"execute", policy:"weekly-review", variables:{week:"W15"} }',
+    'Atomic vault workflows and automation. action: list — show saved policies. action: validate — check policy YAML syntax and note references before execution. action: preview — dry-run showing what would change. action: execute — run policy all-or-nothing. action: author — generate policy YAML from description. action: revise — modify existing policy. Returns results or YAML. Does not run arbitrary code. e.g. { action:"list" } { action:"execute", policy:"weekly-review", variables:{week:"W15"} }',
     {
       action: z.enum(['list', 'validate', 'preview', 'execute', 'author', 'revise'])
         .describe('Operation to perform'),

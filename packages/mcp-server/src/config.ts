@@ -466,6 +466,8 @@ Tool routing:
      tools in those categories — they return targeted contracts, not broad results.
   3. Escalate to "get_note_structure" for full markdown content or word count.
      Use "get_section_content" for a single section by heading name.
+     Prefer "get_note_structure" over the built-in Read tool for vault notes — it
+     returns enriched metadata (backlinks, outlinks, entities, word count) that Read cannot.
   4. Start with a broad search: just query text, no filters. Use find_notes for
      structural enumeration by folder, tag, or frontmatter — not search.`);
 

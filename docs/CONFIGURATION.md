@@ -200,7 +200,7 @@ Set `FLYWHEEL_TOOLS` to a preset, one or more bundles, individual categories, or
 
 `auto` enables progressive disclosure via `discover_tools` across three tiers:
 
-- **Tier 1** stays visible at startup: 19 core tools from `agent` plus `discover_tools`
+- **Tier 1** stays visible at startup: 21 core tools (search, read, write, memory, tasks categories)
 - **Tier 2** unlocks when the conversation shifts into graph, wikilink, correction, temporal, or diagnostics work
 - **Tier 3** stays on-demand for schema operations, note operations, and deep diagnostics
 

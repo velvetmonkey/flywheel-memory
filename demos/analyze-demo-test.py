@@ -12,17 +12,20 @@ from pathlib import Path
 
 # Full tool -> category mapping — canonical source is packages/mcp-server/src/config.ts (TOOL_CATEGORY).
 # Keep this dict in sync when tools are added or removed.
+# T43: merged tools (link, correct, entity, graph, insights, schema, note) coexist with standalone tools.
 TOOL_CATEGORY = {
     # search (4 tools)
     "search": "search",
     "init_semantic": "search",
     "find_similar": "search",
     "discover_tools": "search",
-    # read (3 tools)
+    # read (4 tools)
     "get_note_structure": "read",
     "get_section_content": "read",
     "find_sections": "read",
-    # write (7 tools)
+    "find_notes": "read",
+    # write (8 tools)
+    "note": "write",
     "vault_add_to_section": "write",
     "vault_remove_from_section": "write",
     "vault_replace_in_section": "write",
@@ -30,14 +33,18 @@ TOOL_CATEGORY = {
     "vault_create_note": "write",
     "vault_undo_last_mutation": "write",
     "policy": "write",
-    # graph (6 tools)
+    # graph (9 tools)
+    "graph": "graph",
     "graph_analysis": "graph",
-    "semantic_analysis": "graph",
     "get_connection_strength": "graph",
     "list_entities": "graph",
     "get_link_path": "graph",
     "get_common_neighbors": "graph",
-    # schema (7 tools)
+    "get_backlinks": "graph",
+    "get_forward_links": "graph",
+    "get_strong_connections": "graph",
+    # schema (8 tools)
+    "schema": "schema",
     "vault_schema": "schema",
     "schema_conventions": "schema",
     "schema_validate": "schema",
@@ -46,14 +53,15 @@ TOOL_CATEGORY = {
     "migrate_field_values": "schema",
     "rename_tag": "schema",
     # wikilinks (7 tools)
+    "link": "wikilinks",
     "suggest_wikilinks": "wikilinks",
     "validate_links": "wikilinks",
     "wikilink_feedback": "wikilinks",
     "discover_stub_candidates": "wikilinks",
     "discover_cooccurrence_gaps": "wikilinks",
     "suggest_entity_aliases": "wikilinks",
-    "unlinked_mentions_report": "wikilinks",
-    # corrections (4 tools)
+    # corrections (5 tools)
+    "correct": "corrections",
     "vault_record_correction": "corrections",
     "vault_list_corrections": "corrections",
     "vault_resolve_correction": "corrections",
@@ -65,7 +73,8 @@ TOOL_CATEGORY = {
     # memory (2 tools)
     "memory": "memory",
     "brief": "memory",
-    # note-ops (4 tools)
+    # note-ops (5 tools)
+    "entity": "note-ops",
     "vault_delete_note": "note-ops",
     "vault_move_note": "note-ops",
     "vault_rename_note": "note-ops",
@@ -74,36 +83,28 @@ TOOL_CATEGORY = {
     "get_context_around_date": "temporal",
     "predict_stale_notes": "temporal",
     "track_concept_evolution": "temporal",
-    # diagnostics (16 tools)
+    # diagnostics (8 tools)
+    "insights": "diagnostics",
+    "pipeline_status": "diagnostics",
     "refresh_index": "diagnostics",
     "vault_growth": "diagnostics",
     "flywheel_config": "diagnostics",
     "server_log": "diagnostics",
-    "suggest_entity_merges": "diagnostics",
-    "dismiss_merge_suggestion": "diagnostics",
-    "vault_init": "diagnostics",
     "flywheel_doctor": "diagnostics",
-    "flywheel_trust_report": "diagnostics",
-    "flywheel_benchmark": "diagnostics",
-    "vault_session_history": "diagnostics",
-    "vault_entity_history": "diagnostics",
-    "flywheel_learning_report": "diagnostics",
-    "flywheel_calibration_export": "diagnostics",
-    "pipeline_status": "diagnostics",
-    "tool_selection_feedback": "diagnostics",
 }
 
 # Expected tools per beat (any of these counts as a pass).
 # The runner's exit status is authoritative; this analyzer is reporting-only.
+# T43: accept both standalone tools and merged tool equivalents.
 EXPECTED_TOOLS = {
-    "beat1_brief": {"brief"},
+    "beat1_brief": {"brief", "memory"},
     "beat2_billing": {"search"},
     "beat3_capture1": {"vault_add_to_section"},
-    "beat4_reject": {"wikilink_feedback"},
-    "beat5_accept": {"wikilink_feedback"},
+    "beat4_reject": {"wikilink_feedback", "link"},
+    "beat5_accept": {"wikilink_feedback", "link"},
     "beat6_capture2": {"vault_add_to_section"},
-    "beat7_assign": {"vault_update_frontmatter", "vault_add_task"},
-    "beat8_dashboard": {"wikilink_feedback"},
+    "beat7_assign": {"vault_update_frontmatter", "vault_add_task", "tasks"},
+    "beat8_dashboard": {"wikilink_feedback", "link"},
     "beat9_pipeline": {"policy", "search"},
 }
 

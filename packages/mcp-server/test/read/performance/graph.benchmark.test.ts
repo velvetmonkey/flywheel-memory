@@ -43,10 +43,10 @@ describe('Graph Query Performance Benchmarks', () => {
       console.log(`search_notes latency: ${elapsed.toFixed(2)}ms`);
     });
 
-    it('search metadata completes in <500ms', async () => {
+    it('find_notes by title completes in <500ms', async () => {
 
       const start = performance.now();
-      const result = await client.callTool('search', {
+      const result = await client.callTool('find_notes', {
         title_contains: 'Propulsion System',
         limit: 1,
       });
@@ -71,8 +71,8 @@ describe('Graph Query Performance Benchmarks', () => {
         limit: 10,
       });
 
-      // Step 2: Search metadata
-      await client.callTool('search', {
+      // Step 2: Find notes by title
+      await client.callTool('find_notes', {
         title_contains: 'Marcus Johnson',
         limit: 1,
       });
@@ -86,9 +86,9 @@ describe('Graph Query Performance Benchmarks', () => {
   });
 
   describe('response token efficiency', () => {
-    it('search metadata response is efficient (<500 tokens)', async () => {
+    it('find_notes response is efficient (<500 tokens)', async () => {
 
-      const result = await client.callTool('search', {
+      const result = await client.callTool('find_notes', {
         title_contains: 'Propulsion System',
         limit: 1,
       });

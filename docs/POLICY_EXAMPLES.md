@@ -12,8 +12,8 @@ Ready-to-run policy examples for common vault workflows. Save any of these as `.
 |---------|---------|-------------|
 | Scaffold/create | [Project Setup](#example-2-project-setup) | Create multiple notes from a template |
 | Append/log | [Daily Standup](#example-3-daily-standup-log) | Add structured content to existing notes |
-| Read→write | [Overdue Invoice Chaser](#example-5-overdue-invoice-chaser) | `vault_search` feeds results into write steps |
-| Read→write | [Team Utilization Report](#example-6-team-utilization-report) | Search + aggregate into a report note |
+| Read→write | [Overdue Invoice Chaser](#example-5-overdue-invoice-chaser) | `vault_find_notes` feeds results into write steps |
+| Read→write | [Team Utilization Report](#example-6-team-utilization-report) | `vault_find_notes` + aggregate into a report note |
 | Conditional | [Weekly Review](#example-1-weekly-review) | Create-if-not-exists with conditions |
 | Processing | [Inbox Processing](#example-4-inbox-processing) | Search + frontmatter update loop |
 
@@ -57,7 +57,9 @@ Ready-to-run policy examples for common vault workflows. Save any of these as `.
 
 **Write:** `vault_add_to_section`, `vault_remove_from_section`, `vault_replace_in_section`, `vault_create_note`, `vault_delete_note`, `vault_toggle_task`, `vault_add_task`, `vault_update_frontmatter`, `vault_add_frontmatter_field`
 
-**Read:** `vault_search` — query the vault index mid-policy. Results are available to subsequent steps via `{{steps.step_id.results}}`. Use this to find notes dynamically, then act on them.
+**Read:** `vault_search` — full-text/semantic query of the vault index mid-policy. Results are available to subsequent steps via `{{steps.step_id.results}}`. Use when you have a query string.
+
+**Read:** `vault_find_notes` — enumerate notes by folder, tags, or frontmatter values. Use instead of `vault_search` when you need a structural list (no query text — e.g., all notes in a folder, all notes with `status: active`). Same template variable contract (`results`, `summary`, `count`).
 
 ---
 
@@ -289,7 +291,7 @@ output:
 
 ## Example 5: Overdue Invoice Chaser
 
-Searches for overdue invoices and creates a follow-up task in today's daily note. Demonstrates `vault_search` as a read step — the policy finds notes dynamically, then acts on the results.
+Enumerates overdue invoices by frontmatter and creates a follow-up task in today's daily note. Demonstrates `vault_find_notes` as a read step — the policy finds notes by metadata filter, then acts on the results.
 
 ```yaml
 version: "1.0"
@@ -303,9 +305,8 @@ variables:
 
 steps:
   - id: find_overdue
-    tool: vault_search
+    tool: vault_find_notes
     params:
-      query: "overdue invoice"
       where:
         type: invoice
         status: pending
@@ -328,7 +329,7 @@ output:
 
 **Run:** `policy action=execute name=chase-overdue`
 
-**What happens:** The policy searches the vault for pending invoices, then logs a task list in the daily note with auto-wikilinks to each invoice and client. One command, zero manual lookup.
+**What happens:** The policy enumerates pending invoices by frontmatter filter, then logs a task list in the daily note with auto-wikilinks to each invoice and client. One command, zero manual lookup.
 
 ---
 
@@ -353,7 +354,7 @@ conditions:
 
 steps:
   - id: find_team
-    tool: vault_search
+    tool: vault_find_notes
     params:
       where:
         type: person

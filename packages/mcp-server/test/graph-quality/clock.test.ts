@@ -122,7 +122,7 @@ describe('Clock Test — T16', () => {
     const { mcp } = await refreshAndSnapshot([alphaPath, bravoPath]);
 
     // Metadata search
-    const statusHits = await callJsonTool(client, 'search', {
+    const statusHits = await callJsonTool(client, 'find_notes', {
       where: { status: 'active' },
       limit: 10,
     });

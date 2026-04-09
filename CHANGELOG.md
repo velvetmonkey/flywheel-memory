@@ -8,8 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`find_notes` tool** — dedicated metadata enumeration tool (folder, tags, frontmatter filters, date range, sort/limit). Returns lightweight note summaries; does not perform full-text or semantic search.
 - **Search consumer parameter** — `consumer` param (`human` vs `llm`) adjusts output formatting per audience
 - **Self-healing embeddings** — automatic re-embed when `EMBEDDING_TEXT_VERSION` changes; LoCoMo benchmark updated to 695 questions
+
+### Breaking
+
+**`search` structural filter params removed** — the following params have been extracted from `search` into the new `find_notes` tool:
+
+| Removed from `search` | Use instead |
+|-----------------------|-------------|
+| `folder` | `find_notes({ folder })` |
+| `where` | `find_notes({ where })` |
+| `has_tag` | `find_notes({ has_tag })` |
+| `has_any_tag` | `find_notes({ has_any_tag })` |
+| `has_all_tags` | `find_notes({ has_all_tags })` |
+| `include_children` | `find_notes({ include_children })` |
+| `title_contains` | `find_notes({ title_contains })` |
+
+`search` is now broad-only: query text + date filters (`modified_after`, `modified_before`). For structural listing (folder contents, tag filtering, frontmatter queries), use `find_notes` instead.
 
 ### Changed
 - **Shared answer layer (P39)** — new `demos/lib/answer_layer.py` provides dataset-agnostic answer parsing, extraction/compression, LLM-as-judge, and scoring. LoCoMo benchmark uses `ANSWER:` prompt contract with per-question answer artifacts (raw vs final). Token F1 split into raw (diagnostic) and final (after extraction). Env controls: `JUDGE`, `JUDGE_MODEL`, `ANSWER_EXTRACT`, `EXTRACT_MODEL`. 50 unit tests.

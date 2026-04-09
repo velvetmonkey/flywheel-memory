@@ -77,7 +77,7 @@ describe('rename_tag traces', () => {
   });
 
   it('search by new tag finds all renamed notes', async () => {
-    const result = await snap(client, 'search', { has_tag: 'work' });
+    const result = await snap(client, 'find_notes', { has_tag: 'work' });
     expect(result.total_matches).toBeGreaterThanOrEqual(3);
   });
 });

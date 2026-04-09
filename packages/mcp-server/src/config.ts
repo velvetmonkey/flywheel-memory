@@ -238,10 +238,11 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   find_similar: 'search',
   discover_tools: 'search',
 
-  // read (3 tools) -- note reading
+  // read (4 tools) -- note reading + structural enumeration
   get_note_structure: 'read',
   get_section_content: 'read',
   find_sections: 'read',
+  find_notes: 'read',
 
   // write (7 tools) -- content mutations + frontmatter + note creation + undo + policy
   vault_add_to_section: 'write',
@@ -337,6 +338,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   get_note_structure: 1,
   get_section_content: 1,
   find_sections: 1,
+  find_notes: 1,
   vault_add_to_section: 1,
   vault_remove_from_section: 1,
   vault_replace_in_section: 1,
@@ -461,8 +463,8 @@ Tool routing:
      tools in those categories — they return targeted contracts, not broad results.
   3. Escalate to "get_note_structure" for full markdown content or word count.
      Use "get_section_content" for a single section by heading name.
-  4. Start with a broad search: just query text, no filters. Narrow with folder,
-     tag, or frontmatter filters only on a second pass.`);
+  4. Start with a broad search: just query text, no filters. Use find_notes for
+     structural enumeration by folder, tag, or frontmatter — not search.`);
 
   // Onboarding hint: nudge init_semantic if embeddings aren't built
   if (!hasEmbeddingsIndex()) {
@@ -477,7 +479,7 @@ improves search results, and enables similarity-based tools. Without it, search 
 ## Multi-Vault
 
 This server manages multiple vaults. Every tool has an optional "vault" parameter.
-- "search" without vault searches ALL vaults and merges results (each result has a "vault" field).
+- "search" and "find_notes" without vault search ALL vaults and merge results (each result has a "vault" field).
 - All other tools default to the primary vault when "vault" is omitted.
 - Available vaults: ${registry.getVaultNames().join(', ')}`);
   }

@@ -597,7 +597,7 @@ The scoring algorithm above powers wikilink suggestions -- what to link. The sea
 | Input | Route | What runs |
 |---|---|---|
 | Query text present | Content search | FTS5 + semantic + entity + memory channels |
-| No query, filters only | Metadata search | Frontmatter, tags, folder, date range |
+| Structural enumeration (folder, tags, frontmatter) | `find_notes` | Metadata scan — no FTS5 or semantic |
 | `prefix: true` + query | Entity autocomplete | Name/alias prefix matching |
 
 ### Three Search Channels (Structured Response)

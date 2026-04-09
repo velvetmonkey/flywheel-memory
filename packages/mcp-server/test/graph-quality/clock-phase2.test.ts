@@ -566,7 +566,7 @@ describe('Clock Test Phase 2 — Extended Tool Coverage', () => {
     expect(mcp.structures[rocketPath]?.frontmatter?.status).toBe('in-progress');
 
     // Search by new status
-    const statusHits = await callJsonTool(client, 'search', {
+    const statusHits = await callJsonTool(client, 'find_notes', {
       where: { status: 'in-progress' },
       limit: 10,
     });
@@ -628,8 +628,8 @@ describe('Clock Test Phase 2 — Extended Tool Coverage', () => {
 
     // Verify it exists
     await callJsonTool(client, 'refresh_index', {});
-    const inv1 = await callJsonTool(client, 'search', { where: {}, limit: 200 });
-    const paths1 = (inv1.notes ?? inv1.results ?? []).map((r: any) => r.path);
+    const inv1 = await callJsonTool(client, 'find_notes', { limit: 200 });
+    const paths1 = (inv1.notes ?? []).map((r: any) => r.path);
     expect(paths1).toContain(scratchPath);
 
     // Undo (soft reset — file stays on disk, commit is reverted)

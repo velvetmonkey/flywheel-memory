@@ -1,8 +1,7 @@
 /**
- * Tests for Query Tools - frontmatter, tag, and folder matching
+ * Tests for Query Tools - date filtering, sorting, and enrichment
  *
- * These tests cover type coercion, case sensitivity, array matching,
- * folder prefix matching, and sorting behavior.
+ * Structural filters (folder, tags, frontmatter) moved to find_notes.test.ts.
  */
 
 import { describe, test, expect, beforeAll } from 'vitest';
@@ -54,222 +53,6 @@ describe('Query Tools', () => {
         expect(note.modified).toBeDefined();
         expect(note.tags).toBeDefined();
         expect(note.frontmatter).toBeDefined();
-      });
-    });
-
-    describe('Frontmatter Matching (where)', () => {
-      test('matches exact string values', async () => {
-
-        const result = await client.callTool('search', {
-          where: { type: 'project' },
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        // Should match notes with type: project
-        for (const note of data.notes) {
-          if (note.frontmatter.type) {
-            expect(note.frontmatter.type.toLowerCase()).toBe('project');
-          }
-        }
-      });
-
-      test('case-insensitive string matching', async () => {
-
-        const result = await client.callTool('search', {
-          where: { status: 'ACTIVE' },
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        // Case shouldn't matter
-        for (const note of data.notes) {
-          if (note.frontmatter.status && typeof note.frontmatter.status === 'string') {
-            expect(note.frontmatter.status.toLowerCase()).toBe('active');
-          }
-        }
-      });
-
-      test('matches values in arrays', async () => {
-
-        // Tags in frontmatter are often arrays
-        const result = await client.callTool('search', { modified_after: '2000-01-01', limit: 50 });
-
-        const data = JSON.parse(result.content[0].text);
-        expect(data).toBeDefined();
-      });
-
-      test('handles null/undefined filter values', async () => {
-
-        const result = await client.callTool('search', {
-          where: { nonexistent: null },
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        // Should return notes that DON'T have this field
-        expect(data).toBeDefined();
-      });
-
-      test('exact match for non-string types', async () => {
-
-        const result = await client.callTool('search', {
-          where: { priority: 1 },
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          if (note.frontmatter.priority !== undefined) {
-            expect(note.frontmatter.priority).toBe(1);
-          }
-        }
-      });
-
-      test('multiple where conditions are AND-ed', async () => {
-
-        const result = await client.callTool('search', {
-          where: { type: 'project', status: 'active' },
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          // Both conditions must match
-          if (note.frontmatter.type && note.frontmatter.status) {
-            expect(note.frontmatter.type.toLowerCase()).toBe('project');
-            expect(note.frontmatter.status.toLowerCase()).toBe('active');
-          }
-        }
-      });
-    });
-
-    describe('Tag Matching', () => {
-      test('has_tag filters by single tag', async () => {
-
-        const result = await client.callTool('search', {
-          has_tag: 'test',
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          expect(note.tags.map((t: string) => t.toLowerCase())).toContain('test');
-        }
-      });
-
-      test('has_tag with # prefix works', async () => {
-
-        const result = await client.callTool('search', {
-          has_tag: '#test',
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        // # prefix should be stripped
-        for (const note of data.notes) {
-          expect(note.tags.map((t: string) => t.toLowerCase())).toContain('test');
-        }
-      });
-
-      test('has_any_tag matches any of multiple tags (OR)', async () => {
-
-        const result = await client.callTool('search', {
-          has_any_tag: ['test', 'example'],
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          const lowerTags = note.tags.map((t: string) => t.toLowerCase());
-          expect(lowerTags.includes('test') || lowerTags.includes('example')).toBe(true);
-        }
-      });
-
-      test('has_all_tags matches all specified tags (AND)', async () => {
-
-        const result = await client.callTool('search', {
-          has_all_tags: ['test'],
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          const lowerTags = note.tags.map((t: string) => t.toLowerCase());
-          expect(lowerTags).toContain('test');
-        }
-      });
-
-      test('empty has_any_tag returns all notes', async () => {
-
-        const allNotes = await client.callTool('search', { modified_after: '2000-01-01', limit: 100 });
-        const emptyFilter = await client.callTool('search', {
-          modified_after: '2000-01-01',
-          has_any_tag: [],
-          limit: 100,
-        });
-
-        const allData = JSON.parse(allNotes.content[0].text);
-        const filterData = JSON.parse(emptyFilter.content[0].text);
-        expect(filterData.total_matches).toBe(allData.total_matches);
-      });
-    });
-
-    describe('Folder Matching', () => {
-      test('filters by folder name', async () => {
-
-        const result = await client.callTool('search', {
-          folder: 'edge-cases',
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          expect(note.path.startsWith('edge-cases/')).toBe(true);
-        }
-      });
-
-      test('folder with trailing slash works', async () => {
-
-        const result = await client.callTool('search', {
-          folder: 'edge-cases/',
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          expect(note.path.startsWith('edge-cases/')).toBe(true);
-        }
-      });
-
-      test('avoids false positive on folder prefix', async () => {
-
-        // If we have folders "foo" and "foobar", searching for "foo"
-        // should NOT match notes in "foobar"
-        const result = await client.callTool('search', {
-          folder: 'edge-cases',
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          // Should start with folder prefix
-          expect(note.path.startsWith('edge-cases')).toBe(true);
-        }
-      });
-    });
-
-    describe('Title Matching', () => {
-      test('title_contains filters by substring', async () => {
-
-        const result = await client.callTool('search', {
-          title_contains: 'note',
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          expect(note.title.toLowerCase()).toContain('note');
-        }
-      });
-
-      test('title_contains is case-insensitive', async () => {
-
-        const result = await client.callTool('search', {
-          title_contains: 'NOTE',
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          expect(note.title.toLowerCase()).toContain('note');
-        }
       });
     });
 
@@ -339,38 +122,6 @@ describe('Query Tools', () => {
       });
     });
 
-    describe('Combined Filters', () => {
-      test('combines where + has_tag', async () => {
-
-        const result = await client.callTool('search', {
-          where: { type: 'project' },
-          has_tag: 'test',
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          if (note.frontmatter.type) {
-            expect(note.frontmatter.type.toLowerCase()).toBe('project');
-          }
-          expect(note.tags.map((t: string) => t.toLowerCase())).toContain('test');
-        }
-      });
-
-      test('combines folder + title_contains', async () => {
-
-        const result = await client.callTool('search', {
-          folder: 'edge-cases',
-          title_contains: 'note',
-        });
-
-        const data = JSON.parse(result.content[0].text);
-        for (const note of data.notes) {
-          expect(note.path.startsWith('edge-cases')).toBe(true);
-          expect(note.title.toLowerCase()).toContain('note');
-        }
-      });
-    });
-
     describe('Tiered Enrichment', () => {
       test('light results lack frontmatter/backlinks/outlinks arrays but have counts', async () => {
         const result = await client.callTool('search', {
@@ -421,36 +172,26 @@ describe('Query Tools', () => {
     });
 
     describe('Edge Cases', () => {
-      test('handles empty vault gracefully', async () => {
-
-        const result = await client.callTool('search', {
-          folder: 'nonexistent-folder-xyz',
-        });
-
+      test('no query and no date filters returns error', async () => {
+        const result = await client.callTool('search', {});
         const data = JSON.parse(result.content[0].text);
-        expect(data.total_matches).toBe(0);
-        expect(data.notes).toHaveLength(0);
+        expect(data.error).toBeDefined();
       });
 
-      test('handles special characters in search', async () => {
-
+      test('handles special characters in query', async () => {
         const result = await client.callTool('search', {
-          title_contains: '日本',
+          query: '日本',
         });
-
-        const data = JSON.parse(result.content[0].text);
         // Should not crash
+        const data = JSON.parse(result.content[0].text);
         expect(data).toBeDefined();
       });
 
-      test('returns total_matches and returned in response', async () => {
-
+      test('date-only search returns total_matches and returned', async () => {
         const result = await client.callTool('search', {
-          has_tag: 'test',
-          folder: 'edge-cases',
+          modified_after: '2000-01-01',
           limit: 5,
         });
-
         const data = JSON.parse(result.content[0].text);
         expect(data.total_matches).toBeDefined();
         expect(data.returned).toBeDefined();

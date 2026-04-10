@@ -252,6 +252,7 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
 
   // write (8 tools) -- content mutations + frontmatter + note creation + undo + policy
   note: 'write',
+  edit_section: 'write',
   vault_add_to_section: 'write',
   vault_remove_from_section: 'write',
   vault_replace_in_section: 'write',
@@ -343,6 +344,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   find_sections: 1,
   find_notes: 1,
   note: 1,
+  edit_section: 1,
   vault_add_to_section: 1,
   vault_remove_from_section: 1,
   vault_replace_in_section: 1,
@@ -440,6 +442,7 @@ export const DISCLOSURE_ONLY_TOOLS = new Set(['discover_tools']);
  */
 export const ACTION_PARAM_MAP: Record<string, readonly string[]> = {
   note: ['create', 'move', 'rename', 'delete'],
+  edit_section: ['add', 'remove', 'replace'],
   memory: ['store', 'get', 'search', 'list', 'forget', 'summarize_session'],
   entity: ['list', 'alias', 'suggest_aliases', 'merge', 'suggest_merges', 'dismiss_merge'],
   policy: ['list', 'validate', 'preview', 'execute', 'author', 'revise'],

@@ -70,6 +70,7 @@ import { registerCorrectTool } from './tools/write/correct.js';
 import { registerEntityTool } from './tools/write/entity.js';
 import { registerLinkTool } from './tools/write/link.js';
 import { registerNoteTool } from './tools/write/note.js';
+import { registerEditSectionTool } from './tools/write/editSection.js';
 import { detectMisroute, recordHeuristicMisroute } from './core/shared/misrouteDetection.js';
 import { registerCorrectionTools } from './tools/write/corrections.js';
 import { registerMemoryTools } from './tools/write/memory.js';
@@ -995,6 +996,7 @@ export function registerAllTools(
   registerLinkTool(targetServer, gvi, gvp, gsd);
   registerCorrectTool(targetServer, gsd, gvp);
   registerEntityTool(targetServer, gvp, gsd, gvi);
+  registerEditSectionTool(targetServer, gvp, gcf);
 
   // Discovery tool (progressive disclosure meta-tool — only in auto/tiered mode)
   if (controller && controller.mode === 'tiered') {

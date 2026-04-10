@@ -124,6 +124,7 @@ Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` —
 
 <!-- GENERATED:action-param-tools START -->
 - `correct` — `action: record|list|resolve|undo`
+- `edit_section` — `action: add|remove|replace`
 - `entity` — `action: list|alias|suggest_aliases|merge|suggest_merges|dismiss_merge`
 - `graph` — `action: analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps`
 - `insights` — `action: evolution|staleness|context|note_intelligence|growth`

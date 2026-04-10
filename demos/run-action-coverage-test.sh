@@ -31,11 +31,14 @@ mkdir -p "$RESULTS_DIR/raw"
 # auto-memory entries that shadow fresh tool calls. Without this, tests like
 # memory_store and entity_dismiss_merge silently pass against stale state from
 # previous runs instead of exercising the MCP tool surface.
+#
+# Reset via the outer flywheel-memory repo (not a nested .git inside the demo
+# dir). A nested repo caused dual-tracking pollution where the inner HEAD
+# diverged from the outer repo's tracked snapshot and phantom diffs leaked
+# into unrelated PRs.
 echo "Resetting demo vault and Claude auto-memory to clean state..."
-if [[ -d "$DEMO_DIR/.git" ]]; then
-  git -C "$DEMO_DIR" checkout -- . 2>/dev/null || true
-  git -C "$DEMO_DIR" clean -fd 2>/dev/null || true
-fi
+git -C "$REPO_ROOT" checkout -- demos/carter-strategy/ 2>/dev/null || true
+git -C "$REPO_ROOT" clean -fd demos/carter-strategy/ 2>/dev/null || true
 rm -rf "$HOME/.claude/projects/-home-ben-src-flywheel-memory-demos-carter-strategy"
 
 # Parse prompts

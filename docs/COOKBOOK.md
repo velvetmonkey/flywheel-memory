@@ -27,8 +27,7 @@ All examples assume Flywheel is connected to your vault. See [SETUP.md](SETUP.md
   - [Enable hybrid search](#enable-hybrid-search)
   - [Search by concept](#search-by-concept)
   - [Find similar notes](#find-similar-notes)
-  - [Discover semantic bridges](#discover-semantic-bridges)
-  - [Cluster by meaning](#cluster-by-meaning)
+  - [Find missing connections](#find-missing-connections)
   - [Find semantic links for a note](#find-semantic-links-for-a-note)
   - [Inspect semantic scoring](#inspect-semantic-scoring)
 - [Maintenance](#maintenance)
@@ -209,17 +208,11 @@ When embeddings exist, search automatically uses hybrid ranking (keyword + seman
 
 `find_similar` combines keyword and semantic matching when the semantic index is built, surfacing conceptually related notes even if they don't share keywords.
 
-### Discover semantic bridges
+### Find missing connections
 
-> "Find notes that are conceptually related but have no link between them"
+> "Find pairs of entities I write about together that don't have a link between them"
 
-Uses `semantic_analysis({ type: "bridges" })` to discover high-value missing connections. Great for finding notes that *should* be linked but aren't.
-
-### Cluster by meaning
-
-> "Group my notes by semantic similarity instead of folder structure"
-
-Uses `semantic_analysis({ type: "clusters" })` to organize notes by what they're about, not where they live.
+Uses `graph({ action: "cooccurrence_gaps" })` to surface entity pairs that co-occur in notes but lack a direct link — concrete candidates for new connections, backed by the evidence notes.
 
 ### Find semantic links for a note
 
@@ -388,4 +381,4 @@ Manage vault-wide changes.
 - **Let auto-wikilinks work.** When writing through Flywheel, entity mentions are linked automatically. Write naturally -- don't add `[[brackets]]` yourself.
 - **Check before deleting.** `vault_delete_note` shows backlink warnings before deletion. If a note has backlinks, consider moving or renaming instead.
 - **Dry-run any write.** All write tools accept `dry_run: true` to preview changes without modifying files. Bulk tools (`rename_field`, `migrate_field_values`) default to dry-run mode.
-- **Build the semantic index once** — `init_semantic` now builds both note embeddings (for hybrid search) and entity embeddings (for semantic wikilink scoring). Takes ~2-3 minutes for 500 entities. After that, wikilink suggestions gain semantic understanding, and new analyses unlock: `semantic_analysis` (clusters, bridges), `semantic_links`.
+- **Build the semantic index once** — `init_semantic` builds both note embeddings (for hybrid search via `search` and `find_similar`) and entity embeddings (for semantic wikilink scoring). Takes ~2-3 minutes for 500 entities. After that, wikilink suggestions gain semantic understanding and the `semantic_links` mode in `note_intelligence` becomes available.

@@ -246,7 +246,7 @@ COUNT=500 demos/hotpotqa/run-benchmark.sh
 
 What happens under the hood:
 
-1. **Pre-warm** (1 Claude Haiku session): `health_check` -> `vault_init` (auto-link) -> `refresh_index` -> `init_semantic` (embeddings) -> `health_check`. This matches production usage -- Flywheel indexes and links the vault before questions start.
+1. **Pre-warm** (1 Claude Haiku session): `flywheel_doctor` -> `refresh_index` -> `init_semantic` (embeddings) -> `flywheel_doctor`. This matches production usage -- Flywheel indexes and embeds the vault before questions start. (Auto-wikilinks are applied on write, so they accrue naturally as the vault is populated.)
 2. **500 questions** (500 individual Claude Sonnet sessions): Each question gets its own `claude -p` session with `--strict-mcp-config` (no filesystem access, vault tools only). Claude decides which tools to call. Non-MCP tools (Bash, Grep, Read, etc.) are stripped via `--disallowedTools`.
 3. **Analysis**: Python script parses JSONL output, computes document recall against ground truth.
 
@@ -312,7 +312,7 @@ demos/locomo/run-benchmark.sh
 
 What happens under the hood:
 
-1. **Pre-warm** (1 Claude Haiku session with `full,memory` preset): `health_check` -> `vault_init` (auto-link) -> `refresh_index` -> `init_semantic` (embeddings) -> `health_check`.
+1. **Pre-warm** (1 Claude Haiku session with `full,memory` preset): `flywheel_doctor` -> `refresh_index` -> `init_semantic` (embeddings) -> `flywheel_doctor`.
 2. **Stratified sampling**: Python selects 695 questions balanced across all 5 categories (commonsense, single-hop, multi-hop, temporal, adversarial) and all 10 conversations (seed 42).
 3. **695 questions** (695 individual Claude Sonnet sessions): Each question gets its own `claude -p` session with `--strict-mcp-config`. Claude is told notes are conversation sessions and uses search + read tools to find evidence and answer.
 4. **Analysis**: Python script computes evidence recall and token F1 per category.

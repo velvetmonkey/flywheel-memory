@@ -127,7 +127,7 @@ EOF
 )
 
 # Pre-warm: ensure vault is fully indexed + embeddings built before questions start
-# Uses full preset (health_check, refresh_index, init_semantic) for bootstrap
+# Uses full,memory preset (flywheel_doctor, refresh_index, init_semantic) for bootstrap
 warmup_config=$(cat <<EOF
 {"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$VAULT_DIR","FLYWHEEL_TOOLS":"full,memory"}}}}
 EOF
@@ -136,13 +136,12 @@ EOF
 if [[ -n "${RESUME:-}" ]] && [[ -f "$RESULTS_DIR/warmup.jsonl" ]]; then
   echo "Resuming — skipping warmup (already done)"
 else
-echo "Pre-warming vault: index + auto-link + embeddings..."
+echo "Pre-warming vault: index + embeddings..."
 if claude -p "Bootstrap this vault for benchmarking. Run these steps in order:
-1. Call health_check — report entity_count and note_count.
-2. Call vault_init with mode='enrich' and dry_run=false to auto-link all notes with wikilinks.
-3. Call refresh_index to re-index with the new wikilinks.
-4. Call init_semantic to build embeddings. Wait for completion.
-5. Call health_check — confirm fts5_ready=true and embeddings_ready=true.
+1. Call flywheel_doctor — report entity_count and note_count.
+2. Call refresh_index to build the full-text index.
+3. Call init_semantic to build embeddings. Wait for completion.
+4. Call flywheel_doctor — confirm fts5_ready=true and embeddings_ready=true.
 Report final status with entity_count, note_count, and embeddings_ready." \
   --output-format stream-json \
   --no-session-persistence \
@@ -151,7 +150,7 @@ Report final status with entity_count, note_count, and embeddings_ready." \
   --strict-mcp-config \
   --model haiku \
   > "$RESULTS_DIR/warmup.jsonl" 2>"$RESULTS_DIR/warmup.stderr"; then
-  echo "Vault pre-warmed (index + auto-link + embeddings)"
+  echo "Vault pre-warmed (index + embeddings)"
 else
   echo "WARNING: Pre-warm failed (exit $?) — continuing anyway"
 fi

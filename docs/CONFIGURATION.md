@@ -88,6 +88,12 @@ Codex does not read `.mcp.json`. Keep the Flywheel server in `.codex/config.toml
 
 No `FLYWHEEL_TOOLS` needed — defaults to `agent` (search, read, write, tasks, memory). Add it only to override.
 
+<!-- GENERATED:claude-code-memory-note START -->
+> **Claude Code note:** the `memory` merged tool is suppressed under Claude Code
+> (`CLAUDECODE=1`) because Claude Code ships its own memory plane. Agent preset
+> exposes 19 tools under Claude Code instead of 20; `brief` stays available.
+<!-- GENERATED:claude-code-memory-note END -->
+
 ### Claude Desktop (`claude_desktop_config.json`)
 
 ```json
@@ -234,39 +240,69 @@ Custom `EMBEDDING_MODEL` users fall back to `pattern` unless the tool manifest w
 
 #### Category Reference
 
-| Category | What's included |
-|----------|-----------------|
-| `search` | search, init_semantic, find_similar, discover_tools (`auto` only) |
-| `read` | get_note_structure, get_section_content, find_sections |
-| `write` | vault_add_to_section, vault_remove_from_section, vault_replace_in_section, vault_update_frontmatter, vault_create_note, vault_undo_last_mutation, policy |
-| `graph` | graph_analysis, semantic_analysis, get_connection_strength, list_entities, get_link_path, get_common_neighbors |
-| `schema` | vault_schema, schema_conventions, schema_validate, note_intelligence, rename_field, migrate_field_values, rename_tag |
-| `wikilinks` | suggest_wikilinks, validate_links, wikilink_feedback, discover_stub_candidates, discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report |
-| `corrections` | vault_record_correction, vault_list_corrections, vault_resolve_correction, absorb_as_alias |
-| `tasks` | tasks, vault_toggle_task, vault_add_task |
-| `memory` | memory, brief |
-| `note-ops` | vault_delete_note, vault_move_note, vault_rename_note, merge_entities |
+<!-- GENERATED:category-reference START -->
+| Category | Tools |
+|----------|-------|
+| `search` | find_similar, init_semantic, search |
+| `read` | find_notes, find_sections, get_note_structure, get_section_content |
+| `write` | note, policy, vault_add_to_section, vault_create_note, vault_remove_from_section, vault_replace_in_section, vault_undo_last_mutation, vault_update_frontmatter |
+| `graph` | get_backlinks, get_common_neighbors, get_connection_strength, get_forward_links, get_link_path, get_strong_connections, graph, graph_analysis, list_entities |
+| `schema` | migrate_field_values, note_intelligence, rename_field, rename_tag, schema, schema_conventions, schema_validate, vault_schema |
+| `wikilinks` | discover_cooccurrence_gaps, discover_stub_candidates, link, suggest_entity_aliases, suggest_wikilinks, validate_links, wikilink_feedback |
+| `corrections` | absorb_as_alias, correct, vault_list_corrections, vault_record_correction, vault_resolve_correction |
+| `tasks` | tasks, vault_add_task, vault_toggle_task |
+| `memory` | brief, memory |
+| `note-ops` | entity, merge_entities, vault_delete_note, vault_move_note, vault_rename_note |
 | `temporal` | get_context_around_date, predict_stale_notes, track_concept_evolution |
-| `diagnostics` | pipeline_status, refresh_index, vault_growth, flywheel_config, server_log, suggest_entity_merges, dismiss_merge_suggestion, vault_init, flywheel_doctor, flywheel_trust_report, flywheel_benchmark, vault_session_history, vault_entity_history, flywheel_learning_report, flywheel_calibration_export, tool_selection_feedback |
+| `diagnostics` | flywheel_config, flywheel_doctor, insights, pipeline_status, refresh_index, server_log, vault_growth |
+<!-- GENERATED:category-reference END -->
+
+#### Retired Tools
+
+The following tool names appeared in earlier releases and have been removed or absorbed into merged action-param tools. They are listed here so docs and search results remain navigable — none of them are callable.
+
+<!-- GENERATED:retired-tools START -->
+- `dismiss_merge_suggestion`
+- `flywheel_benchmark`
+- `flywheel_calibration_export`
+- `flywheel_learning_report`
+- `flywheel_trust_report`
+- `get_all_entities`
+- `get_folder_structure`
+- `get_unlinked_mentions`
+- `get_vault_stats`
+- `health_check`
+- `semantic_analysis`
+- `suggest_entity_merges`
+- `temporal_summary`
+- `tool_selection_feedback`
+- `unlinked_mentions_report`
+- `vault_activity`
+- `vault_entity_history`
+- `vault_init`
+- `vault_session_history`
+<!-- GENERATED:retired-tools END -->
 
 Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`, `append`, `frontmatter`, `notes`, `orphans`, `hubs`, `paths`, `health`, `analysis`, `git`, `ops`) still work — they resolve to current category names.
 
 #### Preset → Category Mapping
 
-| Category | `agent` | `full` |
-|----------|:-------:|:------:|
-| search | Yes | Yes |
-| read | Yes | Yes |
-| write | Yes | Yes |
-| tasks | Yes | Yes |
-| memory | Yes | Yes |
-| graph | | Yes |
-| schema | | Yes |
-| wikilinks | | Yes |
-| corrections | | Yes |
-| note-ops | | Yes |
-| temporal | | Yes |
-| diagnostics | | Yes |
+<!-- GENERATED:preset-category-map START -->
+| Category | `agent` | `power` | `full` | `auto` |
+|----------|:------:|:------:|:------:|:------:|
+| search | Yes | Yes | Yes | Yes |
+| read | Yes | Yes | Yes | Yes |
+| write | Yes | Yes | Yes | Yes |
+| graph |  |  | Yes | Yes |
+| schema |  | Yes | Yes | Yes |
+| wikilinks |  | Yes | Yes | Yes |
+| corrections |  | Yes | Yes | Yes |
+| tasks | Yes | Yes | Yes | Yes |
+| memory | Yes | Yes | Yes | Yes |
+| note-ops |  | Yes | Yes | Yes |
+| temporal |  |  | Yes | Yes |
+| diagnostics |  |  | Yes | Yes |
+<!-- GENERATED:preset-category-map END -->
 
 ### Semantic Embeddings
 

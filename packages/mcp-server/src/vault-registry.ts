@@ -21,6 +21,8 @@ export type IntegrityState = 'unknown' | 'checking' | 'healthy' | 'failed' | 'er
 export interface VaultContext {
   name: string;
   vaultPath: string;
+  /** True on case-insensitive filesystems (Windows NTFS, macOS APFS default, CIFS/SMB mounts). Probed at boot. */
+  caseInsensitive: boolean;
   stateDb: StateDb | null;
   vaultIndex: VaultIndex;
   flywheelConfig: FlywheelConfig;

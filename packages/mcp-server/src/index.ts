@@ -37,6 +37,7 @@ import {
   type IndexState,
 } from './core/read/graph.js';
 import { scanVault } from './core/read/vault.js';
+import { detectCaseInsensitive, setModuleCaseInsensitive } from './core/read/caseSensitivity.js';
 import { loadConfig, inferConfig, saveConfig, DEFAULT_ENTITY_EXCLUDE_FOLDERS, getExcludeTags, type FlywheelConfig } from './core/read/config.js';
 import { findVaultRoot } from './core/read/vaultRoot.js';
 import {
@@ -546,9 +547,11 @@ async function runIntegrityCheck(
  * Integrity check is deferred to after transport connects (see runIntegrityCheck).
  */
 async function initializeVault(name: string, vaultPathArg: string): Promise<VaultContext> {
+  const caseInsensitive = detectCaseInsensitive(vaultPathArg);
   const ctx: VaultContext = {
     name,
     vaultPath: vaultPathArg,
+    caseInsensitive,
     stateDb: null,
     vaultIndex: undefined as unknown as VaultIndex,
     flywheelConfig: {},
@@ -841,15 +844,17 @@ async function main() {
     const primaryCtx = await initializeVault(vaultConfigs[0].name, vaultConfigs[0].path);
     vaultRegistry.addContext(primaryCtx);
     stateDb = primaryCtx.stateDb;
+    setModuleCaseInsensitive(primaryCtx.caseInsensitive);
     activateVault(primaryCtx, true);  // skip embedding load — defer until after transport connects
-    serverLog('server', `[${primaryCtx.name}] stateDb_open=${Date.now() - startTime}ms`);
+    serverLog('server', `[${primaryCtx.name}] stateDb_open=${Date.now() - startTime}ms case_insensitive_fs=${primaryCtx.caseInsensitive}`);
   } else {
     vaultRegistry = new VaultRegistry('default');
     const ctx = await initializeVault('default', vaultPath);
     vaultRegistry.addContext(ctx);
     stateDb = ctx.stateDb;
+    setModuleCaseInsensitive(ctx.caseInsensitive);
     activateVault(ctx, true);  // skip embedding load — defer until after transport connects
-    serverLog('server', `[${ctx.name}] stateDb_open=${Date.now() - startTime}ms`);
+    serverLog('server', `[${ctx.name}] stateDb_open=${Date.now() - startTime}ms case_insensitive_fs=${ctx.caseInsensitive}`);
   }
 
   // ── Phase 1b: Load tool routing manifest (non-blocking) ──

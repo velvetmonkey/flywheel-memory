@@ -95,6 +95,74 @@ describe('SQLite State Management', () => {
       ).get();
       expect(col).toBeDefined();
     });
+
+    it('P42: wikilink_applications unique index collates note_path NOCASE', () => {
+      stateDb = openStateDb(testVaultPath);
+      // Insert a mixed-case duplicate pair. With NOCASE on note_path the
+      // second insert violates the unique constraint and is rejected.
+      stateDb.db.exec(`
+        INSERT INTO wikilink_applications (entity, note_path)
+          VALUES ('Flywheel', 'tech/flywheel/Flywheel.md');
+      `);
+      expect(() => {
+        stateDb.db.exec(`
+          INSERT INTO wikilink_applications (entity, note_path)
+            VALUES ('flywheel', 'tech/flywheel/flywheel.md');
+        `);
+      }).toThrow(/UNIQUE constraint failed/);
+
+      const rows = stateDb.db
+        .prepare('SELECT COUNT(*) as c FROM wikilink_applications')
+        .get() as { c: number };
+      expect(rows.c).toBe(1);
+    });
+
+    it('P42: v39 migration collapses legacy mixed-case wikilink_applications rows', () => {
+      // Hand-seed a pre-v39 state: drop the NOCASE index, recreate the v38
+      // shape (only entity is COLLATE NOCASE), insert rows that collide
+      // only on path casing, and rewind schema_version so the v39 migration
+      // re-runs on reopen.
+      stateDb = openStateDb(testVaultPath);
+      stateDb.db.exec('DROP INDEX IF EXISTS idx_wl_apps_unique');
+      stateDb.db.exec(`
+        CREATE UNIQUE INDEX idx_wl_apps_unique
+        ON wikilink_applications(entity COLLATE NOCASE, note_path)
+      `);
+      stateDb.db.exec(`
+        INSERT INTO wikilink_applications (entity, note_path) VALUES
+          ('EntA', 'tech/flywheel/Flywheel.md'),
+          ('EntA', 'tech/flywheel/flywheel.md'),
+          ('EntB', 'tech/flywheel/FLYWHEEL.md');
+      `);
+      stateDb.db.exec('DELETE FROM schema_version WHERE version >= 39');
+      stateDb.close();
+
+      stateDb = openStateDb(testVaultPath);
+      // EntA rows collapse to one; EntB row stays distinct.
+      const rows = stateDb.db
+        .prepare(
+          `SELECT entity, LOWER(note_path) AS p, COUNT(*) AS c
+           FROM wikilink_applications
+           GROUP BY LOWER(entity), LOWER(note_path)`,
+        )
+        .all() as Array<{ entity: string; p: string; c: number }>;
+      const counts = Object.fromEntries(rows.map(r => [r.entity.toLowerCase(), r.c]));
+      expect(counts.enta).toBe(1);
+      expect(counts.entb).toBe(1);
+
+      const version = stateDb.db
+        .prepare('SELECT MAX(version) as v FROM schema_version')
+        .get() as { v: number };
+      expect(version.v).toBeGreaterThanOrEqual(39);
+
+      // Re-inserting a mixed-case duplicate now fails the new NOCASE constraint.
+      expect(() => {
+        stateDb.db.exec(`
+          INSERT INTO wikilink_applications (entity, note_path)
+            VALUES ('enta', 'TECH/FLYWHEEL/FLYWHEEL.MD')
+        `);
+      }).toThrow(/UNIQUE constraint failed/);
+    });
   });
 
   describe('Entity Operations', () => {

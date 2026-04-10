@@ -20,6 +20,7 @@ import {
 import { parseNote } from './parser.js';
 import { levenshteinDistance } from '../shared/levenshtein.js';
 import { serverLog } from '../shared/serverLog.js';
+import { canonicalPath, getModuleCaseInsensitive } from './caseSensitivity.js';
 import { embedTextCached, findSemanticallySimilarEntities, hasEntityEmbeddingsIndex } from './embeddings.js';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 
@@ -182,7 +183,10 @@ async function buildVaultIndexInternal(
     for (let j = 0; j < results.length; j++) {
       const result = results[j];
       if (result.status === 'fulfilled') {
-        notes.set(result.value.note.path, result.value.note);
+        // Canonical key collapses mixed-case duplicates on case-insensitive
+        // filesystems; VaultNote.path itself still carries the on-disk case
+        // so writers hit the real file.
+        notes.set(canonicalPath(result.value.note.path), result.value.note);
       } else {
         const filePath = batch[j]?.path ?? '<unknown>';
         const reason = result.reason instanceof Error
@@ -222,21 +226,25 @@ async function buildVaultIndexInternal(
   const entities = new Map<string, string>();
 
   for (const note of notes.values()) {
+    // Entity values store the canonical-key form so `notes.get(entities.get(x))`
+    // resolves on case-insensitive filesystems without an extra canonicalization.
+    const canonicalNoteKey = canonicalPath(note.path);
+
     // Map by title
     const normalizedTitle = normalizeTarget(note.title);
     if (!entities.has(normalizedTitle)) {
-      entities.set(normalizedTitle, note.path);
+      entities.set(normalizedTitle, canonicalNoteKey);
     }
 
     // Map by full path (without extension)
     const normalizedPath = normalizeNotePath(note.path);
-    entities.set(normalizedPath, note.path);
+    entities.set(normalizedPath, canonicalNoteKey);
 
     // Map by aliases
     for (const alias of note.aliases) {
       const normalizedAlias = normalizeTarget(alias);
       if (!entities.has(normalizedAlias)) {
-        entities.set(normalizedAlias, note.path);
+        entities.set(normalizedAlias, canonicalNoteKey);
       }
     }
   }
@@ -258,7 +266,10 @@ async function buildVaultIndexInternal(
       }
 
       backlinks.get(key)!.push({
-        source: note.path,
+        // Canonical key form so reverse lookups via `notes.get(backlink.source)`
+        // resolve on case-insensitive filesystems. Readers needing the display
+        // path should round-trip via `notes.get(source).path`.
+        source: canonicalPath(note.path),
         line: link.line,
         // Context will be loaded on-demand to save memory
       });
@@ -273,7 +284,7 @@ async function buildVaultIndexInternal(
       if (!tags.has(tag)) {
         tags.set(tag, new Set());
       }
-      tags.get(tag)!.add(note.path);
+      tags.get(tag)!.add(canonicalPath(note.path));
     }
   }
 
@@ -306,13 +317,23 @@ export function getBacklinksForNote(index: VaultIndex, notePath: string): Backli
 }
 
 /**
+ * Look up a note from the index by path with case-insensitive-filesystem
+ * awareness. Pass user-supplied or externally-sourced paths through this
+ * helper so `Flywheel.md` and `flywheel.md` resolve to the same entry on
+ * Windows/macOS default volumes.
+ */
+export function getIndexedNote(index: VaultIndex, notePath: string): VaultNote | undefined {
+  return index.notes.get(canonicalPath(notePath));
+}
+
+/**
  * Get forward links (outlinks) for a note with resolution info
  */
 export function getForwardLinksForNote(
   index: VaultIndex,
   notePath: string
 ): Array<{ target: string; alias?: string; line: number; resolvedPath?: string; exists: boolean }> {
-  const note = index.notes.get(notePath);
+  const note = index.notes.get(canonicalPath(notePath));
   if (!note) return [];
 
   return note.outlinks.map((link) => {
@@ -532,9 +553,15 @@ export function serializeVaultIndex(index: VaultIndex): VaultIndexCacheData {
  * Deserialize VaultIndex from cached format
  */
 export function deserializeVaultIndex(data: VaultIndexCacheData): VaultIndex {
+  // Re-canonicalize keys on load so caches persisted under a different
+  // filesystem-sensitivity state (e.g. a cache carried from Linux to Windows)
+  // collapse duplicates consistently with the current FS. `VaultNote.path`
+  // and backlink sources are normalized to canonical so downstream map
+  // lookups continue to resolve.
+  const ci = getModuleCaseInsensitive();
   const notes = new Map<string, VaultNote>();
   for (const note of data.notes) {
-    notes.set(note.path, {
+    notes.set(canonicalPath(note.path, ci), {
       path: note.path,
       title: note.title,
       aliases: note.aliases,
@@ -548,17 +575,29 @@ export function deserializeVaultIndex(data: VaultIndexCacheData): VaultIndex {
 
   const backlinks = new Map<string, Backlink[]>();
   for (const [key, value] of data.backlinks) {
-    backlinks.set(key, value);
+    const canonKey = canonicalPath(key, ci);
+    const canonValue = value.map(bl => ({
+      ...bl,
+      source: canonicalPath(bl.source, ci),
+    }));
+    const existing = backlinks.get(canonKey);
+    if (existing) {
+      existing.push(...canonValue);
+    } else {
+      backlinks.set(canonKey, canonValue);
+    }
   }
 
   const entities = new Map<string, string>();
   for (const [key, value] of data.entities) {
-    entities.set(key, value);
+    // Entity key is already lowercased (title/alias/normalizeNotePath);
+    // the value is a path that must match `notes` keys.
+    entities.set(key, canonicalPath(value, ci));
   }
 
   const tags = new Map<string, Set<string>>();
   for (const [tag, paths] of data.tags) {
-    tags.set(tag, new Set(paths));
+    tags.set(tag, new Set(paths.map(p => canonicalPath(p, ci))));
   }
 
   return {

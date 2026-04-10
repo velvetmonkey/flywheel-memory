@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 38;
+export const SCHEMA_VERSION = 39;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -182,7 +182,10 @@ CREATE TABLE IF NOT EXISTS wikilink_applications (
   status TEXT DEFAULT 'applied',
   source TEXT NOT NULL DEFAULT 'tool'
 );
-CREATE UNIQUE INDEX IF NOT EXISTS idx_wl_apps_unique ON wikilink_applications(entity COLLATE NOCASE, note_path);
+-- v39: note_path uses COLLATE NOCASE so mixed-case paths on case-insensitive
+-- filesystems (Windows NTFS, macOS APFS default) collapse to one row. Prevents
+-- doubled wikilink-application counts when scanner and watcher disagree on casing.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wl_apps_unique ON wikilink_applications(entity COLLATE NOCASE, note_path COLLATE NOCASE);
 
 -- Index events tracking (v6: index activity history)
 CREATE TABLE IF NOT EXISTS index_events (

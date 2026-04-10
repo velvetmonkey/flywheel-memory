@@ -9,6 +9,7 @@ import path from 'path';
 import type { VaultIndex, VaultNote, Backlink } from '../types.js';
 import type { VaultFile } from '../vault.js';
 import { parseNote } from '../parser.js';
+import { canonicalPath } from '../caseSensitivity.js';
 
 /**
  * Normalize a link target for matching
@@ -59,13 +60,14 @@ export interface IncrementalUpdateResult {
  * Note: Does NOT remove backlinks TO this note (those become broken links)
  */
 export function removeNoteFromIndex(index: VaultIndex, notePath: string): string[] {
-  const note = index.notes.get(notePath);
+  const canonicalKey = canonicalPath(notePath);
+  const note = index.notes.get(canonicalKey);
   if (!note) {
     return [];
   }
 
   // Remove from notes map
-  index.notes.delete(notePath);
+  index.notes.delete(canonicalKey);
 
   // Remove entity mappings, tracking released keys
   const releasedKeys: string[] = [];
@@ -73,11 +75,11 @@ export function removeNoteFromIndex(index: VaultIndex, notePath: string): string
   const normalizedPath = normalizeNotePath(notePath);
 
   // Only remove if this path is the one mapped
-  if (index.entities.get(normalizedTitle) === notePath) {
+  if (index.entities.get(normalizedTitle) === canonicalKey) {
     index.entities.delete(normalizedTitle);
     releasedKeys.push(normalizedTitle);
   }
-  if (index.entities.get(normalizedPath) === notePath) {
+  if (index.entities.get(normalizedPath) === canonicalKey) {
     index.entities.delete(normalizedPath);
     // Path keys are unique per note, no need to reconcile
   }
@@ -85,7 +87,7 @@ export function removeNoteFromIndex(index: VaultIndex, notePath: string): string
   // Remove alias mappings
   for (const alias of note.aliases) {
     const normalizedAlias = normalizeTarget(alias);
-    if (index.entities.get(normalizedAlias) === notePath) {
+    if (index.entities.get(normalizedAlias) === canonicalKey) {
       index.entities.delete(normalizedAlias);
       releasedKeys.push(normalizedAlias);
     }
@@ -95,7 +97,7 @@ export function removeNoteFromIndex(index: VaultIndex, notePath: string): string
   for (const tag of note.tags) {
     const tagPaths = index.tags.get(tag);
     if (tagPaths) {
-      tagPaths.delete(notePath);
+      tagPaths.delete(canonicalKey);
       if (tagPaths.size === 0) {
         index.tags.delete(tag);
       }
@@ -110,7 +112,7 @@ export function removeNoteFromIndex(index: VaultIndex, notePath: string): string
 
     const backlinks = index.backlinks.get(key);
     if (backlinks) {
-      const filtered = backlinks.filter(bl => bl.source !== notePath);
+      const filtered = backlinks.filter(bl => bl.source !== canonicalKey);
       if (filtered.length === 0) {
         index.backlinks.delete(key);
       } else {
@@ -131,14 +133,15 @@ export function reconcileReleasedKeys(index: VaultIndex, releasedKeys: string[])
     if (index.entities.has(key)) continue; // already reclaimed by addNoteToIndex
 
     for (const [, note] of index.notes) {
+      const canonicalNoteKey = canonicalPath(note.path);
       const normalizedTitle = normalizeTarget(note.title);
       if (normalizedTitle === key) {
-        index.entities.set(key, note.path);
+        index.entities.set(key, canonicalNoteKey);
         break;
       }
       for (const alias of note.aliases) {
         if (normalizeTarget(alias) === key) {
-          index.entities.set(key, note.path);
+          index.entities.set(key, canonicalNoteKey);
           break;
         }
       }
@@ -157,8 +160,15 @@ export function reconcileReleasedKeys(index: VaultIndex, releasedKeys: string[])
  * - Backlinks FROM this note
  */
 export function addNoteToIndex(index: VaultIndex, note: VaultNote): void {
+  // Canonical key collapses mixed-case duplicates on case-insensitive
+  // filesystems. `note.path` still carries whatever casing the caller passed
+  // (typically the on-disk form from scanVault or the normalized form from
+  // the watcher) — writers that consume it hit the real file because on
+  // case-insensitive FS the kernel resolves casing.
+  const canonicalKey = canonicalPath(note.path);
+
   // Add to notes map
-  index.notes.set(note.path, note);
+  index.notes.set(canonicalKey, note);
 
   // Add entity mappings
   const normalizedTitle = normalizeTarget(note.title);
@@ -166,17 +176,17 @@ export function addNoteToIndex(index: VaultIndex, note: VaultNote): void {
 
   // Map by title (only if not already mapped)
   if (!index.entities.has(normalizedTitle)) {
-    index.entities.set(normalizedTitle, note.path);
+    index.entities.set(normalizedTitle, canonicalKey);
   }
 
   // Map by full path (always set, path is unique)
-  index.entities.set(normalizedPath, note.path);
+  index.entities.set(normalizedPath, canonicalKey);
 
   // Map by aliases (only if not already mapped)
   for (const alias of note.aliases) {
     const normalizedAlias = normalizeTarget(alias);
     if (!index.entities.has(normalizedAlias)) {
-      index.entities.set(normalizedAlias, note.path);
+      index.entities.set(normalizedAlias, canonicalKey);
     }
   }
 
@@ -185,7 +195,7 @@ export function addNoteToIndex(index: VaultIndex, note: VaultNote): void {
     if (!index.tags.has(tag)) {
       index.tags.set(tag, new Set());
     }
-    index.tags.get(tag)!.add(note.path);
+    index.tags.get(tag)!.add(canonicalKey);
   }
 
   // Add backlinks FROM this note
@@ -199,7 +209,7 @@ export function addNoteToIndex(index: VaultIndex, note: VaultNote): void {
     }
 
     index.backlinks.get(key)!.push({
-      source: note.path,
+      source: canonicalKey,
       line: link.line,
     });
   }
@@ -217,8 +227,9 @@ export async function upsertNote(
 ): Promise<IncrementalUpdateResult> {
   try {
     // Check if note already exists
-    const existed = index.notes.has(notePath);
-    const oldNote = existed ? index.notes.get(notePath) : undefined;
+    const canonicalKey = canonicalPath(notePath);
+    const existed = index.notes.has(canonicalKey);
+    const oldNote = existed ? index.notes.get(canonicalKey) : undefined;
 
     // Remove old data if exists
     let releasedKeys: string[] = [];
@@ -278,7 +289,7 @@ export function deleteNote(
   index: VaultIndex,
   notePath: string
 ): IncrementalUpdateResult {
-  const existed = index.notes.has(notePath);
+  const existed = index.notes.has(canonicalPath(notePath));
   const releasedKeys = removeNoteFromIndex(index, notePath);
 
   if (releasedKeys.length > 0) {
@@ -308,7 +319,7 @@ export async function applyTransaction(
 
   // Remove notes first
   for (const notePath of transaction.notesToRemove) {
-    const existed = index.notes.has(notePath);
+    const existed = index.notes.has(canonicalPath(notePath));
     const releasedKeys = removeNoteFromIndex(index, notePath);
     allReleasedKeys.push(...releasedKeys);
     results.push({
@@ -352,7 +363,7 @@ export async function processBatch(
 
   for (const event of events) {
     if (event.type === 'delete') {
-      const existed = index.notes.has(event.path);
+      const existed = index.notes.has(canonicalPath(event.path));
       const releasedKeys = removeNoteFromIndex(index, event.path);
       allReleasedKeys.push(...releasedKeys);
       results.push({
@@ -362,7 +373,7 @@ export async function processBatch(
       });
     } else {
       // Upsert: remove old, parse new, add
-      const existed = index.notes.has(event.path);
+      const existed = index.notes.has(canonicalPath(event.path));
       if (existed) {
         const releasedKeys = removeNoteFromIndex(index, event.path);
         allReleasedKeys.push(...releasedKeys);

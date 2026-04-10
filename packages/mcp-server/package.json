@@ -45,6 +45,7 @@
     "test:quality": "vitest run test/graph-quality/",
     "test:quality:report": "tsx test/graph-quality/generate-proof.ts",
     "generate:tool-embeddings": "tsx scripts/generate-tool-embeddings.ts",
+    "generate:doc-fragments": "tsx scripts/generate-doc-fragments.ts",
     "smoke:registry-latest": "node scripts/post-publish-codex-smoke.mjs latest",
     "test:coverage": "vitest run --coverage",
     "test:ci": "vitest run --reporter=github-actions",

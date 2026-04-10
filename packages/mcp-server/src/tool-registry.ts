@@ -862,11 +862,23 @@ export function applyToolGating(
  * Uses scope-aware getters that read from ALS VaultScope first,
  * falling back to module-level singletons via the injected context.
  */
+export interface RegisterAllToolsOptions {
+  /**
+   * When true (default), the Claude Code client fingerprint (CLAUDECODE=1)
+   * causes the `memory` tool to be skipped because Claude Code intercepts
+   * memory verbs onto its own native memory plane. Set to false in test
+   * catalog collection so the manifest always reflects the complete surface.
+   */
+  applyClientSuppressions?: boolean;
+}
+
 export function registerAllTools(
   targetServer: McpServer,
   ctx: ToolRegistryContext,
   controller?: ToolTierController | null,
+  options: RegisterAllToolsOptions = {},
 ): void {
+  const { applyClientSuppressions = true } = options;
   const { getVaultPath: gvp, getVaultIndex: gvi, getStateDb: gsd, getFlywheelConfig: gcf } = ctx;
 
   // Read tools
@@ -957,7 +969,23 @@ export function registerAllTools(
   // registerCalibrationExportTools retired (T43) — flywheel_calibration_export removed from surface
 
   // Memory tools
-  registerMemoryTools(targetServer, gsd);
+  //
+  // Claude Code intercepts verbs like "remember", "search memory", "list memories",
+  // "forget" onto its native client-side memory plane (Glob/Read against
+  // ~/.claude/memory/), never reaching the MCP `memory` tool regardless of how
+  // the tool is described or ranked. Measured 3/6 memory-action tests routed to
+  // Glob instead of memory(*). To avoid the collision, suppress registration of
+  // the `memory` tool when we detect the Claude Code client (via CLAUDECODE=1
+  // env var it sets on spawned MCP subprocesses). `brief` stays registered —
+  // it's the Claude Code escape hatch for memory retrieval. flywheel-engine and
+  // non-Claude clients are unaffected. Override with FW_ENABLE_MEMORY_FOR_CLAUDE=1.
+  const suppressMemoryForClaude =
+    applyClientSuppressions &&
+    process.env.CLAUDECODE === '1' &&
+    process.env.FW_ENABLE_MEMORY_FOR_CLAUDE !== '1';
+  if (!suppressMemoryForClaude) {
+    registerMemoryTools(targetServer, gsd);
+  }
   // recall removed — entity/memory search merged into search (uber search)
   // registerRecallTools(targetServer, gsd, gvp, () => gvi() ?? null);
   registerBriefTools(targetServer, gsd);

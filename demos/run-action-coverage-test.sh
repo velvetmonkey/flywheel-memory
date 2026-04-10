@@ -50,9 +50,10 @@ if [[ -n "$FILTER" ]]; then
 fi
 echo ""
 
-# MCP config — full preset so all tools visible
+# MCP config — agent preset (the shipping default). Tests measure what real
+# users see, not a configuration we never deploy.
 mcp_config=$(cat <<EOF
-{"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$DEMO_DIR","FLYWHEEL_TOOLS":"full"}}}}
+{"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$DEMO_DIR","FLYWHEEL_TOOLS":"agent"}}}}
 EOF
 )
 
@@ -69,9 +70,19 @@ for i in $(seq 0 $((total - 1))); do
   tool=$(jq -r ".prompts[$i].tool" "$PROMPTS_FILE")
   action=$(jq -r ".prompts[$i].action // empty" "$PROMPTS_FILE")
   prompt=$(jq -r ".prompts[$i].prompt" "$PROMPTS_FILE")
+  skip_when_claude=$(jq -r ".prompts[$i].skip_when_claude // false" "$PROMPTS_FILE")
 
   # Apply filter
   if [[ -n "$FILTER" ]] && ! echo "$id" | grep -qE "$FILTER"; then
+    skipped=$((skipped + 1))
+    continue
+  fi
+
+  # Skip prompts marked as unreachable from Claude Code (memory-plane collision).
+  # The server suppresses the `memory` tool when CLAUDECODE=1, so tests for its
+  # sub-actions have nothing to route to. Override with FW_ENABLE_MEMORY_FOR_CLAUDE=1.
+  if [[ "$skip_when_claude" == "true" && "${FW_ENABLE_MEMORY_FOR_CLAUDE:-0}" != "1" ]]; then
+    printf "[--] %-35s SKIP (memory suppressed for Claude Code)\n" "$id"
     skipped=$((skipped + 1))
     continue
   fi

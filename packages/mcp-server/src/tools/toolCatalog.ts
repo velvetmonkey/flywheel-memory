@@ -131,7 +131,10 @@ export function collectToolCatalog(): Map<string, CatalogEntry> {
   const { server, captured } = createCaptureServer();
   const ctx = createStubContext();
 
-  registerAllTools(server, ctx, createStubController());
+  // Catalog collection must enumerate the complete registrable surface so the
+  // embedding manifest and contract tests see every tool, independent of
+  // runtime client-specific gates (e.g. Claude Code memory-plane suppression).
+  registerAllTools(server, ctx, createStubController(), { applyClientSuppressions: false });
 
   const catalog = new Map<string, CatalogEntry>();
   const missingCategory: string[] = [];

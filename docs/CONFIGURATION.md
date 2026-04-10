@@ -690,7 +690,23 @@ Daily notes, task management, basic editing — the `agent` preset includes task
 
 ### Memory-Enabled Sessions
 
-Memory tools (brief, memory) are included in the `agent` preset. No additional configuration needed.
+Memory tools (`brief`, `memory`) are included in the `agent` preset.
+
+**Claude Code memory-plane collision.** Claude Code ships with its own native
+memory plane (`~/.claude/memory/*.md` files) that intercepts verbs like
+"remember", "recall", "forget", and "list memories" before the MCP tool surface
+is consulted. As a result, the `memory` tool is **not registered** when the
+server detects Claude Code (`CLAUDECODE=1` env var on spawned MCP subprocesses).
+The `brief` tool remains registered and is the recommended entry point for
+retrieving vault context in Claude Code sessions.
+
+If you want Claude Code to use Flywheel's vault-scoped memory (TTL, auto-linking,
+entity association) instead of its native plane, set
+`FW_ENABLE_MEMORY_FOR_CLAUDE=1` in the MCP server environment. You will then
+need to phrase requests explicitly enough to beat Claude Code's built-in
+routing (e.g. "use the flywheel memory tool to store ..."). Other MCP clients
+(Claude Desktop, flywheel-engine, Codex CLI, custom clients) are unaffected
+and see the `memory` tool normally.
 
 ### Knowledge Work
 

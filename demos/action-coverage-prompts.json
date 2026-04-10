@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "description": "T43 action-coverage prompts — one per tool+action. Each prompt should trigger exactly the named tool with the named action.",
+    "description": "Action-coverage prompts for the agent preset (the shipping default). One prompt per tool+action in the 21-tool core read/write surface.",
     "pass_criteria": "Tool called with correct action param, no cross-action param bleed",
     "vault": "carter-strategy",
-    "preset": "full"
+    "preset": "agent"
   },
   "prompts": [
     {
@@ -52,15 +52,15 @@
       "id": "edit_section_replace",
       "tool": "vault_replace_in_section",
       "action": null,
-      "prompt": "In the Acme Data Migration project note, replace the Phase section content with 'Phase 4 — Production cutover complete. All systems live.'",
-      "notes": "Section replacement"
+      "prompt": "In the Acme Data Migration project note, overwrite the 'Phase' section contents with this text (use vault_replace_in_section to perform the replacement, do not just read it): 'Phase 4 \u2014 Production cutover complete. All systems live.'",
+      "notes": "Section replacement. Directive phrasing is intentional: LLMs in non-interactive mode over-investigate before mutating; the prompt has to explicitly request the write step for the test to measure the mutation tool rather than the read path."
     },
     {
       "id": "note_create",
       "tool": "note",
       "action": "create",
-      "prompt": "Create a new client note for 'Pinnacle Systems' in the clients folder with type: client, status: prospect, industry: logistics",
-      "notes": "New note creation"
+      "prompt": "Create a new client note at clients/Pinnacle Systems.md with frontmatter type: client, status: prospect, industry: logistics. Go ahead and create the file \u2014 it does not exist yet, no need to search first.",
+      "notes": "New note creation. Explicit path + 'no need to search first' suppresses the investigate-before-mutate loop."
     },
     {
       "id": "note_move",
@@ -80,43 +80,47 @@
       "id": "note_delete",
       "tool": "note",
       "action": "delete",
-      "prompt": "Delete the Cloud Strategy Template note — we don't need it anymore",
-      "notes": "File deletion"
+      "prompt": "Delete the Cloud Strategy Template note using the note tool with action:\"delete\" and confirm:true. I've already decided to remove it \u2014 execute the deletion, don't ask for confirmation.",
+      "notes": "File deletion. Claude Code's destructive-action aversion otherwise blocks the delete; the prompt has to carry the confirm:true hint and explicit 'execute' directive to reach the mutation path."
     },
     {
       "id": "memory_store",
       "tool": "memory",
       "action": "store",
       "prompt": "Remember that Sarah Mitchell prefers email over phone for status updates",
-      "notes": "Store a preference"
+      "notes": "Store a preference. Skipped for Claude Code: the MCP memory tool is suppressed when CLAUDECODE=1 (collision with Claude Code's native memory plane). Set FW_ENABLE_MEMORY_FOR_CLAUDE=1 to re-enable and run this test.",
+      "skip_when_claude": true
     },
     {
       "id": "memory_search",
       "tool": "memory",
       "action": "search",
       "prompt": "What do you remember about Sarah Mitchell's communication preferences?",
-      "notes": "Search stored memories"
+      "notes": "Search stored memories. Skipped for Claude Code (memory plane collision, see memory_store).",
+      "skip_when_claude": true
     },
     {
       "id": "memory_list",
       "tool": "memory",
       "action": "list",
       "prompt": "List all memories you've stored about my clients",
-      "notes": "Browse memories"
+      "notes": "Browse memories. Skipped for Claude Code (memory plane collision, see memory_store).",
+      "skip_when_claude": true
     },
     {
       "id": "memory_brief",
       "tool": "memory",
       "action": "brief",
-      "prompt": "Give me a quick briefing — what's been happening in this vault recently?",
-      "notes": "Session startup context; may use brief standalone tool"
+      "prompt": "Give me a quick briefing \u2014 what's been happening in this vault recently?",
+      "notes": "Session startup context. Routes through the standalone brief tool (not suppressed), so it remains runnable for Claude Code."
     },
     {
       "id": "memory_forget",
       "tool": "memory",
       "action": "forget",
       "prompt": "Forget whatever you stored about Sarah Mitchell's preferences",
-      "notes": "Delete a memory"
+      "notes": "Delete a memory. Skipped for Claude Code (memory plane collision, see memory_store).",
+      "skip_when_claude": true
     },
     {
       "id": "tasks_list",
@@ -129,7 +133,7 @@
       "id": "tasks_add",
       "tool": "tasks",
       "action": "add",
-      "prompt": "Add a task to the Acme Data Migration note: 'Schedule cutover dry-run with Marcus Webb 📅 2026-04-15'",
+      "prompt": "Add a task to the Acme Data Migration note: 'Schedule cutover dry-run with Marcus Webb \ud83d\udcc5 2026-04-15'",
       "notes": "Task creation; may use vault_add_task"
     },
     {
@@ -140,270 +144,11 @@
       "notes": "Task completion; may use vault_toggle_task"
     },
     {
-      "id": "doctor_health",
-      "tool": "flywheel_doctor",
-      "action": null,
-      "prompt": "Run a health check on the vault — is everything indexed properly?",
-      "notes": "Health diagnostics"
-    },
-    {
       "id": "policy_validate",
       "tool": "policy",
       "action": "validate",
       "prompt": "Check if my planned edit to the Acme Corp note follows vault policies",
       "notes": "Policy validation"
-    },
-    {
-      "id": "link_suggest",
-      "tool": "link",
-      "action": "suggest",
-      "prompt": "Suggest wikilinks for this text: 'Met with Marcus Webb to review the Acme data migration. Sarah Mitchell approved the Phase 3 cutover plan.'",
-      "notes": "Wikilink suggestions; may use suggest_wikilinks"
-    },
-    {
-      "id": "link_feedback",
-      "tool": "link",
-      "action": "feedback",
-      "prompt": "The wikilink [[Meridian Financial]] in today's daily note is wrong — record that as negative feedback",
-      "notes": "Feedback recording; may use wikilink_feedback"
-    },
-    {
-      "id": "link_unlinked",
-      "tool": "link",
-      "action": "unlinked",
-      "prompt": "Find all unlinked mentions of Marcus Webb across the vault",
-      "notes": "Unlinked mention discovery"
-    },
-    {
-      "id": "link_validate",
-      "tool": "link",
-      "action": "validate",
-      "prompt": "Check for broken wikilinks across the vault",
-      "notes": "Link validation; may use validate_links"
-    },
-    {
-      "id": "link_stubs",
-      "tool": "link",
-      "action": "stubs",
-      "prompt": "Which wikilinks point to notes that don't exist yet? Find stub candidates",
-      "notes": "Stub discovery; may use discover_stub_candidates"
-    },
-    {
-      "id": "link_dashboard",
-      "tool": "link",
-      "action": "dashboard",
-      "prompt": "Show me the wikilink feedback dashboard — how's the suggestion quality?",
-      "notes": "Dashboard view; may use wikilink_feedback mode=dashboard"
-    },
-    {
-      "id": "correct_record",
-      "tool": "correct",
-      "action": "record",
-      "prompt": "Record a correction: the Acme Corp note has the wrong contact listed — it should be Sarah Mitchell, not James Rodriguez",
-      "notes": "Correction logging; may use vault_record_correction"
-    },
-    {
-      "id": "correct_list",
-      "tool": "correct",
-      "action": "list",
-      "prompt": "Show me all pending corrections that need to be applied",
-      "notes": "Correction listing"
-    },
-    {
-      "id": "correct_resolve",
-      "tool": "correct",
-      "action": "resolve",
-      "prompt": "Mark the correction about the Acme contact as resolved — I've fixed it",
-      "notes": "Correction resolution"
-    },
-    {
-      "id": "correct_undo",
-      "tool": "correct",
-      "action": "undo",
-      "prompt": "Undo the last mutation I made to the vault",
-      "notes": "Git-based undo"
-    },
-    {
-      "id": "entity_list",
-      "tool": "entity",
-      "action": "list",
-      "prompt": "List all entities in the vault grouped by category",
-      "notes": "Entity index; may use list_entities"
-    },
-    {
-      "id": "entity_alias",
-      "tool": "entity",
-      "action": "alias",
-      "prompt": "Add 'Acme' as an alias for 'Acme Corp' so both names resolve to the same note",
-      "notes": "Alias absorption; may use absorb_as_alias"
-    },
-    {
-      "id": "entity_suggest_aliases",
-      "tool": "entity",
-      "action": "suggest_aliases",
-      "prompt": "Suggest missing aliases for entities in the clients folder — any acronyms or short names I should add?",
-      "notes": "Alias suggestions"
-    },
-    {
-      "id": "entity_suggest_merges",
-      "tool": "entity",
-      "action": "suggest_merges",
-      "prompt": "Are there any duplicate entities that should be merged?",
-      "notes": "Merge suggestions"
-    },
-    {
-      "id": "entity_merge",
-      "tool": "entity",
-      "action": "merge",
-      "prompt": "Deduplicate the 'Emily Chen' and 'Em Chen' entities — they're the same person, the note has been accidentally created under two names. Merge them, keeping 'Emily Chen' as the canonical one.",
-      "notes": "Entity merge"
-    },
-    {
-      "id": "entity_dismiss_merge",
-      "tool": "entity",
-      "action": "dismiss_merge",
-      "prompt": "Don't merge Sarah Mitchell and Stacy Thompson — they're definitely different people despite similar names",
-      "notes": "Dismiss merge suggestion"
-    },
-    {
-      "id": "schema_overview",
-      "tool": "schema",
-      "action": "overview",
-      "prompt": "What frontmatter fields are used across the vault? Give me the schema overview",
-      "notes": "Schema intelligence; may use vault_schema"
-    },
-    {
-      "id": "schema_conventions",
-      "tool": "schema",
-      "action": "conventions",
-      "prompt": "What are the naming conventions and required fields for notes in the clients/ folder?",
-      "notes": "Folder conventions"
-    },
-    {
-      "id": "schema_folders",
-      "tool": "schema",
-      "action": "folders",
-      "prompt": "Show me the folder structure with note counts",
-      "notes": "Folder tree"
-    },
-    {
-      "id": "schema_rename_field",
-      "tool": "schema",
-      "action": "rename_field",
-      "prompt": "Rename the frontmatter field 'rate' to 'hourly_rate' across all notes",
-      "notes": "Field rename migration"
-    },
-    {
-      "id": "schema_rename_tag",
-      "tool": "schema",
-      "action": "rename_tag",
-      "prompt": "Rename the tag 'data-migration' to 'data-engineering' everywhere",
-      "notes": "Tag rename"
-    },
-    {
-      "id": "schema_migrate",
-      "tool": "schema",
-      "action": "migrate",
-      "prompt": "Migrate all notes where status is 'sent' to status 'pending' — normalize the invoice statuses",
-      "notes": "Field value migration"
-    },
-    {
-      "id": "schema_validate",
-      "tool": "schema",
-      "action": "validate",
-      "prompt": "Validate that all client notes have the required fields: type, status, contact, rate",
-      "notes": "Schema validation"
-    },
-    {
-      "id": "graph_analyse",
-      "tool": "graph",
-      "action": "analyse",
-      "prompt": "Analyze the vault's knowledge graph — what are the main hubs and clusters?",
-      "notes": "Structural analysis; may use graph_analysis"
-    },
-    {
-      "id": "graph_backlinks",
-      "tool": "graph",
-      "action": "backlinks",
-      "prompt": "What notes link TO the Acme Corp client note?",
-      "notes": "Backlink listing"
-    },
-    {
-      "id": "graph_forward_links",
-      "tool": "graph",
-      "action": "forward_links",
-      "prompt": "What notes does the Acme Data Migration project link OUT to?",
-      "notes": "Forward link listing"
-    },
-    {
-      "id": "graph_strong_connections",
-      "tool": "graph",
-      "action": "strong_connections",
-      "prompt": "What are the strongest connections to Marcus Webb's note?",
-      "notes": "Weighted connection discovery"
-    },
-    {
-      "id": "graph_path",
-      "tool": "graph",
-      "action": "path",
-      "prompt": "What's the link path connecting GlobalBank to Nexus Health?",
-      "notes": "Shortest path between notes"
-    },
-    {
-      "id": "graph_neighbors",
-      "tool": "graph",
-      "action": "neighbors",
-      "prompt": "What notes are linked by both Acme Corp and TechStart Inc?",
-      "notes": "Common neighbors"
-    },
-    {
-      "id": "graph_strength",
-      "tool": "graph",
-      "action": "strength",
-      "prompt": "How strong is the connection between Marcus Webb and the Acme Data Migration project?",
-      "notes": "Pairwise connection strength"
-    },
-    {
-      "id": "graph_cooccurrence_gaps",
-      "tool": "graph",
-      "action": "cooccurrence_gaps",
-      "prompt": "Which entities frequently appear together but don't have a direct link between them?",
-      "notes": "Missing link discovery"
-    },
-    {
-      "id": "insights_evolution",
-      "tool": "insights",
-      "action": "evolution",
-      "prompt": "How has the Acme Corp entity evolved over time? Show me its timeline",
-      "notes": "Entity evolution tracking"
-    },
-    {
-      "id": "insights_staleness",
-      "tool": "insights",
-      "action": "staleness",
-      "prompt": "Which notes are getting stale and need attention?",
-      "notes": "Staleness prediction"
-    },
-    {
-      "id": "insights_context",
-      "tool": "insights",
-      "action": "context",
-      "prompt": "What was happening in the vault around January 15, 2026?",
-      "notes": "Temporal context retrieval"
-    },
-    {
-      "id": "insights_note_intelligence",
-      "tool": "insights",
-      "action": "note_intelligence",
-      "prompt": "Analyze the Acme Data Migration project note — what insights can you extract?",
-      "notes": "Single-note deep analysis"
-    },
-    {
-      "id": "insights_growth",
-      "tool": "insights",
-      "action": "growth",
-      "prompt": "Show me vault growth trends — how many notes have been added over time?",
-      "notes": "Vault growth metrics"
     }
   ]
 }

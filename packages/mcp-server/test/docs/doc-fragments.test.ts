@@ -35,6 +35,15 @@ interface ExtractedBlock {
 }
 
 /**
+ * Normalize CRLF → LF. Windows CI checks out with CRLF endings, but the
+ * canonical DOC_FRAGMENTS strings are LF-only (written by the generator on
+ * Linux). Compare on LF-normalized content so the test is OS-independent.
+ */
+function normalizeLineEndings(s: string): string {
+  return s.replace(/\r\n/g, '\n');
+}
+
+/**
  * Extract every GENERATED:<id> block from a file.
  * Uses a loose regex for the id so a stale/renamed id still shows up as a
  * failure (rather than silently passing by being skipped).
@@ -54,7 +63,7 @@ describe('doc fragment contract', () => {
   for (const rel of TARGET_FILES) {
     const full = join(REPO_ROOT, rel);
     if (!existsSync(full)) continue;
-    const content = readFileSync(full, 'utf-8');
+    const content = normalizeLineEndings(readFileSync(full, 'utf-8'));
     allBlocks.push(...extractBlocks(rel, content));
   }
 

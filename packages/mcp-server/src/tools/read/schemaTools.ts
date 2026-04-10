@@ -35,7 +35,7 @@ export function registerSchemaTools(
     {
       title: 'Schema',
       description:
-        'Inspect and evolve vault schema. action: overview — field usage. action: conventions — folder rules. action: folders — structure. action: rename_field — bulk rename field. action: rename_tag — bulk rename tag. action: migrate — update values. action: validate — check rules. Returns stats, conventions, or errors. Does not read note body content. e.g. { action:"overview" } { action:"rename_tag", old_name:"wip", new_name:"in-progress", dry_run:true }',
+        'Inspect and evolve vault schema. action: overview — field usage stats. conventions — naming and required fields. folders — folder tree with note counts per folder. rename_field / rename_tag — bulk rename. migrate — update field values. validate — check notes against schema. Returns stats, conventions, or errors. Does not read note body content. e.g. { action:"overview" } { action:"rename_tag", old_name:"wip", new_name:"in-progress", dry_run:true }',
       inputSchema: {
         action: z.enum(['overview', 'conventions', 'folders', 'rename_field', 'rename_tag', 'migrate', 'validate'])
           .describe('Schema operation to perform'),

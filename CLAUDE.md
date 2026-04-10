@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 17 merged tools across 3 preset tiers (agent/power/full) for search, graph analysis, schema intelligence, tasks, note mutations, temporal analysis, and memory — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `doctor(action: init_semantic)`.
+**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 65 tools across 3 preset tiers (agent/power/full) organized into 12 categories: search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, and diagnostics — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -103,27 +103,26 @@ packages/mcp-server/src/
 
 Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
 
-**Presets (T43 — 3-tier collapsed surface):**
-- **`agent`** (default) — 8 tools: `search`, `read`, `edit_section`, `note`, `memory`, `tasks`, `doctor`, `policy`
-- **`power`** — 14 tools: agent + `find_notes`, `vault_update_frontmatter`, `link`, `correct`, `entity`, `schema`
-- **`full`** — 17 tools: power + `graph`, `insights`, `export_graph`
+**Presets (3-tier progressive disclosure):**
+- **`agent`** (default) — Tier 1, 21 tools: search, read, write, memory, tasks categories. Always visible.
+- **`power`** — Tier 1+2, 50 tools: agent + graph, schema, wikilinks, corrections, temporal, diagnostics categories.
+- **`full`** — All 65 tools: power + tier 3 advanced tools (entity, insights, migrations, merged graph/schema).
 
-Switch preset at runtime: `doctor(action: config, key: tool_preset, value: agent|power|full)`
+Switch preset at runtime: `flywheel_config` with `key: tool_preset, value: agent|power|full`
 
-**Merged tool → actions:**
-- `search` — text search; `action: similar` for similarity search
-- `read` — `path` (full note), `path+section` (section only), `pattern` (find headings)
-- `edit_section` — `action: add|remove|replace`
+Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` — never hardcode.
+
+**Action-param tools** (merged tools with `action` discriminator):
 - `note` — `action: create|move|rename|delete`
-- `memory` — `action: store|recall|brief` (brief = startup context)
+- `memory` — `action: store|get|search|list|forget|summarize_session`
 - `tasks` — `action: list|add|toggle`
-- `doctor` — `action: health|pipeline|config|refresh|log|init_semantic`
 - `link` — `action: suggest|feedback|unlinked|validate|stubs|dashboard|unsuppress|timeline|layer_timeseries|snapshot_diff`
 - `correct` — `action: record|list|resolve|undo`
-- `entity` — `action: list|alias|suggest_aliases|merge`
+- `entity` — `action: list|alias|suggest_aliases|merge|suggest_merges|dismiss_merge`
 - `schema` — `action: overview|conventions|folders|rename_field|rename_tag|migrate|validate`
 - `graph` — `action: analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps`
 - `insights` — `action: evolution|staleness|context|note_intelligence|growth`
+- `policy` — `action: list|validate|preview|execute|author|revise`
 
 ---
 

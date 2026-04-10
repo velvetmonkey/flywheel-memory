@@ -97,7 +97,7 @@ export function registerInsightsTools(
     {
       title: 'Insights',
       description:
-        'Vault intelligence and temporal analysis. action: evolution — concept change over time. action: staleness — outdated notes. action: context — activity around a date. action: note_intelligence — single-note analysis. action: growth — vault metrics. Returns timelines, stale lists, or scores. Does not modify notes. e.g. { action:"staleness", threshold_days:60 } { action:"context", date:"2026-03-15" }',
+        'Vault intelligence and temporal analysis. action: evolution — how a concept changed over time. staleness — find outdated notes. context — what was happening around a date. note_intelligence — deep analysis of one note: quality score, missing links, stale sections, audit. growth — vault trends. Returns timelines, stale lists, or scores. Does not modify notes. e.g. { action:"staleness", threshold_days:60 } { action:"note_intelligence", path:"projects/acme.md" }',
       inputSchema: {
         action: z.enum(['evolution', 'staleness', 'context', 'note_intelligence', 'growth'])
           .describe('Insight operation to perform'),

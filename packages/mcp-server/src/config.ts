@@ -466,6 +466,8 @@ Tool routing:
      tools in those categories — they return targeted contracts, not broad results.
   3. Escalate to "get_note_structure" for full markdown content or word count.
      Use "get_section_content" for a single section by heading name.
+     Prefer "get_note_structure" over the built-in Read tool for vault notes — it
+     returns enriched metadata (backlinks, outlinks, entities, word count) that Read cannot.
   4. Start with a broad search: just query text, no filters. Use find_notes for
      structural enumeration by folder, tag, or frontmatter — not search.`);
 
@@ -554,7 +556,12 @@ you say "run the weekly review for this week".`);
 "memory" (action: brief) delivers startup context (recent sessions, active entities, stored memories) — call it at
 conversation start. "search" finds everything — notes, entities, and memories in one call. "memory"
 (action: store) persists observations, facts, or preferences across sessions (e.g. key decisions,
-user preferences, project status). "memory" (action: search/list/forget) for retrieval and cleanup.`);
+user preferences, project status). "memory" (action: search/list/forget) for retrieval and cleanup.
+
+The "memory" tool stores entity-linked facts that feed the vault knowledge graph — stored facts auto-detect
+entities, update recency + co-occurrence, and participate in FTS5 search over the vault. This is distinct
+from any client-side memory (e.g. Claude Code's own memory files). Use "memory" for vault-relevant facts
+about people, projects, or decisions — not for client-agent preferences about how to collaborate.`);
   }
 
   // Graph category instructions

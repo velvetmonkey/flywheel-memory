@@ -149,6 +149,11 @@ export interface ToolTierController {
 
 const ACTIVATION_PATTERNS: Array<{ category: ToolCategory; tier: ToolTier; patterns: RegExp[] }> = [
   {
+    category: 'memory',
+    tier: 1,
+    patterns: [/\b(remember|recall|forget|memory|memories|preference|setting|store|stored|brief(ing)?|session context|note to self|what do you know)\b/i],
+  },
+  {
     category: 'graph',
     tier: 2,
     patterns: [/\b(backlinks?|forward links?|connections?|link path|paths?|hubs?|orphans?|dead ends?|clusters?|bridges?)\b/i],
@@ -171,17 +176,17 @@ const ACTIVATION_PATTERNS: Array<{ category: ToolCategory; tier: ToolTier; patte
   {
     category: 'diagnostics',
     tier: 2,
-    patterns: [/\b(health|doctor|diagnostics?|status|config|configuration|pipeline|refresh index|reindex|logs?)\b/i],
+    patterns: [/\b(health|doctor|diagnostics?|status|config|configuration|pipeline|refresh index|reindex|logs?|insights?|intelligence|analyze note|quality score|audit|staleness|growth trends?)\b/i],
   },
   {
     category: 'schema',
     tier: 3,
-    patterns: [/\b(schema|schemas|frontmatter|metadata|conventions?|rename field|rename tag|migrate)\b/i],
+    patterns: [/\b(schema|schemas|frontmatter|metadata|conventions?|rename field|rename tag|migrate|folder structure|folder tree|note counts)\b/i],
   },
   {
     category: 'note-ops',
     tier: 3,
-    patterns: [/\b(delete note|move note|rename note|merge entities|merge notes?)\b/i],
+    patterns: [/\b(create note|delete note|move note|rename note|merge entit(y|ies)|merge notes?|deduplicate|also known as|aka|nickname)\b/i],
   },
 ];
 

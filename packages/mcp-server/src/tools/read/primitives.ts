@@ -53,7 +53,7 @@ export function registerPrimitiveTools(
     'get_note_structure',
     {
       title: 'Get Note Structure',
-      description: 'Use after search identifies a note you need detail on. Produces heading tree, frontmatter, tags, word count, backlink and outlink counts, and optionally full section content. Returns enriched note structure with entity metadata when available. Does not search — requires an exact path from a prior search result.',
+      description: 'Read a vault note by path. Returns heading tree, frontmatter, tags, word count, backlinks, outlinks, and optionally full section content with entity metadata. Prefer this over the built-in Read tool for vault notes — it provides enriched metadata that Read cannot. Does not search — requires a path from a prior search result.',
       inputSchema: {
         path: z.string().describe('Path to the note'),
         include_content: z.boolean().default(false).describe('Include the text content under each top-level section. Default false for structure only.'),

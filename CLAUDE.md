@@ -29,18 +29,16 @@ packages/mcp-server/src/
 │   ├── read/                   # Read-side tool registrations (20 files, helpers omitted)
 │   │   ├── query.ts            # search
 │   │   ├── primitives.ts       # get_note_structure, get_section_content, find_sections, tasks
-│   │   ├── graphAnalysis.ts    # graph_analysis (7 modes), list_entities, get_connection_strength,
+│   │   ├── graphAnalysis.ts    # graph_analysis (7 modes), get_connection_strength,
 │   │   │                       #   get_link_path, get_common_neighbors
-│   │   ├── semanticAnalysis.ts # semantic_analysis (clusters, bridges)
-│   │   ├── system.ts           # refresh_index, suggest_entity_aliases, unlinked_mentions_report
+│   │   ├── system.ts           # refresh_index, list_entities, suggest_entity_aliases
 │   │   ├── health.ts           # flywheel_doctor, pipeline_status, server_log
 │   │   ├── vaultSchema.ts      # vault_schema, schema_conventions, schema_validate
 │   │   ├── noteIntelligence.ts # note_intelligence
 │   │   ├── wikilinks.ts        # suggest_wikilinks, validate_links, discover_stub_candidates,
-│   │   │                       #   discover_cooccurrence_gaps, suggest_entity_aliases, unlinked_mentions_report
+│   │   │                       #   discover_cooccurrence_gaps
 │   │   ├── migrations.ts       # rename_field, migrate_field_values
 │   │   ├── metrics.ts          # vault_growth
-│   │   ├── merges.ts           # suggest_entity_merges, dismiss_merge_suggestion
 │   │   ├── similarity.ts       # find_similar
 │   │   ├── semantic.ts         # init_semantic
 │   │   └── brief.ts            # brief
@@ -53,11 +51,9 @@ packages/mcp-server/src/
 │       ├── merge.ts            # merge_entities, absorb_as_alias
 │       ├── corrections.ts      # vault_record_correction, vault_list_corrections, vault_resolve_correction
 │       ├── wikilinkFeedback.ts # wikilink_feedback
-│       ├── toolSelectionFeedback.ts # tool_selection_feedback
 │       ├── tags.ts             # rename_tag
 │       ├── memory.ts           # memory
 │       ├── config.ts           # flywheel_config
-│       ├── enrich.ts           # vault_init
 │       ├── system.ts           # vault_undo_last_mutation
 │       └── policy.ts           # policy
 ├── core/

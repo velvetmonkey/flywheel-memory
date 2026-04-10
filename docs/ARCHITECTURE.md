@@ -74,7 +74,6 @@ packages/
 │       │   │   ├── query.ts     # search (unified: metadata + content + entities)
 │       │   │   ├── graphAdvanced.ts  # get_link_path, get_common_neighbors, get_connection_strength
 │       │   │   ├── graphAnalysis.ts  # graph_analysis (7 modes + centrality + cycles)
-│       │   │   ├── semanticAnalysis.ts # semantic_analysis (clusters, bridges)
 │       │   │   ├── vaultSchema.ts    # vault_schema (unified: overview, field_values, inconsistencies, validate, conventions, incomplete)
 │       │   │   ├── noteIntelligence.ts # note_intelligence (unified: prose_patterns, suggest_frontmatter, suggest_wikilinks, compute, semantic_links)
 │       │   │   ├── primitives.ts     # get_note_structure, get_section_content, find_sections, tasks
@@ -93,8 +92,7 @@ packages/
 │       │       ├── system.ts    # vault_undo_last_mutation
 │       │       ├── policy.ts    # policy (unified: list, validate, preview, execute, author, revise)
 │       │       ├── memory.ts    # memory (agent working memory)
-│       │       ├── config.ts    # flywheel_config (runtime configuration)
-│       │       └── toolSelectionFeedback.ts # tool_selection_feedback
+│       │       └── config.ts    # flywheel_config (runtime configuration)
 │       ├── core/
 │       │   ├── read/            # Read-side core logic
 │       │   │   ├── graph.ts     # Index building, backlinks, hubs, orphans, path finding
@@ -272,7 +270,7 @@ In addition to note-level embeddings, Flywheel builds entity-level embeddings fo
 
 **Integration points:**
 - **Layer 9 scoring** in `suggestRelatedLinks()`  --  cosine similarity against in-memory entity embeddings
-- **Semantic analysis**  --  `semantic_analysis` tool (clusters, bridges)
+- **Hybrid search**  --  note embeddings power `search` (BM25 + semantic via RRF) and `find_similar`
 - **Semantic note intelligence**  --  `semantic_links` mode in `note_intelligence`
 - **Preflight duplicate detection**  --  `vault_create_note` checks semantic similarity before creation
 - **Broken link fallback**  --  `validate_links` uses embedding similarity to suggest corrections

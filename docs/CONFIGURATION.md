@@ -167,6 +167,7 @@ Vault root detection order:
 | Preset | Behaviour |
 |--------|-----------|
 | `agent` (default) | Fixed set — search, read, write, tasks, memory |
+| `power` | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
 | `full` | All tools visible at startup |
 | `auto` | Progressive disclosure across the full surface via `discover_tools` |
 
@@ -176,7 +177,7 @@ Start with `agent`, then add what you need:
 
 | Bundle | What it adds |
 |--------|--------------|
-| `graph` | Structural analysis, semantic analysis, entity lists, paths, neighbor overlap, connection strength |
+| `graph` | Structural analysis, entity lists, paths, neighbor overlap, connection strength, backlinks, forward links |
 | `schema` | Schema inspection, conventions, validation, note intelligence, migrations, tag rename |
 | `wikilinks` | Link suggestions, validation, feedback, discovery |
 | `corrections` | Correction recording + resolution |
@@ -184,14 +185,14 @@ Start with `agent`, then add what you need:
 | `memory` | Session memory + brief |
 | `note-ops` | Delete, move, rename notes, merge entities |
 | `temporal` | get_context_around_date, predict_stale_notes, track_concept_evolution |
-| `diagnostics` | Vault health, config, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status |
+| `diagnostics` | Vault health, config, refresh, doctor, pipeline status, server log, growth metrics, insights |
 
 #### Recipes
 
 | Config | What you get |
 |--------|--------------|
 | `agent` | search, read, write, tasks, memory |
-| `agent,graph` | agent + graph analysis, semantic analysis, paths, hubs |
+| `agent,graph` | agent + graph analysis, paths, hubs, connection strength |
 | `agent,graph,wikilinks` | + link suggestions, validation |
 | `full` | All categories, all tools visible immediately |
 | `auto` | All categories, progressive disclosure |
@@ -630,7 +631,6 @@ flywheel_config({
 - An entity note with `type: work-ticket` in its frontmatter gets category `work-ticket` instead of falling through to "other"
 - The `type_boost` controls how strongly the scoring pipeline favors linking this category (0 = neutral, 5 = strong preference, like people)
 - Built-in frontmatter type mappings still work (`type: person` → people, `type: tool` → technologies, etc.)
-- Custom categories appear in `flywheel_calibration_export` survival-by-category data, making the calibration signal meaningful for your vault's ontology
 - No schema migration needed — the database already stores categories as free text
 
 **When to use this:**
@@ -655,7 +655,7 @@ flywheel_config({
 | `paths` | object | (auto-detected) | Periodic note folder paths. Sub-keys: `daily_notes`, `weekly_notes`, `monthly_notes`, `quarterly_notes`, `yearly_notes`, `templates`. Override if auto-detection picks the wrong folder. |
 | `templates` | object | (auto-detected) | Template file paths. Sub-keys: `daily`, `weekly`, `monthly`, `quarterly`, `yearly`. |
 
-> **Note:** `paths` and `templates` are auto-detected at startup. They cannot be changed via `flywheel_config` — use `vault_init` to override them.
+> **Note:** `paths` and `templates` are auto-detected at startup from your vault structure. They are not currently overridable via `flywheel_config`; rename the folders in your vault if auto-detection picks the wrong ones.
 
 ### Examples
 

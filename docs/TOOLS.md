@@ -16,7 +16,6 @@ The `agent` preset (default) provides search, read, write, tasks, and memory. Us
   - [Task mutations](#task-mutations)
 - [Explore Connections](#explore-connections)
   - [`graph_analysis`](#graph_analysis)
-  - [`semantic_analysis`](#semantic_analysis)
   - [Other graph tools](#other-graph-tools)
 - [Wikilinks & Linking](#wikilinks--linking)
 - [Schema & Consistency](#schema--consistency)
@@ -47,7 +46,7 @@ The `agent` preset (default) provides search, read, write, tasks, and memory. Us
 | [Read a specific note](#read-deeper) | `get_note_structure` |
 | [Write or edit content](#write--edit) | `vault_add_to_section` |
 | [Work with tasks](#tasks) | `tasks` |
-| [Explore how notes connect](#explore-connections) | `graph_analysis`, `get_connection_strength`, `get_link_path` |
+| [Explore how notes connect](#explore-connections) | `search` (agent); `graph_analysis`, `get_connection_strength`, `get_link_path` (power/full) |
 | [Improve my wikilinks](#wikilinks--linking) | `suggest_wikilinks` |
 | [Clean up my schema](#schema--consistency) | `vault_schema`, `schema_conventions`, `schema_validate` |
 | [Record corrections](#corrections) | `vault_record_correction` |
@@ -196,7 +195,7 @@ Use this when the fixed default surface is not enough and you want Flywheel to r
 
 ### `init_semantic`
 
-Builds a local embedding index for your vault. Once built, `search` and `find_similar` automatically upgrade to hybrid mode (keywords + meaning), and wikilink suggestions gain semantic scoring. Also unlocks `semantic_analysis` (clusters, bridges) and `semantic_links` in `note_intelligence`.
+Builds a local embedding index for your vault. Once built, `search` and `find_similar` automatically upgrade to hybrid mode (keywords + meaning), and wikilink suggestions gain semantic scoring. Also enables `semantic_links` in `note_intelligence`.
 
 No parameters — just run it once. Takes a few minutes on large vaults.
 
@@ -274,15 +273,6 @@ Run different analyses on your vault's link graph:
 | `centrality` | Notes ranked by graph-centrality metrics. |
 | `cycles` | Cycles in the explicit wikilink graph. |
 
-### `semantic_analysis`
-
-Embedding-based vault analysis (requires `init_semantic`).
-
-| Type | What it finds |
-|------|--------------|
-| `clusters` | Groups of notes that are about similar topics. |
-| `bridges` | Notes that are semantically similar but have no link path between them. |
-
 ### Other graph tools
 
 | Tool | When to use it |
@@ -306,7 +296,7 @@ Keep your vault's links accurate and discover missing connections.
 | `discover_stub_candidates` | Find notes with minimal content that could be enriched. |
 | `discover_cooccurrence_gaps` | Entity pairs that appear together often but aren't linked yet. |
 | `suggest_entity_aliases` | Suggest alternative names for entities based on how they're referenced. |
-| `unlinked_mentions_report` | Full report of entity mentions that aren't linked as wikilinks. |
+| `link` (`action: unlinked`) | Full report of entity mentions that aren't linked as wikilinks. |
 
 ---
 

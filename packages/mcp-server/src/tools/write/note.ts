@@ -49,7 +49,7 @@ export function registerNoteTool(
 ): void {
   server.tool(
     'note',
-    'Create, delete, move, or rename vault notes permanently. action: create — new note with frontmatter. delete — remove note (requires confirm:true). move — relocate (rewires backlinks). rename — rename file (rewires wikilinks). Returns mutation result. Does not edit note body content. e.g. { action:"delete", path:"stale.md", confirm:true }',
+    'Create, move, rename, or delete a vault note. action: create — new note with optional content and frontmatter. action: move — relocate note (rewires backlinks). action: rename — rename file (rewires wikilinks). action: delete — remove note (requires confirm:true). Returns mutation result with path and rewired backlinks. Does not edit note content.',
     {
       action: z.enum(['create', 'move', 'rename', 'delete']).describe(
         'Operation to perform: create | move | rename | delete'

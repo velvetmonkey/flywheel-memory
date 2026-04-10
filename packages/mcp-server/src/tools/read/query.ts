@@ -419,7 +419,7 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Use when looking up vault content by keyword, entity, or concept. Produces ranked results with frontmatter, backlinks, outlinks, section provenance, dates, and confidence scores. Returns a decision surface of notes, entities, and memories in one call. Does not read full note bodies — use get_note_structure or get_section_content for full text.',
+    'Read-only query of vault notes by keyword, concept, or date. Ranked results include frontmatter, backlinks, outlinks, section provenance, and confidence scores. Returns a decision surface for the matching notes. Does not perform mutations.',
     {
       query: z.string().optional().describe('Search query text. Required unless using date filters. For folder/tags/frontmatter enumeration, use find_notes.'),
 

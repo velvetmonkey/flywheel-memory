@@ -426,6 +426,44 @@ assertToolTierCoverage();
 /** Tools only registered when progressive disclosure is active (auto preset). */
 export const DISCLOSURE_ONLY_TOOLS = new Set(['discover_tools']);
 
+/**
+ * Action discriminators for merged action-param tools.
+ *
+ * Single source of truth for the sub-actions on tools that use an `action`
+ * discriminator field. Used by the doc-fragments generator to render the
+ * action-param tools list in CLAUDE.md, and kept here so drift between the
+ * tool's Zod schema and the doc is visible in the same file as the tool list.
+ *
+ * NOTE: `tasks` is intentionally omitted — it is a standalone query tool
+ * (filtering by status/path/tag), not a merged action-param tool. Task
+ * mutations are separate tools: vault_add_task and vault_toggle_task.
+ */
+export const ACTION_PARAM_MAP: Record<string, readonly string[]> = {
+  note: ['create', 'move', 'rename', 'delete'],
+  memory: ['store', 'get', 'search', 'list', 'forget', 'summarize_session'],
+  entity: ['list', 'alias', 'suggest_aliases', 'merge', 'suggest_merges', 'dismiss_merge'],
+  policy: ['list', 'validate', 'preview', 'execute', 'author', 'revise'],
+  correct: ['record', 'list', 'resolve', 'undo'],
+  link: ['suggest', 'feedback', 'unlinked', 'validate', 'stubs', 'dashboard', 'unsuppress', 'timeline', 'layer_timeseries', 'snapshot_diff'],
+  graph: ['analyse', 'backlinks', 'forward_links', 'strong_connections', 'path', 'neighbors', 'strength', 'cooccurrence_gaps'],
+  schema: ['overview', 'conventions', 'folders', 'rename_field', 'rename_tag', 'migrate', 'validate'],
+  insights: ['evolution', 'staleness', 'context', 'note_intelligence', 'growth'],
+};
+
+/**
+ * Sanity-check: every key in ACTION_PARAM_MAP must be a real tool in TOOL_CATEGORY.
+ * Catches the case where a merged tool gets renamed or retired and its action
+ * list is left dangling.
+ */
+(function assertActionParamMapCoverage(): void {
+  const orphans = Object.keys(ACTION_PARAM_MAP).filter((name) => !(name in TOOL_CATEGORY));
+  if (orphans.length > 0) {
+    throw new Error(
+      `ACTION_PARAM_MAP references tools not in TOOL_CATEGORY: ${orphans.join(', ')}`
+    );
+  }
+})();
+
 // Computed constants — derived from TOOL_CATEGORY and TOOL_TIER, never hardcode these numbers
 export const TOTAL_TOOL_COUNT = Object.keys(TOOL_CATEGORY).length;
 export const TIER_1_TOOL_COUNT = Object.values(TOOL_TIER).filter(t => t === 1).length;

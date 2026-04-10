@@ -63,6 +63,22 @@ function stripFencedCode(content: string): string {
 }
 
 /**
+ * Strip `<!-- GENERATED:id START --> ... <!-- GENERATED:id END -->` blocks.
+ *
+ * Content inside these sentinels is machine-rendered from config.ts by the
+ * doc-fragments generator and verified by test/docs/doc-fragments.test.ts.
+ * The prose-scanner should ignore it — it's generated, not written — so
+ * phrases like "19 tools" inside the Claude Code memory note don't trip
+ * the "no stale tool counts in prose" invariant.
+ */
+function stripGeneratedBlocks(content: string): string {
+  return content.replace(
+    /<!-- GENERATED:[\w-]+ START -->[\s\S]*?<!-- GENERATED:[\w-]+ END -->/g,
+    ''
+  );
+}
+
+/**
  * Read a doc file relative to the repo root.
  */
 async function readDoc(relativePath: string): Promise<string> {
@@ -365,14 +381,14 @@ describe('Documentation Wording Contracts', () => {
 // =============================================================================
 
 describe('Stale Copy Detection', () => {
-  describe('prose scan (fenced code stripped)', () => {
+  describe('prose scan (fenced code + generated blocks stripped)', () => {
     it('no user-facing "N tools" phrasing in prose', async () => {
       const failures: string[] = [];
 
       for (const docPath of SCANNED_DOCS) {
         try {
           const raw = await readDoc(docPath);
-          const prose = stripFencedCode(raw);
+          const prose = stripGeneratedBlocks(stripFencedCode(raw));
           const matches = prose.match(/(?<!tier-)\b\d+\s+tools\b/gi);
           if (matches) {
             failures.push(`${docPath}: ${matches.join(', ')}`);
@@ -391,7 +407,7 @@ describe('Stale Copy Detection', () => {
       for (const docPath of SCANNED_DOCS) {
         try {
           const raw = await readDoc(docPath);
-          const prose = stripFencedCode(raw);
+          const prose = stripGeneratedBlocks(stripFencedCode(raw));
           const matches = prose.match(/Start with.*\bdefault\b/gi);
           if (matches) {
             failures.push(`${docPath}: ${matches.join(', ')}`);
@@ -410,7 +426,7 @@ describe('Stale Copy Detection', () => {
       for (const docPath of SCANNED_DOCS) {
         try {
           const raw = await readDoc(docPath);
-          const prose = stripFencedCode(raw);
+          const prose = stripGeneratedBlocks(stripFencedCode(raw));
           if (prose.includes('Included in the default preset')) {
             failures.push(docPath);
           }

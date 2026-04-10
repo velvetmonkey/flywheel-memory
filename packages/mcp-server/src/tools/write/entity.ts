@@ -37,7 +37,7 @@ export function registerEntityTool(
 ): void {
   server.tool(
     'entity',
-    'Manage vault entities and aliases. action: list — browse entities by category. action: alias — register an alternate name (aka/nickname) for an entity. action: suggest_aliases — find missing aliases. action: merge — absorb one entity into another, rewiring all links (deduplicate). action: suggest_merges — find duplicate entities that should be combined. action: dismiss_merge — mark a suggested merge as incorrect (not the same entity). Returns entity list, result, or candidates. Does not create notes. e.g. { action:"list", category:"people" } { action:"alias", entity:"people/alice.md", alias:"Ali" }',
+    'Manage vault entities and aliases. action: list — browse by category. alias — register alternate name (aka/nickname). suggest_aliases — find missing aliases. merge — absorb one entity into another, rewiring all links (deduplicate). suggest_merges — find duplicates. dismiss_merge — mark a suggestion incorrect (not the same entity). Returns list, result, or candidates. Does not create notes. e.g. { action:"list", category:"people" } { action:"alias", entity:"people/alice.md", alias:"Ali" }',
     {
       action: z.enum(['list', 'alias', 'suggest_aliases', 'merge', 'suggest_merges', 'dismiss_merge']).describe('Operation to perform'),
 

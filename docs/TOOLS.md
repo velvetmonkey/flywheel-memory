@@ -449,6 +449,14 @@ Monitor, configure, and maintain your vault.
 
 ---
 
+## Retired Tools
+
+The following tools were retired in T43 and are no longer registered:
+
+- `tool_selection_feedback` — merged into `wikilink_feedback`. Tool-selection signals now flow through the unified feedback tool.
+
+---
+
 ## Tool Selection Intelligence
 
 Under `agent` (the default), only the fixed reduced surface is shown at startup (search, read, write, tasks, memory). Under `full`, the full surface is shown immediately.

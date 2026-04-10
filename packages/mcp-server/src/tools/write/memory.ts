@@ -24,7 +24,7 @@ export function registerMemoryTools(
 ): void {
   server.tool(
     'memory',
-    'Remember and recall facts, preferences, and settings across sessions. action: store — save a fact or preference. action: get — retrieve by key. action: search — full-text search stored memories. action: list — browse all memories. action: forget — delete a memory. action: summarize_session — session summary. Returns stored/retrieved content. Does not search vault notes — use "search" for vault content. e.g. { action:"store", key:"u.theme", value:"dark", type:"preference" } { action:"search", query:"Sarah" }',
+    'Entity-linked vault facts and session summaries. action: store — save a fact (auto-links entities). get — by key. search — FTS5 over memories. list — browse. forget — delete. summarize_session — session summary. Returns stored/retrieved content. Does not search vault notes — use search. e.g. { action:"store", key:"sarah.pref", value:"email" }',
     {
       action: z.enum(['store', 'get', 'search', 'list', 'forget', 'summarize_session']).describe('Operation to perform'),
       key: z.string().optional().describe('[store|get|forget] Memory key (e.g., "user.pref.theme", "project.x.deadline")'),

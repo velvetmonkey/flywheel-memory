@@ -556,7 +556,12 @@ you say "run the weekly review for this week".`);
 "memory" (action: brief) delivers startup context (recent sessions, active entities, stored memories) — call it at
 conversation start. "search" finds everything — notes, entities, and memories in one call. "memory"
 (action: store) persists observations, facts, or preferences across sessions (e.g. key decisions,
-user preferences, project status). "memory" (action: search/list/forget) for retrieval and cleanup.`);
+user preferences, project status). "memory" (action: search/list/forget) for retrieval and cleanup.
+
+The "memory" tool stores entity-linked facts that feed the vault knowledge graph — stored facts auto-detect
+entities, update recency + co-occurrence, and participate in FTS5 search over the vault. This is distinct
+from any client-side memory (e.g. Claude Code's own memory files). Use "memory" for vault-relevant facts
+about people, projects, or decisions — not for client-agent preferences about how to collaborate.`);
   }
 
   // Graph category instructions

@@ -14,10 +14,9 @@ from pathlib import Path
 # Keep this dict in sync when tools are added or removed.
 # T43: merged tools (link, correct, entity, graph, insights, schema, note) coexist with standalone tools.
 TOOL_CATEGORY = {
-    # search (4 tools)
+    # search (3 tools)
     "search": "search",
     "init_semantic": "search",
-    "find_similar": "search",
     "discover_tools": "search",
     # read (4 tools)
     "get_note_structure": "read",

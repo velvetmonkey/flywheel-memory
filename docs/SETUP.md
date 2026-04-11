@@ -592,7 +592,7 @@ This runs `init_semantic`, which builds **two** indexes:
 
 ### Note Embeddings (Hybrid Search)
 - Embeds all vault notes using a local model (23 MB, downloaded once)
-- After build: `search` and `find_similar` automatically combine keyword and semantic matching
+- After build: `search` (both `action=query` and `action=similar`) automatically combines keyword and semantic matching
 - No configuration changes needed — hybrid mode activates automatically
 
 ### Entity Embeddings (Semantic Wikilinks + Graph Analysis)
@@ -614,7 +614,7 @@ This runs `init_semantic`, which builds **two** indexes:
 
 After building semantic embeddings:
 
-- **Hybrid search**: `search` and `find_similar` combine BM25 + semantic matching via Reciprocal Rank Fusion — concept queries surface notes that don't share keywords
+- **Hybrid search**: `search` (both `action=query` and `action=similar`) combines BM25 + semantic matching via Reciprocal Rank Fusion — concept queries surface notes that don't share keywords
 - **Wikilink suggestions**: Semantic scoring finds conceptual links that keyword matching misses
 - **Semantic links**: `note_intelligence({ analysis: "semantic_links" })` — find missing entity links for a specific note
 - **Preflight checks**: `vault_create_note` warns when a semantically similar note already exists

@@ -35,7 +35,7 @@ export function registerSemanticTools(
     {
       title: 'Initialize Semantic Search',
       description:
-        'Run once to build vector embeddings for hybrid search. Produces an embedding index over all notes and entities. Returns embedding count and build duration. Does not run automatically — must be invoked explicitly. After building, search and find_similar automatically use semantic matching alongside BM25.',
+        'Run once to build vector embeddings for hybrid search. Produces an embedding index over all notes and entities. Returns embedding count and build duration. Does not run automatically — must be invoked explicitly. After building, search (action=query and action=similar) automatically uses semantic matching alongside BM25.',
       inputSchema: {
         force: z.boolean().optional().describe(
           'Clear and rebuild all embeddings from scratch (default: false)'

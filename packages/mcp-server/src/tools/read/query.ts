@@ -30,6 +30,7 @@ import {
   hasEntityEmbeddingsIndex,
   type ScoredNote,
 } from '../../core/read/embeddings.js';
+import { findSimilarNotes, findHybridSimilarNotes } from '../../core/read/similarity.js';
 import {
   enrichResult,
   enrichResultLight,
@@ -419,32 +420,95 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Read-only query of vault notes by keyword, concept, or date. Ranked results include frontmatter, backlinks, outlinks, section provenance, and confidence scores. Returns a decision surface for the matching notes. Does not perform mutations.',
+    'Read-only query of vault notes. action=query (default): keyword/concept/date search. action=similar: content-overlap neighbours of a given note path. Returns a decision surface with frontmatter, backlinks, outlinks, section provenance, and confidence scores. Does not perform mutations.',
     {
-      query: z.string().optional().describe('Search query text. Required unless using date filters. For folder/tags/frontmatter enumeration, use find_notes.'),
+      action: z.enum(['query', 'similar']).optional().describe('Operation: query (default) | similar'),
+
+      query: z.string().optional().describe('[query] Search query text. Required for action=query unless using date filters. For folder/tags/frontmatter enumeration, use find_notes.'),
 
       // Date filters (find notes by modification date — for pattern analysis use temporal tools)
-      modified_after: z.string().optional().describe('Only notes modified after this date (YYYY-MM-DD)'),
-      modified_before: z.string().optional().describe('Only notes modified before this date (YYYY-MM-DD)'),
+      modified_after: z.string().optional().describe('[query] Only notes modified after this date (YYYY-MM-DD)'),
+      modified_before: z.string().optional().describe('[query] Only notes modified before this date (YYYY-MM-DD)'),
 
       // Sorting
-      sort_by: z.enum(['modified', 'created', 'title']).default('modified').describe('Field to sort by'),
-      order: z.enum(['asc', 'desc']).default('desc').describe('Sort order'),
+      sort_by: z.enum(['modified', 'created', 'title']).default('modified').describe('[query] Field to sort by'),
+      order: z.enum(['asc', 'desc']).default('desc').describe('[query] Sort order'),
 
       // Entity options (prefix mode for autocomplete)
-      prefix: z.boolean().default(false).describe('Enable prefix matching for entity search (autocomplete)'),
+      prefix: z.boolean().default(false).describe('[query] Enable prefix matching for entity search (autocomplete)'),
 
       // Pagination
-      limit: z.number().default(10).describe('Maximum number of results to return'),
-      detail_count: z.number().optional().describe('Number of top results to return with full metadata (backlinks, outlinks, headings, frontmatter). Remaining results get lightweight summaries. Default: 5.'),
+      limit: z.number().default(10).describe('[query|similar] Maximum number of results to return'),
+      detail_count: z.number().optional().describe('[query] Number of top results to return with full metadata (backlinks, outlinks, headings, frontmatter). Remaining results get lightweight summaries. Default: 5.'),
 
       // Context boost (edge weights)
-      context_note: z.string().optional().describe('Path of the note providing context. When set, results connected to this note via weighted edges get an RRF boost.'),
+      context_note: z.string().optional().describe('[query] Path of the note providing context. When set, results connected to this note via weighted edges get an RRF boost.'),
 
       // Consumer format
-      consumer: z.enum(['llm', 'human']).default('llm').describe('Output format: "llm" applies sandwich ordering and strips scoring fields for context efficiency. "human" preserves score order and all scoring metadata for UI display.'),
+      consumer: z.enum(['llm', 'human']).default('llm').describe('[query] Output format: "llm" applies sandwich ordering and strips scoring fields for context efficiency. "human" preserves score order and all scoring metadata for UI display.'),
+
+      // [similar] params
+      path: z.string().optional().describe('[similar] Path to the source note (relative to vault root, e.g. "projects/alpha.md"). Required for action=similar.'),
+      diversity: z.number().min(0).max(1).optional().describe('[similar] Relevance vs diversity tradeoff (0=max diversity, 1=pure relevance, default: 0.7)'),
     },
-    async ({ query, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note, consumer }) => {
+    async ({ action: rawAction, query, modified_after, modified_before, sort_by, order, prefix, limit: requestedLimit, detail_count: requestedDetailCount, context_note, consumer, path: similarPath, diversity }) => {
+      const action = rawAction ?? 'query';
+
+      // ========================================
+      // action === 'similar' — content-overlap search around a source note
+      // ========================================
+      if (action === 'similar') {
+        if (!similarPath) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({
+            error: 'action=similar requires path.',
+            example: { action: 'similar', path: 'projects/alpha.md' },
+          }, null, 2) }] };
+        }
+
+        const index = getIndex();
+        const vaultPath = getVaultPath();
+        const stateDb = getStateDb();
+
+        if (!stateDb) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'StateDb not available' }) }] };
+        }
+
+        if (!index.notes.has(similarPath)) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({
+            error: `Note not found: ${similarPath}`,
+            hint: 'Use the full relative path including .md extension',
+          }, null, 2) }] };
+        }
+
+        const opts = {
+          limit: requestedLimit ?? 10,
+          excludeLinked: true,
+          diversity: diversity ?? 0.7,
+        };
+
+        const useHybrid = hasEmbeddingsIndex();
+        const method = useHybrid ? 'hybrid' : 'bm25';
+
+        const results = useHybrid
+          ? await findHybridSimilarNotes(stateDb.db, vaultPath, index, similarPath, opts)
+          : findSimilarNotes(stateDb.db, vaultPath, index, similarPath, opts);
+
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              source: similarPath,
+              method,
+              count: results.length,
+              similar: results,
+            }, null, 2),
+          }],
+        };
+      }
+
+      // ========================================
+      // action === 'query' — free-text / date / entity search
+      // ========================================
       requireIndex();
       const limit = Math.min(requestedLimit ?? 10, MAX_LIMIT);
       const enrichN = Math.min(requestedDetailCount ?? 5, limit);

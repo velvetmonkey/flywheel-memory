@@ -241,7 +241,6 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   // search
   search: 'search',
   init_semantic: 'search',
-  find_similar: 'search',
   discover_tools: 'search',
 
   // read (4 tools) -- note reading + structural enumeration
@@ -337,7 +336,6 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   // Tier 1 — always visible (= agent preset, see TIER_1_TOOL_COUNT)
   search: 1,
   init_semantic: 1,
-  find_similar: 1,
   discover_tools: 1,
   get_note_structure: 1,
   get_section_content: 1,
@@ -441,6 +439,7 @@ export const DISCLOSURE_ONLY_TOOLS = new Set(['discover_tools']);
  * mutations are separate tools: vault_add_task and vault_toggle_task.
  */
 export const ACTION_PARAM_MAP: Record<string, readonly string[]> = {
+  search: ['query', 'similar'],
   note: ['create', 'move', 'rename', 'delete'],
   edit_section: ['add', 'remove', 'replace'],
   memory: ['store', 'get', 'search', 'list', 'forget', 'summarize_session'],

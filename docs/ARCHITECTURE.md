@@ -246,7 +246,7 @@ Embeddings are stored in the `note_embeddings` table in StateDb (`.flywheel/stat
 
 The `semantic.ts` module merges BM25 keyword results (from FTS5) with semantic similarity results (from cosine distance on context-enriched embeddings) using **Reciprocal Rank Fusion (RRF)**. RRF combines ranked lists by summing `1 / (k + rank)` for each result across all channels, producing a single ranking that benefits from keyword precision and semantic recall. Results then pass through graph reranking, U-shaped interleaving (placing best results at attention peaks), snippet extraction, and section expansion into a decision surface.
 
-When embeddings exist, `search` and `find_similar` automatically upgrade to hybrid mode. When embeddings are not available, both tools fall back to FTS5-only mode with no degradation.
+When embeddings exist, `search` (both `action=query` and `action=similar`) automatically upgrades to hybrid mode. When embeddings are not available, it falls back to FTS5-only mode with no degradation.
 
 ### File Watcher Integration
 
@@ -270,7 +270,7 @@ In addition to note-level embeddings, Flywheel builds entity-level embeddings fo
 
 **Integration points:**
 - **Layer 9 scoring** in `suggestRelatedLinks()`  --  cosine similarity against in-memory entity embeddings
-- **Hybrid search**  --  note embeddings power `search` (BM25 + semantic via RRF) and `find_similar`
+- **Hybrid search**  --  note embeddings power `search` (BM25 + semantic via RRF) for both `action=query` and `action=similar`
 - **Semantic note intelligence**  --  `semantic_links` mode in `note_intelligence`
 - **Preflight duplicate detection**  --  `vault_create_note` checks semantic similarity before creation
 - **Broken link fallback**  --  `validate_links` uses embedding similarity to suggest corrections

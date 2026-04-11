@@ -458,17 +458,23 @@ export function initSchema(db: Database.Database): void {
     // both mixed-case variants could land in the state DB. v40 rebuilds the
     // affected tables with COLLATE NOCASE on their path columns and collapses
     // pre-existing dupes per table-specific rules (see migrateV40 below).
+    let v40Applied = true;
     if (currentVersion < 40) {
-      const applied = migrateV40(db);
-      if (applied) {
+      v40Applied = migrateV40(db);
+      if (v40Applied) {
         db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(40);
       }
       // Dry-run path: schema_version stays at 39. Server boots in degraded state.
     }
 
-    db.prepare(
-      'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
-    ).run(SCHEMA_VERSION);
+    // Only stamp SCHEMA_VERSION at the end if every migration ran. Dry-run
+    // skips v40 → leave schema_version at 39 so the next non-dry-run boot
+    // re-enters the v40 branch.
+    if (v40Applied) {
+      db.prepare(
+        'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
+      ).run(SCHEMA_VERSION);
+    }
   }
 }
 

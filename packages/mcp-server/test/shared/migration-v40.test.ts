@@ -11,7 +11,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { openStateDb, migrateV40 } from '@velvetmonkey/vault-core';
+import { openStateDb, migrateV40, initSchema } from '@velvetmonkey/vault-core';
 import type { StateDb } from '@velvetmonkey/vault-core';
 
 describe('v40 COLLATE NOCASE migration', () => {
@@ -100,7 +100,8 @@ describe('v40 COLLATE NOCASE migration', () => {
         PRIMARY KEY (term, note_path, seen_day)
       );
 
-      INSERT OR REPLACE INTO schema_version (version) VALUES (39);
+      DELETE FROM schema_version;
+      INSERT INTO schema_version (version) VALUES (39);
     `);
   });
 
@@ -244,5 +245,21 @@ describe('v40 COLLATE NOCASE migration', () => {
     // Both rows still present (no rebuild happened)
     const count = stateDb.db.prepare(`SELECT COUNT(*) AS c FROM content_hashes`).get() as { c: number };
     expect(count.c).toBe(2);
+  });
+
+  it('FLYWHEEL_MIGRATION_DRY_RUN=1 via initSchema: schema_version stays at 39', () => {
+    // Verify the trailing INSERT OR IGNORE in initSchema is gated on
+    // v40Applied. Without the gate, dry-run would mark the DB as v40 even
+    // though no rebuild happened — next boot would skip the migration entirely.
+    const prev = process.env.FLYWHEEL_MIGRATION_DRY_RUN;
+    process.env.FLYWHEEL_MIGRATION_DRY_RUN = '1';
+    try {
+      initSchema(stateDb.db);
+      const v = stateDb.db.prepare('SELECT MAX(version) AS v FROM schema_version').get() as { v: number };
+      expect(v.v).toBe(39);
+    } finally {
+      if (prev === undefined) delete process.env.FLYWHEEL_MIGRATION_DRY_RUN;
+      else process.env.FLYWHEEL_MIGRATION_DRY_RUN = prev;
+    }
   });
 });

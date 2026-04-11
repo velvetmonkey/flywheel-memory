@@ -151,8 +151,8 @@ describe('README Examples: Artemis Rocket Vault', () => {
   describe('Graph Intelligence', () => {
     it('should get note structure', async () => {
       const result = await client.callTool({
-        name: 'get_note_structure',
-        arguments: { path: 'project/Artemis Rocket.md' },
+        name: 'note_read',
+        arguments: { action: 'structure', path: 'project/Artemis Rocket.md' },
       });
 
       // May succeed or fail depending on exact file path
@@ -259,7 +259,7 @@ describe('Tool Registration Consistency', () => {
       'flywheel_doctor',
       'graph_analysis',
       'search',
-      'get_note_structure',
+      'note_read',
     ];
 
     for (const tool of documentedTools) {

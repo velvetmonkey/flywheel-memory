@@ -91,7 +91,7 @@ No `FLYWHEEL_TOOLS` needed — defaults to `agent` (search, read, write, tasks, 
 <!-- GENERATED:claude-code-memory-note START -->
 > **Claude Code note:** the `memory` merged tool is suppressed under Claude Code
 > (`CLAUDECODE=1`) because Claude Code ships its own memory plane. Agent preset
-> exposes 19 tools under Claude Code instead of 20; `brief` stays available.
+> exposes 17 tools under Claude Code instead of 18; `brief` stays available.
 <!-- GENERATED:claude-code-memory-note END -->
 
 ### Claude Desktop (`claude_desktop_config.json`)
@@ -245,7 +245,7 @@ Custom `EMBEDDING_MODEL` users fall back to `pattern` unless the tool manifest w
 | Category | Tools |
 |----------|-------|
 | `search` | init_semantic, search |
-| `read` | find_notes, find_sections, get_note_structure, get_section_content |
+| `read` | find_notes, note_read |
 | `write` | edit_section, note, policy, vault_add_to_section, vault_create_note, vault_remove_from_section, vault_replace_in_section, vault_undo_last_mutation, vault_update_frontmatter |
 | `graph` | get_backlinks, get_common_neighbors, get_connection_strength, get_forward_links, get_link_path, get_strong_connections, graph, graph_analysis, list_entities |
 | `schema` | migrate_field_values, note_intelligence, rename_field, rename_tag, schema, schema_conventions, schema_validate, vault_schema |

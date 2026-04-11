@@ -15,8 +15,7 @@ from datetime import datetime
 TOOL_CATEGORY = {
     "search": "search", "init_semantic": "search",
     "discover_tools": "search",
-    "get_note_structure": "read", "get_section_content": "read",
-    "find_sections": "read", "find_notes": "read",
+    "note_read": "read", "find_notes": "read",
     "note": "write", "vault_add_to_section": "write", "vault_remove_from_section": "write",
     "vault_replace_in_section": "write", "vault_update_frontmatter": "write",
     "vault_create_note": "write", "vault_undo_last_mutation": "write", "policy": "write",

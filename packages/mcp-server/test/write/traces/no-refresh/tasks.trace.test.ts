@@ -67,7 +67,7 @@ type: test
   });
 
   it('sections stable after task add', async () => {
-    const beforeStructure = await snap(client, 'get_note_structure', { path: notePath });
+    const beforeStructure = await snap(client, 'note_read', { action: 'structure', path: notePath });
     const sectionsBefore = (beforeStructure.sections ?? beforeStructure.headings ?? [])
       .map((s: any) => s.heading ?? s.text);
 
@@ -77,7 +77,7 @@ type: test
       section: 'Tasks',
     });
 
-    const afterStructure = await snap(client, 'get_note_structure', { path: notePath });
+    const afterStructure = await snap(client, 'note_read', { action: 'structure', path: notePath });
     const sectionsAfter = (afterStructure.sections ?? afterStructure.headings ?? [])
       .map((s: any) => s.heading ?? s.text);
 

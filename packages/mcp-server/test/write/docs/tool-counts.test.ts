@@ -193,6 +193,7 @@ describe('Tool Naming Conventions', () => {
       'correct',
       'entity',
       'edit_section',
+      'note_read',
     ]);
 
     for (const tool of toolNames) {

@@ -48,8 +48,8 @@ describe('README Blocking Chain Example', () => {
   describe('Blocking Chain Entities Exist', () => {
     it('should have Propulsion System note', async () => {
       const result = await client.callTool({
-        name: 'get_note_structure',
-        arguments: { path: 'systems/propulsion/Propulsion System.md' }
+        name: 'note_read',
+        arguments: { action: 'structure', path: 'systems/propulsion/Propulsion System.md' }
       });
 
       expect(result.isError).toBeFalsy();
@@ -59,8 +59,8 @@ describe('README Blocking Chain Example', () => {
 
     it('should have Turbopump note with delayed status', async () => {
       const result = await client.callTool({
-        name: 'get_note_structure',
-        arguments: { path: 'systems/propulsion/Turbopump.md' }
+        name: 'note_read',
+        arguments: { action: 'structure', path: 'systems/propulsion/Turbopump.md' }
       });
 
       expect(result.isError).toBeFalsy();
@@ -70,8 +70,8 @@ describe('README Blocking Chain Example', () => {
 
     it('should have Acme Aerospace supplier note with delayed status', async () => {
       const result = await client.callTool({
-        name: 'get_note_structure',
-        arguments: { path: 'suppliers/Acme Aerospace.md' }
+        name: 'note_read',
+        arguments: { action: 'structure', path: 'suppliers/Acme Aerospace.md' }
       });
 
       expect(result.isError).toBeFalsy();
@@ -83,8 +83,8 @@ describe('README Blocking Chain Example', () => {
 
     it('should have Thrust Validation note with blocked status', async () => {
       const result = await client.callTool({
-        name: 'get_note_structure',
-        arguments: { path: 'tests/Thrust Validation.md' }
+        name: 'note_read',
+        arguments: { action: 'structure', path: 'tests/Thrust Validation.md' }
       });
 
       expect(result.isError).toBeFalsy();
@@ -95,8 +95,8 @@ describe('README Blocking Chain Example', () => {
 
     it('should have Ignition Sequence note', async () => {
       const result = await client.callTool({
-        name: 'get_note_structure',
-        arguments: { path: 'systems/propulsion/Ignition Sequence.md' }
+        name: 'note_read',
+        arguments: { action: 'structure', path: 'systems/propulsion/Ignition Sequence.md' }
       });
 
       expect(result.isError).toBeFalsy();

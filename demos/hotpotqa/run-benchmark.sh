@@ -85,8 +85,8 @@ for i in $(seq 0 $((QUESTION_COUNT - 1))); do
 
   echo -n "  q${padded}: "
 
-  if claude -p "Answer this question using the Flywheel MCP tools (search, get_note_structure, get_section_content, find_sections).
-After searching, read the most relevant notes with get_note_structure to find the answer.
+  if claude -p "Answer this question using the Flywheel MCP tools (search, note_read).
+After searching, read the most relevant notes with note_read (action=structure) to find the answer.
 For multi-hop questions, search again using information from the first document to find the second.
 Be concise.
 

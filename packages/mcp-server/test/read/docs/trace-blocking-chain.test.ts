@@ -41,8 +41,8 @@ describe('End-to-End Blocking Chain Trace', () => {
     // Step 1: Get Propulsion System and find what it references
     console.log('\n--- STEP 1: Get Propulsion System ---');
     const propulsion = await client.callTool({
-      name: 'get_note_structure',
-      arguments: { path: 'systems/propulsion/Propulsion System.md' }
+      name: 'note_read',
+      arguments: { action: 'structure', path: 'systems/propulsion/Propulsion System.md' }
     });
     const propData = JSON.parse((propulsion.content as any)[0].text);
     console.log('Path:', propData.path);
@@ -68,8 +68,8 @@ describe('End-to-End Blocking Chain Trace', () => {
     // Step 3: Get Turbopump metadata - this is the blocker
     console.log('\n--- STEP 3: Get Turbopump (the blocker) ---');
     const turbopump = await client.callTool({
-      name: 'get_note_structure',
-      arguments: { path: 'systems/propulsion/Turbopump.md' }
+      name: 'note_read',
+      arguments: { action: 'structure', path: 'systems/propulsion/Turbopump.md' }
     });
     const turbData = JSON.parse((turbopump.content as any)[0].text);
     console.log('Path:', turbData.path);
@@ -81,8 +81,8 @@ describe('End-to-End Blocking Chain Trace', () => {
     // Step 4: Get Acme Aerospace - the supplier causing the delay
     console.log('\n--- STEP 4: Get Acme Aerospace (supplier causing delay) ---');
     const acme = await client.callTool({
-      name: 'get_note_structure',
-      arguments: { path: 'suppliers/Acme Aerospace.md' }
+      name: 'note_read',
+      arguments: { action: 'structure', path: 'suppliers/Acme Aerospace.md' }
     });
     const acmeData = JSON.parse((acme.content as any)[0].text);
     console.log('Path:', acmeData.path);
@@ -96,8 +96,8 @@ describe('End-to-End Blocking Chain Trace', () => {
     // Step 5: Get Thrust Validation - affected by the delay
     console.log('\n--- STEP 5: Get Thrust Validation (blocked downstream) ---');
     const thrust = await client.callTool({
-      name: 'get_note_structure',
-      arguments: { path: 'tests/Thrust Validation.md' }
+      name: 'note_read',
+      arguments: { action: 'structure', path: 'tests/Thrust Validation.md' }
     });
     const thrustData = JSON.parse((thrust.content as any)[0].text);
     console.log('Path:', thrustData.path);
@@ -111,8 +111,8 @@ describe('End-to-End Blocking Chain Trace', () => {
     // Step 6: Get Engine Hot Fire Results - also affected by the delay
     console.log('\n--- STEP 6: Get Engine Hot Fire Results (also affected) ---');
     const hotFire = await client.callTool({
-      name: 'get_note_structure',
-      arguments: { path: 'tests/Engine Hot Fire Results.md' }
+      name: 'note_read',
+      arguments: { action: 'structure', path: 'tests/Engine Hot Fire Results.md' }
     });
     const hotFireData = JSON.parse((hotFire.content as any)[0].text);
     console.log('Path:', hotFireData.path);

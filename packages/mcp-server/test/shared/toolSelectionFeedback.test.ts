@@ -46,7 +46,7 @@ describe('Tool Selection Feedback', () => {
 
     it('should persist query_context', () => {
       const id = recordToolInvocation(stateDb, {
-        tool_name: 'get_section_content',
+        tool_name: 'note_read',
         query_context: 'Log',
         session_id: 'test-session-1',
       });

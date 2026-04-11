@@ -63,8 +63,8 @@ describe('absorb_as_alias trace', () => {
   });
 
   it('alias resolves link', async () => {
-    // Use get_note_structure to verify the daily note still has outlinks
-    const struct = await snap(client, 'get_note_structure', { path: 'daily/2026-01-01.md' });
+    // Use note_read to verify the daily note still has outlinks
+    const struct = await snap(client, 'note_read', { action: 'structure', path: 'daily/2026-01-01.md' });
     expect(struct).toBeDefined();
     // After absorb, the daily note's [[Bobby]] wikilink should resolve to Bob via alias
     // Check that the daily note still has outlink(s)

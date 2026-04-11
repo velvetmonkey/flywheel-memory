@@ -22,22 +22,22 @@
     },
     {
       "id": "read_path",
-      "tool": "get_note_structure",
-      "action": null,
+      "tool": "note_read",
+      "action": "structure",
       "prompt": "Show me the full contents of the Acme Corp client note",
       "notes": "Escalation from search to full read"
     },
     {
       "id": "read_section",
-      "tool": "get_section_content",
-      "action": null,
+      "tool": "note_read",
+      "action": "section",
       "prompt": "Show me just the Revenue History section from the Acme Corp note",
       "notes": "Section-level read"
     },
     {
       "id": "read_find_sections",
-      "tool": "find_sections",
-      "action": null,
+      "tool": "note_read",
+      "action": "sections",
       "prompt": "Which notes have a section called 'Risks' or 'Risk Assessment'?",
       "notes": "Cross-vault heading search"
     },

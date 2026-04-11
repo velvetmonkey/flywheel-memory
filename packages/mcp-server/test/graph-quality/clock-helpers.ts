@@ -55,7 +55,7 @@ export interface McpSnapshot {
   inventory: string[];                         // sorted note paths
   backlinks: Record<string, string[]>;         // path → sorted source paths
   forwardLinks: Record<string, string[]>;      // path → sorted target names (lowercase)
-  structures: Record<string, any>;             // path → get_note_structure result
+  structures: Record<string, any>;             // path → note_read(action=structure) result
 }
 
 export async function snapshotMcpState(
@@ -82,7 +82,7 @@ export async function snapshotMcpState(
     }
 
     try {
-      structures[p] = await callJsonTool(client, 'get_note_structure', { path: p });
+      structures[p] = await callJsonTool(client, 'note_read', { action: 'structure', path: p });
     } catch {
       structures[p] = null;
     }
@@ -211,7 +211,7 @@ export async function snapshotMcpStateAll(
     }
 
     try {
-      structures[p] = await callJsonTool(client, "get_note_structure", { path: p });
+      structures[p] = await callJsonTool(client, "note_read", { action: "structure", path: p });
     } catch {
       structures[p] = null;
     }
@@ -270,7 +270,7 @@ export async function getSectionContent(
   path: string,
   section: string,
 ): Promise<string> {
-  const data = await callJsonTool(client, "get_section_content", { path, heading: section });
+  const data = await callJsonTool(client, "note_read", { action: "section", path, heading: section });
   return data.content ?? "";
 }
 

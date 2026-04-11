@@ -76,7 +76,7 @@ packages/
 │       │   │   ├── graphAnalysis.ts  # graph_analysis (7 modes + centrality + cycles)
 │       │   │   ├── vaultSchema.ts    # vault_schema (unified: overview, field_values, inconsistencies, validate, conventions, incomplete)
 │       │   │   ├── noteIntelligence.ts # note_intelligence (unified: prose_patterns, suggest_frontmatter, suggest_wikilinks, compute, semantic_links)
-│       │   │   ├── primitives.ts     # get_note_structure, get_section_content, find_sections, tasks
+│       │   │   ├── primitives.ts     # note_read (structure|section|sections), tasks
 │       │   │   ├── health.ts    # flywheel_doctor, pipeline_status, server_log
 │       │   │   ├── system.ts    # refresh_index
 │       │   │   ├── wikilinks.ts # suggest_wikilinks, validate_links (+ typo detection)

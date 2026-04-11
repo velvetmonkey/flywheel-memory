@@ -111,7 +111,8 @@ describe('MCP Server Integration', () => {
 
   describe('Error Handling', () => {
     test('handles invalid path gracefully', async () => {
-      const result = await client.callTool('get_note_structure', {
+      const result = await client.callTool('note_read', {
+        action: 'structure',
         path: '../../../etc/passwd',
       });
 

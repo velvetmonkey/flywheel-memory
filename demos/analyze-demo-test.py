@@ -18,10 +18,8 @@ TOOL_CATEGORY = {
     "search": "search",
     "init_semantic": "search",
     "discover_tools": "search",
-    # read (4 tools)
-    "get_note_structure": "read",
-    "get_section_content": "read",
-    "find_sections": "read",
+    # read (2 tools)
+    "note_read": "read",
     "find_notes": "read",
     # write (8 tools)
     "note": "write",

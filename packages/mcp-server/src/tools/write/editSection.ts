@@ -46,7 +46,7 @@ export function registerEditSectionTool(
 ): void {
   server.tool(
     'edit_section',
-    'Edit content inside a named section of a vault note. action: add — append or prepend content under the heading (auto-wikilinks applied). action: remove — delete matching text from the section. action: replace — find-and-replace within the section. Returns mutation result with path, section, and preview. Does not create the note unless action=add with create_if_missing:true, and does not touch other sections.',
+    'Edit content inside a named section of a vault note. action: add — append/prepend under the heading (auto-wikilinks). action: remove — delete matching text. action: replace — find-and-replace within the section. Returns mutation result with path, section, preview. Does not touch other sections.',
     {
       action: z.enum(['add', 'remove', 'replace']).describe(
         'Operation to perform: add | remove | replace'

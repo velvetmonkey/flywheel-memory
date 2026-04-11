@@ -1287,9 +1287,9 @@ export class PipelineRunner {
     if (totalApplied > 0) {
       serverLog('watcher', `Proactive drain: applied ${totalApplied} links in ${result.applied.length} files`);
     }
+    const byReason: Record<string, number> = {};
+    for (const r of result.rejections) byReason[r.reason] = (byReason[r.reason] ?? 0) + 1;
     if (result.rejections.length > 0) {
-      const byReason: Record<string, number> = {};
-      for (const r of result.rejections) byReason[r.reason] = (byReason[r.reason] ?? 0) + 1;
       const summary = Object.entries(byReason).map(([k, v]) => `${k}=${v}`).join(' ');
       serverLog('watcher', `Proactive drain rejections: ${result.rejections.length} (${summary})`);
     }
@@ -1307,6 +1307,7 @@ export class PipelineRunner {
         skipped_daily_cap: result.skippedDailyCap,
         rejection_count: result.rejections.length,
         rejection_sample: result.rejections.slice(0, 25),
+        rejection_breakdown: byReason,
       });
     } catch { /* non-critical */ }
 

@@ -24,12 +24,29 @@ export interface QueueEntry {
   confidence: string;
 }
 
+export type RejectionReason =
+  | 'active_edit'
+  | 'stat_failed'
+  | 'daily_cap'
+  | 'apply_empty'
+  | 'apply_error';
+
+export interface Rejection {
+  note_path: string;
+  entity: string;
+  score: number;
+  confidence: string;
+  reason: RejectionReason;
+  detail?: string;
+}
+
 export interface DrainResult {
   applied: Array<{ file: string; entities: string[] }>;
   expired: number;
   skippedActiveEdit: number;
   skippedMtimeGuard: number;
   skippedDailyCap: number;
+  rejections: Rejection[];
 }
 
 type ApplyFn = (
@@ -89,6 +106,25 @@ export async function drainProactiveQueue(
     skippedActiveEdit: 0,
     skippedMtimeGuard: 0,
     skippedDailyCap: 0,
+    rejections: [],
+  };
+
+  const pushRejections = (
+    filePath: string,
+    items: Array<{ entity: string; score: number; confidence: string }>,
+    reason: RejectionReason,
+    detail?: string,
+  ): void => {
+    for (const s of items) {
+      result.rejections.push({
+        note_path: filePath,
+        entity: s.entity,
+        score: s.score,
+        confidence: s.confidence,
+        reason,
+        ...(detail ? { detail } : {}),
+      });
+    }
   };
 
   // 1. Expire stale entries
@@ -134,10 +170,12 @@ export async function drainProactiveQueue(
       const mtime = statSync(fullPath).mtimeMs;
       if (Date.now() - mtime < MTIME_GUARD_MS) {
         result.skippedActiveEdit += suggestions.length;
+        pushRejections(filePath, suggestions, 'active_edit', `mtime age ${Date.now() - mtime}ms < ${MTIME_GUARD_MS}ms`);
         continue;
       }
-    } catch {
+    } catch (e) {
       result.skippedActiveEdit += suggestions.length;
+      pushRejections(filePath, suggestions, 'stat_failed', String(e));
       continue;
     }
 
@@ -145,6 +183,7 @@ export async function drainProactiveQueue(
     const todayCount = (countTodayApplied.get(filePath, todayStr) as { cnt: number }).cnt;
     if (todayCount >= config.maxPerDay) {
       result.skippedDailyCap += suggestions.length;
+      pushRejections(filePath, suggestions, 'daily_cap', `today=${todayCount} cap=${config.maxPerDay}`);
       // Mark these as expired since we won't apply them today
       for (const s of suggestions) {
         try {
@@ -171,12 +210,18 @@ export async function drainProactiveQueue(
         }
       }
 
-      // If all were skipped (mtime guard), leave as pending for next drain
-      if (applyResult.applied.length === 0 && applyResult.skipped.length > 0) {
-        result.skippedMtimeGuard += applyResult.skipped.length;
+      // Anything not in applied but in capped was rejected by applyFn
+      // (suppressed, common-word FP, apply produced 0 links, stat/read/write fail).
+      // Leave as pending — next drain retries. Record rejection reason.
+      const appliedSet = new Set(applyResult.applied);
+      const notApplied = capped.filter(s => !appliedSet.has(s.entity));
+      if (notApplied.length > 0) {
+        result.skippedMtimeGuard += notApplied.length;
+        pushRejections(filePath, notApplied, 'apply_empty', 'applyFn returned empty (suppressed, common-word, write failed, or 0 links added)');
       }
     } catch (e) {
       serverLog('watcher', `Proactive drain: error applying to ${filePath}: ${e}`, 'error');
+      pushRejections(filePath, capped, 'apply_error', String(e));
     }
   }
 

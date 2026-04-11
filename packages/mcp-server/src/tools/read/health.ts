@@ -10,7 +10,7 @@ import { resolveTarget, getBacklinksForNote, findSimilarEntity, getIndexState, g
 import { detectPeriodicNotes } from './periodic.js';
 import { getActivitySummary } from './temporal.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
-import { SCHEMA_VERSION, type StateDb } from '@velvetmonkey/vault-core';
+import { SCHEMA_VERSION, getWriteState, type StateDb } from '@velvetmonkey/vault-core';
 import { getRecentIndexEvents, getRecentPipelineEvent, getLastSuccessfulEvent, getLastEventByTrigger, compactPipelineRun, compactStep, type PipelineStep, type CompactStep, type CompactPipelineRun } from '../../core/shared/indexActivity.js';
 import type { PipelineActivity } from '../../core/read/watch/pipeline.js';
 import { getFTS5State } from '../../core/read/fts5.js';
@@ -618,19 +618,81 @@ export function registerHealthTools(
       proactive_linking: isFull && stateDb ? (() => {
         const config = getConfig();
         const enabled = config.proactive_linking !== false;
+        const minScore = config.proactive_min_score ?? 20;
+        const maxPerDay = config.proactive_max_per_day ?? 10;
         const queuePending = stateDb.db.prepare(
           `SELECT COUNT(*) as cnt FROM proactive_queue WHERE status = 'pending'`,
         ).get() as { cnt: number };
         const summary = getProactiveLinkingSummary(stateDb, 1);
         const oneLiner = getProactiveLinkingOneLiner(stateDb, 1);
+
+        // Per-row pending breakdown: why each queued item hasn't applied yet.
+        const pendingRows = stateDb.db.prepare(
+          `SELECT note_path, entity, score, confidence, queued_at, expires_at
+           FROM proactive_queue
+           WHERE status = 'pending'
+           ORDER BY queued_at DESC
+           LIMIT 25`,
+        ).all() as Array<{
+          note_path: string;
+          entity: string;
+          score: number;
+          confidence: string;
+          queued_at: number;
+          expires_at: number;
+        }>;
+
+        const now = Date.now();
+        const pendingBreakdown = pendingRows.map(r => {
+          const reasons: string[] = [];
+          if (r.score < minScore) reasons.push(`score ${r.score} < min ${minScore}`);
+          if (r.confidence !== 'high') reasons.push(`confidence=${r.confidence} (need high)`);
+          if (r.expires_at <= now) reasons.push('expired');
+          return {
+            note_path: r.note_path,
+            entity: r.entity,
+            score: r.score,
+            confidence: r.confidence,
+            age_hours: Math.round((now - r.queued_at) / 3_600_000 * 10) / 10,
+            likely_reasons: reasons.length > 0 ? reasons : ['passes filters — likely active_edit, daily_cap, or apply_empty (see last_drain)'],
+          };
+        });
+
+        const lastDrain = getWriteState<{
+          at: number;
+          total_applied: number;
+          applied_files: number;
+          expired: number;
+          skipped_active: number;
+          skipped_mtime: number;
+          skipped_daily_cap: number;
+          rejection_count: number;
+          rejection_sample: Array<Record<string, unknown>>;
+        }>(stateDb, 'last_proactive_drain');
+
         return {
           enabled,
           queue_pending: queuePending.cnt,
+          min_score: minScore,
+          max_per_day: maxPerDay,
           summary: oneLiner,
           total_applied_24h: summary.total_applied,
           survived_24h: summary.survived,
           removed_24h: summary.removed,
           files_24h: summary.files_touched,
+          pending_breakdown: pendingBreakdown,
+          last_drain: lastDrain ? {
+            at: lastDrain.at,
+            age_minutes: Math.round((now - lastDrain.at) / 60_000),
+            total_applied: lastDrain.total_applied,
+            applied_files: lastDrain.applied_files,
+            expired: lastDrain.expired,
+            skipped_active: lastDrain.skipped_active,
+            skipped_mtime: lastDrain.skipped_mtime,
+            skipped_daily_cap: lastDrain.skipped_daily_cap,
+            rejection_count: lastDrain.rejection_count,
+            rejection_sample: lastDrain.rejection_sample,
+          } : null,
         };
       })() : undefined,
       recommendations,

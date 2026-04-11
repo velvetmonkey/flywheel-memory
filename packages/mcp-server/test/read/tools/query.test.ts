@@ -197,5 +197,44 @@ describe('Query Tools', () => {
         expect(data.returned).toBeDefined();
       });
     });
+
+    describe('action routing', () => {
+      test('default action routes to query branch', async () => {
+        const result = await client.callTool('search', { query: 'Acme' });
+        const data = JSON.parse(result.content[0].text);
+        // Query branch returns a results-shaped payload, not similarity shape
+        expect(data.source).toBeUndefined();
+        expect(data.similar).toBeUndefined();
+        expect(data.results ?? data.notes).toBeDefined();
+      });
+
+      test('action: similar routes to similarity branch', async () => {
+        const result = await client.callTool('search', {
+          action: 'similar',
+          path: 'Acme Corp.md',
+        });
+        const data = JSON.parse(result.content[0].text);
+        expect(data.source).toBe('Acme Corp.md');
+        expect(data.method).toMatch(/^(bm25|hybrid)$/);
+        expect(Array.isArray(data.similar)).toBe(true);
+      });
+
+      test('action: similar without path returns error', async () => {
+        const result = await client.callTool('search', { action: 'similar' });
+        const data = JSON.parse(result.content[0].text);
+        expect(data.error).toMatch(/requires path/i);
+        expect(data.example).toBeDefined();
+      });
+
+      test('action: similar with unknown path returns error', async () => {
+        const result = await client.callTool('search', {
+          action: 'similar',
+          path: 'does-not-exist.md',
+        });
+        const data = JSON.parse(result.content[0].text);
+        expect(data.error).toMatch(/not found/i);
+      });
+
+    });
   });
 });

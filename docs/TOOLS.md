@@ -6,7 +6,6 @@ The `agent` preset (default) provides search, read, write, tasks, and memory. Us
 - [Find Anything](#find-anything)
   - [`search`](#search)
   - [`find_notes`](#find_notes)
-  - [`find_similar`](#find_similar)
   - [`discover_tools`](#discover_tools)
   - [`init_semantic`](#init_semantic)
 - [Read Deeper](#read-deeper)
@@ -100,7 +99,9 @@ The enrichment step is the same regardless of how a note matched — every resul
 - **Structural/metadata enumeration** → use `find_notes` instead (folder, tags, frontmatter filters).
 - **`prefix: true` + query** → entity autocomplete.
 
-**Parameters:** `query`, `modified_after`, `modified_before`, `limit`, `detail_count`, `sort_by`, `order`, `context_note`, `consumer`, `prefix`
+**Parameters:** `action` (`query` default, or `similar`), `query`, `modified_after`, `modified_before`, `limit`, `detail_count`, `sort_by`, `order`, `context_note`, `consumer`, `prefix`, `path` (for `action: similar`), `diversity` (for `action: similar`)
+
+**`action: similar`** — "Show me notes like this one." Pass a `path` and it finds related notes by content overlap (BM25 + semantic when embeddings exist). Filters out notes already linked so only new connections surface. Use `diversity` (0..1, default 0.7) to control MMR diversity.
 
 **Multi-vault behavior**
 
@@ -181,12 +182,6 @@ Enumerate notes by metadata — folder, tags, or frontmatter values. Use when yo
 | `order` | `"desc"` | Sort order: `"asc"` or `"desc"` |
 | `limit` | `50` | Maximum results to return |
 
-### `find_similar`
-
-"Show me notes like this one." Give it a note path, and it finds related notes by content overlap. Filters out notes already linked to it, so you only see new connections.
-
-**Parameters:** `path`, `limit`, `diversity`
-
 ### `discover_tools`
 
 Only available in `auto`. Give it a natural-language task and it activates the specialised categories that match the request.
@@ -195,7 +190,7 @@ Use this when the fixed default surface is not enough and you want Flywheel to r
 
 ### `init_semantic`
 
-Builds a local embedding index for your vault. Once built, `search` and `find_similar` automatically upgrade to hybrid mode (keywords + meaning), and wikilink suggestions gain semantic scoring. Also enables `semantic_links` in `note_intelligence`.
+Builds a local embedding index for your vault. Once built, `search` automatically upgrades to hybrid mode (keywords + meaning) for both `action=query` and `action=similar`, and wikilink suggestions gain semantic scoring. Also enables `semantic_links` in `note_intelligence`.
 
 No parameters — just run it once. Takes a few minutes on large vaults.
 

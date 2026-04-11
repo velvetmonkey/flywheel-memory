@@ -13,7 +13,7 @@ from datetime import datetime
 # Keep this dict in sync when tools are added or removed.
 # T43: merged tools coexist with standalone tools.
 TOOL_CATEGORY = {
-    "search": "search", "init_semantic": "search", "find_similar": "search",
+    "search": "search", "init_semantic": "search",
     "discover_tools": "search",
     "get_note_structure": "read", "get_section_content": "read",
     "find_sections": "read", "find_notes": "read",

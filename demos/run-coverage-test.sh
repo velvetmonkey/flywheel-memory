@@ -23,10 +23,9 @@ RESULTS_DIR="$SCRIPT_DIR/test-results/coverage-$TIMESTAMP"
 # Tool definitions: tool_name|FLYWHEEL_TOOLS|prompt|resets(yes/no)
 # One entry per default-visible flywheel tool, organized by category.
 TOOLS=(
-  # --- search (3) ---
+  # --- search (2) ---
   'search|default|How much have I billed Acme Corp?|no'
   'init_semantic|default|Build a semantic search index for this vault so I can do similarity searches|no'
-  'find_similar|default|Find notes that are similar to the Acme Corp client note|no'
 
   # --- read (3) ---
   'get_note_structure|default|Show me the full structure and content of the note at clients/Acme Corp.md|no'

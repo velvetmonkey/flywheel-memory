@@ -3,7 +3,7 @@
  *
  * Verifies that creating a note propagates through refresh_index
  * to search, backlinks, forward links, vault_stats, vault_schema,
- * and find_similar.
+ * and search(action: similar).
  *
  * Note: vault_create_note lowercases filenames via sanitizeNotePath,
  * so "people/Bob.md" becomes "people/bob.md".
@@ -128,8 +128,8 @@ describe('vault_create_note traces', () => {
     expect(typeValues).toContain('widget');
   });
 
-  it('findable by find_similar', async () => {
-    const similar = await snap(client, 'find_similar', { path: 'people/alice.md' });
+  it('findable by search(action: similar)', async () => {
+    const similar = await snap(client, 'search', { action: 'similar', path: 'people/alice.md' });
     const paths = similar.similar.map((s: any) => s.path);
     expect(paths).toContain('people/bob.md');
   });

@@ -206,7 +206,7 @@ When embeddings exist, search automatically uses hybrid ranking (keyword + seman
 
 > "Find notes similar to projects/alpha.md using semantic similarity"
 
-`find_similar` combines keyword and semantic matching when the semantic index is built, surfacing conceptually related notes even if they don't share keywords.
+`search({ action: "similar", path: "projects/alpha.md" })` combines keyword and semantic matching when the semantic index is built, surfacing conceptually related notes even if they don't share keywords.
 
 ### Find missing connections
 
@@ -381,4 +381,4 @@ Manage vault-wide changes.
 - **Let auto-wikilinks work.** When writing through Flywheel, entity mentions are linked automatically. Write naturally -- don't add `[[brackets]]` yourself.
 - **Check before deleting.** `vault_delete_note` shows backlink warnings before deletion. If a note has backlinks, consider moving or renaming instead.
 - **Dry-run any write.** All write tools accept `dry_run: true` to preview changes without modifying files. Bulk tools (`rename_field`, `migrate_field_values`) default to dry-run mode.
-- **Build the semantic index once** — `init_semantic` builds both note embeddings (for hybrid search via `search` and `find_similar`) and entity embeddings (for semantic wikilink scoring). Takes ~2-3 minutes for 500 entities. After that, wikilink suggestions gain semantic understanding and the `semantic_links` mode in `note_intelligence` becomes available.
+- **Build the semantic index once** — `init_semantic` builds both note embeddings (for hybrid search via `search` — both `action=query` and `action=similar`) and entity embeddings (for semantic wikilink scoring). Takes ~2-3 minutes for 500 entities. After that, wikilink suggestions gain semantic understanding and the `semantic_links` mode in `note_intelligence` becomes available.

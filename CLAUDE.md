@@ -39,7 +39,6 @@ packages/mcp-server/src/
 │   │   │                       #   discover_cooccurrence_gaps
 │   │   ├── migrations.ts       # rename_field, migrate_field_values
 │   │   ├── metrics.ts          # vault_growth
-│   │   ├── similarity.ts       # find_similar
 │   │   ├── semantic.ts         # init_semantic
 │   │   └── brief.ts            # brief
 │   └── write/                  # Write-side tool registrations
@@ -104,16 +103,16 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 <!-- GENERATED:preset-counts START -->
 | Preset | Tools | Categories | Behaviour |
 |--------|-------|------------|-----------|
-| `agent` (default) | 21 | search, read, write, tasks, memory | Focused tier-1 surface — search, read, write, tasks, memory |
-| `power` | 46 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
-| `full` | 65 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema, graph, diagnostics, temporal | All categories visible at startup |
-| `auto` | 66 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
+| `agent` (default) | 20 | search, read, write, tasks, memory | Focused tier-1 surface — search, read, write, tasks, memory |
+| `power` | 45 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
+| `full` | 64 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema, graph, diagnostics, temporal | All categories visible at startup |
+| `auto` | 65 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
 <!-- GENERATED:preset-counts END -->
 
 <!-- GENERATED:claude-code-memory-note START -->
 > **Claude Code note:** the `memory` merged tool is suppressed under Claude Code
 > (`CLAUDECODE=1`) because Claude Code ships its own memory plane. Agent preset
-> exposes 20 tools under Claude Code instead of 21; `brief` stays available.
+> exposes 19 tools under Claude Code instead of 20; `brief` stays available.
 <!-- GENERATED:claude-code-memory-note END -->
 
 Switch preset at runtime: `flywheel_config` with `key: tool_preset, value: agent|power|full`
@@ -133,6 +132,7 @@ Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` —
 - `note` — `action: create|move|rename|delete`
 - `policy` — `action: list|validate|preview|execute|author|revise`
 - `schema` — `action: overview|conventions|folders|rename_field|rename_tag|migrate|validate`
+- `search` — `action: query|similar`
 <!-- GENERATED:action-param-tools END -->
 
 Note: `tasks` is a standalone query tool (filters by status/path/tag), not a merged action-param tool. Task mutations use `vault_add_task` and `vault_toggle_task`.

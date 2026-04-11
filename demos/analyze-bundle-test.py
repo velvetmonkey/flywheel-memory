@@ -13,10 +13,9 @@ from pathlib import Path
 # Full tool → category mapping — canonical source is packages/mcp-server/src/config.ts (TOOL_CATEGORY).
 # Keep this dict in sync when tools are added or removed.
 TOOL_CATEGORY = {
-    # search (4 tools)
+    # search (3 tools)
     "search": "search",
     "init_semantic": "search",
-    "find_similar": "search",
     "discover_tools": "search",
     # read (3 tools)
     "get_note_structure": "read",

@@ -164,7 +164,6 @@ aliases = {
     'graph': ['graph_analysis', 'get_backlinks', 'get_forward_links', 'get_strong_connections', 'get_link_path', 'get_common_neighbors', 'get_connection_strength', 'discover_cooccurrence_gaps'],
     'insights': ['track_concept_evolution', 'predict_stale_notes', 'get_context_around_date', 'note_intelligence', 'vault_growth'],
     'note': ['vault_create_note', 'vault_move_note', 'vault_rename_note', 'vault_delete_note'],
-    'search': ['find_similar'],
     'memory': ['brief'],
     'tasks': ['vault_add_task', 'vault_toggle_task'],
 }

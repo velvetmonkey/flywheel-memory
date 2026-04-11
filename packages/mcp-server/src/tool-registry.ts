@@ -83,7 +83,7 @@ import { registerInitTools } from './tools/write/enrich.js';
 // Additional read tool registrations
 import { registerMetricsTools } from './tools/read/metrics.js';
 // activity.ts retired — vault_activity modes folded into vault_session_history
-import { registerSimilarityTools } from './tools/read/similarity.js';
+// similarity.ts retired (T43) — find_similar absorbed into search as action: similar
 import { registerSemanticTools } from './tools/read/semantic.js';
 // registerReadMergeTools retired (T43) — suggest_entity_merges/dismiss_merge_suggestion absorbed into entity tool
 import { registerTemporalAnalysisTools } from './tools/read/temporalAnalysis.js';
@@ -960,7 +960,7 @@ export function registerAllTools(
   // Additional read tools
   registerMetricsTools(targetServer, gvi, gsd);
   // vault_activity retired — modes folded into vault_session_history
-  registerSimilarityTools(targetServer, gvi, gvp, gsd);
+  // registerSimilarityTools retired (T43) — find_similar absorbed into search
   registerSemanticTools(targetServer, gvp, gsd);
   // registerReadMergeTools retired (T43) — suggest_merges/dismiss_merge now in entity tool
   registerTemporalAnalysisTools(targetServer, gvi, gvp, gsd);

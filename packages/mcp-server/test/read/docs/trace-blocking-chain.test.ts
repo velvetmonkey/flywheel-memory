@@ -42,7 +42,7 @@ describe('End-to-End Blocking Chain Trace', () => {
     console.log('\n--- STEP 1: Get Propulsion System ---');
     const propulsion = await client.callTool({
       name: 'note_read',
-      arguments: { path: 'systems/propulsion/Propulsion System.md' }
+      arguments: { action: 'structure', path: 'systems/propulsion/Propulsion System.md' }
     });
     const propData = JSON.parse((propulsion.content as any)[0].text);
     console.log('Path:', propData.path);
@@ -69,7 +69,7 @@ describe('End-to-End Blocking Chain Trace', () => {
     console.log('\n--- STEP 3: Get Turbopump (the blocker) ---');
     const turbopump = await client.callTool({
       name: 'note_read',
-      arguments: { path: 'systems/propulsion/Turbopump.md' }
+      arguments: { action: 'structure', path: 'systems/propulsion/Turbopump.md' }
     });
     const turbData = JSON.parse((turbopump.content as any)[0].text);
     console.log('Path:', turbData.path);
@@ -82,7 +82,7 @@ describe('End-to-End Blocking Chain Trace', () => {
     console.log('\n--- STEP 4: Get Acme Aerospace (supplier causing delay) ---');
     const acme = await client.callTool({
       name: 'note_read',
-      arguments: { path: 'suppliers/Acme Aerospace.md' }
+      arguments: { action: 'structure', path: 'suppliers/Acme Aerospace.md' }
     });
     const acmeData = JSON.parse((acme.content as any)[0].text);
     console.log('Path:', acmeData.path);
@@ -97,7 +97,7 @@ describe('End-to-End Blocking Chain Trace', () => {
     console.log('\n--- STEP 5: Get Thrust Validation (blocked downstream) ---');
     const thrust = await client.callTool({
       name: 'note_read',
-      arguments: { path: 'tests/Thrust Validation.md' }
+      arguments: { action: 'structure', path: 'tests/Thrust Validation.md' }
     });
     const thrustData = JSON.parse((thrust.content as any)[0].text);
     console.log('Path:', thrustData.path);
@@ -112,7 +112,7 @@ describe('End-to-End Blocking Chain Trace', () => {
     console.log('\n--- STEP 6: Get Engine Hot Fire Results (also affected) ---');
     const hotFire = await client.callTool({
       name: 'note_read',
-      arguments: { path: 'tests/Engine Hot Fire Results.md' }
+      arguments: { action: 'structure', path: 'tests/Engine Hot Fire Results.md' }
     });
     const hotFireData = JSON.parse((hotFire.content as any)[0].text);
     console.log('Path:', hotFireData.path);

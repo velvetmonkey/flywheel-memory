@@ -152,7 +152,7 @@ describe('README Examples: Artemis Rocket Vault', () => {
     it('should get note structure', async () => {
       const result = await client.callTool({
         name: 'note_read',
-        arguments: { path: 'project/Artemis Rocket.md' },
+        arguments: { action: 'structure', path: 'project/Artemis Rocket.md' },
       });
 
       // May succeed or fail depending on exact file path

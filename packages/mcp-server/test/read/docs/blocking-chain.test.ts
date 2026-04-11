@@ -49,7 +49,7 @@ describe('README Blocking Chain Example', () => {
     it('should have Propulsion System note', async () => {
       const result = await client.callTool({
         name: 'note_read',
-        arguments: { path: 'systems/propulsion/Propulsion System.md' }
+        arguments: { action: 'structure', path: 'systems/propulsion/Propulsion System.md' }
       });
 
       expect(result.isError).toBeFalsy();
@@ -60,7 +60,7 @@ describe('README Blocking Chain Example', () => {
     it('should have Turbopump note with delayed status', async () => {
       const result = await client.callTool({
         name: 'note_read',
-        arguments: { path: 'systems/propulsion/Turbopump.md' }
+        arguments: { action: 'structure', path: 'systems/propulsion/Turbopump.md' }
       });
 
       expect(result.isError).toBeFalsy();
@@ -71,7 +71,7 @@ describe('README Blocking Chain Example', () => {
     it('should have Acme Aerospace supplier note with delayed status', async () => {
       const result = await client.callTool({
         name: 'note_read',
-        arguments: { path: 'suppliers/Acme Aerospace.md' }
+        arguments: { action: 'structure', path: 'suppliers/Acme Aerospace.md' }
       });
 
       expect(result.isError).toBeFalsy();
@@ -84,7 +84,7 @@ describe('README Blocking Chain Example', () => {
     it('should have Thrust Validation note with blocked status', async () => {
       const result = await client.callTool({
         name: 'note_read',
-        arguments: { path: 'tests/Thrust Validation.md' }
+        arguments: { action: 'structure', path: 'tests/Thrust Validation.md' }
       });
 
       expect(result.isError).toBeFalsy();
@@ -96,7 +96,7 @@ describe('README Blocking Chain Example', () => {
     it('should have Ignition Sequence note', async () => {
       const result = await client.callTool({
         name: 'note_read',
-        arguments: { path: 'systems/propulsion/Ignition Sequence.md' }
+        arguments: { action: 'structure', path: 'systems/propulsion/Ignition Sequence.md' }
       });
 
       expect(result.isError).toBeFalsy();

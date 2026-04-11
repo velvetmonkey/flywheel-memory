@@ -510,11 +510,11 @@ describe.skip('Clock Test Phase 2 — Extended Tool Coverage', () => {
       tool_name: 'search',
     });
 
-    // Report incorrect for get_note_structure
+    // Report incorrect for note_read
     await callJsonTool(client, 'tool_selection_feedback', {
       mode: 'report',
       correct: false,
-      tool_name: 'get_note_structure',
+      tool_name: 'note_read',
       expected_tool: 'search',
       reason: 'Should have searched instead of reading structure',
     });

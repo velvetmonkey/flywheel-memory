@@ -14,7 +14,7 @@ import { getHeuristicMisroutes, getToolSelectionStats } from '../../src/core/sha
 describe('Heuristic Misroute Detection', () => {
   describe('detectMisroute', () => {
     it('should flag temporal query routed to non-temporal tool', () => {
-      const result = detectMisroute('get_note_structure', 'show me the timeline of Alice');
+      const result = detectMisroute('note_read', 'show me the timeline of Alice');
       expect(result).not.toBeNull();
       expect(result!.expectedCategory).toBe('temporal');
       expect(result!.ruleId).toBe('temporal-via-wrong-cat');
@@ -28,13 +28,13 @@ describe('Heuristic Misroute Detection', () => {
     });
 
     it('should flag schema query routed to non-schema tool', () => {
-      const result = detectMisroute('get_section_content', 'show me the schema conventions');
+      const result = detectMisroute('note_read', 'show me the schema conventions');
       expect(result).not.toBeNull();
       expect(result!.expectedCategory).toBe('schema');
     });
 
     it('should flag wikilinks query routed to non-wikilink tool', () => {
-      const result = detectMisroute('get_note_structure', 'suggest wikilinks for this note');
+      const result = detectMisroute('note_read', 'suggest wikilinks for this note');
       expect(result).not.toBeNull();
       expect(result!.expectedCategory).toBe('wikilinks');
     });
@@ -60,8 +60,8 @@ describe('Heuristic Misroute Detection', () => {
     });
 
     it('should return null for empty query context', () => {
-      expect(detectMisroute('get_note_structure', '')).toBeNull();
-      expect(detectMisroute('get_note_structure', '  ')).toBeNull();
+      expect(detectMisroute('note_read', '')).toBeNull();
+      expect(detectMisroute('note_read', '  ')).toBeNull();
     });
   });
 
@@ -82,17 +82,17 @@ describe('Heuristic Misroute Detection', () => {
 
     it('should store heuristic advisory row with correct=NULL', () => {
       const invId = recordToolInvocation(stateDb, {
-        tool_name: 'get_note_structure',
+        tool_name: 'note_read',
         query_context: 'evolution of the project',
         session_id: 'test-sess',
       });
 
-      const detection = detectMisroute('get_note_structure', 'evolution of the project')!;
+      const detection = detectMisroute('note_read', 'evolution of the project')!;
       recordHeuristicMisroute(stateDb, invId, detection);
 
       const misroutes = getHeuristicMisroutes(stateDb, 10);
       expect(misroutes.length).toBe(1);
-      expect(misroutes[0].tool_name).toBe('get_note_structure');
+      expect(misroutes[0].tool_name).toBe('note_read');
       expect(misroutes[0].query_context).toBe('evolution of the project');
       expect(misroutes[0].correct).toBeNull();
       expect(misroutes[0].source).toBe('heuristic');
@@ -106,7 +106,7 @@ describe('Heuristic Misroute Detection', () => {
     it('should not affect explicit feedback stats', () => {
       // Heuristic rows have correct=NULL, so they should be excluded from stats
       const stats = getToolSelectionStats(stateDb, 30);
-      const noteStructStats = stats.find(s => s.tool_name === 'get_note_structure');
+      const noteStructStats = stats.find(s => s.tool_name === 'note_read');
       // No explicit feedback was recorded, so this tool shouldn't appear in stats
       expect(noteStructStats).toBeUndefined();
     });

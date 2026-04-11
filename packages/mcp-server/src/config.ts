@@ -243,10 +243,8 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   init_semantic: 'search',
   discover_tools: 'search',
 
-  // read (4 tools) -- note reading + structural enumeration
-  get_note_structure: 'read',
-  get_section_content: 'read',
-  find_sections: 'read',
+  // read (2 tools) -- note reading + structural enumeration
+  note_read: 'read',
   find_notes: 'read',
 
   // write (8 tools) -- content mutations + frontmatter + note creation + undo + policy
@@ -337,9 +335,7 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   search: 1,
   init_semantic: 1,
   discover_tools: 1,
-  get_note_structure: 1,
-  get_section_content: 1,
-  find_sections: 1,
+  note_read: 1,
   find_notes: 1,
   note: 1,
   edit_section: 1,
@@ -440,6 +436,7 @@ export const DISCLOSURE_ONLY_TOOLS = new Set(['discover_tools']);
  */
 export const ACTION_PARAM_MAP: Record<string, readonly string[]> = {
   search: ['query', 'similar'],
+  note_read: ['structure', 'section', 'sections'],
   note: ['create', 'move', 'rename', 'delete'],
   edit_section: ['add', 'remove', 'replace'],
   memory: ['store', 'get', 'search', 'list', 'forget', 'summarize_session'],
@@ -504,9 +501,10 @@ Tool routing:
      answer without reading full files.
   2. For structural, temporal, wikilink, or diagnostic goals, use the specialized
      tools in those categories — they return targeted contracts, not broad results.
-  3. Escalate to "get_note_structure" for full markdown content or word count.
-     Use "get_section_content" for a single section by heading name.
-     Prefer "get_note_structure" over the built-in Read tool for vault notes — it
+  3. Escalate to "note_read" for full markdown content or word count.
+     Use action=structure for heading outline + metadata, action=section for a single
+     section by heading name, action=sections for vault-wide heading search.
+     Prefer "note_read" over the built-in Read tool for vault notes — it
      returns enriched metadata (backlinks, outlinks, entities, word count) that Read cannot.
   4. Start with a broad search: just query text, no filters. Use find_notes for
      structural enumeration by folder, tag, or frontmatter — not search.`);
@@ -543,9 +541,9 @@ Good frontmatter is the highest-leverage action for improving suggestions, searc
     parts.push(`
 ## Read
 
-Escalation: "search" (enriched metadata + content preview) → "get_note_structure"
-(full content + word count) → "get_section_content" (single section).
-"find_sections" finds headings across the vault by pattern.`);
+Escalation: "search" (enriched metadata + content preview) → "note_read"
+(full content + word count via action=structure, single section via action=section).
+"note_read" with action=sections finds headings across the vault by regex pattern.`);
   }
 
   // Write category instructions

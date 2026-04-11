@@ -376,7 +376,7 @@ Manage vault-wide changes.
 
 ## Tips
 
-- **Start broad, then narrow.** Use `search` first — it returns enriched results with frontmatter, backlinks, outlinks, and content previews. Escalate to `get_note_structure` only when you need full content.
+- **Start broad, then narrow.** Use `search` first — it returns enriched results with frontmatter, backlinks, outlinks, and content previews. Escalate to `note_read` only when you need full content.
 - **Use sections.** Flywheel works best when notes have clear heading structure. `vault_add_to_section` targets specific sections, avoiding accidental overwrites.
 - **Let auto-wikilinks work.** When writing through Flywheel, entity mentions are linked automatically. Write naturally -- don't add `[[brackets]]` yourself.
 - **Check before deleting.** `vault_delete_note` shows backlink warnings before deletion. If a note has backlinks, consider moving or renaming instead.

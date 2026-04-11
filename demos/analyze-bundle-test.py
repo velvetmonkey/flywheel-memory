@@ -17,10 +17,8 @@ TOOL_CATEGORY = {
     "search": "search",
     "init_semantic": "search",
     "discover_tools": "search",
-    # read (3 tools)
-    "get_note_structure": "read",
-    "get_section_content": "read",
-    "find_sections": "read",
+    # read (1 tool)
+    "note_read": "read",
     # write (7 tools)
     "vault_add_to_section": "write",
     "vault_remove_from_section": "write",

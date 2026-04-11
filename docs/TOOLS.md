@@ -42,7 +42,7 @@ The `agent` preset (default) provides search, read, write, tasks, and memory. Us
 |---|---|
 | [Ask my vault a question](#find-anything) | `search` |
 | [List notes by folder, tag, or frontmatter](#find_notes) | `find_notes` |
-| [Read a specific note](#read-deeper) | `get_note_structure` |
+| [Read a specific note](#read-deeper) | `note_read` |
 | [Write or edit content](#write--edit) | `vault_add_to_section` |
 | [Work with tasks](#tasks) | `tasks` |
 | [Explore how notes connect](#explore-connections) | `search` (agent); `graph_analysis`, `get_connection_strength`, `get_link_path` (power/full) |
@@ -138,7 +138,7 @@ Search results include body text in one of two forms:
 
 **Content previews** are positional — always the opening of the note body (after frontmatter — YAML is excluded). They appear when a note matched by entity name, metadata filter, or semantic similarity rather than keyword.
 
-Between `snippet`, `section_content`, and frontmatter, most questions can be answered from the decision surface alone. Escalate to `get_note_structure` only when you need content outside the matched section.
+Between `snippet`, `section_content`, and frontmatter, most questions can be answered from the decision surface alone. Escalate to `note_read` only when you need content outside the matched section.
 
 **What gets indexed**
 
@@ -202,9 +202,9 @@ When search gives you the right note but you need more detail. Search already re
 
 | Tool | When to use it |
 |------|---------------|
-| `get_note_structure` | See a note's heading outline, word count, and optionally its full content. Good after search identifies something interesting. |
-| `get_section_content` | Read just one section of a note by heading name. |
-| `find_sections` | Find every section across your vault matching a heading pattern (regex). "Where are all my ## Status sections?" |
+| `note_read` (action=structure) | See a note's heading outline, word count, and optionally its full content. Good after search identifies something interesting. |
+| `note_read` (action=section) | Read just one section of a note by heading name. |
+| `note_read` (action=sections) | Find every section across your vault matching a heading pattern (regex). "Where are all my ## Status sections?" |
 
 ---
 

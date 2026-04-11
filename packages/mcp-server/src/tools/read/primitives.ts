@@ -45,166 +45,157 @@ export function registerPrimitiveTools(
   getStateDb: () => StateDb | null = () => null
 ) {
   // ============================================
-  // STRUCTURE PRIMITIVES
+  // NOTE_READ — merged structure/section/sections tool (T43 B2)
   // ============================================
 
-  // get_note_structure - also absorbs get_headings and vault_list_sections
-  server.registerTool(
-    'get_note_structure',
+  server.tool(
+    'note_read',
+    'Read vault note content. action=structure (default): heading outline, frontmatter, backlinks, outlinks, word count, optional full section text — prefer over built-in Read for vault notes. action=section: text under one heading by name. action=sections: vault-wide heading search by regex. Returns enriched note metadata. Does not search or mutate.',
     {
-      title: 'Get Note Structure',
-      description: 'Read a vault note by path. Returns heading tree, frontmatter, tags, word count, backlinks, outlinks, and optionally full section content with entity metadata. Prefer this over the built-in Read tool for vault notes — it provides enriched metadata that Read cannot. Does not search — requires a path from a prior search result.',
-      inputSchema: {
-        path: z.string().describe('Path to the note'),
-        include_content: z.boolean().default(false).describe('Include the text content under each top-level section. Default false for structure only.'),
-        max_content_chars: z.number().default(20000).describe('Max total chars of section content to include. Sections are truncated at paragraph boundaries.'),
-      },
+      action: z.enum(['structure', 'section', 'sections']).describe(
+        'Operation: structure (read note outline + metadata) | section (read one section by heading) | sections (vault-wide heading search)'
+      ),
+
+      // [structure|section] params
+      path: z.string().optional().describe('[structure|section] Vault-relative note path'),
+      include_content: z.boolean().optional().describe('[structure] Include full section text under each heading (default false)'),
+      max_content_chars: z.number().optional().describe('[structure] Max total chars of section content (default 20000)'),
+
+      // [section] params
+      heading: z.string().optional().describe('[section] Heading text to find'),
+      include_subheadings: z.boolean().optional().describe('[section] Include content under subheadings (default true)'),
+      max_section_chars: z.number().optional().describe('[section] Max chars of section content (default 10000)'),
+
+      // [sections] params
+      pattern: z.string().optional().describe('[sections] Regex to match heading text'),
+      folder: z.string().optional().describe('[sections] Limit to notes in this folder'),
+      limit: z.coerce.number().optional().describe('[sections] Max results (default 50)'),
+      offset: z.coerce.number().optional().describe('[sections] Results to skip for pagination (default 0)'),
     },
-    async ({ path, include_content, max_content_chars }) => {
+    async ({ action, path, include_content, max_content_chars, heading, include_subheadings, max_section_chars, pattern, folder, limit: requestedLimit, offset: requestedOffset }) => {
       const index = getIndex();
       const vaultPath = getVaultPath();
-      const result = await getNoteStructure(index, path, vaultPath);
 
-      if (!result) {
-        return {
-          content: [{ type: 'text' as const, text: JSON.stringify({ error: 'Note not found', path }, null, 2) }],
-        };
-      }
+      // ── action=structure ───────────────────────────────────────────────
+      if (action === 'structure') {
+        if (!path) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({
+            error: 'action=structure requires path.',
+            example: { action: 'structure', path: 'projects/alpha.md' },
+          }, null, 2) }] };
+        }
 
-      // Optionally include section content with cumulative char budget
-      let totalChars = 0;
-      let truncated = false;
-      if (include_content) {
-        for (const section of result.sections) {
-          if (totalChars >= max_content_chars) {
-            truncated = true;
-            break;
-          }
-          const sectionResult = await getSectionContent(index, path, section.heading.text, vaultPath, true);
-          if (sectionResult) {
-            let content = sectionResult.content;
-            const remaining = max_content_chars - totalChars;
-            if (content.length > remaining) {
-              // Truncate at last paragraph boundary within budget
-              const sliced = content.slice(0, remaining);
-              const lastBreak = sliced.lastIndexOf('\n\n');
-              content = lastBreak > 0 ? sliced.slice(0, lastBreak) : sliced;
-              truncated = true;
+        const result = await getNoteStructure(index, path, vaultPath);
+        if (!result) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'Note not found', path }, null, 2) }] };
+        }
+
+        const maxChars = max_content_chars ?? 20000;
+        let totalChars = 0;
+        let truncated = false;
+        if (include_content) {
+          for (const section of result.sections) {
+            if (totalChars >= maxChars) { truncated = true; break; }
+            const sectionResult = await getSectionContent(index, path, section.heading.text, vaultPath, true);
+            if (sectionResult) {
+              let content = sectionResult.content;
+              const remaining = maxChars - totalChars;
+              if (content.length > remaining) {
+                const sliced = content.slice(0, remaining);
+                const lastBreak = sliced.lastIndexOf('\n\n');
+                content = lastBreak > 0 ? sliced.slice(0, lastBreak) : sliced;
+                truncated = true;
+              }
+              (section as any).content = content;
+              totalChars += content.length;
             }
-            (section as any).content = content;
-            totalChars += content.length;
           }
         }
+
+        const note = index.notes.get(path);
+        const enriched: Record<string, unknown> = { ...result };
+        if (note) {
+          enriched.frontmatter = note.frontmatter;
+          enriched.tags = note.tags;
+          enriched.aliases = note.aliases;
+          const normalizedPath = path.toLowerCase().replace(/\.md$/, '');
+          const backlinks = index.backlinks.get(normalizedPath) || [];
+          enriched.backlink_count = backlinks.length;
+          enriched.outlink_count = note.outlinks.length;
+        }
+
+        const stateDb = getStateDb();
+        if (stateDb && note) {
+          try {
+            const entity = getEntityByName(stateDb, note.title);
+            if (entity) {
+              enriched.category = entity.category;
+              enriched.hub_score = entity.hubScore;
+              if (entity.description) enriched.description = entity.description;
+            }
+          } catch { /* entity lookup is best-effort */ }
+        }
+
+        if (include_content) {
+          enriched.truncated = truncated;
+          enriched.returned_chars = totalChars;
+        }
+
+        return { content: [{ type: 'text' as const, text: JSON.stringify(enriched, null, 2) }] };
       }
 
-      // Enrich with indexed metadata
-      const note = index.notes.get(path);
-      const enriched: Record<string, unknown> = { ...result };
+      // ── action=section ─────────────────────────────────────────────────
+      if (action === 'section') {
+        if (!path) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({
+            error: 'action=section requires path.',
+            example: { action: 'section', path: 'projects/alpha.md', heading: 'Background' },
+          }, null, 2) }] };
+        }
+        if (!heading) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({
+            error: 'action=section requires heading.',
+            example: { action: 'section', path: 'projects/alpha.md', heading: 'Background' },
+          }, null, 2) }] };
+        }
 
-      if (note) {
-        enriched.frontmatter = note.frontmatter;
-        enriched.tags = note.tags;
-        enriched.aliases = note.aliases;
-        const normalizedPath = path.toLowerCase().replace(/\.md$/, '');
-        const backlinks = index.backlinks.get(normalizedPath) || [];
-        enriched.backlink_count = backlinks.length;
-        enriched.outlink_count = note.outlinks.length;
+        const result = await getSectionContent(index, path, heading, vaultPath, include_subheadings ?? true);
+        if (!result) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'Section not found', path, heading }, null, 2) }] };
+        }
+
+        const maxChars = max_section_chars ?? 10000;
+        let truncated = false;
+        if (result.content.length > maxChars) {
+          const sliced = result.content.slice(0, maxChars);
+          const lastBreak = sliced.lastIndexOf('\n\n');
+          result.content = lastBreak > 0 ? sliced.slice(0, lastBreak) : sliced;
+          truncated = true;
+        }
+
+        return { content: [{ type: 'text' as const, text: JSON.stringify({ ...result, truncated }, null, 2) }] };
       }
 
-      const stateDb = getStateDb();
-      if (stateDb && note) {
-        try {
-          const entity = getEntityByName(stateDb, note.title);
-          if (entity) {
-            enriched.category = entity.category;
-            enriched.hub_score = entity.hubScore;
-            if (entity.description) enriched.description = entity.description;
-          }
-        } catch { /* entity lookup is best-effort */ }
+      // ── action=sections ────────────────────────────────────────────────
+      if (!pattern) {
+        return { content: [{ type: 'text' as const, text: JSON.stringify({
+          error: 'action=sections requires pattern.',
+          example: { action: 'sections', pattern: 'Status', folder: 'projects/' },
+        }, null, 2) }] };
       }
 
-      if (include_content) {
-        enriched.truncated = truncated;
-        enriched.returned_chars = totalChars;
-      }
-
-      return {
-        content: [{ type: 'text' as const, text: JSON.stringify(enriched, null, 2) }],
-      };
-    }
-  );
-
-  // get_section_content
-  server.registerTool(
-    'get_section_content',
-    {
-      title: 'Get Section Content',
-      description: 'Use when you need the text under one heading in a known note. Produces the markdown body of a single section with optional subheadings. Returns section content, heading level, and line range. Does not return other sections — use get_note_structure for full outline.',
-      inputSchema: {
-        path: z.string().describe('Path to the note'),
-        heading: z.string().describe('Heading text to find'),
-        include_subheadings: z.boolean().default(true).describe('Include content under subheadings'),
-        max_content_chars: z.number().default(10000).describe('Max chars of section content. Truncated at paragraph boundaries.'),
-      },
-    },
-    async ({ path, heading, include_subheadings, max_content_chars }) => {
-      const index = getIndex();
-      const vaultPath = getVaultPath();
-      const result = await getSectionContent(index, path, heading, vaultPath, include_subheadings);
-
-      if (!result) {
-        return {
-          content: [{ type: 'text' as const, text: JSON.stringify({
-            error: 'Section not found',
-            path,
-            heading,
-          }, null, 2) }],
-        };
-      }
-
-      let truncated = false;
-      if (result.content.length > max_content_chars) {
-        const sliced = result.content.slice(0, max_content_chars);
-        const lastBreak = sliced.lastIndexOf('\n\n');
-        result.content = lastBreak > 0 ? sliced.slice(0, lastBreak) : sliced;
-        truncated = true;
-      }
-
-      return {
-        content: [{ type: 'text' as const, text: JSON.stringify({ ...result, truncated }, null, 2) }],
-      };
-    }
-  );
-
-  // find_sections
-  server.registerTool(
-    'find_sections',
-    {
-      title: 'Find Sections',
-      description: 'Use when scanning for headings across the entire vault. Produces a list of sections matching a regex pattern with note path, heading text, and level. Returns total count and paginated results. Answers: "Which notes have a Status section?" or "Find all ## TODO headings." Does not return section body text — follow up with get_section_content for content.',
-      inputSchema: {
-        pattern: z.string().describe('Regex pattern to match heading text'),
-        folder: z.string().optional().describe('Limit to notes in this folder'),
-        limit: z.coerce.number().default(50).describe('Maximum number of results to return'),
-        offset: z.coerce.number().default(0).describe('Number of results to skip (for pagination)'),
-      },
-    },
-    async ({ pattern, folder, limit: requestedLimit, offset }) => {
       const limit = Math.min(requestedLimit ?? 50, MAX_LIMIT);
-      const index = getIndex();
-      const vaultPath = getVaultPath();
+      const offset = requestedOffset ?? 0;
       const allResults = await findSections(index, pattern, vaultPath, folder);
       const result = allResults.slice(offset, offset + limit);
 
-      return {
-        content: [{ type: 'text' as const, text: JSON.stringify({
-          pattern,
-          folder,
-          total_count: allResults.length,
-          returned_count: result.length,
-          sections: result,
-        }, null, 2) }],
-      };
+      return { content: [{ type: 'text' as const, text: JSON.stringify({
+        pattern,
+        folder,
+        total_count: allResults.length,
+        returned_count: result.length,
+        sections: result,
+      }, null, 2) }] };
     }
   );
 

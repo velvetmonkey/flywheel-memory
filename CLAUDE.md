@@ -28,7 +28,7 @@ packages/mcp-server/src/
 │   ├── toolCatalog.ts          # Tool metadata collection for embedding manifest
 │   ├── read/                   # Read-side tool registrations (20 files, helpers omitted)
 │   │   ├── query.ts            # search
-│   │   ├── primitives.ts       # get_note_structure, get_section_content, find_sections, tasks
+│   │   ├── primitives.ts       # note_read (structure|section|sections), tasks
 │   │   ├── graphAnalysis.ts    # graph_analysis (7 modes), get_connection_strength,
 │   │   │                       #   get_link_path, get_common_neighbors
 │   │   ├── system.ts           # refresh_index, list_entities, suggest_entity_aliases
@@ -103,16 +103,16 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 <!-- GENERATED:preset-counts START -->
 | Preset | Tools | Categories | Behaviour |
 |--------|-------|------------|-----------|
-| `agent` (default) | 20 | search, read, write, tasks, memory | Focused tier-1 surface — search, read, write, tasks, memory |
-| `power` | 45 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
-| `full` | 64 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema, graph, diagnostics, temporal | All categories visible at startup |
-| `auto` | 65 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
+| `agent` (default) | 18 | search, read, write, tasks, memory | Focused tier-1 surface — search, read, write, tasks, memory |
+| `power` | 43 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
+| `full` | 62 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema, graph, diagnostics, temporal | All categories visible at startup |
+| `auto` | 63 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
 <!-- GENERATED:preset-counts END -->
 
 <!-- GENERATED:claude-code-memory-note START -->
 > **Claude Code note:** the `memory` merged tool is suppressed under Claude Code
 > (`CLAUDECODE=1`) because Claude Code ships its own memory plane. Agent preset
-> exposes 19 tools under Claude Code instead of 20; `brief` stays available.
+> exposes 17 tools under Claude Code instead of 18; `brief` stays available.
 <!-- GENERATED:claude-code-memory-note END -->
 
 Switch preset at runtime: `flywheel_config` with `key: tool_preset, value: agent|power|full`
@@ -130,6 +130,7 @@ Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` —
 - `link` — `action: suggest|feedback|unlinked|validate|stubs|dashboard|unsuppress|timeline|layer_timeseries|snapshot_diff`
 - `memory` — `action: store|get|search|list|forget|summarize_session`
 - `note` — `action: create|move|rename|delete`
+- `note_read` — `action: structure|section|sections`
 - `policy` — `action: list|validate|preview|execute|author|revise`
 - `schema` — `action: overview|conventions|folders|rename_field|rename_tag|migrate|validate`
 - `search` — `action: query|similar`

@@ -27,10 +27,10 @@ TOOLS=(
   'search|default|How much have I billed Acme Corp?|no'
   'init_semantic|default|Build a semantic search index for this vault so I can do similarity searches|no'
 
-  # --- read (3) ---
-  'get_note_structure|default|Show me the full structure and content of the note at clients/Acme Corp.md|no'
-  'get_section_content|default|Show me just the content of the Notes section in the Acme Corp file|no'
-  'find_sections|default|Find all sections with Status in the heading across every note in the vault|no'
+  # --- read (1) ---
+  'note_read|structure|Show me the full structure and content of the note at clients/Acme Corp.md|no'
+  'note_read|section|Show me just the content of the Notes section in the Acme Corp file|no'
+  'note_read|sections|Find all sections with Status in the heading across every note in the vault|no'
 
   # --- write (7) ---
   'vault_add_to_section|default|Add a line saying Reviewed Q1 billing with Sarah under the Notes section in the Acme Corp file|yes'

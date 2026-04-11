@@ -36,11 +36,19 @@ export interface Backlink {
 
 /** The complete vault index */
 export interface VaultIndex {
-  notes: Map<string, VaultNote>;           // path -> VaultNote
+  notes: Map<string, VaultNote>;           // on-disk path -> VaultNote
   backlinks: Map<string, Backlink[]>;      // normalized target -> backlinks
-  entities: Map<string, string>;           // lowercase title/alias -> path
-  tags: Map<string, Set<string>>;          // tag -> note paths
+  entities: Map<string, string>;           // lowercase title/alias -> on-disk path
+  tags: Map<string, Set<string>>;          // tag -> on-disk note paths
   builtAt: Date;                           // When the index was built (for staleness detection)
+  /**
+   * Canonical → on-disk alias map. On case-insensitive filesystems (Windows NTFS,
+   * macOS APFS default), collapses case variants of the same physical file to a
+   * single notes entry. On Linux ext4 (case-sensitive), this is effectively an
+   * identity map over the `notes` keys. Optional so legacy callers can construct
+   * a partial index for tests; helpers lazily initialize it when needed.
+   */
+  canonicalAlias?: Map<string, string>;
 }
 
 // ========================================

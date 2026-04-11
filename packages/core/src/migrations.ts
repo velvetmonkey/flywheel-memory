@@ -428,6 +428,30 @@ export function initSchema(db: Database.Database): void {
       db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(38);
     }
 
+    // v39: case-insensitive note_path on wikilink_applications unique index.
+    // On Windows NTFS / macOS APFS, `Flywheel.md` and `flywheel.md` are the
+    // same physical file. Without COLLATE NOCASE on note_path, mixed-case
+    // rows were legal and the same application could be recorded twice,
+    // doubling counts and breaking dedup in the doctor report (P42 issue 1).
+    if (currentVersion < 39) {
+      db.exec('DROP INDEX IF EXISTS idx_wl_apps_unique');
+      // Collapse any pre-existing duplicates before re-adding the unique index.
+      // Keep the lowest-id row per (entity NOCASE, note_path NOCASE) group.
+      db.exec(`
+        DELETE FROM wikilink_applications
+        WHERE id NOT IN (
+          SELECT MIN(id)
+          FROM wikilink_applications
+          GROUP BY LOWER(entity), LOWER(note_path)
+        )
+      `);
+      db.exec(`
+        CREATE UNIQUE INDEX idx_wl_apps_unique
+        ON wikilink_applications(entity COLLATE NOCASE, note_path COLLATE NOCASE)
+      `);
+      db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(39);
+    }
+
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
     ).run(SCHEMA_VERSION);

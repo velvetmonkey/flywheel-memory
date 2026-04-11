@@ -6,6 +6,7 @@
  */
 
 import path from 'path';
+import { getModuleCaseInsensitive } from '../caseSensitivity.js';
 
 /**
  * Directories to always ignore (no config needed)
@@ -84,18 +85,22 @@ function matchesIgnoredPattern(filename: string): boolean {
 }
 
 /**
- * Normalize a path for consistent handling across platforms
+ * Normalize a path for consistent handling across platforms.
  *
  * - Converts backslashes to forward slashes
- * - Lowercases on Windows for case-insensitive comparison
+ * - Lowercases on case-insensitive filesystems (Windows NTFS, macOS APFS default,
+ *   CIFS/SMB mounts) so mixed-case paths collapse to one canonical key
  * - Handles WSL /mnt/c/ paths
+ *
+ * The case-insensitivity flag is read from the module-level cache set at boot
+ * by the primary vault probe. Tests can pass the flag explicitly.
  */
-export function normalizePath(filePath: string): string {
+export function normalizePath(filePath: string, caseInsensitive?: boolean): string {
   // Convert Windows backslashes to forward slashes
   let normalized = filePath.replace(/\\/g, '/');
 
-  // On Windows, lowercase for case-insensitive comparison
-  if (process.platform === 'win32') {
+  const ci = caseInsensitive ?? getModuleCaseInsensitive();
+  if (ci) {
     normalized = normalized.toLowerCase();
   }
 

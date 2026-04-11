@@ -183,10 +183,11 @@ async function buildVaultIndexInternal(
     for (let j = 0; j < results.length; j++) {
       const result = results[j];
       if (result.status === 'fulfilled') {
-        // Canonical key collapses mixed-case duplicates on case-insensitive
-        // filesystems; VaultNote.path itself still carries the on-disk case
-        // so writers hit the real file.
-        notes.set(canonicalPath(result.value.note.path), result.value.note);
+        // Keyed by on-disk path. Dedup of case variants on case-insensitive
+        // filesystems happens in `addNoteToIndex` / the post-scan canonical
+        // dedup pass below — scanVault returns one path per physical file,
+        // so the common case is already dedup-free.
+        notes.set(result.value.note.path, result.value.note);
       } else {
         const filePath = batch[j]?.path ?? '<unknown>';
         const reason = result.reason instanceof Error
@@ -226,25 +227,22 @@ async function buildVaultIndexInternal(
   const entities = new Map<string, string>();
 
   for (const note of notes.values()) {
-    // Entity values store the canonical-key form so `notes.get(entities.get(x))`
-    // resolves on case-insensitive filesystems without an extra canonicalization.
-    const canonicalNoteKey = canonicalPath(note.path);
-
-    // Map by title
+    // Entity values hold the on-disk `note.path` so consumers surfacing them as
+    // display paths (suggest_wikilinks) keep the true casing. Lookups against
+    // `index.notes` must go through `getIndexedNote` / `canonicalPath` to
+    // collapse case variants on case-insensitive volumes.
     const normalizedTitle = normalizeTarget(note.title);
     if (!entities.has(normalizedTitle)) {
-      entities.set(normalizedTitle, canonicalNoteKey);
+      entities.set(normalizedTitle, note.path);
     }
 
-    // Map by full path (without extension)
     const normalizedPath = normalizeNotePath(note.path);
-    entities.set(normalizedPath, canonicalNoteKey);
+    entities.set(normalizedPath, note.path);
 
-    // Map by aliases
     for (const alias of note.aliases) {
       const normalizedAlias = normalizeTarget(alias);
       if (!entities.has(normalizedAlias)) {
-        entities.set(normalizedAlias, canonicalNoteKey);
+        entities.set(normalizedAlias, note.path);
       }
     }
   }
@@ -266,10 +264,10 @@ async function buildVaultIndexInternal(
       }
 
       backlinks.get(key)!.push({
-        // Canonical key form so reverse lookups via `notes.get(backlink.source)`
-        // resolve on case-insensitive filesystems. Readers needing the display
-        // path should round-trip via `notes.get(source).path`.
-        source: canonicalPath(note.path),
+        // Source holds on-disk case so backlink trace output matches the real
+        // file name. Reverse lookups via `index.notes` must go through
+        // `getIndexedNote` / `canonicalPath` on case-insensitive volumes.
+        source: note.path,
         line: link.line,
         // Context will be loaded on-demand to save memory
       });
@@ -284,8 +282,19 @@ async function buildVaultIndexInternal(
       if (!tags.has(tag)) {
         tags.set(tag, new Set());
       }
-      tags.get(tag)!.add(canonicalPath(note.path));
+      // `notes` collapses by canonical key, so at most one note per tag holds
+      // the canonical path — use `note.path` directly (on-disk case).
+      tags.get(tag)!.add(note.path);
     }
+  }
+
+  // Build canonical→on-disk alias map. On case-sensitive filesystems this is
+  // effectively an identity map over notes keys. On case-insensitive volumes
+  // it lets `getIndexedNote` resolve mixed-case inputs in O(1). scanVault
+  // returns one path per physical file, so no dedup is needed here.
+  const canonicalAlias = new Map<string, string>();
+  for (const onDiskPath of notes.keys()) {
+    canonicalAlias.set(canonicalPath(onDiskPath), onDiskPath);
   }
 
   console.error(`Index built: ${notes.size} notes, ${entities.size} entities, ${backlinks.size} link targets, ${tags.size} tags`);
@@ -295,6 +304,7 @@ async function buildVaultIndexInternal(
     backlinks,
     entities,
     tags,
+    canonicalAlias,
     builtAt: new Date(),
   };
 }
@@ -323,7 +333,21 @@ export function getBacklinksForNote(index: VaultIndex, notePath: string): Backli
  * Windows/macOS default volumes.
  */
 export function getIndexedNote(index: VaultIndex, notePath: string): VaultNote | undefined {
-  return index.notes.get(canonicalPath(notePath));
+  // Fast path: exact match (covers Linux and any case that matches on-disk).
+  const direct = index.notes.get(notePath);
+  if (direct) return direct;
+  // Fall back to canonical alias for mixed-case inputs on case-insensitive FS.
+  const aliased = index.canonicalAlias?.get(canonicalPath(notePath));
+  return aliased ? index.notes.get(aliased) : undefined;
+}
+
+/**
+ * Case-insensitive-aware existence check for a note path.
+ */
+export function hasIndexedNote(index: VaultIndex, notePath: string): boolean {
+  if (index.notes.has(notePath)) return true;
+  const aliased = index.canonicalAlias?.get(canonicalPath(notePath));
+  return aliased !== undefined && index.notes.has(aliased);
 }
 
 /**
@@ -333,7 +357,7 @@ export function getForwardLinksForNote(
   index: VaultIndex,
   notePath: string
 ): Array<{ target: string; alias?: string; line: number; resolvedPath?: string; exists: boolean }> {
-  const note = index.notes.get(canonicalPath(notePath));
+  const note = getIndexedNote(index, notePath);
   if (!note) return [];
 
   return note.outlinks.map((link) => {
@@ -553,15 +577,22 @@ export function serializeVaultIndex(index: VaultIndex): VaultIndexCacheData {
  * Deserialize VaultIndex from cached format
  */
 export function deserializeVaultIndex(data: VaultIndexCacheData): VaultIndex {
-  // Re-canonicalize keys on load so caches persisted under a different
-  // filesystem-sensitivity state (e.g. a cache carried from Linux to Windows)
-  // collapse duplicates consistently with the current FS. `VaultNote.path`
-  // and backlink sources are normalized to canonical so downstream map
-  // lookups continue to resolve.
+  // Notes keyed by on-disk path. A legacy cache persisted with two case
+  // variants of the same physical file (pre-P42-Issue-1 bug) collapses to
+  // the first-seen entry on case-insensitive filesystems — we can't know
+  // which was "correct," and the scanner will rewrite this on next full
+  // rebuild anyway.
   const ci = getModuleCaseInsensitive();
   const notes = new Map<string, VaultNote>();
+  const canonicalAlias = new Map<string, string>();
   for (const note of data.notes) {
-    notes.set(canonicalPath(note.path, ci), {
+    const canonKey = canonicalPath(note.path, ci);
+    const existingOnDisk = canonicalAlias.get(canonKey);
+    if (existingOnDisk) {
+      // Duplicate physical file — keep the first-seen entry.
+      continue;
+    }
+    notes.set(note.path, {
       path: note.path,
       title: note.title,
       aliases: note.aliases,
@@ -571,33 +602,31 @@ export function deserializeVaultIndex(data: VaultIndexCacheData): VaultIndex {
       modified: new Date(note.modified),
       created: note.created ? new Date(note.created) : undefined,
     });
+    canonicalAlias.set(canonKey, note.path);
   }
 
   const backlinks = new Map<string, Backlink[]>();
   for (const [key, value] of data.backlinks) {
-    const canonKey = canonicalPath(key, ci);
-    const canonValue = value.map(bl => ({
-      ...bl,
-      source: canonicalPath(bl.source, ci),
-    }));
+    // Backlink keys were already lowercased via normalizeNotePath when built,
+    // but a cache persisted on a different FS may carry mixed case — lowercase
+    // defensively so `getBacklinksForNote` lookups hit the right bucket.
+    const canonKey = key.toLowerCase();
     const existing = backlinks.get(canonKey);
     if (existing) {
-      existing.push(...canonValue);
+      existing.push(...value);
     } else {
-      backlinks.set(canonKey, canonValue);
+      backlinks.set(canonKey, [...value]);
     }
   }
 
   const entities = new Map<string, string>();
   for (const [key, value] of data.entities) {
-    // Entity key is already lowercased (title/alias/normalizeNotePath);
-    // the value is a path that must match `notes` keys.
-    entities.set(key, canonicalPath(value, ci));
+    entities.set(key, value);
   }
 
   const tags = new Map<string, Set<string>>();
   for (const [tag, paths] of data.tags) {
-    tags.set(tag, new Set(paths.map(p => canonicalPath(p, ci))));
+    tags.set(tag, new Set(paths));
   }
 
   return {
@@ -605,6 +634,7 @@ export function deserializeVaultIndex(data: VaultIndexCacheData): VaultIndex {
     backlinks,
     entities,
     tags,
+    canonicalAlias,
     builtAt: new Date(data.builtAt),
   };
 }

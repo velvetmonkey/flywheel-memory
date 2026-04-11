@@ -38,6 +38,7 @@ function emptyIndex(): VaultIndex {
     backlinks: new Map(),
     entities: new Map(),
     tags: new Map(),
+    canonicalAlias: new Map(),
     builtAt: new Date(),
   };
 }
@@ -126,7 +127,7 @@ describe('P42 Issue 1 — case-insensitive path handling', () => {
       expect(tagSet!.size).toBe(1);
     });
 
-    it('deserializeVaultIndex canonicalizes keys from a cache persisted under mixed casing', () => {
+    it('deserializeVaultIndex preserves on-disk case and builds canonicalAlias', () => {
       const cached = {
         notes: [
           {
@@ -158,16 +159,21 @@ describe('P42 Issue 1 — case-insensitive path handling', () => {
       // deserializeVaultIndex signature is lenient — cast to the cached data shape.
       const index = deserializeVaultIndex(cached as any);
 
-      // All notes keyed by canonical path
-      expect([...index.notes.keys()]).toEqual(['tech/flywheel/flywheel.md']);
-      // Entity value rewritten to canonical key so `notes.get(entities.get(x))` resolves
-      expect(index.entities.get('flywheel')).toBe('tech/flywheel/flywheel.md');
-      // Backlink sources canonicalized
+      // Notes keyed by on-disk path (first-seen form)
+      expect([...index.notes.keys()]).toEqual(['tech/flywheel/Flywheel.md']);
+      // canonicalAlias lets mixed-case lookups resolve in O(1)
+      expect(index.canonicalAlias?.get('tech/flywheel/flywheel.md')).toBe(
+        'tech/flywheel/Flywheel.md',
+      );
+      // Entity value preserved as on-disk path so consumers surfacing it
+      // (suggest_wikilinks) keep true casing.
+      expect(index.entities.get('flywheel')).toBe('tech/flywheel/Flywheel.md');
+      // Backlink sources preserved verbatim from the cache.
       const bl = index.backlinks.get('tech/flywheel/flywheel');
-      expect(bl?.map(b => b.source).sort()).toEqual(['notes/a.md', 'notes/b.md']);
-      // Tag set values canonicalized
+      expect(bl?.map(b => b.source).sort()).toEqual(['notes/A.md', 'notes/b.md']);
+      // Tag set values preserved as on-disk path.
       expect([...(index.tags.get('flywheel') ?? [])]).toEqual([
-        'tech/flywheel/flywheel.md',
+        'tech/flywheel/Flywheel.md',
       ]);
     });
 

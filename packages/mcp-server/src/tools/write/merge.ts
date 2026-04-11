@@ -11,7 +11,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { validatePath, readVaultFile, writeVaultFile, WriteConflictError, type LineEnding } from '../../core/write/writer.js';
+import { validatePath, validatePathSecure, readVaultFile, writeVaultFile, WriteConflictError, type LineEnding } from '../../core/write/writer.js';
 import type { MutationResult } from '../../core/write/types.js';
 import { initializeEntityIndex } from '../../core/write/wikilinks.js';
 import {
@@ -42,20 +42,22 @@ export function registerMergeTools(
     async ({ source_path, target_path, dry_run }) => {
       try {
         const vaultPath = getVaultPath();
-        // 1. Validate paths
-        if (!validatePath(vaultPath, source_path)) {
+        // 1. Validate paths (async: follows symlinks, blocks sensitive file patterns)
+        const sourceValidation = await validatePathSecure(vaultPath, source_path);
+        if (!sourceValidation.valid) {
           const result: MutationResult = {
             success: false,
-            message: 'Invalid source path: path traversal not allowed',
+            message: `Invalid source path: ${sourceValidation.reason}`,
             path: source_path,
           };
           return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
         }
 
-        if (!validatePath(vaultPath, target_path)) {
+        const targetValidation = await validatePathSecure(vaultPath, target_path);
+        if (!targetValidation.valid) {
           const result: MutationResult = {
             success: false,
-            message: 'Invalid target path: path traversal not allowed',
+            message: `Invalid target path: ${targetValidation.reason}`,
             path: target_path,
           };
           return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
@@ -227,11 +229,12 @@ export function registerMergeTools(
     async ({ source_name, target_path, dry_run }) => {
       try {
         const vaultPath = getVaultPath();
-        // 1. Validate target path
-        if (!validatePath(vaultPath, target_path)) {
+        // 1. Validate target path (async: follows symlinks, blocks sensitive file patterns)
+        const absorbTargetValidation = await validatePathSecure(vaultPath, target_path);
+        if (!absorbTargetValidation.valid) {
           const result: MutationResult = {
             success: false,
-            message: 'Invalid target path: path traversal not allowed',
+            message: `Invalid target path: ${absorbTargetValidation.reason}`,
             path: target_path,
           };
           return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };

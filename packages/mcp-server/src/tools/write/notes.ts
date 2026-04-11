@@ -5,7 +5,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { writeVaultFile, validatePath, sanitizeNotePath, injectMutationMetadata } from '../../core/write/writer.js';
+import { writeVaultFile, validatePath, validatePathSecure, sanitizeNotePath, injectMutationMetadata } from '../../core/write/writer.js';
 import {
   maybeApplyWikilinks,
   suggestRelatedLinks,
@@ -61,8 +61,9 @@ export function registerNoteTools(
         const notePath = sanitizeNotePath(rawNotePath);
 
         // 1. Validate path
-        if (!validatePath(vaultPath, notePath)) {
-          return formatMcpResult(errorResult(notePath, 'Invalid path: path traversal not allowed'));
+        const pathValidation = await validatePathSecure(vaultPath, notePath);
+        if (!pathValidation.valid) {
+          return formatMcpResult(errorResult(notePath, `Invalid path: ${pathValidation.reason}`));
         }
 
         const fullPath = path.join(vaultPath, notePath);
@@ -82,6 +83,11 @@ export function registerNoteTools(
         let effectiveContent = content;
         let effectiveFrontmatter = frontmatter;
         if (template) {
+          // Validate template path before reading — prevents arbitrary file read (LFI)
+          const templateValidation = await validatePathSecure(vaultPath, template);
+          if (!templateValidation.valid) {
+            return formatMcpResult(errorResult(notePath, `Invalid template path: ${templateValidation.reason}`));
+          }
           const templatePath = path.join(vaultPath, template);
           try {
             const raw = await fs.readFile(templatePath, 'utf-8');
@@ -242,9 +248,10 @@ export function registerNoteTools(
     async ({ path: notePath, confirm, commit, dry_run }) => {
       try {
         const vaultPath = getVaultPath();
-        // 1. Validate path
-        if (!validatePath(vaultPath, notePath)) {
-          return formatMcpResult(errorResult(notePath, 'Invalid path: path traversal not allowed'));
+        // 1. Validate path (async: follows symlinks, blocks sensitive file patterns)
+        const deletePathValidation = await validatePathSecure(vaultPath, notePath);
+        if (!deletePathValidation.valid) {
+          return formatMcpResult(errorResult(notePath, `Invalid path: ${deletePathValidation.reason}`));
         }
 
         // 2. Check if file exists

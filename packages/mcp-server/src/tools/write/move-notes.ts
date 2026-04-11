@@ -7,7 +7,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { validatePath, readVaultFile, writeVaultFile, computeContentHash } from '../../core/write/writer.js';
+import { validatePath, validatePathSecure, readVaultFile, writeVaultFile, computeContentHash } from '../../core/write/writer.js';
 import type { MutationResult } from '../../core/write/types.js';
 import { commitChange } from '../../core/write/git.js';
 import { initializeEntityIndex } from '../../core/write/wikilinks.js';
@@ -188,20 +188,22 @@ export function registerMoveNoteTools(
     async ({ oldPath, newPath, updateBacklinks, commit, dry_run }) => {
       try {
         const vaultPath = getVaultPath();
-        // 1. Validate paths
-        if (!validatePath(vaultPath, oldPath)) {
+        // 1. Validate paths (async: follows symlinks, blocks sensitive file patterns)
+        const oldPathValidation = await validatePathSecure(vaultPath, oldPath);
+        if (!oldPathValidation.valid) {
           const result: MutationResult = {
             success: false,
-            message: 'Invalid source path: path traversal not allowed',
+            message: `Invalid source path: ${oldPathValidation.reason}`,
             path: oldPath,
           };
           return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
         }
 
-        if (!validatePath(vaultPath, newPath)) {
+        const newPathValidation = await validatePathSecure(vaultPath, newPath);
+        if (!newPathValidation.valid) {
           const result: MutationResult = {
             success: false,
-            message: 'Invalid destination path: path traversal not allowed',
+            message: `Invalid destination path: ${newPathValidation.reason}`,
             path: newPath,
           };
           return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
@@ -383,11 +385,12 @@ export function registerMoveNoteTools(
     async ({ path: notePath, newTitle, updateBacklinks, commit, dry_run }) => {
       try {
         const vaultPath = getVaultPath();
-        // 1. Validate path
-        if (!validatePath(vaultPath, notePath)) {
+        // 1. Validate path (async: follows symlinks, blocks sensitive file patterns)
+        const renamePathValidation = await validatePathSecure(vaultPath, notePath);
+        if (!renamePathValidation.valid) {
           const result: MutationResult = {
             success: false,
-            message: 'Invalid path: path traversal not allowed',
+            message: `Invalid path: ${renamePathValidation.reason}`,
             path: notePath,
           };
           return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };

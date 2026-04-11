@@ -17,6 +17,7 @@ import {
   rangeOverlapsProtectedZone,
   detectImplicitEntities,
   recordEntityMention,
+  setWriteState,
   type EntitySearchResult,
 } from '@velvetmonkey/vault-core';
 
@@ -1286,6 +1287,28 @@ export class PipelineRunner {
     if (totalApplied > 0) {
       serverLog('watcher', `Proactive drain: applied ${totalApplied} links in ${result.applied.length} files`);
     }
+    if (result.rejections.length > 0) {
+      const byReason: Record<string, number> = {};
+      for (const r of result.rejections) byReason[r.reason] = (byReason[r.reason] ?? 0) + 1;
+      const summary = Object.entries(byReason).map(([k, v]) => `${k}=${v}`).join(' ');
+      serverLog('watcher', `Proactive drain rejections: ${result.rejections.length} (${summary})`);
+    }
+
+    // Persist last-drain snapshot for doctor diagnostics. Cap rejection sample
+    // to avoid bloat — diagnostic surface, not durable audit log.
+    try {
+      setWriteState(p.sd, 'last_proactive_drain', {
+        at: Date.now(),
+        total_applied: totalApplied,
+        applied_files: result.applied.length,
+        expired: result.expired,
+        skipped_active: result.skippedActiveEdit,
+        skipped_mtime: result.skippedMtimeGuard,
+        skipped_daily_cap: result.skippedDailyCap,
+        rejection_count: result.rejections.length,
+        rejection_sample: result.rejections.slice(0, 25),
+      });
+    } catch { /* non-critical */ }
 
     return {
       applied: result.applied,
@@ -1294,6 +1317,7 @@ export class PipelineRunner {
       skipped_active: result.skippedActiveEdit,
       skipped_mtime: result.skippedMtimeGuard,
       skipped_daily_cap: result.skippedDailyCap,
+      rejections: result.rejections.length,
     };
   }
 

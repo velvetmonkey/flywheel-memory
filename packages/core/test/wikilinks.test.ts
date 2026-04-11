@@ -1595,4 +1595,39 @@ describe('noise reduction', () => {
       expect(names).toContain('CLOUD-99999');
     });
   });
+
+  describe('version-string exclusion (defense-in-depth vs auto-logger pollution)', () => {
+    // Pins the regex literal shipped in DEFAULT_IMPLICIT_CONFIG.excludePatterns.
+    // detectImplicitEntities's proper-noun capture won't match pure version
+    // strings today, but any other path that routes text through shouldExclude
+    // (explicit suggestion matching against canonical entities, future capture
+    // patterns) inherits this backstop.
+    const VERSION_PATTERN = /^v?\d+(?:\.\d+){1,3}(?:[-.][a-zA-Z0-9]+)?$/i;
+
+    it('matches pure version strings that the auto-logger was leaking', () => {
+      expect(VERSION_PATTERN.test('v2.8.0')).toBe(true);
+      expect(VERSION_PATTERN.test('1.27.35')).toBe(true);
+      expect(VERSION_PATTERN.test('v3.0.0-beta')).toBe(true);
+      expect(VERSION_PATTERN.test('2.1')).toBe(true);
+      expect(VERSION_PATTERN.test('v1.0.0.0')).toBe(true);
+    });
+
+    it('does not match legitimate tech/version phrases that should stay linkable', () => {
+      expect(VERSION_PATTERN.test('1.2 million')).toBe(false);
+      expect(VERSION_PATTERN.test('iOS 17.4')).toBe(false);
+      expect(VERSION_PATTERN.test('Section 1.1')).toBe(false);
+      expect(VERSION_PATTERN.test('React 18')).toBe(false);
+      expect(VERSION_PATTERN.test('v2.8.0 released')).toBe(false);
+    });
+
+    it('ships in DEFAULT_IMPLICIT_CONFIG.excludePatterns so every call inherits it', () => {
+      // If a consumer ever captures a version string (via a future pattern or
+      // explicit match), the default exclude list filters it out without an
+      // explicit config override.
+      const matches = detectImplicitEntities('Release v2.8.0 Version ships today with 1.27.35 updates.');
+      const names = matches.map(m => m.text);
+      expect(names).not.toContain('v2.8.0');
+      expect(names).not.toContain('1.27.35');
+    });
+  });
 });

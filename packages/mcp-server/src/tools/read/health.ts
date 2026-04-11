@@ -668,6 +668,7 @@ export function registerHealthTools(
           skipped_daily_cap: number;
           rejection_count: number;
           rejection_sample: Array<Record<string, unknown>>;
+          rejection_breakdown?: Record<string, number>;
         }>(stateDb, 'last_proactive_drain');
 
         return {
@@ -691,6 +692,7 @@ export function registerHealthTools(
             skipped_mtime: lastDrain.skipped_mtime,
             skipped_daily_cap: lastDrain.skipped_daily_cap,
             rejection_count: lastDrain.rejection_count,
+            rejection_breakdown: lastDrain.rejection_breakdown ?? {},
             rejection_sample: lastDrain.rejection_sample,
           } : null,
         };
@@ -1277,6 +1279,40 @@ export function registerHealthTools(
           if (hashCount) {
             checks.push({ name: 'content_hashes', status: 'ok',
               detail: `${hashCount.count} content hashes cached` });
+          }
+        } catch { /* skip */ }
+      }
+
+      // 15. Proactive queue stall detection
+      if (stateDb) {
+        try {
+          const queuePending = stateDb.db.prepare(
+            `SELECT COUNT(*) as cnt FROM proactive_queue WHERE status = 'pending'`,
+          ).get() as { cnt: number };
+          const proactiveSummary = getProactiveLinkingSummary(stateDb, 1);
+          const lastDrain = getWriteState<{
+            rejection_count: number;
+            rejection_breakdown?: Record<string, number>;
+          }>(stateDb, 'last_proactive_drain');
+
+          if (queuePending.cnt > 0 && proactiveSummary.total_applied === 0) {
+            const top = Object.entries(lastDrain?.rejection_breakdown ?? {})
+              .sort(([, a], [, b]) => b - a)
+              .slice(0, 2)
+              .map(([reason, count]) => `${reason} (${count})`)
+              .join(', ');
+            checks.push({
+              name: 'proactive_queue',
+              status: 'warning',
+              detail: `${queuePending.cnt} pending, 0 applied in 24h. Top rejections: ${top || 'unknown'}`,
+              fix: 'Lower proactive_min_score or inspect via pipeline_status',
+            });
+          } else {
+            checks.push({
+              name: 'proactive_queue',
+              status: 'ok',
+              detail: `${queuePending.cnt} pending, ${proactiveSummary.total_applied} applied in 24h`,
+            });
           }
         } catch { /* skip */ }
       }

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { connectTestClient, type TestClient, createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
 import { recordIndexEvent } from '../../../src/core/shared/indexActivity.js';
 import { setEmbeddingsDatabase, setEmbeddingsBuildState } from '../../../src/core/read/embeddings.js';
+import { setWriteState } from '@velvetmonkey/vault-core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
@@ -252,6 +253,93 @@ describe('flywheel_doctor', () => {
     // This only holds when there are aliases/paths expanding the surface beyond canonical count
     if (indexEntitySize !== dbEntityCount) {
       expect(denominator).not.toBe(indexEntitySize);
+    }
+  });
+
+  test('proactive_queue stall check fires when pending>0 and total_applied=0', async () => {
+    const stateDb = context.stateDb!;
+
+    stateDb.db.prepare(`DELETE FROM proactive_queue`).run();
+    stateDb.db.prepare(`DELETE FROM wikilink_applications WHERE source = 'proactive'`).run();
+
+    const now = Date.now();
+    stateDb.db.prepare(
+      `INSERT INTO proactive_queue (note_path, entity, score, confidence, queued_at, expires_at, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    ).run('notes/stall-a.md', 'EntA', 25, 'high', now - 3600_000, now + 86400_000, 'pending');
+    stateDb.db.prepare(
+      `INSERT INTO proactive_queue (note_path, entity, score, confidence, queued_at, expires_at, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    ).run('notes/stall-b.md', 'EntB', 25, 'high', now - 3600_000, now + 86400_000, 'pending');
+
+    setWriteState(stateDb, 'last_proactive_drain', {
+      at: now,
+      total_applied: 0,
+      applied_files: 0,
+      expired: 0,
+      skipped_active: 0,
+      skipped_mtime: 0,
+      skipped_daily_cap: 0,
+      rejection_count: 5,
+      rejection_sample: [],
+      rejection_breakdown: { active_edit: 3, apply_empty: 2 },
+    });
+
+    try {
+      const result = await client.callTool('flywheel_doctor', {});
+      const data = JSON.parse(result.content[0].text);
+      const check = data.checks.find((c: any) => c.name === 'proactive_queue');
+      expect(check).toBeDefined();
+      expect(check.status).toBe('warning');
+      expect(check.detail).toMatch(/2 pending, 0 applied/);
+      expect(check.detail).toMatch(/active_edit \(3\)/);
+      expect(check.detail).toMatch(/apply_empty \(2\)/);
+      expect(check.fix).toMatch(/proactive_min_score|pipeline_status/);
+    } finally {
+      stateDb.db.prepare(`DELETE FROM proactive_queue`).run();
+      setWriteState(stateDb, 'last_proactive_drain', null);
+    }
+  });
+
+  test('proactive_queue check stays ok when queue is drained cleanly', async () => {
+    const stateDb = context.stateDb!;
+    stateDb.db.prepare(`DELETE FROM proactive_queue`).run();
+    setWriteState(stateDb, 'last_proactive_drain', null);
+
+    const result = await client.callTool('flywheel_doctor', {});
+    const data = JSON.parse(result.content[0].text);
+    const check = data.checks.find((c: any) => c.name === 'proactive_queue');
+    expect(check).toBeDefined();
+    expect(check.status).toBe('ok');
+  });
+
+  test('health report surfaces rejection_breakdown on last_drain', async () => {
+    const stateDb = context.stateDb!;
+    const now = Date.now();
+
+    setWriteState(stateDb, 'last_proactive_drain', {
+      at: now,
+      total_applied: 4,
+      applied_files: 2,
+      expired: 0,
+      skipped_active: 1,
+      skipped_mtime: 0,
+      skipped_daily_cap: 0,
+      rejection_count: 6,
+      rejection_sample: [],
+      rejection_breakdown: { active_edit: 4, apply_empty: 2 },
+    });
+
+    try {
+      const result = await client.callTool('flywheel_doctor', { report: 'health', detail: 'full' });
+      const data = JSON.parse(result.content[0].text);
+      expect(data.proactive_linking?.last_drain).toBeDefined();
+      expect(data.proactive_linking.last_drain.rejection_breakdown).toEqual({
+        active_edit: 4,
+        apply_empty: 2,
+      });
+    } finally {
+      setWriteState(stateDb, 'last_proactive_drain', null);
     }
   });
 });

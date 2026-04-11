@@ -146,6 +146,38 @@ describe('Proactive Queue Drain — rejection diagnostics', () => {
     expect(result.rejections.every(r => r.reason === 'apply_empty')).toBe(true);
   });
 
+  it('mixed-reason drain aggregates into a rejection_breakdown histogram', async () => {
+    // Reproduces the pipeline.ts aggregation path: the persistence layer
+    // computes `byReason` from the full rejection list and stores it in
+    // last_proactive_drain so flywheel_doctor can surface top reasons.
+    writeNote('fine.md');                 // will apply_empty (applyFn returns [])
+    writeNote('hot.md', 1000);            // < 60s → active_edit
+    // ghost.md — missing → stat_failed
+
+    enqueueProactiveSuggestions(stateDb, [
+      { notePath: 'fine.md', entity: 'EntFine1', score: 30, confidence: 'high' },
+      { notePath: 'fine.md', entity: 'EntFine2', score: 30, confidence: 'high' },
+      { notePath: 'hot.md', entity: 'EntHot', score: 30, confidence: 'high' },
+      { notePath: 'ghost.md', entity: 'EntGhost', score: 30, confidence: 'high' },
+    ]);
+
+    const result = await drainProactiveQueue(
+      stateDb,
+      vaultPath,
+      { minScore: 20, maxPerFile: 5, maxPerDay: 10 },
+      async () => ({ applied: [], skipped: [] }),
+    );
+
+    // Same aggregation shape pipeline.ts persists.
+    const byReason: Record<string, number> = {};
+    for (const r of result.rejections) byReason[r.reason] = (byReason[r.reason] ?? 0) + 1;
+
+    expect(byReason.apply_empty).toBe(2);
+    expect(byReason.active_edit).toBe(1);
+    expect(byReason.stat_failed).toBe(1);
+    expect(Object.values(byReason).reduce((a, b) => a + b, 0)).toBe(result.rejections.length);
+  });
+
   it('records apply_error when applyFn throws', async () => {
     writeNote('boom.md');
     enqueueProactiveSuggestions(stateDb, [

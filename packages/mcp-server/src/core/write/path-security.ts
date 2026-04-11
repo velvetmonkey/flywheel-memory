@@ -100,7 +100,11 @@ export function isWithinDirectory(child: string, parent: string, allowEqual = fa
 }
 
 /**
- * Validate path to prevent traversal attacks (sync version for reads)
+ * @deprecated Use validatePathSecure() instead. This sync version does not follow
+ * symlinks and does not check sensitive file patterns (.env, .key, SSH keys, etc.).
+ * It is retained only for existing tests. All tool code must use validatePathSecure().
+ *
+ * @see validatePathSecure
  */
 export function validatePath(vaultPath: string, notePath: string): boolean {
   // Reject absolute paths

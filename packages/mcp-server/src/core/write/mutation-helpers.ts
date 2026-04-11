@@ -204,6 +204,11 @@ export async function ensureFileExists(
   vaultPath: string,
   notePath: string
 ): Promise<MutationResult | null> {
+  // Validate path before any filesystem access
+  const validation = await validatePathSecure(vaultPath, notePath);
+  if (!validation.valid) {
+    return errorResult(notePath, `Invalid path: ${validation.reason}`);
+  }
   const fullPath = path.join(vaultPath, notePath);
   try {
     await fs.access(fullPath);

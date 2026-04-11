@@ -951,7 +951,10 @@ export function resolveAliasWikilinks(
 const DEFAULT_IMPLICIT_CONFIG: Required<ImplicitEntityConfig> = {
   detectImplicit: false,
   implicitPatterns: ['proper-nouns', 'quoted-terms'],
-  excludePatterns: ['^The ', '^A ', '^An ', '^This ', '^That ', '^These ', '^Those '],
+  excludePatterns: [
+    '^The ', '^A ', '^An ', '^This ', '^That ', '^These ', '^Those ',
+    '^v?\\d+(?:\\.\\d+){1,3}(?:[-.][a-zA-Z0-9]+)?$',
+  ],
   minEntityLength: 3,
 };
 

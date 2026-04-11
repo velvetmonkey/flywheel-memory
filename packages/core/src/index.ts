@@ -135,6 +135,8 @@ export {
   deleteStateDbFiles,
   backupStateDb,
   preserveCorruptedDb,
+  // Migrations (exported for tests)
+  migrateV40,
   // Backup & Recovery
   BACKUP_ROTATION_COUNT,
   SALVAGE_TABLES,

@@ -452,10 +452,478 @@ export function initSchema(db: Database.Database): void {
       db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(39);
     }
 
+    // v40: COLLATE NOCASE rollout across 14 more path columns.
+    // Case-insensitive filesystems (Windows NTFS, macOS APFS default) treat
+    // "Flywheel.md" and "flywheel.md" as the same file, but without collation
+    // both mixed-case variants could land in the state DB. v40 rebuilds the
+    // affected tables with COLLATE NOCASE on their path columns and collapses
+    // pre-existing dupes per table-specific rules (see migrateV40 below).
+    if (currentVersion < 40) {
+      const applied = migrateV40(db);
+      if (applied) {
+        db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(40);
+      }
+      // Dry-run path: schema_version stays at 39. Server boots in degraded state.
+    }
+
     db.prepare(
       'INSERT OR IGNORE INTO schema_version (version) VALUES (?)'
     ).run(SCHEMA_VERSION);
   }
+}
+
+// =============================================================================
+// v40 Migration: COLLATE NOCASE rollout
+// =============================================================================
+
+/**
+ * Run the v40 migration: add COLLATE NOCASE to path columns across 14 tables,
+ * collapsing mixed-case duplicates with table-specific conflict resolution.
+ *
+ * Safety:
+ * - Wrapped in a single db.transaction(). better-sqlite3 supports transactional
+ *   DDL (CREATE/DROP/ALTER RENAME participate in transactions), so any rebuild
+ *   failure rolls back the whole batch. Partial-upgrade state is impossible.
+ * - Caller (openStateDb) runs a synchronous VACUUM INTO backup before calling
+ *   initSchema when upgrading from < v40.
+ * - No VACUUM or PRAGMA statements inside the transaction (they auto-commit).
+ * - Foreign keys disabled for the duration to permit DROP TABLE on referenced
+ *   tables. Re-enabled at the end.
+ *
+ * Conflict resolution per table (see p42 v40 plan S3 for full rationale):
+ *
+ * | Table                  | Rule                                               |
+ * |------------------------|----------------------------------------------------|
+ * | entities               | column alter (via rebuild) — no rows to merge      |
+ * | note_embeddings        | MAX(updated_at)                                    |
+ * | content_hashes         | MAX(updated_at)                                    |
+ * | tasks                  | best-effort MAX(id); file scan reconciles          |
+ * | note_links             | MAX(weight_updated_at), keep matching weight       |
+ * | note_tags              | INSERT OR IGNORE — pure dedup, no values to merge  |
+ * | note_link_history      | MIN(first_seen_at), MAX(edits_survived/last_pos)   |
+ * | note_moves             | column alter — preserve all rows                   |
+ * | suggestion_events      | MAX(total_score) per (timestamp, note, entity)     |
+ * | corrections            | column alter — preserve all rows                   |
+ * | prospect_ledger        | MIN first_seen, MAX last_seen, SUM sightings       |
+ * | proactive_queue        | MAX(score), prefer 'pending' status                |
+ * | retrieval_cooccurrence | SUM(weight), MIN(timestamp)                        |
+ * | wikilink_feedback      | column alter — preserve all rows                   |
+ */
+export function migrateV40(db: Database.Database): boolean {
+  // Log pre-migration collision counts so users see what's about to collapse.
+  // Counts are best-effort: tables that don't exist yet (fresh DB) are skipped.
+  const collisionProbes: Array<{ table: string; pathCol: string; extraCols?: string }> = [
+    { table: 'entities',              pathCol: 'path' },
+    { table: 'note_embeddings',       pathCol: 'path' },
+    { table: 'content_hashes',        pathCol: 'path' },
+    { table: 'tasks',                 pathCol: 'path',     extraCols: 'line' },
+    { table: 'note_links',            pathCol: 'note_path', extraCols: 'target' },
+    { table: 'note_tags',             pathCol: 'note_path', extraCols: 'tag' },
+    { table: 'note_link_history',     pathCol: 'note_path', extraCols: 'target' },
+    { table: 'suggestion_events',     pathCol: 'note_path', extraCols: 'timestamp, entity' },
+    { table: 'prospect_ledger',       pathCol: 'note_path', extraCols: 'term, seen_day' },
+    { table: 'proactive_queue',       pathCol: 'note_path', extraCols: 'entity' },
+    { table: 'retrieval_cooccurrence', pathCol: 'note_a',    extraCols: 'note_b, session_id' },
+  ];
+
+  const collisions: Array<{ table: string; count: number }> = [];
+  for (const probe of collisionProbes) {
+    try {
+      const groupCols = probe.extraCols
+        ? `LOWER(${probe.pathCol}), ${probe.extraCols}`
+        : `LOWER(${probe.pathCol})`;
+      const row = db.prepare(
+        `SELECT COUNT(*) AS cnt FROM (
+           SELECT 1 FROM ${probe.table}
+           GROUP BY ${groupCols}
+           HAVING COUNT(*) > 1
+         )`
+      ).get() as { cnt: number } | undefined;
+      if (row && row.cnt > 0) {
+        collisions.push({ table: probe.table, count: row.cnt });
+      }
+    } catch {
+      // Table doesn't exist yet — skip silently.
+    }
+  }
+
+  if (collisions.length > 0) {
+    const summary = collisions.map(c => `${c.table}=${c.count}`).join(', ');
+    console.error(`[vault-core] v40 migration: collapsing mixed-case duplicates — ${summary}`);
+  } else {
+    console.error('[vault-core] v40 migration: no mixed-case duplicates detected');
+  }
+
+  if (process.env.FLYWHEEL_MIGRATION_DRY_RUN === '1') {
+    console.error('[vault-core] FLYWHEEL_MIGRATION_DRY_RUN=1 — skipping v40 apply, DB stays at v39');
+    return false;
+  }
+
+  // Disable foreign keys for the rebuild. SQLite requires this off when
+  // renaming tables that may be referenced by others. Re-enabled after.
+  db.pragma('foreign_keys = OFF');
+
+  const runV40 = db.transaction(() => {
+    // --- entities: simple rebuild (all existing rows preserved) ---
+    db.exec(`
+      CREATE TABLE entities_v40_new (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        name_lower TEXT NOT NULL,
+        path TEXT NOT NULL COLLATE NOCASE,
+        category TEXT NOT NULL,
+        aliases_json TEXT,
+        hub_score INTEGER DEFAULT 0,
+        description TEXT
+      );
+      INSERT INTO entities_v40_new SELECT id, name, name_lower, path, category, aliases_json, hub_score, description FROM entities;
+      DROP TABLE entities;
+      ALTER TABLE entities_v40_new RENAME TO entities;
+    `);
+
+    // --- note_embeddings: dedup by LOWER(path), keep MAX(updated_at).
+    //     Window function ranks rows per case-folded path by updated_at desc,
+    //     rowid asc as tie-break. Pick rank 1. ---
+    db.exec(`
+      CREATE TABLE note_embeddings_v40_new (
+        path TEXT PRIMARY KEY COLLATE NOCASE,
+        embedding BLOB NOT NULL,
+        content_hash TEXT NOT NULL,
+        model TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+      INSERT INTO note_embeddings_v40_new
+      SELECT path, embedding, content_hash, model, updated_at
+      FROM (
+        SELECT path, embedding, content_hash, model, updated_at,
+          ROW_NUMBER() OVER (PARTITION BY LOWER(path) ORDER BY updated_at DESC, rowid ASC) AS rn
+        FROM note_embeddings
+      ) WHERE rn = 1;
+      DROP TABLE note_embeddings;
+      ALTER TABLE note_embeddings_v40_new RENAME TO note_embeddings;
+    `);
+
+    // --- content_hashes: dedup by LOWER(path), keep MAX(updated_at).
+    //     ROW_NUMBER() picks one row deterministically per case-folded path. ---
+    db.exec(`
+      CREATE TABLE content_hashes_v40_new (
+        path TEXT PRIMARY KEY COLLATE NOCASE,
+        hash TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+      INSERT INTO content_hashes_v40_new
+      SELECT path, hash, updated_at
+      FROM (
+        SELECT path, hash, updated_at,
+          ROW_NUMBER() OVER (PARTITION BY LOWER(path) ORDER BY updated_at DESC, rowid ASC) AS rn
+        FROM content_hashes
+      ) WHERE rn = 1;
+      DROP TABLE content_hashes;
+      ALTER TABLE content_hashes_v40_new RENAME TO content_hashes;
+    `);
+
+    // --- tasks: best-effort dedup by (LOWER(path), line), keep MAX(id).
+    //     Post-boot file scan repopulates with the canonical filesystem case. ---
+    db.exec(`
+      CREATE TABLE tasks_v40_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        path TEXT NOT NULL COLLATE NOCASE,
+        line INTEGER NOT NULL,
+        text TEXT NOT NULL,
+        status TEXT NOT NULL,
+        raw TEXT NOT NULL,
+        context TEXT,
+        tags_json TEXT,
+        due_date TEXT,
+        UNIQUE(path, line)
+      );
+      INSERT INTO tasks_v40_new
+      SELECT id, path, line, text, status, raw, context, tags_json, due_date
+      FROM (
+        SELECT id, path, line, text, status, raw, context, tags_json, due_date,
+          ROW_NUMBER() OVER (PARTITION BY LOWER(path), line ORDER BY id DESC) AS rn
+        FROM tasks
+      ) WHERE rn = 1;
+      DROP TABLE tasks;
+      ALTER TABLE tasks_v40_new RENAME TO tasks;
+    `);
+
+    // --- note_links: dedup by (LOWER(note_path), target), keep row with the
+    //     latest weight_updated_at. Treat NULL as 0 for ordering so non-NULL
+    //     wins. rowid tiebreak keeps the pick deterministic. ---
+    db.exec(`
+      CREATE TABLE note_links_v40_new (
+        note_path TEXT NOT NULL COLLATE NOCASE,
+        target TEXT NOT NULL,
+        weight REAL NOT NULL DEFAULT 1.0,
+        weight_updated_at INTEGER,
+        PRIMARY KEY (note_path, target)
+      );
+      INSERT INTO note_links_v40_new
+      SELECT note_path, target, weight, weight_updated_at
+      FROM (
+        SELECT note_path, target, weight, weight_updated_at,
+          ROW_NUMBER() OVER (
+            PARTITION BY LOWER(note_path), target
+            ORDER BY COALESCE(weight_updated_at, 0) DESC, rowid ASC
+          ) AS rn
+        FROM note_links
+      ) WHERE rn = 1;
+      DROP TABLE note_links;
+      ALTER TABLE note_links_v40_new RENAME TO note_links;
+    `);
+
+    // --- note_tags: pure dedup via INSERT OR IGNORE. No value columns to merge. ---
+    db.exec(`
+      CREATE TABLE note_tags_v40_new (
+        note_path TEXT NOT NULL COLLATE NOCASE,
+        tag TEXT NOT NULL,
+        PRIMARY KEY (note_path, tag)
+      );
+      INSERT OR IGNORE INTO note_tags_v40_new SELECT note_path, tag FROM note_tags;
+      DROP TABLE note_tags;
+      ALTER TABLE note_tags_v40_new RENAME TO note_tags;
+    `);
+
+    // --- note_link_history: MIN(first_seen_at), MAX(edits_survived, last_positive_at) ---
+    db.exec(`
+      CREATE TABLE note_link_history_v40_new (
+        note_path TEXT NOT NULL COLLATE NOCASE,
+        target TEXT NOT NULL,
+        first_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+        edits_survived INTEGER NOT NULL DEFAULT 0,
+        last_positive_at TEXT,
+        PRIMARY KEY (note_path, target)
+      );
+      INSERT INTO note_link_history_v40_new
+      SELECT MIN(note_path), target, MIN(first_seen_at), MAX(edits_survived), MAX(last_positive_at)
+      FROM note_link_history
+      GROUP BY LOWER(note_path), target;
+      DROP TABLE note_link_history;
+      ALTER TABLE note_link_history_v40_new RENAME TO note_link_history;
+    `);
+
+    // --- note_moves: column alter via rebuild. All rows preserved (no dedup;
+    //     history is append-only, old/new paths are legitimately case-variant). ---
+    db.exec(`
+      CREATE TABLE note_moves_v40_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        old_path TEXT NOT NULL COLLATE NOCASE,
+        new_path TEXT NOT NULL COLLATE NOCASE,
+        moved_at TEXT NOT NULL DEFAULT (datetime('now')),
+        old_folder TEXT,
+        new_folder TEXT
+      );
+      INSERT INTO note_moves_v40_new SELECT id, old_path, new_path, moved_at, old_folder, new_folder FROM note_moves;
+      DROP TABLE note_moves;
+      ALTER TABLE note_moves_v40_new RENAME TO note_moves;
+    `);
+
+    // --- suggestion_events: dedup by (timestamp, LOWER(note_path), entity),
+    //     keep row with MAX(total_score), id DESC tiebreak. ---
+    db.exec(`
+      CREATE TABLE suggestion_events_v40_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp INTEGER NOT NULL,
+        note_path TEXT NOT NULL COLLATE NOCASE,
+        entity TEXT NOT NULL,
+        total_score REAL NOT NULL,
+        breakdown_json TEXT NOT NULL,
+        threshold REAL NOT NULL,
+        passed INTEGER NOT NULL,
+        strictness TEXT NOT NULL,
+        applied INTEGER DEFAULT 0,
+        pipeline_event_id INTEGER,
+        UNIQUE(timestamp, note_path, entity)
+      );
+      INSERT INTO suggestion_events_v40_new
+      SELECT id, timestamp, note_path, entity, total_score, breakdown_json,
+             threshold, passed, strictness, applied, pipeline_event_id
+      FROM (
+        SELECT id, timestamp, note_path, entity, total_score, breakdown_json,
+               threshold, passed, strictness, applied, pipeline_event_id,
+          ROW_NUMBER() OVER (
+            PARTITION BY timestamp, LOWER(note_path), entity
+            ORDER BY total_score DESC, id DESC
+          ) AS rn
+        FROM suggestion_events
+      ) WHERE rn = 1;
+      DROP TABLE suggestion_events;
+      ALTER TABLE suggestion_events_v40_new RENAME TO suggestion_events;
+    `);
+
+    // --- corrections: column alter via rebuild. All rows preserved. ---
+    db.exec(`
+      CREATE TABLE corrections_v40_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        entity TEXT,
+        note_path TEXT COLLATE NOCASE,
+        correction_type TEXT NOT NULL,
+        description TEXT NOT NULL,
+        source TEXT NOT NULL DEFAULT 'user',
+        status TEXT DEFAULT 'pending',
+        created_at TEXT DEFAULT (datetime('now')),
+        resolved_at TEXT
+      );
+      INSERT INTO corrections_v40_new
+      SELECT id, entity, note_path, correction_type, description, source, status, created_at, resolved_at
+      FROM corrections;
+      DROP TABLE corrections;
+      ALTER TABLE corrections_v40_new RENAME TO corrections;
+    `);
+
+    // --- prospect_ledger: aggregate sums (sighting_count, score, backlink_count,
+    //     first/last_seen_at) plus non-aggregate cols (display_name, source,
+    //     pattern, confidence) taken from the row with the latest last_seen_at.
+    //     CTE: agg computes the sums; ranked picks the winning row per group;
+    //     INSERT joins the two. ---
+    db.exec(`
+      CREATE TABLE prospect_ledger_v40_new (
+        term TEXT NOT NULL,
+        display_name TEXT NOT NULL,
+        note_path TEXT NOT NULL COLLATE NOCASE,
+        seen_day TEXT NOT NULL,
+        source TEXT NOT NULL,
+        pattern TEXT,
+        confidence TEXT NOT NULL DEFAULT 'low',
+        backlink_count INTEGER DEFAULT 0,
+        score REAL DEFAULT 0,
+        first_seen_at INTEGER NOT NULL,
+        last_seen_at INTEGER NOT NULL,
+        sighting_count INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (term, note_path, seen_day)
+      );
+      INSERT INTO prospect_ledger_v40_new
+      WITH agg AS (
+        SELECT
+          term AS tm,
+          LOWER(note_path) AS lnp,
+          seen_day AS sd,
+          MIN(first_seen_at) AS first_seen,
+          MAX(last_seen_at) AS last_seen,
+          SUM(sighting_count) AS total_sightings,
+          MAX(score) AS best_score,
+          MAX(backlink_count) AS total_backlinks
+        FROM prospect_ledger
+        GROUP BY term, LOWER(note_path), seen_day
+      ),
+      ranked AS (
+        SELECT term, display_name, note_path, seen_day, source, pattern, confidence,
+          ROW_NUMBER() OVER (
+            PARTITION BY term, LOWER(note_path), seen_day
+            ORDER BY last_seen_at DESC, rowid ASC
+          ) AS rn
+        FROM prospect_ledger
+      )
+      SELECT
+        r.term,
+        r.display_name,
+        r.note_path,
+        r.seen_day,
+        r.source,
+        r.pattern,
+        r.confidence,
+        COALESCE(a.total_backlinks, 0) AS backlink_count,
+        COALESCE(a.best_score, 0) AS score,
+        a.first_seen AS first_seen_at,
+        a.last_seen AS last_seen_at,
+        a.total_sightings AS sighting_count
+      FROM ranked r
+      INNER JOIN agg a
+        ON r.term = a.tm AND LOWER(r.note_path) = a.lnp AND r.seen_day = a.sd
+      WHERE r.rn = 1;
+      DROP TABLE prospect_ledger;
+      ALTER TABLE prospect_ledger_v40_new RENAME TO prospect_ledger;
+    `);
+
+    // --- proactive_queue: dedup by (LOWER(note_path), entity). Keep row with
+    //     MAX(score); on score tie, prefer status='pending' over 'applied' (so
+    //     unfinished work survives); then latest queued_at; then highest id. ---
+    db.exec(`
+      CREATE TABLE proactive_queue_v40_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        note_path TEXT NOT NULL COLLATE NOCASE,
+        entity TEXT NOT NULL,
+        score REAL NOT NULL,
+        confidence TEXT NOT NULL,
+        queued_at INTEGER NOT NULL,
+        expires_at INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        applied_at INTEGER,
+        UNIQUE(note_path, entity)
+      );
+      INSERT INTO proactive_queue_v40_new
+      SELECT id, note_path, entity, score, confidence,
+             queued_at, expires_at, status, applied_at
+      FROM (
+        SELECT id, note_path, entity, score, confidence,
+               queued_at, expires_at, status, applied_at,
+          ROW_NUMBER() OVER (
+            PARTITION BY LOWER(note_path), entity
+            ORDER BY score DESC,
+                     CASE WHEN status = 'pending' THEN 0 ELSE 1 END ASC,
+                     queued_at DESC,
+                     id DESC
+          ) AS rn
+        FROM proactive_queue
+      ) WHERE rn = 1;
+      DROP TABLE proactive_queue;
+      ALTER TABLE proactive_queue_v40_new RENAME TO proactive_queue;
+    `);
+
+    // --- retrieval_cooccurrence: SUM(weight), MIN(timestamp) per
+    //     (LOWER(note_a), LOWER(note_b), session_id) ---
+    db.exec(`
+      CREATE TABLE retrieval_cooccurrence_v40_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        note_a TEXT NOT NULL COLLATE NOCASE,
+        note_b TEXT NOT NULL COLLATE NOCASE,
+        session_id TEXT NOT NULL,
+        timestamp INTEGER NOT NULL,
+        weight REAL NOT NULL DEFAULT 1.0,
+        UNIQUE(note_a, note_b, session_id)
+      );
+      INSERT INTO retrieval_cooccurrence_v40_new (note_a, note_b, session_id, timestamp, weight)
+      SELECT MIN(note_a), MIN(note_b), session_id, MIN(timestamp), SUM(weight)
+      FROM retrieval_cooccurrence
+      GROUP BY LOWER(note_a), LOWER(note_b), session_id;
+      DROP TABLE retrieval_cooccurrence;
+      ALTER TABLE retrieval_cooccurrence_v40_new RENAME TO retrieval_cooccurrence;
+    `);
+
+    // --- wikilink_feedback: column alter via rebuild. All rows preserved. ---
+    db.exec(`
+      CREATE TABLE wikilink_feedback_v40_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        entity TEXT NOT NULL,
+        context TEXT NOT NULL,
+        note_path TEXT NOT NULL COLLATE NOCASE,
+        correct INTEGER NOT NULL,
+        confidence REAL NOT NULL DEFAULT 1.0,
+        matched_term TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
+      INSERT INTO wikilink_feedback_v40_new
+      SELECT id, entity, context, note_path, correct, confidence, matched_term, created_at
+      FROM wikilink_feedback;
+      DROP TABLE wikilink_feedback;
+      ALTER TABLE wikilink_feedback_v40_new RENAME TO wikilink_feedback;
+    `);
+
+    // Recreate all indexes stripped by DROP TABLE. Re-executing SCHEMA_SQL
+    // is safe inside the transaction: CREATE TABLE IF NOT EXISTS is a no-op
+    // for the renamed tables, and CREATE INDEX IF NOT EXISTS repopulates
+    // the missing indexes. Triggers on entities_fts also get re-created.
+    db.exec(SCHEMA_SQL);
+  });
+
+  try {
+    runV40();
+  } finally {
+    // Always re-enable foreign keys, even if the transaction threw and rolled back.
+    db.pragma('foreign_keys = ON');
+  }
+  return true;
 }
 
 // =============================================================================

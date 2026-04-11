@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 39;
+export const SCHEMA_VERSION = 40;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS entities (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   name_lower TEXT NOT NULL,
-  path TEXT NOT NULL,
+  path TEXT NOT NULL COLLATE NOCASE,
   category TEXT NOT NULL,
   aliases_json TEXT,
   hub_score INTEGER DEFAULT 0,
@@ -151,12 +151,12 @@ CREATE TABLE IF NOT EXISTS vault_metrics (
 CREATE INDEX IF NOT EXISTS idx_vault_metrics_ts ON vault_metrics(timestamp);
 CREATE INDEX IF NOT EXISTS idx_vault_metrics_m ON vault_metrics(metric, timestamp);
 
--- Wikilink feedback (v4: quality tracking)
+-- Wikilink feedback (v4: quality tracking, v40: NOCASE note_path)
 CREATE TABLE IF NOT EXISTS wikilink_feedback (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   entity TEXT NOT NULL,
   context TEXT NOT NULL,
-  note_path TEXT NOT NULL,
+  note_path TEXT NOT NULL COLLATE NOCASE,
   correct INTEGER NOT NULL,
   confidence REAL NOT NULL DEFAULT 1.0,
   matched_term TEXT,
@@ -230,9 +230,9 @@ CREATE TABLE IF NOT EXISTS graph_snapshots (
 CREATE INDEX IF NOT EXISTS idx_graph_snap_ts ON graph_snapshots(timestamp);
 CREATE INDEX IF NOT EXISTS idx_graph_snap_m ON graph_snapshots(metric, timestamp);
 
--- Note embeddings for semantic search (v9)
+-- Note embeddings for semantic search (v9, v40: NOCASE path)
 CREATE TABLE IF NOT EXISTS note_embeddings (
-  path TEXT PRIMARY KEY,
+  path TEXT PRIMARY KEY COLLATE NOCASE,
   embedding BLOB NOT NULL,
   content_hash TEXT NOT NULL,
   model TEXT NOT NULL,
@@ -248,10 +248,10 @@ CREATE TABLE IF NOT EXISTS entity_embeddings (
   updated_at INTEGER NOT NULL
 );
 
--- Task cache for fast task queries (v12)
+-- Task cache for fast task queries (v12, v40: NOCASE path)
 CREATE TABLE IF NOT EXISTS tasks (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  path TEXT NOT NULL,
+  path TEXT NOT NULL COLLATE NOCASE,
   line INTEGER NOT NULL,
   text TEXT NOT NULL,
   status TEXT NOT NULL,
@@ -276,11 +276,11 @@ CREATE TABLE IF NOT EXISTS merge_dismissals (
   dismissed_at TEXT DEFAULT (datetime('now'))
 );
 
--- Suggestion events audit log (v15: pipeline observability)
+-- Suggestion events audit log (v15: pipeline observability, v40: NOCASE note_path)
 CREATE TABLE IF NOT EXISTS suggestion_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   timestamp INTEGER NOT NULL,
-  note_path TEXT NOT NULL,
+  note_path TEXT NOT NULL COLLATE NOCASE,
   entity TEXT NOT NULL,
   total_score REAL NOT NULL,
   breakdown_json TEXT NOT NULL,
@@ -294,9 +294,9 @@ CREATE TABLE IF NOT EXISTS suggestion_events (
 CREATE INDEX IF NOT EXISTS idx_suggestion_entity ON suggestion_events(entity);
 CREATE INDEX IF NOT EXISTS idx_suggestion_note ON suggestion_events(note_path);
 
--- Forward-link persistence for diff-based feedback (v16), edge weights (v22)
+-- Forward-link persistence for diff-based feedback (v16), edge weights (v22), v40: NOCASE note_path
 CREATE TABLE IF NOT EXISTS note_links (
-  note_path TEXT NOT NULL,
+  note_path TEXT NOT NULL COLLATE NOCASE,
   target TEXT NOT NULL,
   weight REAL NOT NULL DEFAULT 1.0,
   weight_updated_at INTEGER,
@@ -312,16 +312,16 @@ CREATE TABLE IF NOT EXISTS entity_changes (
   changed_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- Note tag persistence for diff-based feedback (v18)
+-- Note tag persistence for diff-based feedback (v18, v40: NOCASE note_path)
 CREATE TABLE IF NOT EXISTS note_tags (
-  note_path TEXT NOT NULL,
+  note_path TEXT NOT NULL COLLATE NOCASE,
   tag TEXT NOT NULL,
   PRIMARY KEY (note_path, tag)
 );
 
--- Wikilink survival tracking for positive feedback signals (v19)
+-- Wikilink survival tracking for positive feedback signals (v19, v40: NOCASE note_path)
 CREATE TABLE IF NOT EXISTS note_link_history (
-  note_path TEXT NOT NULL,
+  note_path TEXT NOT NULL COLLATE NOCASE,
   target TEXT NOT NULL,
   first_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
   edits_survived INTEGER NOT NULL DEFAULT 0,
@@ -329,11 +329,11 @@ CREATE TABLE IF NOT EXISTS note_link_history (
   PRIMARY KEY (note_path, target)
 );
 
--- Note move history (v20): records when files are moved/renamed to a different folder
+-- Note move history (v20): records when files are moved/renamed to a different folder, v40: NOCASE paths
 CREATE TABLE IF NOT EXISTS note_moves (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  old_path TEXT NOT NULL,
-  new_path TEXT NOT NULL,
+  old_path TEXT NOT NULL COLLATE NOCASE,
+  new_path TEXT NOT NULL COLLATE NOCASE,
   moved_at TEXT NOT NULL DEFAULT (datetime('now')),
   old_folder TEXT,
   new_folder TEXT
@@ -342,11 +342,11 @@ CREATE INDEX IF NOT EXISTS idx_note_moves_old_path ON note_moves(old_path);
 CREATE INDEX IF NOT EXISTS idx_note_moves_new_path ON note_moves(new_path);
 CREATE INDEX IF NOT EXISTS idx_note_moves_moved_at ON note_moves(moved_at);
 
--- Corrections (v24): persistent correction records from user/engine feedback
+-- Corrections (v24): persistent correction records from user/engine feedback, v40: NOCASE note_path
 CREATE TABLE IF NOT EXISTS corrections (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   entity TEXT,
-  note_path TEXT,
+  note_path TEXT COLLATE NOCASE,
   correction_type TEXT NOT NULL,
   description TEXT NOT NULL,
   source TEXT NOT NULL DEFAULT 'user',
@@ -412,9 +412,9 @@ CREATE TABLE IF NOT EXISTS cooccurrence_cache (
   association_count INTEGER NOT NULL
 );
 
--- Content hashes (v28): persist watcher content hashes across restarts
+-- Content hashes (v28): persist watcher content hashes across restarts, v40: NOCASE path
 CREATE TABLE IF NOT EXISTS content_hashes (
-  path TEXT PRIMARY KEY,
+  path TEXT PRIMARY KEY COLLATE NOCASE,
   hash TEXT NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -432,11 +432,11 @@ CREATE TABLE IF NOT EXISTS session_summaries (
   tool_count INTEGER
 );
 
--- Retrieval co-occurrence (v30): notes retrieved together build implicit edges
+-- Retrieval co-occurrence (v30): notes retrieved together build implicit edges, v40: NOCASE notes
 CREATE TABLE IF NOT EXISTS retrieval_cooccurrence (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  note_a TEXT NOT NULL,
-  note_b TEXT NOT NULL,
+  note_a TEXT NOT NULL COLLATE NOCASE,
+  note_b TEXT NOT NULL COLLATE NOCASE,
   session_id TEXT NOT NULL,
   timestamp INTEGER NOT NULL,
   weight REAL NOT NULL DEFAULT 1.0,
@@ -445,10 +445,10 @@ CREATE TABLE IF NOT EXISTS retrieval_cooccurrence (
 CREATE INDEX IF NOT EXISTS idx_retcooc_notes ON retrieval_cooccurrence(note_a, note_b);
 CREATE INDEX IF NOT EXISTS idx_retcooc_ts ON retrieval_cooccurrence(timestamp);
 
--- Deferred proactive linking queue (v31)
+-- Deferred proactive linking queue (v31, v40: NOCASE note_path)
 CREATE TABLE IF NOT EXISTS proactive_queue (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  note_path TEXT NOT NULL,
+  note_path TEXT NOT NULL COLLATE NOCASE,
   entity TEXT NOT NULL,
   score REAL NOT NULL,
   confidence TEXT NOT NULL,
@@ -493,11 +493,11 @@ CREATE TABLE IF NOT EXISTS tool_selection_feedback (
 CREATE INDEX IF NOT EXISTS idx_tsf_tool ON tool_selection_feedback(tool_name);
 CREATE INDEX IF NOT EXISTS idx_tsf_ts ON tool_selection_feedback(timestamp);
 
--- Prospect ledger (v37): day-grain sightings for pre-entity pattern accumulation
+-- Prospect ledger (v37): day-grain sightings for pre-entity pattern accumulation, v40: NOCASE note_path
 CREATE TABLE IF NOT EXISTS prospect_ledger (
   term TEXT NOT NULL,
   display_name TEXT NOT NULL,
-  note_path TEXT NOT NULL,
+  note_path TEXT NOT NULL COLLATE NOCASE,
   seen_day TEXT NOT NULL,
   source TEXT NOT NULL,
   pattern TEXT,

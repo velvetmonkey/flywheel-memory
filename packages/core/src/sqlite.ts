@@ -19,7 +19,7 @@ import type { Entity, EntityCategory, EntityWithAliases, EntityIndex } from './t
 export { SCHEMA_VERSION, STATE_DB_FILENAME, FLYWHEEL_DIR, SCHEMA_SQL } from './schema.js';
 
 // Re-export migrations
-export { getStateDbPath, initSchema, deleteStateDbFiles, backupStateDb, preserveCorruptedDb } from './migrations.js';
+export { getStateDbPath, initSchema, migrateV40, deleteStateDbFiles, backupStateDb, preserveCorruptedDb } from './migrations.js';
 
 // Re-export backup & recovery
 export {
@@ -165,6 +165,59 @@ export interface StateDb {
 }
 
 // =============================================================================
+// Pre-v40 backup hook
+// =============================================================================
+
+/**
+ * Snapshot the state DB to `<dbPath>.pre-v40.backup` before the v40 migration
+ * runs. Synchronous (uses VACUUM INTO) so it slots into openStateDb's existing
+ * sync flow without cascading async to dozens of callers.
+ *
+ * Skipped if:
+ * - schema_version table doesn't exist (fresh DB, nothing to back up)
+ * - currentVersion >= 40 (already migrated, hook is a no-op)
+ * - quick_check fails (don't overwrite a good backup with a corrupt DB)
+ *
+ * Failures are logged but never throw — the migration may still succeed.
+ */
+function runPreV40BackupHook(db: Database.Database, dbPath: string): void {
+  try {
+    const schemaVersionTable = db.prepare(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='schema_version'`
+    ).get();
+    if (!schemaVersionTable) return;
+
+    const row = db.prepare('SELECT MAX(version) AS v FROM schema_version').get() as
+      | { v: number | null }
+      | undefined;
+    const currentVersion = row?.v ?? 0;
+    if (currentVersion >= 40) return;
+
+    const quickCheck = db.pragma('quick_check') as Array<Record<string, string>>;
+    const firstValue = quickCheck.length > 0 ? Object.values(quickCheck[0])[0] : 'no result';
+    if (firstValue !== 'ok') {
+      console.error(
+        `[vault-core] Pre-v40 backup skipped: quick_check returned "${firstValue}" — DB may be corrupt`
+      );
+      return;
+    }
+
+    const backupPath = `${dbPath}.pre-v40.backup`;
+    // VACUUM INTO refuses to overwrite an existing file. Clear any prior snapshot first.
+    if (fs.existsSync(backupPath)) {
+      fs.unlinkSync(backupPath);
+    }
+    const escaped = backupPath.replace(/'/g, "''");
+    db.exec(`VACUUM INTO '${escaped}'`);
+    console.error(`[vault-core] Pre-v40 backup created at ${backupPath}`);
+  } catch (err) {
+    console.error(
+      `[vault-core] Pre-v40 backup failed: ${err instanceof Error ? err.message : err}`
+    );
+  }
+}
+
+// =============================================================================
 // Factory
 // =============================================================================
 
@@ -197,6 +250,17 @@ export function openStateDb(vaultPath: string): StateDb {
   let db: InstanceType<typeof Database>;
   try {
     db = new Database(dbPath);
+
+    // Pre-v40 backup hook: before initSchema runs migrations, snapshot the
+    // current state.db so users can recover if the v40 COLLATE NOCASE rebuild
+    // picks an unexpected row in a tie. Synchronous VACUUM INTO is WAL-safe.
+    // Skipped on fresh DBs (no schema_version table yet) and on already-migrated
+    // databases (currentVersion >= 40). Quick_check guards against backing up
+    // a corrupt DB on top of a previously-good backup.
+    if (!isNewDb) {
+      runPreV40BackupHook(db, dbPath);
+    }
+
     initSchema(db);
 
     // Enable incremental auto_vacuum on existing databases (one-time cost).

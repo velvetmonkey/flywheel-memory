@@ -173,6 +173,33 @@ This loses all accumulated signals. Only use if all backups are also corrupted.
 - If running multiple MCP clients pointing at the same vault, be aware of potential SQLite lock contention (WAL mode handles most concurrent reads, but simultaneous writes can conflict)
 - The `.flywheel/` directory is safe to add to `.gitignore`  --  it's entirely regenerable (but the backup files within it protect your accumulated data, so don't delete them unless you're doing a full reset)
 
+### v40 Migration Recovery (`pre-v40.backup`)
+
+When upgrading to schema v40, Flywheel Memory makes a synchronous snapshot of `state.db` named `state.db.pre-v40.backup` *before* running the COLLATE NOCASE rebuild. The v40 migration collapses mixed-case duplicate rows that case-insensitive filesystems (Windows NTFS, macOS APFS) silently created. Per-table conflict rules pick a winner from each duplicate group; if the wrong row was kept you can restore from this backup.
+
+**Recovery steps:**
+
+```bash
+# 1. Stop the MCP server
+# 2. Move the post-migration DB out of the way
+mv .flywheel/state.db .flywheel/state.db.v40-broken
+
+# 3. Restore the pre-migration snapshot
+cp .flywheel/state.db.pre-v40.backup .flywheel/state.db
+
+# 4. Set the dry-run flag so the next start logs collisions without re-applying
+export FLYWHEEL_MIGRATION_DRY_RUN=1
+# 5. Restart the server, inspect the collision counts in stderr
+# 6. Unset the flag and restart to apply v40 again, or report the issue
+unset FLYWHEEL_MIGRATION_DRY_RUN
+```
+
+**Notes:**
+
+- The `pre-v40.backup` file lives next to `state.db` (not in `.flywheel/backups/`) because it's created synchronously before the async backup system runs.
+- Setting `FLYWHEEL_MIGRATION_DRY_RUN=1` logs the per-table collision counts and **skips** the v40 apply, leaving the DB at v39. The server boots in degraded state.
+- The pre-v40 snapshot is created only once, at the upgrade boundary. After the migration succeeds, you may delete it to reclaim disk.
+
 ---
 
 ## Git Lock Contention

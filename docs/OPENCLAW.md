@@ -169,7 +169,7 @@ You usually want to think about both.
 The pattern that works well in OpenClaw is:
 
 1. Use `search` first for almost every vault question.
-2. Use `brief` to cold-start a long-running agent that should remember recent vault state.
+2. Use `memory(action: "brief")` to cold-start a long-running agent that should remember recent vault state.
 3. Use `memory` for durable bot-side observations or handoff notes that should survive session resets.
 4. Use `edit_section(action: add)`, `vault_add_task`, and related write tools for structured capture.
 5. Use `suggestOutgoingLinks: true` for chat-to-note or voice-to-note capture flows where graph growth matters.
@@ -177,7 +177,7 @@ The pattern that works well in OpenClaw is:
 In practice that means:
 
 - "What did we agree with Acme last week?" -> `search`
-- "Pick up where we left off" -> `brief`
+- "Pick up where we left off" -> `memory(action: "brief")`
 - "Remember that Sarah prefers Tuesday reviews" -> `memory`
 - "Log this meeting note into today's daily note" -> `edit_section(action: add)`
 

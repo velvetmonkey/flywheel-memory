@@ -110,7 +110,8 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET`. Preset/category gating is ow
 <!-- GENERATED:claude-code-memory-note START -->
 > **Claude Code note:** the `memory` merged tool is suppressed under Claude Code
 > (`CLAUDECODE=1`) because Claude Code ships its own memory plane. Agent preset
-> exposes 13 tools under Claude Code instead of 14; `brief` stays available.
+> exposes 13 tools under Claude Code instead of 14;
+> the briefing entrypoint still works as `memory(action: "brief")`.
 <!-- GENERATED:claude-code-memory-note END -->
 
 `auto` is compatibility-only. `discover_tools` suggests tools but does not activate or reveal them. `FLYWHEEL_TOOL_ROUTING` affects routing hints, not visibility. Runtime config goes through `doctor(action: "config")`; `tool_tier_override` is deprecated and has no effect.

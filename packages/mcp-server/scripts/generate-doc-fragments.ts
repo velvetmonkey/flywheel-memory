@@ -134,7 +134,8 @@ function renderClaudeCodeMemoryNote(): string {
   return [
     '> **Claude Code note:** the `memory` merged tool is suppressed under Claude Code',
     `> (\`CLAUDECODE=1\`) because Claude Code ships its own memory plane. Agent preset`,
-    `> exposes ${claudeAgentCount} tools under Claude Code instead of ${agentCount}; \`brief\` stays available.`,
+    `> exposes ${claudeAgentCount} tools under Claude Code instead of ${agentCount};`,
+    '> the briefing entrypoint still works as `memory(action: "brief")`.',
   ].join('\n');
 }
 

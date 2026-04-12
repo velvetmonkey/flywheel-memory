@@ -226,10 +226,10 @@ export function getWatcherStatus(): WatcherStatus | null {
 
 const toolConfig = resolveToolConfig();
 const enabledCategories = toolConfig.categories;
-const toolTierMode: ToolTierMode = toolConfig.includeDiscoveryTool ? 'tiered' : 'off';
+const toolTierMode: ToolTierMode = toolConfig.enableProgressiveDisclosure ? 'tiered' : 'off';
 
 function getInstructionActiveCategories(): Set<ToolCategory> | undefined {
-  return toolConfig.includeDiscoveryTool ? new Set(enabledCategories) : undefined;
+  return toolConfig.enableProgressiveDisclosure ? new Set(enabledCategories) : undefined;
 }
 
 // ============================================================================

@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
-const ROOT = join(process.cwd(), 'packages/mcp-server');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const ROOT = join(__dirname, '..');
 const PRIVATE_REGISTERED_TOOLS = `_${'registeredTools'}`;
 const PRIVATE_REQUEST_HANDLERS = `_${'requestHandlers'}`;
 const CHECK_PATHS = [

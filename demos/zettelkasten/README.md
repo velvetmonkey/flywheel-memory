@@ -81,7 +81,7 @@ This vault demonstrates:
 
 - **Graph traversal across note types** -- trace an idea from a raw hunch (`fleeting/`) through a book summary (`literature/`) to an atomic concept (`permanent/`) to a synthesis project (`projects/`)
 - **Hub detection** -- Active Recall, Spaced Repetition, and Desirable Difficulties are the most-connected nodes, and Flywheel finds them without reading any files
-- **Wikilink suggestion** -- content is written with natural concept overlap so `suggest_wikilinks` surfaces real, useful connections
+- **Wikilink suggestion** -- content is written with natural concept overlap so `link(action: suggest)` surfaces real, useful connections
 - **Cluster analysis** -- three distinct clusters emerge: learning techniques, cognitive architecture, and motivation
 - **No orphans** -- every permanent note links to at least 2 others, giving Flywheel a connected graph to navigate
 
@@ -204,7 +204,7 @@ You: "What are the most connected notes in this vault?"
 ```
 You: "Capture: Spaced Repetition leverages the Testing Effect as a form of Desirable Difficulties"
 
-● flywheel › vault_create_note
+● flywheel › note(action: create)
   folder: "fleeting/"
   content: "[[Spaced Repetition]] leverages the [[Testing Effect]] as a form of
             [[Desirable Difficulties]]"

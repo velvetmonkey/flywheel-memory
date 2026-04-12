@@ -151,7 +151,7 @@ Vault mutations accept arbitrary markdown -- a finite set of example inputs can'
 
 Properties tested:
 
-- **Mutation safety** -- `vault_add_to_section` never corrupts file structure, regardless of generated input.
+- **Mutation safety** -- `edit_section` never corrupts file structure, regardless of generated input.
 - **Section heading preservation** -- all original headings survive any mutation.
 - **Frontmatter round-trip** -- YAML keys and values survive read-write cycles.
 - **Unicode/emoji preservation** -- CJK, mathematical symbols, arrows, and emoji persist through mutations.
@@ -305,11 +305,11 @@ The benchmark measures whether a real Claude agent with Flywheel tools can answe
 - Output: 290 clean markdown files, zero wikilinks, no `.flywheel/` state
 
 **2. Pre-warm** (one Claude Haiku session with `full,memory` preset):
-- `flywheel_doctor` → confirms FTS5 index built, entities scanned
+- `doctor(action: health)` → confirms FTS5 index built, entities scanned
 - `vault_init` mode='enrich' → auto-links all notes with wikilinks (same as production usage)
 - `refresh_index` → re-indexes with new wikilinks
 - `init_semantic` → builds semantic embeddings for hybrid search
-- `flywheel_doctor` → confirms everything ready
+- `doctor(action: health)` → confirms everything ready
 
 This matches how a real vault works: Flywheel indexes it, auto-links it, and builds embeddings. The vault state after pre-warm is representative of production usage.
 
@@ -459,7 +459,7 @@ This kind of test is valuable because it measures actual tool selection and comp
 
 A tool might work perfectly in isolation but fail in practice because its description is ambiguous, its response is too large, or it overlaps confusingly with another tool. Live AI testing catches these issues:
 
-- If Claude reaches for `search` instead of `graph_analysis` when asked about connections, the tool description needs work
+- If Claude reaches for `search` instead of `graph` when asked about connections, the tool description needs work
 - If Claude makes 5 follow-up calls after a search, the response shape needs more information
 - If a write tool consistently gets skipped, the AI doesn't understand when to use it
 

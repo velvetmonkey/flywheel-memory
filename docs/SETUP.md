@@ -598,7 +598,7 @@ This runs `init_semantic`, which builds **two** indexes:
 ### Entity Embeddings (Semantic Wikilinks + Graph Analysis)
 - Embeds all vault entities (note titles, aliases, categories)
 - After build: wikilink suggestions gain **semantic scoring** — content about "deployment automation" can suggest `[[CI/CD]]` without keyword matches
-- Unlocks `semantic_links` in `note_intelligence` for per-note missing-entity suggestions
+- Unlocks `semantic_links` in `schema(action: note_intelligence)` for per-note missing-entity suggestions
 
 ### Build Details
 
@@ -616,8 +616,8 @@ After building semantic embeddings:
 
 - **Hybrid search**: `search` (both `action=query` and `action=similar`) combines BM25 + semantic matching via Reciprocal Rank Fusion — concept queries surface notes that don't share keywords
 - **Wikilink suggestions**: Semantic scoring finds conceptual links that keyword matching misses
-- **Semantic links**: `note_intelligence({ analysis: "semantic_links" })` — find missing entity links for a specific note
-- **Preflight checks**: `vault_create_note` warns when a semantically similar note already exists
+- **Semantic links**: `schema({ action: "note_intelligence", analysis: "semantic_links" })` — find missing entity links for a specific note
+- **Preflight checks**: `note(action: create)` warns when a semantically similar note already exists
 - **Broken link recovery**: `validate_links` suggests fixes via semantic similarity when exact matches fail
 
 ---

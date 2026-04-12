@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Consolidated Carter Strategy Demo Runner — 9-beat, three-act narrative
 #
-# Act I  — Retrieval (Job 1):           brief, billing
+# Act I  — Retrieval (Job 1):           memory, billing
 # Act II — Enrichment + Learning Loop:  capture1, reject, accept, capture2
 # Act III — Operational Power:           assign, dashboard, pipeline
 #
@@ -90,7 +90,7 @@ seed_feedback() {
 
   # Check if feedback already exists
   local count
-  count=$(sqlite3 "$db" "SELECT COUNT(*) FROM wikilink_feedback;" 2>/dev/null || echo 0)
+  count=$(sqlite3 "$db" "SELECT COUNT(*) FROM link;" 2>/dev/null || echo 0)
   if [[ "$count" -gt 10 ]]; then
     echo "  Feedback already seeded ($count records)"
     return 0
@@ -100,7 +100,7 @@ seed_feedback() {
 
   # Create tables if they don't exist (plural: wikilink_suppressions)
   sqlite3 "$db" "
-    CREATE TABLE IF NOT EXISTS wikilink_feedback (
+    CREATE TABLE IF NOT EXISTS link (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       entity TEXT NOT NULL,
       context TEXT,
@@ -117,40 +117,40 @@ seed_feedback() {
 
   # Positive feedback — core Acme entities (high accuracy)
   for i in $(seq 1 10); do
-    sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Sarah Mitchell', 'Acme project update', 'daily-notes/2026-03-$((10+i)).md', 1, datetime('now', '-$((30-i)) days'));"
+    sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Sarah Mitchell', 'Acme project update', 'daily-notes/2026-03-$((10+i)).md', 1, datetime('now', '-$((30-i)) days'));"
   done
   for i in $(seq 1 8); do
-    sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Acme Data Migration', 'project status', 'daily-notes/2026-03-$((10+i)).md', 1, datetime('now', '-$((28-i)) days'));"
+    sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Acme Data Migration', 'project status', 'daily-notes/2026-03-$((10+i)).md', 1, datetime('now', '-$((28-i)) days'));"
   done
   for i in $(seq 1 12); do
-    sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Acme Corp', 'client update', 'daily-notes/2026-03-$((8+i)).md', 1, datetime('now', '-$((30-i)) days'));"
+    sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Acme Corp', 'client update', 'daily-notes/2026-03-$((8+i)).md', 1, datetime('now', '-$((30-i)) days'));"
   done
   for i in $(seq 1 6); do
-    sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Marcus Webb', 'team assignment', 'daily-notes/2026-03-$((12+i)).md', 1, datetime('now', '-$((25-i)) days'));"
+    sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Marcus Webb', 'team assignment', 'daily-notes/2026-03-$((12+i)).md', 1, datetime('now', '-$((25-i)) days'));"
   done
 
   # Negative feedback — GlobalBank (suppressed: 30% accuracy with 25 obs)
   for i in $(seq 1 7); do
-    sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('GlobalBank', 'Acme context', 'daily-notes/2026-03-$((5+i)).md', 1, datetime('now', '-$((30-i)) days'));"
+    sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('GlobalBank', 'Acme context', 'daily-notes/2026-03-$((5+i)).md', 1, datetime('now', '-$((30-i)) days'));"
   done
   for i in $(seq 1 18); do
-    sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('GlobalBank', 'Acme context', 'daily-notes/2026-03-$((5+i)).md', 0, datetime('now', '-$((30-i)) days'));"
+    sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('GlobalBank', 'Acme context', 'daily-notes/2026-03-$((5+i)).md', 0, datetime('now', '-$((30-i)) days'));"
   done
   # Suppress GlobalBank
   sqlite3 "$db" "INSERT OR REPLACE INTO wikilink_suppressions (entity, false_positive_rate) VALUES ('GlobalBank', 0.72);"
 
   # Marginal feedback — Meridian Financial and Discovery Workshop Template
-  sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Meridian Financial', 'pipeline review', 'daily-notes/2026-03-15.md', 1, datetime('now', '-15 days'));"
-  sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Meridian Financial', 'Acme update', 'daily-notes/2026-03-18.md', 0, datetime('now', '-12 days'));"
-  sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Meridian Financial', 'client meeting', 'daily-notes/2026-03-20.md', 1, datetime('now', '-10 days'));"
-  sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Meridian Financial', 'weekly review', 'daily-notes/2026-03-22.md', 0, datetime('now', '-8 days'));"
+  sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Meridian Financial', 'pipeline review', 'daily-notes/2026-03-15.md', 1, datetime('now', '-15 days'));"
+  sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Meridian Financial', 'Acme update', 'daily-notes/2026-03-18.md', 0, datetime('now', '-12 days'));"
+  sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Meridian Financial', 'client meeting', 'daily-notes/2026-03-20.md', 1, datetime('now', '-10 days'));"
+  sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Meridian Financial', 'weekly review', 'daily-notes/2026-03-22.md', 0, datetime('now', '-8 days'));"
 
-  sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Discovery Workshop Template', 'project reference', 'daily-notes/2026-03-10.md', 1, datetime('now', '-20 days'));"
-  sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Discovery Workshop Template', 'Acme standup', 'daily-notes/2026-03-17.md', 0, datetime('now', '-13 days'));"
-  sqlite3 "$db" "INSERT INTO wikilink_feedback (entity, context, note_path, correct, created_at) VALUES ('Discovery Workshop Template', 'cutover planning', 'daily-notes/2026-03-25.md', 1, datetime('now', '-5 days'));"
+  sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Discovery Workshop Template', 'project reference', 'daily-notes/2026-03-10.md', 1, datetime('now', '-20 days'));"
+  sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Discovery Workshop Template', 'Acme standup', 'daily-notes/2026-03-17.md', 0, datetime('now', '-13 days'));"
+  sqlite3 "$db" "INSERT INTO link (entity, context, note_path, correct, created_at) VALUES ('Discovery Workshop Template', 'cutover planning', 'daily-notes/2026-03-25.md', 1, datetime('now', '-5 days'));"
 
   local final_count
-  final_count=$(sqlite3 "$db" "SELECT COUNT(*) FROM wikilink_feedback;" 2>/dev/null || echo 0)
+  final_count=$(sqlite3 "$db" "SELECT COUNT(*) FROM link;" 2>/dev/null || echo 0)
   echo "  Seeded $final_count feedback records"
 }
 
@@ -360,11 +360,11 @@ for i in "${!BEAT_NAMES[@]}"; do
   beat_pass=true
 
   case $beat_num in
-    1) # brief
-      if echo "$tools_used" | grep -q "mcp__flywheel__brief\|mcp__flywheel__memory"; then
-        echo "  [PASS] brief/memory tool called"
+    1) # memory
+      if echo "$tools_used" | grep -q "mcp__flywheel__memory\|mcp__flywheel__memory"; then
+        echo "  [PASS] memory/memory tool called"
       else
-        echo "  [FAIL] brief/memory tool not called"
+        echo "  [FAIL] memory/memory tool not called"
         beat_pass=false
       fi
       ;;
@@ -379,10 +379,10 @@ for i in "${!BEAT_NAMES[@]}"; do
       ;;
 
     3) # capture1
-      if echo "$tools_used" | grep -q "mcp__flywheel__vault_add_to_section"; then
-        echo "  [PASS] vault_add_to_section called"
+      if echo "$tools_used" | grep -q "mcp__flywheel__edit_section"; then
+        echo "  [PASS] edit_section called"
       else
-        echo "  [FAIL] vault_add_to_section not called"
+        echo "  [FAIL] edit_section not called"
         beat_pass=false
       fi
       # Daily note should exist with wikilinks
@@ -407,9 +407,9 @@ for i in "${!BEAT_NAMES[@]}"; do
       ;;
 
     4) # reject
-      if echo "$tools_used" | grep -q "mcp__flywheel__wikilink_feedback\|mcp__flywheel__link"; then
-        echo "  [PASS] wikilink_feedback/link tool called"
-        feedback_args=$(extract_tool_args "$out" "mcp__flywheel__wikilink_feedback")
+      if echo "$tools_used" | grep -q "mcp__flywheel__link\|mcp__flywheel__link"; then
+        echo "  [PASS] link/link tool called"
+        feedback_args=$(extract_tool_args "$out" "mcp__flywheel__link")
         if [[ -z "$feedback_args" ]]; then
           feedback_args=$(extract_tool_args "$out" "mcp__flywheel__link")
         fi
@@ -422,15 +422,15 @@ for i in "${!BEAT_NAMES[@]}"; do
           echo "  [WARN] no explicit negative feedback detected in args"
         fi
       else
-        echo "  [FAIL] wikilink_feedback/link not called"
+        echo "  [FAIL] link/link not called"
         beat_pass=false
       fi
       ;;
 
     5) # accept
-      if echo "$tools_used" | grep -q "mcp__flywheel__wikilink_feedback\|mcp__flywheel__link"; then
-        echo "  [PASS] wikilink_feedback/link tool called"
-        feedback_args=$(extract_tool_args "$out" "mcp__flywheel__wikilink_feedback")
+      if echo "$tools_used" | grep -q "mcp__flywheel__link\|mcp__flywheel__link"; then
+        echo "  [PASS] link/link tool called"
+        feedback_args=$(extract_tool_args "$out" "mcp__flywheel__link")
         if [[ -z "$feedback_args" ]]; then
           feedback_args=$(extract_tool_args "$out" "mcp__flywheel__link")
         fi
@@ -443,16 +443,16 @@ for i in "${!BEAT_NAMES[@]}"; do
           echo "  [WARN] no explicit positive feedback detected in args"
         fi
       else
-        echo "  [FAIL] wikilink_feedback/link not called"
+        echo "  [FAIL] link/link not called"
         beat_pass=false
       fi
       ;;
 
     6) # capture2
-      if echo "$tools_used" | grep -q "mcp__flywheel__vault_add_to_section"; then
-        echo "  [PASS] vault_add_to_section called"
+      if echo "$tools_used" | grep -q "mcp__flywheel__edit_section"; then
+        echo "  [PASS] edit_section called"
       else
-        echo "  [FAIL] vault_add_to_section not called"
+        echo "  [FAIL] edit_section not called"
         beat_pass=false
       fi
       # Check daily note for key wikilinks
@@ -498,9 +498,9 @@ for i in "${!BEAT_NAMES[@]}"; do
       ;;
 
     8) # dashboard
-      if echo "$tools_used" | grep -q "mcp__flywheel__wikilink_feedback\|mcp__flywheel__link"; then
-        echo "  [PASS] wikilink_feedback/link tool called"
-        feedback_args=$(extract_tool_args "$out" "mcp__flywheel__wikilink_feedback")
+      if echo "$tools_used" | grep -q "mcp__flywheel__link\|mcp__flywheel__link"; then
+        echo "  [PASS] link/link tool called"
+        feedback_args=$(extract_tool_args "$out" "mcp__flywheel__link")
         if [[ -z "$feedback_args" ]]; then
           feedback_args=$(extract_tool_args "$out" "mcp__flywheel__link")
         fi
@@ -510,7 +510,7 @@ for i in "${!BEAT_NAMES[@]}"; do
           echo "  [WARN] feedback tool called but mode may not be dashboard"
         fi
       else
-        echo "  [WARN] wikilink_feedback/link not called (may have used alternative tool)"
+        echo "  [WARN] link/link not called (may have used alternative tool)"
       fi
       ;;
 
@@ -561,7 +561,7 @@ cat > "$RESULTS_DIR/report.md" <<REPORTEOF
 
 | Beat | Name | Act | Focus |
 |------|------|-----|-------|
-| 1 | brief | Retrieval | Brief / context summary |
+| 1 | memory | Retrieval | Brief / context summary |
 | 2 | billing | Retrieval | Outstanding invoices |
 | 3 | capture1 | Learning Loop | Write + auto-suggest |
 | 4 | reject | Learning Loop | Negative feedback (x2) |

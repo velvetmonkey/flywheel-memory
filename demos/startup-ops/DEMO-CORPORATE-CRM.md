@@ -38,7 +38,7 @@ DataDriven"              [[DataDriven Co]]       backlink density
 **Context**: Co-founder logs Day 2 customer check-in
 
 ```javascript
-await flywheel.vault_add_to_section({
+await flywheel.edit_section({ action: 'add',
   path: 'daily-notes/2026-01-07.md',
   section: 'Log',
   content: 'Day 2 check-in with Sarah at DataDriven. Dashboard usage looking good - 3 team members active. She asked about API access for their BI tool.',
@@ -133,7 +133,7 @@ for (const customer of customers) {
 
 ```javascript
 // Update customer note with onboarding progress
-await flywheel.vault_add_to_section({
+await flywheel.edit_section({ action: 'add',
   path: 'ops/customers/DataDriven Co.md',
   section: 'Timeline',
   content: '| 2026-01-07 | Day 2 complete | Dashboard active, API interest |',
@@ -142,7 +142,7 @@ await flywheel.vault_add_to_section({
 });
 
 // Agent decides: Also update playbook tracker
-await flywheel.vault_add_to_section({
+await flywheel.edit_section({ action: 'add',
   path: 'ops/playbooks/Customer Onboarding.md',
   section: 'Active Onboardings',
   content: '[[DataDriven Co]] - Day 2 ✅, Day 7 scheduled (2026-01-13)',
@@ -184,7 +184,7 @@ await flywheel.vault_add_to_section({
 
 ```javascript
 // Create meeting note structure
-await flywheel.vault_create_note({
+await flywheel.note({ action: 'create',
   path: 'ops/meetings/2026-01-07 DataDriven Day 2.md',
   frontmatter: {
     type: 'meeting',
@@ -205,7 +205,7 @@ await flywheel.vault_create_note({
 });
 
 // Add meeting content with suggestions
-await flywheel.vault_add_to_section({
+await flywheel.edit_section({ action: 'add',
   path: 'ops/meetings/2026-01-07 DataDriven Day 2.md',
   section: 'Summary',
   content: 'Day 2 check-in successful. 3 team members now active on platform. Sarah enthusiastic about Q1 rollout.',
@@ -213,7 +213,7 @@ await flywheel.vault_add_to_section({
   suggestOutgoingLinks: true
 });
 
-await flywheel.vault_add_to_section({
+await flywheel.edit_section({ action: 'add',
   path: 'ops/meetings/2026-01-07 DataDriven Day 2.md',
   section: 'Discussion',
   content: `- Dashboard usage patterns positive

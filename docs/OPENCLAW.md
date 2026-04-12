@@ -171,7 +171,7 @@ The pattern that works well in OpenClaw is:
 1. Use `search` first for almost every vault question.
 2. Use `brief` to cold-start a long-running agent that should remember recent vault state.
 3. Use `memory` for durable bot-side observations or handoff notes that should survive session resets.
-4. Use `vault_add_to_section`, `vault_add_task`, and related write tools for structured capture.
+4. Use `edit_section(action: add)`, `vault_add_task`, and related write tools for structured capture.
 5. Use `suggestOutgoingLinks: true` for chat-to-note or voice-to-note capture flows where graph growth matters.
 
 In practice that means:
@@ -179,7 +179,7 @@ In practice that means:
 - "What did we agree with Acme last week?" -> `search`
 - "Pick up where we left off" -> `brief`
 - "Remember that Sarah prefers Tuesday reviews" -> `memory`
-- "Log this meeting note into today's daily note" -> `vault_add_to_section`
+- "Log this meeting note into today's daily note" -> `edit_section(action: add)`
 
 For capture-heavy bots, ask the model to prefer structured writes over raw file dumping. Flywheel is strongest when the bot writes to known sections, updates tasks explicitly, and lets auto-wikilinks densify the graph.
 

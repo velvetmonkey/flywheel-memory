@@ -31,7 +31,7 @@ Agent knows: Tests are happening
 ### Flywheel Query (Context Cloud)
 ```javascript
 // Query the graph, not just keywords
-const backlinks = await flywheel.get_backlinks({ path: 'systems/propulsion/Propulsion System.md' });
+const backlinks = await flywheel.graph({ action: 'backlinks', path: 'systems/propulsion/Propulsion System.md' });
 const forwardLinks = await flywheel.get_forward_links({ path: 'tests/Engine Hot Fire Results.md' });
 const blocked = await flywheel.search_notes({ where: { status: 'blocked' } });
 ```

@@ -50,7 +50,7 @@ What it **does not** contain: entity names, note paths, note content, file names
 
 ### Also safe
 
-- **`vault_growth`** — aggregate metrics (note count, link density, connected ratio). Numbers only.
+- **`insights(action: growth)`** — aggregate metrics (note count, link density, connected ratio). Numbers only.
 - **`flywheel_benchmark`** — search latency, index timing. Performance data only.
 
 ### Review before sharing

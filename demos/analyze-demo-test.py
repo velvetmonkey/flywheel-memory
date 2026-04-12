@@ -19,89 +19,47 @@ TOOL_CATEGORY = {
     "init_semantic": "search",
     "discover_tools": "search",
     # read (2 tools)
-    "note_read": "read",
+    "read": "read",
     "find_notes": "read",
     # write (8 tools)
     "note": "write",
-    "vault_add_to_section": "write",
-    "vault_remove_from_section": "write",
-    "vault_replace_in_section": "write",
+    "edit_section": "write",
     "vault_update_frontmatter": "write",
-    "vault_create_note": "write",
-    "vault_undo_last_mutation": "write",
+    "correct": "write",
     "policy": "write",
     # graph (9 tools)
     "graph": "graph",
-    "graph_analysis": "graph",
-    "get_connection_strength": "graph",
-    "list_entities": "graph",
-    "get_link_path": "graph",
-    "get_common_neighbors": "graph",
-    "get_backlinks": "graph",
-    "get_forward_links": "graph",
-    "get_strong_connections": "graph",
+    "entity": "graph",
     # schema (8 tools)
     "schema": "schema",
-    "vault_schema": "schema",
-    "schema_conventions": "schema",
-    "schema_validate": "schema",
-    "note_intelligence": "schema",
-    "rename_field": "schema",
-    "migrate_field_values": "schema",
-    "rename_tag": "schema",
     # wikilinks (7 tools)
     "link": "wikilinks",
-    "suggest_wikilinks": "wikilinks",
-    "validate_links": "wikilinks",
-    "wikilink_feedback": "wikilinks",
-    "discover_stub_candidates": "wikilinks",
-    "discover_cooccurrence_gaps": "wikilinks",
-    "suggest_entity_aliases": "wikilinks",
     # corrections (5 tools)
-    "correct": "corrections",
-    "vault_record_correction": "corrections",
-    "vault_list_corrections": "corrections",
-    "vault_resolve_correction": "corrections",
-    "absorb_as_alias": "corrections",
     # tasks (3 tools)
     "tasks": "tasks",
-    "vault_toggle_task": "tasks",
     "vault_add_task": "tasks",
     # memory (2 tools)
     "memory": "memory",
-    "brief": "memory",
     # note-ops (5 tools)
-    "entity": "note-ops",
-    "vault_delete_note": "note-ops",
-    "vault_move_note": "note-ops",
-    "vault_rename_note": "note-ops",
-    "merge_entities": "note-ops",
     # temporal (3 tools)
-    "get_context_around_date": "temporal",
-    "predict_stale_notes": "temporal",
-    "track_concept_evolution": "temporal",
+    "insights": "temporal",
     # diagnostics (8 tools)
-    "insights": "diagnostics",
-    "pipeline_status": "diagnostics",
+    "doctor": "diagnostics",
     "refresh_index": "diagnostics",
-    "vault_growth": "diagnostics",
-    "flywheel_config": "diagnostics",
-    "server_log": "diagnostics",
-    "flywheel_doctor": "diagnostics",
 }
 
 # Expected tools per beat (any of these counts as a pass).
 # The runner's exit status is authoritative; this analyzer is reporting-only.
 # T43: accept both standalone tools and merged tool equivalents.
 EXPECTED_TOOLS = {
-    "beat1_brief": {"brief", "memory"},
+    "beat1_brief": {"memory", "memory"},
     "beat2_billing": {"search"},
-    "beat3_capture1": {"vault_add_to_section"},
-    "beat4_reject": {"wikilink_feedback", "link"},
-    "beat5_accept": {"wikilink_feedback", "link"},
-    "beat6_capture2": {"vault_add_to_section"},
+    "beat3_capture1": {"edit_section"},
+    "beat4_reject": {"link", "link"},
+    "beat5_accept": {"link", "link"},
+    "beat6_capture2": {"edit_section"},
     "beat7_assign": {"vault_update_frontmatter", "vault_add_task", "tasks"},
-    "beat8_dashboard": {"wikilink_feedback", "link"},
+    "beat8_dashboard": {"link", "link"},
     "beat9_pipeline": {"policy", "search"},
 }
 

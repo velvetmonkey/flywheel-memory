@@ -91,7 +91,7 @@ No `FLYWHEEL_TOOLS` needed — defaults to `agent` (search, read, write, tasks, 
 <!-- GENERATED:claude-code-memory-note START -->
 > **Claude Code note:** the `memory` merged tool is suppressed under Claude Code
 > (`CLAUDECODE=1`) because Claude Code ships its own memory plane. Agent preset
-> exposes 17 tools under Claude Code instead of 18; `brief` stays available.
+> exposes 13 tools under Claude Code instead of 14; `brief` stays available.
 <!-- GENERATED:claude-code-memory-note END -->
 
 ### Claude Desktop (`claude_desktop_config.json`)
@@ -184,7 +184,7 @@ Start with `agent`, then add what you need:
 | `tasks` | Task queries and mutations (already included in `agent`) |
 | `memory` | Session memory + brief |
 | `note-ops` | Delete, move, rename notes, merge entities |
-| `temporal` | get_context_around_date, predict_stale_notes, track_concept_evolution |
+| `temporal` | insights (evolution, staleness, context, growth) |
 | `diagnostics` | Vault health, config, refresh, doctor, pipeline status, server log, growth metrics, insights |
 
 #### Recipes
@@ -245,17 +245,17 @@ Custom `EMBEDDING_MODEL` users fall back to `pattern` unless the tool manifest w
 | Category | Tools |
 |----------|-------|
 | `search` | init_semantic, search |
-| `read` | find_notes, note_read |
-| `write` | edit_section, note, policy, vault_add_to_section, vault_create_note, vault_remove_from_section, vault_replace_in_section, vault_undo_last_mutation, vault_update_frontmatter |
-| `graph` | get_backlinks, get_common_neighbors, get_connection_strength, get_forward_links, get_link_path, get_strong_connections, graph, graph_analysis, list_entities |
-| `schema` | migrate_field_values, note_intelligence, rename_field, rename_tag, schema, schema_conventions, schema_validate, vault_schema |
-| `wikilinks` | discover_cooccurrence_gaps, discover_stub_candidates, link, suggest_entity_aliases, suggest_wikilinks, validate_links, wikilink_feedback |
-| `corrections` | absorb_as_alias, correct, vault_list_corrections, vault_record_correction, vault_resolve_correction |
-| `tasks` | tasks, vault_add_task, vault_toggle_task |
-| `memory` | brief, memory |
-| `note-ops` | entity, merge_entities, vault_delete_note, vault_move_note, vault_rename_note |
-| `temporal` | get_context_around_date, predict_stale_notes, track_concept_evolution |
-| `diagnostics` | flywheel_config, flywheel_doctor, insights, pipeline_status, refresh_index, server_log, vault_growth |
+| `read` | find_notes, note_read, read |
+| `write` | edit_section, note, policy, vault_update_frontmatter |
+| `graph` | graph |
+| `schema` | schema |
+| `wikilinks` | link |
+| `corrections` | correct |
+| `tasks` | tasks, vault_add_task |
+| `memory` | memory |
+| `note-ops` | entity |
+| `temporal` | insights |
+| `diagnostics` | doctor, refresh_index |
 <!-- GENERATED:category-reference END -->
 
 #### Retired Tools
@@ -302,7 +302,7 @@ Deprecated aliases (`minimal`, `writer`, `researcher`, `backlinks`, `structure`,
 | memory | Yes | Yes | Yes | Yes |
 | note-ops |  | Yes | Yes | Yes |
 | temporal |  |  | Yes | Yes |
-| diagnostics |  |  | Yes | Yes |
+| diagnostics | Yes | Yes | Yes | Yes |
 <!-- GENERATED:preset-category-map END -->
 
 ### Semantic Embeddings
@@ -645,7 +645,7 @@ flywheel_config({
 | `exclude_entities` | string[] | `[]` | Entity names to never auto-link. Use when a valid entity name collides with a common word in your vault. |
 | `exclude_entity_folders` | string[] | `[]` | Folders to exclude from entity scanning. Notes in these folders won't be indexed as entities. Useful for `templates/`, `archive/`, etc. |
 | `exclude_task_tags` | string[] | `[]` | Tags to exclude from task queries. Tasks with these tags are filtered out of `tasks` tool results. |
-| `exclude_analysis_tags` | string[] | `[]` | Tags to exclude from schema analysis. Notes with these tags are skipped by `vault_schema` and `note_intelligence`. |
+| `exclude_analysis_tags` | string[] | `[]` | Tags to exclude from schema analysis. Notes with these tags are skipped by `schema` and `schema(action: note_intelligence)`. |
 
 #### Vault Structure (auto-inferred, read-only)
 

@@ -17,7 +17,7 @@ Ready-to-run policy examples for common vault workflows. Save any of these as `.
 | Conditional | [Weekly Review](#example-1-weekly-review) | Create-if-not-exists with conditions |
 | Processing | [Inbox Processing](#example-4-inbox-processing) | Search + frontmatter update loop |
 
-**Note:** Policy steps use internal tool names like `vault_search` and `vault_add_to_section`. These are the same tools available at the MCP level but referenced by their policy schema names.
+**Note:** Policy steps use internal tool names like `vault_search` and `edit_section`. These are the same tools available at the MCP level but referenced by their policy schema names.
 
 - [Quick Reference](#quick-reference)
 - [Template Syntax](#template-syntax)
@@ -55,7 +55,7 @@ Ready-to-run policy examples for common vault workflows. Save any of these as `.
 
 ## Available Tools
 
-**Write:** `vault_add_to_section`, `vault_remove_from_section`, `vault_replace_in_section`, `vault_create_note`, `vault_delete_note`, `vault_toggle_task`, `vault_add_task`, `vault_update_frontmatter`, `vault_add_frontmatter_field`
+**Write:** `edit_section` (add|remove|replace), `note` (create|delete), `tasks` (toggle), `vault_add_task`, `vault_update_frontmatter`
 
 **Read:** `vault_search` — full-text/semantic query of the vault index mid-policy. Results are available to subsequent steps via `{{steps.step_id.results}}`. Use when you have a query string.
 
@@ -88,7 +88,7 @@ conditions:
 
 steps:
   - id: create_weekly
-    tool: vault_create_note
+    tool: note
     when: "{{conditions.weekly_note_exists | negate}}"
     params:
       path: "reviews/{{variables.week}}.md"
@@ -158,7 +158,7 @@ conditions:
 
 steps:
   - id: create_project
-    tool: vault_create_note
+    tool: note
     when: "{{conditions.project_exists | negate}}"
     params:
       path: "projects/{{variables.name}}.md"
@@ -226,7 +226,7 @@ variables:
 
 steps:
   - id: log_standup
-    tool: vault_add_to_section
+    tool: edit_section
     params:
       path: "daily/{{variables.date}}.md"
       section: "## Log"
@@ -313,7 +313,7 @@ steps:
       limit: 10
 
   - id: log_chasers
-    tool: vault_add_to_section
+    tool: edit_section
     params:
       path: "daily-notes/{{variables.date}}.md"
       section: "## Tasks"
@@ -362,7 +362,7 @@ steps:
       limit: 20
 
   - id: create_report
-    tool: vault_create_note
+    tool: note
     when: "{{conditions.report_exists | negate}}"
     params:
       path: "reports/team-utilization-{{variables.date}}.md"

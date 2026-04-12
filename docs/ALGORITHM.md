@@ -137,7 +137,7 @@ Why deferred? The file that triggered the watcher was just modified -- its mtime
 
 This is what makes the flywheel self-sustaining. You edit a note in Obsidian. The watcher scores it and queues links. Next time the watcher fires, those links are applied. The new links create co-occurrence edges. Those edges sharpen future scoring. The graph grows whether you're using Claude or not.
 
-The threshold is deliberately conservative -- score 20 means strong exact match plus multiple contextual signals. Flywheel won't speculatively link based on a stem match alone. The per-cycle cap of 5 and daily cap of 10 prevent flooding. If this is too aggressive for your workflow, disable it: `flywheel_config({ mode: "set", key: "proactive_linking", value: false })`. Auto-linking through explicit write tool calls (`vault_add_to_section`, etc.) is unaffected.
+The threshold is deliberately conservative -- score 20 means strong exact match plus multiple contextual signals. Flywheel won't speculatively link based on a stem match alone. The per-cycle cap of 5 and daily cap of 10 prevent flooding. If this is too aggressive for your workflow, disable it: `doctor(action: config)` with `key: "proactive_linking", value: false`. Auto-linking through explicit write tool calls (`edit_section`, etc.) is unaffected.
 
 Static tools give you the same results on day 1 and day 100. Flywheel's results on day 100 are informed by everything you've written and edited since day 1. No retraining, no configuration changes, no manual curation. Just use it.
 
@@ -381,7 +381,7 @@ Three modes control the precision/recall trade-off:
 - **Default:** `balanced` -- opinionated toward link discovery, opt out to `conservative` if too noisy
 - **Configurable:** Set `wikilink_strictness` in `flywheel_config` to `conservative` or `aggressive`
 - **Adaptive (on by default):** Daily notes auto-escalate to `aggressive` for maximum capture. Set `adaptive_strictness: false` to disable.
-- **`suggest_wikilinks`** with `detail: true` always uses `balanced` for exploration
+- **`link(action: suggest)`** with `detail: true` always uses `balanced` for exploration
 
 | Setting | Conservative | Balanced | Aggressive |
 |---|---|---|---|

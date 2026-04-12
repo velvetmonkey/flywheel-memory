@@ -59,10 +59,10 @@ EOF
 
 echo "Pre-warming vault: index + embeddings..."
 if claude -p "Bootstrap this vault for benchmarking. Run these steps in order:
-1. Call flywheel_doctor — report entity_count and note_count.
+1. Call doctor — report entity_count and note_count.
 2. Call refresh_index to build the full-text index.
 3. Call init_semantic to build embeddings. Wait for completion.
-4. Call flywheel_doctor — confirm fts5_ready=true and embeddings_ready=true.
+4. Call doctor — confirm fts5_ready=true and embeddings_ready=true.
 Report final status with entity_count, note_count, and embeddings_ready." \
   --output-format stream-json \
   --no-session-persistence \
@@ -85,8 +85,8 @@ for i in $(seq 0 $((QUESTION_COUNT - 1))); do
 
   echo -n "  q${padded}: "
 
-  if claude -p "Answer this question using the Flywheel MCP tools (search, note_read).
-After searching, read the most relevant notes with note_read (action=structure) to find the answer.
+  if claude -p "Answer this question using the Flywheel MCP tools (search, read).
+After searching, read the most relevant notes with read (action=structure) to find the answer.
 For multi-hop questions, search again using information from the first document to find the second.
 Be concise.
 

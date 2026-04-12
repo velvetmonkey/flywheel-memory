@@ -157,15 +157,15 @@ for t in tools:
             sys.exit(0)
 # Also check standalone equivalents
 aliases = {
-    'link': ['suggest_wikilinks', 'wikilink_feedback', 'validate_links', 'discover_stub_candidates', 'discover_cooccurrence_gaps', 'suggest_entity_aliases'],
-    'correct': ['vault_record_correction', 'vault_list_corrections', 'vault_resolve_correction', 'vault_undo_last_mutation'],
-    'entity': ['list_entities', 'absorb_as_alias', 'suggest_entity_aliases', 'merge_entities', 'suggest_entity_merges', 'dismiss_merge_suggestion'],
-    'schema': ['vault_schema', 'schema_conventions', 'schema_validate', 'rename_field', 'rename_tag', 'migrate_field_values', 'get_folder_structure'],
-    'graph': ['graph_analysis', 'get_backlinks', 'get_forward_links', 'get_strong_connections', 'get_link_path', 'get_common_neighbors', 'get_connection_strength', 'discover_cooccurrence_gaps'],
-    'insights': ['track_concept_evolution', 'predict_stale_notes', 'get_context_around_date', 'note_intelligence', 'vault_growth'],
-    'note': ['vault_create_note', 'vault_move_note', 'vault_rename_note', 'vault_delete_note'],
-    'memory': ['brief'],
-    'tasks': ['vault_add_task', 'vault_toggle_task'],
+    'link': ['link', 'link', 'link', 'link', 'link', 'link'],
+    'correct': ['correct', 'correct', 'correct', 'correct'],
+    'entity': ['entity', 'entity', 'link', 'entity', 'suggest_entity_merges', 'dismiss_merge_suggestion'],
+    'schema': ['schema', 'schema', 'schema', 'schema', 'schema', 'schema', 'get_folder_structure'],
+    'graph': ['graph', 'graph', 'graph', 'graph', 'graph', 'graph', 'graph', 'link'],
+    'insights': ['insights', 'insights', 'insights', 'schema', 'insights'],
+    'note': ['note', 'note', 'note', 'note'],
+    'memory': ['memory'],
+    'tasks': ['vault_add_task', 'tasks'],
 }
 # Reverse: standalone -> merged
 reverse = {}

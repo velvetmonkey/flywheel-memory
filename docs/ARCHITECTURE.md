@@ -72,27 +72,25 @@ packages/
 │       │   ├── toolCatalog.ts   # Tool metadata collection for embedding manifest
 │       │   ├── read/            # Read tool registrations
 │       │   │   ├── query.ts     # search (unified: metadata + content + entities)
-│       │   │   ├── graphAdvanced.ts  # get_link_path, get_common_neighbors, get_connection_strength
-│       │   │   ├── graphAnalysis.ts  # graph_analysis (7 modes + centrality + cycles)
-│       │   │   ├── vaultSchema.ts    # vault_schema (unified: overview, field_values, inconsistencies, validate, conventions, incomplete)
-│       │   │   ├── noteIntelligence.ts # note_intelligence (unified: prose_patterns, suggest_frontmatter, suggest_wikilinks, compute, semantic_links)
-│       │   │   ├── primitives.ts     # note_read (structure|section|sections), tasks
-│       │   │   ├── health.ts    # flywheel_doctor, pipeline_status, server_log
-│       │   │   ├── system.ts    # refresh_index
-│       │   │   ├── wikilinks.ts # suggest_wikilinks, validate_links (+ typo detection)
-│       │   │   ├── migrations.ts # rename_field, migrate_field_values
-│       │   │   ├── temporalAnalysis.ts # predict_stale_notes, track_concept_evolution, get_context_around_date
-│       │   │   └── brief.ts         # brief (startup context assembly)
+│       │   │   ├── graphAnalysis.ts  # graph (analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps)
+│       │   │   ├── schemaTools.ts    # schema (overview|field_values|conventions|folders|rename_field|rename_tag|migrate|validate|note_intelligence)
+│       │   │   ├── noteIntelligence.ts # insights (evolution|staleness|context|note_intelligence|growth)
+│       │   │   ├── primitives.ts     # read/note_read (structure|section|sections), tasks (list|toggle)
+│       │   │   ├── health.ts    # doctor (health|pipeline|config|log|stats)
+│       │   │   ├── system.ts    # refresh_index, entity (list|alias|suggest_aliases|merge|...)
+│       │   │   ├── wikilinks.ts # link (suggest|validate|feedback|stubs|unlinked|dashboard|...)
+│       │   │   ├── migrations.ts # (absorbed into schema actions)
+│       │   │   └── brief.ts         # (absorbed into memory action: brief)
 │       │   └── write/           # Write tool registrations
-│       │       ├── mutations.ts # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
-│       │       ├── tasks.ts     # vault_toggle_task, vault_add_task
-│       │       ├── notes.ts     # vault_create_note, vault_delete_note
-│       │       ├── move-notes.ts # vault_move_note, vault_rename_note (with backlink updates)
-│       │       ├── frontmatter.ts # vault_update_frontmatter (+ only_if_missing)
-│       │       ├── system.ts    # vault_undo_last_mutation
-│       │       ├── policy.ts    # policy (unified: list, validate, preview, execute, author, revise)
-│       │       ├── memory.ts    # memory (agent working memory)
-│       │       └── config.ts    # flywheel_config (runtime configuration)
+│       │       ├── mutations.ts # edit_section (add|remove|replace)
+│       │       ├── tasks.ts     # vault_add_task (standalone), tasks(toggle) in primitives.ts
+│       │       ├── notes.ts     # note (create|delete)
+│       │       ├── move-notes.ts # note (move|rename) with backlink updates
+│       │       ├── frontmatter.ts # vault_update_frontmatter
+│       │       ├── entity.ts    # entity (alias|merge) + correct (record|list|resolve|undo)
+│       │       ├── policy.ts    # policy (list|validate|preview|execute|author|revise)
+│       │       ├── memory.ts    # memory (store|get|search|list|forget|summarize_session|brief)
+│       │       └── config.ts    # (doctor action: config)
 │       ├── core/
 │       │   ├── read/            # Read-side core logic
 │       │   │   ├── graph.ts     # Index building, backlinks, hubs, orphans, path finding
@@ -271,9 +269,9 @@ In addition to note-level embeddings, Flywheel builds entity-level embeddings fo
 **Integration points:**
 - **Layer 9 scoring** in `suggestRelatedLinks()`  --  cosine similarity against in-memory entity embeddings
 - **Hybrid search**  --  note embeddings power `search` (BM25 + semantic via RRF) for both `action=query` and `action=similar`
-- **Semantic note intelligence**  --  `semantic_links` mode in `note_intelligence`
-- **Preflight duplicate detection**  --  `vault_create_note` checks semantic similarity before creation
-- **Broken link fallback**  --  `validate_links` uses embedding similarity to suggest corrections
+- **Semantic note intelligence**  --  `semantic_links` mode in `schema(action: note_intelligence)`
+- **Preflight duplicate detection**  --  `note(action: create)` checks semantic similarity before creation
+- **Broken link fallback**  --  `link(action: validate)` uses embedding similarity to suggest corrections
 
 ---
 
@@ -297,7 +295,7 @@ Hub scores are computed using **eigenvector centrality**  --  a power-iteration 
 
 ### Path Finding
 
-`get_link_path` implements BFS from source to target, following outlinks at each hop. Returns the shortest path as a list of note paths, or reports no path found. Max depth is configurable (default: 10).
+`graph(action: path)` implements BFS from source to target, following outlinks at each hop. Returns the shortest path as a list of note paths, or reports no path found. Max depth is configurable (default: 10).
 
 ### Orphan and Dead-End Detection
 
@@ -309,7 +307,7 @@ Hub scores are computed using **eigenvector centrality**  --  a power-iteration 
 
 ## Auto-Wikilinks
 
-When Claude writes content through any mutation tool (`vault_add_to_section`, `vault_create_note`, `vault_add_task`, `vault_replace_in_section`), Flywheel automatically scans the text for mentions of both known entities and prospective entities, and wraps them in `[[wikilinks]]`.
+When Claude writes content through any mutation tool (`edit_section`, `note(action: create)`, `vault_add_task`, `vault_update_frontmatter`), Flywheel automatically scans the text for mentions of both known entities and prospective entities, and wraps them in `[[wikilinks]]`.
 
 ### How It Works
 
@@ -336,11 +334,11 @@ Common words, sentence starters, and technical terms are excluded to minimize fa
 
 ### Read-Side Prospect Discovery
 
-Separately from write-time auto-linking, the `suggest_wikilinks` tool surfaces prospective entities through additional analysis:
+Separately from write-time auto-linking, `link(action: suggest)` surfaces prospective entities through additional analysis:
 
 - **Dead-link target matching:** Entities referenced by existing `[[wikilinks]]` in the vault but with no backing note. Targets with ≥3 backlinks are marked `confidence: 'high'`; those with 2 are `'medium'`.
 - **Cross-reference boost:** When an implicit pattern match coincides with a dead-link target, confidence is elevated to `'high'` and source is marked `'both'`.
-- **Scored suggestions:** With `detail: true`, `suggest_wikilinks` returns a per-layer scoring breakdown including Layer 3.5 fuzzy matching  --  token-level Levenshtein (≥80% similarity, ≥4 chars) and whole-term collapsed matching (`"turbo-pump"` = `"turbopump"` = `"turbo pump"`). Strictness modes (conservative / balanced / aggressive) control fuzzy bonus weights.
+- **Scored suggestions:** With `detail: true`, `link(action: suggest)` returns a per-layer scoring breakdown including Layer 3.5 fuzzy matching  --  token-level Levenshtein (≥80% similarity, ≥4 chars) and whole-term collapsed matching (`"turbo-pump"` = `"turbopump"` = `"turbo pump"`). Strictness modes (conservative / balanced / aggressive) control fuzzy bonus weights.
 
 ### Outgoing Link Suggestions
 
@@ -499,7 +497,7 @@ Every write path checks for concurrent edits using SHA-256 content hashes (trunc
 
 ### Move and Rename
 
-`vault_move_note` and `vault_rename_note` update all backlinks across the entire vault. They find every note containing a wikilink to the old name/path, rewrite the link to point to the new location, and optionally commit the changes.
+`note(action: move)` and `note(action: rename)` update all backlinks across the entire vault. They find every note containing a wikilink to the old name/path, rewrite the link to point to the new location, and optionally commit the changes.
 
 ---
 

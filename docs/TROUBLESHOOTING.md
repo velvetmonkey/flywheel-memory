@@ -165,7 +165,7 @@ This loses all accumulated signals. Only use if all backups are also corrupted.
 
 ### Diagnostics
 
-- **`flywheel_doctor`**  --  Comprehensive diagnostic including database integrity check (`PRAGMA quick_check`), schema version, index freshness, and more. Use `report="health"` for a quick status or `report="diagnosis"` for full diagnostics.
+- **`doctor(action: health)`**  --  Comprehensive diagnostic including database integrity check (`PRAGMA quick_check`), schema version, index freshness, and more. Use `action: health` for a quick status or `action: stats` for full stats.
 
 ### Prevention
 
@@ -399,13 +399,13 @@ See [CONFIGURATION.md](CONFIGURATION.md) for preset details.
 
 > "Run a health check"
 
-Use `flywheel_doctor` with `report="health"` for a quick status (vault accessibility, index freshness, configuration) or `report="diagnosis"` for comprehensive diagnostics with recommendations.
+Use `doctor(action: health)` for a quick status (vault accessibility, index freshness, configuration) or `doctor(action: stats)` for vault statistics.
 
 ### Vault stats
 
 > "Show me vault stats"
 
-Use `flywheel_doctor` with `report="stats"` for note counts, link totals, most-linked notes, folder distribution, and tag frequency. This replaces the former `get_vault_stats` tool.
+Use `doctor(action: stats)` for note counts, link totals, most-linked notes, folder distribution, and tag frequency.
 
 ### Server logs
 

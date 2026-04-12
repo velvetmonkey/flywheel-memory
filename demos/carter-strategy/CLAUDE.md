@@ -8,13 +8,13 @@ This vault has saved policies in `.flywheel/policies/`. Use `policy action=list`
 
 ### Creating daily notes
 
-If the daily note does not exist, create it using `vault_create_note` with `template: "templates/daily-note.md"`. Set `frontmatter.date` to the target date (YYYY-MM-DD).
+If the daily note does not exist, create it using `note(action: create)` with `template: "templates/daily-note.md"`. Set `frontmatter.date` to the target date (YYYY-MM-DD).
 
 ### Writing entries to daily notes
 
 **Default section: Log** — always append with `format="timestamp-bullet"`.
 
-Use `vault_add_to_section` with:
+Use `edit_section(action: add)` with:
 - `section: "Log"`
 - `format: "timestamp-bullet"` (auto-inserts current time as `- **HH:MM** `)
 - `suggestOutgoingLinks: true`

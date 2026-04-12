@@ -14,25 +14,20 @@ The `agent` preset (default) provides search, read, write, tasks, and memory. Us
   - [`tasks`](#tasks-1)
   - [Task mutations](#task-mutations)
 - [Explore Connections](#explore-connections)
-  - [`graph_analysis`](#graph_analysis)
-  - [Other graph tools](#other-graph-tools)
+  - [`graph`](#graph)
 - [Wikilinks & Linking](#wikilinks--linking)
 - [Schema & Consistency](#schema--consistency)
-  - [`vault_schema`](#vault_schema)
-  - [`schema_conventions`](#schema_conventions)
-  - [`schema_validate`](#schema_validate)
-  - [`note_intelligence`](#note_intelligence)
-  - [Bulk migrations](#bulk-migrations)
+  - [`schema`](#schema)
 - [Corrections](#corrections)
+  - [`correct`](#correct)
 - [Organize Notes](#organize-notes)
 - [Session Memory](#session-memory)
   - [`memory`](#memory)
-  - [`brief`](#brief)
+  - `memory(action: brief)`
 - [Temporal Analysis](#temporal-analysis)
 - [Vault Health](#vault-health)
 - [Automation](#automation)
   - [`policy`](#policy)
-  - [`vault_undo_last_mutation`](#vault_undo_last_mutation)
 
 ---
 
@@ -42,17 +37,17 @@ The `agent` preset (default) provides search, read, write, tasks, and memory. Us
 |---|---|
 | [Ask my vault a question](#find-anything) | `search` |
 | [List notes by folder, tag, or frontmatter](#find_notes) | `find_notes` |
-| [Read a specific note](#read-deeper) | `note_read` |
-| [Write or edit content](#write--edit) | `vault_add_to_section` |
+| [Read a specific note](#read-deeper) | `read` |
+| [Write or edit content](#write--edit) | `edit_section` |
 | [Work with tasks](#tasks) | `tasks` |
-| [Explore how notes connect](#explore-connections) | `search` (agent); `graph_analysis`, `get_connection_strength`, `get_link_path` (power/full) |
-| [Improve my wikilinks](#wikilinks--linking) | `suggest_wikilinks` |
-| [Clean up my schema](#schema--consistency) | `vault_schema`, `schema_conventions`, `schema_validate` |
-| [Record corrections](#corrections) | `vault_record_correction` |
-| [Move, rename, or merge notes](#organize-notes) | `vault_move_note` |
+| [Explore how notes connect](#explore-connections) | `search` (agent); `graph` (power/full) |
+| [Improve my wikilinks](#wikilinks--linking) | `link` |
+| [Clean up my schema](#schema--consistency) | `schema` |
+| [Record corrections](#corrections) | `correct` |
+| [Move, rename, or merge notes](#organize-notes) | `note(action: move)` |
 | [Persistent memory](#session-memory) | `memory`, `brief` |
-| [Analyze temporal patterns](#temporal-analysis) | `get_context_around_date` |
-| [Check vault health](#vault-health) | `flywheel_doctor` |
+| [Analyze temporal patterns](#temporal-analysis) | `insights` |
+| [Check vault health](#vault-health) | `doctor` |
 | [Automate workflows](#automation) | `policy` |
 
 ---
@@ -138,7 +133,7 @@ Search results include body text in one of two forms:
 
 **Content previews** are positional — always the opening of the note body (after frontmatter — YAML is excluded). They appear when a note matched by entity name, metadata filter, or semantic similarity rather than keyword.
 
-Between `snippet`, `section_content`, and frontmatter, most questions can be answered from the decision surface alone. Escalate to `note_read` only when you need content outside the matched section.
+Between `snippet`, `section_content`, and frontmatter, most questions can be answered from the decision surface alone. Escalate to `read` only when you need content outside the matched section.
 
 **What gets indexed**
 
@@ -202,9 +197,9 @@ When search gives you the right note but you need more detail. Search already re
 
 | Tool | When to use it |
 |------|---------------|
-| `note_read` (action=structure) | See a note's heading outline, word count, and optionally its full content. Good after search identifies something interesting. |
-| `note_read` (action=section) | Read just one section of a note by heading name. |
-| `note_read` (action=sections) | Find every section across your vault matching a heading pattern (regex). "Where are all my ## Status sections?" |
+| `read` (action=structure) | See a note's heading outline, word count, and optionally its full content. Good after search identifies something interesting. |
+| `read` (action=section) | Read just one section of a note by heading name. |
+| `read` (action=sections) | Find every section across your vault matching a heading pattern (regex). "Where are all my ## Status sections?" |
 
 ---
 
@@ -214,11 +209,11 @@ Every write auto-links entities as wikilinks — both known entities (notes and 
 
 | Tool | What it does |
 |------|-------------|
-| `vault_add_to_section` | Append content to a section. Set `create_if_missing: true` to create the note from a template if it doesn't exist — one call to capture a daily log entry. Supports formats: plain, bullet, task, numbered, timestamp-bullet. |
-| `vault_remove_from_section` | Remove lines matching a pattern from a section. |
-| `vault_replace_in_section` | Find-and-replace within a section. If the target isn't found, the error includes closest matches and suggestions. |
-| `vault_update_frontmatter` | Update frontmatter fields (merges with existing). Set `only_if_missing: true` to only fill in gaps. |
-| `vault_create_note` | Create a new note. Checks for similar notes and alias collisions before writing. With semantic embeddings, also warns about potential duplicates. |
+| `edit_section(action: add)` | Append content to a section. Supports formats: plain, bullet, task, numbered, timestamp-bullet. |
+| `edit_section(action: remove)` | Remove lines matching a pattern from a section. |
+| `edit_section(action: replace)` | Find-and-replace within a section. |
+| `vault_update_frontmatter` | Update frontmatter fields (merges with existing). |
+| `note(action: create)` | Create a new note. Checks for similar notes and alias collisions before writing. |
 
 **Shared write parameters:**
 
@@ -243,7 +238,7 @@ Query tasks across your vault or within a single note. Filter by status, due dat
 
 | Tool | What it does |
 |------|-------------|
-| `vault_toggle_task` | Check or uncheck a task by matching its text. |
+| `tasks(action: toggle)` | Check or uncheck a task by matching its text. (Replaces retired `vault_toggle_task`) |
 | `vault_add_task` | Add a new task to a section. Auto-links entities, validates content. |
 
 ---
@@ -252,30 +247,20 @@ Query tasks across your vault or within a single note. Filter by status, due dat
 
 Understand how your notes relate to each other.
 
-### `graph_analysis`
+### `graph`
 
-Run different analyses on your vault's link graph:
+Analyse and navigate the vault link graph. Pass `action` to select:
 
-| Analysis | What it finds |
-|----------|--------------|
-| `orphans` | Notes nothing links to — disconnected content. |
-| `dead_ends` | Notes with incoming links but no outgoing ones. |
-| `sources` | Notes that link out but nothing links to them. |
-| `hubs` | The most-connected notes in your vault. |
-| `stale` | Important notes (many backlinks) that haven't been updated recently. |
-| `immature` | Thin notes — low word count, few links, sparse frontmatter. |
-| `emerging_hubs` | Entities gaining connections fastest. |
-| `centrality` | Notes ranked by graph-centrality metrics. |
-| `cycles` | Cycles in the explicit wikilink graph. |
-
-### Other graph tools
-
-| Tool | When to use it |
-|------|---------------|
-| `list_entities` | Browse all entities grouped by category. Filter by `category`, cap with `limit`. |
-| `get_connection_strength` | How strongly are two notes connected? Considers links, shared neighbors, co-occurrence. |
-| `get_link_path` | Shortest path between two notes through the link graph. |
-| `get_common_neighbors` | Notes that both A and B link to — find what they have in common. |
+| Action | What it does |
+|--------|-------------|
+| `analyse` | Structural analysis: orphans, dead_ends, sources, hubs, stale, immature, emerging_hubs, centrality, cycles |
+| `backlinks` | Notes that link to a given path |
+| `forward_links` | Notes that a given path links to |
+| `strong_connections` | Strongest peer connections for a path |
+| `path` | Shortest link path between two notes |
+| `neighbors` | Notes that both A and B link to |
+| `strength` | Connection strength between two notes |
+| `cooccurrence_gaps` | Entity pairs that co-occur but aren't linked |
 
 ---
 
@@ -283,15 +268,16 @@ Run different analyses on your vault's link graph:
 
 Keep your vault's links accurate and discover missing connections.
 
-| Tool | What it does |
-|------|-------------|
-| `suggest_wikilinks` | Analyze text and suggest where wikilinks should go. With semantic embeddings, finds conceptual matches even without keyword overlap. |
-| `validate_links` | Find broken links across your vault. Suggests fixes for typos. |
-| `wikilink_feedback` | Report whether a wikilink suggestion was correct or wrong. The system learns from feedback and auto-suppresses entities with high false-positive rates. |
-| `discover_stub_candidates` | Find notes with minimal content that could be enriched. |
-| `discover_cooccurrence_gaps` | Entity pairs that appear together often but aren't linked yet. |
-| `suggest_entity_aliases` | Suggest alternative names for entities based on how they're referenced. |
-| `link` (`action: unlinked`) | Full report of entity mentions that aren't linked as wikilinks. |
+### `link`
+
+| Action | What it does |
+|--------|-------------|
+| `suggest` | Analyze text and suggest where wikilinks should go. |
+| `validate` | Find broken links across your vault. |
+| `feedback` | Report whether a wikilink suggestion was correct or wrong. |
+| `stubs` | Find notes with minimal content that could be enriched. |
+| `dashboard` | Overview of link health stats and coverage. |
+| `unlinked` | Full report of entity mentions not yet linked as wikilinks. |
 
 ---
 
@@ -299,56 +285,19 @@ Keep your vault's links accurate and discover missing connections.
 
 Understand and standardize your vault's frontmatter.
 
-### `vault_schema`
+### `schema`
 
-Inspect vault frontmatter schema:
-
-| Analysis | What it does |
-|----------|-------------|
-| `overview` | Map of every frontmatter field across your vault — types, frequency, examples. |
-| `field_values` | All unique values for a specific field. "What statuses are people using?" |
-| `inconsistencies` | Fields where different notes use different types (string vs number, etc.). |
-| `contradictions` | Conflicting frontmatter across notes referencing the same entity. |
-
-### `schema_conventions`
-
-Infer frontmatter conventions from usage patterns:
-
-| Analysis | What it does |
-|----------|-------------|
-| `conventions` | Auto-detect what frontmatter patterns a folder uses. |
-| `incomplete` | Notes missing fields their peers have. |
-| `suggest_values` | Suggest values for a field based on what's already in use. |
-
-### `schema_validate`
-
-Validate frontmatter against rules:
-
-| Analysis | What it does |
-|----------|-------------|
-| `validate` | Check notes against a schema you provide. |
-| `missing` | Find notes missing expected fields for their folder. |
-
-### `note_intelligence`
-
-Deep analysis of a single note:
-
-| Analysis | What it does |
-|----------|-------------|
-| `prose_patterns` | Find "Key: Value" patterns buried in prose that should be frontmatter. |
-| `suggest_frontmatter` | Generate frontmatter YAML from detected patterns. |
-| `suggest_wikilinks` | Find frontmatter values that could link to existing notes. |
-| `compute` | Auto-compute derived fields (word_count, link_count, etc.). |
-| `semantic_links` | Find semantically related entities not yet linked (requires embeddings). |
-| `all` | Run everything at once. |
-
-### Bulk migrations
-
-| Tool | What it does |
-|------|-------------|
+| Action | What it does |
+|--------|-------------|
+| `overview` | Map of every frontmatter field — types, frequency, examples. |
+| `field_values` | All unique values for a specific field. |
+| `conventions` | Auto-detect frontmatter patterns a folder uses. |
+| `folders` | Folder-level schema summary. |
+| `validate` | Check notes against expected schema. |
+| `note_intelligence` | Deep analysis of a single note: prose patterns, frontmatter suggestions, semantic links. |
 | `rename_field` | Rename a frontmatter field across your whole vault. Dry-run by default. |
-| `migrate_field_values` | Transform field values with a mapping (e.g., "active" → "in-progress"). Dry-run by default. |
-| `rename_tag` | Rename a tag everywhere — frontmatter and inline. Supports hierarchical rename. Dry-run by default. |
+| `rename_tag` | Rename a tag everywhere — frontmatter and inline. Dry-run by default. |
+| `migrate` | Transform field values with a mapping. Dry-run by default. |
 
 ---
 
@@ -356,12 +305,14 @@ Deep analysis of a single note:
 
 Record mistakes that should persist across sessions. Flywheel processes these into feedback that improves future suggestions.
 
-| Tool | What it does |
-|------|-------------|
-| `vault_record_correction` | "That link was wrong" or "That category is wrong." Saved permanently. |
-| `vault_list_corrections` | See pending corrections, optionally filtered by status or entity. |
-| `vault_resolve_correction` | Mark a correction as applied or dismissed. |
-| `absorb_as_alias` | Make one entity an alias of another — updates all references and deprecates the source note. |
+### `correct`
+
+| Action | What it does |
+|--------|-------------|
+| `record` | Record a correction — "that link was wrong", "that category is wrong." Saved permanently. |
+| `list` | See pending corrections, optionally filtered by status or entity. |
+| `resolve` | Mark a correction as applied or dismissed. |
+| `undo` | Undo the last Flywheel write (git soft reset). No params required. |
 
 ---
 
@@ -369,12 +320,25 @@ Record mistakes that should persist across sessions. Flywheel processes these in
 
 Move, rename, delete, or merge — all backlinks update automatically.
 
-| Tool | What it does |
-|------|-------------|
-| `vault_move_note` | Move a note to a new folder. Every note linking to it updates its path. |
-| `vault_rename_note` | Rename a note in place. Backlinks update to match. |
-| `vault_delete_note` | Delete a note. Shows you what links to it first. |
-| `merge_entities` | Merge two notes into one — combines content, merges aliases, updates all wikilinks vault-wide. |
+### `note`
+
+Move, rename, delete, or create notes — all backlinks update automatically.
+
+| Action | What it does |
+|--------|-------------|
+| `create` | Create a new note. Checks for similar notes and alias collisions. |
+| `move` | Move a note to a new folder. Every linking note updates its path. |
+| `rename` | Rename a note in place. Backlinks update to match. |
+| `delete` | Delete a note. Shows what links to it first. |
+
+### `entity`
+
+| Action | What it does |
+|--------|-------------|
+| `list` | Browse all entities grouped by category. |
+| `alias` | Make one entity an alias of another — updates all references. |
+| `merge` | Merge two notes into one — combines content, updates all wikilinks vault-wide. |
+| `suggest_aliases` | Suggest alternative names for entities based on how they're referenced. |
 
 ---
 
@@ -395,13 +359,7 @@ Store and retrieve facts, preferences, and observations. Each memory has a key, 
 | `forget` | Delete a memory. |
 | `summarize_session` | Store a session summary with topics and metadata. |
 
-### `brief`
-
-Cold-start context for any session. Builds a token-budgeted summary of recent sessions, active entities, stored memories, pending corrections, and vault pulse — so an agent can pick up where it left off without reading the whole vault.
-
-Available in the `agent` preset via the `memory` category.
-
-**Parameters:** `max_tokens`, `focus`
+**`action: brief`** — Cold-start context for any session. Builds a token-budgeted summary of recent sessions, active entities, stored memories, pending corrections, and vault pulse. Parameters: `max_tokens`, `focus`.
 
 ---
 
@@ -409,11 +367,15 @@ Available in the `agent` preset via the `memory` category.
 
 Understand how your vault changes over time.
 
-| Tool | What it does |
-|------|-------------|
-| `get_context_around_date` | Reconstruct vault activity around a specific date. Notes, entities, wikilinks, moves. |
-| `predict_stale_notes` | Multi-signal staleness prediction with importance scoring and recommendations. |
-| `track_concept_evolution` | Entity timeline (`mode: "evolution"`) or period digest (`mode: "summary"`). Covers link additions, feedback, category changes, co-occurrence, and dated summaries. |
+### `insights`
+
+| Action | What it does |
+|--------|-------------|
+| `context` | Reconstruct vault activity around a specific date. |
+| `staleness` | Multi-signal staleness prediction with importance scoring. |
+| `evolution` | Entity timeline or period digest — link additions, feedback, category changes. |
+| `growth` | Track vault size over time — snapshots, history, trends. |
+| `note_intelligence` | Deep analysis of a single note (alias from schema). |
 
 ---
 
@@ -421,24 +383,47 @@ Understand how your vault changes over time.
 
 Monitor, configure, and maintain your vault.
 
-| Tool | What it does |
-|------|-------------|
-| `pipeline_status` | Live pipeline activity: whether a batch is running, current step, progress, and recent completions. |
-| `refresh_index` | Force a full index rebuild without restarting. |
-| `vault_growth` | Track vault size over time — snapshots, history, trends. |
-| `flywheel_config` | Read or update Flywheel configuration. |
-| `server_log` | View recent server activity entries. |
-| `flywheel_doctor` | Run diagnostics, health summaries, or vault stats with `report: "diagnosis" | "health" | "stats"`. |
-| `insights` | Vault intelligence and temporal analysis. `action: evolution\|staleness\|context\|note_intelligence\|growth`. |
-| `entity` | Manage entities and aliases. `action: list\|alias\|suggest_aliases\|merge\|suggest_merges\|dismiss_merge`. |
+### `doctor`
+
+| Action | What it does |
+|--------|-------------|
+| `health` | Run diagnostics and health summary. |
+| `stats` | Vault statistics: total notes, links, entities, tags. |
+| `pipeline` | Live pipeline activity: current step, progress, recent completions. |
+| `config` | Read or update Flywheel configuration. |
+| `log` | View recent server activity entries. |
+
+Other diagnostic tools: `refresh_index` (force full index rebuild), `init_semantic` (build embedding index).
 
 ---
 
 ## Retired Tools
 
-The following tools were retired in T43 and are no longer registered:
+The following standalone tools were retired in T43 B3+ (v2.9.0) and replaced by merged action-param tools:
 
-- `tool_selection_feedback` — merged into `wikilink_feedback`. Tool-selection signals now flow through the unified feedback tool.
+**Merged into `graph`:** `graph_analysis`, `get_connection_strength`, `get_link_path`, `get_common_neighbors`, `get_backlinks`, `get_forward_links`, `get_strong_connections`
+
+**Merged into `link`:** `suggest_wikilinks`, `validate_links`, `link(action: feedback)`, `discover_stub_candidates`, `suggest_entity_aliases`, `discover_cooccurrence_gaps`
+
+**Merged into `correct`:** `vault_record_correction`, `vault_list_corrections`, `vault_resolve_correction`, `vault_undo_last_mutation`
+
+**Merged into `entity`:** `absorb_as_alias`, `merge_entities`, `list_entities`
+
+**Merged into `schema`:** `vault_schema`, `schema_conventions`, `schema_validate`, `note_intelligence`, `rename_field`, `migrate_field_values`, `rename_tag`
+
+**Merged into `edit_section`:** `vault_add_to_section`, `vault_remove_from_section`, `vault_replace_in_section`
+
+**Merged into `note`:** `vault_create_note`, `vault_delete_note`, `vault_move_note`, `vault_rename_note`
+
+**Merged into `insights`:** `track_concept_evolution`, `predict_stale_notes`, `get_context_around_date`, `vault_growth`
+
+**Merged into `doctor`:** `flywheel_doctor`, `pipeline_status`, `flywheel_config`, `server_log`
+
+**Merged into `memory`:** `brief` (now `memory(action: brief)`)
+
+**Merged into `tasks`:** `vault_toggle_task` (now `tasks(action: toggle)`)
+
+**Removed entirely:** `get_weighted_links`, `get_all_entities`, `vault_session_history`, `vault_entity_history`, `flywheel_benchmark`, `flywheel_calibration_export`, `flywheel_trust_report`, `flywheel_learning_report`, `vault_init`, `tool_selection_feedback`, `semantic_analysis`, `unlinked_mentions_report`
 
 ---
 
@@ -477,7 +462,7 @@ Semantic routing requires `init_semantic` to have been run. Custom `EMBEDDING_MO
 
 ### Feedback
 
-`wikilink_feedback` records whether a wikilink suggestion was correct or wrong. Over time, this builds per-entity accuracy scores that inform suggestion ranking.
+`link(action: feedback)` records whether a wikilink suggestion was correct or wrong. Over time, this builds per-entity accuracy scores that inform suggestion ranking.
 
 ---
 
@@ -506,12 +491,6 @@ Policies can include `vault_search` steps that query the vault mid-execution. Re
 
 [Policies guide ->](POLICIES.md) | [Examples catalog ->](POLICY_EXAMPLES.md)
 
-### `vault_undo_last_mutation`
 
-Undo the last Flywheel write (git soft reset). Safety checks prevent undoing the wrong commit.
-
-**Parameters:** `confirm` (required), `hash` (optional safety check)
-
----
 
 See [CONFIGURATION.md](CONFIGURATION.md) for tool presets, composable bundles, and category mapping.

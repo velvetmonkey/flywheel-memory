@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 65 tools across 3 preset tiers (agent/power/full) organized into 12 categories: search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, and diagnostics — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 21 merged action-param tools across 3 preset tiers (agent/power/full) organized into 12 categories: search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, and diagnostics — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -28,32 +28,30 @@ packages/mcp-server/src/
 │   ├── toolCatalog.ts          # Tool metadata collection for embedding manifest
 │   ├── read/                   # Read-side tool registrations (20 files, helpers omitted)
 │   │   ├── query.ts            # search
-│   │   ├── primitives.ts       # note_read (structure|section|sections), tasks
-│   │   ├── graphAnalysis.ts    # graph_analysis (7 modes), get_connection_strength,
-│   │   │                       #   get_link_path, get_common_neighbors
-│   │   ├── system.ts           # refresh_index, list_entities, suggest_entity_aliases
-│   │   ├── health.ts           # flywheel_doctor, pipeline_status, server_log
-│   │   ├── vaultSchema.ts      # vault_schema, schema_conventions, schema_validate
-│   │   ├── noteIntelligence.ts # note_intelligence
-│   │   ├── wikilinks.ts        # suggest_wikilinks, validate_links, discover_stub_candidates,
-│   │   │                       #   discover_cooccurrence_gaps
-│   │   ├── migrations.ts       # rename_field, migrate_field_values
-│   │   ├── metrics.ts          # vault_growth
+│   │   ├── primitives.ts       # read/note_read (structure|section|sections), tasks (list|toggle)
+│   │   ├── graphAnalysis.ts    # graph (analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps)
+│   │   ├── system.ts           # refresh_index, entity (list|alias|suggest_aliases|merge|suggest_merges|dismiss_merge)
+│   │   ├── health.ts           # doctor (health|pipeline|config|log|stats)
+│   │   ├── schemaTools.ts      # schema (overview|field_values|conventions|folders|rename_field|rename_tag|migrate|validate|note_intelligence)
+│   │   ├── noteIntelligence.ts # insights (evolution|staleness|context|note_intelligence|growth)
+│   │   ├── wikilinks.ts        # link (suggest|validate|feedback|stubs|unlinked|dashboard|unsuppress|timeline|...)
+│   │   ├── migrations.ts       # (schema actions: rename_field, migrate absorbed into schema)
+│   │   ├── metrics.ts          # (insights action: growth)
 │   │   ├── semantic.ts         # init_semantic
-│   │   └── brief.ts            # brief
+│   │   └── brief.ts            # (memory action: brief)
 │   └── write/                  # Write-side tool registrations
-│       ├── mutations.ts        # vault_add_to_section, vault_remove_from_section, vault_replace_in_section
-│       ├── tasks.ts            # vault_toggle_task, vault_add_task
-│       ├── notes.ts            # vault_create_note, vault_delete_note
-│       ├── move-notes.ts       # vault_move_note, vault_rename_note
+│       ├── mutations.ts        # edit_section (add|remove|replace)
+│       ├── tasks.ts            # vault_add_task (standalone), tasks(action: toggle) in primitives.ts
+│       ├── notes.ts            # note (create|delete) and legacy note files
+│       ├── move-notes.ts       # note (move|rename)
 │       ├── frontmatter.ts      # vault_update_frontmatter
-│       ├── merge.ts            # merge_entities, absorb_as_alias
-│       ├── corrections.ts      # vault_record_correction, vault_list_corrections, vault_resolve_correction
-│       ├── wikilinkFeedback.ts # wikilink_feedback
-│       ├── tags.ts             # rename_tag
-│       ├── memory.ts           # memory
-│       ├── config.ts           # flywheel_config
-│       ├── system.ts           # vault_undo_last_mutation
+│       ├── entity.ts           # entity (alias|merge) + correct (record|list|resolve|undo)
+│       ├── corrections.ts      # correct tool source logic
+│       ├── wikilinkFeedback.ts # link (feedback action)
+│       ├── tags.ts             # schema (rename_tag action)
+│       ├── memory.ts           # memory (store|get|search|list|forget|summarize_session|brief)
+│       ├── config.ts           # (doctor action: config)
+│       ├── system.ts           # (correct action: undo)
 │       └── policy.ts           # policy
 ├── core/
 │   ├── read/                   # Read-side core logic (graph, vault, parser, fts5, config, watcher)
@@ -103,16 +101,16 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 <!-- GENERATED:preset-counts START -->
 | Preset | Tools | Categories | Behaviour |
 |--------|-------|------------|-----------|
-| `agent` (default) | 18 | search, read, write, tasks, memory | Focused tier-1 surface — search, read, write, tasks, memory |
-| `power` | 43 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
-| `full` | 62 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema, graph, diagnostics, temporal | All categories visible at startup |
-| `auto` | 63 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
+| `agent` (default) | 14 | search, read, write, tasks, memory, diagnostics | Focused tier-1 surface — search, read, write, tasks, memory |
+| `power` | 18 | search, read, write, tasks, memory, diagnostics, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
+| `full` | 20 | search, read, write, tasks, memory, diagnostics, wikilinks, corrections, note-ops, schema, graph, temporal | All categories visible at startup |
+| `auto` | 21 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
 <!-- GENERATED:preset-counts END -->
 
 <!-- GENERATED:claude-code-memory-note START -->
 > **Claude Code note:** the `memory` merged tool is suppressed under Claude Code
 > (`CLAUDECODE=1`) because Claude Code ships its own memory plane. Agent preset
-> exposes 17 tools under Claude Code instead of 18; `brief` stays available.
+> exposes 13 tools under Claude Code instead of 14; `brief` stays available.
 <!-- GENERATED:claude-code-memory-note END -->
 
 Switch preset at runtime: `flywheel_config` with `key: tool_preset, value: agent|power|full`
@@ -123,20 +121,23 @@ Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` —
 
 <!-- GENERATED:action-param-tools START -->
 - `correct` — `action: record|list|resolve|undo`
+- `doctor` — `action: health|diagnosis|stats|pipeline|config|log`
 - `edit_section` — `action: add|remove|replace`
 - `entity` — `action: list|alias|suggest_aliases|merge|suggest_merges|dismiss_merge`
 - `graph` — `action: analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps`
 - `insights` — `action: evolution|staleness|context|note_intelligence|growth`
 - `link` — `action: suggest|feedback|unlinked|validate|stubs|dashboard|unsuppress|timeline|layer_timeseries|snapshot_diff`
-- `memory` — `action: store|get|search|list|forget|summarize_session`
+- `memory` — `action: store|get|search|list|forget|summarize_session|brief`
 - `note` — `action: create|move|rename|delete`
 - `note_read` — `action: structure|section|sections`
 - `policy` — `action: list|validate|preview|execute|author|revise`
-- `schema` — `action: overview|conventions|folders|rename_field|rename_tag|migrate|validate`
+- `read` — `action: structure|section|sections`
+- `schema` — `action: overview|field_values|conventions|folders|rename_field|rename_tag|migrate|validate`
 - `search` — `action: query|similar`
+- `tasks` — `action: list|toggle`
 <!-- GENERATED:action-param-tools END -->
 
-Note: `tasks` is a standalone query tool (filters by status/path/tag), not a merged action-param tool. Task mutations use `vault_add_task` and `vault_toggle_task`.
+Note: `tasks(action: toggle)` was merged in T43 B3+; `vault_toggle_task` is retired. `vault_add_task` is still registered as a standalone tool.
 
 ---
 

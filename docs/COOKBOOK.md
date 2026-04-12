@@ -224,7 +224,7 @@ Uses `note_intelligence({ path: "projects/AI-Agent.md", analysis: "semantic_link
 
 > "Show me the detailed score breakdown for wikilink suggestions — I want to see the semantic boost"
 
-Use `suggest_wikilinks` with `detail: true` to see `semanticBoost` in the score breakdown for each suggestion. This reveals which suggestions were found purely through semantic similarity vs keyword matching.
+Use `link(action: suggest)` with `detail: true` to see `semanticBoost` in the score breakdown for each suggestion. This reveals which suggestions were found purely through semantic similarity vs keyword matching.
 
 ---
 
@@ -276,7 +276,7 @@ Create well-structured notes with proper metadata.
 
 > "Add a new entry to today's daily note. If the note doesn't exist, create it with ## Log, ## Tasks, and ## Notes sections"
 
-The `create_if_missing` parameter on `vault_add_to_section` handles this -- Claude knows to use it when the daily note might not exist yet.
+The `create_if_missing` parameter on `edit_section(action: add)` handles this -- Claude knows to use it when the daily note might not exist yet.
 
 ---
 
@@ -377,8 +377,8 @@ Manage vault-wide changes.
 ## Tips
 
 - **Start broad, then narrow.** Use `search` first — it returns enriched results with frontmatter, backlinks, outlinks, and content previews. Escalate to `note_read` only when you need full content.
-- **Use sections.** Flywheel works best when notes have clear heading structure. `vault_add_to_section` targets specific sections, avoiding accidental overwrites.
+- **Use sections.** Flywheel works best when notes have clear heading structure. `edit_section(action: add)` targets specific sections, avoiding accidental overwrites.
 - **Let auto-wikilinks work.** When writing through Flywheel, entity mentions are linked automatically. Write naturally -- don't add `[[brackets]]` yourself.
-- **Check before deleting.** `vault_delete_note` shows backlink warnings before deletion. If a note has backlinks, consider moving or renaming instead.
+- **Check before deleting.** `note(action: delete)` shows backlink warnings before deletion. If a note has backlinks, consider moving or renaming instead.
 - **Dry-run any write.** All write tools accept `dry_run: true` to preview changes without modifying files. Bulk tools (`rename_field`, `migrate_field_values`) default to dry-run mode.
 - **Build the semantic index once** — `init_semantic` builds both note embeddings (for hybrid search via `search` — both `action=query` and `action=similar`) and entity embeddings (for semantic wikilink scoring). Takes ~2-3 minutes for 500 entities. After that, wikilink suggestions gain semantic understanding and the `semantic_links` mode in `note_intelligence` becomes available.

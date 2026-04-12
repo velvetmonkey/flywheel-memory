@@ -17,7 +17,7 @@ Policies are saved, deterministic workflows composed from Flywheel's tools. They
 
 | Situation | Use |
 |-----------|-----|
-| One-off edit to a note | Direct write tools (`vault_add_to_section`, `vault_create_note`, etc.) |
+| One-off edit to a note | Direct write tools (`edit_section`, `note(action: create)`, etc.) |
 | Repeatable, structured workflow | **Policy** |
 | Workflow that needs to read vault state before writing | **Policy** with `vault_search` steps |
 | Parameterized template (same structure, different inputs) | **Policy** with variables |
@@ -41,7 +41,7 @@ Policies can search the vault mid-execution and feed results into later steps:
 ```
 vault_search (read step)
     ↓ results available as {{steps.find_overdue.results}}
-vault_add_to_section (write step, uses search results)
+edit_section (write step, uses search results)
     ↓
 vault_update_frontmatter (write step)
 ```
@@ -54,7 +54,7 @@ The policy schema uses the internal step name `vault_search` for read steps. Lat
 
 **Read:** `vault_find_notes` — enumerate notes by folder, tags, or frontmatter values. Use instead of `vault_search` when you need a structural list (no query text). Same result contract, same template variables (`results`, `summary`, `count`).
 
-**Write:** `vault_add_to_section`, `vault_remove_from_section`, `vault_replace_in_section`, `vault_create_note`, `vault_delete_note`, `vault_toggle_task`, `vault_add_task`, `vault_update_frontmatter`, `vault_add_frontmatter_field`
+**Write:** `edit_section` (add|remove|replace), `note` (create|delete), `tasks` (toggle), `vault_add_task`, `vault_update_frontmatter`
 
 ### Template syntax
 
@@ -76,7 +76,7 @@ Policies are designed for safe, auditable execution:
 | **Preview** | `policy action=preview` dry-runs every step, showing what would happen without modifying the vault |
 | **Conditions** | Steps can be skipped based on vault state (`when` clauses), so a policy adapts without failing |
 | **Atomic commits** | All steps in a policy execute as a single git commit — if any step fails, all changes roll back |
-| **Undo** | `vault_undo_last_mutation` reverses the entire policy execution in one step |
+| **Undo** | `correct(action: undo)` reverses the entire policy execution in one step |
 
 The recommended workflow: **author → validate → preview → execute**.
 
@@ -98,8 +98,9 @@ steps:
       query: "type:invoice status:sent"
 
   - id: log_followups
-    tool: vault_add_to_section
+    tool: edit_section
     params:
+      action: add
       path: "daily-notes/{{builtins.today}}.md"
       heading: "Tasks"
       content: |
@@ -152,7 +153,7 @@ steps:
       query: "status:open has:due_date"
 
   - id: create_review
-    tool: vault_create_note
+    tool: note
     when: "{{conditions.review_exists | negate}}"
     params:
       path: "reviews/{{variables.week}}.md"

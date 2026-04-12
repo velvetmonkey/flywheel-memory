@@ -120,14 +120,14 @@ echo "Vault mode:    $MODE"
 echo "Results:       $RESULTS_DIR"
 echo ""
 
-# MCP config — default preset (search, memory, brief tools for conversational memory)
+# MCP config — default preset (search, memory, memory tools for conversational memory)
 mcp_config=$(cat <<EOF
 {"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$VAULT_DIR"}}}}
 EOF
 )
 
 # Pre-warm: ensure vault is fully indexed + embeddings built before questions start
-# Uses full,memory preset (flywheel_doctor, refresh_index, init_semantic) for bootstrap
+# Uses full,memory preset (doctor, refresh_index, init_semantic) for bootstrap
 warmup_config=$(cat <<EOF
 {"mcpServers":{"flywheel":{"command":"node","args":["$MCP_SERVER"],"env":{"PROJECT_PATH":"$VAULT_DIR","FLYWHEEL_TOOLS":"full,memory"}}}}
 EOF
@@ -138,10 +138,10 @@ if [[ -n "${RESUME:-}" ]] && [[ -f "$RESULTS_DIR/warmup.jsonl" ]]; then
 else
 echo "Pre-warming vault: index + embeddings..."
 if claude -p "Bootstrap this vault for benchmarking. Run these steps in order:
-1. Call flywheel_doctor — report entity_count and note_count.
+1. Call doctor — report entity_count and note_count.
 2. Call refresh_index to build the full-text index.
 3. Call init_semantic to build embeddings. Wait for completion.
-4. Call flywheel_doctor — confirm fts5_ready=true and embeddings_ready=true.
+4. Call doctor — confirm fts5_ready=true and embeddings_ready=true.
 Report final status with entity_count, note_count, and embeddings_ready." \
   --output-format stream-json \
   --no-session-persistence \
@@ -181,8 +181,8 @@ for i in $INDICES; do
     echo -n "reuse... "
   elif timeout 180 claude -p "You are answering questions about conversations stored in this vault.
 Each note is one session of a multi-session conversation between two people.
-Use the Flywheel MCP tools (search, note_read).
-After searching, read relevant session notes with note_read (action=structure) to find evidence.
+Use the Flywheel MCP tools (search, read).
+After searching, read relevant session notes with read (action=structure) to find evidence.
 For multi-hop questions, search again using details from what you've read.
 
 Question: $question

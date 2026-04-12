@@ -53,7 +53,7 @@ https://github.com/user-attachments/assets/4a0635ff-dd73-4fb1-933d-bf384822e2ce
 ```text
 > Log that Stacy reviewed the security checklist before the Beta Corp kickoff
 
-flywheel -> vault_add_to_section
+flywheel -> edit_section action=add
   path: "daily-notes/2026-01-04.md"
   section: "Log"
   suggestOutgoingLinks: true
@@ -87,7 +87,7 @@ flywheel -> policy action=author
 
 flywheel -> policy action=preview name=overdue-invoice-chaser
   Step 1: vault_search: query "type:invoice status:sent" in invoices/ -> 3 results
-  Step 2: vault_add_to_section: would append to daily-notes/2026-03-31.md#Tasks
+  Step 2: edit_section: would append to daily-notes/2026-03-31.md#Tasks
   (no changes made; preview only)
 
 > Execute it
@@ -163,16 +163,16 @@ The `agent` preset (default) provides a focused set of core tools. Use `power` f
 <!-- GENERATED:preset-counts START -->
 | Preset | Tools | Categories | Behaviour |
 |--------|-------|------------|-----------|
-| `agent` (default) | 18 | search, read, write, tasks, memory | Focused tier-1 surface — search, read, write, tasks, memory |
-| `power` | 43 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
-| `full` | 62 | search, read, write, tasks, memory, wikilinks, corrections, note-ops, schema, graph, diagnostics, temporal | All categories visible at startup |
-| `auto` | 63 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
+| `agent` (default) | 14 | search, read, write, tasks, memory, diagnostics | Focused tier-1 surface — search, read, write, tasks, memory |
+| `power` | 18 | search, read, write, tasks, memory, diagnostics, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
+| `full` | 20 | search, read, write, tasks, memory, diagnostics, wikilinks, corrections, note-ops, schema, graph, temporal | All categories visible at startup |
+| `auto` | 21 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
 <!-- GENERATED:preset-counts END -->
 
 <!-- GENERATED:claude-code-memory-note START -->
 > **Claude Code note:** the `memory` merged tool is suppressed under Claude Code
 > (`CLAUDECODE=1`) because Claude Code ships its own memory plane. Agent preset
-> exposes 17 tools under Claude Code instead of 18; `brief` stays available.
+> exposes 13 tools under Claude Code instead of 14; `brief` stays available.
 <!-- GENERATED:claude-code-memory-note END -->
 
 Compose bundles for custom configurations:

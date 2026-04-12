@@ -1,11 +1,8 @@
 /**
- * Tool registration and gating.
+ * Flywheel-owned tool registration and dispatch.
  *
- * applyToolGating() — monkey-patches server.tool() to filter by category,
- *   track invocations, and inject multi-vault support.
- *
- * registerAllTools() — calls all tool registration functions with
- *   scope-aware getters for vault state.
+ * Runtime owns registration state, visibility, and tools/list + tools/call
+ * dispatch. MCP SDK private helpers are not used.
  */
 
 import * as path from 'path';
@@ -14,7 +11,9 @@ import { statSync, readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import type { McpServer, RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { CallToolRequestSchema, ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
+import { normalizeObjectSchema, safeParseAsync, getParseErrorMessage } from '@modelcontextprotocol/sdk/server/zod-compat.js';
+import { toJsonSchemaCompat } from '@modelcontextprotocol/sdk/server/zod-json-schema-compat.js';
+import { CallToolRequestSchema, ErrorCode, ListToolsRequestSchema, McpError, type CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 const __trFilename = fileURLToPath(import.meta.url);
 const __trDirname = dirname(__trFilename);
@@ -27,79 +26,33 @@ import type { PipelineActivity } from './core/read/watch/pipeline.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getSessionId } from '@velvetmonkey/vault-core';
 
-import { PRESETS, TOOL_CATEGORY, TOOL_TIER, type ToolCategory, type ToolTier, type ToolTierOverride } from './config.js';
-import { getSemanticActivations, getToolRoutingMode, hasToolRouting, type SemanticActivation } from './core/read/toolRouting.js';
-import { applySandwichOrdering } from './tools/read/query.js';
+import { DISCLOSURE_ONLY_TOOLS, TOOL_CATEGORY, type ToolCategory, type ToolTier, type ToolTierOverride } from './config.js';
 import { VaultRegistry, type VaultContext } from './vault-registry.js';
 import { runInVaultScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
 
-// Core imports - Tool Tracking
 import { recordToolInvocation } from './core/shared/toolTracking.js';
-
-// Read tool registrations
-// graph.ts retired (T43 B3+) — get_backlinks, get_forward_links, get_strong_connections folded into graph merged tool
-// graphExport.ts retired — export_graph removed
-// wikilinks.ts retired (T43 B3+) — suggest_wikilinks, validate_links, discover_stub_candidates, discover_cooccurrence_gaps folded into link merged tool
 import { registerHealthTools } from './tools/read/health.js';
 import { registerQueryTools } from './tools/read/query.js';
 import { registerFindNotesTools } from './tools/read/find_notes.js';
 import { registerSystemTools as registerReadSystemTools } from './tools/read/system.js';
 import { registerPrimitiveTools } from './tools/read/primitives.js';
-// migrations.ts retired (T43 B3+) — rename_field, migrate_field_values folded into schema merged tool
-// graphAnalysis.ts retired (T43 B3+) — graph_analysis, get_connection_strength, get_link_path, get_common_neighbors folded into graph merged tool
-// vaultSchema.ts retired (T43 B3+) — vault_schema, schema_conventions, schema_validate folded into schema merged tool
-// semanticAnalysis.ts retired (T43) — semantic_analysis removed from surface
-// noteIntelligence.ts retired (T43 B3+) — note_intelligence folded into insights merged tool
 import { registerSchemaTools } from './tools/read/schemaTools.js';
 import { registerGraphTools2 } from './tools/read/graphTools.js';
 import { registerInsightsTools } from './tools/read/insightsTools.js';
-
-// Write tool registrations
-// mutations.ts retired (T43 B3+) — vault_add_to_section, vault_remove_from_section, vault_replace_in_section folded into edit_section merged tool
 import { registerTaskTools } from './tools/write/tasks.js';
 import { registerFrontmatterTools } from './tools/write/frontmatter.js';
-// notes.ts retired (T43 B3+) — vault_create_note, vault_delete_note folded into note merged tool
-// move-notes.ts retired (T43 B3+) — vault_move_note, vault_rename_note folded into note merged tool
-// merge.ts retired (T43 B3+) — merge_entities, absorb_as_alias folded into entity merged tool
-// system.ts (write) retired (T43 B3+) — vault_undo_last_mutation folded into correct(action: undo)
 import { registerPolicyTools } from './tools/write/policy.js';
-// tags.ts retired (T43 B3+) — rename_tag folded into schema merged tool
-// wikilinkFeedback.ts retired (T43 B3+) — wikilink_feedback folded into link merged tool
-// toolSelectionFeedback.ts retired (T43) — tool_selection_feedback removed
 import { registerCorrectTool } from './tools/write/correct.js';
 import { registerEntityTool } from './tools/write/entity.js';
 import { registerLinkTool } from './tools/write/link.js';
 import { registerNoteTool } from './tools/write/note.js';
 import { registerEditSectionTool } from './tools/write/editSection.js';
 import { detectMisroute, recordHeuristicMisroute } from './core/shared/misrouteDetection.js';
-// corrections.ts retired (T43 B3+) — vault_record_correction, vault_list_corrections, vault_resolve_correction folded into correct merged tool
 import { registerMemoryTools } from './tools/write/memory.js';
-// recall removed — entity/memory search merged into search (uber search)
-// brief.ts retired (T43 B3+) — brief folded into memory(action: brief); runBrief still used by memory.ts
-// config.ts (write) retired (T43 B3+) — flywheel_config folded into doctor(action: config)
-import { registerInitTools } from './tools/write/enrich.js';
-
-// Additional read tool registrations
-// metrics.ts retired (T43 B3+) — vault_growth folded into insights merged tool
-// activity.ts retired — vault_activity modes folded into vault_session_history
-// similarity.ts retired (T43) — find_similar absorbed into search as action: similar
 import { registerSemanticTools } from './tools/read/semantic.js';
-// registerReadMergeTools retired (T43) — suggest_entity_merges/dismiss_merge_suggestion absorbed into entity tool
-// temporalAnalysis.ts retired (T43 B3+) — track_concept_evolution, predict_stale_notes, get_context_around_date folded into insights merged tool
-// sessionHistory.ts retired (T43) — vault_session_history removed from surface
-// entityHistory.ts retired (T43) — vault_entity_history removed from surface
-// learningReport.ts retired (T43) — flywheel_learning_report removed from surface
-// calibrationExport.ts retired (T43) — flywheel_calibration_export removed from surface
 import { registerDiscoveryTools } from './tools/read/discovery.js';
-
-// Resources
 import { registerVaultResources } from './resources/vault.js';
 
-// ============================================================================
-// Types
-// ============================================================================
-
-/** Callbacks and getters injected from index.ts (owns the singletons) */
 export interface ToolRegistryContext {
   getVaultPath: () => string;
   getVaultIndex: () => VaultIndex;
@@ -122,14 +75,12 @@ export interface ToolRegistryContext {
   updateFlywheelConfig: (config: FlywheelConfig) => void;
 }
 
-/** Vault activation callbacks for multi-vault gating */
 export interface VaultActivationCallbacks {
   activateVault: (ctx: VaultContext) => void;
   buildVaultScope: (ctx: VaultContext) => VaultScope;
 }
 
 export type ToolTierMode = 'off' | 'tiered';
-// ToolTierOverride re-exported from config.ts (side-effect-free for testing)
 export type { ToolTierOverride } from './config.js';
 
 export interface ToolTierController {
@@ -147,77 +98,36 @@ export interface ToolTierController {
   getRegisteredTools(): ReadonlyMap<string, RegisteredTool>;
 }
 
+export interface ToolRegistrationSurface {
+  tool: McpServer['tool'];
+  registerTool: McpServer['registerTool'];
+  registerResource: McpServer['registerResource'];
+  sendToolListChanged: McpServer['sendToolListChanged'];
+}
+
+const RUNTIME = Symbol('tool-runtime');
+
 const ACTIVATION_PATTERNS: Array<{ category: ToolCategory; tier: ToolTier; patterns: RegExp[] }> = [
-  {
-    category: 'memory',
-    tier: 1,
-    patterns: [/\b(remember|recall|forget|memory|memories|preference|setting|store|stored|brief(ing)?|session context|note to self|what do you know)\b/i],
-  },
-  {
-    category: 'graph',
-    tier: 2,
-    patterns: [/\b(backlinks?|forward links?|connections?|link path|paths?|hubs?|orphans?|dead ends?|clusters?|bridges?)\b/i],
-  },
-  {
-    category: 'wikilinks',
-    tier: 2,
-    patterns: [/\b(wikilinks?|link suggestions?|stubs?|unlinked mentions?|aliases?)\b/i],
-  },
-  {
-    category: 'corrections',
-    tier: 2,
-    patterns: [/\b(corrections?|wrong links?|bad links?|mistakes?|fix(es|ing)?|errors?)\b/i],
-  },
-  {
-    category: 'temporal',
-    tier: 2,
-    patterns: [/\b(history|timeline|timelines|evolution|stale notes?|around date|weekly review|monthly review|quarterly review)\b/i],
-  },
-  {
-    category: 'diagnostics',
-    tier: 2,
-    patterns: [/\b(health|doctor|diagnostics?|status|config|configuration|pipeline|refresh index|reindex|logs?|insights?|intelligence|analyze note|quality score|audit|staleness|growth trends?)\b/i],
-  },
-  {
-    category: 'schema',
-    tier: 3,
-    patterns: [/\b(schema|schemas|frontmatter|metadata|conventions?|rename field|rename tag|migrate|folder structure|folder tree|note counts)\b/i],
-  },
-  {
-    category: 'note-ops',
-    tier: 3,
-    patterns: [/\b(create note|delete note|move note|rename note|merge entit(y|ies)|merge notes?|deduplicate|also known as|aka|nickname)\b/i],
-  },
+  { category: 'memory', tier: 1, patterns: [/\b(remember|recall|forget|memory|memories|preference|setting|store|stored|brief(ing)?|session context|note to self|what do you know)\b/i] },
+  { category: 'graph', tier: 2, patterns: [/\b(backlinks?|forward links?|connections?|link path|paths?|hubs?|orphans?|dead ends?|clusters?|bridges?)\b/i] },
+  { category: 'wikilinks', tier: 2, patterns: [/\b(wikilinks?|link suggestions?|stubs?|unlinked mentions?|aliases?)\b/i] },
+  { category: 'corrections', tier: 2, patterns: [/\b(corrections?|wrong links?|bad links?|mistakes?|fix(es|ing)?|errors?)\b/i] },
+  { category: 'temporal', tier: 2, patterns: [/\b(history|timeline|timelines|evolution|stale notes?|around date|weekly review|monthly review|quarterly review)\b/i] },
+  { category: 'diagnostics', tier: 2, patterns: [/\b(health|doctor|diagnostics?|status|config|configuration|pipeline|refresh index|reindex|logs?|insights?|intelligence|analyze note|quality score|audit|staleness|growth trends?)\b/i] },
+  { category: 'schema', tier: 3, patterns: [/\b(schema|schemas|frontmatter|metadata|conventions?|rename field|rename tag|migrate|folder structure|folder tree|note counts)\b/i] },
+  { category: 'note-ops', tier: 3, patterns: [/\b(create note|delete note|move note|rename note|merge entit(y|ies)|merge notes?|deduplicate|also known as|aka|nickname)\b/i] },
 ];
 
 const MUTATING_TOOL_NAMES = new Set([
-  'vault_add_to_section',
-  'vault_remove_from_section',
-  'vault_replace_in_section',
   'vault_add_task',
-  'vault_toggle_task',
-  'vault_update_frontmatter',
-  'vault_create_note',
-  'vault_delete_note',
-  'vault_move_note',
-  'vault_rename_note',
-  'merge_entities',
-  'absorb_as_alias',
-  'vault_undo_last_mutation',
   'policy',
-  'rename_tag',
-  'wikilink_feedback',
-  'tool_selection_feedback',
-  'vault_record_correction',
-  'vault_resolve_correction',
   'memory',
-  'flywheel_config',
-  'vault_init',
-  'rename_field',
-  'migrate_field_values',
   'refresh_index',
   'init_semantic',
 ]);
+
+const MAX_QUERY_CONTEXT_LENGTH = 500;
+const QUERY_CONTEXT_FIELDS = ['query', 'focus', 'analysis', 'entity', 'heading', 'field', 'date', 'concept'] as const;
 
 export function getPatternSignals(raw: string): Array<{ category: ToolCategory; tier: ToolTier }> {
   if (!raw) return [];
@@ -226,7 +136,6 @@ export function getPatternSignals(raw: string): Array<{ category: ToolCategory; 
     .map(({ category, tier }) => ({ category, tier }));
 }
 
-/** Deduplicate activation signals by category, keeping the highest tier per category. */
 export function unionSignalsByCategory(
   signals: Array<{ category: ToolCategory; tier: ToolTier }>,
 ): Array<{ category: ToolCategory; tier: ToolTier }> {
@@ -238,210 +147,226 @@ export function unionSignalsByCategory(
   return Array.from(best.entries()).map(([category, tier]) => ({ category, tier }));
 }
 
-async function getActivationSignals(
-  toolName: string,
-  params: unknown,
-  searchMethod?: string,
-  isFullToolset: boolean = false,
-): Promise<Array<{ category: ToolCategory; tier: ToolTier }>> {
-  // Activation signals from search (query param) and memory/brief (focus param)
-  // memory(action: brief, focus: ...) replaces standalone brief tool (T43 B3+)
-  const isBriefAction = toolName === 'memory' && (params as Record<string, unknown>)?.action === 'brief';
-  if (toolName !== 'search' && toolName !== 'brief' && !isBriefAction) return [];
-  if (!params || typeof params !== 'object') return [];
+function createToolError(errorMessage: string): CallToolResult {
+  return {
+    content: [{ type: 'text', text: errorMessage }],
+    isError: true,
+  };
+}
 
-  const raw = [
-    typeof (params as Record<string, unknown>).query === 'string' ? (params as Record<string, string>).query : '',
-    typeof (params as Record<string, unknown>).focus === 'string' ? (params as Record<string, string>).focus : '',
-  ].filter(Boolean).join(' ');
+function toJsonSchema(inputSchema: unknown, pipeStrategy: 'input' | 'output'): object {
+  const obj = normalizeObjectSchema(inputSchema as any);
+  if (!obj) return { type: 'object' };
+  return toJsonSchemaCompat(obj, { strictUnions: true, pipeStrategy });
+}
 
-  if (!raw) return [];
+function extractQueryContext(params: unknown): string | undefined {
+  if (!params || typeof params !== 'object') return undefined;
+  const p = params as Record<string, unknown>;
+  const parts: string[] = [];
+  for (const field of QUERY_CONTEXT_FIELDS) {
+    const val = p[field];
+    if (typeof val === 'string' && val.trim()) parts.push(val.trim());
+  }
+  if (parts.length === 0) return undefined;
+  const joined = parts.join(' | ').replace(/\s+/g, ' ');
+  return joined.length > MAX_QUERY_CONTEXT_LENGTH ? joined.slice(0, MAX_QUERY_CONTEXT_LENGTH) : joined;
+}
 
-  const routingMode = getToolRoutingMode(isFullToolset);
+class FlywheelToolRuntime {
+  private registeredCount = 0;
+  private skippedCount = 0;
+  private override: ToolTierOverride = 'auto';
+  private readonly toolHandles = new Map<string, RegisteredTool>();
 
-  // Pattern-based signals (T13 regex activation)
-  const patternSignals = routingMode !== 'semantic' ? getPatternSignals(raw) : [];
+  readonly controller: ToolTierController;
+  readonly surface: ToolRegistrationSurface;
 
-  // Semantic signals (T14 embedding-based activation)
-  let semanticSignals: SemanticActivation[] = [];
-  if (
-    routingMode !== 'pattern' &&
-    searchMethod === 'hybrid' &&
-    hasToolRouting()
+  constructor(
+    private readonly targetServer: McpServer,
+    private readonly categories: Set<ToolCategory>,
+    private readonly getDb: () => StateDb | null,
+    private readonly registry?: VaultRegistry | null,
+    private readonly getVaultPath?: () => string,
+    private readonly vaultCallbacks?: VaultActivationCallbacks,
+    private readonly mode: ToolTierMode = 'off',
+    private readonly onTierStateChange?: (controller: ToolTierController) => void,
+    private readonly onToolCall?: () => void,
   ) {
-    semanticSignals = await getSemanticActivations(raw);
+    this.controller = {
+      mode: this.mode,
+      get registered() { return thisRuntime.registeredCount; },
+      get skipped() { return thisRuntime.skippedCount; },
+      get activeCategories() { return new Set(thisRuntime.categories); },
+      getOverride: () => this.override,
+      finalizeRegistration: () => {
+        this.installCustomHandlers();
+        this.assertNoTaskTools();
+        this.onTierStateChange?.(this.controller);
+      },
+      activateCategory: () => {},
+      enableTierCategory: () => {},
+      enableAllTiers: () => {
+        this.override = 'full';
+        this.onTierStateChange?.(this.controller);
+      },
+      setOverride: (override: ToolTierOverride) => {
+        this.override = override;
+        this.onTierStateChange?.(this.controller);
+      },
+      getActivatedCategoryTiers: () => new Map(Array.from(this.categories).map((category) => [category, 1 as ToolTier])),
+      getRegisteredTools: () => this.toolHandles,
+    };
+
+    const thisRuntime = this;
+    this.surface = {
+      tool: ((name: string, ...args: any[]) => this.registerLegacyTool(name, ...args)) as McpServer['tool'],
+      registerTool: ((name: string, config: any, cb: any) => this.registerStructuredTool(name, config, cb)) as McpServer['registerTool'],
+      registerResource: this.targetServer.registerResource.bind(this.targetServer),
+      sendToolListChanged: this.targetServer.sendToolListChanged.bind(this.targetServer),
+    };
   }
 
-  // In 'semantic' mode with non-hybrid search, fall back to pattern signals
-  if (routingMode === 'semantic' && searchMethod !== 'hybrid') {
-    return getPatternSignals(raw);
-  }
-
-  return unionSignalsByCategory([...patternSignals, ...semanticSignals]);
-}
-
-/**
- * Extract the search method from an MCP tool result payload.
- * The search tool returns JSON with a 'method' field ('hybrid', 'fts5', 'cross_vault', etc.).
- */
-function extractSearchMethod(result: unknown): string | undefined {
-  if (!result || typeof result !== 'object') return undefined;
-  const content = (result as { content?: unknown[] }).content;
-  if (!Array.isArray(content) || content.length === 0) return undefined;
-  const first = content[0] as { type?: string; text?: string };
-  if (first?.type !== 'text' || typeof first.text !== 'string') return undefined;
-  try {
-    const parsed = JSON.parse(first.text);
-    if (typeof parsed.method === 'string') return parsed.method;
-  } catch { /* not JSON or no method field */ }
-  return undefined;
-}
-
-// ============================================================================
-// Tool Gating
-// ============================================================================
-
-/**
- * Apply tool gating to a McpServer instance.
- * Monkey-patches server.tool() and server.registerTool() to filter by category,
- * wrap handlers with invocation tracking, and optionally inject a `vault` parameter
- * for multi-vault support.
- *
- * When registry is multi-vault, every tool gets an optional `vault` parameter.
- * Before each handler runs, `activateVault(registry.getContext(vault))` is called
- * to swap module-level singletons to the correct vault.
- */
-export function applyToolGating(
-  targetServer: McpServer,
-  categories: Set<ToolCategory>,
-  getDb: () => StateDb | null,
-  registry?: VaultRegistry | null,
-  getVaultPath?: () => string,
-  vaultCallbacks?: VaultActivationCallbacks,
-  tierMode: ToolTierMode = 'off',
-  onTierStateChange?: (controller: ToolTierController) => void,
-  isFullToolset: boolean = false,
-  onToolCall?: () => void,
-): ToolTierController {
-  let _registered = 0;
-  let _skipped = 0;
-  let tierOverride: ToolTierOverride = 'auto';
-  const toolHandles = new Map<string, RegisteredTool>();
-  const activatedCategoryTiers = new Map<ToolCategory, ToolTier>();
-  let controllerRef: ToolTierController | null = null;
-
-  function gate(name: string): boolean {
+  private gate(name: string): boolean {
     const category = TOOL_CATEGORY[name];
     if (!category) {
-      throw new Error(
-        `Tool "${name}" has no entry in TOOL_CATEGORY (config.ts). ` +
-        `Every tool must be assigned a category for gating to work.`
-      );
+      throw new Error(`Tool "${name}" has no entry in TOOL_CATEGORY (config.ts).`);
     }
-    if (!categories.has(category)) {
-      _skipped++;
+    if (!this.categories.has(category)) {
+      this.skippedCount++;
       return false;
     }
-    _registered++;
+    if (DISCLOSURE_ONLY_TOOLS.has(name) && this.mode !== 'tiered') {
+      this.skippedCount++;
+      return false;
+    }
+    this.registeredCount++;
     return true;
   }
 
-  function enableCategory(category: ToolCategory, tier: ToolTier): string[] {
-    if (!categories.has(category)) return [];
-    const previousTier = activatedCategoryTiers.get(category) ?? 0;
-    if (tier > previousTier) {
-      activatedCategoryTiers.set(category, tier);
+  private injectVaultParam(args: any[]): void {
+    if (!this.registry?.isMultiVault) return;
+    const handlerIdx = args.findIndex((a) => typeof a === 'function');
+    if (handlerIdx <= 0) return;
+    const schemaIdx = handlerIdx - 1;
+    const schema = args[schemaIdx];
+    if (schema && typeof schema === 'object' && !Array.isArray(schema)) {
+      schema.vault = z.string().optional().describe(
+        `Vault name for multi-vault mode. Available: ${this.registry.getVaultNames().join(', ')}. Default: ${this.registry.primaryName}`,
+      );
     }
-    return refreshToolVisibility();
   }
 
-  function shouldEnableTool(toolName: string): boolean {
-    const tier = TOOL_TIER[toolName];
-    const category = TOOL_CATEGORY[toolName];
-    if (!tier || !category) return true;
-    if (!categories.has(category)) return false;
-    if (tierMode === 'off') return true;
-    if (tierOverride === 'full') return true;
-    if (tier === 1) return true;
-    if (tierOverride === 'minimal') return false;
-    const activatedTier = activatedCategoryTiers.get(category) ?? 0;
-    return activatedTier >= tier;
-  }
-
-  /** Returns names of tools that were newly enabled (empty if no change). */
-  function refreshToolVisibility(): string[] {
-    const newlyEnabled: string[] = [];
-    for (const [name, handle] of toolHandles) {
-      const enabled = shouldEnableTool(name);
-      if (enabled !== handle.enabled) {
-        // Set directly instead of enable()/disable() to avoid per-tool
-        // sendToolListChanged() notifications — we send one batch notification below.
-        // `enabled` is a public mutable property on RegisteredTool (SDK >=1.26.0).
-        handle.enabled = enabled;
-        if (enabled) newlyEnabled.push(name);
-      }
-    }
-    if (newlyEnabled.length > 0) {
-      targetServer.sendToolListChanged();
-    }
-    // Always fire callback — override state may have changed even if no tools flipped
-    if (controllerRef) {
-      onTierStateChange?.(controllerRef);
-    }
-    return newlyEnabled;
-  }
-
-  /** Returns names of tools newly activated (empty if none). */
-  async function maybeActivateFromContext(toolName: string, params: unknown, searchMethod?: string): Promise<string[]> {
-    if (tierMode !== 'tiered' || tierOverride === 'full') return [];
-    const newlyEnabled: string[] = [];
-    for (const { category, tier } of await getActivationSignals(toolName, params, searchMethod, isFullToolset)) {
-      newlyEnabled.push(...enableCategory(category, tier));
-    }
-    return newlyEnabled;
-  }
-
-  function ensureToolEnabledForDirectCall(toolName: string): void {
-    if (tierMode !== 'tiered') return;
-    const handle = toolHandles.get(toolName);
-    if (!handle || handle.enabled) return;
-    const category = TOOL_CATEGORY[toolName];
-    const tier = TOOL_TIER[toolName];
-    if (!category || !tier) return;
-    enableCategory(category, tier);
-  }
-
-
-  /** Max length for stored query context */
-  const MAX_QUERY_CONTEXT_LENGTH = 500;
-
-  /** Strict allowlist of intent-bearing param fields */
-  const QUERY_CONTEXT_FIELDS = ['query', 'focus', 'analysis', 'entity', 'heading', 'field', 'date', 'concept'] as const;
-
-  /**
-   * Extract user-intent query context from tool params.
-   * Strict allowlist — excludes content, description, frontmatter, yaml, policy, key, value, mode.
-   */
-  function extractQueryContext(params: unknown): string | undefined {
-    if (!params || typeof params !== 'object') return undefined;
-    const p = params as Record<string, unknown>;
-    const parts: string[] = [];
-    for (const field of QUERY_CONTEXT_FIELDS) {
-      const val = p[field];
-      if (typeof val === 'string' && val.trim()) {
-        parts.push(val.trim());
-      }
-    }
-    if (parts.length === 0) return undefined;
-    const joined = parts.join(' | ').replace(/\s+/g, ' ');
-    return joined.length > MAX_QUERY_CONTEXT_LENGTH
-      ? joined.slice(0, MAX_QUERY_CONTEXT_LENGTH)
-      : joined;
-  }
-
-  function wrapWithTracking(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
+  private wrapWithIntegrityGate(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
+    if (!MUTATING_TOOL_NAMES.has(toolName)) return handler;
     return async (...args: any[]) => {
-      onToolCall?.();
+      const params = (args[0] && typeof args[0] === 'object') ? args[0] as Record<string, unknown> : undefined;
+      const vaultCtx = this.getTargetVaultContext(params);
+      const integrityState = vaultCtx?.integrityState ?? getActiveScopeOrNull()?.integrityState;
+      if (integrityState === 'failed') {
+        throw new Error('StateDb integrity failed; write operations are disabled until recovery/restart.');
+      }
+      return handler(...args);
+    };
+  }
+
+  private getTargetVaultContext(params: Record<string, unknown> | undefined): VaultContext | null {
+    if (!this.registry) return null;
+    if (this.registry.isMultiVault) {
+      const vaultName = typeof params?.vault === 'string' ? params.vault : undefined;
+      return this.registry.getContext(vaultName);
+    }
+    return this.registry.getContext();
+  }
+
+  private wrapWithVaultActivation(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
+    if (!this.registry?.isMultiVault || !this.vaultCallbacks) return handler;
+    return async (...args: any[]) => {
+      const params = args[0];
+      const vaultName = params?.vault;
+      if (params && 'vault' in params) delete params.vault;
+      if ((toolName === 'search' || toolName === 'find_notes') && !vaultName) {
+        return this.crossVaultSearch(handler, args);
+      }
+      const ctx = this.registry!.getContext(vaultName);
+      this.vaultCallbacks!.activateVault(ctx);
+      return runInVaultScope(this.vaultCallbacks!.buildVaultScope(ctx), () => handler(...args));
+    };
+  }
+
+  private async crossVaultSearch(
+    handler: (...args: any[]) => any,
+    args: any[],
+  ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
+    const perVault: Array<{ vault: string; data: any }> = [];
+    const callerConsumer: string = args[0]?.consumer ?? 'llm';
+    const crossArgs = [{ ...args[0], consumer: 'human' }, ...args.slice(1)];
+
+    for (const ctx of this.registry!.getAllContexts()) {
+      this.vaultCallbacks!.activateVault(ctx);
+      try {
+        const result = await runInVaultScope(this.vaultCallbacks!.buildVaultScope(ctx), () => handler(...crossArgs));
+        const text = result?.content?.[0]?.text;
+        if (text) perVault.push({ vault: ctx.name, data: JSON.parse(text) });
+      } catch {
+        // Skip vaults that error during search.
+      }
+    }
+
+    const mergedResults: any[] = [];
+    const mergedEntities: any[] = [];
+    const mergedMemories: any[] = [];
+    const vaultsSearched: string[] = [];
+    let query: string | undefined;
+
+    for (const { vault, data } of perVault) {
+      vaultsSearched.push(vault);
+      if (data.query) query = data.query;
+      if (data.error || data.building) continue;
+      for (const item of data.results || data.notes || []) mergedResults.push({ vault, ...item });
+      if (Array.isArray(data.entities)) for (const item of data.entities) mergedEntities.push({ vault, ...item });
+      if (Array.isArray(data.memories)) for (const item of data.memories) mergedMemories.push({ vault, ...item });
+    }
+
+    if (mergedResults.some((r) => r.rrf_score != null)) {
+      mergedResults.sort((a, b) => (b.rrf_score ?? 0) - (a.rrf_score ?? 0));
+    }
+
+    const limit = args[0]?.limit ?? 10;
+    const truncated = mergedResults.slice(0, limit);
+    if (callerConsumer === 'llm') {
+      const { applySandwichOrdering } = await import('./tools/read/query.js');
+      applySandwichOrdering(truncated);
+      for (const result of truncated) {
+        delete result.rrf_score;
+        delete result.in_fts5;
+        delete result.in_semantic;
+        delete result.in_entity;
+        delete result.graph_boost;
+        delete result._combined_score;
+      }
+    }
+
+    return {
+      content: [{
+        type: 'text' as const,
+        text: JSON.stringify({
+          method: 'cross_vault',
+          query,
+          vaults_searched: vaultsSearched,
+          total_results: mergedResults.length,
+          returned: truncated.length,
+          results: truncated,
+          ...(mergedEntities.length > 0 ? { entities: mergedEntities.slice(0, limit) } : {}),
+          ...(mergedMemories.length > 0 ? { memories: mergedMemories.slice(0, limit) } : {}),
+        }, null, 2),
+      }],
+    };
+  }
+
+  private wrapWithTracking(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
+    return async (...args: any[]) => {
+      this.onToolCall?.();
       const start = Date.now();
       let success = true;
       let notePaths: string[] | undefined;
@@ -458,49 +383,33 @@ export function applyToolGating(
       }
       try {
         result = await handler(...args);
-        // Extract search method from result for semantic routing gating
-        const searchMethod = extractSearchMethod(result);
-        const newlyActivated = await maybeActivateFromContext(toolName, params, searchMethod);
-        // Append activation notice to response so HTTP clients learn about new tools
-        // (sendToolListChanged notifications are lost over stateless HTTP transport)
-        if (newlyActivated.length > 0 && result?.content && Array.isArray(result.content)) {
-          result.content.push({
-            type: 'text' as const,
-            text: `\n[Progressive disclosure: ${newlyActivated.length} new tools activated: ${newlyActivated.join(', ')}. Call tools/list to refresh.]`,
-          });
-        }
         return result;
       } catch (err) {
         success = false;
         throw err;
       } finally {
-        const db = getDb();
-        if (db) {
+        const db = this.getDb();
+        if (!db) continueTracking();
+        else {
           try {
             let sessionId: string | undefined;
-            try { sessionId = getSessionId(); } catch { /* no session */ }
+            try { sessionId = getSessionId(); } catch {}
 
-            // Estimate response tokens from MCP response
             let responseTokens: number | undefined;
             if (result?.content) {
               let totalChars = 0;
               for (const block of result.content) {
-                if (block?.type === 'text' && typeof block.text === 'string') {
-                  totalChars += block.text.length;
-                }
+                if (block?.type === 'text' && typeof block.text === 'string') totalChars += block.text.length;
               }
               if (totalChars > 0) responseTokens = Math.ceil(totalChars / 4);
             }
 
-            // Estimate baseline tokens (raw file read cost)
             let baselineTokens: number | undefined;
-            if (notePaths && notePaths.length > 0 && getVaultPath) {
-              const vp = getVaultPath();
+            if (notePaths && notePaths.length > 0 && this.getVaultPath) {
+              const vp = this.getVaultPath();
               let totalBytes = 0;
               for (const p of notePaths) {
-                try {
-                  totalBytes += statSync(path.join(vp, p)).size;
-                } catch { /* file may not exist */ }
+                try { totalBytes += statSync(path.join(vp, p)).size; } catch {}
               }
               if (totalBytes > 0) baselineTokens = Math.ceil(totalBytes / 4);
             }
@@ -517,361 +426,191 @@ export function applyToolGating(
               query_context: queryContext,
             });
 
-            // Heuristic misroute detection (T15b)
             if (queryContext) {
               try {
                 const misroute = detectMisroute(toolName, queryContext);
-                if (misroute) {
-                  recordHeuristicMisroute(db, invocationId, misroute);
-                }
-              } catch { /* never let heuristic errors affect tool execution */ }
+                if (misroute) recordHeuristicMisroute(db, invocationId, misroute);
+              } catch {}
             }
-          } catch {
-            // Never let tracking errors affect tool execution
-          }
+          } catch {}
+        }
+
+        function continueTracking() {
+          return;
         }
       }
     };
   }
 
-  const isMultiVault = registry?.isMultiVault ?? false;
-
-  function getTargetVaultContext(params: Record<string, unknown> | undefined): VaultContext | null {
-    if (!registry) return null;
-    if (isMultiVault) {
-      const vaultName = typeof params?.vault === 'string' ? params.vault : undefined;
-      return registry.getContext(vaultName);
-    }
-    return registry.getContext();
-  }
-
-  function wrapWithIntegrityGate(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
-    if (!MUTATING_TOOL_NAMES.has(toolName)) return handler;
-    return async (...args: any[]) => {
-      const params = (args[0] && typeof args[0] === 'object') ? args[0] as Record<string, unknown> : undefined;
-      const vaultCtx = getTargetVaultContext(params);
-      const integrityState = vaultCtx?.integrityState ?? getActiveScopeOrNull()?.integrityState;
-      if (integrityState === 'failed') {
-        throw new Error('StateDb integrity failed; write operations are disabled until recovery/restart.');
-      }
-      return handler(...args);
-    };
-  }
-
-  /**
-   * Wrap a handler to activate the correct vault before execution (multi-vault).
-   * Extracts the `vault` param, calls activateVault(), then forwards to the original handler.
-   * For `search` with no explicit vault, iterates all vaults and merges results.
-   */
-  function wrapWithVaultActivation(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
-    if (!isMultiVault || !registry || !vaultCallbacks) return handler;
-    return async (...args: any[]) => {
-      const params = args[0];
-      const vaultName = params?.vault;
-      // Remove vault from params before forwarding (tools don't expect it)
-      if (params && 'vault' in params) {
-        delete params.vault;
-      }
-      // Cross-vault search/find: when no vault specified, query all vaults and merge
-      if ((toolName === 'search' || toolName === 'find_notes') && !vaultName) {
-        return crossVaultSearch(registry!, vaultCallbacks!, handler, args);
-      }
-      const ctx = registry.getContext(vaultName);
-      // Set fallback scope + module-level state (for watcher/startup code paths)
-      vaultCallbacks!.activateVault(ctx);
-      // Run handler inside ALS context for per-request isolation
-      return runInVaultScope(vaultCallbacks!.buildVaultScope(ctx), () => handler(...args));
-    };
-  }
-
-  /**
-   * Cross-vault search: run search handler in each vault context, merge results.
-   * Each vault's results are tagged with a `vault` field.
-   */
-  async function crossVaultSearch(
-    reg: VaultRegistry,
-    callbacks: VaultActivationCallbacks,
-    handler: (...args: any[]) => any,
-    args: any[]
-  ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
-    const perVault: Array<{ vault: string; data: any }> = [];
-    // Preserve the caller's consumer preference; force 'human' for per-vault calls
-    // so rrf_score survives for cross-vault merge-sort, then apply LLM post-processing after
-    const callerConsumer: string = args[0]?.consumer ?? 'llm';
-    const crossArgs = [{ ...args[0], consumer: 'human' }, ...args.slice(1)];
-
-    for (const ctx of reg.getAllContexts()) {
-      callbacks.activateVault(ctx);
-      try {
-        // Run each vault's search inside its own ALS context
-        const result = await runInVaultScope(callbacks.buildVaultScope(ctx), () => handler(...crossArgs));
-        const text = result?.content?.[0]?.text;
-        if (text) {
-          perVault.push({ vault: ctx.name, data: JSON.parse(text) });
-        }
-      } catch {
-        // Skip vaults that error during search
-      }
-    }
-
-    // Merge result items across vaults (notes, entities, memories separately)
-    const mergedResults: any[] = [];
-    const mergedEntities: any[] = [];
-    const mergedMemories: any[] = [];
-    const vaultsSearched: string[] = [];
-    let query: string | undefined;
-
-    for (const { vault, data } of perVault) {
-      vaultsSearched.push(vault);
-      if (data.query) query = data.query;
-      if (data.error || data.building) continue;
-
-      // Note results
-      const items = data.results || data.notes || [];
-      for (const item of items) {
-        mergedResults.push({ vault, ...item });
-      }
-
-      // Entity results
-      if (Array.isArray(data.entities)) {
-        for (const item of data.entities) {
-          mergedEntities.push({ vault, ...item });
-        }
-      }
-
-      // Memory results
-      if (Array.isArray(data.memories)) {
-        for (const item of data.memories) {
-          mergedMemories.push({ vault, ...item });
-        }
-      }
-    }
-
-    // Sort note results by rrf_score when available (hybrid/fts5), otherwise preserve order
-    if (mergedResults.some((r: any) => r.rrf_score != null)) {
-      mergedResults.sort((a: any, b: any) => (b.rrf_score ?? 0) - (a.rrf_score ?? 0));
-    }
-
-    // Deduplicate entities across vaults (same name = keep first)
-    const seenEntities = new Set<string>();
-    const dedupedEntities = mergedEntities.filter((e: any) => {
-      const key = (e.name || '').toLowerCase();
-      if (seenEntities.has(key)) return false;
-      seenEntities.add(key);
-      return true;
-    });
-
-    // Deduplicate memories across vaults (same key = keep first)
-    const seenMemories = new Set<string>();
-    const dedupedMemories = mergedMemories.filter((m: any) => {
-      if (seenMemories.has(m.key)) return false;
-      seenMemories.add(m.key);
-      return true;
-    });
-
-    const limit = args[0]?.limit ?? 10;
-    const truncated = mergedResults.slice(0, limit);
-
-    // Apply LLM context engineering on merged results when caller is LLM
-    if (callerConsumer === 'llm') {
-      applySandwichOrdering(truncated);
-      const INTERNAL = ['rrf_score', 'in_fts5', 'in_semantic', 'in_entity', 'graph_boost', '_combined_score'];
-      for (const r of truncated) {
-        for (const key of INTERNAL) delete r[key];
-      }
-    }
-
-    return {
-      content: [{
-        type: 'text' as const,
-        text: JSON.stringify({
-          method: 'cross_vault',
-          query,
-          vaults_searched: vaultsSearched,
-          total_results: mergedResults.length,
-          returned: truncated.length,
-          results: truncated,
-          ...(dedupedEntities.length > 0 ? { entities: dedupedEntities.slice(0, limit) } : {}),
-          ...(dedupedMemories.length > 0 ? { memories: dedupedMemories.slice(0, limit) } : {}),
-        }, null, 2),
-      }],
-    };
-  }
-
-  /**
-   * Inject `vault` parameter into a tool's schema (multi-vault only).
-   * server.tool() is called as: (name, description, schema, handler) or (name, schema, handler)
-   */
-  function injectVaultParam(args: any[]): void {
-    if (!isMultiVault || !registry) return;
-    // Find the schema object (the arg before the handler function)
-    const handlerIdx = args.findIndex((a: any) => typeof a === 'function');
-    if (handlerIdx <= 0) return;
-    const schemaIdx = handlerIdx - 1;
-    const schema = args[schemaIdx];
-    if (schema && typeof schema === 'object' && !Array.isArray(schema)) {
-      schema.vault = z.string().optional().describe(
-        `Vault name for multi-vault mode. Available: ${registry.getVaultNames().join(', ')}. Default: ${registry.primaryName}`
-      );
-    }
-  }
-
-  const origTool = targetServer.tool.bind(targetServer) as (...args: unknown[]) => unknown;
-  (targetServer as any).tool = (name: string, ...args: any[]) => {
-    if (!gate(name)) return;
-    // Inject vault param into schema (multi-vault)
-    injectVaultParam(args);
-    // Wrap handler with tracking + vault activation
+  private normalizeLegacyToolArgs(args: any[]): any[] {
+    this.injectVaultParam(args);
     if (args.length > 0 && typeof args[args.length - 1] === 'function') {
       let handler = args[args.length - 1];
-      handler = wrapWithVaultActivation(name, handler);
-      handler = wrapWithIntegrityGate(name, handler);
-      args[args.length - 1] = wrapWithTracking(name, handler);
+      handler = this.wrapWithVaultActivation(String(args[0] ?? ''), handler);
+      handler = this.wrapWithIntegrityGate(String(args[0] ?? ''), handler);
+      args[args.length - 1] = this.wrapWithTracking(String(args[0] ?? ''), handler);
     }
-    const registered = origTool(name, ...args) as RegisteredTool;
-    toolHandles.set(name, registered);
-    return registered;
-  };
-
-  const origRegisterTool = (targetServer as any).registerTool?.bind(targetServer);
-  if (origRegisterTool) {
-    (targetServer as any).registerTool = (name: string, ...args: any[]) => {
-      if (!gate(name)) return;
-      injectVaultParam(args);
-      if (args.length > 0 && typeof args[args.length - 1] === 'function') {
-        let handler = args[args.length - 1];
-        handler = wrapWithVaultActivation(name, handler);
-        handler = wrapWithIntegrityGate(name, handler);
-        args[args.length - 1] = wrapWithTracking(name, handler);
-      }
-      const registered = origRegisterTool(name, ...args) as RegisteredTool;
-      toolHandles.set(name, registered);
-      return registered;
-    };
+    return args;
   }
 
-  /**
-   * Install a custom CallTool handler that adds auto-promotion for tiered tools.
-   *
-   * When a client calls a disabled tier-2 tool directly, this handler auto-promotes
-   * the tool's category before the SDK rejects the call. This can't be done via
-   * handler wrappers because the SDK checks `tool.enabled` before calling handlers.
-   *
-   * SDK internal access (documented for version audits):
-   *   - serverAny.server.setRequestHandler — replaces the tool call handler
-   *   - serverAny.validateToolInput — input schema validation
-   *   - serverAny.executeToolHandler — handler invocation
-   *   - serverAny.validateToolOutput — output schema validation
-   *   - serverAny.createToolError — error response construction
-   *   - serverAny.handleAutomaticTaskPolling — task support (optional mode)
-   *
-   * These are stable across SDK 1.25–1.26 but not part of the public API.
-   * TODO: Upstream a pre-call hook or middleware API to eliminate this coupling.
-   */
-  function installTieredCallHandler(): void {
-    if (tierMode !== 'tiered') return;
-    const serverAny = targetServer as any;
-    serverAny.server.setRequestHandler(CallToolRequestSchema, async (request: any, extra: any) => {
+  private registerLegacyTool(name: string, ...args: any[]): RegisteredTool | undefined {
+    if (!this.gate(name)) return undefined;
+    this.injectVaultParam(args);
+    if (args.length > 0 && typeof args[args.length - 1] === 'function') {
+      let handler = args[args.length - 1];
+      handler = this.wrapWithVaultActivation(name, handler);
+      handler = this.wrapWithIntegrityGate(name, handler);
+      args[args.length - 1] = this.wrapWithTracking(name, handler);
+    }
+    const registered = (this.targetServer.tool as any)(name, ...args) as RegisteredTool;
+    this.toolHandles.set(name, registered);
+    return registered;
+  }
+
+  private registerStructuredTool(name: string, config: any, cb: any): RegisteredTool | undefined {
+    if (!this.gate(name)) return undefined;
+    const wrappedConfig = config ? { ...config } : {};
+    if (wrappedConfig.inputSchema && typeof wrappedConfig.inputSchema === 'object') {
+      wrappedConfig.inputSchema = { ...wrappedConfig.inputSchema };
+    }
+    const args: any[] = [wrappedConfig, cb];
+    this.injectVaultParam(args);
+    let handler = args[1];
+    handler = this.wrapWithVaultActivation(name, handler);
+    handler = this.wrapWithIntegrityGate(name, handler);
+    handler = this.wrapWithTracking(name, handler);
+    const registered = this.targetServer.registerTool(name, args[0], handler);
+    this.toolHandles.set(name, registered);
+    return registered;
+  }
+
+  private assertNoTaskTools(): void {
+    for (const [name, tool] of this.toolHandles) {
+      const taskSupport = tool.execution?.taskSupport;
+      if (taskSupport && taskSupport !== 'forbidden') {
+        throw new Error(`Tool ${name} uses taskSupport '${taskSupport}', which is unsupported in Flywheel's custom dispatcher.`);
+      }
+      if ('createTask' in tool.handler) {
+        throw new Error(`Tool ${name} registered a task handler, which is unsupported in Flywheel's custom dispatcher.`);
+      }
+    }
+  }
+
+  private async validateToolInput(tool: RegisteredTool, args: unknown, toolName: string): Promise<unknown> {
+    if (!tool.inputSchema) return undefined;
+    const inputObj = normalizeObjectSchema(tool.inputSchema);
+    const schemaToParse = inputObj ?? tool.inputSchema;
+    const parseResult = await safeParseAsync(schemaToParse, args);
+    if (!parseResult.success) {
+      const errorMessage = getParseErrorMessage('error' in parseResult ? parseResult.error : 'Unknown error');
+      throw new McpError(ErrorCode.InvalidParams, `Input validation error: Invalid arguments for tool ${toolName}: ${errorMessage}`);
+    }
+    return parseResult.data;
+  }
+
+  private async validateToolOutput(tool: RegisteredTool, result: any, toolName: string): Promise<void> {
+    if (!tool.outputSchema || !('content' in result) || result.isError) return;
+    if (!result.structuredContent) {
+      throw new McpError(ErrorCode.InvalidParams, `Output validation error: Tool ${toolName} has an output schema but no structured content was provided`);
+    }
+    const outputObj = normalizeObjectSchema(tool.outputSchema);
+    const schemaToParse = outputObj ?? tool.outputSchema;
+    const parseResult = await safeParseAsync(schemaToParse, result.structuredContent);
+    if (!parseResult.success) {
+      const errorMessage = getParseErrorMessage('error' in parseResult ? parseResult.error : 'Unknown error');
+      throw new McpError(ErrorCode.InvalidParams, `Output validation error: Invalid structured content for tool ${toolName}: ${errorMessage}`);
+    }
+  }
+
+  private async executeToolHandler(tool: RegisteredTool, args: unknown, extra: any): Promise<any> {
+    const handler = tool.handler as any;
+    if ('createTask' in handler) {
+      throw new McpError(ErrorCode.InternalError, 'Task handlers are unsupported in Flywheel custom dispatch');
+    }
+    if (tool.inputSchema) {
+      return await handler(args, extra);
+    }
+    return await handler(extra);
+  }
+
+  private installCustomHandlers(): void {
+    this.targetServer.server.setRequestHandler(ListToolsRequestSchema, async () => ({
+      tools: Array.from(this.toolHandles.entries())
+        .filter(([, tool]) => tool.enabled)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, tool]) => {
+          const definition: Record<string, unknown> = {
+            name,
+            title: tool.title,
+            description: tool.description,
+            inputSchema: toJsonSchema(tool.inputSchema, 'input'),
+            annotations: tool.annotations,
+            execution: tool.execution,
+            _meta: tool._meta,
+          };
+          if (tool.outputSchema) {
+            definition.outputSchema = toJsonSchema(tool.outputSchema, 'output');
+          }
+          return definition;
+        }),
+    }));
+
+    this.targetServer.server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
       try {
-        const tool = toolHandles.get(request.params.name);
+        const tool = this.toolHandles.get(request.params.name);
         if (!tool) {
           throw new McpError(ErrorCode.InvalidParams, `Tool ${request.params.name} not found`);
         }
         if (!tool.enabled) {
-          ensureToolEnabledForDirectCall(request.params.name);
-        }
-        if (!tool.enabled) {
           throw new McpError(ErrorCode.InvalidParams, `Tool ${request.params.name} disabled`);
         }
-        const isTaskRequest = !!request.params.task;
-        const taskSupport = tool.execution?.taskSupport;
-        const isTaskHandler = 'createTask' in tool.handler;
-        if ((taskSupport === 'required' || taskSupport === 'optional') && !isTaskHandler) {
-          throw new McpError(ErrorCode.InternalError, `Tool ${request.params.name} has taskSupport '${taskSupport}' but was not registered with registerToolTask`);
+        if (request.params.task) {
+          throw new McpError(ErrorCode.MethodNotFound, `Tool ${request.params.name} does not support task augmentation`);
         }
-        if (taskSupport === 'required' && !isTaskRequest) {
-          throw new McpError(ErrorCode.MethodNotFound, `Tool ${request.params.name} requires task augmentation (taskSupport: 'required')`);
-        }
-        if (taskSupport === 'optional' && !isTaskRequest && isTaskHandler) {
-          return await serverAny.handleAutomaticTaskPolling(tool, request, extra);
-        }
-        const args = await serverAny.validateToolInput(tool, request.params.arguments, request.params.name);
-        const result = await serverAny.executeToolHandler(tool, args, extra);
-        if (isTaskRequest) {
-          return result;
-        }
-        await serverAny.validateToolOutput(tool, result, request.params.name);
+        const args = await this.validateToolInput(tool, request.params.arguments, request.params.name);
+        const result = await this.executeToolHandler(tool, args, extra);
+        await this.validateToolOutput(tool, result, request.params.name);
         return result;
       } catch (error) {
-        if (error instanceof McpError && error.code === ErrorCode.UrlElicitationRequired) {
-          throw error;
-        }
-        return serverAny.createToolError(error instanceof Error ? error.message : String(error));
+        if (error instanceof McpError && error.code === ErrorCode.UrlElicitationRequired) throw error;
+        return createToolError(error instanceof Error ? error.message : String(error));
       }
     });
   }
-
-  const controller: ToolTierController = {
-    mode: tierMode,
-    get registered() {
-      return _registered;
-    },
-    get skipped() {
-      return _skipped;
-    },
-    get activeCategories() {
-      return new Set(activatedCategoryTiers.keys());
-    },
-    getOverride() {
-      return tierOverride;
-    },
-    finalizeRegistration() {
-      refreshToolVisibility();
-      installTieredCallHandler();
-    },
-    activateCategory(category: ToolCategory, tier: ToolTier = 2) {
-      enableCategory(category, tier);
-    },
-    enableTierCategory(category: ToolCategory) {
-      enableCategory(category, 2);
-    },
-    enableAllTiers() {
-      tierOverride = 'full';
-      refreshToolVisibility();
-    },
-    setOverride(override: ToolTierOverride) {
-      tierOverride = override;
-      refreshToolVisibility();
-    },
-    getActivatedCategoryTiers() {
-      return new Map(activatedCategoryTiers);
-    },
-    getRegisteredTools() {
-      return toolHandles;
-    },
-  };
-
-  controllerRef = controller;
-
-  return controller;
 }
 
-// ============================================================================
-// Tool Registration
-// ============================================================================
+function getRuntime(controller?: ToolTierController | null): FlywheelToolRuntime | null {
+  return controller ? ((controller as any)[RUNTIME] ?? null) : null;
+}
 
-/**
- * Register all tools on a McpServer instance.
- * Uses scope-aware getters that read from ALS VaultScope first,
- * falling back to module-level singletons via the injected context.
- */
+export function applyToolGating(
+  targetServer: McpServer,
+  categories: Set<ToolCategory>,
+  getDb: () => StateDb | null,
+  registry?: VaultRegistry | null,
+  getVaultPath?: () => string,
+  vaultCallbacks?: VaultActivationCallbacks,
+  tierMode: ToolTierMode = 'off',
+  onTierStateChange?: (controller: ToolTierController) => void,
+  _isFullToolset: boolean = false,
+  onToolCall?: () => void,
+): ToolTierController {
+  const runtime = new FlywheelToolRuntime(
+    targetServer,
+    categories,
+    getDb,
+    registry,
+    getVaultPath,
+    vaultCallbacks,
+    tierMode,
+    onTierStateChange,
+    onToolCall,
+  );
+  (runtime.controller as any)[RUNTIME] = runtime;
+  return runtime.controller;
+}
+
 export interface RegisterAllToolsOptions {
-  /**
-   * When true (default), the Claude Code client fingerprint (CLAUDECODE=1)
-   * causes the `memory` tool to be skipped because Claude Code intercepts
-   * memory verbs onto its own native memory plane. Set to false in test
-   * catalog collection so the manifest always reflects the complete surface.
-   */
   applyClientSuppressions?: boolean;
 }
 
@@ -881,44 +620,37 @@ export function registerAllTools(
   controller?: ToolTierController | null,
   options: RegisterAllToolsOptions = {},
 ): void {
+  const runtime = getRuntime(controller);
+  const surface = runtime?.surface ?? targetServer as unknown as ToolRegistrationSurface;
   const { applyClientSuppressions = true } = options;
   const { getVaultPath: gvp, getVaultIndex: gvi, getStateDb: gsd, getFlywheelConfig: gcf } = ctx;
 
-  // Read tools
-  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, ctx.getWatcherStatus, () => trPkg.version, ctx.getPipelineActivity, ctx.getVaultRuntimeState, (newConfig) => { ctx.updateFlywheelConfig(newConfig); });
-  registerReadSystemTools(
-    targetServer,
-    gvi,
-    (newIndex) => { ctx.updateVaultIndex(newIndex); },
-    gvp,
-    (newConfig) => { ctx.updateFlywheelConfig(newConfig); },
-    gsd
-  );
-  registerQueryTools(targetServer, gvi, gvp, gsd);
-  registerFindNotesTools(targetServer, gvi, gsd);
-  registerPrimitiveTools(targetServer, gvi, gvp, gcf, gsd);
-  registerSchemaTools(targetServer, gvi, gvp);
-  registerGraphTools2(targetServer, gvi, gvp, gsd);
-  registerInsightsTools(targetServer, gvi, gvp, gsd, gcf);
+  registerHealthTools(surface as any, gvi, gvp, gcf, gsd, ctx.getWatcherStatus, () => trPkg.version, ctx.getPipelineActivity, ctx.getVaultRuntimeState, (newConfig) => { ctx.updateFlywheelConfig(newConfig); });
+  registerReadSystemTools(surface as any, gvi, (newIndex) => { ctx.updateVaultIndex(newIndex); }, gvp, (newConfig) => { ctx.updateFlywheelConfig(newConfig); }, gsd);
+  registerQueryTools(surface as any, gvi, gvp, gsd);
+  registerFindNotesTools(surface as any, gvi, gsd);
+  registerPrimitiveTools(surface as any, gvi, gvp, gcf, gsd);
+  registerSchemaTools(surface as any, gvi, gvp);
+  registerGraphTools2(surface as any, gvi, gvp, gsd);
+  registerInsightsTools(surface as any, gvi, gvp, gsd, gcf);
 
-  // Write tools
-  registerTaskTools(targetServer, gvp);
-  registerFrontmatterTools(targetServer, gvp);
-  registerPolicyTools(targetServer, gvp, () => {
+  registerTaskTools(surface as any, gvp);
+  registerFrontmatterTools(surface as any, gvp);
+  registerPolicyTools(surface as any, gvp, () => {
     const index = gvi();
     if (!index) return undefined;
     return ({ query, folder, where, limit = 10 }: { query?: string; folder?: string; where?: Record<string, unknown>; limit?: number }) => {
       let notes = Array.from(index.notes.values());
       if (folder) {
-        const normalizedFolder = folder.endsWith('/') ? folder : folder + '/';
-        notes = notes.filter(n => n.path.startsWith(normalizedFolder) || n.path.split('/')[0] === folder.replace('/', ''));
+        const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
+        notes = notes.filter((n) => n.path.startsWith(normalizedFolder) || n.path.split('/')[0] === folder.replace('/', ''));
       }
       if (where) {
-        notes = notes.filter(n => {
+        notes = notes.filter((n) => {
           for (const [key, value] of Object.entries(where)) {
             const noteValue = n.frontmatter[key];
             if (Array.isArray(value)) {
-              if (!value.some(v => String(noteValue).toLowerCase() === String(v).toLowerCase())) return false;
+              if (!value.some((v) => String(noteValue).toLowerCase() === String(v).toLowerCase())) return false;
             } else if (value !== undefined && String(noteValue ?? '').toLowerCase() !== String(value).toLowerCase()) {
               return false;
             }
@@ -926,7 +658,7 @@ export function registerAllTools(
           return true;
         });
       }
-      return notes.slice(0, limit).map(n => ({
+      return notes.slice(0, limit).map((n) => ({
         path: n.path,
         title: n.title,
         frontmatter: n.frontmatter,
@@ -934,58 +666,26 @@ export function registerAllTools(
       }));
     };
   });
-  // registerTagTools retired (T43 B3+) — rename_tag folded into schema merged tool
-  // registerWikilinkFeedbackTools retired (T43 B3+) — wikilink_feedback folded into link merged tool
-  // registerToolSelectionFeedbackTools retired (T43) — tool_selection_feedback removed from surface
-  // registerCorrectionTools retired (T43 B3+) — vault_record_correction etc. folded into correct merged tool
-  // registerInitTools retired (T43) — vault_init removed from surface
-  // registerConfigTools retired (T43 B3+) — flywheel_config folded into doctor(action: config)
 
-  // Additional read tools
-  // registerMetricsTools retired (T43 B3+) — vault_growth folded into insights merged tool
-  // vault_activity retired — modes folded into vault_session_history
-  // registerSimilarityTools retired (T43) — find_similar absorbed into search
-  registerSemanticTools(targetServer, gvp, gsd);
-  // registerReadMergeTools retired (T43) — suggest_merges/dismiss_merge now in entity tool
-  // registerTemporalAnalysisTools retired (T43 B3+) — track_concept_evolution etc. folded into insights merged tool
-  // registerSessionHistoryTools retired (T43) — vault_session_history removed from surface
-  // registerEntityHistoryTools retired (T43) — vault_entity_history removed from surface
-  // registerLearningReportTools retired (T43) — flywheel_learning_report removed from surface
-  // registerCalibrationExportTools retired (T43) — flywheel_calibration_export removed from surface
+  registerSemanticTools(surface as any, gvp, gsd);
 
-  // Memory tools
-  //
-  // Claude Code intercepts verbs like "remember", "search memory", "list memories",
-  // "forget" onto its native client-side memory plane (Glob/Read against
-  // ~/.claude/memory/), never reaching the MCP `memory` tool regardless of how
-  // the tool is described or ranked. Measured 3/6 memory-action tests routed to
-  // Glob instead of memory(*). To avoid the collision, suppress registration of
-  // the `memory` tool when we detect the Claude Code client (via CLAUDECODE=1
-  // env var it sets on spawned MCP subprocesses). `memory(action: brief)` stays
-  // available — it's the Claude Code escape hatch for memory retrieval. flywheel-engine
-  // and non-Claude clients are unaffected. Override with FW_ENABLE_MEMORY_FOR_CLAUDE=1.
   const suppressMemoryForClaude =
     applyClientSuppressions &&
     process.env.CLAUDECODE === '1' &&
     process.env.FW_ENABLE_MEMORY_FOR_CLAUDE !== '1';
   if (!suppressMemoryForClaude) {
-    registerMemoryTools(targetServer, gsd);
-  }
-  // recall removed — entity/memory search merged into search (uber search)
-  // brief tool retired (T43 B3+) — brief action now part of memory tool (memory.ts imports runBrief)
-
-  // T43 merged tools
-  registerNoteTool(targetServer, gvp, gvi);
-  registerLinkTool(targetServer, gvi, gvp, gsd);
-  registerCorrectTool(targetServer, gsd, gvp);
-  registerEntityTool(targetServer, gvp, gsd, gvi);
-  registerEditSectionTool(targetServer, gvp, gcf);
-
-  // Discovery tool (progressive disclosure meta-tool — only in auto/tiered mode)
-  if (controller && controller.mode === 'tiered') {
-    registerDiscoveryTools(targetServer, controller);
+    registerMemoryTools(surface as any, gsd);
   }
 
-  // Resources (always registered, not gated by tool presets)
-  registerVaultResources(targetServer, () => gvi() ?? null);
+  registerNoteTool(surface as any, gvp, gvi);
+  registerLinkTool(surface as any, gvi, gvp, gsd);
+  registerCorrectTool(surface as any, gsd, gvp);
+  registerEntityTool(surface as any, gvp, gsd, gvi);
+  registerEditSectionTool(surface as any, gvp, gcf);
+
+  if (controller?.mode === 'tiered') {
+    registerDiscoveryTools(surface as any, controller);
+  }
+
+  registerVaultResources(surface as any, () => gvi() ?? null);
 }

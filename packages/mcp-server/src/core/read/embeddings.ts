@@ -37,10 +37,9 @@ import * as fs from 'fs';
 import type { EntityWithType } from '@velvetmonkey/vault-core';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 import * as path from 'path';
-import { Worker } from 'node:worker_threads';
-import { fileURLToPath } from 'node:url';
 import { scanVault } from './vault.js';
 import { SYSTEM_EXCLUDED_DIRS } from '../shared/constants.js';
+import { getEmbeddingProvider, resetEmbeddingProvider } from './embeddingProvider.js';
 
 // =============================================================================
 // Types
@@ -127,14 +126,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 let db: Database.Database | null = null;
 let embeddingsBuilding = false;
 
-/** Embedding worker thread — owns model loading and inference */
-let worker: Worker | null = null;
-let workerReady = false;
-let workerDims = 0;
-let workerInitPromise: Promise<void> | null = null;
-let embedRequestId = 0;
-const pendingEmbeds = new Map<number, { resolve: (v: Float32Array) => void; reject: (e: Error) => void }>();
-
 /** LRU cache for embedText results (max 500 entries) */
 const embeddingCache = new Map<string, Float32Array>();
 const EMBEDDING_CACHE_MAX = 500;
@@ -219,134 +210,12 @@ export function setEmbeddingsDatabase(database: Database.Database): void {
   db = database;
 }
 
-// =============================================================================
-// Worker Lifecycle
-// =============================================================================
-
-/**
- * Resolve the path to the embedding worker script.
- * esbuild bundles both index.ts and embedding-worker.ts into dist/,
- * so in production they're siblings: dist/index.js + dist/embedding-worker.js.
- */
-function resolveWorkerPath(): string {
-  // import.meta.url points to the bundled output (dist/index.js)
-  const thisFile = typeof __filename !== 'undefined'
-    ? __filename
-    : fileURLToPath(import.meta.url);
-  const thisDir = path.dirname(thisFile);
-
-  // Both entry points land in the same dist/ directory
-  const workerPath = path.join(thisDir, 'embedding-worker.js');
-  if (fs.existsSync(workerPath)) return workerPath;
-
-  // Fallback for unbundled development (e.g. vitest)
-  const devPath = path.resolve(thisDir, '..', '..', '..', 'dist', 'embedding-worker.js');
-  if (fs.existsSync(devPath)) return devPath;
-
-  throw new Error(
-    `Embedding worker not found at ${workerPath}. Run 'npm run build' to generate it.`
-  );
-}
-
-/**
- * Spawn the embedding worker thread and wait for it to load the model.
- * Cached after first call — subsequent calls return immediately.
- * Worker failures are isolated from the main MCP server process.
- */
 export async function initEmbeddings(): Promise<void> {
-  if (workerReady && worker) return;
-  if (workerInitPromise) return workerInitPromise;
-
-  workerInitPromise = new Promise<void>((resolve, reject) => {
-    try {
-      const workerPath = resolveWorkerPath();
-      console.error(`[Semantic] Spawning embedding worker: ${workerPath}`);
-
-      worker = new Worker(workerPath);
-
-      worker.on('message', (msg: any) => {
-        switch (msg.type) {
-          case 'ready':
-            workerReady = true;
-            workerDims = msg.dims;
-            if (activeModelConfig.dims === 0) {
-              activeModelConfig.dims = msg.dims;
-              console.error(`[Semantic] Probed model ${activeModelConfig.id}: ${msg.dims} dims`);
-            }
-            console.error(`[Semantic] Worker ready (model: ${activeModelConfig.id}, dims: ${msg.dims})`);
-            resolve();
-            break;
-
-          case 'result': {
-            const pending = pendingEmbeds.get(msg.id);
-            if (pending) {
-              pendingEmbeds.delete(msg.id);
-              pending.resolve(new Float32Array(msg.embedding));
-            }
-            break;
-          }
-
-          case 'error': {
-            if (msg.fatal) {
-              // Fatal error during init — reject the init promise
-              console.error(`[Semantic] Worker fatal error: ${msg.message}`);
-              console.error(`[Semantic] Semantic search disabled. Keyword search (BM25) remains available.`);
-              terminateWorker();
-              workerInitPromise = null;
-              reject(new Error(msg.message));
-            } else if (msg.id != null) {
-              // Non-fatal error for a specific embed request
-              const pending = pendingEmbeds.get(msg.id);
-              if (pending) {
-                pendingEmbeds.delete(msg.id);
-                pending.reject(new Error(msg.message));
-              }
-            }
-            break;
-          }
-        }
-      });
-
-      worker.on('error', (err) => {
-        console.error(`[Semantic] Worker error: ${err.message}`);
-        handleWorkerCrash();
-        if (!workerReady) {
-          workerInitPromise = null;
-          reject(err);
-        }
-      });
-
-      worker.on('exit', (code) => {
-        if (code !== 0 && workerReady) {
-          console.error(`[Semantic] Worker exited with code ${code}`);
-          handleWorkerCrash();
-        }
-      });
-
-      // Send init message
-      worker.postMessage({ type: 'init', modelId: activeModelConfig.id });
-
-    } catch (err) {
-      workerInitPromise = null;
-      reject(err);
-    }
-  });
-
-  return workerInitPromise;
-}
-
-/**
- * Handle unexpected worker termination. Rejects all pending embed requests
- * and resets state so the next initEmbeddings() call will respawn.
- */
-function handleWorkerCrash(): void {
-  for (const [id, pending] of pendingEmbeds) {
-    pending.reject(new Error('Embedding worker crashed'));
-    pendingEmbeds.delete(id);
+  const { dims } = await getEmbeddingProvider(activeModelConfig.id).init();
+  if (activeModelConfig.dims === 0) {
+    activeModelConfig.dims = dims;
+    console.error(`[Semantic] Probed model ${activeModelConfig.id}: ${dims} dims`);
   }
-  worker = null;
-  workerReady = false;
-  workerInitPromise = null;
 }
 
 /**
@@ -354,12 +223,7 @@ function handleWorkerCrash(): void {
  * Call during server shutdown to clean up resources.
  */
 export function terminateWorker(): void {
-  if (worker) {
-    try { worker.postMessage({ type: 'shutdown' }); } catch { /* already dead */ }
-    worker = null;
-  }
-  workerReady = false;
-  workerInitPromise = null;
+  resetEmbeddingProvider();
 }
 
 // =============================================================================
@@ -372,16 +236,7 @@ export function terminateWorker(): void {
  */
 export async function embedText(text: string): Promise<Float32Array> {
   await initEmbeddings();
-
-  if (!worker) {
-    throw new Error('Embedding worker not available');
-  }
-
-  const id = ++embedRequestId;
-  return new Promise<Float32Array>((resolve, reject) => {
-    pendingEmbeds.set(id, { resolve, reject });
-    worker!.postMessage({ type: 'embed', id, text });
-  });
+  return getEmbeddingProvider(activeModelConfig.id).embed(text);
 }
 
 /**

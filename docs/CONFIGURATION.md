@@ -12,6 +12,7 @@ Most users only need `VAULT_PATH` and, optionally, `FLYWHEEL_TOOLS`.
 - [MCP Config](#mcp-config)
 - [Environment Variables](#environment-variables)
 - [Tool Presets](#tool-presets)
+- [Preset And Routing Model](#preset-and-routing-model)
 - [Runtime Configuration](#runtime-configuration)
 - [Multi-Vault](#multi-vault)
 - [Transport And Platform Notes](#transport-and-platform-notes)
@@ -78,6 +79,7 @@ Claude Desktop usually needs `VAULT_PATH` because it does not launch from the va
 | `VAULT_PATH` | cwd / auto-detect | Single-vault path |
 | `FLYWHEEL_TOOLS` | `agent` | Preset, bundle, or comma-separated category list |
 | `FLYWHEEL_PRESET` | — | Alias for `FLYWHEEL_TOOLS` |
+| `FLYWHEEL_TOOL_ROUTING` | `hybrid` | Tool-selection hinting mode: `pattern`, `hybrid`, or `semantic` |
 | `FLYWHEEL_VAULTS` | — | Multi-vault mode |
 | `FLYWHEEL_TRANSPORT` | `stdio` | `stdio`, `http`, or `both` |
 | `FLYWHEEL_HTTP_PORT` | `3111` | HTTP port |
@@ -112,6 +114,37 @@ Claude Desktop usually needs `VAULT_PATH` because it does not launch from the va
 - `auto` now behaves like `full` plus the `discover_tools` compatibility helper.
 - `discover_tools` does not reveal, unlock, or activate categories.
 - Unknown preset or bundle names are ignored with a warning; if nothing valid remains, Flywheel falls back to `agent`.
+
+## Preset And Routing Model
+
+Preset choice and routing are separate concerns.
+
+- `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` decide which categories are visible.
+- `FLYWHEEL_TOOL_ROUTING` affects how Flywheel chooses or suggests tools within that visible surface.
+
+Today the visibility model is static:
+
+- `agent` for the focused everyday surface
+- `power` for link cleanup, schema work, corrections, and note operations
+- `full` for the whole surface
+- `auto` for backward compatibility only
+
+What `auto` means now:
+
+- it behaves like `full`
+- it may include `discover_tools` for older clients
+- it does not perform progressive disclosure
+
+What routing means now:
+
+- `pattern`, `hybrid`, and `semantic` influence tool-selection hints and analysis
+- routing can improve which visible tool gets chosen first
+- routing does not reveal hidden tools or expand the preset mid-session
+
+What feedback means now:
+
+- feedback improves reporting and future routing analysis
+- feedback does not change runtime visibility during the current session
 
 ### Bundles And Categories
 

@@ -315,9 +315,22 @@ describe('Documentation Wording Contracts', () => {
     expect(content).toContain('informational only');
   });
 
+  it('TOOLS.md includes the How Tool Choice Works explainer', async () => {
+    const content = await readDoc('docs/TOOLS.md');
+    expect(content).toContain('## How Tool Choice Works');
+    expect(content).toContain('FLYWHEEL_TOOL_ROUTING');
+  });
+
   it('CONFIGURATION.md documents doctor(action: "config")', async () => {
     const content = await readDoc('docs/CONFIGURATION.md');
     expect(content).toContain('doctor(action: "config")');
+  });
+
+  it('CONFIGURATION.md separates preset visibility from routing', async () => {
+    const content = await readDoc('docs/CONFIGURATION.md');
+    expect(content).toContain('## Preset And Routing Model');
+    expect(content).toContain('FLYWHEEL_TOOL_ROUTING');
+    expect(content).toContain('does not reveal hidden tools');
   });
 
   it('docs describe agent as the default preset', async () => {

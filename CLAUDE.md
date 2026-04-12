@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 21 merged action-param tools across 3 preset tiers (agent/power/full) organized into 12 categories: search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, and diagnostics — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. The current public tool model is static presets (`agent`, `power`, `full`) plus `auto` as a backward-compatible full-surface mode with an informational `discover_tools` helper. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -21,12 +21,12 @@
 
 ```
 packages/mcp-server/src/
-├── index.ts                    # MCP server entry point + tool preset gating
-├── tool-registry.ts            # Tool gating, tiering, activation tracking
-├── config.ts                   # Tool categories, tiers, presets, instructions
+├── index.ts                    # MCP server entry point, transport, and vault activation wiring
+├── tool-registry.ts            # Flywheel-owned registry, preset gating, tools/list + tools/call dispatch
+├── config.ts                   # Tool categories, presets, aliases, instructions
 ├── tools/
-│   ├── toolCatalog.ts          # Tool metadata collection for embedding manifest
-│   ├── read/                   # Read-side tool registrations (20 files, helpers omitted)
+│   ├── toolCatalog.ts          # Tool metadata collection for the embedding manifest
+│   ├── read/                   # Read-side tool registrations
 │   │   ├── query.ts            # search
 │   │   ├── primitives.ts       # read/note_read (structure|section|sections), tasks (list|toggle)
 │   │   ├── graphAnalysis.ts    # graph (analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps)
@@ -50,7 +50,7 @@ packages/mcp-server/src/
 │       ├── wikilinkFeedback.ts # link (feedback action)
 │       ├── tags.ts             # schema (rename_tag action)
 │       ├── memory.ts           # memory (store|get|search|list|forget|summarize_session|brief)
-│       ├── config.ts           # (doctor action: config)
+│       ├── config.ts           # legacy standalone config helper source (public docs use doctor action=config)
 │       ├── system.ts           # (correct action: undo)
 │       └── policy.ts           # policy
 ├── core/
@@ -68,18 +68,18 @@ packages/mcp-server/src/
 ```
 packages/mcp-server/src/
 ├── vault-registry.ts              # VaultContext interface + VaultRegistry class + parseVaultConfig()
-├── index.ts                       # applyToolGating(), registerAllTools(), createConfiguredServer()
+├── index.ts                       # registerAllTools(), createConfiguredServer(), transport bootstrap
 ```
 
-- `vault-registry.ts` — `VaultContext` holds per-vault state (name, vaultPath, stateDb, vaultIndex, flywheelConfig, watcher). `VaultRegistry` tracks all contexts with a primary vault name. `parseVaultConfig()` reads `FLYWHEEL_VAULTS` env var.
-- `applyToolGating()` — Monkey-patches `server.tool()` to filter by category. In multi-vault mode, wraps handlers with `activateVault()` and injects optional `vault` parameter on all tools.
-- `registerAllTools()` — Calls all tool registration functions. Write tools use `getVaultPath: () => string` getter (not a captured string) so vault switching works.
+- `vault-registry.ts` — `VaultContext` holds per-vault state (name, vaultPath, stateDb, vaultIndex, flywheelConfig, watcher). `VaultRegistry` tracks all contexts with a primary vault name. `parseVaultConfig()` reads `FLYWHEEL_VAULTS`.
+- `tool-registry.ts` — Flywheel owns registration state and dispatch. It installs `tools/list` and `tools/call` against the public MCP server surface and does not rely on private SDK helpers.
+- `registerAllTools()` — Calls all tool registration functions through the Flywheel-owned registration surface. Write tools use getters rather than captured vault paths so vault switching works.
 - `createConfiguredServer()` — Creates a stateless per-request McpServer for HTTP transport (fresh server per POST /mcp).
 - `activateVault(ctx)` — Swaps 5 module-level singletons: `setWriteStateDb`, `setFTS5Database`, `setRecencyStateDb`, `setTaskCacheDatabase`, `setEmbeddingsDatabase` + `loadEntityEmbeddingsToMemory`. (Edge weights removed — functions take `stateDb` as parameter.)
 - Transport env vars: `FLYWHEEL_TRANSPORT` (stdio/http/both), `FLYWHEEL_HTTP_PORT` (default 3111), `FLYWHEEL_HTTP_HOST` (default 127.0.0.1).
 - Multi-vault: `FLYWHEEL_VAULTS=name1:/path1,name2:/path2`. First vault is primary. Falls back to `PROJECT_PATH`/`VAULT_PATH` for single-vault mode.
 - Cross-vault search: `wrapWithVaultActivation` detects `search` tool with no `vault` param → calls `crossVaultSearch()` which iterates all contexts, runs search per vault, merges results with `vault` field, sorts by `rrf_score`. Returns `method: 'cross_vault'`.
-- Tool routing: `FLYWHEEL_TOOL_ROUTING` (pattern/hybrid/semantic). Default is `hybrid` when `full` preset is active, `pattern` otherwise.
+- Tool routing: `FLYWHEEL_TOOL_ROUTING` (pattern/hybrid/semantic). This affects discovery/routing hints, not preset visibility.
 
 ### Dependencies
 
@@ -94,9 +94,9 @@ packages/mcp-server/src/
 
 ## Tool Presets
 
-Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
+Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET`. Preset/category gating is owned by Flywheel's local registry rather than monkey-patched SDK internals.
 
-**Presets (3-tier progressive disclosure):**
+**Presets:**
 
 <!-- GENERATED:preset-counts START -->
 | Preset | Tools | Categories | Behaviour |
@@ -104,7 +104,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 | `agent` (default) | 14 | search, read, write, tasks, memory, diagnostics | Focused tier-1 surface — search, read, write, tasks, memory |
 | `power` | 18 | search, read, write, tasks, memory, diagnostics, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
 | `full` | 20 | search, read, write, tasks, memory, diagnostics, wikilinks, corrections, note-ops, schema, graph, temporal | All categories visible at startup |
-| `auto` | 21 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
+| `auto` | 21 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | Full surface + informational `discover_tools` helper |
 <!-- GENERATED:preset-counts END -->
 
 <!-- GENERATED:claude-code-memory-note START -->
@@ -113,7 +113,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 > exposes 13 tools under Claude Code instead of 14; `brief` stays available.
 <!-- GENERATED:claude-code-memory-note END -->
 
-Switch preset at runtime: `flywheel_config` with `key: tool_preset, value: agent|power|full`
+`auto` is compatibility-only. `discover_tools` suggests tools but does not activate or reveal them. Runtime config goes through `doctor(action: "config")`; `tool_tier_override` is deprecated and has no effect.
 
 Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` — never hardcode.
 

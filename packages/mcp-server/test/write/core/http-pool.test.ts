@@ -12,6 +12,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
+import { connectMcpTestClient } from '../../helpers/mcpClient.js';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -40,10 +41,11 @@ function registerTestTools(server: McpServer): string[] {
   return names;
 }
 
-/** Extract tool names from a configured McpServer via its internal registry. */
-function getRegisteredToolNames(server: McpServer): string[] {
-  const tools = (server as any)._registeredTools;
-  return tools ? Object.keys(tools) : [];
+async function getRegisteredToolNames(server: McpServer): Promise<string[]> {
+  const client = await connectMcpTestClient(server);
+  const names = (await client.listTools()).tools.map((tool) => tool.name);
+  await client.close();
+  return names;
 }
 
 // ─── Pool Implementation (mirrors index.ts, isolated for testing) ───────────
@@ -88,47 +90,27 @@ describe('T9: HTTP McpServer Pool', () => {
   describe('reconnect reuse', () => {
     it('server works after close + reconnect with new transport', async () => {
       const server = new McpServer({ name: 'test', version: '0.0.0' });
-      registerTestTools(server);
+      const expectedNames = registerTestTools(server);
 
-      // First connection
-      const transport1 = createFakeTransport();
-      await server.connect(transport1);
+      const client1 = await connectMcpTestClient(server);
+      await client1.close();
 
-      // Verify tools are registered
-      const toolsBefore = getRegisteredToolNames(server);
-      expect(toolsBefore).toContain('tool_alpha');
-
-      // Close (simulates end of HTTP request)
-      await server.close();
-
-      // Second connection — should not throw
-      const transport2 = createFakeTransport();
-      await server.connect(transport2);
-
-      // Tools should still be registered
-      const toolsAfter = getRegisteredToolNames(server);
-      expect(toolsAfter).toContain('tool_alpha');
-      expect(toolsAfter).toContain('tool_beta');
-      expect(toolsAfter).toContain('tool_gamma');
-
-      await server.close();
+      const names = await getRegisteredToolNames(server);
+      for (const name of expectedNames) {
+        expect(names).toContain(name);
+      }
     });
 
     it('tool metadata survives reconnect — same count and names', async () => {
       const server = new McpServer({ name: 'test', version: '0.0.0' });
       const expectedNames = registerTestTools(server);
 
-      const transport1 = createFakeTransport();
-      await server.connect(transport1);
-      const before = getRegisteredToolNames(server);
-      await server.close();
+      const client = await connectMcpTestClient(server);
+      await client.close();
 
-      const transport2 = createFakeTransport();
-      await server.connect(transport2);
-      const after = getRegisteredToolNames(server);
-      await server.close();
+      const after = await getRegisteredToolNames(server);
 
-      expect(after.length).toBe(before.length);
+      expect(after.length).toBe(expectedNames.length);
       for (const name of expectedNames) {
         expect(after).toContain(name);
       }
@@ -311,10 +293,8 @@ describe('T9: HTTP McpServer Pool', () => {
       registerTestTools(server);
 
       for (let i = 0; i < 5; i++) {
-        const transport = createFakeTransport();
-        await server.connect(transport);
-        expect(getRegisteredToolNames(server).length).toBe(3);
-        await server.close();
+        const names = await getRegisteredToolNames(server);
+        expect(names.length).toBe(3);
       }
     });
   });

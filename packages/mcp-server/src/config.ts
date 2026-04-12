@@ -19,7 +19,7 @@ import type { VaultRegistry } from './vault-registry.js';
 //   agent      - Tier-1 tools: search, read, note, edit_section, memory, tasks, doctor, policy — DEFAULT
 //   power      - Tier 1+2: agent + link, correct, entity, schema, find_notes, vault_update_frontmatter
 //   full       - Tier 1+2+3: power + graph, insights, vault_add_task
-//   auto       - Progressive disclosure via discover_tools, all categories, hybrid routing
+//   auto       - Full surface + discover_tools compatibility helper
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural graph analysis (graph merged tool)
@@ -34,7 +34,7 @@ import type { VaultRegistry } from './vault-registry.js';
 //
 // Examples:
 //   (no env)                                  # focused default preset (agent)
-//   FLYWHEEL_TOOLS=auto                       # progressive disclosure via discover_tools
+//   FLYWHEEL_TOOLS=auto                       # full surface + discover_tools compatibility helper
 //   FLYWHEEL_TOOLS=agent                      # core tools only, no disclosure
 //   FLYWHEEL_TOOLS=agent,graph                # 29 tools, no tiering
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
@@ -55,8 +55,8 @@ export type ToolTierOverride = 'auto' | 'full' | 'minimal';
 
 /**
  * Default tier override for fresh sessions.
- * 'auto' enables progressive disclosure (tier-1 visible, tier-2/3 activated by context).
- * Users can override to 'full' via flywheel_config at runtime.
+ * Deprecated compatibility flag. Accepted for older clients but has no
+ * runtime effect on tool visibility.
  */
 export const INITIAL_TIER_OVERRIDE: ToolTierOverride = 'auto';
 
@@ -75,7 +75,7 @@ export const PRESETS: Record<string, ToolCategory[]> = {
   power: ['search', 'read', 'write', 'tasks', 'memory', 'diagnostics', 'wikilinks', 'corrections', 'note-ops', 'schema'],
   //   full — tier 1+2+3: power + graph + temporal (insights) + vault_add_task
   full: ['search', 'read', 'write', 'tasks', 'memory', 'diagnostics', 'wikilinks', 'corrections', 'note-ops', 'schema', 'graph', 'temporal'],
-  //   auto — progressive disclosure via discover_tools, all categories
+  //   auto — full preset surface plus discover_tools compatibility helper
   auto: [...ALL_CATEGORIES],
 
   // Composable bundles (one per category)
@@ -178,6 +178,7 @@ export interface ToolConfig {
   preset: string | null;
   isFullToolset: boolean;
   enableProgressiveDisclosure: boolean;
+  includeDiscoveryTool: boolean;
 }
 
 /**
@@ -195,6 +196,7 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
       preset: DEFAULT_PRESET,
       isFullToolset,
       enableProgressiveDisclosure: false,
+      includeDiscoveryTool: false,
     };
   }
 
@@ -208,7 +210,8 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
       categories: cats,
       preset: lowerValue,
       isFullToolset,
-      enableProgressiveDisclosure: lowerValue === 'auto',
+      enableProgressiveDisclosure: false,
+      includeDiscoveryTool: lowerValue === 'auto',
     };
   }
 
@@ -221,7 +224,8 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
         categories: cats,
         preset: resolved,
         isFullToolset: cats.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => cats.has(c)),
-        enableProgressiveDisclosure: resolved === 'auto',
+        enableProgressiveDisclosure: false,
+        includeDiscoveryTool: resolved === 'auto',
       };
     }
   }
@@ -233,6 +237,7 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
     preset: null,
     isFullToolset: categories.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => categories.has(c)),
     enableProgressiveDisclosure: false,
+    includeDiscoveryTool: false,
   };
 }
 
@@ -406,16 +411,11 @@ export const TIER_3_TOOL_COUNT = Object.values(TOOL_TIER).filter(t => t === 3).l
 export function generateInstructions(
   categories: Set<ToolCategory>,
   registry?: VaultRegistry | null,
-  activeTierCategories?: Set<ToolCategory>,
+  discoveryCategories?: Set<ToolCategory>,
 ): string {
   const parts: string[] = [];
-  const tieringActive = activeTierCategories !== undefined;
-  const isCategoryVisible = (category: ToolCategory): boolean => {
-    if (!categories.has(category)) return false;
-    if (!tieringActive) return true;
-    if (PRESETS.agent.includes(category)) return true;
-    return activeTierCategories.has(category);
-  };
+  const discoveryHintEnabled = discoveryCategories !== undefined;
+  const isCategoryVisible = (category: ToolCategory): boolean => categories.has(category);
 
   // Base instruction (always present)
   parts.push(`Flywheel provides tools to search, read, and write an Obsidian vault's knowledge graph.
@@ -538,7 +538,7 @@ Use "graph" (action: path) to trace the shortest chain between notes.
 Use "graph" (action: neighbors) to find shared connections between two notes.
 Use "graph" (action: backlinks/forward_links) for link lists.`);
   }
-  else if (tieringActive && categories.has('graph')) {
+  else if (discoveryHintEnabled && categories.has('graph')) {
     // Escalation hint handled by unified discover_tools guidance below
   }
 
@@ -573,7 +573,7 @@ Use "schema" (action: validate) to validate frontmatter against explicit rules.
 Use "schema" (action: rename_field/rename_tag/migrate) for bulk schema changes (preview with dry_run:true first).
 Use "insights" (action: note_intelligence) for per-note analysis (completeness, quality, suggestions).`);
   }
-  else if (tieringActive && categories.has('schema')) {
+  else if (discoveryHintEnabled && categories.has('schema')) {
     // Escalation hint handled by unified discover_tools guidance below
   }
 
@@ -590,7 +590,7 @@ Link quality and discovery — not for finding content (use search for that).
 - "Was that link correct?" → link(action: feedback) — accept/reject, improves future suggestions
 - "What aliases am I missing?" → entity(action: suggest_aliases)`);
   }
-  else if (tieringActive && categories.has('wikilinks')) {
+  else if (discoveryHintEnabled && categories.has('wikilinks')) {
     // Escalation hint handled by unified discover_tools guidance below
   }
 
@@ -606,7 +606,7 @@ When the user says something is wrong — a bad link, wrong entity, wrong catego
 "correct" (action: undo) reverses the last vault mutation.
 Use "entity" (action: alias) when two names should resolve to the same entity without merging note bodies.`);
   }
-  else if (tieringActive && categories.has('corrections')) {
+  else if (discoveryHintEnabled && categories.has('corrections')) {
     // Escalation hint handled by unified discover_tools guidance below
   }
 
@@ -621,7 +621,7 @@ Temporal tools analyze *patterns and changes* over time — use them for "what c
 - "What was I working on around March 15?" → insights(action: context) — notes, entities, activity in a window
 - "What notes need attention?" → insights(action: staleness) — importance × staleness → archive/update/review`);
   }
-  else if (tieringActive && categories.has('temporal')) {
+  else if (discoveryHintEnabled && categories.has('temporal')) {
     // Escalation hint handled by unified discover_tools guidance below
   }
 
@@ -631,18 +631,18 @@ Temporal tools analyze *patterns and changes* over time — use them for "what c
 
  - Health: "doctor" (action: health) — vault status, integrity, pipeline summary
  - Pipeline: "doctor" (action: pipeline) — watcher state, indexing activity
- - Config: "doctor" (action: config) — inspect/set runtime configuration, including tool_tier_override
+ - Config: "doctor" (action: config) — inspect/set runtime configuration. \`tool_tier_override\` is deprecated and has no runtime effect.
  - Logs: "doctor" (action: log) — recent server event timeline
  - Maintenance: "refresh_index" — rebuild the vault index`);
   }
-  else if (tieringActive && categories.has('diagnostics')) {
+  else if (discoveryHintEnabled && categories.has('diagnostics')) {
     // Escalation hint handled by unified discover_tools guidance below
   }
 
   // Unified discover_tools guidance (replaces per-category escalation hints)
-  if (tieringActive) {
+  if (discoveryHintEnabled) {
     parts.push(`
-**More tools available:** Call \`discover_tools({ query: "your need" })\` to find and activate specialized tools for graph analysis, wikilinks, diagnostics, schema, temporal analysis, note operations, and more. Returns tool names, descriptions, and input schemas.`);
+**Tool discovery:** Call \`discover_tools({ query: "your need" })\` to get recommended specialized tools for graph analysis, wikilinks, diagnostics, schema, temporal analysis, note operations, and more. It suggests tools and schemas only; it does not activate or reveal anything.`);
   }
 
   return parts.join('\n');

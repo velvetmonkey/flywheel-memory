@@ -1,20 +1,28 @@
 /**
- * Unit tests for note_read tool — action routing and error handling.
+ * Unit tests for primitives tools — note_read and tasks.
  *
- * Covers:
+ * note_read covers:
  *   action=structure — heading outline + frontmatter + metadata
  *   action=section   — single section by heading name
  *   action=sections  — vault-wide heading regex search
  *   Missing required params → clean read-side error JSON (no formatMcpResult wrapper)
+ *
+ * tasks covers:
+ *   action=list   — vault-wide and path-scoped task queries with status filters
+ *   action=toggle — check/uncheck a task by path + text match (uses write server)
  */
 
-import { describe, test, expect, beforeAll } from 'vitest';
+import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { connectTestClient, type TestClient, createTestServer, type TestServerContext } from '../helpers/createTestServer.js';
+import { createWriteTestServer, type WriteTestServerContext } from '../../helpers/createWriteTestServer.js';
+import { createTempVault, createTestNote, cleanupTempVault } from '../../write/helpers/testUtils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
+
+// ── note_read ─────────────────────────────────────────────────────────────────
 
 describe('note_read', () => {
   let context: TestServerContext;
@@ -152,6 +160,160 @@ describe('note_read', () => {
 
       expect(data.error).toBeDefined();
       expect(data.success).toBeUndefined();
+    });
+  });
+});
+
+// ── tasks ─────────────────────────────────────────────────────────────────────
+
+describe('tasks', () => {
+  // ── action=list ────────────────────────────────────────────────
+  // Uses the read-side test server (falls back to disk scan when task cache not set up)
+
+  describe('action=list', () => {
+    let client: TestClient;
+
+    beforeAll(async () => {
+      const context = await createTestServer(FIXTURES_PATH);
+      client = connectTestClient(context.server);
+    });
+
+    test('returns tasks array with correct shape', async () => {
+      // Scope to tasks-note.md to avoid relying on vault-wide cache
+      const result = await client.callTool('tasks', {
+        action: 'list',
+        path: 'tasks-note.md',
+      });
+      const data = JSON.parse(result.content[0].text);
+
+      expect(data.tasks).toBeDefined();
+      expect(Array.isArray(data.tasks)).toBe(true);
+      expect(data.tasks.length).toBeGreaterThan(0);
+      const task = data.tasks[0];
+      expect(typeof task.text).toBe('string');
+      expect(typeof task.status).toBe('string');
+      expect(typeof task.path).toBe('string');
+    });
+
+    test('status: "open" filter returns only open tasks', async () => {
+      const result = await client.callTool('tasks', {
+        action: 'list',
+        path: 'tasks-note.md',
+        status: 'open',
+      });
+      const data = JSON.parse(result.content[0].text);
+
+      expect(Array.isArray(data.tasks)).toBe(true);
+      expect(data.tasks.every((t: any) => t.status === 'open')).toBe(true);
+      expect(data.tasks.some((t: any) => t.text.includes('Open task one'))).toBe(true);
+    });
+
+    test('status: "completed" filter returns only completed tasks', async () => {
+      const result = await client.callTool('tasks', {
+        action: 'list',
+        path: 'tasks-note.md',
+        status: 'completed',
+      });
+      const data = JSON.parse(result.content[0].text);
+
+      expect(Array.isArray(data.tasks)).toBe(true);
+      expect(data.tasks.every((t: any) => t.status === 'completed')).toBe(true);
+      expect(data.tasks.some((t: any) => t.text.includes('Done task'))).toBe(true);
+    });
+
+    test('path not found returns error JSON', async () => {
+      const result = await client.callTool('tasks', {
+        action: 'list',
+        path: 'does-not-exist.md',
+      });
+      const data = JSON.parse(result.content[0].text);
+
+      expect(data.error).toBeDefined();
+      expect(data.success).toBeUndefined();
+    });
+  });
+
+  // ── action=toggle ──────────────────────────────────────────────
+  // Uses write-capable server with a temp vault to avoid mutating fixtures
+
+  describe('action=toggle', () => {
+    let writeContext: WriteTestServerContext;
+    let writeClient: TestClient;
+
+    beforeAll(async () => {
+      const tempVaultPath = await createTempVault();
+      await createTestNote(
+        tempVaultPath,
+        'tasks-note.md',
+        `# Tasks Note\n\n- [ ] Open task one\n- [ ] Open task two\n- [x] Done task\n`
+      );
+      writeContext = await createWriteTestServer(tempVaultPath);
+      writeClient = connectTestClient(writeContext.server);
+    });
+
+    afterAll(async () => {
+      if (writeContext) {
+        await writeContext.cleanup();
+      }
+    });
+
+    test('dry_run: true does not modify the file', async () => {
+      const { readFile } = await import('fs/promises');
+
+      const result = await writeClient.callTool('tasks', {
+        action: 'toggle',
+        path: 'tasks-note.md',
+        task: 'Open task one',
+        dry_run: true,
+      });
+      const data = JSON.parse(result.content[0].text);
+
+      expect(data.success).toBe(true);
+      expect(data.preview).toBeDefined();
+      expect(data.dryRun).toBe(true);
+
+      // File must not have changed
+      const content = await readFile(path.join(writeContext.vaultPath, 'tasks-note.md'), 'utf8');
+      expect(content).toContain('- [ ] Open task one');
+    });
+
+    test('toggling an open task marks it done', async () => {
+      const { readFile } = await import('fs/promises');
+
+      const result = await writeClient.callTool('tasks', {
+        action: 'toggle',
+        path: 'tasks-note.md',
+        task: 'Open task two',
+      });
+      const data = JSON.parse(result.content[0].text);
+
+      expect(data.success).toBe(true);
+
+      const content = await readFile(path.join(writeContext.vaultPath, 'tasks-note.md'), 'utf8');
+      expect(content).toContain('- [x] Open task two');
+    });
+
+    test('missing path returns an error', async () => {
+      const result = await writeClient.callTool('tasks', {
+        action: 'toggle',
+        task: 'Open task one',
+      });
+      const data = JSON.parse(result.content[0].text);
+
+      expect(data.success).toBe(false);
+      expect(data.message).toBeDefined();
+    });
+
+    test('task text not found returns an error', async () => {
+      const result = await writeClient.callTool('tasks', {
+        action: 'toggle',
+        path: 'tasks-note.md',
+        task: 'This task does not exist',
+      });
+      const data = JSON.parse(result.content[0].text);
+
+      expect(data.success).toBe(false);
+      expect(data.message).toBeDefined();
     });
   });
 });

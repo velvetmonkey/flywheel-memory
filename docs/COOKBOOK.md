@@ -138,6 +138,8 @@ Export your vault as a graph file and open it in professional visualization tool
 
 > "Export the graph but only include edges with weight above 2.0"
 
+Use `graph(action: "export", ...)` for this flow. Scope large exports with `center_entity` and `depth`, or raise `max_nodes` for full-vault output.
+
 **How to use the export:**
 
 1. **Gephi** (gephi.org) — Open-source graph visualization. File → Open → select the .graphml file. Apply Force Atlas 2 layout. Color nodes by `category` attribute.

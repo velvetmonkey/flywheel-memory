@@ -32,7 +32,7 @@ Every mutation is git-committed, conflict-detected with a SHA-256 content hash, 
 
 ### Build context over time
 
-Every accepted link strengthens the graph. Every rejected link updates the scorer. Every write adds more context for the next read. `memory(action: "brief")` assembles a token-budgeted summary of recent activity, while the other `memory` actions persist observations with confidence decay. The graph can be exported as GraphML for visualization in tools like [Gephi](https://gephi.org) or NetworkX — see the [carter-strategy demo](demos/carter-strategy/) for an example. [Configuration ->](docs/CONFIGURATION.md)
+Every accepted link strengthens the graph. Every rejected link updates the scorer. Every write adds more context for the next read. `memory(action: "brief")` assembles a token-budgeted summary of recent activity, and `memory` persists observations with confidence decay. The graph can be exported through `graph(action: "export")` as GraphML for visualization in tools like [Gephi](https://gephi.org) or NetworkX — see the [carter-strategy demo](demos/carter-strategy/) for an example. [Configuration ->](docs/CONFIGURATION.md)
 
 ---
 
@@ -158,9 +158,7 @@ Flywheel watches the vault, maintains local indexes, and serves the graph to MCP
 
 ### Optional: Tool presets
 
-The default `agent` preset is the smallest useful surface: search, read, write, tasks, memory, and diagnostics. Use `power` when you want everyday maintenance tools like wikilinks, corrections, schema work, and note operations. Use `full` when you want the entire surface visible from the start. `auto` is kept for backward compatibility and behaves like `full` plus an informational `discover_tools` helper.
-
-If you are deciding between presets or wondering which tool family handles a job, start with [docs/TOOLS.md](docs/TOOLS.md). If you want the exact env vars and preset/routing behaviour, use [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
+The `agent` preset (default) provides a focused set of core tools. Use `power` for tier 1+2 (adds wikilinks, corrections, note-ops, schema), `full` to expose the entire tool surface immediately, or `auto` for progressive disclosure via `discover_tools`.
 
 <!-- GENERATED:preset-counts START -->
 | Preset | Tools | Categories | Behaviour |
@@ -194,7 +192,7 @@ Compose bundles for custom configurations:
 }
 ```
 
-[Browse all tools ->](docs/TOOLS.md) | [Preset chooser + config ->](docs/CONFIGURATION.md)
+[Browse all tools ->](docs/TOOLS.md) | [Preset recipes ->](docs/CONFIGURATION.md)
 
 ### Multiple vaults
 

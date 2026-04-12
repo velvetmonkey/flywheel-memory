@@ -163,7 +163,7 @@ Zero file reads needed.
 
 ### Knowledge Graph Export
 
-The vault's knowledge graph, exported as GraphML via `graph_analysis` and visualized with NetworkX + matplotlib:
+The vault's knowledge graph, exported as GraphML via `graph(action: "export")` and visualized with NetworkX + matplotlib:
 
 ![Acme Corp Knowledge Graph](carter-strategy-acme-graph.png)
 

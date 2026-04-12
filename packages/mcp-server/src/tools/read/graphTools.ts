@@ -24,6 +24,7 @@ import {
   getConnectionStrength,
 } from './graphAdvanced.js';
 import { getCooccurrenceIndex } from '../../core/write/wikilinks.js';
+import { buildGraphData, toGraphML } from './graphExport.js';
 
 export function registerGraphTools2(
   server: McpServer,
@@ -36,7 +37,7 @@ export function registerGraphTools2(
     {
       title: 'Graph',
       description:
-        'Vault graph analysis. action: analyse — hubs/orphans/clusters. action: backlinks/forward_links — links to/from note. action: strong_connections — top links. action: path — shortest chain. action: neighbors — shared connections. action: strength — link weight. action: cooccurrence_gaps — unlinked co-occurring pairs. Returns metrics, links, paths, or gaps. Does not modify notes. e.g. { action:"backlinks", path:"people/alice.md" } { action:"path", from:"projects/x.md", to:"people/bob.md" }',
+        'Vault graph analysis. action: analyse — hubs/orphans/clusters. action: backlinks/forward_links — links to/from note. action: strong_connections — top links. action: path — shortest chain. action: neighbors — shared connections. action: strength — link weight. action: cooccurrence_gaps — unlinked co-occurring pairs. action: export — GraphML or JSON export for Gephi, yEd, Cytoscape, or code. Returns metrics, links, paths, gaps, or serialized graph data. Does not modify notes.',
       inputSchema: {
         action: z.enum([
           'analyse',
@@ -47,6 +48,7 @@ export function registerGraphTools2(
           'neighbors',
           'strength',
           'cooccurrence_gaps',
+          'export',
         ]).describe('Graph operation to perform'),
 
         limit: z.coerce.number().optional().describe('[analyse|cooccurrence_gaps] Maximum results to return'),
@@ -60,6 +62,12 @@ export function registerGraphTools2(
         path_b: z.string().optional().describe('[neighbors|strength] Second note path'),
 
         entity: z.string().optional().describe('[cooccurrence_gaps] Entity name to find gaps for'),
+        format: z.enum(['graphml', 'json']).optional().describe('[export] Output format: graphml for Gephi/yEd/Cytoscape, json for programmatic use'),
+        include_cooccurrence: z.boolean().optional().describe('[export] Include co-occurrence edges between entities (default true)'),
+        min_edge_weight: z.coerce.number().optional().describe('[export] Minimum edge weight threshold for learned weighted edges'),
+        center_entity: z.string().optional().describe('[export] Center the export on this entity; only include nodes within depth hops'),
+        depth: z.coerce.number().optional().describe('[export] Hops from center_entity to include (default 1)'),
+        max_nodes: z.coerce.number().optional().describe('[export] Maximum nodes when center_entity is omitted (default 500)'),
       },
     },
     async (params) => {
@@ -360,6 +368,46 @@ export function registerGraphTools2(
               returned_count: top.length,
               gaps: top,
             }, null, 2) }],
+          };
+        }
+
+        // -----------------------------------------------------------------
+        // export — scoped/full graph export as GraphML or JSON
+        // -----------------------------------------------------------------
+        case 'export': {
+          const stateDb = getStateDb?.() ?? null;
+          const format = params.format ?? 'graphml';
+          const includeCooccurrence = params.include_cooccurrence ?? true;
+          const minEdgeWeight = params.min_edge_weight ?? 0;
+          const depth = params.depth ?? 1;
+          const maxNodes = params.max_nodes ?? 500;
+          const data = buildGraphData(index, stateDb, {
+            include_cooccurrence: includeCooccurrence,
+            min_edge_weight: minEdgeWeight,
+            center_entity: params.center_entity,
+            depth,
+          });
+
+          if (!params.center_entity && data.nodes.length > maxNodes) {
+            return {
+              content: [{
+                type: 'text' as const,
+                text: JSON.stringify({
+                  error: `Graph has ${data.nodes.length} nodes and ${data.edges.length} edges, exceeding max_nodes=${maxNodes}. Use center_entity to scope the export or raise max_nodes.`,
+                  node_count: data.nodes.length,
+                  edge_count: data.edges.length,
+                  max_nodes: maxNodes,
+                }, null, 2),
+              }],
+              isError: true,
+            };
+          }
+
+          return {
+            content: [{
+              type: 'text' as const,
+              text: format === 'json' ? JSON.stringify(data, null, 2) : toGraphML(data),
+            }],
           };
         }
       }

@@ -38,7 +38,7 @@ import { recordToolInvocation } from './core/shared/toolTracking.js';
 
 // Read tool registrations
 // graph.ts retired (T43 B3+) — get_backlinks, get_forward_links, get_strong_connections folded into graph merged tool
-// graphExport.ts retired — export_graph removed
+// graphExport.ts standalone tool retired — graph export lives under graph(action: export)
 // wikilinks.ts retired (T43 B3+) — suggest_wikilinks, validate_links, discover_stub_candidates, discover_cooccurrence_gaps folded into link merged tool
 import { registerHealthTools } from './tools/read/health.js';
 import { registerQueryTools } from './tools/read/query.js';

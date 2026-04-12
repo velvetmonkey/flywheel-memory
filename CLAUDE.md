@@ -124,7 +124,7 @@ Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` —
 - `doctor` — `action: health|diagnosis|stats|pipeline|config|log`
 - `edit_section` — `action: add|remove|replace`
 - `entity` — `action: list|alias|suggest_aliases|merge|suggest_merges|dismiss_merge`
-- `graph` — `action: analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps`
+- `graph` — `action: analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps|export`
 - `insights` — `action: evolution|staleness|context|note_intelligence|growth`
 - `link` — `action: suggest|feedback|unlinked|validate|stubs|dashboard|unsuppress|timeline|layer_timeseries|snapshot_diff`
 - `memory` — `action: store|get|search|list|forget|summarize_session|brief`

@@ -373,7 +373,7 @@ export const ACTION_PARAM_MAP: Record<string, readonly string[]> = {
   policy: ['list', 'validate', 'preview', 'execute', 'author', 'revise'],
   correct: ['record', 'list', 'resolve', 'undo'],
   link: ['suggest', 'feedback', 'unlinked', 'validate', 'stubs', 'dashboard', 'unsuppress', 'timeline', 'layer_timeseries', 'snapshot_diff'],
-  graph: ['analyse', 'backlinks', 'forward_links', 'strong_connections', 'path', 'neighbors', 'strength', 'cooccurrence_gaps'],
+  graph: ['analyse', 'backlinks', 'forward_links', 'strong_connections', 'path', 'neighbors', 'strength', 'cooccurrence_gaps', 'export'],
   schema: ['overview', 'field_values', 'conventions', 'folders', 'rename_field', 'rename_tag', 'migrate', 'validate'],
   insights: ['evolution', 'staleness', 'context', 'note_intelligence', 'growth'],
   doctor: ['health', 'diagnosis', 'stats', 'pipeline', 'config', 'log'],

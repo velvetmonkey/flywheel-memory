@@ -9,6 +9,13 @@ Flywheel is easier to use if you start with the job, not the tool name. This gui
 
 For presets and env vars, see [CONFIGURATION.md](CONFIGURATION.md).
 
+- [What Should I Use?](#what-should-i-use)
+- [Preset Chooser](#preset-chooser)
+- [Tool Families](#tool-families)
+- [Current Tool Surface](#current-tool-surface)
+- [Compatibility Notes](#compatibility-notes)
+- [Retired Names You May Still See](#retired-names-you-may-still-see)
+
 ## What Should I Use?
 
 | If you want to... | Start here | Why |

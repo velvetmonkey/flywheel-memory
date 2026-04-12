@@ -2,6 +2,12 @@
 
 [← Back to main README](../README.md)
 
+- [Start Here](#start-here)
+- [Technical Reference](#technical-reference)
+- [Integrations](#integrations)
+- [Quick Answers](#quick-answers)
+- [Demos](#demos)
+
 Flywheel has three layers of documentation:
 
 - Start here if you are setting up a client or choosing a preset.
@@ -46,6 +52,9 @@ Flywheel has three layers of documentation:
 
 ## Demos
 
+- [solo-operator](../demos/solo-operator/) for solo knowledge work and personal operations
+- [startup-ops](../demos/startup-ops/) for startup workflow and operating cadence
+- [support-desk](../demos/support-desk/) for ticketing and service operations
 - [carter-strategy](../demos/carter-strategy/) for the consultant / PKM workflow
 - [artemis-rocket](../demos/artemis-rocket/) for engineering/project context
 - [nexus-lab](../demos/nexus-lab/) for research-style notes

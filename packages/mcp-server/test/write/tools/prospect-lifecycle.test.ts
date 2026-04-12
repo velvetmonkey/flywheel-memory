@@ -30,6 +30,12 @@ describe('prospect lifecycle tools', () => {
   afterEach(async () => {
     setProspectStateDb(null);
     await client.close();
+    try {
+      stateDb.close();
+    } catch {
+      // ignore
+    }
+    await new Promise((resolve) => setTimeout(resolve, 25));
     deleteStateDb(vaultPath);
     await fs.rm(vaultPath, { recursive: true, force: true });
   });

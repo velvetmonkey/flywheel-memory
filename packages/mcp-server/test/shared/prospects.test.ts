@@ -11,12 +11,16 @@ import type { StateDb } from '@velvetmonkey/vault-core';
 import {
   setProspectStateDb,
   recordProspectSightings,
+  recordProspectFeedback,
   refreshProspectSummaries,
   computePromotionScore,
   computeProspectDecay,
   getProspectBoostMap,
   getPromotionCandidates,
   getProspectSampleNotes,
+  resolveProspectsForCreatedEntity,
+  resolveProspectForAlias,
+  dismissProspect,
   cleanStaleProspects,
   resetCleanupCooldown,
   PROSPECT_DECAY_HALF_LIFE_DAYS,
@@ -41,12 +45,61 @@ describe('Prospect Ledger', () => {
     setProspectStateDb(null);
   });
 
+  function insertProspectSummary(params: {
+    term: string;
+    displayName: string;
+    noteCount: number;
+    dayCount: number;
+    totalSightings: number;
+    backlinkMax: number;
+    cooccurringEntities?: string | null;
+    bestSource: string;
+    bestConfidence: string;
+    bestScore: number;
+    firstSeenAt: number;
+    lastSeenAt: number;
+    promotionScore: number;
+    promotedAt?: number | null;
+    status?: 'prospect' | 'entity_created' | 'merged' | 'rejected';
+    resolvedEntityPath?: string | null;
+    lastFeedbackAt?: number | null;
+    updatedAt: number;
+  }): void {
+    stateDb.db.prepare(`
+      INSERT INTO prospect_summary (
+        term, display_name, note_count, day_count, total_sightings, backlink_max,
+        cooccurring_entities, best_source, best_confidence, best_score,
+        first_seen_at, last_seen_at, promotion_score, promoted_at,
+        status, resolved_entity_path, last_feedback_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      params.term,
+      params.displayName,
+      params.noteCount,
+      params.dayCount,
+      params.totalSightings,
+      params.backlinkMax,
+      params.cooccurringEntities ?? null,
+      params.bestSource,
+      params.bestConfidence,
+      params.bestScore,
+      params.firstSeenAt,
+      params.lastSeenAt,
+      params.promotionScore,
+      params.promotedAt ?? null,
+      params.status ?? 'prospect',
+      params.resolvedEntityPath ?? null,
+      params.lastFeedbackAt ?? null,
+      params.updatedAt,
+    );
+  }
+
   // ===========================================================================
   // Schema / Migration
   // ===========================================================================
 
   describe('schema', () => {
-    it('creates prospect_ledger and prospect_summary tables at v37', () => {
+    it('creates prospect_ledger, prospect_summary, and prospect_feedback tables at current schema', () => {
       const version = stateDb.db.prepare(
         'SELECT MAX(version) as v FROM schema_version'
       ).get() as { v: number };
@@ -54,10 +107,10 @@ describe('Prospect Ledger', () => {
 
       const tables = stateDb.db.prepare(`
         SELECT name FROM sqlite_master WHERE type='table'
-        AND name IN ('prospect_ledger', 'prospect_summary')
+        AND name IN ('prospect_feedback', 'prospect_ledger', 'prospect_summary')
         ORDER BY name
       `).all() as Array<{ name: string }>;
-      expect(tables.map(t => t.name)).toEqual(['prospect_ledger', 'prospect_summary']);
+      expect(tables.map(t => t.name)).toEqual(['prospect_feedback', 'prospect_ledger', 'prospect_summary']);
     });
 
     it('prospect_ledger has correct PK (term, note_path, seen_day)', () => {
@@ -307,6 +360,63 @@ describe('Prospect Ledger', () => {
       // (3*3 + 3*2 + 3*2 + 0*1 + 0*0.5) * 1.2 = (9+6+6) * 1.2 = 25.2
       expect(summary.promotion_score).toBe(25.2);
     });
+
+    it('derives rejected status from explicit feedback', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('test', 'Test', 'a.md', '2026-03-01', 'implicit', NULL, 'low', 0, 0, ${now}, ${now}, 1);
+      `);
+      recordProspectFeedback([{ term: 'test', action: 'reject', reason: 'noise', createdAt: now }]);
+
+      refreshProspectSummaries(['test']);
+
+      const summary = stateDb.db.prepare(
+        'SELECT status, resolved_entity_path, last_feedback_at FROM prospect_summary WHERE term = ?'
+      ).get('test') as { status: string; resolved_entity_path: string | null; last_feedback_at: number | null };
+
+      expect(summary.status).toBe('rejected');
+      expect(summary.resolved_entity_path).toBeNull();
+      expect(summary.last_feedback_at).toBe(now);
+    });
+
+    it('prefers merge_alias over create_entity over reject', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('test', 'Test', 'a.md', '2026-03-01', 'implicit', NULL, 'low', 0, 0, ${now}, ${now}, 1);
+      `);
+      recordProspectFeedback([
+        { term: 'test', action: 'reject', createdAt: now + 1 },
+        { term: 'test', action: 'create_entity', entityPath: 'entities/test.md', createdAt: now + 2 },
+        { term: 'test', action: 'merge_alias', entityPath: 'people/test.md', createdAt: now + 3 },
+      ]);
+
+      refreshProspectSummaries(['test']);
+
+      const summary = stateDb.db.prepare(
+        'SELECT status, resolved_entity_path FROM prospect_summary WHERE term = ?'
+      ).get('test') as { status: string; resolved_entity_path: string | null };
+
+      expect(summary.status).toBe('merged');
+      expect(summary.resolved_entity_path).toBe('people/test.md');
+    });
+
+    it('falls back to entity existence when no explicit feedback exists', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('gamma tool', 'Gamma Tool', 'a.md', '2026-03-01', 'implicit', NULL, 'low', 0, 0, ${now}, ${now}, 1);
+        INSERT INTO entities (name, name_lower, path, category) VALUES ('Gamma Tool', 'gamma tool', 'gamma.md', 'general');
+      `);
+
+      refreshProspectSummaries(['gamma tool']);
+
+      const summary = stateDb.db.prepare(
+        'SELECT status, resolved_entity_path, promoted_at FROM prospect_summary WHERE term = ?'
+      ).get('gamma tool') as { status: string; resolved_entity_path: string | null; promoted_at: number | null };
+
+      expect(summary.status).toBe('entity_created');
+      expect(summary.resolved_entity_path).toBe('gamma.md');
+      expect(summary.promoted_at).not.toBeNull();
+    });
   });
 
   // ===========================================================================
@@ -322,12 +432,21 @@ describe('Prospect Ledger', () => {
     it('scales effective score to [0, 6] range', () => {
       const now = Date.now();
       // Create a high-scoring prospect
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary
-          (term, display_name, note_count, day_count, total_sightings, backlink_max, best_source, best_confidence, best_score, first_seen_at, last_seen_at, promotion_score, updated_at)
-        VALUES
-          ('test', 'Test', 10, 10, 50, 5, 'dead_link', 'high', 0, ${now}, ${now}, 60, ${now})
-      `);
+      insertProspectSummary({
+        term: 'test',
+        displayName: 'Test',
+        noteCount: 10,
+        dayCount: 10,
+        totalSightings: 50,
+        backlinkMax: 5,
+        bestSource: 'dead_link',
+        bestConfidence: 'high',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 60,
+        updatedAt: now,
+      });
 
       const map = getProspectBoostMap();
       // effective = 60 * ~1.0 (just seen) = 60, boost = min(6, 60/10) = 6
@@ -336,15 +455,48 @@ describe('Prospect Ledger', () => {
 
     it('filters out low effective scores', () => {
       const longAgo = Date.now() - 180 * 24 * 60 * 60 * 1000;
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary
-          (term, display_name, note_count, day_count, total_sightings, backlink_max, best_source, best_confidence, best_score, first_seen_at, last_seen_at, promotion_score, updated_at)
-        VALUES
-          ('stale', 'Stale', 2, 1, 2, 1, 'implicit', 'low', 0, ${longAgo}, ${longAgo}, 10, ${longAgo})
-      `);
+      insertProspectSummary({
+        term: 'stale',
+        displayName: 'Stale',
+        noteCount: 2,
+        dayCount: 1,
+        totalSightings: 2,
+        backlinkMax: 1,
+        bestSource: 'implicit',
+        bestConfidence: 'low',
+        bestScore: 0,
+        firstSeenAt: longAgo,
+        lastSeenAt: longAgo,
+        promotionScore: 10,
+        updatedAt: longAgo,
+      });
 
       const map = getProspectBoostMap();
       expect(map.has('stale')).toBe(false);
+    });
+
+    it('ignores non-active lifecycle states', () => {
+      const now = Date.now();
+      insertProspectSummary({
+        term: 'rejected',
+        displayName: 'Rejected',
+        noteCount: 4,
+        dayCount: 4,
+        totalSightings: 8,
+        backlinkMax: 3,
+        bestSource: 'dead_link',
+        bestConfidence: 'high',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 40,
+        status: 'rejected',
+        lastFeedbackAt: now,
+        updatedAt: now,
+      });
+
+      const map = getProspectBoostMap();
+      expect(map.has('rejected')).toBe(false);
     });
   });
 
@@ -355,10 +507,36 @@ describe('Prospect Ledger', () => {
   describe('getPromotionCandidates', () => {
     it('returns candidates sorted by effective score', () => {
       const now = Date.now();
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary VALUES ('low', 'Low', 2, 2, 2, 1, NULL, 'implicit', 'low', 0, ${now}, ${now}, 10, NULL, ${now});
-        INSERT INTO prospect_summary VALUES ('high', 'High', 8, 6, 20, 5, NULL, 'dead_link', 'high', 0, ${now}, ${now}, 60, NULL, ${now});
-      `);
+      insertProspectSummary({
+        term: 'low',
+        displayName: 'Low',
+        noteCount: 2,
+        dayCount: 2,
+        totalSightings: 2,
+        backlinkMax: 1,
+        bestSource: 'implicit',
+        bestConfidence: 'low',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 10,
+        updatedAt: now,
+      });
+      insertProspectSummary({
+        term: 'high',
+        displayName: 'High',
+        noteCount: 8,
+        dayCount: 6,
+        totalSightings: 20,
+        backlinkMax: 5,
+        bestSource: 'dead_link',
+        bestConfidence: 'high',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 60,
+        updatedAt: now,
+      });
 
       const candidates = getPromotionCandidates(10);
       expect(candidates.length).toBe(2);
@@ -375,9 +553,21 @@ describe('Prospect Ledger', () => {
         INSERT INTO entities (name, name_lower, path, category) VALUES ('Test Entity', 'test entity', 'test-entity.md', 'general');
       `);
       // Insert a prospect matching that entity
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary VALUES ('test entity', 'Test Entity', 5, 5, 10, 3, NULL, 'dead_link', 'high', 0, ${now}, ${now}, 50, NULL, ${now});
-      `);
+      insertProspectSummary({
+        term: 'test entity',
+        displayName: 'Test Entity',
+        noteCount: 5,
+        dayCount: 5,
+        totalSightings: 10,
+        backlinkMax: 3,
+        bestSource: 'dead_link',
+        bestConfidence: 'high',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 50,
+        updatedAt: now,
+      });
 
       const candidates = getPromotionCandidates(10);
       expect(candidates.length).toBe(0);
@@ -416,9 +606,21 @@ describe('Prospect Ledger', () => {
         INSERT INTO prospect_ledger VALUES ('stale', 'Stale', 'b.md', '2025-08-01', 'implicit', NULL, 'low', 0, 0, ${old}, ${old}, 1);
       `);
       // Also add summary for stale
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary VALUES ('stale', 'Stale', 1, 1, 1, 0, NULL, 'implicit', 'low', 0, ${old}, ${old}, 5, NULL, ${old});
-      `);
+      insertProspectSummary({
+        term: 'stale',
+        displayName: 'Stale',
+        noteCount: 1,
+        dayCount: 1,
+        totalSightings: 1,
+        backlinkMax: 0,
+        bestSource: 'implicit',
+        bestConfidence: 'low',
+        bestScore: 0,
+        firstSeenAt: old,
+        lastSeenAt: old,
+        promotionScore: 5,
+        updatedAt: old,
+      });
 
       const deleted = cleanStaleProspects();
       expect(deleted).toBe(1);
@@ -522,19 +724,37 @@ describe('Prospect Ledger', () => {
     it('excludes prospects with effective score <= 5', () => {
       const now = Date.now();
       // effective = 8 * 1.0 = 8 > 5 → included
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary
-          (term, display_name, note_count, day_count, total_sightings, backlink_max, best_source, best_confidence, best_score, first_seen_at, last_seen_at, promotion_score, updated_at)
-        VALUES
-          ('included', 'Included', 3, 2, 5, 1, 'implicit', 'low', 0, ${now}, ${now}, 8, ${now})
-      `);
+      insertProspectSummary({
+        term: 'included',
+        displayName: 'Included',
+        noteCount: 3,
+        dayCount: 2,
+        totalSightings: 5,
+        backlinkMax: 1,
+        bestSource: 'implicit',
+        bestConfidence: 'low',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 8,
+        updatedAt: now,
+      });
       // effective = 4 * 1.0 = 4 <= 5 → excluded
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary
-          (term, display_name, note_count, day_count, total_sightings, backlink_max, best_source, best_confidence, best_score, first_seen_at, last_seen_at, promotion_score, updated_at)
-        VALUES
-          ('excluded', 'Excluded', 2, 1, 2, 0, 'implicit', 'low', 0, ${now}, ${now}, 4, ${now})
-      `);
+      insertProspectSummary({
+        term: 'excluded',
+        displayName: 'Excluded',
+        noteCount: 2,
+        dayCount: 1,
+        totalSightings: 2,
+        backlinkMax: 0,
+        bestSource: 'implicit',
+        bestConfidence: 'low',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 4,
+        updatedAt: now,
+      });
 
       const map = getProspectBoostMap();
       expect(map.has('included')).toBe(true);
@@ -603,9 +823,21 @@ describe('Prospect Ledger', () => {
   describe('cooccurring_entities JSON handling', () => {
     it('NULL cooccurring_entities produces empty array in candidates', () => {
       const now = Date.now();
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary VALUES ('orphan', 'Orphan', 3, 2, 5, 2, NULL, 'dead_link', 'medium', 0, ${now}, ${now}, 20, NULL, ${now});
-      `);
+      insertProspectSummary({
+        term: 'orphan',
+        displayName: 'Orphan',
+        noteCount: 3,
+        dayCount: 2,
+        totalSightings: 5,
+        backlinkMax: 2,
+        bestSource: 'dead_link',
+        bestConfidence: 'medium',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 20,
+        updatedAt: now,
+      });
 
       const candidates = getPromotionCandidates(10);
       const orphan = candidates.find(c => c.term === 'orphan');
@@ -615,9 +847,22 @@ describe('Prospect Ledger', () => {
 
     it('valid JSON array is parsed correctly in candidates', () => {
       const now = Date.now();
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary VALUES ('linked', 'Linked', 5, 3, 10, 3, '["Entity A","Entity B"]', 'dead_link', 'high', 0, ${now}, ${now}, 30, NULL, ${now});
-      `);
+      insertProspectSummary({
+        term: 'linked',
+        displayName: 'Linked',
+        noteCount: 5,
+        dayCount: 3,
+        totalSightings: 10,
+        backlinkMax: 3,
+        cooccurringEntities: '["Entity A","Entity B"]',
+        bestSource: 'dead_link',
+        bestConfidence: 'high',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 30,
+        updatedAt: now,
+      });
 
       const candidates = getPromotionCandidates(10);
       const linked = candidates.find(c => c.term === 'linked');
@@ -635,8 +880,22 @@ describe('Prospect Ledger', () => {
       const now = Date.now();
       stateDb.db.exec(`
         INSERT INTO entities (name, name_lower, path, category) VALUES ('Alpha Protocol', 'alpha protocol', 'alpha-protocol.md', 'general');
-        INSERT INTO prospect_summary VALUES ('alpha protocol', 'Alpha Protocol', 5, 5, 10, 3, NULL, 'dead_link', 'high', 0, ${now}, ${now}, 60, NULL, ${now});
       `);
+      insertProspectSummary({
+        term: 'alpha protocol',
+        displayName: 'Alpha Protocol',
+        noteCount: 5,
+        dayCount: 5,
+        totalSightings: 10,
+        backlinkMax: 3,
+        bestSource: 'dead_link',
+        bestConfidence: 'high',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 60,
+        updatedAt: now,
+      });
 
       const candidates = getPromotionCandidates(10);
       expect(candidates.find(c => c.term === 'alpha protocol')).toBeUndefined();
@@ -646,8 +905,22 @@ describe('Prospect Ledger', () => {
       const now = Date.now();
       stateDb.db.exec(`
         INSERT INTO entities (name, name_lower, path, category, aliases_json) VALUES ('Alpha Protocol Project', 'alpha protocol project', 'app.md', 'general', '["AP"]');
-        INSERT INTO prospect_summary VALUES ('ap', 'AP', 4, 3, 8, 2, NULL, 'dead_link', 'medium', 0, ${now}, ${now}, 25, NULL, ${now});
       `);
+      insertProspectSummary({
+        term: 'ap',
+        displayName: 'AP',
+        noteCount: 4,
+        dayCount: 3,
+        totalSightings: 8,
+        backlinkMax: 2,
+        bestSource: 'dead_link',
+        bestConfidence: 'medium',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 25,
+        updatedAt: now,
+      });
 
       const candidates = getPromotionCandidates(10);
       expect(candidates.find(c => c.term === 'ap')).toBeUndefined();
@@ -657,8 +930,22 @@ describe('Prospect Ledger', () => {
       const now = Date.now();
       stateDb.db.exec(`
         INSERT INTO entities (name, name_lower, path, category) VALUES ('Beta System', 'beta system', 'beta.md', 'general');
-        INSERT INTO prospect_summary VALUES ('beta system', 'Beta System', 5, 5, 10, 3, NULL, 'dead_link', 'high', 0, ${now}, ${now}, 60, NULL, ${now});
       `);
+      insertProspectSummary({
+        term: 'beta system',
+        displayName: 'Beta System',
+        noteCount: 5,
+        dayCount: 5,
+        totalSightings: 10,
+        backlinkMax: 3,
+        bestSource: 'dead_link',
+        bestConfidence: 'high',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 60,
+        updatedAt: now,
+      });
 
       // Initially excluded
       expect(getPromotionCandidates(10).find(c => c.term === 'beta system')).toBeUndefined();
@@ -707,6 +994,52 @@ describe('Prospect Ledger', () => {
     });
   });
 
+  describe('lifecycle helpers', () => {
+    it('resolves created entities by normalized exact match across title and aliases', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('machine learning', 'Machine Learning', 'a.md', '2026-03-30', 'dead_link', NULL, 'medium', 2, 0, ${now}, ${now}, 1);
+      `);
+      refreshProspectSummaries(['machine learning']);
+
+      const resolved = resolveProspectsForCreatedEntity('concepts/ml.md', 'Machine-Learning', ['ML']);
+      expect(resolved).toEqual(['machine learning']);
+
+      const summary = stateDb.db.prepare(
+        'SELECT status, resolved_entity_path FROM prospect_summary WHERE term = ?'
+      ).get('machine learning') as { status: string; resolved_entity_path: string | null };
+      expect(summary.status).toBe('entity_created');
+      expect(summary.resolved_entity_path).toBe('concepts/ml.md');
+    });
+
+    it('resolves alias merges and supports manual dismissal', () => {
+      const now = Date.now();
+      stateDb.db.exec(`
+        INSERT INTO prospect_ledger VALUES ('ap', 'AP', 'a.md', '2026-03-30', 'dead_link', NULL, 'medium', 2, 0, ${now}, ${now}, 1);
+        INSERT INTO prospect_ledger VALUES ('noise item', 'Noise Item', 'b.md', '2026-03-30', 'implicit', NULL, 'low', 0, 0, ${now}, ${now}, 1);
+      `);
+      refreshProspectSummaries(['ap', 'noise item']);
+
+      const merged = resolveProspectForAlias('projects/app.md', 'A.P.');
+      expect(merged).toEqual(['ap']);
+
+      const dismissed = dismissProspect('Noise Item', 'not worth tracking', 'daily/2026-04-12.md');
+      expect(dismissed).toBe(true);
+
+      const ap = stateDb.db.prepare(
+        'SELECT status, resolved_entity_path FROM prospect_summary WHERE term = ?'
+      ).get('ap') as { status: string; resolved_entity_path: string | null };
+      expect(ap.status).toBe('merged');
+      expect(ap.resolved_entity_path).toBe('projects/app.md');
+
+      const noise = stateDb.db.prepare(
+        'SELECT status, last_feedback_at FROM prospect_summary WHERE term = ?'
+      ).get('noise item') as { status: string; last_feedback_at: number | null };
+      expect(noise.status).toBe('rejected');
+      expect(noise.last_feedback_at).not.toBeNull();
+    });
+  });
+
   // ===========================================================================
   // Stale Cleanup Boundary
   // ===========================================================================
@@ -731,8 +1064,22 @@ describe('Prospect Ledger', () => {
       const veryOld = now - 220 * 24 * 60 * 60 * 1000;
       stateDb.db.exec(`
         INSERT INTO prospect_ledger VALUES ('prunable', 'Prunable', 'a.md', '2025-07-01', 'implicit', NULL, 'low', 0, 0, ${veryOld}, ${veryOld}, 1);
-        INSERT INTO prospect_summary VALUES ('prunable', 'Prunable', 1, 1, 1, 0, NULL, 'implicit', 'low', 0, ${veryOld}, ${veryOld}, 5, NULL, ${veryOld});
       `);
+      insertProspectSummary({
+        term: 'prunable',
+        displayName: 'Prunable',
+        noteCount: 1,
+        dayCount: 1,
+        totalSightings: 1,
+        backlinkMax: 0,
+        bestSource: 'implicit',
+        bestConfidence: 'low',
+        bestScore: 0,
+        firstSeenAt: veryOld,
+        lastSeenAt: veryOld,
+        promotionScore: 5,
+        updatedAt: veryOld,
+      });
 
       cleanStaleProspects();
 
@@ -748,9 +1095,21 @@ describe('Prospect Ledger', () => {
   describe('zero and boundary scores', () => {
     it('promotion_score=0 is excluded from both boost map and candidates', () => {
       const now = Date.now();
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary VALUES ('zero', 'Zero', 1, 1, 1, 0, NULL, 'implicit', 'low', 0, ${now}, ${now}, 0, NULL, ${now});
-      `);
+      insertProspectSummary({
+        term: 'zero',
+        displayName: 'Zero',
+        noteCount: 1,
+        dayCount: 1,
+        totalSightings: 1,
+        backlinkMax: 0,
+        bestSource: 'implicit',
+        bestConfidence: 'low',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 0,
+        updatedAt: now,
+      });
 
       expect(getProspectBoostMap().has('zero')).toBe(false);
       expect(getPromotionCandidates(10).find(c => c.term === 'zero')).toBeUndefined();

@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 40;
+export const SCHEMA_VERSION = 41;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -528,8 +528,23 @@ CREATE TABLE IF NOT EXISTS prospect_summary (
   last_seen_at INTEGER NOT NULL,
   promotion_score REAL NOT NULL DEFAULT 0,
   promoted_at INTEGER,
+  status TEXT NOT NULL DEFAULT 'prospect',
+  resolved_entity_path TEXT,
+  last_feedback_at INTEGER,
   updated_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_prospect_summary_score ON prospect_summary(promotion_score DESC);
+
+-- Prospect lifecycle feedback (v41): explicit resolution/dismissal events for prospects
+CREATE TABLE IF NOT EXISTS prospect_feedback (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  term TEXT NOT NULL,
+  action TEXT NOT NULL,
+  entity_path TEXT,
+  note_path TEXT COLLATE NOCASE,
+  reason TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_prospect_feedback_term ON prospect_feedback(term, created_at DESC);
 
 `;

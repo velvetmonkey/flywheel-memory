@@ -21,6 +21,54 @@ let client: TestClient;
 let stateDb: StateDb;
 
 describe('Wikilink Prospect Integration', () => {
+  function insertProspectSummary(params: {
+    term: string;
+    displayName: string;
+    noteCount: number;
+    dayCount: number;
+    totalSightings: number;
+    backlinkMax: number;
+    cooccurringEntities?: string | null;
+    bestSource: string;
+    bestConfidence: string;
+    bestScore: number;
+    firstSeenAt: number;
+    lastSeenAt: number;
+    promotionScore: number;
+    updatedAt: number;
+    status?: 'prospect' | 'entity_created' | 'merged' | 'rejected';
+    resolvedEntityPath?: string | null;
+    lastFeedbackAt?: number | null;
+  }): void {
+    stateDb.db.prepare(`
+      INSERT INTO prospect_summary (
+        term, display_name, note_count, day_count, total_sightings, backlink_max,
+        cooccurring_entities, best_source, best_confidence, best_score,
+        first_seen_at, last_seen_at, promotion_score, promoted_at,
+        status, resolved_entity_path, last_feedback_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      params.term,
+      params.displayName,
+      params.noteCount,
+      params.dayCount,
+      params.totalSightings,
+      params.backlinkMax,
+      params.cooccurringEntities ?? null,
+      params.bestSource,
+      params.bestConfidence,
+      params.bestScore,
+      params.firstSeenAt,
+      params.lastSeenAt,
+      params.promotionScore,
+      null,
+      params.status ?? 'prospect',
+      params.resolvedEntityPath ?? null,
+      params.lastFeedbackAt ?? null,
+      params.updatedAt,
+    );
+  }
+
   beforeAll(async () => {
     tempVault = await createTempVault();
 
@@ -183,13 +231,37 @@ describe('Wikilink Prospect Integration', () => {
       const now = Date.now();
       stateDb.db.exec('DELETE FROM prospect_summary');
       // One with backlink_max=2 (below min_frequency=5)
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary VALUES ('low ref', 'Low Ref', 3, 2, 5, 2, NULL, 'dead_link', 'medium', 0, ${now}, ${now}, 20, NULL, ${now});
-      `);
+      insertProspectSummary({
+        term: 'low ref',
+        displayName: 'Low Ref',
+        noteCount: 3,
+        dayCount: 2,
+        totalSightings: 5,
+        backlinkMax: 2,
+        bestSource: 'dead_link',
+        bestConfidence: 'medium',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 20,
+        updatedAt: now,
+      });
       // One with backlink_max=8 (above min_frequency=5)
-      stateDb.db.exec(`
-        INSERT INTO prospect_summary VALUES ('high ref', 'High Ref', 8, 6, 20, 8, NULL, 'dead_link', 'high', 0, ${now}, ${now}, 60, NULL, ${now});
-      `);
+      insertProspectSummary({
+        term: 'high ref',
+        displayName: 'High Ref',
+        noteCount: 8,
+        dayCount: 6,
+        totalSightings: 20,
+        backlinkMax: 8,
+        bestSource: 'dead_link',
+        bestConfidence: 'high',
+        bestScore: 0,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        promotionScore: 60,
+        updatedAt: now,
+      });
 
       const result = await client.callTool('discover_stub_candidates', {
         min_frequency: 5,

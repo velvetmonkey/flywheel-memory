@@ -337,7 +337,7 @@ describe('Backup & Recovery', () => {
   // Extended salvage scenarios
   // ===========================================================================
   describe('salvageFeedbackTables (extended)', () => {
-    it('salvages all 12 SALVAGE_TABLES when populated', () => {
+    it('salvages every configured salvage table when populated', () => {
       const sourceDb = openStateDb(testVaultPath);
       const now = Date.now();
 
@@ -378,6 +378,9 @@ describe('Backup & Recovery', () => {
       sourceDb.db.prepare(
         `INSERT INTO prospect_summary (term, display_name, note_count, day_count, total_sightings, backlink_max, best_source, best_confidence, best_score, first_seen_at, last_seen_at, promotion_score, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).run('test term', 'Test Term', 1, 1, 1, 0, 'implicit', 'low', 0, now, now, 5.0, now);
+      sourceDb.db.prepare(
+        `INSERT INTO prospect_feedback (term, action, entity_path, note_path, reason, created_at) VALUES (?, ?, ?, ?, ?, ?)`
+      ).run('test term', 'reject', null, 'n.md', 'test', now);
       sourceDb.close();
 
       const backupPath = `${dbPath}.full-salvage`;
@@ -391,7 +394,7 @@ describe('Backup & Recovery', () => {
 
       try {
         const results = salvageFeedbackTables(targetDb.db, backupPath);
-        // All 12 tables should have been salvaged
+        // Every configured salvage table should have been salvaged
         for (const table of SALVAGE_TABLES) {
           expect(results[table]).toBeGreaterThanOrEqual(1);
         }

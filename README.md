@@ -160,6 +160,8 @@ Flywheel watches the vault, maintains local indexes, and serves the graph to MCP
 
 The default `agent` preset is the smallest useful surface: search, read, write, tasks, memory, and diagnostics. Use `power` when you want everyday maintenance tools like wikilinks, corrections, schema work, and note operations. Use `full` when you want the entire surface visible from the start. `auto` is kept for backward compatibility and behaves like `full` plus an informational `discover_tools` helper.
 
+If you are deciding between presets or wondering which tool family handles a job, start with [docs/TOOLS.md](docs/TOOLS.md). If you want the exact env vars and preset/routing behaviour, use [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
+
 <!-- GENERATED:preset-counts START -->
 | Preset | Tools | Categories | Behaviour |
 |--------|-------|------------|-----------|

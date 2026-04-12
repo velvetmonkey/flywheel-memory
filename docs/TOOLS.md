@@ -10,8 +10,10 @@ Flywheel is easier to use if you start with the job, not the tool name. This gui
 For presets and env vars, see [CONFIGURATION.md](CONFIGURATION.md).
 
 - [What Should I Use?](#what-should-i-use)
+- [How Tool Choice Works](#how-tool-choice-works)
 - [Preset Chooser](#preset-chooser)
 - [Tool Families](#tool-families)
+- [Worked Examples](#worked-examples)
 - [Current Tool Surface](#current-tool-surface)
 - [Compatibility Notes](#compatibility-notes)
 - [Retired Names You May Still See](#retired-names-you-may-still-see)
@@ -32,6 +34,26 @@ For presets and env vars, see [CONFIGURATION.md](CONFIGURATION.md).
 | Check vault health or runtime config | `doctor` | Health, pipeline, stats, logs, and config |
 | Build semantic search | `init_semantic` | Turns on hybrid retrieval and semantic similarity |
 | Save reusable workflows | `policy` | Author, preview, validate, and execute atomic workflows |
+
+## How Tool Choice Works
+
+Tool choice has two layers:
+
+1. **Preset visibility** decides which tool families are available at all.
+2. **Routing and feedback** help clients pick among the visible tools.
+
+Preset visibility is controlled by `FLYWHEEL_TOOLS` or `FLYWHEEL_PRESET`.
+
+- `agent` is the focused default surface for everyday questions, note edits, tasks, memory, and diagnostics.
+- `power` adds the common maintenance layer: links, corrections, schema work, and note operations.
+- `full` exposes every category immediately.
+- `auto` is compatibility-only. It behaves like `full` and may expose `discover_tools` for older workflows.
+
+`discover_tools` is guidance, not activation. It can suggest which tool family to try next, but it does not reveal or unlock more tools mid-session.
+
+`FLYWHEEL_TOOL_ROUTING` affects how Flywheel scores or suggests tools for a task. It helps with discovery and routing hints. It does **not** change preset visibility.
+
+Feedback still matters after `T33`. Accepted and rejected suggestions improve reporting, calibration, and future routing analysis. What changed is that feedback no longer changes the visible tool surface during a session.
 
 ## Preset Chooser
 
@@ -135,7 +157,7 @@ The current preset counts are documented in [README.md](../README.md#optional-to
   - `timeline`
   - `layer_timeseries`
   - `snapshot_diff`
-- Best for: suggestion workflows, broken-link cleanup, and understanding link behavior over time.
+- Best for: suggestion workflows, broken-link cleanup, stub/prospect review, and understanding link behavior over time.
 
 #### `entity`
 - Use when: you are working at the entity layer rather than directly on note text.
@@ -146,7 +168,8 @@ The current preset counts are documented in [README.md](../README.md#optional-to
   - `merge`
   - `suggest_merges`
   - `dismiss_merge`
-- Best for: alias management, deduplication, and entity inventory.
+  - `dismiss_prospect`
+- Best for: alias management, deduplication, entity inventory, and rejecting prospect terms that should stop surfacing as active candidates.
 
 #### `correct`
 - Use when: the vault or model behavior needs a durable correction record.
@@ -206,6 +229,29 @@ The current preset counts are documented in [README.md](../README.md#optional-to
   - `config`
   - `log`
 - `doctor(action: "config")` replaces the old standalone config tool in the public interface.
+
+## Worked Examples
+
+### Daily note capture on `agent`
+
+- Preset: `agent`
+- Likely first tool: `search(action: "query")` if you need context, then `edit_section(action: "add")`
+- Routing matters when the prompt is vague, such as "log this call and add any obvious links"
+- Follow-up tool calls are often unnecessary because `edit_section` can write directly and optionally suggest outgoing links
+
+### Note hygiene and cleanup on `power`
+
+- Preset: `power`
+- Likely first tool: `link(action: "validate")`, `entity(action: "suggest_merges")`, or `schema(action: "validate")`
+- Routing matters when the task blends link cleanup, alias cleanup, and metadata cleanup
+- Follow-up tool calls are common because hygiene work often moves from inspection to correction
+
+### Graph or temporal investigation on `full`
+
+- Preset: `full`
+- Likely first tool: `search(action: "query")`, then `graph(action: "path" | "neighbors")` or `insights(action: "context" | "evolution")`
+- Routing matters when the question is about relationships, change over time, or cross-note evidence
+- Follow-up tool calls are normal because graph and temporal work usually starts with search, then drills into structure
 
 #### `refresh_index`
 - Use when: the vault index is stale or you made bulk changes outside the watcher.

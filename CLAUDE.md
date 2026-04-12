@@ -113,7 +113,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET`. Preset/category gating is ow
 > exposes 13 tools under Claude Code instead of 14; `brief` stays available.
 <!-- GENERATED:claude-code-memory-note END -->
 
-`auto` is compatibility-only. `discover_tools` suggests tools but does not activate or reveal them. Runtime config goes through `doctor(action: "config")`; `tool_tier_override` is deprecated and has no effect.
+`auto` is compatibility-only. `discover_tools` suggests tools but does not activate or reveal them. `FLYWHEEL_TOOL_ROUTING` affects routing hints, not visibility. Runtime config goes through `doctor(action: "config")`; `tool_tier_override` is deprecated and has no effect.
 
 Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` — never hardcode.
 
@@ -123,7 +123,7 @@ Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` —
 - `correct` — `action: record|list|resolve|undo`
 - `doctor` — `action: health|diagnosis|stats|pipeline|config|log`
 - `edit_section` — `action: add|remove|replace`
-- `entity` — `action: list|alias|suggest_aliases|merge|suggest_merges|dismiss_merge`
+- `entity` — `action: list|alias|suggest_aliases|merge|suggest_merges|dismiss_merge|dismiss_prospect`
 - `graph` — `action: analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps`
 - `insights` — `action: evolution|staleness|context|note_intelligence|growth`
 - `link` — `action: suggest|feedback|unlinked|validate|stubs|dashboard|unsuppress|timeline|layer_timeseries|snapshot_diff`

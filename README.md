@@ -158,7 +158,7 @@ Flywheel watches the vault, maintains local indexes, and serves the graph to MCP
 
 ### Optional: Tool presets
 
-The `agent` preset (default) provides a focused set of core tools. Use `power` for tier 1+2 (adds wikilinks, corrections, note-ops, schema), `full` to expose the entire tool surface immediately, or `auto` for progressive disclosure via `discover_tools`.
+The default `agent` preset is the smallest useful surface: search, read, write, tasks, memory, and diagnostics. Use `power` when you want everyday maintenance tools like wikilinks, corrections, schema work, and note operations. Use `full` when you want the entire surface visible from the start. `auto` is kept for backward compatibility and behaves like `full` plus an informational `discover_tools` helper.
 
 <!-- GENERATED:preset-counts START -->
 | Preset | Tools | Categories | Behaviour |
@@ -166,7 +166,7 @@ The `agent` preset (default) provides a focused set of core tools. Use `power` f
 | `agent` (default) | 14 | search, read, write, tasks, memory, diagnostics | Focused tier-1 surface — search, read, write, tasks, memory |
 | `power` | 18 | search, read, write, tasks, memory, diagnostics, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
 | `full` | 20 | search, read, write, tasks, memory, diagnostics, wikilinks, corrections, note-ops, schema, graph, temporal | All categories visible at startup |
-| `auto` | 21 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
+| `auto` | 21 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | Full surface + informational `discover_tools` helper |
 <!-- GENERATED:preset-counts END -->
 
 <!-- GENERATED:claude-code-memory-note START -->
@@ -191,7 +191,7 @@ Compose bundles for custom configurations:
 }
 ```
 
-[Browse all tools ->](docs/TOOLS.md) | [Preset recipes ->](docs/CONFIGURATION.md)
+[Browse all tools ->](docs/TOOLS.md) | [Preset chooser + config ->](docs/CONFIGURATION.md)
 
 ### Multiple vaults
 

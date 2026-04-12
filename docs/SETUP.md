@@ -1,143 +1,30 @@
-# Set Up Your Own Vault
+# Setup
 
 [← Back to docs](README.md)
 
-After trying the [demo vaults](../demos/), point Flywheel at your own Obsidian vault.
+This guide is the practical setup path for real clients. Use it when you want Flywheel running against your own vault with the right preset and a sane first-run workflow.
 
-- **Fastest path:** add Flywheel to your client config, point it at your vault, run the first 5 commands, then enable semantic search later if you want it.
-
-- [Prerequisites](#prerequisites)
-- [Startup Times](#startup-times)
-- [Windows](#windows)
-  - [WSL2: Keep Your Vault on the Linux Filesystem](#wsl2-keep-your-vault-on-the-linux-filesystem)
-- [Step 1: Configure Your Client](#step-1-configure-your-client)
-  - [Codex (stdio)](#codex-stdio)
-  - [Claude Code (stdio)](#claude-code-stdio)
-  - [Claude Desktop (stdio)](#claude-desktop-stdio)
-  - [OpenClaw (stdio)](#openclaw-stdio)
-  - [HTTP Clients (Cursor, Windsurf, VS Code, Continue)](#http-clients-cursor-windsurf-vs-code-continue)
-    - [Cursor (HTTP)](#cursor-http)
-    - [Windsurf (HTTP)](#windsurf-http)
-    - [VS Code + GitHub Copilot (HTTP)](#vs-code--github-copilot-http)
-    - [Continue (HTTP)](#continue-http)
-    - [Other HTTP Clients](#other-http-clients)
+- [Choose A Client](#choose-a-client)
+- [Claude Code](#claude-code)
+- [Codex](#codex)
+- [Claude Desktop](#claude-desktop)
+- [HTTP Clients](#http-clients)
+- [First 5 Things To Try](#first-5-things-to-try)
+- [Choose A Preset](#choose-a-preset)
+- [Add Vault Instructions](#add-vault-instructions)
 - [Multi-Vault](#multi-vault)
-- [Step 2: First 5 Commands to Try](#step-2-first-5-commands-to-try)
-  - [1. Search your vault](#1-search-your-vault)
-  - [2. Explore connections](#2-explore-connections)
-  - [3. Check vault health](#3-check-vault-health)
-  - [4. Read note structure](#4-read-note-structure)
-  - [5. Write with auto-wikilinks](#5-write-with-auto-wikilinks)
-- [Step 3: Choose a Tool Preset](#step-3-choose-a-tool-preset)
-- [Step 4: Configure Claude for Your Vault](#step-4-configure-claude-for-your-vault)
-  - [CLAUDE.md: Your Vault Persona](#claudemd-your-vault-persona)
-    - [Starter Template](#starter-template)
-  - [`.claude/rules/`: Format Rules for Note Types](#clauderules-format-rules-for-note-types)
-  - [Iteration](#iteration)
-- [Step 5: Enable Semantic Intelligence (Optional)](#step-5-enable-semantic-intelligence-optional)
-  - [Note Embeddings (Hybrid Search)](#note-embeddings-hybrid-search)
-  - [Entity Embeddings (Semantic Wikilinks + Graph Analysis)](#entity-embeddings-semantic-wikilinks--graph-analysis)
-  - [Build Details](#build-details)
-  - [What Unlocks](#what-unlocks)
-- [Common Issues](#common-issues)
-  - ["Vault not found"](#vault-not-found)
-  - ["Too many tools" / Claude picks the wrong tool](#too-many-tools--claude-picks-the-wrong-tool)
-  - ["Permission denied" on file writes](#permission-denied-on-file-writes)
-  - [Server silently fails on Windows](#server-silently-fails-on-windows)
-  - [Stale search results](#stale-search-results)
-  - [Git-related errors](#git-related-errors)
-- [Git Integration (Optional)](#git-integration-optional)
-  - [Setup](#setup)
-  - [How it works](#how-it-works)
-  - [No git? No problem.](#no-git-no-problem)
-- [Next Steps](#next-steps)
+- [Platform Notes](#platform-notes)
 
----
+## Choose A Client
 
-## Prerequisites
+| Client | Best when |
+|---|---|
+| Claude Code | You want stdio MCP inside the vault and the smoothest local workflow |
+| Codex | You want Flywheel available from your repo-level Codex setup |
+| Claude Desktop | You want Flywheel inside the desktop app |
+| Cursor / Windsurf / VS Code / Continue | You prefer HTTP MCP to a long-running local Flywheel server |
 
-- **Node.js 22+** -- check with `node --version`.
-- **An Obsidian vault** -- any folder with `.md` files works, but Flywheel detects Obsidian conventions (`.obsidian/` folder, periodic notes, templates)
-- **An MCP-compatible client** -- Claude Code, Claude Desktop, Cursor, Windsurf, VS Code + GitHub Copilot, Continue, [OpenClaw](https://github.com/openclaw/openclaw), or any Streamable HTTP client
-
----
-
-## Startup Times
-
-Flywheel connects to your MCP client immediately, then builds indexes in the background. Most tools work within seconds; semantic search takes longer on first run.
-
-| Scenario | MCP handshake | Full index ready |
-|----------|--------------|-----------------|
-| Cache hit, single vault (1k notes) | <1s | 1-3s |
-| Cache hit, single vault (10k notes) | <1s | 3-10s |
-| Cache miss, single vault (1k notes) | <1s | 5-15s |
-| Cache miss, multi-vault (6k+ notes) | <1s | 30-90s |
-| First run with semantic embeddings | <1s | 1-20 min (background) |
-
-> **Client timeouts.** If your MCP client has a startup timeout, set it to at least **120 seconds** to cover cold starts on large vaults. Flywheel signals "connected" within 1 second, but some clients wait for the first successful tool call before considering the server ready.
->
-> | Client | Config |
-> |--------|--------|
-> | Codex | `startup_timeout_sec = 120` in `config.toml` |
-> | Claude Desktop | No timeout config needed |
-> | Claude Code | No timeout config needed |
-> | Cursor / Windsurf (HTTP) | Start server first, then connect |
-
----
-
-## Windows
-
-On Windows, the MCP config differs from macOS/Linux in three ways:
-
-> **If you're on Windows, read this before configuring your client below.** The three differences here cause silent failures if missed.
-
-1. **`cmd /c` wrapper** — use `"command": "cmd"` with `"args": ["/c", "npx", ...]` instead of `"command": "npx"`. Windows installs npx as a batch script (`npx.cmd`) which MCP clients can't execute directly — without this wrapper the server silently fails.
-2. **`VAULT_PATH`** — set to your vault's Windows path (e.g. `C:\Users\you\obsidian\MyVault`)
-3. **`FLYWHEEL_WATCH_POLL=true`** — native file events are unreliable on Windows
-
-See [CONFIGURATION.md](CONFIGURATION.md#windows) for the full config example.
-
-> **Alternative:** You can also use HTTP transport on Windows — start the server in a terminal with `FLYWHEEL_TRANSPORT=http` and connect from your editor via HTTP URL. See the [HTTP clients](#http-clients-cursor-windsurf-vs-code-continue) section below.
-
-### WSL2: Keep Your Vault on the Linux Filesystem
-
-If you run Flywheel inside WSL2, **do not** put your vault on `/mnt/c/` (the Windows filesystem mounted in WSL). Every file operation crosses the 9P filesystem bridge, which is 5-10x slower than native Linux I/O. File watching is especially affected — chokidar either misses events entirely or falls back to expensive polling.
-
-**Recommended setup:**
-
-```
-# Vault lives inside WSL's native filesystem — fast
-~/obsidian/MyVault/
-
-# NOT this — slow, unreliable file watching
-/mnt/c/Users/you/obsidian/MyVault/
-```
-
-To edit the vault from Windows Obsidian, open the WSL path directly: `\\wsl$\Ubuntu\home\you\obsidian\MyVault`. Windows can read/write WSL paths natively via the `\\wsl$` network share. This gives you native Linux I/O for Flywheel (fast indexing, reliable file watching) while Obsidian on Windows still has full access to the same files.
-
-**VAULT_PATH for WSL:** Use the Linux path (`/home/you/obsidian/MyVault`), not the Windows path. Flywheel runs inside WSL and needs the Linux-native path.
-
----
-
-## Step 1: Configure Your Client
-
-### Codex (stdio)
-
-Add Flywheel to `.codex/config.toml`:
-
-```toml
-[mcp_servers.flywheel]
-command = "npx"
-args = ["-y", "@velvetmonkey/flywheel-memory@latest"]
-cwd = "/path/to/project"
-startup_timeout_sec = 120
-tool_timeout_sec = 120
-env = { FLYWHEEL_VAULTS = "personal:/path/to/vault", FLYWHEEL_PRESET = "full" }
-```
-
-Codex reads `.codex/config.toml`, not `.mcp.json`. If you keep a `.mcp.json` nearby, treat it as a reference file for Claude/demo-vault workflows.
-
-### Claude Code (stdio)
+## Claude Code
 
 Create `.mcp.json` in your vault root:
 
@@ -152,35 +39,34 @@ Create `.mcp.json` in your vault root:
 }
 ```
 
-> **Windows?** Use `"command": "cmd"` with `"args": ["/c", "npx", "-y", "@velvetmonkey/flywheel-memory"]` and add `"FLYWHEEL_WATCH_POLL": "true"` to `env`. [Full example →](CONFIGURATION.md#windows)
-
-Launch:
+Then:
 
 ```bash
-cd /path/to/your/vault && claude
+cd /path/to/your/vault
+claude
 ```
 
-**Multi-vault** — serve two or more vaults from one server:
+`agent` is the default preset. Add `FLYWHEEL_TOOLS` only if you want `power`, `full`, or explicit bundles.
 
-```json
-{
-  "mcpServers": {
-    "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
-      "env": {
-        "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work"
-      }
-    }
-  }
-}
+## Codex
+
+Add Flywheel to `.codex/config.toml`:
+
+```toml
+[mcp_servers.flywheel]
+command = "npx"
+args = ["-y", "@velvetmonkey/flywheel-memory@latest"]
+cwd = "/path/to/project"
+startup_timeout_sec = 120
+tool_timeout_sec = 120
+env = { FLYWHEEL_VAULTS = "personal:/path/to/vault", FLYWHEEL_TOOLS = "power" }
 ```
 
-The first vault in the list is the **primary**. `search` spans all vaults by default; other tools operate on the primary vault unless you pass `vault: "work"`. See [CONFIGURATION.md](CONFIGURATION.md#multi-vault) for details.
+Codex does not read `.mcp.json`, so keep Flywheel in `.codex/config.toml`.
 
-### Claude Desktop (stdio)
+## Claude Desktop
 
-Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
+Add Flywheel to `claude_desktop_config.json`:
 
 ```json
 {
@@ -196,102 +82,25 @@ Edit `claude_desktop_config.json` (Settings > Developer > Edit Config):
 }
 ```
 
-> **Windows?** Use `"command": "cmd"` with `"args": ["/c", "npx", "-y", "@velvetmonkey/flywheel-memory"]`, set `VAULT_PATH` to a backslash-escaped Windows path (e.g. `C:\\Users\\you\\obsidian\\MyVault`), and add `"FLYWHEEL_WATCH_POLL": "true"`. [Full example →](CONFIGURATION.md#windows)
+Claude Desktop usually needs `VAULT_PATH` because it is not launched inside the vault directory.
 
-Claude Desktop requires `VAULT_PATH` because it doesn't launch from the vault directory. Claude Code auto-detects the vault root from the working directory.
+## HTTP Clients
 
-**Multi-vault** — replace `VAULT_PATH` with `FLYWHEEL_VAULTS`:
-
-```json
-{
-  "mcpServers": {
-    "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
-      "env": {
-        "FLYWHEEL_VAULTS": "personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work"
-      }
-    }
-  }
-}
-```
-
-Restart Claude Desktop after editing the config. Flywheel appears in the MCP server list.
-
-### OpenClaw (stdio)
-
-[OpenClaw](https://github.com/openclaw/openclaw) is a self-hosted, multi-channel AI assistant that lives in Discord, Telegram, WhatsApp, and Slack. Flywheel gives it persistent, graph-aware memory instead of default amnesiac file access.
-
-Add this to `~/.openclaw/openclaw.json`:
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "flywheel": {
-        "command": "npx",
-        "args": ["-y", "@velvetmonkey/flywheel-memory"],
-        "env": {
-          "VAULT_PATH": "/path/to/your/vault"
-        }
-      }
-    }
-  }
-}
-```
-
-> **Windows?** Use `"command": "cmd"` with `"args": ["/c", "npx", "-y", "@velvetmonkey/flywheel-memory"]`, set `VAULT_PATH` to a backslash-escaped Windows path (e.g. `C:\\Users\\you\\obsidian\\MyVault`), and add `"FLYWHEEL_WATCH_POLL": "true"`. [Full example →](CONFIGURATION.md#windows)
-
-Restart OpenClaw. Flywheel appears as an MCP server with search, read, write, and memory tools.
-
-Flywheel defaults to the `agent` tool surface (search, read, write, tasks, memory). Use `"FLYWHEEL_TOOLS": "full"` for the complete 65-tool surface.
-
-Recommended next step: read the dedicated [OpenClaw integration guide](OPENCLAW.md). It covers the pattern that works best in practice:
-
-- configure Flywheel on the OpenClaw gateway/agent
-- route the right channels to a dedicated OpenClaw agent
-- keep OpenClaw workspace and Obsidian vault separate unless you intentionally want them combined
-- choose `FLYWHEEL_TOOLS` based on whether you want the agent surface (default) or the full vault surface (`FLYWHEEL_TOOLS=full`)
-
-OpenClaw connects via stdio here, same as Claude Desktop. For HTTP transport (e.g., running Flywheel as a shared service), see the [HTTP Clients](#http-clients-cursor-windsurf-vs-code-continue) section below.
-
-### HTTP Clients (Cursor, Windsurf, VS Code, Continue)
-
-HTTP clients connect to a running Flywheel server. Start it first:
+Start Flywheel first:
 
 ```bash
-VAULT_PATH=/path/to/your/vault FLYWHEEL_TRANSPORT=http npx -y @velvetmonkey/flywheel-memory
+VAULT_PATH=/path/to/vault FLYWHEEL_TRANSPORT=http npx -y @velvetmonkey/flywheel-memory
 ```
 
-Verify it's running:
+Health check:
 
 ```bash
 curl http://localhost:3111/health
 ```
 
-**HTTP server options:**
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `FLYWHEEL_TRANSPORT` | `stdio` | Set to `http` for HTTP-only, or `both` to run stdio + HTTP simultaneously |
-| `FLYWHEEL_HTTP_PORT` | `3111` | Port the HTTP server listens on |
-| `FLYWHEEL_HTTP_HOST` | `127.0.0.1` | Bind address. Keep as `127.0.0.1` — for remote access, use a [reverse proxy](SECURITY.md) instead |
-
-Example with custom port:
-
-```bash
-VAULT_PATH=/path/to/your/vault FLYWHEEL_TRANSPORT=http FLYWHEEL_HTTP_PORT=8080 npx -y @velvetmonkey/flywheel-memory
-```
-
-Update the URLs in your client config to match (e.g. `http://localhost:8080/mcp`).
-
-Keep the server running in a terminal tab, tmux session, or as a systemd service.
-Then configure your client below.
-
-#### Cursor (HTTP)
+### Cursor
 
 ```json
-// .cursor/mcp.json (project) or ~/.cursor/mcp.json (global)
 {
   "mcpServers": {
     "flywheel": {
@@ -301,10 +110,9 @@ Then configure your client below.
 }
 ```
 
-#### Windsurf (HTTP)
+### Windsurf
 
 ```json
-// ~/.codeium/windsurf/mcp_config.json
 {
   "mcpServers": {
     "flywheel": {
@@ -314,12 +122,9 @@ Then configure your client below.
 }
 ```
 
-#### VS Code + GitHub Copilot (HTTP)
-
-Note: VS Code uses `"servers"` not `"mcpServers"`.
+### VS Code
 
 ```json
-// .vscode/mcp.json
 {
   "servers": {
     "flywheel": {
@@ -330,135 +135,37 @@ Note: VS Code uses `"servers"` not `"mcpServers"`.
 }
 ```
 
-#### Continue (HTTP)
-
-Each server gets its own file:
+### Continue
 
 ```yaml
-# .continue/mcpServers/flywheel.yaml
 name: flywheel
 type: streamable-http
 url: http://localhost:3111/mcp
 ```
 
-#### Other HTTP Clients
+## First 5 Things To Try
 
-Any client that speaks Streamable HTTP can connect to `http://localhost:3111/mcp`.
+1. Ask a plain-language question with `search`.
+   Example: "What do my notes say about Acme?"
+2. Read the winning note or section.
+   Example: "Show me the Status section of Project X."
+3. Write one safe change.
+   Example: "Add this to today's log..."
+4. Inspect vault health.
+   Example: `doctor(action: "health")`
+5. Check runtime config.
+   Example: `doctor(action: "config", mode: "get")`
 
-**MCP endpoint:** `POST /mcp` — accepts `application/json` and `text/event-stream`.
+## Choose A Preset
 
-**List available tools:**
+| Preset | Use it when |
+|---|---|
+| `agent` | You want the focused default surface |
+| `power` | You want everyday maintenance tools too |
+| `full` | You want all categories visible immediately |
+| `auto` | You need compatibility with older discovery-first prompts |
 
-```bash
-curl -X POST http://localhost:3111/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
-```
-
-**Search your vault:**
-
-```bash
-curl -X POST http://localhost:3111/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"search","arguments":{"query":"meeting notes"}}}'
-```
-
-**Multi-vault setup:**
-
-```bash
-FLYWHEEL_VAULTS="personal:/home/user/obsidian/Personal,work:/home/user/obsidian/Work" \
-  FLYWHEEL_TRANSPORT=http npx @velvetmonkey/flywheel-memory
-```
-
-When multi-vault is active, every tool gains an optional `vault` parameter. The `search` tool automatically searches all vaults when `vault` is omitted, merging results with a `vault` field on each. Other tools default to the primary vault (first in list). The health endpoint reports all vault names.
-
-See [CONFIGURATION.md](CONFIGURATION.md#multi-vault) for all multi-vault options.
-
-On first run, Flywheel creates a `.flywheel/` directory containing its SQLite index and rotated backups. Add `.flywheel/` to your `.gitignore` if your vault is version-controlled. Flywheel automatically backs up its database on each startup (3 rotated copies) and recovers feedback data from backups if corruption occurs — see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#statedb-corruption) for details.
-
-> **Proactive linking is on by default.** Flywheel's file watcher monitors your vault for changes and automatically inserts high-confidence wikilinks into notes you edit -- even outside of Claude. Only strong matches are applied (score >= 20, max 5 per file, max 10 per day). This is the core flywheel: edits you make in Obsidian get linked without you asking. If you prefer links only through explicit Claude tool calls, disable it:
->
-> ```
-> flywheel_config({ mode: "set", key: "proactive_linking", value: false })
-> ```
->
-> See [CONFIGURATION.md](CONFIGURATION.md#wikilink-behavior) for fine-tuning the score threshold and per-file limit.
-
-> **Custom entity categories.** If your vault uses frontmatter `type:` fields for domain-specific note types (e.g., `type: recipe`, `type: work-ticket`, `type: statute`), tell Flywheel about them so they get proper scoring instead of landing in "other":
->
-> ```
-> flywheel_config({
->   mode: "set",
->   key: "custom_categories",
->   value: { "work-ticket": { "type_boost": 2 }, "recipe": { "type_boost": 1 } }
-> })
-> ```
->
-> See [CONFIGURATION.md](CONFIGURATION.md#custom-categories) for details.
-
----
-
-## Multi-Vault
-
-All client configs above show a single vault. To serve multiple vaults from one Flywheel instance, replace `VAULT_PATH` with `FLYWHEEL_VAULTS`:
-
-```
-FLYWHEEL_VAULTS="name1:/path/to/vault1,name2:/path/to/vault2"
-```
-
-The first vault is the **primary**. Key behaviors:
-
-| Behavior | `vault` specified | `vault` omitted |
-|----------|-------------------|-----------------|
-| `search` | Searches that vault only | Searches **all** vaults, merges results |
-| All other tools | Operates on that vault | Operates on primary vault |
-
-Each vault gets fully isolated state: separate `.flywheel/state.db`, graph index, file watcher, and runtime config.
-
-Multi-vault examples appear inline in the [Claude Code](#claude-code-stdio) and [Claude Desktop](#claude-desktop-stdio) sections above. For HTTP clients, see the [HTTP multi-vault example](#other-http-clients). Full reference: [CONFIGURATION.md](CONFIGURATION.md#multi-vault).
-
----
-
-## Step 2: First 5 Commands to Try
-
-Start with these to see Flywheel in action on your vault:
-
-### 1. Search your vault
-
-> "Search for notes about [topic]"
-
-This uses full-text search with highlighted snippets from the local index.
-
-### 2. Explore connections
-
-> "What links to my note about [topic]?"
-
-Flywheel returns backlinks instantly from its pre-built graph -- no file scanning needed.
-
-### 3. Check vault health
-
-> "Run a health check on my vault"
-
-Returns vault stats, index freshness, detected periodic note folders, and recommendations.
-
-### 4. Read note structure
-
-> "Show me the structure of [note name]"
-
-Returns the heading hierarchy, word count, and sections without reading the full file content.
-
-### 5. Write with auto-wikilinks
-
-> "Add a note to today's daily note under ## Log: Met with [person name] about [topic]"
-
-Flywheel auto-links any mentions of existing notes. If your vault has `Stacy Thompson.md`, the output becomes `[[Stacy Thompson]] reviewed the [[API Security Checklist]]`.
-
----
-
-## Step 3: Choose a Tool Preset
-
-Flywheel defaults to the `agent` preset (search, read, write, tasks, memory).
-Use `"full"` for the complete tool surface, `"auto"` for progressive disclosure. Add bundles for graph analysis, wikilinks, or other capabilities:
+Examples:
 
 ```json
 {
@@ -468,230 +175,87 @@ Use `"full"` for the complete tool surface, `"auto"` for progressive disclosure.
 }
 ```
 
-See [CONFIGURATION.md](CONFIGURATION.md) for all presets, composable bundles, and categories.
-
----
-
-## Step 4: Configure Claude for Your Vault
-
-Flywheel gives Claude the tools. Configuration tells Claude *how to think about your vault* -- which folders matter, what frontmatter means, and how notes should be formatted.
-
-There are three layers, each optional:
-
-```
-.mcp.json          → Which tools Claude can use (Step 1 already did this)
-CLAUDE.md          → How Claude should think about your vault
-.claude/rules/     → Format rules for specific note types
+```json
+{
+  "env": {
+    "FLYWHEEL_TOOLS": "full"
+  }
+}
 ```
 
-Start with just `CLAUDE.md`. Add rules files later as you notice Claude getting formats wrong.
+`auto` is no longer progressive disclosure. It behaves like `full` plus an informational `discover_tools` helper.
 
-### CLAUDE.md: Your Vault Persona
+## Add Vault Instructions
 
-Create a `CLAUDE.md` file in your vault root. This is the single most impactful thing you can do -- it transforms Claude from a generic assistant into one that understands your specific system.
+Flywheel gives the model tools. Your vault instructions tell it how to use them well.
 
-Here's what to include and why:
+The useful stack is:
 
-**Vault structure** -- folder layout with what each folder holds. Claude uses this to pick the right tool arguments (folder filters, path construction). Without it, Claude guesses folder names.
-
-**Frontmatter conventions** -- field names, allowed values, which folders use which fields. Claude uses this to construct correct `where` filters and to create notes with proper metadata.
-
-**Section conventions** -- what headings your notes use (`## Log`, `## Tasks`, etc.). Claude uses this to target `vault_add_to_section` correctly instead of appending to the wrong place.
-
-**Key hubs** -- notes that serve as connection points (e.g., a "[[Team Roster]]" or "Project Index"). Claude checks backlinks on these first when answering broad questions.
-
-**Quick commands** (optional) -- natural language shortcuts mapped to what you want. These prime Claude to respond to shorthand like "what's overdue" with the right multi-tool workflow.
-
-**Workflows** (optional) -- multi-step tool chains for common tasks. These show Claude the optimal tool sequence so it doesn't have to figure it out each time.
-
-#### Starter Template
-
-```markdown
-# My Vault
-
-## Structure
-
-- `daily-notes/` -- daily journal entries with ## Log and ## Tasks sections
-- `projects/` -- one note per project, status tracked in frontmatter
-- `people/` -- one note per person, role and company in frontmatter
-- `meetings/` -- meeting notes linked to projects and people
-
-## Frontmatter
-
-| Field | Used in | Values |
-|-------|---------|--------|
-| `status` | projects | active, completed, on-hold |
-| `tags` | all | free-form |
-| `created` | all | YYYY-MM-DD |
-
-## Sections
-
-- Daily notes: `## Log` for entries, `## Tasks` for action items
-- Meeting notes: `## Attendees`, `## Notes`, `## Action Items`
-
-## Key Hubs
-
-- `projects/Project Index.md` -- links to all active projects
-- `people/Team.md` -- links to all team members
+```text
+.mcp.json or .codex/config.toml   -> which tools exist
+CLAUDE.md / AGENTS.md             -> how to think about the vault
+.claude/rules/                    -> format and workflow rules for specific note types
 ```
 
-### `.claude/rules/`: Format Rules for Note Types
+Good vault instructions usually cover:
+- folder structure
+- frontmatter conventions
+- common sections like `## Log` or `## Tasks`
+- preferred write habits
+- any required note templates or policies
 
-Claude Code supports [rules files](https://docs.anthropic.com/en/docs/claude-code/memory#project-level-memory) in `.claude/rules/` with `paths:` frontmatter for folder-scoped activation. These are ideal for format constraints that only apply to certain note types.
+## Multi-Vault
 
-Use them for:
-- Required frontmatter fields for a folder
-- Naming conventions (e.g., `INV-###` for invoices)
-- Section structure (required headings, ordering)
-- Time/date formats
+Use `FLYWHEEL_VAULTS` instead of `VAULT_PATH`:
 
-**Example: daily notes rule** (`.claude/rules/daily-notes.md`)
-
-```markdown
----
-paths: "daily-notes/**/*.md"
-alwaysApply: false
----
-
-# Daily Notes Format
-
-## Log Section
-
-Format log entries as continuous bullets:
-
-## Log
-
-- 09:00 - [[Client Name]] - Activity description
-- 10:30 - [[Client Name]] - Activity description
-- 14:00 - Admin - Non-billable activity
-
-## Time Format
-
-- Use 24-hour time: `09:00`, `14:30`
-- Include client wikilink when billable
+```text
+FLYWHEEL_VAULTS="personal:/home/you/obsidian/Personal,work:/home/you/obsidian/Work"
 ```
 
-### Iteration
+Rules:
+- the first vault is primary
+- `search` without `vault` searches across all vaults
+- most other tools default to the primary vault
+- each vault keeps separate index, watcher, and config state
 
-Start simple and build up:
+## Platform Notes
 
-1. **Week 1:** Add `CLAUDE.md` with just your folder structure
-2. **Week 2:** Add frontmatter conventions after you see Claude creating notes with wrong metadata
-3. **Week 3:** Add `.claude/rules/` files for note types where Claude keeps getting the format wrong
-4. **Ongoing:** Add quick commands and workflows as you discover patterns you repeat
+### Windows
 
----
+Use:
+- `cmd /c npx`
+- explicit `VAULT_PATH`
+- `FLYWHEEL_WATCH_POLL=true`
 
-## Step 5: Enable Semantic Intelligence (Optional)
+Without polling, Obsidian edits may not show up reliably.
 
-Flywheel supports deep semantic integration that goes far beyond keyword search. To enable it:
+### Semantic Search
 
-> "Build the semantic search index for my vault"
+If you want hybrid retrieval, run `init_semantic` once after setup. That builds the local embeddings index and search uses it automatically afterward.
 
-This runs `init_semantic`, which builds **two** indexes:
+### Runtime Config Examples
 
-### Note Embeddings (Hybrid Search)
-- Embeds all vault notes using a local model (23 MB, downloaded once)
-- After build: `search` (both `action=query` and `action=similar`) automatically combines keyword and semantic matching
-- No configuration changes needed — hybrid mode activates automatically
+Disable proactive linking:
 
-### Entity Embeddings (Semantic Wikilinks + Graph Analysis)
-- Embeds all vault entities (note titles, aliases, categories)
-- After build: wikilink suggestions gain **semantic scoring** — content about "deployment automation" can suggest `[[CI/CD]]` without keyword matches
-- Unlocks `semantic_links` in `schema(action: note_intelligence)` for per-note missing-entity suggestions
-
-### Build Details
-
-| | |
-|---|---|
-| **Build time** | ~2-3 minutes for 500 entities |
-| **Memory** | ~768 KB for 500 entities (loaded into memory at startup) |
-| **Model** | Local model, 23 MB (runs entirely on your machine) |
-| **Incremental** | File watcher keeps embeddings current as you edit |
-| **Runs once** | Subsequent startups load from cache |
-
-### What Unlocks
-
-After building semantic embeddings:
-
-- **Hybrid search**: `search` (both `action=query` and `action=similar`) combines BM25 + semantic matching via Reciprocal Rank Fusion — concept queries surface notes that don't share keywords
-- **Wikilink suggestions**: Semantic scoring finds conceptual links that keyword matching misses
-- **Semantic links**: `schema({ action: "note_intelligence", analysis: "semantic_links" })` — find missing entity links for a specific note
-- **Preflight checks**: `note(action: create)` warns when a semantically similar note already exists
-- **Broken link recovery**: `validate_links` suggests fixes via semantic similarity when exact matches fail
-
----
-
-## Common Issues
-
-### "Vault not found"
-
-Flywheel looks for a vault root by walking up from the working directory, checking for `.obsidian/` or `.claude/`. If neither exists:
-
-- **Claude Code:** Make sure you `cd` into your vault before running `claude`
-- **Claude Desktop:** Set `VAULT_PATH` explicitly in the config
-
-### "Too many tools" / Claude picks the wrong tool
-
-Reduce the tool set. Switch from `full` to `agent` or a specific bundle combination. Fewer tools = better tool selection by Claude.
-
-### "Permission denied" on file writes
-
-Flywheel writes to files in your vault directory and creates `.flywheel/` for its index. Make sure the user running Claude has write access to the vault folder.
-
-### Server silently fails on Windows
-
-Windows installs `npx` as a batch script (`npx.cmd`) which MCP clients can't execute directly via `spawn()`. The server process exits immediately with no error message — the client typically reports "Connection closed" or simply never lists Flywheel.
-
-**Fix:** Use `"command": "cmd"` with `"args": ["/c", "npx", ...]` instead of `"command": "npx"`. Also add `"FLYWHEEL_WATCH_POLL": "true"` to `env` — without it, edits you make in Obsidian won't appear in search results. See the [Windows section](#windows) or [CONFIGURATION.md](CONFIGURATION.md#windows) for the full config.
-
-### Stale search results
-
-The index rebuilds automatically via file watcher, but if results seem stale:
-
-1. Ask Claude to "refresh the index" (uses the `refresh_index` tool)
-2. Or delete `.flywheel/` and restart -- it rebuilds in seconds
-
-**Windows:** Make sure `FLYWHEEL_WATCH_POLL=true` is set — native file events are unreliable on Windows. See [Windows](#windows).
-
-### Git-related errors
-
-Flywheel's write tools optionally auto-commit changes. If your vault isn't a git repository, commits are silently skipped. If you see git errors:
-
-- Make sure git is installed and the vault is initialized (`git init`)
-- Check for stale `.git/index.lock` files (see [TROUBLESHOOTING.md](TROUBLESHOOTING.md))
-
----
-
-## Git Integration (Optional)
-
-Flywheel's write tools can auto-commit changes to git, giving you undo support and change history.
-
-### Setup
-
-```bash
-cd /path/to/vault
-git init
-echo ".flywheel/" >> .gitignore
-git add -A && git commit -m "initial commit"
+```text
+doctor({
+  action: "config",
+  mode: "set",
+  key: "proactive_linking",
+  value: false
+})
 ```
 
-### How it works
+Add custom `type:` categories:
 
-- Every write tool has a `commit` parameter (default: `false`)
-- Set `commit: true` to auto-commit each mutation
-- Use `vault_undo_last_mutation` to reverse the last commit
-- If the vault isn't a git repo, commits are silently skipped -- mutations still work
-
-### No git? No problem.
-
-All vault operations work without git. You just won't have undo or commit history. Git is never required.
-
----
-
-## Next Steps
-
-- **[COOKBOOK.md](COOKBOOK.md)** -- Example prompts organized by use case
-- **[TOOLS.md](TOOLS.md)** -- Full tool reference
-- **[CONFIGURATION.md](CONFIGURATION.md)** -- All environment variables and advanced options
-- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** -- Error recovery and diagnostics
+```text
+doctor({
+  action: "config",
+  mode: "set",
+  key: "custom_categories",
+  value: {
+    "work-ticket": { "type_boost": 2 },
+    "recipe": { "type_boost": 1 }
+  }
+})
+```

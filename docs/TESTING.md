@@ -478,11 +478,11 @@ These are product quality signals that no amount of handler unit testing can det
 Results from live testing (2026-03-22). Claude discovers and uses flywheel tools when enabled.
 
 Current tool surface reference from `packages/mcp-server/src/config.ts`:
-- Total registered tools: 65 across 12 categories
-- `full` preset surface: 65 tools visible
-- `agent` preset surface: 21 tools (Tier 1)
+- Total registered tools: see `packages/mcp-server/src/config.ts` / generated preset docs
+- `full` preset surface: full static category surface at startup
+- `agent` preset surface: focused default preset
 
-The embedded reports below are historical artifacts from runs on older tool surfaces. Keep the dated report numbers as historical evidence, but use the current counts above for the live product surface.
+The embedded reports below are historical artifacts from older tool surfaces and older tool names. Keep them as dated evidence only; use the current config and generated docs for the live product surface.
 
 #### Bundle Adoption
 
@@ -633,7 +633,7 @@ Each of 12 tool bundles tested with a targeted prompt against carter-strategy va
 
 ### Per-Tool Coverage
 
-Each tool tested with a targeted prompt against the carter-strategy vault. The current default-visible surface is the 21 tools in the `agent` preset (Tier 1). The embedded report below is a historical full-surface run from before preset rationalization; rerun `demos/run-coverage-test.sh` if you need a fresh report for the current default or full surface.
+Each tool tested with a targeted prompt against the carter-strategy vault. The embedded report below is a historical full-surface run from before preset rationalization and merged tool names; rerun `demos/run-coverage-test.sh` if you need a fresh report for the current surface.
 
 <!-- BEGIN COVERAGE TEST RESULTS -->
 # Tool Coverage Test Report

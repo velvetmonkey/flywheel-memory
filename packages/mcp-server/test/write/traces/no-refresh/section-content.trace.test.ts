@@ -34,7 +34,8 @@ Some notes here
   });
 
   it('add visible in note_read', async () => {
-    await snap(client, 'vault_add_to_section', {
+    await snap(client, 'edit_section', {
+      action: 'add',
       path: notePath,
       section: 'Log',
       content: 'New xyzunique entry',
@@ -52,7 +53,8 @@ Some notes here
 
   it('remove visible in note_read', async () => {
     // Add a line we can remove
-    await snap(client, 'vault_add_to_section', {
+    await snap(client, 'edit_section', {
+      action: 'add',
       path: notePath,
       section: 'Log',
       content: 'Removable qrsunique item',
@@ -68,7 +70,8 @@ Some notes here
     expect(before.content).toContain('Removable qrsunique item');
 
     // Remove it
-    await snap(client, 'vault_remove_from_section', {
+    await snap(client, 'edit_section', {
+      action: 'remove',
       path: notePath,
       section: 'Log',
       pattern: 'Removable qrsunique item',
@@ -83,7 +86,8 @@ Some notes here
   });
 
   it('replace visible in note_read', async () => {
-    await snap(client, 'vault_replace_in_section', {
+    await snap(client, 'edit_section', {
+      action: 'replace',
       path: notePath,
       section: 'Log',
       search: 'Existing entry',

@@ -45,9 +45,9 @@ describe('MCP Write Integration', () => {
   });
 
   // ==========================================================================
-  // vault_add_to_section
+  // edit_section (action: 'add')
   // ==========================================================================
-  describe('vault_add_to_section', () => {
+  describe('edit_section (action: add)', () => {
     it('adds content to an existing section', async () => {
       await createTestNote(ctx.vaultPath, 'test-add.md', [
         '# Test',
@@ -59,8 +59,9 @@ describe('MCP Write Integration', () => {
       ].join('\n'));
 
       const result = await client.callTool({
-        name: 'vault_add_to_section',
+        name: 'edit_section',
         arguments: {
+          action: 'add',
           path: 'test-add.md',
           section: 'Log',
           content: '- New entry',
@@ -79,8 +80,9 @@ describe('MCP Write Integration', () => {
     it('creates a note when create_if_missing is true', async () => {
       // create_if_missing creates note from fallback, then auto-creates missing section
       const result = await client.callTool({
-        name: 'vault_add_to_section',
+        name: 'edit_section',
         arguments: {
+          action: 'add',
           path: 'daily/2099-01-01.md',
           section: 'Log',
           content: '- Created via MCP',
@@ -101,8 +103,9 @@ describe('MCP Write Integration', () => {
 
     it('dry_run + create_if_missing does not create a file', async () => {
       const result = await client.callTool({
-        name: 'vault_add_to_section',
+        name: 'edit_section',
         arguments: {
+          action: 'add',
           path: 'daily/2099-02-02.md',
           section: '2099-02-02',
           content: '- Should not exist',
@@ -121,8 +124,9 @@ describe('MCP Write Integration', () => {
 
     it('blocks path traversal', async () => {
       const result = await client.callTool({
-        name: 'vault_add_to_section',
+        name: 'edit_section',
         arguments: {
+          action: 'add',
           path: '../../../etc/passwd',
           section: 'Log',
           content: 'exploit',
@@ -135,8 +139,9 @@ describe('MCP Write Integration', () => {
 
     it('blocks sensitive file access', async () => {
       const result = await client.callTool({
-        name: 'vault_add_to_section',
+        name: 'edit_section',
         arguments: {
+          action: 'add',
           path: '.env',
           section: 'Secrets',
           content: 'exploit',
@@ -147,7 +152,7 @@ describe('MCP Write Integration', () => {
       expect(text).toMatch(/sensitive|blocked|denied|protected|security|\.env/);
     });
 
-    describe('vault_add_to_section children', () => {
+    describe('edit_section children', () => {
       it('renders child labels as nested bullets', async () => {
         await createTestNote(ctx.vaultPath, 'child.md', [
           '# Test',
@@ -157,8 +162,9 @@ describe('MCP Write Integration', () => {
         ].join('\n'));
 
         const result = await client.callTool({
-          name: 'vault_add_to_section',
+          name: 'edit_section',
           arguments: {
+            action: 'add',
             path: 'child.md',
             section: 'Log',
             content: 'Summary',
@@ -186,8 +192,9 @@ describe('MCP Write Integration', () => {
         ].join('\n'));
 
         const result = await client.callTool({
-          name: 'vault_add_to_section',
+          name: 'edit_section',
           arguments: {
+            action: 'add',
             path: 'child-indent.md',
             section: 'Log',
             content: 'Update',
@@ -215,8 +222,9 @@ describe('MCP Write Integration', () => {
         ].join('\n'));
 
         await client.callTool({
-          name: 'vault_add_to_section',
+          name: 'edit_section',
           arguments: {
+            action: 'add',
             path: 'child-sanitize.md',
             section: 'Log',
             content: 'Summary',
@@ -243,8 +251,9 @@ describe('MCP Write Integration', () => {
         ].join('\n'));
 
         await client.callTool({
-          name: 'vault_add_to_section',
+          name: 'edit_section',
           arguments: {
+            action: 'add',
             path: 'child-code.md',
             section: 'Log',
             content: 'Snippet',
@@ -274,8 +283,9 @@ describe('MCP Write Integration', () => {
         ].join('\n'));
 
         await client.callTool({
-          name: 'vault_add_to_section',
+          name: 'edit_section',
           arguments: {
+            action: 'add',
             path: 'child-none.md',
             section: 'Log',
             content: 'Regular entry',
@@ -290,13 +300,14 @@ describe('MCP Write Integration', () => {
   });
 
   // ==========================================================================
-  // vault_create_note
+  // note (action: 'create')
   // ==========================================================================
-  describe('vault_create_note', () => {
+  describe('note (action: create)', () => {
     it('creates a note with valid path and content', async () => {
       const result = await client.callTool({
-        name: 'vault_create_note',
+        name: 'note',
         arguments: {
+          action: 'create',
           path: 'new-note.md',
           content: '# New Note\n\nHello world',
         },
@@ -312,8 +323,9 @@ describe('MCP Write Integration', () => {
 
     it('blocks path traversal on create', async () => {
       const result = await client.callTool({
-        name: 'vault_create_note',
+        name: 'note',
         arguments: {
+          action: 'create',
           path: '../../outside.md',
           content: '# Exploit',
         },
@@ -325,13 +337,13 @@ describe('MCP Write Integration', () => {
   });
 
   // ==========================================================================
-  // flywheel_config
+  // doctor (action: 'config')
   // ==========================================================================
-  describe('flywheel_config', () => {
+  describe('doctor (action: config)', () => {
     it('returns valid config in get mode', async () => {
       const result = await client.callTool({
-        name: 'flywheel_config',
-        arguments: { mode: 'get' },
+        name: 'doctor',
+        arguments: { action: 'config', mode: 'get' },
       });
 
       expect(result.isError).toBeFalsy();
@@ -341,8 +353,9 @@ describe('MCP Write Integration', () => {
 
     it('persists a valid key with set mode', async () => {
       const setResult = await client.callTool({
-        name: 'flywheel_config',
+        name: 'doctor',
         arguments: {
+          action: 'config',
           mode: 'set',
           key: 'wikilink_strictness',
           value: 'conservative',
@@ -355,8 +368,8 @@ describe('MCP Write Integration', () => {
 
       // Verify via get
       const getResult = await client.callTool({
-        name: 'flywheel_config',
-        arguments: { mode: 'get' },
+        name: 'doctor',
+        arguments: { action: 'config', mode: 'get' },
       });
       const getData = parseResult(getResult) as Record<string, unknown>;
       expect(getData.wikilink_strictness).toBe('conservative');
@@ -364,8 +377,9 @@ describe('MCP Write Integration', () => {
 
     it('rejects an unknown config key', async () => {
       const result = await client.callTool({
-        name: 'flywheel_config',
+        name: 'doctor',
         arguments: {
+          action: 'config',
           mode: 'set',
           key: 'nonexistent',
           value: 'anything',
@@ -379,8 +393,9 @@ describe('MCP Write Integration', () => {
 
     it('rejects an invalid value type', async () => {
       const result = await client.callTool({
-        name: 'flywheel_config',
+        name: 'doctor',
         arguments: {
+          action: 'config',
           mode: 'set',
           key: 'wikilink_strictness',
           value: 12345,
@@ -394,8 +409,9 @@ describe('MCP Write Integration', () => {
 
     it('rejects read-only key (paths)', async () => {
       const result = await client.callTool({
-        name: 'flywheel_config',
+        name: 'doctor',
         arguments: {
+          action: 'config',
           mode: 'set',
           key: 'paths',
           value: {},

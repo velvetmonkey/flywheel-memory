@@ -17,13 +17,15 @@ describe('Trace: Flywheel config (no refresh)', () => {
   });
 
   it('set persists in get', async () => {
-    await snap(client, 'flywheel_config', {
+    await snap(client, 'doctor', {
+      action: 'config',
       mode: 'set',
       key: 'wikilink_strictness',
       value: 'conservative',
     });
 
-    const config = await snap(client, 'flywheel_config', {
+    const config = await snap(client, 'doctor', {
+      action: 'config',
       mode: 'get',
     });
 

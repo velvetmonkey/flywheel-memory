@@ -24,6 +24,28 @@ import {
 } from './tasks.js';
 
 import {
+  findTasks,
+  toggleTask,
+} from '../write/tasks.js';
+
+import {
+  readVaultFile,
+  writeVaultFile,
+  WriteConflictError,
+  findSection,
+  injectMutationMetadata,
+} from '../../core/write/writer.js';
+
+import {
+  ensureFileExists,
+  handleGitCommit,
+  formatMcpResult,
+  errorResult,
+  successResult,
+} from '../../core/write/mutation-helpers.js';
+
+
+import {
   getLinkPath,
   getWeightedLinkPath,
   getCommonNeighbors,
@@ -31,7 +53,7 @@ import {
 } from './graphAdvanced.js';
 
 import { getExcludeTags, type FlywheelConfig } from '../../core/read/config.js';
-import { isTaskCacheReady, queryTasksFromCache, refreshIfStale } from '../../core/read/taskCache.js';
+import { isTaskCacheReady, queryTasksFromCache, refreshIfStale, updateTaskCacheForFile } from '../../core/read/taskCache.js';
 import { getEntityByName, type StateDb } from '@velvetmonkey/vault-core';
 
 /**
@@ -48,31 +70,32 @@ export function registerPrimitiveTools(
   // NOTE_READ — merged structure/section/sections tool (T43 B2)
   // ============================================
 
-  server.tool(
-    'note_read',
-    'Read vault note content. action=structure (default): heading outline, frontmatter, backlinks, outlinks, word count, optional full section text — prefer over built-in Read for vault notes. action=section: text under one heading by name. action=sections: vault-wide heading search by regex. Returns enriched note metadata. Does not search or mutate.',
-    {
-      action: z.enum(['structure', 'section', 'sections']).describe(
-        'Operation: structure (read note outline + metadata) | section (read one section by heading) | sections (vault-wide heading search)'
-      ),
+  // Shared schema for note_read / read (alias) — defined once, registered twice
+  const noteReadDesc = 'Read vault note content. action=structure (default): heading outline, frontmatter, backlinks, outlinks, word count, optional full section text — prefer over built-in Read for vault notes. action=section: text under one heading by name. action=sections: vault-wide heading search by regex. Returns enriched note metadata. Does not search or mutate.';
+  const noteReadSchema = {
+    action: z.enum(['structure', 'section', 'sections']).describe(
+      'Operation: structure (read note outline + metadata) | section (read one section by heading) | sections (vault-wide heading search)'
+    ),
+    path: z.string().optional().describe('[structure|section] Vault-relative note path'),
+    include_content: z.boolean().optional().describe('[structure] Include full section text under each heading (default false)'),
+    max_content_chars: z.number().optional().describe('[structure] Max total chars of section content (default 20000)'),
+    heading: z.string().optional().describe('[section] Heading text to find'),
+    include_subheadings: z.boolean().optional().describe('[section] Include content under subheadings (default true)'),
+    max_section_chars: z.number().optional().describe('[section] Max chars of section content (default 10000)'),
+    pattern: z.string().optional().describe('[sections] Regex to match heading text'),
+    folder: z.string().optional().describe('[sections] Limit to notes in this folder'),
+    limit: z.coerce.number().optional().describe('[sections] Max results (default 50)'),
+    offset: z.coerce.number().optional().describe('[sections] Results to skip for pagination (default 0)'),
+  } as const;
 
-      // [structure|section] params
-      path: z.string().optional().describe('[structure|section] Vault-relative note path'),
-      include_content: z.boolean().optional().describe('[structure] Include full section text under each heading (default false)'),
-      max_content_chars: z.number().optional().describe('[structure] Max total chars of section content (default 20000)'),
+  type NoteReadArgs = {
+    action: 'structure' | 'section' | 'sections';
+    path?: string; include_content?: boolean; max_content_chars?: number;
+    heading?: string; include_subheadings?: boolean; max_section_chars?: number;
+    pattern?: string; folder?: string; limit?: number; offset?: number;
+  };
 
-      // [section] params
-      heading: z.string().optional().describe('[section] Heading text to find'),
-      include_subheadings: z.boolean().optional().describe('[section] Include content under subheadings (default true)'),
-      max_section_chars: z.number().optional().describe('[section] Max chars of section content (default 10000)'),
-
-      // [sections] params
-      pattern: z.string().optional().describe('[sections] Regex to match heading text'),
-      folder: z.string().optional().describe('[sections] Limit to notes in this folder'),
-      limit: z.coerce.number().optional().describe('[sections] Max results (default 50)'),
-      offset: z.coerce.number().optional().describe('[sections] Results to skip for pagination (default 0)'),
-    },
-    async ({ action, path, include_content, max_content_chars, heading, include_subheadings, max_section_chars, pattern, folder, limit: requestedLimit, offset: requestedOffset }) => {
+  const noteReadImpl = async ({ action, path, include_content, max_content_chars, heading, include_subheadings, max_section_chars, pattern, folder, limit: requestedLimit, offset: requestedOffset }: NoteReadArgs) => {
       const index = getIndex();
       const vaultPath = getVaultPath();
 
@@ -196,8 +219,11 @@ export function registerPrimitiveTools(
         returned_count: result.length,
         sections: result,
       }, null, 2) }] };
-    }
-  );
+  }; // end noteReadImpl
+
+  // Register as note_read (backward compat) and read (canonical T43 B3+ name)
+  server.tool('note_read', noteReadDesc, noteReadSchema, noteReadImpl);
+  server.tool('read', noteReadDesc, noteReadSchema, noteReadImpl);
 
   // ============================================
   // UNIFIED TASKS TOOL
@@ -207,18 +233,83 @@ export function registerPrimitiveTools(
     'tasks',
     {
       title: 'Tasks',
-      description: 'Use when listing, filtering, or counting tasks across the vault. Produces task items with status, text, due date, path, and line number. Returns total and per-status counts with paginated results. Does not toggle or create tasks — use vault_toggle_task or vault_add_task to mutate.',
+      description: `Use to list, filter, or toggle tasks in the vault. Returns task items with path, status, and text. Does not create tasks — use vault_add_task for that. action: list (filter by status/folder/tag/path) | toggle (check/uncheck by path + text match)`,
       inputSchema: {
-        path: z.string().optional().describe('Scope to tasks from this specific note path'),
-        status: z.enum(['open', 'completed', 'cancelled']).default('open').describe('Filter by task status'),
-        has_due_date: z.boolean().optional().describe('If true, only return tasks with due dates (sorted by date)'),
-        folder: z.string().optional().describe('Limit to tasks in notes within this folder'),
-        tag: z.string().optional().describe('Filter to tasks with this tag'),
-        limit: z.coerce.number().default(25).describe('Maximum tasks to return'),
-        offset: z.coerce.number().default(0).describe('Number of results to skip (for pagination)'),
+        action: z.enum(['list', 'toggle']).optional().default('list').describe('Operation: list=query tasks (default), toggle=check/uncheck a task'),
+        // [list] query params
+        path: z.string().optional().describe('[list] Scope to tasks from this note path. [toggle] Note containing the task (required for toggle)'),
+        status: z.enum(['open', 'completed', 'cancelled']).default('open').describe('[list] Filter by task status'),
+        has_due_date: z.boolean().optional().describe('[list] Only return tasks with due dates'),
+        folder: z.string().optional().describe('[list] Limit to notes in this folder'),
+        tag: z.string().optional().describe('[list] Filter to tasks with this tag'),
+        limit: z.coerce.number().default(25).describe('[list] Maximum tasks to return'),
+        offset: z.coerce.number().default(0).describe('[list] Results to skip (pagination)'),
+        // [toggle] mutation params
+        task: z.string().optional().describe('[toggle] Task text to find (partial match)'),
+        section: z.string().optional().describe('[toggle] Limit task search to this section'),
+        commit: z.boolean().optional().default(false).describe('[toggle] Commit this change to git'),
+        dry_run: z.boolean().optional().default(false).describe('[toggle] Preview without writing'),
+        agent_id: z.string().optional().describe('[toggle] Agent identifier for scoping'),
+        session_id: z.string().optional().describe('[toggle] Session identifier for scoping'),
       },
     },
-    async ({ path, status, has_due_date, folder, tag, limit: requestedLimit, offset }) => {
+    async ({ action = 'list', path, status, has_due_date, folder, tag, limit: requestedLimit, offset, task, section, commit, dry_run, agent_id, session_id }) => {
+      // ── action: toggle ──────────────────────────────────────────────────────
+      if (action === 'toggle') {
+        if (!path || !task) {
+          return formatMcpResult(errorResult(path ?? '', 'toggle requires path and task'));
+        }
+        const vaultPath = getVaultPath();
+        try {
+          const existsError = await ensureFileExists(vaultPath, path);
+          if (existsError) return formatMcpResult(existsError);
+
+          const { content: fileContent, frontmatter, contentHash } = await readVaultFile(vaultPath, path);
+
+          let sectionBoundary: ReturnType<typeof findSection> | undefined;
+          if (section) {
+            const found = findSection(fileContent, section);
+            if (!found) return formatMcpResult(errorResult(path, `Section not found: ${section}`));
+            sectionBoundary = found;
+          }
+
+          const tasks = findTasks(fileContent, sectionBoundary ?? undefined);
+          const searchLower = task.toLowerCase();
+          const matchingTask = tasks.find(t => t.text.toLowerCase().includes(searchLower));
+          if (!matchingTask) return formatMcpResult(errorResult(path, `No task found matching "${task}"`));
+
+          const toggleResult = toggleTask(fileContent, matchingTask.line);
+          if (!toggleResult) return formatMcpResult(errorResult(path, 'Failed to toggle task'));
+
+          const newStatus = toggleResult.newState ? 'completed' : 'incomplete';
+          const checkbox = toggleResult.newState ? '[x]' : '[ ]';
+
+          if (dry_run) {
+            return formatMcpResult(successResult(path, `[dry run] Would toggle task to ${newStatus}`, {}, {
+              preview: `${checkbox} ${matchingTask.text}`, dryRun: true,
+            }));
+          }
+
+          let finalFrontmatter = frontmatter;
+          if (agent_id || session_id) {
+            finalFrontmatter = injectMutationMetadata(frontmatter, { agent_id, session_id });
+          }
+          await writeVaultFile(vaultPath, path, toggleResult.content, finalFrontmatter, 'LF', contentHash);
+          await updateTaskCacheForFile(vaultPath, path).catch(() => {});
+          const gitInfo = await handleGitCommit(vaultPath, path, commit ?? false, '[Flywheel:Task]');
+          return formatMcpResult(successResult(path, `Toggled task to ${newStatus}`, gitInfo, {
+            preview: `${checkbox} ${matchingTask.text}`,
+          }));
+        } catch (error) {
+          const extras: Partial<import('../../core/write/types.js').MutationResult> = {};
+          if (error instanceof WriteConflictError) {
+            extras.warnings = [{ type: 'write_conflict', message: (error as Error).message, suggestion: 'Re-read and retry.' }];
+          }
+          return formatMcpResult(errorResult(path, `Failed to toggle task: ${error instanceof Error ? error.message : String(error)}`, extras));
+        }
+      }
+
+      // ── action: list (default) ───────────────────────────────────────────────
       const limit = Math.min(requestedLimit ?? 25, MAX_LIMIT);
       const index = getIndex();
       const vaultPath = getVaultPath();
@@ -339,88 +430,7 @@ export function registerPrimitiveTools(
     }
   );
 
-  // ============================================
-  // ADVANCED GRAPH PRIMITIVES
-  // ============================================
-
-  // get_link_path
-  server.registerTool(
-    'get_link_path',
-    {
-      title: 'Get Link Path',
-      description: 'Use when tracing how two notes connect. Produces the shortest chain of wikilinks from source to target, showing each intermediate note. Returns an ordered path array. Answers: "What\'s the connection chain between A and B?" Does not consider semantic similarity — only follows explicit wikilinks.',
-      inputSchema: {
-        from: z.string().describe('Starting note path'),
-        to: z.string().describe('Target note path'),
-        max_depth: z.coerce.number().default(10).describe('Maximum path length to search'),
-        weighted: z.boolean().default(false).describe('Use weighted path-finding that penalizes hub nodes for more meaningful paths'),
-      },
-    },
-    async ({ from, to, max_depth, weighted }) => {
-      const index = getIndex();
-      const result = weighted
-        ? getWeightedLinkPath(index, from, to, max_depth)
-        : getLinkPath(index, from, to, max_depth);
-
-      return {
-        content: [{ type: 'text' as const, text: JSON.stringify({
-          from,
-          to,
-          ...result,
-        }, null, 2) }],
-      };
-    }
-  );
-
-  // get_common_neighbors
-  server.registerTool(
-    'get_common_neighbors',
-    {
-      title: 'Get Common Neighbors',
-      description: 'Use when finding what two notes have in common. Produces shared backlinks and forward links between two specified notes — the notes they both link to or are both linked from. Returns common neighbor paths with link directions. Answers: "How are these two notes related through shared connections?"',
-      inputSchema: {
-        note_a: z.string().describe('First note path'),
-        note_b: z.string().describe('Second note path'),
-      },
-    },
-    async ({ note_a, note_b }) => {
-      const index = getIndex();
-      const result = getCommonNeighbors(index, note_a, note_b);
-
-      return {
-        content: [{ type: 'text' as const, text: JSON.stringify({
-          note_a,
-          note_b,
-          common_count: result.length,
-          common_neighbors: result,
-        }, null, 2) }],
-      };
-    }
-  );
-
-  // get_connection_strength
-  server.registerTool(
-    'get_connection_strength',
-    {
-      title: 'Get Connection Strength',
-      description: 'Use when measuring how strongly two notes relate. Produces a composite score from direct links, shared neighbors, co-occurrence, and path distance. Returns a numeric strength value with factor breakdown. Does not list individual connections — use get_common_neighbors for detail.',
-      inputSchema: {
-        note_a: z.string().describe('First note path'),
-        note_b: z.string().describe('Second note path'),
-      },
-    },
-    async ({ note_a, note_b }) => {
-      const index = getIndex();
-      const result = getConnectionStrength(index, note_a, note_b);
-
-      return {
-        content: [{ type: 'text' as const, text: JSON.stringify({
-          note_a,
-          note_b,
-          ...result,
-        }, null, 2) }],
-      };
-    }
-  );
+  // get_link_path, get_common_neighbors, get_connection_strength retired (T43 B3+)
+  // Use graph(action: path|neighbors|strength) instead
 
 }

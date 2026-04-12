@@ -53,7 +53,8 @@ describe('cascading flywheel traces', () => {
 
     it('adding wikilink via mutation creates backlink on target', async () => {
       // Simulate enrichment: replace plain "Dana" with [[Dana]] wikilink
-      await snap(client, 'vault_replace_in_section', {
+      await snap(client, 'edit_section', {
+        action: 'replace',
         path: 'daily/2026-03-01.md',
         section: '2026-03-01',
         search: 'Met with Dana to discuss the roadmap.',
@@ -102,7 +103,8 @@ describe('cascading flywheel traces', () => {
       expect(before.total_results).toBeGreaterThanOrEqual(1);
 
       // Replace content
-      await snap(client, 'vault_replace_in_section', {
+      await snap(client, 'edit_section', {
+        action: 'replace',
         path: 'notes/framework.md',
         section: 'Details',
         search: 'reactxyztoken',

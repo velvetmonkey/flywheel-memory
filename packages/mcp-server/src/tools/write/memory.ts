@@ -14,6 +14,7 @@ import {
   forgetMemory,
   storeSessionSummary,
 } from '../../core/write/memory.js';
+import { runBrief } from '../read/brief.js';
 
 /**
  * Register memory tools with the MCP server
@@ -26,7 +27,7 @@ export function registerMemoryTools(
     'memory',
     'Entity-linked vault facts and session summaries. action: store — save a fact (auto-links entities). get — by key. search — FTS5 over memories. list — browse. forget — delete. summarize_session — session summary. Returns stored/retrieved content. Does not operate on vault note bodies. e.g. { action:"store", key:"sarah.pref", value:"email" }',
     {
-      action: z.enum(['store', 'get', 'search', 'list', 'forget', 'summarize_session']).describe('Operation to perform'),
+      action: z.enum(['store', 'get', 'search', 'list', 'forget', 'summarize_session', 'brief']).describe('Operation to perform'),
       key: z.string().optional().describe('[store|get|forget] Memory key (e.g., "user.pref.theme", "project.x.deadline")'),
       value: z.string().optional().describe('[store] The fact/preference/observation to store (up to 2000 chars)'),
       type: z.enum(['fact', 'preference', 'observation', 'summary']).optional().describe('[store|search] Memory type'),
@@ -230,6 +231,13 @@ export function registerMemoryTools(
               }, null, 2),
             }],
           };
+        }
+
+        case 'brief': {
+          return runBrief(stateDb, {
+            max_tokens: (args as { max_tokens?: number }).max_tokens,
+            focus: (args as { focus?: string }).focus,
+          });
         }
 
         default:

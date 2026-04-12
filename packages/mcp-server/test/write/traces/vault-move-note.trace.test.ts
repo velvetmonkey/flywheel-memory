@@ -56,9 +56,10 @@ describe('vault_move_note trace', () => {
     await snap(client, 'refresh_index');
 
     // Perform the move
-    await snap(client, 'vault_move_note', {
-      oldPath: 'people/Alice.md',
-      newPath: 'team/Alice.md',
+    await snap(client, 'note', {
+      action: 'move',
+      path: 'people/Alice.md',
+      destination: 'team/Alice.md',
     });
 
     // Refresh after move

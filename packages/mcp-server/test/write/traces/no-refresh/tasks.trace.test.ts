@@ -31,7 +31,8 @@ type: test
   });
 
   it('toggle reflects in tasks tool', async () => {
-    await snap(client, 'vault_toggle_task', {
+    await snap(client, 'tasks', {
+      action: 'toggle',
       path: notePath,
       task: 'Buy milk',
     });

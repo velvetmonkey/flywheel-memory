@@ -15,6 +15,7 @@ import { registerSystemTools } from '../../../src/tools/read/system.js';
 import { registerPrimitiveTools } from '../../../src/tools/read/primitives.js';
 import { registerMigrationTools } from '../../../src/tools/read/migrations.js';
 import { registerGraphAnalysisTools } from '../../../src/tools/read/graphAnalysis.js';
+import { registerGraphTools2 } from '../../../src/tools/read/graphTools.js';
 import { registerVaultSchemaTools } from '../../../src/tools/read/vaultSchema.js';
 import { registerSemanticAnalysisTools } from '../../../src/tools/read/semanticAnalysis.js';
 import { registerNoteIntelligenceTools } from '../../../src/tools/read/noteIntelligence.js';
@@ -139,6 +140,14 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     server,
     () => currentIndex,
     () => vaultPath
+  );
+
+  // T43 B3+: also register merged graph tool alongside legacy graph_analysis
+  registerGraphTools2(
+    server,
+    () => currentIndex,
+    () => vaultPath,
+    () => stateDb,
   );
 
   registerSemanticAnalysisTools(

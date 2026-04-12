@@ -43,7 +43,8 @@ describe('vault_replace_in_section traces', () => {
     const before = await snap(client, 'search', { query: 'oldunique' });
     expect(before.total_results).toBeGreaterThanOrEqual(1);
 
-    await snap(client, 'vault_replace_in_section', {
+    await snap(client, 'edit_section', {
+      action: 'replace',
       path: 'notes/replace-test.md',
       section: 'Details',
       search: 'oldunique text here with details.',

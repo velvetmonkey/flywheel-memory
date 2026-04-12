@@ -245,84 +245,64 @@ function buildProactiveLinkingSection(stateDb: StateDb): BriefSection | null {
 // Tool Registration
 // =============================================================================
 
-export function registerBriefTools(
-  server: McpServer,
-  getStateDb: () => StateDb | null,
-): void {
-  server.tool(
-    'brief',
-    'Use at conversation start for session context. Produces a startup briefing with recent sessions, active entities, stored memories, pending corrections, and vault stats. Returns a compact context payload. Does not search or read individual notes — use search to find specific content.',
-    {
-      max_tokens: z.number().optional().describe('Token budget (lower-priority sections truncated first)'),
-      focus: z.string().optional().describe('Focus entity or topic (filters content)'),
-    },
-    async (args) => {
-      const stateDb = getStateDb();
-      if (!stateDb) {
-        return {
-          content: [{ type: 'text' as const, text: JSON.stringify({ error: 'StateDb not available' }) }],
-          isError: true,
-        };
-      }
+/**
+ * Shared brief handler — called by both the standalone brief tool and
+ * memory(action: brief). Exported so memory.ts can reuse the logic.
+ */
+export async function runBrief(
+  stateDb: StateDb,
+  args: { max_tokens?: number; focus?: string },
+): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
+  const sections: BriefSection[] = [
+    buildSessionSection(stateDb, 5),
+    buildActiveEntitiesSection(stateDb, 10),
+    buildActiveMemoriesSection(stateDb, 20),
+    buildCorrectionsSection(stateDb, 10),
+    buildVaultPulseSection(stateDb),
+    buildProactiveLinkingSection(stateDb),
+  ].filter((s): s is BriefSection => s !== null);
 
-      const sections: BriefSection[] = [
-        buildSessionSection(stateDb, 5),
-        buildActiveEntitiesSection(stateDb, 10),
-        buildActiveMemoriesSection(stateDb, 20),
-        buildCorrectionsSection(stateDb, 10),
-        buildVaultPulseSection(stateDb),
-        buildProactiveLinkingSection(stateDb),
-      ].filter((s): s is BriefSection => s !== null);
-
-      // Token budgeting: if max_tokens specified, enforce as a hard cap
-      if (args.max_tokens) {
-        let totalTokens = 0;
-        // Sort by priority (ascending = higher priority first)
-        sections.sort((a, b) => a.priority - b.priority);
-
-        // Filter to sections that fit, truncating the first partial one
-        const kept: BriefSection[] = [];
-        for (const section of sections) {
-          if (totalTokens >= args.max_tokens) {
-            // Budget exhausted — omit remaining sections entirely
-            break;
-          }
-          if (totalTokens + section.estimated_tokens <= args.max_tokens) {
-            // Fits entirely
-            totalTokens += section.estimated_tokens;
-            kept.push(section);
-          } else if (Array.isArray(section.content)) {
-            // Partially fits — truncate array content
-            const remaining = args.max_tokens - totalTokens;
-            const itemTokens = section.estimated_tokens / Math.max(1, (section.content as unknown[]).length);
-            const keepCount = Math.max(1, Math.floor(remaining / itemTokens));
-            section.content = (section.content as unknown[]).slice(0, keepCount);
-            section.estimated_tokens = estimateTokens(section.content);
-            totalTokens += section.estimated_tokens;
-            kept.push(section);
-            break; // Budget consumed after partial section
-          }
-          // Non-array section that doesn't fit — skip it
-        }
-        sections.length = 0;
-        sections.push(...kept);
-      }
-
-      // Build response
-      const response: Record<string, unknown> = {};
-      let totalTokens = 0;
-      for (const section of sections) {
-        response[section.name] = section.content;
+  if (args.max_tokens) {
+    let totalTokens = 0;
+    sections.sort((a, b) => a.priority - b.priority);
+    const kept: BriefSection[] = [];
+    for (const section of sections) {
+      if (totalTokens >= args.max_tokens) break;
+      if (totalTokens + section.estimated_tokens <= args.max_tokens) {
         totalTokens += section.estimated_tokens;
+        kept.push(section);
+      } else if (Array.isArray(section.content)) {
+        const remaining = args.max_tokens - totalTokens;
+        const itemTokens = section.estimated_tokens / Math.max(1, (section.content as unknown[]).length);
+        const keepCount = Math.max(1, Math.floor(remaining / itemTokens));
+        section.content = (section.content as unknown[]).slice(0, keepCount);
+        section.estimated_tokens = estimateTokens(section.content);
+        totalTokens += section.estimated_tokens;
+        kept.push(section);
+        break;
       }
-      response._meta = { total_estimated_tokens: totalTokens };
-
-      return {
-        content: [{
-          type: 'text' as const,
-          text: JSON.stringify(response, null, 2),
-        }],
-      };
     }
-  );
+    sections.length = 0;
+    sections.push(...kept);
+  }
+
+  const response: Record<string, unknown> = {};
+  let totalTokens = 0;
+  for (const section of sections) {
+    response[section.name] = section.content;
+    totalTokens += section.estimated_tokens;
+  }
+  response._meta = { total_estimated_tokens: totalTokens };
+
+  return { content: [{ type: 'text' as const, text: JSON.stringify(response, null, 2) }] };
 }
+
+// brief standalone tool retired (T43 B3+) — brief action now part of memory tool
+// registerBriefTools is no longer called; runBrief is still exported for memory.ts
+export function registerBriefTools(
+  _server: McpServer,
+  _getStateDb: () => StateDb | null,
+): void {
+  // Intentionally empty — brief folded into memory(action: brief)
+}
+

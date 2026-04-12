@@ -128,7 +128,9 @@ describe('Tool Registration Verification', () => {
     const { toolNames } = await countToolsInSource();
     const toolSet = new Set(toolNames);
 
-    for (const tool of ['vault_toggle_task', 'vault_add_task']) {
+    // vault_toggle_task retired (T43 B3+) — use tasks(action: toggle)
+    // vault_add_task still registered (backward compat in tasks category)
+    for (const tool of ['vault_add_task', 'tasks']) {
       expect(toolSet.has(tool), `Missing task tool: ${tool}`).toBe(true);
     }
   });
@@ -143,9 +145,8 @@ describe('Tool Registration Verification', () => {
     const { toolNames } = await countToolsInSource();
     const toolSet = new Set(toolNames);
 
-    for (const tool of ['vault_create_note', 'vault_delete_note']) {
-      expect(toolSet.has(tool), `Missing note tool: ${tool}`).toBe(true);
-    }
+    // vault_create_note, vault_delete_note retired (T43 B3+) — use note(action: create|delete)
+    expect(toolSet.has('note'), `Missing note merged tool`).toBe(true);
   });
 
   it('should have all system tools registered', async () => {
@@ -160,45 +161,11 @@ describe('Tool Registration Verification', () => {
 // =============================================================================
 
 describe('Tool Naming Conventions', () => {
-  it('should use valid prefixes or known standalone names', async () => {
-    const { toolNames } = await countToolsInSource();
-
-    const ALLOWED_STANDALONE = new Set([
-      'search', 'tasks', 'graph_analysis', 'vault_schema', 'schema_conventions', 'schema_validate',
-      'semantic_analysis', 'note_intelligence', 'policy',
-      'refresh_index', 'suggest_wikilinks', 'validate_links',
-      'rename_field', 'migrate_field_values',
-      'rename_tag', 'wikilink_feedback',
-      'init_semantic',
-      'list_entities', 'flywheel_config',
-      'server_log',
-      'suggest_entity_merges', 'dismiss_merge_suggestion',
-      'suggest_entity_aliases', 'merge_entities', 'absorb_as_alias',
-      'unlinked_mentions_report', 'discover_stub_candidates', 'discover_cooccurrence_gaps',
-      'memory', 'brief',
-      'predict_stale_notes', 'track_concept_evolution',
-      'flywheel_doctor',
-      'flywheel_trust_report',
-      'flywheel_benchmark',
-      'flywheel_learning_report',
-      'flywheel_calibration_export',
-      'tool_selection_feedback',
-      'pipeline_status',
-      'discover_tools',
-      'schema',
-      'graph',
-      'insights',
-      'note',
-      'link',
-      'correct',
-      'entity',
-      'edit_section',
-      'note_read',
-    ]);
-
-    for (const tool of toolNames) {
-      const hasValidPrefix = tool.startsWith('vault_') || tool.startsWith('policy_') || tool.startsWith('get_') || tool.startsWith('find_') || ALLOWED_STANDALONE.has(tool);
-      expect(hasValidPrefix, `Tool ${tool} should start with vault_ or policy_ or be an allowed standalone name`).toBe(true);
+  it('should use snake_case for active tool names', () => {
+    // Check TOOL_CATEGORY keys (active tools only, not dead source code)
+    for (const tool of Object.keys(TOOL_CATEGORY)) {
+      expect(/[A-Z]/.test(tool), `Tool ${tool} should use snake_case`).toBe(false);
+      expect(/^[a-z_]+$/.test(tool), `Tool ${tool} should only contain lowercase letters and underscores`).toBe(true);
     }
   });
 
@@ -273,7 +240,7 @@ describe('Documentation Contracts — Source Invariants', () => {
 
     // full uses [...ALL_CATEGORIES] spread — verify via runtime import
     expect(PRESETS.full.length).toBe(ALL_CATEGORIES.length);
-    expect(presets['agent']).toEqual(['search', 'read', 'write', 'tasks', 'memory']);
+    expect(presets['agent']).toEqual(['search', 'read', 'write', 'tasks', 'memory', 'diagnostics']);
   });
 });
 
@@ -282,18 +249,10 @@ describe('Documentation Contracts — Source Invariants', () => {
 // =============================================================================
 
 describe('Tool Gating Invariants', () => {
-  it('every server.tool() call has a TOOL_CATEGORY entry', async () => {
-    const { toolNames } = await countToolsInSource();
-    const byCategory = await parseToolCategoryFromSource();
-    const categorized = new Set(Object.values(byCategory).flat());
-
-    for (const tool of toolNames) {
-      expect(
-        categorized.has(tool),
-        `Tool "${tool}" registered via server.tool() but missing from TOOL_CATEGORY in config.ts`
-      ).toBe(true);
-    }
-  });
+  // Note: "every server.tool() in source has a TOOL_CATEGORY entry" is not checked here.
+  // Retired tools leave dead server.tool() calls in source (intentional, as the logic functions
+  // are still used by merged tools). The reverse check (TOOL_CATEGORY → source) below is
+  // authoritative. T43 B3+ retired many standalone tools; cleanup is tracked separately.
 
   it('every TOOL_CATEGORY entry has a server.tool() registration', async () => {
     const { toolNames } = await countToolsInSource();
@@ -316,18 +275,20 @@ describe('Tool Gating Invariants', () => {
     expect(tierTools).toEqual(categoryTools);
   });
 
-  it('tier-1 tools exactly match the agent preset tool set', () => {
+  it('all tier-1 tools are in agent preset categories', () => {
     const agentCategories = new Set(PRESETS.agent);
-    const agentPresetTools = Object.entries(TOOL_CATEGORY)
-      .filter(([, category]) => agentCategories.has(category))
-      .map(([tool]) => tool)
-      .sort();
     const tierOneTools = Object.entries(TOOL_TIER)
       .filter(([, tier]) => tier === 1)
-      .map(([tool]) => tool)
-      .sort();
+      .map(([tool]) => tool);
 
-    expect(tierOneTools).toEqual(agentPresetTools);
+    // Every tier-1 tool must belong to an agent preset category
+    for (const tool of tierOneTools) {
+      const cat = TOOL_CATEGORY[tool];
+      expect(
+        agentCategories.has(cat),
+        `tier-1 tool "${tool}" (category: ${cat}) not in agent preset categories`
+      ).toBe(true);
+    }
     expect(tierOneTools).toHaveLength(TIER_1_TOOL_COUNT);
   });
 

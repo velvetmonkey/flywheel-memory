@@ -107,9 +107,10 @@ describe('Advanced Graph Tools via MCP', () => {
     client = connectTestClient(context.server);
   });
 
-  describe('get_link_path', () => {
+  describe('graph action: path', () => {
     test('finds path between connected notes', async () => {
-      const result = await client.callTool('get_link_path', {
+      const result = await client.callTool('graph', {
+        action: 'path',
         from: 'normal-note.md',
         to: 'another-note.md',
       });
@@ -122,7 +123,8 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('returns empty path for unconnected notes', async () => {
-      const result = await client.callTool('get_link_path', {
+      const result = await client.callTool('graph', {
+        action: 'path',
         from: 'orphan-note.md',
         to: 'another-note.md',
       });
@@ -133,7 +135,8 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('handles same note as start and end', async () => {
-      const result = await client.callTool('get_link_path', {
+      const result = await client.callTool('graph', {
+        action: 'path',
         from: 'normal-note.md',
         to: 'normal-note.md',
       });
@@ -144,7 +147,8 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('respects max_depth parameter', async () => {
-      const result = await client.callTool('get_link_path', {
+      const result = await client.callTool('graph', {
+        action: 'path',
         from: 'normal-note.md',
         to: 'orphan-note.md',
         max_depth: 1,
@@ -157,11 +161,12 @@ describe('Advanced Graph Tools via MCP', () => {
     });
   });
 
-  describe('get_common_neighbors', () => {
+  describe('graph action: neighbors', () => {
     test('finds common targets between notes', async () => {
-      const result = await client.callTool('get_common_neighbors', {
-        note_a: 'normal-note.md',
-        note_b: 'acme-corp.md',
+      const result = await client.callTool('graph', {
+        action: 'neighbors',
+        path_a: 'normal-note.md',
+        path_b: 'acme-corp.md',
       });
 
       const data = JSON.parse(result.content[0].text);
@@ -170,9 +175,10 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('returns empty for notes with no common links', async () => {
-      const result = await client.callTool('get_common_neighbors', {
-        note_a: 'orphan-note.md',
-        note_b: 'another-note.md',
+      const result = await client.callTool('graph', {
+        action: 'neighbors',
+        path_a: 'orphan-note.md',
+        path_b: 'another-note.md',
       });
 
       const data = JSON.parse(result.content[0].text);
@@ -180,9 +186,10 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('handles non-existent notes', async () => {
-      const result = await client.callTool('get_common_neighbors', {
-        note_a: 'does-not-exist.md',
-        note_b: 'normal-note.md',
+      const result = await client.callTool('graph', {
+        action: 'neighbors',
+        path_a: 'does-not-exist.md',
+        path_b: 'normal-note.md',
       });
 
       const data = JSON.parse(result.content[0].text);
@@ -250,11 +257,12 @@ describe('Advanced Graph Tools via MCP', () => {
     });
   });
 
-  describe('get_connection_strength', () => {
+  describe('graph action: strength', () => {
     test('calculates connection strength between notes', async () => {
-      const result = await client.callTool('get_connection_strength', {
-        note_a: 'normal-note.md',
-        note_b: 'another-note.md',
+      const result = await client.callTool('graph', {
+        action: 'strength',
+        path_a: 'normal-note.md',
+        path_b: 'another-note.md',
       });
 
       const data = JSON.parse(result.content[0].text);
@@ -264,9 +272,10 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('returns zero for unconnected notes', async () => {
-      const result = await client.callTool('get_connection_strength', {
-        note_a: 'orphan-note.md',
-        note_b: 'another-note.md',
+      const result = await client.callTool('graph', {
+        action: 'strength',
+        path_a: 'orphan-note.md',
+        path_b: 'another-note.md',
       });
 
       const data = JSON.parse(result.content[0].text);
@@ -274,9 +283,10 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('handles non-existent notes', async () => {
-      const result = await client.callTool('get_connection_strength', {
-        note_a: 'does-not-exist.md',
-        note_b: 'normal-note.md',
+      const result = await client.callTool('graph', {
+        action: 'strength',
+        path_a: 'does-not-exist.md',
+        path_b: 'normal-note.md',
       });
 
       const data = JSON.parse(result.content[0].text);

@@ -145,10 +145,13 @@ describe('Package Startup', () => {
       const tools = await connection.client.listTools();
       const toolNames = new Set(tools.tools.map((tool: { name: string }) => tool.name));
 
-      expect(toolNames.size).toBeGreaterThan(20);
+      // T43 B3+: full preset = 20 tools (discover_tools is auto-only)
+      expect(toolNames.size).toBeGreaterThanOrEqual(18);
       expect(toolNames.has('search')).toBe(true);
-      expect(toolNames.has('vault_create_note')).toBe(true);
-      expect(toolNames.has('flywheel_doctor')).toBe(true);
+      // vault_create_note retired (T43 B3+) — merged into note(action: create)
+      expect(toolNames.has('note')).toBe(true);
+      // flywheel_doctor retired (T43 B3+) — merged into doctor
+      expect(toolNames.has('doctor')).toBe(true);
       expect(connection.stderr.join('')).toContain('Starting Flywheel Memory');
     } finally {
       await closeConnection(connection);

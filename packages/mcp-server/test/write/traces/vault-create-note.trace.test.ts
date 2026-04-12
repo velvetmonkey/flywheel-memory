@@ -62,7 +62,7 @@ describe('vault_create_note traces', () => {
     await snap(client, 'refresh_index');
 
     // Capture before-state
-    statsBefore = await snap(client, 'flywheel_doctor', { report: 'stats' });
+    statsBefore = await snap(client, 'doctor', { action: 'stats' });
     backlinksBefore = await snap(client, 'search', { query: 'Alpha' }).then((r: any) => {
       const note = (r.results ?? []).find((n: any) => n.path === 'projects/alpha.md');
       return { backlink_count: note?.backlink_count ?? 0 };
@@ -74,7 +74,7 @@ describe('vault_create_note traces', () => {
   });
 
   it('appears in search after creation', async () => {
-    await snap(client, 'vault_create_note', {
+    await snap(client, 'note', { action: 'create',
       path: 'people/bob.md',
       content: '# Bob\n\nBob works on [[Alpha]].',
       frontmatter: { type: 'person' },
@@ -106,24 +106,24 @@ describe('vault_create_note traces', () => {
   });
 
   it('increases vault_stats total_notes by 1', async () => {
-    const after = await snap(client, 'flywheel_doctor', { report: 'stats' });
+    const after = await snap(client, 'doctor', { action: 'stats' });
     expect(after.total_notes).toBe(statsBefore.total_notes + 1);
   });
 
   it('increases vault_stats total_links', async () => {
-    const after = await snap(client, 'flywheel_doctor', { report: 'stats' });
+    const after = await snap(client, 'doctor', { action: 'stats' });
     expect(after.total_links).toBeGreaterThan(statsBefore.total_links);
   });
 
   it('new type appears in vault_schema field_values', async () => {
-    await snap(client, 'vault_create_note', {
+    await snap(client, 'note', { action: 'create',
       path: 'misc/widget-thing.md',
       content: '# Widget Thing\n\nA widget.',
       frontmatter: { type: 'widget' },
     });
     await snap(client, 'refresh_index');
 
-    const schema = await snap(client, 'vault_schema', { analysis: 'field_values', field: 'type' });
+    const schema = await snap(client, 'schema', { action: 'field_values', field: 'type' });
     const typeValues = schema.values.map((v: any) => v.value);
     expect(typeValues).toContain('widget');
   });

@@ -64,7 +64,7 @@ describe('vault_update_frontmatter traces', () => {
     });
     await snap(client, 'refresh_index');
 
-    const schema = await snap(client, 'vault_schema', { analysis: 'field_values', field: 'type' });
+    const schema = await snap(client, 'schema', { action: 'field_values', field: 'type' });
     const typeValues = schema.values.map((v: any) => v.value);
     expect(typeValues).toContain('gadget');
   });

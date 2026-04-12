@@ -15,8 +15,8 @@ No screenshots. No demos on someone else's machine. Clone the repo, run the test
 - [Phase 6: Your Own Vault](#phase-6-your-own-vault)
 - [Reproduce Our Numbers](#reproduce-our-numbers)
   - [1. Unit Tests](#1-unit-tests)
-  - [2. HotpotQA Retrieval Benchmark (92.4% recall, 500 questions)](#2-hotpotqa-retrieval-benchmark-924-recall-500-questions)
-  - [3. LoCoMo E2E Benchmark (84.3% evidence recall, 695 questions)](#3-locomo-e2e-benchmark-843-evidence-recall-695-questions)
+  - [2. HotpotQA Retrieval Benchmark (90.0% recall, 50 questions)](#2-hotpotqa-retrieval-benchmark-900-recall-50-questions)
+  - [3. LoCoMo E2E Benchmark (81.9% evidence recall, 695 questions)](#3-locomo-e2e-benchmark-819-evidence-recall-695-questions)
 - [What You Just Proved](#what-you-just-proved)
 - [Why It's Efficient](#why-its-efficient)
 - [Next Steps](#next-steps)
@@ -216,16 +216,16 @@ npm test
 
 ---
 
-### 2. HotpotQA Retrieval Benchmark (92.4% recall, 500 questions)
+### 2. HotpotQA Retrieval Benchmark (90.0% recall, 50 questions)
 
-**What it proves:** Flywheel's search finds 92% of supporting documents on a standard multi-hop QA dataset from CMU/Stanford -- beating BM25 baselines by +17pp and exceeding purpose-built neural retrievers that were trained on the dataset.
+**What it proves:** Flywheel's search finds 90% of supporting documents on a standard multi-hop QA dataset from CMU/Stanford -- beating BM25 baselines by +15pp and approaching purpose-built neural retrievers that were trained on the dataset.
 
 **Prerequisites:**
 - Everything from step 1 (repo cloned, `npm install` done)
 - MCP server built: `npm run build`
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI authenticated (`claude --version`)
 - Python 3 (for analysis script)
-- Anthropic API credits (latest checked-in 500-question run averaged **$0.074/question**)
+- Anthropic API credits (latest checked-in 50-question run averaged **$0.083/question**)
 
 **Step 1: Build the benchmark vault**
 
@@ -258,19 +258,19 @@ Results land in `demos/hotpotqa/results/run-<timestamp>/`.
 cat demos/hotpotqa/results/run-*/report.md
 ```
 
-**Latest checked-in artifact:** `demos/hotpotqa/results/run-20260328T044033/report.md` (**March 28, 2026**)
+**Latest checked-in artifact:** `demos/hotpotqa/results/run-20260410T181354/report.md` (**April 10, 2026**)
 
 | Metric | Latest checked-in run |
 |---|---|
-| Document Recall | **92.4%** (924/1000 supporting docs found) |
-| Full Recall (both docs) | **85.2%** (426/500) |
-| Partial Recall (at least 1 doc) | **99.6%** (498/500) |
-| Avg Cost / Question | **$0.074** |
+| Document Recall | **90.0%** (90/100 supporting docs found) |
+| Full Recall (both docs) | **80.0%** (40/50) |
+| Partial Recall (at least 1 doc) | **100.0%** (50/50) |
+| Avg Cost / Question | **$0.083** |
 
 Exact numbers vary between runs due to model non-determinism and pricing changes. Treat the table above as the latest committed run, not a permanent invariant.
 
-**Estimated time:** ~2-3 hours for 500 questions (each question is a separate Claude session).
-**Estimated cost:** about **$37** at the pricing/model mix used in the latest checked-in run.
+**Estimated time:** ~15-20 minutes for 50 questions (each question is a separate Claude session).
+**Estimated cost:** about **$4** at the pricing/model mix used in the latest checked-in run.
 
 **Smaller test run:** To verify the pipeline works before committing to the full 500:
 
@@ -282,7 +282,7 @@ This runs 20 questions in ~10 minutes for ~$1.25.
 
 ---
 
-### 3. LoCoMo E2E Benchmark (84.3% evidence recall, 695 questions)
+### 3. LoCoMo E2E Benchmark (81.9% evidence recall, 695 questions)
 
 **What it proves:** Flywheel retrieves evidence from long-term conversational memory — measured on the same LoCoMo dataset from Snap Research (ACL 2024) used by Mem0, Zep, LangMem, and MemGPT.
 
@@ -291,7 +291,7 @@ This runs 20 questions in ~10 minutes for ~$1.25.
 - MCP server built: `npm run build`
 - Claude Code CLI authenticated
 - Python 3
-- Anthropic API credits (latest checked-in 695-question run averaged **$0.122/question**)
+- Anthropic API credits (latest checked-in 695-question run averaged **$0.112/question**)
 
 **Step 1: Build the benchmark vault**
 
@@ -325,21 +325,16 @@ Results land in `demos/locomo/results/run-<timestamp>/`.
 cat demos/locomo/results/run-*/report.md
 ```
 
-**Latest checked-in artifact:** `demos/locomo/results/run-20260328T043936/report.md` (**March 28, 2026**)
+**Latest checked-in artifact:** `demos/locomo/results/run-20260410T182658/report.md` (**April 10, 2026**)
 
 | Category | Questions | Evidence Recall | Accuracy (Judge) |
 |---|---|---|---|
-| **Overall** | **695** | **84.3%** | **58.7%** |
-| Single-hop | 139 | 97.4% | 77.0% |
-| Commonsense | 139 | 96.4% | 78.4% |
-| Multi-hop | 139 | 73.7% | 38.9% |
-| Temporal | 96 | 69.2% | 53.1% |
-| Adversarial | 182 | 98.9% | 47.8% |
+| **Overall** | **695** | **81.9%** | **54.0%** |
 
-Latest checked-in final token F1 is **0.483** and raw token F1 is **0.291**. Exact numbers vary between runs due to model non-determinism. Answer accuracy is LLM-as-judge (Claude Haiku in the latest committed report).
+Latest checked-in final token F1 is **0.431** and raw token F1 is **0.202**. Exact numbers vary between runs due to model non-determinism. Answer accuracy is LLM-as-judge (Claude Haiku in the latest committed report).
 
 **Estimated time:** ~8-12 hours for 695 questions.
-**Estimated cost:** about **$85** at the pricing/model mix used in the latest checked-in run.
+**Estimated cost:** about **$78** at the pricing/model mix used in the latest checked-in run.
 
 **Smaller test run:** To verify the pipeline:
 

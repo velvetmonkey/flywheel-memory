@@ -44,7 +44,7 @@ describe('Trace: Memory (no refresh)', () => {
       type: 'preference',
     });
 
-    const result = await client.callTool('brief', {});
+    const result = await client.callTool('memory', { action: 'brief' });
     const text = result.content[0].text;
     expect(text).toContain('oolong tea kqztrace');
   });

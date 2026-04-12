@@ -20,32 +20,33 @@ function createTieredServer() {
     'tiered',
   );
 
-  // search and brief need schemas so params flow through wrapWithTracking
+  // search and memory(brief) need schemas so params flow through wrapWithTracking
   server.tool('search', { query: z.string().optional(), focus: z.string().optional() }, async () => ({
     content: [{ type: 'text' as const, text: 'search ok' }],
   }));
-  server.tool('brief', { focus: z.string().optional() }, async () => ({
-    content: [{ type: 'text' as const, text: 'brief ok' }],
+  server.tool('memory', { action: z.string().optional(), focus: z.string().optional() }, async () => ({
+    content: [{ type: 'text' as const, text: 'memory ok' }],
   }));
-  server.tool('graph_analysis', async () => ({
+  // Merged tools (T43 B3+ names)
+  server.tool('graph', async () => ({
     content: [{ type: 'text' as const, text: 'graph ok' }],
   }));
-  server.tool('vault_schema', async () => ({
+  server.tool('schema', async () => ({
     content: [{ type: 'text' as const, text: 'schema ok' }],
   }));
-  server.tool('pipeline_status', async () => ({
-    content: [{ type: 'text' as const, text: 'pipeline ok' }],
+  server.tool('doctor', async () => ({
+    content: [{ type: 'text' as const, text: 'doctor ok' }],
   }));
-  server.tool('merge_entities', async () => ({
-    content: [{ type: 'text' as const, text: 'merge ok' }],
+  server.tool('entity', async () => ({
+    content: [{ type: 'text' as const, text: 'entity ok' }],
   }));
-  server.tool('suggest_wikilinks', async () => ({
-    content: [{ type: 'text' as const, text: 'wikilinks ok' }],
+  server.tool('link', async () => ({
+    content: [{ type: 'text' as const, text: 'link ok' }],
   }));
-  server.tool('vault_record_correction', async () => ({
-    content: [{ type: 'text' as const, text: 'correction ok' }],
+  server.tool('correct', async () => ({
+    content: [{ type: 'text' as const, text: 'correct ok' }],
   }));
-  server.tool('get_context_around_date', async () => ({
+  server.tool('insights', async () => ({
     content: [{ type: 'text' as const, text: 'temporal ok' }],
   }));
 
@@ -72,8 +73,8 @@ function createFullPresetServer(options: { startupOverride?: 'auto' | 'full' | '
       server.tool(toolName, { query: z.string().optional(), focus: z.string().optional() }, async () => ({
         content: [{ type: 'text' as const, text: `${toolName} ok` }],
       }));
-    } else if (toolName === 'brief') {
-      server.tool(toolName, { focus: z.string().optional() }, async () => ({
+    } else if (toolName === 'memory') {
+      server.tool(toolName, { action: z.string().optional(), focus: z.string().optional() }, async () => ({
         content: [{ type: 'text' as const, text: `${toolName} ok` }],
       }));
     } else {
@@ -118,10 +119,10 @@ describe('tool tiering', () => {
     const tools = (server as any)._registeredTools;
 
     expect(tools.search.enabled).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(false);
-    expect(tools.vault_schema.enabled).toBe(false);
-    expect(tools.pipeline_status.enabled).toBe(false);
-    expect(tools.merge_entities.enabled).toBe(false);
+    expect(tools.doctor.enabled).toBe(true);  // tier-1: always visible
+    expect(tools.graph.enabled).toBe(false);  // tier-2: hidden initially
+    expect(tools.schema.enabled).toBe(false); // tier-2: hidden initially
+    expect(tools.entity.enabled).toBe(false); // tier-2: hidden initially
   });
 
   it('enableTierCategory reveals all tier-2 tools in that category', () => {
@@ -130,9 +131,9 @@ describe('tool tiering', () => {
 
     controller.enableTierCategory('graph');
 
-    expect(tools.graph_analysis.enabled).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(false);
-    expect(tools.pipeline_status.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(false);
+    expect(tools.doctor.enabled).toBe(true); // tier-1: always enabled
   });
 
   it('enableAllTiers reveals every registered tool', () => {
@@ -142,20 +143,20 @@ describe('tool tiering', () => {
     controller.enableAllTiers();
 
     expect(tools.search.enabled).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(true);
-    expect(tools.pipeline_status.enabled).toBe(true);
-    expect(tools.merge_entities.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
+    expect(tools.doctor.enabled).toBe(true);
+    expect(tools.entity.enabled).toBe(true);
   });
 
   it('executes a hidden tier tool when called directly and reveals its category', async () => {
     const { server, controller } = createTieredServer();
 
-    const result = await callTool(server, 'graph_analysis');
+    const result = await callTool(server, 'graph');
 
     expect(result.isError).not.toBe(true);
     expect(result.content[0].text).toContain('graph ok');
-    expect((server as any)._registeredTools.graph_analysis.enabled).toBe(true);
+    expect((server as any)._registeredTools.graph.enabled).toBe(true);
     expect(controller.activeCategories.has('graph')).toBe(true);
   });
 
@@ -190,24 +191,24 @@ describe('activation signals via search/brief', () => {
     const { server, controller } = createTieredServer();
     const tools = (server as any)._registeredTools;
 
-    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
 
     await callTool(server, 'search', { query: 'show me backlinks for this note' });
 
     expect(controller.activeCategories.has('graph')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 
-  it('search query with "schema" unlocks schema category (tier 3)', async () => {
+  it('search query with "schema" unlocks schema category (tier 2)', async () => {
     const { server, controller } = createTieredServer();
     const tools = (server as any)._registeredTools;
 
-    expect(tools.vault_schema.enabled).toBe(false);
+    expect(tools.schema.enabled).toBe(false);
 
     await callTool(server, 'search', { query: 'what does the schema look like' });
 
     expect(controller.activeCategories.has('schema')).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
   });
 
   it('search query with "stale notes" unlocks temporal category', async () => {
@@ -216,7 +217,7 @@ describe('activation signals via search/brief', () => {
     await callTool(server, 'search', { query: 'find stale notes that need updating' });
 
     expect(controller.activeCategories.has('temporal')).toBe(true);
-    expect((server as any)._registeredTools.get_context_around_date.enabled).toBe(true);
+    expect((server as any)._registeredTools.insights.enabled).toBe(true);
   });
 
   it('search query with "wikilinks" unlocks wikilinks category', async () => {
@@ -225,7 +226,7 @@ describe('activation signals via search/brief', () => {
     await callTool(server, 'search', { query: 'check wikilinks on my project notes' });
 
     expect(controller.activeCategories.has('wikilinks')).toBe(true);
-    expect((server as any)._registeredTools.suggest_wikilinks.enabled).toBe(true);
+    expect((server as any)._registeredTools.link.enabled).toBe(true);
   });
 
   it('search query with no signal keywords does not unlock anything', async () => {
@@ -234,14 +235,14 @@ describe('activation signals via search/brief', () => {
     await callTool(server, 'search', { query: 'find notes about cooking recipes' });
 
     expect(controller.activeCategories.size).toBe(0);
-    expect((server as any)._registeredTools.graph_analysis.enabled).toBe(false);
-    expect((server as any)._registeredTools.vault_schema.enabled).toBe(false);
+    expect((server as any)._registeredTools.graph.enabled).toBe(false);
+    expect((server as any)._registeredTools.schema.enabled).toBe(false);
   });
 
-  it('brief focus param triggers activation', async () => {
+  it('memory(action: brief) focus param triggers activation', async () => {
     const { server, controller } = createTieredServer();
 
-    await callTool(server, 'brief', { focus: 'review backlinks and connections' });
+    await callTool(server, 'memory', { action: 'brief', focus: 'review backlinks and connections' });
 
     expect(controller.activeCategories.has('graph')).toBe(true);
   });
@@ -256,24 +257,24 @@ describe('activation signals via search/brief', () => {
     expect(controller.activeCategories.has('temporal')).toBe(true);
   });
 
-  it('tier-2 signal does not unlock tier-3 categories', async () => {
+  it('backlinks signal does not unlock schema/note-ops categories', async () => {
     const { server, controller } = createTieredServer();
 
     await callTool(server, 'search', { query: 'show me backlinks and connections' });
 
     expect(controller.activeCategories.has('graph')).toBe(true);
-    // schema (tier 3) and note-ops (tier 3) should stay locked
+    // schema (tier 2+, needs schema-specific signal) and note-ops should stay locked
     expect(controller.activeCategories.has('schema')).toBe(false);
     expect(controller.activeCategories.has('note-ops')).toBe(false);
-    expect((server as any)._registeredTools.vault_schema.enabled).toBe(false);
+    expect((server as any)._registeredTools.schema.enabled).toBe(false);
   });
 
   it('non-search/brief tool calls do not trigger activation signals', async () => {
     const { server, controller } = createTieredServer();
 
-    // Direct-call graph_analysis — it auto-enables its own category,
+    // Direct-call graph — it auto-enables its own category,
     // but should NOT parse its params for activation of other categories
-    await callTool(server, 'graph_analysis', { query: 'wikilinks and schema' });
+    await callTool(server, 'graph', { query: 'wikilinks and schema' });
 
     // graph is enabled (direct call auto-enable), but wikilinks/schema should NOT be
     expect(controller.activeCategories.has('graph')).toBe(true);
@@ -333,7 +334,7 @@ describe('override modes', () => {
     await callTool(server, 'search', { query: 'show me backlinks' });
 
     // Signal fired but minimal mode prevents enablement
-    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
   });
 
   it('full override enables all tools regardless of activation state', () => {
@@ -343,19 +344,19 @@ describe('override modes', () => {
     controller.setOverride('full');
 
     expect(tools.search.enabled).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(true);
-    expect(tools.pipeline_status.enabled).toBe(true);
-    expect(tools.merge_entities.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
+    expect(tools.doctor.enabled).toBe(true);
+    expect(tools.entity.enabled).toBe(true);
   });
 
-  it('direct call to tier-3 tool in minimal mode returns error', async () => {
+  it('direct call to higher-tier tool in minimal mode returns error', async () => {
     const { server, controller } = createTieredServer();
 
     controller.setOverride('minimal');
 
     // Minimal mode blocks even direct calls
-    const result = await callTool(server, 'vault_schema');
+    const result = await callTool(server, 'schema');
 
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain('disabled');
@@ -366,10 +367,10 @@ describe('override modes', () => {
     const tools = (server as any)._registeredTools;
 
     controller.setOverride('full');
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
 
     controller.setOverride('auto');
-    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
     expect(tools.search.enabled).toBe(true);
   });
 });
@@ -393,7 +394,7 @@ describe('multi-vault tier isolation', () => {
     serverA.tool('search', { query: z.string().optional() }, async () => ({
       content: [{ type: 'text' as const, text: 'a' }],
     }));
-    serverA.tool('graph_analysis', async () => ({
+    serverA.tool('graph', async () => ({
       content: [{ type: 'text' as const, text: 'a' }],
     }));
     controllerA.finalizeRegistration();
@@ -411,7 +412,7 @@ describe('multi-vault tier isolation', () => {
     serverB.tool('search', { query: z.string().optional() }, async () => ({
       content: [{ type: 'text' as const, text: 'b' }],
     }));
-    serverB.tool('graph_analysis', async () => ({
+    serverB.tool('graph', async () => ({
       content: [{ type: 'text' as const, text: 'b' }],
     }));
     controllerB.finalizeRegistration();
@@ -420,11 +421,11 @@ describe('multi-vault tier isolation', () => {
     controllerA.enableTierCategory('graph');
 
     // Vault A: graph enabled
-    expect((serverA as any)._registeredTools.graph_analysis.enabled).toBe(true);
+    expect((serverA as any)._registeredTools.graph.enabled).toBe(true);
     expect(controllerA.activeCategories.has('graph')).toBe(true);
 
     // Vault B: graph still disabled
-    expect((serverB as any)._registeredTools.graph_analysis.enabled).toBe(false);
+    expect((serverB as any)._registeredTools.graph.enabled).toBe(false);
     expect(controllerB.activeCategories.has('graph')).toBe(false);
   });
 });
@@ -441,11 +442,11 @@ describe('tool routing mode integration', () => {
 
     // In pattern mode, regex activation should still work
     expect(tools.search.enabled).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
 
     // Regex-based activation should still enable categories
     controller.activateCategory('graph', 2);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
 
     delete process.env.FLYWHEEL_TOOL_ROUTING;
   });
@@ -473,26 +474,26 @@ describe('progressive disclosure session persistence', () => {
     const tools = (server as any)._registeredTools;
 
     // Initial: graph hidden
-    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
 
     // Query 1: activate graph
     await callTool(server, 'search', { query: 'show me backlinks and connections' });
     expect(controller.activeCategories.has('graph')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
 
     // Query 2: unrelated search
     await callTool(server, 'search', { query: 'cooking recipes for dinner' });
 
     // Graph should still be active — categories never deactivate
     expect(controller.activeCategories.has('graph')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
 
     // Query 3: another unrelated search
     await callTool(server, 'search', { query: 'project status update' });
 
     // Still active
     expect(controller.activeCategories.has('graph')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 
   it('sequential queries accumulate categories without conflict', async () => {
@@ -502,25 +503,25 @@ describe('progressive disclosure session persistence', () => {
     // Step 1: activate graph
     await callTool(server, 'search', { query: 'show me backlinks' });
     expect(controller.activeCategories.has('graph')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
 
     // Step 2: activate temporal
     await callTool(server, 'search', { query: 'show me the timeline and history' });
     expect(controller.activeCategories.has('temporal')).toBe(true);
-    expect(tools.get_context_around_date.enabled).toBe(true);
+    expect(tools.insights.enabled).toBe(true);
 
-    // Step 3: activate schema (tier 3)
+    // Step 3: activate schema
     await callTool(server, 'search', { query: 'what does the schema look like' });
     expect(controller.activeCategories.has('schema')).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
 
     // All three should coexist
     expect(controller.activeCategories.has('graph')).toBe(true);
     expect(controller.activeCategories.has('temporal')).toBe(true);
     expect(controller.activeCategories.has('schema')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
-    expect(tools.get_context_around_date.enabled).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
+    expect(tools.insights.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
   });
 
   it('direct tool call persists — subsequent calls succeed without re-activation', async () => {
@@ -528,14 +529,14 @@ describe('progressive disclosure session persistence', () => {
     const tools = (server as any)._registeredTools;
 
     // Direct call to hidden tool — should auto-enable
-    const result1 = await callTool(server, 'graph_analysis');
+    const result1 = await callTool(server, 'graph');
     expect(result1.isError).not.toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
 
     // Second call should work without any new activation
-    const result2 = await callTool(server, 'graph_analysis');
+    const result2 = await callTool(server, 'graph');
     expect(result2.isError).not.toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 
   it('override mode persists across calls', async () => {
@@ -543,16 +544,16 @@ describe('progressive disclosure session persistence', () => {
     const tools = (server as any)._registeredTools;
 
     controller.setOverride('full');
-    expect(tools.graph_analysis.enabled).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
 
     // Multiple calls don't reset the override
     await callTool(server, 'search', { query: 'simple search' });
     await callTool(server, 'search', { query: 'another search' });
 
     expect(controller.getOverride()).toBe('full');
-    expect(tools.graph_analysis.enabled).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
   });
 
   it('listTools reflects tier state — hidden tools not listed, activated tools listed', async () => {
@@ -566,7 +567,7 @@ describe('progressive disclosure session persistence', () => {
     // tier-1 visible
     expect(initialNames).toContain('search');
     // tier-2 hidden
-    expect(initialNames).not.toContain('graph_analysis');
+    expect(initialNames).not.toContain('graph');
 
     // Activate graph
     controller.activateCategory('graph', 2);
@@ -574,8 +575,8 @@ describe('progressive disclosure session persistence', () => {
     const updatedList = await listHandler({ method: 'tools/list' }, {});
     const updatedNames = updatedList.tools.map((t: { name: string }) => t.name);
 
-    // Now graph_analysis should appear
-    expect(updatedNames).toContain('graph_analysis');
+    // Now graph should appear
+    expect(updatedNames).toContain('graph');
     // search still there
     expect(updatedNames).toContain('search');
   });
@@ -597,14 +598,14 @@ describe('activation edge cases', () => {
     await callTool(server, 'search', args);
 
     expect(controller.activeCategories.size).toBe(0);
-    expect(tools.graph_analysis.enabled).toBe(false);
-    expect(tools.suggest_wikilinks.enabled).toBe(false);
-    expect(tools.vault_schema.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
+    expect(tools.link.enabled).toBe(false);
+    expect(tools.schema.enabled).toBe(false);
   });
 
   it.each([
-    { query: 'BACKLINKS', category: 'graph', tool: 'graph_analysis' },
-    { query: 'Schema', category: 'schema', tool: 'vault_schema' },
+    { query: 'BACKLINKS', category: 'graph', tool: 'graph' },
+    { query: 'Schema', category: 'schema', tool: 'schema' },
   ])('case-insensitive: "$query" activates $category', async ({ query, category, tool }) => {
     const { server, controller } = createTieredServer();
     const tools = (server as any)._registeredTools;
@@ -638,7 +639,7 @@ describe('generateInstructions integration with controller state', () => {
     // Activate graph via search signal
     await callTool(server, 'search', { query: 'show backlinks' });
     expect(controller.activeCategories.has('graph')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
 
     instructions = getInstructions();
     expect(instructions).toContain('## Graph');
@@ -647,7 +648,7 @@ describe('generateInstructions integration with controller state', () => {
     // Activate wikilinks via search signal
     await callTool(server, 'search', { query: 'check wikilinks' });
     expect(controller.activeCategories.has('wikilinks')).toBe(true);
-    expect(tools.suggest_wikilinks.enabled).toBe(true);
+    expect(tools.link.enabled).toBe(true);
 
     instructions = getInstructions();
     expect(instructions).toContain('## Graph');
@@ -754,20 +755,23 @@ describe('full preset reachability', () => {
 // ============================================================================
 
 describe('non-Claude client simulation (listTools-only discovery)', () => {
-  it('flywheel_doctor is absent from listTools() in tiered/auto mode', async () => {
+  it('graph (tier-2) is absent from listTools() in tiered/auto mode', async () => {
     const { server } = createFullPresetServer();
     const names = await listToolNames(server);
 
-    expect(names).not.toContain('flywheel_doctor');
+    // doctor is tier-1 (visible); graph is tier-2 (hidden until activated)
+    expect(names).toContain('doctor');
+    expect(names).not.toContain('graph');
   });
 
-  it('flywheel_doctor appears in listTools() after setOverride(\'full\')', async () => {
+  it('graph appears in listTools() after setOverride(\'full\')', async () => {
     const { server, controller } = createFullPresetServer();
 
     controller.setOverride('full');
 
     const names = await listToolNames(server);
-    expect(names).toContain('flywheel_doctor');
+    expect(names).toContain('doctor');
+    expect(names).toContain('graph');
   });
 
   it('lists exactly tier-1 tools in tiered/auto mode', async () => {
@@ -790,7 +794,8 @@ describe('non-Claude client simulation (listTools-only discovery)', () => {
     const { server } = createFullPresetServer({ startupOverride: 'full' });
     const names = await listToolNames(server);
 
-    expect(names).toContain('flywheel_doctor');
+    expect(names).toContain('doctor');
+    expect(names).toContain('graph');
     expect(names.size).toBe(Object.keys(TOOL_CATEGORY).length);
   });
 });
@@ -815,28 +820,28 @@ function createTieredServerWithCallback(onTierStateChange: (controller: ToolTier
   server.tool('search', { query: z.string().optional(), focus: z.string().optional() }, async () => ({
     content: [{ type: 'text' as const, text: 'search ok' }],
   }));
-  server.tool('brief', { focus: z.string().optional() }, async () => ({
-    content: [{ type: 'text' as const, text: 'brief ok' }],
+  server.tool('memory', { action: z.string().optional(), focus: z.string().optional() }, async () => ({
+    content: [{ type: 'text' as const, text: 'memory ok' }],
   }));
-  server.tool('graph_analysis', async () => ({
+  server.tool('graph', async () => ({
     content: [{ type: 'text' as const, text: 'graph ok' }],
   }));
-  server.tool('vault_schema', async () => ({
+  server.tool('schema', async () => ({
     content: [{ type: 'text' as const, text: 'schema ok' }],
   }));
-  server.tool('pipeline_status', async () => ({
+  server.tool('doctor', async () => ({
     content: [{ type: 'text' as const, text: 'pipeline ok' }],
   }));
-  server.tool('merge_entities', async () => ({
+  server.tool('entity', async () => ({
     content: [{ type: 'text' as const, text: 'merge ok' }],
   }));
-  server.tool('suggest_wikilinks', async () => ({
+  server.tool('link', async () => ({
     content: [{ type: 'text' as const, text: 'wikilinks ok' }],
   }));
-  server.tool('vault_record_correction', async () => ({
+  server.tool('correct', async () => ({
     content: [{ type: 'text' as const, text: 'correction ok' }],
   }));
-  server.tool('get_context_around_date', async () => ({
+  server.tool('insights', async () => ({
     content: [{ type: 'text' as const, text: 'temporal ok' }],
   }));
 
@@ -906,12 +911,12 @@ describe('T18 — session behaviour (progressive disclosure)', () => {
 
     await callTool(server, 'search', { query: 'show me backlinks' });
     let names = await listToolNames(server);
-    expect(names).toContain('graph_analysis');
+    expect(names).toContain('graph');
     expect(names).toContain('search');
 
     await callTool(server, 'search', { query: 'cooking recipes' });
     names = await listToolNames(server);
-    expect(names).toContain('graph_analysis');
+    expect(names).toContain('graph');
   });
 
   it('accumulates graph, schema, and wikilinks tools across sequential activations', async () => {
@@ -922,9 +927,9 @@ describe('T18 — session behaviour (progressive disclosure)', () => {
     await callTool(server, 'search', { query: 'wikilinks' });
 
     const names = await listToolNames(server);
-    expect(names).toContain('graph_analysis');
-    expect(names).toContain('vault_schema');
-    expect(names).toContain('suggest_wikilinks');
+    expect(names).toContain('graph');
+    expect(names).toContain('schema');
+    expect(names).toContain('link');
   });
 
   it('listTools() count grows monotonically as categories activate', async () => {
@@ -959,9 +964,9 @@ describe('T18 — session behaviour (progressive disclosure)', () => {
     expect(instructions).toContain('## Graph');
     expect(instructions).toContain('## Wikilinks');
     expect(instructions).not.toContain('## Schema');
-    expect(names).toContain('graph_analysis');
-    expect(names).toContain('suggest_wikilinks');
-    expect(names).not.toContain('vault_schema');
+    expect(names).toContain('graph');
+    expect(names).toContain('link');
+    expect(names).not.toContain('schema');
   });
 });
 
@@ -1030,11 +1035,11 @@ describe('activation suppression in full override', () => {
     expect(controller.activeCategories.has('graph')).toBe(true);
 
     controller.setOverride('full');
-    expect(tools.vault_schema.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
 
     controller.setOverride('auto');
-    expect(tools.graph_analysis.enabled).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(false);
   });
 
   it('signals during full do not leak into auto mode', async () => {
@@ -1047,8 +1052,8 @@ describe('activation suppression in full override', () => {
 
     controller.setOverride('auto');
 
-    expect(tools.graph_analysis.enabled).toBe(false);
-    expect(tools.vault_schema.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
+    expect(tools.schema.enabled).toBe(false);
   });
 });
 
@@ -1115,11 +1120,11 @@ describe('minimal-to-auto state transitions', () => {
 
     controller.setOverride('minimal');
 
-    const result = await callTool(server, 'graph_analysis');
+    const result = await callTool(server, 'graph');
 
     expect(result.isError).toBe(true);
     expect(controller.getActivatedCategoryTiers().has('graph')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
   });
 
   it('switching from minimal to auto reveals categories activated during minimal', async () => {
@@ -1127,11 +1132,11 @@ describe('minimal-to-auto state transitions', () => {
     const tools = (server as any)._registeredTools;
 
     controller.setOverride('minimal');
-    await callTool(server, 'graph_analysis');
-    expect(tools.graph_analysis.enabled).toBe(false);
+    await callTool(server, 'graph');
+    expect(tools.graph.enabled).toBe(false);
 
     controller.setOverride('auto');
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 
   it('search signal in minimal records activation for later auto restore', async () => {
@@ -1143,10 +1148,10 @@ describe('minimal-to-auto state transitions', () => {
     await callTool(server, 'search', { query: 'show backlinks' });
 
     expect(controller.getActivatedCategoryTiers().has('graph')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
 
     controller.setOverride('auto');
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 });
 
@@ -1168,8 +1173,8 @@ describe('concurrent activation and finalization', () => {
     expect(controller.activeCategories.has('schema')).toBe(true);
     expect(controller.getActivatedCategoryTiers().get('graph')).toBe(2);
     expect(controller.getActivatedCategoryTiers().get('schema')).toBe(3);
-    expect(tools.graph_analysis.enabled).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
   });
 
   it('concurrent searches activating the same category produce a single entry', async () => {
@@ -1183,7 +1188,7 @@ describe('concurrent activation and finalization', () => {
 
     expect(controller.activeCategories.has('graph')).toBe(true);
     expect(controller.getActivatedCategoryTiers().get('graph')).toBe(2);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 
   it('calling finalizeRegistration twice does not throw or break tools', async () => {
@@ -1195,9 +1200,9 @@ describe('concurrent activation and finalization', () => {
     await callTool(server, 'search', { query: 'show backlinks' });
     expect(controller.activeCategories.has('graph')).toBe(true);
 
-    const result = await callTool(server, 'graph_analysis');
+    const result = await callTool(server, 'graph');
     expect(result.isError).not.toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 });
 
@@ -1224,11 +1229,11 @@ describe('activation suppression in full override', () => {
     expect(controller.activeCategories.has('graph')).toBe(true);
 
     controller.setOverride('full');
-    expect(tools.vault_schema.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
 
     controller.setOverride('auto');
-    expect(tools.graph_analysis.enabled).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(false);
   });
 
   it('signals during full do not leak into auto mode', async () => {
@@ -1241,8 +1246,8 @@ describe('activation suppression in full override', () => {
 
     controller.setOverride('auto');
 
-    expect(tools.graph_analysis.enabled).toBe(false);
-    expect(tools.vault_schema.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
+    expect(tools.schema.enabled).toBe(false);
   });
 });
 
@@ -1309,11 +1314,11 @@ describe('minimal-to-auto state transitions', () => {
 
     controller.setOverride('minimal');
 
-    const result = await callTool(server, 'graph_analysis');
+    const result = await callTool(server, 'graph');
 
     expect(result.isError).toBe(true);
     expect(controller.getActivatedCategoryTiers().has('graph')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
   });
 
   it('switching from minimal to auto reveals categories activated during minimal', async () => {
@@ -1321,11 +1326,11 @@ describe('minimal-to-auto state transitions', () => {
     const tools = (server as any)._registeredTools;
 
     controller.setOverride('minimal');
-    await callTool(server, 'graph_analysis');
-    expect(tools.graph_analysis.enabled).toBe(false);
+    await callTool(server, 'graph');
+    expect(tools.graph.enabled).toBe(false);
 
     controller.setOverride('auto');
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 
   it('search signal in minimal records activation for later auto restore', async () => {
@@ -1337,10 +1342,10 @@ describe('minimal-to-auto state transitions', () => {
     await callTool(server, 'search', { query: 'show backlinks' });
 
     expect(controller.getActivatedCategoryTiers().has('graph')).toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(false);
+    expect(tools.graph.enabled).toBe(false);
 
     controller.setOverride('auto');
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 });
 
@@ -1362,8 +1367,8 @@ describe('concurrent activation and finalization', () => {
     expect(controller.activeCategories.has('schema')).toBe(true);
     expect(controller.getActivatedCategoryTiers().get('graph')).toBe(2);
     expect(controller.getActivatedCategoryTiers().get('schema')).toBe(3);
-    expect(tools.graph_analysis.enabled).toBe(true);
-    expect(tools.vault_schema.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
+    expect(tools.schema.enabled).toBe(true);
   });
 
   it('concurrent searches activating the same category produce a single entry', async () => {
@@ -1377,7 +1382,7 @@ describe('concurrent activation and finalization', () => {
 
     expect(controller.activeCategories.has('graph')).toBe(true);
     expect(controller.getActivatedCategoryTiers().get('graph')).toBe(2);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 
   it('calling finalizeRegistration twice does not throw or break tools', async () => {
@@ -1389,9 +1394,9 @@ describe('concurrent activation and finalization', () => {
     await callTool(server, 'search', { query: 'show backlinks' });
     expect(controller.activeCategories.has('graph')).toBe(true);
 
-    const result = await callTool(server, 'graph_analysis');
+    const result = await callTool(server, 'graph');
     expect(result.isError).not.toBe(true);
-    expect(tools.graph_analysis.enabled).toBe(true);
+    expect(tools.graph.enabled).toBe(true);
   });
 });
 
@@ -1443,8 +1448,8 @@ function createServerLikeIndexTs(envOverride?: string) {
       server.tool(toolName, { query: z.string().optional(), focus: z.string().optional() }, async () => ({
         content: [{ type: 'text' as const, text: `${toolName} ok` }],
       }));
-    } else if (toolName === 'brief') {
-      server.tool(toolName, { focus: z.string().optional() }, async () => ({
+    } else if (toolName === 'memory') {
+      server.tool(toolName, { action: z.string().optional(), focus: z.string().optional() }, async () => ({
         content: [{ type: 'text' as const, text: `${toolName} ok` }],
       }));
     } else {
@@ -1493,8 +1498,8 @@ function createHttpPoolServerSim(
       server.tool(toolName, { query: z.string().optional(), focus: z.string().optional() }, async () => ({
         content: [{ type: 'text' as const, text: `${toolName} ok` }],
       }));
-    } else if (toolName === 'brief') {
-      server.tool(toolName, { focus: z.string().optional() }, async () => ({
+    } else if (toolName === 'memory') {
+      server.tool(toolName, { action: z.string().optional(), focus: z.string().optional() }, async () => ({
         content: [{ type: 'text' as const, text: `${toolName} ok` }],
       }));
     } else {
@@ -1568,7 +1573,7 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
     const names = await listToolNames(server);
     expect(names).toContain('discover_tools');
     expect(names).toContain('search');
-    expect(names).not.toContain('pipeline_status');
+    expect(names).toContain('doctor'); // doctor is tier-1 (visible in tiered mode)
     expect(names.size).toBe(TIER_1_TOOL_COUNT);
   });
 
@@ -1599,7 +1604,7 @@ describe('index.ts initialization simulation (d42835a regression guard)', () => 
       .filter(([name, tier]) => tier === 2 && TOOL_CATEGORY[name] === 'graph')
       .length;
     expect(names.size).toBe(TIER_1_TOOL_COUNT + graphTier2Count);
-    expect(names).toContain('graph_analysis');
+    expect(names).toContain('graph');
     expect(names).toContain('search');
     expect(names).toContain('discover_tools');
   });
@@ -1643,8 +1648,8 @@ function createServerWithDiscovery() {
       server.tool(toolName, { query: z.string().optional(), focus: z.string().optional() }, async () => ({
         content: [{ type: 'text' as const, text: `${toolName} ok` }],
       }));
-    } else if (toolName === 'brief') {
-      server.tool(toolName, { focus: z.string().optional() }, async () => ({
+    } else if (toolName === 'memory') {
+      server.tool(toolName, { action: z.string().optional(), focus: z.string().optional() }, async () => ({
         content: [{ type: 'text' as const, text: `${toolName} ok` }],
       }));
     } else {
@@ -1672,9 +1677,9 @@ describe('discover_tools meta-tool', () => {
 
     expect(data.matched_categories).toContain('diagnostics');
     expect(data.newly_activated_categories).toContain('diagnostics');
-    expect(data.tools.some((t: any) => t.name === 'flywheel_doctor')).toBe(true);
+    expect(data.tools.some((t: any) => t.name === 'doctor')).toBe(true);
     // Input schemas are included
-    expect(data.tools.find((t: any) => t.name === 'flywheel_doctor').inputSchema).toBeDefined();
+    expect(data.tools.find((t: any) => t.name === 'doctor').inputSchema).toBeDefined();
     expect(controller.activeCategories.has('diagnostics')).toBe(true);
   });
 
@@ -1685,7 +1690,7 @@ describe('discover_tools meta-tool', () => {
     const data = JSON.parse(result.content[0].text);
 
     expect(data.matched_categories).toContain('graph');
-    expect(data.tools.some((t: any) => t.name === 'graph_analysis')).toBe(true);
+    expect(data.tools.some((t: any) => t.name === 'graph')).toBe(true);
     expect(controller.activeCategories.has('graph')).toBe(true);
   });
 
@@ -1716,7 +1721,7 @@ describe('discover_tools meta-tool', () => {
     expect(data.matched_categories).toContain('graph');
     expect(data.newly_activated_categories).not.toContain('graph');
     // Tools are still returned even though category was already active
-    expect(data.tools.some((t: any) => t.name === 'graph_analysis')).toBe(true);
+    expect(data.tools.some((t: any) => t.name === 'graph')).toBe(true);
   });
 });
 
@@ -1731,14 +1736,15 @@ describe('notification batching in refreshToolVisibility', () => {
     // Attach spy AFTER createFullPresetServer() returns (registration-time notifications already fired)
     const spy = vi.spyOn(server, 'sendToolListChanged');
 
-    controller.enableTierCategory('graph');
+    // Use 'read' category which has multiple tier-2 tools (note_read, find_notes)
+    controller.enableTierCategory('read');
 
-    // Multiple graph tools should now be enabled
-    const graphTools = Object.entries(TOOL_TIER)
-      .filter(([name, tier]) => tier === 2 && TOOL_CATEGORY[name] === 'graph')
+    // Multiple read tools should now be enabled
+    const readTier2Tools = Object.entries(TOOL_TIER)
+      .filter(([name, tier]) => tier === 2 && TOOL_CATEGORY[name] === 'read')
       .map(([name]) => name);
-    expect(graphTools.length).toBeGreaterThan(1);
-    for (const name of graphTools) {
+    expect(readTier2Tools.length).toBeGreaterThan(1);
+    for (const name of readTier2Tools) {
       expect((server as any)._registeredTools[name]?.enabled).toBe(true);
     }
 

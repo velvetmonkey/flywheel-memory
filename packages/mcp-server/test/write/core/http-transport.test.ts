@@ -51,7 +51,8 @@ describe('T13: HTTP Transport', () => {
 
       registerTaskTools(server, () => '/test/vault');
 
-      expect(toolNames).toContain('vault_toggle_task');
+      // vault_toggle_task retired (T43 B3+) — merged into tasks(action: toggle)
+      expect(toolNames).not.toContain('vault_toggle_task');
       expect(toolNames).toContain('vault_add_task');
     });
 
@@ -198,13 +199,15 @@ describe('T13: HTTP Transport', () => {
       registerInitTools(server, getter, () => null);
 
       // All 9 registration functions should register their tools
-      // (vault_init retired T43, registerInitTools is now a no-op → 14 tools)
-      expect(allToolNames.length).toBeGreaterThanOrEqual(14);
+      // (vault_init retired T43, registerInitTools is now a no-op)
+      // (vault_toggle_task retired T43 B3+, merged into tasks(action: toggle) → 13 tools)
+      expect(allToolNames.length).toBeGreaterThanOrEqual(13);
 
       // Verify key tools are present
       const expectedTools = [
         'vault_add_to_section', 'vault_remove_from_section', 'vault_replace_in_section',
-        'vault_toggle_task', 'vault_add_task',
+        // vault_toggle_task retired (T43 B3+) — merged into tasks(action: toggle)
+        'vault_add_task',
         'vault_update_frontmatter',
         'vault_create_note', 'vault_delete_note',
         'vault_move_note', 'vault_rename_note',

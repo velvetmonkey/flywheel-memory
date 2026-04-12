@@ -26,30 +26,26 @@ describe('MCP Server Integration', () => {
     test('registers all expected tools', async () => {
       const result = await client.listTools();
 
-      // Should have 24+ tools registered (read tools only in test server)
-      expect(result.tools.length).toBeGreaterThanOrEqual(24);
+      // Should have 15+ tools registered (read tools only in test server)
+      expect(result.tools.length).toBeGreaterThanOrEqual(15);
 
-      // Check for key tool categories
+      // Check for key merged tool categories
       const toolNames = result.tools.map((t: { name: string }) => t.name);
 
-      // Graph tools
-      expect(toolNames).toContain('graph_analysis');
-
-      // Wikilink tools
-      expect(toolNames).toContain('suggest_wikilinks');
-      expect(toolNames).toContain('validate_links');
-
-      // Health tools (health_check + get_vault_stats merged into flywheel_doctor)
-      expect(toolNames).toContain('flywheel_doctor');
+      // Health tools (merged into doctor)
+      expect(toolNames).toContain('doctor');
 
       // Query tools (unified search)
       expect(toolNames).toContain('search');
 
-      // Schema tools (split)
-      expect(toolNames).toContain('vault_schema');
-      expect(toolNames).toContain('schema_conventions');
-      expect(toolNames).toContain('schema_validate');
-      expect(toolNames).toContain('note_intelligence');
+      // Read primitives
+      expect(toolNames).toContain('note_read');
+
+      // Index management
+      expect(toolNames).toContain('refresh_index');
+
+      // Find notes
+      expect(toolNames).toContain('find_notes');
     });
 
     test('all tools have valid input schemas', async () => {
@@ -73,16 +69,16 @@ describe('MCP Server Integration', () => {
   });
 
   describe('Tool Invocation', () => {
-    test('flywheel_doctor report=health returns valid response', async () => {
-      const result = await client.callTool('flywheel_doctor', { report: 'health' });
+    test('doctor action=health returns valid response', async () => {
+      const result = await client.callTool('doctor', { action: 'health' });
 
       expect(result.content).toBeDefined();
       expect(result.content.length).toBeGreaterThan(0);
       expect(result.content[0].type).toBe('text');
     });
 
-    test('flywheel_doctor report=stats returns statistics', async () => {
-      const result = await client.callTool('flywheel_doctor', { report: 'stats' });
+    test('doctor action=stats returns statistics', async () => {
+      const result = await client.callTool('doctor', { action: 'stats' });
 
       expect(result.content).toBeDefined();
       const stats = JSON.parse(result.content[0].text);

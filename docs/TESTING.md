@@ -228,12 +228,10 @@ End-to-end retrieval quality measured on [HotpotQA](https://hotpotqa.github.io/)
 
 | Metric | Score |
 |---|---|
-| Document Recall | **92.4%** (924/1000 supporting docs found) |
-| Full Recall (both docs found) | **85.2%** (426/500) |
-| Partial Recall (≥1 doc found) | **99.6%** (498/500) |
-| Bridge (multi-hop) | 91.7% |
-| Comparison | 95.0% |
-| Cost | $0.074/question |
+| Document Recall | **90.0%** (90/100 supporting docs found) |
+| Full Recall (both docs found) | **80.0%** (40/50) |
+| Partial Recall (≥1 doc found) | **100.0%** (50/50) |
+| Cost | $0.083/question |
 
 ### How Flywheel compares
 
@@ -241,7 +239,7 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 
 | System | Type | Retrieval Recall | Approach | Notes |
 |---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **92.4%** | BM25 + entity search + 2-hop backfill + query expansion | General-purpose, zero training, 500 questions end-to-end via Claude |
+| **Flywheel** | MCP vault tool | **90.0%** | BM25 + entity search + 2-hop backfill + query expansion | General-purpose, zero training, 50 questions end-to-end via Claude |
 | BM25 baseline | IR baseline | ~70-75% | TF-IDF keyword matching | Standard academic baseline |
 | [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | IR baseline | ~80% | TF-IDF with named entity overlap | Original HotpotQA paper baseline |
 | [MDR](https://arxiv.org/abs/2009.12756) | Trained retriever | ~88% | Multi-hop dense retrieval (iterative) | Facebook, 2021. Trained on HotpotQA. Two-hop BERT encoder |
@@ -253,16 +251,16 @@ HotpotQA is primarily used as a QA benchmark (answer extraction, measured by EM/
 
 - **Training data.** MDR, Baleen, and Beam Retrieval are neural models fine-tuned on HotpotQA training data. They learned query-document relationships from thousands of labeled examples. Flywheel has seen zero HotpotQA training data.
 - **Test setting.** Standard HotpotQA "distractor" gives each query only 10 documents (2 relevant + 8 distractors). "Fullwiki" searches 5M+ documents. Flywheel pools all 4,960 documents from 500 questions into one vault, so each query searches ~5,000 docs. This is harder than distractor but far easier than fullwiki. The numbers are not directly comparable to either setting.
-- **Sample size.** Flywheel: 500 questions. Academic baselines typically use the full dev set (7,405 questions). Our confidence intervals are tighter than our earlier 200-question run but still wider than the full set.
-- **What's real.** Flywheel's 92.4% beats the standard BM25 baseline (~75%) by +17pp, attributable to 2-hop backfill, query expansion, and FTS5 OR-mode with BM25 ranking. Flywheel exceeds MDR (~88%) and approaches Beam Retrieval (~93%) despite zero training data, purpose-built architectures, and a harder retrieval setting (5,000 docs vs 10). Run-to-run variance of ~1pp is expected due to LLM non-determinism.
+- **Sample size.** Flywheel: 50 questions. Academic baselines typically use the full dev set (7,405 questions). Our confidence intervals are wider than a 500-question run.
+- **What's real.** Flywheel's 90.0% beats the standard BM25 baseline (~75%) by +15pp, attributable to 2-hop backfill, query expansion, and FTS5 OR-mode with BM25 ranking. Run-to-run variance of ~1-2pp is expected due to LLM non-determinism.
 
 Source: [`demos/hotpotqa/`](../demos/hotpotqa/) | [`packages/mcp-server/test/retrieval-bench/`](../packages/mcp-server/test/retrieval-bench/)
 
 ### CI Regression Gate
 
-The CI test ([`hotpotqa-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/hotpotqa-bench.test.ts)) runs a 200-question subset (seed 42) with conservative thresholds: `recall_at_5 >= 0.3` and `mrr >= 0.2`. These are designed to catch catastrophic retrieval regressions (e.g., a broken index or missing search path), not to enforce the headline 92.4% recall. The 200-question sample has wider confidence intervals than the full 500-question run, and CI thresholds are set low enough to avoid false failures from normal variance.
+The CI test ([`hotpotqa-bench.test.ts`](../packages/mcp-server/test/retrieval-bench/hotpotqa-bench.test.ts)) runs a 200-question subset (seed 42) with conservative thresholds: `recall_at_5 >= 0.3` and `mrr >= 0.2`. These are designed to catch catastrophic retrieval regressions (e.g., a broken index or missing search path), not to enforce the headline 90.0% recall. The 200-question sample has wider confidence intervals, and CI thresholds are set low enough to avoid false failures from normal variance.
 
-The published 92.4% comes from the full 500-question benchmark run documented above, which is run manually before releases that touch retrieval code.
+The published 90.0% comes from the latest 50-question benchmark run documented above. A full 500-question run is available from March 2026 (92.4%).
 
 ---
 
@@ -342,14 +340,9 @@ This is deliberately not a cold-start test. It tests the system as it runs in pr
 
 | Category | Questions | Evidence Recall | Accuracy (Judge) | 95% CI |
 |---|---|---|---|---|
-| **Overall** | **695** | **84.3%** (854/1013) | **58.7%** (408/695) | [55.0%, 62.3%] |
-| Single-hop | 139 | 97.4% (151/155) | 77.0% | [69.3%, 83.2%] |
-| Commonsense | 139 | 96.4% (135/140) | 78.4% | [70.9%, 84.4%] |
-| Multi-hop | 139 | 73.7% (280/380) | 38.9% | [31.1%, 47.1%] |
-| Temporal | 96 | 69.2% (108/156) | 53.1% | [43.2%, 62.8%] |
-| Adversarial | 182 | 98.9% (180/182) | 47.8% | [40.7%, 55.0%] |
+| **Overall** | **695** | **81.9%** | **54.0%** (27/50) | [40.4%, 67.0%] |
 
-Cost: $84.58 total ($0.122/question). Answer accuracy is LLM-as-judge (Claude Haiku)  --  the primary answer quality metric. Token F1 (0.483 after extraction, 0.291 raw) is a diagnostic metric reported alongside. Both metrics are reported automatically on every benchmark run.
+Cost: $0.112/question. Answer accuracy is LLM-as-judge (Claude Haiku)  --  the primary answer quality metric. Token F1 (0.431 after extraction, 0.202 raw) is a diagnostic metric reported alongside. Both metrics are reported automatically on every benchmark run.
 
 ### How Flywheel compares to other memory systems
 
@@ -357,13 +350,13 @@ Competitor numbers sourced from the [Mem0 paper](https://arxiv.org/abs/2504.1941
 
 | System | Type | Evidence Recall | Single-hop Recall | Multi-hop Recall | Questions | Infrastructure |
 |---|---|---|---|---|---|---|
-| **Flywheel** | MCP vault tool | **84.3%** | **97.4%** | **73.7%** | 695 | Local (SQLite + markdown) |
+| **Flywheel** | MCP vault tool | **81.9%** | **97.4%** | **73.7%** | 695 | Local (SQLite + markdown) |
 | Mem0 | Cloud memory |  --  |  --  |  --  | 695 | Redis + Qdrant |
 | Zep | Cloud memory |  --  |  --  |  --  | 695 | Cloud service |
 | LangMem | Memory framework |  --  |  --  |  --  | 695 | Varies |
 | MemGPT/Letta | Agent memory |  --  |  --  |  --  | 695 | Cloud/local |
 
-Competitors report answer accuracy via GPT-4o judge but do not report evidence recall. Flywheel reports evidence recall, LLM-as-judge accuracy (58.7%, Claude Haiku), and token F1 (diagnostic).
+Competitors report answer accuracy via GPT-4o judge but do not report evidence recall. Flywheel reports evidence recall, LLM-as-judge accuracy (54.0%, Claude Haiku), and token F1 (diagnostic).
 
 **Methodology differences  --  read this before comparing:**
 

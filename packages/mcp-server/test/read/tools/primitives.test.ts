@@ -165,22 +165,35 @@ describe('note_read', () => {
 });
 
 // ── tasks ─────────────────────────────────────────────────────────────────────
+// Both list and toggle use a shared write-capable server with a temp vault.
+// This avoids CRLF/path-separator issues with fixtures on Windows and ensures
+// tasks are indexed before the server starts.
 
 describe('tasks', () => {
+  let writeContext: WriteTestServerContext;
+  let writeClient: TestClient;
+
+  beforeAll(async () => {
+    // Create note BEFORE createWriteTestServer so buildVaultIndex picks it up
+    const tempVaultPath = await createTempVault();
+    await createTestNote(
+      tempVaultPath,
+      'tasks-note.md',
+      '# Tasks Note\n\n- [ ] Open task one\n- [ ] Open task two\n- [x] Done task\n'
+    );
+    writeContext = await createWriteTestServer(tempVaultPath);
+    writeClient = connectTestClient(writeContext.server);
+  });
+
+  afterAll(async () => {
+    if (writeContext) await writeContext.cleanup();
+  });
+
   // ── action=list ────────────────────────────────────────────────
-  // Uses the read-side test server (falls back to disk scan when task cache not set up)
 
   describe('action=list', () => {
-    let client: TestClient;
-
-    beforeAll(async () => {
-      const context = await createTestServer(FIXTURES_PATH);
-      client = connectTestClient(context.server);
-    });
-
     test('returns tasks array with correct shape', async () => {
-      // Scope to tasks-note.md to avoid relying on vault-wide cache
-      const result = await client.callTool('tasks', {
+      const result = await writeClient.callTool('tasks', {
         action: 'list',
         path: 'tasks-note.md',
       });
@@ -196,7 +209,7 @@ describe('tasks', () => {
     });
 
     test('status: "open" filter returns only open tasks', async () => {
-      const result = await client.callTool('tasks', {
+      const result = await writeClient.callTool('tasks', {
         action: 'list',
         path: 'tasks-note.md',
         status: 'open',
@@ -209,7 +222,7 @@ describe('tasks', () => {
     });
 
     test('status: "completed" filter returns only completed tasks', async () => {
-      const result = await client.callTool('tasks', {
+      const result = await writeClient.callTool('tasks', {
         action: 'list',
         path: 'tasks-note.md',
         status: 'completed',
@@ -222,7 +235,7 @@ describe('tasks', () => {
     });
 
     test('path not found returns error JSON', async () => {
-      const result = await client.callTool('tasks', {
+      const result = await writeClient.callTool('tasks', {
         action: 'list',
         path: 'does-not-exist.md',
       });
@@ -234,29 +247,8 @@ describe('tasks', () => {
   });
 
   // ── action=toggle ──────────────────────────────────────────────
-  // Uses write-capable server with a temp vault to avoid mutating fixtures
 
   describe('action=toggle', () => {
-    let writeContext: WriteTestServerContext;
-    let writeClient: TestClient;
-
-    beforeAll(async () => {
-      const tempVaultPath = await createTempVault();
-      await createTestNote(
-        tempVaultPath,
-        'tasks-note.md',
-        `# Tasks Note\n\n- [ ] Open task one\n- [ ] Open task two\n- [x] Done task\n`
-      );
-      writeContext = await createWriteTestServer(tempVaultPath);
-      writeClient = connectTestClient(writeContext.server);
-    });
-
-    afterAll(async () => {
-      if (writeContext) {
-        await writeContext.cleanup();
-      }
-    });
-
     test('dry_run: true does not modify the file', async () => {
       const { readFile } = await import('fs/promises');
 
@@ -272,7 +264,6 @@ describe('tasks', () => {
       expect(data.preview).toBeDefined();
       expect(data.dryRun).toBe(true);
 
-      // File must not have changed
       const content = await readFile(path.join(writeContext.vaultPath, 'tasks-note.md'), 'utf8');
       expect(content).toContain('- [ ] Open task one');
     });

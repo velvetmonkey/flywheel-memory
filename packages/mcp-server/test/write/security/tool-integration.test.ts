@@ -28,6 +28,7 @@ import {
 import { createTestNote } from '../helpers/testUtils.js';
 import fs from 'fs/promises';
 import path from 'path';
+import os from 'os';
 
 /** Parse the first text content block from a tool result */
 function parseResult(result: { content: unknown }): Record<string, unknown> {
@@ -314,7 +315,7 @@ describe('Tool-level path security (T32)', () => {
   describe('symlink escape (note delete)', () => {
     it('rejects symlink pointing outside vault', async () => {
       // Create a temp dir outside the vault
-      const outsideDir = await fs.mkdtemp('/tmp/flywheel-outside-');
+      const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), 'flywheel-outside-'));
       const outsideFile = path.join(outsideDir, 'secret.md');
       await fs.writeFile(outsideFile, 'secret content');
 

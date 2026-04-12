@@ -119,8 +119,17 @@ const ACTIVATION_PATTERNS: Array<{ category: ToolCategory; tier: ToolTier; patte
 ];
 
 const MUTATING_TOOL_NAMES = new Set([
+  'edit_section',
+  'note',
   'vault_add_task',
+  'vault_update_frontmatter',
+  'tasks',
   'policy',
+  'correct',
+  'entity',
+  'link',
+  'schema',
+  'doctor',
   'memory',
   'refresh_index',
   'init_semantic',

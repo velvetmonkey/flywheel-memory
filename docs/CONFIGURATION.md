@@ -216,6 +216,16 @@ doctor({
 | `vault_name` | string | Friendly vault label |
 | `tool_tier_override` | `"auto" | "full" | "minimal"` | Deprecated compatibility key; accepted but has no runtime effect |
 
+### Deprecated Compatibility Keys
+
+These keys are still accepted because older vaults and clients may already use them:
+
+| Key | Status |
+|---|---|
+| `exclude_task_tags` | Deprecated alias; prefer `exclude` |
+| `exclude_analysis_tags` | Deprecated alias; prefer `exclude` |
+| `exclude_entities` | Deprecated alias; prefer `exclude` |
+
 ### Example Recipes
 
 #### Turn Off Proactive Linking

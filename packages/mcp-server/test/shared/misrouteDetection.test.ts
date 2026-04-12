@@ -22,7 +22,7 @@ describe('Heuristic Misroute Detection', () => {
     });
 
     it('should flag graph query routed to non-graph tool', () => {
-      const result = detectMisroute('vault_add_to_section', 'backlinks to project Alpha');
+      const result = detectMisroute('edit_section', 'backlinks to project Alpha');
       expect(result).not.toBeNull();
       expect(result!.expectedCategory).toBe('graph');
     });
@@ -55,7 +55,7 @@ describe('Heuristic Misroute Detection', () => {
     });
 
     it('should NOT flag non-matching write query', () => {
-      const result = detectMisroute('vault_add_to_section', 'add this content to the log');
+      const result = detectMisroute('edit_section', 'add this content to the log');
       expect(result).toBeNull();
     });
 

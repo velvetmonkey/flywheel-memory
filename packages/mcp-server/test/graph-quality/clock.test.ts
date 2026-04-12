@@ -56,7 +56,9 @@ describe('Clock Test — T16', () => {
   // ── Tick functions ────────────────────────────────────────────
 
   async function tick1_createAlpha() {
-    await callJsonTool(client, 'vault_create_note', {
+    // vault_create_note retired (T43 B3+) — use note(action: create)
+    await callJsonTool(client, 'note', {
+      action: 'create',
       path: 'test/alpha.md',
       content: '# Alpha\n\nA rocketry project.',
       frontmatter: { type: 'project' },
@@ -74,7 +76,9 @@ describe('Clock Test — T16', () => {
   }
 
   async function tick2_createBravoLinkingAlpha() {
-    await callJsonTool(client, 'vault_create_note', {
+    // vault_create_note retired (T43 B3+) — use note(action: create)
+    await callJsonTool(client, 'note', {
+      action: 'create',
       path: bravoPath,
       content: '# Bravo\n\nSupports [[Alpha]] with propulsion.',
       skipWikilinks: true,
@@ -93,7 +97,9 @@ describe('Clock Test — T16', () => {
   }
 
   async function tick3_addLinkToAlpha() {
-    await callJsonTool(client, 'vault_add_to_section', {
+    // vault_add_to_section retired (T43 B3+) — use edit_section(action: add)
+    await callJsonTool(client, 'edit_section', {
+      action: 'add',
       path: alphaPath,
       section: 'Alpha',
       content: 'Phase 1 launched. See [[Bravo]].',
@@ -137,7 +143,9 @@ describe('Clock Test — T16', () => {
   }
 
   async function tick5_createOrphanCharlie() {
-    await callJsonTool(client, 'vault_create_note', {
+    // vault_create_note retired (T43 B3+) — use note(action: create)
+    await callJsonTool(client, 'note', {
+      action: 'create',
       path: charliePath,
       content: '# Charlie\n\nUnrelated aerodynamics.',
       skipWikilinks: true,
@@ -153,7 +161,9 @@ describe('Clock Test — T16', () => {
   }
 
   async function tick6_linkCharlieIntoGraph() {
-    await callJsonTool(client, 'vault_add_to_section', {
+    // vault_add_to_section retired (T43 B3+) — use edit_section(action: add)
+    await callJsonTool(client, 'edit_section', {
+      action: 'add',
       path: charliePath,
       section: 'Charlie',
       content: 'Collaborating with [[Alpha]] and [[Bravo]].',
@@ -171,9 +181,11 @@ describe('Clock Test — T16', () => {
   }
 
   async function tick7_renameAlpha() {
-    await callJsonTool(client, 'vault_rename_note', {
+    // vault_rename_note retired (T43 B3+) — use note(action: rename)
+    await callJsonTool(client, 'note', {
+      action: 'rename',
       path: 'test/alpha.md',
-      newTitle: 'alpha-prime',
+      new_name: 'alpha-prime',
       updateBacklinks: true,
     });
 
@@ -196,7 +208,9 @@ describe('Clock Test — T16', () => {
   }
 
   async function tick8_replaceBravoContent() {
-    await callJsonTool(client, 'vault_replace_in_section', {
+    // vault_replace_in_section retired (T43 B3+) — use edit_section(action: replace)
+    await callJsonTool(client, 'edit_section', {
+      action: 'replace',
       path: bravoPath,
       section: 'Bravo',
       search: 'propulsion',
@@ -217,7 +231,9 @@ describe('Clock Test — T16', () => {
   }
 
   async function tick9_deleteBravo() {
-    await callJsonTool(client, 'vault_delete_note', {
+    // vault_delete_note retired (T43 B3+) — use note(action: delete)
+    await callJsonTool(client, 'note', {
+      action: 'delete',
       path: bravoPath,
       confirm: true,
     });
@@ -249,7 +265,9 @@ describe('Clock Test — T16', () => {
     expect(mcp.structures[alphaPath]?.frontmatter?.priority).toBe('high');
 
     // Validate links: should report dead links (bravo references in surviving notes)
-    const validation = await callJsonTool(client, 'validate_links', {
+    // validate_links retired (T43 B3+) — use link(action: validate)
+    const validation = await callJsonTool(client, 'link', {
+      action: 'validate',
       group_by_target: true,
       limit: 20,
     });

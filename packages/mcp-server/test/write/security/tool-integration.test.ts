@@ -10,12 +10,12 @@
  * validatePathSecure() rather than the deprecated sync validatePath().
  *
  * Covered:
- *   vault_create_note  — note path traversal, template LFI
- *   vault_delete_note  — path traversal on delete
- *   vault_move_note    — traversal on source and destination
- *   vault_rename_note  — traversal on source path
- *   merge_entities     — traversal on source and target
- *   absorb_as_alias    — traversal on target
+ *   note(create)       — note path traversal, template LFI
+ *   note(delete)       — path traversal on delete
+ *   note(move)         — traversal on source and destination
+ *   note(rename)       — traversal on source path
+ *   entity(merge)      — traversal on source and target
+ *   entity(alias)      — traversal on target
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -58,14 +58,14 @@ describe('Tool-level path security (T32)', () => {
   });
 
   // ============================================================
-  // vault_create_note — note path traversal
+  // note(create) — note path traversal
   // ============================================================
 
-  describe('vault_create_note — note path', () => {
+  describe('note(create) — note path', () => {
     it('rejects simple path traversal', async () => {
       const result = await client.callTool({
-        name: 'vault_create_note',
-        arguments: { path: '../outside.md', content: 'bad' },
+        name: 'note',
+        arguments: { action: 'create', path: '../outside.md', content: 'bad' },
       });
       const data = parseResult(result);
       expect(data.success).toBe(false);
@@ -74,8 +74,8 @@ describe('Tool-level path security (T32)', () => {
 
     it('rejects absolute path', async () => {
       const result = await client.callTool({
-        name: 'vault_create_note',
-        arguments: { path: '/etc/passwd.md', content: 'bad' },
+        name: 'note',
+        arguments: { action: 'create', path: '/etc/passwd.md', content: 'bad' },
       });
       const data = parseResult(result);
       expect(data.success).toBe(false);
@@ -83,8 +83,8 @@ describe('Tool-level path security (T32)', () => {
 
     it('rejects sensitive file target (.env)', async () => {
       const result = await client.callTool({
-        name: 'vault_create_note',
-        arguments: { path: '.env', content: 'TOKEN=stolen' },
+        name: 'note',
+        arguments: { action: 'create', path: '.env', content: 'TOKEN=stolen' },
       });
       const data = parseResult(result);
       expect(data.success).toBe(false);
@@ -93,15 +93,16 @@ describe('Tool-level path security (T32)', () => {
   });
 
   // ============================================================
-  // vault_create_note — template LFI (Local File Inclusion)
+  // note(create) — template LFI (Local File Inclusion)
   // ============================================================
 
-  describe('vault_create_note — template path', () => {
+  describe('note(create) — template path', () => {
     it('rejects traversal in template path', async () => {
       // Create a legit target note path to get past note-path validation
       const result = await client.callTool({
-        name: 'vault_create_note',
+        name: 'note',
         arguments: {
+          action: 'create',
           path: 'notes/safe.md',
           template: '../../etc/passwd',
           content: '',
@@ -114,8 +115,9 @@ describe('Tool-level path security (T32)', () => {
 
     it('rejects absolute path in template', async () => {
       const result = await client.callTool({
-        name: 'vault_create_note',
+        name: 'note',
         arguments: {
+          action: 'create',
           path: 'notes/safe2.md',
           template: '/etc/passwd',
           content: '',
@@ -129,8 +131,9 @@ describe('Tool-level path security (T32)', () => {
       // Create a .env file inside vault so it "exists" — should still be blocked
       await fs.writeFile(path.join(ctx.vaultPath, '.env'), 'SECRET=test');
       const result = await client.callTool({
-        name: 'vault_create_note',
+        name: 'note',
         arguments: {
+          action: 'create',
           path: 'notes/safe3.md',
           template: '.env',
           content: '',
@@ -143,14 +146,14 @@ describe('Tool-level path security (T32)', () => {
   });
 
   // ============================================================
-  // vault_delete_note
+  // note(delete)
   // ============================================================
 
-  describe('vault_delete_note', () => {
+  describe('note(delete)', () => {
     it('rejects path traversal', async () => {
       const result = await client.callTool({
-        name: 'vault_delete_note',
-        arguments: { path: '../outside.md', confirm: true },
+        name: 'note',
+        arguments: { action: 'delete', path: '../outside.md', confirm: true },
       });
       const data = parseResult(result);
       expect(data.success).toBe(false);
@@ -159,8 +162,8 @@ describe('Tool-level path security (T32)', () => {
 
     it('rejects sensitive file target', async () => {
       const result = await client.callTool({
-        name: 'vault_delete_note',
-        arguments: { path: '.env', confirm: true },
+        name: 'note',
+        arguments: { action: 'delete', path: '.env', confirm: true },
       });
       const data = parseResult(result);
       expect(data.success).toBe(false);
@@ -168,16 +171,17 @@ describe('Tool-level path security (T32)', () => {
   });
 
   // ============================================================
-  // vault_move_note
+  // note(move)
   // ============================================================
 
-  describe('vault_move_note', () => {
+  describe('note(move)', () => {
     it('rejects path traversal on source', async () => {
       const result = await client.callTool({
-        name: 'vault_move_note',
+        name: 'note',
         arguments: {
-          oldPath: '../outside.md',
-          newPath: 'notes/dest.md',
+          action: 'move',
+          path: '../outside.md',
+          destination: 'notes/dest.md',
         },
       });
       const data = parseResult(result);
@@ -188,10 +192,11 @@ describe('Tool-level path security (T32)', () => {
     it('rejects path traversal on destination', async () => {
       await createTestNote(ctx.vaultPath, 'notes/move-source.md', '# Source\n');
       const result = await client.callTool({
-        name: 'vault_move_note',
+        name: 'note',
         arguments: {
-          oldPath: 'notes/move-source.md',
-          newPath: '../../etc/escape.md',
+          action: 'move',
+          path: 'notes/move-source.md',
+          destination: '../../etc/escape.md',
         },
       });
       const data = parseResult(result);
@@ -202,10 +207,11 @@ describe('Tool-level path security (T32)', () => {
     it('rejects sensitive destination', async () => {
       await createTestNote(ctx.vaultPath, 'notes/move-source2.md', '# Source\n');
       const result = await client.callTool({
-        name: 'vault_move_note',
+        name: 'note',
         arguments: {
-          oldPath: 'notes/move-source2.md',
-          newPath: '.env',
+          action: 'move',
+          path: 'notes/move-source2.md',
+          destination: '.env',
         },
       });
       const data = parseResult(result);
@@ -214,16 +220,17 @@ describe('Tool-level path security (T32)', () => {
   });
 
   // ============================================================
-  // vault_rename_note
+  // note(rename)
   // ============================================================
 
-  describe('vault_rename_note', () => {
+  describe('note(rename)', () => {
     it('rejects path traversal on source', async () => {
       const result = await client.callTool({
-        name: 'vault_rename_note',
+        name: 'note',
         arguments: {
+          action: 'rename',
           path: '../outside.md',
-          newTitle: 'new-name',
+          new_name: 'new-name',
         },
       });
       const data = parseResult(result);
@@ -233,17 +240,17 @@ describe('Tool-level path security (T32)', () => {
   });
 
   // ============================================================
-  // merge_entities
+  // entity(merge)
   // ============================================================
 
-  describe('merge_entities', () => {
+  describe('entity(merge)', () => {
     it('rejects path traversal on source', async () => {
       const result = await client.callTool({
-        name: 'merge_entities',
+        name: 'entity',
         arguments: {
-          source_path: '../outside.md',
-          target_path: 'notes/target.md',
-          dry_run: true,
+          action: 'merge',
+          primary: 'notes/target.md',
+          secondary: '../outside.md',
         },
       });
       const data = parseResult(result);
@@ -254,11 +261,11 @@ describe('Tool-level path security (T32)', () => {
     it('rejects path traversal on target', async () => {
       await createTestNote(ctx.vaultPath, 'notes/merge-source.md', '# Source\n');
       const result = await client.callTool({
-        name: 'merge_entities',
+        name: 'entity',
         arguments: {
-          source_path: 'notes/merge-source.md',
-          target_path: '../../etc/escape.md',
-          dry_run: true,
+          action: 'merge',
+          primary: '../../etc/escape.md',
+          secondary: 'notes/merge-source.md',
         },
       });
       const data = parseResult(result);
@@ -268,17 +275,17 @@ describe('Tool-level path security (T32)', () => {
   });
 
   // ============================================================
-  // absorb_as_alias
+  // entity(alias)
   // ============================================================
 
-  describe('absorb_as_alias', () => {
+  describe('entity(alias)', () => {
     it('rejects path traversal on target', async () => {
       const result = await client.callTool({
-        name: 'absorb_as_alias',
+        name: 'entity',
         arguments: {
-          source_name: 'SomeName',
-          target_path: '../../etc/escape.md',
-          dry_run: true,
+          action: 'alias',
+          entity: '../../etc/escape.md',
+          alias: 'SomeName',
         },
       });
       const data = parseResult(result);
@@ -288,11 +295,11 @@ describe('Tool-level path security (T32)', () => {
 
     it('rejects sensitive file as target', async () => {
       const result = await client.callTool({
-        name: 'absorb_as_alias',
+        name: 'entity',
         arguments: {
-          source_name: 'SomeName',
-          target_path: '.env',
-          dry_run: true,
+          action: 'alias',
+          entity: '.env',
+          alias: 'SomeName',
         },
       });
       const data = parseResult(result);
@@ -304,7 +311,7 @@ describe('Tool-level path security (T32)', () => {
   // Symlink escape (if OS supports symlink creation)
   // ============================================================
 
-  describe('symlink escape (vault_delete_note)', () => {
+  describe('symlink escape (note delete)', () => {
     it('rejects symlink pointing outside vault', async () => {
       // Create a temp dir outside the vault
       const outsideDir = await fs.mkdtemp('/tmp/flywheel-outside-');
@@ -322,8 +329,8 @@ describe('Tool-level path security (T32)', () => {
       }
 
       const result = await client.callTool({
-        name: 'vault_delete_note',
-        arguments: { path: 'escape-link.md', confirm: true },
+        name: 'note',
+        arguments: { action: 'delete', path: 'escape-link.md', confirm: true },
       });
 
       // Clean up regardless of result

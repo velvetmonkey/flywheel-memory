@@ -45,10 +45,11 @@ describe('README Examples: Artemis Rocket Vault', () => {
   });
 
   describe('Tool Execution', () => {
-    it('should execute flywheel_doctor report=health successfully', async () => {
+    it('should execute doctor action=health successfully', async () => {
+      // flywheel_doctor retired (T43 B3+) — merged into doctor(action: health)
       const result = await client.callTool({
-        name: 'flywheel_doctor',
-        arguments: { report: 'health' },
+        name: 'doctor',
+        arguments: { action: 'health' },
       });
 
       expect(result.isError).toBeFalsy();
@@ -61,21 +62,23 @@ describe('README Examples: Artemis Rocket Vault', () => {
       expect(healthData.vault_path).toContain('artemis-rocket');
     });
 
-    it('should find hub notes with graph_analysis', async () => {
+    it('should find hub notes with graph', async () => {
+      // graph_analysis retired (T43 B3+) — merged into graph(action: analyse, analysis: hubs)
       const result = await client.callTool({
-        name: 'graph_analysis',
-        arguments: { analysis: 'hubs', limit: 10 },
+        name: 'graph',
+        arguments: { action: 'analyse', analysis: 'hubs', limit: 10 },
       });
 
       expect(result.isError).toBeFalsy();
       const content = result.content as Array<{ type: string; text: string }>;
       const hubs = JSON.parse(content[0].text);
 
-      expect(Array.isArray(hubs.hubs)).toBe(true);
+      // graph(action: analyse) returns top_hubs (renamed from hubs in graph_analysis)
+      expect(Array.isArray(hubs.top_hubs)).toBe(true);
       // May have no hubs if min_links threshold not met in small demo vault
-      if (hubs.hubs.length > 0) {
+      if (hubs.top_hubs.length > 0) {
         // Hub notes should have meaningful backlink counts
-        for (const hub of hubs.hubs.slice(0, 3)) {
+        for (const hub of hubs.top_hubs.slice(0, 3)) {
           expect(hub.path).toMatch(/\.md$/);
           expect(typeof hub.backlink_count).toBe('number');
         }
@@ -135,16 +138,17 @@ describe('README Examples: Artemis Rocket Vault', () => {
     });
 
     it('should get orphan notes', async () => {
+      // graph_analysis retired (T43 B3+) — merged into graph(action: analyse)
       const result = await client.callTool({
-        name: 'graph_analysis',
-        arguments: { analysis: 'orphans', limit: 20 },
+        name: 'graph',
+        arguments: { action: 'analyse', limit: 20 },
       });
 
       expect(result.isError).toBeFalsy();
       const content = result.content as Array<{ type: string; text: string }>;
-      const orphans = JSON.parse(content[0].text);
+      const data = JSON.parse(content[0].text);
 
-      expect(Array.isArray(orphans.orphans)).toBe(true);
+      expect(Array.isArray(data.orphans)).toBe(true);
     });
   });
 
@@ -191,10 +195,11 @@ describe('README Examples: Carter Strategy Vault', () => {
     await client?.close();
   });
 
-  it('should execute flywheel_doctor report=health successfully', async () => {
+  it('should execute doctor action=health successfully', async () => {
+    // flywheel_doctor retired (T43 B3+) — merged into doctor(action: health)
     const result = await client.callTool({
-      name: 'flywheel_doctor',
-      arguments: { report: 'health' },
+      name: 'doctor',
+      arguments: { action: 'health' },
     });
 
     expect(result.isError).toBeFalsy();
@@ -208,16 +213,17 @@ describe('README Examples: Carter Strategy Vault', () => {
   it('should list all tools', async () => {
     const tools = await client.listTools();
 
-    expect(tools.tools.length).toBeGreaterThanOrEqual(24);
+    // T43 B3+: agent preset = 18 tools (17 under CLAUDECODE=1)
+    expect(tools.tools.length).toBeGreaterThanOrEqual(18);
 
     // Check for key tool categories
     const toolNames = tools.tools.map(t => t.name);
 
-    // Graph tools
-    expect(toolNames).toContain('graph_analysis');
+    // Graph tools (graph_analysis retired, merged into graph)
+    expect(toolNames).toContain('graph');
 
-    // Health tools (merged into flywheel_doctor)
-    expect(toolNames).toContain('flywheel_doctor');
+    // Health tools (flywheel_doctor retired, merged into doctor)
+    expect(toolNames).toContain('doctor');
 
     // Query tools
     expect(toolNames).toContain('search');
@@ -254,10 +260,10 @@ describe('Tool Registration Consistency', () => {
     const tools = await client.listTools();
     const toolNames = tools.tools.map(t => t.name);
 
-    // Core documented tools (from README)
+    // Core documented tools (T43 B3+ merged names)
     const documentedTools = [
-      'flywheel_doctor',
-      'graph_analysis',
+      'doctor',       // flywheel_doctor retired — merged into doctor
+      'graph',        // graph_analysis retired — merged into graph
       'search',
       'note_read',
     ];
@@ -269,9 +275,8 @@ describe('Tool Registration Consistency', () => {
 
   it('should return valid JSON from all tools', async () => {
     const testCalls = [
-      { name: 'flywheel_doctor', arguments: { report: 'health' } },
-      { name: 'graph_analysis', arguments: { analysis: 'hubs', limit: 5 } },
-      { name: 'graph_analysis', arguments: { analysis: 'orphans', limit: 5 } },
+      { name: 'doctor', arguments: { action: 'health' } },
+      { name: 'graph', arguments: { action: 'analyse', limit: 5 } },
       { name: 'search', arguments: { modified_after: '2000-01-01', sort_by: 'modified', limit: 5 } },
     ];
 

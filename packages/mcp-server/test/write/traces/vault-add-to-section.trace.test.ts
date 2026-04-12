@@ -49,7 +49,8 @@ describe('vault_add_to_section traces', () => {
   });
 
   it('added content appears in search', async () => {
-    await snap(client, 'vault_add_to_section', {
+    await snap(client, 'edit_section', {
+      action: 'add',
       path: 'journal/entry.md',
       section: 'Log',
       content: '- xyzunique groceries pickup',
@@ -61,7 +62,8 @@ describe('vault_add_to_section traces', () => {
   });
 
   it('wikilink in added content creates backlink', async () => {
-    await snap(client, 'vault_add_to_section', {
+    await snap(client, 'edit_section', {
+      action: 'add',
       path: 'journal/entry.md',
       section: 'Log',
       content: '- Spoke with [[Alice]] about the project',

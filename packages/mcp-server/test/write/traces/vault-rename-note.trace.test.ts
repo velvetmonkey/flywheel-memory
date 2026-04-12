@@ -46,13 +46,14 @@ describe('vault_rename_note trace', () => {
     await snap(client, 'refresh_index');
 
     // Capture total notes before rename
-    const statsBefore = await snap(client, 'flywheel_doctor', { report: 'stats' });
+    const statsBefore = await snap(client, 'doctor', { action: 'stats' });
     totalNotesBefore = statsBefore.total_notes;
 
     // Perform the rename
-    await snap(client, 'vault_rename_note', {
+    await snap(client, 'note', {
+      action: 'rename',
       path: 'people/Alice.md',
-      newTitle: 'AliceRenamed',
+      new_name: 'AliceRenamed',
     });
 
     // Refresh after rename
@@ -76,7 +77,7 @@ describe('vault_rename_note trace', () => {
   });
 
   it('vault_stats total unchanged', async () => {
-    const statsAfter = await snap(client, 'flywheel_doctor', { report: 'stats' });
+    const statsAfter = await snap(client, 'doctor', { action: 'stats' });
     expect(statsAfter.total_notes).toBe(totalNotesBefore);
   });
 });

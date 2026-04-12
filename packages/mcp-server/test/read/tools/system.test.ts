@@ -1,5 +1,5 @@
 /**
- * Tests for list_entities inferred category decoration
+ * Tests for entity(action: list) inferred category decoration
  */
 
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
@@ -9,6 +9,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../../src/core/read/types.js';
 import { buildVaultIndex, setIndexState } from '../../../src/core/read/graph.js';
 import { registerSystemTools } from '../../../src/tools/read/system.js';
+import { registerEntityTool } from '../../../src/tools/write/entity.js';
 import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
 import { setFTS5Database } from '../../../src/core/read/fts5.js';
 import { connectTestClient, type TestClient } from '../helpers/createTestServer.js';
@@ -21,7 +22,7 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 
-describe('list_entities inferred categories', () => {
+describe('entity(action: list) inferred categories', () => {
   let server: McpServer;
   let client: TestClient;
   let stateDb: StateDb;
@@ -44,6 +45,8 @@ describe('list_entities inferred categories', () => {
       undefined,
       () => stateDb,
     );
+
+    registerEntityTool(server, () => FIXTURES_PATH, () => stateDb, () => vaultIndex);
 
     client = connectTestClient(server);
 
@@ -68,7 +71,7 @@ describe('list_entities inferred categories', () => {
   });
 
   test('other entities with inferred hit get inferredCategory and inferredConfidence', async () => {
-    const result = await client.callTool('list_entities', { category: 'other' });
+    const result = await client.callTool('entity', { action: 'list', category: 'other' });
     const data = JSON.parse(result.content[0].text);
     const otherEntities = data.other ?? [];
 
@@ -86,7 +89,7 @@ describe('list_entities inferred categories', () => {
   });
 
   test('entities without inference omit those fields', async () => {
-    const result = await client.callTool('list_entities', { category: 'other' });
+    const result = await client.callTool('entity', { action: 'list', category: 'other' });
     const data = JSON.parse(result.content[0].text);
     const otherEntities = data.other ?? [];
 
@@ -101,7 +104,7 @@ describe('list_entities inferred categories', () => {
   });
 
   test('non-other categories unaffected by inferred annotation', async () => {
-    const result = await client.callTool('list_entities', { category: 'people' });
+    const result = await client.callTool('entity', { action: 'list', category: 'people' });
     const data = JSON.parse(result.content[0].text);
     const people = data.people ?? [];
 

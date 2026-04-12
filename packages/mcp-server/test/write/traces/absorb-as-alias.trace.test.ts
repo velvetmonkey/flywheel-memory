@@ -49,9 +49,10 @@ describe('absorb_as_alias trace', () => {
     await snap(client, 'refresh_index');
 
     // Absorb Bobby as alias of Bob
-    await snap(client, 'absorb_as_alias', {
-      source_name: 'Bobby',
-      target_path: 'people/Bob.md',
+    await snap(client, 'entity', {
+      action: 'alias',
+      entity: 'people/Bob.md',
+      alias: 'Bobby',
     });
 
     // Refresh after absorb

@@ -69,10 +69,11 @@ describe('undo traces', () => {
     });
 
     it('undo restores total_notes to original count', async () => {
-      const statsBefore = await snap(client, 'flywheel_doctor', { report: 'stats' });
+      const statsBefore = await snap(client, 'doctor', { action: 'stats' });
 
       // Create a note with commit (undo point)
-      await snap(client, 'vault_create_note', {
+      await snap(client, 'note', {
+        action: 'create',
         path: 'notes/undoable.md',
         content: '# Undoable\n\nThis will be undone.',
         frontmatter: { type: 'note' },
@@ -80,18 +81,18 @@ describe('undo traces', () => {
       });
       await snap(client, 'refresh_index');
 
-      const statsAfter = await snap(client, 'flywheel_doctor', { report: 'stats' });
+      const statsAfter = await snap(client, 'doctor', { action: 'stats' });
       expect(statsAfter.total_notes).toBe(statsBefore.total_notes + 1);
 
       // Undo (soft reset)
-      const undoResult = await snap(client, 'vault_undo_last_mutation', { confirm: true });
+      const undoResult = await snap(client, 'correct', { action: 'undo' });
       expect(undoResult.success).toBe(true);
 
       // Restore working tree to match HEAD
       await restoreWorkingTree(ctx.vaultPath);
       await snap(client, 'refresh_index');
 
-      const statsRestored = await snap(client, 'flywheel_doctor', { report: 'stats' });
+      const statsRestored = await snap(client, 'doctor', { action: 'stats' });
       expect(statsRestored.total_notes).toBe(statsBefore.total_notes);
     });
   });
@@ -137,7 +138,8 @@ describe('undo traces', () => {
 
     it('undo removes added section content', async () => {
       // Add content with commit
-      await snap(client, 'vault_add_to_section', {
+      await snap(client, 'edit_section', {
+        action: 'add',
         path: 'notes/sectioned.md',
         section: 'Log',
         content: 'undoable content xyz',
@@ -153,7 +155,7 @@ describe('undo traces', () => {
       expect(contentAfter.content).toContain('undoable content xyz');
 
       // Undo (soft reset)
-      const undoResult = await snap(client, 'vault_undo_last_mutation', { confirm: true });
+      const undoResult = await snap(client, 'correct', { action: 'undo' });
       expect(undoResult.success).toBe(true);
 
       // Restore working tree
@@ -208,7 +210,7 @@ describe('undo traces', () => {
 
     it('undo restores original type in schema', async () => {
       // Snapshot schema before
-      const schemaBefore = await snap(client, 'vault_schema', { analysis: 'field_values', field: 'type' });
+      const schemaBefore = await snap(client, 'schema', { action: 'field_values', field: 'type' });
       const valuesBefore = schemaBefore.values.map((v: any) => v.value);
       expect(valuesBefore).toContain('person');
 
@@ -221,12 +223,12 @@ describe('undo traces', () => {
       await snap(client, 'refresh_index');
 
       // Verify robot appeared
-      const schemaAfter = await snap(client, 'vault_schema', { analysis: 'field_values', field: 'type' });
+      const schemaAfter = await snap(client, 'schema', { action: 'field_values', field: 'type' });
       const valuesAfter = schemaAfter.values.map((v: any) => v.value);
       expect(valuesAfter).toContain('robot');
 
       // Undo (soft reset)
-      const undoResult = await snap(client, 'vault_undo_last_mutation', { confirm: true });
+      const undoResult = await snap(client, 'correct', { action: 'undo' });
       expect(undoResult.success).toBe(true);
 
       // Restore working tree
@@ -234,7 +236,7 @@ describe('undo traces', () => {
       await snap(client, 'refresh_index');
 
       // Verify person is back, robot is gone
-      const schemaRestored = await snap(client, 'vault_schema', { analysis: 'field_values', field: 'type' });
+      const schemaRestored = await snap(client, 'schema', { action: 'field_values', field: 'type' });
       const valuesRestored = schemaRestored.values.map((v: any) => v.value);
       expect(valuesRestored).toContain('person');
       expect(valuesRestored).not.toContain('robot');

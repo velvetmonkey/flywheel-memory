@@ -36,7 +36,7 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
   });
 
   test('returns healthy status on valid vault', async () => {
-    const result = await client.callTool('flywheel_doctor', { report: 'health' });
+    const result = await client.callTool('doctor', { action: 'health' });
     expect(result.content).toBeDefined();
     const data = JSON.parse(result.content[0].text);
     expect(data.status).toBeDefined();
@@ -46,7 +46,7 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
   });
 
   test('returns structured output with expected fields', async () => {
-    const result = await client.callTool('flywheel_doctor', { report: 'health' });
+    const result = await client.callTool('doctor', { action: 'health' });
     const data = JSON.parse(result.content[0].text);
     expect(data).toHaveProperty('status');
     expect(data).toHaveProperty('recommendations');
@@ -62,7 +62,7 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
     //
     // We can't easily mock the SQLite pragma in this test setup,
     // but we verify the handler completes without throwing.
-    const result = await client.callTool('flywheel_doctor', { report: 'health' });
+    const result = await client.callTool('doctor', { action: 'health' });
     expect(result.content).toBeDefined();
     expect(result.isError).toBeFalsy();
 
@@ -72,7 +72,7 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
   });
 
   test('database integrity section exists in response', async () => {
-    const result = await client.callTool('flywheel_doctor', { report: 'health' });
+    const result = await client.callTool('doctor', { action: 'health' });
     const data = JSON.parse(result.content[0].text);
     // The database check ran without error (dbIntegrityFailed = false)
     // so status should NOT be 'unhealthy' on a valid test vault
@@ -97,7 +97,7 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
     context.runtimeState.integrityCheckInProgress = true;
 
     try {
-      const result = await client.callTool('flywheel_doctor', { report: 'health', detail: 'summary' });
+      const result = await client.callTool('doctor', { action: 'health', detail: 'summary' });
       const data = JSON.parse(result.content[0].text);
       expect(result.isError).toBeFalsy();
       expect(quickCheckCalls).toBe(0);
@@ -111,7 +111,7 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
   });
 
   test('summary detail omits full-scan dead-link fields', async () => {
-    const result = await client.callTool('flywheel_doctor', { report: 'health', detail: 'summary' });
+    const result = await client.callTool('doctor', { action: 'health', detail: 'summary' });
     const data = JSON.parse(result.content[0].text);
 
     expect(data).not.toHaveProperty('dead_link_count');
@@ -119,7 +119,7 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
   });
 
   test('full detail includes dead-link fields', async () => {
-    const result = await client.callTool('flywheel_doctor', { report: 'health', detail: 'full' });
+    const result = await client.callTool('doctor', { action: 'health', detail: 'full' });
     const data = JSON.parse(result.content[0].text);
 
     expect(data).toHaveProperty('dead_link_count');
@@ -133,7 +133,7 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
     context.runtimeState.integrityCheckInProgress = true;
 
     try {
-      const result = await client.callTool('pipeline_status', {});
+      const result = await client.callTool('doctor', { action: 'pipeline' });
       const data = JSON.parse(result.content[0].text);
       expect(data.boot_state).toBe('booting');
       expect(data.integrity_state).toBe('checking');
@@ -173,7 +173,7 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
     stateDb.db.prepare('UPDATE index_events SET timestamp = ? WHERE trigger = ?')
       .run(now - watcherAgoSeconds * 1000, 'watcher');
 
-    const result = await client.callTool('flywheel_doctor', { report: 'health' });
+    const result = await client.callTool('doctor', { action: 'health' });
     const data = JSON.parse(result.content[0].text);
 
     expect(data.index_age_seconds).toBeGreaterThanOrEqual(rebuildAgoSeconds - 5);
@@ -234,7 +234,7 @@ describe('flywheel_doctor', () => {
     // Get the linkable surface count from the in-memory index
     const indexEntitySize = context.getIndex().entities.size;
 
-    const result = await client.callTool('flywheel_doctor', {});
+    const result = await client.callTool('doctor', { action: 'diagnosis' });
     const data = JSON.parse(result.content[0].text);
     const check = data.checks.find((c: any) => c.name === 'entity_embedding_coverage');
 
@@ -286,7 +286,7 @@ describe('flywheel_doctor', () => {
     });
 
     try {
-      const result = await client.callTool('flywheel_doctor', {});
+      const result = await client.callTool('doctor', { action: 'diagnosis' });
       const data = JSON.parse(result.content[0].text);
       const check = data.checks.find((c: any) => c.name === 'proactive_queue');
       expect(check).toBeDefined();
@@ -294,7 +294,7 @@ describe('flywheel_doctor', () => {
       expect(check.detail).toMatch(/2 pending, 0 applied/);
       expect(check.detail).toMatch(/active_edit \(3\)/);
       expect(check.detail).toMatch(/apply_empty \(2\)/);
-      expect(check.fix).toMatch(/proactive_min_score|pipeline_status/);
+      expect(check.fix).toMatch(/proactive_min_score|pipeline_status|pipeline/);
     } finally {
       stateDb.db.prepare(`DELETE FROM proactive_queue`).run();
       setWriteState(stateDb, 'last_proactive_drain', null);
@@ -306,7 +306,7 @@ describe('flywheel_doctor', () => {
     stateDb.db.prepare(`DELETE FROM proactive_queue`).run();
     setWriteState(stateDb, 'last_proactive_drain', null);
 
-    const result = await client.callTool('flywheel_doctor', {});
+    const result = await client.callTool('doctor', { action: 'diagnosis' });
     const data = JSON.parse(result.content[0].text);
     const check = data.checks.find((c: any) => c.name === 'proactive_queue');
     expect(check).toBeDefined();
@@ -331,7 +331,7 @@ describe('flywheel_doctor', () => {
     });
 
     try {
-      const result = await client.callTool('flywheel_doctor', { report: 'health', detail: 'full' });
+      const result = await client.callTool('doctor', { action: 'health', detail: 'full' });
       const data = JSON.parse(result.content[0].text);
       expect(data.proactive_linking?.last_drain).toBeDefined();
       expect(data.proactive_linking.last_drain.rejection_breakdown).toEqual({

@@ -1,7 +1,7 @@
 {
   "suite": "cross-vault-learning-report",
-  "timestamp": "2026-04-09T15:21:48.394Z",
-  "duration_ms": 194320,
+  "timestamp": "2026-04-12T02:09:04.207Z",
+  "duration_ms": 252360,
   "summary": {
     "primary_final_f1": 0.58,
     "small-world_final_f1": 0.265,

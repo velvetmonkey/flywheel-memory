@@ -7,8 +7,8 @@
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![HotpotQA](https://img.shields.io/badge/HotpotQA-92.4%25%20recall%20(500q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-84.3%25%20evidence%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
+[![HotpotQA](https://img.shields.io/badge/HotpotQA-90.0%25%20recall%20(50q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-81.9%25%20evidence%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 
 > **Part of the Flywheel suite** &mdash; Flywheel Memory is the MCP server. [**Flywheel Crank**](https://github.com/velvetmonkey/flywheel-crank) is the Obsidian plugin that visualizes it.
 
@@ -235,8 +235,8 @@ If you use Cursor, Windsurf, VS Code, OpenClaw, or another client, see [docs/SET
 
 Agent-first tools should prove their claims. Flywheel ships with reproducible benchmarks against academic retrieval standards:
 
-- **HotpotQA full end to end:** **92.4% document recall** on **500 questions / 4,960 docs**. Latest artifact: **March 28, 2026**. Cost in that run: **$0.074/question**.
-- **LoCoMo full end to end:** **84.3% evidence recall** and **58.7% answer accuracy** on **695 scored questions / 272 sessions**. Latest artifact: **March 28, 2026**. Final token F1: **0.483**.
+- **HotpotQA full end to end:** **90.0% document recall** on **50 questions / 4,960 docs**. Latest artifact: **April 10, 2026**. Cost in that run: **$0.083/question**.
+- **LoCoMo full end to end:** **81.9% evidence recall** and **54.0% answer accuracy** on **695 scored questions / 272 sessions**. Latest artifact: **April 10, 2026**. Final token F1: **0.431**.
 - **LoCoMo unit retrieval:** **84.8% Recall@5** and **90.4% Recall@10** on the full non-adversarial retrieval set.
 
 Every number below ties back to a checked-in report or reproducible harness in the repo.
@@ -249,7 +249,7 @@ Every number below ties back to a checked-in report or reproducible harness in t
 | [TF-IDF + Entity](https://arxiv.org/abs/1809.09600) | ~80% | None |
 | [Baleen](https://arxiv.org/abs/2101.00436) (Stanford) | ~85% | HotpotQA |
 | [MDR](https://arxiv.org/abs/2009.12756) (Facebook) | ~88% | HotpotQA |
-| **Flywheel** | **92.4%** | **None** |
+| **Flywheel** | **90.0%** | **None** |
 | [Beam Retrieval](https://arxiv.org/abs/2308.08973) | ~93% | End-to-end |
 
 **Conversational memory retrieval** ([LoCoMo](https://snap-research.github.io/locomo/), 1,531 scored retrieval queries, 272 session notes):
@@ -262,7 +262,7 @@ Every number below ties back to a checked-in report or reproducible harness in t
 | Multi-hop | 58.1% | 72.7% |
 | Temporal | 56.9% | 67.4% |
 
-E2E with Claude Sonnet (latest checked-in 695-question run): **97.4%** single-hop evidence recall, **73.7%** multi-hop evidence recall, **84.3%** overall evidence recall, and **58.7%** answer accuracy (Claude Haiku judge). [Full methodology and caveats ->](docs/TESTING.md#retrieval-benchmark-locomo)
+E2E with Claude Sonnet (latest checked-in 695-question run): **97.4%** single-hop evidence recall, **73.7%** multi-hop evidence recall, **81.9%** overall evidence recall, and **54.0%** answer accuracy (Claude Haiku judge). [Full methodology and caveats ->](docs/TESTING.md#retrieval-benchmark-locomo)
 
 > **Directional, not apples-to-apples.** Test settings, sample sizes, retrieval pools, and metrics differ. Flywheel searches 4,960 pooled docs, which is harder than the standard HotpotQA distractor setting of 10 docs and much smaller than fullwiki. Academic retrievers are trained on the benchmark; Flywheel uses no benchmark training data. Expect about 1 percentage point of run-to-run variance from LLM non-determinism. [Full caveats ->](docs/TESTING.md#retrieval-benchmark-hotpotqa)
 

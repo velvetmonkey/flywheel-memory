@@ -9,8 +9,9 @@ import type { VaultIndex } from '../../core/read/types.js';
 import { resolveTarget, getBacklinksForNote, findSimilarEntity, getIndexState, getIndexProgress, getIndexError, normalizeTarget, type IndexState } from '../../core/read/graph.js';
 import { detectPeriodicNotes } from './periodic.js';
 import { getActivitySummary } from './temporal.js';
-import type { FlywheelConfig } from '../../core/read/config.js';
-import { SCHEMA_VERSION, getWriteState, type StateDb } from '@velvetmonkey/vault-core';
+import { loadConfig, type FlywheelConfig } from '../../core/read/config.js';
+import { SCHEMA_VERSION, getWriteState, saveFlywheelConfigToDb, type StateDb } from '@velvetmonkey/vault-core';
+import { VALID_CONFIG_KEYS } from '../write/config.js';
 import { getRecentIndexEvents, getRecentPipelineEvent, getLastSuccessfulEvent, getLastEventByTrigger, compactPipelineRun, compactStep, type PipelineStep, type CompactStep, type CompactPipelineRun } from '../../core/shared/indexActivity.js';
 import type { PipelineActivity } from '../../core/read/watch/pipeline.js';
 import { getFTS5State } from '../../core/read/fts5.js';
@@ -63,6 +64,7 @@ export function registerHealthTools(
     lastIntegrityDetail: null,
     lastBackupAt: null,
   }),
+  doctorSetConfig?: (config: FlywheelConfig) => void,
 ): void {
   // health_check - MCP server health status + periodic note detection + config
   const IndexProgressSchema = z.object({
@@ -711,65 +713,7 @@ export function registerHealthTools(
     };
   }
 
-  // pipeline_status — live pipeline activity surface
-  server.registerTool(
-    'pipeline_status',
-    {
-      title: 'Pipeline Status',
-      description:
-        'Use when checking whether the indexing pipeline is running. Produces live process status with current step, batch progress, and recent completions. Returns a lightweight status snapshot. Does not trigger a reindex — use refresh_index for that.',
-      inputSchema: {
-        detail: z.boolean().optional().default(false)
-          .describe('Include per-step timings for recent runs'),
-      },
-    },
-    async ({ detail = false }): Promise<{
-      content: Array<{ type: 'text'; text: string }>;
-    }> => {
-      const activity = getPipelineActivityState();
-      const now = Date.now();
-      const runtimeState = getVaultRuntimeState();
-
-      const output: Record<string, unknown> = {
-        busy: activity?.busy ?? false,
-        trigger: activity?.trigger ?? null,
-        started_at: activity?.started_at ?? null,
-        age_ms: activity?.busy && activity.started_at ? now - activity.started_at : null,
-        current_step: activity?.current_step ?? null,
-        progress: activity && activity.busy && activity.total_steps > 0
-          ? `${activity.completed_steps}/${activity.total_steps} steps`
-          : null,
-        pending_events: activity?.pending_events ?? 0,
-        boot_state: runtimeState.bootState,
-        integrity_state: runtimeState.integrityState,
-        integrity_check_in_progress: runtimeState.integrityCheckInProgress,
-        last_completed: activity?.last_completed_at ? {
-          at: activity.last_completed_at,
-          ago_seconds: Math.floor((now - activity.last_completed_at) / 1000),
-          trigger: activity.last_completed_trigger,
-          duration_ms: activity.last_completed_duration_ms,
-          files: activity.last_completed_files,
-          steps: activity.last_completed_steps,
-        } : null,
-      };
-
-      if (detail) {
-        const stateDb = getStateDb();
-        if (stateDb) {
-          try {
-            const events = getRecentIndexEvents(stateDb, 10)
-              .filter(e => e.steps && e.steps.length > 0)
-              .slice(0, 5);
-            output.recent_runs = events.map(e => compactPipelineRun(e));
-          } catch { /* ignore */ }
-        }
-      }
-
-      return {
-        content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
-      };
-    }
-  );
+  // pipeline_status retired (T43 B3+) — use doctor(action: pipeline) instead
 
   // get_vault_stats - Comprehensive vault statistics
   const TagStatSchema = z.object({
@@ -984,358 +928,314 @@ export function registerHealthTools(
     server_uptime_ms: number;
   };
 
-  server.registerTool(
-    'server_log',
-    {
-      title: 'Server Activity Log',
-      description:
-        'Use when debugging server behavior or checking startup and indexing events. Produces timestamped log entries filtered by level and time range. Returns log entry array with timestamps and messages. Does not modify server state — read-only access to the activity log.',
-      inputSchema: {
-        since: z.coerce.number().optional().describe('Only return entries after this Unix timestamp (ms)'),
-        component: z.string().optional().describe('Filter by component (server, index, fts5, semantic, tasks, watcher, statedb, config)'),
-        limit: z.coerce.number().optional().describe('Max entries to return (default 100)'),
-      },
-      outputSchema: ServerLogOutputSchema,
-    },
-    async (params: { since?: number; component?: string; limit?: number }): Promise<{
-      content: Array<{ type: 'text'; text: string }>;
-      structuredContent: ServerLogOutput;
-    }> => {
-      const result = getServerLog({
-        since: params.since,
-        component: params.component,
-        limit: params.limit,
-      });
+  // server_log retired (T43 B3+) — use doctor(action: log) instead
 
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      };
-    }
-  );
-
-  // flywheel_doctor — Comprehensive diagnostic report (absorbs health_check + get_vault_stats)
-  server.registerTool(
-    'flywheel_doctor',
-    {
-      title: 'Flywheel Doctor',
-      description:
-        'Use when something seems broken, when you need a health check, or when you need vault metrics. Report "diagnosis" (default) runs problem detection with severity and fixes. Report "health" produces vault accessibility, index freshness, and config summary. Report "stats" produces note counts, link density, tag usage, and folder distribution. Returns diagnostic checks, health status, or vault metrics. Does not fix problems automatically — follow the suggested remediation steps.',
-      inputSchema: {
-        report: z.enum(['diagnosis', 'health', 'stats']).default('diagnosis')
-          .describe('Which report to run: "diagnosis" for problem detection, "health" for server/vault status, "stats" for vault metrics'),
-        detail: z.enum(['summary', 'full']).optional().default('summary')
-          .describe('Detail level for report=health (ignored for other reports)'),
-      },
-    },
-    async ({ report = 'diagnosis', detail = 'summary' }: { report?: 'diagnosis' | 'health' | 'stats'; detail?: 'summary' | 'full' }): Promise<{
-      content: Array<{ type: 'text'; text: string }>;
-      structuredContent?: HealthCheckOutput | VaultStatsOutput;
-    }> => {
-      // Dispatch to absorbed tools
-      if (report === 'health') {
-        return runHealthCheck(detail);
-      }
-      if (report === 'stats') {
-        return runVaultStats();
-      }
-
-      // report === 'diagnosis' — original flywheel_doctor logic
-      const checks: Array<{
-        name: string;
-        status: 'ok' | 'warning' | 'error';
-        detail: string;
-        fix?: string;
-      }> = [];
-
-      const index = getIndex();
-      const vaultPath = getVaultPath();
-      const stateDb = getStateDb();
-      const watcherStatus = getWatcherStatus();
-
-      // 1. Schema version
-      checks.push({
-        name: 'schema_version',
-        status: 'ok',
-        detail: `Schema version ${SCHEMA_VERSION}`,
-      });
-
-      // 2. Vault accessibility
-      try {
-        fs.accessSync(vaultPath, fs.constants.R_OK | fs.constants.W_OK);
-        checks.push({ name: 'vault_access', status: 'ok', detail: `Vault readable and writable at ${vaultPath}` });
-      } catch {
-        checks.push({ name: 'vault_access', status: 'error', detail: `Vault not accessible at ${vaultPath}`, fix: 'Check PROJECT_PATH environment variable and directory permissions' });
-      }
-
-      // 3. Index activity freshness (uses index_events, not builtAt)
-      const indexState = getIndexState();
-      const indexBuilt = indexState === 'ready' && index?.notes !== undefined;
-      if (indexState === 'ready' && indexBuilt) {
-        let activityAge: number | null = null;
-        if (stateDb) {
-          try {
-            const lastEvt = getLastSuccessfulEvent(stateDb);
-            if (lastEvt) activityAge = Math.floor((Date.now() - lastEvt.timestamp) / 1000);
-          } catch { /* ignore */ }
-        }
-        // Fall back to builtAt if no events recorded yet
-        const age = activityAge ?? Math.floor((Date.now() - index.builtAt.getTime()) / 1000);
-        if (age > STALE_THRESHOLD_SECONDS) {
-          checks.push({ name: 'index_activity', status: 'warning', detail: `Last index activity ${Math.floor(age / 60)} minutes ago`, fix: 'Run refresh_index to rebuild' });
-        } else {
-          checks.push({ name: 'index_activity', status: 'ok', detail: `Last activity ${age}s ago, ${index.notes.size} notes, ${index.entities.size} entities` });
-        }
-        // Separate snapshot age check (informational only)
-        const snapshotAge = Math.floor((Date.now() - index.builtAt.getTime()) / 1000);
-        checks.push({ name: 'index_snapshot_age', status: 'ok', detail: `In-memory snapshot built ${snapshotAge}s ago` });
-      } else if (indexState === 'building') {
-        const progress = getIndexProgress();
-        checks.push({ name: 'index_activity', status: 'warning', detail: `Index building (${progress.parsed}/${progress.total} files)` });
-      } else {
-        const err = getIndexError();
-        checks.push({ name: 'index_activity', status: 'error', detail: `Index in ${indexState} state${err ? ': ' + err.message : ''}`, fix: 'Run refresh_index' });
-      }
-
-      // 4. Embedding coverage
-      const embReady = hasEmbeddingsIndex();
-      const embCount = getEmbeddingsCount();
-      const noteCount = indexBuilt ? index.notes.size : 0;
-      if (embReady && noteCount > 0) {
-        const coverage = Math.round((embCount / noteCount) * 100);
-        if (coverage < 50) {
-          checks.push({ name: 'embedding_coverage', status: 'warning', detail: `${embCount}/${noteCount} notes embedded (${coverage}%)`, fix: 'Run init_semantic with force=true to rebuild' });
-        } else {
-          checks.push({ name: 'embedding_coverage', status: 'ok', detail: `${embCount}/${noteCount} notes embedded (${coverage}%), model: ${getActiveModelId() || 'default'}` });
-        }
-        // Entity embeddings
-        const entityEmbCount = getEntityEmbeddingsCount();
-        const entityCount = (() => {
-          if (!stateDb) return 0;
-          try {
-            return (stateDb.db.prepare('SELECT COUNT(*) as cnt FROM entities').get() as { cnt: number })?.cnt ?? 0;
-          } catch { return 0; }
-        })();
-        if (entityCount > 0) {
-          const entityCoverage = Math.round((entityEmbCount / entityCount) * 100);
-          checks.push({ name: 'entity_embedding_coverage', status: entityCoverage < 50 ? 'warning' : 'ok', detail: `${entityEmbCount}/${entityCount} canonical entities embedded (${entityCoverage}%)` });
-        }
-      } else if (!embReady) {
-        checks.push({ name: 'embedding_coverage', status: 'warning', detail: 'Semantic embeddings not built', fix: 'Run init_semantic to enable hybrid search' });
-      } else if (isEmbeddingsBuilding()) {
-        checks.push({ name: 'embedding_coverage', status: 'warning', detail: 'Embedding build in progress' });
-      }
-
-      // 5. FTS5 state
-      const fts = getFTS5State();
-      if (fts.ready) {
-        checks.push({ name: 'fts5', status: 'ok', detail: `FTS5 ready, ${fts.noteCount ?? 0} notes indexed` });
-      } else if (fts.building) {
-        checks.push({ name: 'fts5', status: 'warning', detail: 'FTS5 index building' });
-      } else {
-        checks.push({ name: 'fts5', status: 'error', detail: 'FTS5 not available', fix: 'Will build automatically on next index rebuild' });
-      }
-
-      // 6. Watcher state
-      if (watcherStatus) {
-        if (watcherStatus.state === 'ready') {
-          checks.push({ name: 'watcher', status: 'ok', detail: `Watcher running, ${watcherStatus.pendingEvents ?? 0} pending events` });
-        } else if (watcherStatus.state === 'error') {
-          checks.push({ name: 'watcher', status: 'error', detail: 'Watcher in error state', fix: 'Restart the MCP server' });
-        } else {
-          checks.push({ name: 'watcher', status: 'warning', detail: `Watcher state: ${watcherStatus.state}${watcherStatus.pendingEvents ? `, ${watcherStatus.pendingEvents} pending` : ''}` });
-        }
-      } else {
-        checks.push({ name: 'watcher', status: 'warning', detail: 'No watcher status available' });
-      }
-
-      // 7. Task cache
-      if (isTaskCacheReady()) {
-        checks.push({ name: 'task_cache', status: 'ok', detail: 'Task cache ready' });
-      } else if (isTaskCacheBuilding()) {
-        checks.push({ name: 'task_cache', status: 'warning', detail: 'Task cache building' });
-      } else {
-        checks.push({ name: 'task_cache', status: 'warning', detail: 'Task cache not ready' });
-      }
-
-      // 8. Suppression health
-      if (stateDb) {
-        try {
-          const suppressedCount = getSuppressedCount(stateDb);
-          const stats = getEntityStats(stateDb);
-          const entityCount = indexBuilt ? index.entities.size : 0;
-
-          if (entityCount > 0 && suppressedCount > entityCount * 0.2) {
-            checks.push({ name: 'suppression_health', status: 'warning', detail: `${suppressedCount} entities suppressed (${Math.round(suppressedCount / entityCount * 100)}% of total)`, fix: 'Review suppressed entities — high suppression rate may indicate overly aggressive feedback' });
-          } else {
-            checks.push({ name: 'suppression_health', status: 'ok', detail: `${suppressedCount} entities suppressed, ${stats.length} entities with feedback` });
-          }
-        } catch {
-          checks.push({ name: 'suppression_health', status: 'ok', detail: 'No suppression data yet' });
-        }
-      }
-
-      // 9. StateDb disk usage
-      if (stateDb) {
-        try {
-          const dbPath = stateDb.db.name;
-          if (dbPath && dbPath !== ':memory:') {
-            const dbStat = fs.statSync(dbPath);
-            const dbSizeMb = Math.round(dbStat.size / 1024 / 1024 * 10) / 10;
-            let walSizeMb = 0;
-            try {
-              const walStat = fs.statSync(dbPath + '-wal');
-              walSizeMb = Math.round(walStat.size / 1024 / 1024 * 10) / 10;
-            } catch { /* no WAL file */ }
-
-            if (walSizeMb > 100) {
-              checks.push({ name: 'disk_usage', status: 'warning', detail: `StateDb: ${dbSizeMb}MB, WAL: ${walSizeMb}MB`, fix: 'WAL file is large. Consider running PRAGMA wal_checkpoint(TRUNCATE)' });
-            } else {
-              checks.push({ name: 'disk_usage', status: 'ok', detail: `StateDb: ${dbSizeMb}MB${walSizeMb > 0 ? `, WAL: ${walSizeMb}MB` : ''}` });
-            }
-          }
-        } catch {
-          checks.push({ name: 'disk_usage', status: 'ok', detail: 'Unable to check disk usage' });
-        }
-      }
-
-      // 10. Cache freshness — co-occurrence
-      if (stateDb) {
-        try {
-          const row = stateDb.db.prepare(
-            `SELECT built_at FROM cooccurrence_cache LIMIT 1`
-          ).get() as { built_at: number } | undefined;
-          if (row) {
-            const ageHours = Math.round((Date.now() - row.built_at) / 3600000 * 10) / 10;
-            checks.push({ name: 'cooccurrence_cache', status: ageHours > 24 ? 'warning' : 'ok', detail: `Co-occurrence cache ${ageHours}h old`, ...(ageHours > 24 ? { fix: 'Will rebuild automatically on next watcher batch' } : {}) });
-          } else {
-            checks.push({ name: 'cooccurrence_cache', status: 'warning', detail: 'Co-occurrence cache not built', fix: 'Will build on next index rebuild' });
-          }
-        } catch {
-          checks.push({ name: 'cooccurrence_cache', status: 'ok', detail: 'Co-occurrence cache check skipped' });
-        }
-      }
-
-      // 11. Pipeline health (last pipeline run)
-      if (stateDb) {
-        try {
-          const evt = getRecentPipelineEvent(stateDb);
-          if (evt) {
-            const ageMin = Math.round((Date.now() - evt.timestamp) / 60000);
-            const failedSteps = evt.steps?.filter((s: PipelineStep) => s.skipped && s.skip_reason?.includes('error')) || [];
-            if (failedSteps.length > 0) {
-              checks.push({ name: 'pipeline', status: 'warning', detail: `Last pipeline ${ageMin}min ago (${evt.duration_ms}ms), ${failedSteps.length} failed steps: ${failedSteps.map((s: PipelineStep) => s.name).join(', ')}` });
-            } else {
-              checks.push({ name: 'pipeline', status: 'ok', detail: `Last pipeline ${ageMin}min ago, ${evt.duration_ms}ms, ${evt.steps?.length ?? 0} steps` });
-            }
-          }
-        } catch {
-          checks.push({ name: 'pipeline', status: 'ok', detail: 'No pipeline data' });
-        }
-      }
-
-      // 12. Hub scores
-      if (stateDb) {
-        try {
-          const hubStats = stateDb.db.prepare(
-            `SELECT COUNT(*) as total, COUNT(CASE WHEN hub_score > 0 THEN 1 END) as with_score,
-             MAX(hub_score) as max_score, ROUND(AVG(CASE WHEN hub_score > 0 THEN hub_score END), 1) as avg_score
-             FROM entities`
-          ).get() as { total: number; with_score: number; max_score: number; avg_score: number } | undefined;
-          if (hubStats) {
-            checks.push({ name: 'hub_scores', status: 'ok',
-              detail: `${hubStats.with_score}/${hubStats.total} entities have hub scores (max: ${hubStats.max_score}, avg: ${hubStats.avg_score ?? 0})` });
-          }
-        } catch { /* skip */ }
-      }
-
-      // 13. Edge weights
-      if (stateDb) {
-        try {
-          const edgeStats = stateDb.db.prepare(
-            `SELECT COUNT(*) as total, COUNT(CASE WHEN weight > 1.0 THEN 1 END) as weighted,
-             COUNT(CASE WHEN weight > 3.0 THEN 1 END) as strong,
-             ROUND(AVG(weight), 2) as avg_weight
-             FROM note_links WHERE weight IS NOT NULL`
-          ).get() as { total: number; weighted: number; strong: number; avg_weight: number } | undefined;
-          if (edgeStats && edgeStats.total > 0) {
-            checks.push({ name: 'edge_weights', status: 'ok',
-              detail: `${edgeStats.total} links, ${edgeStats.weighted} weighted (>${1.0}), ${edgeStats.strong} strong (>${3.0}), avg: ${edgeStats.avg_weight}` });
-          }
-        } catch { /* skip */ }
-      }
-
-      // 14. Content hashes
-      if (stateDb) {
-        try {
-          const hashCount = stateDb.db.prepare(
-            `SELECT COUNT(*) as count FROM content_hashes`
-          ).get() as { count: number } | undefined;
-          if (hashCount) {
-            checks.push({ name: 'content_hashes', status: 'ok',
-              detail: `${hashCount.count} content hashes cached` });
-          }
-        } catch { /* skip */ }
-      }
-
-      // 15. Proactive queue stall detection
-      if (stateDb) {
-        try {
-          const queuePending = stateDb.db.prepare(
-            `SELECT COUNT(*) as cnt FROM proactive_queue WHERE status = 'pending'`,
-          ).get() as { cnt: number };
-          const proactiveSummary = getProactiveLinkingSummary(stateDb, 1);
-          const lastDrain = getWriteState<{
-            rejection_count: number;
-            rejection_breakdown?: Record<string, number>;
-          }>(stateDb, 'last_proactive_drain');
-
-          if (queuePending.cnt > 0 && proactiveSummary.total_applied === 0) {
-            const top = Object.entries(lastDrain?.rejection_breakdown ?? {})
-              .sort(([, a], [, b]) => b - a)
-              .slice(0, 2)
-              .map(([reason, count]) => `${reason} (${count})`)
-              .join(', ');
-            checks.push({
-              name: 'proactive_queue',
-              status: 'warning',
-              detail: `${queuePending.cnt} pending, 0 applied in 24h. Top rejections: ${top || 'unknown'}`,
-              fix: 'Lower proactive_min_score or inspect via pipeline_status',
-            });
-          } else {
-            checks.push({
-              name: 'proactive_queue',
-              status: 'ok',
-              detail: `${queuePending.cnt} pending, ${proactiveSummary.total_applied} applied in 24h`,
-            });
-          }
-        } catch { /* skip */ }
-      }
-
-      // Summary
-      const errorCount = checks.filter(c => c.status === 'error').length;
-      const warningCount = checks.filter(c => c.status === 'warning').length;
-      const overallStatus = errorCount > 0 ? 'unhealthy' : warningCount > 0 ? 'needs_attention' : 'healthy';
-
-      const output = {
-        status: overallStatus,
-        summary: `${checks.length} checks: ${checks.length - errorCount - warningCount} ok, ${warningCount} warnings, ${errorCount} errors`,
-        checks,
-        fixes: checks.filter(c => c.fix).map(c => ({ check: c.name, fix: c.fix })),
-      };
-
-      return {
-        content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
-      };
-    }
-  );
+  // flywheel_doctor retired (T43 B3+) — use doctor(action: health) instead
 
   // flywheel_trust_report retired (T43) — functionality absorbed into flywheel_doctor
   // flywheel_benchmark retired (T43)
+
+  // doctor — Merged diagnostic/config tool (T43 B3+)
+  // Absorbs: flywheel_doctor (health) + pipeline_status + server_log + flywheel_config
+  server.registerTool(
+    'doctor',
+    {
+      title: 'Doctor',
+      description: `Use for diagnostics and runtime management. Returns vault health, named checks, stats, pipeline status, server log, or config. Does not read note content — use read or search for that. action: health | diagnosis | stats | pipeline | config | log`,
+      inputSchema: {
+        action: z.enum(['health', 'diagnosis', 'stats', 'pipeline', 'config', 'log'])
+          .describe('Operation: health=vault status, pipeline=indexing status, config=runtime config, log=activity log'),
+        // [health]
+        detail: z.union([z.enum(['summary', 'full']), z.boolean()]).optional()
+          .describe('[health] Detail level: summary or full. [pipeline] true = include per-step timings'),
+        // [config]
+        mode: z.enum(['get', 'set']).optional().describe('[config] Operation: get or set'),
+        key: z.string().optional().describe('[config] Config key to update (required for set)'),
+        value: z.unknown().optional().describe('[config] New value for the key (required for set)'),
+        // [log]
+        since: z.coerce.number().optional().describe('[log] Only return entries after this Unix timestamp (ms)'),
+        component: z.string().optional().describe('[log] Filter by component (server, index, fts5, semantic, tasks, watcher, statedb, config)'),
+        limit: z.coerce.number().optional().describe('[log] Max entries to return (default 100)'),
+      },
+    },
+    async ({ action, detail, mode, key, value, since, component, limit }) => {
+      switch (action) {
+        case 'health': {
+          const detailLevel = (typeof detail === 'string' ? detail : 'summary') as 'summary' | 'full';
+          return runHealthCheck(detailLevel);
+        }
+
+        case 'diagnosis': {
+          // Named checks array — port of old flywheel_doctor(report: diagnosis) default behaviour
+          const checks: Array<{
+            name: string;
+            status: 'ok' | 'warning' | 'error';
+            detail: string;
+            fix?: string;
+          }> = [];
+
+          const diagIndex = getIndex();
+          const diagVaultPath = getVaultPath();
+          const diagStateDb = getStateDb();
+          const diagWatcherStatus = getWatcherStatus();
+
+          // 1. Schema version
+          checks.push({ name: 'schema_version', status: 'ok', detail: `Schema version ${SCHEMA_VERSION}` });
+
+          // 2. Vault accessibility
+          try {
+            fs.accessSync(diagVaultPath, fs.constants.R_OK | fs.constants.W_OK);
+            checks.push({ name: 'vault_access', status: 'ok', detail: `Vault readable and writable at ${diagVaultPath}` });
+          } catch {
+            checks.push({ name: 'vault_access', status: 'error', detail: `Vault not accessible at ${diagVaultPath}`, fix: 'Check PROJECT_PATH environment variable and directory permissions' });
+          }
+
+          // 3. Index activity freshness
+          const diagIndexState = getIndexState();
+          const diagIndexBuilt = diagIndexState === 'ready' && diagIndex?.notes !== undefined;
+          if (diagIndexState === 'ready' && diagIndexBuilt) {
+            let activityAge: number | null = null;
+            if (diagStateDb) {
+              try {
+                const lastEvt = getLastSuccessfulEvent(diagStateDb);
+                if (lastEvt) activityAge = Math.floor((Date.now() - lastEvt.timestamp) / 1000);
+              } catch { /* ignore */ }
+            }
+            const age = activityAge ?? Math.floor((Date.now() - diagIndex.builtAt.getTime()) / 1000);
+            if (age > STALE_THRESHOLD_SECONDS) {
+              checks.push({ name: 'index_activity', status: 'warning', detail: `Last index activity ${Math.floor(age / 60)} minutes ago`, fix: 'Run refresh_index to rebuild' });
+            } else {
+              checks.push({ name: 'index_activity', status: 'ok', detail: `Last activity ${age}s ago, ${diagIndex.notes.size} notes, ${diagIndex.entities.size} entities` });
+            }
+          } else if (diagIndexState === 'building') {
+            const progress = getIndexProgress();
+            checks.push({ name: 'index_activity', status: 'warning', detail: `Index building (${progress.parsed}/${progress.total} files)` });
+          } else {
+            const err = getIndexError();
+            checks.push({ name: 'index_activity', status: 'error', detail: `Index in ${diagIndexState} state${err ? ': ' + err.message : ''}`, fix: 'Run refresh_index' });
+          }
+
+          // 4. Embedding coverage
+          const embReady = hasEmbeddingsIndex();
+          const embCount = getEmbeddingsCount();
+          const diagNoteCount = diagIndexBuilt ? diagIndex.notes.size : 0;
+          if (embReady && diagNoteCount > 0) {
+            const coverage = Math.round((embCount / diagNoteCount) * 100);
+            if (coverage < 50) {
+              checks.push({ name: 'embedding_coverage', status: 'warning', detail: `${embCount}/${diagNoteCount} notes embedded (${coverage}%)`, fix: 'Run init_semantic with force=true to rebuild' });
+            } else {
+              checks.push({ name: 'embedding_coverage', status: 'ok', detail: `${embCount}/${diagNoteCount} notes embedded (${coverage}%), model: ${getActiveModelId() || 'default'}` });
+            }
+            // Entity embeddings
+            const entityEmbCount = getEntityEmbeddingsCount();
+            const diagEntityCount = (() => {
+              if (!diagStateDb) return 0;
+              try {
+                return (diagStateDb.db.prepare('SELECT COUNT(*) as cnt FROM entities').get() as { cnt: number })?.cnt ?? 0;
+              } catch { return 0; }
+            })();
+            if (diagEntityCount > 0) {
+              const entityCoverage = Math.round((entityEmbCount / diagEntityCount) * 100);
+              checks.push({ name: 'entity_embedding_coverage', status: entityCoverage < 50 ? 'warning' : 'ok', detail: `${entityEmbCount}/${diagEntityCount} canonical entities embedded (${entityCoverage}%)` });
+            }
+          } else if (!embReady) {
+            checks.push({ name: 'embedding_coverage', status: 'warning', detail: 'Semantic embeddings not built', fix: 'Run init_semantic to enable hybrid search' });
+          } else if (isEmbeddingsBuilding()) {
+            checks.push({ name: 'embedding_coverage', status: 'warning', detail: 'Embedding build in progress' });
+          }
+
+          // 5. FTS5 state
+          const fts = getFTS5State();
+          if (fts.ready) {
+            checks.push({ name: 'fts5', status: 'ok', detail: `FTS5 ready, ${fts.noteCount ?? 0} notes indexed` });
+          } else if (fts.building) {
+            checks.push({ name: 'fts5', status: 'warning', detail: 'FTS5 index building' });
+          } else {
+            checks.push({ name: 'fts5', status: 'error', detail: 'FTS5 not available', fix: 'Will build automatically on next index rebuild' });
+          }
+
+          // 6. Watcher state
+          if (diagWatcherStatus) {
+            if (diagWatcherStatus.state === 'ready') {
+              checks.push({ name: 'watcher', status: 'ok', detail: `Watcher running, ${diagWatcherStatus.pendingEvents ?? 0} pending events` });
+            } else if (diagWatcherStatus.state === 'error') {
+              checks.push({ name: 'watcher', status: 'error', detail: 'Watcher in error state', fix: 'Restart the MCP server' });
+            } else {
+              checks.push({ name: 'watcher', status: 'warning', detail: `Watcher state: ${diagWatcherStatus.state}${diagWatcherStatus.pendingEvents ? `, ${diagWatcherStatus.pendingEvents} pending` : ''}` });
+            }
+          }
+
+          // 7. Task cache
+          if (isTaskCacheReady()) {
+            checks.push({ name: 'task_cache', status: 'ok', detail: 'Task cache ready' });
+          } else if (isTaskCacheBuilding()) {
+            checks.push({ name: 'task_cache', status: 'warning', detail: 'Task cache building' });
+          } else {
+            checks.push({ name: 'task_cache', status: 'warning', detail: 'Task cache not ready' });
+          }
+
+          // 8. Suppression health
+          if (diagStateDb) {
+            try {
+              const suppressedCount = getSuppressedCount(diagStateDb);
+              const stats = getEntityStats(diagStateDb);
+              const diagEntityCount2 = diagIndexBuilt ? diagIndex.entities.size : 0;
+              if (diagEntityCount2 > 0 && suppressedCount > diagEntityCount2 * 0.2) {
+                checks.push({ name: 'suppression_health', status: 'warning', detail: `${suppressedCount} entities suppressed (${Math.round(suppressedCount / diagEntityCount2 * 100)}% of total)`, fix: 'Review suppressed entities — high suppression rate may indicate overly aggressive feedback' });
+              } else {
+                checks.push({ name: 'suppression_health', status: 'ok', detail: `${suppressedCount} entities suppressed, ${stats.length} entities with feedback` });
+              }
+            } catch {
+              checks.push({ name: 'suppression_health', status: 'ok', detail: 'No suppression data yet' });
+            }
+          }
+
+          // 9. Pipeline health
+          if (diagStateDb) {
+            try {
+              const evt = getRecentPipelineEvent(diagStateDb);
+              if (evt) {
+                const ageMin = Math.round((Date.now() - evt.timestamp) / 60000);
+                const failedSteps = evt.steps?.filter((s: PipelineStep) => s.skipped && s.skip_reason?.includes('error')) || [];
+                if (failedSteps.length > 0) {
+                  checks.push({ name: 'pipeline', status: 'warning', detail: `Last pipeline ${ageMin}min ago (${evt.duration_ms}ms), ${failedSteps.length} failed steps: ${failedSteps.map((s: PipelineStep) => s.name).join(', ')}` });
+                } else {
+                  checks.push({ name: 'pipeline', status: 'ok', detail: `Last pipeline ${ageMin}min ago, ${evt.duration_ms}ms, ${evt.steps?.length ?? 0} steps` });
+                }
+              }
+            } catch {
+              checks.push({ name: 'pipeline', status: 'ok', detail: 'No pipeline data' });
+            }
+          }
+
+          // 10. Proactive queue stall detection
+          if (diagStateDb) {
+            try {
+              const queuePending = diagStateDb.db.prepare(
+                `SELECT COUNT(*) as cnt FROM proactive_queue WHERE status = 'pending'`,
+              ).get() as { cnt: number };
+              const proactiveSummary = getProactiveLinkingSummary(diagStateDb, 1);
+              const lastDrain = getWriteState<{
+                rejection_count: number;
+                rejection_breakdown?: Record<string, number>;
+              }>(diagStateDb, 'last_proactive_drain');
+
+              if (queuePending.cnt > 0 && proactiveSummary.total_applied === 0) {
+                const top = Object.entries(lastDrain?.rejection_breakdown ?? {})
+                  .sort(([, a], [, b]) => b - a)
+                  .slice(0, 2)
+                  .map(([reason, count]) => `${reason} (${count})`)
+                  .join(', ');
+                checks.push({
+                  name: 'proactive_queue',
+                  status: 'warning',
+                  detail: `${queuePending.cnt} pending, 0 applied in 24h. Top rejections: ${top || 'unknown'}`,
+                  fix: 'Lower proactive_min_score or inspect via doctor(action: pipeline)',
+                });
+              } else {
+                checks.push({
+                  name: 'proactive_queue',
+                  status: 'ok',
+                  detail: `${queuePending.cnt} pending, ${proactiveSummary.total_applied} applied in 24h`,
+                });
+              }
+            } catch { /* skip */ }
+          }
+
+          const errorCount = checks.filter(c => c.status === 'error').length;
+          const warningCount = checks.filter(c => c.status === 'warning').length;
+          const overallStatus = errorCount > 0 ? 'unhealthy' : warningCount > 0 ? 'needs_attention' : 'healthy';
+
+          const diagOutput = {
+            status: overallStatus,
+            summary: `${checks.length} checks: ${checks.length - errorCount - warningCount} ok, ${warningCount} warnings, ${errorCount} errors`,
+            checks,
+            fixes: checks.filter(c => c.fix).map(c => ({ check: c.name, fix: c.fix })),
+          };
+          return { content: [{ type: 'text' as const, text: JSON.stringify(diagOutput, null, 2) }] };
+        }
+
+        case 'pipeline': {
+          const includeDetail = typeof detail === 'boolean' ? detail : false;
+          const activity = getPipelineActivityState();
+          const now = Date.now();
+          const runtimeState = getVaultRuntimeState();
+
+          const output: Record<string, unknown> = {
+            busy: activity?.busy ?? false,
+            trigger: activity?.trigger ?? null,
+            started_at: activity?.started_at ?? null,
+            age_ms: activity?.busy && activity.started_at ? now - activity.started_at : null,
+            current_step: activity?.current_step ?? null,
+            progress: activity && activity.busy && activity.total_steps > 0
+              ? `${activity.completed_steps}/${activity.total_steps} steps`
+              : null,
+            pending_events: activity?.pending_events ?? 0,
+            boot_state: runtimeState.bootState,
+            integrity_state: runtimeState.integrityState,
+            integrity_check_in_progress: runtimeState.integrityCheckInProgress,
+            last_completed: activity?.last_completed_at ? {
+              at: activity.last_completed_at,
+              ago_seconds: Math.floor((now - activity.last_completed_at) / 1000),
+              trigger: activity.last_completed_trigger,
+              duration_ms: activity.last_completed_duration_ms,
+              files: activity.last_completed_files,
+              steps: activity.last_completed_steps,
+            } : null,
+          };
+
+          if (includeDetail) {
+            const stateDb = getStateDb();
+            if (stateDb) {
+              try {
+                const events = getRecentIndexEvents(stateDb, 10)
+                  .filter(e => e.steps && e.steps.length > 0)
+                  .slice(0, 5);
+                output.recent_runs = events.map(e => compactPipelineRun(e));
+              } catch { /* ignore */ }
+            }
+          }
+
+          return { content: [{ type: 'text' as const, text: JSON.stringify(output, null, 2) }] };
+        }
+
+        case 'config': {
+          if (!mode || mode === 'get') {
+            return { content: [{ type: 'text' as const, text: JSON.stringify(getConfig(), null, 2) }] };
+          }
+          // mode === 'set'
+          if (!key) {
+            return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'key is required for set mode' }) }] };
+          }
+          const configSchema = VALID_CONFIG_KEYS[key];
+          if (!configSchema) {
+            return { content: [{ type: 'text' as const, text: JSON.stringify({ error: `Unknown config key: "${key}". Valid keys: ${Object.keys(VALID_CONFIG_KEYS).join(', ')}` }) }] };
+          }
+          const parsed = configSchema.safeParse(value);
+          if (!parsed.success) {
+            return { content: [{ type: 'text' as const, text: JSON.stringify({ error: `Invalid value for "${key}": ${parsed.error.message}` }) }] };
+          }
+          const stateDb = getStateDb();
+          if (!stateDb) {
+            return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'StateDb not available' }) }] };
+          }
+          const updated: FlywheelConfig = { ...getConfig(), [key]: parsed.data };
+          saveFlywheelConfigToDb(stateDb, updated as unknown as Record<string, unknown>);
+          const reloaded = loadConfig(stateDb);
+          if (doctorSetConfig) doctorSetConfig(reloaded);
+          return { content: [{ type: 'text' as const, text: JSON.stringify(reloaded, null, 2) }] };
+        }
+
+        case 'stats': {
+          return runVaultStats();
+        }
+
+        case 'log': {
+          const result = getServerLog({ since, component, limit });
+          return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
+        }
+      }
+    }
+  );
 
 }

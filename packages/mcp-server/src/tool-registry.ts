@@ -37,60 +37,59 @@ import { runInVaultScope, getActiveScopeOrNull, type VaultScope } from './vault-
 import { recordToolInvocation } from './core/shared/toolTracking.js';
 
 // Read tool registrations
-import { registerGraphTools } from './tools/read/graph.js';
+// graph.ts retired (T43 B3+) — get_backlinks, get_forward_links, get_strong_connections folded into graph merged tool
 // graphExport.ts retired — export_graph removed
-import { registerWikilinkTools } from './tools/read/wikilinks.js';
+// wikilinks.ts retired (T43 B3+) — suggest_wikilinks, validate_links, discover_stub_candidates, discover_cooccurrence_gaps folded into link merged tool
 import { registerHealthTools } from './tools/read/health.js';
 import { registerQueryTools } from './tools/read/query.js';
 import { registerFindNotesTools } from './tools/read/find_notes.js';
 import { registerSystemTools as registerReadSystemTools } from './tools/read/system.js';
 import { registerPrimitiveTools } from './tools/read/primitives.js';
-import { registerMigrationTools } from './tools/read/migrations.js';
-import { registerGraphAnalysisTools } from './tools/read/graphAnalysis.js';
-import { registerVaultSchemaTools } from './tools/read/vaultSchema.js';
-import { registerSemanticAnalysisTools } from './tools/read/semanticAnalysis.js';
-import { registerNoteIntelligenceTools } from './tools/read/noteIntelligence.js';
+// migrations.ts retired (T43 B3+) — rename_field, migrate_field_values folded into schema merged tool
+// graphAnalysis.ts retired (T43 B3+) — graph_analysis, get_connection_strength, get_link_path, get_common_neighbors folded into graph merged tool
+// vaultSchema.ts retired (T43 B3+) — vault_schema, schema_conventions, schema_validate folded into schema merged tool
+// semanticAnalysis.ts retired (T43) — semantic_analysis removed from surface
+// noteIntelligence.ts retired (T43 B3+) — note_intelligence folded into insights merged tool
 import { registerSchemaTools } from './tools/read/schemaTools.js';
 import { registerGraphTools2 } from './tools/read/graphTools.js';
 import { registerInsightsTools } from './tools/read/insightsTools.js';
 
 // Write tool registrations
-import { registerMutationTools } from './tools/write/mutations.js';
+// mutations.ts retired (T43 B3+) — vault_add_to_section, vault_remove_from_section, vault_replace_in_section folded into edit_section merged tool
 import { registerTaskTools } from './tools/write/tasks.js';
 import { registerFrontmatterTools } from './tools/write/frontmatter.js';
-import { registerNoteTools } from './tools/write/notes.js';
-import { registerMoveNoteTools } from './tools/write/move-notes.js';
-import { registerMergeTools as registerWriteMergeTools } from './tools/write/merge.js';
-import { registerSystemTools as registerWriteSystemTools } from './tools/write/system.js';
+// notes.ts retired (T43 B3+) — vault_create_note, vault_delete_note folded into note merged tool
+// move-notes.ts retired (T43 B3+) — vault_move_note, vault_rename_note folded into note merged tool
+// merge.ts retired (T43 B3+) — merge_entities, absorb_as_alias folded into entity merged tool
+// system.ts (write) retired (T43 B3+) — vault_undo_last_mutation folded into correct(action: undo)
 import { registerPolicyTools } from './tools/write/policy.js';
-import { registerTagTools } from './tools/write/tags.js';
-import { registerWikilinkFeedbackTools } from './tools/write/wikilinkFeedback.js';
-import { registerToolSelectionFeedbackTools } from './tools/write/toolSelectionFeedback.js';
+// tags.ts retired (T43 B3+) — rename_tag folded into schema merged tool
+// wikilinkFeedback.ts retired (T43 B3+) — wikilink_feedback folded into link merged tool
+// toolSelectionFeedback.ts retired (T43) — tool_selection_feedback removed
 import { registerCorrectTool } from './tools/write/correct.js';
 import { registerEntityTool } from './tools/write/entity.js';
 import { registerLinkTool } from './tools/write/link.js';
 import { registerNoteTool } from './tools/write/note.js';
 import { registerEditSectionTool } from './tools/write/editSection.js';
 import { detectMisroute, recordHeuristicMisroute } from './core/shared/misrouteDetection.js';
-import { registerCorrectionTools } from './tools/write/corrections.js';
+// corrections.ts retired (T43 B3+) — vault_record_correction, vault_list_corrections, vault_resolve_correction folded into correct merged tool
 import { registerMemoryTools } from './tools/write/memory.js';
 // recall removed — entity/memory search merged into search (uber search)
-// import { registerRecallTools } from './tools/read/recall.js';
-import { registerBriefTools } from './tools/read/brief.js';
-import { registerConfigTools } from './tools/write/config.js';
+// brief.ts retired (T43 B3+) — brief folded into memory(action: brief); runBrief still used by memory.ts
+// config.ts (write) retired (T43 B3+) — flywheel_config folded into doctor(action: config)
 import { registerInitTools } from './tools/write/enrich.js';
 
 // Additional read tool registrations
-import { registerMetricsTools } from './tools/read/metrics.js';
+// metrics.ts retired (T43 B3+) — vault_growth folded into insights merged tool
 // activity.ts retired — vault_activity modes folded into vault_session_history
 // similarity.ts retired (T43) — find_similar absorbed into search as action: similar
 import { registerSemanticTools } from './tools/read/semantic.js';
 // registerReadMergeTools retired (T43) — suggest_entity_merges/dismiss_merge_suggestion absorbed into entity tool
-import { registerTemporalAnalysisTools } from './tools/read/temporalAnalysis.js';
-import { registerSessionHistoryTools } from './tools/read/sessionHistory.js';
-import { registerEntityHistoryTools } from './tools/read/entityHistory.js';
-import { registerLearningReportTools } from './tools/read/learningReport.js';
-import { registerCalibrationExportTools } from './tools/read/calibrationExport.js';
+// temporalAnalysis.ts retired (T43 B3+) — track_concept_evolution, predict_stale_notes, get_context_around_date folded into insights merged tool
+// sessionHistory.ts retired (T43) — vault_session_history removed from surface
+// entityHistory.ts retired (T43) — vault_entity_history removed from surface
+// learningReport.ts retired (T43) — flywheel_learning_report removed from surface
+// calibrationExport.ts retired (T43) — flywheel_calibration_export removed from surface
 import { registerDiscoveryTools } from './tools/read/discovery.js';
 
 // Resources
@@ -245,7 +244,10 @@ async function getActivationSignals(
   searchMethod?: string,
   isFullToolset: boolean = false,
 ): Promise<Array<{ category: ToolCategory; tier: ToolTier }>> {
-  if (toolName !== 'search' && toolName !== 'brief') return [];
+  // Activation signals from search (query param) and memory/brief (focus param)
+  // memory(action: brief, focus: ...) replaces standalone brief tool (T43 B3+)
+  const isBriefAction = toolName === 'memory' && (params as Record<string, unknown>)?.action === 'brief';
+  if (toolName !== 'search' && toolName !== 'brief' && !isBriefAction) return [];
   if (!params || typeof params !== 'object') return [];
 
   const raw = [
@@ -883,7 +885,7 @@ export function registerAllTools(
   const { getVaultPath: gvp, getVaultIndex: gvi, getStateDb: gsd, getFlywheelConfig: gcf } = ctx;
 
   // Read tools
-  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, ctx.getWatcherStatus, () => trPkg.version, ctx.getPipelineActivity, ctx.getVaultRuntimeState);
+  registerHealthTools(targetServer, gvi, gvp, gcf, gsd, ctx.getWatcherStatus, () => trPkg.version, ctx.getPipelineActivity, ctx.getVaultRuntimeState, (newConfig) => { ctx.updateFlywheelConfig(newConfig); });
   registerReadSystemTools(
     targetServer,
     gvi,
@@ -892,29 +894,16 @@ export function registerAllTools(
     (newConfig) => { ctx.updateFlywheelConfig(newConfig); },
     gsd
   );
-  // graph.ts + graphExport.ts retired (8 tools removed)
-  registerWikilinkTools(targetServer, gvi, gvp, gsd);
   registerQueryTools(targetServer, gvi, gvp, gsd);
   registerFindNotesTools(targetServer, gvi, gsd);
   registerPrimitiveTools(targetServer, gvi, gvp, gcf, gsd);
-  registerGraphTools(targetServer, gvi, gvp, gsd);
-  registerGraphAnalysisTools(targetServer, gvi, gvp, gsd, gcf);
-  // registerSemanticAnalysisTools retired (T43) — semantic_analysis removed from surface
-  registerVaultSchemaTools(targetServer, gvi, gvp);
-  registerNoteIntelligenceTools(targetServer, gvi, gvp, gcf);
-  registerMigrationTools(targetServer, gvi, gvp);
   registerSchemaTools(targetServer, gvi, gvp);
   registerGraphTools2(targetServer, gvi, gvp, gsd);
   registerInsightsTools(targetServer, gvi, gvp, gsd, gcf);
 
   // Write tools
-  registerMutationTools(targetServer, gvp, gcf);
   registerTaskTools(targetServer, gvp);
   registerFrontmatterTools(targetServer, gvp);
-  registerNoteTools(targetServer, gvp, gvi);
-  registerMoveNoteTools(targetServer, gvp);
-  registerWriteMergeTools(targetServer, gvp);
-  registerWriteSystemTools(targetServer, gvp);
   registerPolicyTools(targetServer, gvp, () => {
     const index = gvi();
     if (!index) return undefined;
@@ -945,25 +934,20 @@ export function registerAllTools(
       }));
     };
   });
-  registerTagTools(targetServer, gvi, gvp);
-  registerWikilinkFeedbackTools(targetServer, gsd);
+  // registerTagTools retired (T43 B3+) — rename_tag folded into schema merged tool
+  // registerWikilinkFeedbackTools retired (T43 B3+) — wikilink_feedback folded into link merged tool
   // registerToolSelectionFeedbackTools retired (T43) — tool_selection_feedback removed from surface
-  registerCorrectionTools(targetServer, gsd);
+  // registerCorrectionTools retired (T43 B3+) — vault_record_correction etc. folded into correct merged tool
   // registerInitTools retired (T43) — vault_init removed from surface
-  registerConfigTools(
-    targetServer,
-    gcf,
-    (newConfig) => { ctx.updateFlywheelConfig(newConfig); },
-    gsd
-  );
+  // registerConfigTools retired (T43 B3+) — flywheel_config folded into doctor(action: config)
 
   // Additional read tools
-  registerMetricsTools(targetServer, gvi, gsd);
+  // registerMetricsTools retired (T43 B3+) — vault_growth folded into insights merged tool
   // vault_activity retired — modes folded into vault_session_history
   // registerSimilarityTools retired (T43) — find_similar absorbed into search
   registerSemanticTools(targetServer, gvp, gsd);
   // registerReadMergeTools retired (T43) — suggest_merges/dismiss_merge now in entity tool
-  registerTemporalAnalysisTools(targetServer, gvi, gvp, gsd);
+  // registerTemporalAnalysisTools retired (T43 B3+) — track_concept_evolution etc. folded into insights merged tool
   // registerSessionHistoryTools retired (T43) — vault_session_history removed from surface
   // registerEntityHistoryTools retired (T43) — vault_entity_history removed from surface
   // registerLearningReportTools retired (T43) — flywheel_learning_report removed from surface
@@ -977,9 +961,9 @@ export function registerAllTools(
   // the tool is described or ranked. Measured 3/6 memory-action tests routed to
   // Glob instead of memory(*). To avoid the collision, suppress registration of
   // the `memory` tool when we detect the Claude Code client (via CLAUDECODE=1
-  // env var it sets on spawned MCP subprocesses). `brief` stays registered —
-  // it's the Claude Code escape hatch for memory retrieval. flywheel-engine and
-  // non-Claude clients are unaffected. Override with FW_ENABLE_MEMORY_FOR_CLAUDE=1.
+  // env var it sets on spawned MCP subprocesses). `memory(action: brief)` stays
+  // available — it's the Claude Code escape hatch for memory retrieval. flywheel-engine
+  // and non-Claude clients are unaffected. Override with FW_ENABLE_MEMORY_FOR_CLAUDE=1.
   const suppressMemoryForClaude =
     applyClientSuppressions &&
     process.env.CLAUDECODE === '1' &&
@@ -988,8 +972,7 @@ export function registerAllTools(
     registerMemoryTools(targetServer, gsd);
   }
   // recall removed — entity/memory search merged into search (uber search)
-  // registerRecallTools(targetServer, gsd, gvp, () => gvi() ?? null);
-  registerBriefTools(targetServer, gsd);
+  // brief tool retired (T43 B3+) — brief action now part of memory tool (memory.ts imports runBrief)
 
   // T43 merged tools
   registerNoteTool(targetServer, gvp, gvi);

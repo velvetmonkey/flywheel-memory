@@ -12,7 +12,7 @@ import type { VaultIndex } from '../../core/read/types.js';
 import { getEntityIndexFromDb, getAllEntitiesFromDb, getDismissedMergePairs, recordMergeDismissal } from '@velvetmonkey/vault-core';
 import { getInferredCategory } from '../../core/read/embeddings.js';
 import { suggestEntityAliases } from '../../core/read/aliasSuggestions.js';
-import { validatePath, readVaultFile, writeVaultFile, WriteConflictError, type LineEnding } from '../../core/write/writer.js';
+import { validatePath, validatePathSecure, readVaultFile, writeVaultFile, WriteConflictError, type LineEnding } from '../../core/write/writer.js';
 import type { MutationResult } from '../../core/write/types.js';
 import { initializeEntityIndex } from '../../core/write/wikilinks.js';
 import { levenshteinDistance } from '../../core/shared/levenshtein.js';
@@ -172,11 +172,10 @@ export function registerEntityTool(
 
         const vaultPath = getVaultPath();
 
-        if (!validatePath(vaultPath, entity)) {
-          return {
-            content: [{ type: 'text' as const, text: JSON.stringify({ error: 'Invalid entity path: path traversal not allowed' }) }],
-            isError: true,
-          };
+        const entityPathValidation = await validatePathSecure(vaultPath, entity);
+        if (!entityPathValidation.valid) {
+          const result: MutationResult = { success: false, message: `Invalid target path: ${entityPathValidation.reason}`, path: entity };
+          return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
         }
 
         let fileData: { content: string; frontmatter: Record<string, unknown>; lineEnding: string; contentHash: string };
@@ -230,12 +229,14 @@ export function registerEntityTool(
 
         const vaultPath = getVaultPath();
 
-        if (!validatePath(vaultPath, primary)) {
-          const result: MutationResult = { success: false, message: 'Invalid primary path: path traversal not allowed', path: primary };
+        const primaryValidation = await validatePathSecure(vaultPath, primary);
+        if (!primaryValidation.valid) {
+          const result: MutationResult = { success: false, message: `Invalid source path: ${primaryValidation.reason}`, path: primary };
           return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
         }
-        if (!validatePath(vaultPath, secondary)) {
-          const result: MutationResult = { success: false, message: 'Invalid secondary path: path traversal not allowed', path: secondary };
+        const secondaryValidation = await validatePathSecure(vaultPath, secondary);
+        if (!secondaryValidation.valid) {
+          const result: MutationResult = { success: false, message: `Invalid target path: ${secondaryValidation.reason}`, path: secondary };
           return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
         }
 

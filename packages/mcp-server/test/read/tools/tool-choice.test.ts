@@ -28,8 +28,7 @@ describe('generateInstructions routing', () => {
     const cats = parseEnabledCategories('agent,diagnostics');
     const instructions = generateInstructions(cats);
     expect(instructions).toContain('## Diagnostics');
-    expect(instructions).toContain('flywheel_doctor');
-    expect(instructions).toContain('insights');
+    expect(instructions).toContain('doctor');
   });
 
   it('includes wikilinks routing when wikilinks enabled', () => {
@@ -52,7 +51,7 @@ describe('generateInstructions routing', () => {
     expect(instructions).not.toContain('## Temporal');
     expect(instructions).not.toContain('## Wikilinks');
     expect(instructions).not.toContain('## Corrections');
-    expect(instructions).not.toContain('## Diagnostics');
+    // Note: diagnostics IS included in agent preset (doctor is tier-1)
   });
 
   it('full preset includes all 11 category sections', () => {

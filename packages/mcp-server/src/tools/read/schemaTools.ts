@@ -12,6 +12,7 @@ import { requireIndex } from '../../core/read/indexGuard.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import {
   getFrontmatterSchema,
+  getFieldValues,
   findFrontmatterInconsistencies,
   validateFrontmatter,
   findMissingFrontmatter,
@@ -37,7 +38,7 @@ export function registerSchemaTools(
       description:
         'Inspect and evolve vault schema. action: overview — field usage stats. conventions — naming and required fields. folders — folder tree with note counts per folder. rename_field / rename_tag — bulk rename. migrate — update field values. validate — check notes against schema. Returns stats, conventions, or errors. Does not read note body content. e.g. { action:"overview" } { action:"rename_tag", old_name:"wip", new_name:"in-progress", dry_run:true }',
       inputSchema: {
-        action: z.enum(['overview', 'conventions', 'folders', 'rename_field', 'rename_tag', 'migrate', 'validate'])
+        action: z.enum(['overview', 'field_values', 'conventions', 'folders', 'rename_field', 'rename_tag', 'migrate', 'validate'])
           .describe('Schema operation to perform'),
 
         folder: z.string().optional().describe('[conventions|validate] Folder to scope to'),
@@ -47,7 +48,7 @@ export function registerSchemaTools(
 
         rename_children: z.boolean().optional().describe('[rename_tag] Also rename child tags (default true)'),
 
-        field: z.string().optional().describe('[migrate] Field to migrate values for'),
+        field: z.string().optional().describe('[field_values|migrate] Field name'),
         from_value: z.string().optional().describe('[migrate] Old field value to replace'),
         to_value: z.string().optional().describe('[migrate] New field value to set'),
 
@@ -67,6 +68,19 @@ export function registerSchemaTools(
         // -----------------------------------------------------------------
         case 'overview': {
           const result = getFrontmatterSchema(index);
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+          };
+        }
+
+        // -----------------------------------------------------------------
+        // field_values — value distribution for a specific frontmatter field
+        // -----------------------------------------------------------------
+        case 'field_values': {
+          if (!params.field) {
+            return { content: [{ type: 'text' as const, text: JSON.stringify({ error: 'field is required for action=field_values' }) }] };
+          }
+          const result = getFieldValues(index, params.field);
           return {
             content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
           };

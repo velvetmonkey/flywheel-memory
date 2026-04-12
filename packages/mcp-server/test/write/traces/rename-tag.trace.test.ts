@@ -63,14 +63,15 @@ describe('rename_tag traces', () => {
   });
 
   it('old tag absent, new tag present in vault_schema', async () => {
-    await snap(client, 'rename_tag', {
-      old_tag: 'project',
-      new_tag: 'work',
+    await snap(client, 'schema', {
+      action: 'rename_tag',
+      old_name: 'project',
+      new_name: 'work',
       dry_run: false,
     });
     await snap(client, 'refresh_index');
 
-    const schema = await snap(client, 'vault_schema', { analysis: 'field_values', field: 'tags' });
+    const schema = await snap(client, 'schema', { action: 'field_values', field: 'tags' });
     const tagValues = schema.values.map((v: any) => v.value);
     expect(tagValues).toContain('work');
     expect(tagValues).not.toContain('project');

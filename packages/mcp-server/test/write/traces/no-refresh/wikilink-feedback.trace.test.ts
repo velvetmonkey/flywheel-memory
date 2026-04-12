@@ -17,44 +17,33 @@ describe('Trace: Wikilink feedback (no refresh)', () => {
   });
 
   it('report recorded in stats', async () => {
-    await snap(client, 'wikilink_feedback', {
-      mode: 'report',
+    const result = await snap(client, 'link', {
+      action: 'feedback',
       entity: 'TestEntity_wfbtrace',
+      accepted: false,
       note_path: 'test.md',
       context: 'test context for wikilink feedback',
-      correct: false,
     });
 
-    const stats = await snap(client, 'wikilink_feedback', {
-      mode: 'stats',
-    });
-
-    // Stats should include an entry for our entity
-    const entities = stats.entities ?? stats.stats ?? [];
-    const entityNames = entities.map((e: any) => e.entity ?? e.name ?? '');
-    expect(entityNames).toEqual(expect.arrayContaining([
-      expect.stringContaining('TestEntity_wfbtrace'),
-    ]));
+    // The feedback response includes total_feedback_rows
+    expect(result.total_feedback_rows).toBeGreaterThanOrEqual(1);
+    expect(result.reported.entity).toBe('TestEntity_wfbtrace');
   });
 
   it('dashboard updated', async () => {
-    const dashBefore = await snap(client, 'wikilink_feedback', {
-      mode: 'dashboard',
-    });
-    const countBefore = dashBefore.total_feedback ?? dashBefore.total ?? dashBefore.summary?.total ?? 0;
+    const dashBefore = await snap(client, 'link', { action: 'dashboard' });
+    const countBefore = dashBefore.total_feedback ?? 0;
 
-    await snap(client, 'wikilink_feedback', {
-      mode: 'report',
+    await snap(client, 'link', {
+      action: 'feedback',
       entity: 'DashEntity_wfbtrace',
+      accepted: true,
       note_path: 'dash-test.md',
       context: 'dashboard count test context',
-      correct: true,
     });
 
-    const dashAfter = await snap(client, 'wikilink_feedback', {
-      mode: 'dashboard',
-    });
-    const countAfter = dashAfter.total_feedback ?? dashAfter.total ?? dashAfter.summary?.total ?? 0;
+    const dashAfter = await snap(client, 'link', { action: 'dashboard' });
+    const countAfter = dashAfter.total_feedback ?? 0;
 
     expect(countAfter).toBeGreaterThan(countBefore);
   });

@@ -79,7 +79,7 @@ function createServerForConfig(
     undefined,
     tierMode,
   );
-  registerAllTools(server, createStubRegistryContext(), controller);
+  registerAllTools(server, createStubRegistryContext(), controller, { applyClientSuppressions: false });
   controller.finalizeRegistration();
   return { server, controller, resolved };
 }
@@ -99,7 +99,7 @@ function createServerForCategories(
     undefined,
     tierMode,
   );
-  registerAllTools(server, createStubRegistryContext(), controller);
+  registerAllTools(server, createStubRegistryContext(), controller, { applyClientSuppressions: false });
   controller.finalizeRegistration();
   return { server, controller };
 }

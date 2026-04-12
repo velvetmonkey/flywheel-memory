@@ -181,7 +181,7 @@ describe('index staleness traces', () => {
 
     it('vault_stats total_notes matches refresh_index notes_count', async () => {
       const refreshResult = await snap(client, 'refresh_index');
-      const stats = await snap(client, 'flywheel_doctor', { report: 'stats' });
+      const stats = await snap(client, 'doctor', { action: 'stats' });
 
       expect(stats.total_notes).toBe(refreshResult.notes_count);
     });

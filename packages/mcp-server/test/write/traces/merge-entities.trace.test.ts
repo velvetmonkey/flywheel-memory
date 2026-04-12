@@ -57,13 +57,14 @@ describe('merge_entities trace', () => {
     await snap(client, 'refresh_index');
 
     // Capture total notes before merge
-    const statsBefore = await snap(client, 'flywheel_doctor', { report: 'stats' });
+    const statsBefore = await snap(client, 'doctor', { action: 'stats' });
     totalNotesBefore = statsBefore.total_notes;
 
-    // Perform merge: Robert → Bob
-    await snap(client, 'merge_entities', {
-      source_path: 'people/Robert.md',
-      target_path: 'people/Bob.md',
+    // Perform merge: Robert → Bob (primary=keep, secondary=absorb)
+    await snap(client, 'entity', {
+      action: 'merge',
+      primary: 'people/Bob.md',
+      secondary: 'people/Robert.md',
     });
 
     // Refresh after merge
@@ -96,7 +97,7 @@ describe('merge_entities trace', () => {
   });
 
   it('vault_stats total decreased by 1', async () => {
-    const statsAfter = await snap(client, 'flywheel_doctor', { report: 'stats' });
+    const statsAfter = await snap(client, 'doctor', { action: 'stats' });
     expect(statsAfter.total_notes).toBe(totalNotesBefore - 1);
   });
 });

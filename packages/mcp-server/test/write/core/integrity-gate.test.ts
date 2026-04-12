@@ -52,13 +52,14 @@ describe('integrity write gate', () => {
       'off',
     );
 
-    server.tool('vault_create_note', async () => ({
+    // vault_update_frontmatter is in both TOOL_CATEGORY (write) and MUTATING_TOOL_NAMES
+    server.tool('vault_update_frontmatter', async () => ({
       content: [{ type: 'text' as const, text: 'should not run' }],
     }));
     controller.finalizeRegistration();
 
     const client = connectTestClient(server);
-    const result = await client.callTool('vault_create_note', { path: 'Test.md' });
+    const result = await client.callTool('vault_update_frontmatter', { path: 'Test.md', frontmatter: {} });
 
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain('StateDb integrity failed');

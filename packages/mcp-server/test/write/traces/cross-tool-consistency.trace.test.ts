@@ -97,7 +97,7 @@ describe('cross-tool consistency traces', () => {
   });
 
   it('backlink count matches vault_stats most_linked_notes', async () => {
-    const stats = await snap(client, 'flywheel_doctor', { report: 'stats' });
+    const stats = await snap(client, 'doctor', { action: 'stats' });
     const topEntries = stats.most_linked_notes.slice(0, 2);
 
     for (const entry of topEntries) {
@@ -112,7 +112,7 @@ describe('cross-tool consistency traces', () => {
   it('forward link existence matches disk', async () => {
     // notes/orphan.md has a link to NonExistent (doesn't exist)
     // validate_links should report the dangling link
-    const validation = await snap(client, 'validate_links', {});
+    const validation = await snap(client, 'link', { action: 'validate' });
     expect(validation.broken_links).toBeGreaterThanOrEqual(1);
     const targets = validation.broken.map((b: any) => b.target);
     expect(targets).toContain('NonExistent');

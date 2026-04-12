@@ -13,22 +13,24 @@ import type { VaultRegistry } from './vault-registry.js';
 // ============================================================================
 // FLYWHEEL_TOOLS / FLYWHEEL_PRESET env var controls which tools are loaded.
 //
-// Presets (tool counts derived at runtime — see TOTAL_TOOL_COUNT, TIER_1_TOOL_COUNT):
-//   agent      - Tier-1 tools: search, read, note, memory, tasks, policy + core write — DEFAULT (fixed reduced)
-//   power      - Tier 1+2: agent + wikilinks (link), corrections (correct), note-ops (entity), schema
-//   full       - Tier 1+2+3: power + graph, diagnostics, temporal
+// T43 B3+ — 21 tools total (down from 63). Tier 1 = 8 core agent tools.
+//
+// Presets:
+//   agent      - Tier-1 tools: search, read, note, edit_section, memory, tasks, doctor, policy — DEFAULT
+//   power      - Tier 1+2: agent + link, correct, entity, schema, find_notes, vault_update_frontmatter
+//   full       - Tier 1+2+3: power + graph, insights, vault_add_task
 //   auto       - Progressive disclosure via discover_tools, all categories, hybrid routing
 //
 // Composable bundles (combine with presets or each other):
-//   graph       - Structural analysis + link detail + semantic + export (11 tools)
-//   schema      - Schema intelligence + migrations: vault_schema, schema_conventions, schema_validate, note_intelligence, rename_field, migrate_field_values, rename_tag (7 tools)
-//   wikilinks   - Wikilink suggestions, validation, discovery (7 tools)
-//   corrections - Correction recording + resolution (4 tools)
-//   tasks       - Task queries and mutations (3 tools)
-//   memory      - Session memory + brief (2 tools)
-//   note-ops    - File management: delete, move, rename, merge (4 tools)
-//   temporal    - Time-based vault intelligence (4 tools)
-//   diagnostics - Vault health, stats, config, activity, merges, doctor, trust, benchmark, session/entity history, learning report, calibration export, pipeline status, tool selection feedback (22 tools)
+//   graph       - Structural graph analysis (graph merged tool)
+//   schema      - Schema intelligence + migrations (schema merged tool)
+//   wikilinks   - Wikilink suggestions, validation, discovery (link merged tool)
+//   corrections - Correction recording + resolution (correct merged tool)
+//   tasks       - Task queries, toggle, and creation (tasks + vault_add_task)
+//   memory      - Session memory (memory merged tool — includes brief action)
+//   note-ops    - Entity management + file ops (entity merged tool)
+//   temporal    - Time-based vault intelligence (insights merged tool)
+//   diagnostics - Vault health, config, logs (doctor + refresh_index)
 //
 // Examples:
 //   (no env)                                  # focused default preset (agent)
@@ -66,13 +68,13 @@ export const ALL_CATEGORIES: ToolCategory[] = [
 ];
 
 export const PRESETS: Record<string, ToolCategory[]> = {
-  // Named presets (3-tier surface)
-  //   agent — tier-1 tools: search, read, note, memory, tasks, policy + core write/diagnostics
-  agent: ['search', 'read', 'write', 'tasks', 'memory'],
-  //   power — tier 1+2: agent + wikilinks (link), corrections (correct), note-ops (entity), schema
-  power: ['search', 'read', 'write', 'tasks', 'memory', 'wikilinks', 'corrections', 'note-ops', 'schema'],
-  //   full — tier 1+2+3: power + graph + diagnostics + temporal
-  full: ['search', 'read', 'write', 'tasks', 'memory', 'wikilinks', 'corrections', 'note-ops', 'schema', 'graph', 'diagnostics', 'temporal'],
+  // Named presets (3-tier surface — T43 B3+ target: agent=8, power=14, full=17 visible tools)
+  //   agent — tier-1 tools: search, read, note, edit_section, memory, tasks, doctor, policy
+  agent: ['search', 'read', 'write', 'tasks', 'memory', 'diagnostics'],
+  //   power — tier 1+2: agent + link, correct, entity, schema + find_notes, vault_update_frontmatter
+  power: ['search', 'read', 'write', 'tasks', 'memory', 'diagnostics', 'wikilinks', 'corrections', 'note-ops', 'schema'],
+  //   full — tier 1+2+3: power + graph + temporal (insights) + vault_add_task
+  full: ['search', 'read', 'write', 'tasks', 'memory', 'diagnostics', 'wikilinks', 'corrections', 'note-ops', 'schema', 'graph', 'temporal'],
   //   auto — progressive disclosure via discover_tools, all categories
   auto: [...ALL_CATEGORIES],
 
@@ -237,169 +239,98 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
 // Per-tool category mapping (tool name -> category).
 // This is the single source of truth for tool count: Object.keys(TOOL_CATEGORY).length.
 // Every tool MUST have an entry — gate() throws on startup if one is missing.
+//
+// T43 B3+ tool surface (21 tools total after legacy retirement):
+//   search (3): search, init_semantic, discover_tools
+//   read (3): read, note_read [compat], find_notes
+//   write (4): note, edit_section, vault_update_frontmatter, policy
+//   graph (1): graph
+//   schema (1): schema
+//   wikilinks (1): link
+//   corrections (1): correct
+//   tasks (2): tasks, vault_add_task
+//   memory (1): memory
+//   note-ops (1): entity
+//   temporal (1): insights
+//   diagnostics (2): doctor, refresh_index
 export const TOOL_CATEGORY: Record<string, ToolCategory> = {
-  // search
+  // search (3)
   search: 'search',
   init_semantic: 'search',
   discover_tools: 'search',
 
-  // read (2 tools) -- note reading + structural enumeration
+  // read (3) -- read is canonical T43 name; note_read kept as backward-compat alias
+  read: 'read',
   note_read: 'read',
   find_notes: 'read',
 
-  // write (8 tools) -- content mutations + frontmatter + note creation + undo + policy
+  // write (4)
   note: 'write',
   edit_section: 'write',
-  vault_add_to_section: 'write',
-  vault_remove_from_section: 'write',
-  vault_replace_in_section: 'write',
   vault_update_frontmatter: 'write',
-  vault_create_note: 'write',
-  vault_undo_last_mutation: 'write',
   policy: 'write',
 
-  // graph (9 tools) -- structural analysis + link detail
+  // graph (1)
   graph: 'graph',
-  graph_analysis: 'graph',
-  get_connection_strength: 'graph',
-  list_entities: 'graph',
-  get_link_path: 'graph',
-  get_common_neighbors: 'graph',
-  get_backlinks: 'graph',
-  get_forward_links: 'graph',
-  get_strong_connections: 'graph',
 
-  // schema (8 tools) -- schema intelligence + migrations
+  // schema (1)
   schema: 'schema',
-  vault_schema: 'schema',
-  schema_conventions: 'schema',
-  schema_validate: 'schema',
-  note_intelligence: 'schema',
-  rename_field: 'schema',
-  migrate_field_values: 'schema',
-  rename_tag: 'schema',
 
-  // wikilinks (7 tools) -- suggestions, validation, discovery (link merged tool + individual tools)
+  // wikilinks (1)
   link: 'wikilinks',
-  suggest_wikilinks: 'wikilinks',
-  validate_links: 'wikilinks',
-  wikilink_feedback: 'wikilinks',
-  discover_stub_candidates: 'wikilinks',
-  discover_cooccurrence_gaps: 'wikilinks',
-  suggest_entity_aliases: 'wikilinks',
 
-  // corrections (5 tools) -- correct merged tool + individual correction tools
+  // corrections (1)
   correct: 'corrections',
-  vault_record_correction: 'corrections',
-  vault_list_corrections: 'corrections',
-  vault_resolve_correction: 'corrections',
-  absorb_as_alias: 'corrections',
 
-  // tasks (3 tools)
+  // tasks (2)
   tasks: 'tasks',
-  vault_toggle_task: 'tasks',
   vault_add_task: 'tasks',
 
-  // memory (2 tools) -- session memory
+  // memory (1)
   memory: 'memory',
-  brief: 'memory',
 
-  // note-ops (5 tools) -- file management + entity management
+  // note-ops (1)
   entity: 'note-ops',
-  vault_delete_note: 'note-ops',
-  vault_move_note: 'note-ops',
-  vault_rename_note: 'note-ops',
-  merge_entities: 'note-ops',
 
-  // temporal (3 tools) -- time-based vault intelligence (temporal_summary absorbed into track_concept_evolution)
-  get_context_around_date: 'temporal',
-  predict_stale_notes: 'temporal',
-  track_concept_evolution: 'temporal',
+  // temporal (1) -- insights absorbs: evolution, staleness, context, note_intelligence, growth
+  insights: 'temporal',
 
-  // diagnostics (8 tools) -- vault health, stats, config, merges, doctor, pipeline status
-  // Retired: health_check, get_vault_stats (absorbed into flywheel_doctor), vault_activity, get_folder_structure, get_all_entities, get_unlinked_mentions (into link), vault_session_history, vault_entity_history, flywheel_trust_report, flywheel_benchmark, flywheel_learning_report, flywheel_calibration_export, tool_selection_feedback, semantic_analysis, vault_init
-  insights: 'diagnostics',
-  pipeline_status: 'diagnostics',
+  // diagnostics (2)
+  doctor: 'diagnostics',
   refresh_index: 'diagnostics',
-  vault_growth: 'diagnostics',
-  flywheel_config: 'diagnostics',
-  server_log: 'diagnostics',
-  // suggest_entity_merges retired (T43) — absorbed into entity tool as action: suggest_merges
-  // dismiss_merge_suggestion retired (T43) — absorbed into entity tool as action: dismiss_merge
-  flywheel_doctor: 'diagnostics',
-
 };
 
 export const TOOL_TIER: Record<string, ToolTier> = {
-  // Tier 1 — always visible (= agent preset, see TIER_1_TOOL_COUNT)
+  // Tier 1 — always visible in agent preset (8 core tools when tiering active)
+  // These are the primary entry points for every task class.
   search: 1,
-  init_semantic: 1,
-  discover_tools: 1,
-  note_read: 1,
-  find_notes: 1,
+  read: 1,
   note: 1,
   edit_section: 1,
-  vault_add_to_section: 1,
-  vault_remove_from_section: 1,
-  vault_replace_in_section: 1,
-  vault_update_frontmatter: 1,
-  vault_create_note: 1,
-  vault_undo_last_mutation: 1,
   policy: 1,
   tasks: 1,
-  vault_toggle_task: 1,
-  vault_add_task: 1,
   memory: 1,
-  brief: 1,
+  doctor: 1,
 
-  // Tier 2 — context-triggered categories + core diagnostics (see TIER_2_TOOL_COUNT)
-  schema: 2,
-  graph_analysis: 2,
-  get_connection_strength: 2,
-  list_entities: 2,
-  get_link_path: 2,
-  get_common_neighbors: 2,
-  get_backlinks: 2,
-  get_forward_links: 2,
-  get_strong_connections: 2,
+  // Tier 2 — power-level: context-triggered or explicitly requested
+  // Activated by query patterns or when power/full preset is active.
+  init_semantic: 2,
+  note_read: 2,       // backward-compat alias for read (prefer read)
+  find_notes: 2,
+  vault_update_frontmatter: 2,
   link: 2,
-  suggest_wikilinks: 2,
-  validate_links: 2,
-  wikilink_feedback: 2,
-  discover_stub_candidates: 2,
-  discover_cooccurrence_gaps: 2,
-  suggest_entity_aliases: 2,
   correct: 2,
-  vault_record_correction: 2,
-  vault_list_corrections: 2,
-  vault_resolve_correction: 2,
-  absorb_as_alias: 2,
-  get_context_around_date: 2,
-  predict_stale_notes: 2,
-  track_concept_evolution: 2,
-  pipeline_status: 2,
+  entity: 2,
+  schema: 2,
   refresh_index: 2,
-  flywheel_config: 2,
-  server_log: 2,
-  flywheel_doctor: 2,
 
-  // Tier 3 — explicit or advanced operations (see TIER_3_TOOL_COUNT)
-  graph: 3,
-  insights: 3,
-  vault_schema: 3,
-  schema_conventions: 3,
-  schema_validate: 3,
-  note_intelligence: 3,
-  rename_field: 3,
-  migrate_field_values: 3,
-  rename_tag: 3,
-  entity: 3,
-  vault_delete_note: 3,
-  vault_move_note: 3,
-  vault_rename_note: 3,
-  merge_entities: 3,
-  vault_growth: 3,
-  // suggest_entity_merges/dismiss_merge_suggestion retired (T43) — in entity tool
+  // Tier 2 — also triggered by activation signals (graph/temporal patterns fire at tier 2)
+  graph: 2,
+  insights: 2,
+
+  // Tier 3 — full-level / advanced operations
+  vault_add_task: 3,
+  discover_tools: 1,  // auto preset only — tier-1 so always visible when registered
 };
 
 function assertToolTierCoverage(): void {
@@ -429,24 +360,23 @@ export const DISCLOSURE_ONLY_TOOLS = new Set(['discover_tools']);
  * discriminator field. Used by the doc-fragments generator to render the
  * action-param tools list in CLAUDE.md, and kept here so drift between the
  * tool's Zod schema and the doc is visible in the same file as the tool list.
- *
- * NOTE: `tasks` is intentionally omitted — it is a standalone query tool
- * (filtering by status/path/tag), not a merged action-param tool. Task
- * mutations are separate tools: vault_add_task and vault_toggle_task.
  */
 export const ACTION_PARAM_MAP: Record<string, readonly string[]> = {
   search: ['query', 'similar'],
+  tasks: ['list', 'toggle'],  // T43 B3+: toggle action added; vault_toggle_task retired
   note_read: ['structure', 'section', 'sections'],
+  read: ['structure', 'section', 'sections'],  // T43 B3+: canonical alias for note_read
   note: ['create', 'move', 'rename', 'delete'],
   edit_section: ['add', 'remove', 'replace'],
-  memory: ['store', 'get', 'search', 'list', 'forget', 'summarize_session'],
+  memory: ['store', 'get', 'search', 'list', 'forget', 'summarize_session', 'brief'],
   entity: ['list', 'alias', 'suggest_aliases', 'merge', 'suggest_merges', 'dismiss_merge'],
   policy: ['list', 'validate', 'preview', 'execute', 'author', 'revise'],
   correct: ['record', 'list', 'resolve', 'undo'],
   link: ['suggest', 'feedback', 'unlinked', 'validate', 'stubs', 'dashboard', 'unsuppress', 'timeline', 'layer_timeseries', 'snapshot_diff'],
   graph: ['analyse', 'backlinks', 'forward_links', 'strong_connections', 'path', 'neighbors', 'strength', 'cooccurrence_gaps'],
-  schema: ['overview', 'conventions', 'folders', 'rename_field', 'rename_tag', 'migrate', 'validate'],
+  schema: ['overview', 'field_values', 'conventions', 'folders', 'rename_field', 'rename_tag', 'migrate', 'validate'],
   insights: ['evolution', 'staleness', 'context', 'note_intelligence', 'growth'],
+  doctor: ['health', 'diagnosis', 'stats', 'pipeline', 'config', 'log'],
 };
 
 /**
@@ -501,10 +431,10 @@ Tool routing:
      answer without reading full files.
   2. For structural, temporal, wikilink, or diagnostic goals, use the specialized
      tools in those categories — they return targeted contracts, not broad results.
-  3. Escalate to "note_read" for full markdown content or word count.
+  3. Escalate to "read" for full markdown content or word count.
      Use action=structure for heading outline + metadata, action=section for a single
      section by heading name, action=sections for vault-wide heading search.
-     Prefer "note_read" over the built-in Read tool for vault notes — it
+     Prefer "read" over the built-in Read tool for vault notes — it
      returns enriched metadata (backlinks, outlinks, entities, word count) that Read cannot.
   4. Start with a broad search: just query text, no filters. Use find_notes for
      structural enumeration by folder, tag, or frontmatter — not search.`);
@@ -541,9 +471,9 @@ Good frontmatter is the highest-leverage action for improving suggestions, searc
     parts.push(`
 ## Read
 
-Escalation: "search" (enriched metadata + content preview) → "note_read"
+Escalation: "search" (enriched metadata + content preview) → "read"
 (full content + word count via action=structure, single section via action=section).
-"note_read" with action=sections finds headings across the vault by regex pattern.`);
+"read" with action=sections finds headings across the vault by regex pattern.`);
   }
 
   // Write category instructions
@@ -628,7 +558,8 @@ Use "entity" (action: merge) to consolidate two entity notes — adds aliases, m
     parts.push(`
 ## Tasks
 
-Use "tasks" to query tasks across the vault (filter by status, due date, path, folder, tag). Use "vault_add_task" to create tasks and "vault_toggle_task" to complete them.`);
+Use "tasks" (action: list) to query tasks across the vault (filter by status, due date, path, folder, tag).
+Use "tasks" (action: toggle) to check/uncheck a task. Use "vault_add_task" to create new tasks.`);
   }
 
   // Schema category instructions
@@ -698,12 +629,11 @@ Temporal tools analyze *patterns and changes* over time — use them for "what c
     parts.push(`
 ## Diagnostics
 
- - Triage: "flywheel_doctor" (diagnosis, health status, or vault metrics via report param) → "server_log" (event timeline)
- - Stats: "flywheel_doctor report=stats" (counts), "insights" (action: growth) for trends
- - Entities: "entity" (action: suggest_merges) for duplicates, "entity" (action: list) for browsing
- - Maintenance: "refresh_index" (rebuild), "flywheel_config" (settings)
-
-Use "flywheel_config" to inspect runtime configuration and set "tool_tier_override" to "auto", "full", or "minimal" for this vault.`);
+ - Health: "doctor" (action: health) — vault status, integrity, pipeline summary
+ - Pipeline: "doctor" (action: pipeline) — watcher state, indexing activity
+ - Config: "doctor" (action: config) — inspect/set runtime configuration, including tool_tier_override
+ - Logs: "doctor" (action: log) — recent server event timeline
+ - Maintenance: "refresh_index" — rebuild the vault index`);
   }
   else if (tieringActive && categories.has('diagnostics')) {
     // Escalation hint handled by unified discover_tools guidance below

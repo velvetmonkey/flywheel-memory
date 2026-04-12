@@ -8,7 +8,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { writeVaultFile, validatePath, sanitizeNotePath, injectMutationMetadata } from '../../core/write/writer.js';
+import { writeVaultFile, validatePath, validatePathSecure, sanitizeNotePath, injectMutationMetadata } from '../../core/write/writer.js';
 import {
   maybeApplyWikilinks,
   suggestRelatedLinks,
@@ -198,6 +198,11 @@ async function handleCreate(
     let effectiveFrontmatter = rawFrontmatter;
 
     if (template) {
+      // Validate template path before reading — prevents LFI / sensitive file read
+      const templateValidation = await validatePathSecure(vaultPath, template);
+      if (!templateValidation.valid) {
+        return formatMcpResult(errorResult(notePath, `Invalid template path: ${templateValidation.reason}`));
+      }
       const templatePath = path.join(vaultPath, template);
       try {
         const raw = await fs.readFile(templatePath, 'utf-8');

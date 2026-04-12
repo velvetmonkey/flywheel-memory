@@ -45,7 +45,8 @@ describe('vault_remove_from_section traces', () => {
     const before = await snap(client, 'search', { query: 'removemeunique' });
     expect(before.total_results).toBeGreaterThanOrEqual(1);
 
-    await snap(client, 'vault_remove_from_section', {
+    await snap(client, 'edit_section', {
+      action: 'remove',
       path: 'notes/remove-test.md',
       section: 'Details',
       pattern: 'removemeunique content that should vanish.',

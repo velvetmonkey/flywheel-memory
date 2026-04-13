@@ -103,7 +103,7 @@ You: "Run my morning briefing"
     ops/Subscriber Metrics.md
       frontmatter: { subscribers: 2847, weekly_growth: 36 }
 
-● flywheel › note_read
+● flywheel › read
   action: "structure", path: "ops/Morning Briefing.md" (include_content: true)
   → Briefing template with revenue, subscriber, content sections
 

@@ -154,7 +154,7 @@ describe('README Examples: Artemis Rocket Vault', () => {
   describe('Graph Intelligence', () => {
     it('should get note structure', async () => {
       const result = await client.callTool({
-        name: 'note_read',
+        name: 'read',
         arguments: { action: 'structure', path: 'project/Artemis Rocket.md' },
       });
 
@@ -264,7 +264,7 @@ describe('Tool Registration Consistency', () => {
       'doctor',       // flywheel_doctor retired — merged into doctor
       'graph',        // graph_analysis retired — merged into graph
       'search',
-      'note_read',
+      'read',
     ];
 
     for (const tool of documentedTools) {

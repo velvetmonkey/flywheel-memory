@@ -39,7 +39,7 @@ describe('MCP Server Integration', () => {
       expect(toolNames).toContain('search');
 
       // Read primitives
-      expect(toolNames).toContain('note_read');
+      expect(toolNames).toContain('read');
 
       // Index management
       expect(toolNames).toContain('refresh_index');
@@ -107,7 +107,7 @@ describe('MCP Server Integration', () => {
 
   describe('Error Handling', () => {
     test('handles invalid path gracefully', async () => {
-      const result = await client.callTool('note_read', {
+      const result = await client.callTool('read', {
         action: 'structure',
         path: '../../../etc/passwd',
       });

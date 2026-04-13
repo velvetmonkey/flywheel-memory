@@ -353,7 +353,7 @@ Flywheel rejects file operations that reference paths outside the vault root. Th
 
 - Check the exact file path (case-sensitive on Linux)
 - Use `search` to find the correct path if unsure
-- For sections, check the exact heading text with `note_read` (action=structure)
+- For sections, check the exact heading text with `read` (action=structure)
 
 ### "Failed to parse frontmatter"
 

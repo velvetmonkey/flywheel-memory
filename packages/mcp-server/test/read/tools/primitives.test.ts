@@ -1,7 +1,7 @@
 /**
- * Unit tests for primitives tools — note_read and tasks.
+ * Unit tests for primitives tools — read and tasks.
  *
- * note_read covers:
+ * read covers:
  *   action=structure — heading outline + frontmatter + metadata
  *   action=section   — single section by heading name
  *   action=sections  — vault-wide heading regex search
@@ -22,9 +22,9 @@ import { createTempVault, createTestNote, cleanupTempVault } from '../../write/h
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 
-// ── note_read ─────────────────────────────────────────────────────────────────
+// ── read ─────────────────────────────────────────────────────────────────
 
-describe('note_read', () => {
+describe('read', () => {
   let context: TestServerContext;
   let client: TestClient;
 
@@ -37,7 +37,7 @@ describe('note_read', () => {
 
   describe('action=structure', () => {
     test('returns outline fields for a known note', async () => {
-      const result = await client.callTool('note_read', {
+      const result = await client.callTool('read', {
         action: 'structure',
         path: 'Acme Corp.md',
       });
@@ -53,7 +53,7 @@ describe('note_read', () => {
     });
 
     test('returns sections for a note with multiple headings', async () => {
-      const result = await client.callTool('note_read', {
+      const result = await client.callTool('read', {
         action: 'structure',
         path: 'normal-note.md',
       });
@@ -74,7 +74,7 @@ describe('note_read', () => {
     });
 
     test('missing path returns error JSON without formatMcpResult wrapper', async () => {
-      const result = await client.callTool('note_read', {
+      const result = await client.callTool('read', {
         action: 'structure',
       });
       const data = JSON.parse(result.content[0].text);
@@ -90,7 +90,7 @@ describe('note_read', () => {
 
   describe('action=section', () => {
     test('returns content under a specific heading', async () => {
-      const result = await client.callTool('note_read', {
+      const result = await client.callTool('read', {
         action: 'section',
         path: 'normal-note.md',
         heading: 'Section with code',
@@ -103,7 +103,7 @@ describe('note_read', () => {
     });
 
     test('missing path returns error JSON', async () => {
-      const result = await client.callTool('note_read', {
+      const result = await client.callTool('read', {
         action: 'section',
         heading: 'Section with code',
       });
@@ -114,7 +114,7 @@ describe('note_read', () => {
     });
 
     test('missing heading returns error JSON', async () => {
-      const result = await client.callTool('note_read', {
+      const result = await client.callTool('read', {
         action: 'section',
         path: 'normal-note.md',
       });
@@ -129,7 +129,7 @@ describe('note_read', () => {
 
   describe('action=sections', () => {
     test('returns matching sections across the vault', async () => {
-      const result = await client.callTool('note_read', {
+      const result = await client.callTool('read', {
         action: 'sections',
         pattern: 'Section with code',
       });
@@ -142,7 +142,7 @@ describe('note_read', () => {
     });
 
     test('returns empty sections array for non-matching pattern', async () => {
-      const result = await client.callTool('note_read', {
+      const result = await client.callTool('read', {
         action: 'sections',
         pattern: 'ZZZNoSuchHeadingXXX',
       });
@@ -153,7 +153,7 @@ describe('note_read', () => {
     });
 
     test('missing pattern returns error JSON', async () => {
-      const result = await client.callTool('note_read', {
+      const result = await client.callTool('read', {
         action: 'sections',
       });
       const data = JSON.parse(result.content[0].text);

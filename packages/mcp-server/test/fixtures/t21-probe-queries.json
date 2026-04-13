@@ -13,7 +13,7 @@
   },
   {
     "query": "Show me the structure of my project planning note",
-    "expectedPrimaryTool": "note_read",
+    "expectedPrimaryTool": "read",
     "expectedActivatedCategory": null,
     "notes": "Explicit structure request \u2014 Tier 1 read tool"
   },

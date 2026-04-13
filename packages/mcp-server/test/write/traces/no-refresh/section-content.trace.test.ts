@@ -33,7 +33,7 @@ Some notes here
     await ctx.cleanup();
   });
 
-  it('add visible in note_read', async () => {
+  it('add visible in read', async () => {
     await snap(client, 'edit_section', {
       action: 'add',
       path: notePath,
@@ -42,7 +42,7 @@ Some notes here
       format: 'bullet',
     });
 
-    const result = await snap(client, 'note_read', {
+    const result = await snap(client, 'read', {
       action: 'section',
       path: notePath,
       heading: 'Log',
@@ -51,7 +51,7 @@ Some notes here
     expect(result.content).toContain('New xyzunique entry');
   });
 
-  it('remove visible in note_read', async () => {
+  it('remove visible in read', async () => {
     // Add a line we can remove
     await snap(client, 'edit_section', {
       action: 'add',
@@ -62,7 +62,7 @@ Some notes here
     });
 
     // Verify it was added
-    const before = await snap(client, 'note_read', {
+    const before = await snap(client, 'read', {
       action: 'section',
       path: notePath,
       heading: 'Log',
@@ -77,7 +77,7 @@ Some notes here
       pattern: 'Removable qrsunique item',
     });
 
-    const after = await snap(client, 'note_read', {
+    const after = await snap(client, 'read', {
       action: 'section',
       path: notePath,
       heading: 'Log',
@@ -85,7 +85,7 @@ Some notes here
     expect(after.content).not.toContain('Removable qrsunique item');
   });
 
-  it('replace visible in note_read', async () => {
+  it('replace visible in read', async () => {
     await snap(client, 'edit_section', {
       action: 'replace',
       path: notePath,
@@ -94,7 +94,7 @@ Some notes here
       replacement: 'Replaced entry',
     });
 
-    const result = await snap(client, 'note_read', {
+    const result = await snap(client, 'read', {
       action: 'section',
       path: notePath,
       heading: 'Log',

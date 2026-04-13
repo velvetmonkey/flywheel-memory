@@ -247,7 +247,7 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
 //
 // T43 B3+ tool surface (21 tools total after legacy retirement):
 //   search (3): search, init_semantic, discover_tools
-//   read (3): read, note_read [compat], find_notes
+//   read (2): read, find_notes
 //   write (4): note, edit_section, vault_update_frontmatter, policy
 //   graph (1): graph
 //   schema (1): schema
@@ -264,9 +264,8 @@ export const TOOL_CATEGORY: Record<string, ToolCategory> = {
   init_semantic: 'search',
   discover_tools: 'search',
 
-  // read (3) -- read is canonical T43 name; note_read kept as backward-compat alias
+  // read (2)
   read: 'read',
-  note_read: 'read',
   find_notes: 'read',
 
   // write (4)
@@ -320,7 +319,6 @@ export const TOOL_TIER: Record<string, ToolTier> = {
   // Tier 2 — power-level: context-triggered or explicitly requested
   // Activated by query patterns or when power/full preset is active.
   init_semantic: 2,
-  note_read: 2,       // backward-compat alias for read (prefer read)
   find_notes: 2,
   vault_update_frontmatter: 2,
   link: 2,
@@ -369,8 +367,7 @@ export const DISCLOSURE_ONLY_TOOLS = new Set(['discover_tools']);
 export const ACTION_PARAM_MAP: Record<string, readonly string[]> = {
   search: ['query', 'similar'],
   tasks: ['list', 'toggle'],  // T43 B3+: toggle action added; vault_toggle_task retired
-  note_read: ['structure', 'section', 'sections'],
-  read: ['structure', 'section', 'sections'],  // T43 B3+: canonical alias for note_read
+  read: ['structure', 'section', 'sections'],
   note: ['create', 'move', 'rename', 'delete'],
   edit_section: ['add', 'remove', 'replace'],
   memory: ['store', 'get', 'search', 'list', 'forget', 'summarize_session', 'brief'],

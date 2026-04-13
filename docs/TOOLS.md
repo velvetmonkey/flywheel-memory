@@ -24,7 +24,7 @@ For presets and env vars, see [CONFIGURATION.md](CONFIGURATION.md).
 |---|---|---|
 | Ask the vault a question | `search(action: "query")` | Returns a rich decision surface: frontmatter, snippets, backlinks, outlinks, dates, and section context |
 | Find notes by folder, tags, or frontmatter | `find_notes` | Structural listing, not relevance-ranked search |
-| Read one note or one section | `read` or `note_read` | Focused note reads after search narrows the target |
+| Read one note or one section | `read` | Focused note reads after search narrows the target |
 | Add or change content in a note | `edit_section` | Safest general write tool |
 | Create, move, rename, or delete notes | `note` | File-level note operations |
 | Work with tasks | `tasks` and `vault_add_task` | Query/toggle existing tasks or add new ones |
@@ -94,7 +94,7 @@ The current preset counts are documented in [README.md](../README.md#optional-to
 
 ### Read And Inspect
 
-#### `read` and `note_read`
+#### `read`
 - `action: "structure"` for note outline, metadata, and optional section content
 - `action: "section"` to read one heading by name
 - `action: "sections"` to find matching headings across the vault
@@ -142,7 +142,9 @@ The current preset counts are documented in [README.md](../README.md#optional-to
   - `neighbors`
   - `strength`
   - `cooccurrence_gaps`
-- Best for: hub notes, paths between concepts, shared neighbors, and structural analysis.
+  - `export`
+- Best for: hub notes, paths between concepts, shared neighbors, structural analysis, and graph export.
+- Export tip: use `graph(action: "export", format: "graphml")` for Gephi, yEd, or Cytoscape, or `format: "json"` for programmatic export. Scope large exports with `center_entity`, `depth`, or `max_nodes`.
 
 #### `link`
 - Use when: you want to improve or inspect the wikilink layer.
@@ -273,7 +275,7 @@ The current preset counts are documented in [README.md](../README.md#optional-to
 | Category | Tools |
 |---|---|
 | Search | `search`, `find_notes`, `init_semantic`, `discover_tools` (`auto` compatibility only) |
-| Read | `read`, `note_read` |
+| Read | `read` |
 | Write | `edit_section`, `note`, `vault_update_frontmatter`, `policy` |
 | Tasks | `tasks`, `vault_add_task` |
 | Graph | `graph` |

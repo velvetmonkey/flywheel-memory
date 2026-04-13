@@ -31,6 +31,7 @@ export const SALVAGE_TABLES = [
   'tool_selection_feedback',
   'prospect_ledger',
   'prospect_summary',
+  'prospect_feedback',
 ] as const;
 
 // =============================================================================
@@ -465,6 +466,37 @@ export function initSchema(db: Database.Database): void {
         db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(40);
       }
       // Dry-run path: schema_version stays at 39. Server boots in degraded state.
+    }
+
+    if (currentVersion < 41 && v40Applied) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS prospect_feedback (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          term TEXT NOT NULL,
+          action TEXT NOT NULL,
+          entity_path TEXT,
+          note_path TEXT COLLATE NOCASE,
+          reason TEXT,
+          created_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_prospect_feedback_term ON prospect_feedback(term, created_at DESC);
+      `);
+
+      const summaryColumns = new Set(
+        (db.prepare('PRAGMA table_info(prospect_summary)').all() as Array<{ name: string }>).map((row) => row.name)
+      );
+
+      if (!summaryColumns.has('status')) {
+        db.exec(`ALTER TABLE prospect_summary ADD COLUMN status TEXT NOT NULL DEFAULT 'prospect';`);
+      }
+      if (!summaryColumns.has('resolved_entity_path')) {
+        db.exec(`ALTER TABLE prospect_summary ADD COLUMN resolved_entity_path TEXT;`);
+      }
+      if (!summaryColumns.has('last_feedback_at')) {
+        db.exec(`ALTER TABLE prospect_summary ADD COLUMN last_feedback_at INTEGER;`);
+      }
+
+      db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(41);
     }
 
     // Only stamp SCHEMA_VERSION at the end if every migration ran. Dry-run

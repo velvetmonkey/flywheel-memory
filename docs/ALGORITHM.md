@@ -379,7 +379,7 @@ This is why precision matters more than aggressive recall. A wrong link pollutes
 Three modes control the precision/recall trade-off:
 
 - **Default:** `balanced` -- opinionated toward link discovery, opt out to `conservative` if too noisy
-- **Configurable:** Set `wikilink_strictness` in `flywheel_config` to `conservative` or `aggressive`
+- **Configurable:** Set `wikilink_strictness` via `doctor(action: "config")` to `conservative` or `aggressive`
 - **Adaptive (on by default):** Daily notes auto-escalate to `aggressive` for maximum capture. Set `adaptive_strictness: false` to disable.
 - **`link(action: suggest)`** with `detail: true` always uses `balanced` for exploration
 

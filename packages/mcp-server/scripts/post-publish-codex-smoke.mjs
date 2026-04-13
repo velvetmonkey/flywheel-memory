@@ -41,7 +41,7 @@ try {
   const tools = await client.listTools();
   const toolNames = new Set(tools.tools.map(tool => tool.name));
 
-  const required = ['search', 'vault_create_note', 'flywheel_doctor'];
+  const required = ['search', 'note', 'doctor'];
   const missing = required.filter(name => !toolNames.has(name));
   if (missing.length > 0) {
     throw new Error(`Missing expected tools: ${missing.join(', ')}`);

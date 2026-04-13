@@ -104,13 +104,14 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 | `agent` (default) | 14 | search, read, write, tasks, memory, diagnostics | Focused tier-1 surface — search, read, write, tasks, memory |
 | `power` | 18 | search, read, write, tasks, memory, diagnostics, wikilinks, corrections, note-ops, schema | Tier 1+2 — agent + wikilinks, corrections, note-ops, schema |
 | `full` | 20 | search, read, write, tasks, memory, diagnostics, wikilinks, corrections, note-ops, schema, graph, temporal | All categories visible at startup |
-| `auto` | 21 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | All categories, progressive disclosure via `discover_tools` |
+| `auto` | 21 | search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, diagnostics | Full surface + informational `discover_tools` helper |
 <!-- GENERATED:preset-counts END -->
 
 <!-- GENERATED:claude-code-memory-note START -->
 > **Claude Code note:** the `memory` merged tool is suppressed under Claude Code
 > (`CLAUDECODE=1`) because Claude Code ships its own memory plane. Agent preset
-> exposes 13 tools under Claude Code instead of 14; `brief` stays available.
+> exposes 13 tools under Claude Code instead of 14;
+> the briefing entrypoint still works as `memory(action: "brief")`.
 <!-- GENERATED:claude-code-memory-note END -->
 
 Switch preset at runtime: `flywheel_config` with `key: tool_preset, value: agent|power|full`

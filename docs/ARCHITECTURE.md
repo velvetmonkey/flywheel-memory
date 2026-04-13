@@ -43,8 +43,8 @@ Flywheel Memory is a single MCP server that gives AI agents full read/write acce
   - [How to inspect](#how-to-inspect)
   - [Network access model](#network-access-model)
 - [Tool Selection & Routing](#tool-selection--routing)
-  - [Tiered Visibility (auto preset)](#tiered-visibility-auto-preset)
-  - [Pattern Routing (auto preset)](#pattern-routing-auto-preset)
+  - [Preset Visibility](#preset-visibility)
+  - [Discovery And Routing Hints](#discovery-and-routing-hints)
   - [Semantic Routing](#semantic-routing)
   - [Routing Modes](#routing-modes)
   - [Tool Invocation Tracking](#tool-invocation-tracking)
@@ -63,9 +63,9 @@ Flywheel Memory is a single MCP server that gives AI agents full read/write acce
 packages/
 ├── mcp-server/                  # The MCP server (published as @velvetmonkey/flywheel-memory)
 │   └── src/
-│       ├── index.ts             # Entry point, tool preset gating, startup
-│       ├── config.ts            # Tool categories, tiers, presets, instruction generation
-│       ├── tool-registry.ts     # Tool gating, tiering, activation tracking
+│       ├── index.ts             # Entry point, startup, transport, vault activation
+│       ├── config.ts            # Tool categories, presets, aliases, instruction generation
+│       ├── tool-registry.ts     # Flywheel-owned registry, preset gating, request dispatch
 │       ├── vault-registry.ts    # Multi-vault context management (VaultRegistry, parseVaultConfig)
 │       ├── vault-scope.ts       # Per-request vault isolation via AsyncLocalStorage
 │       ├── tools/
@@ -358,7 +358,7 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 | `fts_metadata` | FTS rebuild tracking (last rebuild time, counts) |
 | `recency` | Entity recency tracking (last mentioned, mention count) |
 | `vault_index_cache` | Serialized VaultIndex for fast startup |
-| `flywheel_config` | Configuration key-value store |
+| `doctor(action: config)` | Runtime configuration read/write |
 | `write_state` | Write-side state (last commit, mutation hints) |
 | `metadata` | Schema version, build timestamps, counts |
 | `schema_version` | Schema migration tracking |
@@ -431,7 +431,7 @@ New tables are added directly to `SCHEMA_SQL` with `CREATE TABLE IF NOT EXISTS`,
 
 | Version | Changes |
 |---------|---------|
-| v1 | Initial schema: `entities`, `entities_fts`, `recency`, `notes_fts`, `fts_metadata`, `vault_index_cache`, `flywheel_config`, `metadata`, `schema_version` |
+| v1 | Initial schema: `entities`, `entities_fts`, `recency`, `notes_fts`, `fts_metadata`, `vault_index_cache`, config state, `metadata`, `schema_version` |
 | v2 | Dropped dead `notes`/`links` tables from v1 |
 | v3 | Renamed `crank_state` to `write_state` |
 | v4 | Added `vault_metrics`, `wikilink_feedback`, `wikilink_suppressions` tables |
@@ -559,28 +559,25 @@ No telemetry. No analytics. No phone-home. No remote git operations.
 
 ## Tool Selection & Routing
 
-The `tool-registry.ts` module manages tool visibility via `applyToolGating()`, which monkey-patches `server.tool()` to track registrations and control visibility through a `ToolTierController`.
+The `tool-registry.ts` module owns Flywheel's tool registry state and installs `tools/list` / `tools/call` handlers using the public MCP server surface. Tool visibility is static per preset or category bundle; Flywheel no longer depends on private SDK registry internals.
 
-Under `agent` (the default), only the core surface is visible (search, read, write, tasks, memory). Under `full`, all tools are visible at startup with no tiering.
+### Preset Visibility
 
-### Tiered Visibility (auto preset)
+- `agent` exposes the focused default surface.
+- `power` adds schema, link, correction, and note-op tooling.
+- `full` exposes every category at startup.
+- `auto` is a compatibility mode: it exposes the same category surface as `full` plus `discover_tools`.
 
-When `FLYWHEEL_TOOLS=auto`, tools are progressively disclosed across three tiers:
+`discover_tools` is informational only. It suggests tools and categories for a task, but it does not activate or reveal additional tools.
 
-| Tier | Visibility | Categories |
-|------|-----------|------------|
-| 1 | Always visible | search, read, write, tasks, memory, discover_tools |
-| 2 | Context-triggered | graph, wikilinks, corrections, temporal, diagnostics |
-| 3 | On-demand | schema, note-ops, deep diagnostics |
+### Discovery And Routing Hints
 
-The `discover_tools` meta-tool (tier 1, auto-only) lets the LLM explicitly find and activate specialised tools by natural-language query.
+Flywheel still maintains routing hints so discovery and hybrid search can suggest the right tools for a task:
 
-### Pattern Routing (auto preset)
+- pattern-based matches for common intents such as graph analysis, schema work, diagnostics, and temporal analysis
+- semantic routing when the tool embedding manifest is available
 
-Seven `ACTIVATION_PATTERNS` in `tool-registry.ts` match query text from `search`, `brief`, and `discover_tools` calls:
-
-- **Tier 2:** graph (backlinks, connections, hubs, paths), wikilinks (stubs, unlinked mentions), corrections (wrong links, mistakes), temporal (history, evolution, stale notes), diagnostics (health, config, pipeline)
-- **Tier 3:** schema (frontmatter, conventions, rename field), note-ops (delete note, move note, merge)
+These routing hints affect suggestions and ranking. They do not change which tools are visible under a preset.
 
 ### Semantic Routing
 

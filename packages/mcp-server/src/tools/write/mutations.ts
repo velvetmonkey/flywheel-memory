@@ -283,7 +283,7 @@ export function registerMutationTools(
             childTextsForLinks = children.map(c => c.content);
           }
 
-          // 3. Suggest outgoing links (enabled by default)
+          // 3. Suggest outgoing links when explicitly enabled
           let suggestInfo: string | undefined;
           if (suggestOutgoingLinks && !skipWikilinks) {
             const suggestionText = childTextsForLinks.length > 0
@@ -447,7 +447,7 @@ export function registerMutationTools(
           // 2. Apply wikilinks to replacement text (unless skipped)
           let { content: processedReplacement } = maybeApplyWikilinks(workingReplacement, skipWikilinks, notePath, ctx.content);
 
-          // 3. Suggest outgoing links (enabled by default)
+          // 3. Suggest outgoing links when explicitly enabled
           if (suggestOutgoingLinks && !skipWikilinks) {
             const result = await suggestRelatedLinks(processedReplacement, { maxSuggestions, notePath });
             if (result.suffix) {

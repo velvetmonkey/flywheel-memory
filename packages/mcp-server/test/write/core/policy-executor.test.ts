@@ -2,7 +2,7 @@
  * Tests for policy executor step output passing
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { executePolicy } from '../../../src/core/write/policy/executor.js';
 import type { PolicyDefinition } from '../../../src/core/write/policy/types.js';
 import {
@@ -10,9 +10,11 @@ import {
   cleanupTempVault,
   openStateDb,
   deleteStateDb,
+  createEntityCacheInStateDb,
   type StateDb,
 } from '../helpers/testUtils.js';
-import { setWriteStateDb } from '../../../src/core/write/wikilinks.js';
+import { initializeEntityIndex, setWriteStateDb } from '../../../src/core/write/wikilinks.js';
+import * as wikilinksModule from '../../../src/core/write/wikilinks.js';
 import { readVaultFile } from '../../../src/core/write/writer.js';
 import path from 'path';
 import fs from 'fs/promises';
@@ -20,6 +22,14 @@ import fs from 'fs/promises';
 describe('Policy Executor - Step Output Passing', () => {
   let vaultPath: string;
   let db: StateDb | null = null;
+
+  async function createTestEntitySetup(): Promise<void> {
+    createEntityCacheInStateDb(db!, vaultPath, {
+      technologies: ['TypeScript', 'JavaScript', 'Python'],
+      projects: ['MCP Server'],
+    });
+    await initializeEntityIndex(vaultPath);
+  }
 
   beforeEach(async () => {
     vaultPath = await createTempVault();
@@ -306,5 +316,80 @@ Original content here.
     expect(restored).toContain('title: Important Note');
     expect(restored).toContain('custom_field: preserve-me');
     expect(restored).toContain('tags:');
+  });
+
+  it('does not add outgoing link suffixes by default for policy writes', async () => {
+    await fs.writeFile(
+      path.join(vaultPath, 'project.md'),
+      '# Project\n\n## Notes\n\n'
+    );
+    await createTestEntitySetup();
+    const suggestSpy = vi.spyOn(wikilinksModule, 'suggestRelatedLinks');
+
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'policy-default-no-suffix',
+      description: 'Policy writes should not append suffix suggestions unless enabled',
+      steps: [
+        {
+          id: 'add-note',
+          tool: 'vault_add_to_section',
+          params: {
+            path: 'project.md',
+            section: '## Notes',
+            content: 'Discussed TypeScript and JavaScript today.',
+            format: 'plain',
+          },
+        },
+      ],
+    };
+
+    const result = await executePolicy(policy, vaultPath, {}, false);
+
+    expect(result.success).toBe(true);
+    expect(suggestSpy).not.toHaveBeenCalled();
+    const { content } = await readVaultFile(vaultPath, 'project.md');
+    expect(content).toContain('[[TypeScript]]');
+    expect(content).toContain('[[JavaScript]]');
+    expect(content).not.toContain('→ [[');
+    suggestSpy.mockRestore();
+  });
+
+  it('adds outgoing link suffixes for policy writes when explicitly enabled', async () => {
+    await fs.writeFile(
+      path.join(vaultPath, 'project.md'),
+      '# Project\n\n## Notes\n\n'
+    );
+    const suggestSpy = vi.spyOn(wikilinksModule, 'suggestRelatedLinks').mockResolvedValue({
+      suggestions: ['MCP Server'],
+      suffix: '→ [[MCP Server]]',
+    });
+
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'policy-explicit-suffix',
+      description: 'Policy writes should append suffix suggestions when enabled',
+      steps: [
+        {
+          id: 'add-note',
+          tool: 'vault_add_to_section',
+          params: {
+            path: 'project.md',
+            section: '## Notes',
+            content: 'Discussed TypeScript and JavaScript today.',
+            format: 'plain',
+            suggestOutgoingLinks: true,
+          },
+        },
+      ],
+    };
+
+    const result = await executePolicy(policy, vaultPath, {}, false);
+
+    expect(result.success).toBe(true);
+    expect(suggestSpy).toHaveBeenCalled();
+    const { content } = await readVaultFile(vaultPath, 'project.md');
+    expect(content).toContain('→ [[MCP Server]]');
+    suggestSpy.mockRestore();
   });
 });

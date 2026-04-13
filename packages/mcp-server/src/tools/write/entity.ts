@@ -48,19 +48,20 @@ export function registerEntityTool(
 
       entity: z.string().optional().describe('[alias] Entity path to add alias to; [suggest_aliases] entity to get suggestions for'),
       alias: z.string().optional().describe('[alias] The alias to add'),
+      source_name: z.string().optional().describe('[alias] Compatibility form: entity name to absorb as an alias of target_path, rewriting links. [dismiss_merge] Source entity name'),
+      target_path: z.string().optional().describe('[alias] Compatibility form: target note path for source_name absorption. [dismiss_merge] Target entity path'),
+      dry_run: z.boolean().optional().describe('[alias] Compatibility form: preview alias absorption without writing'),
 
       primary: z.string().optional().describe('[merge] Entity path to keep'),
       secondary: z.string().optional().describe('[merge] Entity path to absorb into primary'),
 
       source_path: z.string().optional().describe('[dismiss_merge] Source entity path'),
-      target_path: z.string().optional().describe('[dismiss_merge] Target entity path'),
-      source_name: z.string().optional().describe('[dismiss_merge] Source entity name'),
       target_name: z.string().optional().describe('[dismiss_merge] Target entity name'),
       reason: z.string().optional().describe('[dismiss_merge] Reason for the original suggestion'),
       prospect: z.string().optional().describe('[dismiss_prospect] Prospect term or display name to reject'),
       note_path: z.string().optional().describe('[dismiss_prospect] Optional note path that motivated the dismissal'),
     },
-    async ({ action, query, category, limit, entity, alias, primary, secondary, source_path, target_path, source_name, target_name, reason, prospect, note_path }) => {
+    async ({ action, query, category, limit, entity, alias, primary, secondary, source_path, target_path, source_name, target_name, reason, dry_run, prospect, note_path }) => {
       const stateDb = getStateDb();
 
       // ---- action: list ----
@@ -160,6 +161,126 @@ export function registerEntityTool(
 
       // ---- action: alias ----
       if (action === 'alias') {
+        if (source_name || target_path) {
+          if (!source_name || !target_path) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({ error: 'source_name and target_path are both required for alias absorption' }) }],
+              isError: true,
+            };
+          }
+
+          const vaultPath = getVaultPath();
+          const absorbTargetValidation = await validatePathSecure(vaultPath, target_path);
+          if (!absorbTargetValidation.valid) {
+            const result: MutationResult = {
+              success: false,
+              message: `Invalid target path: ${absorbTargetValidation.reason}`,
+              path: target_path,
+            };
+            return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
+          }
+
+          let targetContent: string;
+          let targetFrontmatter: Record<string, unknown>;
+          let absorbTargetHash: string;
+          try {
+            const target = await readVaultFile(vaultPath, target_path);
+            targetContent = target.content;
+            targetFrontmatter = target.frontmatter;
+            absorbTargetHash = target.contentHash;
+          } catch {
+            const result: MutationResult = {
+              success: false,
+              message: `Target file not found: ${target_path}`,
+              path: target_path,
+            };
+            return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
+          }
+
+          const targetTitle = getTitleFromPath(target_path);
+          const existingAliases = extractAliases(targetFrontmatter);
+          const deduped = new Set(existingAliases);
+          if (source_name.toLowerCase() !== targetTitle.toLowerCase()) {
+            deduped.add(source_name);
+          }
+          targetFrontmatter.aliases = Array.from(deduped);
+
+          const backlinks = await findBacklinks(vaultPath, source_name, []);
+          let totalBacklinksUpdated = 0;
+          const modifiedFiles: string[] = [];
+          const sourceNoteFile = await findSourceNote(vaultPath, source_name, target_path);
+
+          if (dry_run) {
+            for (const backlink of backlinks) {
+              if (backlink.path === target_path) continue;
+              totalBacklinksUpdated += backlink.links.length;
+              modifiedFiles.push(backlink.path);
+            }
+          } else {
+            await writeVaultFile(vaultPath, target_path, targetContent, targetFrontmatter, 'LF', absorbTargetHash);
+
+            for (const backlink of backlinks) {
+              if (backlink.path === target_path) continue;
+
+              let fileData: { content: string; frontmatter: Record<string, unknown>; lineEnding: string; contentHash: string };
+              try {
+                fileData = await readVaultFile(vaultPath, backlink.path);
+              } catch {
+                continue;
+              }
+
+              let content = fileData.content;
+              let linksUpdated = 0;
+              const pattern = new RegExp(`\\[\\[${escapeRegex(source_name)}(\\|[^\\]]+)?\\]\\]`, 'gi');
+
+              content = content.replace(pattern, (_match, displayPart) => {
+                linksUpdated++;
+                if (displayPart) return `[[${targetTitle}${displayPart}]]`;
+                if (source_name.toLowerCase() === targetTitle.toLowerCase()) return `[[${targetTitle}]]`;
+                return `[[${targetTitle}|${source_name}]]`;
+              });
+
+              if (linksUpdated > 0) {
+                await writeVaultFile(vaultPath, backlink.path, content, fileData.frontmatter, fileData.lineEnding as LineEnding, fileData.contentHash);
+                totalBacklinksUpdated += linksUpdated;
+                modifiedFiles.push(backlink.path);
+              }
+            }
+
+            if (sourceNoteFile) {
+              await fs.unlink(`${vaultPath}/${sourceNoteFile}`);
+            }
+
+            initializeEntityIndex(vaultPath).catch(err => {
+              console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
+            });
+          }
+
+          const aliasAdded = source_name.toLowerCase() !== targetTitle.toLowerCase();
+          const previewLines = [
+            `${dry_run ? 'Would absorb' : 'Absorbed'}: "${source_name}" → "${targetTitle}"`,
+            `Alias ${dry_run ? 'to add' : 'added'}: ${aliasAdded ? source_name : 'no (matches target title)'}`,
+            `Backlinks ${dry_run ? 'to update' : 'updated'}: ${totalBacklinksUpdated}`,
+            sourceNoteFile ? `Source note ${dry_run ? 'to delete' : 'deleted'}: ${sourceNoteFile}` : 'Source note: none found',
+          ];
+          if (modifiedFiles.length > 0) {
+            previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${modifiedFiles.join(', ')}`);
+          }
+
+          const result: MutationResult & { backlinks_updated?: number } = {
+            success: true,
+            message: dry_run
+              ? `[dry run] Would absorb "${source_name}" as alias of "${targetTitle}"`
+              : `Absorbed "${source_name}" as alias of "${targetTitle}"`,
+            path: target_path,
+            preview: previewLines.join('\n'),
+            backlinks_updated: totalBacklinksUpdated,
+            ...(dry_run ? { dryRun: true } : {}),
+          };
+
+          return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
+        }
+
         if (!entity) {
           return {
             content: [{ type: 'text' as const, text: JSON.stringify({ error: 'entity is required for action: alias' }) }],
@@ -501,4 +622,30 @@ export function registerEntityTool(
       };
     }
   );
+}
+
+async function findSourceNote(vaultPath: string, sourceName: string, excludePath: string): Promise<string | null> {
+  const targetLower = sourceName.toLowerCase();
+
+  async function scanDir(dir: string): Promise<string | null> {
+    let entries;
+    try { entries = await fs.readdir(dir, { withFileTypes: true }); } catch { return null; }
+    for (const entry of entries) {
+      if (entry.name.startsWith('.')) continue;
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        const found = await scanDir(fullPath);
+        if (found) return found;
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        const basename = path.basename(entry.name, '.md');
+        if (basename.toLowerCase() === targetLower) {
+          const relative = path.relative(vaultPath, fullPath).replace(/\\/g, '/');
+          if (relative !== excludePath) return relative;
+        }
+      }
+    }
+    return null;
+  }
+
+  return scanDir(vaultPath);
 }

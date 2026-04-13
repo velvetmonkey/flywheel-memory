@@ -40,6 +40,51 @@ describe('MCP Write Integration', () => {
     await client.connect(clientTransport);
   });
 
+  describe('entity (action: alias) compatibility absorption', () => {
+    it('absorbs a source name into a target note, rewrites backlinks, and deletes the source note', async () => {
+      await createTestNote(ctx.vaultPath, 'people/Bar.md', [
+        '# Bar',
+        '',
+        'Target note.',
+      ].join('\n'));
+
+      await createTestNote(ctx.vaultPath, 'people/Foo.md', [
+        '# Foo',
+        '',
+        'Source note.',
+      ].join('\n'));
+
+      await createTestNote(ctx.vaultPath, 'notes/ref.md', [
+        '# Ref',
+        '',
+        'See [[Foo]] for context.',
+      ].join('\n'));
+
+      const result = await client.callTool({
+        name: 'entity',
+        arguments: {
+          action: 'alias',
+          source_name: 'Foo',
+          target_path: 'people/Bar.md',
+        },
+      });
+
+      expect(result.isError).toBeFalsy();
+      const data = parseResult(result) as Record<string, unknown>;
+      expect(data.success).toBe(true);
+      expect(data.backlinks_updated).toBe(1);
+
+      const targetContent = readFileSync(path.join(ctx.vaultPath, 'people/Bar.md'), 'utf-8');
+      expect(targetContent).toContain('aliases:');
+      expect(targetContent).toContain('Foo');
+
+      const refContent = readFileSync(path.join(ctx.vaultPath, 'notes/ref.md'), 'utf-8');
+      expect(refContent).toContain('[[Bar|Foo]]');
+
+      expect(existsSync(path.join(ctx.vaultPath, 'people/Foo.md'))).toBe(false);
+    });
+  });
+
   afterAll(async () => {
     await client?.close();
     await ctx?.cleanup();
@@ -97,7 +142,7 @@ describe('MCP Write Integration', () => {
       expect(created).toBe(true);
 
       const fileContent = readFileSync(path.join(ctx.vaultPath, 'daily/2099-01-01.md'), 'utf-8');
-      expect(fileContent).toContain('Created via MCP');
+      expect(fileContent).toContain('Created via [[MCP]]');
       // Section was auto-created since it wasn't in the fallback template
       expect(fileContent).toContain('## Log');
     });
@@ -181,7 +226,44 @@ describe('MCP Write Integration', () => {
         const fileContent = readFileSync(path.join(ctx.vaultPath, 'child.md'), 'utf-8');
         expect(fileContent).toContain('- Summary');
         expect(fileContent).toContain('  - **Result:** Passed');
-        expect(fileContent).toContain('  - **Owner:** Jordan Smith');
+        expect(fileContent).toContain('  - **Owner:** [[Jordan Smith]]');
+      });
+
+      it('applies wikilinks inside child content', async () => {
+        await createTestNote(ctx.vaultPath, 'people/Jordan Smith.md', [
+          '# Jordan Smith',
+          '',
+          'Person note.',
+        ].join('\n'));
+        createEntityCacheInStateDb(ctx.stateDb, ctx.vaultPath, {
+          people: ['Jordan Smith'],
+        });
+        await initializeEntityIndex(ctx.vaultPath);
+
+        await createTestNote(ctx.vaultPath, 'child-links.md', [
+          '# Test',
+          '',
+          '## Log',
+          '',
+        ].join('\n'));
+
+        const result = await client.callTool({
+          name: 'edit_section',
+          arguments: {
+            action: 'add',
+            path: 'child-links.md',
+            section: 'Log',
+            content: 'Summary',
+            suggestOutgoingLinks: false,
+            children: [
+              { label: '**Owner:**', content: 'Jordan Smith reviewed this.' },
+            ],
+          },
+        });
+        expect(result.isError).toBeFalsy();
+
+        const fileContent = readFileSync(path.join(ctx.vaultPath, 'child-links.md'), 'utf-8');
+        expect(fileContent).toContain('  - **Owner:** [[Jordan Smith]] reviewed this.');
       });
 
       it('applies wikilinks inside child content', async () => {

@@ -19,7 +19,7 @@ import type { VaultRegistry } from './vault-registry.js';
 //   agent      - Tier-1 tools: search, read, note, edit_section, memory, tasks, doctor, policy — DEFAULT
 //   power      - Tier 1+2: agent + link, correct, entity, schema, find_notes, vault_update_frontmatter
 //   full       - Tier 1+2+3: power + graph, insights, vault_add_task
-//   auto       - Progressive disclosure via discover_tools, all categories, hybrid routing
+//   auto       - Full surface plus informational discover_tools helper
 //
 // Composable bundles (combine with presets or each other):
 //   graph       - Structural graph analysis (graph merged tool)
@@ -34,7 +34,7 @@ import type { VaultRegistry } from './vault-registry.js';
 //
 // Examples:
 //   (no env)                                  # focused default preset (agent)
-//   FLYWHEEL_TOOLS=auto                       # progressive disclosure via discover_tools
+//   FLYWHEEL_TOOLS=auto                       # full surface + discover_tools helper
 //   FLYWHEEL_TOOLS=agent                      # core tools only, no disclosure
 //   FLYWHEEL_TOOLS=agent,graph                # 29 tools, no tiering
 //   FLYWHEEL_TOOLS=search,read,graph          # fine-grained categories
@@ -55,8 +55,8 @@ export type ToolTierOverride = 'auto' | 'full' | 'minimal';
 
 /**
  * Default tier override for fresh sessions.
- * 'auto' enables progressive disclosure (tier-1 visible, tier-2/3 activated by context).
- * Users can override to 'full' via flywheel_config at runtime.
+ * Retained for runtime compatibility with doctor(action: config), even though
+ * the public `auto` preset now means full surface + discover_tools helper.
  */
 export const INITIAL_TIER_OVERRIDE: ToolTierOverride = 'auto';
 
@@ -75,7 +75,7 @@ export const PRESETS: Record<string, ToolCategory[]> = {
   power: ['search', 'read', 'write', 'tasks', 'memory', 'diagnostics', 'wikilinks', 'corrections', 'note-ops', 'schema'],
   //   full — tier 1+2+3: power + graph + temporal (insights) + vault_add_task
   full: ['search', 'read', 'write', 'tasks', 'memory', 'diagnostics', 'wikilinks', 'corrections', 'note-ops', 'schema', 'graph', 'temporal'],
-  //   auto — progressive disclosure via discover_tools, all categories
+  //   auto — full surface + informational discover_tools helper
   auto: [...ALL_CATEGORIES],
 
   // Composable bundles (one per category)
@@ -178,6 +178,7 @@ export interface ToolConfig {
   preset: string | null;
   isFullToolset: boolean;
   enableProgressiveDisclosure: boolean;
+  includeDiscoveryTool: boolean;
 }
 
 /**
@@ -195,6 +196,7 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
       preset: DEFAULT_PRESET,
       isFullToolset,
       enableProgressiveDisclosure: false,
+      includeDiscoveryTool: false,
     };
   }
 
@@ -208,7 +210,8 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
       categories: cats,
       preset: lowerValue,
       isFullToolset,
-      enableProgressiveDisclosure: lowerValue === 'auto',
+      enableProgressiveDisclosure: false,
+      includeDiscoveryTool: lowerValue === 'auto',
     };
   }
 
@@ -221,7 +224,8 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
         categories: cats,
         preset: resolved,
         isFullToolset: cats.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => cats.has(c)),
-        enableProgressiveDisclosure: resolved === 'auto',
+        enableProgressiveDisclosure: false,
+        includeDiscoveryTool: resolved === 'auto',
       };
     }
   }
@@ -233,6 +237,7 @@ export function resolveToolConfig(envValue?: string): ToolConfig {
     preset: null,
     isFullToolset: categories.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every(c => categories.has(c)),
     enableProgressiveDisclosure: false,
+    includeDiscoveryTool: false,
   };
 }
 
@@ -642,7 +647,7 @@ Temporal tools analyze *patterns and changes* over time — use them for "what c
   // Unified discover_tools guidance (replaces per-category escalation hints)
   if (tieringActive) {
     parts.push(`
-**More tools available:** Call \`discover_tools({ query: "your need" })\` to find and activate specialized tools for graph analysis, wikilinks, diagnostics, schema, temporal analysis, note operations, and more. Returns tool names, descriptions, and input schemas.`);
+**More tools available:** Call \`discover_tools({ query: "your need" })\` to find specialized tools for graph analysis, wikilinks, diagnostics, schema, temporal analysis, note operations, and more. It is informational only and does not activate or reveal anything beyond the currently registered tool surface.`);
   }
 
   return parts.join('\n');

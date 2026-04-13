@@ -158,7 +158,7 @@ Flywheel watches the vault, maintains local indexes, and serves the graph to MCP
 
 ### Optional: Tool presets
 
-The `agent` preset (default) provides a focused set of core tools. Use `power` for tier 1+2 (adds wikilinks, corrections, note-ops, schema), `full` to expose the entire tool surface immediately, or `auto` for progressive disclosure via `discover_tools`.
+The `agent` preset (default) provides a focused set of core tools. Use `power` for tier 1+2 (adds wikilinks, corrections, note-ops, schema), `full` to expose the entire tool surface immediately, or `auto` for the full surface plus the informational `discover_tools` helper.
 
 <!-- GENERATED:preset-counts START -->
 | Preset | Tools | Categories | Behaviour |

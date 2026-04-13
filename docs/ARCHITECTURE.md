@@ -75,7 +75,7 @@ packages/
 │       │   │   ├── graphAnalysis.ts  # graph (analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps)
 │       │   │   ├── schemaTools.ts    # schema (overview|field_values|conventions|folders|rename_field|rename_tag|migrate|validate|note_intelligence)
 │       │   │   ├── noteIntelligence.ts # insights (evolution|staleness|context|note_intelligence|growth)
-│       │   │   ├── primitives.ts     # read/note_read (structure|section|sections), tasks (list|toggle)
+│       │   │   ├── primitives.ts     # read (structure|section|sections), tasks (list|toggle)
 │       │   │   ├── health.ts    # doctor (health|pipeline|config|log|stats)
 │       │   │   ├── system.ts    # refresh_index, entity (list|alias|suggest_aliases|merge|...)
 │       │   │   ├── wikilinks.ts # link (suggest|validate|feedback|stubs|unlinked|dashboard|...)

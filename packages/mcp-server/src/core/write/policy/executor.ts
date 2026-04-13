@@ -169,7 +169,7 @@ async function executeAddToSection(
   const format = (params.format as FormatType) || 'plain';
   const skipWikilinks = Boolean(params.skipWikilinks);
   const preserveListNesting = params.preserveListNesting !== false;
-  const suggestOutgoingLinks = params.suggestOutgoingLinks !== false;
+  const suggestOutgoingLinks = params.suggestOutgoingLinks === true;
   const maxSuggestions = Number(params.maxSuggestions) || 3;
 
   const outcome = await executeMutation(
@@ -260,7 +260,7 @@ async function executeReplaceInSection(
   const mode = (params.mode as MatchMode) || 'first';
   const useRegex = Boolean(params.useRegex);
   const skipWikilinks = Boolean(params.skipWikilinks);
-  const suggestOutgoingLinks = params.suggestOutgoingLinks !== false;
+  const suggestOutgoingLinks = params.suggestOutgoingLinks === true;
   const maxSuggestions = Number(params.maxSuggestions) || 3;
 
   const outcome = await executeMutation(

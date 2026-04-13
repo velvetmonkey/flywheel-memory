@@ -73,12 +73,11 @@ describe('README Examples: Artemis Rocket Vault', () => {
       const content = result.content as Array<{ type: string; text: string }>;
       const hubs = JSON.parse(content[0].text);
 
-      // graph(action: analyse) returns top_hubs (renamed from hubs in graph_analysis)
-      expect(Array.isArray(hubs.top_hubs)).toBe(true);
+      expect(Array.isArray(hubs.hubs)).toBe(true);
       // May have no hubs if min_links threshold not met in small demo vault
-      if (hubs.top_hubs.length > 0) {
+      if (hubs.hubs.length > 0) {
         // Hub notes should have meaningful backlink counts
-        for (const hub of hubs.top_hubs.slice(0, 3)) {
+        for (const hub of hubs.hubs.slice(0, 3)) {
           expect(hub.path).toMatch(/\.md$/);
           expect(typeof hub.backlink_count).toBe('number');
         }

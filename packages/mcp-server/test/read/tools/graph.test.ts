@@ -197,6 +197,44 @@ describe('Advanced Graph Tools via MCP', () => {
     });
   });
 
+  describe('graph action: analyse', () => {
+    test('supports mode-specific orphan analysis on merged graph tool', async () => {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
+        analysis: 'orphans',
+        limit: 5,
+      });
+
+      const data = JSON.parse(result.content[0].text);
+      expect(data.analysis).toBe('orphans');
+      expect(Array.isArray(data.orphans)).toBe(true);
+    });
+
+    test('supports mode-specific dead-end analysis on merged graph tool', async () => {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
+        analysis: 'dead_ends',
+        min_backlinks: 1,
+      });
+
+      const data = JSON.parse(result.content[0].text);
+      expect(data.analysis).toBe('dead_ends');
+      expect(Array.isArray(data.dead_ends)).toBe(true);
+    });
+
+    test('supports mode-specific immature-note analysis on merged graph tool', async () => {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
+        analysis: 'immature',
+        limit: 5,
+      });
+
+      const data = JSON.parse(result.content[0].text);
+      expect(data.analysis).toBe('immature');
+      expect(Array.isArray(data.notes)).toBe(true);
+    });
+  });
+
   describe('graph_analysis: dead_ends', () => {
     test('finds notes with backlinks but no outlinks', async () => {
       const result = await client.callTool('graph_analysis', {

@@ -23,14 +23,17 @@ import {
   getCommonNeighbors,
   getConnectionStrength,
 } from './graphAdvanced.js';
+import { runGraphAnalysis } from './graphAnalysis.js';
 import { getCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { buildGraphData, toGraphML } from './graphExport.js';
+import type { FlywheelConfig } from '../../core/read/config.js';
 
 export function registerGraphTools2(
   server: McpServer,
   getIndex: () => VaultIndex,
   getVaultPath: () => string,
   getStateDb?: () => StateDb | null,
+  getConfig?: () => FlywheelConfig,
 ): void {
   server.registerTool(
     'graph',
@@ -52,6 +55,13 @@ export function registerGraphTools2(
         ]).describe('Graph operation to perform'),
 
         limit: z.coerce.number().optional().describe('[analyse|cooccurrence_gaps] Maximum results to return'),
+        analysis: z.enum(['orphans', 'dead_ends', 'sources', 'hubs', 'stale', 'immature', 'emerging_hubs', 'centrality', 'cycles']).optional().describe('[analyse] Specific graph analysis mode'),
+        folder: z.string().optional().describe('[analyse] Limit analysis to notes in this folder'),
+        min_links: z.coerce.number().optional().describe('[analyse] Minimum total connections for hubs'),
+        min_backlinks: z.coerce.number().optional().describe('[analyse] Minimum backlinks for dead_ends or stale'),
+        min_outlinks: z.coerce.number().optional().describe('[analyse] Minimum outlinks for sources'),
+        days: z.coerce.number().optional().describe('[analyse] Days threshold for stale or emerging_hubs'),
+        offset: z.coerce.number().optional().describe('[analyse] Results to skip for pagination'),
 
         path: z.string().optional().describe('[backlinks|forward_links|strong_connections] Note path'),
 
@@ -80,6 +90,22 @@ export function registerGraphTools2(
         // analyse — global hub/orphan/cluster analysis (delegates to graph_analysis hubs mode)
         // -----------------------------------------------------------------
         case 'analyse': {
+          if (params.analysis) {
+            const result = await runGraphAnalysis({
+              analysis: params.analysis,
+              folder: params.folder,
+              min_links: params.min_links,
+              min_backlinks: params.min_backlinks,
+              min_outlinks: params.min_outlinks,
+              days: params.days,
+              limit: params.limit,
+              offset: params.offset,
+            }, getIndex, getVaultPath, getStateDb, getConfig);
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+            };
+          }
+
           // Compute hubs + orphan summary from index
           const allNotes = Array.from(index.notes.values());
           const totalNotes = allNotes.length;

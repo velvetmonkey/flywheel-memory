@@ -898,7 +898,7 @@ export function registerAllTools(
   registerFindNotesTools(targetServer, gvi, gsd);
   registerPrimitiveTools(targetServer, gvi, gvp, gcf, gsd);
   registerSchemaTools(targetServer, gvi, gvp);
-  registerGraphTools2(targetServer, gvi, gvp, gsd);
+  registerGraphTools2(targetServer, gvi, gvp, gsd, gcf);
   registerInsightsTools(targetServer, gvi, gvp, gsd, gcf);
 
   // Write tools

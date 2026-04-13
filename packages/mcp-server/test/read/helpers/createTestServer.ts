@@ -148,6 +148,7 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     () => currentIndex,
     () => vaultPath,
     () => stateDb,
+    () => ({}),
   );
 
   registerSemanticAnalysisTools(

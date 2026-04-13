@@ -10,11 +10,12 @@ import { existsSync, readFileSync } from 'fs';
 import path from 'path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { initializeEntityIndex } from '../../../src/core/write/wikilinks.js';
 import {
   createWriteTestServer,
   type WriteTestServerContext,
 } from '../../helpers/createWriteTestServer.js';
-import { createTestNote } from '../helpers/testUtils.js';
+import { createEntityCacheInStateDb, createTestNote } from '../helpers/testUtils.js';
 
 /** Parse the first text content block from a tool result */
 function parseResult(result: { content: unknown }): unknown {
@@ -181,6 +182,43 @@ describe('MCP Write Integration', () => {
         expect(fileContent).toContain('- Summary');
         expect(fileContent).toContain('  - **Result:** Passed');
         expect(fileContent).toContain('  - **Owner:** Jordan Smith');
+      });
+
+      it('applies wikilinks inside child content', async () => {
+        await createTestNote(ctx.vaultPath, 'people/Jordan Smith.md', [
+          '# Jordan Smith',
+          '',
+          'Person note.',
+        ].join('\n'));
+        createEntityCacheInStateDb(ctx.stateDb, ctx.vaultPath, {
+          people: ['Jordan Smith'],
+        });
+        await initializeEntityIndex(ctx.vaultPath);
+
+        await createTestNote(ctx.vaultPath, 'child-links.md', [
+          '# Test',
+          '',
+          '## Log',
+          '',
+        ].join('\n'));
+
+        const result = await client.callTool({
+          name: 'edit_section',
+          arguments: {
+            action: 'add',
+            path: 'child-links.md',
+            section: 'Log',
+            content: 'Summary',
+            suggestOutgoingLinks: false,
+            children: [
+              { label: '**Owner:**', content: 'Jordan Smith reviewed this.' },
+            ],
+          },
+        });
+        expect(result.isError).toBeFalsy();
+
+        const fileContent = readFileSync(path.join(ctx.vaultPath, 'child-links.md'), 'utf-8');
+        expect(fileContent).toContain('  - **Owner:** [[Jordan Smith]] reviewed this.');
       });
 
       it('indents multi-line child content', async () => {

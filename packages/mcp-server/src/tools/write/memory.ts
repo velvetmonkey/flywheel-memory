@@ -36,6 +36,7 @@ export function registerMemoryTools(
       ttl_days: z.number().min(1).optional().describe('[store] Time-to-live in days (null = permanent)'),
       query: z.string().optional().describe('[search] FTS5 search query'),
       limit: z.number().min(1).max(200).optional().describe('[search|list] Max results to return'),
+      agent_id: z.string().optional().describe('[store|search|list|summarize_session|brief] Agent identifier for scoped memory/session context'),
       session_id: z.string().optional().describe('[summarize_session] Session ID'),
       summary: z.string().optional().describe('[summarize_session] Session summary text'),
       topics: z.array(z.string()).optional().describe('[summarize_session] Topics discussed'),
@@ -51,7 +52,7 @@ export function registerMemoryTools(
         };
       }
 
-      const agentId = process.env.FLYWHEEL_AGENT_ID || undefined;
+      const agentId = args.agent_id || process.env.FLYWHEEL_AGENT_ID || undefined;
       let sessionId: string | undefined;
       try {
         const { getSessionId } = await import('@velvetmonkey/vault-core');
@@ -237,6 +238,7 @@ export function registerMemoryTools(
           return runBrief(stateDb, {
             max_tokens: (args as { max_tokens?: number }).max_tokens,
             focus: (args as { focus?: string }).focus,
+            agent_id: agentId,
           });
         }
 

@@ -37,9 +37,9 @@ function estimateTokens(value: unknown): number {
 /**
  * Build session summaries section.
  */
-function buildSessionSection(stateDb: StateDb, limit: number): BriefSection {
+function buildSessionSection(stateDb: StateDb, limit: number, agent_id?: string): BriefSection {
   // Try agent-generated summaries first
-  const summaries = getRecentSessionSummaries(stateDb, limit);
+  const summaries = getRecentSessionSummaries(stateDb, limit, agent_id);
 
   if (summaries.length > 0) {
     const content = summaries.map(s => ({
@@ -55,6 +55,10 @@ function buildSessionSection(stateDb: StateDb, limit: number): BriefSection {
       content,
       estimated_tokens: estimateTokens(content),
     };
+  }
+
+  if (agent_id) {
+    return { name: 'recent_sessions', priority: 1, content: [], estimated_tokens: 0 };
   }
 
   // Fall back to tool invocation groups
@@ -251,10 +255,10 @@ function buildProactiveLinkingSection(stateDb: StateDb): BriefSection | null {
  */
 export async function runBrief(
   stateDb: StateDb,
-  args: { max_tokens?: number; focus?: string },
+  args: { max_tokens?: number; focus?: string; agent_id?: string },
 ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
   const sections: BriefSection[] = [
-    buildSessionSection(stateDb, 5),
+    buildSessionSection(stateDb, 5, args.agent_id),
     buildActiveEntitiesSection(stateDb, 10),
     buildActiveMemoriesSection(stateDb, 20),
     buildCorrectionsSection(stateDb, 10),
@@ -305,4 +309,3 @@ export function registerBriefTools(
 ): void {
   // Intentionally empty — brief folded into memory(action: brief)
 }
-

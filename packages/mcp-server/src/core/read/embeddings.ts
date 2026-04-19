@@ -144,6 +144,20 @@ function getEmbMap(): Map<string, Float32Array> {
   return getActiveScopeOrNull()?.entityEmbeddingsMap ?? entityEmbeddingsMap;
 }
 
+/** Resolve inferred categories map: ALS scope first, fallback to module-level. */
+function getInferredMap(): Map<string, InferredCategory> {
+  return getActiveScopeOrNull()?.inferredCategoriesMap ?? inferredCategoriesMap;
+}
+
+function setInferredMap(map: Map<string, InferredCategory>): void {
+  const scope = getActiveScopeOrNull();
+  if (scope) {
+    scope.inferredCategoriesMap = map;
+  } else {
+    inferredCategoriesMap = map;
+  }
+}
+
 // =============================================================================
 // Build State Tracking
 // =============================================================================
@@ -346,7 +360,7 @@ export async function buildEmbeddingsIndex(
     throw new Error('Embeddings database not initialized. Call setEmbeddingsDatabase() first.');
   }
 
-  embeddingsBuilding = true;
+  setEmbeddingsBuilding(true);
   setEmbeddingsBuildState('building_notes');
   await initEmbeddings();
 
@@ -412,7 +426,7 @@ export async function buildEmbeddingsIndex(
   // Persist the text version so startup can detect version changes without loading the model
   setStoredTextVersion(EMBEDDING_TEXT_VERSION);
 
-  embeddingsBuilding = false;
+  setEmbeddingsBuilding(false);
   console.error(`[Semantic] Indexed ${progress.current - progress.skipped} notes, skipped ${progress.skipped}`);
   return progress;
 }
@@ -600,7 +614,12 @@ export function isEmbeddingsBuilding(): boolean {
 }
 
 export function setEmbeddingsBuilding(value: boolean): void {
-  embeddingsBuilding = value;
+  const scope = getActiveScopeOrNull();
+  if (scope) {
+    scope.embeddingsBuilding = value;
+  } else {
+    embeddingsBuilding = value;
+  }
 }
 
 /**
@@ -1001,7 +1020,7 @@ export async function updateEntityEmbedding(
     `).run(entityName, buf, hash, activeModelConfig.id, Date.now());
 
     // Update in-memory map
-    entityEmbeddingsMap.set(entityName, embedding);
+    getEmbMap().set(entityName, embedding);
   } catch (err) {
     console.error(`[Semantic] Failed to update entity embedding ${entityName}: ${err instanceof Error ? err.message : err}`);
   }
@@ -1075,11 +1094,11 @@ export function hasEntityEmbeddingsIndex(): boolean {
 
 /** Get the current in-memory entity embeddings map (for VaultScope). */
 export function getEntityEmbeddingsMap(): Map<string, Float32Array> {
-  return entityEmbeddingsMap;
+  return getEmbMap();
 }
 
 export function getInferredCategory(entityName: string): InferredCategory | undefined {
-  return inferredCategoriesMap.get(entityName);
+  return getInferredMap().get(entityName);
 }
 
 function ensureInferredCategoriesTable(): void {
@@ -1099,8 +1118,9 @@ function ensureInferredCategoriesTable(): void {
 
 export function loadInferredCategories(): Map<string, InferredCategory> {
   const db = getDb();
-  inferredCategoriesMap = new Map();
-  if (!db) return inferredCategoriesMap;
+  const categories = new Map<string, InferredCategory>();
+  setInferredMap(categories);
+  if (!db) return categories;
 
   try {
     ensureInferredCategoriesTable();
@@ -1111,22 +1131,22 @@ export function loadInferredCategories(): Map<string, InferredCategory> {
     `).all() as Array<{ entity_name: string; category: string; confidence: number }>;
 
     for (const row of rows) {
-      inferredCategoriesMap.set(row.entity_name, {
+      categories.set(row.entity_name, {
         entityName: row.entity_name,
         category: row.category,
         confidence: row.confidence,
       });
     }
   } catch {
-    inferredCategoriesMap = new Map();
+    setInferredMap(new Map());
   }
 
-  return inferredCategoriesMap;
+  return getInferredMap();
 }
 
 export function saveInferredCategories(categories: Map<string, InferredCategory>): void {
   const db = getDb();
-  inferredCategoriesMap = new Map(categories);
+  setInferredMap(new Map(categories));
   if (!db) return;
 
   ensureInferredCategoriesTable();
@@ -1203,7 +1223,7 @@ export function classifyUncategorizedEntities(
 
   const inferred = new Map<string, InferredCategory>();
   if (centroids.size === 0) {
-    inferredCategoriesMap = inferred;
+    setInferredMap(inferred);
     return inferred;
   }
 
@@ -1232,7 +1252,7 @@ export function classifyUncategorizedEntities(
     }
   }
 
-  inferredCategoriesMap = inferred;
+  setInferredMap(inferred);
   return inferred;
 }
 
@@ -1244,8 +1264,9 @@ export function loadEntityEmbeddingsToMemory(): void {
   if (!db) return;
 
   try {
+    const targetMap = getEmbMap();
     const rows = db.prepare('SELECT entity_name, embedding FROM entity_embeddings').all() as EntityEmbeddingRow[];
-    entityEmbeddingsMap.clear();
+    targetMap.clear();
 
     for (const row of rows) {
       const embedding = new Float32Array(
@@ -1253,7 +1274,7 @@ export function loadEntityEmbeddingsToMemory(): void {
         row.embedding.byteOffset,
         row.embedding.byteLength / Float32Array.BYTES_PER_ELEMENT
       );
-      entityEmbeddingsMap.set(row.entity_name, embedding);
+      targetMap.set(row.entity_name, embedding);
     }
 
     if (rows.length > 0) {

@@ -27,6 +27,44 @@ let tempVault: string;
 let stateDb: StateDb;
 let vaultIndex: VaultIndex;
 
+function makeVaultContext(name = 'test'): VaultContext {
+  return {
+    name,
+    vaultPath: tempVault,
+    caseInsensitive: false,
+    stateDb,
+    vaultIndex,
+    flywheelConfig: {},
+    watcher: null,
+    cooccurrenceIndex: null,
+    embeddingsBuilding: false,
+    writeEntityIndex: null,
+    writeEntityIndexReady: false,
+    writeEntityIndexError: null,
+    writeEntityIndexLastLoadedAt: 0,
+    writeRecencyIndex: null,
+    entityEmbeddingsMap: new Map(),
+    inferredCategoriesMap: new Map(),
+    indexState: 'ready',
+    indexError: null,
+    lastCooccurrenceRebuildAt: 0,
+    lastEdgeWeightRebuildAt: 0,
+    lastEntityScanAt: 0,
+    lastHubScoreRebuildAt: 0,
+    lastIndexCacheSaveAt: 0,
+    pipelineActivity: createEmptyPipelineActivity(),
+    bootState: 'ready',
+    integrityState: 'healthy',
+    integrityCheckInProgress: false,
+    integrityStartedAt: null,
+    integritySource: null,
+    lastIntegrityCheckedAt: null,
+    lastIntegrityDurationMs: null,
+    lastIntegrityDetail: null,
+    lastBackupAt: null,
+  };
+}
+
 describe('PipelineRunner', () => {
   beforeAll(async () => {
     tempVault = await createTempVault();
@@ -66,24 +104,7 @@ describe('PipelineRunner', () => {
 
   it('runs the full pipeline on a file change without crashing', async () => {
     // Simulate modifying Alice.md
-    const ctx: VaultContext = {
-      name: 'test',
-      vaultPath: tempVault,
-      stateDb,
-      vaultIndex,
-      flywheelConfig: {},
-      watcher: null,
-      cooccurrenceIndex: null,
-      embeddingsBuilding: false,
-      indexState: 'ready',
-      indexError: null,
-      lastCooccurrenceRebuildAt: 0,
-      lastEdgeWeightRebuildAt: 0,
-      lastEntityScanAt: 0,
-      lastHubScoreRebuildAt: 0,
-      lastIndexCacheSaveAt: 0,
-      pipelineActivity: createEmptyPipelineActivity(),
-    };
+    const ctx = makeVaultContext();
 
     const pctx: PipelineContext = {
       vp: tempVault,
@@ -129,24 +150,7 @@ describe('PipelineRunner', () => {
   }, 30000);
 
   it('handles delete events gracefully', async () => {
-    const ctx: VaultContext = {
-      name: 'test',
-      vaultPath: tempVault,
-      stateDb,
-      vaultIndex,
-      flywheelConfig: {},
-      watcher: null,
-      cooccurrenceIndex: null,
-      embeddingsBuilding: false,
-      indexState: 'ready',
-      indexError: null,
-      lastCooccurrenceRebuildAt: 0,
-      lastEdgeWeightRebuildAt: 0,
-      lastEntityScanAt: 0,
-      lastHubScoreRebuildAt: 0,
-      lastIndexCacheSaveAt: 0,
-      pipelineActivity: createEmptyPipelineActivity(),
-    };
+    const ctx = makeVaultContext();
 
     const pctx: PipelineContext = {
       vp: tempVault,
@@ -168,24 +172,7 @@ describe('PipelineRunner', () => {
   }, 30000);
 
   it('records rename events in step output', async () => {
-    const ctx: VaultContext = {
-      name: 'test',
-      vaultPath: tempVault,
-      stateDb,
-      vaultIndex,
-      flywheelConfig: {},
-      watcher: null,
-      cooccurrenceIndex: null,
-      embeddingsBuilding: false,
-      indexState: 'ready',
-      indexError: null,
-      lastCooccurrenceRebuildAt: 0,
-      lastEdgeWeightRebuildAt: 0,
-      lastEntityScanAt: 0,
-      lastHubScoreRebuildAt: 0,
-      lastIndexCacheSaveAt: 0,
-      pipelineActivity: createEmptyPipelineActivity(),
-    };
+    const ctx = makeVaultContext();
 
     const pctx: PipelineContext = {
       vp: tempVault,
@@ -220,24 +207,7 @@ describe('PipelineRunner', () => {
   }, 30000);
 
   it('records note_embeddings and entity_embeddings via runStep', async () => {
-    const ctx: VaultContext = {
-      name: 'test',
-      vaultPath: tempVault,
-      stateDb,
-      vaultIndex,
-      flywheelConfig: {},
-      watcher: null,
-      cooccurrenceIndex: null,
-      embeddingsBuilding: false,
-      indexState: 'ready',
-      indexError: null,
-      lastCooccurrenceRebuildAt: 0,
-      lastEdgeWeightRebuildAt: 0,
-      lastEntityScanAt: 0,
-      lastHubScoreRebuildAt: 0,
-      lastIndexCacheSaveAt: 0,
-      pipelineActivity: createEmptyPipelineActivity(),
-    };
+    const ctx = makeVaultContext();
 
     const pctx: PipelineContext = {
       vp: tempVault,
@@ -298,24 +268,7 @@ describe('PipelineRunner', () => {
   }, 30000);
 
   it('tracks pipeline activity per vault context', async () => {
-    const ctxA: VaultContext = {
-      name: 'vault-a',
-      vaultPath: tempVault,
-      stateDb,
-      vaultIndex,
-      flywheelConfig: {},
-      watcher: null,
-      cooccurrenceIndex: null,
-      embeddingsBuilding: false,
-      indexState: 'ready',
-      indexError: null,
-      lastCooccurrenceRebuildAt: 0,
-      lastEdgeWeightRebuildAt: 0,
-      lastEntityScanAt: 0,
-      lastHubScoreRebuildAt: 0,
-      lastIndexCacheSaveAt: 0,
-      pipelineActivity: createEmptyPipelineActivity(),
-    };
+    const ctxA = makeVaultContext('vault-a');
     const ctxB: VaultContext = {
       ...ctxA,
       name: 'vault-b',

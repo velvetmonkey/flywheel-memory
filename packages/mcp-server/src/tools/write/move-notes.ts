@@ -7,7 +7,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { validatePath, validatePathSecure, readVaultFile, writeVaultFile, computeContentHash } from '../../core/write/writer.js';
+import { validatePathSecure, readVaultFile, writeVaultFile } from '../../core/write/writer.js';
 import type { MutationResult } from '../../core/write/types.js';
 import { commitChange } from '../../core/write/git.js';
 import { initializeEntityIndex } from '../../core/write/wikilinks.js';
@@ -165,6 +165,351 @@ export function extractAliases(frontmatter: Record<string, unknown>): string[] {
   return aliases;
 }
 
+export interface MoveNoteParams {
+  oldPath: string;
+  newPath: string;
+  updateBacklinks?: boolean;
+  commit?: boolean;
+  dry_run?: boolean;
+}
+
+export interface RenameNoteParams {
+  notePath: string;
+  newTitle: string;
+  updateBacklinks?: boolean;
+  commit?: boolean;
+  dry_run?: boolean;
+}
+
+export async function moveNote(
+  vaultPath: string,
+  { oldPath, newPath, updateBacklinks = true, commit = false, dry_run = false }: MoveNoteParams
+): Promise<MutationResult> {
+  try {
+    const oldPathValidation = await validatePathSecure(vaultPath, oldPath);
+    if (!oldPathValidation.valid) {
+      return {
+        success: false,
+        message: `Invalid source path: ${oldPathValidation.reason}`,
+        path: oldPath,
+      };
+    }
+
+    const newPathValidation = await validatePathSecure(vaultPath, newPath);
+    if (!newPathValidation.valid) {
+      return {
+        success: false,
+        message: `Invalid destination path: ${newPathValidation.reason}`,
+        path: newPath,
+      };
+    }
+
+    const oldFullPath = path.join(vaultPath, oldPath);
+    const newFullPath = path.join(vaultPath, newPath);
+
+    try {
+      await fs.access(oldFullPath);
+    } catch {
+      return {
+        success: false,
+        message: `Source file not found: ${oldPath}`,
+        path: oldPath,
+      };
+    }
+
+    try {
+      await fs.access(newFullPath);
+      return {
+        success: false,
+        message: `Destination already exists: ${newPath}`,
+        path: newPath,
+      };
+    } catch {
+      // Good - destination doesn't exist.
+    }
+
+    const sourceContent = await fs.readFile(oldFullPath, 'utf-8');
+    const parsed = matter(sourceContent);
+    const aliases = extractAliases(parsed.data);
+
+    const oldTitle = getTitleFromPath(oldPath);
+    const newTitle = getTitleFromPath(newPath);
+
+    let backlinkCount = 0;
+    const backlinkUpdates: Array<{ path: string; linksUpdated: number }> = [];
+
+    if (updateBacklinks && oldTitle.toLowerCase() !== newTitle.toLowerCase()) {
+      const backlinks = await findBacklinks(vaultPath, oldTitle, aliases);
+      backlinkCount = backlinks.reduce((sum, b) => sum + b.links.length, 0);
+
+      if (dry_run) {
+        for (const backlink of backlinks) {
+          if (backlink.path === oldPath) continue;
+          backlinkUpdates.push({
+            path: backlink.path,
+            linksUpdated: backlink.links.length,
+          });
+        }
+      } else {
+        const allOldTitles = [oldTitle, ...aliases];
+        for (const backlink of backlinks) {
+          if (backlink.path === oldPath) continue;
+
+          const updateResult = await updateBacklinksInFile(
+            vaultPath,
+            backlink.path,
+            allOldTitles,
+            newTitle
+          );
+
+          if (updateResult.updated) {
+            backlinkUpdates.push({
+              path: backlink.path,
+              linksUpdated: updateResult.linksUpdated,
+            });
+          }
+        }
+      }
+    }
+
+    const updatedBacklinks = backlinkUpdates.reduce((sum, b) => sum + b.linksUpdated, 0);
+    const previewLines = [
+      `${dry_run ? 'Would move' : 'Moved'}: ${oldPath} → ${newPath}`,
+    ];
+
+    if (backlinkCount > 0) {
+      previewLines.push(`Backlinks found: ${backlinkCount}`);
+      previewLines.push(`Backlinks ${dry_run ? 'to update' : 'updated'}: ${updatedBacklinks}`);
+      if (backlinkUpdates.length > 0) {
+        previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${backlinkUpdates.map(b => b.path).join(', ')}`);
+      }
+    } else {
+      previewLines.push('No backlinks found');
+    }
+
+    if (dry_run) {
+      return {
+        success: true,
+        message: `[dry run] Would move note: ${oldPath} → ${newPath}`,
+        path: newPath,
+        preview: previewLines.join('\n'),
+        dryRun: true,
+      };
+    }
+
+    await fs.mkdir(path.dirname(newFullPath), { recursive: true });
+    await fs.rename(oldFullPath, newFullPath);
+
+    let gitCommit: string | undefined;
+    let undoAvailable: boolean | undefined;
+    let staleLockDetected: boolean | undefined;
+    let lockAgeMs: number | undefined;
+
+    if (commit) {
+      const filesToCommit = [newPath, ...backlinkUpdates.map(b => b.path)];
+      const gitResult = await commitChange(vaultPath, filesToCommit.join(', '), `[Flywheel:Move] ${oldPath} → ${newPath}`);
+
+      if (gitResult.success && gitResult.hash) {
+        gitCommit = gitResult.hash;
+        undoAvailable = gitResult.undoAvailable;
+      }
+      if (gitResult.staleLockDetected) {
+        staleLockDetected = gitResult.staleLockDetected;
+        lockAgeMs = gitResult.lockAgeMs;
+      }
+    }
+
+    initializeEntityIndex(vaultPath).catch(err => {
+      console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
+    });
+
+    return {
+      success: true,
+      message: `Moved note: ${oldPath} → ${newPath}`,
+      path: newPath,
+      preview: previewLines.join('\n'),
+      gitCommit,
+      undoAvailable,
+      staleLockDetected,
+      lockAgeMs,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `Failed to move note: ${error instanceof Error ? error.message : String(error)}`,
+      path: oldPath,
+    };
+  }
+}
+
+export async function renameNote(
+  vaultPath: string,
+  { notePath, newTitle, updateBacklinks = true, commit = false, dry_run = false }: RenameNoteParams
+): Promise<MutationResult> {
+  try {
+    const renamePathValidation = await validatePathSecure(vaultPath, notePath);
+    if (!renamePathValidation.valid) {
+      return {
+        success: false,
+        message: `Invalid path: ${renamePathValidation.reason}`,
+        path: notePath,
+      };
+    }
+
+    if (!newTitle || newTitle.trim() === '') {
+      return {
+        success: false,
+        message: 'New title cannot be empty',
+        path: notePath,
+      };
+    }
+
+    const sanitizedTitle = newTitle.replace(/[<>:"/\\|?*]/g, '');
+    if (sanitizedTitle !== newTitle) {
+      console.error(`[Flywheel] Title sanitized: "${newTitle}" → "${sanitizedTitle}"`);
+    }
+
+    const fullPath = path.join(vaultPath, notePath);
+    const dir = path.dirname(notePath);
+    const newPath = dir === '.' ? `${sanitizedTitle}.md` : path.join(dir, `${sanitizedTitle}.md`);
+    const newFullPath = path.join(vaultPath, newPath);
+
+    try {
+      await fs.access(fullPath);
+    } catch {
+      return {
+        success: false,
+        message: `File not found: ${notePath}`,
+        path: notePath,
+      };
+    }
+
+    if (fullPath !== newFullPath) {
+      try {
+        await fs.access(newFullPath);
+        return {
+          success: false,
+          message: `A note with this title already exists: ${newPath}`,
+          path: notePath,
+        };
+      } catch {
+        // Good - destination doesn't exist.
+      }
+    }
+
+    const sourceContent = await fs.readFile(fullPath, 'utf-8');
+    const parsed = matter(sourceContent);
+    const aliases = extractAliases(parsed.data);
+    const oldTitle = getTitleFromPath(notePath);
+
+    let backlinkCount = 0;
+    const backlinkUpdates: Array<{ path: string; linksUpdated: number }> = [];
+
+    if (updateBacklinks && oldTitle.toLowerCase() !== sanitizedTitle.toLowerCase()) {
+      const backlinks = await findBacklinks(vaultPath, oldTitle, aliases);
+      backlinkCount = backlinks.reduce((sum, b) => sum + b.links.length, 0);
+
+      if (dry_run) {
+        for (const backlink of backlinks) {
+          if (backlink.path === notePath) continue;
+          backlinkUpdates.push({
+            path: backlink.path,
+            linksUpdated: backlink.links.length,
+          });
+        }
+      } else {
+        const allOldTitles = [oldTitle, ...aliases];
+        for (const backlink of backlinks) {
+          if (backlink.path === notePath) continue;
+
+          const updateResult = await updateBacklinksInFile(
+            vaultPath,
+            backlink.path,
+            allOldTitles,
+            sanitizedTitle
+          );
+
+          if (updateResult.updated) {
+            backlinkUpdates.push({
+              path: backlink.path,
+              linksUpdated: updateResult.linksUpdated,
+            });
+          }
+        }
+      }
+    }
+
+    const updatedBacklinks = backlinkUpdates.reduce((sum, b) => sum + b.linksUpdated, 0);
+    const previewLines = [
+      `${dry_run ? 'Would rename' : 'Renamed'}: "${oldTitle}" → "${sanitizedTitle}"`,
+    ];
+
+    if (backlinkCount > 0) {
+      previewLines.push(`Backlinks found: ${backlinkCount}`);
+      previewLines.push(`Backlinks ${dry_run ? 'to update' : 'updated'}: ${updatedBacklinks}`);
+      if (backlinkUpdates.length > 0) {
+        previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${backlinkUpdates.map(b => b.path).join(', ')}`);
+      }
+    } else {
+      previewLines.push('No backlinks found');
+    }
+
+    if (dry_run) {
+      return {
+        success: true,
+        message: `[dry run] Would rename note: ${oldTitle} → ${sanitizedTitle}`,
+        path: newPath,
+        preview: previewLines.join('\n'),
+        dryRun: true,
+      };
+    }
+
+    if (fullPath !== newFullPath) {
+      await fs.rename(fullPath, newFullPath);
+    }
+
+    let gitCommit: string | undefined;
+    let undoAvailable: boolean | undefined;
+    let staleLockDetected: boolean | undefined;
+    let lockAgeMs: number | undefined;
+
+    if (commit) {
+      const filesToCommit = [newPath, ...backlinkUpdates.map(b => b.path)];
+      const gitResult = await commitChange(vaultPath, filesToCommit.join(', '), `[Flywheel:Rename] ${oldTitle} → ${sanitizedTitle}`);
+
+      if (gitResult.success && gitResult.hash) {
+        gitCommit = gitResult.hash;
+        undoAvailable = gitResult.undoAvailable;
+      }
+      if (gitResult.staleLockDetected) {
+        staleLockDetected = gitResult.staleLockDetected;
+        lockAgeMs = gitResult.lockAgeMs;
+      }
+    }
+
+    initializeEntityIndex(vaultPath).catch(err => {
+      console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
+    });
+
+    return {
+      success: true,
+      message: `Renamed note: ${oldTitle} → ${sanitizedTitle}`,
+      path: newPath,
+      preview: previewLines.join('\n'),
+      gitCommit,
+      undoAvailable,
+      staleLockDetected,
+      lockAgeMs,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `Failed to rename note: ${error instanceof Error ? error.message : String(error)}`,
+      path: notePath,
+    };
+  }
+}
+
 /**
  * Register move/rename tools with the MCP server
  */
@@ -186,186 +531,8 @@ export function registerMoveNoteTools(
       dry_run: z.boolean().optional().default(false).describe('Preview what would change without moving any files'),
     },
     async ({ oldPath, newPath, updateBacklinks, commit, dry_run }) => {
-      try {
-        const vaultPath = getVaultPath();
-        // 1. Validate paths (async: follows symlinks, blocks sensitive file patterns)
-        const oldPathValidation = await validatePathSecure(vaultPath, oldPath);
-        if (!oldPathValidation.valid) {
-          const result: MutationResult = {
-            success: false,
-            message: `Invalid source path: ${oldPathValidation.reason}`,
-            path: oldPath,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        const newPathValidation = await validatePathSecure(vaultPath, newPath);
-        if (!newPathValidation.valid) {
-          const result: MutationResult = {
-            success: false,
-            message: `Invalid destination path: ${newPathValidation.reason}`,
-            path: newPath,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        const oldFullPath = path.join(vaultPath, oldPath);
-        const newFullPath = path.join(vaultPath, newPath);
-
-        // 2. Check source exists
-        try {
-          await fs.access(oldFullPath);
-        } catch {
-          const result: MutationResult = {
-            success: false,
-            message: `Source file not found: ${oldPath}`,
-            path: oldPath,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        // 3. Check destination doesn't exist
-        try {
-          await fs.access(newFullPath);
-          const result: MutationResult = {
-            success: false,
-            message: `Destination already exists: ${newPath}`,
-            path: newPath,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        } catch {
-          // Good - destination doesn't exist
-        }
-
-        // 4. Read source file to extract aliases
-        const sourceContent = await fs.readFile(oldFullPath, 'utf-8');
-        const parsed = matter(sourceContent);
-        const aliases = extractAliases(parsed.data);
-
-        const oldTitle = getTitleFromPath(oldPath);
-        const newTitle = getTitleFromPath(newPath);
-
-        // 5. Compute backlink update plan
-        let backlinkCount = 0;
-        const backlinkUpdates: Array<{ path: string; linksUpdated: number }> = [];
-
-        if (updateBacklinks && oldTitle.toLowerCase() !== newTitle.toLowerCase()) {
-          const backlinks = await findBacklinks(vaultPath, oldTitle, aliases);
-          backlinkCount = backlinks.reduce((sum, b) => sum + b.links.length, 0);
-
-          // For dry run, compute which files would be modified without writing
-          if (dry_run) {
-            for (const backlink of backlinks) {
-              if (backlink.path === oldPath) continue;
-              backlinkUpdates.push({
-                path: backlink.path,
-                linksUpdated: backlink.links.length,
-              });
-            }
-          } else {
-            const allOldTitles = [oldTitle, ...aliases];
-            for (const backlink of backlinks) {
-              if (backlink.path === oldPath) continue;
-
-              const updateResult = await updateBacklinksInFile(
-                vaultPath,
-                backlink.path,
-                allOldTitles,
-                newTitle
-              );
-
-              if (updateResult.updated) {
-                backlinkUpdates.push({
-                  path: backlink.path,
-                  linksUpdated: updateResult.linksUpdated,
-                });
-              }
-            }
-          }
-        }
-
-        const updatedBacklinks = backlinkUpdates.reduce((sum, b) => sum + b.linksUpdated, 0);
-
-        // Build preview
-        const previewLines = [
-          `${dry_run ? 'Would move' : 'Moved'}: ${oldPath} → ${newPath}`,
-        ];
-
-        if (backlinkCount > 0) {
-          previewLines.push(`Backlinks found: ${backlinkCount}`);
-          previewLines.push(`Backlinks ${dry_run ? 'to update' : 'updated'}: ${updatedBacklinks}`);
-          if (backlinkUpdates.length > 0) {
-            previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${backlinkUpdates.map(b => b.path).join(', ')}`);
-          }
-        } else {
-          previewLines.push('No backlinks found');
-        }
-
-        // Dry run: return preview without moving or committing
-        if (dry_run) {
-          const result: MutationResult = {
-            success: true,
-            message: `[dry run] Would move note: ${oldPath} → ${newPath}`,
-            path: newPath,
-            preview: previewLines.join('\n'),
-            dryRun: true,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        // 6. Create destination directory
-        const destDir = path.dirname(newFullPath);
-        await fs.mkdir(destDir, { recursive: true });
-
-        // 7. Move the file
-        await fs.rename(oldFullPath, newFullPath);
-
-        // 8. Commit if requested
-        let gitCommit: string | undefined;
-        let undoAvailable: boolean | undefined;
-        let staleLockDetected: boolean | undefined;
-        let lockAgeMs: number | undefined;
-
-        if (commit) {
-          // Commit all changed files
-          const filesToCommit = [newPath, ...backlinkUpdates.map(b => b.path)];
-          const gitResult = await commitChange(vaultPath, filesToCommit.join(', '), `[Flywheel:Move] ${oldPath} → ${newPath}`);
-
-          if (gitResult.success && gitResult.hash) {
-            gitCommit = gitResult.hash;
-            undoAvailable = gitResult.undoAvailable;
-          }
-          if (gitResult.staleLockDetected) {
-            staleLockDetected = gitResult.staleLockDetected;
-            lockAgeMs = gitResult.lockAgeMs;
-          }
-        }
-
-        // 9. Rebuild entity cache in background
-        initializeEntityIndex(vaultPath).catch(err => {
-          console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
-        });
-
-        const result: MutationResult = {
-          success: true,
-          message: `Moved note: ${oldPath} → ${newPath}`,
-          path: newPath,
-          preview: previewLines.join('\n'),
-          gitCommit,
-          undoAvailable,
-          staleLockDetected,
-          lockAgeMs,
-        };
-
-        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-      } catch (error) {
-        const result: MutationResult = {
-          success: false,
-          message: `Failed to move note: ${error instanceof Error ? error.message : String(error)}`,
-          path: oldPath,
-        };
-        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-      }
+      const result = await moveNote(getVaultPath(), { oldPath, newPath, updateBacklinks, commit, dry_run });
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }
   );
 
@@ -383,191 +550,8 @@ export function registerMoveNoteTools(
       dry_run: z.boolean().optional().default(false).describe('Preview what would change without renaming any files'),
     },
     async ({ path: notePath, newTitle, updateBacklinks, commit, dry_run }) => {
-      try {
-        const vaultPath = getVaultPath();
-        // 1. Validate path (async: follows symlinks, blocks sensitive file patterns)
-        const renamePathValidation = await validatePathSecure(vaultPath, notePath);
-        if (!renamePathValidation.valid) {
-          const result: MutationResult = {
-            success: false,
-            message: `Invalid path: ${renamePathValidation.reason}`,
-            path: notePath,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        // 2. Validate new title
-        if (!newTitle || newTitle.trim() === '') {
-          const result: MutationResult = {
-            success: false,
-            message: 'New title cannot be empty',
-            path: notePath,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        // Sanitize title (remove invalid filename characters)
-        const sanitizedTitle = newTitle.replace(/[<>:"/\\|?*]/g, '');
-        if (sanitizedTitle !== newTitle) {
-          console.error(`[Flywheel] Title sanitized: "${newTitle}" → "${sanitizedTitle}"`);
-        }
-
-        const fullPath = path.join(vaultPath, notePath);
-        const dir = path.dirname(notePath);
-        const newPath = dir === '.' ? `${sanitizedTitle}.md` : path.join(dir, `${sanitizedTitle}.md`);
-        const newFullPath = path.join(vaultPath, newPath);
-
-        // 3. Check source exists
-        try {
-          await fs.access(fullPath);
-        } catch {
-          const result: MutationResult = {
-            success: false,
-            message: `File not found: ${notePath}`,
-            path: notePath,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        // 4. Check destination doesn't exist (unless same file)
-        if (fullPath !== newFullPath) {
-          try {
-            await fs.access(newFullPath);
-            const result: MutationResult = {
-              success: false,
-              message: `A note with this title already exists: ${newPath}`,
-              path: notePath,
-            };
-            return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-          } catch {
-            // Good - destination doesn't exist
-          }
-        }
-
-        // 5. Read source file to extract aliases
-        const sourceContent = await fs.readFile(fullPath, 'utf-8');
-        const parsed = matter(sourceContent);
-        const aliases = extractAliases(parsed.data);
-
-        const oldTitle = getTitleFromPath(notePath);
-
-        // 6. Compute backlink update plan
-        let backlinkCount = 0;
-        const backlinkUpdates: Array<{ path: string; linksUpdated: number }> = [];
-
-        if (updateBacklinks && oldTitle.toLowerCase() !== sanitizedTitle.toLowerCase()) {
-          const backlinks = await findBacklinks(vaultPath, oldTitle, aliases);
-          backlinkCount = backlinks.reduce((sum, b) => sum + b.links.length, 0);
-
-          if (dry_run) {
-            for (const backlink of backlinks) {
-              if (backlink.path === notePath) continue;
-              backlinkUpdates.push({
-                path: backlink.path,
-                linksUpdated: backlink.links.length,
-              });
-            }
-          } else {
-            const allOldTitles = [oldTitle, ...aliases];
-            for (const backlink of backlinks) {
-              if (backlink.path === notePath) continue;
-
-              const updateResult = await updateBacklinksInFile(
-                vaultPath,
-                backlink.path,
-                allOldTitles,
-                sanitizedTitle
-              );
-
-              if (updateResult.updated) {
-                backlinkUpdates.push({
-                  path: backlink.path,
-                  linksUpdated: updateResult.linksUpdated,
-                });
-              }
-            }
-          }
-        }
-
-        const updatedBacklinks = backlinkUpdates.reduce((sum, b) => sum + b.linksUpdated, 0);
-
-        // Build preview
-        const previewLines = [
-          `${dry_run ? 'Would rename' : 'Renamed'}: "${oldTitle}" → "${sanitizedTitle}"`,
-        ];
-
-        if (backlinkCount > 0) {
-          previewLines.push(`Backlinks found: ${backlinkCount}`);
-          previewLines.push(`Backlinks ${dry_run ? 'to update' : 'updated'}: ${updatedBacklinks}`);
-          if (backlinkUpdates.length > 0) {
-            previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${backlinkUpdates.map(b => b.path).join(', ')}`);
-          }
-        } else {
-          previewLines.push('No backlinks found');
-        }
-
-        // Dry run: return preview without renaming or committing
-        if (dry_run) {
-          const result: MutationResult = {
-            success: true,
-            message: `[dry run] Would rename note: ${oldTitle} → ${sanitizedTitle}`,
-            path: newPath,
-            preview: previewLines.join('\n'),
-            dryRun: true,
-          };
-          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-        }
-
-        // 7. Rename the file
-        if (fullPath !== newFullPath) {
-          await fs.rename(fullPath, newFullPath);
-        }
-
-        // 8. Commit if requested
-        let gitCommit: string | undefined;
-        let undoAvailable: boolean | undefined;
-        let staleLockDetected: boolean | undefined;
-        let lockAgeMs: number | undefined;
-
-        if (commit) {
-          const filesToCommit = [newPath, ...backlinkUpdates.map(b => b.path)];
-          const gitResult = await commitChange(vaultPath, filesToCommit.join(', '), `[Flywheel:Rename] ${oldTitle} → ${sanitizedTitle}`);
-
-          if (gitResult.success && gitResult.hash) {
-            gitCommit = gitResult.hash;
-            undoAvailable = gitResult.undoAvailable;
-          }
-          if (gitResult.staleLockDetected) {
-            staleLockDetected = gitResult.staleLockDetected;
-            lockAgeMs = gitResult.lockAgeMs;
-          }
-        }
-
-        // 9. Rebuild entity cache in background
-        initializeEntityIndex(vaultPath).catch(err => {
-          console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
-        });
-
-        const result: MutationResult = {
-          success: true,
-          message: `Renamed note: ${oldTitle} → ${sanitizedTitle}`,
-          path: newPath,
-          preview: previewLines.join('\n'),
-          gitCommit,
-          undoAvailable,
-          staleLockDetected,
-          lockAgeMs,
-        };
-
-        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-      } catch (error) {
-        const result: MutationResult = {
-          success: false,
-          message: `Failed to rename note: ${error instanceof Error ? error.message : String(error)}`,
-          path: notePath,
-        };
-        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-      }
+      const result = await renameNote(getVaultPath(), { notePath, newTitle, updateBacklinks, commit, dry_run });
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }
   );
 }

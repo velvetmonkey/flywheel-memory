@@ -2,7 +2,7 @@
  * Tests for policy executor step output passing
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { executePolicy } from '../../../src/core/write/policy/executor.js';
 import type { PolicyDefinition } from '../../../src/core/write/policy/types.js';
 import {
@@ -10,9 +10,12 @@ import {
   cleanupTempVault,
   openStateDb,
   deleteStateDb,
+  createEntityCacheInStateDb,
   type StateDb,
 } from '../helpers/testUtils.js';
-import { setWriteStateDb } from '../../../src/core/write/wikilinks.js';
+import { initializeEntityIndex, setWriteStateDb } from '../../../src/core/write/wikilinks.js';
+import * as wikilinksModule from '../../../src/core/write/wikilinks.js';
+import * as gitModule from '../../../src/core/write/git.js';
 import { readVaultFile } from '../../../src/core/write/writer.js';
 import path from 'path';
 import fs from 'fs/promises';
@@ -20,6 +23,14 @@ import fs from 'fs/promises';
 describe('Policy Executor - Step Output Passing', () => {
   let vaultPath: string;
   let db: StateDb | null = null;
+
+  async function createTestEntitySetup(): Promise<void> {
+    createEntityCacheInStateDb(db!, vaultPath, {
+      technologies: ['TypeScript', 'JavaScript', 'Python'],
+      projects: ['MCP Server'],
+    });
+    await initializeEntityIndex(vaultPath);
+  }
 
   beforeEach(async () => {
     vaultPath = await createTempVault();
@@ -306,5 +317,175 @@ Original content here.
     expect(restored).toContain('title: Important Note');
     expect(restored).toContain('custom_field: preserve-me');
     expect(restored).toContain('tags:');
+  });
+
+  it('does not add outgoing link suffixes by default for policy writes', async () => {
+    await fs.writeFile(
+      path.join(vaultPath, 'project.md'),
+      '# Project\n\n## Notes\n\n'
+    );
+    await createTestEntitySetup();
+    const suggestSpy = vi.spyOn(wikilinksModule, 'suggestRelatedLinks');
+
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'policy-default-no-suffix',
+      description: 'Policy writes should not append suffix suggestions unless enabled',
+      steps: [
+        {
+          id: 'add-note',
+          tool: 'vault_add_to_section',
+          params: {
+            path: 'project.md',
+            section: '## Notes',
+            content: 'Discussed TypeScript and JavaScript today.',
+            format: 'plain',
+          },
+        },
+      ],
+    };
+
+    const result = await executePolicy(policy, vaultPath, {}, false);
+
+    expect(result.success).toBe(true);
+    expect(suggestSpy).not.toHaveBeenCalled();
+    const { content } = await readVaultFile(vaultPath, 'project.md');
+    expect(content).toContain('[[TypeScript]]');
+    expect(content).toContain('[[JavaScript]]');
+    expect(content).not.toContain('→ [[');
+    suggestSpy.mockRestore();
+  });
+
+  it('adds outgoing link suffixes for policy writes when explicitly enabled', async () => {
+    await fs.writeFile(
+      path.join(vaultPath, 'project.md'),
+      '# Project\n\n## Notes\n\n'
+    );
+    const suggestSpy = vi.spyOn(wikilinksModule, 'suggestRelatedLinks').mockResolvedValue({
+      suggestions: ['MCP Server'],
+      suffix: '→ [[MCP Server]]',
+    });
+
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'policy-explicit-suffix',
+      description: 'Policy writes should append suffix suggestions when enabled',
+      steps: [
+        {
+          id: 'add-note',
+          tool: 'vault_add_to_section',
+          params: {
+            path: 'project.md',
+            section: '## Notes',
+            content: 'Discussed TypeScript and JavaScript today.',
+            format: 'plain',
+            suggestOutgoingLinks: true,
+          },
+        },
+      ],
+    };
+
+    const result = await executePolicy(policy, vaultPath, {}, false);
+
+    expect(result.success).toBe(true);
+    expect(suggestSpy).toHaveBeenCalled();
+    const { content } = await readVaultFile(vaultPath, 'project.md');
+    expect(content).toContain('→ [[MCP Server]]');
+    suggestSpy.mockRestore();
+  });
+
+  it('reports rollback failure details when compensating rollback cannot restore changes', async () => {
+    const createdNotePath = 'notes/rollback-created.md';
+    const originalUnlink = fs.unlink;
+    const unlinkSpy = vi.spyOn(fs, 'unlink').mockImplementation(async (filePath) => {
+      if (String(filePath).endsWith(createdNotePath)) {
+        throw new Error('simulated unlink failure during rollback');
+      }
+      return originalUnlink.call(fs, filePath as Parameters<typeof fs.unlink>[0]);
+    });
+
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'rollback-failure-reporting',
+      description: 'Rollback failure reporting',
+      steps: [
+        {
+          id: 'create-note',
+          tool: 'vault_create_note',
+          params: {
+            path: createdNotePath,
+            content: 'Created before failure',
+          },
+        },
+        {
+          id: 'fail-step',
+          tool: 'vault_add_to_section',
+          params: {
+            path: 'missing/file.md',
+            section: '## Missing',
+            content: 'This step fails',
+            format: 'plain',
+          },
+        },
+      ],
+    };
+
+    const result = await executePolicy(policy, vaultPath, {}, false);
+
+    unlinkSpy.mockRestore();
+
+    expect(result.success).toBe(false);
+    expect(result.rollbackFailed).toBe(true);
+    expect(result.rollbackError).toMatch(/simulated unlink failure during rollback/i);
+    expect(result.filesModified).toContain(createdNotePath);
+    expect(result.message).toMatch(/rollback also failed/i);
+    await expect(fs.access(path.join(vaultPath, createdNotePath))).resolves.toBeUndefined();
+  });
+
+  it('rolls back live writes when git commit fails after successful steps', async () => {
+    const notePath = 'commit-failure.md';
+    const originalContent = '# Commit Failure\n\n## Log\n\nOriginal content.\n';
+    await fs.writeFile(path.join(vaultPath, notePath), originalContent);
+
+    const isRepoSpy = vi.spyOn(gitModule, 'isGitRepo').mockResolvedValue(true);
+    const lockSpy = vi.spyOn(gitModule, 'checkGitLock').mockResolvedValue({ locked: false });
+    const commitSpy = vi.spyOn(gitModule, 'commitPolicyChanges').mockResolvedValue({
+      success: false,
+      error: 'simulated git commit failure',
+      undoAvailable: false,
+      filesCommitted: 0,
+    });
+
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'commit-failure-rolls-back',
+      description: 'Commit failure rollback',
+      steps: [
+        {
+          id: 'append-log',
+          tool: 'vault_add_to_section',
+          params: {
+            path: notePath,
+            section: '## Log',
+            content: 'Added before commit failure',
+            format: 'plain',
+          },
+        },
+      ],
+    };
+
+    const result = await executePolicy(policy, vaultPath, {}, true);
+
+    commitSpy.mockRestore();
+    lockSpy.mockRestore();
+    isRepoSpy.mockRestore();
+
+    expect(result.success).toBe(false);
+    expect(result.message).toMatch(/git commit failed/i);
+    expect(result.rollbackFailed).toBe(false);
+    expect(result.filesModified).toEqual([]);
+
+    const restored = await fs.readFile(path.join(vaultPath, notePath), 'utf-8');
+    expect(restored).toBe(originalContent);
   });
 });

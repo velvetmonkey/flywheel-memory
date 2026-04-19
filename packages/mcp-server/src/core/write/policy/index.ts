@@ -10,3 +10,4 @@ export * from './conditions.js';
 export * from './executor.js';
 export * from './policyPaths.js';
 export * from './storage.js';
+export * from './names.js';

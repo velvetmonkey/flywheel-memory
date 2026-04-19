@@ -70,6 +70,41 @@ const RULES: SingletonRule[] = [
     variable: /\bdb\b/,
     allowedFunctions: ['setEmbeddingsDatabase', 'getDb'],
   },
+  {
+    file: 'read/embeddings.ts',
+    variable: 'entityEmbeddingsMap',
+    allowedFunctions: ['getEmbMap'],
+  },
+  {
+    file: 'read/embeddings.ts',
+    variable: 'inferredCategoriesMap',
+    allowedFunctions: ['getInferredMap', 'setInferredMap'],
+  },
+  {
+    file: 'write/wikilinks.ts',
+    variable: 'entityIndex',
+    allowedFunctions: ['getScopedEntityIndex', 'setScopedEntityIndex'],
+  },
+  {
+    file: 'write/wikilinks.ts',
+    variable: 'indexReady',
+    allowedFunctions: ['isScopedEntityIndexReady', 'setScopedEntityIndexReady'],
+  },
+  {
+    file: 'write/wikilinks.ts',
+    variable: 'indexError',
+    allowedFunctions: ['getScopedEntityIndexError', 'setScopedEntityIndexError'],
+  },
+  {
+    file: 'write/wikilinks.ts',
+    variable: 'lastLoadedAt',
+    allowedFunctions: ['getScopedEntityIndexLastLoadedAt', 'setScopedEntityIndexLastLoadedAt'],
+  },
+  {
+    file: 'write/wikilinks.ts',
+    variable: 'recencyIndex',
+    allowedFunctions: ['getScopedRecencyIndex', 'setScopedRecencyIndex'],
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -278,7 +313,12 @@ function checkRule(rule: SingletonRule): Violation[] {
   const declLineNum = lines.findIndex(
     l => {
       const trimmed = l.trim();
-      return trimmed.startsWith(`let ${varName}`) || trimmed.startsWith(`let ${varName}:`);
+      return (
+        trimmed.startsWith(`let ${varName}`) ||
+        trimmed.startsWith(`let ${varName}:`) ||
+        trimmed.startsWith(`const ${varName}`) ||
+        trimmed.startsWith(`const ${varName}:`)
+      );
     },
   ) + 1; // convert to 1-based, 0 means not found
 

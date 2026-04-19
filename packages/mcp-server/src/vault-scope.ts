@@ -11,11 +11,13 @@
  */
 
 import { AsyncLocalStorage } from 'node:async_hooks';
-import type { StateDb } from '@velvetmonkey/vault-core';
+import type { EntityIndex, StateDb } from '@velvetmonkey/vault-core';
 import type { CooccurrenceIndex } from './core/shared/cooccurrence.js';
 import type { FlywheelConfig } from './core/read/config.js';
 import type { IndexState } from './core/read/graph.js';
+import type { InferredCategory } from './core/read/embeddings.js';
 import type { VaultIndex } from './core/shared/types.js';
+import type { RecencyIndex } from './core/shared/recency.js';
 import type { PipelineActivity } from './core/read/watch/pipeline.js';
 import type { IntegrityState, VaultBootState } from './vault-registry.js';
 
@@ -29,7 +31,13 @@ export interface VaultScope {
   indexState: IndexState;
   indexError: Error | null;
   embeddingsBuilding: boolean;
+  writeEntityIndex: EntityIndex | null;
+  writeEntityIndexReady: boolean;
+  writeEntityIndexError: Error | null;
+  writeEntityIndexLastLoadedAt: number;
+  writeRecencyIndex: RecencyIndex | null;
   entityEmbeddingsMap: Map<string, Float32Array>;
+  inferredCategoriesMap: Map<string, InferredCategory>;
   pipelineActivity: PipelineActivity;
   bootState: VaultBootState;
   integrityState: IntegrityState;

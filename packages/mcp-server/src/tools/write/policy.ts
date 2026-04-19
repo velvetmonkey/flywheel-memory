@@ -38,7 +38,7 @@ export function registerPolicyTools(
 ): void {
   server.tool(
     'policy',
-    'Atomic vault workflows. action: list — show policies. validate — check YAML and note refs. preview — dry-run. execute — run all-or-nothing. author — generate YAML from description. revise — modify policy. Returns results or YAML. Does not run arbitrary code. e.g. { action:"list" } { action:"execute", policy:"weekly-review" }',
+    'Vault workflows. action: list — show policies. validate — check YAML and note refs. preview — dry-run. execute — run with compensating rollback on failure. author — generate YAML from description. revise — modify policy. Returns results or YAML. Does not run arbitrary code. e.g. { action:"list" } { action:"execute", policy:"weekly-review" }',
     {
       action: z.enum(['list', 'validate', 'preview', 'execute', 'author', 'revise'])
         .describe('Operation to perform'),
@@ -49,7 +49,7 @@ export function registerPolicyTools(
       variables: z.record(z.unknown()).optional()
         .describe('[preview|execute] Variables to pass to the policy'),
       commit: z.boolean().optional()
-        .describe('[execute] If true, commit all changes atomically'),
+        .describe('[execute] If true, commit successful changes in one git commit after execution'),
       name: z.string().optional()
         .describe('[author] Name for the policy'),
       description: z.string().optional()

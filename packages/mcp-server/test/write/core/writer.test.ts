@@ -1216,7 +1216,7 @@ describe('validatePath', () => {
 
 describe('sanitizeNotePath', () => {
   it('should replace spaces with hyphens and lowercase', () => {
-    expect(sanitizeNotePath('Flywheel Roadmap v3.md')).toBe('flywheel-roadmap-v3.md');
+    expect(sanitizeNotePath('Flywheel Overview v3.md')).toBe('flywheel-overview-v3.md');
   });
 
   it('should strip problematic characters', () => {
@@ -1434,6 +1434,28 @@ describe('validatePathSecure', () => {
     } finally {
       try {
         await fs.unlink(symlinkDir);
+        await fs.rmdir(outsideDir);
+      } catch {}
+    }
+  });
+
+  it.skipIf(process.platform === 'win32')('should detect nested destination escape via deepest existing ancestor symlink', async () => {
+    const outsideDir = path.join(tempVault, '..', 'escape-target-nested');
+    await fs.mkdir(outsideDir, { recursive: true });
+
+    const symlinkDir = path.join(tempVault, 'escape-link');
+
+    try {
+      await fs.symlink(outsideDir, symlinkDir);
+
+      const result = await validatePathSecure(tempVault, 'escape-link/new/sub/file.md');
+      expect(result.valid).toBe(false);
+      expect(result.reason).toContain('outside vault');
+    } finally {
+      try {
+        await fs.unlink(symlinkDir);
+      } catch {}
+      try {
         await fs.rmdir(outsideDir);
       } catch {}
     }

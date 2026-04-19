@@ -26,8 +26,8 @@ import {
 import { getBacklinksForNote } from '../../core/read/graph.js';
 import type { VaultIndex } from '../../core/read/types.js';
 import type { ValidationWarning } from '../../core/write/types.js';
-import type { MutationResult } from '../../core/write/types.js';
-import { moveNote, renameNote } from './move-notes.js';
+import { resolveProspectsForCreatedEntity } from '../../core/shared/prospects.js';
+import { extractAliases, moveNote, renameNote } from './move-notes.js';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -300,13 +300,26 @@ async function handleCreate(
     }
 
     await writeVaultFile(vaultPath, notePath, processedContent, finalFrontmatter);
+
+    const resolvedProspects = resolveProspectsForCreatedEntity(
+      notePath,
+      noteName,
+      extractAliases(finalFrontmatter),
+    );
     const gitInfo = await handleGitCommit(vaultPath, notePath, commit, '[Flywheel:Create]');
 
     return formatMcpResult(
       successResult(notePath, `Created note: ${notePath}`, gitInfo, {
         preview: previewLines.join('\n'),
         warnings: warnings.length > 0 ? warnings : undefined,
-      })
+        prospect_resolution: resolvedProspects.length > 0
+          ? {
+              resolved_terms: resolvedProspects,
+              status: 'entity_created',
+              resolved_entity_path: notePath,
+            }
+          : undefined,
+      } as any)
     );
   } catch (error) {
     return formatMcpResult(

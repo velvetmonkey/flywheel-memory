@@ -393,7 +393,6 @@ Original content here.
     expect(content).toContain('→ [[MCP Server]]');
     suggestSpy.mockRestore();
   });
-
   it('reports rollback failure details when compensating rollback cannot restore changes', async () => {
     const createdNotePath = 'notes/rollback-created.md';
     const originalUnlink = fs.unlink;

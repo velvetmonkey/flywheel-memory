@@ -147,7 +147,7 @@ describe('undo traces', () => {
       });
 
       // Verify content was added
-      const contentAfter = await snap(client, 'note_read', {
+      const contentAfter = await snap(client, 'read', {
         action: 'section',
         path: 'notes/sectioned.md',
         heading: 'Log',
@@ -162,7 +162,7 @@ describe('undo traces', () => {
       await restoreWorkingTree(ctx.vaultPath);
       await snap(client, 'refresh_index');
 
-      const contentRestored = await snap(client, 'note_read', {
+      const contentRestored = await snap(client, 'read', {
         action: 'section',
         path: 'notes/sectioned.md',
         heading: 'Log',

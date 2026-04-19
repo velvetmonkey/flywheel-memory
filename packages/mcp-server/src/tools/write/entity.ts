@@ -23,6 +23,7 @@ import {
   getTitleFromPath,
   escapeRegex,
 } from './move-notes.js';
+import { dismissProspect, resolveProspectForAlias } from '../../core/shared/prospects.js';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -37,9 +38,9 @@ export function registerEntityTool(
 ): void {
   server.tool(
     'entity',
-    'Manage vault entities and aliases. action: list — browse by category. alias — register alternate name (aka/nickname). suggest_aliases — find missing aliases. merge — absorb one entity into another, rewiring all links (deduplicate). suggest_merges — find duplicates. dismiss_merge — mark a suggestion incorrect (not the same entity). Returns list, result, or candidates. Does not create notes. e.g. { action:"list", category:"people" } { action:"alias", entity:"people/alice.md", alias:"Ali" }',
+    'Manage vault entities and aliases. action: list — browse by category. alias — add an alternate name. suggest_aliases — find missing aliases. merge — absorb one entity into another and rewire links. suggest_merges — find duplicates. dismiss_merge — mark a merge suggestion incorrect. dismiss_prospect — reject an unresolved prospect term so it stops surfacing as an active stub candidate. Returns lists, results, or candidates. Does not create notes.',
     {
-      action: z.enum(['list', 'alias', 'suggest_aliases', 'merge', 'suggest_merges', 'dismiss_merge']).describe('Operation to perform'),
+      action: z.enum(['list', 'alias', 'suggest_aliases', 'merge', 'suggest_merges', 'dismiss_merge', 'dismiss_prospect']).describe('Operation to perform'),
 
       query: z.string().optional().describe('[list] Filter entities by name substring'),
       category: z.string().optional().describe('[list|suggest_aliases] Filter to a specific category'),
@@ -57,8 +58,10 @@ export function registerEntityTool(
       source_path: z.string().optional().describe('[dismiss_merge] Source entity path'),
       target_name: z.string().optional().describe('[dismiss_merge] Target entity name'),
       reason: z.string().optional().describe('[dismiss_merge] Reason for the original suggestion'),
+      prospect: z.string().optional().describe('[dismiss_prospect] Prospect term or display name to reject'),
+      note_path: z.string().optional().describe('[dismiss_prospect] Optional note path that motivated the dismissal'),
     },
-    async ({ action, query, category, limit, entity, alias, primary, secondary, source_path, target_path, source_name, target_name, reason, dry_run }) => {
+    async ({ action, query, category, limit, entity, alias, primary, secondary, source_path, target_path, source_name, target_name, reason, dry_run, prospect, note_path }) => {
       const stateDb = getStateDb();
 
       // ---- action: list ----
@@ -320,6 +323,8 @@ export function registerEntityTool(
 
         await writeVaultFile(vaultPath, entity, fileData.content, fileData.frontmatter, fileData.lineEnding as LineEnding, fileData.contentHash);
 
+        const resolvedProspects = resolveProspectForAlias(entity, alias);
+
         return {
           content: [{
             type: 'text' as const,
@@ -328,6 +333,15 @@ export function registerEntityTool(
               entity,
               alias_added: alias,
               all_aliases: Array.from(deduped),
+              ...(resolvedProspects.length > 0
+                ? {
+                    prospect_resolution: {
+                      resolved_terms: resolvedProspects,
+                      status: 'merged',
+                      resolved_entity_path: entity,
+                    },
+                  }
+                : {}),
             }, null, 2),
           }],
         };
@@ -574,6 +588,31 @@ export function registerEntityTool(
         const pairKey = [source_path, target_path].sort().join('::');
         return {
           content: [{ type: 'text' as const, text: JSON.stringify({ dismissed: true, pair_key: pairKey }) }],
+        };
+      }
+
+      // ---- action: dismiss_prospect ----
+      if (action === 'dismiss_prospect') {
+        if (!prospect) {
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify({ error: 'prospect is required for action: dismiss_prospect' }) }],
+            isError: true,
+          };
+        }
+
+        const dismissed = dismissProspect(prospect, reason ?? null, note_path ?? null);
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              dismissed,
+              prospect,
+              status: dismissed ? 'rejected' : 'not_found',
+              ...(reason ? { reason } : {}),
+              ...(note_path ? { note_path } : {}),
+            }, null, 2),
+          }],
+          ...(dismissed ? {} : { isError: true }),
         };
       }
 

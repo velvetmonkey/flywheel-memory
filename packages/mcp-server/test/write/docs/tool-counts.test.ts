@@ -226,13 +226,12 @@ describe('Documentation Contracts — Source Invariants', () => {
 
     expect(VALID_CONFIG_KEYS['paths']).toBeUndefined();
     expect(VALID_CONFIG_KEYS['templates']).toBeUndefined();
-    expect(configContent).toContain('read-only');
   });
 
   it('TOOLS.md documents key tools', async () => {
     const toolsContent = await fs.readFile(path.join(DOCS_DIR, 'TOOLS.md'), 'utf-8');
-    expect(toolsContent).toContain('vault_add_to_section');
-    expect(toolsContent).toContain('vault_toggle_task');
+    expect(toolsContent).toContain('edit_section');
+    expect(toolsContent).toContain('vault_add_task');
   });
 
   it('preset compositions match source', async () => {
@@ -306,36 +305,48 @@ describe('Tool Gating Invariants', () => {
 // =============================================================================
 
 describe('Documentation Wording Contracts', () => {
-  it('TOOLS.md describes progressive disclosure', async () => {
+  it('TOOLS.md describes auto as a compatibility preset', async () => {
     const content = await readDoc('docs/TOOLS.md');
-    expect(content).toMatch(/progressively/i);
+    expect(content).toContain('compatibility preset');
   });
 
-  it('TOOLS.md documents tool_selection_feedback', async () => {
+  it('TOOLS.md documents discover_tools as informational only', async () => {
     const content = await readDoc('docs/TOOLS.md');
-    expect(content).toContain('tool_selection_feedback');
+    expect(content).toContain('informational only');
   });
 
-  it('CONFIGURATION.md documents FLYWHEEL_TOOL_ROUTING', async () => {
-    const content = await readDoc('docs/CONFIGURATION.md');
+  it('TOOLS.md includes the How Tool Choice Works explainer', async () => {
+    const content = await readDoc('docs/TOOLS.md');
+    expect(content).toContain('## How Tool Choice Works');
     expect(content).toContain('FLYWHEEL_TOOL_ROUTING');
   });
 
-  it('docs describe full as the default preset', async () => {
+  it('CONFIGURATION.md documents doctor(action: "config")', async () => {
+    const content = await readDoc('docs/CONFIGURATION.md');
+    expect(content).toContain('doctor(action: "config")');
+  });
+
+  it('CONFIGURATION.md separates preset visibility from routing', async () => {
+    const content = await readDoc('docs/CONFIGURATION.md');
+    expect(content).toContain('## Preset And Routing Model');
+    expect(content).toContain('FLYWHEEL_TOOL_ROUTING');
+    expect(content).toContain('does not reveal hidden tools');
+  });
+
+  it('docs describe agent as the default preset', async () => {
     const tools = await readDoc('docs/TOOLS.md');
     const config = await readDoc('docs/CONFIGURATION.md');
     const combined = tools + config;
 
-    // Must mention agent as default somewhere
     expect(combined).toMatch(/`agent`[^`]*default|default[^`]*`agent`/i);
   });
 
-  it('docs describe agent as the fixed reduced preset', async () => {
+  it('docs describe agent as the focused preset', async () => {
     const tools = await readDoc('docs/TOOLS.md');
     const config = await readDoc('docs/CONFIGURATION.md');
     const combined = tools + config;
 
-    expect(combined).toMatch(/`agent`[^`]*fixed|fixed[^`]*`agent`/i);
+    expect(combined).toMatch(/`agent`[^`]*(focused|smallest useful)|(?:focused|smallest useful)[^`]*`agent`/i);
   });
 });
 

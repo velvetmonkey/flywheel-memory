@@ -43,7 +43,15 @@ import {
   AI_CONFIG_PRIOR_ALPHA,
 } from '../../core/write/wikilinkFeedback.js';
 import { compareGraphSnapshots } from '../../core/shared/graphSnapshots.js';
-import { recordProspectSightings, refreshProspectSummaries, getPromotionCandidates, getProspectSampleNotes, PROMOTION_THRESHOLD, type ProspectSighting } from '../../core/shared/prospects.js';
+import {
+  recordProspectSightings,
+  refreshProspectSummaries,
+  getPromotionCandidates,
+  getProspectSampleNotes,
+  PROMOTION_THRESHOLD,
+  type ProspectSighting,
+  type ProspectStatus,
+} from '../../core/shared/prospects.js';
 import type { ScoredSuggestion } from '../../core/write/types.js';
 
 // ============================================================================
@@ -70,6 +78,8 @@ interface ProspectMatch {
   ledger_day_count?: number;
   effective_score?: number;
   promotion_ready?: boolean;
+  status?: ProspectStatus;
+  resolved_entity_path?: string | null;
 }
 
 function findEntityMatches(text: string, entities: Map<string, string>, commonWordKeys: Set<string> = new Set()): EntityMatch[] {
@@ -205,6 +215,7 @@ export function registerLinkTool(
         limit: z.number().optional().describe('Maximum items to return'),
 
         min_frequency: z.coerce.number().optional().describe('[stubs] Minimum reference count to include (default 5)'),
+        status: z.enum(['prospect', 'entity_created', 'merged', 'rejected', 'all']).optional().describe('[stubs] Prospect lifecycle status filter (default: prospect)'),
 
         days_back: z.number().optional().describe('[timeline|layer_timeseries] Days to look back (default 30)'),
         granularity: z.enum(['day', 'week']).optional().describe('[layer_timeseries] Time bucket granularity (default: day)'),
@@ -220,6 +231,7 @@ export function registerLinkTool(
       typos_only, group_by_target,
       limit: rawLimit,
       min_frequency,
+      status,
       days_back, granularity,
       timestamp_before, timestamp_after,
     }) => {
@@ -318,9 +330,18 @@ export function registerLinkTool(
           try {
             for (const prospect of prospects) {
               const row = stateDb.db.prepare(
-                'SELECT note_count, day_count, best_source, best_score, promotion_score, last_seen_at FROM prospect_summary WHERE term = ?'
-              ).get(prospect.entity.toLowerCase()) as { note_count: number; day_count: number; best_source: string; best_score: number; promotion_score: number; last_seen_at: number } | undefined;
-              if (row) {
+                'SELECT note_count, day_count, best_source, best_score, promotion_score, last_seen_at, status, resolved_entity_path FROM prospect_summary WHERE term = ?'
+              ).get(prospect.entity.toLowerCase()) as {
+                note_count: number;
+                day_count: number;
+                best_source: string;
+                best_score: number;
+                promotion_score: number;
+                last_seen_at: number;
+                status: ProspectStatus;
+                resolved_entity_path: string | null;
+              } | undefined;
+              if (row && row.status === 'prospect') {
                 prospect.ledger_source = row.best_source as 'implicit' | 'dead_link' | 'high_score';
                 prospect.ledger_note_count = row.note_count;
                 prospect.ledger_day_count = row.day_count;
@@ -328,6 +349,8 @@ export function registerLinkTool(
                 const effective = Math.round(row.promotion_score * decay * 10) / 10;
                 prospect.effective_score = effective;
                 prospect.promotion_ready = effective >= PROMOTION_THRESHOLD;
+                prospect.status = row.status;
+                prospect.resolved_entity_path = row.resolved_entity_path;
               }
             }
           } catch { /* ledger enrichment unavailable */ }
@@ -573,27 +596,52 @@ export function registerLinkTool(
       if (action === 'stubs') {
         const limit = Math.min(rawLimit ?? 20, 100);
         const minFreq = min_frequency ?? 5;
+        const statusFilter = status ?? 'prospect';
         requireIndex();
         const index = getIndex();
+        const hasLedgerSummaries = !!stateDb && (() => {
+          try {
+            const row = stateDb.db.prepare('SELECT COUNT(*) as cnt FROM prospect_summary').get() as { cnt: number };
+            return row.cnt > 0;
+          } catch {
+            return false;
+          }
+        })();
 
-        const prospectCandidates = getPromotionCandidates(limit * 2);
+        const prospectCandidates = getPromotionCandidates(limit * 4, statusFilter);
         if (prospectCandidates.length > 0) {
           const filtered = prospectCandidates
             .filter(c => c.backlinkMax >= minFreq)
             .slice(0, limit)
             .map(c => ({
               term: c.displayName,
+              status: c.status,
+              resolved_entity_path: c.resolvedEntityPath,
               wikilink_references: c.backlinkMax,
               content_mentions: countFTS5Mentions(c.term),
               sample_notes: getProspectSampleNotes(c.term, 3),
+              first_seen_at: c.firstSeenAt,
+              last_seen_at: c.lastSeenAt,
+              note_count: c.noteCount,
+              day_count: c.dayCount,
               effective_score: c.effectiveScore,
               promotion_ready: c.promotionReady,
             }));
 
           return { content: [{ type: 'text' as const, text: JSON.stringify({
+            status: statusFilter,
             total_dead_targets: prospectCandidates.length,
             candidates_above_threshold: filtered.length,
             candidates: filtered,
+          }, null, 2) }] };
+        }
+
+        if (hasLedgerSummaries || statusFilter !== 'prospect') {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({
+            status: statusFilter,
+            total_dead_targets: 0,
+            candidates_above_threshold: 0,
+            candidates: [],
           }, null, 2) }] };
         }
 

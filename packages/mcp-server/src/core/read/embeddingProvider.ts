@@ -20,7 +20,6 @@ export class EmbeddingProviderShutdownError extends Error {
     this.name = 'EmbeddingProviderShutdownError';
   }
 }
-
 /**
  * Worker-backed embedding provider.
  * Owns model loading, retry recovery, and request/response wiring so
@@ -47,7 +46,6 @@ export class WorkerEmbeddingProvider implements EmbeddingProvider {
 
     this.initPromise = new Promise<{ dims: number }>((resolve, reject) => {
       this.initReject = reject;
-
       try {
         const workerPath = resolveWorkerPath();
         console.error(`[Semantic] Spawning embedding worker: ${workerPath}`);
@@ -57,7 +55,6 @@ export class WorkerEmbeddingProvider implements EmbeddingProvider {
 
         worker.on('message', (msg: any) => {
           if (this.worker !== worker) return;
-
           switch (msg.type) {
             case 'ready':
               this.ready = true;

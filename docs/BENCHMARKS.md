@@ -63,7 +63,7 @@ Typical latency for common tool calls (1,500-note vault, index warm):
 | `search` (hybrid) | 10–30ms | FTS5 + semantic + RRF |
 | `link(action: suggest)` | 5–15ms | Without `detail=true` |
 | `link(action: suggest)` (detail) | 20–50ms | With 13-layer scoring |
-| `note_read` | 1–3ms | Single file read + parse |
+| `read` | 1–3ms | Single file read + parse |
 | `get_backlinks` | 1–5ms | Index lookup |
 | `doctor(action: health)` | 10–30ms | Aggregates subsystem health (FTS5, embeddings, indexes) |
 | `edit_section(action: add)` | 5–20ms | Read + parse + write + hash check |

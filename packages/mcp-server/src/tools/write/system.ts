@@ -2,7 +2,7 @@
  * System tools for Flywheel Memory
  * Tools: vault_undo_last_mutation
  *
- * Note: vault_list_sections was absorbed into note_read (read/primitives.ts)
+ * Note: vault_list_sections was absorbed into read (read/primitives.ts)
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';

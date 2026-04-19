@@ -27,7 +27,7 @@ import type { PipelineActivity } from './core/read/watch/pipeline.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getSessionId } from '@velvetmonkey/vault-core';
 
-import { PRESETS, TOOL_CATEGORY, TOOL_TIER, type ToolCategory, type ToolTier, type ToolTierOverride } from './config.js';
+import { ALL_CATEGORIES, PRESETS, TOOL_CATEGORY, TOOL_TIER, type ToolCategory, type ToolTier, type ToolTierOverride } from './config.js';
 import { getSemanticActivations, getToolRoutingMode, hasToolRouting, type SemanticActivation } from './core/read/toolRouting.js';
 import { applySandwichOrdering } from './tools/read/query.js';
 import { VaultRegistry, type VaultContext } from './vault-registry.js';
@@ -361,6 +361,7 @@ export function applyToolGating(
     if (!tier || !category) return true;
     if (!categories.has(category)) return false;
     if (tierMode === 'off') return true;
+    if (categories.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every((c) => categories.has(c))) return true;
     if (tierOverride === 'full') return true;
     if (tier === 1) return true;
     if (tierOverride === 'minimal') return false;

@@ -67,10 +67,10 @@ export function registerPrimitiveTools(
   getStateDb: () => StateDb | null = () => null
 ) {
   // ============================================
-  // NOTE_READ — merged structure/section/sections tool (T43 B2)
+  // READ — merged structure/section/sections tool (T43 B2)
   // ============================================
 
-  // Shared schema for note_read / read (alias) — defined once, registered twice
+  // Shared schema/handler for the canonical read tool
   const noteReadDesc = 'Read vault note content. action=structure (default): heading outline, frontmatter, backlinks, outlinks, word count, optional full section text — prefer over built-in Read for vault notes. action=section: text under one heading by name. action=sections: vault-wide heading search by regex. Returns enriched note metadata. Does not search or mutate.';
   const noteReadSchema = {
     action: z.enum(['structure', 'section', 'sections']).describe(
@@ -221,8 +221,6 @@ export function registerPrimitiveTools(
       }, null, 2) }] };
   }; // end noteReadImpl
 
-  // Register as note_read (backward compat) and read (canonical T43 B3+ name)
-  server.tool('note_read', noteReadDesc, noteReadSchema, noteReadImpl);
   server.tool('read', noteReadDesc, noteReadSchema, noteReadImpl);
 
   // ============================================

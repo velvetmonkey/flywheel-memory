@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { applyToolGating } from '../../../src/tool-registry.js';
+import { applyToolGating, registerAllTools, type ToolRegistryContext } from '../../../src/tool-registry.js';
 import { VaultRegistry, type VaultContext } from '../../../src/vault-registry.js';
 import { connectTestClient } from '../../read/helpers/createTestServer.js';
 import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
@@ -44,6 +44,30 @@ function createFailedVaultContext(): VaultContext {
   };
 }
 
+function createStubRegistryContext(): ToolRegistryContext {
+  return {
+    getVaultPath: () => '/tmp/fake-vault',
+    getVaultIndex: () => null as any,
+    getStateDb: () => null,
+    getFlywheelConfig: () => ({} as any),
+    getWatcherStatus: () => null,
+    getPipelineActivity: () => null,
+    getVaultRuntimeState: () => ({
+      bootState: 'degraded',
+      integrityState: 'failed',
+      integrityCheckInProgress: false,
+      integrityStartedAt: null,
+      integritySource: 'startup',
+      lastIntegrityCheckedAt: Date.now(),
+      lastIntegrityDurationMs: 1000,
+      lastIntegrityDetail: 'database disk image is malformed',
+      lastBackupAt: null,
+    }),
+    updateVaultIndex: () => {},
+    updateFlywheelConfig: () => {},
+  };
+}
+
 describe('integrity write gate', () => {
   test('blocks mutating tools after integrity failure', async () => {
     const server = new McpServer({ name: 'integrity-gate-test', version: '0.0.0' });
@@ -60,10 +84,7 @@ describe('integrity write gate', () => {
       'off',
     );
 
-    // vault_update_frontmatter is in both TOOL_CATEGORY (write) and MUTATING_TOOL_NAMES
-    server.tool('vault_update_frontmatter', async () => ({
-      content: [{ type: 'text' as const, text: 'should not run' }],
-    }));
+    registerAllTools(server, createStubRegistryContext(), controller, { applyClientSuppressions: false });
     controller.finalizeRegistration();
 
     const client = connectTestClient(server);

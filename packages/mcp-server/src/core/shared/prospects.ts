@@ -18,6 +18,7 @@
 
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
+import { normalizeFuzzyTerm } from './levenshtein.js';
 
 // =============================================================================
 // Constants
@@ -81,6 +82,8 @@ export function setProspectStateDb(stateDb: StateDb | null): void {
 // =============================================================================
 
 export type ProspectSource = 'implicit' | 'dead_link' | 'high_score';
+export type ProspectStatus = 'prospect' | 'entity_created' | 'merged' | 'rejected';
+export type ProspectFeedbackAction = 'reject' | 'create_entity' | 'merge_alias';
 
 export interface ProspectSighting {
   term: string;           // lowercased
@@ -96,6 +99,8 @@ export interface ProspectSighting {
 export interface ProspectCandidate {
   term: string;
   displayName: string;
+  status: ProspectStatus;
+  resolvedEntityPath: string | null;
   promotionScore: number;     // raw un-decayed
   effectiveScore: number;     // after decay
   promotionReady: boolean;    // effectiveScore >= PROMOTION_THRESHOLD
@@ -108,6 +113,16 @@ export interface ProspectCandidate {
   bestScore: number;
   firstSeenAt: number;
   lastSeenAt: number;
+  lastFeedbackAt: number | null;
+}
+
+export interface ProspectFeedbackEvent {
+  term: string;
+  action: ProspectFeedbackAction;
+  entityPath?: string | null;
+  notePath?: string | null;
+  reason?: string | null;
+  createdAt?: number;
 }
 
 interface ProspectSummaryRow {
@@ -125,7 +140,16 @@ interface ProspectSummaryRow {
   last_seen_at: number;
   promotion_score: number;
   promoted_at: number | null;
+  status: ProspectStatus;
+  resolved_entity_path: string | null;
+  last_feedback_at: number | null;
   updated_at: number;
+}
+
+interface ProspectFeedbackRow {
+  action: ProspectFeedbackAction;
+  entity_path: string | null;
+  created_at: number;
 }
 
 // =============================================================================
@@ -152,6 +176,10 @@ export function computeProspectDecay(lastSeenAt: number, now?: number): number {
  */
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function normalizeProspectKey(term: string): string {
+  return normalizeFuzzyTerm(term).toLowerCase();
 }
 
 /**
@@ -208,6 +236,109 @@ export function recordProspectSightings(sightings: ProspectSighting[]): void {
   });
 
   runBatch();
+}
+
+export function recordProspectFeedback(events: ProspectFeedbackEvent[]): void {
+  const stateDb = getStateDb();
+  if (!stateDb || events.length === 0) return;
+
+  const insert = stateDb.db.prepare(`
+    INSERT INTO prospect_feedback (term, action, entity_path, note_path, reason, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+
+  const runBatch = stateDb.db.transaction(() => {
+    for (const event of events) {
+      insert.run(
+        event.term.toLowerCase(),
+        event.action,
+        event.entityPath ?? null,
+        event.notePath ?? null,
+        event.reason ?? null,
+        event.createdAt ?? Date.now(),
+      );
+    }
+  });
+
+  runBatch();
+}
+
+function getMatchingProspectTerms(candidates: string[]): string[] {
+  const stateDb = getStateDb();
+  if (!stateDb || candidates.length === 0) return [];
+
+  const wanted = new Set(
+    candidates
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .map((value) => normalizeProspectKey(value))
+  );
+  if (wanted.size === 0) return [];
+
+  const rows = stateDb.db.prepare(`
+    SELECT term, display_name
+    FROM prospect_summary
+    WHERE status = 'prospect'
+  `).all() as Array<{ term: string; display_name: string }>;
+
+  const matched = new Set<string>();
+  for (const row of rows) {
+    const rowKey = normalizeProspectKey(row.display_name || row.term);
+    if (wanted.has(rowKey)) matched.add(row.term);
+  }
+  return Array.from(matched);
+}
+
+export function resolveProspectsForCreatedEntity(
+  entityPath: string,
+  title: string,
+  aliases: string[] = [],
+): string[] {
+  const terms = getMatchingProspectTerms([title, ...aliases]);
+  if (terms.length === 0) return [];
+
+  recordProspectFeedback(
+    terms.map((term) => ({
+      term,
+      action: 'create_entity',
+      entityPath,
+      notePath: entityPath,
+    }))
+  );
+  refreshProspectSummaries(terms);
+  return terms;
+}
+
+export function resolveProspectForAlias(entityPath: string, alias: string): string[] {
+  const terms = getMatchingProspectTerms([alias]);
+  if (terms.length === 0) return [];
+
+  recordProspectFeedback(
+    terms.map((term) => ({
+      term,
+      action: 'merge_alias',
+      entityPath,
+      notePath: entityPath,
+    }))
+  );
+  refreshProspectSummaries(terms);
+  return terms;
+}
+
+export function dismissProspect(term: string, reason?: string | null, notePath?: string | null): boolean {
+  const matched = getMatchingProspectTerms([term]);
+  if (matched.length === 0) return false;
+
+  recordProspectFeedback(
+    matched.map((matchedTerm) => ({
+      term: matchedTerm,
+      action: 'reject',
+      reason,
+      notePath,
+    }))
+  );
+  refreshProspectSummaries(matched);
+  return true;
 }
 
 // =============================================================================
@@ -270,20 +401,41 @@ export function refreshProspectSummaries(terms: string[]): void {
 
   // Check if entity exists (for promoted_at)
   const entityExists = stateDb.db.prepare(`
-    SELECT 1 FROM entities
+    SELECT path FROM entities
     WHERE name_lower = ?
     UNION
-    SELECT 1 FROM entities
+    SELECT path FROM entities
     WHERE EXISTS (
       SELECT 1 FROM json_each(aliases_json) WHERE LOWER(value) = ?
     )
     LIMIT 1
   `);
 
+  const latestFeedback = stateDb.db.prepare(`
+    SELECT action, entity_path, created_at
+    FROM prospect_feedback
+    WHERE term = ?
+    ORDER BY
+      CASE action
+        WHEN 'merge_alias' THEN 3
+        WHEN 'create_entity' THEN 2
+        WHEN 'reject' THEN 1
+        ELSE 0
+      END DESC,
+      created_at DESC
+    LIMIT 1
+  `);
+
+  const lastFeedbackAt = stateDb.db.prepare(`
+    SELECT MAX(created_at) AS created_at
+    FROM prospect_feedback
+    WHERE term = ?
+  `);
+
   // Upsert summary
   const upsertSummary = stateDb.db.prepare(`
-    INSERT INTO prospect_summary (term, display_name, note_count, day_count, total_sightings, backlink_max, cooccurring_entities, best_source, best_confidence, best_score, first_seen_at, last_seen_at, promotion_score, promoted_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO prospect_summary (term, display_name, note_count, day_count, total_sightings, backlink_max, cooccurring_entities, best_source, best_confidence, best_score, first_seen_at, last_seen_at, promotion_score, promoted_at, status, resolved_entity_path, last_feedback_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(term) DO UPDATE SET
       display_name = excluded.display_name,
       note_count = excluded.note_count,
@@ -298,6 +450,9 @@ export function refreshProspectSummaries(terms: string[]): void {
       last_seen_at = excluded.last_seen_at,
       promotion_score = excluded.promotion_score,
       promoted_at = excluded.promoted_at,
+      status = excluded.status,
+      resolved_entity_path = excluded.resolved_entity_path,
+      last_feedback_at = excluded.last_feedback_at,
       updated_at = excluded.updated_at
   `);
 
@@ -325,8 +480,25 @@ export function refreshProspectSummaries(terms: string[]): void {
       const coocEntities = coocRows.map(r => r.target);
 
       // Check entity existence for promoted_at
-      const exists = entityExists.get(term, term);
-      const promotedAt = exists ? now : null;
+      const existingEntity = entityExists.get(term, term) as { path: string } | undefined;
+      const feedback = latestFeedback.get(term) as ProspectFeedbackRow | undefined;
+      const feedbackTimeRow = lastFeedbackAt.get(term) as { created_at: number | null } | undefined;
+      const promotedAt = existingEntity ? now : null;
+
+      let status: ProspectStatus = 'prospect';
+      let resolvedEntityPath: string | null = null;
+      if (feedback?.action === 'merge_alias') {
+        status = 'merged';
+        resolvedEntityPath = feedback.entity_path ?? null;
+      } else if (feedback?.action === 'create_entity') {
+        status = 'entity_created';
+        resolvedEntityPath = feedback.entity_path ?? null;
+      } else if (feedback?.action === 'reject') {
+        status = 'rejected';
+      } else if (existingEntity?.path) {
+        status = 'entity_created';
+        resolvedEntityPath = existingEntity.path;
+      }
 
       const promoScore = computePromotionScore({
         noteCount: agg.note_count,
@@ -352,6 +524,9 @@ export function refreshProspectSummaries(terms: string[]): void {
         agg.last_seen_at,
         promoScore,
         promotedAt,
+        status,
+        resolvedEntityPath,
+        feedbackTimeRow?.created_at ?? null,
         now,
       );
     }
@@ -419,6 +594,7 @@ export function getProspectBoostMap(): Map<string, number> {
       SELECT term, promotion_score, last_seen_at
       FROM prospect_summary
       WHERE promotion_score > 0
+        AND status = 'prospect'
     `).all() as Array<Pick<ProspectSummaryRow, 'term' | 'promotion_score' | 'last_seen_at'>>;
 
     const now = Date.now();
@@ -448,7 +624,7 @@ export function getProspectBoostMap(): Map<string, number> {
  * against entities.name_lower + json_each(aliases_json)).
  * Each candidate includes promotion_ready annotation.
  */
-export function getPromotionCandidates(limit = 50): ProspectCandidate[] {
+export function getPromotionCandidates(limit = 50, statusFilter: ProspectStatus | 'all' = 'prospect'): ProspectCandidate[] {
   const stateDb = getStateDb();
   if (!stateDb) return [];
 
@@ -457,15 +633,21 @@ export function getPromotionCandidates(limit = 50): ProspectCandidate[] {
       SELECT ps.*
       FROM prospect_summary ps
       WHERE ps.promotion_score > 0
-        AND NOT EXISTS (
-          SELECT 1 FROM entities WHERE name_lower = ps.term
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM entities e, json_each(e.aliases_json) j
-          WHERE LOWER(j.value) = ps.term
+        AND (? = 'all' OR ps.status = ?)
+        AND (
+          ps.status != 'prospect'
+          OR (
+            NOT EXISTS (
+              SELECT 1 FROM entities WHERE name_lower = ps.term
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM entities e, json_each(e.aliases_json) j
+              WHERE LOWER(j.value) = ps.term
+            )
+          )
         )
       ORDER BY ps.promotion_score DESC
-    `).all() as ProspectSummaryRow[];
+    `).all(statusFilter, statusFilter) as ProspectSummaryRow[];
 
     const now = Date.now();
     const candidates: ProspectCandidate[] = [];
@@ -477,6 +659,8 @@ export function getPromotionCandidates(limit = 50): ProspectCandidate[] {
       candidates.push({
         term: row.term,
         displayName: row.display_name,
+        status: row.status,
+        resolvedEntityPath: row.resolved_entity_path,
         promotionScore: row.promotion_score,
         effectiveScore: Math.round(effective * 10) / 10,
         promotionReady: effective >= PROMOTION_THRESHOLD,
@@ -489,6 +673,7 @@ export function getPromotionCandidates(limit = 50): ProspectCandidate[] {
         bestScore: row.best_score,
         firstSeenAt: row.first_seen_at,
         lastSeenAt: row.last_seen_at,
+        lastFeedbackAt: row.last_feedback_at,
       });
 
       if (candidates.length >= limit) break;

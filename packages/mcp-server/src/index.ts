@@ -155,9 +155,7 @@ import {
   parseEnabledCategories,
   resolveToolConfig,
   generateInstructions,
-  INITIAL_TIER_OVERRIDE,
   type ToolCategory,
-  type ToolTier,
 } from './config.js';
 
 // Tool registration and gating
@@ -167,7 +165,6 @@ import {
   type ToolRegistryContext,
   type ToolTierController,
   type ToolTierMode,
-  type ToolTierOverride,
   type VaultActivationCallbacks,
 } from './tool-registry.js';
 
@@ -229,30 +226,9 @@ export function getWatcherStatus(): WatcherStatus | null {
 const toolConfig = resolveToolConfig();
 const enabledCategories = toolConfig.categories;
 const toolTierMode: ToolTierMode = toolConfig.enableProgressiveDisclosure ? 'tiered' : 'off';
-let runtimeToolTierOverride: ToolTierOverride = INITIAL_TIER_OVERRIDE;
-let runtimeActiveCategoryTiers = new Map<ToolCategory, ToolTier>();
-let primaryToolTierController: ToolTierController | null = null;
 
 function getInstructionActiveCategories(): Set<ToolCategory> | undefined {
-  if (toolTierMode !== 'tiered') return undefined;
-  if (runtimeToolTierOverride === 'full') {
-    return new Set(enabledCategories);
-  }
-  return new Set(runtimeActiveCategoryTiers.keys());
-}
-
-function syncRuntimeTierState(controller: ToolTierController): void {
-  runtimeToolTierOverride = controller.getOverride();
-  runtimeActiveCategoryTiers = new Map(controller.getActivatedCategoryTiers());
-}
-
-function handleTierStateChange(controller: ToolTierController): void {
-  syncRuntimeTierState(controller);
-  invalidateHttpPool();
-}
-
-function getConfigToolTierOverride(config: FlywheelConfig): ToolTierOverride {
-  return config.tool_tier_override ?? 'auto';
+  return toolConfig.enableProgressiveDisclosure ? new Set(enabledCategories) : undefined;
 }
 
 // ============================================================================
@@ -310,15 +286,11 @@ function createConfiguredServer(): McpServer {
     ctx.getVaultPath,
     buildVaultCallbacks(),
     toolTierMode,
-    handleTierStateChange,
+    undefined,
     toolConfig.isFullToolset,
     () => { lastMcpRequestAt = Date.now(); },
   );
   registerAllTools(s, ctx, toolTierController);
-  toolTierController.setOverride(runtimeToolTierOverride);
-  for (const [category, tier] of runtimeActiveCategoryTiers) {
-    toolTierController.activateCategory(category, tier);
-  }
   toolTierController.finalizeRegistration();
   return s;
 }
@@ -383,15 +355,12 @@ const _gatingResult = applyToolGating(
   _registryCtx.getVaultPath,
   buildVaultCallbacks(),
   toolTierMode,
-  handleTierStateChange,
+  undefined,
   toolConfig.isFullToolset,
   () => { lastMcpRequestAt = Date.now(); },
 );
 registerAllTools(server, _registryCtx, _gatingResult);
-_gatingResult.setOverride(runtimeToolTierOverride);
 _gatingResult.finalizeRegistration();
-primaryToolTierController = _gatingResult;
-syncRuntimeTierState(_gatingResult);
 
 const categoryList = Array.from(enabledCategories).sort().join(', ');
 serverLog('server', `Tool categories: ${categoryList}`);
@@ -722,11 +691,6 @@ function updateVaultIndex(index: VaultIndex): void {
 function updateFlywheelConfig(config: FlywheelConfig): void {
   flywheelConfig = config;
   setWikilinkConfig(config);
-  if (toolTierMode === 'tiered' && primaryToolTierController) {
-    primaryToolTierController.setOverride(getConfigToolTierOverride(config));
-    syncRuntimeTierState(primaryToolTierController);
-    invalidateHttpPool();
-  }
   const ctx = getActiveVaultContext();
   if (ctx) {
     ctx.flywheelConfig = config;

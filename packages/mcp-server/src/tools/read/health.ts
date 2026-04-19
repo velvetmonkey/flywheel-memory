@@ -1223,6 +1223,17 @@ export function registerHealthTools(
           saveFlywheelConfigToDb(stateDb, updated as unknown as Record<string, unknown>);
           const reloaded = loadConfig(stateDb);
           if (doctorSetConfig) doctorSetConfig(reloaded);
+          if (key === 'tool_tier_override') {
+            return {
+              content: [{
+                type: 'text' as const,
+                text: JSON.stringify({
+                  config: reloaded,
+                  warning: 'tool_tier_override is deprecated and has no runtime effect. Use agent, power, or full presets instead.',
+                }, null, 2),
+              }],
+            };
+          }
           return { content: [{ type: 'text' as const, text: JSON.stringify(reloaded, null, 2) }] };
         }
 

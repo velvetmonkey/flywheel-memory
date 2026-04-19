@@ -3,7 +3,7 @@
  *
  * Run: npm run generate:doc-fragments
  *
- * Reads TOOL_CATEGORY, TOOL_TIER, PRESETS, DEFAULT_PRESET, and ACTION_PARAM_MAP
+ * Reads TOOL_CATEGORY, PRESETS, DEFAULT_PRESET, and ACTION_PARAM_MAP
  * from config.ts and writes markdown fragments between paired sentinels in
  * README.md, CLAUDE.md, docs/CONFIGURATION.md.
  *
@@ -13,7 +13,7 @@
  * Sentinels: <!-- GENERATED:<id> START --> ... <!-- GENERATED:<id> END -->
  *
  * Fragment IDs:
- *   preset-counts            — README.md, CLAUDE.md
+ *   preset-counts            — README.md, CLAUDE.md, docs/CONFIGURATION.md
  *   category-reference       — docs/CONFIGURATION.md
  *   preset-category-map      — docs/CONFIGURATION.md
  *   claude-code-memory-note  — README.md, CLAUDE.md, docs/CONFIGURATION.md
@@ -50,7 +50,7 @@ const PRESET_BEHAVIOUR: Record<DocumentedPreset, string> = {
   agent: 'Focused tier-1 surface — search, read, write, tasks, memory',
   power: 'Tier 1+2 — agent + wikilinks, corrections, note-ops, schema',
   full: 'All categories visible at startup',
-  auto: 'All categories, progressive disclosure via `discover_tools`',
+  auto: 'Full surface + informational `discover_tools` helper',
 };
 
 // ============================================================================
@@ -68,11 +68,9 @@ function toolsInCategory(category: ToolCategory): string[] {
 /**
  * Count of tools reachable under a preset.
  *
- * `auto` is tricky: progressive disclosure means *all* 12 categories are
- * registered but tier-2/3 are hidden behind activation. For the preset-counts
- * table we report the total reachable surface, which matches how the existing
- * docs describe it ("advertises the 65-tool surface"). `discover_tools` is
- * only registered under auto, so we include it for that preset alone.
+ * `auto` is a compatibility mode: it exposes the same category surface as
+ * `full`, plus the informational `discover_tools` helper. That helper is only
+ * registered under `auto`, so we include it for that preset alone.
  */
 function countToolsInPreset(preset: DocumentedPreset): number {
   const categories = new Set(PRESETS[preset]);
@@ -129,14 +127,15 @@ function renderPresetCategoryMap(): string {
 
 function renderClaudeCodeMemoryNote(): string {
   const agentCount = countToolsInPreset('agent');
-  // memory (merged) is suppressed under Claude Code; brief stays. So Claude
-  // Code sees one fewer tool across any preset that includes the memory
-  // category — compute rather than hardcode so future removals stay correct.
+  // memory (merged) is suppressed under Claude Code; memory(action: brief)
+  // stays available through the remaining surface. Compute the delta rather
+  // than hardcode so future removals stay correct.
   const claudeAgentCount = agentCount - 1;
   return [
     '> **Claude Code note:** the `memory` merged tool is suppressed under Claude Code',
     `> (\`CLAUDECODE=1\`) because Claude Code ships its own memory plane. Agent preset`,
-    `> exposes ${claudeAgentCount} tools under Claude Code instead of ${agentCount}; \`brief\` stays available.`,
+    `> exposes ${claudeAgentCount} tools under Claude Code instead of ${agentCount};`,
+    '> the briefing entrypoint still works as `memory(action: "brief")`.',
   ].join('\n');
 }
 

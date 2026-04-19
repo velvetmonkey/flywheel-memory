@@ -167,7 +167,7 @@ export function registerTaskTools(
           // 2. Apply wikilinks to task text (unless skipped)
           let { content: processedTask, wikilinkInfo } = maybeApplyWikilinks(workingTask, skipWikilinks, notePath);
 
-          // 3. Suggest outgoing links (enabled by default)
+          // 3. Suggest outgoing links when explicitly enabled
           let suggestInfo: string | undefined;
           if (suggestOutgoingLinks && !skipWikilinks) {
             const result = await suggestRelatedLinks(processedTask, { maxSuggestions, notePath });

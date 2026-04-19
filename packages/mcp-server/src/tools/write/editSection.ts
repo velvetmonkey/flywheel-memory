@@ -277,7 +277,11 @@ async function handleAdd(
       let childTextsForLinks: string[] = [];
 
       if (children && children.length > 0) {
-        const childBlocks = children.map(({ label, content: childContent }) => {
+        const processedChildren = children.map(({ label, content: childContent }) => {
+          const { content: processedChildContent } = maybeApplyWikilinks(childContent, skipWikilinks, notePath, ctx.content);
+          return { label, content: processedChildContent };
+        });
+        const childBlocks = processedChildren.map(({ label, content: childContent }) => {
           const sanitized = sanitizeForObsidian(childContent);
           const processed = indentContinuation(sanitized);
           const lines = processed.split('\n');
@@ -288,7 +292,7 @@ async function handleAdd(
         });
         finalContent = `- ${processedContent}\n${childBlocks.join('\n')}`;
         finalFormat = 'plain';
-        childTextsForLinks = children.map(c => c.content);
+        childTextsForLinks = processedChildren.map(c => c.content);
       }
 
       // 3. Suggest outgoing links
@@ -300,7 +304,7 @@ async function handleAdd(
         const result = await suggestRelatedLinks(suggestionText, { maxSuggestions, notePath });
         if (result.suffix) {
           if (childTextsForLinks.length > 0) {
-            finalContent = finalContent + ' ' + result.suffix;
+            finalContent = `${finalContent}\n  ${result.suffix}`;
           } else {
             processedContent = processedContent + ' ' + result.suffix;
             finalContent = processedContent;

@@ -160,7 +160,7 @@ export function registerNoteTools(
         // 4. Apply wikilinks to content (unless skipped)
         let { content: processedContent, wikilinkInfo } = maybeApplyWikilinks(effectiveContent, skipWikilinks, notePath);
 
-        // 5. Suggest outgoing links (enabled by default)
+        // 5. Suggest outgoing links when explicitly enabled
         let suggestInfo: string | undefined;
         if (suggestOutgoingLinks && !skipWikilinks) {
           const result = await suggestRelatedLinks(processedContent, { maxSuggestions, notePath });

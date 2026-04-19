@@ -77,13 +77,12 @@ describe('EventQueue', () => {
     expect(onBatch).toHaveBeenCalledTimes(1);
     const batch = onBatch.mock.calls[0][0] as EventBatch;
     expect(batch.events).toEqual([]);
-    expect(batch.renames).toEqual([
-      expect.objectContaining({
-        type: 'rename',
-        oldPath: 'people/Alice.md',
-        newPath: 'team/Alice.md',
-      }),
-    ]);
+    expect(batch.renames).toHaveLength(1);
+    expect(batch.renames[0]).toEqual(expect.objectContaining({
+      type: 'rename',
+    }));
+    expect(batch.renames[0].oldPath.toLowerCase()).toBe('people/alice.md');
+    expect(batch.renames[0].newPath.toLowerCase()).toBe('team/alice.md');
   });
 
   it('cleans up timers on dispose without emitting delayed batches', () => {

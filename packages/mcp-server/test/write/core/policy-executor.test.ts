@@ -395,9 +395,11 @@ Original content here.
   });
   it('reports rollback failure details when compensating rollback cannot restore changes', async () => {
     const createdNotePath = 'notes/rollback-created.md';
+    const normalizedCreatedNotePath = createdNotePath.replace(/\\/g, '/').toLowerCase();
     const originalUnlink = fs.unlink;
     const unlinkSpy = vi.spyOn(fs, 'unlink').mockImplementation(async (filePath) => {
-      if (String(filePath).endsWith(createdNotePath)) {
+      const normalizedFilePath = String(filePath).replace(/\\/g, '/').toLowerCase();
+      if (normalizedFilePath.endsWith(normalizedCreatedNotePath)) {
         throw new Error('simulated unlink failure during rollback');
       }
       return originalUnlink.call(fs, filePath as Parameters<typeof fs.unlink>[0]);

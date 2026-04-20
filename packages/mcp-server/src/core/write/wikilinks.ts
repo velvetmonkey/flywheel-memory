@@ -48,18 +48,28 @@ import { isSuppressed, getAllFeedbackBoosts, getAllSuppressionPenalties, getEnti
 import { getCorrectedEntityNotePairs } from './corrections.js';
 import { setGitStateDb } from './git.js';
 import { setHintsStateDb } from './hints.js';
+import {
+  STRICTNESS_CONFIGS,
+  capScoreWithoutContentRelevance,
+  evaluateCooccurrenceAdmission,
+  getAdaptiveMinScore,
+  getContextBoostScore,
+  getEdgeWeightBoostScore,
+  getFeedbackBoostScore,
+  getSemanticStrictnessMultiplier,
+  getSuppressionPenaltyScore,
+  scoreEntity,
+} from './wikilinkScoring.js';
 import { setRecencyStateDb } from '../shared/recency.js';
 import path from 'path';
 import * as fs from 'fs/promises';
 import type { FlywheelConfig } from '../read/config.js';
-import type { SuggestOptions, SuggestResult, SuggestionConfig, StrictnessMode, NoteContext, ScoreBreakdown, ScoredSuggestion, ConfidenceLevel, ScoringLayer } from './types.js';
+import type { SuggestOptions, SuggestResult, StrictnessMode, NoteContext, ScoreBreakdown, ScoredSuggestion, ConfidenceLevel, ScoringLayer } from './types.js';
 import { stem, tokenize } from '../shared/stemmer.js';
 import { getProspectBoostMap } from '../shared/prospects.js';
 import {
   mineCooccurrences,
   getCooccurrenceBoost,
-  computeNpmi,
-  tokenIdf,
   entityRarity,
   serializeCooccurrenceIndex,
   deserializeCooccurrenceIndex,
@@ -80,7 +90,7 @@ import {
   hasEntityEmbeddingsIndex,
 } from '../read/embeddings.js';
 import { getEntityEdgeWeightMap } from './edgeWeights.js';
-import { scoreFuzzyMatch, buildCollapsedContentTerms, normalizeFuzzyTerm } from '../shared/levenshtein.js';
+import { buildCollapsedContentTerms, normalizeFuzzyTerm } from '../shared/levenshtein.js';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /**
@@ -907,61 +917,6 @@ export function isLikelyArticleTitle(name: string): boolean {
 }
 
 /**
- * Strictness mode configurations for suggestion scoring
- *
- * Each mode provides different trade-offs between precision and recall:
- * - conservative: High precision, fewer false positives (default)
- * - balanced: Moderate precision, matches v0.7 behavior
- * - aggressive: Maximum recall, may include loose matches
- */
-const STRICTNESS_CONFIGS: Record<StrictnessMode, SuggestionConfig> = {
-  conservative: {
-    minWordLength: 3,
-    minSuggestionScore: 18,    // Requires exact match (10) + stem (5) + at least one boost
-    minMatchRatio: 0.6,        // 60% of multi-word entity must match
-    requireMultipleMatches: true, // Single-word entities need multiple content matches
-    stemMatchBonus: 3,         // Lower bonus for stem-only matches
-    exactMatchBonus: 10,       // Standard bonus for exact matches
-    fuzzyMatchBonus: 2,        // Low fuzzy bonus — supplementary signal only
-    contentRelevanceFloor: 5,
-    noRelevanceCap: 12,
-    minCooccurrenceGate: 6,
-    minContentMatch: 3,
-  },
-  balanced: {
-    minWordLength: 3,
-    minSuggestionScore: 10,    // Exact match (10) or two stem matches
-    minMatchRatio: 0.6,        // 60% of multi-word entity must match (blocks 1-of-2 token FPs)
-    requireMultipleMatches: false,
-    stemMatchBonus: 5,         // Standard bonus for stem matches
-    exactMatchBonus: 10,       // Standard bonus for exact matches
-    fuzzyMatchBonus: 4,        // Moderate fuzzy bonus
-    contentRelevanceFloor: 5,
-    noRelevanceCap: 9,         // Below minSuggestionScore — graph-only entities can't reach threshold
-    minCooccurrenceGate: 6,    // Stronger graph signal for graph-only admission
-    minContentMatch: 2,
-  },
-  aggressive: {
-    minWordLength: 3,
-    minSuggestionScore: 5,     // Single stem match is enough
-    minMatchRatio: 0.3,        // 30% of multi-word entity must match
-    requireMultipleMatches: false,
-    stemMatchBonus: 6,         // Higher bonus for stem matches
-    exactMatchBonus: 10,       // Standard bonus for exact matches
-    fuzzyMatchBonus: 5,        // Higher fuzzy bonus — discovery mode
-    contentRelevanceFloor: 3,
-    noRelevanceCap: 18,
-    minCooccurrenceGate: 3,
-    minContentMatch: 0,
-  },
-};
-
-/**
- * Default strictness mode
- */
-const DEFAULT_STRICTNESS: StrictnessMode = 'conservative';
-
-/**
  * Type-based score boost per entity category
  *
  * People and projects are typically more useful to link than
@@ -1021,17 +976,6 @@ function isCommonWordFalsePositive(
   if (!IMPLICIT_EXCLUDE_WORDS.has(lowerName) && !COMMON_ENGLISH_WORDS.has(lowerName)) return false;
 
   return !rawContent.includes(entityName);
-}
-
-function capScoreWithoutContentRelevance(
-  score: number,
-  contentRelevance: number,
-  config: SuggestionConfig,
-): number {
-  if (contentRelevance < config.contentRelevanceFloor) {
-    return Math.min(score, config.noRelevanceCap);
-  }
-  return score;
 }
 
 /**
@@ -1195,237 +1139,6 @@ export function getNoteContext(notePath: string): NoteContext {
 }
 
 /**
- * Get adaptive minimum score based on content length
- *
- * Short content (<50 chars) needs lower thresholds to get any suggestions.
- * Long content (>200 chars) should require stronger matches to avoid noise.
- *
- * @param contentLength - Length of content in characters
- * @param baseScore - Base minimum score from strictness config
- * @returns Adjusted minimum score
- */
-function getAdaptiveMinScore(contentLength: number, baseScore: number): number {
-  if (contentLength < 50) {
-    // Short content: lower threshold to allow suggestions
-    return Math.max(5, Math.floor(baseScore * 0.6));
-  }
-  if (contentLength > 200 && baseScore > 5) {
-    // Long content: tighten threshold for conservative/balanced only
-    return Math.floor(baseScore * 1.2);
-  }
-  // Standard threshold for medium-length content
-  return baseScore;
-}
-
-// Legacy constants (kept for backward compatibility, use STRICTNESS_CONFIGS instead)
-const MIN_SUGGESTION_SCORE = STRICTNESS_CONFIGS.balanced.minSuggestionScore;
-const MIN_MATCH_RATIO = STRICTNESS_CONFIGS.balanced.minMatchRatio;
-
-/**
- * Bonus for single-word aliases that exactly match a content token
- * This ensures "production" alias matches "production" in content in conservative mode
- */
-const FULL_ALIAS_MATCH_BONUS = 8;
-
-/**
- * Score a name (entity name or alias) against content
- *
- * When coocIndex is provided, weights each token's contribution by its IDF
- * (Inverse Document Frequency). Informative tokens like "hackathon" contribute
- * more than common tokens like "spring". Without coocIndex, all tokens contribute
- * equally (IDF weight = 1.0).
- *
- * @param name - Entity name or alias to score
- * @param contentTokens - Set of tokenized content words
- * @param contentStems - Set of stemmed content words
- * @param config - Scoring configuration from strictness mode
- * @param coocIndex - Optional co-occurrence index for IDF weighting
- * @returns Object with score, matchedWords, and exactMatches
- */
-interface LexicalScoreResult {
-  exactScore: number;
-  stemScore: number;
-  lexicalScore: number;
-  matchedWords: number;
-  exactMatches: number;
-  totalTokens: number;
-  nameTokens: string[];
-  unmatchedTokenIndices: number[];
-}
-
-function scoreNameAgainstContent(
-  name: string,
-  contentTokens: Set<string>,
-  contentStems: Set<string>,
-  config: SuggestionConfig,
-  coocIndex?: CooccurrenceIndex | null,
-  disableExact?: boolean,
-  disableStem?: boolean,
-): LexicalScoreResult {
-  const nameTokens = tokenize(name);
-  if (nameTokens.length === 0) {
-    return { exactScore: 0, stemScore: 0, lexicalScore: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0, nameTokens: [], unmatchedTokenIndices: [] };
-  }
-
-  const nameStems = nameTokens.map(t => stem(t));
-
-  let exactScore = 0;
-  let stemScore = 0;
-  let matchedWords = 0;
-  let exactMatches = 0;
-  const unmatchedTokenIndices: number[] = [];
-
-  for (let i = 0; i < nameTokens.length; i++) {
-    const token = nameTokens[i];
-    const nameStem = nameStems[i];
-
-    // IDF weight: informative tokens contribute more than common ones
-    const idfWeight = coocIndex ? tokenIdf(token, coocIndex) : 1.0;
-
-    if (!disableExact && contentTokens.has(token)) {
-      // Exact word match - highest confidence, IDF-weighted
-      exactScore += config.exactMatchBonus * idfWeight;
-      matchedWords++;
-      exactMatches++;
-    } else if (!disableStem && contentStems.has(nameStem)) {
-      // Stem match only - medium confidence, IDF-weighted
-      stemScore += config.stemMatchBonus * idfWeight;
-      matchedWords++;
-    } else {
-      unmatchedTokenIndices.push(i);
-    }
-  }
-
-  const lexicalScore = Math.round((exactScore + stemScore) * 10) / 10;
-
-  return { exactScore, stemScore, lexicalScore, matchedWords, exactMatches, totalTokens: nameTokens.length, nameTokens, unmatchedTokenIndices };
-}
-
-/**
- * Score an entity based on word overlap with content
- *
- * Scoring layers:
- * - Exact match: +exactMatchBonus per word (highest confidence)
- * - Stem match: +stemMatchBonus per word (medium confidence)
- * - Alias matching: Also scores against entity aliases
- *
- * The config determines thresholds and bonuses based on strictness mode.
- *
- * @param entity - Entity object (with name and aliases) or string name
- * @param contentTokens - Set of tokenized content words
- * @param contentStems - Set of stemmed content words
- * @param config - Scoring configuration from strictness mode
- * @returns Score (higher = more relevant), 0 if doesn't meet threshold
- */
-interface EntityScoreResult {
-  contentMatch: number;  // exact + stem only
-  fuzzyMatch: number;    // fuzzy layer only
-  totalLexical: number;  // contentMatch + fuzzyMatch
-  matchedWords: number;
-  exactMatches: number;
-  totalTokens: number;
-}
-
-function scoreEntity(
-  entity: Entity,
-  contentTokens: Set<string>,
-  contentStems: Set<string>,
-  collapsedContentTerms: Set<string>,
-  config: SuggestionConfig,
-  disabled: Set<ScoringLayer>,
-  coocIndex?: CooccurrenceIndex | null,
-  tokenFuzzyCache?: Map<string, number>,
-): EntityScoreResult {
-  const zero: EntityScoreResult = { contentMatch: 0, fuzzyMatch: 0, totalLexical: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0 };
-  const entityName = getEntityName(entity);
-  const aliases = getEntityAliases(entity);
-  const disableExact = disabled.has('exact_match');
-  const disableStem = disabled.has('stem_match');
-  const disableFuzzy = disabled.has('fuzzy_match');
-
-  const cache = tokenFuzzyCache ?? new Map<string, number>();
-  const idfFn = (token: string) => coocIndex ? tokenIdf(token, coocIndex) : 1.0;
-
-  // Score the primary name (exact + stem)
-  const nameResult = scoreNameAgainstContent(entityName, contentTokens, contentStems, config, coocIndex, disableExact, disableStem);
-
-  // Score each alias and take the best match
-  let bestAliasResult: LexicalScoreResult = { exactScore: 0, stemScore: 0, lexicalScore: 0, matchedWords: 0, exactMatches: 0, totalTokens: 0, nameTokens: [], unmatchedTokenIndices: [] };
-  for (const alias of aliases) {
-    const aliasResult = scoreNameAgainstContent(alias, contentTokens, contentStems, config, coocIndex, disableExact, disableStem);
-    if (aliasResult.lexicalScore > bestAliasResult.lexicalScore) {
-      bestAliasResult = aliasResult;
-    }
-  }
-
-  // Use the best score between name and aliases
-  const bestResult = nameResult.lexicalScore >= bestAliasResult.lexicalScore ? nameResult : bestAliasResult;
-  let { lexicalScore, matchedWords, exactMatches, totalTokens, nameTokens, unmatchedTokenIndices } = bestResult;
-  // Use name for whole-term fuzzy (entity name, not alias — the alias may be short)
-  const fuzzyTargetName = nameResult.lexicalScore >= bestAliasResult.lexicalScore ? entityName : (aliases[0] ?? entityName);
-
-  if (totalTokens === 0) return zero;
-
-  // Bonus for single-word aliases that exactly match a content token
-  if (!disableExact) {
-    for (const alias of aliases) {
-      const aliasLower = alias.toLowerCase();
-      if (aliasLower.length >= 3 &&
-          !/\s/.test(aliasLower) &&
-          contentTokens.has(aliasLower)) {
-        lexicalScore += FULL_ALIAS_MATCH_BONUS;
-        break;
-      }
-    }
-  }
-
-  // Fuzzy matching (Layer 3.5) — only for unmatched tokens
-  let fuzzyScore = 0;
-  let fuzzyMatchedWords = 0;
-  if (!disableFuzzy && unmatchedTokenIndices.length > 0) {
-    const fuzzyResult = scoreFuzzyMatch(
-      nameTokens, unmatchedTokenIndices, contentTokens, collapsedContentTerms,
-      fuzzyTargetName, config.fuzzyMatchBonus, idfFn, cache,
-    );
-    fuzzyScore = fuzzyResult.fuzzyScore;
-    fuzzyMatchedWords = fuzzyResult.fuzzyMatchedWords;
-    if (fuzzyResult.isWholeTermMatch) {
-      // Whole-term match: count all tokens as matched for ratio check
-      matchedWords = totalTokens;
-    } else {
-      matchedWords += fuzzyMatchedWords;
-    }
-  }
-
-  // Multi-word entities need minimum match ratio
-  if (totalTokens > 1) {
-    const matchRatio = matchedWords / totalTokens;
-    if (matchRatio < config.minMatchRatio) {
-      return zero;
-    }
-  }
-
-  // For conservative mode: single-word entities need multiple content word matches
-  if (config.requireMultipleMatches && totalTokens === 1) {
-    if (exactMatches === 0 && fuzzyMatchedWords === 0) {
-      return zero;
-    }
-  }
-
-  const contentMatch = Math.round(lexicalScore * 10) / 10;
-  const fuzzyMatch = Math.round(fuzzyScore * 10) / 10;
-
-  return {
-    contentMatch,
-    fuzzyMatch,
-    totalLexical: Math.round((contentMatch + fuzzyMatch) * 10) / 10,
-    matchedWords,
-    exactMatches,
-    totalTokens,
-  };
-}
-
-/**
  * Suggest related wikilinks based on content analysis
  *
  * Analyzes content tokens and scores entities from the cache,
@@ -1447,17 +1160,6 @@ function scoreEntity(
  * @param options - Configuration options
  * @returns Suggestion result with entity names and formatted suffix
  */
-
-/**
- * Layer 12: Compute edge weight boost for an entity.
- * Entities with high-quality incoming links (avg weight > 1.0) get a boost.
- * Capped at 4 points to prevent domination.
- */
-function getEdgeWeightBoostScore(entityName: string, map: Map<string, number>): number {
-  const avgWeight = map.get(entityName.toLowerCase());
-  if (!avgWeight) return 0;
-  return Math.min((avgWeight - 1.0) * 2, 4);
-}
 
 export async function suggestRelatedLinks(
   content: string,
@@ -1636,7 +1338,7 @@ export async function suggestRelatedLinks(
     score += layerTypeBoost;
 
     // Layer 6: Context boost - boost types relevant to note context
-    const layerContextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
+    const layerContextBoost = disabled.has('context_boost') ? 0 : getContextBoostScore(category, contextBoosts);
     score += layerContextBoost;
 
     // Layer 7: Recency boost - boost recently-mentioned entities
@@ -1652,7 +1354,7 @@ export async function suggestRelatedLinks(
     score += layerHubBoost;
 
     // Layer 10: Feedback boost - adjust based on historical accuracy
-    const layerFeedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
+    const layerFeedbackAdj = disabled.has('feedback') ? 0 : getFeedbackBoostScore(entityName, feedbackBoosts);
     score += layerFeedbackAdj;
 
     // Layer 12: Edge weight boost — entities with high-quality incoming links
@@ -1671,7 +1373,7 @@ export async function suggestRelatedLinks(
     }
 
     // Layer 0: Soft suppression penalty (proportional to Beta-Binomial posterior)
-    const layerSuppressionPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(entityName) ?? 0);
+    const layerSuppressionPenalty = disabled.has('feedback') ? 0 : getSuppressionPenaltyScore(entityName, suppressionPenalties);
     score += layerSuppressionPenalty;
     score = capScoreWithoutContentRelevance(score, contentScore + fuzzyMatchScore, config);
 
@@ -1763,51 +1465,27 @@ export async function suggestRelatedLinks(
           const existingContentRelevance = existing.breakdown.contentMatch + existing.breakdown.fuzzyMatch + (existing.breakdown.semanticBoost ?? 0);
           existing.score = capScoreWithoutContentRelevance(existing.score, existingContentRelevance, config);
         } else {
-          // Require minimal content overlap for co-occurrence suggestions,
-          // UNLESS the entity has strong co-occurrence with multiple content-matched entities.
-          // This allows graph-only T3 entities through when they have ≥2 associations.
-          const entityTokens = tokenize(entityName);
-          const hasContentOverlap = entityTokens.some(token =>
-            contentTokens.has(token) || contentStems.has(stem(token))
+          const admission = evaluateCooccurrenceAdmission(
+            entityName,
+            contentTokens,
+            contentStems,
+            cooccurrenceSeeds,
+            cooccurrenceIndex,
+            boost,
+            config,
           );
-
-          // Requires stronger graph signal to admit entities with no content overlap
-          const strongCooccurrence = boost >= config.minCooccurrenceGate;
-
-          // Graph-only entities need co-occurrence with ≥2 distinct content-matched seeds
-          // (skip this gate when minContentMatch=0, e.g. aggressive mode allows graph-only)
-          let multiSeedOK = true;
-          if (!hasContentOverlap && cooccurrenceIndex && config.minContentMatch > 0) {
-            let qualifyingSeedCount = 0;
-            for (const seed of cooccurrenceSeeds) {
-              const entityAssocs = cooccurrenceIndex.associations[seed];
-              if (!entityAssocs) continue;
-              const coocCount = entityAssocs.get(entityName) || 0;
-              if (coocCount < (cooccurrenceIndex.minCount ?? 2)) continue;
-              const dfEntity = cooccurrenceIndex.documentFrequency?.get(entityName) || 0;
-              const dfSeed = cooccurrenceIndex.documentFrequency?.get(seed) || 0;
-              if (dfEntity === 0 || dfSeed === 0) continue;
-              const npmi = computeNpmi(coocCount, dfEntity, dfSeed, cooccurrenceIndex.totalNotesScanned ?? 1);
-              if (npmi > 0) qualifyingSeedCount++;
-            }
-            multiSeedOK = qualifyingSeedCount >= 2;
-          }
-
-          if (!hasContentOverlap && !(strongCooccurrence && multiSeedOK)) {
-            continue;  // Skip entities with zero content relevance and weak/single-seed co-occurrence
-          }
+          const { admitted, hasContentOverlap } = admission;
+          if (!admitted) continue;
 
           // Entity passed content overlap or strong co-occurrence check —
           // qualify it for final results
-          if (hasContentOverlap || (strongCooccurrence && multiSeedOK)) {
-            entitiesWithAnyScoringPath.add(entityName);
-          }
+          entitiesWithAnyScoringPath.add(entityName);
 
           // For purely co-occurrence-based suggestions, add relevant boosts.
           // Recency is omitted for graph-only entities — it's a "recently seen" signal
           // that shouldn't inflate scores for entities absent from the note's text.
           const typeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories, entityName);
-          const contextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
+          const contextBoost = disabled.has('context_boost') ? 0 : getContextBoostScore(category, contextBoosts);
           const recencyBoostVal = hasContentOverlap && !disabled.has('recency')
             ? (scopedRecencyIndex ? getRecencyBoost(entityName, scopedRecencyIndex) : 0)
             : 0;
@@ -1817,10 +1495,10 @@ export async function suggestRelatedLinks(
           // to prevent hub entities from dominating suffix lines via graph signals alone
           const hubBoost = hasContentOverlap ? rawHubBoost : Math.min(rawHubBoost, 2);
           const crossFolderBoost = hasContentOverlap ? rawCrossFolderBoost : Math.min(rawCrossFolderBoost, 2);
-          const feedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(entityName) ?? 0);
+          const feedbackAdj = disabled.has('feedback') ? 0 : getFeedbackBoostScore(entityName, feedbackBoosts);
           const edgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(entityName, edgeWeightMap);
           const prospectBoost = disabled.has('prospect_boost') ? 0 : (prospectBoosts.get(entityName.toLowerCase()) ?? 0);
-          const suppPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(entityName) ?? 0);
+          const suppPenalty = disabled.has('feedback') ? 0 : getSuppressionPenaltyScore(entityName, suppressionPenalties);
           let totalBoost = boost + typeBoost + contextBoost + recencyBoostVal + crossFolderBoost + hubBoost + feedbackAdj + edgeWeightBoost + prospectBoost + suppPenalty;
           const coocContentRelevance = hasContentOverlap ? 5 : 0;
           totalBoost = capScoreWithoutContentRelevance(totalBoost, coocContentRelevance, config);
@@ -1870,9 +1548,7 @@ export async function suggestRelatedLinks(
       const alreadyScoredNames = new Set(scoredEntities.map(e => e.name));
 
       // Strictness multiplier for semantic boost
-      const semanticStrictnessMultiplier = strictness === 'conservative' ? 0.6
-        : strictness === 'aggressive' ? 1.3
-        : 1.0;
+      const semanticStrictnessMultiplier = getSemanticStrictnessMultiplier(strictness);
 
       const semanticMatches = findSemanticallySimilarEntities(
         contentEmbedding,
@@ -1908,13 +1584,13 @@ export async function suggestRelatedLinks(
 
           // Reuse existing layer logic for base boosts
           const layerTypeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories, match.entityName);
-          const layerContextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
+          const layerContextBoost = disabled.has('context_boost') ? 0 : getContextBoostScore(category, contextBoosts);
           const layerHubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
           const layerCrossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
-          const layerFeedbackAdj = disabled.has('feedback') ? 0 : (feedbackBoosts.get(match.entityName) ?? 0);
+          const layerFeedbackAdj = disabled.has('feedback') ? 0 : getFeedbackBoostScore(match.entityName, feedbackBoosts);
           const layerEdgeWeightBoost = disabled.has('edge_weight') ? 0 : getEdgeWeightBoostScore(match.entityName, edgeWeightMap);
           const layerProspectBoost = disabled.has('prospect_boost') ? 0 : (prospectBoosts.get(match.entityName.toLowerCase()) ?? 0);
-          const layerSuppPenalty = disabled.has('feedback') ? 0 : (suppressionPenalties.get(match.entityName) ?? 0);
+          const layerSuppPenalty = disabled.has('feedback') ? 0 : getSuppressionPenaltyScore(match.entityName, suppressionPenalties);
 
           const totalScore = boost + layerTypeBoost + layerContextBoost + layerHubBoost + layerCrossFolderBoost + layerFeedbackAdj + layerEdgeWeightBoost + layerProspectBoost + layerSuppPenalty;
 

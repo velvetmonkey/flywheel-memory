@@ -3,6 +3,8 @@
  *
  * Executes policy steps by calling tool functions directly.
  * Policy writes happen live and use compensating rollback on failure.
+ * If the process is terminated mid-run (for example SIGKILL, OOM, or power loss),
+ * rollback cannot run and partial filesystem state may remain.
  */
 
 import fs from 'fs/promises';
@@ -578,6 +580,7 @@ function executeSearch(
  * Policies perform live writes, optionally followed by a single git commit.
  * On step failure or commit failure, the executor attempts to roll back any
  * files it already modified and reports whether that rollback succeeded.
+ * This is best-effort recovery, not transactional staging.
  */
 export async function executePolicy(
   policy: PolicyDefinition,
@@ -701,7 +704,7 @@ export async function executePolicy(
     }
   }
 
-  // Create atomic commit if requested
+  // Create a single git commit if requested after all live writes succeed
   let gitCommit: string | undefined;
   let undoAvailable: boolean | undefined;
   let commitError: string | undefined;

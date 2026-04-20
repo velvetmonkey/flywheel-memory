@@ -53,7 +53,6 @@ const DEFAULT_RETRY: RetryConfig = {
 };
 
 const STALE_LOCK_THRESHOLD_MS = 30_000; // 30 seconds
-const STAGING_DIR = '.flywheel-staging';
 
 /**
  * Tracking data for the last successful mutation commit.
@@ -150,7 +149,7 @@ export interface GitLockStatus {
 
 /**
  * Check if git index.lock exists (pre-flight check for strict mode)
- * Use this before starting operations that require atomic commits
+ * Use this before starting operations that need an immediate git commit.
  */
 export async function checkGitLock(vaultPath: string): Promise<GitLockStatus> {
   const lockPath = path.join(vaultPath, '.git/index.lock');
@@ -164,134 +163,6 @@ export async function checkGitLock(vaultPath: string): Promise<GitLockStatus> {
     };
   } catch {
     return { locked: false };
-  }
-}
-
-/**
- * Staging file helpers for atomic policy execution
- */
-export interface StagedFile {
-  /** Original file path (vault-relative) */
-  originalPath: string;
-  /** Staging file path (absolute) */
-  stagingPath: string;
-  /** Original content (for rollback) */
-  originalContent: string | null;
-  /** Whether the original file existed */
-  originalExisted: boolean;
-}
-
-/**
- * Get the staging directory path for a vault
- */
-export function getStagingDir(vaultPath: string): string {
-  return path.join(vaultPath, STAGING_DIR);
-}
-
-/**
- * Create a staging file for atomic writes
- * Returns the staging file path where content should be written
- */
-export async function createStagingFile(
-  vaultPath: string,
-  notePath: string
-): Promise<StagedFile> {
-  const stagingDir = getStagingDir(vaultPath);
-  await fs.mkdir(stagingDir, { recursive: true });
-
-  // Create a unique staging file name based on hash of path
-  const hash = Buffer.from(notePath).toString('base64url').replace(/[^a-zA-Z0-9]/g, '');
-  const stagingPath = path.join(stagingDir, `${hash}.md`);
-
-  // Read original content for potential rollback
-  const fullPath = path.join(vaultPath, notePath);
-  let originalContent: string | null = null;
-  let originalExisted = false;
-
-  try {
-    originalContent = await fs.readFile(fullPath, 'utf-8');
-    originalExisted = true;
-  } catch {
-    // File doesn't exist yet - that's fine for new notes
-  }
-
-  return {
-    originalPath: notePath,
-    stagingPath,
-    originalContent,
-    originalExisted,
-  };
-}
-
-/**
- * Commit staged files - move from staging to real locations
- */
-export async function commitStagedFiles(
-  vaultPath: string,
-  stagedFiles: StagedFile[]
-): Promise<void> {
-  for (const staged of stagedFiles) {
-    const realPath = path.join(vaultPath, staged.originalPath);
-
-    // Ensure parent directory exists
-    await fs.mkdir(path.dirname(realPath), { recursive: true });
-
-    // Move staging file to real location
-    try {
-      await fs.rename(staged.stagingPath, realPath);
-    } catch {
-      // rename might fail across filesystems, fall back to copy+delete
-      const content = await fs.readFile(staged.stagingPath, 'utf-8');
-      await fs.writeFile(realPath, content);
-      await fs.unlink(staged.stagingPath);
-    }
-  }
-}
-
-/**
- * Rollback staged files - delete staging files and restore originals
- */
-export async function rollbackStagedFiles(
-  vaultPath: string,
-  stagedFiles: StagedFile[]
-): Promise<void> {
-  for (const staged of stagedFiles) {
-    // Delete staging file
-    try {
-      await fs.unlink(staged.stagingPath);
-    } catch {
-      // Already deleted or doesn't exist
-    }
-
-    // Restore original if it existed and was overwritten
-    const realPath = path.join(vaultPath, staged.originalPath);
-    if (staged.originalExisted && staged.originalContent !== null) {
-      // Restore original content
-      await fs.writeFile(realPath, staged.originalContent);
-    } else if (!staged.originalExisted) {
-      // File was newly created - delete it
-      try {
-        await fs.unlink(realPath);
-      } catch {
-        // File doesn't exist - that's fine
-      }
-    }
-  }
-}
-
-/**
- * Clean up staging directory
- */
-export async function cleanupStagingDir(vaultPath: string): Promise<void> {
-  const stagingDir = getStagingDir(vaultPath);
-  try {
-    const files = await fs.readdir(stagingDir);
-    for (const file of files) {
-      await fs.unlink(path.join(stagingDir, file));
-    }
-    await fs.rmdir(stagingDir);
-  } catch {
-    // Directory doesn't exist or is not empty
   }
 }
 
@@ -572,8 +443,7 @@ export interface PolicyCommitResult {
 }
 
 /**
- * Commit multiple files as a single atomic policy commit.
- * Used by policy_execute for batch commits.
+ * Commit multiple files as a single policy commit after live writes succeed.
  */
 export async function commitPolicyChanges(
   vaultPath: string,

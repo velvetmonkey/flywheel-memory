@@ -27,11 +27,20 @@ import type { PipelineActivity } from './core/read/watch/pipeline.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getSessionId } from '@velvetmonkey/vault-core';
 
-import { ALL_CATEGORIES, PRESETS, TOOL_CATEGORY, TOOL_TIER, type ToolCategory, type ToolTier, type ToolTierOverride } from './config.js';
-import { getSemanticActivations, getToolRoutingMode, hasToolRouting, type SemanticActivation } from './core/read/toolRouting.js';
-import { applySandwichOrdering } from './tools/read/query.js';
+import { ALL_CATEGORIES, TOOL_CATEGORY, type ToolCategory, type ToolTier, type ToolTierOverride } from './config.js';
 import { VaultRegistry, type VaultContext } from './vault-registry.js';
-import { runInVaultScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
+import { runInVaultScope, getActiveScopeOrNull } from './vault-scope.js';
+import {
+  extractQueryContext,
+  extractSearchMethod,
+  getActivationSignals,
+} from './tool-registry/activation.js';
+import { shouldSuppressMemoryTool } from './tool-registry/clientSuppressions.js';
+import { runCrossVaultSearch } from './tool-registry/crossVault.js';
+import { shouldEnableTieredTool, getDirectCallPromotion } from './tool-registry/tiering.js';
+import type { ToolTierMode, VaultActivationCallbacks } from './tool-registry/types.js';
+export { getPatternSignals, unionSignalsByCategory } from './tool-registry/activation.js';
+export type { ToolTierMode, VaultActivationCallbacks } from './tool-registry/types.js';
 
 // Core imports - Tool Tracking
 import { recordToolInvocation } from './core/shared/toolTracking.js';
@@ -123,12 +132,6 @@ export interface ToolRegistryContext {
 }
 
 /** Vault activation callbacks for multi-vault gating */
-export interface VaultActivationCallbacks {
-  activateVault: (ctx: VaultContext) => void;
-  buildVaultScope: (ctx: VaultContext) => VaultScope;
-}
-
-export type ToolTierMode = 'off' | 'tiered';
 // ToolTierOverride re-exported from config.ts (side-effect-free for testing)
 export type { ToolTierOverride } from './config.js';
 
@@ -146,49 +149,6 @@ export interface ToolTierController {
   getActivatedCategoryTiers(): ReadonlyMap<ToolCategory, ToolTier>;
   getRegisteredTools(): ReadonlyMap<string, RegisteredTool>;
 }
-
-const ACTIVATION_PATTERNS: Array<{ category: ToolCategory; tier: ToolTier; patterns: RegExp[] }> = [
-  {
-    category: 'memory',
-    tier: 1,
-    patterns: [/\b(remember|recall|forget|memory|memories|preference|setting|store|stored|brief(ing)?|session context|note to self|what do you know)\b/i],
-  },
-  {
-    category: 'graph',
-    tier: 2,
-    patterns: [/\b(backlinks?|forward links?|connections?|link path|paths?|hubs?|orphans?|dead ends?|clusters?|bridges?)\b/i],
-  },
-  {
-    category: 'wikilinks',
-    tier: 2,
-    patterns: [/\b(wikilinks?|link suggestions?|stubs?|unlinked mentions?|aliases?)\b/i],
-  },
-  {
-    category: 'corrections',
-    tier: 2,
-    patterns: [/\b(corrections?|wrong links?|bad links?|mistakes?|fix(es|ing)?|errors?)\b/i],
-  },
-  {
-    category: 'temporal',
-    tier: 2,
-    patterns: [/\b(history|timeline|timelines|evolution|stale notes?|around date|weekly review|monthly review|quarterly review)\b/i],
-  },
-  {
-    category: 'diagnostics',
-    tier: 2,
-    patterns: [/\b(health|doctor|diagnostics?|status|config|configuration|pipeline|refresh index|reindex|logs?|insights?|intelligence|analyze note|quality score|audit|staleness|growth trends?)\b/i],
-  },
-  {
-    category: 'schema',
-    tier: 3,
-    patterns: [/\b(schema|schemas|frontmatter|metadata|conventions?|rename field|rename tag|migrate|folder structure|folder tree|note counts)\b/i],
-  },
-  {
-    category: 'note-ops',
-    tier: 3,
-    patterns: [/\b(create note|delete note|move note|rename note|merge entit(y|ies)|merge notes?|deduplicate|also known as|aka|nickname)\b/i],
-  },
-];
 
 const MUTATING_TOOL_NAMES = new Set([
   'vault_add_to_section',
@@ -218,84 +178,6 @@ const MUTATING_TOOL_NAMES = new Set([
   'refresh_index',
   'init_semantic',
 ]);
-
-export function getPatternSignals(raw: string): Array<{ category: ToolCategory; tier: ToolTier }> {
-  if (!raw) return [];
-  return ACTIVATION_PATTERNS
-    .filter(({ patterns }) => patterns.some((pattern) => pattern.test(raw)))
-    .map(({ category, tier }) => ({ category, tier }));
-}
-
-/** Deduplicate activation signals by category, keeping the highest tier per category. */
-export function unionSignalsByCategory(
-  signals: Array<{ category: ToolCategory; tier: ToolTier }>,
-): Array<{ category: ToolCategory; tier: ToolTier }> {
-  const best = new Map<ToolCategory, ToolTier>();
-  for (const { category, tier } of signals) {
-    const existing = best.get(category);
-    if (!existing || tier > existing) best.set(category, tier);
-  }
-  return Array.from(best.entries()).map(([category, tier]) => ({ category, tier }));
-}
-
-async function getActivationSignals(
-  toolName: string,
-  params: unknown,
-  searchMethod?: string,
-  isFullToolset: boolean = false,
-): Promise<Array<{ category: ToolCategory; tier: ToolTier }>> {
-  // Activation signals from search (query param) and memory/brief (focus param)
-  // memory(action: brief, focus: ...) replaces standalone brief tool (T43 B3+)
-  const isBriefAction = toolName === 'memory' && (params as Record<string, unknown>)?.action === 'brief';
-  if (toolName !== 'search' && toolName !== 'brief' && !isBriefAction) return [];
-  if (!params || typeof params !== 'object') return [];
-
-  const raw = [
-    typeof (params as Record<string, unknown>).query === 'string' ? (params as Record<string, string>).query : '',
-    typeof (params as Record<string, unknown>).focus === 'string' ? (params as Record<string, string>).focus : '',
-  ].filter(Boolean).join(' ');
-
-  if (!raw) return [];
-
-  const routingMode = getToolRoutingMode(isFullToolset);
-
-  // Pattern-based signals (T13 regex activation)
-  const patternSignals = routingMode !== 'semantic' ? getPatternSignals(raw) : [];
-
-  // Semantic signals (T14 embedding-based activation)
-  let semanticSignals: SemanticActivation[] = [];
-  if (
-    routingMode !== 'pattern' &&
-    searchMethod === 'hybrid' &&
-    hasToolRouting()
-  ) {
-    semanticSignals = await getSemanticActivations(raw);
-  }
-
-  // In 'semantic' mode with non-hybrid search, fall back to pattern signals
-  if (routingMode === 'semantic' && searchMethod !== 'hybrid') {
-    return getPatternSignals(raw);
-  }
-
-  return unionSignalsByCategory([...patternSignals, ...semanticSignals]);
-}
-
-/**
- * Extract the search method from an MCP tool result payload.
- * The search tool returns JSON with a 'method' field ('hybrid', 'fts5', 'cross_vault', etc.).
- */
-function extractSearchMethod(result: unknown): string | undefined {
-  if (!result || typeof result !== 'object') return undefined;
-  const content = (result as { content?: unknown[] }).content;
-  if (!Array.isArray(content) || content.length === 0) return undefined;
-  const first = content[0] as { type?: string; text?: string };
-  if (first?.type !== 'text' || typeof first.text !== 'string') return undefined;
-  try {
-    const parsed = JSON.parse(first.text);
-    if (typeof parsed.method === 'string') return parsed.method;
-  } catch { /* not JSON or no method field */ }
-  return undefined;
-}
 
 // ============================================================================
 // Tool Gating
@@ -356,17 +238,12 @@ export function applyToolGating(
   }
 
   function shouldEnableTool(toolName: string): boolean {
-    const tier = TOOL_TIER[toolName];
-    const category = TOOL_CATEGORY[toolName];
-    if (!tier || !category) return true;
-    if (!categories.has(category)) return false;
-    if (tierMode === 'off') return true;
-    if (categories.size === ALL_CATEGORIES.length && ALL_CATEGORIES.every((c) => categories.has(c))) return true;
-    if (tierOverride === 'full') return true;
-    if (tier === 1) return true;
-    if (tierOverride === 'minimal') return false;
-    const activatedTier = activatedCategoryTiers.get(category) ?? 0;
-    return activatedTier >= tier;
+    return shouldEnableTieredTool(toolName, {
+      categories,
+      tierMode,
+      tierOverride,
+      activatedCategoryTiers,
+    });
   }
 
   /** Returns names of tools that were newly enabled (empty if no change). */
@@ -406,38 +283,9 @@ export function applyToolGating(
     if (tierMode !== 'tiered') return;
     const handle = toolHandles.get(toolName);
     if (!handle || handle.enabled) return;
-    const category = TOOL_CATEGORY[toolName];
-    const tier = TOOL_TIER[toolName];
-    if (!category || !tier) return;
-    enableCategory(category, tier);
-  }
-
-
-  /** Max length for stored query context */
-  const MAX_QUERY_CONTEXT_LENGTH = 500;
-
-  /** Strict allowlist of intent-bearing param fields */
-  const QUERY_CONTEXT_FIELDS = ['query', 'focus', 'analysis', 'entity', 'heading', 'field', 'date', 'concept'] as const;
-
-  /**
-   * Extract user-intent query context from tool params.
-   * Strict allowlist — excludes content, description, frontmatter, yaml, policy, key, value, mode.
-   */
-  function extractQueryContext(params: unknown): string | undefined {
-    if (!params || typeof params !== 'object') return undefined;
-    const p = params as Record<string, unknown>;
-    const parts: string[] = [];
-    for (const field of QUERY_CONTEXT_FIELDS) {
-      const val = p[field];
-      if (typeof val === 'string' && val.trim()) {
-        parts.push(val.trim());
-      }
-    }
-    if (parts.length === 0) return undefined;
-    const joined = parts.join(' | ').replace(/\s+/g, ' ');
-    return joined.length > MAX_QUERY_CONTEXT_LENGTH
-      ? joined.slice(0, MAX_QUERY_CONTEXT_LENGTH)
-      : joined;
+    const promotion = getDirectCallPromotion(toolName, categories, tierMode);
+    if (!promotion) return;
+    enableCategory(promotion.category, promotion.tier);
   }
 
   function wrapWithTracking(toolName: string, handler: (...args: any[]) => any): (...args: any[]) => any {
@@ -575,127 +423,13 @@ export function applyToolGating(
       }
       // Cross-vault search/find: when no vault specified, query all vaults and merge
       if ((toolName === 'search' || toolName === 'find_notes') && !vaultName) {
-        return crossVaultSearch(registry!, vaultCallbacks!, handler, args);
+        return runCrossVaultSearch(registry!, vaultCallbacks!, handler, args);
       }
       const ctx = registry.getContext(vaultName);
       // Set fallback scope + module-level state (for watcher/startup code paths)
       vaultCallbacks!.activateVault(ctx);
       // Run handler inside ALS context for per-request isolation
       return runInVaultScope(vaultCallbacks!.buildVaultScope(ctx), () => handler(...args));
-    };
-  }
-
-  /**
-   * Cross-vault search: run search handler in each vault context, merge results.
-   * Each vault's results are tagged with a `vault` field.
-   */
-  async function crossVaultSearch(
-    reg: VaultRegistry,
-    callbacks: VaultActivationCallbacks,
-    handler: (...args: any[]) => any,
-    args: any[]
-  ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
-    const perVault: Array<{ vault: string; data: any }> = [];
-    // Preserve the caller's consumer preference; force 'human' for per-vault calls
-    // so rrf_score survives for cross-vault merge-sort, then apply LLM post-processing after
-    const callerConsumer: string = args[0]?.consumer ?? 'llm';
-    const crossArgs = [{ ...args[0], consumer: 'human' }, ...args.slice(1)];
-
-    for (const ctx of reg.getAllContexts()) {
-      callbacks.activateVault(ctx);
-      try {
-        // Run each vault's search inside its own ALS context
-        const result = await runInVaultScope(callbacks.buildVaultScope(ctx), () => handler(...crossArgs));
-        const text = result?.content?.[0]?.text;
-        if (text) {
-          perVault.push({ vault: ctx.name, data: JSON.parse(text) });
-        }
-      } catch {
-        // Skip vaults that error during search
-      }
-    }
-
-    // Merge result items across vaults (notes, entities, memories separately)
-    const mergedResults: any[] = [];
-    const mergedEntities: any[] = [];
-    const mergedMemories: any[] = [];
-    const vaultsSearched: string[] = [];
-    let query: string | undefined;
-
-    for (const { vault, data } of perVault) {
-      vaultsSearched.push(vault);
-      if (data.query) query = data.query;
-      if (data.error || data.building) continue;
-
-      // Note results
-      const items = data.results || data.notes || [];
-      for (const item of items) {
-        mergedResults.push({ vault, ...item });
-      }
-
-      // Entity results
-      if (Array.isArray(data.entities)) {
-        for (const item of data.entities) {
-          mergedEntities.push({ vault, ...item });
-        }
-      }
-
-      // Memory results
-      if (Array.isArray(data.memories)) {
-        for (const item of data.memories) {
-          mergedMemories.push({ vault, ...item });
-        }
-      }
-    }
-
-    // Sort note results by rrf_score when available (hybrid/fts5), otherwise preserve order
-    if (mergedResults.some((r: any) => r.rrf_score != null)) {
-      mergedResults.sort((a: any, b: any) => (b.rrf_score ?? 0) - (a.rrf_score ?? 0));
-    }
-
-    // Deduplicate entities across vaults (same name = keep first)
-    const seenEntities = new Set<string>();
-    const dedupedEntities = mergedEntities.filter((e: any) => {
-      const key = (e.name || '').toLowerCase();
-      if (seenEntities.has(key)) return false;
-      seenEntities.add(key);
-      return true;
-    });
-
-    // Deduplicate memories across vaults (same key = keep first)
-    const seenMemories = new Set<string>();
-    const dedupedMemories = mergedMemories.filter((m: any) => {
-      if (seenMemories.has(m.key)) return false;
-      seenMemories.add(m.key);
-      return true;
-    });
-
-    const limit = args[0]?.limit ?? 10;
-    const truncated = mergedResults.slice(0, limit);
-
-    // Apply LLM context engineering on merged results when caller is LLM
-    if (callerConsumer === 'llm') {
-      applySandwichOrdering(truncated);
-      const INTERNAL = ['rrf_score', 'in_fts5', 'in_semantic', 'in_entity', 'graph_boost', '_combined_score'];
-      for (const r of truncated) {
-        for (const key of INTERNAL) delete r[key];
-      }
-    }
-
-    return {
-      content: [{
-        type: 'text' as const,
-        text: JSON.stringify({
-          method: 'cross_vault',
-          query,
-          vaults_searched: vaultsSearched,
-          total_results: mergedResults.length,
-          returned: truncated.length,
-          results: truncated,
-          ...(dedupedEntities.length > 0 ? { entities: dedupedEntities.slice(0, limit) } : {}),
-          ...(dedupedMemories.length > 0 ? { memories: dedupedMemories.slice(0, limit) } : {}),
-        }, null, 2),
-      }],
     };
   }
 
@@ -965,10 +699,7 @@ export function registerAllTools(
   // env var it sets on spawned MCP subprocesses). `memory(action: brief)` stays
   // available — it's the Claude Code escape hatch for memory retrieval. flywheel-engine
   // and non-Claude clients are unaffected. Override with FW_ENABLE_MEMORY_FOR_CLAUDE=1.
-  const suppressMemoryForClaude =
-    applyClientSuppressions &&
-    process.env.CLAUDECODE === '1' &&
-    process.env.FW_ENABLE_MEMORY_FOR_CLAUDE !== '1';
+  const suppressMemoryForClaude = shouldSuppressMemoryTool({ applyClientSuppressions });
   if (!suppressMemoryForClaude) {
     registerMemoryTools(targetServer, gsd);
   }

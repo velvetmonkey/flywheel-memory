@@ -108,4 +108,28 @@ describe('tool registry compatibility', () => {
     const fullInstructions = generateInstructions(new Set(ALL_CATEGORIES));
     expect(fullInstructions).not.toContain('discover_tools');
   });
+
+  it('direct calls auto-promote disabled tiered tools before execution', async () => {
+    const server = new McpServer({ name: 'tool-tiering-direct-call', version: '0.0.0' });
+    const controller = applyToolGating(
+      server,
+      new Set(['diagnostics', 'graph']),
+      () => null,
+      null,
+      undefined,
+      undefined,
+      'tiered',
+    );
+    registerAllTools(server, createStubRegistryContext(), controller, { applyClientSuppressions: false });
+    controller.finalizeRegistration();
+
+    const client = await connectMcpTestClient(server);
+    const graphHandle = controller.getRegisteredTools().get('graph');
+
+    expect(graphHandle?.enabled).toBe(false);
+    await client.callTool('graph', { action: 'analyse', analysis: 'hubs' });
+    expect(graphHandle?.enabled).toBe(true);
+
+    await client.close();
+  });
 });

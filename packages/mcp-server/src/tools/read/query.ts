@@ -420,7 +420,7 @@ export function registerQueryTools(
   // ========================================
   server.tool(
     'search',
-    'Read-only query of vault notes. action=query (default): keyword/concept/date search. action=similar: content-overlap neighbours of a given note path. Returns a decision surface with frontmatter, backlinks, outlinks, section provenance, and confidence scores. Does not perform mutations.',
+    'Read-only query of vault notes. action=query (default): keyword/concept/date search. action=similar: content-overlap neighbours of a given note path. Returns a decision surface with frontmatter, backlinks, outlinks, section provenance, and confidence scores. In multi-vault mode, cross-vault responses may also include partial_failure and vault_errors metadata when some vaults fail. Does not perform mutations.',
     {
       action: z.enum(['query', 'similar']).optional().describe('Operation: query (default) | similar'),
 

@@ -12,6 +12,7 @@ import type {
   PolicyValidationError,
   PolicyValidationWarning,
 } from './types.js';
+import { POLICY_NAME_ERROR_MESSAGE, validatePolicyName } from './names.js';
 
 /**
  * Variable type enum
@@ -140,7 +141,9 @@ const ConditionsSchema = z.preprocess((val) => {
  */
 export const PolicyDefinitionSchema = z.object({
   version: z.union([z.literal('1.0'), z.literal('1')]).transform(() => '1.0' as const),
-  name: z.string().min(1, 'Policy name is required'),
+  name: z.string()
+    .min(1, 'Policy name is required')
+    .refine((name) => validatePolicyName(name).valid, POLICY_NAME_ERROR_MESSAGE),
   description: z.string().min(1, 'Policy description is required'),
   variables: z.record(PolicyVariableSchema).optional(),
   conditions: ConditionsSchema.optional(),

@@ -6,9 +6,35 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { validatePathSecure } from '../path-security.js';
 import type { PolicyMetadata, PolicyDefinition } from './types.js';
+import { validatePolicyName } from './names.js';
 import { extractPolicyMetadata, parsePolicyString, serializePolicyToYaml } from './parser.js';
 import { getPoliciesDir, ensurePoliciesDir, ensureMigrated } from './policyPaths.js';
+
+function getPolicyRelativePath(policyName: string): string {
+  return path.join('.flywheel', 'policies', `${policyName}.yaml`);
+}
+
+async function validatePolicyStorageTarget(
+  vaultPath: string,
+  policyName: string
+): Promise<{ valid: true; filename: string; filePath: string } | { valid: false; message: string }> {
+  const nameValidation = validatePolicyName(policyName);
+  if (!nameValidation.valid) {
+    return { valid: false, message: `Invalid policy name: ${nameValidation.reason}` };
+  }
+
+  const dir = getPoliciesDir(vaultPath);
+  const filename = `${policyName}.yaml`;
+  const filePath = path.join(dir, filename);
+  const pathValidation = await validatePathSecure(vaultPath, getPolicyRelativePath(policyName));
+  if (!pathValidation.valid) {
+    return { valid: false, message: `Invalid policy path: ${pathValidation.reason}` };
+  }
+
+  return { valid: true, filename, filePath };
+}
 
 /**
  * List all policies in the vault
@@ -57,6 +83,9 @@ export async function listPolicies(vaultPath: string): Promise<PolicyMetadata[]>
  * Check if a policy exists
  */
 export async function policyExists(vaultPath: string, policyName: string): Promise<boolean> {
+  const nameValidation = validatePolicyName(policyName);
+  if (!nameValidation.valid) return false;
+
   await ensureMigrated(vaultPath);
   const dir = getPoliciesDir(vaultPath);
 
@@ -81,6 +110,9 @@ export async function policyExists(vaultPath: string, policyName: string): Promi
  * Get the full path to a policy file
  */
 export async function getPolicyPath(vaultPath: string, policyName: string): Promise<string | null> {
+  const nameValidation = validatePolicyName(policyName);
+  if (!nameValidation.valid) return null;
+
   await ensureMigrated(vaultPath);
   const dir = getPoliciesDir(vaultPath);
 
@@ -109,11 +141,16 @@ export async function savePolicy(
   overwrite: boolean = false
 ): Promise<{ success: boolean; path: string; message: string }> {
   await ensureMigrated(vaultPath);
-  const dir = getPoliciesDir(vaultPath);
   await ensurePoliciesDir(vaultPath);
-
-  const filename = `${policy.name}.yaml`;
-  const filePath = path.join(dir, filename);
+  const target = await validatePolicyStorageTarget(vaultPath, policy.name);
+  if (!target.valid) {
+    return {
+      success: false,
+      path: `${policy.name}.yaml`,
+      message: target.message,
+    };
+  }
+  const { filename, filePath } = target;
 
   // Check if exists
   if (!overwrite) {
@@ -148,6 +185,13 @@ export async function deletePolicy(
   policyName: string
 ): Promise<{ success: boolean; message: string }> {
   await ensureMigrated(vaultPath);
+  const nameValidation = validatePolicyName(policyName);
+  if (!nameValidation.valid) {
+    return {
+      success: false,
+      message: `Invalid policy name: ${nameValidation.reason}`,
+    };
+  }
   const policyPath = await getPolicyPath(vaultPath, policyName);
 
   if (!policyPath) {
@@ -173,6 +217,13 @@ export async function readPolicyRaw(
   policyName: string
 ): Promise<{ success: boolean; content?: string; message: string }> {
   await ensureMigrated(vaultPath);
+  const nameValidation = validatePolicyName(policyName);
+  if (!nameValidation.valid) {
+    return {
+      success: false,
+      message: `Invalid policy name: ${nameValidation.reason}`,
+    };
+  }
   const policyPath = await getPolicyPath(vaultPath, policyName);
 
   if (!policyPath) {
@@ -201,11 +252,16 @@ export async function writePolicyRaw(
   overwrite: boolean = false
 ): Promise<{ success: boolean; path: string; message: string }> {
   await ensureMigrated(vaultPath);
-  const dir = getPoliciesDir(vaultPath);
   await ensurePoliciesDir(vaultPath);
-
-  const filename = `${policyName}.yaml`;
-  const filePath = path.join(dir, filename);
+  const target = await validatePolicyStorageTarget(vaultPath, policyName);
+  if (!target.valid) {
+    return {
+      success: false,
+      path: `${policyName}.yaml`,
+      message: target.message,
+    };
+  }
+  const { filename, filePath } = target;
 
   // Check if exists
   if (!overwrite) {

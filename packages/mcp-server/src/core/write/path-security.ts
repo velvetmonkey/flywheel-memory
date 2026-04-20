@@ -166,6 +166,32 @@ export function sanitizeNotePath(notePath: string): string {
   return dir === '.' ? filename : path.join(dir, filename).replace(/\\/g, '/');
 }
 
+async function pathExists(targetPath: string): Promise<boolean> {
+  try {
+    await fs.lstat(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function findDeepestExistingAncestor(fullPath: string, vaultPath: string): Promise<string> {
+  const resolvedVaultPath = path.resolve(vaultPath);
+  let currentPath = fullPath;
+
+  while (isWithinDirectory(currentPath, resolvedVaultPath, true)) {
+    if (await pathExists(currentPath)) {
+      return currentPath;
+    }
+
+    const parentPath = path.dirname(currentPath);
+    if (parentPath === currentPath) break;
+    currentPath = parentPath;
+  }
+
+  return resolvedVaultPath;
+}
+
 /**
  * Securely validate path for write operations.
  *
@@ -237,15 +263,11 @@ export async function validatePathSecure(
 
   // For files that exist, resolve symlinks and verify still in vault
   try {
-    // Check if path exists (might be a symlink or regular file)
     const fullPath = path.join(vaultPath, notePath);
+    const realVaultPath = await fs.realpath(vaultPath);
 
-    try {
-      await fs.access(fullPath);
-
-      // File exists - resolve any symlinks
+    if (await pathExists(fullPath)) {
       const realPath = await fs.realpath(fullPath);
-      const realVaultPath = await fs.realpath(vaultPath);
 
       if (!isWithinDirectory(realPath, realVaultPath)) {
         return {
@@ -254,7 +276,6 @@ export async function validatePathSecure(
         };
       }
 
-      // Also check if the resolved path is a sensitive file
       const relativePath = path.relative(realVaultPath, realPath);
       if (isSensitivePath(relativePath)) {
         return {
@@ -262,23 +283,15 @@ export async function validatePathSecure(
           reason: 'Symlink target is a sensitive file',
         };
       }
-    } catch {
-      // File doesn't exist yet - check parent directory for symlink escape
-      const parentDir = path.dirname(fullPath);
-      try {
-        await fs.access(parentDir);
-        const realParentPath = await fs.realpath(parentDir);
-        const realVaultPath = await fs.realpath(vaultPath);
+    } else {
+      const ancestorPath = await findDeepestExistingAncestor(fullPath, vaultPath);
+      const realAncestorPath = await fs.realpath(ancestorPath);
 
-        if (!isWithinDirectory(realParentPath, realVaultPath, true)) {
-          return {
-            valid: false,
-            reason: 'Parent directory symlink target is outside vault',
-          };
-        }
-      } catch {
-        // Parent directory doesn't exist - that's fine, will be created
-        // Just ensure the path we're creating is within vault boundaries
+      if (!isWithinDirectory(realAncestorPath, realVaultPath, true)) {
+        return {
+          valid: false,
+          reason: 'Deepest existing ancestor resolves outside vault',
+        };
       }
     }
   } catch (error) {

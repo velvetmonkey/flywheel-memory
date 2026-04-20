@@ -183,6 +183,10 @@ export interface PolicyExecutionResult {
   retryAfterMs?: number;
   /** Whether git lock contention was detected */
   lockContention?: boolean;
+  /** Whether rollback was attempted but did not fully succeed */
+  rollbackFailed?: boolean;
+  /** Rollback failure detail when rollbackFailed is true */
+  rollbackError?: string;
 }
 
 /**

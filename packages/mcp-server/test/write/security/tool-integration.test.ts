@@ -26,6 +26,7 @@ import {
   type WriteTestServerContext,
 } from '../../helpers/createWriteTestServer.js';
 import { createTestNote } from '../helpers/testUtils.js';
+import { moveNote } from '../../../src/tools/write/move-notes.js';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
@@ -90,6 +91,30 @@ describe('Tool-level path security (T32)', () => {
       const data = parseResult(result);
       expect(data.success).toBe(false);
       expect(data.message).toMatch(/invalid path|sensitive/i);
+    });
+
+    it('rejects nested destination when deepest existing ancestor is a symlink outside the vault', async () => {
+      const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), 'flywheel-create-escape-'));
+      const symlinkDir = path.join(ctx.vaultPath, 'escape-link');
+
+      try {
+        await fs.symlink(outsideDir, symlinkDir);
+      } catch {
+        await fs.rm(outsideDir, { recursive: true, force: true });
+        return;
+      }
+
+      const result = await client.callTool({
+        name: 'note',
+        arguments: { action: 'create', path: 'escape-link/new/sub/file.md', content: 'bad' },
+      });
+
+      await fs.rm(outsideDir, { recursive: true, force: true });
+      try { await fs.unlink(symlinkDir); } catch { /* already gone */ }
+
+      const data = parseResult(result);
+      expect(data.success).toBe(false);
+      expect(data.message).toMatch(/invalid path|outside vault|ancestor/i);
     });
   });
 
@@ -217,6 +242,42 @@ describe('Tool-level path security (T32)', () => {
       });
       const data = parseResult(result);
       expect(data.success).toBe(false);
+    });
+
+    it('rejects nested destination escapes for both merged and shared move implementations', async () => {
+      await createTestNote(ctx.vaultPath, 'notes/move-source3.md', '# Source\n');
+
+      const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), 'flywheel-move-escape-'));
+      const symlinkDir = path.join(ctx.vaultPath, 'escape-link');
+
+      try {
+        await fs.symlink(outsideDir, symlinkDir);
+      } catch {
+        await fs.rm(outsideDir, { recursive: true, force: true });
+        return;
+      }
+
+      const mergedResult = await client.callTool({
+        name: 'note',
+        arguments: {
+          action: 'move',
+          path: 'notes/move-source3.md',
+          destination: 'escape-link/new/sub/file.md',
+        },
+      });
+      const dedicatedData = await moveNote(ctx.vaultPath, {
+        oldPath: 'notes/move-source3.md',
+        newPath: 'escape-link/new/sub/file.md',
+      });
+
+      await fs.rm(outsideDir, { recursive: true, force: true });
+      try { await fs.unlink(symlinkDir); } catch { /* already gone */ }
+
+      const mergedData = parseResult(mergedResult);
+      expect(mergedData.success).toBe(false);
+      expect(dedicatedData.success).toBe(false);
+      expect(String(mergedData.message)).toMatch(/invalid destination path|outside vault|ancestor/i);
+      expect(String(dedicatedData.message)).toMatch(/invalid destination path|outside vault|ancestor/i);
     });
   });
 

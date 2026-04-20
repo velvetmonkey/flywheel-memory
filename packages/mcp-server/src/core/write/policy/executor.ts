@@ -2,7 +2,7 @@
  * Policy executor
  *
  * Executes policy steps by calling tool functions directly.
- * All steps in a policy are executed atomically with a single git commit.
+ * Policy writes happen live and use compensating rollback on failure.
  */
 
 import fs from 'fs/promises';
@@ -39,11 +39,6 @@ import {
   commitPolicyChanges,
   checkGitLock,
   isGitRepo,
-  createStagingFile,
-  commitStagedFiles,
-  rollbackStagedFiles,
-  cleanupStagingDir,
-  type StagedFile,
 } from '../git.js';
 import { maybeApplyWikilinks, suggestRelatedLinks } from '../wikilinks.js';
 import { runValidationPipeline, type GuardrailMode } from '../validator.js';
@@ -578,18 +573,11 @@ function executeSearch(
 }
 
 /**
- * Execute a complete policy with strict atomic mode
+ * Execute a complete policy with compensating rollback semantics.
  *
- * Policies always use strict atomic mode for commits:
- * 1. Pre-flight: Check git lock before any mutations
- * 2. Execute: Perform all file mutations
- * 3. Commit: Atomic git commit of all changes
- * 4. On failure: Report retryable status for lock contention
- *
- * This ensures agents get clear success/failure semantics:
- * - success=true means ALL changes committed atomically
- * - success=false with retryable=true means try again
- * - success=false with retryable=false means fix the issue
+ * Policies perform live writes, optionally followed by a single git commit.
+ * On step failure or commit failure, the executor attempts to roll back any
+ * files it already modified and reports whether that rollback succeeded.
  */
 export async function executePolicy(
   policy: PolicyDefinition,
@@ -690,18 +678,23 @@ export async function executePolicy(
 
     // Fail-fast: stop on first error
     if (!result.success && !result.skipped) {
-      // Rollback any changes made so far (if commit was requested)
-      if (commit && filesModified.size > 0) {
-        await rollbackChanges(vaultPath, originalContents, filesModified);
+      let rollbackError: string | undefined;
+      if (filesModified.size > 0) {
+        rollbackError = await rollbackChanges(vaultPath, originalContents, filesModified);
       }
+      const rollbackFailed = rollbackError !== undefined;
 
       const executionResult: PolicyExecutionResult = {
         success: false,
         policyName: policy.name,
-        message: `Policy failed at step '${step.id}': ${result.message}`,
+        message: rollbackFailed
+          ? `Policy failed at step '${step.id}': ${result.message}. Rollback also failed: ${rollbackError}`
+          : `Policy failed at step '${step.id}': ${result.message}${filesModified.size > 0 ? '. Changes rolled back.' : ''}`,
         stepResults,
-        filesModified: [], // Nothing committed due to failure
+        filesModified: rollbackFailed ? Array.from(filesModified) : [],
         retryable: false,  // Step failure is not retryable
+        rollbackFailed,
+        rollbackError,
       };
       executionResult.tokensEstimate = estimateTokens(executionResult);
       return executionResult;
@@ -714,6 +707,8 @@ export async function executePolicy(
   let commitError: string | undefined;
   let isRetryable = false;
   let isLockContention = false;
+  let rollbackError: string | undefined;
+  let rollbackFailed = false;
 
   if (commit && filesModified.size > 0) {
     // Commit all modified files together as a single policy commit
@@ -733,8 +728,8 @@ export async function executePolicy(
       gitCommit = gitResult.hash;
       undoAvailable = gitResult.undoAvailable;
     } else if (!gitResult.success) {
-      // Git commit failed - rollback file changes for atomic semantics
-      await rollbackChanges(vaultPath, originalContents, filesModified);
+      rollbackError = await rollbackChanges(vaultPath, originalContents, filesModified);
+      rollbackFailed = rollbackError !== undefined;
 
       // Check if this is a retryable error (lock contention)
       const errorLower = (gitResult.error || '').toLowerCase();
@@ -752,12 +747,16 @@ export async function executePolicy(
     const executionResult: PolicyExecutionResult = {
       success: false,
       policyName: policy.name,
-      message: `Policy steps succeeded but git commit failed: ${commitError}. All changes rolled back.`,
+      message: rollbackFailed
+        ? `Policy steps succeeded but git commit failed: ${commitError}. Rollback also failed: ${rollbackError}`
+        : `Policy steps succeeded but git commit failed: ${commitError}. Changes rolled back.`,
       stepResults,
-      filesModified: [], // Nothing committed due to rollback
+      filesModified: rollbackFailed ? Array.from(filesModified) : [],
       retryable: isRetryable,
       retryAfterMs: isRetryable ? 500 : undefined,
       lockContention: isLockContention,
+      rollbackFailed,
+      rollbackError,
     };
     executionResult.tokensEstimate = estimateTokens(executionResult);
     return executionResult;
@@ -791,11 +790,16 @@ async function rollbackChanges(
   vaultPath: string,
   originalContents: Map<string, string | null>,
   filesModified: Set<string>
-): Promise<void> {
+): Promise<string | undefined> {
+  const errors: string[] = [];
+
   for (const filePath of filesModified) {
     // Full secure validation during rollback (defense in depth)
     const pathCheck = await validatePathSecure(vaultPath, filePath);
-    if (!pathCheck.valid) continue;
+    if (!pathCheck.valid) {
+      errors.push(`${filePath}: ${pathCheck.reason}`);
+      continue;
+    }
 
     const original = originalContents.get(filePath);
     const fullPath = path.join(vaultPath, filePath);
@@ -804,18 +808,23 @@ async function rollbackChanges(
       // File was newly created - delete it
       try {
         await fs.unlink(fullPath);
-      } catch {
-        // File might not exist anymore
+      } catch (error) {
+        const code = (error as NodeJS.ErrnoException).code;
+        if (code !== 'ENOENT') {
+          errors.push(`${filePath}: ${error instanceof Error ? error.message : String(error)}`);
+        }
       }
     } else if (original !== undefined) {
       // Restore original content
       try {
         await fs.writeFile(fullPath, original);
-      } catch {
-        // Best effort rollback
+      } catch (error) {
+        errors.push(`${filePath}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
   }
+
+  return errors.length > 0 ? errors.join('; ') : undefined;
 }
 
 /**

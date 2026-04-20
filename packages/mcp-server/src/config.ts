@@ -502,7 +502,8 @@ Use "policy" to build deterministic, repeatable vault workflows. Describe what y
 language — Claude authors the YAML, saves it, and can execute it on demand. No YAML knowledge needed.
 
 Policies chain vault tools (add/remove/replace sections, create notes, update frontmatter, toggle
-tasks) into atomic operations — all steps succeed or all roll back, committed as a single git commit.
+tasks) into live-write workflows with compensating rollback on failure. Successful runs can optionally
+be committed as a single git commit.
 
 Actions: "list" saved policies (do this first), "execute" with variables, "author" a policy
 from a description, "validate" the YAML, "preview" (dry-run), "revise" to modify.
@@ -511,7 +512,8 @@ Key capabilities:
   - **Variables** — parameterize policies (string, number, boolean, array, enum with defaults).
   - **Conditions** — branch on file/section/frontmatter state (skip steps, don't abort).
   - **Templates** — interpolate variables, builtins ({{today}}, {{now}}), and prior step outputs.
-  - **Atomicity** — failure at any step rolls back all changes. One policy = one git commit.
+  - **Rollback semantics** — failures trigger compensating rollback; rollback failure is reported explicitly.
+  - **Single commit option** — successful executions can be committed as one git commit.
 
 Example: ask "create a policy that generates a weekly review note, pulls open tasks, and updates
 project frontmatter" — Claude authors the YAML, saves it to .flywheel/policies/, and runs it whenever

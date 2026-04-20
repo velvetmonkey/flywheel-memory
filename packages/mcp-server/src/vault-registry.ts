@@ -10,10 +10,12 @@
 import type { VaultIndex } from './core/read/types.js';
 import type { FlywheelConfig } from './core/read/config.js';
 import type { VaultWatcher } from './core/read/watch/index.js';
-import type { StateDb } from '@velvetmonkey/vault-core';
+import type { EntityIndex, StateDb } from '@velvetmonkey/vault-core';
 import type { CooccurrenceIndex } from './core/shared/cooccurrence.js';
 import type { IndexState } from './core/read/graph.js';
 import type { PipelineActivity } from './core/read/watch/pipeline.js';
+import type { InferredCategory } from './core/read/embeddings.js';
+import type { RecencyIndex } from './core/shared/recency.js';
 
 export type VaultBootState = 'transport_connected' | 'booting' | 'ready' | 'degraded';
 export type IntegrityState = 'unknown' | 'checking' | 'healthy' | 'failed' | 'error';
@@ -31,6 +33,20 @@ export interface VaultContext {
   cooccurrenceIndex: CooccurrenceIndex | null;
   /** Per-vault embedding build flag */
   embeddingsBuilding: boolean;
+  /** Per-vault write-side entity index cache */
+  writeEntityIndex: EntityIndex | null;
+  /** Per-vault write-side entity index readiness */
+  writeEntityIndexReady: boolean;
+  /** Per-vault write-side entity index error */
+  writeEntityIndexError: Error | null;
+  /** Per-vault timestamp: last write-side entity index load */
+  writeEntityIndexLastLoadedAt: number;
+  /** Per-vault write-side recency index cache */
+  writeRecencyIndex: RecencyIndex | null;
+  /** Per-vault in-memory entity embeddings for semantic suggestions */
+  entityEmbeddingsMap: Map<string, Float32Array>;
+  /** Per-vault inferred semantic categories */
+  inferredCategoriesMap: Map<string, InferredCategory>;
   /** Per-vault index build state */
   indexState: IndexState;
   /** Per-vault index error */

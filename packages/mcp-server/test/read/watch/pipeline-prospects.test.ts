@@ -31,6 +31,44 @@ let tempVault: string;
 let stateDb: StateDb;
 let vaultIndex: VaultIndex;
 
+function makeVaultContext(): VaultContext {
+  return {
+    name: 'test',
+    vaultPath: tempVault,
+    caseInsensitive: false,
+    stateDb,
+    vaultIndex,
+    flywheelConfig: {},
+    watcher: null,
+    cooccurrenceIndex: null,
+    embeddingsBuilding: false,
+    writeEntityIndex: null,
+    writeEntityIndexReady: false,
+    writeEntityIndexError: null,
+    writeEntityIndexLastLoadedAt: 0,
+    writeRecencyIndex: null,
+    entityEmbeddingsMap: new Map(),
+    inferredCategoriesMap: new Map(),
+    indexState: 'ready',
+    indexError: null,
+    lastCooccurrenceRebuildAt: 0,
+    lastEdgeWeightRebuildAt: 0,
+    lastEntityScanAt: 0,
+    lastHubScoreRebuildAt: 0,
+    lastIndexCacheSaveAt: 0,
+    pipelineActivity: createEmptyPipelineActivity(),
+    bootState: 'ready',
+    integrityState: 'healthy',
+    integrityCheckInProgress: false,
+    integrityStartedAt: null,
+    integritySource: null,
+    lastIntegrityCheckedAt: null,
+    lastIntegrityDurationMs: null,
+    lastIntegrityDetail: null,
+    lastBackupAt: null,
+  };
+}
+
 describe('PipelineRunner prospect_scan', () => {
   beforeAll(async () => {
     tempVault = await createTempVault();
@@ -95,24 +133,7 @@ describe('PipelineRunner prospect_scan', () => {
   });
 
   async function runPipeline(changedPaths: string[]) {
-    const ctx: VaultContext = {
-      name: 'test',
-      vaultPath: tempVault,
-      stateDb,
-      vaultIndex,
-      flywheelConfig: {},
-      watcher: null,
-      cooccurrenceIndex: null,
-      embeddingsBuilding: false,
-      indexState: 'ready',
-      indexError: null,
-      lastCooccurrenceRebuildAt: 0,
-      lastEdgeWeightRebuildAt: 0,
-      lastEntityScanAt: 0,
-      lastHubScoreRebuildAt: 0,
-      lastIndexCacheSaveAt: 0,
-      pipelineActivity: createEmptyPipelineActivity(),
-    };
+    const ctx = makeVaultContext();
 
     const events = changedPaths.map(p => ({
       type: 'upsert' as const,

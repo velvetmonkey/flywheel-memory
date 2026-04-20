@@ -16,6 +16,9 @@ import {
   type VaultScope,
 } from '../../../src/vault-scope.js';
 import type { VaultIndex } from '../../../src/core/read/types.js';
+import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
+import { getEntityEmbeddingsMap, getInferredCategory } from '../../../src/core/read/embeddings.js';
+import { getEntityIndex, isEntityIndexReady } from '../../../src/core/write/wikilinks.js';
 
 /** Minimal VaultScope stub for testing. */
 function stubScope(name: string): VaultScope {
@@ -29,7 +32,23 @@ function stubScope(name: string): VaultScope {
     indexState: 'ready' as const,
     indexError: null,
     embeddingsBuilding: false,
+    writeEntityIndex: null,
+    writeEntityIndexReady: false,
+    writeEntityIndexError: null,
+    writeEntityIndexLastLoadedAt: 0,
+    writeRecencyIndex: null,
     entityEmbeddingsMap: new Map(),
+    inferredCategoriesMap: new Map(),
+    pipelineActivity: createEmptyPipelineActivity(),
+    bootState: 'ready',
+    integrityState: 'healthy',
+    integrityCheckInProgress: false,
+    integrityStartedAt: null,
+    integritySource: null,
+    lastIntegrityCheckedAt: null,
+    lastIntegrityDurationMs: null,
+    lastIntegrityDetail: null,
+    lastBackupAt: null,
   };
 }
 
@@ -151,5 +170,68 @@ describe('multi-vault ALS isolation', () => {
     }
 
     expect(results.length).toBe(9);
+  });
+
+  it('isolates scoped embeddings and write-side entity index state', async () => {
+    const scopeA = stubScope('vault-a');
+    const scopeB = stubScope('vault-b');
+
+    scopeA.entityEmbeddingsMap.set('Alpha', new Float32Array([1, 0]));
+    scopeB.entityEmbeddingsMap.set('Beta', new Float32Array([0, 1]));
+    scopeA.inferredCategoriesMap.set('Alpha', {
+      entityName: 'Alpha',
+      category: 'project',
+      confidence: 0.9,
+    });
+    scopeB.inferredCategoriesMap.set('Beta', {
+      entityName: 'Beta',
+      category: 'person',
+      confidence: 0.8,
+    });
+    scopeA.writeEntityIndex = { _metadata: { total_entities: 1 } } as any;
+    scopeB.writeEntityIndex = { _metadata: { total_entities: 2 } } as any;
+    scopeA.writeEntityIndexReady = true;
+    scopeB.writeEntityIndexReady = true;
+
+    let releaseA!: () => void;
+    const gateA = new Promise<void>(resolve => { releaseA = resolve; });
+
+    const handlerA = runInVaultScope(scopeA, async () => {
+      expect(getEntityEmbeddingsMap().has('Alpha')).toBe(true);
+      expect(getEntityEmbeddingsMap().has('Beta')).toBe(false);
+      await gateA;
+      return {
+        embeddingKeys: Array.from(getEntityEmbeddingsMap().keys()),
+        inferred: getInferredCategory('Alpha')?.category,
+        indexReady: isEntityIndexReady(),
+        entityCount: (getEntityIndex() as any)?._metadata?.total_entities,
+      };
+    });
+
+    const handlerB = runInVaultScope(scopeB, async () => {
+      const snapshot = {
+        embeddingKeys: Array.from(getEntityEmbeddingsMap().keys()),
+        inferred: getInferredCategory('Beta')?.category,
+        indexReady: isEntityIndexReady(),
+        entityCount: (getEntityIndex() as any)?._metadata?.total_entities,
+      };
+      releaseA();
+      return snapshot;
+    });
+
+    const [resultA, resultB] = await Promise.all([handlerA, handlerB]);
+
+    expect(resultA).toEqual({
+      embeddingKeys: ['Alpha'],
+      inferred: 'project',
+      indexReady: true,
+      entityCount: 1,
+    });
+    expect(resultB).toEqual({
+      embeddingKeys: ['Beta'],
+      inferred: 'person',
+      indexReady: true,
+      entityCount: 2,
+    });
   });
 });

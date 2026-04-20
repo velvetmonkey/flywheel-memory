@@ -52,6 +52,9 @@ c:*
 *.log
 npm-debug.log*
 
+# Generated review bundles
+flywheel-memory-repomix-review.xml
+
 # Lock files (use root only)
 packages/*/package-lock.json
 

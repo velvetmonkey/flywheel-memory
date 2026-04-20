@@ -8,6 +8,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
 import type { PolicyDefinition, PolicyValidationResult } from './types.js';
+import { validatePolicyName } from './names.js';
 import { validatePolicySchema } from './schema.js';
 import { getPoliciesDir, ensureMigrated } from './policyPaths.js';
 
@@ -77,6 +78,19 @@ export async function loadPolicy(
   vaultPath: string,
   policyName: string
 ): Promise<PolicyValidationResult> {
+  const nameValidation = validatePolicyName(policyName);
+  if (!nameValidation.valid) {
+    return {
+      valid: false,
+      errors: [{
+        type: 'schema',
+        message: `Invalid policy name: ${nameValidation.reason}`,
+        path: 'name',
+      }],
+      warnings: [],
+    };
+  }
+
   await ensureMigrated(vaultPath);
   const policiesDir = getPoliciesDir(vaultPath);
   const policyPath = path.join(policiesDir, `${policyName}.yaml`);

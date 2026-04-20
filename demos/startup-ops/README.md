@@ -39,9 +39,9 @@ startup-ops/
 │   ├── research/
 │   │   ├── Competitor Analysis.md    # vs Tableau, PowerBI, Looker
 │   │   └── User Interview Synthesis.md  # 12 interviews
-│   └── roadmap/
+│   └── planning/
 │       ├── Feature Priorities.md     # P0-P3 backlog
-│       └── Q1 2026 Roadmap.md        # Caching, alerts, reports
+│       └── Q1 2026 Priorities.md     # Caching, alerts, reports
 ├── team/
 │   ├── Alex Chen.md                  # Co-Founder & CEO, engineering
 │   ├── Jamie Patel.md               # Co-Founder & COO, sales

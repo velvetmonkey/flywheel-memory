@@ -68,7 +68,6 @@ import {
   hasEntityEmbeddingsIndex,
   getStoredEmbeddingModel,
   getActiveModelId,
-  getEntityEmbeddingsMap,
   getStoredTextVersion,
   clearEmbeddingsForRebuild,
   classifyUncategorizedEntities,
@@ -527,6 +526,13 @@ async function initializeVault(name: string, vaultPathArg: string): Promise<Vaul
     watcher: null,
     cooccurrenceIndex: null,
     embeddingsBuilding: false,
+    writeEntityIndex: null,
+    writeEntityIndexReady: false,
+    writeEntityIndexError: null,
+    writeEntityIndexLastLoadedAt: 0,
+    writeRecencyIndex: null,
+    entityEmbeddingsMap: new Map(),
+    inferredCategoriesMap: new Map(),
     indexState: 'building',
     indexError: null,
     lastCooccurrenceRebuildAt: 0,
@@ -573,21 +579,47 @@ function buildVaultScope(ctx: VaultContext): VaultScope {
     stateDb: ctx.stateDb,
     flywheelConfig: ctx.flywheelConfig,
     vaultIndex: ctx.vaultIndex,
-    cooccurrenceIndex: ctx.cooccurrenceIndex,
-    indexState: ctx.indexState,
-    indexError: ctx.indexError,
-    embeddingsBuilding: ctx.embeddingsBuilding,
-    entityEmbeddingsMap: getEntityEmbeddingsMap(),
+    get cooccurrenceIndex() { return ctx.cooccurrenceIndex; },
+    set cooccurrenceIndex(value) { ctx.cooccurrenceIndex = value; },
+    get indexState() { return ctx.indexState; },
+    set indexState(value) { ctx.indexState = value; },
+    get indexError() { return ctx.indexError; },
+    set indexError(value) { ctx.indexError = value; },
+    get embeddingsBuilding() { return ctx.embeddingsBuilding; },
+    set embeddingsBuilding(value) { ctx.embeddingsBuilding = value; },
+    get writeEntityIndex() { return ctx.writeEntityIndex; },
+    set writeEntityIndex(value) { ctx.writeEntityIndex = value; },
+    get writeEntityIndexReady() { return ctx.writeEntityIndexReady; },
+    set writeEntityIndexReady(value) { ctx.writeEntityIndexReady = value; },
+    get writeEntityIndexError() { return ctx.writeEntityIndexError; },
+    set writeEntityIndexError(value) { ctx.writeEntityIndexError = value; },
+    get writeEntityIndexLastLoadedAt() { return ctx.writeEntityIndexLastLoadedAt; },
+    set writeEntityIndexLastLoadedAt(value) { ctx.writeEntityIndexLastLoadedAt = value; },
+    get writeRecencyIndex() { return ctx.writeRecencyIndex; },
+    set writeRecencyIndex(value) { ctx.writeRecencyIndex = value; },
+    get entityEmbeddingsMap() { return ctx.entityEmbeddingsMap; },
+    set entityEmbeddingsMap(value) { ctx.entityEmbeddingsMap = value; },
+    get inferredCategoriesMap() { return ctx.inferredCategoriesMap; },
+    set inferredCategoriesMap(value) { ctx.inferredCategoriesMap = value; },
     pipelineActivity: ctx.pipelineActivity,
-    bootState: ctx.bootState,
-    integrityState: ctx.integrityState,
-    integrityCheckInProgress: ctx.integrityCheckInProgress,
-    integrityStartedAt: ctx.integrityStartedAt,
-    integritySource: ctx.integritySource,
-    lastIntegrityCheckedAt: ctx.lastIntegrityCheckedAt,
-    lastIntegrityDurationMs: ctx.lastIntegrityDurationMs,
-    lastIntegrityDetail: ctx.lastIntegrityDetail,
-    lastBackupAt: ctx.lastBackupAt,
+    get bootState() { return ctx.bootState; },
+    set bootState(value) { ctx.bootState = value; },
+    get integrityState() { return ctx.integrityState; },
+    set integrityState(value) { ctx.integrityState = value; },
+    get integrityCheckInProgress() { return ctx.integrityCheckInProgress; },
+    set integrityCheckInProgress(value) { ctx.integrityCheckInProgress = value; },
+    get integrityStartedAt() { return ctx.integrityStartedAt; },
+    set integrityStartedAt(value) { ctx.integrityStartedAt = value; },
+    get integritySource() { return ctx.integritySource; },
+    set integritySource(value) { ctx.integritySource = value; },
+    get lastIntegrityCheckedAt() { return ctx.lastIntegrityCheckedAt; },
+    set lastIntegrityCheckedAt(value) { ctx.lastIntegrityCheckedAt = value; },
+    get lastIntegrityDurationMs() { return ctx.lastIntegrityDurationMs; },
+    set lastIntegrityDurationMs(value) { ctx.lastIntegrityDurationMs = value; },
+    get lastIntegrityDetail() { return ctx.lastIntegrityDetail; },
+    set lastIntegrityDetail(value) { ctx.lastIntegrityDetail = value; },
+    get lastBackupAt() { return ctx.lastBackupAt; },
+    set lastBackupAt(value) { ctx.lastBackupAt = value; },
   };
 }
 
@@ -602,6 +634,9 @@ function buildVaultScope(ctx: VaultContext): VaultScope {
 function activateVault(ctx: VaultContext, skipEmbeddingLoad = false): void {
   // Update module-level state
   (globalThis as any).__flywheel_active_vault = ctx.name;
+
+  // Set the fallback VaultScope first so scope-aware caches populate per-vault state.
+  setActiveScope(buildVaultScope(ctx));
 
   if (ctx.stateDb) {
     setWriteStateDb(ctx.stateDb);
@@ -621,9 +656,6 @@ function activateVault(ctx: VaultContext, skipEmbeddingLoad = false): void {
   setIndexState(ctx.indexState);
   setIndexError(ctx.indexError);
   setEmbeddingsBuilding(ctx.embeddingsBuilding);
-
-  // Set the fallback VaultScope (for code outside ALS context: startup, watcher)
-  setActiveScope(buildVaultScope(ctx));
 }
 
 /**

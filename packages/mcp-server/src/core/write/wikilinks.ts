@@ -183,6 +183,71 @@ let cooccurrenceIndex: CooccurrenceIndex | null = null;
  */
 let recencyIndex: RecencyIndex | null = null;
 
+function getScopedEntityIndex(): EntityIndex | null {
+  return getActiveScopeOrNull()?.writeEntityIndex ?? entityIndex;
+}
+
+function setScopedEntityIndex(value: EntityIndex | null): void {
+  const scope = getActiveScopeOrNull();
+  if (scope) {
+    scope.writeEntityIndex = value;
+  } else {
+    entityIndex = value;
+  }
+}
+
+function isScopedEntityIndexReady(): boolean {
+  return getActiveScopeOrNull()?.writeEntityIndexReady ?? indexReady;
+}
+
+function setScopedEntityIndexReady(value: boolean): void {
+  const scope = getActiveScopeOrNull();
+  if (scope) {
+    scope.writeEntityIndexReady = value;
+  } else {
+    indexReady = value;
+  }
+}
+
+function getScopedEntityIndexError(): Error | null {
+  return getActiveScopeOrNull()?.writeEntityIndexError ?? indexError;
+}
+
+function setScopedEntityIndexError(value: Error | null): void {
+  const scope = getActiveScopeOrNull();
+  if (scope) {
+    scope.writeEntityIndexError = value;
+  } else {
+    indexError = value;
+  }
+}
+
+function getScopedEntityIndexLastLoadedAt(): number {
+  return getActiveScopeOrNull()?.writeEntityIndexLastLoadedAt ?? lastLoadedAt;
+}
+
+function setScopedEntityIndexLastLoadedAt(value: number): void {
+  const scope = getActiveScopeOrNull();
+  if (scope) {
+    scope.writeEntityIndexLastLoadedAt = value;
+  } else {
+    lastLoadedAt = value;
+  }
+}
+
+function getScopedRecencyIndex(): RecencyIndex | null {
+  return getActiveScopeOrNull()?.writeRecencyIndex ?? recencyIndex;
+}
+
+function setScopedRecencyIndex(value: RecencyIndex | null): void {
+  const scope = getActiveScopeOrNull();
+  if (scope) {
+    scope.writeRecencyIndex = value;
+  } else {
+    recencyIndex = value;
+  }
+}
+
 /**
  * Folders to exclude from entity scanning
  * Includes periodic notes, working folders, and clippings/external content
@@ -226,9 +291,10 @@ export async function initializeEntityIndex(vaultPath: string): Promise<void> {
       try {
         const dbIndex = getEntityIndexFromDb(stateDb);
         if (dbIndex._metadata.total_entities > 0) {
-          entityIndex = dbIndex;
-          indexReady = true;
-          lastLoadedAt = Date.now();
+          setScopedEntityIndex(dbIndex);
+          setScopedEntityIndexReady(true);
+          setScopedEntityIndexError(null);
+          setScopedEntityIndexLastLoadedAt(Date.now());
           console.error(`[Flywheel] Loaded ${dbIndex._metadata.total_entities} entities from StateDb`);
           return;
         }
@@ -240,8 +306,9 @@ export async function initializeEntityIndex(vaultPath: string): Promise<void> {
     // No StateDb or empty - build index
     await rebuildIndex(vaultPath);
   } catch (error) {
-    indexError = error instanceof Error ? error : new Error(String(error));
-    console.error(`[Flywheel] Failed to initialize entity index: ${indexError.message}`);
+    const resolvedError = error instanceof Error ? error : new Error(String(error));
+    setScopedEntityIndexError(resolvedError);
+    console.error(`[Flywheel] Failed to initialize entity index: ${resolvedError.message}`);
     // Don't throw - wikilinks will just be disabled
   }
 }
@@ -253,21 +320,23 @@ async function rebuildIndex(vaultPath: string): Promise<void> {
   console.error(`[Flywheel] Scanning vault for entities...`);
   const startTime = Date.now();
 
-  entityIndex = await scanVaultEntities(vaultPath, {
+  const scannedEntityIndex = await scanVaultEntities(vaultPath, {
     excludeFolders: DEFAULT_EXCLUDE_FOLDERS,
     customCategories: getConfig()?.custom_categories,
   });
+  setScopedEntityIndex(scannedEntityIndex);
+  setScopedEntityIndexReady(true);
+  setScopedEntityIndexError(null);
+  setScopedEntityIndexLastLoadedAt(Date.now());
 
-  indexReady = true;
-  lastLoadedAt = Date.now();
   const entityDuration = Date.now() - startTime;
-  console.error(`[Flywheel] Entity index built: ${entityIndex._metadata.total_entities} entities in ${entityDuration}ms`);
+  console.error(`[Flywheel] Entity index built: ${scannedEntityIndex._metadata.total_entities} entities in ${entityDuration}ms`);
 
   // Save to StateDb for fast subsequent loads
   const stateDb = getWriteStateDb();
   if (stateDb) {
     try {
-      stateDb.replaceAllEntities(entityIndex);
+      stateDb.replaceAllEntities(scannedEntityIndex);
       console.error(`[Flywheel] Saved entities to StateDb`);
     } catch (e) {
       console.error(`[Flywheel] Failed to save entities to StateDb: ${e}`);
@@ -275,7 +344,7 @@ async function rebuildIndex(vaultPath: string): Promise<void> {
   }
 
   // Get entities for secondary indexes
-  const entities = getAllEntities(entityIndex);
+  const entities = getAllEntities(scannedEntityIndex);
   const entityNames = entities.map(e => typeof e === 'string' ? e : getEntityName(e));
 
   // Mine co-occurrences for conceptual suggestions
@@ -296,17 +365,18 @@ async function rebuildIndex(vaultPath: string): Promise<void> {
 
     if (cachedRecency && cacheAgeMs < 60 * 60 * 1000) {
       // Cache is valid and less than 1 hour old
-      recencyIndex = cachedRecency;
-      console.error(`[Flywheel] Recency index loaded from StateDb (${recencyIndex.lastMentioned.size} entities)`);
+      setScopedRecencyIndex(cachedRecency);
+      console.error(`[Flywheel] Recency index loaded from StateDb (${cachedRecency.lastMentioned.size} entities)`);
     } else {
       // Build fresh recency index
       const recencyStart = Date.now();
-      recencyIndex = await buildRecencyIndex(vaultPath, entities);
+      const rebuiltRecencyIndex = await buildRecencyIndex(vaultPath, entities);
+      setScopedRecencyIndex(rebuiltRecencyIndex);
       const recencyDuration = Date.now() - recencyStart;
-      console.error(`[Flywheel] Recency index built: ${recencyIndex.lastMentioned.size} entities in ${recencyDuration}ms`);
+      console.error(`[Flywheel] Recency index built: ${rebuiltRecencyIndex.lastMentioned.size} entities in ${recencyDuration}ms`);
 
       // Save to StateDb
-      saveRecencyToStateDb(recencyIndex);
+      saveRecencyToStateDb(rebuiltRecencyIndex);
     }
   } catch (e) {
     console.error(`[Flywheel] Failed to build recency index: ${e}`);
@@ -317,14 +387,14 @@ async function rebuildIndex(vaultPath: string): Promise<void> {
  * Check if entity index is ready
  */
 export function isEntityIndexReady(): boolean {
-  return indexReady && entityIndex !== null;
+  return isScopedEntityIndexReady() && getScopedEntityIndex() !== null;
 }
 
 /**
  * Get the entity index (may be null if not ready)
  */
 export function getEntityIndex(): EntityIndex | null {
-  return entityIndex;
+  return getScopedEntityIndex();
 }
 
 /**
@@ -337,7 +407,7 @@ export function getEntityIndex(): EntityIndex | null {
  */
 export function checkAndRefreshIfStale(): void {
   const stateDb = getWriteStateDb();
-  if (!stateDb || !indexReady) return;
+  if (!stateDb || !isScopedEntityIndexReady()) return;
 
   try {
     const metadata = getStateDbMetadata(stateDb);
@@ -346,20 +416,22 @@ export function checkAndRefreshIfStale(): void {
     const dbBuiltAt = new Date(metadata.entitiesBuiltAt).getTime();
 
     // If StateDb was updated after we loaded, refresh
-    if (dbBuiltAt > lastLoadedAt) {
+    if (dbBuiltAt > getScopedEntityIndexLastLoadedAt()) {
       console.error('[Flywheel] Entity index stale, reloading from StateDb...');
       const dbIndex = getEntityIndexFromDb(stateDb);
       if (dbIndex._metadata.total_entities > 0) {
-        entityIndex = dbIndex;
-        lastLoadedAt = Date.now();
+        setScopedEntityIndex(dbIndex);
+        setScopedEntityIndexReady(true);
+        setScopedEntityIndexError(null);
+        setScopedEntityIndexLastLoadedAt(Date.now());
         console.error(`[Flywheel] Reloaded ${dbIndex._metadata.total_entities} entities`);
       }
     }
 
     // Always refresh recency from StateDb (watcher updates it independently of entities)
     const freshRecency = loadRecencyFromStateDb();
-    if (freshRecency && freshRecency.lastUpdated > (recencyIndex?.lastUpdated ?? 0)) {
-      recencyIndex = freshRecency;
+    if (freshRecency && freshRecency.lastUpdated > (getScopedRecencyIndex()?.lastUpdated ?? 0)) {
+      setScopedRecencyIndex(freshRecency);
       console.error(`[Flywheel] Refreshed recency index (${freshRecency.lastMentioned.size} entities)`);
     }
   } catch (e) {
@@ -492,7 +564,8 @@ export function sanitizeWikilinks(content: string): { content: string; removed: 
  * @returns Content with wikilinks applied, or original if index not ready
  */
 export function processWikilinks(content: string, notePath?: string, existingContent?: string): WikilinkResult {
-  if (!isEntityIndexReady() || !entityIndex) {
+  const scopedEntityIndex = getScopedEntityIndex();
+  if (!isEntityIndexReady() || !scopedEntityIndex) {
     return {
       content,
       linksAdded: 0,
@@ -500,7 +573,7 @@ export function processWikilinks(content: string, notePath?: string, existingCon
     };
   }
 
-  let entities = getAllEntities(entityIndex);
+  let entities = getAllEntities(scopedEntityIndex);
 
   // Filter out suppressed entities (from wikilink feedback, with folder context)
   const stateDb = getWriteStateDb();
@@ -691,36 +764,37 @@ export function getEntityIndexStats(): {
   categories: Record<string, number>;
   error?: string;
 } {
-  if (!indexReady || !entityIndex) {
+  const scopedEntityIndex = getScopedEntityIndex();
+  if (!isScopedEntityIndexReady() || !scopedEntityIndex) {
     return {
       ready: false,
       totalEntities: 0,
       categories: {},
-      error: indexError?.message,
+      error: getScopedEntityIndexError()?.message,
     };
   }
 
   return {
     ready: true,
-    totalEntities: entityIndex._metadata.total_entities,
+    totalEntities: scopedEntityIndex._metadata.total_entities,
     categories: {
-      technologies: entityIndex.technologies.length,
-      acronyms: entityIndex.acronyms.length,
-      people: entityIndex.people.length,
-      projects: entityIndex.projects.length,
-      organizations: entityIndex.organizations?.length ?? 0,
-      locations: entityIndex.locations?.length ?? 0,
-      concepts: entityIndex.concepts?.length ?? 0,
-      animals: entityIndex.animals?.length ?? 0,
-      media: entityIndex.media?.length ?? 0,
-      events: entityIndex.events?.length ?? 0,
-      documents: entityIndex.documents?.length ?? 0,
-      vehicles: entityIndex.vehicles?.length ?? 0,
-      health: entityIndex.health?.length ?? 0,
-      finance: entityIndex.finance?.length ?? 0,
-      food: entityIndex.food?.length ?? 0,
-      hobbies: entityIndex.hobbies?.length ?? 0,
-      other: entityIndex.other.length,
+      technologies: scopedEntityIndex.technologies.length,
+      acronyms: scopedEntityIndex.acronyms.length,
+      people: scopedEntityIndex.people.length,
+      projects: scopedEntityIndex.projects.length,
+      organizations: scopedEntityIndex.organizations?.length ?? 0,
+      locations: scopedEntityIndex.locations?.length ?? 0,
+      concepts: scopedEntityIndex.concepts?.length ?? 0,
+      animals: scopedEntityIndex.animals?.length ?? 0,
+      media: scopedEntityIndex.media?.length ?? 0,
+      events: scopedEntityIndex.events?.length ?? 0,
+      documents: scopedEntityIndex.documents?.length ?? 0,
+      vehicles: scopedEntityIndex.vehicles?.length ?? 0,
+      health: scopedEntityIndex.health?.length ?? 0,
+      finance: scopedEntityIndex.finance?.length ?? 0,
+      food: scopedEntityIndex.food?.length ?? 0,
+      hobbies: scopedEntityIndex.hobbies?.length ?? 0,
+      other: scopedEntityIndex.other.length,
     },
   };
 }
@@ -1423,12 +1497,13 @@ export async function suggestRelatedLinks(
   checkAndRefreshIfStale();
 
   // Check if entity index is ready
-  if (!isEntityIndexReady() || !entityIndex) {
+  const scopedEntityIndex = getScopedEntityIndex();
+  if (!isEntityIndexReady() || !scopedEntityIndex) {
     return emptyResult;
   }
 
   // Get all entities with type information for category-based boosting
-  const entitiesWithTypes = getAllEntitiesWithTypes(entityIndex);
+  const entitiesWithTypes = getAllEntitiesWithTypes(scopedEntityIndex);
   if (entitiesWithTypes.length === 0) {
     return emptyResult;
   }
@@ -1501,6 +1576,7 @@ export async function suggestRelatedLinks(
   const directlyMatchedEntities = new Set<string>();
   // Track entities admitted by any scoring path (lexical, cooccurrence, semantic) — minContentMatch gate applied later
   const entitiesWithAnyScoringPath = new Set<string>();
+  const scopedRecencyIndex = getScopedRecencyIndex();
 
   for (const { entity, category } of entitiesWithTypes) {
     // Get entity name
@@ -1564,7 +1640,7 @@ export async function suggestRelatedLinks(
     score += layerContextBoost;
 
     // Layer 7: Recency boost - boost recently-mentioned entities
-    const layerRecencyBoost = disabled.has('recency') ? 0 : (recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0);
+    const layerRecencyBoost = disabled.has('recency') ? 0 : (scopedRecencyIndex ? getRecencyBoost(entityName, scopedRecencyIndex) : 0);
     score += layerRecencyBoost;
 
     // Layer 8: Cross-folder boost - prioritize cross-cutting connections
@@ -1674,7 +1750,7 @@ export async function suggestRelatedLinks(
       if (linkedEntities.has(entityName.toLowerCase())) continue;
 
       // Get co-occurrence boost: max(content co-occurrence, retrieval co-occurrence)
-      const contentCoocBoost = getCooccurrenceBoost(entityName, cooccurrenceSeeds, cooccurrenceIndex, recencyIndex);
+      const contentCoocBoost = getCooccurrenceBoost(entityName, cooccurrenceSeeds, cooccurrenceIndex, scopedRecencyIndex);
       const retrievalCoocBoost = getRetrievalBoost(entity.path, retrievalBoostMap);
       const boost = Math.max(contentCoocBoost, retrievalCoocBoost);
 
@@ -1733,7 +1809,7 @@ export async function suggestRelatedLinks(
           const typeBoost = disabled.has('type_boost') ? 0 : getTypeBoost(category, getConfig()?.custom_categories, entityName);
           const contextBoost = disabled.has('context_boost') ? 0 : (contextBoosts[category] || 0);
           const recencyBoostVal = hasContentOverlap && !disabled.has('recency')
-            ? (recencyIndex ? getRecencyBoost(entityName, recencyIndex) : 0)
+            ? (scopedRecencyIndex ? getRecencyBoost(entityName, scopedRecencyIndex) : 0)
             : 0;
           const rawCrossFolderBoost = disabled.has('cross_folder') ? 0 : ((notePath && entity.path) ? getCrossFolderBoost(entity.path, notePath) : 0);
           const rawHubBoost = disabled.has('hub_boost') ? 0 : getHubBoost(entity);
@@ -1903,9 +1979,9 @@ export async function suggestRelatedLinks(
     if (b.score !== a.score) return b.score - a.score;
 
     // Secondary: recency (more recent first)
-    if (recencyIndex) {
-      const aRecency = recencyIndex.lastMentioned.get(a.name.toLowerCase()) || 0;
-      const bRecency = recencyIndex.lastMentioned.get(b.name.toLowerCase()) || 0;
+    if (scopedRecencyIndex) {
+      const aRecency = scopedRecencyIndex.lastMentioned.get(a.name.toLowerCase()) || 0;
+      const bRecency = scopedRecencyIndex.lastMentioned.get(b.name.toLowerCase()) || 0;
       return bRecency - aRecency;
     }
 

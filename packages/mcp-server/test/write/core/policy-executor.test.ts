@@ -15,6 +15,7 @@ import {
 } from '../helpers/testUtils.js';
 import { initializeEntityIndex, setWriteStateDb } from '../../../src/core/write/wikilinks.js';
 import * as wikilinksModule from '../../../src/core/write/wikilinks.js';
+import * as gitModule from '../../../src/core/write/git.js';
 import { readVaultFile } from '../../../src/core/write/writer.js';
 import path from 'path';
 import fs from 'fs/promises';
@@ -391,5 +392,101 @@ Original content here.
     const { content } = await readVaultFile(vaultPath, 'project.md');
     expect(content).toContain('→ [[MCP Server]]');
     suggestSpy.mockRestore();
+  });
+  it('reports rollback failure details when compensating rollback cannot restore changes', async () => {
+    const createdNotePath = 'notes/rollback-created.md';
+    const normalizedCreatedNotePath = createdNotePath.replace(/\\/g, '/').toLowerCase();
+    const originalUnlink = fs.unlink;
+    const unlinkSpy = vi.spyOn(fs, 'unlink').mockImplementation(async (filePath) => {
+      const normalizedFilePath = String(filePath).replace(/\\/g, '/').toLowerCase();
+      if (normalizedFilePath.endsWith(normalizedCreatedNotePath)) {
+        throw new Error('simulated unlink failure during rollback');
+      }
+      return originalUnlink.call(fs, filePath as Parameters<typeof fs.unlink>[0]);
+    });
+
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'rollback-failure-reporting',
+      description: 'Rollback failure reporting',
+      steps: [
+        {
+          id: 'create-note',
+          tool: 'vault_create_note',
+          params: {
+            path: createdNotePath,
+            content: 'Created before failure',
+          },
+        },
+        {
+          id: 'fail-step',
+          tool: 'vault_add_to_section',
+          params: {
+            path: 'missing/file.md',
+            section: '## Missing',
+            content: 'This step fails',
+            format: 'plain',
+          },
+        },
+      ],
+    };
+
+    const result = await executePolicy(policy, vaultPath, {}, false);
+
+    unlinkSpy.mockRestore();
+
+    expect(result.success).toBe(false);
+    expect(result.rollbackFailed).toBe(true);
+    expect(result.rollbackError).toMatch(/simulated unlink failure during rollback/i);
+    expect(result.filesModified).toContain(createdNotePath);
+    expect(result.message).toMatch(/rollback also failed/i);
+    await expect(fs.access(path.join(vaultPath, createdNotePath))).resolves.toBeUndefined();
+  });
+
+  it('rolls back live writes when git commit fails after successful steps', async () => {
+    const notePath = 'commit-failure.md';
+    const originalContent = '# Commit Failure\n\n## Log\n\nOriginal content.\n';
+    await fs.writeFile(path.join(vaultPath, notePath), originalContent);
+
+    const isRepoSpy = vi.spyOn(gitModule, 'isGitRepo').mockResolvedValue(true);
+    const lockSpy = vi.spyOn(gitModule, 'checkGitLock').mockResolvedValue({ locked: false });
+    const commitSpy = vi.spyOn(gitModule, 'commitPolicyChanges').mockResolvedValue({
+      success: false,
+      error: 'simulated git commit failure',
+      undoAvailable: false,
+      filesCommitted: 0,
+    });
+
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'commit-failure-rolls-back',
+      description: 'Commit failure rollback',
+      steps: [
+        {
+          id: 'append-log',
+          tool: 'vault_add_to_section',
+          params: {
+            path: notePath,
+            section: '## Log',
+            content: 'Added before commit failure',
+            format: 'plain',
+          },
+        },
+      ],
+    };
+
+    const result = await executePolicy(policy, vaultPath, {}, true);
+
+    commitSpy.mockRestore();
+    lockSpy.mockRestore();
+    isRepoSpy.mockRestore();
+
+    expect(result.success).toBe(false);
+    expect(result.message).toMatch(/git commit failed/i);
+    expect(result.rollbackFailed).toBe(false);
+    expect(result.filesModified).toEqual([]);
+
+    const restored = await fs.readFile(path.join(vaultPath, notePath), 'utf-8');
+    expect(restored).toBe(originalContent);
   });
 });

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.4] - 2026-04-21
+
 ### Added
 - **`find_notes` tool** — dedicated metadata enumeration tool (folder, tags, frontmatter filters, date range, sort/limit). Returns lightweight note summaries; does not perform full-text or semantic search.
 - **Search consumer parameter** — `consumer` param (`human` vs `llm`) adjusts output formatting per audience
@@ -30,7 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Shared answer layer (P39)** — new `demos/lib/answer_layer.py` provides dataset-agnostic answer parsing, extraction/compression, LLM-as-judge, and scoring. LoCoMo benchmark uses `ANSWER:` prompt contract with per-question answer artifacts (raw vs final). Token F1 split into raw (diagnostic) and final (after extraction). Env controls: `JUDGE`, `JUDGE_MODEL`, `ANSWER_EXTRACT`, `EXTRACT_MODEL`. 50 unit tests.
+- **Vault-scoped runtime hardening (P45)** — watcher scheduling, recency/task cache access, and policy watcher reconciliation now resolve through vault scope instead of steady-state module globals, with per-vault buffering and final reconciliation for policy writes.
 - **README redesigned** as product page, trimmed implementation details, benchmark section leads with data
+- **Policy/docs contract tightened** — public docs now describe live writes with compensating rollback, and the iteration stress harness is labeled simulation-only where it surfaces.
 - **Stale tool counts** fixed across config, docs, and demos
 
 ## [2.0.151-154] - 2026-03-27
@@ -625,7 +629,8 @@ Foundation polish: policy engine fixes, AGPL relicense, code health cleanup, tes
 - CI workflows for linting and testing
 - Strategic README with project positioning
 
-[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.154...HEAD
+[Unreleased]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.12.4...HEAD
+[2.12.4]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.12.3...flywheel-memory-v2.12.4
 [2.0.151-154]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.150...flywheel-memory-v2.0.154
 [2.0.145-2.0.150]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.144...flywheel-memory-v2.0.150
 [2.0.139-2.0.144]: https://github.com/velvetmonkey/flywheel-memory/compare/flywheel-memory-v2.0.138...flywheel-memory-v2.0.144

@@ -15,6 +15,10 @@ import { SCHEMA_VERSION, SCHEMA_SQL, STATE_DB_FILENAME, FLYWHEEL_DIR } from './s
 // Backup & Recovery Constants
 // =============================================================================
 
+/**
+ * Number of rotated backup generations kept alongside the current `.backup`
+ * file. Steady state retention is `.backup` plus `.backup.1`..`.backup.N`.
+ */
 export const BACKUP_ROTATION_COUNT = 3;
 
 /** High-value tables whose data should survive a corruption recovery. */
@@ -1004,8 +1008,9 @@ export function preserveCorruptedDb(dbPath: string): void {
 // =============================================================================
 
 /**
- * Rotate existing backup files: .backup → .backup.1 → .backup.2 → .backup.3
- * Drops the oldest if rotation count exceeded. Does NOT create a new backup.
+ * Rotate existing backup files: .backup → .backup.1 → .backup.2 → .backup.3.
+ * Retains the numbered generations only; `safeBackupAsync()` then writes a new
+ * current `.backup` file. Drops the oldest generation if rotation count is exceeded.
  */
 export function rotateBackupFiles(dbPath: string): void {
   try {
@@ -1029,7 +1034,8 @@ export function rotateBackupFiles(dbPath: string): void {
 
 /**
  * Create a WAL-safe backup using SQLite's backup API.
- * Rotates existing backups first, then writes a new .backup file.
+ * Rotates existing backups first, then writes a new `.backup` file so steady
+ * state retention is the current backup plus `BACKUP_ROTATION_COUNT` generations.
  */
 export async function safeBackupAsync(db: Database.Database, dbPath: string): Promise<boolean> {
   try {

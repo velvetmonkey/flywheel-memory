@@ -109,11 +109,11 @@ The StateDb at `.flywheel/state.db` stores everything Flywheel learns about your
 
 Flywheel has four layers of protection:
 
-1. **Rotated WAL-safe backups**  --  After each successful startup (and every 6 hours during operation), Flywheel creates a backup using SQLite's backup API, which is safe even during active WAL writes. Three rotated copies are kept: `state.db.backup` (most recent), `.backup.1`, `.backup.2`, `.backup.3`. This means even if the most recent backup is bad, older ones are available.
+1. **Rotated WAL-safe backups**  --  After each successful startup (and every 6 hours during operation), Flywheel creates a backup using SQLite's backup API, which is safe even during active WAL writes. Flywheel keeps four backup files in steady state: `state.db.backup` (most recent), plus older generations at `.backup.1`, `.backup.2`, and `.backup.3`. When a new backup is created, the generations rotate and the oldest one is dropped. This means even if the most recent backup is bad, older ones are available.
 
 2. **Integrity checks**  --  `PRAGMA quick_check` runs after every startup and every 6 hours in the watcher pipeline. If corruption is detected, recovery triggers immediately.
 
-3. **Automatic feedback salvage**  --  When corruption forces a fresh database, Flywheel automatically recovers feedback data by merging rows from all available sources (newest first): `.backup`, `.backup.1`, `.backup.2`, `.backup.3`, `.corrupt`. Each source fills in rows the previous ones didn't cover. The 9 salvaged tables are: `wikilink_feedback`, `wikilink_applications`, `suggestion_events`, `wikilink_suppressions`, `note_links`, `note_link_history`, `memories`, `session_summaries`, `corrections`.
+3. **Automatic feedback salvage**  --  When corruption forces a fresh database, Flywheel automatically recovers feedback data by merging rows from all available sources (newest first): `.backup`, `.backup.1`, `.backup.2`, `.backup.3`, `.corrupt`. Each source fills in rows the previous ones didn't cover. The 13 salvaged tables are: `wikilink_feedback`, `wikilink_applications`, `suggestion_events`, `wikilink_suppressions`, `note_links`, `note_link_history`, `memories`, `session_summaries`, `corrections`, `tool_selection_feedback`, `prospect_ledger`, `prospect_summary`, `prospect_feedback`.
 
 4. **Zero-byte guard**  --  If `state.db` is 0 bytes (e.g., native module compilation failure), it's deleted and rebuilt.
 

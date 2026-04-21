@@ -393,17 +393,17 @@ All persistent state is stored in a single SQLite database at `.flywheel/state.d
 
 Flywheel's backup system is designed to protect accumulated feedback data  --  the signals that take weeks to build and can't be regenerated from markdown alone.
 
-**Rotated backups (3 copies):** After each successful startup, Flywheel creates a WAL-safe backup using SQLite's backup API (not `fs.copyFileSync`, which can copy inconsistent state during WAL writes). Existing backups are rotated: `.backup` → `.backup.1` → `.backup.2` → `.backup.3`. The oldest is dropped. This means you always have at least one backup that predates the current session.
+**Rotated backups (4 retained files):** After each successful startup, Flywheel creates a WAL-safe backup using SQLite's backup API (not `fs.copyFileSync`, which can copy inconsistent state during WAL writes). Flywheel keeps the current backup at `.backup` and up to three older generations at `.backup.1`, `.backup.2`, and `.backup.3`. On each new backup, the generations rotate and the oldest one is dropped. This means you keep one current backup plus three historical generations, so at least one retained backup predates the current session.
 
 **Integrity checks:** On every startup, `PRAGMA quick_check` verifies database integrity after opening. The watcher pipeline also runs an integrity check every 6 hours, triggering a safe backup on pass.
 
 **Automatic feedback salvage:** When corruption is detected, Flywheel:
 1. Preserves the corrupted file as `state.db.corrupt`
 2. Creates a fresh database
-3. Attempts to recover 9 high-value tables from all available sources (newest first): `.backup`, `.backup.1`, `.backup.2`, `.backup.3`, `.corrupt`
+3. Attempts to recover 13 high-value tables from all available sources (newest first): `.backup`, `.backup.1`, `.backup.2`, `.backup.3`, `.corrupt`
 4. Merges rows across all sources using `INSERT OR IGNORE`  --  each successive source fills in rows the previous ones didn't cover
 
-The salvaged tables are: `wikilink_feedback`, `wikilink_applications`, `suggestion_events`, `wikilink_suppressions`, `note_links`, `note_link_history`, `memories`, `session_summaries`, `corrections`.
+The salvaged tables are: `wikilink_feedback`, `wikilink_applications`, `suggestion_events`, `wikilink_suppressions`, `note_links`, `note_link_history`, `memories`, `session_summaries`, `corrections`, `tool_selection_feedback`, `prospect_ledger`, `prospect_summary`, `prospect_feedback`.
 
 **What's regenerable vs. irreplaceable:**
 

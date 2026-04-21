@@ -126,6 +126,23 @@ describe('Backup & Recovery', () => {
         stateDb.close();
       }
     });
+
+    it('retains the current backup plus capped rotated generations', { timeout: 15_000 }, async () => {
+      const stateDb = openStateDb(testVaultPath);
+      try {
+        for (let i = 0; i < BACKUP_ROTATION_COUNT + 2; i++) {
+          await safeBackupAsync(stateDb.db, stateDb.dbPath);
+        }
+
+        expect(fs.existsSync(`${stateDb.dbPath}.backup`)).toBe(true);
+        for (let i = 1; i <= BACKUP_ROTATION_COUNT; i++) {
+          expect(fs.existsSync(`${stateDb.dbPath}.backup.${i}`)).toBe(true);
+        }
+        expect(fs.existsSync(`${stateDb.dbPath}.backup.${BACKUP_ROTATION_COUNT + 1}`)).toBe(false);
+      } finally {
+        stateDb.close();
+      }
+    });
   });
 
   // ===========================================================================

@@ -75,7 +75,7 @@ packages/mcp-server/src/
 - `applyToolGating()` — Monkey-patches `server.tool()` to filter by category. In multi-vault mode, wraps handlers with `activateVault()` and injects optional `vault` parameter on all tools.
 - `registerAllTools()` — Calls all tool registration functions. Write tools use `getVaultPath: () => string` getter (not a captured string) so vault switching works.
 - `createConfiguredServer()` — Creates a stateless per-request McpServer for HTTP transport (fresh server per POST /mcp).
-- `activateVault(ctx)` — Swaps 5 module-level singletons: `setWriteStateDb`, `setFTS5Database`, `setRecencyStateDb`, `setTaskCacheDatabase`, `setEmbeddingsDatabase` + `loadEntityEmbeddingsToMemory`. (Edge weights removed — functions take `stateDb` as parameter.)
+- `activateVault(ctx)` — Swaps the boot-time fallback/module handles that still need explicit vault activation: `setWriteStateDb`, `setFTS5Database`, `setEmbeddingsDatabase` + `loadEntityEmbeddingsToMemory`. Normal request, watcher, and maintenance execution should run through `runInVaultScope()` / `VaultScope`; recency and task-cache runtime state now resolve from ALS instead of normal module-level setters.
 - Transport env vars: `FLYWHEEL_TRANSPORT` (stdio/http/both), `FLYWHEEL_HTTP_PORT` (default 3111), `FLYWHEEL_HTTP_HOST` (default 127.0.0.1).
 - Multi-vault: `FLYWHEEL_VAULTS=name1:/path1,name2:/path2`. First vault is primary. Falls back to `PROJECT_PATH`/`VAULT_PATH` for single-vault mode.
 - Cross-vault search: `wrapWithVaultActivation` detects `search` tool with no `vault` param → calls `crossVaultSearch()` which iterates all contexts, runs search per vault, merges results with `vault` field, sorts by `rrf_score`. Returns `method: 'cross_vault'`.
@@ -114,7 +114,7 @@ Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category ga
 > the briefing entrypoint still works as `memory(action: "brief")`.
 <!-- GENERATED:claude-code-memory-note END -->
 
-Switch preset at runtime: `flywheel_config` with `key: tool_preset, value: agent|power|full`
+Switch preset at runtime: `doctor(action: "config")` with `key: tool_preset, value: agent|power|full`
 
 Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` — never hardcode.
 

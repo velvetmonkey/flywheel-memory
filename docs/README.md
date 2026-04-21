@@ -39,7 +39,7 @@ Flywheel has three layers of documentation:
 | Document | Use it for |
 |---|---|
 | [OPENCLAW.md](OPENCLAW.md) | OpenClaw setup and routing patterns |
-| [POLICIES.md](POLICIES.md) | Saved workflows that search and write atomically |
+| [POLICIES.md](POLICIES.md) | Saved workflows that search, write live, and roll back on failure |
 | [POLICY_EXAMPLES.md](POLICY_EXAMPLES.md) | Concrete policy examples |
 
 ## Quick Answers

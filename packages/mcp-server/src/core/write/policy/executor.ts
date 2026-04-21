@@ -46,6 +46,7 @@ import { maybeApplyWikilinks, suggestRelatedLinks } from '../wikilinks.js';
 import { runValidationPipeline, type GuardrailMode } from '../validator.js';
 import { estimateTokens } from '../constants.js';
 import { executeMutation, executeFrontmatterMutation, executeCreateNote as executeCreateNoteCore, executeDeleteNote as executeDeleteNoteCore } from '../mutation-helpers.js';
+import { createPolicyWatcherGuard, type PolicyWatcherGuard } from './watcherIsolation.js';
 
 /**
  * Execute a single step of a policy
@@ -55,7 +56,8 @@ async function executeStep(
   vaultPath: string,
   context: PolicyContext,
   conditionResults: Record<string, boolean>,
-  searchFn?: PolicySearchFn
+  searchFn?: PolicySearchFn,
+  watcherGuard?: PolicyWatcherGuard,
 ): Promise<StepExecutionResult> {
   // Check if step should execute based on condition
   const { execute, reason } = shouldStepExecute(step.when, conditionResults);
@@ -77,6 +79,11 @@ async function executeStep(
     // Handle vault_search separately (read-only, no MutationResult)
     if (step.tool === 'vault_search') {
       return executeSearch(step.id, resolvedParams, searchFn);
+    }
+
+    const maybePath = typeof resolvedParams.path === 'string' ? resolvedParams.path.trim() : '';
+    if (maybePath) {
+      watcherGuard?.registerPath(maybePath);
     }
 
     const result = await executeToolCall(step.tool, resolvedParams, vaultPath, context);
@@ -642,6 +649,22 @@ export async function executePolicy(
     context.conditions = await evaluateAllConditions(policy.conditions, vaultPath, context);
   }
 
+  const watcherGuard = createPolicyWatcherGuard();
+  const finalizeExecutionResult = async (
+    executionResult: PolicyExecutionResult,
+  ): Promise<PolicyExecutionResult> => {
+    const watcherError = await watcherGuard.finish();
+    if (watcherError) {
+      executionResult.message = `${executionResult.message} Watcher reconciliation failed: ${watcherError}`;
+      if (executionResult.success) {
+        executionResult.success = false;
+        executionResult.retryable = false;
+      }
+    }
+    executionResult.tokensEstimate = estimateTokens(executionResult);
+    return executionResult;
+  };
+
   // Track files for rollback on failure
   const filesModified = new Set<string>();
   const originalContents = new Map<string, string | null>();
@@ -666,7 +689,7 @@ export async function executePolicy(
   const stepResults: StepExecutionResult[] = [];
 
   for (const step of policy.steps) {
-    const result = await executeStep(step, vaultPath, context, context.conditions, searchFn);
+    const result = await executeStep(step, vaultPath, context, context.conditions, searchFn, watcherGuard);
     stepResults.push(result);
 
     // Track modified files
@@ -699,8 +722,7 @@ export async function executePolicy(
         rollbackFailed,
         rollbackError,
       };
-      executionResult.tokensEstimate = estimateTokens(executionResult);
-      return executionResult;
+      return finalizeExecutionResult(executionResult);
     }
   }
 
@@ -761,8 +783,7 @@ export async function executePolicy(
       rollbackFailed,
       rollbackError,
     };
-    executionResult.tokensEstimate = estimateTokens(executionResult);
-    return executionResult;
+    return finalizeExecutionResult(executionResult);
   }
 
   // Generate summary from output template
@@ -781,9 +802,7 @@ export async function executePolicy(
     filesModified: Array.from(filesModified),
     summary,
   };
-  executionResult.tokensEstimate = estimateTokens(executionResult);
-
-  return executionResult;
+  return finalizeExecutionResult(executionResult);
 }
 
 /**

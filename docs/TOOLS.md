@@ -33,7 +33,7 @@ For presets and env vars, see [CONFIGURATION.md](CONFIGURATION.md).
 | Inspect schema or metadata conventions | `schema` | Validation, migrations, field usage, and tag/field cleanup |
 | Check vault health or runtime config | `doctor` | Health, pipeline, stats, logs, and config |
 | Build semantic search | `init_semantic` | Turns on hybrid retrieval and semantic similarity |
-| Save reusable workflows | `policy` | Author, preview, validate, and execute atomic workflows |
+| Save reusable workflows | `policy` | Author, preview, validate, and execute repeatable workflows with rollback |
 
 ## How Tool Choice Works
 
@@ -260,7 +260,7 @@ The current preset counts are documented in [README.md](../README.md#optional-to
 - What it does: rebuilds the in-memory index and FTS layer from the current vault.
 
 #### `policy`
-- Use when: the workflow is multi-step and should be repeatable or atomic.
+- Use when: the workflow is multi-step and should be repeatable with preview and rollback.
 - Main actions:
   - `list`
   - `validate`

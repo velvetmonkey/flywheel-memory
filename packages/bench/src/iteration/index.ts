@@ -1,8 +1,9 @@
 /**
  * Iteration stress testing module
  *
- * Provides utilities for running 10k+ mutation stress tests
- * to validate vault stability and performance over time.
+ * Simulation-only helper for long-running stress probes. This module does not
+ * execute Flywheel's production mutation pipeline; it exercises a lightweight
+ * placeholder loop so callers can smoke-test integrity and memory trends.
  */
 
 export { runStressTest, DEFAULT_STRESS_CONFIG } from './stressTest.js';
@@ -11,7 +12,7 @@ export { checkGitHealth } from './gitHealthChecker.js';
 export { PerformanceTracker } from './performanceTracker.js';
 
 /**
- * Simplified config for iteration stress testing
+ * Simulation-only config for iteration stress testing
  */
 export interface IterationStressConfig {
   vaultPath: string;
@@ -27,7 +28,7 @@ export interface IterationStressConfig {
 }
 
 /**
- * Result from iteration stress test
+ * Result from the simulation-only iteration stress test
  */
 export interface IterationStressResult {
   totalIterations: number;
@@ -45,9 +46,10 @@ export interface IterationStressResult {
 }
 
 /**
- * Run a simplified iteration stress test
+ * Run the simulation-only iteration stress test.
  *
- * This is a wrapper around runStressTest with sensible defaults.
+ * This wrapper does not call the production write stack. It is useful for
+ * lightweight smoke checks, not for evidence about live mutation safety.
  */
 export async function runIterationStressTest(
   config: IterationStressConfig
@@ -67,11 +69,11 @@ export async function runIterationStressTest(
   const startMemory = process.memoryUsage().heapUsed / 1024 / 1024;
   let maxMemory = startMemory;
 
-  // Simulate iterations (in real usage, this would call actual mutation functions)
+  // Simulation only: this does not execute real Flywheel mutations.
   for (let i = 1; i <= config.iterations; i++) {
     const iterStart = Date.now();
 
-    // Simulate a mutation operation (placeholder - real impl would use mutation functions)
+    // Simulate one placeholder mutation cycle.
     try {
       await simulateMutation(config.vaultPath);
       successfulIterations++;
@@ -120,15 +122,10 @@ export async function runIterationStressTest(
 }
 
 /**
- * Simulate a mutation operation (placeholder for testing)
+ * Simulate a mutation operation (placeholder only)
  */
 async function simulateMutation(vaultPath: string): Promise<void> {
-  // In real implementation, this would:
-  // 1. Select a random mutation type based on distribution
-  // 2. Execute the mutation via the actual mutation functions
-  // 3. Handle errors appropriately
-
-  // For now, just simulate some I/O
+  // Placeholder simulation: read the vault directory and wait briefly.
   const fs = await import('fs/promises');
   const path = await import('path');
 

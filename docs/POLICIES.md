@@ -2,7 +2,7 @@
 
 [← Back to docs](README.md)
 
-Policies are saved, deterministic workflows composed from Flywheel's tools. They can search the vault, branch on conditions, and drive write steps — all as a single atomic operation.
+Policies are saved, deterministic workflows composed from Flywheel's tools. They can search the vault, branch on conditions, and drive write steps with live execution plus compensating rollback on failure.
 
 - [When to use policies](#when-to-use-policies)
 - [How policies work](#how-policies-work)
@@ -75,7 +75,8 @@ Policies are designed for safe, auditable execution:
 | **Validate** | `policy action=validate` checks YAML syntax and step references before anything runs |
 | **Preview** | `policy action=preview` dry-runs every step, showing what would happen without modifying the vault |
 | **Conditions** | Steps can be skipped based on vault state (`when` clauses), so a policy adapts without failing |
-| **Atomic commits** | All steps in a policy execute as a single git commit — if any step fails, all changes roll back |
+| **Execution model** | Steps write live to the vault, and Flywheel attempts compensating rollback if a later step or git commit fails |
+| **Git commit** | If `commit` is enabled and the policy succeeds, Flywheel records one optional git commit for the modified files |
 | **Undo** | `correct(action: undo)` reverses the entire policy execution in one step |
 
 The recommended workflow: **author → validate → preview → execute**.

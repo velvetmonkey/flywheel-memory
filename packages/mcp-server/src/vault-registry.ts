@@ -13,7 +13,7 @@ import type { VaultWatcher } from './core/read/watch/index.js';
 import type { EntityIndex, StateDb } from '@velvetmonkey/vault-core';
 import type { CooccurrenceIndex } from './core/shared/cooccurrence.js';
 import type { IndexState } from './core/read/graph.js';
-import type { PipelineActivity } from './core/read/watch/pipeline.js';
+import type { DeferredStepScheduler, PipelineActivity } from './core/read/watch/pipeline.js';
 import type { InferredCategory } from './core/read/embeddings.js';
 import type { RecencyIndex } from './core/shared/recency.js';
 
@@ -43,10 +43,22 @@ export interface VaultContext {
   writeEntityIndexLastLoadedAt: number;
   /** Per-vault write-side recency index cache */
   writeRecencyIndex: RecencyIndex | null;
+  /** Per-vault task cache build flag */
+  taskCacheBuilding: boolean;
   /** Per-vault in-memory entity embeddings for semantic suggestions */
   entityEmbeddingsMap: Map<string, Float32Array>;
   /** Per-vault inferred semantic categories */
   inferredCategoriesMap: Map<string, InferredCategory>;
+  /** Watcher-muted paths during live policy execution */
+  mutedWatcherPaths: Set<string>;
+  /** Paths changed while muted and awaiting final reconciliation */
+  dirtyMutedWatcherPaths: Set<string>;
+  /** Per-vault watcher reconciliation callback for muted writes */
+  reconcileMutedWatcherPaths: ((paths: string[]) => Promise<void>) | null;
+  /** Per-vault deferred step scheduler for throttled watcher work */
+  deferredScheduler: DeferredStepScheduler | null;
+  /** Per-vault timestamp: last periodic purge run */
+  lastPurgeAt: number;
   /** Per-vault index build state */
   indexState: IndexState;
   /** Per-vault index error */

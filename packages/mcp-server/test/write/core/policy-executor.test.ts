@@ -17,6 +17,8 @@ import { initializeEntityIndex, setWriteStateDb } from '../../../src/core/write/
 import * as wikilinksModule from '../../../src/core/write/wikilinks.js';
 import * as gitModule from '../../../src/core/write/git.js';
 import { readVaultFile } from '../../../src/core/write/writer.js';
+import { runInVaultScope, type VaultScope } from '../../../src/vault-scope.js';
+import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -46,6 +48,41 @@ describe('Policy Executor - Step Output Passing', () => {
     }
     await cleanupTempVault(vaultPath);
   });
+
+  function makePolicyScope(name: string = 'policy-test'): VaultScope {
+    return {
+      name,
+      vaultPath,
+      stateDb: db,
+      flywheelConfig: {},
+      vaultIndex: { notes: new Map(), entities: new Map(), backlinks: new Map(), tags: new Map(), builtAt: new Date() } as any,
+      cooccurrenceIndex: null,
+      indexState: 'ready',
+      indexError: null,
+      embeddingsBuilding: false,
+      writeEntityIndex: null,
+      writeEntityIndexReady: false,
+      writeEntityIndexError: null,
+      writeEntityIndexLastLoadedAt: 0,
+      writeRecencyIndex: null,
+      taskCacheBuilding: false,
+      entityEmbeddingsMap: new Map(),
+      inferredCategoriesMap: new Map(),
+      mutedWatcherPaths: new Set(),
+      dirtyMutedWatcherPaths: new Set(),
+      reconcileMutedWatcherPaths: null,
+      pipelineActivity: createEmptyPipelineActivity(),
+      bootState: 'ready',
+      integrityState: 'healthy',
+      integrityCheckInProgress: false,
+      integrityStartedAt: null,
+      integritySource: null,
+      lastIntegrityCheckedAt: null,
+      lastIntegrityDurationMs: null,
+      lastIntegrityDetail: null,
+      lastBackupAt: null,
+    };
+  }
 
   it('should pass step outputs to subsequent steps', async () => {
     // Create daily note for logging
@@ -488,5 +525,77 @@ Original content here.
 
     const restored = await fs.readFile(path.join(vaultPath, notePath), 'utf-8');
     expect(restored).toBe(originalContent);
+  });
+
+  it('reconciles watcher-muted paths once after a scoped policy write', async () => {
+    const notePath = 'policy-watch.md';
+    await fs.writeFile(path.join(vaultPath, notePath), '# Policy Watch\n\n## Log\n\n');
+
+    const scope = makePolicyScope('watcher-success');
+    scope.dirtyMutedWatcherPaths.add(notePath);
+    const reconcileSpy = vi.fn(async (_paths: string[]) => {});
+    scope.reconcileMutedWatcherPaths = reconcileSpy;
+
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'watcher-reconcile-success',
+      description: 'Policy watcher reconciliation success',
+      steps: [
+        {
+          id: 'append-log',
+          tool: 'vault_add_to_section',
+          params: {
+            path: notePath,
+            section: '## Log',
+            content: 'Watcher-safe update',
+            format: 'plain',
+          },
+        },
+      ],
+    };
+
+    const result = await runInVaultScope(scope, () => executePolicy(policy, vaultPath, {}, false));
+
+    expect(result.success).toBe(true);
+    expect(reconcileSpy).toHaveBeenCalledTimes(1);
+    expect(reconcileSpy).toHaveBeenCalledWith([notePath]);
+    expect(scope.mutedWatcherPaths.size).toBe(0);
+    expect(scope.dirtyMutedWatcherPaths.size).toBe(0);
+  });
+
+  it('surfaces watcher reconciliation failures after scoped policy execution', async () => {
+    const notePath = 'policy-watch-failure.md';
+    await fs.writeFile(path.join(vaultPath, notePath), '# Policy Watch\n\n## Log\n\n');
+
+    const scope = makePolicyScope('watcher-failure');
+    scope.dirtyMutedWatcherPaths.add(notePath);
+    scope.reconcileMutedWatcherPaths = vi.fn(async () => {
+      throw new Error('simulated watcher reconcile failure');
+    });
+
+    const policy: PolicyDefinition = {
+      version: '1.0',
+      name: 'watcher-reconcile-failure',
+      description: 'Policy watcher reconciliation failure',
+      steps: [
+        {
+          id: 'append-log',
+          tool: 'vault_add_to_section',
+          params: {
+            path: notePath,
+            section: '## Log',
+            content: 'Watcher failure update',
+            format: 'plain',
+          },
+        },
+      ],
+    };
+
+    const result = await runInVaultScope(scope, () => executePolicy(policy, vaultPath, {}, false));
+
+    expect(result.success).toBe(false);
+    expect(result.message).toMatch(/watcher reconciliation failed/i);
+    expect(result.message).toMatch(/simulated watcher reconcile failure/i);
+    expect(scope.mutedWatcherPaths.size).toBe(0);
   });
 });

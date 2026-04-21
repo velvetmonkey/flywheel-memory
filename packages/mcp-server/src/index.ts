@@ -75,7 +75,6 @@ import {
   EMBEDDING_TEXT_VERSION,
 } from './core/read/embeddings.js';
 import {
-  setTaskCacheDatabase,
   buildTaskCache,
   refreshIfStale,
   isTaskCacheStale,
@@ -125,7 +124,6 @@ import { serverLog } from './core/shared/serverLog.js';
 import { updateSuppressionList } from './core/write/wikilinkFeedback.js';
 
 // Core imports - Recency
-import { setRecencyStateDb } from './core/shared/recency.js';
 import { setProspectStateDb } from './core/shared/prospects.js';
 
 // Core imports - Co-occurrence
@@ -147,7 +145,7 @@ import {
   type VaultBootState,
   type VaultContext,
 } from './vault-registry.js';
-import { setActiveScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
+import { runInVaultScope, setFallbackScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
 
 // Config (tool categories, presets, instructions)
 import {
@@ -206,9 +204,6 @@ let lastFullRebuildAt = 0;
 
 /** Scanned vault files from bootVault — reused by startup catch-up to avoid duplicate filesystem walk */
 let startupScanFiles: import('./core/read/vault.js').VaultFile[] | null = null;
-
-/** Per-vault deferred step schedulers */
-let deferredScheduler: DeferredStepScheduler | null = null;
 /** In-flight integrity checks keyed by vault name */
 const integrityRuns = new Map<string, Promise<IntegrityWorkerResult>>();
 
@@ -401,7 +396,7 @@ function hydrateIntegrityMetadata(ctx: VaultContext): void {
 function setBootState(ctx: VaultContext, state: VaultBootState): void {
   ctx.bootState = state;
   if ((globalThis as any).__flywheel_active_vault === ctx.name) {
-    setActiveScope(buildVaultScope(ctx));
+    setFallbackScope(buildVaultScope(ctx));
   }
 }
 
@@ -418,7 +413,7 @@ function setIntegrityState(
     ctx.bootState = 'degraded';
   }
   if ((globalThis as any).__flywheel_active_vault === ctx.name) {
-    setActiveScope(buildVaultScope(ctx));
+    setFallbackScope(buildVaultScope(ctx));
   }
 }
 
@@ -501,7 +496,7 @@ async function runIntegrityCheck(
   }).finally(() => {
     integrityRuns.delete(ctx.name);
     if ((globalThis as any).__flywheel_active_vault === ctx.name) {
-      setActiveScope(buildVaultScope(ctx));
+      setFallbackScope(buildVaultScope(ctx));
     }
   });
 
@@ -531,8 +526,14 @@ async function initializeVault(name: string, vaultPathArg: string): Promise<Vaul
     writeEntityIndexError: null,
     writeEntityIndexLastLoadedAt: 0,
     writeRecencyIndex: null,
+    taskCacheBuilding: false,
     entityEmbeddingsMap: new Map(),
     inferredCategoriesMap: new Map(),
+    mutedWatcherPaths: new Set(),
+    dirtyMutedWatcherPaths: new Set(),
+    reconcileMutedWatcherPaths: null,
+    deferredScheduler: null,
+    lastPurgeAt: Date.now(),
     indexState: 'building',
     indexError: null,
     lastCooccurrenceRebuildAt: 0,
@@ -597,10 +598,18 @@ function buildVaultScope(ctx: VaultContext): VaultScope {
     set writeEntityIndexLastLoadedAt(value) { ctx.writeEntityIndexLastLoadedAt = value; },
     get writeRecencyIndex() { return ctx.writeRecencyIndex; },
     set writeRecencyIndex(value) { ctx.writeRecencyIndex = value; },
+    get taskCacheBuilding() { return ctx.taskCacheBuilding; },
+    set taskCacheBuilding(value) { ctx.taskCacheBuilding = value; },
     get entityEmbeddingsMap() { return ctx.entityEmbeddingsMap; },
     set entityEmbeddingsMap(value) { ctx.entityEmbeddingsMap = value; },
     get inferredCategoriesMap() { return ctx.inferredCategoriesMap; },
     set inferredCategoriesMap(value) { ctx.inferredCategoriesMap = value; },
+    get mutedWatcherPaths() { return ctx.mutedWatcherPaths; },
+    set mutedWatcherPaths(value) { ctx.mutedWatcherPaths = value; },
+    get dirtyMutedWatcherPaths() { return ctx.dirtyMutedWatcherPaths; },
+    set dirtyMutedWatcherPaths(value) { ctx.dirtyMutedWatcherPaths = value; },
+    get reconcileMutedWatcherPaths() { return ctx.reconcileMutedWatcherPaths; },
+    set reconcileMutedWatcherPaths(value) { ctx.reconcileMutedWatcherPaths = value; },
     pipelineActivity: ctx.pipelineActivity,
     get bootState() { return ctx.bootState; },
     set bootState(value) { ctx.bootState = value; },
@@ -625,8 +634,8 @@ function buildVaultScope(ctx: VaultContext): VaultScope {
 
 /**
  * Activate a vault context by swapping all module-level singletons.
- * Also sets the fallback VaultScope for code outside ALS context.
- * Tool handlers additionally run inside runInVaultScope() for per-request isolation.
+ * Also sets the fallback VaultScope for boot-time compatibility outside ALS context.
+ * Requests, watcher batches, and background jobs should run inside runInVaultScope().
  *
  * @param skipEmbeddingLoad - Skip loading entity embeddings into memory (used during
  *   early startup to avoid blocking the event loop before transport connects)
@@ -636,14 +645,12 @@ function activateVault(ctx: VaultContext, skipEmbeddingLoad = false): void {
   (globalThis as any).__flywheel_active_vault = ctx.name;
 
   // Set the fallback VaultScope first so scope-aware caches populate per-vault state.
-  setActiveScope(buildVaultScope(ctx));
+  setFallbackScope(buildVaultScope(ctx));
 
   if (ctx.stateDb) {
     setWriteStateDb(ctx.stateDb);
     setFTS5Database(ctx.stateDb.db);
-    setRecencyStateDb(ctx.stateDb);
     setProspectStateDb(ctx.stateDb);
-    setTaskCacheDatabase(ctx.stateDb.db);
     setEmbeddingsDatabase(ctx.stateDb.db);
     if (!skipEmbeddingLoad) {
       loadEntityEmbeddingsToMemory();
@@ -695,7 +702,7 @@ function updateFlywheelConfig(config: FlywheelConfig): void {
   if (ctx) {
     ctx.flywheelConfig = config;
     // Rebuild fallback scope so scope-aware getters see the update
-    setActiveScope(buildVaultScope(ctx));
+    setFallbackScope(buildVaultScope(ctx));
   }
 }
 
@@ -706,6 +713,21 @@ function updateFlywheelConfig(config: FlywheelConfig): void {
 async function bootVault(ctx: VaultContext, startTime: number): Promise<void> {
   const vp = ctx.vaultPath;
   const sd = ctx.stateDb;
+  const updateCtxIndexState = (state: IndexState, error?: Error | null): void => {
+    ctx.indexState = state;
+    if (error !== undefined) ctx.indexError = error;
+    if ((globalThis as any).__flywheel_active_vault === ctx.name) {
+      updateIndexState(state, error);
+      setFallbackScope(buildVaultScope(ctx));
+    }
+  };
+  const updateCtxVaultIndex = (index: VaultIndex): void => {
+    ctx.vaultIndex = index;
+    if ((globalThis as any).__flywheel_active_vault === ctx.name) {
+      updateVaultIndex(index);
+      setFallbackScope(buildVaultScope(ctx));
+    }
+  };
 
   // Initialize logging
   initializeReadLogger(vp).then(() => {
@@ -750,8 +772,8 @@ async function bootVault(ctx: VaultContext, startTime: number): Promise<void> {
   }
 
   if (cachedIndex) {
-    updateVaultIndex(cachedIndex);
-    updateIndexState('ready');
+    updateCtxVaultIndex(cachedIndex);
+    updateCtxIndexState('ready');
     const duration = Date.now() - startTime;
     const cacheAge = cachedIndex.builtAt ? Math.round((Date.now() - cachedIndex.builtAt.getTime()) / 1000) : 0;
     serverLog('index', `[${ctx.name}] Cache hit: ${cachedIndex.notes.size} notes, ${cacheAge}s old — loaded in ${duration}ms`);
@@ -768,8 +790,8 @@ async function bootVault(ctx: VaultContext, startTime: number): Promise<void> {
     serverLog('index', `[${ctx.name}] Cache miss: building from scratch`);
     try {
       const built = await buildVaultIndex(vp);
-      updateVaultIndex(built);
-      updateIndexState('ready');
+      updateCtxVaultIndex(built);
+      updateCtxIndexState('ready');
       const duration = Date.now() - startTime;
       serverLog('index', `[${ctx.name}] Vault index ready in ${duration}ms — ${vaultIndex.notes.size} notes`);
       if (sd) {
@@ -790,7 +812,7 @@ async function bootVault(ctx: VaultContext, startTime: number): Promise<void> {
       lastFullRebuildAt = Date.now();
       await runPostIndexWork(ctx);
     } catch (err) {
-      updateIndexState('error', err instanceof Error ? err : new Error(String(err)));
+      updateCtxIndexState('error', err instanceof Error ? err : new Error(String(err)));
       const duration = Date.now() - startTime;
       if (sd) {
         recordIndexEvent(sd, {
@@ -1055,12 +1077,6 @@ async function main() {
 
 // DEFAULT_ENTITY_EXCLUDE_FOLDERS imported from ./core/read/config.js
 
-/** Timestamp of last co-occurrence index rebuild (epoch ms) */
-let lastCooccurrenceRebuildAt = 0;
-
-/** Timestamp of last edge weight recompute (epoch ms) */
-let lastEdgeWeightRebuildAt = 0;
-
 /**
  * Scan vault for entities and save to StateDb
  */
@@ -1112,15 +1128,12 @@ function buildStartupCatchupBatch(
 // Periodic Maintenance (runs on sweep timer — every 5 min)
 // ============================================================================
 
-/** Track when purges last ran (startup purges count as the first run) */
-let lastPurgeAt = Date.now();
-
 /**
  * Periodic maintenance callback for the sweep timer.
  * Memory lifecycle runs every call (cheap SQL on small tables).
  * Purges run once per day (not urgent, just prevent unbounded growth).
  */
-function runPeriodicMaintenance(db: StateDb): void {
+function runPeriodicMaintenance(ctx: VaultContext, db: StateDb): void {
   // Memory lifecycle — cheap, run every sweep (5 min)
   sweepExpiredMemories(db);
   decayMemoryConfidence(db);
@@ -1137,7 +1150,7 @@ function runPeriodicMaintenance(db: StateDb): void {
 
   // Purges — run once per day
   const now = Date.now();
-  if (now - lastPurgeAt > 24 * 60 * 60 * 1000) {
+  if (now - ctx.lastPurgeAt > 24 * 60 * 60 * 1000) {
     purgeOldMetrics(db, 90);
     purgeOldBenchmarks(db, 90);
     purgeOldIndexEvents(db, 90);
@@ -1146,7 +1159,7 @@ function runPeriodicMaintenance(db: StateDb): void {
     purgeOldNoteLinkHistory(db, 90);
     purgeOldSnapshots(db, 90);
     pruneStaleRetrievalCooccurrence(db, 30);
-    lastPurgeAt = now;
+    ctx.lastPurgeAt = now;
     serverLog('server', 'Daily purge complete');
   }
 }
@@ -1159,6 +1172,28 @@ async function runPostIndexWork(ctx: VaultContext) {
   const index = ctx.vaultIndex;
   const vp = ctx.vaultPath;
   const sd = ctx.stateDb;
+  const runWithVaultScope = <T>(fn: () => T): T => runInVaultScope(buildVaultScope(ctx), fn);
+  const updateCtxIndexState = (state: IndexState, error?: Error | null): void => {
+    ctx.indexState = state;
+    if (error !== undefined) ctx.indexError = error;
+    if ((globalThis as any).__flywheel_active_vault === ctx.name) {
+      updateIndexState(state, error);
+      setFallbackScope(buildVaultScope(ctx));
+    }
+  };
+  const updateCtxVaultIndex = (nextIndex: VaultIndex): void => {
+    ctx.vaultIndex = nextIndex;
+    if ((globalThis as any).__flywheel_active_vault === ctx.name) {
+      updateVaultIndex(nextIndex);
+      setFallbackScope(buildVaultScope(ctx));
+    }
+  };
+  const updateCtxFlywheelConfig = (config: FlywheelConfig): void => {
+    ctx.flywheelConfig = config;
+    if ((globalThis as any).__flywheel_active_vault === ctx.name) {
+      updateFlywheelConfig(config);
+    }
+  };
   let rvp: string;
   try { rvp = realpathSync(vp).replace(/\\/g, '/'); } catch { rvp = vp.replace(/\\/g, '/'); }
   const postStart = Date.now();
@@ -1222,22 +1257,22 @@ async function runPostIndexWork(ctx: VaultContext) {
   if (sd) {
     saveConfig(sd, inferred, existing);
   }
-  updateFlywheelConfig(loadConfig(sd));
-  const configKeys = Object.keys(flywheelConfig).filter(k => (flywheelConfig as Record<string, unknown>)[k] != null);
+  updateCtxFlywheelConfig(loadConfig(sd));
+  const configKeys = Object.keys(ctx.flywheelConfig).filter(k => (ctx.flywheelConfig as Record<string, unknown>)[k] != null);
   serverLog('config', `Config inferred: ${configKeys.join(', ')}`);
 
   // Build task cache (skip rebuild if SQLite cache is already fresh)
   if (sd) {
     if (isTaskCacheStale()) {
       serverLog('tasks', 'Task cache stale, rebuilding...');
-      refreshIfStale(vp, index, getExcludeTags(flywheelConfig));
+      refreshIfStale(vp, index, getExcludeTags(ctx.flywheelConfig));
     } else {
       serverLog('tasks', 'Task cache fresh, skipping rebuild');
     }
   }
 
-  if (flywheelConfig.vault_name) {
-    serverLog('config', `Vault: ${flywheelConfig.vault_name}`);
+  if (ctx.flywheelConfig.vault_name) {
+    serverLog('config', `Vault: ${ctx.flywheelConfig.vault_name}`);
   }
 
   // Auto-build embeddings in background (fire-and-forget)
@@ -1367,17 +1402,20 @@ async function runPostIndexWork(ctx: VaultContext) {
     serverLog('watcher', `File watcher enabled (debounce: ${config.debounceMs}ms)`);
 
     // Set up deferred step scheduler for throttled pipeline steps
-    deferredScheduler = new DeferredStepScheduler();
+    const deferredScheduler = new DeferredStepScheduler();
+    ctx.deferredScheduler = deferredScheduler;
     deferredScheduler.setExecutor({
       ctx,
       vp,
       sd,
-      getVaultIndex: () => vaultIndex,
+      getVaultIndex: () => ctx.vaultIndex,
       updateEntitiesInStateDb,
+      runWithScope: runWithVaultScope,
     });
 
     // Define before createVaultWatcher so we can call it directly for catch-up
     const handleBatch: BatchHandler = async (batch) => {
+      return runWithVaultScope(async () => {
         // Convert event paths from absolute to vault-relative
         // Handles symlink mismatches (e.g., WSL /mnt/c/ vs /home/user/ mounts)
         const vaultPrefixes = new Set([
@@ -1427,11 +1465,27 @@ async function runPostIndexWork(ctx: VaultContext) {
           newPath: normalizeEventPath(r.newPath),
         }));
 
+        const mutedPaths = ctx.mutedWatcherPaths;
+        const dirtyMutedPaths = ctx.dirtyMutedWatcherPaths;
+        const visibleEvents = batch.events.filter((event) => {
+          if (!mutedPaths.has(event.path)) return true;
+          dirtyMutedPaths.add(event.path);
+          return false;
+        });
+        const visibleRenames = batchRenames.filter((rename) => {
+          const muted = mutedPaths.has(rename.oldPath) || mutedPaths.has(rename.newPath);
+          if (muted) {
+            dirtyMutedPaths.add(rename.oldPath);
+            dirtyMutedPaths.add(rename.newPath);
+          }
+          return !muted;
+        });
+
         // Content hash gate: skip files that haven't changed since last batch
         const filteredEvents: CoalescedEvent[] = [];
         const hashUpserts: Array<{ path: string; hash: string }> = [];
         const hashDeletes: string[] = [];
-        for (const event of batch.events) {
+        for (const event of visibleEvents) {
           if (event.type === 'delete') {
             filteredEvents.push(event);
             lastContentHashes.delete(event.path);
@@ -1457,7 +1511,7 @@ async function runPostIndexWork(ctx: VaultContext) {
         }
 
         // Process rename events: record moves and update path references in DB
-        if (batchRenames.length > 0 && sd) {
+        if (visibleRenames.length > 0 && sd) {
           try {
             const insertMove = sd.db.prepare(`
               INSERT INTO note_moves (old_path, new_path, old_folder, new_folder)
@@ -1478,7 +1532,7 @@ async function runPostIndexWork(ctx: VaultContext) {
             const renameProactiveQueue = sd.db.prepare(
               'UPDATE proactive_queue SET note_path = ? WHERE note_path = ? AND status = \'pending\''
             );
-            for (const rename of batchRenames) {
+            for (const rename of visibleRenames) {
               const oldFolder = rename.oldPath.includes('/') ? rename.oldPath.split('/').slice(0, -1).join('/') : '';
               const newFolder = rename.newPath.includes('/') ? rename.newPath.split('/').slice(0, -1).join('/') : '';
               insertMove.run(rename.oldPath, rename.newPath, oldFolder || null, newFolder || null);
@@ -1495,20 +1549,23 @@ async function runPostIndexWork(ctx: VaultContext) {
                 renameContentHash(sd, rename.oldPath, rename.newPath);
               }
             }
-            serverLog('watcher', `Renames: recorded ${batchRenames.length} move(s) in note_moves`);
+            serverLog('watcher', `Renames: recorded ${visibleRenames.length} move(s) in note_moves`);
           } catch (err) {
             serverLog('watcher', `Rename recording failed: ${err instanceof Error ? err.message : err}`, 'error');
           }
         }
 
-        if (filteredEvents.length === 0 && batchRenames.length === 0) {
+        if (filteredEvents.length === 0 && visibleRenames.length === 0) {
+          if (visibleEvents.length === 0 && visibleRenames.length === 0 && dirtyMutedPaths.size > 0) {
+            serverLog('watcher', `Muted ${dirtyMutedPaths.size} watcher path(s) during policy execution`);
+          }
           serverLog('watcher', 'All files unchanged (hash gate), skipping batch');
           return;
         }
 
         // Synthesize upsert events for renamed files so the full pipeline refreshes in-memory state
-        if (filteredEvents.length === 0 && batchRenames.length > 0) {
-          for (const rename of batchRenames) {
+        if (filteredEvents.length === 0 && visibleRenames.length > 0) {
+          for (const rename of visibleRenames) {
             filteredEvents.push({
               type: 'upsert' as const,
               path: rename.newPath,
@@ -1526,19 +1583,20 @@ async function runPostIndexWork(ctx: VaultContext) {
           sd,
           ctx,
           events: filteredEvents,
-          renames: batchRenames,
+          renames: visibleRenames,
           batch,
           changedPaths,
-          flywheelConfig,
-          updateIndexState,
-          updateVaultIndex,
+          flywheelConfig: ctx.flywheelConfig,
+          updateIndexState: updateCtxIndexState,
+          updateVaultIndex: updateCtxVaultIndex,
           updateEntitiesInStateDb,
-          getVaultIndex: () => vaultIndex,
+          getVaultIndex: () => ctx.vaultIndex,
           buildVaultIndex,
-          deferredScheduler: deferredScheduler ?? undefined,
+          deferredScheduler,
           runIntegrityCheck,
         });
         await runner.run();
+      });
     };
 
     const watcher = createVaultWatcher({
@@ -1556,6 +1614,22 @@ async function runPostIndexWork(ctx: VaultContext) {
     });
     ctx.watcher = watcher;
     watcherInstance = watcher;
+    ctx.reconcileMutedWatcherPaths = async (paths: string[]) => {
+      if (paths.length === 0) return;
+      const deduped = Array.from(new Set(paths));
+      const reconciledEvents: CoalescedEvent[] = [];
+      for (const filePath of deduped) {
+        try {
+          await fs.access(path.join(vp, filePath));
+          reconciledEvents.push({ type: 'upsert', path: filePath, originalEvents: [] });
+        } catch {
+          reconciledEvents.push({ type: 'delete', path: filePath, originalEvents: [] });
+        }
+      }
+      if (reconciledEvents.length === 0) return;
+      serverLog('policy', `Reconciling ${reconciledEvents.length} watcher-muted path(s)`);
+      await handleBatch({ events: reconciledEvents, renames: [], timestamp: Date.now() });
+    };
 
     // Startup catch-up: process files that were modified while the server was offline.
     // getRecentPipelineEvent returns the last event with steps (i.e. last watcher run).
@@ -1593,8 +1667,8 @@ async function runPostIndexWork(ctx: VaultContext) {
   // Start periodic sweep for graph hygiene metrics (only when watcher is active)
   if (process.env.FLYWHEEL_WATCH !== 'false') {
     startSweepTimer(() => ctx.vaultIndex, undefined, () => {
-      if (sd) runPeriodicMaintenance(sd);
-    });
+      if (sd) runPeriodicMaintenance(ctx, sd);
+    }, runWithVaultScope, ctx.name);
     serverLog('server', 'Sweep timer started (5 min interval)');
 
     // Start periodic maintenance for aggregate step refresh
@@ -1605,9 +1679,10 @@ async function runPostIndexWork(ctx: VaultContext) {
       sd,
       getVaultIndex: () => ctx.vaultIndex,
       updateEntitiesInStateDb,
-      updateFlywheelConfig,
+      updateFlywheelConfig: updateCtxFlywheelConfig,
       getLastMcpRequestAt: () => lastMcpRequestAt,
       getLastFullRebuildAt: () => lastFullRebuildAt,
+      runWithScope: runWithVaultScope,
     }, maintenanceIntervalMs);
     serverLog('server', `Maintenance timer started (~${Math.round(maintenanceIntervalMs / 60000)}min interval)`);
   }
@@ -1670,8 +1745,11 @@ function gracefulShutdown(signal: string) {
   console.error(`[Memory] Received ${signal}, shutting down...`);
   if (watchdogTimer) clearInterval(watchdogTimer);
   if (httpListener) httpListener.close();
+  for (const ctx of vaultRegistry?.getAllContexts() ?? []) {
+    try { ctx.watcher?.stop(); } catch { /* best-effort */ }
+    try { ctx.deferredScheduler?.cancelAll(); } catch { /* best-effort */ }
+  }
   try { watcherInstance?.stop(); } catch {}
-  try { deferredScheduler?.cancelAll(); } catch {}
   stopSweepTimer();
   stopMaintenanceTimer();
   flushLogs()

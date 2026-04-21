@@ -1,7 +1,8 @@
 /**
  * Task Cache — SQLite-backed task index for fast queries
  *
- * Follows the FTS5/embeddings pattern: module-level db ref, injected via setter.
+ * Uses VaultScope for normal runtime access and a compatibility setter for
+ * isolated tests or bootstrapping paths outside ALS.
  * Replaces full vault scan with indexed SQL queries.
  */
 
@@ -12,41 +13,34 @@ import { extractTasksFromNote, type Task } from '../../tools/read/tasks.js';
 import { serverLog } from '../shared/serverLog.js';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 
-// Module-level database reference
-let db: Database.Database | null = null;
+// Compatibility database reference for tests and bootstrapping outside ALS.
+let compatDb: Database.Database | null = null;
+
+function getTaskCacheBuildingFlag(): boolean {
+  const scope = getActiveScopeOrNull();
+  return scope?.taskCacheBuilding ?? false;
+}
+
+function setTaskCacheBuildingFlag(building: boolean): void {
+  const scope = getActiveScopeOrNull();
+  if (scope) {
+    scope.taskCacheBuilding = building;
+  }
+}
 
 /** Resolve DB handle: ALS scope first, fallback to module-level. */
 function getDb(): Database.Database | null {
-  return getActiveScopeOrNull()?.stateDb?.db ?? db;
+  return getActiveScopeOrNull()?.stateDb?.db ?? compatDb;
 }
 
 /** Staleness threshold: 30 minutes */
 const TASK_CACHE_STALE_MS = 30 * 60 * 1000;
 
-/** Whether the cache has been built at least once this session */
-let cacheReady = false;
-
-/** Whether a background rebuild is in progress */
-let rebuildInProgress = false;
-
 /**
- * Inject database handle (called from index.ts after StateDb init)
+ * Compatibility injection for isolated tests and bootstrapping outside ALS.
  */
-export function setTaskCacheDatabase(database: Database.Database): void {
-  db = database;
-
-  // Check if cache was previously built
-  try {
-    const row = db.prepare(
-      'SELECT value FROM fts_metadata WHERE key = ?'
-    ).get('task_cache_built') as { value: string } | undefined;
-
-    if (row) {
-      cacheReady = true;
-    }
-  } catch {
-    // Table might not exist yet
-  }
+export function setTaskCacheDatabase(database: Database.Database | null): void {
+  compatDb = database;
 }
 
 /**
@@ -70,7 +64,7 @@ export function isTaskCacheReady(): boolean {
  * Check if a task cache rebuild is currently in progress
  */
 export function isTaskCacheBuilding(): boolean {
-  return rebuildInProgress;
+  return getTaskCacheBuildingFlag();
 }
 
 /**
@@ -87,14 +81,11 @@ export async function buildTaskCache(
 ): Promise<void> {
   const db = getDb();
   if (!db) {
-    throw new Error('Task cache database not initialized. Call setTaskCacheDatabase() first.');
+    throw new Error('Task cache database not initialized. Run inside an active vault scope or call setTaskCacheDatabase() in tests.');
   }
 
-  if (rebuildInProgress) return;
-  rebuildInProgress = true;
-
-  // Keep cacheReady=true if it was already set (serve stale data during rebuild)
-  // Only mark as not-ready if this is the very first build (no prior cache data)
+  if (getTaskCacheBuildingFlag()) return;
+  setTaskCacheBuildingFlag(true);
 
   const start = Date.now();
 
@@ -145,12 +136,10 @@ export async function buildTaskCache(
     });
 
     swapAll();
-
-    cacheReady = true;
     const duration = Date.now() - start;
     serverLog('tasks', `Task cache built: ${allRows.length} tasks from ${notePaths.length} notes in ${duration}ms`);
   } finally {
-    rebuildInProgress = false;
+    setTaskCacheBuildingFlag(false);
   }
 }
 
@@ -380,7 +369,7 @@ export function refreshIfStale(
   index: VaultIndex,
   excludeTags?: string[]
 ): void {
-  if (!isTaskCacheStale() || rebuildInProgress) return;
+  if (!isTaskCacheStale() || getTaskCacheBuildingFlag()) return;
 
   buildTaskCache(vaultPath, index, excludeTags).catch(err => {
     serverLog('tasks', `Task cache background refresh failed: ${err instanceof Error ? err.message : err}`, 'error');

@@ -175,6 +175,17 @@ describe('Sweep Module', () => {
 
       expect(cached).toBe(results);
     });
+
+    it('tracks cached results per vault key', () => {
+      const denseIndex = makeIndex();
+      const emptyIndex = makeIndex({ notes: new Map(), entities: new Map() });
+
+      runSweep(denseIndex, 'vault-a');
+      runSweep(emptyIndex, 'vault-b');
+
+      expect(getSweepResults('vault-a')?.dead_link_count).toBe(3);
+      expect(getSweepResults('vault-b')?.dead_link_count).toBe(0);
+    });
   });
 
   describe('startSweepTimer / stopSweepTimer', () => {

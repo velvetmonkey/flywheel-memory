@@ -10,6 +10,8 @@ const DOCS_PROVE_IT_PATH = path.join(REPO_ROOT, 'docs', 'PROVE-IT.md');
 const DOCS_README_PATH = path.join(REPO_ROOT, 'docs', 'README.md');
 const DOCS_VISION_PATH = path.join(REPO_ROOT, 'docs', 'VISION.md');
 const DOCS_QUALITY_REPORT_PATH = path.join(REPO_ROOT, 'docs', 'QUALITY_REPORT.md');
+const BENCH_ITERATION_INDEX_PATH = path.join(REPO_ROOT, 'packages', 'bench', 'src', 'iteration', 'index.ts');
+const BENCH_ITERATION_CLI_PATH = path.join(REPO_ROOT, 'packages', 'bench', 'src', 'cli', 'iteration-stress.ts');
 const DEMOS_DIR = path.join(REPO_ROOT, 'demos');
 
 const hasResults = existsSync(path.join(REPO_ROOT, 'demos', 'hotpotqa', 'results'))
@@ -147,5 +149,17 @@ describe('documentation claims truth', () => {
     for (const demo of configuredDemos) {
       expect(docsIndex).toMatch(new RegExp(`\\[${escapeRegex(demo)}\\]`));
     }
+  });
+
+  it('iteration stress bench is labeled simulation-only everywhere it surfaces', async () => {
+    const [iterationIndex, iterationCli] = await Promise.all([
+      read(BENCH_ITERATION_INDEX_PATH),
+      read(BENCH_ITERATION_CLI_PATH),
+    ]);
+
+    expect(iterationIndex).toContain('simulation-only');
+    expect(iterationCli).toContain('simulation-only');
+    expect(iterationIndex).not.toContain('real impl would use mutation functions');
+    expect(iterationCli).toContain('Running iteration stress test (simulation-only)');
   });
 });

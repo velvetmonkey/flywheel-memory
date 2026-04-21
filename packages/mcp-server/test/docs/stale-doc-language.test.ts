@@ -12,6 +12,7 @@ const TARGET_FILES = [
   'CLAUDE.md',
   'docs/README.md',
   'docs/TOOLS.md',
+  'docs/POLICIES.md',
   'docs/CONFIGURATION.md',
   'docs/SETUP.md',
   'docs/ARCHITECTURE.md',
@@ -23,6 +24,9 @@ const STALE_PATTERNS: Array<{ pattern: RegExp; message: string }> = [
   { pattern: /read or update via the `flywheel_config` tool/i, message: 'public docs should refer to doctor(action: "config") instead of flywheel_config' },
   { pattern: /65-tool|65 tool/i, message: 'hard-coded old tool counts should be removed' },
   { pattern: /discover_tools[^.\n]*(activates|reveals|unlocks)/i, message: 'discover_tools should not be documented as activating tools' },
+  { pattern: /single atomic operation/i, message: 'policies should not be documented as atomic staging' },
+  { pattern: /search and write atomically/i, message: 'policy docs should describe live writes plus rollback' },
+  { pattern: /execute atomic workflows/i, message: 'tool docs should avoid atomic workflow language' },
 ];
 
 describe('stale doc language guard', () => {

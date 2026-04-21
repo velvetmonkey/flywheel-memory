@@ -222,7 +222,7 @@ One search call returns enough context for the model to answer grounded question
 
 ### Write safely
 
-Every mutation is conflict-detected with a SHA-256 content hash and reversible with one undo. Writes preserve Markdown structure, so edits do not corrupt tables, callouts, code blocks, frontmatter, links, comments, or math. Auto-wikilinks stay deterministic and traceable. For one-off edits, use the direct write tools. For repeatable workflows that search the vault and act on the results, use **policies**, saved YAML workflows that branch on vault state and run multiple write steps as a single atomic operation. [How scoring works ->](docs/ALGORITHM.md) | [Policies guide ->](docs/POLICIES.md)
+Every mutation is conflict-detected with a SHA-256 content hash and reversible with one undo. Writes preserve Markdown structure, so edits do not corrupt tables, callouts, code blocks, frontmatter, links, comments, or math. Auto-wikilinks stay deterministic and traceable. For one-off edits, use the direct write tools. For repeatable workflows that search the vault and act on the results, use **policies**, saved YAML workflows that branch on vault state, perform live writes, and attempt compensating rollback on failure. [How scoring works ->](docs/ALGORITHM.md) | [Policies guide ->](docs/POLICIES.md)
 
 ### Build memory over time
 
@@ -299,7 +299,7 @@ E2E with Claude Sonnet (latest checked-in 695-question run): **97.4%** single-ho
 
 - **Graph quality:** Latest generated report shows balanced-mode **50.6% precision / 66.7% recall / 57.6% F1** on the primary synthetic vault, along with multi-generation, archetype, chaos, and regression coverage. [Report ->](docs/QUALITY_REPORT.md)
 - **Live AI testing:** Real `claude -p` sessions verify tool adoption end to end, not just handler logic.
-- **Write safety:** Git-backed conflict detection, atomic rollback, and 100 parallel writes with zero corruption in the checked-in test suite.
+- **Write safety:** Git-backed conflict detection, compensating rollback for policy failures, and 100 parallel writes with zero corruption in the checked-in test suite.
 - **Security:** Coverage includes SQL injection, path traversal, Unicode normalization, and permission bypass cases.
 
 [Full methodology and results ->](docs/TESTING.md)

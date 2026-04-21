@@ -1,119 +1,35 @@
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>
-  <p><strong>Flywheel turns an Obsidian vault into a local MCP workspace for AI agents: fast to query and safe to write.</strong></p>
+  <p><strong>Flywheel turns your Obsidian vault into safe local memory for AI agents.</strong></p>
+  <p>Search your notes with real context, write back safely, and keep your Markdown on your machine.</p>
 </div>
 
 [![npm version](https://img.shields.io/npm/v/@velvetmonkey/flywheel-memory.svg)](https://www.npmjs.com/package/@velvetmonkey/flywheel-memory)
 [![CI](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/velvetmonkey/flywheel-memory/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![HotpotQA](https://img.shields.io/badge/HotpotQA-90.0%25%20recall%20(50q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
-[![LoCoMo](https://img.shields.io/badge/LoCoMo-81.9%25%20evidence%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 
-> **Part of the Flywheel suite** &mdash; Flywheel Memory is the MCP server. [**Flywheel Crank**](https://github.com/velvetmonkey/flywheel-crank) is the Obsidian plugin that visualizes it.
+**[Get Started](#get-started)** · **[See It Work](#see-it-work)** · **[What It Does](#what-it-does)** · **[Skills + Flywheel](#skills--flywheel)** · **[Benchmarks](#benchmarks)** · **[Testing](#testing)** · **[Documentation](#documentation)** · **[License](#license)**
 
-**[What It Does](#what-it-does)** · **[See It Work](#see-it-work)** · **[Skills + Flywheel](#skills--flywheel)** · **[Get Started](#get-started)** · **[Benchmarks](#benchmarks)** · **[Testing](#testing)** · **[Documentation](#documentation)** · **[License](#license)**
+Flywheel is a local-first memory layer for AI agents working over Obsidian and plain Markdown. It gives agents grounded search across your notes, safe bounded writes back into the vault, and local indexes that stay on your machine.
 
-Flywheel is a local MCP server that gives AI agents structured access to an Obsidian vault. Search returns a *decision surface* with frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. In many cases that is enough context to answer without opening a chain of files. Writes are git-committed, conflict-detected, and reversible. Auto-wikilinks use a deterministic scoring algorithm, and every suggestion has a traceable receipt.
+Built for people who want AI to work over real notes without handing their vault to a cloud app. Your files stay readable Markdown, semantic search is optional and local, and every write is inspectable and reversible.
 
-Everything runs on your machine. Nothing leaves your disk. Every action is bounded, inspectable, and reversible. Semantic search is optional — when enabled via `init_semantic`, a 23 MB embedding model ([all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2)) is downloaded once to `~/.cache/huggingface/` and runs locally. No content is sent to any external service.
+- **Grounded search** — find the notes that matter, plus the linked context around them, without making the model trawl through a pile of files.
+- **Safe reversible writes** — update a live vault through bounded operations that preserve Markdown structure and can be undone.
+- **Local-first by default** — keep your notes on disk, use plain Markdown as the source of truth, and add local semantic search only if you want it.
 
----
+### Why not raw file access or naive RAG?
 
-## What It Does
+Raw file access gives an agent text, not memory. Flywheel adds better ranking across notes, linked context that helps the model stay grounded, and write operations that are bounded enough to trust inside a live vault.
 
-### Search your vault
+### A 30-second workflow
 
-One call returns everything the model needs to answer: frontmatter, scored backlinks and outlinks, snippets with section context, dates, entity bridges, and confidence. Under the hood, entities give the system stable identity, the graph gives it load-bearing structure, and semantic search surfaces related notes when no explicit link exists yet. Keyword search (BM25) finds what you said. Semantic search finds what you meant. Both are fused via Reciprocal Rank Fusion, running locally. [How search works ->](docs/ARCHITECTURE.md)
+From the [carter-strategy](demos/carter-strategy/) demo:
 
-### Write safely
-
-Every mutation is git-committed, conflict-detected with a SHA-256 content hash, and reversible with one undo. Writes preserve markdown structure, so edits do not corrupt tables, callouts, code blocks, frontmatter, links, comments, or math. Auto-wikilinks use a deterministic 13-layer scoring algorithm where every suggestion has a traceable receipt. For one-off edits, use the direct write tools. For repeatable workflows that search the vault and act on the results, use **policies**, which are saved YAML workflows that branch on vault state and run multiple write steps as a single atomic operation. [How scoring works ->](docs/ALGORITHM.md) | [Policies guide ->](docs/POLICIES.md)
-
-### Build context over time
-
-Every accepted link strengthens the graph. Every rejected link updates the scorer. Every write adds more context for the next read. `memory(action: "brief")` assembles a token-budgeted summary of recent activity, and `memory` persists observations with confidence decay. The graph can be exported through `graph(action: "export")` as GraphML for visualization in tools like [Gephi](https://gephi.org) or NetworkX — see the [carter-strategy demo](demos/carter-strategy/) for an example. [Configuration ->](docs/CONFIGURATION.md)
-
----
-
-## See It Work
-
-### Voice: The learning loop
-
-From the [carter-strategy](demos/carter-strategy/) demo: log a call by voice, watch wikilinks and suggestions appear, accept and reject a few, then log again — the suggestions improve immediately.
-
-https://github.com/user-attachments/assets/cb9e4945-7f0b-410d-85ef-0c42ffc18c6e
-
-https://github.com/user-attachments/assets/bfdae034-6217-426e-bb1d-ff8e2f0d4bc3
-
-https://github.com/user-attachments/assets/4a0635ff-dd73-4fb1-933d-bf384822e2ce
-
-### Write: Auto-wikilinks on mutation
-
-```text
-> Log that Stacy reviewed the security checklist before the Beta Corp kickoff
-
-flywheel -> edit_section action=add
-  path: "daily-notes/2026-01-04.md"
-  section: "Log"
-  suggestOutgoingLinks: true
-  content: "[[Stacy Thompson|Stacy]] reviewed the [[API Security Checklist|security checklist]]
-            before the [[Beta Corp Dashboard|Beta Corp]] kickoff
-            -> [[GlobalBank API Audit]], [[Acme Data Migration]]"
-```
-
-You type a normal sentence. Flywheel resolves known entities, detects prospective entities (proper nouns, acronyms, CamelCase terms), and adds wikilinks and suggests related links based on aliases, co-occurrence, graph structure, and semantic context. Suggested outgoing links are optional and off by default. Enable them where you want the graph to grow naturally, such as daily notes, meeting logs, or voice capture. [Configuration guide ->](docs/CONFIGURATION.md)
-
-### Boundaries
-
-- Writes happen through visible tool calls.
-- Changes stay within the vault unless you explicitly point a tool somewhere else.
-- Git commits are opt-in.
-- Proactive linking can be disabled.
-
-> **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/run-demo-test.sh) script that runs the full sequence end to end with `claude -p`, checking tool usage and vault state between steps.
-
-<details>
-<summary><strong>Policy example: Search the vault, then act on it</strong></summary>
-
-```text
-> Create a policy that finds overdue invoices and logs follow-up tasks in today's daily note
-
-flywheel -> policy action=author
-  description: "Find invoices with status:sent, create follow-up task list in daily note"
-  ✓ Saved to .flywheel/policies/overdue-invoice-chaser.yaml
-
-> Preview the overdue-invoice-chaser policy
-
-flywheel -> policy action=preview name=overdue-invoice-chaser
-  Step 1: vault_search: query "type:invoice status:sent" in invoices/ -> 3 results
-  Step 2: edit_section: would append to daily-notes/2026-03-31.md#Tasks
-  (no changes made; preview only)
-
-> Execute it
-
-flywheel -> policy action=execute name=overdue-invoice-chaser
-  ✓ 2 steps executed, 1 note modified, committed as single git commit
-```
-
-Policies search the vault, then write back. Author them in plain language, preview before running, and undo with one call if needed. [Policies guide ->](docs/POLICIES.md) | [Examples ->](docs/POLICY_EXAMPLES.md)
-
-</details>
-
----
-
-## Skills + Flywheel
-
-Skills encode methodology: how to do something. Flywheel encodes knowledge: what you know. They are complementary layers:
-
-| Layer | What it provides | Example |
-|---|---|---|
-| Skills | Procedures, templates, reasoning frameworks | "How to write a client proposal" |
-| Flywheel | Entities, relationships, history, context | "Everything you know about this client" |
-
-An agent calling a proposal-writing skill works better when it can also search your vault for the client's history, past invoices, project notes, and team relationships. Skills tell agents how to work. Flywheel tells them what you know.
-
-[OpenClaw](https://github.com/openclaw) skills and Flywheel connect through MCP. OpenClaw routes intent and manages session flow; Flywheel provides the structured context and safe writes that make responses accurate. [Integration guide ->](docs/OPENCLAW.md)
+1. Ask: *"How much have I billed Acme Corp?"*
+2. Flywheel searches the right notes, returns connected context, and answers from the vault.
+3. If you want to act on the result, the same session can log follow-ups or update the right note as a visible, bounded change.
 
 ---
 
@@ -154,7 +70,7 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Flywheel watches the vault, maintains local indexes, and serves the graph to MCP clients. Your source of truth stays in markdown. If you delete `.flywheel/state.db`, Flywheel rebuilds from the vault.
+Flywheel watches the vault, maintains local indexes, and serves structured context to MCP clients. Your source of truth stays in Markdown. If you delete `.flywheel/state.db`, Flywheel rebuilds from the vault.
 
 ### Optional: Tool presets
 
@@ -232,7 +148,113 @@ If you use Cursor, Windsurf, VS Code, OpenClaw, or another client, see [docs/SET
 
 ---
 
+## See It Work
+
+### Voice: The learning loop
+
+From the [carter-strategy](demos/carter-strategy/) demo: log a call by voice, watch wikilinks and suggestions appear, accept and reject a few, then log again — the suggestions improve immediately.
+
+https://github.com/user-attachments/assets/cb9e4945-7f0b-410d-85ef-0c42ffc18c6e
+
+https://github.com/user-attachments/assets/bfdae034-6217-426e-bb1d-ff8e2f0d4bc3
+
+https://github.com/user-attachments/assets/4a0635ff-dd73-4fb1-933d-bf384822e2ce
+
+### Write: Auto-wikilinks on mutation
+
+```text
+> Log that Stacy reviewed the security checklist before the Beta Corp kickoff
+
+flywheel -> edit_section action=add
+  path: "daily-notes/2026-01-04.md"
+  section: "Log"
+  suggestOutgoingLinks: true
+  content: "[[Stacy Thompson|Stacy]] reviewed the [[API Security Checklist|security checklist]]
+            before the [[Beta Corp Dashboard|Beta Corp]] kickoff
+            -> [[GlobalBank API Audit]], [[Acme Data Migration]]"
+```
+
+You type a normal sentence. Flywheel resolves known entities, detects prospective entities (proper nouns, acronyms, CamelCase terms), and adds wikilinks and suggests related links based on aliases, co-occurrence, graph structure, and semantic context. Suggested outgoing links are optional and off by default. Enable them where you want the graph to grow naturally, such as daily notes, meeting logs, or voice capture. [Configuration guide ->](docs/CONFIGURATION.md)
+
+### Boundaries
+
+- Writes happen through visible tool calls.
+- Changes stay within the vault unless you explicitly point a tool somewhere else.
+- Git commits are opt-in.
+- Proactive linking can be disabled.
+
+> **Reproduce it yourself:** The carter-strategy demo includes a [`run-demo-test.sh`](demos/run-demo-test.sh) script that runs the full sequence end to end with `claude -p`, checking tool usage and vault state between steps.
+
+<details>
+<summary><strong>Policy example: Search the vault, then act on it</strong></summary>
+
+```text
+> Create a policy that finds overdue invoices and logs follow-up tasks in today's daily note
+
+flywheel -> policy action=author
+  description: "Find invoices with status:sent, create follow-up task list in daily note"
+  ✓ Saved to .flywheel/policies/overdue-invoice-chaser.yaml
+
+> Preview the overdue-invoice-chaser policy
+
+flywheel -> policy action=preview name=overdue-invoice-chaser
+  Step 1: vault_search: query "type:invoice status:sent" in invoices/ -> 3 results
+  Step 2: edit_section: would append to daily-notes/2026-03-31.md#Tasks
+  (no changes made; preview only)
+
+> Execute it
+
+flywheel -> policy action=execute name=overdue-invoice-chaser
+  ✓ 2 steps executed, 1 note modified, committed as single git commit
+```
+
+Policies search the vault, then write back. Author them in plain language, preview before running, and undo with one call if needed. [Policies guide ->](docs/POLICIES.md) | [Examples ->](docs/POLICY_EXAMPLES.md)
+
+</details>
+
+---
+
+## What It Does
+
+### Search with context
+
+One search call returns enough context for the model to answer grounded questions: frontmatter, section-aware snippets, dates, and linked notes that matter. Keyword search (BM25) handles exact terms. Optional local semantic search helps when the right note is related but not explicitly linked yet. Together they reduce file-hopping and make answers more reliable over a real vault. [How search works ->](docs/ARCHITECTURE.md)
+
+### Write safely
+
+Every mutation is conflict-detected with a SHA-256 content hash and reversible with one undo. Writes preserve Markdown structure, so edits do not corrupt tables, callouts, code blocks, frontmatter, links, comments, or math. Auto-wikilinks stay deterministic and traceable. For one-off edits, use the direct write tools. For repeatable workflows that search the vault and act on the results, use **policies**, saved YAML workflows that branch on vault state and run multiple write steps as a single atomic operation. [How scoring works ->](docs/ALGORITHM.md) | [Policies guide ->](docs/POLICIES.md)
+
+### Build memory over time
+
+Every accepted link strengthens the graph. Every rejected link updates the scorer. Every write adds more context for the next read. `memory(action: "brief")` assembles a token-budgeted summary of recent activity, and `memory` persists observations with confidence decay. The graph can be exported through `graph(action: "export")` as GraphML for visualization in tools like [Gephi](https://gephi.org) or NetworkX — see the [carter-strategy demo](demos/carter-strategy/) for an example. [Configuration ->](docs/CONFIGURATION.md)
+
+---
+
+## Skills + Flywheel
+
+Skills encode methodology: how to do something. Flywheel encodes knowledge: what you know. They are complementary layers:
+
+| Layer | What it provides | Example |
+|---|---|---|
+| Skills | Procedures, templates, reasoning frameworks | "How to write a client proposal" |
+| Flywheel | Entities, relationships, history, context | "Everything you know about this client" |
+
+An agent calling a proposal-writing skill works better when it can also search your vault for the client's history, past invoices, project notes, and team relationships. Skills tell agents how to work. Flywheel tells them what you know.
+
+[OpenClaw](https://github.com/openclaw) skills and Flywheel connect through MCP. OpenClaw routes intent and manages session flow; Flywheel provides the structured context and safe writes that make responses accurate. [Integration guide ->](docs/OPENCLAW.md)
+
+---
+
+## The Flywheel Suite
+
+Flywheel Memory is the core memory engine. [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) is the Obsidian plugin that visualizes the same local graph and workflows. [Flywheel Engine](https://github.com/velvetmonkey/flywheel-engine) is the service layer that calls Flywheel over MCP. Start with Flywheel Memory; add the other layers when you want UI or automation around the same vault.
+
+---
+
 ## Benchmarks
+
+[![HotpotQA](https://img.shields.io/badge/HotpotQA-90.0%25%20recall%20(50q)-brightgreen.svg)](docs/TESTING.md#retrieval-benchmark-hotpotqa)
+[![LoCoMo](https://img.shields.io/badge/LoCoMo-81.9%25%20evidence%20recall%20(695q)-blue.svg)](docs/TESTING.md#retrieval-benchmark-locomo)
 
 Agent-first tools should prove their claims. Flywheel ships with reproducible benchmarks against academic retrieval standards:
 

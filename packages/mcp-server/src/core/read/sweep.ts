@@ -9,14 +9,15 @@
  * - Unlinked mention counts for top entities
  * - Stub candidates (dead links worth creating notes for)
  *
- * Results are cached in module-level state and exposed via getSweepResults().
- * health_check reads these on every poll (every 3s from crank).
+ * Results and timers are tracked per vault and exposed via getSweepResults().
+ * health_check reads the active vault's latest sweep data on every poll.
  */
 
 import type { VaultIndex } from './types.js';
 import { resolveTarget } from './graph.js';
 import { countFTS5Mentions } from './fts5.js';
 import { serverLog } from '../shared/serverLog.js';
+import { getActiveScopeOrNull } from '../../vault-scope.js';
 
 /** Default sweep interval: 5 minutes */
 const DEFAULT_SWEEP_INTERVAL_MS = 5 * 60 * 1000;
@@ -45,14 +46,38 @@ export interface SweepResults {
   }>;
 }
 
-let cachedResults: SweepResults | null = null;
-let sweepTimer: ReturnType<typeof setInterval> | null = null;
-let sweepRunning = false;
+interface SweepRuntime {
+  cachedResults: SweepResults | null;
+  initialTimer: ReturnType<typeof setTimeout> | null;
+  sweepTimer: ReturnType<typeof setInterval> | null;
+  sweepRunning: boolean;
+}
+
+const runtimes = new Map<string, SweepRuntime>();
+
+function resolveSweepKey(explicitKey?: string): string {
+  return explicitKey ?? getActiveScopeOrNull()?.name ?? 'default';
+}
+
+function getRuntime(key: string): SweepRuntime {
+  let runtime = runtimes.get(key);
+  if (!runtime) {
+    runtime = {
+      cachedResults: null,
+      initialTimer: null,
+      sweepTimer: null,
+      sweepRunning: false,
+    };
+    runtimes.set(key, runtime);
+  }
+  return runtime;
+}
 
 /**
  * Run a single sweep scan against the current vault index.
  */
-export function runSweep(index: VaultIndex): SweepResults {
+export function runSweep(index: VaultIndex, vaultKey?: string): SweepResults {
+  const runtime = getRuntime(resolveSweepKey(vaultKey));
   const start = Date.now();
 
   // 1. Dead link scan — aggregate by target
@@ -118,7 +143,7 @@ export function runSweep(index: VaultIndex): SweepResults {
     top_unlinked_entities: unlinkedEntities.slice(0, 10),
   };
 
-  cachedResults = results;
+  runtime.cachedResults = results;
   return results;
 }
 
@@ -132,59 +157,100 @@ export function startSweepTimer(
   getIndex: () => VaultIndex,
   intervalMs?: number,
   maintenanceCallback?: () => void,
+  runWithScope?: <T>(fn: () => T) => T,
+  vaultKey?: string,
 ): void {
+  const key = resolveSweepKey(vaultKey);
+  const runtime = getRuntime(key);
   const interval = Math.max(intervalMs ?? DEFAULT_SWEEP_INTERVAL_MS, MIN_SWEEP_INTERVAL_MS);
+  const run = runWithScope ?? ((fn: () => void) => fn());
+
+  if (runtime.initialTimer) {
+    clearTimeout(runtime.initialTimer);
+    runtime.initialTimer = null;
+  }
+  if (runtime.sweepTimer) {
+    clearInterval(runtime.sweepTimer);
+    runtime.sweepTimer = null;
+  }
 
   // Run initial sweep after a short delay (let startup finish)
-  setTimeout(() => {
-    doSweep(getIndex);
+  runtime.initialTimer = setTimeout(() => {
+    runtime.initialTimer = null;
+    run(() => {
+      doSweep(getIndex, key);
+    });
   }, 5000);
+  runtime.initialTimer.unref?.();
 
-  sweepTimer = setInterval(() => {
-    doSweep(getIndex);
-    if (maintenanceCallback) {
-      try {
-        maintenanceCallback();
-      } catch (err) {
-        serverLog('sweep', `Maintenance error: ${err}`, 'error');
+  runtime.sweepTimer = setInterval(() => {
+    run(() => {
+      doSweep(getIndex, key);
+      if (maintenanceCallback) {
+        try {
+          maintenanceCallback();
+        } catch (err) {
+          serverLog('sweep', `Maintenance error: ${err}`, 'error');
+        }
       }
-    }
+    });
   }, interval);
 
   // Don't prevent process exit
-  if (sweepTimer && typeof sweepTimer === 'object' && 'unref' in sweepTimer) {
-    sweepTimer.unref();
+  if (runtime.sweepTimer && typeof runtime.sweepTimer === 'object' && 'unref' in runtime.sweepTimer) {
+    runtime.sweepTimer.unref();
   }
 }
 
-function doSweep(getIndex: () => VaultIndex): void {
-  if (sweepRunning) return;
-  sweepRunning = true;
+function doSweep(getIndex: () => VaultIndex, vaultKey?: string): void {
+  const runtime = getRuntime(resolveSweepKey(vaultKey));
+  if (runtime.sweepRunning) return;
+  runtime.sweepRunning = true;
   try {
     const index = getIndex();
     if (index && index.notes && index.notes.size > 0) {
-      runSweep(index);
+      runtime.cachedResults = runSweep(index, vaultKey);
     }
   } catch (err) {
     serverLog('sweep', `Sweep error: ${err}`, 'error');
   } finally {
-    sweepRunning = false;
+    runtime.sweepRunning = false;
   }
 }
 
 /**
  * Stop the periodic sweep timer.
  */
-export function stopSweepTimer(): void {
-  if (sweepTimer) {
-    clearInterval(sweepTimer);
-    sweepTimer = null;
+export function stopSweepTimer(vaultKey?: string): void {
+  if (vaultKey) {
+    const runtime = runtimes.get(resolveSweepKey(vaultKey));
+    if (!runtime) return;
+    if (runtime.initialTimer) {
+      clearTimeout(runtime.initialTimer);
+      runtime.initialTimer = null;
+    }
+    if (runtime.sweepTimer) {
+      clearInterval(runtime.sweepTimer);
+      runtime.sweepTimer = null;
+    }
+    return;
+  }
+
+  for (const runtime of runtimes.values()) {
+    if (runtime.initialTimer) {
+      clearTimeout(runtime.initialTimer);
+      runtime.initialTimer = null;
+    }
+    if (runtime.sweepTimer) {
+      clearInterval(runtime.sweepTimer);
+      runtime.sweepTimer = null;
+    }
   }
 }
 
 /**
  * Get the most recent sweep results, or null if no sweep has run yet.
  */
-export function getSweepResults(): SweepResults | null {
-  return cachedResults;
+export function getSweepResults(vaultKey?: string): SweepResults | null {
+  return getRuntime(resolveSweepKey(vaultKey)).cachedResults;
 }

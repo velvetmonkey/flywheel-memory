@@ -68,7 +68,7 @@ export {
   timeOperation,
   timeAsyncOperation
 } from './iteration/performanceTracker.js';
-// Simplified iteration stress test
+// Simulation-only iteration stress test
 export {
   runIterationStressTest,
   type IterationStressConfig,

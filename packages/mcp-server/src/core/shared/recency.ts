@@ -25,8 +25,8 @@ import { getActiveScopeOrNull } from '../../vault-scope.js';
 import { SYSTEM_EXCLUDED_DIRS } from './constants.js';
 
 /**
- * Module-level StateDb reference for recency storage
- * Set via setRecencyStateDb() during initialization
+ * Compatibility StateDb reference for recency storage.
+ * Normal runtime should access recency through VaultScope/ALS instead.
  */
 let moduleStateDb: StateDb | null = null;
 
@@ -36,8 +36,7 @@ function getStateDb(): StateDb | null {
 }
 
 /**
- * Set the StateDb instance for this module
- * Called during MCP server initialization
+ * Compatibility hook for isolated tests and bootstrapping paths outside ALS.
  */
 export function setRecencyStateDb(stateDb: StateDb | null): void {
   moduleStateDb = stateDb;

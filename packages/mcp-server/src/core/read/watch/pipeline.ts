@@ -88,6 +88,7 @@ export interface DeferredStepExecutor {
   sd: StateDb | null;
   getVaultIndex: () => VaultIndex;
   updateEntitiesInStateDb: (vp: string, sd: StateDb | null) => Promise<void>;
+  runWithScope?: <T>(fn: () => T) => T;
 }
 
 export class DeferredStepScheduler {
@@ -141,7 +142,9 @@ export class DeferredStepScheduler {
 
     const start = Date.now();
     try {
-      switch (step) {
+      const run = exec.runWithScope ?? ((fn: () => Promise<void>) => fn());
+      await run(async () => {
+        switch (step) {
         case 'entity_scan': {
           await exec.updateEntitiesInStateDb(exec.vp, exec.sd);
           exec.ctx.lastEntityScanAt = Date.now();
@@ -180,7 +183,8 @@ export class DeferredStepScheduler {
           }
           break;
         }
-      }
+        }
+      });
       const duration = Date.now() - start;
       serverLog('deferred', `Completed ${step} in ${duration}ms`);
       if (exec.sd) {

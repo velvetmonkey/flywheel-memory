@@ -36,8 +36,12 @@ export interface VaultScope {
   writeEntityIndexError: Error | null;
   writeEntityIndexLastLoadedAt: number;
   writeRecencyIndex: RecencyIndex | null;
+  taskCacheBuilding: boolean;
   entityEmbeddingsMap: Map<string, Float32Array>;
   inferredCategoriesMap: Map<string, InferredCategory>;
+  mutedWatcherPaths: Set<string>;
+  dirtyMutedWatcherPaths: Set<string>;
+  reconcileMutedWatcherPaths: ((paths: string[]) => Promise<void>) | null;
   pipelineActivity: PipelineActivity;
   bootState: VaultBootState;
   integrityState: IntegrityState;

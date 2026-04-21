@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * CLI for running iteration stress tests (10k+ mutations)
+ * CLI for running the simulation-only iteration stress test
  *
  * Usage:
  *   npm run iteration-stress -- --vault /path/to/vault --iterations 10000
@@ -26,7 +26,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  console.log('Running iteration stress test...');
+  console.log('Running iteration stress test (simulation-only)...');
   console.log(`  Vault: ${vaultPath}`);
   console.log(`  Iterations: ${iterations}`);
   console.log();

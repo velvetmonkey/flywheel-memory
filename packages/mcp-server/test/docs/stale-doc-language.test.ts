@@ -12,6 +12,7 @@ const TARGET_FILES = [
   'CLAUDE.md',
   'docs/README.md',
   'docs/TOOLS.md',
+  'docs/POLICIES.md',
   'docs/CONFIGURATION.md',
   'docs/SETUP.md',
   'docs/ARCHITECTURE.md',
@@ -25,6 +26,12 @@ const STALE_PATTERNS: Array<{ pattern: RegExp; message: string }> = [
   { pattern: /discover_tools[^.\n]*(activates|reveals|unlocks)/i, message: 'discover_tools should not be documented as activating tools' },
 ];
 
+const POLICY_WORDING_TARGETS: Array<{ rel: string; pattern: RegExp; message: string }> = [
+  { rel: 'docs/POLICIES.md', pattern: /single atomic operation/i, message: 'policy docs should describe live writes plus rollback' },
+  { rel: 'docs/README.md', pattern: /search and write atomically/i, message: 'docs index should not describe policies as atomic staging' },
+  { rel: 'docs/TOOLS.md', pattern: /execute atomic workflows/i, message: 'tool docs should avoid atomic workflow language' },
+];
+
 describe('stale doc language guard', () => {
   for (const rel of TARGET_FILES) {
     it(`${rel} avoids stale tool-model language`, () => {
@@ -32,6 +39,13 @@ describe('stale doc language guard', () => {
       for (const { pattern, message } of STALE_PATTERNS) {
         expect(content, `${rel}: ${message}`).not.toMatch(pattern);
       }
+    });
+  }
+
+  for (const { rel, pattern, message } of POLICY_WORDING_TARGETS) {
+    it(`${rel} avoids stale policy wording`, () => {
+      const content = readFileSync(join(REPO_ROOT, rel), 'utf-8');
+      expect(content, `${rel}: ${message}`).not.toMatch(pattern);
     });
   }
 });

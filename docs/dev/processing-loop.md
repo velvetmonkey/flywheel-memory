@@ -63,7 +63,7 @@ Re-extracts entities from vault. Uses `extractFrontmatterFields()` for aliases/t
 Computes backlink count per entity from `VaultIndex`. In-memory.
 
 ### 5. recency (~line 1079)
-Updates last-mention timestamps via `saveRecencyToStateDb()`. Module-level StateDb ref set by `setRecencyStateDb()`.
+Updates last-mention timestamps via `saveRecencyToStateDb()`. Normal runtime resolves StateDb from the active `VaultScope`; the compatibility setter exists only for tests and bootstrapping paths outside ALS.
 
 ### 6. cooccurrence (~line 1099)
 Builds co-occurrence matrix — which entities appear together in notes. In-memory index.
@@ -81,7 +81,7 @@ Generates/updates entity embeddings. Stored in `entity_embeddings` table. Used b
 Rebuilds in-memory suggestion index used by `suggestRelatedLinks()`.
 
 ### 11. task_cache (~line 1221)
-Updates task cache for changed files via `updateTaskCacheForFile()` in `taskCache.ts`. Module-level db ref set by `setTaskCacheDatabase()`.
+Updates task cache for changed files via `updateTaskCacheForFile()` in `taskCache.ts`. Normal runtime resolves the DB handle and build flag from the active `VaultScope`; the compatibility setter exists only for tests and bootstrapping paths outside ALS.
 
 ### 12. forward_links (~line 1241)
 Resolves wikilinks per note using `extractLinkedEntities()`. Diffs against `note_links` table via `getStoredNoteLinks()`/`updateStoredNoteLinks()`/`diffNoteLinks()`. Produces `linkDiffs[]` with added/removed arrays. Also tracks link survival in `note_link_history` and triggers `implicit:kept` feedback at 3+ edits. First-run mitigation: seeds without reporting additions if previousSet empty.
@@ -102,7 +102,7 @@ Detects tag additions/removals per note. Stores in `note_tags` table. First-run 
 File: `packages/mcp-server/src/core/write/wikilinks.ts` — `suggestRelatedLinks()`
 
 ### Layer 0: Suppression filter
-`isSuppressed()` from `wikilinkFeedback.ts`. Checks `wikilink_suppressions` table (global) and per-folder FP rates. Hard blocks entity from all three scoring loops (main, co-occurrence, semantic).
+`isSuppressed()` from `wikilinkFeedback.ts`. Checks the active vault's `wikilink_suppressions` table plus per-folder FP rates. Hard blocks an entity inside that vault's scoring loops (main, co-occurrence, semantic).
 
 ### Layers 1a-1b: Length + article filter
 `MAX_ENTITY_LENGTH` (25 chars), `isLikelyArticleTitle()`.

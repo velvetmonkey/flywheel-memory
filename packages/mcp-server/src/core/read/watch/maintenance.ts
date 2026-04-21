@@ -20,7 +20,7 @@
  */
 
 import type { StateDb } from '@velvetmonkey/vault-core';
-import { getAllEntitiesFromDb, scanVaultEntities } from '@velvetmonkey/vault-core';
+import { getAllEntitiesFromDb } from '@velvetmonkey/vault-core';
 import type { VaultIndex } from '../types.js';
 import type { VaultContext } from '../../../vault-registry.js';
 import { serverLog } from '../../shared/serverLog.js';
@@ -68,11 +68,34 @@ export interface MaintenanceConfig {
   updateFlywheelConfig: (config: any) => void;
   getLastMcpRequestAt: () => number;
   getLastFullRebuildAt: () => number;
+  runWithScope?: <T>(fn: () => T) => T;
 }
 
-let timer: ReturnType<typeof setTimeout> | null = null;
-let config: MaintenanceConfig | null = null;
-let lastConfigInferenceAt = 0;
+interface MaintenanceRuntime {
+  config: MaintenanceConfig | null;
+  timer: ReturnType<typeof setTimeout> | null;
+  lastConfigInferenceAt: number;
+}
+
+const runtimes = new Map<string, MaintenanceRuntime>();
+
+function resolveRuntimeKey(cfgOrKey?: MaintenanceConfig | string): string {
+  if (typeof cfgOrKey === 'string') return cfgOrKey;
+  return cfgOrKey?.ctx.name ?? 'default';
+}
+
+function getRuntime(key: string): MaintenanceRuntime {
+  let runtime = runtimes.get(key);
+  if (!runtime) {
+    runtime = {
+      config: null,
+      timer: null,
+      lastConfigInferenceAt: 0,
+    };
+    runtimes.set(key, runtime);
+  }
+  return runtime;
+}
 
 function addJitter(interval: number): number {
   const jitter = interval * JITTER_FACTOR * (2 * Math.random() - 1);
@@ -84,38 +107,67 @@ function addJitter(interval: number): number {
  * Schedules the first run after one interval (with jitter).
  */
 export function startMaintenanceTimer(cfg: MaintenanceConfig, intervalMs?: number): void {
-  config = cfg;
+  const runtime = getRuntime(resolveRuntimeKey(cfg));
+  runtime.config = cfg;
+  if (runtime.timer) {
+    clearTimeout(runtime.timer);
+    runtime.timer = null;
+  }
   const baseInterval = Math.max(intervalMs ?? DEFAULT_INTERVAL_MS, MIN_INTERVAL_MS);
-  scheduleNext(baseInterval);
+  scheduleNext(resolveRuntimeKey(cfg), baseInterval);
   serverLog('maintenance', `Timer started (interval ~${Math.round(baseInterval / 60000)}min)`);
 }
 
 /** Stop the maintenance timer */
-export function stopMaintenanceTimer(): void {
-  if (timer) {
-    clearTimeout(timer);
-    timer = null;
+export function stopMaintenanceTimer(key?: string): void {
+  if (key) {
+    const runtime = runtimes.get(resolveRuntimeKey(key));
+    if (!runtime) return;
+    if (runtime.timer) {
+      clearTimeout(runtime.timer);
+      runtime.timer = null;
+    }
+    runtime.config = null;
+    return;
   }
-  config = null;
+
+  for (const runtime of runtimes.values()) {
+    if (runtime.timer) {
+      clearTimeout(runtime.timer);
+      runtime.timer = null;
+    }
+    runtime.config = null;
+  }
 }
 
-function scheduleNext(baseInterval: number): void {
-  timer = setTimeout(() => {
-    runMaintenance(baseInterval);
+function scheduleNext(key: string, baseInterval: number): void {
+  const runtime = getRuntime(key);
+  runtime.timer = setTimeout(() => {
+    runMaintenance(key, baseInterval);
   }, addJitter(baseInterval));
-  timer.unref();
+  runtime.timer.unref();
 }
 
-async function runMaintenance(baseInterval: number): Promise<void> {
-  const cfg = config;
+async function runMaintenance(key: string, baseInterval: number): Promise<void> {
+  const runtime = getRuntime(key);
+  const cfg = runtime.config;
   if (!cfg) return;
+
+  const run = cfg.runWithScope ?? ((fn: () => Promise<void>) => fn());
+  await run(async () => {
+    await runMaintenanceInScope(key, cfg, baseInterval);
+  });
+}
+
+async function runMaintenanceInScope(key: string, cfg: MaintenanceConfig, baseInterval: number): Promise<void> {
+  const runtime = getRuntime(key);
 
   const { ctx, sd } = cfg;
 
   // Skip if pipeline is busy
   if (ctx.pipelineActivity.busy) {
     serverLog('maintenance', 'Skipped: pipeline busy');
-    scheduleNext(baseInterval);
+    scheduleNext(key, baseInterval);
     return;
   }
 
@@ -123,7 +175,7 @@ async function runMaintenance(baseInterval: number): Promise<void> {
   const lastFullRebuild = cfg.getLastFullRebuildAt();
   if (lastFullRebuild > 0 && Date.now() - lastFullRebuild < RECENT_REBUILD_THRESHOLD_MS) {
     serverLog('maintenance', `Skipped: full rebuild ${Math.round((Date.now() - lastFullRebuild) / 60000)}min ago`);
-    scheduleNext(baseInterval);
+    scheduleNext(key, baseInterval);
     return;
   }
 
@@ -132,8 +184,8 @@ async function runMaintenance(baseInterval: number): Promise<void> {
   if (lastRequest > 0 && Date.now() - lastRequest < IDLE_THRESHOLD_MS) {
     serverLog('maintenance', 'Skipped: server not idle, retrying in 1min');
     // Retry sooner — server was recently active
-    timer = setTimeout(() => runMaintenance(baseInterval), 60 * 1000);
-    timer.unref();
+    runtime.timer = setTimeout(() => runMaintenance(key, baseInterval), 60 * 1000);
+    runtime.timer.unref();
     return;
   }
 
@@ -204,14 +256,14 @@ async function runMaintenance(baseInterval: number): Promise<void> {
     }
 
     // Config inference (only during maintenance — watcher never does this)
-    const configAge = lastConfigInferenceAt > 0 ? now - lastConfigInferenceAt : Infinity;
+    const configAge = runtime.lastConfigInferenceAt > 0 ? now - runtime.lastConfigInferenceAt : Infinity;
     if (sd && configAge >= STEP_TTLS.config_inference) {
       tracker.start('config_inference', {});
       const existing = loadConfig(sd);
       const inferred = inferConfig(cfg.getVaultIndex(), cfg.vp);
       saveConfig(sd, inferred, existing);
       cfg.updateFlywheelConfig(loadConfig(sd));
-      lastConfigInferenceAt = Date.now();
+      runtime.lastConfigInferenceAt = Date.now();
       tracker.end({ inferred: true });
       stepsRun.push('config_inference');
     }
@@ -266,5 +318,5 @@ async function runMaintenance(baseInterval: number): Promise<void> {
   }
 
   // Schedule next run
-  scheduleNext(baseInterval);
+  scheduleNext(key, baseInterval);
 }

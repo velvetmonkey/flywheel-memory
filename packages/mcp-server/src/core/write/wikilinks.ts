@@ -60,7 +60,6 @@ import {
   getSuppressionPenaltyScore,
   scoreEntity,
 } from './wikilinkScoring.js';
-import { setRecencyStateDb } from '../shared/recency.js';
 import path from 'path';
 import * as fs from 'fs/promises';
 import type { FlywheelConfig } from '../read/config.js';
@@ -107,7 +106,6 @@ export function setWriteStateDb(stateDb: StateDb | null): void {
   // Propagate to other modules
   setGitStateDb(stateDb);
   setHintsStateDb(stateDb);
-  setRecencyStateDb(stateDb);
 }
 
 /**
@@ -164,7 +162,7 @@ export function getCooccurrenceIndex(): CooccurrenceIndex | null {
 
 /**
  * Set the co-occurrence index (called by watcher to inject rebuilt index).
- * Follows established pattern from setWriteStateDb, setRecencyStateDb, etc.
+ * Follows the same explicit cache-injection pattern as other write-side helpers.
  */
 export function setCooccurrenceIndex(index: CooccurrenceIndex | null): void {
   cooccurrenceIndex = index;

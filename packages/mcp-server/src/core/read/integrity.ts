@@ -7,8 +7,9 @@
 
 import * as path from 'node:path';
 import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { Worker } from 'node:worker_threads';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const INTEGRITY_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 export const INTEGRITY_CHECK_TIMEOUT_MS = 2 * 60 * 1000;
@@ -36,6 +37,13 @@ interface IntegrityWorkerMessage {
   busyTimeoutMs: number;
 }
 
+const requireFromHere = createRequire(import.meta.url);
+
+export function resolveTsxImportSpecifier(): string {
+  const tsxLoaderPath = requireFromHere.resolve('tsx');
+  return pathToFileURL(tsxLoaderPath).href;
+}
+
 function resolveWorkerSpec(): { filename: string; execArgv?: string[] } {
   const thisFile = fileURLToPath(import.meta.url);
   const thisDir = path.dirname(thisFile);
@@ -47,7 +55,7 @@ function resolveWorkerSpec(): { filename: string; execArgv?: string[] } {
   if (existsSync(distPath)) return { filename: distPath };
 
   const srcPath = path.join(thisDir, 'integrity-worker.ts');
-  return { filename: srcPath, execArgv: ['--import', 'tsx'] };
+  return { filename: srcPath, execArgv: ['--import', resolveTsxImportSpecifier()] };
 }
 
 export async function runIntegrityWorker(

@@ -2,9 +2,10 @@ import { afterEach, describe, expect, test } from 'vitest';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 
 import { openStateDb } from '@velvetmonkey/vault-core';
-import { runIntegrityWorker } from '../../../src/core/read/integrity.js';
+import { resolveTsxImportSpecifier, runIntegrityWorker } from '../../../src/core/read/integrity.js';
 
 const tempDirs: string[] = [];
 
@@ -16,6 +17,15 @@ afterEach(() => {
 });
 
 describe('integrity worker', () => {
+  test('resolves the tsx loader relative to the package', () => {
+    const specifier = resolveTsxImportSpecifier();
+    const resolvedPath = fileURLToPath(specifier).replace(/\\/g, '/');
+
+    expect(specifier).not.toBe('tsx');
+    expect(specifier.startsWith('file:')).toBe(true);
+    expect(resolvedPath).toContain('/node_modules/tsx/');
+  });
+
   test('runs quick_check in a worker and creates a backup', async () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'flywheel-integrity-'));
     tempDirs.push(tempDir);

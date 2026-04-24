@@ -247,7 +247,7 @@ An agent calling a proposal-writing skill works better when it can also search y
 
 ## The Flywheel Suite
 
-Flywheel Memory is the core memory engine. [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) is the Obsidian plugin that visualizes the same local graph and workflows. [Flywheel Engine](https://github.com/velvetmonkey/flywheel-engine) is the service layer that calls Flywheel over MCP. Start with Flywheel Memory; add the other layers when you want UI or automation around the same vault.
+Flywheel Memory is the core memory engine. [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) is the Obsidian plugin that visualizes the same local graph and workflows. Start with Flywheel Memory; add Crank when you want a UI around the same vault.
 
 ---
 

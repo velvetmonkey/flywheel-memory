@@ -243,13 +243,26 @@ An agent calling a proposal-writing skill works better when it can also search y
 
 ### Install Flywheel as a Skill
 
-For users arriving from the Agent Skills ecosystem (kepano/obsidian-skills, claude-plugins.dev, skillsmp.com), Flywheel ships its own [`SKILL.md`](skills/flywheel/SKILL.md). It teaches an agent when to invoke Flywheel, walks the user through `.mcp.json` setup, and documents the read/write idiom. From your vault directory:
+For users arriving from the Agent Skills ecosystem (kepano/obsidian-skills, claude-plugins.dev, skillsmp.com), Flywheel ships its own [`SKILL.md`](skills/flywheel/SKILL.md). It teaches an agent when to invoke Flywheel, walks the user through `.mcp.json` setup, and documents the read/write idiom.
+
+**Step 1: install the skill** with [`npx skills`](https://github.com/vercel-labs/skills) (the standard Agent Skills installer — GitHub-as-registry):
+
+```bash
+npx -y skills add velvetmonkey/flywheel-memory       # project scope (.claude/skills/)
+npx -y skills add velvetmonkey/flywheel-memory -g    # global scope (~/.claude/skills/)
+```
+
+`npx skills` clones the repo, finds `skills/flywheel/SKILL.md`, and symlinks it into your agent's skills directory. Updates pull through automatically.
+
+**Step 2: wire the MCP server** so the skill's tools are actually callable. From your vault directory:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/skills/flywheel/scripts/install.sh)
 ```
 
-The installer merges `.mcp.json`, copies the skill into `<vault>/.claude/skills/flywheel/`, and prints restart instructions. PowerShell variant for Windows users at [`skills/flywheel/scripts/install.ps1`](skills/flywheel/scripts/install.ps1). [Skill source and example queries ->](skills/flywheel/)
+The installer merges Flywheel into `<vault>/.mcp.json` and prints restart instructions. PowerShell variant for Windows users at [`skills/flywheel/scripts/install.ps1`](skills/flywheel/scripts/install.ps1). If you'd rather hand-edit, see the [Quick start](#your-vault-in-2-minutes) snippet above.
+
+**Step 3: restart your client** (`claude` / `codex`). MCP servers register at startup only. [Skill source and example queries ->](skills/flywheel/)
 
 [OpenClaw](https://github.com/openclaw) skills and Flywheel connect through MCP. OpenClaw routes intent and manages session flow; Flywheel provides the structured context and safe writes that make responses accurate. [Integration guide ->](docs/OPENCLAW.md)
 

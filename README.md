@@ -51,9 +51,32 @@ Then ask: *"How much have I billed Acme Corp?"*
 | [nexus-lab](demos/nexus-lab/) | PhD researcher | "How does AlphaFold connect to my experiment?" |
 | [zettelkasten](demos/zettelkasten/) | Zettelkasten student | "How does spaced repetition connect to active recall?" |
 
+Ready to use Flywheel against your own notes instead of the demo? Install on your vault:
+
 ### Your Vault in 2 Minutes
 
-Add `.mcp.json` to your vault root:
+Install Flywheel as an [Agent Skill](https://github.com/vercel-labs/skills) (the standard onboarding for AI tooling — `npx skills` uses GitHub as a registry):
+
+1. **Install the skill.** From any directory:
+   ```bash
+   npx -y skills add velvetmonkey/flywheel-memory -g
+   ```
+   Drop `-g` to install at project scope (`<vault>/.claude/skills/`) instead of global (`~/.claude/skills/`). The skill teaches an agent when to use Flywheel and walks the user through the next two steps automatically.
+
+2. **Wire the MCP server.** From your vault directory:
+   ```bash
+   bash <(curl -fsSL https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/skills/flywheel/scripts/install.sh)
+   ```
+   Merges Flywheel into `<vault>/.mcp.json`. Windows users: [`install.ps1`](skills/flywheel/scripts/install.ps1) — same idempotent merge for PowerShell.
+
+3. **Restart your client** (`claude` / `codex`) from the vault directory. MCP servers register at startup only.
+
+Then ask a question. Flywheel watches the vault, maintains local indexes, and serves structured context to MCP clients. Your source of truth stays in Markdown. If you delete `.flywheel/state.db`, Flywheel rebuilds from the vault.
+
+<details>
+<summary><strong>Manual install (no installers — for Cursor, Windsurf, VS Code, Continue.dev, etc.)</strong></summary>
+
+If you'd rather hand-edit `.mcp.json` (e.g. integrating with a non-Claude-Code client), add this block to your client's MCP config:
 
 ```json
 {
@@ -70,7 +93,8 @@ Add `.mcp.json` to your vault root:
 cd /path/to/your/vault && claude
 ```
 
-Flywheel watches the vault, maintains local indexes, and serves structured context to MCP clients. Your source of truth stays in Markdown. If you delete `.flywheel/state.db`, Flywheel rebuilds from the vault.
+The skill itself is optional in this path — clients without a skills surface still get the full MCP tool set. Skill source: [`skills/flywheel/`](skills/flywheel/).
+</details>
 
 ### Optional: Tool presets
 
@@ -135,7 +159,9 @@ Search automatically spans all vaults and tags each result with its source vault
 <details>
 <summary><strong>Windows users</strong></summary>
 
-Three things differ from macOS and Linux:
+If you ran [`install.ps1`](skills/flywheel/scripts/install.ps1) in step 2 above, the Windows-specific config (`cmd /c npx` and `FLYWHEEL_WATCH_POLL: "true"`) is already written into your `.mcp.json` automatically — no further action needed.
+
+If you're hand-editing `.mcp.json` instead, three things differ from macOS and Linux:
 
 1. Use **`cmd /c npx`** instead of `npx`. On Windows, `npx` is installed as a `.cmd` script and cannot be spawned directly.
 2. Set **`VAULT_PATH`** to your vault's Windows path.
@@ -241,28 +267,7 @@ Skills encode methodology: how to do something. Flywheel encodes knowledge: what
 
 An agent calling a proposal-writing skill works better when it can also search your vault for the client's history, past invoices, project notes, and team relationships. Skills tell agents how to work. Flywheel tells them what you know.
 
-### Install Flywheel as a Skill
-
-For users arriving from the Agent Skills ecosystem (kepano/obsidian-skills, claude-plugins.dev, skillsmp.com), Flywheel ships its own [`SKILL.md`](skills/flywheel/SKILL.md). It teaches an agent when to invoke Flywheel, walks the user through `.mcp.json` setup, and documents the read/write idiom.
-
-**Step 1: install the skill** with [`npx skills`](https://github.com/vercel-labs/skills) (the standard Agent Skills installer — GitHub-as-registry):
-
-```bash
-npx -y skills add velvetmonkey/flywheel-memory       # project scope (.claude/skills/)
-npx -y skills add velvetmonkey/flywheel-memory -g    # global scope (~/.claude/skills/)
-```
-
-`npx skills` clones the repo, finds `skills/flywheel/SKILL.md`, and symlinks it into your agent's skills directory. Updates pull through automatically.
-
-**Step 2: wire the MCP server** so the skill's tools are actually callable. From your vault directory:
-
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/skills/flywheel/scripts/install.sh)
-```
-
-The installer merges Flywheel into `<vault>/.mcp.json` and prints restart instructions. PowerShell variant for Windows users at [`skills/flywheel/scripts/install.ps1`](skills/flywheel/scripts/install.ps1). If you'd rather hand-edit, see the [Quick start](#your-vault-in-2-minutes) snippet above.
-
-**Step 3: restart your client** (`claude` / `codex`). MCP servers register at startup only. [Skill source and example queries ->](skills/flywheel/)
+For install steps, see [Your Vault in 2 Minutes](#your-vault-in-2-minutes) above. Skill source and example queries: [`skills/flywheel/`](skills/flywheel/).
 
 [OpenClaw](https://github.com/openclaw) skills and Flywheel connect through MCP. OpenClaw routes intent and manages session flow; Flywheel provides the structured context and safe writes that make responses accurate. [Integration guide ->](docs/OPENCLAW.md)
 

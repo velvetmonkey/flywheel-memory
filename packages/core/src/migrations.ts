@@ -503,6 +503,46 @@ export function initSchema(db: Database.Database): void {
       db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(41);
     }
 
+    if (currentVersion < 42 && v40Applied) {
+      const memoryColumns = new Set(
+        (db.prepare(`PRAGMA table_info(memories)`).all() as Array<{ name: string }>).map((row) => row.name)
+      );
+
+      if (!memoryColumns.has('owner_scope')) {
+        db.exec(`ALTER TABLE memories ADD COLUMN owner_scope TEXT NOT NULL DEFAULT 'global'`);
+      }
+
+      db.exec(`
+        UPDATE memories
+        SET owner_scope = CASE
+          WHEN visibility = 'private' AND source_agent_id IS NOT NULL AND TRIM(source_agent_id) <> '' THEN source_agent_id
+          ELSE 'global'
+        END
+        WHERE owner_scope IS NULL OR TRIM(owner_scope) = ''
+      `);
+
+      db.exec(`
+        DELETE FROM memories
+        WHERE id NOT IN (
+          SELECT id FROM (
+            SELECT id,
+                   ROW_NUMBER() OVER (
+                     PARTITION BY key, owner_scope
+                     ORDER BY updated_at DESC, id DESC
+                   ) AS row_num
+            FROM memories
+          )
+          WHERE row_num = 1
+        )
+      `);
+
+      db.exec(`DROP INDEX IF EXISTS idx_memories_key_owner_scope`);
+      db.exec(`CREATE UNIQUE INDEX idx_memories_key_owner_scope ON memories(key, owner_scope)`);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_memories_owner_scope ON memories(owner_scope)`);
+
+      db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(42);
+    }
+
     // Only stamp SCHEMA_VERSION at the end if every migration ran. Dry-run
     // skips v40 → leave schema_version at 39 so the next non-dry-run boot
     // re-enters the v40 branch.

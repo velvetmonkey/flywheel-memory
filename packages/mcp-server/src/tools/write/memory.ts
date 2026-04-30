@@ -34,14 +34,17 @@ export function registerMemoryTools(
       entity: z.string().optional().describe('[store|search] Primary entity association'),
       confidence: z.number().min(0).max(1).optional().describe('[store] Confidence level (0-1, default 1.0)'),
       ttl_days: z.number().min(1).optional().describe('[store] Time-to-live in days (null = permanent)'),
+      visibility: z.enum(['shared', 'private']).optional().describe('[store] Memory visibility. Defaults to private when agent_id is supplied, otherwise shared'),
       query: z.string().optional().describe('[search] FTS5 search query'),
       limit: z.number().min(1).max(200).optional().describe('[search|list] Max results to return'),
-      agent_id: z.string().optional().describe('[store|search|list|summarize_session|brief] Agent identifier for scoped memory/session context'),
+      agent_id: z.string().optional().describe('[store|get|search|list|forget|summarize_session|brief] Agent identifier for scoped memory/session context'),
       session_id: z.string().optional().describe('[summarize_session] Session ID'),
       summary: z.string().optional().describe('[summarize_session] Session summary text'),
       topics: z.array(z.string()).optional().describe('[summarize_session] Topics discussed'),
       notes_modified: z.array(z.string()).optional().describe('[summarize_session] Note paths modified'),
       tool_count: z.number().optional().describe('[summarize_session] Number of tool calls'),
+      focus: z.enum(['full', 'personal']).optional().describe('[brief] Brief composition mode'),
+      max_tokens: z.number().min(1).max(8000).optional().describe('[brief] Approximate token budget'),
     },
     async (args) => {
       const stateDb = getStateDb();
@@ -82,6 +85,7 @@ export function registerMemoryTools(
             ttl_days: args.ttl_days,
             agent_id: agentId,
             session_id: sessionId,
+            visibility: args.visibility ?? (agentId ? 'private' : 'shared'),
           });
           return {
             content: [{
@@ -95,6 +99,8 @@ export function registerMemoryTools(
                   entity: memory.entity,
                   entities_detected: memory.entities_json ? JSON.parse(memory.entities_json) : [],
                   confidence: memory.confidence,
+                  visibility: memory.visibility,
+                  owner_scope: memory.owner_scope,
                 },
               }, null, 2),
             }],
@@ -108,7 +114,7 @@ export function registerMemoryTools(
               isError: true,
             };
           }
-          const memory = getMemory(stateDb, args.key);
+          const memory = getMemory(stateDb, args.key, agentId);
           if (!memory) {
             return {
               content: [{ type: 'text' as const, text: JSON.stringify({ found: false, key: args.key }) }],
@@ -126,6 +132,8 @@ export function registerMemoryTools(
                   entity: memory.entity,
                   entities: memory.entities_json ? JSON.parse(memory.entities_json) : [],
                   confidence: memory.confidence,
+                  visibility: memory.visibility,
+                  owner_scope: memory.owner_scope,
                   created_at: memory.created_at,
                   updated_at: memory.updated_at,
                   accessed_at: memory.accessed_at,
@@ -159,6 +167,8 @@ export function registerMemoryTools(
                   type: m.memory_type,
                   entity: m.entity,
                   confidence: m.confidence,
+                  visibility: m.visibility,
+                  owner_scope: m.owner_scope,
                   updated_at: m.updated_at,
                 })),
                 count: results.length,
@@ -184,6 +194,8 @@ export function registerMemoryTools(
                   type: m.memory_type,
                   entity: m.entity,
                   confidence: m.confidence,
+                  visibility: m.visibility,
+                  owner_scope: m.owner_scope,
                   updated_at: m.updated_at,
                 })),
                 count: results.length,
@@ -199,7 +211,7 @@ export function registerMemoryTools(
               isError: true,
             };
           }
-          const deleted = forgetMemory(stateDb, args.key);
+          const deleted = forgetMemory(stateDb, args.key, agentId);
           return {
             content: [{
               type: 'text' as const,

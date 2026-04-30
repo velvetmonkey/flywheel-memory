@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 41;
+export const SCHEMA_VERSION = 42;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -373,11 +373,14 @@ CREATE TABLE IF NOT EXISTS memories (
   accessed_at INTEGER NOT NULL,
   ttl_days INTEGER,
   superseded_by INTEGER REFERENCES memories(id),
-  visibility TEXT NOT NULL DEFAULT 'shared'
+  visibility TEXT NOT NULL DEFAULT 'shared',
+  owner_scope TEXT NOT NULL DEFAULT 'global'
 );
 CREATE INDEX IF NOT EXISTS idx_memories_key ON memories(key);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_memories_key_owner_scope ON memories(key, owner_scope);
 CREATE INDEX IF NOT EXISTS idx_memories_entity ON memories(entity);
 CREATE INDEX IF NOT EXISTS idx_memories_type ON memories(memory_type);
+CREATE INDEX IF NOT EXISTS idx_memories_owner_scope ON memories(owner_scope);
 
 CREATE VIRTUAL TABLE IF NOT EXISTS memories_fts USING fts5(
   key, value,

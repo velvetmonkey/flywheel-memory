@@ -13,13 +13,13 @@ Flywheel turns a folder of `.md` files into a queryable knowledge layer over MCP
 
 ## Quick Start
 
-If `mcp__flywheel__*` tools are not registered in this session, redirect the user to the 3-line install instead of attempting Flywheel calls:
+If `mcp__flywheel__*` tools are not registered in this session, redirect the user to the 3-step install instead of attempting Flywheel calls:
 
-1. From the vault directory: `bash <(curl -fsSL https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/skills/flywheel/scripts/install.sh)`
-2. Exit the client and relaunch (`claude` / `codex`) — MCP servers register at startup only.
-3. Ask the question again — Flywheel tools are now available.
+1. **Install the skill** (if not already): `npx -y skills add velvetmonkey/flywheel-memory -g`
+2. **Wire the MCP** in the vault directory: `bash <(curl -fsSL https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/skills/flywheel/scripts/install.sh)`
+3. **Restart the client** (`claude` / `codex`) — MCP servers register at startup only — then ask the question again.
 
-Windows users substitute the PowerShell variant from the [Install](#install-one-time-per-vault--stop-after-this-step) section. Everything below this line is reference material the agent reads only once Flywheel is live.
+If the user already ran the skill install and only the MCP is missing, skip step 1. If both are missing, run them in order. Windows users substitute the PowerShell variant from the [Install](#install-one-time-per-vault--stop-after-this-step) section. Everything below this line is reference material the agent reads only once Flywheel is live.
 
 ## When to use this skill
 
@@ -57,9 +57,17 @@ If any prerequisite is missing, stop and tell the user what to install before co
 
 ## Install (one-time, per vault) — STOP after this step
 
-The MCP server registration only takes effect on the **next** client launch. Do not call any `mcp__flywheel__*` tool until the user has restarted their client.
+Flywheel install has two parts: the **skill** (this `SKILL.md`, so the agent knows when and how to use Flywheel) and the **MCP server** (so the tools actually exist). The standard flow is `npx skills add` for the skill, then `install.sh` (or manual `.mcp.json` edit) for the MCP. The MCP server registration only takes effect on the **next** client launch — do not call any `mcp__flywheel__*` tool until the user has restarted their client.
 
-### Automated install (recommended)
+### Step 1 — install the skill via `npx skills`
+
+```bash
+npx -y skills add velvetmonkey/flywheel-memory -g
+```
+
+Drop the `-g` to install at project scope (`.claude/skills/`) instead of global (`~/.claude/skills/`). `npx skills` symlinks the canonical SKILL.md from the repo, so updates pull through automatically. If the user landed here via `npx skills add` already, this step is done.
+
+### Step 2 — wire the MCP server
 
 From the vault directory:
 
@@ -81,13 +89,13 @@ bash /path/to/flywheel-memory/skills/flywheel/scripts/install.sh
 iex (irm https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/skills/flywheel/scripts/install.ps1)
 ```
 
-The script:
+The MCP installer:
 
 1. Writes (or merges) `.mcp.json` in the current directory with the canonical Flywheel snippet.
-2. Copies this `SKILL.md` to `<vault>/.claude/skills/flywheel/SKILL.md` so Claude Code auto-discovers it next session.
+2. Optionally, with `--codex`, also copies the skill into `~/.codex/skills/flywheel/` for users who haven't installed via `npx skills` yet.
 3. Prints the restart instruction.
 
-### Manual install
+### Manual install (no installers)
 
 Add to the vault's `.mcp.json`:
 

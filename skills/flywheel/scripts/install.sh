@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
-# Flywheel skill installer (POSIX).
-# Writes/merges .mcp.json in the current directory and installs SKILL.md
-# into <vault>/.claude/skills/flywheel/ for auto-discovery by Claude Code.
+# Flywheel MCP installer (POSIX).
+#
+# Primary job: write/merge Flywheel into <vault>/.mcp.json so the Flywheel
+# MCP server is registered for the user's client (Claude Code, Codex, etc).
+#
+# Secondary: also drop SKILL.md into <vault>/.claude/skills/flywheel/ at
+# project scope as a fallback for users who haven't installed the skill
+# via `npx skills add velvetmonkey/flywheel-memory`. If the user already
+# ran the canonical skill install, this overwrite is harmless.
+#
 # Optional --codex flag also installs to ~/.codex/skills/flywheel/.
 
 set -euo pipefail

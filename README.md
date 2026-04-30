@@ -241,6 +241,16 @@ Skills encode methodology: how to do something. Flywheel encodes knowledge: what
 
 An agent calling a proposal-writing skill works better when it can also search your vault for the client's history, past invoices, project notes, and team relationships. Skills tell agents how to work. Flywheel tells them what you know.
 
+### Install Flywheel as a Skill
+
+For users arriving from the Agent Skills ecosystem (kepano/obsidian-skills, claude-plugins.dev, skillsmp.com), Flywheel ships its own [`SKILL.md`](skills/flywheel/SKILL.md). It teaches an agent when to invoke Flywheel, walks the user through `.mcp.json` setup, and documents the read/write idiom. From your vault directory:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/skills/flywheel/scripts/install.sh)
+```
+
+The installer merges `.mcp.json`, copies the skill into `<vault>/.claude/skills/flywheel/`, and prints restart instructions. PowerShell variant for Windows users at [`skills/flywheel/scripts/install.ps1`](skills/flywheel/scripts/install.ps1). [Skill source and example queries ->](skills/flywheel/)
+
 [OpenClaw](https://github.com/openclaw) skills and Flywheel connect through MCP. OpenClaw routes intent and manages session flow; Flywheel provides the structured context and safe writes that make responses accurate. [Integration guide ->](docs/OPENCLAW.md)
 
 ---

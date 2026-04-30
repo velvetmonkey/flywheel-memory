@@ -123,9 +123,9 @@ function buildActiveEntitiesSection(stateDb: StateDb, limit: number): BriefSecti
  * Build active memories section.
  * Orders by type: recent observations first, then facts/preferences by confidence, then summaries.
  */
-function buildActiveMemoriesSection(stateDb: StateDb, limit: number): BriefSection {
+function buildActiveMemoriesSection(stateDb: StateDb, limit: number, agent_id?: string): BriefSection {
   // Fetch more than limit so we can reorder by type group, then truncate
-  const memories = listMemories(stateDb, { limit: limit * 2 });
+  const memories = listMemories(stateDb, { limit: limit * 2, agent_id });
 
   const observations = memories.filter(m => m.memory_type === 'observation');
   const factsAndPrefs = memories.filter(m => m.memory_type === 'fact' || m.memory_type === 'preference');
@@ -257,14 +257,20 @@ export async function runBrief(
   stateDb: StateDb,
   args: { max_tokens?: number; focus?: string; agent_id?: string },
 ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
-  const sections: BriefSection[] = [
-    buildSessionSection(stateDb, 5, args.agent_id),
-    buildActiveEntitiesSection(stateDb, 10),
-    buildActiveMemoriesSection(stateDb, 20),
-    buildCorrectionsSection(stateDb, 10),
-    buildVaultPulseSection(stateDb),
-    buildProactiveLinkingSection(stateDb),
-  ].filter((s): s is BriefSection => s !== null);
+  const focus = args.focus === 'personal' ? 'personal' : 'full';
+  const sections: BriefSection[] = (focus === 'personal'
+    ? [
+        buildSessionSection(stateDb, 5, args.agent_id),
+        buildActiveMemoriesSection(stateDb, 20, args.agent_id),
+      ]
+    : [
+        buildSessionSection(stateDb, 5, args.agent_id),
+        buildActiveEntitiesSection(stateDb, 10),
+        buildActiveMemoriesSection(stateDb, 20, args.agent_id),
+        buildCorrectionsSection(stateDb, 10),
+        buildVaultPulseSection(stateDb),
+        buildProactiveLinkingSection(stateDb),
+      ]).filter((s): s is BriefSection => s !== null);
 
   if (args.max_tokens) {
     let totalTokens = 0;

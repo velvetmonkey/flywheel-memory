@@ -32,6 +32,7 @@ export interface Memory {
   ttl_days: number | null;
   superseded_by: number | null;
   visibility: string;
+  owner_scope: string;
 }
 
 export interface StoreMemoryOptions {
@@ -61,6 +62,8 @@ export interface ListMemoryOptions {
   agent_id?: string;
   include_expired?: boolean;
 }
+
+const GLOBAL_OWNER_SCOPE = 'global';
 
 export interface SessionSummary {
   id: number;
@@ -174,6 +177,29 @@ function removeGraphSignals(stateDb: StateDb, memoryKey: string): void {
   updateStoredNoteLinks(stateDb, sourcePath, new Set());
 }
 
+function resolveOwnerScope(
+  agentId: string | undefined,
+  visibility: 'shared' | 'private',
+): string {
+  if (visibility === 'private') {
+    if (!agentId) {
+      throw new Error('Private memories require agent_id');
+    }
+    return agentId;
+  }
+  return GLOBAL_OWNER_SCOPE;
+}
+
+function applyVisibilityFilter(conditions: string[], params: unknown[], agentId?: string): void {
+  if (agentId) {
+    conditions.push('(owner_scope = ? OR owner_scope = ?)');
+    params.push(GLOBAL_OWNER_SCOPE, agentId);
+    return;
+  }
+  conditions.push('owner_scope = ?');
+  params.push(GLOBAL_OWNER_SCOPE);
+}
+
 // =============================================================================
 // CORE FUNCTIONS
 // =============================================================================
@@ -197,6 +223,7 @@ export function storeMemory(
     session_id,
     visibility = 'shared',
   } = options;
+  const ownerScope = resolveOwnerScope(agent_id, visibility);
 
   const now = Date.now();
 
@@ -210,8 +237,8 @@ export function storeMemory(
 
   // Check if memory with this key already exists
   const existing = stateDb.db.prepare(
-    'SELECT id FROM memories WHERE key = ?'
-  ).get(key) as { id: number } | undefined;
+    'SELECT id FROM memories WHERE key = ? AND owner_scope = ?'
+  ).get(key, ownerScope) as { id: number } | undefined;
 
   if (existing) {
     // Upsert: update existing memory
@@ -220,35 +247,37 @@ export function storeMemory(
         value = ?, memory_type = ?, entity = ?, entities_json = ?,
         source_agent_id = ?, source_session_id = ?,
         confidence = ?, updated_at = ?, accessed_at = ?,
-        ttl_days = ?, visibility = ?, superseded_by = NULL
-      WHERE key = ?
+        ttl_days = ?, visibility = ?, owner_scope = ?, superseded_by = NULL
+      WHERE key = ? AND owner_scope = ?
     `).run(
       value, type, entity ?? null, entitiesJson,
       agent_id ?? null, session_id ?? null,
       confidence, now, now,
-      ttl_days ?? null, visibility, key,
+      ttl_days ?? null, visibility, ownerScope, key, ownerScope,
     );
   } else {
     // Insert new memory
     stateDb.db.prepare(`
       INSERT INTO memories (key, value, memory_type, entity, entities_json,
         source_agent_id, source_session_id, confidence,
-        created_at, updated_at, accessed_at, ttl_days, visibility)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        created_at, updated_at, accessed_at, ttl_days, visibility, owner_scope)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       key, value, type, entity ?? null, entitiesJson,
       agent_id ?? null, session_id ?? null, confidence,
-      now, now, now, ttl_days ?? null, visibility,
+      now, now, now, ttl_days ?? null, visibility, ownerScope,
     );
   }
 
-  // Update graph signals
-  updateGraphSignals(stateDb, key, detectedEntities);
+  // Private memories must not leak into shared graph-derived signals.
+  if (visibility === 'shared') {
+    updateGraphSignals(stateDb, key, detectedEntities);
+  }
 
   // Return the stored memory
   return stateDb.db.prepare(
-    'SELECT * FROM memories WHERE key = ?'
-  ).get(key) as Memory;
+    'SELECT * FROM memories WHERE key = ? AND owner_scope = ?'
+  ).get(key, ownerScope) as Memory;
 }
 
 /**
@@ -257,10 +286,23 @@ export function storeMemory(
 export function getMemory(
   stateDb: StateDb,
   key: string,
+  agent_id?: string,
 ): Memory | null {
-  const memory = stateDb.db.prepare(
-    'SELECT * FROM memories WHERE key = ? AND superseded_by IS NULL'
-  ).get(key) as Memory | undefined;
+  let memory: Memory | undefined;
+  if (agent_id) {
+    memory = stateDb.db.prepare(`
+      SELECT * FROM memories
+      WHERE key = ?
+        AND superseded_by IS NULL
+        AND (owner_scope = ? OR owner_scope = ?)
+      ORDER BY CASE owner_scope WHEN ? THEN 0 ELSE 1 END, updated_at DESC, id DESC
+      LIMIT 1
+    `).get(key, GLOBAL_OWNER_SCOPE, agent_id, agent_id) as Memory | undefined;
+  } else {
+    memory = stateDb.db.prepare(
+      'SELECT * FROM memories WHERE key = ? AND superseded_by IS NULL AND owner_scope = ? ORDER BY updated_at DESC, id DESC LIMIT 1'
+    ).get(key, GLOBAL_OWNER_SCOPE) as Memory | undefined;
+  }
 
   if (!memory) return null;
 
@@ -292,10 +334,7 @@ export function searchMemories(
     conditions.push('(m.entity = ? COLLATE NOCASE OR m.entities_json LIKE ?)');
     params.push(entity, `%"${entity}"%`);
   }
-  if (agent_id) {
-    conditions.push("(m.visibility = 'shared' OR m.source_agent_id = ?)");
-    params.push(agent_id);
-  }
+  applyVisibilityFilter(conditions, params, agent_id);
 
   const where = conditions.length > 0 ? `AND ${conditions.join(' AND ')}` : '';
 
@@ -341,10 +380,7 @@ export function listMemories(
     conditions.push('(entity = ? COLLATE NOCASE OR entities_json LIKE ?)');
     params.push(entity, `%"${entity}"%`);
   }
-  if (agent_id) {
-    conditions.push("(visibility = 'shared' OR source_agent_id = ?)");
-    params.push(agent_id);
-  }
+  applyVisibilityFilter(conditions, params, agent_id);
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
   params.push(limit);
@@ -360,18 +396,26 @@ export function listMemories(
 export function forgetMemory(
   stateDb: StateDb,
   key: string,
+  agent_id?: string,
 ): boolean {
-  const memory = stateDb.db.prepare(
-    'SELECT id FROM memories WHERE key = ?'
-  ).get(key) as { id: number } | undefined;
+  let memory: Memory | undefined;
+  if (agent_id) {
+    memory = stateDb.db.prepare(
+      'SELECT * FROM memories WHERE key = ? AND superseded_by IS NULL AND owner_scope = ? ORDER BY updated_at DESC, id DESC LIMIT 1'
+    ).get(key, agent_id) as Memory | undefined;
+  } else {
+    memory = stateDb.db.prepare(
+      'SELECT * FROM memories WHERE key = ? AND superseded_by IS NULL AND owner_scope = ? ORDER BY updated_at DESC, id DESC LIMIT 1'
+    ).get(key, GLOBAL_OWNER_SCOPE) as Memory | undefined;
+  }
 
   if (!memory) return false;
 
-  // Remove graph edges
-  removeGraphSignals(stateDb, key);
+  if (memory.visibility === 'shared' && memory.owner_scope === GLOBAL_OWNER_SCOPE) {
+    removeGraphSignals(stateDb, key);
+  }
 
-  // Delete the memory
-  stateDb.db.prepare('DELETE FROM memories WHERE key = ?').run(key);
+  stateDb.db.prepare('DELETE FROM memories WHERE id = ?').run(memory.id);
 
   return true;
 }

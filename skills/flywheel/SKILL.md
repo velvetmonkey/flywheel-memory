@@ -11,6 +11,16 @@ when_to_use: |
 
 Flywheel turns a folder of `.md` files into a queryable knowledge layer over MCP. This skill walks the agent through registering the MCP server, restarting the client, and using the bounded read/write surface that follows.
 
+## Quick Start
+
+If `mcp__flywheel__*` tools are not registered in this session, redirect the user to the 3-line install instead of attempting Flywheel calls:
+
+1. From the vault directory: `bash <(curl -fsSL https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/skills/flywheel/scripts/install.sh)`
+2. Exit the client and relaunch (`claude` / `codex`) — MCP servers register at startup only.
+3. Ask the question again — Flywheel tools are now available.
+
+Windows users substitute the PowerShell variant from the [Install](#install-one-time-per-vault--stop-after-this-step) section. Everything below this line is reference material the agent reads only once Flywheel is live.
+
 ## When to use this skill
 
 Apply when:

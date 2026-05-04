@@ -18,6 +18,7 @@ Built for people who want AI to work over real notes without handing their vault
 - **Grounded search** — find the notes that matter, plus the linked context around them, without making the model trawl through a pile of files.
 - **Safe reversible writes** — update a live vault through bounded operations that preserve Markdown structure and can be undone.
 - **Local-first by default** — keep your notes on disk, use plain Markdown as the source of truth, and add local semantic search only if you want it.
+- **Portable by construction** — note text and entity edits land in Markdown. Flywheel's learned state (memories, link feedback, scoring) lives locally beside the vault in `.flywheel/state.db`. No cloud, no proprietary export needed — the parts that *are* your notes stay readable Markdown by definition.
 
 ### Why not raw file access or naive RAG?
 
@@ -71,7 +72,7 @@ Install Flywheel as an [Agent Skill](https://github.com/vercel-labs/skills) (the
 
 3. **Restart your client** (`claude` / `codex`) from the vault directory. MCP servers register at startup only.
 
-Then ask a question. Flywheel watches the vault, maintains local indexes, and serves structured context to MCP clients. Your source of truth stays in Markdown. If you delete `.flywheel/state.db`, Flywheel rebuilds from the vault.
+Then ask a question. Flywheel watches the vault, maintains local indexes, and serves structured context to MCP clients. Your source of truth stays in Markdown. If you delete `.flywheel/state.db`, Flywheel rebuilds note indexes from the vault — learned state (memories, link feedback) regenerates with use.
 
 <details>
 <summary><strong>Manual install (no installers — for Cursor, Windsurf, VS Code, Continue.dev, etc.)</strong></summary>
@@ -266,6 +267,8 @@ Skills encode methodology: how to do something. Flywheel encodes knowledge: what
 | Flywheel | Entities, relationships, history, context | "Everything you know about this client" |
 
 An agent calling a proposal-writing skill works better when it can also search your vault for the client's history, past invoices, project notes, and team relationships. Skills tell agents how to work. Flywheel tells them what you know.
+
+Other tools in the agent-context space treat knowledge as a side-effect of skill execution: state files written by a harness, scoped to its conventions. Flywheel treats knowledge as the substrate skills run on top of — an entity graph, temporal history, and grounded retrieval that any skill in any harness can read through MCP. A harness needs Flywheel-shaped state to be accurate; Flywheel works with any harness.
 
 For install steps, see [Your Vault in 2 Minutes](#your-vault-in-2-minutes) above. Skill source and example queries: [`skills/flywheel/`](skills/flywheel/).
 

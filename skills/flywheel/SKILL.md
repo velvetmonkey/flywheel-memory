@@ -9,7 +9,7 @@ when_to_use: |
   directories, or when the user explicitly wants raw filesystem reads.
 ---
 
-Flywheel turns a folder of `.md` files into a queryable knowledge layer over MCP. This skill walks the agent through registering the MCP server, restarting the client, and using the bounded read/write surface that follows.
+Flywheel turns a folder of `.md` files into a queryable knowledge layer over MCP. Your notes stay the source of truth in Markdown; Flywheel's learned state lives locally beside the vault. This skill walks the agent through registering the MCP server, restarting the client, and using the bounded read/write surface that follows.
 
 ## Quick Start
 

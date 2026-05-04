@@ -357,7 +357,14 @@ CREATE TABLE IF NOT EXISTS corrections (
 CREATE INDEX IF NOT EXISTS idx_corrections_status ON corrections(status);
 CREATE INDEX IF NOT EXISTS idx_corrections_entity ON corrections(entity);
 
--- Memories (v26): lightweight key-value working memory for agents
+-- Memories (v26): lightweight key-value working memory for agents.
+--
+-- Rule: indexes/views/triggers that reference a column added in a later
+-- migration must be created INSIDE that migration block in migrations.ts, not
+-- here. This file runs against existing tables with IF-NOT-EXISTS semantics
+-- that preserve the old shape, so column-dependent statements crash boot on
+-- upgrading vaults before the migration loop has a chance to add the column.
+-- Example: owner_scope (v42) — its indexes live in the v42 migration block.
 CREATE TABLE IF NOT EXISTS memories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   key TEXT NOT NULL,
@@ -377,10 +384,10 @@ CREATE TABLE IF NOT EXISTS memories (
   owner_scope TEXT NOT NULL DEFAULT 'global'
 );
 CREATE INDEX IF NOT EXISTS idx_memories_key ON memories(key);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_memories_key_owner_scope ON memories(key, owner_scope);
 CREATE INDEX IF NOT EXISTS idx_memories_entity ON memories(entity);
 CREATE INDEX IF NOT EXISTS idx_memories_type ON memories(memory_type);
-CREATE INDEX IF NOT EXISTS idx_memories_owner_scope ON memories(owner_scope);
+-- idx_memories_key_owner_scope (UNIQUE) and idx_memories_owner_scope are created
+-- by the v42 migration in migrations.ts, after that migration adds owner_scope.
 
 CREATE VIRTUAL TABLE IF NOT EXISTS memories_fts USING fts5(
   key, value,

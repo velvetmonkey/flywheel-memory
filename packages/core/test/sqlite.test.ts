@@ -117,6 +117,46 @@ describe('SQLite State Management', () => {
       expect(rows.c).toBe(1);
     });
 
+    it('P42: v42 migration upgrades a pre-owner_scope memories table without crashing', () => {
+      // Regression test for the 2.12.6 startup crash: SCHEMA_SQL must not
+      // contain index statements that reference a column added by a later
+      // migration. A real user vault hit this when v2.12.6 booted on a v41
+      // DB and `CREATE INDEX ... ON memories(key, owner_scope)` from
+      // SCHEMA_SQL fired before the v42 migration could ALTER TABLE the
+      // column in. Synthesize that state and assert the migration recovers.
+      stateDb = openStateDb(testVaultPath);
+      stateDb.db.exec('DROP INDEX IF EXISTS idx_memories_key_owner_scope');
+      stateDb.db.exec('DROP INDEX IF EXISTS idx_memories_owner_scope');
+      stateDb.db.exec('ALTER TABLE memories DROP COLUMN owner_scope');
+      stateDb.db.exec('DELETE FROM schema_version WHERE version >= 42');
+      stateDb.close();
+      // ts-friendly clear so afterEach doesn't double-close.
+      stateDb = undefined as unknown as StateDb;
+
+      // Reopen — must not throw the "no such column: owner_scope" error.
+      stateDb = openStateDb(testVaultPath);
+
+      const col = stateDb.db
+        .prepare("SELECT name FROM pragma_table_info('memories') WHERE name = 'owner_scope'")
+        .get() as { name: string } | undefined;
+      expect(col?.name).toBe('owner_scope');
+
+      const indexes = stateDb.db
+        .prepare(
+          "SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'memories' AND name LIKE '%owner_scope%' ORDER BY name",
+        )
+        .all() as Array<{ name: string }>;
+      expect(indexes.map(i => i.name)).toEqual([
+        'idx_memories_key_owner_scope',
+        'idx_memories_owner_scope',
+      ]);
+
+      const version = stateDb.db
+        .prepare('SELECT MAX(version) as v FROM schema_version')
+        .get() as { v: number };
+      expect(version.v).toBeGreaterThanOrEqual(42);
+    });
+
     it('P42: v39 migration collapses legacy mixed-case wikilink_applications rows', () => {
       // Hand-seed a pre-v39 state: drop the NOCASE index, recreate the v38
       // shape (only entity is COLLATE NOCASE), insert rows that collide

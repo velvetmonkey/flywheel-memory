@@ -266,17 +266,42 @@ export function registerInsightsTools(
           const cutoff = new Date();
           cutoff.setDate(cutoff.getDate() - days);
 
+          // 1. Backlink counts
           const backlinkCountsByPath = new Map<string, number>();
           for (const note of index.notes.values()) {
             const count = getBacklinksForNote(index, note.path).length;
             if (count > 0) backlinkCountsByPath.set(note.path, count);
           }
 
+          // 2. Hub scores
           const hubScores = new Map<string, number>();
           if (stateDb) {
             try {
               const rows = stateDb.db.prepare('SELECT name_lower, hub_score FROM entities WHERE hub_score > 0').all() as Array<{ name_lower: string; hub_score: number }>;
               for (const r of rows) hubScores.set(r.name_lower, r.hub_score);
+            } catch { /* table may not exist */ }
+          }
+
+          // 3. Open task counts
+          const openTaskCounts = new Map<string, number>();
+          if (stateDb) {
+            try {
+              const rows = stateDb.db.prepare(
+                `SELECT path, COUNT(*) as cnt FROM tasks WHERE status = 'open' GROUP BY path`
+              ).all() as Array<{ path: string; cnt: number }>;
+              for (const r of rows) openTaskCounts.set(r.path, r.cnt);
+            } catch { /* table may not exist */ }
+          }
+
+          // 4. Recently active entities (last 30 days)
+          const recentlyActiveEntities = new Set<string>();
+          if (stateDb) {
+            try {
+              const thirtyDaysAgo = Date.now() - 30 * 86400000;
+              const rows = stateDb.db.prepare(
+                'SELECT entity_name_lower FROM recency WHERE last_mentioned_at >= ?'
+              ).all(thirtyDaysAgo) as Array<{ entity_name_lower: string }>;
+              for (const r of rows) recentlyActiveEntities.add(r.entity_name_lower);
             } catch { /* table may not exist */ }
           }
 
@@ -287,6 +312,14 @@ export function registerInsightsTools(
             importance: number;
             staleness_risk: number;
             recommendation: string;
+            signals: {
+              backlink_count: number;
+              hub_score: number;
+              outlink_count: number;
+              has_open_tasks: boolean;
+              status_active: boolean;
+              active_entity_ratio: number;
+            };
           }> = [];
 
           for (const note of index.notes.values()) {
@@ -298,23 +331,37 @@ export function registerInsightsTools(
             const backlinkCount = backlinkCountsByPath.get(note.path) || 0;
             const hubScore = hubScores.get(note.title.toLowerCase()) || 0;
             const outlinkCount = note.outlinks.length;
+            const hasOpenTasks = (openTaskCounts.get(note.path) || 0) > 0;
             const statusActive = note.frontmatter?.status === 'active';
+
+            // Active entity ratio: fraction of outlinked entities mentioned recently
+            let activeEntityRatio = 0;
+            if (outlinkCount > 0) {
+              let activeCount = 0;
+              for (const link of note.outlinks) {
+                const target = (link.target || '').toLowerCase();
+                if (recentlyActiveEntities.has(target)) activeCount++;
+              }
+              activeEntityRatio = activeCount / outlinkCount;
+            }
 
             const importance =
               Math.min(backlinkCount / 10, 1) * 30 +
               Math.min(hubScore / 20, 1) * 20 +
               Math.min(outlinkCount / 5, 1) * 15 +
+              (hasOpenTasks ? 20 : 0) +
               (statusActive ? 15 : 0);
 
             const stalenessRisk =
-              Math.min(daysSince / 180, 1) * 50 +
-              (statusActive && daysSince > days ? 20 : 0) +
-              Math.min(backlinkCount / 5, 1) * 30;
+              Math.min(daysSince / 180, 1) * 40 +
+              (1 - activeEntityRatio) * 30 +
+              (hasOpenTasks ? 20 : 0) +
+              (statusActive && daysSince > days ? 10 : 0);
 
             let recommendation = 'low_priority';
-            if (importance < 20 && daysSince > 180) recommendation = 'archive';
-            else if (importance >= 50) recommendation = 'update';
-            else if (statusActive) recommendation = 'review';
+            if (importance < 20 && daysSince > 180 && !hasOpenTasks) recommendation = 'archive';
+            else if (importance >= 50 && activeEntityRatio > 0) recommendation = 'update';
+            else if (hasOpenTasks || statusActive) recommendation = 'review';
 
             candidates.push({
               path: note.path,
@@ -323,6 +370,14 @@ export function registerInsightsTools(
               importance: Math.round(importance * 10) / 10,
               staleness_risk: Math.round(stalenessRisk * 10) / 10,
               recommendation,
+              signals: {
+                backlink_count: backlinkCount,
+                hub_score: hubScore,
+                outlink_count: outlinkCount,
+                has_open_tasks: hasOpenTasks,
+                status_active: statusActive,
+                active_entity_ratio: Math.round(activeEntityRatio * 100) / 100,
+              },
             });
           }
 

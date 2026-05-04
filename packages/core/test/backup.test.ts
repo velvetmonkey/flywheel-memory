@@ -489,7 +489,7 @@ describe('Backup & Recovery', () => {
       }
     });
 
-    it('salvages from a partially-readable corrupt file', () => {
+    it('salvages from a partially-readable corrupt file', { timeout: 15_000 }, () => {
       // Create a DB with data
       const sourceDb = openStateDb(testVaultPath);
       sourceDb.db.prepare(

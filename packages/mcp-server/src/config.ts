@@ -484,8 +484,10 @@ Escalation: "search" (enriched metadata + content preview) → "read"
 ## Write
 
 **Before writing, check for saved policies** with \`policy(action="list")\`. Policies ensure notes are
-created with the correct structure and frontmatter for this vault. Use a matching policy instead of
-raw write tools when one exists. Fall back to direct tools only when no policy fits.
+created with the correct structure and frontmatter for this vault. This matters most for *structured
+work items* — tickets, project notes, formal vault entries — where a policy carries integrations and
+audit trail (e.g. \`create-cherwell\` for Cherwell tickets). Use a matching policy via \`policy(action="execute")\`
+instead of raw write tools when one exists. Fall back to direct tools only when no policy fits.
 
 **Every new note should have \`type\`, \`aliases\`, and \`description\` in frontmatter** — this is what powers
 entity categorization, search ranking, and link suggestions. Notes without frontmatter are nearly invisible

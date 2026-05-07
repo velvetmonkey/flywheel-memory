@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/velvetmonkey-flywheel-memory-badge.png)](https://mseep.ai/app/velvetmonkey-flywheel-memory)
+
 <div align="center">
   <img src="header.png" alt="Flywheel" width="256"/>
   <h1>Flywheel</h1>

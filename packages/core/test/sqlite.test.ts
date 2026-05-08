@@ -499,24 +499,54 @@ describe('SQLite State Management', () => {
   });
 
   describe('FTS5 Query Escaping', () => {
-    it('should strip special characters and OR-join tokens', () => {
-      expect(escapeFts5Query('test (query)')).toBe('test OR query');
-      expect(escapeFts5Query('test: value')).toBe('test OR value');
+    it('should strip special characters and OR-join quoted tokens', () => {
+      expect(escapeFts5Query('test (query)')).toBe('"test" OR "query"');
+      expect(escapeFts5Query('test: value')).toBe('"test" OR "value"');
     });
 
     it('should extract quoted phrases and OR-join remaining tokens', () => {
-      expect(escapeFts5Query('test "value"')).toBe('"value" test');
-      expect(escapeFts5Query('"project alpha" beta gamma')).toBe('"project alpha" beta OR gamma');
+      expect(escapeFts5Query('test "value"')).toBe('"value" "test"');
+      expect(escapeFts5Query('"project alpha" beta gamma')).toBe('"project alpha" "beta" OR "gamma"');
     });
 
-    it('should return single token as-is', () => {
-      expect(escapeFts5Query('test')).toBe('test');
-      expect(escapeFts5Query('test' + '*')).toBe('test*');
+    it('should wrap single tokens in quotes', () => {
+      expect(escapeFts5Query('test')).toBe('"test"');
     });
 
-    it('should skip explicit operators', () => {
-      expect(escapeFts5Query('test AND value')).toBe('test OR value');
-      expect(escapeFts5Query('test OR value')).toBe('test OR value');
+    it('should preserve prefix-search * outside the quote (regression)', () => {
+      expect(escapeFts5Query('test' + '*')).toBe('"test"*');
+    });
+
+    it('should skip explicit boolean operators', () => {
+      expect(escapeFts5Query('test AND value')).toBe('"test" OR "value"');
+      expect(escapeFts5Query('test OR value')).toBe('"test" OR "value"');
+    });
+
+    // Regression: 2026-05-08 morning-briefing job failed with `no such column: 05`
+    // because the date `2026-05-08` was unquoted, so SQLite parsed `05` as a
+    // column reference. With the fix each numeric token is quoted as a phrase.
+    it('should safely handle date-formatted queries', () => {
+      const result = escapeFts5Query('2026-05-08');
+      expect(result).toBe('"2026" OR "05" OR "08"');
+      expect(result).not.toContain(' 05 ');
+      expect(result).not.toMatch(/^05/);
+    });
+
+    it('should safely handle dotted filenames', () => {
+      expect(escapeFts5Query('file.txt')).toBe('"file" OR "txt"');
+    });
+
+    it('should safely handle plus-containing tokens like C++', () => {
+      // The strip pass removes `+`, leaving the bare letter; quoting prevents
+      // SQLite from interpreting it as anything other than a literal.
+      expect(escapeFts5Query('C++')).toBe('"C"');
+    });
+
+    it('should filter the FTS5 NEAR keyword to prevent operator injection', () => {
+      // NEAR alone is filtered, leaving an empty query.
+      expect(escapeFts5Query('NEAR')).toBe('');
+      // NEAR mixed with real tokens: NEAR is dropped, others quoted.
+      expect(escapeFts5Query('NEAR foo bar')).toBe('"foo" OR "bar"');
     });
   });
 

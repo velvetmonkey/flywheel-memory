@@ -72,7 +72,10 @@ export function searchEntitiesPrefix(
   prefix: string,
   limit: number = 20
 ): EntitySearchResult[] {
-  return searchEntities(stateDb, `${escapeFts5Query(prefix)}*`, limit);
+  // Append `*` BEFORE escaping so the suffix-aware quoter places it correctly
+  // (quoted phrase + outer `*` for prefix search). Pre-escaping here would
+  // produce already-quoted input that the second escape pass cannot reuse.
+  return searchEntities(stateDb, `${prefix}*`, limit);
 }
 
 /**
@@ -488,21 +491,33 @@ export function escapeFts5Query(query: string): string {
     return '';
   });
 
-  // Clean remaining tokens
+  // Clean remaining tokens. Strips FTS5 syntax punctuation (`:` and `-` previously
+  // tripped queries like `2026-05-08` → SQLite parsed `05` as a column reference,
+  // returning `no such column: 05`). `+`, `.`, `_` were also unhandled — see
+  // 2026-05-08 morning-briefing failure.
   const cleaned = withoutPhrases
-    .replace(/[(){}[\]^~:-]/g, ' ')
+    .replace(/[(){}[\]^~:+._-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
-  // Split into tokens, skip explicit AND/OR/NOT operators
-  const tokens = cleaned.split(' ').filter(t => t && t !== 'AND' && t !== 'OR' && t !== 'NOT');
+  // Split into tokens, skip explicit FTS5 operators (AND/OR/NOT/NEAR).
+  const tokens = cleaned
+    .split(' ')
+    .filter(t => t && t !== 'AND' && t !== 'OR' && t !== 'NOT' && t !== 'NEAR');
 
-  // Combine: quoted phrases + OR-joined tokens
+  // Wrap each token as an FTS5 phrase literal so bareword reserved keywords and
+  // numeric tokens cannot be parsed as column references. Preserve trailing `*`
+  // for prefix search by placing it OUTSIDE the quotes (`"foo"*` not `"foo*"`).
+  const safeTokens = tokens.map(t =>
+    t.endsWith('*') ? `"${t.slice(0, -1)}"*` : `"${t}"`
+  );
+
+  // Combine: quoted phrases + OR-joined safe tokens
   const parts = [...phrases];
-  if (tokens.length === 1) {
-    parts.push(tokens[0]);
-  } else if (tokens.length > 1) {
-    parts.push(tokens.join(' OR '));
+  if (safeTokens.length === 1) {
+    parts.push(safeTokens[0]);
+  } else if (safeTokens.length > 1) {
+    parts.push(safeTokens.join(' OR '));
   }
 
   return parts.join(' ') || '';

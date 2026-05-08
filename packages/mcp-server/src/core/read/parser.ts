@@ -17,16 +17,15 @@ import type { VaultFile } from './vault.js';
 /** Maximum file size to parse (10MB) - skip larger files */
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-/** Check if content appears to be binary */
+/** Check if content appears to be binary.
+ * Null-byte presence is the canonical text-vs-binary signal (used by git, file(1)).
+ * The previous printable-ratio heuristic counted every UTF-8 multi-byte sequence as
+ * non-printable, which falsely flagged emoji-heavy markdown (e.g. daily notes with
+ * log markers like 🐵) as binary and silently dropped indexing — see 2026-05-08
+ * incident where today's daily note was rejected 300 times.
+ */
 function isBinaryContent(content: string): boolean {
-  // Check for null bytes or high ratio of non-printable characters
-  const nullBytes = (content.match(/\x00/g) || []).length;
-  if (nullBytes > 0) return true;
-
-  // Check first 1000 chars for non-printable (excluding common whitespace)
-  const sample = content.slice(0, 1000);
-  const nonPrintable = sample.replace(/[\x20-\x7E\t\n\r]/g, '').length;
-  return nonPrintable / sample.length > 0.1;
+  return content.includes('\x00');
 }
 
 /**

@@ -76,6 +76,54 @@ jobs:
       - name: Build
         run: npm run build
 
+  installer-smoke:
+    name: "Installer Smoke"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Smoke 1 — process substitution (bash <(curl …) shape)
+        run: |
+          mkdir -p /tmp/vault-procsub && cd /tmp/vault-procsub
+          bash <(cat $GITHUB_WORKSPACE/skills/flywheel/scripts/install.sh)
+          test -f .mcp.json
+          jq -e '.mcpServers.flywheel.command == "npx"' .mcp.json
+          jq -e '.mcpServers.flywheel.args == ["-y","@velvetmonkey/flywheel-memory"]' .mcp.json
+      - name: Smoke 2 — pure pipe (curl … | bash shape)
+        run: |
+          mkdir -p /tmp/vault-pipe && cd /tmp/vault-pipe
+          cat $GITHUB_WORKSPACE/skills/flywheel/scripts/install.sh | bash
+          test -f .mcp.json
+          jq -e '.mcpServers.flywheel' .mcp.json
+      - name: Smoke 3 — in-tree invocation
+        run: |
+          mkdir -p /tmp/vault-tree && cd /tmp/vault-tree
+          bash $GITHUB_WORKSPACE/skills/flywheel/scripts/install.sh
+          test -f .mcp.json
+          # SKILL.md must NOT be copied (fallback retired — single-purpose installer).
+          if [ -f .claude/skills/flywheel/SKILL.md ]; then
+            echo "::error::installer regressed: SKILL.md was copied (fallback should be retired)" >&2
+            exit 1
+          fi
+      - name: Smoke 4 — idempotency
+        run: |
+          cd /tmp/vault-procsub
+          bash <(cat $GITHUB_WORKSPACE/skills/flywheel/scripts/install.sh) | tee /tmp/second-run.log
+          grep -q "unchanged" /tmp/second-run.log
+      - name: Smoke 5 — vault arg + non-existent dir rejection
+        run: |
+          # Positional vault arg targets a different directory.
+          mkdir -p /tmp/vault-arg
+          bash $GITHUB_WORKSPACE/skills/flywheel/scripts/install.sh /tmp/vault-arg
+          test -f /tmp/vault-arg/.mcp.json
+          # Non-existent dir exits non-zero.
+          if bash $GITHUB_WORKSPACE/skills/flywheel/scripts/install.sh /tmp/does-not-exist; then
+            echo "::error::installer accepted non-existent vault dir" >&2
+            exit 1
+          fi
+
   # ---------------------------------------------------------------------------
   # Focused test jobs — each surfaces as its own pass/fail check in GitHub
   # ---------------------------------------------------------------------------

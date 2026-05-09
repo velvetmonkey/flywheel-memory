@@ -39,8 +39,8 @@ Do **not** apply for:
 
 | Runtime | How the skill loads |
 |---|---|
-| Claude Code | Auto-discovered from `<vault>/.claude/skills/flywheel/SKILL.md` after the install script runs. |
-| Codex CLI | Copy `SKILL.md` to `~/.codex/skills/flywheel/SKILL.md` manually, or have the install script do it (`--codex` flag). |
+| Claude Code | Auto-discovered from `~/.claude/skills/flywheel/SKILL.md` (global) or `<vault>/.claude/skills/flywheel/SKILL.md` (project) after `npx -y skills add velvetmonkey/flywheel-memory -g`. |
+| Codex CLI | Same: `npx -y skills add velvetmonkey/flywheel-memory -g` installs the skill where Codex looks for it. |
 | ChatGPT (Custom GPT) | Paste the body of this `SKILL.md` into the GPT instruction set. The MCP install path (`.mcp.json`) does not apply. |
 
 The `.mcp.json` register step works in any client that speaks the Model Context Protocol — Claude Code, Codex CLI, Cursor, Windsurf, VS Code with MCP extensions, etc. See the project README's [client setup guide](../../docs/SETUP.md) for client-specific config differences.
@@ -51,7 +51,7 @@ Before installing, confirm:
 
 1. **Node ≥ 18** is on PATH. `node --version` should print `v18` or higher. The MCP server runs via `npx`; npx is bundled with npm.
 2. **A folder of `.md` files.** It does not need to be a fully-fledged Obsidian vault — Flywheel works on plain Markdown directories.
-3. **Write access** to the vault directory. Flywheel keeps a local index at `<vault>/.flywheel/state.db` and (when run via the install script) copies this skill into `<vault>/.claude/skills/flywheel/`.
+3. **Write access** to the vault directory. Flywheel keeps a local index at `<vault>/.flywheel/state.db` and writes/merges `<vault>/.mcp.json` to register the MCP server.
 
 If any prerequisite is missing, stop and tell the user what to install before continuing.
 
@@ -89,11 +89,7 @@ bash /path/to/flywheel-memory/skills/flywheel/scripts/install.sh
 iex (irm https://raw.githubusercontent.com/velvetmonkey/flywheel-memory/main/skills/flywheel/scripts/install.ps1)
 ```
 
-The MCP installer:
-
-1. Writes (or merges) `.mcp.json` in the current directory with the canonical Flywheel snippet.
-2. Optionally, with `--codex`, also copies the skill into `~/.codex/skills/flywheel/` for users who haven't installed via `npx skills` yet.
-3. Prints the restart instruction.
+The MCP installer is single-purpose: it writes (or merges) `.mcp.json` in the current directory with the canonical Flywheel snippet, then prints the restart instruction. It does *not* install the agent skill — Step 1 (`npx -y skills add ...`) handles that.
 
 ### Manual install (no installers)
 

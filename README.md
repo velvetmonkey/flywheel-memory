@@ -278,7 +278,11 @@ For install steps, see [Your Vault in 2 Minutes](#your-vault-in-2-minutes) above
 
 ## The Flywheel Suite
 
-Flywheel Memory is the core memory engine. [Flywheel Crank](https://github.com/velvetmonkey/flywheel-crank) is the Obsidian plugin that visualizes the same local graph and workflows. Start with Flywheel Memory; add Crank when you want a UI around the same vault.
+- **flywheel-memory** *(this repo)* — local-first MCP server. Hybrid BM25 + semantic search, knowledge graph, safe writes over an Obsidian vault.
+- **[flywheel-crank](https://github.com/velvetmonkey/flywheel-crank)** — Obsidian plugin. Visual layer over Memory's graph: sidebar, vault health, semantic search UI.
+- **[flywheel-ideas](https://github.com/velvetmonkey/flywheel-ideas)** — falsifiable decision ledger. Pre-registered assumptions, multi-model AI council dissent, outcome-driven refutation propagation.
+- **[flywheel-geometry](https://github.com/velvetmonkey/flywheel-geometry)** — geodesic retrieval extension. Pre-registered study of cross-domain bridge-finding via activation manifolds.
+- **[flywheel-concept](https://github.com/velvetmonkey/flywheel-concept)** — research programme on whether cross-model activations reveal structured concept geometry.
 
 ---
 

@@ -119,6 +119,7 @@ export {
   saveFlywheelConfigToDb,
   loadFlywheelConfigFromDb,
   getStateDbMetadata,
+  escapeFts5Query,
   // Merge Dismissals
   recordMergeDismissal,
   getDismissedMergePairs,

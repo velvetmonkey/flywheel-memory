@@ -7,7 +7,7 @@
  */
 
 import type { StateDb } from '@velvetmonkey/vault-core';
-import { recordEntityMention } from '@velvetmonkey/vault-core';
+import { recordEntityMention, escapeFts5Query } from '@velvetmonkey/vault-core';
 import { updateStoredNoteLinks } from './wikilinkFeedback.js';
 
 // =============================================================================
@@ -338,6 +338,9 @@ export function searchMemories(
 
   const where = conditions.length > 0 ? `AND ${conditions.join(' AND ')}` : '';
 
+  const escaped = escapeFts5Query(query);
+  if (!escaped) return [];
+
   try {
     const results = stateDb.db.prepare(`
       SELECT m.* FROM memories_fts
@@ -346,11 +349,11 @@ export function searchMemories(
       ${where}
       ORDER BY bm25(memories_fts)
       LIMIT ?
-    `).all(query, ...params, limit) as Memory[];
+    `).all(escaped, ...params, limit) as Memory[];
 
     return results;
   } catch (err) {
-    if (err instanceof Error && err.message.includes('fts5: syntax error')) {
+    if (err instanceof Error && (err.message.includes('fts5: syntax error') || err.message.includes('no such column'))) {
       throw new Error(`Invalid search query: ${query}. Check FTS5 syntax.`);
     }
     throw err;

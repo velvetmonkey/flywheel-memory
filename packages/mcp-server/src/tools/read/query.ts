@@ -7,6 +7,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex, VaultNote } from '../../core/read/types.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
+import { serverLog } from '../../core/shared/serverLog.js';
 import {
   searchFTS5,
   buildFTS5Index,
@@ -600,7 +601,11 @@ export function registerQueryTools(
           try {
             const rawMemories = searchMemories(stateDbEntity, { query, limit });
             memoryResults = scoreAndRankMemories(rawMemories, limit);
-          } catch { /* memory search is best-effort */ }
+          } catch (err) {
+            // Best-effort: search must still return note/entity results, but surface
+            // the memory leg failure so regressions don't silently swallow memories.
+            serverLog('fts5', `memory search failed: ${err instanceof Error ? err.message : String(err)}`, 'warn');
+          }
         }
 
         // Entity section — enriched profiles + semantic entity search

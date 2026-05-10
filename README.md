@@ -281,7 +281,7 @@ For install steps, see [Your Vault in 2 Minutes](#your-vault-in-2-minutes) above
 - **flywheel-memory** *(this repo)* — local-first MCP server. Hybrid BM25 + semantic search, knowledge graph, safe writes over an Obsidian vault.
 - **[flywheel-crank](https://github.com/velvetmonkey/flywheel-crank)** — Obsidian plugin. Visual layer over Memory's graph: sidebar, vault health, semantic search UI.
 - **[flywheel-ideas](https://github.com/velvetmonkey/flywheel-ideas)** — falsifiable decision ledger. Pre-registered assumptions, multi-model AI council dissent, outcome-driven refutation propagation.
-- **[flywheel-geometry](https://github.com/velvetmonkey/flywheel-geometry)** — geodesic retrieval extension. Pre-registered study of cross-domain bridge-finding via activation manifolds.
+- **[flywheel-geometry](https://github.com/velvetmonkey/flywheel-geometry)** — geodesic retrieval extension. v0.1 pre-registered falsifier **resolved FAIL 2026-05-10** ([postmortem](https://github.com/velvetmonkey/flywheel-geometry/blob/main/docs/trial2-postmortem.md)); successor research lane at [flywheel-concept](https://github.com/velvetmonkey/flywheel-concept).
 - **[flywheel-concept](https://github.com/velvetmonkey/flywheel-concept)** — research programme on whether cross-model activations reveal structured concept geometry.
 
 ---

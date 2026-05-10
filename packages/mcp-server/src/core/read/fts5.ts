@@ -14,6 +14,7 @@
 
 import type Database from 'better-sqlite3';
 import * as fs from 'fs';
+import { escapeFts5Query } from '@velvetmonkey/vault-core';
 import { scanVault } from './vault.js';
 import { serverLog } from '../shared/serverLog.js';
 import { SYSTEM_EXCLUDED_DIRS } from '../shared/constants.js';
@@ -280,40 +281,6 @@ export function updateFTS5Incremental(
  * - Prefix: auth*
  * - Column filter: title:api
  */
-/**
- * Sanitize a natural language query for FTS5 MATCH.
- * Strips operators, escapes quotes, normalizes whitespace.
- */
-function sanitizeFTS5Query(query: string): string {
-  if (!query?.trim()) return '';
-
-  // Extract quoted phrases first (preserve as AND-joined phrase matches)
-  const phrases: string[] = [];
-  const withoutPhrases = query.replace(/"([^"]+)"/g, (_, phrase) => {
-    phrases.push(`"${phrase.replace(/"/g, '""')}"`);
-    return '';
-  });
-
-  // Clean remaining tokens
-  const cleaned = withoutPhrases
-    .replace(/[(){}[\]^~:\-]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  // Split into tokens, skip explicit AND/OR operators
-  const tokens = cleaned.split(' ').filter(t => t && t !== 'AND' && t !== 'OR' && t !== 'NOT');
-
-  // Combine: quoted phrases + OR-joined tokens
-  // OR semantics with BM25 ranking: documents matching more terms score higher
-  const parts = [...phrases];
-  if (tokens.length === 1) {
-    parts.push(tokens[0]);
-  } else if (tokens.length > 1) {
-    parts.push(tokens.join(' OR '));
-  }
-
-  return parts.join(' ') || '';
-}
 
 export function searchFTS5(
   _vaultPath: string,
@@ -325,7 +292,7 @@ export function searchFTS5(
     throw new Error('FTS5 database not initialized. Call setFTS5Database() first.');
   }
 
-  const sanitized = sanitizeFTS5Query(query);
+  const sanitized = escapeFts5Query(query);
   if (!sanitized) return [];
 
   try {

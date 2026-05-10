@@ -20,7 +20,7 @@ import {
   type ScoredNote,
 } from './embeddings.js';
 import { selectByMmr, type MmrCandidate } from './mmr.js';
-import { STOPWORDS_EN } from '@velvetmonkey/vault-core';
+import { STOPWORDS_EN, escapeFts5Query } from '@velvetmonkey/vault-core';
 
 export interface SimilarNote {
   path: string;
@@ -84,8 +84,10 @@ export function findSimilarNotes(
   const terms = extractKeyTerms(content);
   if (terms.length === 0) return [];
 
-  // Build FTS5 query: OR the terms together
-  const query = terms.join(' OR ');
+  // Build FTS5 query: OR the terms together (escape each so column-name collisions
+  // and FTS5-reserved tokens like NEAR can't break the MATCH clause).
+  const query = escapeFts5Query(terms.join(' '));
+  if (!query) return [];
 
   try {
     // BM25 weights: path=0, title=5x, frontmatter=10x, content=1x

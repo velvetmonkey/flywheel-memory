@@ -15,6 +15,9 @@ import {
   insertInSection,
   removeFromSection,
   replaceInSection,
+  readVaultFile,
+  writeVaultFile,
+  findSection,
   DiagnosticError,
   buildReplaceNotFoundDiagnostic,
   type MatchMode,
@@ -28,13 +31,142 @@ import { maybeApplyWikilinks, suggestRelatedLinks, getWriteStateDb } from '../..
 import { trackWikilinkApplications } from '../../core/write/wikilinkFeedback.js';
 import {
   withVaultFile,
+  handleGitCommit,
   formatMcpResult,
   errorResult,
   successResult,
+  type McpResponse,
 } from '../../core/write/mutation-helpers.js';
 import type { FlywheelConfig } from '../../core/read/config.js';
 import { sanitizeForObsidian, indentContinuation } from '../../core/write/markdown-structure.js';
 import { createNoteFromTemplate } from './mutations.js';
+
+const SHARD_INDEX_WIDTH = 3;
+
+interface ShardOptions {
+  enabled?: boolean;
+  pattern?: string;
+  maxBytes?: number;
+  maxEntries?: number;
+  mode?: 'audit';
+  lightIndex?: boolean;
+}
+
+interface ShardTarget {
+  notePath: string;
+  index: number;
+  created: boolean;
+}
+
+function shardIndexString(index: number): string {
+  return String(index).padStart(SHARD_INDEX_WIDTH, '0');
+}
+
+function dateFromNotePath(notePath: string): string {
+  return notePath.match(/(\d{4}-\d{2}-\d{2})/)?.[1] ?? new Date().toISOString().split('T')[0];
+}
+
+function countAuditEntries(content: string): number {
+  return content.match(/^\s*(?:-\s+)?\*\*\d{2}:\d{2}\*\*/gm)?.length ?? 0;
+}
+
+function shardPath(pattern: string, date: string, index: number): string {
+  return pattern
+    .replace(/\{date\}/g, date)
+    .replace(/\{index\}/g, shardIndexString(index));
+}
+
+async function shardWithinLimits(vaultPath: string, notePath: string, maxBytes: number, maxEntries: number): Promise<boolean> {
+  try {
+    const fullPath = path.join(vaultPath, notePath);
+    const stats = await fs.stat(fullPath);
+    if (stats.size >= maxBytes) return false;
+    const raw = await fs.readFile(fullPath, 'utf-8');
+    return countAuditEntries(raw) < maxEntries;
+  } catch (err: any) {
+    if (err.code === 'ENOENT') return true;
+    throw err;
+  }
+}
+
+async function resolveShardTarget(
+  vaultPath: string,
+  canonicalNotePath: string,
+  options: ShardOptions
+): Promise<ShardTarget> {
+  const date = dateFromNotePath(canonicalNotePath);
+  const pattern = options.pattern || 'daily-notes/logs/{date}-audit-{index}.md';
+  const maxBytes = options.maxBytes || 262_144;
+  const maxEntries = options.maxEntries || 250;
+
+  for (let index = 1; index < 10_000; index++) {
+    const current = shardPath(pattern, date, index);
+    try {
+      await fs.access(path.join(vaultPath, current));
+    } catch (err: any) {
+      if (err.code !== 'ENOENT') throw err;
+      if (index === 1) return { notePath: current, index, created: true };
+
+      const previous = shardPath(pattern, date, index - 1);
+      if (await shardWithinLimits(vaultPath, previous, maxBytes, maxEntries)) {
+        return { notePath: previous, index: index - 1, created: false };
+      }
+      return { notePath: current, index, created: true };
+    }
+  }
+
+  throw new Error(`Shard index exhausted for ${canonicalNotePath}`);
+}
+
+async function ensureShardNote(vaultPath: string, canonicalNotePath: string, target: ShardTarget, options: ShardOptions): Promise<void> {
+  if (!target.created) return;
+
+  const date = dateFromNotePath(canonicalNotePath);
+  const indexLabel = shardIndexString(target.index);
+  await fs.mkdir(path.dirname(path.join(vaultPath, target.notePath)), { recursive: true });
+  await writeVaultFile(
+    vaultPath,
+    target.notePath,
+    '# Log\n',
+    {
+      type: 'daily-log-shard',
+      date,
+      parent: `[[${canonicalNotePath.replace(/\.md$/, '')}]]`,
+      tags: ['#daily', '#audit-log'],
+      shard: options.mode || 'audit',
+      shard_index: target.index,
+      skipWikilinks: true,
+      flywheel_indexing: options.lightIndex === false ? undefined : 'light',
+      description: `Operational audit log shard ${indexLabel} for ${date}`,
+    }
+  );
+  console.error(`[Flywheel] Created audit shard ${target.notePath}`);
+}
+
+async function linkShardFromCanonical(
+  vaultPath: string,
+  canonicalNotePath: string,
+  section: string,
+  target: ShardTarget
+): Promise<void> {
+  const { content, frontmatter, lineEnding, contentHash } = await readVaultFile(vaultPath, canonicalNotePath);
+  const indexLabel = shardIndexString(target.index);
+  const shardLink = `[[${target.notePath.replace(/\.md$/, '')}|Audit log shard ${indexLabel}]]`;
+  if (content.includes(shardLink)) return;
+
+  const sectionResult = findSection(content, section);
+  if (!sectionResult) return;
+
+  const formattedContent = formatContent(shardLink, 'bullet');
+  const updatedContent = insertInSection(
+    content,
+    sectionResult,
+    formattedContent,
+    'append',
+    { preserveListNesting: true, bumpHeadings: true }
+  );
+  await writeVaultFile(vaultPath, canonicalNotePath, updatedContent, frontmatter, lineEnding, contentHash);
+}
 
 /**
  * Register the merged `edit_section` tool with the MCP server.
@@ -85,6 +217,16 @@ export function registerEditSectionTool(
       })).optional().describe('[add] Labeled sub-bullets appended under the parent content line'),
       linkedEntities: z.array(z.string()).optional().describe(
         '[add] Entity names already linked in the content. When skipWikilinks=true, these are tracked for feedback without re-processing.'
+      ),
+      shard: z.object({
+        enabled: z.boolean().optional(),
+        pattern: z.string().optional(),
+        maxBytes: z.number().min(1024).optional(),
+        maxEntries: z.number().min(1).optional(),
+        mode: z.literal('audit').optional(),
+        lightIndex: z.boolean().optional(),
+      }).optional().describe(
+        '[add] Route append-only operational content into bounded shard notes and link them from the requested note'
       ),
 
       // remove-only params
@@ -169,6 +311,7 @@ async function handleAdd(
     maxSuggestions?: number;
     children?: Array<{ label: string; content: string }>;
     linkedEntities?: string[];
+    shard?: ShardOptions;
     commit?: boolean;
     dry_run?: boolean;
     agent_id?: string;
@@ -176,7 +319,7 @@ async function handleAdd(
   },
   getVaultPath: () => string,
   getConfig: () => FlywheelConfig
-) {
+): Promise<McpResponse> {
   const {
     path: notePath,
     section,
@@ -189,6 +332,7 @@ async function handleAdd(
     maxSuggestions = 5,
     children,
     linkedEntities,
+    shard,
     commit = false,
     dry_run = false,
     agent_id,
@@ -201,6 +345,30 @@ async function handleAdd(
   const validate = true;
   const normalize = true;
   const guardrails = 'warn' as const;
+
+  if (shard?.enabled && !dry_run) {
+    return handleShardedAdd(
+      {
+        ...params,
+        content,
+        create_if_missing,
+        position,
+        format,
+        skipWikilinks,
+        suggestOutgoingLinks,
+        maxSuggestions,
+        children,
+        linkedEntities,
+        shard,
+        commit,
+        dry_run,
+        agent_id,
+        session_id,
+      },
+      getVaultPath,
+      getConfig
+    );
+  }
 
   // Handle create_if_missing: create note from template before proceeding
   let noteCreated = false;
@@ -342,6 +510,76 @@ async function handleAdd(
       };
     }
   );
+}
+
+async function handleShardedAdd(
+  params: {
+    path: string;
+    section: string;
+    content?: string;
+    create_if_missing?: boolean;
+    position?: 'append' | 'prepend';
+    format?: FormatType;
+    skipWikilinks?: boolean;
+    suggestOutgoingLinks?: boolean;
+    maxSuggestions?: number;
+    children?: Array<{ label: string; content: string }>;
+    linkedEntities?: string[];
+    shard: ShardOptions;
+    commit?: boolean;
+    dry_run?: boolean;
+    agent_id?: string;
+    session_id?: string;
+  },
+  getVaultPath: () => string,
+  getConfig: () => FlywheelConfig
+): Promise<McpResponse> {
+  const vaultPath = getVaultPath();
+  const canonicalNotePath = params.path;
+
+  if (params.create_if_missing) {
+    try {
+      await fs.access(path.join(vaultPath, canonicalNotePath));
+    } catch {
+      await createNoteFromTemplate(vaultPath, canonicalNotePath, getConfig());
+    }
+  }
+
+  const target = await resolveShardTarget(vaultPath, canonicalNotePath, params.shard);
+  await ensureShardNote(vaultPath, canonicalNotePath, target, params.shard);
+  if (target.created) {
+    await linkShardFromCanonical(vaultPath, canonicalNotePath, params.section, target);
+  }
+
+  const response: McpResponse = await handleAdd(
+    {
+      ...params,
+      path: target.notePath,
+      create_if_missing: false,
+      skipWikilinks: true,
+      suggestOutgoingLinks: false,
+      shard: undefined,
+    },
+    getVaultPath,
+    getConfig
+  );
+
+  if (params.commit && target.created) {
+    await handleGitCommit(vaultPath, canonicalNotePath, true, '[Flywheel:Add]');
+  }
+
+  const text = response.content[0].text;
+  try {
+    const result = JSON.parse(text);
+    result.path = canonicalNotePath;
+    result.shardPath = target.notePath;
+    result.shardIndex = target.index;
+    result.shardCreated = target.created;
+    result.message = `${result.message} via shard ${target.notePath}`;
+    return formatMcpResult(result);
+  } catch {
+    return response;
+  }
 }
 
 async function handleRemove(

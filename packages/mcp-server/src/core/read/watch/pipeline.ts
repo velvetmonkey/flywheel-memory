@@ -9,6 +9,7 @@
 
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
+import matter from 'gray-matter';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import {
   getAllEntitiesFromDb,
@@ -328,6 +329,7 @@ export class PipelineRunner {
   private linkDiffs: Array<{ file: string; added: string[]; removed: string[] }> = [];
   private survivedLinks: Array<{ entity: string; file: string; count: number }> = [];
   private suggestionResults: Array<{ file: string; top: Array<{ entity: string; score: number; confidence: string }> }> = [];
+  private lightIndexPaths = new Set<string>();
 
   constructor(private p: PipelineContext) {
     this.activity = p.ctx.pipelineActivity;
@@ -355,6 +357,39 @@ export class PipelineRunner {
     this.batchStart = Date.now();
   }
 
+  private isLightIndexPath(filePath: string): boolean {
+    return this.lightIndexPaths.has(filePath);
+  }
+
+  private normalEvents(): CoalescedEvent[] {
+    return this.p.events.filter(e => !this.isLightIndexPath(e.path));
+  }
+
+  private async detectLightIndexFiles(): Promise<void> {
+    const { p } = this;
+    this.lightIndexPaths.clear();
+
+    for (const event of p.events) {
+      if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+      try {
+        const raw = await fs.readFile(path.join(p.vp, event.path), 'utf-8');
+        const parsed = matter(raw);
+        if (
+          parsed.data?.flywheel_indexing === 'light' ||
+          parsed.data?.type === 'daily-log-shard'
+        ) {
+          this.lightIndexPaths.add(event.path);
+        }
+      } catch {
+        // Light-index detection is an optimisation, not a critical path.
+      }
+    }
+
+    if (this.lightIndexPaths.size > 0) {
+      serverLog('watcher', `Light-index files: ${this.lightIndexPaths.size} (${[...this.lightIndexPaths].slice(0, 5).join(', ')})`);
+    }
+  }
+
   async run(): Promise<void> {
     const { p, tracker } = this;
 
@@ -380,6 +415,8 @@ export class PipelineRunner {
     this.activity.pending_events = p.events.length;
 
     try {
+      await this.detectLightIndexFiles();
+
       // Step 0.5: Drain deferred proactive queue (before any file processing)
       await runStep('drain_proactive_queue', tracker, {}, () => this.drainQueue());
 
@@ -703,12 +740,16 @@ export class PipelineRunner {
 
   private async noteEmbeddings(): Promise<StepRunResult> {
     const { p } = this;
+    const events = this.normalEvents();
+    if (events.length === 0 && this.lightIndexPaths.size > 0) {
+      return { kind: 'skipped', reason: 'light-index files only', output: { skipped_light_index: this.lightIndexPaths.size } };
+    }
     if (!hasEmbeddingsIndex()) {
       return { kind: 'skipped', reason: 'not built' };
     }
     let embUpdated = 0;
     let embRemoved = 0;
-    for (const event of p.events) {
+    for (const event of events) {
       try {
         if (event.type === 'delete') {
           removeEmbedding(event.path);
@@ -729,22 +770,26 @@ export class PipelineRunner {
       serverLog('watcher', `Note embedding orphan cleanup failed: ${e}`, 'error');
     }
     serverLog('watcher', `Note embeddings: ${embUpdated} updated, ${embRemoved} removed, ${orphansRemoved} orphans cleaned`);
-    return { kind: 'done', output: { updated: embUpdated, removed: embRemoved, orphans_removed: orphansRemoved } };
+    return { kind: 'done', output: { updated: embUpdated, removed: embRemoved, orphans_removed: orphansRemoved, skipped_light_index: this.lightIndexPaths.size } };
   }
 
   // ── Step 5: Entity embeddings ─────────────────────────────────────
 
   private async entityEmbeddings(): Promise<StepRunResult> {
     const { p } = this;
-    if (!hasEntityEmbeddingsIndex() || !p.sd) {
-      return { kind: 'skipped', reason: !p.sd ? 'no sd' : 'not built' };
-    }
     let entEmbUpdated = 0;
     let entEmbOrphansRemoved = 0;
     const entEmbNames: string[] = [];
+    const events = this.normalEvents();
+    if (events.length === 0 && this.lightIndexPaths.size > 0) {
+      return { kind: 'skipped', reason: 'light-index files only', output: { skipped_light_index: this.lightIndexPaths.size } };
+    }
+    if (!hasEntityEmbeddingsIndex() || !p.sd) {
+      return { kind: 'skipped', reason: !p.sd ? 'no sd' : 'not built' };
+    }
     try {
       const allEntities = getAllEntitiesFromDb(p.sd);
-      for (const event of p.events) {
+      for (const event of events) {
         if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
         const matching = allEntities.filter(e => e.path === event.path);
         for (const entity of matching) {
@@ -959,9 +1004,14 @@ export class PipelineRunner {
     const vaultIndex = p.getVaultIndex();
     tracker.start('wikilink_check', { files: p.events.length });
     const trackedLinks: Array<{ file: string; entities: string[] }> = [];
+    const events = this.normalEvents();
+    if (events.length === 0 && this.lightIndexPaths.size > 0) {
+      tracker.skipCurrent('light-index files only', { skipped_light_index: this.lightIndexPaths.size });
+      return;
+    }
 
     if (p.sd) {
-      for (const event of p.events) {
+      for (const event of events) {
         if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
         try {
           const apps = getTrackedApplications(p.sd, event.path);
@@ -989,7 +1039,7 @@ export class PipelineRunner {
 
     // Detect unwikified entity mentions in changed files
     const mentionResults: Array<{ file: string; entities: string[] }> = [];
-    for (const event of p.events) {
+    for (const event of events) {
       if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
       try {
         const content = await fs.readFile(path.join(p.vp, event.path), 'utf-8');
@@ -1031,6 +1081,11 @@ export class PipelineRunner {
   private async implicitFeedback(): Promise<void> {
     const { p, tracker } = this;
     tracker.start('implicit_feedback', { files: p.events.length });
+    const events = this.normalEvents();
+    if (events.length === 0 && this.lightIndexPaths.size > 0) {
+      tracker.skipCurrent('light-index files only', { skipped_light_index: this.lightIndexPaths.size });
+      return;
+    }
 
     const deletedFiles = new Set(
       p.events.filter(e => e.type === 'delete').map(e => e.path)
@@ -1039,7 +1094,7 @@ export class PipelineRunner {
     const feedbackResults: Array<{ entity: string; file: string }> = [];
 
     if (p.sd) {
-      for (const event of p.events) {
+      for (const event of events) {
         if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
         try {
           const content = await fs.readFile(path.join(p.vp, event.path), 'utf-8');
@@ -1153,13 +1208,17 @@ export class PipelineRunner {
   private async prospectScan(): Promise<Record<string, unknown>> {
     const { p } = this;
     const vaultIndex = p.getVaultIndex();
+    const events = this.normalEvents();
+    if (events.length === 0 && this.lightIndexPaths.size > 0) {
+      return { skipped: true, reason: 'light-index files only', skipped_light_index: this.lightIndexPaths.size };
+    }
     const prospectResults: Array<{
       file: string;
       implicit: string[];
       deadLinkMatches: string[];
     }> = [];
 
-    for (const event of p.events) {
+    for (const event of events) {
       if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
       try {
         const content = await fs.readFile(path.join(p.vp, event.path), 'utf-8');
@@ -1238,8 +1297,13 @@ export class PipelineRunner {
   private async suggestionScoring(): Promise<void> {
     const { p, tracker } = this;
     tracker.start('suggestion_scoring', { files: p.events.length });
+    const events = this.normalEvents();
+    if (events.length === 0 && this.lightIndexPaths.size > 0) {
+      tracker.skipCurrent('light-index files only', { skipped_light_index: this.lightIndexPaths.size });
+      return;
+    }
 
-    for (const event of p.events) {
+    for (const event of events) {
       if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
       try {
         const rawContent = await fs.readFile(path.join(p.vp, event.path), 'utf-8');

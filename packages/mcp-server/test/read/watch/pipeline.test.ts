@@ -14,6 +14,7 @@ import {
 } from '@velvetmonkey/vault-core';
 import { createTempVault, cleanupTempVault } from '../../helpers/testUtils.js';
 import { buildVaultIndex } from '../../../src/core/read/graph.js';
+import { buildFTS5Index } from '../../../src/core/read/fts5.js';
 import type { VaultIndex } from '../../../src/core/shared/types.js';
 import type { VaultContext } from '../../../src/vault-registry.js';
 import { setWriteStateDb } from '../../../src/core/write/wikilinks.js';
@@ -98,6 +99,7 @@ describe('PipelineRunner', () => {
     // Seed entities in StateDb
     const entityIndex = await scanVaultEntities(tempVault, { excludeFolders: [] });
     stateDb.replaceAllEntities(entityIndex);
+    await buildFTS5Index(tempVault);
   }, 30000);
 
   afterAll(async () => {
@@ -271,6 +273,66 @@ describe('PipelineRunner', () => {
     // Pipeline should have completed successfully — steps after embeddings should exist
     const embIdx = stepNames.indexOf('note_embeddings');
     expect(stepNames.length).toBeGreaterThan(embIdx + 2); // more steps after embeddings
+  }, 30000);
+
+  it('keeps light-index audit shards searchable while skipping expensive enrichment steps', async () => {
+    await mkdir(path.join(tempVault, 'daily-notes', 'logs'), { recursive: true });
+    await writeFile(path.join(tempVault, 'daily-notes', 'logs', '2099-03-01-audit-001.md'), [
+      '---',
+      'type: daily-log-shard',
+      'date: 2099-03-01',
+      'flywheel_indexing: light',
+      '---',
+      '# Log',
+      '',
+      '- **10:00** audit shard mentions [[Alice]] and Project Alpha',
+      '',
+    ].join('\n'));
+
+    const ctx = makeVaultContext();
+    const pctx: PipelineContext = {
+      vp: tempVault,
+      sd: stateDb,
+      ctx,
+      events: [{ type: 'upsert', path: 'daily-notes/logs/2099-03-01-audit-001.md', originalEvents: [] }],
+      renames: [],
+      batch: { events: [{ type: 'upsert', path: 'daily-notes/logs/2099-03-01-audit-001.md', originalEvents: [] }], renames: [], timestamp: Date.now() },
+      changedPaths: ['daily-notes/logs/2099-03-01-audit-001.md'],
+      flywheelConfig: {},
+      updateIndexState: (state, error) => { ctx.indexState = state; if (error !== undefined) ctx.indexError = error ?? null; },
+      updateVaultIndex: (idx) => { vaultIndex = idx; ctx.vaultIndex = idx; },
+      updateEntitiesInStateDb: async (vp, sd) => {
+        if (!sd) return;
+        const entityIdx = await scanVaultEntities(vp ?? tempVault, { excludeFolders: [] });
+        sd.replaceAllEntities(entityIdx);
+      },
+      getVaultIndex: () => vaultIndex,
+      buildVaultIndex,
+    };
+
+    await new PipelineRunner(pctx).run();
+
+    const event = stateDb.db.prepare(
+      "SELECT steps FROM index_events WHERE trigger = 'watcher' ORDER BY id DESC LIMIT 1"
+    ).get() as { steps: string } | undefined;
+    const steps = JSON.parse(event?.steps ?? '[]');
+
+    const fts = stateDb.db.prepare(
+      "SELECT path FROM notes_fts WHERE path = ?"
+    ).get('daily-notes/logs/2099-03-01-audit-001.md') as { path: string } | undefined;
+    expect(fts?.path).toBe('daily-notes/logs/2099-03-01-audit-001.md');
+
+    for (const name of ['note_embeddings', 'entity_embeddings', 'wikilink_check', 'implicit_feedback', 'suggestion_scoring']) {
+      const step = steps.find((s: { name: string }) => s.name === name);
+      expect(step).toBeDefined();
+      expect(step.skipped).toBe(true);
+      expect(step.skip_reason).toBe('light-index files only');
+    }
+
+    const prospectStep = steps.find((s: { name: string }) => s.name === 'prospect_scan');
+    expect(prospectStep).toBeDefined();
+    expect(prospectStep.output.skipped).toBe(true);
+    expect(prospectStep.output.reason).toBe('light-index files only');
   }, 30000);
 
   it('tracks pipeline activity per vault context', async () => {

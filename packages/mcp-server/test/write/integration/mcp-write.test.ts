@@ -147,6 +147,113 @@ describe('MCP Write Integration', () => {
       expect(fileContent).toContain('## Log');
     });
 
+    it('routes sharded audit appends to bounded log shard notes', async () => {
+      await createTestNote(ctx.vaultPath, 'daily-notes/2099-02-03.md', [
+        '---',
+        'type: daily',
+        "date: '2099-02-03'",
+        '---',
+        '# 2099-02-03',
+        '',
+        '## Log',
+        '',
+      ].join('\n'));
+
+      const result = await client.callTool({
+        name: 'edit_section',
+        arguments: {
+          action: 'add',
+          path: 'daily-notes/2099-02-03.md',
+          section: 'Log',
+          content: '**10:00** 🐵 @alice (1.2s)',
+          children: [{ label: '**Response:**', content: 'Operational note for [[Project Alpha]]' }],
+          format: 'plain',
+          skipWikilinks: true,
+          suggestOutgoingLinks: false,
+          shard: {
+            enabled: true,
+            pattern: 'daily-notes/logs/{date}-audit-{index}.md',
+            maxBytes: 262144,
+            maxEntries: 250,
+            mode: 'audit',
+            lightIndex: true,
+          },
+        },
+      });
+
+      expect(result.isError).toBeFalsy();
+      const data = parseResult(result) as Record<string, unknown>;
+      expect(data.success).toBe(true);
+      expect(data.path).toBe('daily-notes/2099-02-03.md');
+      expect(data.shardPath).toBe('daily-notes/logs/2099-02-03-audit-001.md');
+      expect(data.shardCreated).toBe(true);
+
+      const canonical = readFileSync(path.join(ctx.vaultPath, 'daily-notes/2099-02-03.md'), 'utf-8');
+      expect(canonical).toContain('[[daily-notes/logs/2099-02-03-audit-001|Audit log shard 001]]');
+      expect(canonical).not.toContain('@alice');
+
+      const shard = readFileSync(path.join(ctx.vaultPath, 'daily-notes/logs/2099-02-03-audit-001.md'), 'utf-8');
+      expect(shard).toContain('type: daily-log-shard');
+      expect(shard).toContain('flywheel_indexing: light');
+      expect(shard).toContain("parent: '[[daily-notes/2099-02-03]]'");
+      expect(shard).toContain('- **10:00** 🐵 @alice (1.2s)');
+      expect(shard).toContain('Operational note for [[Project Alpha]]');
+    });
+
+    it('rolls sharded audit appends when the entry count limit is reached', async () => {
+      await createTestNote(ctx.vaultPath, 'daily-notes/2099-02-04.md', [
+        '---',
+        'type: daily',
+        "date: '2099-02-04'",
+        '---',
+        '# 2099-02-04',
+        '',
+        '## Log',
+        '',
+      ].join('\n'));
+
+      await client.callTool({
+        name: 'edit_section',
+        arguments: {
+          action: 'add',
+          path: 'daily-notes/2099-02-04.md',
+          section: 'Log',
+          content: '**10:00** first',
+          shard: {
+            enabled: true,
+            pattern: 'daily-notes/logs/{date}-audit-{index}.md',
+            maxBytes: 262144,
+            maxEntries: 1,
+            mode: 'audit',
+            lightIndex: true,
+          },
+        },
+      });
+
+      const second = await client.callTool({
+        name: 'edit_section',
+        arguments: {
+          action: 'add',
+          path: 'daily-notes/2099-02-04.md',
+          section: 'Log',
+          content: '**10:01** second',
+          shard: {
+            enabled: true,
+            pattern: 'daily-notes/logs/{date}-audit-{index}.md',
+            maxBytes: 262144,
+            maxEntries: 1,
+            mode: 'audit',
+            lightIndex: true,
+          },
+        },
+      });
+
+      const data = parseResult(second) as Record<string, unknown>;
+      expect(data.shardPath).toBe('daily-notes/logs/2099-02-04-audit-002.md');
+      expect(existsSync(path.join(ctx.vaultPath, 'daily-notes/logs/2099-02-04-audit-001.md'))).toBe(true);
+      expect(existsSync(path.join(ctx.vaultPath, 'daily-notes/logs/2099-02-04-audit-002.md'))).toBe(true);
+    });
+
     it('dry_run + create_if_missing does not create a file', async () => {
       const result = await client.callTool({
         name: 'edit_section',

@@ -2,7 +2,7 @@
   "name": "flywheel-memory-monorepo",
   "version": "0.0.0-private",
   "private": true,
-  "description": "MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. Local-first, no cloud.",
+  "description": "Persistent knowledge graph memory for AI agents. Search, read, and write tools over an Obsidian vault via MCP.",
   "workspaces": [
     "packages/*"
   ],

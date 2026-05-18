@@ -93,7 +93,6 @@ const SCANNED_DOCS = [
   'docs/ARCHITECTURE.md',
   'docs/SETUP.md',
   'docs/PROVE-IT.md',
-  'docs/VISION.md',
   'docs/OPENCLAW.md',
   'docs/TROUBLESHOOTING.md',
   'docs/SHARING.md',

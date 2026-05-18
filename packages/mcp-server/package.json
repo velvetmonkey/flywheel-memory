@@ -1,7 +1,7 @@
 {
   "name": "@velvetmonkey/flywheel-memory",
   "version": "2.12.13",
-  "description": "MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits.",
+  "description": "Persistent knowledge graph memory for AI agents. Search, read, and write tools over an Obsidian vault via MCP.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

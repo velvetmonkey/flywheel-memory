@@ -2,8 +2,6 @@
 
 [← Back to docs](README.md)
 
-Your vault is your second brain. You don't hand it to software you can't trust.
-
 **3,292 defined tests | 185 test files | 64,400+ lines of test code**
 
 - [Test Philosophy](#test-philosophy)

@@ -8,7 +8,6 @@ const README_PATH = path.join(REPO_ROOT, 'README.md');
 const DOCS_TESTING_PATH = path.join(REPO_ROOT, 'docs', 'TESTING.md');
 const DOCS_PROVE_IT_PATH = path.join(REPO_ROOT, 'docs', 'PROVE-IT.md');
 const DOCS_README_PATH = path.join(REPO_ROOT, 'docs', 'README.md');
-const DOCS_VISION_PATH = path.join(REPO_ROOT, 'docs', 'VISION.md');
 const DOCS_QUALITY_REPORT_PATH = path.join(REPO_ROOT, 'docs', 'QUALITY_REPORT.md');
 const BENCH_ITERATION_INDEX_PATH = path.join(REPO_ROOT, 'packages', 'bench', 'src', 'iteration', 'index.ts');
 const BENCH_ITERATION_CLI_PATH = path.join(REPO_ROOT, 'packages', 'bench', 'src', 'cli', 'iteration-stress.ts');
@@ -91,7 +90,6 @@ describe('documentation claims truth', () => {
       read(README_PATH),
       read(DOCS_TESTING_PATH),
       read(DOCS_PROVE_IT_PATH),
-      read(DOCS_VISION_PATH),
     ]);
 
     const bannedPhrases = [

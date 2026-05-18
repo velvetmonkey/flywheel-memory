@@ -6,11 +6,8 @@ import path from 'path';
 const REPO_ROOT = path.join(__dirname, '../../../../../');
 const README_PATH = path.join(REPO_ROOT, 'README.md');
 const DOCS_TESTING_PATH = path.join(REPO_ROOT, 'docs', 'TESTING.md');
-const DOCS_PROVE_IT_PATH = path.join(REPO_ROOT, 'docs', 'PROVE-IT.md');
-const DOCS_README_PATH = path.join(REPO_ROOT, 'docs', 'README.md');
 const BENCH_ITERATION_INDEX_PATH = path.join(REPO_ROOT, 'packages', 'bench', 'src', 'iteration', 'index.ts');
 const BENCH_ITERATION_CLI_PATH = path.join(REPO_ROOT, 'packages', 'bench', 'src', 'cli', 'iteration-stress.ts');
-const DEMOS_DIR = path.join(REPO_ROOT, 'demos');
 
 const hasResults = existsSync(path.join(REPO_ROOT, 'demos', 'hotpotqa', 'results'))
   && existsSync(path.join(REPO_ROOT, 'demos', 'locomo', 'results'));
@@ -34,16 +31,11 @@ async function findLatestRunDir(dataset: 'hotpotqa' | 'locomo'): Promise<string>
   return path.join(resultsDir, runs[runs.length - 1]);
 }
 
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 describe('documentation claims truth', () => {
   it.skipIf(!hasResults)('README and benchmark docs match the latest checked-in HotpotQA and LoCoMo artifacts', async () => {
-    const [readme, testingDoc, proveItDoc] = await Promise.all([
+    const [readme, testingDoc] = await Promise.all([
       read(README_PATH),
       read(DOCS_TESTING_PATH),
-      read(DOCS_PROVE_IT_PATH),
     ]);
 
     const hotpotRunDir = await findLatestRunDir('hotpotqa');
@@ -54,41 +46,29 @@ describe('documentation claims truth', () => {
     const locomoReport = await read(path.join(locomoRunDir, 'report.md'));
 
     const hotpotDocRecall = `${(hotpotAnalysis.overall_recall * 100).toFixed(1)}%`;
-    const hotpotFullRecall = `${((hotpotAnalysis.full_recall_count / hotpotAnalysis.total_questions) * 100).toFixed(1)}%`;
-    const hotpotPartialRecall = `${((hotpotAnalysis.partial_recall_count / hotpotAnalysis.total_questions) * 100).toFixed(1)}%`;
     const hotpotCost = `$${(hotpotAnalysis.total_cost_usd / hotpotAnalysis.total_questions).toFixed(3)}`;
 
     const locomoEvidenceRecall = `${(locomoAnalysis.overall_evidence_recall * 100).toFixed(1)}%`;
     const locomoFinalF1 = locomoAnalysis.overall_final_token_f1.toFixed(3);
-    const locomoRawF1 = locomoAnalysis.overall_raw_token_f1.toFixed(3);
-    const locomoCost = `$${(locomoAnalysis.total_cost_usd / locomoAnalysis.scored_questions).toFixed(3)}`;
     const judgeMatch = locomoReport.match(/Answer Accuracy \| \*\*([0-9.]+%)\*\*/);
     expect(judgeMatch, 'LoCoMo report should include Answer Accuracy').toBeTruthy();
     const locomoAccuracy = judgeMatch![1];
 
-    for (const doc of [readme, testingDoc, proveItDoc]) {
+    for (const doc of [readme, testingDoc]) {
       expect(doc).toContain(hotpotDocRecall);
       expect(doc).toContain(locomoEvidenceRecall);
     }
 
     expect(testingDoc).toContain(hotpotCost);
-    expect(proveItDoc).toContain(hotpotCost);
     expect(readme).toContain(locomoAccuracy);
     expect(testingDoc).toContain(locomoAccuracy);
-    expect(proveItDoc).toContain(locomoAccuracy);
     expect(testingDoc).toContain(locomoFinalF1);
-    expect(proveItDoc).toContain(locomoFinalF1);
-    expect(proveItDoc).toContain(locomoRawF1);
-    expect(proveItDoc).toContain(locomoCost);
-    expect(proveItDoc).toContain(hotpotFullRecall);
-    expect(proveItDoc).toContain(hotpotPartialRecall);
   });
 
   it('README and docs do not contain known stale benchmark or quality phrases', async () => {
     const docs = await Promise.all([
       read(README_PATH),
       read(DOCS_TESTING_PATH),
-      read(DOCS_PROVE_IT_PATH),
     ]);
 
     const bannedPhrases = [
@@ -107,29 +87,6 @@ describe('documentation claims truth', () => {
       for (const phrase of bannedPhrases) {
         expect(doc.includes(phrase), `Unexpected stale phrase: ${phrase}`).toBe(false);
       }
-    }
-  });
-
-  it('docs index lists the shipped demos with .mcp.json files', async () => {
-    const docsIndex = await read(DOCS_README_PATH);
-    const entries = await fs.readdir(DEMOS_DIR, { withFileTypes: true });
-    const shippedDemos = entries
-      .filter(entry => entry.isDirectory())
-      .map(entry => entry.name);
-
-    const configuredDemos: string[] = [];
-    for (const demo of shippedDemos) {
-      try {
-        await fs.access(path.join(DEMOS_DIR, demo, '.mcp.json'));
-        configuredDemos.push(demo);
-      } catch {
-        // Not a shipped demo vault, ignore.
-      }
-    }
-
-    expect(configuredDemos.length).toBe(7);
-    for (const demo of configuredDemos) {
-      expect(docsIndex).toMatch(new RegExp(`\\[${escapeRegex(demo)}\\]`));
     }
   });
 

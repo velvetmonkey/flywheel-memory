@@ -395,7 +395,7 @@ The graph quality suite validates that the wikilink suggestion engine works corr
 
 ### Baselines
 
-Locked in `baselines.json` (**2026-02-26**). CI fails if any metric regresses >5pp. These are regression baselines, not the same thing as the latest generated proof report in [QUALITY_REPORT.md](QUALITY_REPORT.md).
+Locked in `baselines.json` (**2026-02-26**). CI fails if any metric regresses >5pp.
 
 | Mode | Precision | Recall | F1 | MRR |
 |---|---|---|---|---|
@@ -405,7 +405,7 @@ Locked in `baselines.json` (**2026-02-26**). CI fails if any metric regresses >5
 
 Measured against a 96-note/61-entity ground truth vault. Links stripped, engine must rediscover them.
 
-The latest generated proof report checked into this repo is [QUALITY_REPORT.md](QUALITY_REPORT.md), generated on **March 27, 2026 21:45 UTC**. Its current balanced-mode headline is **40.2% precision / 71.7% recall / 51.5% F1**.
+Regenerate the proof report via `npm run test:quality:report`.
 
 ### Multi-Generation Stress Test
 
@@ -421,7 +421,7 @@ The latest generated proof report checked into this repo is [QUALITY_REPORT.md](
 
 Source: [`packages/mcp-server/test/graph-quality/multi-generation.test.ts`](../packages/mcp-server/test/graph-quality/multi-generation.test.ts)
 
-For full per-category, per-tier, per-archetype breakdown, see [QUALITY_REPORT.md](QUALITY_REPORT.md).
+For full per-category, per-tier, per-archetype breakdown, regenerate the proof report via `npm run test:quality:report`.
 
 Sources: [`packages/mcp-server/test/graph-quality/`](../packages/mcp-server/test/graph-quality/)
 

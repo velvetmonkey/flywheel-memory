@@ -413,8 +413,6 @@ The salvaged tables are: `wikilink_feedback`, `wikilink_applications`, `suggesti
 | Content hashes, co-occurrence cache, embeddings | Agent memories, session summaries, corrections |
 | Graph snapshots, index events, tool invocations | Wikilink applications, suggestion events |
 
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#statedb-corruption) for recovery steps.
-
 ---
 
 ## Schema Versioning

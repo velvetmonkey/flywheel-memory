@@ -10,9 +10,7 @@ const REPO_ROOT = join(__dirname, '../../../..');
 const TARGET_FILES = [
   'README.md',
   'CLAUDE.md',
-  'docs/README.md',
   'docs/TOOLS.md',
-  'docs/POLICIES.md',
   'docs/CONFIGURATION.md',
   'docs/SETUP.md',
   'docs/ARCHITECTURE.md',
@@ -27,8 +25,6 @@ const STALE_PATTERNS: Array<{ pattern: RegExp; message: string }> = [
 ];
 
 const POLICY_WORDING_TARGETS: Array<{ rel: string; pattern: RegExp; message: string }> = [
-  { rel: 'docs/POLICIES.md', pattern: /single atomic operation/i, message: 'policy docs should describe live writes plus rollback' },
-  { rel: 'docs/README.md', pattern: /search and write atomically/i, message: 'docs index should not describe policies as atomic staging' },
   { rel: 'docs/TOOLS.md', pattern: /execute atomic workflows/i, message: 'tool docs should avoid atomic workflow language' },
 ];
 

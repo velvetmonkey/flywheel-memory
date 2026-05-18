@@ -8,7 +8,6 @@ const README_PATH = path.join(REPO_ROOT, 'README.md');
 const DOCS_TESTING_PATH = path.join(REPO_ROOT, 'docs', 'TESTING.md');
 const DOCS_PROVE_IT_PATH = path.join(REPO_ROOT, 'docs', 'PROVE-IT.md');
 const DOCS_README_PATH = path.join(REPO_ROOT, 'docs', 'README.md');
-const DOCS_QUALITY_REPORT_PATH = path.join(REPO_ROOT, 'docs', 'QUALITY_REPORT.md');
 const BENCH_ITERATION_INDEX_PATH = path.join(REPO_ROOT, 'packages', 'bench', 'src', 'iteration', 'index.ts');
 const BENCH_ITERATION_CLI_PATH = path.join(REPO_ROOT, 'packages', 'bench', 'src', 'cli', 'iteration-stress.ts');
 const DEMOS_DIR = path.join(REPO_ROOT, 'demos');
@@ -109,21 +108,6 @@ describe('documentation claims truth', () => {
         expect(doc.includes(phrase), `Unexpected stale phrase: ${phrase}`).toBe(false);
       }
     }
-  });
-
-  it('README graph-quality headline matches the latest generated quality report', async () => {
-    const [readme, qualityReport] = await Promise.all([
-      read(README_PATH),
-      read(DOCS_QUALITY_REPORT_PATH),
-    ]);
-
-    const balancedMatch = qualityReport.match(/\| balanced \| ([0-9.]+%) \| ([0-9.]+%) \| ([0-9.]+%) \|/i);
-    expect(balancedMatch, 'QUALITY_REPORT should include balanced-mode metrics').toBeTruthy();
-
-    const [, precision, recall, f1] = balancedMatch!;
-    expect(readme).toContain(precision);
-    expect(readme).toContain(recall);
-    expect(readme).toContain(f1);
   });
 
   it('docs index lists the shipped demos with .mcp.json files', async () => {

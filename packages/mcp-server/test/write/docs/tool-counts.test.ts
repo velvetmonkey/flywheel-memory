@@ -92,11 +92,6 @@ const SCANNED_DOCS = [
   'docs/CONFIGURATION.md',
   'docs/ARCHITECTURE.md',
   'docs/SETUP.md',
-  'docs/PROVE-IT.md',
-  'docs/OPENCLAW.md',
-  'docs/TROUBLESHOOTING.md',
-  'docs/SHARING.md',
-  'docs/README.md',
   'packages/mcp-server/README.md',
 ];
 

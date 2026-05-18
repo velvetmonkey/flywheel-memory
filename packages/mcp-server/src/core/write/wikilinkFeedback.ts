@@ -1654,7 +1654,7 @@ export function getExtendedDashboardData(stateDb: StateDb): ExtendedDashboardDat
 /**
  * Generate a human-readable reason string explaining an action in the pipeline.
  *
- * Used for algorithm attribution in the observability UI and PROVE-IT.md.
+ * Used for algorithm attribution in the observability UI.
  */
 export function formatActionReason(
   action: 'discovered' | 'suggested' | 'filtered' | 'applied' | 'feedback_positive' | 'feedback_negative' | 'boosted' | 'suppressed',

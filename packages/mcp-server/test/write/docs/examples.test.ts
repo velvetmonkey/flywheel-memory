@@ -313,7 +313,7 @@ Met with Alice and Bob to discuss Project X progress.
     });
   });
 
-  describe('TROUBLESHOOTING.md solutions', () => {
+  describe('edge case recovery', () => {
     it('should handle missing section gracefully', async () => {
       const note = `---
 type: note

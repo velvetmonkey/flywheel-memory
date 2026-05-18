@@ -64,7 +64,7 @@ Feedback still matters after `T33`. Accepted and rejected suggestions improve re
 | `full` | You want every category visible immediately |
 | `auto` | You need backward compatibility with older clients; it behaves like `full` plus `discover_tools` guidance |
 
-The current preset counts are documented in [README.md](../README.md#optional-tool-presets) and [CONFIGURATION.md](CONFIGURATION.md#quick-start).
+The current preset counts are documented in [README.md](../README.md#tool-presets) and [CONFIGURATION.md](CONFIGURATION.md#quick-start).
 
 ## Tool Families
 

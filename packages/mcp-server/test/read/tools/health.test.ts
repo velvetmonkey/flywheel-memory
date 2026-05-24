@@ -192,7 +192,7 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
     // last_watcher_batch_at lines up with watcherAgoSeconds.
     expect(data.last_watcher_batch_at).toBeGreaterThanOrEqual(now - (watcherAgoSeconds + 5) * 1000);
     expect(data.last_watcher_batch_at).toBeLessThanOrEqual(now - (watcherAgoSeconds - 5) * 1000);
-    // With watcherAgoSeconds=30s under the 300s threshold, index is NOT stale.
+    // With watcherAgoSeconds=30s under the staleness threshold, index is NOT stale.
     expect(data.index_stale).toBe(false);
   });
 });

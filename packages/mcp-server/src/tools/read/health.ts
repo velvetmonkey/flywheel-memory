@@ -29,7 +29,11 @@ import { searchFTS5 } from '../../core/read/fts5.js';
 import { recordBenchmark, getBenchmarkHistory, getBenchmarkTrends } from '../../core/shared/benchmarks.js';
 
 /** Staleness threshold in seconds (5 minutes) */
-const STALE_THRESHOLD_SECONDS = 300;
+// 30 min — a quiet period of half an hour is a more honest threshold for
+// "the watcher might have stopped" than 5 min (which trips on every coffee
+// break on an actively-watched vault). Pair this with the previous fix
+// that makes freshness count watcher batches, not just full rebuilds.
+const STALE_THRESHOLD_SECONDS = 1800;
 
 /**
  * Register vault health tools

@@ -145,7 +145,12 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
     }
   });
 
-  test('uses the last full rebuild for freshness instead of watcher activity', async () => {
+  test('counts recent watcher batches as freshness (incremental pipeline keeps index live)', async () => {
+    // Contract: index_age is min-age across {full rebuild, watcher batch, build}.
+    // The watcher's 25-step pipeline (fts5_incremental, embeddings, hub scores,
+    // etc.) IS a fresh-index signal — treating only full rebuilds as freshness
+    // caused doctor to recommend `refresh_index` 5 min after every manual
+    // refresh on actively-watched vaults, even though the index was current.
     expect(context.stateDb).toBeTruthy();
     const stateDb = context.stateDb!;
     const now = Date.now();
@@ -176,12 +181,19 @@ describe('flywheel_doctor report=health (formerly health_check)', () => {
     const result = await client.callTool('doctor', { action: 'health' });
     const data = JSON.parse(result.content[0].text);
 
-    expect(data.index_age_seconds).toBeGreaterThanOrEqual(rebuildAgoSeconds - 5);
-    expect(data.index_age_seconds).toBeLessThanOrEqual(rebuildAgoSeconds + 5);
+    // index_age tracks the watcher batch (newer than the rebuild).
+    expect(data.index_age_seconds).toBeGreaterThanOrEqual(watcherAgoSeconds - 5);
+    expect(data.index_age_seconds).toBeLessThanOrEqual(watcherAgoSeconds + 5);
+    // last_rebuild still reports the full rebuild — we still surface that
+    // separately so users can see when the last full rebuild ran.
     expect(data.last_rebuild.trigger).toBe('startup_build');
     expect(data.last_rebuild.ago_seconds).toBeGreaterThanOrEqual(rebuildAgoSeconds - 5);
     expect(data.last_rebuild.ago_seconds).toBeLessThanOrEqual(rebuildAgoSeconds + 5);
-    expect(Math.abs(data.last_rebuild.ago_seconds - data.index_age_seconds)).toBeLessThanOrEqual(1);
+    // last_watcher_batch_at lines up with watcherAgoSeconds.
+    expect(data.last_watcher_batch_at).toBeGreaterThanOrEqual(now - (watcherAgoSeconds + 5) * 1000);
+    expect(data.last_watcher_batch_at).toBeLessThanOrEqual(now - (watcherAgoSeconds - 5) * 1000);
+    // With watcherAgoSeconds=30s under the 300s threshold, index is NOT stale.
+    expect(data.index_stale).toBe(false);
   });
 });
 

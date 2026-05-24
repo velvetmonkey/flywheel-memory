@@ -361,8 +361,23 @@ export function registerHealthTools(
       } catch { /* ignore */ }
     }
 
-    // Use last full rebuild for freshness, not watcher activity
-    const freshnessTimestamp = lastFullRebuildAt ?? (indexBuilt && index.builtAt ? index.builtAt.getTime() : undefined);
+    // Freshness = newest of {last full rebuild, last successful watcher
+    // batch}. The watcher's 25-step incremental pipeline (fts5, embeddings,
+    // hub scores, etc.) keeps the index current between full rebuilds —
+    // treating it otherwise produces a false-positive "stale" flag 5 min
+    // after every manual refresh on actively-watched vaults.
+    //
+    // index.builtAt is the in-memory load timestamp — it always equals
+    // "right now" for a freshly-loaded server. Only use it as a last-resort
+    // fallback when no index_events rows exist at all (e.g. brand-new DB
+    // before the first watcher batch lands).
+    const freshnessTimestamp = (() => {
+      const events = [lastFullRebuildAt, lastWatcherBatchAt].filter(
+        (t): t is number => typeof t === 'number' && t > 0,
+      );
+      if (events.length) return Math.max(...events);
+      return indexBuilt && index.builtAt ? index.builtAt.getTime() : undefined;
+    })();
     const indexAge = freshnessTimestamp
       ? Math.floor((Date.now() - freshnessTimestamp) / 1000)
       : -1;

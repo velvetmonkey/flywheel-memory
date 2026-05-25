@@ -35,6 +35,7 @@ import {
   extractSearchMethod,
   getActivationSignals,
 } from './tool-registry/activation.js';
+import { emitObservation, summariseInput, summariseResult } from './core/shared/observer.js';
 import { shouldSuppressMemoryTool } from './tool-registry/clientSuppressions.js';
 import { runCrossVaultSearch } from './tool-registry/crossVault.js';
 import { shouldEnableTieredTool, getDirectCallPromotion } from './tool-registry/tiering.js';
@@ -378,6 +379,37 @@ export function applyToolGating(
           } catch {
             // Never let tracking errors affect tool execution
           }
+        }
+
+        // Stage 1b — capture-at-source retrieval observation. Fire-and-forget
+        // side-channel to FLYWHEEL_OBSERVER_URL (no-op when unset). Wrapped in
+        // its own guard so a summariser/emit fault can never reach the tool
+        // path; mirrors the "Never let tracking errors affect tool execution"
+        // contract above. Runs whether or not a stateDb is present.
+        try {
+          if (process.env.FLYWHEEL_OBSERVER_URL) {
+            let obsSession: string | undefined;
+            try { obsSession = getSessionId(); } catch { /* no session */ }
+            let resultChars: number | undefined;
+            if (result?.content && Array.isArray(result.content)) {
+              let total = 0;
+              for (const block of result.content) {
+                if (block?.type === 'text' && typeof block.text === 'string') total += block.text.length;
+              }
+              if (total > 0) resultChars = total;
+            }
+            emitObservation({
+              tool: toolName,
+              input_summary: summariseInput(params),
+              result_summary: success ? summariseResult(toolName, result?.content) : undefined,
+              result_chars: resultChars,
+              is_error: !success,
+              duration_ms: Date.now() - start,
+              session_id: obsSession,
+            });
+          }
+        } catch {
+          // Never let observation errors affect tool execution
         }
       }
     };

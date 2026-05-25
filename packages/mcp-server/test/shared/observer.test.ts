@@ -1,0 +1,165 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  summariseInput,
+  summariseResult,
+  emitObservation,
+} from '../../src/core/shared/observer.js';
+
+/** Build an MCP-style content array from one JSON-or-text block. */
+function content(text: string) {
+  return [{ type: 'text', text }];
+}
+
+describe('summariseResult', () => {
+  it('summarises a search result as "N results" + leading titles', () => {
+    const c = content(
+      JSON.stringify({ results: [{ title: 'Kuramoto' }, { title: 'Sync' }, { title: 'Third' }] }),
+    );
+    const s = summariseResult('search', c);
+    expect(s).toContain('3 results');
+    expect(s).toContain('Kuramoto');
+    expect(s).toContain('Sync');
+    // only the first two titles, not the third
+    expect(s).not.toContain('Third');
+  });
+
+  it('prefers total_results over the truncated page length', () => {
+    const c = content(JSON.stringify({ total_results: 22, results: [{ title: 'First' }, { title: 'Second' }] }));
+    const s = summariseResult('search', c);
+    expect(s).toContain('22 results');
+    expect(s).toContain('First');
+  });
+
+  it('parses a large (>20k char) search result without corrupting the JSON', () => {
+    // Regression: slicing the text before JSON.parse truncated big results
+    // into invalid JSON and fell back to a raw dump. Must still summarise.
+    const results = Array.from({ length: 40 }, (_, i) => ({
+      title: `Note ${i}`,
+      snippet: 'x'.repeat(800),
+    }));
+    const big = JSON.stringify({ total_results: 40, results });
+    expect(big.length).toBeGreaterThan(20000);
+    const s = summariseResult('search', content(big));
+    expect(s).toContain('40 results');
+    expect(s).toContain('Note 0');
+    expect(s!.length).toBeLessThanOrEqual(280);
+  });
+
+  it('singularises one result', () => {
+    const s = summariseResult('search', content(JSON.stringify({ results: [{ title: 'Solo' }] })));
+    expect(s).toContain('1 result');
+    expect(s).not.toContain('1 results');
+  });
+
+  it('summarises a read result with path + word count', () => {
+    const s = summariseResult('read', content(JSON.stringify({ path: 'tech/x.md', word_count: 412 })));
+    expect(s).toBe('tech/x.md (412 words)');
+  });
+
+  it('summarises a memory result with action + key', () => {
+    const s = summariseResult('memory', content(JSON.stringify({ action: 'store', key: 'sprint' })));
+    expect(s).toContain('store');
+    expect(s).toContain('sprint');
+  });
+
+  it('summarises graph/link/insights by item count', () => {
+    const s = summariseResult('link', content(JSON.stringify({ suggestions: [1, 2, 3, 4] })));
+    expect(s).toBe('4 link items');
+  });
+
+  it('falls back to a truncated text snippet for unknown shapes', () => {
+    const s = summariseResult('doctor', content('plain non-json health output line'));
+    expect(s).toContain('plain non-json health output');
+  });
+
+  it('caps very long summaries', () => {
+    const s = summariseResult('doctor', content('x'.repeat(5000)));
+    expect(s!.length).toBeLessThanOrEqual(280);
+    expect(s!.endsWith('…')).toBe(true);
+  });
+
+  it('returns undefined for empty content', () => {
+    expect(summariseResult('search', [])).toBeUndefined();
+    expect(summariseResult('search', undefined)).toBeUndefined();
+  });
+});
+
+describe('summariseInput', () => {
+  it('surfaces query field', () => {
+    expect(summariseInput({ query: 'kuramoto sync' })).toBe('query=kuramoto sync');
+  });
+
+  it('shows array fields as a count', () => {
+    expect(summariseInput({ paths: ['a.md', 'b.md'] })).toBeUndefined(); // paths not an INPUT_FIELD
+    expect(summariseInput({ path: 'a.md' })).toBe('path=a.md');
+  });
+
+  it('returns undefined when no recognised fields', () => {
+    expect(summariseInput({ unrelated: true })).toBeUndefined();
+    expect(summariseInput(undefined)).toBeUndefined();
+    expect(summariseInput('nope')).toBeUndefined();
+  });
+
+  it('caps at three fields', () => {
+    const s = summariseInput({ query: 'q', focus: 'f', analysis: 'a', entity: 'e' });
+    expect(s!.split(' ').length).toBeLessThanOrEqual(3);
+  });
+});
+
+describe('emitObservation', () => {
+  const realFetch = globalThis.fetch;
+  beforeEach(() => {
+    delete process.env.FLYWHEEL_OBSERVER_URL;
+    delete process.env.FLYWHEEL_OBSERVER_TOKEN;
+  });
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    delete process.env.FLYWHEEL_OBSERVER_URL;
+    delete process.env.FLYWHEEL_OBSERVER_TOKEN;
+    vi.restoreAllMocks();
+  });
+
+  it('no-ops when FLYWHEEL_OBSERVER_URL is unset', () => {
+    const spy = vi.fn();
+    globalThis.fetch = spy as any;
+    emitObservation({ tool: 'search' });
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('POSTs to the observer url when set', () => {
+    process.env.FLYWHEEL_OBSERVER_URL = 'http://localhost:3124/mcp-observed';
+    const spy = vi.fn().mockResolvedValue({ ok: true });
+    globalThis.fetch = spy as any;
+    emitObservation({ tool: 'search', input_summary: 'q=x', result_chars: 10 });
+    expect(spy).toHaveBeenCalledTimes(1);
+    const [url, init] = spy.mock.calls[0];
+    expect(url).toBe('http://localhost:3124/mcp-observed');
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(init.body).tool).toBe('search');
+  });
+
+  it('attaches a bearer token when FLYWHEEL_OBSERVER_TOKEN is set', () => {
+    process.env.FLYWHEEL_OBSERVER_URL = 'http://localhost:3124/mcp-observed';
+    process.env.FLYWHEEL_OBSERVER_TOKEN = 'secret';
+    const spy = vi.fn().mockResolvedValue({ ok: true });
+    globalThis.fetch = spy as any;
+    emitObservation({ tool: 'read' });
+    expect(spy.mock.calls[0][1].headers['authorization']).toBe('Bearer secret');
+  });
+
+  it('swallows a rejected fetch (never throws)', async () => {
+    process.env.FLYWHEEL_OBSERVER_URL = 'http://localhost:3124/mcp-observed';
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error('connrefused')) as any;
+    expect(() => emitObservation({ tool: 'search' })).not.toThrow();
+    // let the rejected microtask settle — must not become an unhandled rejection
+    await new Promise((r) => setTimeout(r, 5));
+  });
+
+  it('swallows a synchronous fetch throw', () => {
+    process.env.FLYWHEEL_OBSERVER_URL = 'http://localhost:3124/mcp-observed';
+    globalThis.fetch = vi.fn(() => {
+      throw new Error('boom');
+    }) as any;
+    expect(() => emitObservation({ tool: 'search' })).not.toThrow();
+  });
+});

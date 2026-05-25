@@ -33,6 +33,10 @@ async function collectTsFiles(dir: string): Promise<string[]> {
 // Known allowed network call sites (file path substring => reason)
 const ALLOWED_NETWORK_SITES: Record<string, string> = {
   'core/read/embeddings.ts': '@huggingface/transformers model download (one-time, cached locally)',
+  'core/shared/observer.ts':
+    'Retrieval observation side-channel. OPT-IN ONLY — no-op unless FLYWHEEL_OBSERVER_URL ' +
+    'is set, so default configuration makes zero outbound calls. Fire-and-forget, ' +
+    'non-awaited, 1.5s timeout, swallowed; sends a compact summary (no full payloads).',
 };
 
 // Network call patterns to detect

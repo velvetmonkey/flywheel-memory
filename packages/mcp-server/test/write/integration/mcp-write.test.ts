@@ -200,6 +200,61 @@ describe('MCP Write Integration', () => {
       expect(shard).toContain('Operational note for [[Project Alpha]]');
     });
 
+    it('auto-links sharded content and omits the skipWikilinks frontmatter stamp when the caller opts in', async () => {
+      await createTestNote(ctx.vaultPath, 'projects/Widget Engine.md', [
+        '# Widget Engine',
+        '',
+        'Project note.',
+      ].join('\n'));
+      createEntityCacheInStateDb(ctx.stateDb, ctx.vaultPath, {
+        projects: ['Widget Engine'],
+      });
+      await initializeEntityIndex(ctx.vaultPath);
+
+      await createTestNote(ctx.vaultPath, 'daily-notes/2099-03-10.md', [
+        '---',
+        'type: daily',
+        "date: '2099-03-10'",
+        '---',
+        '# 2099-03-10',
+        '',
+        '## Log',
+        '',
+      ].join('\n'));
+
+      const result = await client.callTool({
+        name: 'edit_section',
+        arguments: {
+          action: 'add',
+          path: 'daily-notes/2099-03-10.md',
+          section: 'Log',
+          content: '**11:00** 🐵 shipped the Widget Engine rollout',
+          format: 'bullet',
+          // mega-monkey's new audit-log behavior: link even inside shards.
+          skipWikilinks: false,
+          suggestOutgoingLinks: true,
+          shard: {
+            enabled: true,
+            pattern: 'daily-notes/logs/{date}-audit-{index}.md',
+            maxBytes: 262144,
+            maxEntries: 250,
+            mode: 'audit',
+            lightIndex: true,
+          },
+        },
+      });
+
+      expect(result.isError).toBeFalsy();
+      const data = parseResult(result) as Record<string, unknown>;
+      expect(data.shardPath).toBe('daily-notes/logs/2099-03-10-audit-001.md');
+
+      const shard = readFileSync(path.join(ctx.vaultPath, 'daily-notes/logs/2099-03-10-audit-001.md'), 'utf-8');
+      // handleShardedAdd now honors the caller's flags → plain "Widget Engine" gets wrapped.
+      expect(shard).toContain('[[Widget Engine]]');
+      // ensureShardNote no longer stamps skipWikilinks, so enrich keeps processing the shard.
+      expect(shard).not.toMatch(/^skipWikilinks:\s*true\s*$/m);
+    });
+
     it('rolls sharded audit appends when the entry count limit is reached', async () => {
       await createTestNote(ctx.vaultPath, 'daily-notes/2099-02-04.md', [
         '---',

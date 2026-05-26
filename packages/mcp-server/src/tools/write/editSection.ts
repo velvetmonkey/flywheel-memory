@@ -135,7 +135,8 @@ async function ensureShardNote(vaultPath: string, canonicalNotePath: string, tar
       tags: ['#daily', '#audit-log'],
       shard: options.mode || 'audit',
       shard_index: target.index,
-      skipWikilinks: true,
+      // No skipWikilinks stamp: shards must stay eligible for on-write linking and the
+      // background enrich pass (enrich.ts skips any note whose frontmatter sets it true).
       flywheel_indexing: options.lightIndex === false ? undefined : 'light',
       description: `Operational audit log shard ${indexLabel} for ${date}`,
     }
@@ -556,8 +557,11 @@ async function handleShardedAdd(
       ...params,
       path: target.notePath,
       create_if_missing: false,
-      skipWikilinks: true,
-      suggestOutgoingLinks: false,
+      // Honor the caller's linking intent for shard content instead of forcing it off.
+      // mega-monkey passes skipWikilinks:false + suggestOutgoingLinks:true to keep the
+      // audit-log graph-building even while sharding stays enabled.
+      skipWikilinks: params.skipWikilinks ?? false,
+      suggestOutgoingLinks: params.suggestOutgoingLinks ?? false,
       shard: undefined,
     },
     getVaultPath,

@@ -6,11 +6,10 @@
 
 ## Git Workflow
 
-**No direct pushes to main.** Branch protection is enforced — all changes require a PR.
+**Direct pushes to main are allowed.** (The repo is private on a free plan, so GitHub
+branch protection isn't available; PRs are optional, not required.)
 
-- Create a feature branch for code changes
-- Push the branch and open a PR via `gh pr create`
-- Docs-only changes still need a PR but can be fast-tracked
+- Commit and push to `main` directly, or open a PR via `gh pr create` if you want review
 - Never run `npm run build` while a benchmark is running
 
 ---

@@ -35,7 +35,7 @@ import {
   extractSearchMethod,
   getActivationSignals,
 } from './tool-registry/activation.js';
-import { emitObservation, summariseInput, summariseResult } from './core/shared/observer.js';
+import { emitObservation, summariseInput, summariseResult, observedHits } from './core/shared/observer.js';
 import { shouldSuppressMemoryTool } from './tool-registry/clientSuppressions.js';
 import { runCrossVaultSearch } from './tool-registry/crossVault.js';
 import { shouldEnableTieredTool, getDirectCallPromotion } from './tool-registry/tiering.js';
@@ -406,6 +406,8 @@ export function applyToolGating(
               is_error: !success,
               duration_ms: Date.now() - start,
               session_id: obsSession,
+              // Scored hits a search-family handler stashed pre-strip (by result identity).
+              results: success && result ? observedHits.get(result) : undefined,
             });
           }
         } catch {

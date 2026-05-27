@@ -38,6 +38,18 @@ const INPUT_FIELDS = [
   'action',
 ] as const;
 
+/** One scored hit from a search-family tool, captured BEFORE the llm strip. */
+export interface ScoredHit {
+  path: string;
+  title?: string;
+  score: number | null;        // _combined_score ?? rrf_score ?? null (null = unscored branch)
+  method?: string;             // hybrid | fts5 | entity | ...
+  backlink_count?: number;
+  in_fts5?: boolean;
+  in_semantic?: boolean;
+  in_entity?: boolean;
+}
+
 export interface Observation {
   tool: string;
   input_summary?: string;
@@ -46,6 +58,55 @@ export interface Observation {
   is_error?: boolean;
   duration_ms?: number;
   session_id?: string;
+  results?: ScoredHit[];
+}
+
+const MAX_OBSERVED_HITS = 8;
+const MAX_OBSERVED_BYTES = 8_000; // keep the side-channel POST well under the engine's 16KB cap
+
+/**
+ * In-process bridge from a tool's returned result object to the scored hits a
+ * search-family handler captured BEFORE applying the llm-consumer strip (which
+ * deletes rrf_score/_combined_score). The observer wrapper reads this by result
+ * identity. A WeakMap so entries vanish when the result is GC'd; it is never
+ * serialized and never reaches the MCP client.
+ */
+export const observedHits = new WeakMap<object, ScoredHit[]>();
+
+/**
+ * Map ranked result rows → a capped, size-guarded ScoredHit[]. Returns undefined
+ * when no observer is configured (preserving the standalone no-op invariant) or
+ * on any fault. Call this with the rows still in PRE-strip / relevance order.
+ */
+export function extractObservedHits(
+  rows: Array<Record<string, unknown>>,
+  method: string,
+): ScoredHit[] | undefined {
+  if (!process.env.FLYWHEEL_OBSERVER_URL || !Array.isArray(rows)) return undefined;
+  try {
+    let hits: ScoredHit[] = rows.slice(0, MAX_OBSERVED_HITS).map((r) => {
+      const combined = typeof r._combined_score === 'number' ? (r._combined_score as number) : undefined;
+      const rrf = typeof r.rrf_score === 'number' ? (r.rrf_score as number) : undefined;
+      const score = combined ?? rrf ?? null;
+      return {
+        path: String(r.path ?? '').slice(0, 200),
+        title: r.title ? String(r.title).slice(0, 200) : undefined,
+        score: score == null ? null : Math.round(score * 1000) / 1000,
+        method,
+        backlink_count: typeof r.backlink_count === 'number' ? (r.backlink_count as number) : undefined,
+        in_fts5: r.in_fts5 ? true : undefined,
+        in_semantic: r.in_semantic ? true : undefined,
+        in_entity: r.in_entity ? true : undefined,
+      };
+    });
+    // Size guard — drop trailing hits rather than risk a 413 on the whole POST.
+    while (hits.length > 1 && Buffer.byteLength(JSON.stringify(hits)) > MAX_OBSERVED_BYTES) {
+      hits = hits.slice(0, -1);
+    }
+    return hits;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Join the text blocks of an MCP result into one string (capped scan). */

@@ -8,6 +8,7 @@ import type { VaultIndex, VaultNote } from '../../core/read/types.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { serverLog } from '../../core/shared/serverLog.js';
+import { extractObservedHits, observedHits } from '../../core/shared/observer.js';
 import {
   searchFTS5,
   buildFTS5Index,
@@ -717,6 +718,9 @@ export function registerQueryTools(
             applyGraphReranking(results, stateDb);
             applyEntityBridging(results, stateDb);
             await enhanceSnippets(results, query, vaultPath);
+            // Capture scored hits in relevance order BEFORE the llm strip below
+            // deletes rrf_score/_combined_score and re-orders for the sandwich.
+            const observed = extractObservedHits(results, 'hybrid');
             if (consumer === 'llm') {
               applySandwichOrdering(results);
               await expandToSections(results, index, vaultPath, expandN);
@@ -724,7 +728,7 @@ export function registerQueryTools(
             }
 
             const entitySection = await entitySectionPromise;
-            return { content: [{ type: 'text' as const, text: JSON.stringify({
+            const out = { content: [{ type: 'text' as const, text: JSON.stringify({
               method: 'hybrid',
               query,
               total_results: filtered.length,
@@ -732,6 +736,8 @@ export function registerQueryTools(
               ...(entitySection.length > 0 ? { entities: entitySection } : {}),
               ...(memoryResults.length > 0 ? { memories: memoryResults } : {}),
             }, null, 2) }] };
+            if (observed) observedHits.set(out, observed);
+            return out;
           } catch (err) {
             // Semantic failed, fall back to FTS5 + entity only
             console.error('[Semantic] Hybrid search failed, falling back to FTS5:', err instanceof Error ? err.message : err);
@@ -774,6 +780,7 @@ export function registerQueryTools(
           applyGraphReranking(results, stateDb);
           applyEntityBridging(results, stateDb);
           await enhanceSnippets(results, query, vaultPath);
+          const observed = extractObservedHits(results, 'fts5');
           if (consumer === 'llm') {
             applySandwichOrdering(results);
             await expandToSections(results, index, vaultPath, expandN);
@@ -781,7 +788,7 @@ export function registerQueryTools(
           }
 
           const entitySection = await entitySectionPromise;
-          return { content: [{ type: 'text' as const, text: JSON.stringify({
+          const out = { content: [{ type: 'text' as const, text: JSON.stringify({
             method: 'fts5',
             query,
             total_results: filtered.length,
@@ -789,6 +796,8 @@ export function registerQueryTools(
             ...(entitySection.length > 0 ? { entities: entitySection } : {}),
             ...(memoryResults.length > 0 ? { memories: memoryResults } : {}),
           }, null, 2) }] };
+          if (observed) observedHits.set(out, observed);
+          return out;
         }
 
         const stateDbFts = getStateDb();
@@ -807,6 +816,7 @@ export function registerQueryTools(
         applyGraphReranking(results, stateDbFts);
         applyEntityBridging(results, stateDbFts);
         await enhanceSnippets(results, query, vaultPath);
+        const observed = extractObservedHits(results, 'fts5');
         if (consumer === 'llm') {
           applySandwichOrdering(results);
           await expandToSections(results, index, vaultPath, expandN);
@@ -814,7 +824,7 @@ export function registerQueryTools(
         }
 
         const entitySection = await entitySectionPromise;
-        return { content: [{ type: 'text' as const, text: JSON.stringify({
+        const out = { content: [{ type: 'text' as const, text: JSON.stringify({
           method: 'fts5',
           query,
           total_results: results.length,
@@ -822,6 +832,8 @@ export function registerQueryTools(
           ...(entitySection.length > 0 ? { entities: entitySection } : {}),
           ...(memoryResults.length > 0 ? { memories: memoryResults } : {}),
         }, null, 2) }] };
+        if (observed) observedHits.set(out, observed);
+        return out;
       }
 
       // No query and no date filters — return error

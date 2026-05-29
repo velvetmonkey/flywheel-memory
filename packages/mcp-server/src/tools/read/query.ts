@@ -8,7 +8,11 @@ import type { VaultIndex, VaultNote } from '../../core/read/types.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { serverLog } from '../../core/shared/serverLog.js';
-import { extractObservedHits, observedHits } from '../../core/shared/observer.js';
+import { extractObservedHits, observedHits, observedNearMisses } from '../../core/shared/observer.js';
+
+// How many below-cutoff candidates to surface as "considered but discarded".
+// The observer caps internally to MAX_OBSERVED_HITS (8) + a byte guard.
+const NEAR_MISS_K = 8;
 import {
   searchFTS5,
   buildFTS5Index,
@@ -721,6 +725,13 @@ export function registerQueryTools(
             // Capture scored hits in relevance order BEFORE the llm strip below
             // deletes rrf_score/_combined_score and re-orders for the sandwich.
             const observed = extractObservedHits(results, 'hybrid');
+            // "Considered but discarded" — the next slice of the ranked set, just
+            // below the returned cutoff. `filtered` is the full RRF-sorted list;
+            // these rows already carry rrf_score + in_* flags, so extract reads
+            // them directly. Observer-only; never enters `results` (the LLM payload).
+            const nearMiss = filtered.length > limit
+              ? extractObservedHits(filtered.slice(limit, limit + NEAR_MISS_K), 'hybrid-near-miss')
+              : undefined;
             if (consumer === 'llm') {
               applySandwichOrdering(results);
               await expandToSections(results, index, vaultPath, expandN);
@@ -737,6 +748,7 @@ export function registerQueryTools(
               ...(memoryResults.length > 0 ? { memories: memoryResults } : {}),
             }, null, 2) }] };
             if (observed) observedHits.set(out, observed);
+            if (nearMiss && nearMiss.length) observedNearMisses.set(out, nearMiss);
             return out;
           } catch (err) {
             // Semantic failed, fall back to FTS5 + entity only

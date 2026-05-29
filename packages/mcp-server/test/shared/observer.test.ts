@@ -4,6 +4,7 @@ import {
   summariseResult,
   emitObservation,
   extractObservedHits,
+  extractObservedDetails,
 } from '../../src/core/shared/observer.js';
 
 /** Build an MCP-style content array from one JSON-or-text block. */
@@ -207,5 +208,37 @@ describe('extractObservedHits (shared by pulled results + near-miss)', () => {
     const rows = Array.from({ length: 20 }, (_, i) => ({ path: `${i}.md`, rrf_score: 1 - i / 20 }));
     const hits = extractObservedHits(rows, 'hybrid-near-miss');
     expect(hits!.length).toBe(8);
+  });
+});
+
+describe('extractObservedDetails (non-search tools)', () => {
+  beforeEach(() => { process.env.FLYWHEEL_OBSERVER_URL = 'http://localhost:3124/mcp-observed'; });
+  afterEach(() => { delete process.env.FLYWHEEL_OBSERVER_URL; });
+
+  const text = (o: unknown) => [{ type: 'text', text: JSON.stringify(o) }];
+
+  it('read action=structure: heading OBJECTS become their .text, not "[object Object]"', () => {
+    // Regression: structure returns sections[].heading = { text, level }.
+    const hits = extractObservedDetails('read', text({
+      sections: [
+        { heading: { text: "Open", level: 3 } },
+        { heading: { text: "Emerging", level: 3 } },
+      ],
+    }));
+    expect(hits).toBeDefined();
+    expect(hits!.map((h) => h.title)).toEqual(["Open", "Emerging"]);
+    expect(hits!.every((h) => h.title !== "[object Object]")).toBe(true);
+  });
+
+  it('read action=sections: string headings + paths still work', () => {
+    const hits = extractObservedDetails('read', text({
+      sections: [{ path: "a.md", heading: "Background" }],
+    }));
+    expect(hits![0]).toMatchObject({ path: "a.md", title: "Background" });
+  });
+
+  it('no-ops when observer is unset', () => {
+    delete process.env.FLYWHEEL_OBSERVER_URL;
+    expect(extractObservedDetails('read', text({ sections: [{ heading: { text: "x" } }] }))).toBeUndefined();
   });
 });

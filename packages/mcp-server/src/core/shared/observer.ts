@@ -242,14 +242,23 @@ export function extractObservedDetails(
   try {
     switch (tool) {
       case 'read': {
-        // action=sections → array of {path, heading, level, line}
+        // action=sections → [{path, heading, ...}] (heading is a string);
+        // action=structure → [{heading: {text, level}, ...}] (heading is an
+        // OBJECT). Coerce both so we never stringify an object into
+        // "[object Object]".
         const sects = parsed.sections;
         if (Array.isArray(sects) && sects.length) {
-          return sects.slice(0, MAX_OBSERVED_DETAILS).map((s: any) => ({
-            path: String(s.path ?? '').slice(0, 200),
-            title: s.heading ? String(s.heading).slice(0, 200) : undefined,
-            score: null,
-          }));
+          return sects.slice(0, MAX_OBSERVED_DETAILS).map((s: any) => {
+            const h = s.heading;
+            const headingStr = typeof h === 'string'
+              ? h
+              : (h && typeof h === 'object' ? String(h.text ?? h.heading ?? h.title ?? '') : '');
+            return {
+              path: String(s.path ?? '').slice(0, 200),
+              title: headingStr ? headingStr.slice(0, 200) : undefined,
+              score: null,
+            };
+          });
         }
         // action=structure or action=read → single note metadata
         const p = parsed.path ?? parsed.note_path;

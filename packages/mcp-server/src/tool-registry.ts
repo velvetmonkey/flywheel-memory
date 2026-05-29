@@ -35,7 +35,7 @@ import {
   extractSearchMethod,
   getActivationSignals,
 } from './tool-registry/activation.js';
-import { emitObservation, summariseInput, summariseResult, observedHits, observedNearMisses } from './core/shared/observer.js';
+import { emitObservation, summariseInput, summariseResult, observedHits, observedNearMisses, extractObservedDetails } from './core/shared/observer.js';
 import { shouldSuppressMemoryTool } from './tool-registry/clientSuppressions.js';
 import { runCrossVaultSearch } from './tool-registry/crossVault.js';
 import { shouldEnableTieredTool, getDirectCallPromotion } from './tool-registry/tiering.js';
@@ -407,7 +407,10 @@ export function applyToolGating(
               duration_ms: Date.now() - start,
               session_id: obsSession,
               // Scored hits a search-family handler stashed pre-strip (by result identity).
-              results: success && result ? observedHits.get(result) : undefined,
+              // For non-search tools, fall through to detail extraction from result content.
+              results: success && result
+                ? (observedHits.get(result) ?? extractObservedDetails(toolName, result?.content))
+                : undefined,
               // "Considered but discarded" candidates stashed alongside (same identity key).
               near_miss: success && result ? observedNearMisses.get(result) : undefined,
             });

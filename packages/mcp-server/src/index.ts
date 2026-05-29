@@ -146,6 +146,7 @@ import {
   type VaultContext,
 } from './vault-registry.js';
 import { runInVaultScope, setFallbackScope, getActiveScopeOrNull, type VaultScope } from './vault-scope.js';
+import { runWithCaller } from './caller-scope.js';
 
 // Config (tool categories, presets, instructions)
 import {
@@ -921,12 +922,18 @@ async function main() {
       const acquireMs = performance.now() - t0;
 
       const httpTransport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+      // Caller attribution: a consumer (the Mega Monkey engine) tags each
+      // request with its conversation scope so the observer side-channel can
+      // map observation → caller. Bound to the async context for the whole
+      // request via runWithCaller, read by the observer wrapper at emit time.
+      const callerHeader = req.headers['x-flywheel-caller'];
+      const callerId = Array.isArray(callerHeader) ? callerHeader[0] : callerHeader;
       let cleanExit = false;
       try {
         await httpServer.connect(httpTransport);
         const connectMs = performance.now() - t0;
         httpRequestCount++;
-        await httpTransport.handleRequest(req, res, req.body);
+        await runWithCaller(callerId, () => httpTransport.handleRequest(req, res, req.body));
         cleanExit = true;
         const totalMs = performance.now() - t0;
         if (totalMs > 25 || acquireMs > 5 || (connectMs - acquireMs) > 5) {

@@ -58,6 +58,14 @@ export interface Observation {
   is_error?: boolean;
   duration_ms?: number;
   session_id?: string;
+  /**
+   * Stable caller tag from the `X-Flywheel-Caller` request header (e.g. the
+   * consumer's conversation scope key `tg:12345`). Lets a consumer that runs
+   * one shared flywheel instance for many callers attribute each observation
+   * deterministically — `session_id` is process-wide and cannot. Absent on the
+   * stdio path / when no header was sent.
+   */
+  caller_id?: string;
   results?: ScoredHit[];
   /**
    * "Considered but discarded" candidates: items the ranker scored just BELOW

@@ -30,6 +30,7 @@ import { getSessionId } from '@velvetmonkey/vault-core';
 import { ALL_CATEGORIES, TOOL_CATEGORY, type ToolCategory, type ToolTier, type ToolTierOverride } from './config.js';
 import { VaultRegistry, type VaultContext } from './vault-registry.js';
 import { runInVaultScope, getActiveScopeOrNull } from './vault-scope.js';
+import { getCurrentCaller } from './caller-scope.js';
 import {
   extractQueryContext,
   extractSearchMethod,
@@ -406,6 +407,10 @@ export function applyToolGating(
               is_error: !success,
               duration_ms: Date.now() - start,
               session_id: obsSession,
+              // Per-request caller tag (X-Flywheel-Caller). Read synchronously
+              // here, still inside the request's async context, so a consumer
+              // can map this observation to the originating caller's turn.
+              caller_id: getCurrentCaller(),
               // Scored hits a search-family handler stashed pre-strip (by result identity).
               // For non-search tools, fall through to detail extraction from result content.
               results: success && result

@@ -45,6 +45,7 @@ export function registerEntityTool(
       query: z.string().optional().describe('[list] Filter entities by name substring'),
       category: z.string().optional().describe('[list|suggest_aliases] Filter to a specific category'),
       limit: z.number().optional().describe('[list|suggest_aliases|suggest_merges] Maximum results to return'),
+      include: z.array(z.enum(['backlink_count', 'recency'])).optional().describe('[list] Extra per-entity aggregates to attach: backlink_count (distinct notes linking to the entity name or any of its aliases) and recency ({ lastMentionedAt, mentionCount } or null). Omitted → lean response. aliases + isSuppressed are always present regardless.'),
 
       entity: z.string().optional().describe('[alias] Entity path to add alias to; [suggest_aliases] entity to get suggestions for'),
       alias: z.string().optional().describe('[alias] The alias to add'),
@@ -61,7 +62,7 @@ export function registerEntityTool(
       prospect: z.string().optional().describe('[dismiss_prospect] Prospect term or display name to reject'),
       note_path: z.string().optional().describe('[dismiss_prospect] Optional note path that motivated the dismissal'),
     },
-    async ({ action, query, category, limit, entity, alias, primary, secondary, source_path, target_path, source_name, target_name, reason, dry_run, prospect, note_path }) => {
+    async ({ action, query, category, limit, include, entity, alias, primary, secondary, source_path, target_path, source_name, target_name, reason, dry_run, prospect, note_path }) => {
       const stateDb = getStateDb();
 
       // ---- action: list ----
@@ -103,6 +104,56 @@ export function registerEntityTool(
               ent.inferredConfidence = inferred.confidence;
             }
           }
+        }
+
+        // Optional aggregates (each costs one extra query; gated by `include`).
+        // aliases + isSuppressed are already attached above unconditionally; these
+        // two are opt-in because they scan note_links / recency.
+        const includeSet = new Set<string>(include ?? []);
+
+        if (includeSet.has('backlink_count')) {
+          // distinct notes linking to each wikilink target string (one GROUP BY,
+          // not N+1). target is the link text — match it against entity name AND
+          // each alias, lowercased. A note that links both an entity's name and
+          // one of its aliases is double-counted; acceptable for a V1 count.
+          const rows = stateDb.db.prepare(
+            'SELECT lower(target) AS t, COUNT(DISTINCT note_path) AS n FROM note_links GROUP BY lower(target)'
+          ).all() as Array<{ t: string; n: number }>;
+          const byTarget = new Map<string, number>();
+          for (const r of rows) byTarget.set(r.t, r.n);
+          for (const cat of allCategories) {
+            const arr = (entityIndex as any)[cat];
+            if (!Array.isArray(arr)) continue;
+            for (const ent of arr) {
+              let count = byTarget.get(String(ent.name).toLowerCase()) ?? 0;
+              if (Array.isArray(ent.aliases)) {
+                for (const a of ent.aliases) count += byTarget.get(String(a).toLowerCase()) ?? 0;
+              }
+              ent.backlinkCount = count;
+            }
+          }
+        }
+
+        if (includeSet.has('recency')) {
+          const rows = stateDb.db.prepare(
+            'SELECT entity_name_lower AS k, last_mentioned_at AS at, mention_count AS c FROM recency'
+          ).all() as Array<{ k: string; at: number; c: number }>;
+          const byName = new Map<string, { lastMentionedAt: number; mentionCount: number }>();
+          for (const r of rows) byName.set(r.k, { lastMentionedAt: r.at, mentionCount: r.c });
+          for (const cat of allCategories) {
+            const arr = (entityIndex as any)[cat];
+            if (!Array.isArray(arr)) continue;
+            for (const ent of arr) {
+              ent.recency = byName.get(String(ent.name).toLowerCase()) ?? null;
+            }
+          }
+        }
+
+        if (includeSet.size > 0) {
+          (entityIndex as any)._metadata = {
+            ...((entityIndex as any)._metadata ?? {}),
+            include: Array.from(includeSet),
+          };
         }
 
         // Filter by category

@@ -59,6 +59,13 @@ export interface Observation {
   duration_ms?: number;
   session_id?: string;
   results?: ScoredHit[];
+  /**
+   * "Considered but discarded" candidates: items the ranker scored just BELOW
+   * the returned cutoff (ranks limit+1..limit+K). Same ScoredHit shape as
+   * `results`. Lets the cockpit show pulled-vs-near-miss — the retrieval
+   * boundary — without changing what the LLM receives. Hybrid search only.
+   */
+  near_miss?: ScoredHit[];
 }
 
 const MAX_OBSERVED_HITS = 8;
@@ -72,6 +79,13 @@ const MAX_OBSERVED_BYTES = 8_000; // keep the side-channel POST well under the e
  * serialized and never reaches the MCP client.
  */
 export const observedHits = new WeakMap<object, ScoredHit[]>();
+
+/**
+ * Parallel bridge for the "considered but discarded" near-miss candidates
+ * (ranks just below the returned cutoff). Same identity-keyed WeakMap pattern
+ * as observedHits; read by the observer wrapper, never serialized to the client.
+ */
+export const observedNearMisses = new WeakMap<object, ScoredHit[]>();
 
 /**
  * Map ranked result rows → a capped, size-guarded ScoredHit[]. Returns undefined

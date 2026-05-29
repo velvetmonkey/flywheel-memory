@@ -3,6 +3,7 @@ import {
   summariseInput,
   summariseResult,
   emitObservation,
+  extractObservedHits,
 } from '../../src/core/shared/observer.js';
 
 /** Build an MCP-style content array from one JSON-or-text block. */
@@ -161,5 +162,50 @@ describe('emitObservation', () => {
       throw new Error('boom');
     }) as any;
     expect(() => emitObservation({ tool: 'search' })).not.toThrow();
+  });
+
+  it('serializes near_miss candidates in the POST body', () => {
+    process.env.FLYWHEEL_OBSERVER_URL = 'http://localhost:3124/mcp-observed';
+    const spy = vi.fn().mockResolvedValue({ ok: true });
+    globalThis.fetch = spy as any;
+    emitObservation({
+      tool: 'search',
+      results: [{ path: 'a.md', score: 0.9, method: 'hybrid' }],
+      near_miss: [{ path: 'b.md', score: 0.4, method: 'hybrid-near-miss' }],
+    });
+    const body = JSON.parse(spy.mock.calls[0][1].body);
+    expect(body.results).toHaveLength(1);
+    expect(body.near_miss).toHaveLength(1);
+    expect(body.near_miss[0].path).toBe('b.md');
+    expect(body.near_miss[0].method).toBe('hybrid-near-miss');
+  });
+});
+
+describe('extractObservedHits (shared by pulled results + near-miss)', () => {
+  afterEach(() => { delete process.env.FLYWHEEL_OBSERVER_URL; });
+
+  it('returns undefined when the observer is not configured', () => {
+    delete process.env.FLYWHEEL_OBSERVER_URL;
+    expect(extractObservedHits([{ path: 'a.md', rrf_score: 0.5 }], 'hybrid')).toBeUndefined();
+  });
+
+  it('maps ranked rows → ScoredHit with score + method + index flags', () => {
+    process.env.FLYWHEEL_OBSERVER_URL = 'http://localhost:3124/mcp-observed';
+    const hits = extractObservedHits(
+      [{ path: 'a.md', title: 'A', rrf_score: 0.5, in_fts5: true, in_semantic: true, backlink_count: 3 }],
+      'hybrid-near-miss',
+    );
+    expect(hits).toBeDefined();
+    expect(hits![0]).toMatchObject({
+      path: 'a.md', title: 'A', score: 0.5, method: 'hybrid-near-miss',
+      backlink_count: 3, in_fts5: true, in_semantic: true,
+    });
+  });
+
+  it('caps at 8 hits (so a near-miss slice can never bloat the POST)', () => {
+    process.env.FLYWHEEL_OBSERVER_URL = 'http://localhost:3124/mcp-observed';
+    const rows = Array.from({ length: 20 }, (_, i) => ({ path: `${i}.md`, rrf_score: 1 - i / 20 }));
+    const hits = extractObservedHits(rows, 'hybrid-near-miss');
+    expect(hits!.length).toBe(8);
   });
 });

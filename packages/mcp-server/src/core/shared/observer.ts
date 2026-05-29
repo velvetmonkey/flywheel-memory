@@ -217,6 +217,160 @@ export function summariseInput(params: unknown): string | undefined {
   return truncate(parts.join(' '), MAX_INPUT_SUMMARY);
 }
 
+const MAX_OBSERVED_DETAILS = 8;
+
+/**
+ * For non-search tools, extract meaningful detail line items from the result
+ * content so the cockpit Retrieval panel can expand them the same way it
+ * expands search hits. Uses the same ScoredHit shape; no method badges or
+ * scores are set unless the tool naturally produces them.
+ *
+ * Called as a fallback in tool-registry when observedHits is empty — only
+ * when FLYWHEEL_OBSERVER_URL is set (same standalone no-op invariant).
+ */
+export function extractObservedDetails(
+  tool: string,
+  content: unknown,
+): ScoredHit[] | undefined {
+  if (!process.env.FLYWHEEL_OBSERVER_URL) return undefined;
+  const text = joinContent(content);
+  if (!text || text.length > 2_000_000) return undefined;
+  let parsed: any;
+  try { parsed = JSON.parse(text); } catch { return undefined; }
+  if (!parsed || typeof parsed !== 'object') return undefined;
+
+  try {
+    switch (tool) {
+      case 'read': {
+        // action=sections → array of {path, heading, level, line}
+        const sects = parsed.sections;
+        if (Array.isArray(sects) && sects.length) {
+          return sects.slice(0, MAX_OBSERVED_DETAILS).map((s: any) => ({
+            path: String(s.path ?? '').slice(0, 200),
+            title: s.heading ? String(s.heading).slice(0, 200) : undefined,
+            score: null,
+          }));
+        }
+        // action=structure or action=read → single note metadata
+        const p = parsed.path ?? parsed.note_path;
+        const t = parsed.title;
+        const bc = typeof parsed.backlink_count === 'number' ? (parsed.backlink_count as number) : undefined;
+        if (p || t) {
+          return [{
+            path: String(p ?? t ?? '').slice(0, 200),
+            title: t ? String(t).slice(0, 200) : undefined,
+            score: null,
+            backlink_count: bc,
+          }];
+        }
+        break;
+      }
+      case 'memory': {
+        // action=search → results[]; action=list → memories[]
+        const arr = parsed.results ?? parsed.memories;
+        if (Array.isArray(arr) && arr.length) {
+          return arr.slice(0, MAX_OBSERVED_DETAILS).map((m: any) => ({
+            path: String(m.key ?? m.id ?? '').slice(0, 200),
+            title: m.value ? truncate(String(m.value), 120) : undefined,
+            score: typeof m.confidence === 'number' ? Math.round((m.confidence as number) * 1000) / 1000 : null,
+          }));
+        }
+        // action=store/retrieve/read → single item
+        const k = parsed.key;
+        const v = parsed.value;
+        if (k) {
+          return [{
+            path: String(k).slice(0, 200),
+            title: v ? truncate(String(v), 120) : undefined,
+            score: typeof parsed.confidence === 'number' ? Math.round((parsed.confidence as number) * 1000) / 1000 : null,
+          }];
+        }
+        break;
+      }
+      case 'graph': {
+        // get_backlinks → backlinks[] of {source, context}
+        const bls = parsed.backlinks;
+        if (Array.isArray(bls) && bls.length) {
+          return bls.slice(0, MAX_OBSERVED_DETAILS).map((b: any) => ({
+            path: String(b.source ?? '').slice(0, 200),
+            title: b.context ? truncate(String(b.context), 100) : undefined,
+            score: null,
+          }));
+        }
+        // get_forward_links → forward_links[] of {target, alias, resolved_path}
+        const fls = parsed.forward_links;
+        if (Array.isArray(fls) && fls.length) {
+          return fls.slice(0, MAX_OBSERVED_DETAILS).map((f: any) => ({
+            path: String(f.resolved_path ?? f.target ?? '').slice(0, 200),
+            title: (f.alias ?? f.target) ? String(f.alias ?? f.target).slice(0, 200) : undefined,
+            score: null,
+          }));
+        }
+        break;
+      }
+      case 'link': {
+        // suggest_wikilinks → suggestions[] of {entity, target, alias}
+        const suggs = parsed.suggestions;
+        if (Array.isArray(suggs) && suggs.length) {
+          return suggs.slice(0, MAX_OBSERVED_DETAILS).map((s: any) => ({
+            path: String(s.target ?? s.entity ?? '').slice(0, 200),
+            title: s.entity ? String(s.entity).slice(0, 200) : undefined,
+            score: null,
+          }));
+        }
+        // validate_links → broken[] of {source, target, suggestion}
+        const broken = parsed.broken ?? parsed.targets;
+        if (Array.isArray(broken) && broken.length) {
+          return broken.slice(0, MAX_OBSERVED_DETAILS).map((b: any) => ({
+            path: String(b.target ?? b.source ?? '').slice(0, 200),
+            title: b.source ? String(b.source).slice(0, 200) : undefined,
+            score: null,
+          }));
+        }
+        break;
+      }
+      case 'insights': {
+        // staleness/context → notes[] of {path, title}
+        const notes = parsed.notes;
+        if (Array.isArray(notes) && notes.length) {
+          return notes.slice(0, MAX_OBSERVED_DETAILS).map((n: any) => ({
+            path: String(n.path ?? '').slice(0, 200),
+            title: n.title ? String(n.title).slice(0, 200) : undefined,
+            score: null,
+          }));
+        }
+        // evolution → current_state.{path, backlink_count}
+        const cs = parsed.current_state;
+        if (cs && (cs.path || cs.name)) {
+          return [{
+            path: String(cs.path ?? '').slice(0, 200),
+            title: cs.name ? String(cs.name).slice(0, 200) : undefined,
+            score: null,
+            backlink_count: typeof cs.backlink_count === 'number' ? (cs.backlink_count as number) : undefined,
+          }];
+        }
+        break;
+      }
+      case 'entity': {
+        const p = parsed.path ?? parsed.note_path;
+        const t = parsed.name ?? parsed.title;
+        if (p || t) {
+          return [{
+            path: String(p ?? '').slice(0, 200),
+            title: t ? String(t).slice(0, 200) : undefined,
+            score: null,
+            backlink_count: typeof parsed.backlink_count === 'number' ? (parsed.backlink_count as number) : undefined,
+          }];
+        }
+        break;
+      }
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
 /**
  * Fire-and-forget POST the observation to FLYWHEEL_OBSERVER_URL.
  * No-op when the env var is unset. Never awaited, never throws.

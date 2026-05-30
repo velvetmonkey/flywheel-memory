@@ -65,6 +65,7 @@ import {
   updateStoredNoteLinks,
   diffNoteLinks,
   recordFeedback,
+  recordImplicitRemoved,
   getStoredNoteTags,
   updateStoredNoteTags,
   isSuppressed,
@@ -1115,7 +1116,9 @@ export class PipelineRunner {
               (e.aliases ?? []).some((a: string) => a.toLowerCase() === target)
           );
           if (entity) {
-            recordFeedback(p.sd, entity.name, 'implicit:removed', diff.file, false);
+            // Cooldown-guarded (24h per entity+note) so single-note link churn
+            // doesn't cast repeated false-positive votes. Keeps confidence 1.0.
+            recordImplicitRemoved(p.sd, entity.name, diff.file, 1.0);
             feedbackResults.push({ entity: entity.name, file: diff.file });
           }
         }

@@ -27,6 +27,7 @@ export const SALVAGE_TABLES = [
   'wikilink_applications',
   'suggestion_events',
   'wikilink_suppressions',
+  'wikilink_suppression_overrides',
   'note_links',
   'note_link_history',
   'memories',
@@ -541,6 +542,13 @@ export function initSchema(db: Database.Database): void {
       db.exec(`CREATE INDEX IF NOT EXISTS idx_memories_owner_scope ON memories(owner_scope)`);
 
       db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(42);
+    }
+
+    // v43: wikilink_suppression_overrides — durable manual-unsuppress overrides.
+    // The table is created by SCHEMA_SQL (CREATE TABLE IF NOT EXISTS) at the top
+    // of this run; nothing to ALTER. Gated on v40Applied like v41/v42.
+    if (currentVersion < 43 && v40Applied) {
+      db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(43);
     }
 
     // Only stamp SCHEMA_VERSION at the end if every migration ran. Dry-run

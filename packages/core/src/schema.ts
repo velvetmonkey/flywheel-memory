@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 42;
+export const SCHEMA_VERSION = 43;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -170,6 +170,16 @@ CREATE TABLE IF NOT EXISTS wikilink_suppressions (
   entity TEXT PRIMARY KEY,
   false_positive_rate REAL NOT NULL,
   updated_at TEXT DEFAULT (datetime('now'))
+);
+
+-- Manual unsuppress overrides (v43): an explicit user decision that
+-- auto-suppression must NOT undo. unsuppressEntity() records the entity here;
+-- updateSuppressionList / isSuppressed / getAllSuppressionPenalties skip
+-- overridden entities so a manual unsuppress survives every recompute.
+-- suppressEntity() clears the override (explicit re-suppress escape hatch).
+CREATE TABLE IF NOT EXISTS wikilink_suppression_overrides (
+  entity TEXT PRIMARY KEY COLLATE NOCASE,
+  created_at TEXT DEFAULT (datetime('now'))
 );
 
 -- Wikilink applications tracking (v5: implicit feedback, v38: source provenance)

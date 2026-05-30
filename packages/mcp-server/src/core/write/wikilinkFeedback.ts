@@ -412,6 +412,8 @@ function getWeightedFolderStats(
  */
 export function updateSuppressionList(stateDb: StateDb, now?: Date): number {
   const weightedStats = getWeightedEntityStats(stateDb, now);
+  // Manually-unsuppressed entities are never re-suppressed by the recompute.
+  const overrides = getSuppressionOverrides(stateDb);
 
   let updated = 0;
 
@@ -435,6 +437,11 @@ export function updateSuppressionList(stateDb: StateDb, now?: Date): number {
     ).run(SUPPRESSION_TTL_DAYS);
 
     for (const stat of weightedStats) {
+      // Manual override wins: ensure no suppression row, never re-suppress.
+      if (overrides.has(stat.entity.toLowerCase())) {
+        remove.run(stat.entity);
+        continue;
+      }
       const effectiveAlpha = getEffectiveAlpha(stat.entity);
       const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp, effectiveAlpha);
       const totalObs = effectiveAlpha + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
@@ -464,11 +471,19 @@ export function updateSuppressionList(stateDb: StateDb, now?: Date): number {
  * Used for explicit negative feedback where user says "this is wrong."
  */
 export function suppressEntity(stateDb: StateDb, entity: string): void {
-  stateDb.db.prepare(`
-    INSERT INTO wikilink_suppressions (entity, false_positive_rate, updated_at)
-    VALUES (?, 1.0, datetime('now'))
-    ON CONFLICT(entity) DO UPDATE SET false_positive_rate = 1.0, updated_at = datetime('now')
-  `).run(entity);
+  // Explicit suppress clears any manual override (the user is deliberately
+  // putting the entity back under auto-suppression control) and force-suppresses.
+  const txn = stateDb.db.transaction(() => {
+    stateDb.db.prepare(
+      'DELETE FROM wikilink_suppression_overrides WHERE entity = ? COLLATE NOCASE'
+    ).run(entity);
+    stateDb.db.prepare(`
+      INSERT INTO wikilink_suppressions (entity, false_positive_rate, updated_at)
+      VALUES (?, 1.0, datetime('now'))
+      ON CONFLICT(entity) DO UPDATE SET false_positive_rate = 1.0, updated_at = datetime('now')
+    `).run(entity);
+  });
+  txn();
 }
 
 /**
@@ -476,10 +491,34 @@ export function suppressEntity(stateDb: StateDb, entity: string): void {
  * Returns true if the entity was actually suppressed (and is now removed).
  */
 export function unsuppressEntity(stateDb: StateDb, entity: string): boolean {
-  const result = stateDb.db.prepare(
-    'DELETE FROM wikilink_suppressions WHERE entity = ? COLLATE NOCASE'
-  ).run(entity);
-  return result.changes > 0;
+  // One transaction: clear the suppression row AND record a durable manual
+  // override. The override is what makes the unsuppress STICK — without it the
+  // next updateSuppressionList() recompute re-derives suppression from the
+  // unchanged feedback history. Honored in updateSuppressionList / isSuppressed
+  // / getAllSuppressionPenalties so the entity is never auto-suppressed again
+  // until an explicit re-suppress (which clears the override).
+  const txn = stateDb.db.transaction(() => {
+    const result = stateDb.db.prepare(
+      'DELETE FROM wikilink_suppressions WHERE entity = ? COLLATE NOCASE'
+    ).run(entity);
+    stateDb.db.prepare(
+      'INSERT OR IGNORE INTO wikilink_suppression_overrides (entity) VALUES (?)'
+    ).run(entity);
+    return result.changes > 0;
+  });
+  return txn();
+}
+
+/**
+ * Entities the user manually unsuppressed — a durable override that
+ * auto-suppression must not undo. Lowercased for case-insensitive checks
+ * (mirrors the suppressedSet pattern in entity.ts).
+ */
+export function getSuppressionOverrides(stateDb: StateDb): Set<string> {
+  const rows = stateDb.db.prepare(
+    'SELECT entity FROM wikilink_suppression_overrides'
+  ).all() as Array<{ entity: string }>;
+  return new Set(rows.map(r => r.entity.toLowerCase()));
 }
 
 /**
@@ -488,6 +527,13 @@ export function unsuppressEntity(stateDb: StateDb, entity: string): boolean {
  * @param now - Optional reference date for testability (decay computation)
  */
 export function isSuppressed(stateDb: StateDb, entity: string, folder?: string, now?: Date): boolean {
+  // Manual override always wins — never report a user-unsuppressed entity as
+  // suppressed (covers the folder-posterior path below too).
+  const overridden = stateDb.db.prepare(
+    'SELECT 1 FROM wikilink_suppression_overrides WHERE entity = ? COLLATE NOCASE'
+  ).get(entity);
+  if (overridden) return false;
+
   // Global suppression check first (with TTL)
   const row = stateDb.db.prepare(
     `SELECT entity, updated_at FROM wikilink_suppressions
@@ -699,8 +745,12 @@ export function getAllFeedbackBoosts(stateDb: StateDb, folder?: string, now?: Da
 export function getAllSuppressionPenalties(stateDb: StateDb, now?: Date): Map<string, number> {
   const penalties = new Map<string, number>();
   const weightedStats = getWeightedEntityStats(stateDb, now);
+  // Manually-unsuppressed entities get NO soft/hard penalty — else suggestion
+  // ranking would still demote them while the cockpit badge says unsuppressed.
+  const overrides = getSuppressionOverrides(stateDb);
 
   for (const stat of weightedStats) {
+    if (overrides.has(stat.entity.toLowerCase())) continue;
     const effectiveAlpha = getEffectiveAlpha(stat.entity);
     const posteriorMean = computePosteriorMean(stat.weightedCorrect, stat.weightedFp, effectiveAlpha);
     const totalObs = effectiveAlpha + stat.weightedCorrect + PRIOR_BETA + stat.weightedFp;
@@ -727,6 +777,7 @@ export function getAllSuppressionPenalties(stateDb: StateDb, now?: Date): Map<st
   ).all(SUPPRESSION_TTL_DAYS) as Array<{ entity: string; updated_at: string }>;
 
   for (const row of rows) {
+    if (overrides.has(row.entity.toLowerCase())) continue;
     if (!penalties.has(row.entity)) {
       penalties.set(row.entity, MAX_SUPPRESSION_PENALTY);
     }
@@ -953,6 +1004,43 @@ export function updateStoredNoteTags(
   tx();
 }
 
+/** 24h per-(entity,note) cooldown for implicit:removed — symmetric with the
+ *  implicit:survived cooldown in processImplicitFeedback. */
+const IMPLICIT_REMOVED_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Record `implicit:removed` feedback with a 24h per-(entity,note) cooldown.
+ *
+ * Both implicit-removal writers (this module's processImplicitFeedback and the
+ * watcher diff path in core/read/watch/pipeline.ts) route through here. Without
+ * the cooldown, a single note's add→remove→re-add link churn casts dozens of
+ * negative votes for the same (entity,note) — e.g. 74 rows for one note in one
+ * day — which wrongly tips legitimate entities below the suppression threshold.
+ * Mirrors the positive-side survival cooldown. Caller supplies `confidence`
+ * (each writer keeps its own model). Returns true if a row was recorded.
+ */
+export function recordImplicitRemoved(
+  stateDb: StateDb,
+  entity: string,
+  notePath: string,
+  confidence: number,
+  matchedTerm?: string,
+): boolean {
+  const last = stateDb.db.prepare(
+    `SELECT MAX(created_at) as last FROM wikilink_feedback
+     WHERE entity = ? COLLATE NOCASE AND context = 'implicit:removed' AND note_path = ?`
+  ).get(entity, notePath) as { last: string | null } | undefined;
+  if (last?.last) {
+    // SQLite datetime is 'YYYY-MM-DD HH:MM:SS' (UTC) — normalize for JS parsing.
+    const normalized = last.last.includes('T') ? last.last : last.last.replace(' ', 'T') + 'Z';
+    if (Date.now() - new Date(normalized).getTime() < IMPLICIT_REMOVED_COOLDOWN_MS) {
+      return false;
+    }
+  }
+  recordFeedback(stateDb, entity, 'implicit:removed', notePath, false, confidence, matchedTerm);
+  return true;
+}
+
 /**
  * Detect removed auto-applied wikilinks and record implicit negative feedback
  *
@@ -981,7 +1069,8 @@ export function processImplicitFeedback(
     for (const { entity, applied_at, matched_term } of trackedWithTime) {
       if (!currentLinks.has(entity.toLowerCase())) {
         const confidence = computeImplicitRemovalConfidence(applied_at);
-        recordFeedback(stateDb, entity, 'implicit:removed', notePath, false, confidence, matched_term ?? undefined);
+        // Cooldown-guarded — collapses same-(entity,note) churn to one vote/24h.
+        recordImplicitRemoved(stateDb, entity, notePath, confidence, matched_term ?? undefined);
         markRemoved.run(entity, notePath);
         removed.push(entity);
       }

@@ -150,6 +150,19 @@ export async function buildFTS5Index(vaultPath: string): Promise<FTS5State> {
       }
     }
 
+    // Abort-on-empty safety: indexable files present but ZERO readable rows
+    // means every read failed (permissions flap, transient I/O) — the empty
+    // set is an error, not the vault's true state. Swapping it in would also
+    // cascade into embedding orphan-cleanup treating every embedding as
+    // orphaned. Keep the old index. (A genuinely emptied vault — 0 indexable
+    // files — is a legitimate empty swap; the spurious version of that case,
+    // a failed root readdir, now throws inside scanVault itself.)
+    if (indexableFiles.length > 0 && rows.length === 0) {
+      throw new Error(
+        `FTS5 rebuild aborted: ${indexableFiles.length} indexable files but 0 readable rows — refusing to swap in an empty index`
+      );
+    }
+
     // Atomic swap: DELETE + INSERT all in one transaction
     const insert = db.prepare(
       'INSERT INTO notes_fts (path, title, frontmatter, content) VALUES (?, ?, ?, ?)'

@@ -146,6 +146,7 @@ export function registerHealthTools(
     embeddings_building: z.boolean().describe('Whether semantic embeddings are currently building'),
     embeddings_ready: z.boolean().describe('Whether semantic embeddings have been built (enables hybrid keyword+semantic search)'),
     embeddings_count: z.coerce.number().describe('Number of notes with semantic embeddings'),
+    last_embedding_build: z.record(z.string(), z.unknown()).optional().describe('Persisted telemetry of the most recent embedding build (status, timings, error) — survives restarts'),
     embedding_model: z.string().optional().describe('Active embedding model ID (when embeddings are built)'),
     embedding_diagnosis: z.object({
       healthy: z.boolean(),
@@ -263,6 +264,7 @@ export function registerHealthTools(
     embeddings_building: boolean;
     embeddings_ready: boolean;
     embeddings_count: number;
+    last_embedding_build?: Record<string, unknown>;
     embedding_model?: string;
     embedding_diagnosis?: {
       healthy: boolean;
@@ -613,6 +615,9 @@ export function registerHealthTools(
       embeddings_building: isEmbeddingsBuilding(),
       embeddings_ready: hasEmbeddingsIndex(),
       embeddings_count: getEmbeddingsCount(),
+      // Persisted build telemetry (init_semantic background builds) — survives
+      // a server restart so a crashed/failed build stays observable here.
+      last_embedding_build: stateDb ? (getWriteState<Record<string, unknown>>(stateDb, 'last_embedding_build') ?? undefined) : undefined,
       embedding_model: hasEmbeddingsIndex() ? getActiveModelId() : undefined,
       embedding_diagnosis: isFull && hasEmbeddingsIndex() ? diagnoseEmbeddings(vaultPath) : undefined,
       tasks_ready: isTaskCacheReady(),
@@ -687,6 +692,8 @@ export function registerHealthTools(
           skipped_active: number;
           skipped_mtime: number;
           skipped_daily_cap: number;
+          purged_missing?: number;
+          skipped_stat_failed?: number;
           rejection_count: number;
           rejection_sample: Array<Record<string, unknown>>;
           rejection_breakdown?: Record<string, number>;
@@ -712,6 +719,8 @@ export function registerHealthTools(
             skipped_active: lastDrain.skipped_active,
             skipped_mtime: lastDrain.skipped_mtime,
             skipped_daily_cap: lastDrain.skipped_daily_cap,
+            purged_missing: lastDrain.purged_missing ?? 0,
+            skipped_stat_failed: lastDrain.skipped_stat_failed ?? 0,
             rejection_count: lastDrain.rejection_count,
             rejection_breakdown: lastDrain.rejection_breakdown ?? {},
             rejection_sample: lastDrain.rejection_sample,

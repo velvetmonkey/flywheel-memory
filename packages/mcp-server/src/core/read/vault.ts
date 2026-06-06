@@ -49,7 +49,13 @@ export async function scanVault(vaultPath: string): Promise<VaultFile[]> {
     try {
       entries = await fs.promises.readdir(dir, { withFileTypes: true });
     } catch (err) {
-      // Skip directories we can't read (permissions, invalid paths, etc.)
+      // A failed ROOT readdir means the whole scan is invalid — returning []
+      // silently here once cascaded into FTS5 swapping in an empty index and
+      // the embedding sweep deleting every row. Fail loudly instead.
+      if (relativePath === '') {
+        throw new Error(`scanVault: cannot read vault root ${dir}: ${err}`);
+      }
+      // Skip nested directories we can't read (permissions, invalid paths, etc.)
       console.error(`Warning: Could not read directory ${dir}:`, err);
       return;
     }

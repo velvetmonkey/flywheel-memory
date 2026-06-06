@@ -14,6 +14,7 @@ import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
 import {
   enqueueProactiveSuggestions,
   drainProactiveQueue,
+  purgeProactiveForDeleted,
 } from '../../src/core/write/proactiveQueue.js';
 
 describe('Proactive Queue Drain — rejection diagnostics', () => {
@@ -77,7 +78,7 @@ describe('Proactive Queue Drain — rejection diagnostics', () => {
     expect(result.rejections[0].detail).toMatch(/mtime age/);
   });
 
-  it('records stat_failed when the note file is missing', async () => {
+  it('marks entries for missing notes terminal (note_missing) instead of leaving them pending', async () => {
     enqueueProactiveSuggestions(stateDb, [
       { notePath: 'ghost.md', entity: 'Ghost', score: 30, confidence: 'high' },
     ]);
@@ -90,7 +91,39 @@ describe('Proactive Queue Drain — rejection diagnostics', () => {
     );
 
     expect(result.rejections).toHaveLength(1);
-    expect(result.rejections[0].reason).toBe('stat_failed');
+    expect(result.rejections[0].reason).toBe('note_missing');
+    expect(result.purgedMissing).toBe(1);
+    expect(result.skippedActiveEdit).toBe(0); // no longer mislabeled
+    expect(result.skippedStatFailed).toBe(0);
+
+    // Entry is terminal — it will not be re-checked on the next drain.
+    const row = stateDb.db.prepare(
+      `SELECT status FROM proactive_queue WHERE note_path = 'ghost.md' AND entity = 'Ghost'`,
+    ).get() as { status: string };
+    expect(row.status).toBe('expired');
+  });
+
+  it('clears an entire ghost backlog in one drain', async () => {
+    const entries = Array.from({ length: 20 }, (_, i) => ({
+      notePath: `deleted/run-${i}.md`,
+      entity: `Ent${i}`,
+      score: 30,
+      confidence: 'high',
+    }));
+    enqueueProactiveSuggestions(stateDb, entries);
+
+    const result = await drainProactiveQueue(
+      stateDb,
+      vaultPath,
+      { minScore: 20, maxPerFile: 5, maxPerDay: 10 },
+      async () => ({ applied: [], skipped: [] }),
+    );
+
+    expect(result.purgedMissing).toBe(20);
+    const pending = stateDb.db.prepare(
+      `SELECT COUNT(*) as cnt FROM proactive_queue WHERE status = 'pending'`,
+    ).get() as { cnt: number };
+    expect(pending.cnt).toBe(0);
   });
 
   it('records daily_cap rejection and marks rows expired', async () => {
@@ -152,7 +185,7 @@ describe('Proactive Queue Drain — rejection diagnostics', () => {
     // last_proactive_drain so flywheel_doctor can surface top reasons.
     writeNote('fine.md');                 // will apply_empty (applyFn returns [])
     writeNote('hot.md', 1000);            // < 60s → active_edit
-    // ghost.md — missing → stat_failed
+    // ghost.md — missing → note_missing (terminal)
 
     enqueueProactiveSuggestions(stateDb, [
       { notePath: 'fine.md', entity: 'EntFine1', score: 30, confidence: 'high' },
@@ -174,8 +207,49 @@ describe('Proactive Queue Drain — rejection diagnostics', () => {
 
     expect(byReason.apply_empty).toBe(2);
     expect(byReason.active_edit).toBe(1);
-    expect(byReason.stat_failed).toBe(1);
+    expect(byReason.note_missing).toBe(1);
     expect(Object.values(byReason).reduce((a, b) => a + b, 0)).toBe(result.rejections.length);
+  });
+
+  it('re-enqueue does not reset expires_at (TTL anchors to first enqueue)', async () => {
+    enqueueProactiveSuggestions(stateDb, [
+      { notePath: 'anchored.md', entity: 'Anchor', score: 20, confidence: 'high' },
+    ]);
+    const first = stateDb.db.prepare(
+      `SELECT expires_at, score FROM proactive_queue WHERE note_path = 'anchored.md' AND entity = 'Anchor'`,
+    ).get() as { expires_at: number; score: number };
+
+    await new Promise(r => setTimeout(r, 10));
+    enqueueProactiveSuggestions(stateDb, [
+      { notePath: 'anchored.md', entity: 'Anchor', score: 35, confidence: 'high' },
+    ]);
+
+    const second = stateDb.db.prepare(
+      `SELECT expires_at, score FROM proactive_queue WHERE note_path = 'anchored.md' AND entity = 'Anchor'`,
+    ).get() as { expires_at: number; score: number };
+
+    expect(second.score).toBe(35); // score still upgrades
+    expect(second.expires_at).toBe(first.expires_at); // TTL not refreshed
+  });
+
+  it('purgeProactiveForDeleted expires only entries for the deleted paths', async () => {
+    enqueueProactiveSuggestions(stateDb, [
+      { notePath: 'gone.md', entity: 'A', score: 30, confidence: 'high' },
+      { notePath: 'gone.md', entity: 'B', score: 25, confidence: 'high' },
+      { notePath: 'stays.md', entity: 'C', score: 30, confidence: 'high' },
+    ]);
+
+    const purged = purgeProactiveForDeleted(stateDb, ['gone.md']);
+
+    expect(purged).toBe(2);
+    const rows = stateDb.db.prepare(
+      `SELECT note_path, status FROM proactive_queue ORDER BY note_path, entity`,
+    ).all() as Array<{ note_path: string; status: string }>;
+    expect(rows.map(r => `${r.note_path}:${r.status}`)).toEqual([
+      'gone.md:expired',
+      'gone.md:expired',
+      'stays.md:pending',
+    ]);
   });
 
   it('records apply_error when applyFn throws', async () => {

@@ -27,6 +27,7 @@ export interface QueueEntry {
 export type RejectionReason =
   | 'active_edit'
   | 'stat_failed'
+  | 'note_missing'
   | 'daily_cap'
   | 'apply_empty'
   | 'apply_error';
@@ -46,6 +47,10 @@ export interface DrainResult {
   skippedActiveEdit: number;
   skippedMtimeGuard: number;
   skippedDailyCap: number;
+  /** Entries for notes that no longer exist on disk — marked terminal (expired) */
+  purgedMissing: number;
+  /** Non-ENOENT stat failures (permissions, transient I/O) — left pending for retry */
+  skippedStatFailed: number;
   rejections: Rejection[];
 }
 
@@ -59,6 +64,9 @@ type ApplyFn = (
 /**
  * Enqueue suggestions for deferred application.
  * UNIQUE(note_path, entity) deduplicates; on conflict, keeps higher score.
+ * expires_at is intentionally NOT refreshed on conflict — the TTL anchors to
+ * first enqueue, so a perpetually-rescored entry still expires (a resettable
+ * TTL kept ghost entries pending indefinitely).
  */
 export function enqueueProactiveSuggestions(
   stateDb: StateDb,
@@ -76,7 +84,6 @@ export function enqueueProactiveSuggestions(
       score = CASE WHEN excluded.score > proactive_queue.score THEN excluded.score ELSE proactive_queue.score END,
       confidence = excluded.confidence,
       queued_at = excluded.queued_at,
-      expires_at = excluded.expires_at,
       status = 'pending'
     WHERE proactive_queue.status = 'pending'
   `);
@@ -106,6 +113,8 @@ export async function drainProactiveQueue(
     skippedActiveEdit: 0,
     skippedMtimeGuard: 0,
     skippedDailyCap: 0,
+    purgedMissing: 0,
+    skippedStatFailed: 0,
     rejections: [],
   };
 
@@ -174,8 +183,25 @@ export async function drainProactiveQueue(
         continue;
       }
     } catch (e) {
-      result.skippedActiveEdit += suggestions.length;
-      pushRejections(filePath, suggestions, 'stat_failed', String(e));
+      const isMissing = (e as NodeJS.ErrnoException)?.code === 'ENOENT';
+      if (isMissing) {
+        // Note no longer exists — mark entries terminal so they stop being
+        // re-checked every drain forever (5,153 ghost entries witnessed
+        // 2026-06-06 for long-deleted files).
+        result.purgedMissing += suggestions.length;
+        for (const s of suggestions) {
+          try {
+            stateDb.db.prepare(
+              `UPDATE proactive_queue SET status = 'expired' WHERE note_path = ? AND entity = ? AND status = 'pending'`,
+            ).run(filePath, s.entity);
+          } catch { /* non-critical */ }
+        }
+        pushRejections(filePath, suggestions, 'note_missing', 'note deleted from vault — entries marked expired');
+      } else {
+        // Transient stat failure (permissions etc.) — leave pending for retry.
+        result.skippedStatFailed += suggestions.length;
+        pushRejections(filePath, suggestions, 'stat_failed', String(e));
+      }
       continue;
     }
 
@@ -236,4 +262,24 @@ export function expireStaleEntries(stateDb: StateDb): number {
     `UPDATE proactive_queue SET status = 'expired' WHERE status = 'pending' AND expires_at <= ?`,
   ).run(Date.now());
   return result.changes;
+}
+
+/**
+ * Purge pending queue entries for notes deleted from the vault.
+ * Called from the watcher pipeline when it processes delete events, so
+ * entries never linger as ENOENT ghosts. Parameterized note_path comparison
+ * honours the column's COLLATE NOCASE.
+ */
+export function purgeProactiveForDeleted(stateDb: StateDb, deletedPaths: string[]): number {
+  if (deletedPaths.length === 0) return 0;
+  const stmt = stateDb.db.prepare(
+    `UPDATE proactive_queue SET status = 'expired' WHERE note_path = ? AND status = 'pending'`,
+  );
+  let purged = 0;
+  for (const p of deletedPaths) {
+    try {
+      purged += stmt.run(p).changes;
+    } catch { /* non-critical */ }
+  }
+  return purged;
 }

@@ -37,7 +37,7 @@ import { exportHubScores } from '../../shared/hubExport.js';
 import { buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from '../../shared/recency.js';
 import { mineCooccurrences, saveCooccurrenceToStateDb } from '../../shared/cooccurrence.js';
 import { setCooccurrenceIndex, suggestRelatedLinks, applyProactiveSuggestions } from '../../write/wikilinks.js';
-import { enqueueProactiveSuggestions, drainProactiveQueue, type QueueEntry } from '../../write/proactiveQueue.js';
+import { enqueueProactiveSuggestions, drainProactiveQueue, purgeProactiveForDeleted, type QueueEntry } from '../../write/proactiveQueue.js';
 import { mineRetrievalCooccurrence } from '../../shared/retrievalCooccurrence.js';
 import { updateFTS5Incremental, countFTS5Mentions } from '../fts5.js';
 import { recordProspectSightings, refreshProspectSummaries, cleanStaleProspects, type ProspectSighting } from '../../shared/prospects.js';
@@ -555,6 +555,18 @@ export class PipelineRunner {
     if (result.updated > 0 || result.removed > 0) {
       serverLog('watcher', `FTS5: ${result.updated} updated, ${result.removed} removed`);
     }
+    // Purge pending proactive-link queue entries for deleted notes so they
+    // never become ENOENT ghosts re-checked on every drain.
+    if (deleted.length > 0 && p.sd) {
+      try {
+        const purged = purgeProactiveForDeleted(p.sd, deleted);
+        if (purged > 0) {
+          serverLog('watcher', `Proactive queue: purged ${purged} entries for ${deleted.length} deleted note(s)`);
+        }
+      } catch (e) {
+        serverLog('watcher', `Proactive queue purge failed: ${e}`, 'error');
+      }
+    }
   }
 
   // ── Step 1.5: Note moves ──────────────────────────────────────────
@@ -766,7 +778,10 @@ export class PipelineRunner {
     }
     let orphansRemoved = 0;
     try {
-      orphansRemoved = removeOrphanedNoteEmbeddings();
+      // Pass the live vault index paths as the authoritative truth source —
+      // never trust notes_fts for the destructive delete (a failed FTS rebuild
+      // once left it empty and orphan cleanup wiped every embedding).
+      orphansRemoved = removeOrphanedNoteEmbeddings(new Set(p.getVaultIndex().notes.keys()));
     } catch (e) {
       serverLog('watcher', `Note embedding orphan cleanup failed: ${e}`, 'error');
     }
@@ -1376,6 +1391,8 @@ export class PipelineRunner {
         skipped_active: result.skippedActiveEdit,
         skipped_mtime: result.skippedMtimeGuard,
         skipped_daily_cap: result.skippedDailyCap,
+        purged_missing: result.purgedMissing,
+        skipped_stat_failed: result.skippedStatFailed,
         rejection_count: result.rejections.length,
         rejection_sample: result.rejections.slice(0, 25),
         rejection_breakdown: byReason,
@@ -1389,6 +1406,8 @@ export class PipelineRunner {
       skipped_active: result.skippedActiveEdit,
       skipped_mtime: result.skippedMtimeGuard,
       skipped_daily_cap: result.skippedDailyCap,
+      purged_missing: result.purgedMissing,
+      skipped_stat_failed: result.skippedStatFailed,
       rejections: result.rejections.length,
     };
   }

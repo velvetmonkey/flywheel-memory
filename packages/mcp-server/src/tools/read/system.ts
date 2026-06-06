@@ -49,6 +49,8 @@ export function registerSystemTools(
   // refresh_index - Rebuild vault index + FTS5 search index without server restart
   const RefreshIndexOutputSchema = {
     success: z.boolean().describe('Whether the refresh succeeded'),
+    degraded: z.boolean().optional().describe('True when a non-fatal step failed (e.g. FTS5 rebuild) — index rebuilt but search may be impaired'),
+    fts5_rebuild_error: z.string().optional().describe('Error message when the FTS5 rebuild step failed'),
     notes_count: z.number().describe('Number of notes indexed'),
     entities_count: z.number().describe('Number of entities (titles + aliases)'),
     fts5_notes: z.number().describe('Number of notes in FTS5 search index'),
@@ -68,6 +70,8 @@ export function registerSystemTools(
 
   type RefreshIndexOutput = {
     success: boolean;
+    degraded?: boolean;
+    fts5_rebuild_error?: string;
     notes_count: number;
     entities_count: number;
     fts5_notes: number;
@@ -152,6 +156,7 @@ export function registerSystemTools(
 
         // Step 4: Rebuild FTS5 search index
         let fts5Notes = 0;
+        let fts5RebuildError: string | undefined;
         tracker.start('fts5_rebuild', {});
         try {
           const ftsState = await buildFTS5Index(vaultPath);
@@ -159,8 +164,17 @@ export function registerSystemTools(
           tracker.end({ notes: fts5Notes });
           console.error(`[Flywheel] FTS5 index rebuilt: ${fts5Notes} notes`);
         } catch (err) {
-          tracker.end({ error: String(err) });
+          fts5RebuildError = err instanceof Error ? err.message : String(err);
+          tracker.end({ error: fts5RebuildError });
           console.error('[Flywheel] FTS5 rebuild failed:', err);
+        }
+        // A populated vault with an empty FTS index after "rebuild" is a failed
+        // rebuild even if buildFTS5Index didn't throw — never report it as a
+        // clean success (the silent version of this once cascaded into a full
+        // embedding wipe via orphan cleanup).
+        if (!fts5RebuildError && fts5Notes === 0 && newIndex.notes.size > 0) {
+          fts5RebuildError = `FTS5 index empty after rebuild despite ${newIndex.notes.size} indexed notes`;
+          console.error(`[Flywheel] ${fts5RebuildError}`);
         }
 
 
@@ -397,6 +411,8 @@ export function registerSystemTools(
 
         const output: RefreshIndexOutput = {
           success: true,
+          degraded: fts5RebuildError ? true : undefined,
+          fts5_rebuild_error: fts5RebuildError,
           notes_count: newIndex.notes.size,
           entities_count: newIndex.entities.size,
           fts5_notes: fts5Notes,

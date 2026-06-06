@@ -113,7 +113,7 @@ describe('proactiveQueue', () => {
   });
 
   describe('drainProactiveQueue', () => {
-    it('skips files that do not exist on disk', async () => {
+    it('marks entries for files that do not exist on disk as terminal (note_missing)', async () => {
       // Clean slate
       stateDb.db.exec(`DELETE FROM proactive_queue`);
 
@@ -129,8 +129,13 @@ describe('proactiveQueue', () => {
         mockApply,
       );
 
-      expect(result.skippedActiveEdit).toBe(1);
+      expect(result.purgedMissing).toBe(1);
+      expect(result.skippedActiveEdit).toBe(0);
       expect(result.applied).toHaveLength(0);
+      const row = stateDb.db.prepare(
+        `SELECT status FROM proactive_queue WHERE note_path = 'active.md' AND entity = 'TestEntity'`,
+      ).get() as { status: string };
+      expect(row.status).toBe('expired');
     });
 
     it('applies to files with old mtime', async () => {

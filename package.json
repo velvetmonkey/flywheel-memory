@@ -13,6 +13,7 @@
     "clean": "npm run clean --workspaces --if-present",
     "dev": "npm run dev -w @velvetmonkey/flywheel-memory",
     "dev:fast": "FLYWHEEL_TOOLS=agent VAULT_PATH=. node packages/mcp-server/dist/index.js",
+    "deploy:local": "scripts/deploy-local.sh",
     "bench": "npm run bench -w @velvetmonkey/flywheel-bench"
   },
   "repository": {

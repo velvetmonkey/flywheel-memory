@@ -28,15 +28,26 @@ describe('findVaultRoot', () => {
     expect(result).toBe(tempVault);
   });
 
-  it('should find vault root by .claude marker', async () => {
-    await mkdir(path.join(tempVault, '.claude'));
-    const result = findVaultRoot(tempVault);
+  it('should NOT treat .claude as a vault marker (falls through to .obsidian parent)', async () => {
+    // .claude exists in home dirs and most code repos; treating it as a vault
+    // marker made findVaultRoot adopt ~/src as a vault. The real .obsidian
+    // parent must win instead.
+    await mkdir(path.join(tempVault, '.obsidian'));
+    const childPath = path.join(tempVault, 'some-repo');
+    await mkdir(childPath, { recursive: true });
+    await mkdir(path.join(childPath, '.claude'));
+
+    const result = findVaultRoot(childPath);
     expect(result).toBe(tempVault);
   });
 
-  it('should find vault root by .flywheel marker', async () => {
-    await mkdir(path.join(tempVault, '.flywheel'));
-    const result = findVaultRoot(tempVault);
+  it('should NOT treat .flywheel as a vault marker (falls through to .obsidian parent)', async () => {
+    await mkdir(path.join(tempVault, '.obsidian'));
+    const childPath = path.join(tempVault, 'some-repo');
+    await mkdir(childPath, { recursive: true });
+    await mkdir(path.join(childPath, '.flywheel'));
+
+    const result = findVaultRoot(childPath);
     expect(result).toBe(tempVault);
   });
 
@@ -50,7 +61,7 @@ describe('findVaultRoot', () => {
     expect(result).toBe(tempVault);
   });
 
-  it('should prefer .obsidian over .flywheel and .claude when all exist', async () => {
+  it('should detect .obsidian even when .flywheel and .claude also exist', async () => {
     await mkdir(path.join(tempVault, '.obsidian'));
     await mkdir(path.join(tempVault, '.flywheel'));
     await mkdir(path.join(tempVault, '.claude'));
@@ -59,12 +70,16 @@ describe('findVaultRoot', () => {
     expect(result).toBe(tempVault);
   });
 
-  it('should prefer .flywheel over .claude when both exist (no .obsidian)', async () => {
-    await mkdir(path.join(tempVault, '.flywheel'));
-    await mkdir(path.join(tempVault, '.claude'));
+  it('should not stop at a dir that only has .flywheel/.claude (no .obsidian anywhere)', async () => {
+    // No .obsidian above, so no marker matches; it must fall back to the start
+    // path rather than treating the .flywheel/.claude dir as a vault root.
+    const childPath = path.join(tempVault, 'some-repo');
+    await mkdir(childPath, { recursive: true });
+    await mkdir(path.join(childPath, '.flywheel'));
+    await mkdir(path.join(childPath, '.claude'));
 
-    const result = findVaultRoot(tempVault);
-    expect(result).toBe(tempVault);
+    const result = findVaultRoot(childPath);
+    expect(result).toBe(childPath);
   });
 
   it('should return start path if no markers found', async () => {
@@ -78,7 +93,9 @@ describe('findVaultRoot', () => {
     expect(typeof result).toBe('string');
   });
 
-  it('should handle nested vault structure', async () => {
+  it('should resolve a nested project with .claude to the real .obsidian vault root', async () => {
+    // Regression: a project subdir carrying .claude must NOT be treated as its
+    // own vault. The enclosing .obsidian vault is the real root.
     await mkdir(path.join(tempVault, '.obsidian'));
 
     const projectPath = path.join(tempVault, 'projects', 'my-project');
@@ -86,7 +103,7 @@ describe('findVaultRoot', () => {
     await mkdir(path.join(projectPath, '.claude'));
 
     const result = findVaultRoot(projectPath);
-    expect(result).toBe(projectPath);
+    expect(result).toBe(tempVault);
   });
 
   it('should stop at filesystem root if no markers found', async () => {

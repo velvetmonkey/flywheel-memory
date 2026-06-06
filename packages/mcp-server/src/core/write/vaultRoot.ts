@@ -1,11 +1,16 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const VAULT_MARKERS = ['.obsidian', '.flywheel', '.claude'];
+// Only `.obsidian` reliably marks a vault. `.flywheel` (engine state) and
+// `.claude` (Claude config) exist in home dirs and most code repos, so treating
+// them as vault markers makes findVaultRoot adopt ~/src or ~ as a "vault" and
+// wikilink-enrich every markdown file under it. Explicit env config
+// (PROJECT_PATH/VAULT_PATH/OBSIDIAN_VAULT) should win before this fallback runs.
+const VAULT_MARKERS = ['.obsidian'];
 
 /**
  * Find vault root by walking up the directory tree.
- * Looks for .obsidian, .flywheel, or .claude folder as markers.
+ * Looks for an .obsidian folder as the marker.
  */
 export function findVaultRoot(startPath?: string): string {
   let current = path.resolve(startPath || process.cwd());

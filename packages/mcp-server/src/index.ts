@@ -841,13 +841,13 @@ async function main() {
   const vaultConfigs = parseVaultConfig();
   vaultPath = vaultConfigs
     ? vaultConfigs[0].path
-    : (process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot());
+    : (process.env.PROJECT_PATH || process.env.VAULT_PATH || process.env.OBSIDIAN_VAULT || findVaultRoot());
   try { resolvedVaultPath = realpathSync(vaultPath).replace(/\\/g, '/'); } catch { resolvedVaultPath = vaultPath.replace(/\\/g, '/'); }
 
   // Validate vault path exists
   if (!existsSync(resolvedVaultPath)) {
     console.error(`[flywheel] Fatal: vault path does not exist: ${resolvedVaultPath}`);
-    console.error(`[flywheel] Set PROJECT_PATH or VAULT_PATH to a valid Obsidian vault directory.`);
+    console.error(`[flywheel] Set PROJECT_PATH, VAULT_PATH, or OBSIDIAN_VAULT to a valid Obsidian vault directory.`);
     process.exit(1);
   }
 

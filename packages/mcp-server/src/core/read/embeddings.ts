@@ -414,12 +414,19 @@ export async function buildEmbeddingsIndex(
     if (onProgress) onProgress(progress);
   }
 
-  // Remove embeddings for deleted notes
-  const currentPaths = new Set(indexable.map(f => f.path));
-  const deleteStmt = db.prepare('DELETE FROM note_embeddings WHERE path = ?');
-  for (const existingPath of existingHashes.keys()) {
-    if (!currentPaths.has(existingPath)) {
-      deleteStmt.run(existingPath);
+  // Remove embeddings for deleted notes. Guard: an empty scan over a vault
+  // that previously had embeddings means the scan failed (scanVault swallows
+  // a failed root readdir and returns [] silently) — deleting everything on
+  // that basis is the same wipe failure mode as the FTS-orphan one.
+  if (indexable.length === 0 && existingHashes.size > 0) {
+    console.error(`[Semantic] Skipping deleted-note sweep: scan returned 0 indexable files but ${existingHashes.size} embeddings exist (failed vault scan?)`);
+  } else {
+    const currentPaths = new Set(indexable.map(f => f.path));
+    const deleteStmt = db.prepare('DELETE FROM note_embeddings WHERE path = ?');
+    for (const existingPath of existingHashes.keys()) {
+      if (!currentPaths.has(existingPath)) {
+        deleteStmt.run(existingPath);
+      }
     }
   }
 
@@ -1027,12 +1034,59 @@ export async function updateEntityEmbedding(
 }
 
 /**
- * Remove note embeddings whose paths no longer exist in the FTS5 index.
- * Safe to call after fts5Incremental has run.
+ * Remove note embeddings whose paths no longer exist in the vault.
+ *
+ * When `validPaths` is provided (the live VaultIndex path set) it is the
+ * authoritative truth source and the comparison happens SQL-side under the
+ * column's COLLATE NOCASE (a JS lowercased Set diverges from SQLite NOCASE
+ * on non-ASCII paths). Without it, falls back to notes_fts — an UNTRUSTED
+ * source guarded against the witnessed failure mode where a failed FTS5
+ * rebuild left notes_fts empty and this delete wiped every embedding
+ * (3,023 → 0 on 2026-06-06):
+ *   - empty guard: never delete when notes_fts has zero rows
+ *   - ratio guard: abort if >50% of embeddings would go in one call
+ *     (a partial FTS index is never a legitimate mass-orphaning)
  */
-export function removeOrphanedNoteEmbeddings(): number {
+export function removeOrphanedNoteEmbeddings(validPaths?: Set<string>): number {
   const db = getDb();
   if (!db) return 0;
+
+  const existing = (db.prepare('SELECT COUNT(*) as cnt FROM note_embeddings').get() as { cnt: number }).cnt;
+  if (existing === 0) return 0;
+
+  if (validPaths) {
+    if (validPaths.size === 0) {
+      console.error(`[Semantic] Orphan cleanup skipped: empty validPaths with ${existing} note embeddings present (vault index not built?)`);
+      return 0;
+    }
+    // Trusted source: no ratio guard — legitimate mass deletion must still clean up.
+    db.exec('CREATE TEMP TABLE IF NOT EXISTS tmp_valid_note_paths (p TEXT PRIMARY KEY COLLATE NOCASE)');
+    db.prepare('DELETE FROM tmp_valid_note_paths').run();
+    const ins = db.prepare('INSERT OR IGNORE INTO tmp_valid_note_paths (p) VALUES (?)');
+    const fill = db.transaction((paths: string[]) => {
+      for (const p of paths) ins.run(p);
+    });
+    fill([...validPaths]);
+    const result = db.prepare(
+      'DELETE FROM note_embeddings WHERE path NOT IN (SELECT p FROM tmp_valid_note_paths)'
+    ).run();
+    db.prepare('DELETE FROM tmp_valid_note_paths').run();
+    return result.changes;
+  }
+
+  const ftsCount = (db.prepare('SELECT COUNT(*) as cnt FROM notes_fts').get() as { cnt: number }).cnt;
+  if (ftsCount === 0) {
+    console.error(`[Semantic] Orphan cleanup skipped: notes_fts is empty but ${existing} note embeddings exist — refusing to wipe (failed/incomplete FTS rebuild?)`);
+    return 0;
+  }
+
+  const wouldDelete = (db.prepare(
+    'SELECT COUNT(*) as cnt FROM note_embeddings WHERE path NOT IN (SELECT path FROM notes_fts)'
+  ).get() as { cnt: number }).cnt;
+  if (wouldDelete > existing * 0.5) {
+    console.error(`[Semantic] Orphan cleanup aborted: would delete ${wouldDelete}/${existing} embeddings (>50%) against notes_fts(${ftsCount} rows) — likely partial FTS index; pass validPaths to override with an authoritative set`);
+    return 0;
+  }
 
   const result = db.prepare(
     'DELETE FROM note_embeddings WHERE path NOT IN (SELECT path FROM notes_fts)'

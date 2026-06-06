@@ -766,7 +766,10 @@ export class PipelineRunner {
     }
     let orphansRemoved = 0;
     try {
-      orphansRemoved = removeOrphanedNoteEmbeddings();
+      // Pass the live vault index paths as the authoritative truth source —
+      // never trust notes_fts for the destructive delete (a failed FTS rebuild
+      // once left it empty and orphan cleanup wiped every embedding).
+      orphansRemoved = removeOrphanedNoteEmbeddings(new Set(p.getVaultIndex().notes.keys()));
     } catch (e) {
       serverLog('watcher', `Note embedding orphan cleanup failed: ${e}`, 'error');
     }

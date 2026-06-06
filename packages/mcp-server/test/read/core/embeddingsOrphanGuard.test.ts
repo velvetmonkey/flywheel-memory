@@ -5,6 +5,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   createTempVault,
   cleanupTempVault,
@@ -132,20 +134,30 @@ describe('FTS5 abort-on-empty safety', () => {
     await cleanupTempVault(vaultPath);
   });
 
-  it('refuses to swap an empty set over a populated index', async () => {
+  it('refuses to swap an empty set when files exist but none were readable', async () => {
     insertFtsRow(stateDb, 'existing.md');
+    await createTestNote(vaultPath, 'locked.md', '# Locked\n\nsecret');
+    const lockedPath = path.join(vaultPath, 'locked.md');
+    fs.chmodSync(lockedPath, 0o000); // statSync ok, readFileSync fails → 0 rows
 
-    // Temp vault has no markdown files → scan yields 0 rows, but index has 1
-    await expect(buildFTS5Index(vaultPath)).rejects.toThrow(/refusing to swap in an empty index/);
-
-    const count = (stateDb.db.prepare('SELECT COUNT(*) as cnt FROM notes_fts').get() as { cnt: number }).cnt;
-    expect(count).toBe(1); // old index preserved
+    try {
+      await expect(buildFTS5Index(vaultPath)).rejects.toThrow(/refusing to swap in an empty index/);
+      const count = (stateDb.db.prepare('SELECT COUNT(*) as cnt FROM notes_fts').get() as { cnt: number }).cnt;
+      expect(count).toBe(1); // old index preserved
+    } finally {
+      fs.chmodSync(lockedPath, 0o644);
+    }
   });
 
-  it('allows an empty build when both vault and index are genuinely empty', async () => {
-    const state = await buildFTS5Index(vaultPath);
+  it('allows an empty swap when the vault is genuinely empty (legitimate mass deletion)', async () => {
+    insertFtsRow(stateDb, 'all-deleted.md'); // stale index from before the wipe
+
+    const state = await buildFTS5Index(vaultPath); // temp vault has no md files
+
     expect(state.ready).toBe(true);
     expect(state.noteCount).toBe(0);
+    const count = (stateDb.db.prepare('SELECT COUNT(*) as cnt FROM notes_fts').get() as { cnt: number }).cnt;
+    expect(count).toBe(0);
   });
 
   it('builds normally when the vault has readable notes', async () => {

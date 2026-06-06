@@ -687,6 +687,8 @@ export function registerHealthTools(
           skipped_active: number;
           skipped_mtime: number;
           skipped_daily_cap: number;
+          purged_missing?: number;
+          skipped_stat_failed?: number;
           rejection_count: number;
           rejection_sample: Array<Record<string, unknown>>;
           rejection_breakdown?: Record<string, number>;
@@ -712,6 +714,8 @@ export function registerHealthTools(
             skipped_active: lastDrain.skipped_active,
             skipped_mtime: lastDrain.skipped_mtime,
             skipped_daily_cap: lastDrain.skipped_daily_cap,
+            purged_missing: lastDrain.purged_missing ?? 0,
+            skipped_stat_failed: lastDrain.skipped_stat_failed ?? 0,
             rejection_count: lastDrain.rejection_count,
             rejection_breakdown: lastDrain.rejection_breakdown ?? {},
             rejection_sample: lastDrain.rejection_sample,

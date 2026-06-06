@@ -71,6 +71,18 @@ if [[ ! -L "$CORE_LINK" ]]; then
     exit 1
   fi
 fi
+# npm ci also installs a NESTED registry copy under packages/mcp-server that
+# SHADOWS the workspace symlink (known gotcha — same-version stale shadow).
+# Remove it so module resolution falls through to packages/core.
+rm -rf "$TMP/packages/mcp-server/node_modules/@velvetmonkey/vault-core"
+RESOLVED=$(node -p "require.resolve('@velvetmonkey/vault-core/package.json', {paths:['$TMP/packages/mcp-server']})")
+case "$RESOLVED" in
+  "$TMP/packages/core/"*) echo "[deploy] vault-core resolves to workspace copy" ;;
+  *)
+    echo "[deploy] ERROR: vault-core resolves to $RESOLVED (not the workspace copy)" >&2
+    exit 1
+    ;;
+esac
 
 echo "[deploy] build"
 (cd "$TMP" && npm run build --silent)

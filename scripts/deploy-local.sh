@@ -75,14 +75,14 @@ fi
 # SHADOWS the workspace symlink (known gotcha — same-version stale shadow).
 # Remove it so module resolution falls through to packages/core.
 rm -rf "$TMP/packages/mcp-server/node_modules/@velvetmonkey/vault-core"
-RESOLVED=$(node -p "require.resolve('@velvetmonkey/vault-core/package.json', {paths:['$TMP/packages/mcp-server']})")
-case "$RESOLVED" in
-  "$TMP/packages/core/"*) echo "[deploy] vault-core resolves to workspace copy" ;;
-  *)
-    echo "[deploy] ERROR: vault-core resolves to $RESOLVED (not the workspace copy)" >&2
-    exit 1
-    ;;
-esac
+# With the nested shadow gone and the root workspace symlink in place, Node's
+# walk-up resolution can only land on packages/core. (A require.resolve probe
+# doesn't work here — vault-core's exports map blocks subpath resolution.)
+if [[ -e "$TMP/packages/mcp-server/node_modules/@velvetmonkey/vault-core" ]]; then
+  echo "[deploy] ERROR: nested vault-core shadow still present" >&2
+  exit 1
+fi
+echo "[deploy] vault-core resolves to workspace copy (nested shadow removed)"
 
 echo "[deploy] build"
 (cd "$TMP" && npm run build --silent)

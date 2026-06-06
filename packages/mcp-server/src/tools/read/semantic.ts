@@ -14,13 +14,17 @@ import {
   classifyUncategorizedEntities,
   saveInferredCategories,
   setEmbeddingsBuildState,
+  setEmbeddingsBuilding,
+  isEmbeddingsBuilding,
+  getEmbeddingsCount,
   getEntityEmbeddingsCount,
   getStoredEmbeddingModel,
   getActiveModelId,
   clearEmbeddingsForRebuild,
   diagnoseEmbeddings,
 } from '../../core/read/embeddings.js';
-import { getAllEntitiesFromDb } from '@velvetmonkey/vault-core';
+import { getAllEntitiesFromDb, setWriteState } from '@velvetmonkey/vault-core';
+import { getActiveScopeOrNull, runInVaultScope } from '../../vault-scope.js';
 
 /**
  * Register semantic search tools
@@ -89,86 +93,144 @@ export function registerSemanticTools(
         clearEmbeddingsForRebuild();
       }
 
-      // Build notes (handles version bumps, completeness, orphans via content hash)
-      const buildStart = Date.now();
+      // Guard: a build is already running (boot fire-and-forget or a prior
+      // init_semantic call) — never launch a second concurrent build.
+      if (isEmbeddingsBuilding()) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              success: true,
+              started: false,
+              already_building: true,
+              current_embeddings_count: getEmbeddingsCount(),
+              hint: 'A build is already running. Poll doctor(action: "health") — watch embeddings_building / embeddings_count.',
+            }, null, 2),
+          }],
+        };
+      }
 
       const { scanVault } = await import('../../core/read/vault.js');
       const files = await scanVault(vaultPath);
       const estimatedSeconds = Math.ceil(files.length * 0.1);
       const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
-      console.error(`[Semantic] Starting embedding build for ${files.length} notes (estimated ${estimatedMinutes > 1 ? `~${estimatedMinutes} minutes` : `~${estimatedSeconds} seconds`})...`);
+      console.error(`[Semantic] Starting background embedding build for ${files.length} notes (estimated ${estimatedMinutes > 1 ? `~${estimatedMinutes} minutes` : `~${estimatedSeconds} seconds`})...`);
 
-      const progress = await buildEmbeddingsIndex(vaultPath, (p) => {
-        const pct = p.total > 0 ? Math.round((p.current / p.total) * 100) : 0;
-        const elapsed = Math.round((Date.now() - buildStart) / 1000);
-        if (p.current % 50 === 0 || p.current === p.total) {
-          console.error(`[Semantic] Note embeddings: ${p.current}/${p.total} (${pct}%, ${p.skipped} skipped, ${elapsed}s elapsed)...`);
-        }
-      });
+      // Mark building SYNCHRONOUSLY before returning so a doctor call issued
+      // right after this returns already reports embeddings_building: true.
+      setEmbeddingsBuilding(true);
+      setEmbeddingsBuildState('building_notes');
 
-      const embedded = progress.total - progress.skipped;
-
-      // Build entity embeddings
-      let entityEmbedded = 0;
+      const startedAt = Date.now();
       try {
-        const allEntities = getAllEntitiesFromDb(stateDb);
-        const entityMap = new Map<string, { name: string; path: string; category: string; aliases: string[] }>();
-        for (const e of allEntities) {
-          entityMap.set(e.name, {
-            name: e.name,
-            path: e.path,
-            category: e.category,
-            aliases: e.aliases,
-          });
-        }
+        setWriteState(stateDb, 'last_embedding_build', {
+          started_at: startedAt, status: 'building', total_notes: files.length, trigger: 'init_semantic',
+        });
+      } catch { /* non-critical telemetry */ }
 
-        if (entityMap.size > 0) {
-          const entityStart = Date.now();
-          console.error(`[Semantic] Starting entity embeddings for ${entityMap.size} entities...`);
-          entityEmbedded = await buildEntityEmbeddingsIndex(vaultPath, entityMap, (done, total) => {
-            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-            if (done % 50 === 0 || done === total) {
-              const elapsed = Math.round((Date.now() - entityStart) / 1000);
-              console.error(`[Semantic] Entity embeddings: ${done}/${total} (${pct}%, ${elapsed}s elapsed)...`);
+      // The full build over a large vault takes tens of minutes — far past any
+      // MCP client timeout. Run it fire-and-forget (the boot path's pattern)
+      // and return immediately; progress is observable via doctor health
+      // (embeddings_building / embeddings_count climb live via per-note upserts).
+      const runBuild = async (): Promise<void> => {
+        const buildStart = Date.now();
+        try {
+          const progress = await buildEmbeddingsIndex(vaultPath, (p) => {
+            const pct = p.total > 0 ? Math.round((p.current / p.total) * 100) : 0;
+            const elapsed = Math.round((Date.now() - buildStart) / 1000);
+            if (p.current % 250 === 0 || p.current === p.total) {
+              console.error(`[Semantic] Note embeddings: ${p.current}/${p.total} (${pct}%, ${p.skipped} skipped, ${elapsed}s elapsed)...`);
             }
           });
-          loadEntityEmbeddingsToMemory();
-          saveInferredCategories(classifyUncategorizedEntities(
-            allEntities.map(entity => ({
-              entity: {
-                name: entity.name,
-                path: entity.path,
-                aliases: entity.aliases,
-              },
-              category: entity.category,
-            }))
-          ));
+          const embedded = progress.total - progress.skipped;
+
+          // Build entity embeddings
+          let entityEmbedded = 0;
+          try {
+            const allEntities = getAllEntitiesFromDb(stateDb);
+            const entityMap = new Map<string, { name: string; path: string; category: string; aliases: string[] }>();
+            for (const e of allEntities) {
+              entityMap.set(e.name, {
+                name: e.name,
+                path: e.path,
+                category: e.category,
+                aliases: e.aliases,
+              });
+            }
+
+            if (entityMap.size > 0) {
+              const entityStart = Date.now();
+              console.error(`[Semantic] Starting entity embeddings for ${entityMap.size} entities...`);
+              entityEmbedded = await buildEntityEmbeddingsIndex(vaultPath, entityMap, (done, total) => {
+                const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                if (done % 250 === 0 || done === total) {
+                  const elapsed = Math.round((Date.now() - entityStart) / 1000);
+                  console.error(`[Semantic] Entity embeddings: ${done}/${total} (${pct}%, ${elapsed}s elapsed)...`);
+                }
+              });
+              loadEntityEmbeddingsToMemory();
+              saveInferredCategories(classifyUncategorizedEntities(
+                allEntities.map(entity => ({
+                  entity: {
+                    name: entity.name,
+                    path: entity.path,
+                    aliases: entity.aliases,
+                  },
+                  category: entity.category,
+                }))
+              ));
+            }
+          } catch (err) {
+            console.error('[Semantic] Entity embeddings failed:', err instanceof Error ? err.message : err);
+          }
+
+          setEmbeddingsBuildState('complete');
+          const totalElapsed = Math.round((Date.now() - buildStart) / 1000);
+          console.error(`[Semantic] Build complete in ${totalElapsed}s: ${embedded} notes + ${entityEmbedded} entities embedded.`);
+          try {
+            setWriteState(stateDb, 'last_embedding_build', {
+              started_at: startedAt, finished_at: Date.now(), status: 'complete',
+              embedded, entity_embedded: entityEmbedded, total_notes: progress.total,
+              build_time_seconds: totalElapsed, trigger: 'init_semantic',
+            });
+          } catch { /* non-critical telemetry */ }
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error(`[Semantic] Background build failed: ${msg}`);
+          try {
+            setWriteState(stateDb, 'last_embedding_build', {
+              started_at: startedAt, finished_at: Date.now(), status: 'failed', error: msg, trigger: 'init_semantic',
+            });
+          } catch { /* non-critical telemetry */ }
+        } finally {
+          // Always release the building flag — a stuck flag blocks every
+          // future build (the already_building guard above).
+          setEmbeddingsBuilding(false);
         }
-      } catch (err) {
-        console.error('[Semantic] Entity embeddings failed:', err instanceof Error ? err.message : err);
-      }
+      };
 
-      setEmbeddingsBuildState('complete');
-
-      const totalElapsed = Math.round((Date.now() - buildStart) / 1000);
-      console.error(`[Semantic] Build complete in ${totalElapsed}s: ${embedded} notes + ${entityEmbedded} entities embedded.`);
-
-      // Post-build verification
-      const diagnosis = diagnoseEmbeddings(vaultPath);
+      // Pin the build to this vault's scope so getDb()/state setters resolve
+      // to the right vault even if another vault activates meanwhile
+      // (multi-vault: the boot path re-activates between phases for the same
+      // reason). runBuild's try/catch/finally is total, the outer catch is
+      // belt-and-braces against unhandled rejection.
+      const scope = getActiveScopeOrNull();
+      void (scope ? runInVaultScope(scope, runBuild) : runBuild()).catch((err) => {
+        console.error(`[Semantic] Background build crashed: ${err instanceof Error ? err.message : err}`);
+        setEmbeddingsBuilding(false);
+      });
 
       return {
         content: [{
           type: 'text' as const,
           text: JSON.stringify({
             success: true,
-            embedded,
-            skipped: progress.skipped,
-            total: progress.total,
-            entity_embeddings: entityEmbedded,
+            started: true,
+            total_notes: files.length,
+            current_embeddings_count: getEmbeddingsCount(),
             entity_total: getEntityEmbeddingsCount(),
-            build_time_seconds: totalElapsed,
-            checks: diagnosis.checks,
-            hint: 'Embeddings built. All searches now automatically use hybrid ranking.',
+            estimated_minutes: estimatedMinutes,
+            hint: 'Embedding build started in background. Poll doctor(action: "health") — embeddings_building flips false and embeddings_count climbs as notes embed. Searches use hybrid ranking once complete.',
           }, null, 2),
         }],
       };

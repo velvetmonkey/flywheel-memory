@@ -384,6 +384,14 @@ export async function buildEmbeddingsIndex(
   for (const file of indexable) {
     progress.current++;
 
+    // Yield the event loop periodically so the MCP server stays responsive
+    // during a long build. Placed at the TOP of the loop body because the
+    // content-hash skip path `continue`s before the bottom — a run of
+    // thousands of unchanged notes is otherwise fully synchronous.
+    if (progress.current % 50 === 0) {
+      await new Promise<void>(resolve => setImmediate(resolve));
+    }
+
     try {
       const stats = fs.statSync(file.absolutePath);
       if (stats.size > MAX_FILE_SIZE) {

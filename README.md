@@ -89,11 +89,24 @@ substrate, not a courtesy to a particular editor.
 
 ## Related repositories
 
-Part of the velvetmonkey verified-cognition stack:
+Part of the **Flywheel suite** — local-first knowledge infrastructure over a plain-markdown Obsidian vault:
 
-- **flywheel-memory** (this repo) — the knowledge-graph MCP server.
-- [mcp-seal](https://github.com/velvetmonkey/mcp-seal) — a verified MCP approval-gate sidecar that can sit in front of this server and gate destructive `tools/call` actions.
-- [canary](https://github.com/velvetmonkey/canary) — a LangGraph compliance pipeline that writes to a vault through this server, and hosts the seal x Canary security demo.
+- [vault-core](https://github.com/velvetmonkey/vault-core) — Shared infrastructure for the Flywheel ecosystem.
+- **flywheel-memory** (this repo) — Persistent knowledge-graph memory MCP server: semantic search, read, and write over your vault.
+- [flywheel-crank](https://github.com/velvetmonkey/flywheel-crank) — Desktop window into your vault's Flywheel MCP server.
+- [flywheel-gravity](https://github.com/velvetmonkey/flywheel-gravity) — A compressed, reality-filtered context field over a vault.
+- [flywheel-ideas](https://github.com/velvetmonkey/flywheel-ideas) — Local-first decision ledger: falsifiable bets, accepted outcomes, reusable lessons.
+- [mega-monkey](https://github.com/velvetmonkey/mega-monkey) — Telegram-native AI research cockpit over an Obsidian vault.
+- [roundtable](https://github.com/velvetmonkey/roundtable) — Local MCP server for delegating tasks to multiple AI models.
+
+Research and experiments:
+
+- [flywheel-concept](https://github.com/velvetmonkey/flywheel-concept) — A falsifiable study of cross-model concept geometry.
+- [flywheel-geometry](https://github.com/velvetmonkey/flywheel-geometry) — A pre-registered study of cross-domain knowledge retrieval.
+- [flywheel-universe](https://github.com/velvetmonkey/flywheel-universe) — Lean 4 / Mathlib-verified core of the descent argument.
+- [flywheel-velvetgram](https://github.com/velvetmonkey/flywheel-velvetgram) — Local widescreen Telegram reader for long-form reading.
+
+Verified-cognition demo: [mcp-seal](https://github.com/velvetmonkey/mcp-seal) (verified MCP approval gate) and [canary](https://github.com/velvetmonkey/canary) (the seal demo host).
 
 ## License
 

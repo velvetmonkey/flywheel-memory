@@ -372,6 +372,9 @@ describe('Backup & Recovery', () => {
         `INSERT INTO wikilink_suppressions (entity, false_positive_rate) VALUES (?, ?)`
       ).run('BadEntity', 0.8);
       sourceDb.db.prepare(
+        `INSERT INTO wikilink_suppression_overrides (entity) VALUES (?)`
+      ).run('KeptEntity');
+      sourceDb.db.prepare(
         `INSERT INTO note_links (note_path, target) VALUES (?, ?)`
       ).run('n.md', 'E1');
       sourceDb.db.prepare(

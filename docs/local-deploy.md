@@ -1,8 +1,14 @@
 # Local deploys (npm publish retired)
 
+[← Back to docs](README.md)
+
 As of 2026-06-06 flywheel-memory is **not published to npm** beyond the frozen
 `2.12.13`. It runs from versioned on-disk deploys instead — no registry in the
 loop for our own packages.
+
+- [Running from a clone](#running-from-a-clone)
+- [Versioned deploys — `scripts/deploy-local.sh`](#versioned-deploys--scriptsdeploy-localsh)
+- [Release flow](#release-flow)
 
 ## Running from a clone
 

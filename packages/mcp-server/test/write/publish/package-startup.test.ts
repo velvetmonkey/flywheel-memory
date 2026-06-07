@@ -28,6 +28,7 @@ type ClientConnection = {
 };
 
 let nodeModulesPath = '';
+let coreTarballPath = '';
 let testProjectDir = '';
 let testVaultDir = '';
 
@@ -46,6 +47,16 @@ describe('Package Startup', () => {
       encoding: 'utf-8',
     }).trim();
     tarballPath = join(tempDir, packOutput);
+    // npm publish is retired (registry frozen at vault-core 2.12.13), so the
+    // registry can never satisfy @velvetmonkey/vault-core@^2.12.16+. Pack the
+    // WORKSPACE core alongside and install both tarballs together — this is
+    // also the honest smoke for the git-clone distribution model.
+    const coreDir = join(packageDir, '../core');
+    const corePackOutput = execFileSync(npmCommand, ['pack', '--pack-destination', tempDir], {
+      cwd: coreDir,
+      encoding: 'utf-8',
+    }).trim();
+    coreTarballPath = join(tempDir, corePackOutput);
 
     testProjectDir = join(tempDir, 'test-project');
     testVaultDir = join(tempDir, 'test-vault');
@@ -54,7 +65,7 @@ describe('Package Startup', () => {
     writeFileSync(join(testVaultDir, 'Inbox.md'), '# Inbox\n\nSmoke test note.\n');
 
     execFileSync(npmCommand, ['init', '-y'], { cwd: testProjectDir, stdio: 'pipe' });
-    execFileSync(npmCommand, ['install', tarballPath], {
+    execFileSync(npmCommand, ['install', coreTarballPath, tarballPath], {
       cwd: testProjectDir,
       stdio: 'pipe',
       timeout: 600000,

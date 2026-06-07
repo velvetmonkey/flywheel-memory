@@ -32,8 +32,8 @@ Create `.mcp.json` in your vault root:
 {
   "mcpServers": {
     "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"]
+      "command": "node",
+      "args": ["/path/to/flywheel-memory/packages/mcp-server/dist/index.js"]
     }
   }
 }
@@ -54,8 +54,8 @@ Add Flywheel to `.codex/config.toml`:
 
 ```toml
 [mcp_servers.flywheel]
-command = "npx"
-args = ["-y", "@velvetmonkey/flywheel-memory@latest"]
+command = "node"
+args = ["/path/to/flywheel-memory/packages/mcp-server/dist/index.js"]
 cwd = "/path/to/project"
 startup_timeout_sec = 120
 tool_timeout_sec = 120
@@ -72,8 +72,8 @@ Add Flywheel to `claude_desktop_config.json`:
 {
   "mcpServers": {
     "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "command": "node",
+      "args": ["/path/to/flywheel-memory/packages/mcp-server/dist/index.js"],
       "env": {
         "VAULT_PATH": "/path/to/your/vault"
       }
@@ -89,7 +89,7 @@ Claude Desktop usually needs `VAULT_PATH` because it is not launched inside the 
 Start Flywheel first:
 
 ```bash
-VAULT_PATH=/path/to/vault FLYWHEEL_TRANSPORT=http npx -y @velvetmonkey/flywheel-memory
+VAULT_PATH=/path/to/vault FLYWHEEL_TRANSPORT=http node /path/to/flywheel-memory/packages/mcp-server/dist/index.js
 ```
 
 Health check:
@@ -223,7 +223,7 @@ Rules:
 ### Windows
 
 Use:
-- `cmd /c npx`
+- use a full Windows path to `node` and the built `dist/index.js`
 - explicit `VAULT_PATH`
 - `FLYWHEEL_WATCH_POLL=true`
 

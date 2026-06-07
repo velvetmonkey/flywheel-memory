@@ -16,7 +16,7 @@ import { connectTestClient, type TestClient, createTestServer, type TestServerCo
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Use artemis-rocket demo (65+ notes) for realistic performance testing
-const ARTEMIS_DEMO_PATH = path.resolve(__dirname, '../../../../demos/artemis-rocket');
+const ARTEMIS_DEMO_PATH = path.resolve(__dirname, '../../../../../demos/artemis-rocket');
 
 describe('Graph Query Performance Benchmarks', () => {
   let context: TestServerContext;
@@ -97,7 +97,11 @@ describe('Graph Query Performance Benchmarks', () => {
       const estimatedTokens = Math.ceil(responseText.length / 4);
 
       // Enriched metadata includes backlinks/outlinks/headings — larger than old metadata-only
-      expect(estimatedTokens).toBeLessThan(500);
+      // Ceiling recalibrated 2026-06-07: the old 500 was set while this suite
+      // accidentally ran against an empty vault (wrong relative path). Against
+      // the real 66-note artemis vault the enriched decision-surface response
+      // measures ~1272 tokens; 2000 keeps a regression tripwire with headroom.
+      expect(estimatedTokens).toBeLessThan(2000);
 
       console.log(`search metadata response: ${responseText.length} chars (~${estimatedTokens} tokens)`);
     });
@@ -128,7 +132,9 @@ describe('Graph Query Performance Benchmarks', () => {
 
       // Graph queries should be significantly more efficient than file reading
       // Even with JSON formatting overhead, should be under 1000 tokens
-      expect(graphTokens).toBeLessThan(1000);
+      // Recalibrated 2026-06-07 (same empty-vault history): measured ~1986
+      // against real data; 3000 = tripwire, not a pin.
+      expect(graphTokens).toBeLessThan(3000);
     });
   });
 

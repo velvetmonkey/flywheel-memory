@@ -24,8 +24,8 @@ Most users only need `VAULT_PATH` and, optionally, `FLYWHEEL_TOOLS`.
 
 ```toml
 [mcp_servers.flywheel]
-command = "npx"
-args = ["-y", "@velvetmonkey/flywheel-memory@latest"]
+command = "node"
+args = ["/path/to/flywheel-memory/packages/mcp-server/dist/index.js"]
 cwd = "/path/to/project"
 startup_timeout_sec = 120
 tool_timeout_sec = 120
@@ -38,8 +38,8 @@ env = { FLYWHEEL_VAULTS = "personal:/path/to/vault", FLYWHEEL_TOOLS = "power" }
 {
   "mcpServers": {
     "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"]
+      "command": "node",
+      "args": ["/path/to/flywheel-memory/packages/mcp-server/dist/index.js"]
     }
   }
 }
@@ -60,8 +60,8 @@ env = { FLYWHEEL_VAULTS = "personal:/path/to/vault", FLYWHEEL_TOOLS = "power" }
 {
   "mcpServers": {
     "flywheel": {
-      "command": "npx",
-      "args": ["-y", "@velvetmonkey/flywheel-memory"],
+      "command": "node",
+      "args": ["/path/to/flywheel-memory/packages/mcp-server/dist/index.js"],
       "env": {
         "VAULT_PATH": "/path/to/your/vault"
       }
@@ -330,7 +330,7 @@ Rules:
 ### HTTP
 
 ```bash
-VAULT_PATH=/path/to/vault FLYWHEEL_TRANSPORT=http npx -y @velvetmonkey/flywheel-memory
+VAULT_PATH=/path/to/vault FLYWHEEL_TRANSPORT=http node /path/to/flywheel-memory/packages/mcp-server/dist/index.js
 ```
 
 Use `FLYWHEEL_HTTP_PORT` and `FLYWHEEL_HTTP_HOST` if you need a different bind.
@@ -338,7 +338,7 @@ Use `FLYWHEEL_HTTP_PORT` and `FLYWHEEL_HTTP_HOST` if you need a different bind.
 ### Windows
 
 On Windows:
-- use `cmd /c npx`
+- use a full Windows path to `node` and the built `dist/index.js`
 - set `VAULT_PATH` explicitly
 - set `FLYWHEEL_WATCH_POLL=true`
 

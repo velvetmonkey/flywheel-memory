@@ -10,7 +10,7 @@
 // =============================================================================
 
 /** Current schema version - bump when schema changes */
-export const SCHEMA_VERSION = 43;
+export const SCHEMA_VERSION = 44;
 
 /** State database filename */
 export const STATE_DB_FILENAME = 'state.db';
@@ -391,13 +391,16 @@ CREATE TABLE IF NOT EXISTS memories (
   ttl_days INTEGER,
   superseded_by INTEGER REFERENCES memories(id),
   visibility TEXT NOT NULL DEFAULT 'shared',
-  owner_scope TEXT NOT NULL DEFAULT 'global'
+  owner_scope TEXT NOT NULL DEFAULT 'global',
+  thread_id TEXT,
+  supersede_reason TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_memories_key ON memories(key);
 CREATE INDEX IF NOT EXISTS idx_memories_entity ON memories(entity);
 CREATE INDEX IF NOT EXISTS idx_memories_type ON memories(memory_type);
 -- idx_memories_key_owner_scope (UNIQUE) and idx_memories_owner_scope are created
 -- by the v42 migration in migrations.ts, after that migration adds owner_scope.
+-- idx_memories_thread_id is created by the v44 migration, after it adds thread_id.
 
 CREATE VIRTUAL TABLE IF NOT EXISTS memories_fts USING fts5(
   key, value,

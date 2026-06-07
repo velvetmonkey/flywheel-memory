@@ -551,6 +551,27 @@ export function initSchema(db: Database.Database): void {
       db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(43);
     }
 
+    // v44: thread identity (resolution-as-fan-out slice 1). Adds
+    // memories.thread_id (correlation id minted by the engine's threads
+    // registry) + memories.supersede_reason (audit trail for the supersede
+    // action). Index lives here, not SCHEMA_SQL, per the v42 boot-order rule.
+    if (currentVersion < 44 && v40Applied) {
+      const memoryColumns = new Set(
+        (db.prepare(`PRAGMA table_info(memories)`).all() as Array<{ name: string }>).map((row) => row.name)
+      );
+
+      if (!memoryColumns.has('thread_id')) {
+        db.exec(`ALTER TABLE memories ADD COLUMN thread_id TEXT`);
+      }
+      if (!memoryColumns.has('supersede_reason')) {
+        db.exec(`ALTER TABLE memories ADD COLUMN supersede_reason TEXT`);
+      }
+
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_memories_thread_id ON memories(thread_id)`);
+
+      db.prepare('INSERT OR REPLACE INTO schema_version (version) VALUES (?)').run(44);
+    }
+
     // Only stamp SCHEMA_VERSION at the end if every migration ran. Dry-run
     // skips v40 → leave schema_version at 39 so the next non-dry-run boot
     // re-enters the v40 branch.

@@ -31,6 +31,7 @@ That is the difference between an assistant that answers and one that remembers.
 - **Self-correcting flywheel.** Implicit feedback, survival tracking, edge-weight accumulation, and suppression. Day 1 it guesses; month 3 it knows your graph.
 - **Gravity ranking.** Surfaces what matters now by pull, not just lexical match (Gravity Basin Protocol companion).
 - **Knowledge-graph queries.** Backlinks, forward links, hub detection, shortest path between notes, orphan and dead-end detection.
+- **AST-driven mutations.** Every structure-sensitive write runs over a real markdown syntax tree (mdast via micromark, with GFM, frontmatter, and math), not string-bashing. Protected zones (code, tables, frontmatter, math, callouts) are computed from the tree, so edits and auto-wikilinks never corrupt your documents. Regex fallback only if a file fails to parse.
 - **Structured read, safe write.** Section-level reads and outlines; content-hash conflict detection on writes; move and rename that preserve links.
 - **Semantic over an open substrate.** Embeddings with contextual prefixes and dual-granularity section expansion, all over plain markdown you own.
 - **Multi-vault, local-first, audited.** One vault or many; every mutation logged; no lock-in, because it is just files.

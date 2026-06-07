@@ -26,7 +26,7 @@ export function registerMemoryTools(
 ): void {
   server.tool(
     'memory',
-    'Entity-linked vault facts and session summaries. action: store — save a fact (auto-links entities). get — by key. search — FTS5 over memories. list — browse. forget — delete. supersede — tombstone current facts by thread_id or key (idempotent, audited; superseded facts vanish from get/search/list/brief but are retained). summarize_session — session summary. Returns stored/retrieved content. Does not operate on vault note bodies. e.g. { action:"store", key:"sarah.pref", value:"email" }',
+    'Entity-linked vault facts and session summaries. action: store — save a fact (auto-links entities). get — by key. search — FTS5. list — browse. forget — delete. supersede — idempotent tombstone by thread_id or key (kept for audit). summarize_session. Returns stored content. Does not operate on vault note bodies. e.g. { action:"store", key:"sarah.pref" }',
     {
       action: z.enum(['store', 'get', 'search', 'list', 'forget', 'supersede', 'summarize_session', 'brief']).describe('Operation to perform'),
       key: z.string().optional().describe('[store|get|forget|supersede] Memory key (e.g., "user.pref.theme", "project.x.deadline")'),

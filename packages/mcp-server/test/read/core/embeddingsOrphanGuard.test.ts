@@ -134,7 +134,9 @@ describe('FTS5 abort-on-empty safety', () => {
     await cleanupTempVault(vaultPath);
   });
 
-  it('refuses to swap an empty set when files exist but none were readable', async () => {
+  // chmod(0o000) is a no-op on Windows ACLs — the file stays readable, the
+  // guard never trips, and the rejects assertion fails. POSIX-only by nature.
+  it.skipIf(process.platform === 'win32')('refuses to swap an empty set when files exist but none were readable', async () => {
     insertFtsRow(stateDb, 'existing.md');
     await createTestNote(vaultPath, 'locked.md', '# Locked\n\nsecret');
     const lockedPath = path.join(vaultPath, 'locked.md');

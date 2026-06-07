@@ -12,6 +12,7 @@ import {
   searchMemories,
   listMemories,
   forgetMemory,
+  supersedeMemories,
   storeSessionSummary,
 } from '../../core/write/memory.js';
 import { runBrief } from '../read/brief.js';
@@ -25,10 +26,12 @@ export function registerMemoryTools(
 ): void {
   server.tool(
     'memory',
-    'Entity-linked vault facts and session summaries. action: store — save a fact (auto-links entities). get — by key. search — FTS5 over memories. list — browse. forget — delete. summarize_session — session summary. Returns stored/retrieved content. Does not operate on vault note bodies. e.g. { action:"store", key:"sarah.pref", value:"email" }',
+    'Entity-linked vault facts and session summaries. action: store — save a fact (auto-links entities). get — by key. search — FTS5. list — browse. forget — delete. supersede — idempotent tombstone by thread_id or key (kept for audit). summarize_session. Returns stored content. Does not operate on vault note bodies. e.g. { action:"store", key:"sarah.pref" }',
     {
-      action: z.enum(['store', 'get', 'search', 'list', 'forget', 'summarize_session', 'brief']).describe('Operation to perform'),
-      key: z.string().optional().describe('[store|get|forget] Memory key (e.g., "user.pref.theme", "project.x.deadline")'),
+      action: z.enum(['store', 'get', 'search', 'list', 'forget', 'supersede', 'summarize_session', 'brief']).describe('Operation to perform'),
+      key: z.string().optional().describe('[store|get|forget|supersede] Memory key (e.g., "user.pref.theme", "project.x.deadline")'),
+      thread_id: z.string().optional().describe('[store|supersede] Thread correlation id (short GUID minted by the engine threads registry). store: stamps the fact. supersede: tombstones every current fact carrying the id.'),
+      reason: z.string().optional().describe('[supersede] Audit reason recorded on each superseded row (e.g. "thread-resolved: shipped in PR #12")'),
       value: z.string().optional().describe('[store] The fact/preference/observation to store (up to 2000 chars)'),
       type: z.enum(['fact', 'preference', 'observation', 'summary']).optional().describe('[store|search] Memory type'),
       entity: z.string().optional().describe('[store|search] Primary entity association'),
@@ -86,6 +89,7 @@ export function registerMemoryTools(
             agent_id: agentId,
             session_id: sessionId,
             visibility: args.visibility ?? (agentId ? 'private' : 'shared'),
+            thread_id: args.thread_id,
           });
           return {
             content: [{
@@ -101,7 +105,12 @@ export function registerMemoryTools(
                   confidence: memory.confidence,
                   visibility: memory.visibility,
                   owner_scope: memory.owner_scope,
+                  ...(memory.thread_id ? { thread_id: memory.thread_id } : {}),
                 },
+                // Upsert preserves supersession: a re-store on a tombstoned key
+                // updates content but does NOT resurrect the fact. Surface that
+                // so callers aren't misled by stored:true.
+                ...(memory.superseded_by !== null ? { still_superseded: true } : {}),
               }, null, 2),
             }],
           };
@@ -216,6 +225,31 @@ export function registerMemoryTools(
             content: [{
               type: 'text' as const,
               text: JSON.stringify({ forgotten: deleted, key: args.key }, null, 2),
+            }],
+          };
+        }
+
+        case 'supersede': {
+          if (!args.thread_id && !args.key) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({ error: 'supersede requires thread_id or key' }) }],
+              isError: true,
+            };
+          }
+          const result = supersedeMemories(stateDb, {
+            thread_id: args.thread_id,
+            key: args.key,
+            reason: args.reason,
+            agent_id: agentId,
+          });
+          return {
+            content: [{
+              type: 'text' as const,
+              text: JSON.stringify({
+                superseded_count: result.superseded.length,
+                superseded: result.superseded,
+                already_superseded: result.already_superseded,
+              }, null, 2),
             }],
           };
         }

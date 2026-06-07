@@ -87,6 +87,14 @@ end without Flywheel's code in the loop. Transparency via an open format is the
 moat. Wikilinking is a retrieval and provenance mechanism over that open
 substrate, not a courtesy to a particular editor.
 
+## Related repositories
+
+Part of the velvetmonkey verified-cognition stack:
+
+- **flywheel-memory** (this repo) — the knowledge-graph MCP server.
+- [mcp-seal](https://github.com/velvetmonkey/mcp-seal) — a verified MCP approval-gate sidecar that can sit in front of this server and gate destructive `tools/call` actions.
+- [canary](https://github.com/velvetmonkey/canary) — a LangGraph compliance pipeline that writes to a vault through this server, and hosts the seal x Canary security demo.
+
 ## License
 
 Apache-2.0.

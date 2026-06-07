@@ -66,6 +66,22 @@ export interface SupersedeMemoryResult {
   already_superseded: number;
 }
 
+export interface UnsupersedeMemoryOptions {
+  /** Reverse the thread-resolution tombstone on every row carrying this id. */
+  thread_id: string;
+  agent_id?: string;
+}
+
+export interface UnsupersedeMemoryResult {
+  restored: Array<{ id: number; key: string; owner_scope: string }>;
+  /**
+   * Rows matched on the thread but left untouched: either already live
+   * (superseded_by IS NULL) or superseded by a *successor* (replaced, not
+   * thread-tombstoned). The undo only reverses self-tombstones.
+   */
+  skipped: number;
+}
+
 export interface SearchMemoryOptions {
   query: string;
   type?: MemoryType;
@@ -520,6 +536,72 @@ export function supersedeMemories(
   return {
     superseded: current.map((m) => ({ id: m.id, key: m.key, owner_scope: m.owner_scope })),
     already_superseded: alreadySuperseded,
+  };
+}
+
+/**
+ * Unsupersede memories — the undo consumer for a reversed thread resolution
+ * (thread-identity slice 4).
+ *
+ * Reverses supersedeMemories for one thread: clears superseded_by +
+ * supersede_reason so the facts reappear in get/search/list/brief, and
+ * restores the graph edges that supersede removed.
+ *
+ * Only SELF-TOMBSTONED rows are reversible — those with `superseded_by = id`,
+ * the exact marker supersede writes. A row superseded by a *successor*
+ * (`superseded_by != id`) was replaced by a newer fact, not tombstoned by a
+ * thread resolution; reviving it would resurrect a stale value, so it is left
+ * untouched and counted in `skipped`. Already-live rows skip the same way.
+ *
+ * Idempotent: the SQL guard `superseded_by = id` means a second call (or a
+ * call on rows already cleared) is a no-op.
+ */
+export function unsupersedeMemories(
+  stateDb: StateDb,
+  options: UnsupersedeMemoryOptions,
+): UnsupersedeMemoryResult {
+  const { thread_id, agent_id } = options;
+
+  if (!thread_id) {
+    throw new Error('unsupersede requires thread_id');
+  }
+
+  const conditions: string[] = ['thread_id = ?'];
+  const params: unknown[] = [thread_id];
+  // Same visibility scope as supersede: a caller may only reverse facts it can
+  // see — global rows plus its own agent scope.
+  applyVisibilityFilter(conditions, params, agent_id);
+
+  const matched = stateDb.db.prepare(
+    `SELECT id, key, owner_scope, visibility, entities_json, superseded_by FROM memories WHERE ${conditions.join(' AND ')}`
+  ).all(...params) as Array<Pick<Memory, 'id' | 'key' | 'owner_scope' | 'visibility' | 'entities_json' | 'superseded_by'>>;
+
+  const reversible = matched.filter((m) => m.superseded_by !== null && m.superseded_by === m.id);
+  const skipped = matched.length - reversible.length;
+
+  const now = Date.now();
+  const clear = stateDb.db.prepare(
+    'UPDATE memories SET superseded_by = NULL, supersede_reason = NULL, updated_at = ? WHERE id = ? AND superseded_by = id'
+  );
+
+  for (const m of reversible) {
+    clear.run(now, m.id);
+    // Restore graph edges removed at supersede time, from the stored entity
+    // list (mirrors storeMemory's shared/global rule — private/agent rows never
+    // entered the shared graph).
+    if (m.visibility === 'shared' && m.owner_scope === GLOBAL_OWNER_SCOPE && m.entities_json) {
+      try {
+        const entities = JSON.parse(m.entities_json) as string[];
+        if (Array.isArray(entities) && entities.length > 0) {
+          updateGraphSignals(stateDb, m.key, entities);
+        }
+      } catch { /* malformed entities_json — skip graph restore, fact is still revived */ }
+    }
+  }
+
+  return {
+    restored: reversible.map((m) => ({ id: m.id, key: m.key, owner_scope: m.owner_scope })),
+    skipped,
   };
 }
 

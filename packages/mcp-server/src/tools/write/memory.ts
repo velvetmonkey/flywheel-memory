@@ -13,6 +13,7 @@ import {
   listMemories,
   forgetMemory,
   supersedeMemories,
+  unsupersedeMemories,
   storeSessionSummary,
 } from '../../core/write/memory.js';
 import { runBrief } from '../read/brief.js';
@@ -28,9 +29,9 @@ export function registerMemoryTools(
     'memory',
     'Entity-linked vault facts and session summaries. action: store — save a fact (auto-links entities). get — by key. search — FTS5. list — browse. forget — delete. supersede — idempotent tombstone by thread_id or key (kept for audit). summarize_session. Returns stored content. Does not operate on vault note bodies. e.g. { action:"store", key:"sarah.pref" }',
     {
-      action: z.enum(['store', 'get', 'search', 'list', 'forget', 'supersede', 'summarize_session', 'brief']).describe('Operation to perform'),
+      action: z.enum(['store', 'get', 'search', 'list', 'forget', 'supersede', 'unsupersede', 'summarize_session', 'brief']).describe('Operation to perform'),
       key: z.string().optional().describe('[store|get|forget|supersede] Memory key (e.g., "user.pref.theme", "project.x.deadline")'),
-      thread_id: z.string().optional().describe('[store|supersede] Thread correlation id (short GUID minted by the engine threads registry). store: stamps the fact. supersede: tombstones every current fact carrying the id.'),
+      thread_id: z.string().optional().describe('[store|supersede|unsupersede] Thread correlation id (short GUID minted by the engine threads registry). store: stamps the fact. supersede: tombstones every current fact carrying the id. unsupersede: reverses a thread-resolution tombstone (self-tombstoned rows only).'),
       reason: z.string().optional().describe('[supersede] Audit reason recorded on each superseded row (e.g. "thread-resolved: shipped in PR #12")'),
       value: z.string().optional().describe('[store] The fact/preference/observation to store (up to 2000 chars)'),
       type: z.enum(['fact', 'preference', 'observation', 'summary']).optional().describe('[store|search] Memory type'),
@@ -249,6 +250,29 @@ export function registerMemoryTools(
                 superseded_count: result.superseded.length,
                 superseded: result.superseded,
                 already_superseded: result.already_superseded,
+              }, null, 2),
+            }],
+          };
+        }
+
+        case 'unsupersede': {
+          if (!args.thread_id) {
+            return {
+              content: [{ type: 'text' as const, text: JSON.stringify({ error: 'unsupersede requires thread_id' }) }],
+              isError: true,
+            };
+          }
+          const result = unsupersedeMemories(stateDb, {
+            thread_id: args.thread_id,
+            agent_id: agentId,
+          });
+          return {
+            content: [{
+              type: 'text' as const,
+              text: JSON.stringify({
+                restored_count: result.restored.length,
+                restored: result.restored,
+                skipped: result.skipped,
               }, null, 2),
             }],
           };

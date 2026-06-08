@@ -8,7 +8,8 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { writeVaultFile, validatePath, validatePathSecure, sanitizeNotePath, injectMutationMetadata } from '../../core/write/writer.js';
+import { writeVaultFile, validatePath, validatePathSecure, sanitizeNotePath, injectMutationMetadata, WriteConflictError } from '../../core/write/writer.js';
+import { withPathLock, pathLockKey } from '../../core/write/path-lock.js';
 import {
   maybeApplyWikilinks,
   suggestRelatedLinks,
@@ -30,6 +31,14 @@ import { resolveProspectsForCreatedEntity } from '../../core/shared/prospects.js
 import { extractAliases, moveNote, renameNote } from './move-notes.js';
 import fs from 'fs/promises';
 import path from 'path';
+
+/** Thrown when a no-overwrite create loses the race to a concurrent creator. */
+class FileExistsRace extends Error {
+  constructor(notePath: string) {
+    super(`File already exists: ${notePath}`);
+    this.name = 'FileExistsRace';
+  }
+}
 
 /**
  * Register the merged `note` tool with the MCP server
@@ -56,6 +65,9 @@ export function registerNoteTool(
         '[create] Frontmatter fields (JSON object). Set type, aliases, description for best results.'
       ),
       overwrite: z.boolean().optional().describe('[create] If true, overwrite existing file'),
+      expectedHash: z.string().optional().describe(
+        '[create] CAS precondition for overwrite: content hash of the on-disk file as last read (from read action=raw). Write fails with code WRITE_CONFLICT if the file changed since. Only meaningful with overwrite:true.'
+      ),
       template: z.string().optional().describe(
         '[create] Vault-relative path to a template file. Variables {{date}} and {{title}} are substituted.'
       ),
@@ -143,6 +155,7 @@ async function handleCreate(
     content?: string;
     frontmatter?: Record<string, unknown>;
     overwrite?: boolean;
+    expectedHash?: string;
     template?: string;
     skipWikilinks?: boolean;
     suggestOutgoingLinks?: boolean;
@@ -159,6 +172,7 @@ async function handleCreate(
     content = '',
     frontmatter: rawFrontmatter = {},
     overwrite = false,
+    expectedHash,
     template,
     skipWikilinks = false,
     suggestOutgoingLinks = false,
@@ -182,8 +196,9 @@ async function handleCreate(
 
     const existsCheck = await ensureFileExists(vaultPath, notePath);
     if (existsCheck === null && !overwrite) {
-      return formatMcpResult(errorResult(notePath, `File already exists: ${notePath}. Use overwrite:true to replace.`));
+      return formatMcpResult(errorResult(notePath, `File already exists: ${notePath}. Use overwrite:true to replace.`, { code: 'FILE_EXISTS' }));
     }
+    const fileExisted = existsCheck === null;
 
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
 
@@ -299,7 +314,39 @@ async function handleCreate(
       );
     }
 
-    await writeVaultFile(vaultPath, notePath, processedContent, finalFrontmatter);
+    // Per-path lock + CAS: a concurrent writer cannot slip between the
+    // exists/hash check and the write (TOCTOU). Wikilinks were applied
+    // above, before the lock — content-only work stays outside it.
+    try {
+      await withPathLock(pathLockKey(vaultPath, notePath), async () => {
+        // Re-verify existence inside the lock when racing creators matter.
+        if (!overwrite) {
+          try {
+            await fs.access(fullPath);
+            throw new FileExistsRace(notePath);
+          } catch (err) {
+            if (err instanceof FileExistsRace) throw err;
+            // ENOENT — good, proceed with create.
+          }
+        }
+        await writeVaultFile(
+          vaultPath,
+          notePath,
+          processedContent,
+          finalFrontmatter,
+          'LF',
+          overwrite && fileExisted ? expectedHash : undefined,
+        );
+      });
+    } catch (err) {
+      if (err instanceof FileExistsRace) {
+        return formatMcpResult(errorResult(notePath, `File already exists: ${notePath}. Use overwrite:true to replace.`, { code: 'FILE_EXISTS' }));
+      }
+      if (err instanceof WriteConflictError) {
+        return formatMcpResult(errorResult(notePath, err.message, { code: 'WRITE_CONFLICT' }));
+      }
+      throw err;
+    }
 
     const resolvedProspects = resolveProspectsForCreatedEntity(
       notePath,

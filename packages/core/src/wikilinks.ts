@@ -386,6 +386,7 @@ export function applyWikilinks(
     firstOccurrenceOnly = true,
     caseInsensitive = true,
     alreadyLinked,
+    suppressedTerms,
   } = options;
 
   if (!entities.length) {
@@ -393,6 +394,7 @@ export function applyWikilinks(
       content,
       linksAdded: 0,
       linkedEntities: [],
+      linkedTerms: [],
     };
   }
 
@@ -421,6 +423,9 @@ export function applyWikilinks(
     for (const t of terms) {
       // Skip ambiguous aliases (shared by multiple entities)
       if (t.isAlias && ambiguousAliases.has(t.term.toLowerCase())) continue;
+      // Per-alias suppression: drop this one (entity, term) pair without
+      // touching the entity's other terms.
+      if (suppressedTerms?.has(`${t.entityName.toLowerCase()}||${t.term.toLowerCase()}`)) continue;
       if (shouldExcludeEntity(t.term, t.isAlias)) {
         // Rescue common-word entities with distinctive casing (REST, Go, Rust, Swift)
         // They will be matched case-sensitively to avoid false positives
@@ -442,6 +447,7 @@ export function applyWikilinks(
   let result = content;
   let linksAdded = 0;
   const linkedEntities: string[] = [];
+  const linkedTerms: Array<{ entity: string; matchedTerm: string }> = [];
 
   if (firstOccurrenceOnly) {
     // For firstOccurrenceOnly mode, we need to find the earliest match across
@@ -539,7 +545,7 @@ export function applyWikilinks(
     // Sort by position from end to start to preserve offsets when inserting
     selectedMatches.sort((a, b) => b.match.start - a.match.start);
 
-    for (const { entityName, term: _term, match } of selectedMatches) {
+    for (const { entityName, term, match } of selectedMatches) {
       // Use display text format when matched text differs from entity name
       const matchedTextLower = match.matched.toLowerCase();
       const entityNameLower = entityName.toLowerCase();
@@ -569,6 +575,7 @@ export function applyWikilinks(
       if (!linkedEntities.includes(entityName)) {
         linkedEntities.push(entityName);
       }
+      linkedTerms.push({ entity: entityName, matchedTerm: term });
     }
 
     // Stemmed matching pass: for single-word entities (≥4 chars) that didn't match
@@ -621,6 +628,7 @@ export function applyWikilinks(
         if (!linkedEntities.includes(entityName)) {
           linkedEntities.push(entityName);
         }
+        linkedTerms.push({ entity: entityName, matchedTerm: bestStemMatch.matched });
       }
     }
   } else {
@@ -673,6 +681,7 @@ export function applyWikilinks(
         if (!linkedEntities.includes(entityName)) {
           linkedEntities.push(entityName);
         }
+        linkedTerms.push({ entity: entityName, matchedTerm: term });
       }
     }
   }
@@ -681,6 +690,7 @@ export function applyWikilinks(
     content: result,
     linksAdded,
     linkedEntities,
+    linkedTerms,
   };
 }
 
@@ -1732,4 +1742,62 @@ export function processWikilinks(
     linkedEntities: result.linkedEntities,
     implicitEntities,
   };
+}
+
+// ============================================================================
+// Thread-marker linking (🧵#thr-<hex> / 🧵#<handle>)
+// ============================================================================
+
+/**
+ * Matches engine thread markers: `🧵#thr-<10 hex>` (guid form) or
+ * `🧵#<adjective>-<noun>[-N]` (speakable handle form). The emoji+`#` prefix
+ * makes false positives effectively impossible, so markers link on EVERY
+ * occurrence — each one is an explicit reference.
+ *
+ * NOTE: this is deliberately NOT routed through findEntityMatches — `\b`
+ * word boundaries cannot anchor against the emoji/`#` prefix, and
+ * shouldExcludeEntity rejects lowercase-hyphenated terms (correctly, for
+ * prose) which would block both marker forms.
+ */
+export const THREAD_MARKER_RE = /🧵#(thr-[0-9a-fA-F]{10}|[a-z]+-[a-z]+(?:-\d+)?)/gu;
+
+/**
+ * Link thread markers in content to their thread notes.
+ *
+ * @param content - markdown to process
+ * @param resolveThread - maps the marker ref (e.g. "thr-a1b2c3d4e5" or
+ *   "amber-anchor") to the link target (note stem or vault-relative path
+ *   without .md), or null when unknown — unresolved markers are left as-is,
+ *   never turned into dead links.
+ * @returns WikilinkResult; linkedTerms carries the full marker (🧵#…) as the
+ *   matched term for feedback tracking.
+ */
+export function applyThreadMarkerLinks(
+  content: string,
+  resolveThread: (ref: string) => string | null,
+): WikilinkResult {
+  // The marker's own `#thr-…` registers as a hashtag protected zone — drop
+  // hashtag zones that immediately follow the 🧵 emoji (they ARE the marker),
+  // while keeping genuine hashtags, code fences, and existing wikilinks
+  // protected. '🧵' is two UTF-16 code units.
+  const zones = getProtectedZones(content).filter(
+    z => !(z.type === 'hashtag' && content.slice(Math.max(0, z.start - 2), z.start) === '🧵'),
+  );
+  const linkedEntities: string[] = [];
+  const linkedTerms: Array<{ entity: string; matchedTerm: string }> = [];
+  let linksAdded = 0;
+
+  const out = content.replace(THREAD_MARKER_RE, (matched, ref: string, offset: number) => {
+    // Skip markers inside code fences, inline code, existing wikilinks, etc.
+    if (rangeOverlapsProtectedZone(offset, offset + matched.length, zones)) return matched;
+    const target = resolveThread(ref);
+    if (!target) return matched;
+    linksAdded++;
+    if (!linkedEntities.includes(target)) linkedEntities.push(target);
+    linkedTerms.push({ entity: target, matchedTerm: matched });
+    // Display text keeps the human-visible marker; target is the real note.
+    return `[[${target}|${matched}]]`;
+  });
+
+  return { content: out, linksAdded, linkedEntities, linkedTerms };
 }

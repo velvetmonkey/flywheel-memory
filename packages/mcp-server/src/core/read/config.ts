@@ -60,6 +60,14 @@ export interface FlywheelConfig {
   proactive_max_per_file?: number;
   /** Maximum proactive insertions per file per day (default: 10) */
   proactive_max_per_day?: number;
+  /**
+   * Top-level vault folders excluded from proactive linking AND implicit
+   * wikilink-removal feedback (default: ['plans', 'threads', 'councils']).
+   * Engine-owned folders are fully re-rendered from DB with links applied at
+   * write time — watcher link-writes there would be wiped by the next render
+   * and the wipes would cast false implicit-removed votes (suppression churn).
+   */
+  proactive_exclude_folders?: string[];
   /** Tool exposure override for tiered full preset sessions */
   tool_tier_override?: 'auto' | 'full' | 'minimal';
   /**

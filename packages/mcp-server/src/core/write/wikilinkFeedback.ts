@@ -848,6 +848,47 @@ export function getPerAliasPenalties(stateDb: StateDb, now?: Date): Map<string, 
   return penalties;
 }
 
+/**
+ * Per-alias SUPPRESSION set: (entity, term) pairs whose posterior accuracy
+ * fell below the suppression threshold with enough observations — exact
+ * mirror of entity-level isSuppressed() semantics, but scoped to one alias
+ * so a single bad handle can't poison the whole entity. Keys are
+ * `entityLower||termLower` (same key shape as getPerAliasPenalties).
+ */
+export function getSuppressedAliasTerms(stateDb: StateDb, now?: Date): Set<string> {
+  const suppressed = new Set<string>();
+
+  const rows = stateDb.db.prepare(`
+    SELECT entity, matched_term, correct, confidence, created_at
+    FROM wikilink_feedback
+    WHERE matched_term IS NOT NULL
+  `).all() as Array<{ entity: string; matched_term: string; correct: number; confidence: number; created_at: string }>;
+
+  const acc = new Map<string, { weightedCorrect: number; weightedFp: number; entity: string; term: string }>();
+  for (const row of rows) {
+    const key = `${row.entity.toLowerCase()}||${row.matched_term.toLowerCase()}`;
+    if (!acc.has(key)) {
+      acc.set(key, { weightedCorrect: 0, weightedFp: 0, entity: row.entity, term: row.matched_term });
+    }
+    const stats = acc.get(key)!;
+    const weight = computeFeedbackWeight(row.created_at, now) * (row.confidence ?? 1.0);
+    if (row.correct === 1) stats.weightedCorrect += weight;
+    else stats.weightedFp += weight;
+  }
+
+  for (const [key, stats] of acc) {
+    if (stats.entity.toLowerCase() === stats.term.toLowerCase()) continue; // entity-level handles this
+    const effectiveAlpha = getEffectiveAlpha(stats.entity);
+    const posteriorMean = computePosteriorMean(stats.weightedCorrect, stats.weightedFp, effectiveAlpha);
+    const totalObs = effectiveAlpha + stats.weightedCorrect + PRIOR_BETA + stats.weightedFp;
+    if (totalObs >= SUPPRESSION_MIN_OBSERVATIONS && posteriorMean < SUPPRESSION_POSTERIOR_THRESHOLD) {
+      suppressed.add(key);
+    }
+  }
+
+  return suppressed;
+}
+
 // =============================================================================
 // IMPLICIT FEEDBACK (Application Tracking & Removal Detection)
 // =============================================================================

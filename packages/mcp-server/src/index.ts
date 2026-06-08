@@ -957,6 +957,14 @@ async function main() {
       const health: Record<string, unknown> = {
         status: 'ok',
         version: pkg.version,
+        // Semantic capability surface — clients (mega-monkey engine) gate
+        // mutating operations on these, not on tool names or versions.
+        capabilities: [
+          'cas_writes',                 // note create expectedHash + WRITE_CONFLICT/FILE_EXISTS codes
+          'raw_read',                   // read action=raw {rawContent, content_hash}
+          'thread_markers',             // 🧵#thr-/🧵#handle wikilink marker pass
+          'proactive_exclude_folders',  // watcher proactive linking folder exclusion
+        ],
         vault: vaultPath,
         ready: serverReady,
         uptime_s: Math.round(process.uptime()),

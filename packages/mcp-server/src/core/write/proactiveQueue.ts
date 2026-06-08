@@ -27,6 +27,7 @@ export interface QueueEntry {
 export type RejectionReason =
   | 'active_edit'
   | 'stat_failed'
+  | 'excluded_folder'
   | 'note_missing'
   | 'daily_cap'
   | 'apply_empty'
@@ -101,10 +102,25 @@ export function enqueueProactiveSuggestions(
 /**
  * Drain pending queue entries, applying to files that pass safety checks.
  */
+/** Default top-level folders excluded from proactive linking (engine-rendered). */
+export const DEFAULT_PROACTIVE_EXCLUDE_FOLDERS = ['plans', 'threads', 'councils'];
+
+/** Resolve the excluded-folder set from config (lowercased top segments). */
+export function excludedFolderSet(cfg?: { proactive_exclude_folders?: string[] }): Set<string> {
+  const folders = cfg?.proactive_exclude_folders ?? DEFAULT_PROACTIVE_EXCLUDE_FOLDERS;
+  return new Set(folders.map(f => f.toLowerCase().replace(/^\/+|\/+$/g, '')));
+}
+
+/** True when the note's top-level folder is in the excluded set. */
+export function isInExcludedFolder(notePath: string, excluded: Set<string>): boolean {
+  const top = notePath.replace(/^\/+/, '').split('/')[0]?.toLowerCase() ?? '';
+  return excluded.has(top);
+}
+
 export async function drainProactiveQueue(
   stateDb: StateDb,
   vaultPath: string,
-  config: { minScore: number; maxPerFile: number; maxPerDay: number },
+  config: { minScore: number; maxPerFile: number; maxPerDay: number; excludeFolders?: Set<string> },
   applyFn: ApplyFn,
 ): Promise<DrainResult> {
   const result: DrainResult = {
@@ -173,6 +189,13 @@ export async function drainProactiveQueue(
 
   // 4. Process each file
   for (const [filePath, suggestions] of byFile) {
+    // Defensive: engine-rendered folders never receive proactive links —
+    // enqueue already filters, this catches entries queued before the
+    // exclusion existed (or config changes).
+    if (config.excludeFolders && isInExcludedFolder(filePath, config.excludeFolders)) {
+      pushRejections(filePath, suggestions, 'excluded_folder');
+      continue;
+    }
     // Skip files modified within the last minute (actively being edited)
     const fullPath = path.join(vaultPath, filePath);
     try {

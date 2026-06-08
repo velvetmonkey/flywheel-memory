@@ -43,9 +43,11 @@ import {
   STOPWORDS_EN,
   IMPLICIT_EXCLUDE_WORDS,
   COMMON_ENGLISH_WORDS,
+  applyThreadMarkerLinks,
 } from '@velvetmonkey/vault-core';
-import { isSuppressed, getAllFeedbackBoosts, getAllSuppressionPenalties, getEntityStats, trackWikilinkApplications } from './wikilinkFeedback.js';
+import { isSuppressed, getAllFeedbackBoosts, getAllSuppressionPenalties, getEntityStats, trackWikilinkApplications, getSuppressedAliasTerms } from './wikilinkFeedback.js';
 import { getCorrectedEntityNotePairs } from './corrections.js';
+import { withPathLock, pathLockKey } from './path-lock.js';
 import { setGitStateDb } from './git.js';
 import { setHintsStateDb } from './hints.js';
 import {
@@ -606,9 +608,30 @@ export function processWikilinks(content: string, notePath?: string, existingCon
   // Sort by priority (cross-folder + hub) for same-length entity preference
   const sortedEntities = sortEntitiesByPriority(entities, notePath);
 
+  // Step 0: Thread-marker pass — 🧵#thr-<hex> / 🧵#<handle> markers resolve
+  // via the thread note's frontmatter aliases (engine writes the marker
+  // forms as aliases). Runs FIRST: markers can't be matched by the normal
+  // alias path (word boundaries + lowercase-hyphen exclusion) and must link
+  // on every occurrence. Unresolved markers stay plain text.
+  let markerResult: WikilinkResult | null = null;
+  let working = content;
+  if (stateDb) {
+    markerResult = applyThreadMarkerLinks(content, (ref) => {
+      const hits = getEntitiesByAlias(stateDb, `🧵#${ref}`);
+      if (hits.length !== 1) return null; // ambiguous or unknown → leave as-is
+      // Link target: note stem (matches how applyWikilinks targets entities)
+      return hits[0].name;
+    });
+    working = markerResult.content;
+  }
+
+  // Per-alias suppression: one bad alias must not poison the whole entity —
+  // drop only the suppressed (entity, term) pairs inside applyWikilinks.
+  const suppressedTerms = stateDb ? getSuppressedAliasTerms(stateDb) : undefined;
+
   // Step 1: Resolve existing wikilinks that use aliases (case-insensitive)
   // [[model context protocol]] → [[MCP|model context protocol]]
-  const resolved = resolveAliasWikilinks(content, sortedEntities, {
+  const resolved = resolveAliasWikilinks(working, sortedEntities, {
     caseInsensitive: true,
   });
 
@@ -616,6 +639,10 @@ export function processWikilinks(content: string, notePath?: string, existingCon
   // Pass entities resolved by Step 1 as alreadyLinked so firstOccurrenceOnly
   // treats them as already seen and won't link a second occurrence.
   const step1LinkedEntities = new Set(resolved.linkedEntities.map(e => e.toLowerCase()));
+  // Thread notes linked by the marker pass count as already linked.
+  if (markerResult) {
+    for (const e of markerResult.linkedEntities) step1LinkedEntities.add(e.toLowerCase());
+  }
 
   // Also treat entities already linked in the existing note content as already seen.
   // This prevents duplicate wikilinks when vault_add_to_section is called multiple
@@ -636,6 +663,7 @@ export function processWikilinks(content: string, notePath?: string, existingCon
     firstOccurrenceOnly: true,
     caseInsensitive: true,
     alreadyLinked: step1LinkedEntities,
+    suppressedTerms,
   });
 
   // Step 3: Detect implicit entities (dead wikilinks for unrecognized proper nouns, camelCase, acronyms)
@@ -710,12 +738,21 @@ export function processWikilinks(content: string, notePath?: string, existingCon
   // Step 3: Sanitize all wikilinks — remove invalid ones (punctuation, prose phrases, broken fragments)
   const { content: sanitizedContent, removed } = sanitizeWikilinks(finalContent);
 
-  const totalLinksAdded = resolved.linksAdded + result.linksAdded + (newImplicits.length - removed.length);
+  const markerLinks = markerResult?.linksAdded ?? 0;
+  const totalLinksAdded = markerLinks + resolved.linksAdded + result.linksAdded + (newImplicits.length - removed.length);
 
   return {
     content: sanitizedContent,
     linksAdded: Math.max(0, totalLinksAdded),
-    linkedEntities: [...resolved.linkedEntities, ...result.linkedEntities],
+    linkedEntities: [
+      ...(markerResult?.linkedEntities ?? []),
+      ...resolved.linkedEntities,
+      ...result.linkedEntities,
+    ],
+    linkedTerms: [
+      ...(markerResult?.linkedTerms ?? []),
+      ...(result.linkedTerms ?? []),
+    ],
     ...(implicitEntities ? { implicitEntities } : {}),
   };
 }
@@ -744,10 +781,15 @@ export function maybeApplyWikilinks(
   const result = processWikilinks(content, notePath, existingContent);
 
   if (result.linksAdded > 0) {
-    // Track applications for implicit feedback detection
+    // Track applications for implicit feedback detection — carry the
+    // matched term so per-alias feedback/suppression can attribute it.
     const stateDb = getWriteStateDb();
     if (stateDb && notePath) {
-      trackWikilinkApplications(stateDb, notePath, result.linkedEntities);
+      if (result.linkedTerms?.length) {
+        trackWikilinkApplications(stateDb, notePath, result.linkedTerms);
+      } else {
+        trackWikilinkApplications(stateDb, notePath, result.linkedEntities);
+      }
     }
 
     const implicitCount = result.implicitEntities?.length ?? 0;
@@ -2107,6 +2149,9 @@ export async function applyProactiveSuggestions(
     return { applied: [], skipped: candidates.map(c => c.entity) };
   }
 
+  // Per-path lock: read → link → write must be atomic vs engine renders /
+  // tool mutations of the same note (TOCTOU). See path-lock.ts.
+  return withPathLock(pathLockKey(vaultPath, filePath), async () => {
   // Read current file content
   let content: string;
   try {
@@ -2184,4 +2229,5 @@ export async function applyProactiveSuggestions(
       .map(c => c.entity)
       .filter(e => !result.linkedEntities.includes(e)),
   };
+  });
 }

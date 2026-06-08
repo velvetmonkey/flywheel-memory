@@ -97,7 +97,7 @@ Part of the **Flywheel suite** — local-first knowledge infrastructure over a p
 - [flywheel-gravity](https://github.com/velvetmonkey/flywheel-gravity) — A compressed, reality-filtered context field over a vault.
 - [flywheel-ideas](https://github.com/velvetmonkey/flywheel-ideas) — Local-first decision ledger: falsifiable bets, accepted outcomes, reusable lessons.
 - [mega-monkey](https://github.com/velvetmonkey/mega-monkey) — Telegram-native AI research cockpit over an Obsidian vault.
-- [roundtable](https://github.com/velvetmonkey/roundtable) — Local MCP server for delegating tasks to multiple AI [[models]].
+- [roundtable](https://github.com/velvetmonkey/roundtable) — Local MCP server for delegating tasks to multiple AI models.
 
 Research and experiments:
 

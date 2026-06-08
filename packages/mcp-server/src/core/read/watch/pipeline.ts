@@ -37,7 +37,7 @@ import { exportHubScores } from '../../shared/hubExport.js';
 import { buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from '../../shared/recency.js';
 import { mineCooccurrences, saveCooccurrenceToStateDb } from '../../shared/cooccurrence.js';
 import { setCooccurrenceIndex, suggestRelatedLinks, applyProactiveSuggestions } from '../../write/wikilinks.js';
-import { enqueueProactiveSuggestions, drainProactiveQueue, purgeProactiveForDeleted, type QueueEntry } from '../../write/proactiveQueue.js';
+import { enqueueProactiveSuggestions, drainProactiveQueue, purgeProactiveForDeleted, excludedFolderSet, isInExcludedFolder, type QueueEntry } from '../../write/proactiveQueue.js';
 import { mineRetrievalCooccurrence } from '../../shared/retrievalCooccurrence.js';
 import { updateFTS5Incremental, countFTS5Mentions } from '../fts5.js';
 import { recordProspectSightings, refreshProspectSummaries, cleanStaleProspects, type ProspectSighting } from '../../shared/prospects.js';
@@ -1109,9 +1109,13 @@ export class PipelineRunner {
     const preSuppressed = p.sd ? new Set(getAllSuppressionPenalties(p.sd).keys()) : new Set<string>();
     const feedbackResults: Array<{ entity: string; file: string }> = [];
 
+    const feedbackExcluded = excludedFolderSet(p.flywheelConfig);
     if (p.sd) {
       for (const event of events) {
         if (event.type === 'delete' || !event.path.endsWith('.md')) continue;
+        // Engine-rendered folders: full re-renders legitimately drop links;
+        // counting those as implicit-removed would churn-suppress entities.
+        if (isInExcludedFolder(event.path, feedbackExcluded)) continue;
         try {
           const content = await fs.readFile(path.join(p.vp, event.path), 'utf-8');
           const removed = processImplicitFeedback(p.sd, event.path, content);
@@ -1124,6 +1128,7 @@ export class PipelineRunner {
     if (p.sd && this.linkDiffs.length > 0) {
       for (const diff of this.linkDiffs) {
         if (deletedFiles.has(diff.file)) continue;
+        if (isInExcludedFolder(diff.file, feedbackExcluded)) continue;
         for (const target of diff.removed) {
           if (feedbackResults.some(r => r.entity === target && r.file === diff.file)) continue;
           const entity = this.entitiesAfter.find(
@@ -1365,6 +1370,7 @@ export class PipelineRunner {
         minScore: p.flywheelConfig?.proactive_min_score ?? 20,
         maxPerFile: p.flywheelConfig?.proactive_max_per_file ?? 5,
         maxPerDay: p.flywheelConfig?.proactive_max_per_day ?? 10,
+        excludeFolders: excludedFolderSet(p.flywheelConfig),
       },
       applyProactiveSuggestions,
     );
@@ -1423,9 +1429,13 @@ export class PipelineRunner {
     try {
       const minScore = p.flywheelConfig?.proactive_min_score ?? 20;
       const maxPerFile = p.flywheelConfig?.proactive_max_per_file ?? 5;
+      const proactiveExcluded = excludedFolderSet(p.flywheelConfig);
       const entries: QueueEntry[] = [];
 
       for (const { file, top } of this.suggestionResults) {
+        // Engine-owned folders get links at write time; the watcher must
+        // never write into them (re-render⇄proactive churn loop).
+        if (isInExcludedFolder(file, proactiveExcluded)) continue;
         const candidates = top
           .filter(s => s.score >= minScore && s.confidence === 'high')
           .slice(0, maxPerFile);

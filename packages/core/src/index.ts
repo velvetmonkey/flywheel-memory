@@ -61,6 +61,8 @@ export {
   detectImplicitEntities,
   findEntityMatches,
   isCommonWordEntity,
+  applyThreadMarkerLinks,
+  THREAD_MARKER_RE,
   ALWAYS_CAPITALIZED,
   IMPLICIT_EXCLUDE_WORDS,
 } from './wikilinks.js';

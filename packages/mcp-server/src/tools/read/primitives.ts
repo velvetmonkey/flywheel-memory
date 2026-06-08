@@ -5,6 +5,10 @@
  */
 
 import { z } from 'zod';
+import fsp from 'fs/promises';
+import nodePath from 'path';
+import { computeContentHash } from '../../core/write/file-io.js';
+import { validatePathSecure } from '../../core/write/path-security.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
 import { MAX_LIMIT } from '../../core/read/constants.js';
@@ -71,10 +75,10 @@ export function registerPrimitiveTools(
   // ============================================
 
   // Shared schema/handler for the canonical read tool
-  const noteReadDesc = 'Read vault note content. action=structure (default): heading outline, frontmatter, backlinks, outlinks, word count, optional full section text — prefer over built-in Read for vault notes. action=section: text under one heading by name. action=sections: vault-wide heading search by regex. Returns enriched note metadata. Does not search or mutate.';
+  const noteReadDesc = 'Read vault note content. action=structure (default): heading outline, frontmatter, backlinks, word count — prefer over built-in Read for vault notes. action=section: text under one heading. action=sections: vault-wide heading search by regex. action=raw: byte-exact content + hash (CAS/drift checks). Returns note content + metadata. Does not search or mutate.';
   const noteReadSchema = {
-    action: z.enum(['structure', 'section', 'sections']).describe(
-      'Operation: structure (read note outline + metadata) | section (read one section by heading) | sections (vault-wide heading search)'
+    action: z.enum(['structure', 'section', 'sections', 'raw']).describe(
+      'Operation: structure (read note outline + metadata) | section (read one section by heading) | sections (vault-wide heading search) | raw (byte-exact file content + content hash, for CAS writers and drift reconciliation)'
     ),
     path: z.string().optional().describe('[structure|section] Vault-relative note path'),
     include_content: z.boolean().optional().describe('[structure] Include full section text under each heading (default false)'),
@@ -89,7 +93,7 @@ export function registerPrimitiveTools(
   } as const;
 
   type NoteReadArgs = {
-    action: 'structure' | 'section' | 'sections';
+    action: 'structure' | 'section' | 'sections' | 'raw';
     path?: string; include_content?: boolean; max_content_chars?: number;
     heading?: string; include_subheadings?: boolean; max_section_chars?: number;
     pattern?: string; folder?: string; limit?: number; offset?: number;
@@ -98,6 +102,40 @@ export function registerPrimitiveTools(
   const noteReadImpl = async ({ action, path, include_content, max_content_chars, heading, include_subheadings, max_section_chars, pattern, folder, limit: requestedLimit, offset: requestedOffset }: NoteReadArgs) => {
       const index = getIndex();
       const vaultPath = getVaultPath();
+
+      // ── action=raw ─────────────────────────────────────────────────────
+      // Byte-exact content + content hash. NO enrichment, NO truncation —
+      // this is the read CAS writers (mega-monkey outbox) and reconcile
+      // passes depend on; structure/section are enriched/trimmed and
+      // unusable for byte-level comparison.
+      if (action === 'raw') {
+        if (!path) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({
+            error: 'action=raw requires path.',
+            example: { action: 'raw', path: 'plans/2026-06/my-plan.md' },
+          }, null, 2) }] };
+        }
+        const validation = await validatePathSecure(vaultPath, path);
+        if (!validation.valid) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({ error: `Invalid path: ${validation.reason}`, path }, null, 2) }] };
+        }
+        try {
+          const rawContent = await fsp.readFile(nodePath.join(vaultPath, path), 'utf-8');
+          return { content: [{ type: 'text' as const, text: JSON.stringify({
+            path,
+            rawContent,
+            content_hash: computeContentHash(rawContent),
+            length: rawContent.length,
+          }, null, 2) }] };
+        } catch (err) {
+          const code = (err as NodeJS.ErrnoException)?.code;
+          return { content: [{ type: 'text' as const, text: JSON.stringify({
+            error: code === 'ENOENT' ? 'Note not found' : `Read failed: ${err instanceof Error ? err.message : String(err)}`,
+            code: code === 'ENOENT' ? 'NOT_FOUND' : undefined,
+            path,
+          }, null, 2) }] };
+        }
+      }
 
       // ── action=structure ───────────────────────────────────────────────
       if (action === 'structure') {

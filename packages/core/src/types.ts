@@ -188,6 +188,13 @@ export interface WikilinkOptions {
    * will not be linked again by applyWikilinks.
    */
   alreadyLinked?: Set<string>;
+
+  /**
+   * Per-alias suppression: (entity, term) pairs that must not be used as
+   * search terms, keyed `entityLower||termLower`. Lets feedback suppress one
+   * bad alias without poisoning the whole entity.
+   */
+  suppressedTerms?: Set<string>;
 }
 
 /**
@@ -197,6 +204,8 @@ export interface WikilinkResult {
   content: string;
   linksAdded: number;
   linkedEntities: string[];
+  /** (entity, matched term) pairs for per-alias feedback tracking */
+  linkedTerms?: Array<{ entity: string; matchedTerm: string }>;
   /** Implicit entities detected via pattern matching (non-existent targets) */
   implicitEntities?: string[];
 }

@@ -67,6 +67,13 @@ export interface MutationResult {
   success: boolean;
   message: string;
   path: string;
+  /**
+   * Machine-matchable error code for programmatic callers (e.g. the
+   * mega-monkey outbox drain). Stable contract:
+   * - 'WRITE_CONFLICT' — expectedHash precondition failed (CAS reject)
+   * - 'FILE_EXISTS'    — create without overwrite hit an existing file
+   */
+  code?: 'WRITE_CONFLICT' | 'FILE_EXISTS';
   preview?: string;
   gitCommit?: string;
   /** Content hashes for change tracking (optional) */

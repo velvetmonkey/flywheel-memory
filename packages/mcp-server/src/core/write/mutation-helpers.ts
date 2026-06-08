@@ -22,6 +22,7 @@ import { injectMutationMetadata } from './writer.js';
 import { getWriteStateDb } from './wikilinks.js';
 import { processImplicitFeedback } from './wikilinkFeedback.js';
 import { getPoliciesDir } from './policy/policyPaths.js';
+import { withPathLock, pathLockKey } from './path-lock.js';
 
 /**
  * Context provided to mutation operations
@@ -295,6 +296,10 @@ export async function executeMutation(
   const implicitFeedback = options.implicitFeedback !== false;
 
   try {
+    // Serialize the whole read-modify-write under the per-path lock so a
+    // concurrent writer can't slip in between our read and our hash-guarded
+    // write (TOCTOU). See path-lock.ts.
+    return await withPathLock(pathLockKey(vaultPath, notePath), async (): Promise<MutationOutcome> => {
     // 1. Check file exists
     const existsError = await ensureFileExists(vaultPath, notePath);
     if (existsError) {
@@ -385,9 +390,11 @@ export async function executeMutation(
       normalizationChanges: opResult.normalizationChanges,
     });
     return { success: true, result, filesWritten: [notePath] };
+    });
   } catch (error) {
     const extras: Partial<MutationResult> = {};
     if (error instanceof WriteConflictError) {
+      extras.code = 'WRITE_CONFLICT';
       extras.warnings = [{
         type: 'write_conflict',
         message: error.message,
@@ -461,6 +468,8 @@ export async function executeFrontmatterMutation(
   const { vaultPath, notePath, actionDescription, dryRun } = options;
 
   try {
+    // Per-path lock: serialize read → frontmatter-merge → write (TOCTOU).
+    return await withPathLock(pathLockKey(vaultPath, notePath), async (): Promise<MutationOutcome> => {
     // 1. Check file exists
     const existsError = await ensureFileExists(vaultPath, notePath);
     if (existsError) {
@@ -491,9 +500,11 @@ export async function executeFrontmatterMutation(
       preview: opResult.preview,
     });
     return { success: true, result, filesWritten: [notePath] };
+    });
   } catch (error) {
     const extras: Partial<MutationResult> = {};
     if (error instanceof WriteConflictError) {
+      extras.code = 'WRITE_CONFLICT';
       extras.warnings = [{
         type: 'write_conflict',
         message: error.message,
@@ -555,6 +566,13 @@ export interface CreateNoteOptions {
   overwrite?: boolean;
   skipWikilinks?: boolean;
   scoping?: ScopingMetadata;
+  /**
+   * CAS precondition for overwrite renders: sha-256/16 content hash of the
+   * raw on-disk file the caller last read (see computeContentHash). The
+   * write fails with code WRITE_CONFLICT if the file changed since.
+   * Only meaningful with overwrite:true.
+   */
+  expectedHash?: string;
 }
 
 /**
@@ -563,7 +581,7 @@ export interface CreateNoteOptions {
  * Callers (direct tool, policy executor) add their own pre-write intelligence.
  */
 export async function executeCreateNote(options: CreateNoteOptions): Promise<MutationOutcome> {
-  const { vaultPath, notePath, content, frontmatter, overwrite, skipWikilinks, scoping } = options;
+  const { vaultPath, notePath, content, frontmatter, overwrite, skipWikilinks, scoping, expectedHash } = options;
 
   try {
     // 1. Validate path
@@ -572,44 +590,56 @@ export async function executeCreateNote(options: CreateNoteOptions): Promise<Mut
       return { success: false, result: errorResult(notePath, `Path blocked: ${pathCheck.reason}`), filesWritten: [] };
     }
 
-    // 2. Check if file already exists
-    const fullPath = path.join(vaultPath, notePath);
-    let fileExists = false;
-    try {
-      await fs.access(fullPath);
-      fileExists = true;
-    } catch {
-      // File doesn't exist — good
-    }
-
-    if (fileExists && !overwrite) {
-      return { success: false, result: errorResult(notePath, `File already exists: ${notePath}. Use overwrite=true to replace.`), filesWritten: [] };
-    }
-
-    // 3. Create parent directories
-    await fs.mkdir(path.dirname(fullPath), { recursive: true });
-
-    // 4. Apply wikilinks
+    // 2-pre. Content-only work happens BEFORE the lock (wikilink application
+    // depends on content, not disk state) so hot paths don't serialize
+    // behind the O(entities) link pass.
     const { maybeApplyWikilinks } = await import('./wikilinks.js');
     const { content: processedContent } = maybeApplyWikilinks(content, skipWikilinks ?? false, notePath);
 
-    // 5. Inject scoping metadata
     let finalFrontmatter = frontmatter;
     if (scoping && (scoping.agent_id || scoping.session_id)) {
       finalFrontmatter = injectMutationMetadata(frontmatter, scoping);
     }
 
-    // 6. Write file
-    await writeVaultFile(vaultPath, notePath, processedContent, finalFrontmatter);
+    // Per-path lock: exists-check + hash-guarded write are atomic vs other writers.
+    return await withPathLock(pathLockKey(vaultPath, notePath), async (): Promise<MutationOutcome> => {
+      // 2. Check if file already exists
+      const fullPath = path.join(vaultPath, notePath);
+      let fileExists = false;
+      try {
+        await fs.access(fullPath);
+        fileExists = true;
+      } catch {
+        // File doesn't exist — good
+      }
 
-    const result = successResult(notePath, `Created note: ${notePath}`, {}, {
-      preview: `Frontmatter: ${Object.keys(frontmatter).join(', ') || 'none'}, Content: ${processedContent.length} chars`,
+      if (fileExists && !overwrite) {
+        return {
+          success: false,
+          result: errorResult(notePath, `File already exists: ${notePath}. Use overwrite=true to replace.`, { code: 'FILE_EXISTS' }),
+          filesWritten: [],
+        };
+      }
+
+      // 3. Create parent directories
+      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+
+      // 4. Write file (CAS: expectedHash rejects if the file changed since read)
+      await writeVaultFile(vaultPath, notePath, processedContent, finalFrontmatter, 'LF', fileExists ? expectedHash : undefined);
+
+      const result = successResult(notePath, `Created note: ${notePath}`, {}, {
+        preview: `Frontmatter: ${Object.keys(frontmatter).join(', ') || 'none'}, Content: ${processedContent.length} chars`,
+      });
+      return { success: true, result, filesWritten: [notePath] };
     });
-    return { success: true, result, filesWritten: [notePath] };
   } catch (error) {
+    const extras: Partial<MutationResult> = {};
+    if (error instanceof WriteConflictError) {
+      extras.code = 'WRITE_CONFLICT';
+    }
     return {
       success: false,
-      result: errorResult(notePath, `Failed to create note: ${error instanceof Error ? error.message : String(error)}`),
+      result: errorResult(notePath, `Failed to create note: ${error instanceof Error ? error.message : String(error)}`, extras),
       filesWritten: [],
     };
   }

@@ -207,6 +207,35 @@ describe('applyThreadMarkerLinks', () => {
 // False-positive guard (test 9): handles never bare-link
 // ─────────────────────────────────────────────────────────────────────────────
 
+describe('case-preservation (reconcile no-loop)', () => {
+  it('linking text "AI" to a lowercase-canonical entity preserves display as [[ai|AI]]', () => {
+    const entities = [{ name: 'ai', path: 'entities/ai.md', aliases: [] }];
+    const r = applyWikilinks('We use AI/data pipelines daily', entities, {
+      firstOccurrenceOnly: true, caseInsensitive: true,
+    });
+    // MUST keep the original "AI" casing via the piped form — a bare [[ai]]
+    // would lose it and break round-trip consumers (mega-monkey reconcile).
+    expect(r.content).toContain('[[ai|AI]]');
+    expect(r.content).not.toMatch(/\[\[ai\]\]/);
+  });
+
+  it('exact-case match still emits the bare form', () => {
+    const entities = [{ name: 'AI', path: 'entities/AI.md', aliases: [] }];
+    const r = applyWikilinks('We use AI daily', entities, {
+      firstOccurrenceOnly: true, caseInsensitive: true,
+    });
+    expect(r.content).toContain('[[AI]]');
+  });
+
+  it('all-occurrences mode also preserves case', () => {
+    const entities = [{ name: 'ci', path: 'entities/ci.md', aliases: [] }];
+    const r = applyWikilinks('CI here and CI there', entities, {
+      firstOccurrenceOnly: false, caseInsensitive: true,
+    });
+    expect(r.content).toBe('[[ci|CI]] here and [[ci|CI]] there');
+  });
+});
+
 describe('handle false-positive guard', () => {
   it('"dark-mode" thread handle entity does NOT link bare text', () => {
     const entities = [{ name: 'dark-mode', path: 'threads/2026-06/dark-mode.md', aliases: ['🧵#dark-mode'] }];

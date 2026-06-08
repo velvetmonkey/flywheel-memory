@@ -546,10 +546,14 @@ export function applyWikilinks(
     selectedMatches.sort((a, b) => b.match.start - a.match.start);
 
     for (const { entityName, term, match } of selectedMatches) {
-      // Use display text format when matched text differs from entity name
-      const matchedTextLower = match.matched.toLowerCase();
-      const entityNameLower = entityName.toLowerCase();
-      const wikilink = matchedTextLower === entityNameLower
+      // Bare [[Name]] ONLY when the matched text is the entity name
+      // EXACTLY (case included). A case-insensitive match keeps the original
+      // display via the piped form so the source's casing is never lost —
+      // text "AI" linked to entity "ai" emits [[ai|AI]], not [[ai]]. Losing
+      // case here breaks consumers that round-trip through the rendered note
+      // (the mega-monkey reconcile loop: [[ai]] normalizes to "ai" but the DB
+      // source said "AI" → permanent false drift).
+      const wikilink = match.matched === entityName
         ? `[[${entityName}]]`
         : `[[${entityName}|${match.matched}]]`;
 
@@ -652,10 +656,9 @@ export function applyWikilinks(
       const matchesToProcess = [...validMatches].reverse();
 
       for (const match of matchesToProcess) {
-        // Use display text format when matched text differs from entity name
-        const matchedTextLower = match.matched.toLowerCase();
-        const entityNameLower = entityName.toLowerCase();
-        const wikilink = matchedTextLower === entityNameLower
+        // Bare [[Name]] ONLY when matched text is the entity name EXACTLY
+        // (case included) — preserve original display casing otherwise.
+        const wikilink = match.matched === entityName
           ? `[[${entityName}]]`
           : `[[${entityName}|${match.matched}]]`;
 

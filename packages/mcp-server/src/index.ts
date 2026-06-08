@@ -903,7 +903,6 @@ async function main() {
   }
 
   if (transportMode === 'http' || transportMode === 'both') {
-    const { createMcpExpressApp } = await import('@modelcontextprotocol/sdk/server/express.js');
     const { StreamableHTTPServerTransport } = await import('@modelcontextprotocol/sdk/server/streamableHttp.js');
 
     const httpPort = parseInt(process.env.FLYWHEEL_HTTP_PORT ?? '3111', 10);
@@ -913,7 +912,20 @@ async function main() {
     }
     const httpHost = process.env.FLYWHEEL_HTTP_HOST ?? '127.0.0.1';
 
-    const app = createMcpExpressApp({ host: httpHost });
+    // Hand-rolled replica of the SDK's createMcpExpressApp, because its
+    // express.json() uses the 100kb default — large engine plan re-renders
+    // and migrated audit batches blew past it (PayloadTooLargeError, first
+    // observed on the v2.12.18 cutover). Same DNS-rebinding protection.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { default: express } = (await import('express' as string)) as { default: any };
+    const { localhostHostValidation } = await import(
+      '@modelcontextprotocol/sdk/server/middleware/hostHeaderValidation.js'
+    );
+    const app = express();
+    app.use(express.json({ limit: '16mb' }));
+    if (['127.0.0.1', 'localhost', '::1'].includes(httpHost)) {
+      app.use(localhostHostValidation());
+    }
 
     // HTTP — pooled McpServer + per-request StreamableHTTPServerTransport
     app.post('/mcp', async (req: any, res: any) => {

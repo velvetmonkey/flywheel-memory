@@ -1,6 +1,6 @@
 {
   "name": "@velvetmonkey/flywheel-memory",
-  "version": "2.12.18",
+  "version": "2.12.19",
   "description": "Persistent knowledge graph memory for AI agents. Search, read, and write tools over an Obsidian vault via MCP.",
   "type": "module",
   "main": "dist/index.js",
@@ -57,7 +57,7 @@
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
     "@modelcontextprotocol/sdk": "^1.26.0",
-    "@velvetmonkey/vault-core": "^2.12.18",
+    "@velvetmonkey/vault-core": "^2.12.19",
     "better-sqlite3": "^12.0.0",
     "chokidar": "^4.0.0",
     "gray-matter": "^4.0.3",

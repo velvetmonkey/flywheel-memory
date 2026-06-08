@@ -1728,7 +1728,7 @@ if (process.argv.includes('--init-semantic')) {
     const semanticVaultConfigs = parseVaultConfig();
     const semanticVaultPath = semanticVaultConfigs
       ? semanticVaultConfigs[0].path
-      : (process.env.PROJECT_PATH || process.env.VAULT_PATH || findVaultRoot());
+      : (process.env.PROJECT_PATH || process.env.VAULT_PATH || process.env.OBSIDIAN_VAULT || findVaultRoot());
 
     console.error('[Semantic] Pre-warming semantic search...');
     console.error(`[Semantic] Vault: ${semanticVaultPath}`);

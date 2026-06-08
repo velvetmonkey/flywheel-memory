@@ -130,8 +130,10 @@ Learn React here`;
     const entities = ['API', 'API Management'];
     const result = applyWikilinks(content, entities);
 
-    // Should link to "API", not "API Management" - shorter entity is more exact
-    expect(result.content).toBe('the [[API]] is broken');
+    // Should link to "API", not "API Management" - shorter entity is more exact.
+    // Source casing ("api") is preserved via the piped form (v2.12.20 fix:
+    // bare [[API]] only on an EXACT case match; otherwise [[API|api]]).
+    expect(result.content).toBe('the [[API|api]] is broken');
     expect(result.linksAdded).toBe(1);
     expect(result.linkedEntities).toContain('API');
     expect(result.linkedEntities).not.toContain('API Management');
@@ -172,7 +174,9 @@ Learn React here`;
     const entities = ['React'];
     const result = applyWikilinks(content, entities, { caseInsensitive: true });
 
-    expect(result.content).toBe('Using [[React]] for development');
+    // Case-insensitive MATCH still links, but display preserves the source's
+    // "react" casing via the piped form (v2.12.20 fix — prevents reconcile drift).
+    expect(result.content).toBe('Using [[React|react]] for development');
   });
 
   it('should respect word boundaries', () => {

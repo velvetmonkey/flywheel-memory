@@ -61,6 +61,8 @@ export {
   detectImplicitEntities,
   findEntityMatches,
   isCommonWordEntity,
+  overlapsExistingLink,
+  filterNewImplicitMatches,
   applyThreadMarkerLinks,
   THREAD_MARKER_RE,
   ALWAYS_CAPITALIZED,

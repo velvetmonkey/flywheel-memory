@@ -29,6 +29,8 @@ import {
   applyWikilinks,
   resolveAliasWikilinks,
   detectImplicitEntities,
+  filterNewImplicitMatches,
+  overlapsExistingLink,
   getEntityIndexFromDb,
   getStateDbMetadata,
   getEntityByName,
@@ -702,22 +704,12 @@ export function processWikilinks(content: string, notePath?: string, existingCon
     ? notePath.replace(/\.md$/, '').split('/').pop()?.toLowerCase()
     : null;
 
-  let newImplicits = implicitMatches.filter(m => {
-    const normalized = m.text.toLowerCase();
-    if (alreadyLinked.has(normalized)) return false;
-    if (currentNoteName && normalized === currentNoteName) return false;
-    return true;
-  });
+  let newImplicits = filterNewImplicitMatches(implicitMatches, alreadyLinked, currentNoteName);
 
   // Filter overlapping matches (defense-in-depth)
   const nonOverlapping: typeof newImplicits = [];
   for (const match of newImplicits) {
-    const overlaps = nonOverlapping.some(
-      existing =>
-        (match.start >= existing.start && match.start < existing.end) ||
-        (match.end > existing.start && match.end <= existing.end) ||
-        (match.start <= existing.start && match.end >= existing.end)
-    );
+    const overlaps = nonOverlapping.some(existing => overlapsExistingLink(match, existing));
     if (!overlaps) {
       nonOverlapping.push(match);
     }

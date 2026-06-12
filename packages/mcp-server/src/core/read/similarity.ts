@@ -114,25 +114,8 @@ export function findSimilarNotes(
 
     // Optionally filter out already-linked notes
     if (options.excludeLinked) {
-      const note = index.notes.get(sourcePath);
-      if (note) {
-        const linkedPaths = new Set<string>();
-
-        // Forward links
-        for (const link of note.outlinks) {
-          const resolved = index.entities.get(link.target.toLowerCase());
-          if (resolved) linkedPaths.add(resolved);
-        }
-
-        // Backlinks
-        const normalizedPath = normalizeTarget(note.path);
-        const backlinks = index.backlinks.get(normalizedPath) || [];
-        for (const bl of backlinks) {
-          linkedPaths.add(bl.source);
-        }
-
-        filtered = filtered.filter(r => !linkedPaths.has(r.path));
-      }
+      const linkedPaths = getLinkedPaths(index, sourcePath);
+      filtered = filtered.filter(r => !linkedPaths.has(r.path));
     }
 
     return filtered.slice(0, limit).map(r => ({

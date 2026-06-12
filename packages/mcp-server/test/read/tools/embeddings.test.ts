@@ -6,10 +6,8 @@
  */
 
 import { describe, test, expect } from 'vitest';
-import {
-  cosineSimilarity,
-  reciprocalRankFusion,
-} from '../../../src/core/read/embeddings.js';
+import { cosineSimilarity } from '../../../src/core/read/embeddings.js';
+import { reciprocalRankFusion } from '../../../src/core/search/merge.js';
 
 describe('Embeddings Module', () => {
   describe('cosineSimilarity', () => {

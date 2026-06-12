@@ -15,10 +15,10 @@ import {
   findSemanticallySimilar,
   buildEmbeddingsIndex,
   hasEmbeddingsIndex,
-  reciprocalRankFusion,
   loadNoteEmbeddingsForPaths,
   type ScoredNote,
 } from './embeddings.js';
+import { reciprocalRankFusion } from '../search/merge.js';
 import { selectByMmr, type MmrCandidate } from './mmr.js';
 import { STOPWORDS_EN, escapeFts5Query } from '@velvetmonkey/vault-core';
 

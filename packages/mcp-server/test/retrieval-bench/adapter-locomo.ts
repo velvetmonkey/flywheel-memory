@@ -22,8 +22,8 @@ import {
   buildEmbeddingsIndex,
   semanticSearch,
   hasEmbeddingsIndex,
-  reciprocalRankFusion,
 } from '../../src/core/read/embeddings.js';
+import { reciprocalRankFusion } from '../../src/core/search/merge.js';
 import { setWriteStateDb } from '../../src/core/write/wikilinks.js';
 import { setRecencyStateDb } from '../../src/core/shared/recency.js';
 import type { LoCoMoEntry, LoCoMoSession } from './dataset-locomo.js';

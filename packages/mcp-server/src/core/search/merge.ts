@@ -4,15 +4,41 @@
  * The hybrid (FTS5 × semantic × entity × edge-weight) RRF merge and the
  * non-hybrid FTS5+entity merge, extracted verbatim from the inline blocks
  * in tools/read/query.ts. Single home for result merging; the RRF
- * implementation itself currently lives in core/read/embeddings.ts and is
- * re-pointed here in S8 (G2 S6/S8 boundary).
+ * implementation moved here from core/read/embeddings.ts in S8 (G2 S6/S8
+ * boundary).
  *
  * Seam pinned by test/read/tools/search-hybrid-seam.test.ts before the move.
  */
 
 import type { FTS5Result } from '../read/fts5.js';
-import { reciprocalRankFusion, type ScoredNote } from '../read/embeddings.js';
+import type { ScoredNote } from '../read/embeddings/search.js';
 import type { EntitySearchResult } from '@velvetmonkey/vault-core';
+
+// =============================================================================
+// Reciprocal Rank Fusion
+// =============================================================================
+
+/**
+ * Merge two ranked lists using Reciprocal Rank Fusion (RRF).
+ * score(doc) = Σ 1/(k + rank_in_list)
+ * k=60 is the standard constant from the original paper.
+ */
+export function reciprocalRankFusion<T extends { path: string }>(
+  ...lists: T[][]
+): Map<string, number> {
+  const k = 60;
+  const scores = new Map<string, number>();
+
+  for (const list of lists) {
+    for (let rank = 0; rank < list.length; rank++) {
+      const item = list[rank];
+      const rrfScore = 1 / (k + rank + 1); // rank is 0-indexed, so +1
+      scores.set(item.path, (scores.get(item.path) || 0) + rrfScore);
+    }
+  }
+
+  return scores;
+}
 
 export interface HybridMergedHit {
   [key: string]: unknown;

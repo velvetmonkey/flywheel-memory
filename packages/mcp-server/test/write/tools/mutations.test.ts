@@ -16,7 +16,7 @@ import {
   validatePathSecure,
   type MatchMode,
 } from '../../../src/core/write/writer.js';
-import { createNoteFromTemplate } from '../../../src/tools/write/mutations.js';
+import { createNoteFromTemplate } from '../../../src/core/write/noteTemplate.js';
 import {
   createTempVault,
   cleanupTempVault,

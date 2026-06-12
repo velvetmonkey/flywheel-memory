@@ -41,12 +41,10 @@ import { detectCaseInsensitive, setModuleCaseInsensitive } from './core/read/cas
 import { loadConfig, inferConfig, saveConfig, DEFAULT_ENTITY_EXCLUDE_FOLDERS, getExcludeTags, type FlywheelConfig } from './core/read/config.js';
 import { findVaultRoot } from './core/read/vaultRoot.js';
 import {
-  createVaultWatcher,
-  parseWatcherConfig,
   type VaultWatcher,
   type WatcherStatus,
 } from './core/read/watch/index.js';
-import { PipelineRunner, createEmptyPipelineActivity } from './core/read/watch/pipeline.js';
+import { createEmptyPipelineActivity } from './core/write/pipeline/activity.js';
 import { exportHubScores } from './core/shared/hubExport.js';
 import { initializeLogger as initializeReadLogger, getLogger } from './core/read/logging.js';
 
@@ -92,7 +90,7 @@ import {
 } from './core/read/integrity.js';
 
 // Vault-core shared imports
-import { openStateDb, scanVaultEntities, getAllEntitiesFromDb, loadContentHashes, saveContentHashBatch, renameContentHash, type StateDb } from '@velvetmonkey/vault-core';
+import { openStateDb, scanVaultEntities, getAllEntitiesFromDb, type StateDb } from '@velvetmonkey/vault-core';
 
 // Memory lifecycle (used directly in index.ts for periodic maintenance)
 import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } from './core/write/memory.js';
@@ -101,15 +99,17 @@ import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } 
 import { startSweepTimer, stopSweepTimer } from './core/read/sweep.js';
 
 // Core imports - Maintenance
-import { startMaintenanceTimer, stopMaintenanceTimer } from './core/read/watch/maintenance.js';
-import { DeferredStepScheduler } from './core/read/watch/pipeline.js';
+import { startMaintenanceTimer, stopMaintenanceTimer } from './core/write/pipeline/maintenance.js';
+
+// Core imports - Watcher glue (write-side pipeline wiring)
+import { setupVaultWatcher } from './core/write/pipeline/watchGlue.js';
 
 // Core imports - Metrics
 import { computeMetrics, recordMetrics, purgeOldMetrics } from './core/shared/metrics.js';
 import { purgeOldBenchmarks } from './core/shared/benchmarks.js';
 
 // Core imports - Index Activity
-import { recordIndexEvent, purgeOldIndexEvents, purgeOldSuggestionEvents, purgeOldNoteLinkHistory, getRecentPipelineEvent } from './core/shared/indexActivity.js';
+import { recordIndexEvent, purgeOldIndexEvents, purgeOldSuggestionEvents, purgeOldNoteLinkHistory } from './core/shared/indexActivity.js';
 
 // Core imports - Tool Tracking
 import { purgeOldInvocations } from './core/shared/toolTracking.js';
@@ -129,13 +129,6 @@ import { setProspectStateDb } from './core/shared/prospects.js';
 // Core imports - Co-occurrence
 import { loadCooccurrenceFromStateDb } from './core/shared/cooccurrence.js';
 import { pruneStaleRetrievalCooccurrence } from './core/shared/retrievalCooccurrence.js';
-
-// Node builtins
-import * as fs from 'node:fs/promises';
-import { createHash } from 'node:crypto';
-import type { CoalescedEvent, RenameEvent } from './core/read/watch/types.js';
-import type { BatchHandler } from './core/read/watch/index.js';
-import { normalizePath } from './core/read/watch/pathFilter.js';
 
 // Multi-vault
 import {
@@ -1129,27 +1122,8 @@ async function updateEntitiesInStateDb(vp?: string, sd?: StateDb | null): Promis
   }
 }
 
-/**
- * Returns CoalescedEvents for vault .md files modified after sinceMs.
- * Used on startup to catch up on edits made while the server was offline.
- *
- * If preScannedFiles is provided (from the earlier scanVault call in bootVault),
- * uses those instead of re-walking the filesystem.
- */
-function buildStartupCatchupBatch(
-  vaultPath: string,
-  sinceMs: number,
-  preScannedFiles: import('./core/read/vault.js').VaultFile[] | null
-): CoalescedEvent[] {
-  if (preScannedFiles) {
-    return preScannedFiles
-      .filter(f => f.modified.getTime() > sinceMs)
-      .map(f => ({ type: 'upsert' as const, path: f.path, originalEvents: [] }));
-  }
-
-  // Fallback: should not happen in normal startup, but kept for safety
-  return [];
-}
+// The startup catch-up batch builder moved to core/write/pipeline/watchGlue.ts
+// (arch-review S9) together with the rest of the watcher glue.
 
 // ============================================================================
 // Periodic Maintenance (runs on sweep timer — every 5 min)
@@ -1415,277 +1389,22 @@ async function runPostIndexWork(ctx: VaultContext) {
     serverLog('semantic', 'Skipping — FLYWHEEL_SKIP_EMBEDDINGS');
   }
 
-  // Setup file watcher
+  // Setup file watcher (wiring moved to core/write/pipeline/watchGlue.ts — arch-review S9;
+  // index.ts only builds the deps object from its module-scoped closures/state)
   if (process.env.FLYWHEEL_WATCH !== 'false') {
-    const config = parseWatcherConfig();
-    const lastContentHashes = new Map<string, string>();
-    if (sd) {
-      const persisted = loadContentHashes(sd);
-      for (const [p, h] of persisted) lastContentHashes.set(p, h);
-      if (persisted.size > 0) {
-        serverLog('watcher', `Loaded ${persisted.size} persisted content hashes`);
-      }
-    }
-    serverLog('watcher', `File watcher enabled (debounce: ${config.debounceMs}ms)`);
-
-    // Set up deferred step scheduler for throttled pipeline steps
-    const deferredScheduler = new DeferredStepScheduler();
-    ctx.deferredScheduler = deferredScheduler;
-    deferredScheduler.setExecutor({
+    await setupVaultWatcher({
       ctx,
       vp,
+      rvp,
       sd,
-      getVaultIndex: () => ctx.vaultIndex,
+      runWithVaultScope,
+      updateIndexState: updateCtxIndexState,
+      updateVaultIndex: updateCtxVaultIndex,
       updateEntitiesInStateDb,
-      runWithScope: runWithVaultScope,
+      runIntegrityCheck,
+      startupScanFiles,
+      setWatcherInstance: (watcher) => { watcherInstance = watcher; },
     });
-
-    // Define before createVaultWatcher so we can call it directly for catch-up
-    const handleBatch: BatchHandler = async (batch) => {
-      return runWithVaultScope(async () => {
-        // Convert event paths from absolute to vault-relative
-        // Handles symlink mismatches (e.g., WSL /mnt/c/ vs /home/user/ mounts)
-        const vaultPrefixes = new Set([
-          normalizePath(vp),
-          normalizePath(rvp),
-        ]);
-        /** Normalize a single path from absolute to vault-relative */
-        const normalizeEventPath = (rawPath: string): string => {
-          const normalized = normalizePath(rawPath);
-          for (const prefix of vaultPrefixes) {
-            if (normalized.startsWith(prefix + '/')) {
-              return normalized.slice(prefix.length + 1);
-            }
-          }
-          // Try resolving the path itself (handles other symlink layouts)
-          try {
-            const resolved = realpathSync(rawPath).replace(/\\/g, '/');
-            for (const prefix of vaultPrefixes) {
-              if (resolved.startsWith(prefix + '/')) {
-                return resolved.slice(prefix.length + 1);
-              }
-            }
-          } catch { /* deleted file — try parent */
-            try {
-              const dir = path.dirname(rawPath);
-              const base = path.basename(rawPath);
-              const resolvedDir = realpathSync(dir).replace(/\\/g, '/');
-              for (const prefix of vaultPrefixes) {
-                if (resolvedDir.startsWith(prefix + '/') || resolvedDir === prefix) {
-                  const relDir = resolvedDir === prefix ? '' : resolvedDir.slice(prefix.length + 1);
-                  return relDir ? `${relDir}/${base}` : base;
-                }
-              }
-            } catch { /* give up, return as-is */ }
-          }
-          return normalized;
-        };
-
-        for (const event of batch.events) {
-          event.path = normalizeEventPath(event.path);
-        }
-
-        // Normalize rename paths too
-        const batchRenames: RenameEvent[] = (batch.renames ?? []).map(r => ({
-          ...r,
-          oldPath: normalizeEventPath(r.oldPath),
-          newPath: normalizeEventPath(r.newPath),
-        }));
-
-        const mutedPaths = ctx.mutedWatcherPaths;
-        const dirtyMutedPaths = ctx.dirtyMutedWatcherPaths;
-        const visibleEvents = batch.events.filter((event) => {
-          if (!mutedPaths.has(event.path)) return true;
-          dirtyMutedPaths.add(event.path);
-          return false;
-        });
-        const visibleRenames = batchRenames.filter((rename) => {
-          const muted = mutedPaths.has(rename.oldPath) || mutedPaths.has(rename.newPath);
-          if (muted) {
-            dirtyMutedPaths.add(rename.oldPath);
-            dirtyMutedPaths.add(rename.newPath);
-          }
-          return !muted;
-        });
-
-        // Content hash gate: skip files that haven't changed since last batch
-        const filteredEvents: CoalescedEvent[] = [];
-        const hashUpserts: Array<{ path: string; hash: string }> = [];
-        const hashDeletes: string[] = [];
-        for (const event of visibleEvents) {
-          if (event.type === 'delete') {
-            filteredEvents.push(event);
-            lastContentHashes.delete(event.path);
-            hashDeletes.push(event.path);
-            continue;
-          }
-          try {
-            const content = await fs.readFile(path.join(vp, event.path), 'utf-8');
-            const hash = createHash('sha256').update(content).digest('hex').slice(0, 16);
-            if (lastContentHashes.get(event.path) === hash) {
-              serverLog('watcher', `Hash unchanged, skipping: ${event.path}`);
-              continue;
-            }
-            lastContentHashes.set(event.path, hash);
-            hashUpserts.push({ path: event.path, hash });
-            filteredEvents.push(event);
-          } catch {
-            filteredEvents.push(event); // File may have been deleted mid-batch
-          }
-        }
-        if (sd && (hashUpserts.length || hashDeletes.length)) {
-          saveContentHashBatch(sd, hashUpserts, hashDeletes);
-        }
-
-        // Process rename events: record moves and update path references in DB
-        if (visibleRenames.length > 0 && sd) {
-          try {
-            const insertMove = sd.db.prepare(`
-              INSERT INTO note_moves (old_path, new_path, old_folder, new_folder)
-              VALUES (?, ?, ?, ?)
-            `);
-            const renameNoteLinks = sd.db.prepare(
-              'UPDATE note_links SET note_path = ? WHERE note_path = ?'
-            );
-            const renameNoteTags = sd.db.prepare(
-              'UPDATE note_tags SET note_path = ? WHERE note_path = ?'
-            );
-            const renameNoteLinkHistory = sd.db.prepare(
-              'UPDATE note_link_history SET note_path = ? WHERE note_path = ?'
-            );
-            const renameWikilinkApplications = sd.db.prepare(
-              'UPDATE wikilink_applications SET note_path = ? WHERE note_path = ?'
-            );
-            const renameProactiveQueue = sd.db.prepare(
-              'UPDATE proactive_queue SET note_path = ? WHERE note_path = ? AND status = \'pending\''
-            );
-            for (const rename of visibleRenames) {
-              const oldFolder = rename.oldPath.includes('/') ? rename.oldPath.split('/').slice(0, -1).join('/') : '';
-              const newFolder = rename.newPath.includes('/') ? rename.newPath.split('/').slice(0, -1).join('/') : '';
-              insertMove.run(rename.oldPath, rename.newPath, oldFolder || null, newFolder || null);
-              renameNoteLinks.run(rename.newPath, rename.oldPath);
-              renameNoteTags.run(rename.newPath, rename.oldPath);
-              renameNoteLinkHistory.run(rename.newPath, rename.oldPath);
-              renameWikilinkApplications.run(rename.newPath, rename.oldPath);
-              renameProactiveQueue.run(rename.newPath, rename.oldPath);
-              // Also update the content hash map (in-memory + persisted)
-              const oldHash = lastContentHashes.get(rename.oldPath);
-              if (oldHash !== undefined) {
-                lastContentHashes.set(rename.newPath, oldHash);
-                lastContentHashes.delete(rename.oldPath);
-                renameContentHash(sd, rename.oldPath, rename.newPath);
-              }
-            }
-            serverLog('watcher', `Renames: recorded ${visibleRenames.length} move(s) in note_moves`);
-          } catch (err) {
-            serverLog('watcher', `Rename recording failed: ${err instanceof Error ? err.message : err}`, 'error');
-          }
-        }
-
-        if (filteredEvents.length === 0 && visibleRenames.length === 0) {
-          if (visibleEvents.length === 0 && visibleRenames.length === 0 && dirtyMutedPaths.size > 0) {
-            serverLog('watcher', `Muted ${dirtyMutedPaths.size} watcher path(s) during policy execution`);
-          }
-          serverLog('watcher', 'All files unchanged (hash gate), skipping batch');
-          return;
-        }
-
-        // Synthesize upsert events for renamed files so the full pipeline refreshes in-memory state
-        if (filteredEvents.length === 0 && visibleRenames.length > 0) {
-          for (const rename of visibleRenames) {
-            filteredEvents.push({
-              type: 'upsert' as const,
-              path: rename.newPath,
-              originalEvents: [],
-            });
-          }
-        }
-
-        serverLog('watcher', `Processing ${filteredEvents.length} file changes`);
-        const changedPaths = filteredEvents.map(e => e.path);
-
-        // Delegate to PipelineRunner (extracted step logic)
-        const runner = new PipelineRunner({
-          vp,
-          sd,
-          ctx,
-          events: filteredEvents,
-          renames: visibleRenames,
-          batch,
-          changedPaths,
-          flywheelConfig: ctx.flywheelConfig,
-          updateIndexState: updateCtxIndexState,
-          updateVaultIndex: updateCtxVaultIndex,
-          updateEntitiesInStateDb,
-          getVaultIndex: () => ctx.vaultIndex,
-          buildVaultIndex,
-          deferredScheduler,
-          runIntegrityCheck,
-        });
-        await runner.run();
-      });
-    };
-
-    const watcher = createVaultWatcher({
-      vaultPath: vp,
-      config,
-      onBatch: handleBatch,
-      onStateChange: (status) => {
-        if (status.state === 'dirty') {
-          serverLog('watcher', 'Index may be stale', 'warn');
-        }
-      },
-      onError: (err) => {
-        serverLog('watcher', `Watcher error: ${err.message}`, 'error');
-      },
-    });
-    ctx.watcher = watcher;
-    watcherInstance = watcher;
-    ctx.reconcileMutedWatcherPaths = async (paths: string[]) => {
-      if (paths.length === 0) return;
-      const deduped = Array.from(new Set(paths));
-      const reconciledEvents: CoalescedEvent[] = [];
-      for (const filePath of deduped) {
-        try {
-          await fs.access(path.join(vp, filePath));
-          reconciledEvents.push({ type: 'upsert', path: filePath, originalEvents: [] });
-        } catch {
-          reconciledEvents.push({ type: 'delete', path: filePath, originalEvents: [] });
-        }
-      }
-      if (reconciledEvents.length === 0) return;
-      serverLog('policy', `Reconciling ${reconciledEvents.length} watcher-muted path(s)`);
-      await handleBatch({ events: reconciledEvents, renames: [], timestamp: Date.now() });
-    };
-
-    // Startup catch-up: process files that were modified while the server was offline.
-    // getRecentPipelineEvent returns the last event with steps (i.e. last watcher run).
-    // Files with mtime > that timestamp were not seen by the watcher last session.
-    if (sd) {
-      const lastPipelineEvent = getRecentPipelineEvent(sd);
-      if (lastPipelineEvent) {
-        const catchupEvents = buildStartupCatchupBatch(vp, lastPipelineEvent.timestamp, startupScanFiles);
-        if (catchupEvents.length > 0) {
-          // eslint-disable-next-line no-console
-          console.error(`[Flywheel] Startup catch-up: ${catchupEvents.length} file(s) modified while offline`);
-          await handleBatch({ events: catchupEvents, renames: [], timestamp: Date.now() });
-        }
-      }
-    }
-
-    // Expire stale proactive queue entries from previous session
-    if (sd) {
-      try {
-        const { expireStaleEntries } = await import('./core/write/proactiveQueue.js');
-        const expired = expireStaleEntries(sd);
-        if (expired > 0) {
-          serverLog('watcher', `Startup: expired ${expired} stale proactive queue entries`);
-        }
-      } catch { /* non-critical */ }
-    }
-
-    watcher.start();
-    serverLog('watcher', 'File watcher started');
   }
 
   // Free startup scan files — no longer needed after catch-up

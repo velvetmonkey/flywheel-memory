@@ -21,7 +21,7 @@ import { setEmbeddingsDatabase, setEmbeddingsBuilding, isEmbeddingsBuilding } fr
 import { setIndexState, setIndexError, getIndexState, getIndexError, type IndexState } from '../../../src/core/read/graph.js';
 import { setActiveScope, getActiveScope, getActiveScopeOrNull } from '../../../src/vault-scope.js';
 import type { CooccurrenceIndex } from '../../../src/core/shared/cooccurrence.js';
-import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
+import { createEmptyPipelineActivity } from '../../../src/core/write/pipeline/activity.js';
 import { createTempVault, cleanupTempVault, openStateDb, deleteStateDb, type StateDb } from '../helpers/testUtils.js';
 
 function createMockContext(name: string, vaultPath: string): VaultContext {

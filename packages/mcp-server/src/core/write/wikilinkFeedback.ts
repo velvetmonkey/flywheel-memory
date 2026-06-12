@@ -1053,7 +1053,7 @@ const IMPLICIT_REMOVED_COOLDOWN_MS = 24 * 60 * 60 * 1000;
  * Record `implicit:removed` feedback with a 24h per-(entity,note) cooldown.
  *
  * Both implicit-removal writers (this module's processImplicitFeedback and the
- * watcher diff path in core/read/watch/pipeline.ts) route through here. Without
+ * watcher diff path in core/write/pipeline/steps-linking.ts) route through here. Without
  * the cooldown, a single note's add→remove→re-add link churn casts dozens of
  * negative votes for the same (entity,note) — e.g. 74 rows for one note in one
  * day — which wrongly tips legitimate entities below the suppression threshold.

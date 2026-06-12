@@ -23,7 +23,7 @@ const trPkg = JSON.parse(readFileSync(join(__trDirname, '../package.json'), 'utf
 import type { VaultIndex } from './core/read/types.js';
 import type { FlywheelConfig } from './core/read/config.js';
 import type { WatcherStatus } from './core/read/watch/index.js';
-import type { PipelineActivity } from './core/read/watch/pipeline.js';
+import type { PipelineActivity } from './core/read/watch/types.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getSessionId } from '@velvetmonkey/vault-core';
 

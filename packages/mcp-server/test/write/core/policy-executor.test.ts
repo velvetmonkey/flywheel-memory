@@ -18,7 +18,7 @@ import * as wikilinksModule from '../../../src/core/write/wikilinks.js';
 import * as gitModule from '../../../src/core/write/git.js';
 import { readVaultFile } from '../../../src/core/write/writer.js';
 import { runInVaultScope, type VaultScope } from '../../../src/vault-scope.js';
-import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
+import { createEmptyPipelineActivity } from '../../../src/core/write/pipeline/activity.js';
 import path from 'path';
 import fs from 'fs/promises';
 

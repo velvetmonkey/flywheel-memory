@@ -13,7 +13,7 @@ import { setTaskCacheDatabase } from '../../src/core/read/taskCache.js';
 import { setRecencyStateDb } from '../../src/core/shared/recency.js';
 import { setWriteStateDb, setWikilinkConfig } from '../../src/core/write/wikilinks.js';
 import { loadConfig, type FlywheelConfig } from '../../src/core/read/config.js';
-import { createEmptyPipelineActivity } from '../../src/core/read/watch/pipeline.js';
+import { createEmptyPipelineActivity } from '../../src/core/write/pipeline/activity.js';
 import { registerAllTools } from '../../src/tool-registry.js';
 import { createTempVault, cleanupTempVault } from '../write/helpers/testUtils.js';
 import { openStateDb, deleteStateDb, type StateDb } from '@velvetmonkey/vault-core';

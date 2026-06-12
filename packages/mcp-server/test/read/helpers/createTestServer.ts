@@ -22,7 +22,7 @@ import { registerNoteIntelligenceTools } from '../../../src/tools/read/noteIntel
 import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
 import { setFTS5Database } from '../../../src/core/read/fts5.js';
 import { setProspectStateDb } from '../../../src/core/shared/prospects.js';
-import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
+import { createEmptyPipelineActivity } from '../../../src/core/write/pipeline/activity.js';
 
 export interface TestServerContext {
   stateDb: StateDb | null;

@@ -4,7 +4,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { applyToolGating, registerAllTools, type ToolRegistryContext } from '../../../src/tool-registry.js';
 import { VaultRegistry, type VaultContext } from '../../../src/vault-registry.js';
 import { connectTestClient } from '../../read/helpers/createTestServer.js';
-import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
+import { createEmptyPipelineActivity } from '../../../src/core/write/pipeline/activity.js';
 
 function createFailedVaultContext(): VaultContext {
   return {

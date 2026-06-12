@@ -30,7 +30,7 @@ export interface DeferredStepExecutor {
 
 /**
  * Structural contract for the deferred step scheduler (implemented by
- * DeferredStepScheduler in core/read/watch/pipeline.ts). VaultContext types
+ * DeferredStepScheduler in core/write/pipeline/scheduler.ts). VaultContext types
  * against this interface so this module stays a leaf.
  */
 export interface DeferredStepSchedulerHandle {

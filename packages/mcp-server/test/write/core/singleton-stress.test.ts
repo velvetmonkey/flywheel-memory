@@ -24,7 +24,7 @@ import { getWriteStateDb, setWriteStateDb } from '../../../src/core/write/wikili
 import { setFTS5Database, getFTS5State } from '../../../src/core/read/fts5.js';
 import { setTaskCacheDatabase, isTaskCacheReady } from '../../../src/core/read/taskCache.js';
 import { setRecencyStateDb } from '../../../src/core/shared/recency.js';
-import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
+import { createEmptyPipelineActivity } from '../../../src/core/write/pipeline/activity.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

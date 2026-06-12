@@ -21,18 +21,18 @@
 
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getAllEntitiesFromDb } from '@velvetmonkey/vault-core';
-import type { VaultIndex } from '../types.js';
+import type { VaultIndex } from '../../read/types.js';
 import type { VaultContext } from '../../../vault-registry.js';
 import { serverLog } from '../../shared/serverLog.js';
 import { recordIndexEvent, createStepTracker } from '../../shared/indexActivity.js';
 import { exportHubScores } from '../../shared/hubExport.js';
 import { buildRecencyIndex, loadRecencyFromStateDb, saveRecencyToStateDb } from '../../shared/recency.js';
 import { mineCooccurrences, saveCooccurrenceToStateDb } from '../../shared/cooccurrence.js';
-import { setCooccurrenceIndex } from '../../write/wikilinks.js';
-import { recomputeEdgeWeights } from '../../write/edgeWeights.js';
-import { loadConfig, inferConfig, saveConfig } from '../config.js';
+import { setCooccurrenceIndex } from '../wikilinks.js';
+import { recomputeEdgeWeights } from '../edgeWeights.js';
+import { loadConfig, inferConfig, saveConfig } from '../../read/config.js';
 import { computeGraphMetrics, recordGraphSnapshot } from '../../shared/graphSnapshots.js';
-import { saveVaultIndexToCache } from '../graph.js';
+import { saveVaultIndexToCache } from '../../read/graph.js';
 
 /** Default maintenance interval: 2 hours */
 const DEFAULT_INTERVAL_MS = 2 * 60 * 60 * 1000;

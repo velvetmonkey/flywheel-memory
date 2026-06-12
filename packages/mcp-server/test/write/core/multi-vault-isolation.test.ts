@@ -16,7 +16,7 @@ import {
   type VaultScope,
 } from '../../../src/vault-scope.js';
 import type { VaultIndex } from '../../../src/core/read/types.js';
-import { createEmptyPipelineActivity } from '../../../src/core/read/watch/pipeline.js';
+import { createEmptyPipelineActivity } from '../../../src/core/write/pipeline/activity.js';
 import { getEntityEmbeddingsMap, getInferredCategory } from '../../../src/core/read/embeddings.js';
 import { getEntityIndex, isEntityIndexReady } from '../../../src/core/write/wikilinks.js';
 

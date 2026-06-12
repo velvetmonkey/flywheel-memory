@@ -25,7 +25,8 @@ import { setRecencyStateDb } from '../../../src/core/shared/recency.js';
 import { setTaskCacheDatabase } from '../../../src/core/read/taskCache.js';
 import { setEmbeddingsDatabase } from '../../../src/core/read/embeddings.js';
 import { setProspectStateDb, resetCleanupCooldown } from '../../../src/core/shared/prospects.js';
-import { PipelineRunner, createEmptyPipelineActivity, type PipelineContext } from '../../../src/core/read/watch/pipeline.js';
+import { PipelineRunner, type PipelineContext } from '../../../src/core/write/pipeline/runner.js';
+import { createEmptyPipelineActivity } from '../../../src/core/write/pipeline/activity.js';
 
 let tempVault: string;
 let stateDb: StateDb;

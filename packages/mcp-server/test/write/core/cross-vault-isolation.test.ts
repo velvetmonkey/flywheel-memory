@@ -4,25 +4,24 @@
  * Boots the REAL multi-vault server over stdio and asserts vault isolation
  * at the tool layer and on disk.
  *
- * ── KNOWN DEFECT D4 (escalated to Ben, arch-review G3 S0, 2026-06-12) ──
- * The stdio server is constructed and gated at module load (index.ts:340-359)
- * with vaultRegistry=null — before main() builds the registry (index.ts:858).
- * applyToolGating therefore sees isMultiVault=false: no `vault` parameter is
- * injected into any tool schema, and no per-request vault activation wrapper
- * is installed. Over stdio in multi-vault mode:
- *   - `vault: "beta"` on any tool call is silently stripped by zod and the
- *     call runs against the fallback scope (normally the primary vault);
- *   - during a secondary vault's background boot, activateVault(ctx)
- *     (index.ts:1092) flips the fallback scope, so racing stdio writes can
- *     land in the mid-boot vault.
- * HTTP transport is unaffected: per-request servers are gated with the live
- * registry (createConfiguredServer, index.ts:272-292).
+ * ── DEFECT D4 — FIXED (arch-review G3 close-out, 2026-06-12) ──
+ * Originally (found by this suite at S0): the stdio server was constructed and
+ * gated at module load with vaultRegistry=null, before main() built the
+ * registry. applyToolGating therefore saw isMultiVault=false — no `vault`
+ * parameter was injected into any tool schema and no vault-activation wrapper
+ * was installed, so over stdio in multi-vault mode `vault: "beta"` was silently
+ * stripped and every call ran against the primary scope (writes to a named
+ * secondary vault landed in the primary and reported success).
  *
- * Per council binding mod 1 (destructive-op safety valve), this is NOT fixed
- * in the arch-review: the tests below PIN today's behaviour (so refactor
- * slices can't change it silently in either direction) and `it.fails` pins
- * the desired contract — when the bug is fixed, that test flips and forces
- * promotion of the real assertions.
+ * The fix (this commit) builds the stdio server inside main(), AFTER the
+ * registry's full membership is established (initializePrimaryVault +
+ * registerSecondaryVaults), so multi-vault gating injects the `vault` param +
+ * activation wrapper — mirroring the HTTP per-request path
+ * (createConfiguredServer), which was always correct.
+ *
+ * The assertions below now PIN the FIXED contract: the `vault` param is present
+ * in multi-vault stdio schemas, and `vault: "beta"` routes to beta. They guard
+ * against a regression back into the silent-misroute behaviour.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -69,23 +68,24 @@ describe('Cross-vault runtime isolation over stdio (arch-review S0)', () => {
     rmSync(tempRoot, { recursive: true, force: true });
   });
 
-  it('DEFECT PIN (D4): the stdio note schema exposes no vault parameter', async () => {
+  it('FIXED CONTRACT (D4): the stdio note schema exposes the vault parameter in multi-vault mode', async () => {
     const tools = await connection.client.listTools();
     const note = tools.tools.find((t) => t.name === 'note');
     expect(note).toBeDefined();
     const props = (note!.inputSchema as any)?.properties ?? {};
-    // Desired contract: 'vault' IS present in multi-vault mode. Today it is
-    // not (gating ran with a null registry at import time).
-    expect(Object.keys(props)).not.toContain('vault');
+    // The `vault` param is injected by applyToolGating when the registry is
+    // multi-vault. Pre-fix it was absent (gating ran with a null registry at
+    // import time) — its presence is the routing fix made observable.
+    expect(Object.keys(props)).toContain('vault');
   });
 
-  it('DEFECT PIN (D4): create with vault:"beta" lands in the PRIMARY vault and reports success', async () => {
+  it('FIXED CONTRACT (D4): create with vault:"beta" writes into beta only, never the primary', async () => {
     const createResult = await connection.client.callTool({
       name: 'note',
       arguments: {
         action: 'create',
-        path: 'misrouted-probe.md',
-        content: '# Misrouted Probe',
+        path: 'routing-probe.md',
+        content: '# Routing Probe',
         vault: 'beta',
         skipWikilinks: true,
       },
@@ -94,25 +94,9 @@ describe('Cross-vault runtime isolation over stdio (arch-review S0)', () => {
     expect(createResult.isError ?? false, `create errored: ${createText}`).toBe(false);
     expect(JSON.parse(createText).success, `create response: ${createText}`).toBe(true);
 
-    // Today's (wrong) behaviour: file written into alpha, beta untouched.
-    expect(existsSync(join(vaultA, 'misrouted-probe.md'))).toBe(true);
-    expect(existsSync(join(vaultB, 'misrouted-probe.md'))).toBe(false);
-  });
-
-  it.fails('DESIRED (flips when D4 is fixed): create with vault:"beta" writes into beta only', async () => {
-    const createResult = await connection.client.callTool({
-      name: 'note',
-      arguments: {
-        action: 'create',
-        path: 'desired-routing-probe.md',
-        content: '# Desired Routing Probe',
-        vault: 'beta',
-        skipWikilinks: true,
-      },
-    });
-    expect(JSON.parse(resultText(createResult)).success).toBe(true);
-    expect(existsSync(join(vaultB, 'desired-routing-probe.md'))).toBe(true);
-    expect(existsSync(join(vaultA, 'desired-routing-probe.md'))).toBe(false);
+    // Fixed behaviour: the named vault receives the write, the primary does not.
+    expect(existsSync(join(vaultB, 'routing-probe.md'))).toBe(true);
+    expect(existsSync(join(vaultA, 'routing-probe.md'))).toBe(false);
   });
 
   it('writes against the active (primary) vault never leak into the secondary vault tree', async () => {

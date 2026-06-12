@@ -15,11 +15,22 @@
  * - validate_links (absorbed find_broken_links via typos_only param)
  *
  * COMPOSITION ROOT (arch-review S10): this file owns only
- *   1. the IMPORT-TIME stdio McpServer construction + tool gating +
- *      registration — this runs at module load with vaultRegistry=null,
- *      which is OBSERVABLE (initialize-freeze snapshots; known defect D4
- *      pinned by cross-vault-isolation tests) and must not move into main();
+ *   1. buildStdioServer() — stdio McpServer construction + tool gating +
+ *      registration;
  *   2. main(), which sequences the boot phases via the boot/ modules.
+ *
+ * D4 FIX (arch-review G3 close-out): the stdio server is now built INSIDE
+ * main(), after the registry's full membership is established (primary +
+ * registerSecondaryVaults), so multi-vault gating injects the `vault` param +
+ * activation wrapper — stdio multi-vault routing is live, mirroring the HTTP
+ * per-request path. Previously this ran at module load with vaultRegistry=null,
+ * which made multi-vault routing silently dead (writes to a named secondary
+ * vault landed in the primary). The single-vault initialize payload is
+ * unchanged (a one-context registry is !isMultiVault, so generateInstructions
+ * emits no multi-vault section); the multi-vault initialize payload changes
+ * deliberately (gains the multi-vault section + per-tool `vault` param) and its
+ * freeze fixture (initialize.multi.json) was re-frozen with this commit.
+ *
  * Nothing may import this file (arch ratchet B3).
  */
 
@@ -43,6 +54,7 @@ import {
 import {
   resolveVaultEnvironment,
   initializePrimaryVault,
+  registerSecondaryVaults,
   loadToolRoutingState,
   bootPrimaryVault,
   bootSecondaryVaultsInBackground,
@@ -57,36 +69,40 @@ const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8')
 setPkg(pkg);
 
 // ============================================================================
-// Primary Server Instance (stdio transport)
+// Stdio Server construction (built in main(), after registry membership)
 // ============================================================================
-// Constructed at MODULE LOAD, before main() runs: vaultRegistry is still null
-// here, so instructions lack the multi-vault section and gating sees
-// isMultiVault=false (defect D4 — pinned, do not "fix" by moving this block).
+// Constructed AFTER the registry knows all vaults (D4 fix), so multi-vault
+// gating injects the `vault` param + activation wrapper. generateInstructions
+// and applyToolGating read the live vaultRegistry binding at call time.
 
-const server = new McpServer(
-  { name: 'flywheel-memory', version: pkg.version },
-  { instructions: generateInstructions(enabledCategories, vaultRegistry, getInstructionActiveCategories()) },
-);
+function buildStdioServer(): McpServer {
+  const server = new McpServer(
+    { name: 'flywheel-memory', version: pkg.version },
+    { instructions: generateInstructions(enabledCategories, vaultRegistry, getInstructionActiveCategories()) },
+  );
 
-const _registryCtx = buildRegistryContext();
-const _gatingResult = applyToolGating(
-  server,
-  enabledCategories,
-  _registryCtx.getStateDb,
-  vaultRegistry,
-  _registryCtx.getVaultPath,
-  buildVaultCallbacks(),
-  toolTierMode,
-  undefined,
-  toolConfig.isFullToolset,
-  () => { setLastMcpRequestAt(Date.now()); },
-);
-registerAllTools(server, _registryCtx, _gatingResult);
-_gatingResult.finalizeRegistration();
+  const registryCtx = buildRegistryContext();
+  const gatingResult = applyToolGating(
+    server,
+    enabledCategories,
+    registryCtx.getStateDb,
+    vaultRegistry,
+    registryCtx.getVaultPath,
+    buildVaultCallbacks(),
+    toolTierMode,
+    undefined,
+    toolConfig.isFullToolset,
+    () => { setLastMcpRequestAt(Date.now()); },
+  );
+  registerAllTools(server, registryCtx, gatingResult);
+  gatingResult.finalizeRegistration();
 
-const categoryList = Array.from(enabledCategories).sort().join(', ');
-serverLog('server', `Tool categories: ${categoryList}`);
-serverLog('server', `Registered ${_gatingResult.registered} tools, skipped ${_gatingResult.skipped}`);
+  const categoryList = Array.from(enabledCategories).sort().join(', ');
+  serverLog('server', `Tool categories: ${categoryList}`);
+  serverLog('server', `Registered ${gatingResult.registered} tools, skipped ${gatingResult.skipped}`);
+
+  return server;
+}
 
 // ============================================================================
 // Main Entry Point — sequences the boot phases (see src/boot/)
@@ -97,15 +113,20 @@ async function main() {
   const { vaultConfigs, startTime } = resolveVaultEnvironment();
   // Phase 1: initialize primary vault (StateDb only — fast)
   await initializePrimaryVault(vaultConfigs, startTime);
+  // Phase 1a (D4 fix): register secondary vault contexts (StateDb only) so the
+  // registry membership is complete before the stdio server is gated below.
+  await registerSecondaryVaults(vaultConfigs, startTime);
   // Phase 1b/1c: tool routing manifest + effectiveness snapshots
   await loadToolRoutingState(startTime);
+  // Build + gate the stdio server with the now-complete registry (D4 fix).
+  const server = buildStdioServer();
   // Phase 2: connect transports BEFORE heavy work
   const transportMode = await connectTransports(server, startTime);
   // Phase 3: integrity kick + co-occurrence + primary vault boot
   await bootPrimaryVault(startTime);
   // Optional watchdog self-ping
   await startWatchdog(transportMode);
-  // Phase 4: secondary vaults boot in background
+  // Phase 4: secondary vaults boot (index build) in background
   bootSecondaryVaultsInBackground(vaultConfigs, startTime);
 }
 

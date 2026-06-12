@@ -326,6 +326,38 @@ export async function initializePrimaryVault(vaultConfigs: VaultConfigs, startTi
   }
 }
 
+/**
+ * ── Phase 1a (D4 fix): register secondary vault contexts (StateDb open only) ──
+ *
+ * Opens each secondary vault's StateDb and adds its context to the registry so
+ * the registry MEMBERSHIP is complete BEFORE the stdio server is gated in
+ * main(). This is the load-bearing half of the D4 fix: applyToolGating snapshots
+ * `isMultiVault` and the `vault` param enum (registry.getVaultNames()) into
+ * closures + schema at gating time, so every vault must already be in the
+ * registry by then or stdio multi-vault routing is silently dead.
+ *
+ * Only the fast StateDb open runs here. The slow per-vault index build stays in
+ * the background (bootSecondaryVaultsInBackground, Phase 4), so MCP handshake
+ * latency is unchanged. The fallback scope stays on the primary (initializeVault
+ * does not activate), so calls without an explicit vault still route to primary
+ * during registration.
+ */
+export async function registerSecondaryVaults(vaultConfigs: VaultConfigs, startTime: number): Promise<void> {
+  if (!vaultConfigs || vaultConfigs.length <= 1) return;
+  for (const vc of vaultConfigs.slice(1)) {
+    try {
+      const ctx = await initializeVault(vc.name, vc.path);
+      vaultRegistry!.addContext(ctx);
+      serverLog('server', `[${vc.name}] Secondary vault registered (StateDb) ${Date.now() - startTime}ms`);
+    } catch (err) {
+      // A vault that fails to open its StateDb is simply not added — it won't
+      // appear in the vault enum and routing to it errors loudly rather than
+      // silently misrouting. Same degradation as a failed background boot.
+      serverLog('server', `[${vc.name}] Secondary vault registration failed: ${err}`, 'error');
+    }
+  }
+}
+
 /** ── Phase 1b/1c: tool routing manifest + effectiveness snapshots (T15b) ── */
 export async function loadToolRoutingState(startTime: number): Promise<void> {
   // ── Phase 1b: Load tool routing manifest (non-blocking) ──
@@ -364,26 +396,40 @@ export async function bootPrimaryVault(startTime: number): Promise<void> {
   setServerReady(true);
 }
 
-/** ── Phase 4: Initialize + boot secondary vaults (background) ── */
+/**
+ * ── Phase 4: Boot secondary vaults (background) ──
+ *
+ * Secondary contexts are ALREADY registered (registerSecondaryVaults, Phase 1a);
+ * this only does the slow per-vault index build, in the background, so it never
+ * blocks the handshake. Re-fetches each context from the registry by name and
+ * skips any that failed to register.
+ */
 export function bootSecondaryVaultsInBackground(vaultConfigs: VaultConfigs, startTime: number): void {
   if (vaultConfigs && vaultConfigs.length > 1) {
-    const secondaryConfigs = vaultConfigs.slice(1);
+    const secondaryNames = vaultConfigs.slice(1).map(vc => vc.name);
     // Don't await — secondary vaults boot in background
     (async () => {
-      for (const vc of secondaryConfigs) {
+      for (const name of secondaryNames) {
+        let ctx: VaultContext;
         try {
-          const ctx = await initializeVault(vc.name, vc.path);
-          vaultRegistry!.addContext(ctx);
-          invalidateHttpPool();
+          ctx = vaultRegistry!.getContext(name);
+        } catch {
+          // Registration failed in Phase 1a — nothing to boot.
+          continue;
+        }
+        try {
           setBootState(ctx, 'transport_connected');
           void runIntegrityCheck(ctx, 'startup');
           setBootState(ctx, 'booting');
           loadVaultCooccurrence(ctx);
           activateVault(ctx);
           await bootVault(ctx, startTime);
-          serverLog('server', `[${vc.name}] Secondary vault ready`);
+          // Refresh any pooled HTTP servers so their instructions reflect this
+          // vault's now-built embeddings/index state.
+          invalidateHttpPool();
+          serverLog('server', `[${name}] Secondary vault ready`);
         } catch (err) {
-          serverLog('server', `[${vc.name}] Secondary vault boot failed: ${err}`, 'error');
+          serverLog('server', `[${name}] Secondary vault boot failed: ${err}`, 'error');
         }
       }
       // Re-activate primary after all secondaries are booted

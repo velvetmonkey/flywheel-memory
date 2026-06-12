@@ -8,7 +8,7 @@
 
 import * as fs from 'fs';
 import type { EntityCategory, EntityWithAliases, EntityIndex } from './types.js';
-import type { StateDb, EntitySearchResult, RecencyRow, StateDbMetadata } from './sqlite.js';
+import type { StateDb, EntitySearchResult, RecencyRow, StateDbMetadata } from './types.js';
 import { getStateDbPath } from './migrations.js';
 
 // =============================================================================

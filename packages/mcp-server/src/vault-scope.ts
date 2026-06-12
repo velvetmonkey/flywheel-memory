@@ -12,14 +12,10 @@
 
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { EntityIndex, StateDb } from '@velvetmonkey/vault-core';
-import type { CooccurrenceIndex } from './core/shared/cooccurrence.js';
-import type { FlywheelConfig } from './core/read/config.js';
-import type { IndexState } from './core/read/graph.js';
-import type { InferredCategory } from './core/read/embeddings.js';
-import type { VaultIndex } from './core/shared/types.js';
-import type { RecencyIndex } from './core/shared/recency.js';
-import type { PipelineActivity } from './core/read/watch/pipeline.js';
-import type { IntegrityState, VaultBootState } from './vault-registry.js';
+import type { CooccurrenceIndex, RecencyIndex, VaultIndex } from './core/shared/types.js';
+import type { FlywheelConfig, IndexState, InferredCategory } from './core/read/types.js';
+import type { PipelineActivity } from './core/read/watch/types.js';
+import type { IntegrityState, VaultBootState } from './vault-types.js';
 
 export interface VaultScope {
   readonly name: string;

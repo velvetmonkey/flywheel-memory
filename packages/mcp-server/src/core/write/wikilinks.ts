@@ -19,6 +19,7 @@
  * 5. Flywheel Memoryuses its local copy for wikilink application during mutations
  */
 
+import { extractLinkedEntities } from './wikilinkText.js';
 import {
   scanVaultEntities,
   getAllEntities,
@@ -859,22 +860,9 @@ export function getEntityIndexStats(): {
 const SUGGESTION_PATTERN = /→\s*\[\[.+$/;
 
 
-/**
- * Extract entities that are already linked in content
- * @param content - Content to scan for existing wikilinks
- * @returns Set of linked entity names (lowercase for comparison)
- */
-export function extractLinkedEntities(content: string): Set<string> {
-  const linked = new Set<string>();
-  const wikilinkRegex = /\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;
-
-  let match;
-  while ((match = wikilinkRegex.exec(content)) !== null) {
-    linked.add(match[1].toLowerCase());
-  }
-
-  return linked;
-}
+// extractLinkedEntities moved to wikilinkText.ts (arch-review S1: breaks the
+// wikilinks ⇄ wikilinkFeedback import cycle); re-exported for existing importers.
+export { extractLinkedEntities } from './wikilinkText.js';
 
 /**
  * Tokenize content into significant words for matching

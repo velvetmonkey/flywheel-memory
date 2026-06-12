@@ -9,6 +9,7 @@
  */
 
 import type { VaultNote, VaultIndex, Backlink, OutLink } from './types.js';
+import type { IndexState } from './types.js';
 import type { VaultFile } from './vault.js';
 import { scanVault } from './vault.js';
 import type { StateDb, VaultIndexCacheData } from '@velvetmonkey/vault-core';
@@ -38,7 +39,7 @@ const PROGRESS_INTERVAL = 100;
 // =============================================================================
 
 /** Possible states of the vault index */
-export type IndexState = 'building' | 'ready' | 'error';
+export type { IndexState } from './types.js';
 
 /** Current state of the index */
 let indexState: IndexState = 'building';

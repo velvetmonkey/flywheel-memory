@@ -2,6 +2,9 @@
  * Types for vault-core shared utilities
  */
 
+import type Database from 'better-sqlite3';
+import type { Statement, Transaction } from 'better-sqlite3';
+
 /**
  * Built-in entity categories
  */
@@ -272,4 +275,93 @@ export interface ResolveAliasOptions {
    * @default true
    */
   caseInsensitive?: boolean;
+}
+
+// =============================================================================
+// State database types (moved from sqlite.ts so queries.ts can type against
+// them without importing sqlite.ts — breaks the sqlite ⇄ queries import cycle)
+// =============================================================================
+
+/** Search result from FTS5 entity search */
+export interface EntitySearchResult {
+  id: number;
+  name: string;
+  nameLower: string;
+  path: string;
+  category: EntityCategory;
+  aliases: string[];
+  hubScore: number;
+  rank: number;
+  description?: string;
+}
+
+/** Recency tracking for entities */
+export interface RecencyRow {
+  entityNameLower: string;
+  lastMentionedAt: number;
+  mentionCount: number;
+}
+
+/** Database state metadata */
+export interface StateDbMetadata {
+  schemaVersion: number;
+  entitiesBuiltAt: string | null;
+  entityCount: number;
+  notesBuiltAt: string | null;
+  noteCount: number;
+}
+
+/** State database instance with prepared statements */
+export interface StateDb {
+  db: Database.Database;
+  vaultPath: string;
+  dbPath: string;
+
+  // Entity operations
+  insertEntity: Statement;
+  updateEntity: Statement;
+  deleteEntity: Statement;
+  getEntityByName: Statement;
+  getEntityById: Statement;
+  getAllEntities: Statement;
+  getEntitiesByCategory: Statement;
+  searchEntitiesFts: Statement;
+  clearEntities: Statement;
+
+  // Entity alias lookup
+  getEntitiesByAlias: Statement;
+
+  // Recency operations
+  upsertRecency: Statement;
+  getRecency: Statement;
+  getAllRecency: Statement;
+  clearRecency: Statement;
+
+  // Write state operations
+  setWriteState: Statement;
+  getWriteState: Statement;
+  deleteWriteState: Statement;
+
+  // Flywheel config operations
+  setFlywheelConfigStmt: Statement;
+  getFlywheelConfigStmt: Statement;
+  getAllFlywheelConfigStmt: Statement;
+  deleteFlywheelConfigStmt: Statement;
+
+  // Task cache operations
+  insertTask: Statement;
+  deleteTasksForPath: Statement;
+  clearAllTasks: Statement;
+  countTasksByStatus: Statement;
+
+  // Metadata
+  getMetadataValue: Statement;
+  setMetadataValue: Statement;
+
+  // Transactions
+  bulkInsertEntities: Transaction<(entities: EntityWithAliases[], category: EntityCategory) => number>;
+  replaceAllEntities: Transaction<(index: EntityIndex) => number>;
+
+  // Cleanup
+  close: () => void;
 }

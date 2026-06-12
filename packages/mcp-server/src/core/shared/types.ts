@@ -349,3 +349,64 @@ export interface InteractionSearchFilters {
   /** Maximum results to return */
   limit?: number;
 }
+
+// =============================================================================
+// Runtime-state index types (moved from cooccurrence.ts / recency.ts so that
+// vault-scope.ts and vault-types.ts can type against leaf modules — part of
+// the arch-review S1 import-cycle collapse)
+// =============================================================================
+
+/**
+ * Entity associations - maps entity to related entities with co-occurrence counts
+ */
+export interface EntityAssociations {
+  [entityName: string]: Map<string, number>;
+}
+
+/**
+ * Co-occurrence index for efficient lookups
+ */
+export interface CooccurrenceIndex {
+  /**
+   * Maps entity name to its associations
+   * associations[entity] = Map<relatedEntity, count>
+   */
+  associations: EntityAssociations;
+
+  /**
+   * Minimum co-occurrence count for boosting
+   */
+  minCount: number;
+
+  /**
+   * Document frequency: how many notes each entity appears in.
+   * Used for PMI/IDF scoring.
+   */
+  documentFrequency: Map<string, number>;
+
+  /**
+   * Total notes scanned (denominator for PMI/IDF).
+   */
+  totalNotesScanned: number;
+
+  /**
+   * Metadata
+   */
+  _metadata: {
+    generated_at: string;
+    total_associations: number;
+    notes_scanned: number;
+  };
+}
+
+/**
+ * Recency index tracking last mention times for entities
+ */
+export interface RecencyIndex {
+  /** Map of entity name (lowercase) to last mention timestamp (epoch ms) */
+  lastMentioned: Map<string, number>;
+  /** When this index was last updated */
+  lastUpdated: number;
+  /** Cache version for migration detection */
+  version: number;
+}

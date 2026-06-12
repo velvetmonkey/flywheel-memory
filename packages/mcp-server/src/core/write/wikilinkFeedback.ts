@@ -6,7 +6,7 @@
  */
 
 import type { StateDb } from '@velvetmonkey/vault-core';
-import { extractLinkedEntities } from './wikilinks.js';
+import { extractLinkedEntities } from './wikilinkText.js';
 
 // =============================================================================
 // TYPES

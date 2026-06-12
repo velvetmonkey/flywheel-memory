@@ -1,3 +1,5 @@
+import type { IndexEventTrigger } from '../../shared/indexActivity.js';
+
 /**
  * Types for the file watcher module
  */
@@ -122,4 +124,46 @@ export interface WatcherStatus {
   pendingEvents: number;
   lastRebuild: number | null;
   error: Error | null;
+}
+
+// =============================================================================
+// Watcher + pipeline surface types (moved from index.ts / pipeline.ts so that
+// vault-scope.ts and vault-types.ts can type against leaf modules — part of
+// the arch-review S1 import-cycle collapse)
+// =============================================================================
+
+/**
+ * Vault watcher instance
+ */
+export interface VaultWatcher {
+  /** Current watcher status */
+  readonly status: WatcherStatus;
+
+  /** Start watching */
+  start(): void;
+
+  /** Stop watching */
+  stop(): void;
+
+  /** Force flush all pending events */
+  flush(): void;
+
+  /** Get pending event count */
+  readonly pendingCount: number;
+}
+
+/** Live status of the watcher pipeline for a vault (process-local) */
+export interface PipelineActivity {
+  busy: boolean;
+  trigger: IndexEventTrigger | null;
+  started_at: number | null;
+  current_step: string | null;
+  completed_steps: number;
+  total_steps: number;
+  pending_events: number;
+  last_completed_at: number | null;
+  last_completed_trigger: IndexEventTrigger | null;
+  last_completed_duration_ms: number | null;
+  last_completed_files: number | null;
+  last_completed_steps: string[];
 }

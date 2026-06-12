@@ -11,9 +11,8 @@
  */
 
 import Database from 'better-sqlite3';
-import type { Statement, Transaction } from 'better-sqlite3';
 import * as fs from 'fs';
-import type { Entity, EntityCategory, EntityWithAliases, EntityIndex } from './types.js';
+import type { Entity, EntityCategory, EntityWithAliases, EntityIndex, StateDb } from './types.js';
 
 // Re-export constants from schema
 export { SCHEMA_VERSION, STATE_DB_FILENAME, FLYWHEEL_DIR, SCHEMA_SQL } from './schema.js';
@@ -77,92 +76,12 @@ export type { FlywheelConfigRow, VaultIndexCacheData, VaultIndexCacheInfo } from
 import { getStateDbPath, initSchema, deleteStateDbFiles, preserveCorruptedDb, attemptSalvage } from './migrations.js';
 
 // =============================================================================
-// Types
+// Types — definitions live in types.ts so queries.ts can import them without
+// importing sqlite.ts (breaks the sqlite ⇄ queries import cycle). Re-exported
+// here because sqlite.ts is their long-standing public home.
 // =============================================================================
 
-/** Search result from FTS5 entity search */
-export interface EntitySearchResult {
-  id: number;
-  name: string;
-  nameLower: string;
-  path: string;
-  category: EntityCategory;
-  aliases: string[];
-  hubScore: number;
-  rank: number;
-  description?: string;
-}
-
-/** Recency tracking for entities */
-export interface RecencyRow {
-  entityNameLower: string;
-  lastMentionedAt: number;
-  mentionCount: number;
-}
-
-/** Database state metadata */
-export interface StateDbMetadata {
-  schemaVersion: number;
-  entitiesBuiltAt: string | null;
-  entityCount: number;
-  notesBuiltAt: string | null;
-  noteCount: number;
-}
-
-/** State database instance with prepared statements */
-export interface StateDb {
-  db: Database.Database;
-  vaultPath: string;
-  dbPath: string;
-
-  // Entity operations
-  insertEntity: Statement;
-  updateEntity: Statement;
-  deleteEntity: Statement;
-  getEntityByName: Statement;
-  getEntityById: Statement;
-  getAllEntities: Statement;
-  getEntitiesByCategory: Statement;
-  searchEntitiesFts: Statement;
-  clearEntities: Statement;
-
-  // Entity alias lookup
-  getEntitiesByAlias: Statement;
-
-  // Recency operations
-  upsertRecency: Statement;
-  getRecency: Statement;
-  getAllRecency: Statement;
-  clearRecency: Statement;
-
-  // Write state operations
-  setWriteState: Statement;
-  getWriteState: Statement;
-  deleteWriteState: Statement;
-
-  // Flywheel config operations
-  setFlywheelConfigStmt: Statement;
-  getFlywheelConfigStmt: Statement;
-  getAllFlywheelConfigStmt: Statement;
-  deleteFlywheelConfigStmt: Statement;
-
-  // Task cache operations
-  insertTask: Statement;
-  deleteTasksForPath: Statement;
-  clearAllTasks: Statement;
-  countTasksByStatus: Statement;
-
-  // Metadata
-  getMetadataValue: Statement;
-  setMetadataValue: Statement;
-
-  // Transactions
-  bulkInsertEntities: Transaction<(entities: EntityWithAliases[], category: EntityCategory) => number>;
-  replaceAllEntities: Transaction<(index: EntityIndex) => number>;
-
-  // Cleanup
-  close: () => void;
-}
+export type { EntitySearchResult, RecencyRow, StateDbMetadata, StateDb } from './types.js';
 
 // =============================================================================
 // Pre-v40 backup hook

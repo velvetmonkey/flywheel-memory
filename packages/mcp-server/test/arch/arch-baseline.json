@@ -1,23 +1,5 @@
 {
-  "cycles": [
-    "packages/core/src/queries.ts -> packages/core/src/sqlite.ts",
-    "packages/mcp-server/src/core/read/embeddings.ts -> packages/mcp-server/src/vault-scope.ts",
-    "packages/mcp-server/src/core/read/embeddings.ts -> packages/mcp-server/src/vault-scope.ts -> packages/mcp-server/src/core/read/graph.ts",
-    "packages/mcp-server/src/core/read/embeddings.ts -> packages/mcp-server/src/vault-scope.ts -> packages/mcp-server/src/core/read/watch/pipeline.ts",
-    "packages/mcp-server/src/core/read/embeddings.ts -> packages/mcp-server/src/vault-scope.ts -> packages/mcp-server/src/core/read/watch/pipeline.ts -> packages/mcp-server/src/core/write/wikilinks.ts",
-    "packages/mcp-server/src/core/read/embeddings.ts -> packages/mcp-server/src/vault-scope.ts -> packages/mcp-server/src/core/read/watch/pipeline.ts -> packages/mcp-server/src/vault-registry.ts",
-    "packages/mcp-server/src/core/read/fts5.ts -> packages/mcp-server/src/vault-scope.ts -> packages/mcp-server/src/core/read/watch/pipeline.ts",
-    "packages/mcp-server/src/core/read/graph.ts -> packages/mcp-server/src/vault-scope.ts",
-    "packages/mcp-server/src/core/read/taskCache.ts -> packages/mcp-server/src/vault-scope.ts -> packages/mcp-server/src/core/read/watch/pipeline.ts",
-    "packages/mcp-server/src/core/read/watch/pipeline.ts -> packages/mcp-server/src/core/write/wikilinks.ts -> packages/mcp-server/src/core/shared/prospects.ts -> packages/mcp-server/src/vault-scope.ts",
-    "packages/mcp-server/src/core/read/watch/pipeline.ts -> packages/mcp-server/src/core/write/wikilinks.ts -> packages/mcp-server/src/core/write/git.ts -> packages/mcp-server/src/vault-scope.ts",
-    "packages/mcp-server/src/core/read/watch/pipeline.ts -> packages/mcp-server/src/core/write/wikilinks.ts -> packages/mcp-server/src/core/write/hints.ts -> packages/mcp-server/src/vault-scope.ts",
-    "packages/mcp-server/src/core/read/watch/pipeline.ts -> packages/mcp-server/src/core/write/wikilinks.ts -> packages/mcp-server/src/vault-scope.ts",
-    "packages/mcp-server/src/core/read/watch/pipeline.ts -> packages/mcp-server/src/vault-registry.ts",
-    "packages/mcp-server/src/core/shared/cooccurrence.ts -> packages/mcp-server/src/core/shared/recency.ts -> packages/mcp-server/src/vault-scope.ts",
-    "packages/mcp-server/src/core/write/wikilinkFeedback.ts -> packages/mcp-server/src/core/write/wikilinks.ts",
-    "packages/mcp-server/src/tool-registry.ts -> packages/mcp-server/src/tools/read/discovery.ts"
-  ],
+  "cycles": [],
   "layeringViolations": [
     "packages/mcp-server/src/core/read/calibrationExport.ts -> packages/mcp-server/src/core/write/wikilinkFeedback.ts",
     "packages/mcp-server/src/core/read/taskCache.ts -> packages/mcp-server/src/tools/read/tasks.ts",

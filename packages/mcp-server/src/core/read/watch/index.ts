@@ -19,6 +19,7 @@ import {
   EventBatch,
   parseWatcherConfig,
   DEFAULT_WATCHER_CONFIG,
+  type VaultWatcher,
 } from './types.js';
 
 export { WatcherConfig, WatcherStatus, EventBatch, parseWatcherConfig, DEFAULT_WATCHER_CONFIG };
@@ -52,25 +53,7 @@ export interface CreateWatcherOptions {
   onError?: (error: Error) => void;
 }
 
-/**
- * Vault watcher instance
- */
-export interface VaultWatcher {
-  /** Current watcher status */
-  readonly status: WatcherStatus;
-
-  /** Start watching */
-  start(): void;
-
-  /** Stop watching */
-  stop(): void;
-
-  /** Force flush all pending events */
-  flush(): void;
-
-  /** Get pending event count */
-  readonly pendingCount: number;
-}
+export type { VaultWatcher } from './types.js';
 
 /**
  * Create a vault watcher

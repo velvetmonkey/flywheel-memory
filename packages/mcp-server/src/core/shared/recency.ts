@@ -12,6 +12,8 @@
  */
 
 import { readdir, readFile, stat } from 'fs/promises';
+import type { RecencyIndex } from './types.js';
+export type { RecencyIndex } from './types.js';
 import path from 'path';
 import {
   getEntityName,
@@ -42,17 +44,7 @@ export function setRecencyStateDb(stateDb: StateDb | null): void {
   moduleStateDb = stateDb;
 }
 
-/**
- * Recency index tracking last mention times for entities
- */
-export interface RecencyIndex {
-  /** Map of entity name (lowercase) to last mention timestamp (epoch ms) */
-  lastMentioned: Map<string, number>;
-  /** When this index was last updated */
-  lastUpdated: number;
-  /** Cache version for migration detection */
-  version: number;
-}
+
 
 /**
  * Current cache version - bump when schema changes

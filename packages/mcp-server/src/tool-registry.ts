@@ -40,9 +40,9 @@ import { emitObservation, summariseInput, summariseResult, observedHits, observe
 import { shouldSuppressMemoryTool } from './tool-registry/clientSuppressions.js';
 import { runCrossVaultSearch } from './tool-registry/crossVault.js';
 import { shouldEnableTieredTool, getDirectCallPromotion } from './tool-registry/tiering.js';
-import type { ToolTierMode, VaultActivationCallbacks } from './tool-registry/types.js';
+import type { ToolTierMode, ToolTierController, VaultActivationCallbacks } from './tool-registry/types.js';
 export { getPatternSignals, unionSignalsByCategory } from './tool-registry/activation.js';
-export type { ToolTierMode, VaultActivationCallbacks } from './tool-registry/types.js';
+export type { ToolTierMode, ToolTierController, VaultActivationCallbacks } from './tool-registry/types.js';
 
 // Core imports - Tool Tracking
 import { recordToolInvocation } from './core/shared/toolTracking.js';
@@ -137,20 +137,8 @@ export interface ToolRegistryContext {
 // ToolTierOverride re-exported from config.ts (side-effect-free for testing)
 export type { ToolTierOverride } from './config.js';
 
-export interface ToolTierController {
-  readonly mode: ToolTierMode;
-  readonly registered: number;
-  readonly skipped: number;
-  readonly activeCategories: Set<ToolCategory>;
-  getOverride(): ToolTierOverride;
-  finalizeRegistration(): void;
-  activateCategory(category: ToolCategory, tier?: ToolTier): void;
-  enableTierCategory(category: ToolCategory): void;
-  enableAllTiers(): void;
-  setOverride(override: ToolTierOverride): void;
-  getActivatedCategoryTiers(): ReadonlyMap<ToolCategory, ToolTier>;
-  getRegisteredTools(): ReadonlyMap<string, RegisteredTool>;
-}
+// ToolTierController moved to tool-registry/types.ts (arch-review S1: breaks
+// the tool-registry ⇄ tools/read/discovery import cycle); re-exported below.
 
 const MUTATING_TOOL_NAMES = new Set([
   'vault_add_to_section',

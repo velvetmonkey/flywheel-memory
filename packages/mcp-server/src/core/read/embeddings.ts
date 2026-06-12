@@ -31,6 +31,7 @@
  * - Dynamic import of @huggingface/transformers
  */
 
+import type { InferredCategory } from './types.js';
 import type Database from 'better-sqlite3';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -72,11 +73,7 @@ export interface EntitySimilarityResult {
   similarity: number;
 }
 
-export interface InferredCategory {
-  entityName: string;
-  category: string;
-  confidence: number;
-}
+export type { InferredCategory } from './types.js';
 
 // =============================================================================
 // Model Configuration

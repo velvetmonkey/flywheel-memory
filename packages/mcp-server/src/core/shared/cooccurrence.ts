@@ -14,50 +14,11 @@ import path from 'path';
 import { tokenize } from './stemmer.js';
 import { getRecencyBoost, type RecencyIndex } from './recency.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
+import type { CooccurrenceIndex, EntityAssociations } from './types.js';
+export type { EntityAssociations, CooccurrenceIndex } from './types.js';
 import { SYSTEM_EXCLUDED_DIRS } from './constants.js';
 
-/**
- * Entity associations - maps entity to related entities with co-occurrence counts
- */
-export interface EntityAssociations {
-  [entityName: string]: Map<string, number>;
-}
 
-/**
- * Co-occurrence index for efficient lookups
- */
-export interface CooccurrenceIndex {
-  /**
-   * Maps entity name to its associations
-   * associations[entity] = Map<relatedEntity, count>
-   */
-  associations: EntityAssociations;
-
-  /**
-   * Minimum co-occurrence count for boosting
-   */
-  minCount: number;
-
-  /**
-   * Document frequency: how many notes each entity appears in.
-   * Used for PMI/IDF scoring.
-   */
-  documentFrequency: Map<string, number>;
-
-  /**
-   * Total notes scanned (denominator for PMI/IDF).
-   */
-  totalNotesScanned: number;
-
-  /**
-   * Metadata
-   */
-  _metadata: {
-    generated_at: string;
-    total_associations: number;
-    notes_scanned: number;
-  };
-}
 
 /**
  * Default minimum co-occurrence score for an association to be considered.

@@ -11,8 +11,8 @@ import { normalizeObjectSchema } from '@modelcontextprotocol/sdk/server/zod-comp
 import { toJsonSchemaCompat } from '@modelcontextprotocol/sdk/server/zod-json-schema-compat.js';
 import { TOOL_CATEGORY, ALL_CATEGORIES } from '../../config.js';
 import type { ToolCategory } from '../../config.js';
-import { getPatternSignals, unionSignalsByCategory } from '../../tool-registry.js';
-import type { ToolTierController } from '../../tool-registry.js';
+import { getPatternSignals, unionSignalsByCategory } from '../../tool-registry/activation.js';
+import type { ToolTierController } from '../../tool-registry/types.js';
 import { getSemanticActivations, hasToolRouting } from '../../core/read/toolRouting.js';
 
 /** Convert a RegisteredTool's Zod inputSchema to JSON Schema for the response. */

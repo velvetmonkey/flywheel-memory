@@ -156,7 +156,7 @@ S13 may interleave anywhere after S5; everything wikilink-adjacent (S3–S5, S11
 ## 6. Execution checklist (update per G3 slice)
 
 - [x] S0 surface + initialize snapshots, bar tooling (2026-06-12 — surface-freeze (20 tools, full JSON schemas), initialize freeze single+multi (pins null-registry instructions), arch ratchet B2/B3/B4 (baseline: 17 cycles, 31 layering edges, 49 SQL files), cross-vault isolation suite. **Found + escalated D4.** Baseline suite: 3041 pass / 18 skip / 1 env-fail (hotpotqa bench needs external download, network-blocked sandbox))
-- [ ] S1 cycle collapse (17 → 0)
+- [x] S1 cycle collapse (17 → 0) (2026-06-12 @ 42df64b — leaf type modules: vault-types.ts, shared/read/watch types, tool-registry/types, wikilinkText.ts; ratchet baseline cycles emptied, delete-only diff; suite 3053 green)
 - [ ] S2 dead-code purge + http-transport repoint
 - [ ] S3 edit_section reunification (char tests first)
 - [ ] S4 note reunification (char tests first)

@@ -26,7 +26,8 @@ import type { VaultIndex, VaultNote } from '../types.js';
 import type { CoalescedEvent, RenameEvent, EventBatch } from './types.js';
 import { processBatch } from './batchProcessor.js';
 import type { FlywheelConfig } from '../config.js';
-import type { VaultContext } from '../../../vault-registry.js';
+import type { VaultContext, DeferredStepName, DeferredStepExecutor } from '../../../vault-types.js';
+import type { PipelineActivity } from './types.js';
 import type { IndexState } from '../graph.js';
 import type { IntegrityWorkerResult } from '../integrity.js';
 
@@ -82,16 +83,7 @@ import { recomputeEdgeWeights } from '../../write/edgeWeights.js';
 // watcher batch fires before the timer, the timer is cancelled and rescheduled.
 // This ensures throttled steps eventually run even when no more edits arrive.
 
-export type DeferredStepName = 'entity_scan' | 'hub_scores' | 'recency' | 'cooccurrence' | 'edge_weights';
-
-export interface DeferredStepExecutor {
-  ctx: VaultContext;
-  vp: string;
-  sd: StateDb | null;
-  getVaultIndex: () => VaultIndex;
-  updateEntitiesInStateDb: (vp: string, sd: StateDb | null) => Promise<void>;
-  runWithScope?: <T>(fn: () => T) => T;
-}
+export type { DeferredStepName, DeferredStepExecutor, DeferredStepSchedulerHandle } from '../../../vault-types.js';
 
 export class DeferredStepScheduler {
   private timers = new Map<DeferredStepName, ReturnType<typeof setTimeout>>();
@@ -207,20 +199,7 @@ export class DeferredStepScheduler {
 /** Total number of steps in the pipeline (used for progress reporting) */
 const PIPELINE_TOTAL_STEPS = 22;
 
-export interface PipelineActivity {
-  busy: boolean;
-  trigger: IndexEventTrigger | null;
-  started_at: number | null;
-  current_step: string | null;
-  completed_steps: number;
-  total_steps: number;
-  pending_events: number;
-  last_completed_at: number | null;
-  last_completed_trigger: IndexEventTrigger | null;
-  last_completed_duration_ms: number | null;
-  last_completed_files: number | null;
-  last_completed_steps: string[];
-}
+export type { PipelineActivity } from './types.js';
 
 export function createEmptyPipelineActivity(): PipelineActivity {
   return {

@@ -26,7 +26,7 @@ import {
   type WriteTestServerContext,
 } from '../../helpers/createWriteTestServer.js';
 import { createTestNote } from '../helpers/testUtils.js';
-import { moveNote } from '../../../src/tools/write/move-notes.js';
+import { moveNote } from '../../../src/core/write/noteMove.js';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';

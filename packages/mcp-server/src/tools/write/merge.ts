@@ -20,7 +20,7 @@ import {
   extractAliases,
   getTitleFromPath,
   escapeRegex,
-} from './move-notes.js';
+} from '../../core/write/noteMove.js';
 import fs from 'fs/promises';
 import path from 'path';
 

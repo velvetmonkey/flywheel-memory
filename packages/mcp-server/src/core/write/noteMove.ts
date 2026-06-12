@@ -1,53 +1,21 @@
 /**
- * Note move/rename tools for Flywheel Memory
- * Tools: vault_move_note, vault_rename_note
+ * Note move/rename + backlink rewiring (arch-review S4).
  *
- * These tools handle file relocation with automatic backlink updates across the vault.
+ * Moved verbatim from tools/write/move-notes.ts, which doubled as a retired
+ * registration file (vault_move_note / vault_rename_note) and a helper
+ * library for the live note/entity tools. The dead registrations are gone;
+ * this is the single home for move/rename/backlink logic.
  */
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
-import { validatePathSecure, readVaultFile, writeVaultFile } from '../../core/write/writer.js';
-import type { MutationResult } from '../../core/write/types.js';
-import { commitChange } from '../../core/write/git.js';
-import { initializeEntityIndex } from '../../core/write/wikilinks.js';
+import { validatePathSecure, readVaultFile, writeVaultFile } from './writer.js';
+import type { MutationResult } from './types.js';
+import { commitChange } from './git.js';
+import { initializeEntityIndex } from './wikilinks.js';
 import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
-
-/**
- * Escape special regex characters in a string
- */
-export function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
- * Extract wikilinks from content
- * Returns array of { target, displayText?, fullMatch }
- */
-function extractWikilinks(content: string): Array<{ target: string; displayText?: string; fullMatch: string }> {
-  const wikilinks: Array<{ target: string; displayText?: string; fullMatch: string }> = [];
-  const regex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = regex.exec(content)) !== null) {
-    wikilinks.push({
-      target: match[1],
-      displayText: match[2],
-      fullMatch: match[0],
-    });
-  }
-
-  return wikilinks;
-}
-
-/**
- * Get the title from a file path (filename without .md extension)
- */
-export function getTitleFromPath(filePath: string): string {
-  return path.basename(filePath, '.md');
-}
+import { escapeRegex, extractWikilinks, getTitleFromPath } from './wikilinkText.js';
+export { escapeRegex, getTitleFromPath } from './wikilinkText.js';
 
 /**
  * Find all backlinks to a given note (by title and aliases)
@@ -510,48 +478,3 @@ export async function renameNote(
   }
 }
 
-/**
- * Register move/rename tools with the MCP server
- */
-export function registerMoveNoteTools(
-  server: McpServer,
-  getVaultPath: () => string
-): void {
-  // ========================================
-  // Tool: vault_move_note
-  // ========================================
-  server.tool(
-    'vault_move_note',
-    'Use when relocating a note to a different folder. Produces a file move and automatically rewires every backlink across the vault to point to the new location. Returns new path and count of updated backlinks. Does not rename the note — use vault_rename_note for title changes.',
-    {
-      oldPath: z.string().describe('Vault-relative path to move from (e.g., "inbox/note.md")'),
-      newPath: z.string().describe('Vault-relative path to move to (e.g., "projects/note.md")'),
-      updateBacklinks: z.boolean().default(true).describe('If true (default), updates all backlinks pointing to this note'),
-      commit: z.boolean().default(false).describe('If true, commit all changes to git'),
-      dry_run: z.boolean().optional().default(false).describe('Preview what would change without moving any files'),
-    },
-    async ({ oldPath, newPath, updateBacklinks, commit, dry_run }) => {
-      const result = await moveNote(getVaultPath(), { oldPath, newPath, updateBacklinks, commit, dry_run });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-    }
-  );
-
-  // ========================================
-  // Tool: vault_rename_note
-  // ========================================
-  server.tool(
-    'vault_rename_note',
-    'Use when changing a note\'s title. Produces a file rename and automatically rewires every [[OldName]] wikilink across the vault to [[NewName]]. Returns new path and count of updated links. Does not move the note to another folder — use vault_move_note for that.',
-    {
-      path: z.string().describe('Vault-relative path to the note to rename'),
-      newTitle: z.string().describe('New title for the note (without .md extension)'),
-      updateBacklinks: z.boolean().default(true).describe('If true (default), updates all backlinks pointing to this note'),
-      commit: z.boolean().default(false).describe('If true, commit all changes to git'),
-      dry_run: z.boolean().optional().default(false).describe('Preview what would change without renaming any files'),
-    },
-    async ({ path: notePath, newTitle, updateBacklinks, commit, dry_run }) => {
-      const result = await renameNote(getVaultPath(), { notePath, newTitle, updateBacklinks, commit, dry_run });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-    }
-  );
-}

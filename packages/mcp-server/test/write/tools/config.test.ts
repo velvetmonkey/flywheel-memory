@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { VALID_CONFIG_KEYS } from '../../../src/tools/write/config.js';
+import { VALID_CONFIG_KEYS } from '../../../src/core/diagnostics/configStore.js';
 
 describe('VALID_CONFIG_KEYS', () => {
   it('should accept all documented settable keys', () => {

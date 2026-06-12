@@ -31,7 +31,7 @@ import nodePath from 'node:path';
 
 // Re-use the inner handler functions from temporalAnalysis.ts by importing
 // the lower-level helpers directly.
-import { getNotesInRange } from './temporal.js';
+import { getNotesInRange } from '../../core/read/temporal.js';
 import { getBacklinksForNote } from '../../core/read/graph.js';
 import { getCooccurrenceIndex } from '../../core/write/wikilinks.js';
 

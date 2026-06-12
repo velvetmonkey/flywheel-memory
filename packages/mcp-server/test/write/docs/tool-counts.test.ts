@@ -10,7 +10,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 import { PRESETS, TOOL_CATEGORY, TOOL_TIER, ALL_CATEGORIES, TIER_1_TOOL_COUNT } from '../../../src/config.js';
-import { VALID_CONFIG_KEYS } from '../../../src/tools/write/config.js';
+import { VALID_CONFIG_KEYS } from '../../../src/core/diagnostics/configStore.js';
 
 const TOOLS_DIR = path.join(__dirname, '../../../src/tools');
 const DOCS_DIR = path.join(__dirname, '../../../../../docs');

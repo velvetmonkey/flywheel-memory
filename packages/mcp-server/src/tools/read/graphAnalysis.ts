@@ -72,7 +72,7 @@ function getExcludedPaths(index: VaultIndex, config: FlywheelConfig): Set<string
 }
 
 import { findDeadEnds, findSources } from './graphAdvanced.js';
-import { getStaleNotes } from './temporal.js';
+import { getStaleNotes } from '../../core/read/temporal.js';
 import { inferFolderConventions } from './schema.js';
 import { getEmergingHubs } from '../../core/shared/graphSnapshots.js';
 

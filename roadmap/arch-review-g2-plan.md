@@ -155,7 +155,7 @@ S13 may interleave anywhere after S5; everything wikilink-adjacent (S3–S5, S11
 
 ## 6. Execution checklist (update per G3 slice)
 
-- [ ] S0 surface + initialize snapshots, bar tooling
+- [x] S0 surface + initialize snapshots, bar tooling (2026-06-12 — surface-freeze (20 tools, full JSON schemas), initialize freeze single+multi (pins null-registry instructions), arch ratchet B2/B3/B4 (baseline: 17 cycles, 31 layering edges, 49 SQL files), cross-vault isolation suite. **Found + escalated D4.** Baseline suite: 3041 pass / 18 skip / 1 env-fail (hotpotqa bench needs external download, network-blocked sandbox))
 - [ ] S1 cycle collapse (17 → 0)
 - [ ] S2 dead-code purge + http-transport repoint
 - [ ] S3 edit_section reunification (char tests first)
@@ -194,3 +194,4 @@ Panel: **codex** (gpt-5-codex; seams/behaviour-coupling lens), **claude** (sonne
 - D1: `PIPELINE_TOTAL_STEPS` 19/22/25 desync — fix is user-visible in `doctor(action: pipeline)`; one-line bugfix outside this review, or fold in with sign-off? (S9/R3)
 - D2: re-expose `dry_run` for `entity(action: merge)` later? (feature backlog, S5)
 - D3: stemmer unification — corpus-golden project or accept-as-fix? (S11/R6)
+- **D4 (found by S0 isolation test, 2026-06-12, BUG — escalated per binding mod 1): stdio multi-vault routing is dead.** The stdio server is gated at module load with `vaultRegistry=null` (index.ts:340-359) and never re-gated after main() builds the registry (index.ts:858). Consequences over stdio in multi-vault mode: no `vault` param in any tool schema (zod silently strips it); every call runs on the fallback scope (primary), so `note(create, vault:"beta")` writes into ALPHA and reports success; during secondary background boot, `activateVault(ctx)` (index.ts:1092) transiently flips the fallback scope, so racing stdio writes can land in the mid-boot vault. HTTP transport unaffected (per-request servers gated with live registry, index.ts:272-292). Pinned by `test/write/core/cross-vault-isolation.test.ts` (defect pins + `it.fails` desired-contract test). Fix options for Ben: (a) re-apply gating/registration on the stdio server after registry construction; (b) defer stdio server construction into main() — NOTE this is exactly the S10/R5 construction-timing move, so the fix naturally belongs to a future S10 slice WITH a deliberate initialize-snapshot update; (c) document stdio as single-vault-only. Not fixed in S0-S5 (behaviour-preserving).

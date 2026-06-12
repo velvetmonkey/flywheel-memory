@@ -1,0 +1,1825 @@
+[
+  {
+    "name": "correct",
+    "category": "corrections",
+    "tier": 2,
+    "description": "Track corrections and undo mutations. action: record — log correction. action: list — pending corrections. action: resolve — mark resolved. action: undo — reverse last mutation. Returns correction record, list, or undo result. Does not modify note content directly. e.g. { action:\"record\", path:\"people/alice.md\", entity:\"Alice\", note:\"Wrong title\" } { action:\"undo\" }",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "record",
+            "list",
+            "resolve",
+            "undo"
+          ],
+          "description": "Operation to perform"
+        },
+        "path": {
+          "type": "string",
+          "description": "[record|list] Note path the correction applies to"
+        },
+        "entity": {
+          "type": "string",
+          "description": "[record] Entity the correction applies to"
+        },
+        "note": {
+          "type": "string",
+          "description": "[record] Description of the correction"
+        },
+        "limit": {
+          "type": "number",
+          "description": "[list] Maximum corrections to return"
+        },
+        "correction_id": {
+          "type": "string",
+          "description": "[resolve] ID of the correction to mark resolved"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "discover_tools",
+    "category": "search",
+    "tier": 1,
+    "description": "Find and activate specialized tools. Call with what you need — e.g. \"vault health\", \"graph connections\", \"schema migration\". Returns matching tool names, descriptions, and input schemas. Does not execute discovered tools — call them separately after discovery.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Natural language description of what you need — e.g. \"vault health\", \"backlinks and graph\", \"schema migration\""
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "doctor",
+    "category": "diagnostics",
+    "tier": 1,
+    "title": "Doctor",
+    "description": "Use for diagnostics and runtime management. Returns vault health, named checks, stats, pipeline status, server log, or config. Does not read note content — use read or search for that. action: health | diagnosis | stats | pipeline | config | log",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "health",
+            "diagnosis",
+            "stats",
+            "pipeline",
+            "config",
+            "log"
+          ],
+          "description": "Operation: health=vault status, pipeline=indexing status, config=runtime config, log=activity log"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "summary",
+                "full"
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "description": "[health] Detail level: summary or full. [pipeline] true = include per-step timings"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "get",
+            "set"
+          ],
+          "description": "[config] Operation: get or set"
+        },
+        "key": {
+          "type": "string",
+          "description": "[config] Config key to update (required for set)"
+        },
+        "value": {
+          "description": "[config] New value for the key (required for set)"
+        },
+        "since": {
+          "type": "number",
+          "description": "[log] Only return entries after this Unix timestamp (ms)"
+        },
+        "component": {
+          "type": "string",
+          "description": "[log] Filter by component (server, index, fts5, semantic, tasks, watcher, statedb, config)"
+        },
+        "limit": {
+          "type": "number",
+          "description": "[log] Max entries to return (default 100)"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "edit_section",
+    "category": "write",
+    "tier": 1,
+    "description": "Edit content inside a named section of a vault note. action: add — append/prepend under the heading (auto-wikilinks). action: remove — delete matching text. action: replace — find-and-replace within the section. Returns mutation result with path, section, preview. Does not touch other sections.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "add",
+            "remove",
+            "replace"
+          ],
+          "description": "Operation to perform: add | remove | replace"
+        },
+        "path": {
+          "type": "string",
+          "description": "Vault-relative path to the note (e.g., \"daily-notes/2026-01-28.md\")"
+        },
+        "section": {
+          "type": "string",
+          "description": "Heading text to edit (e.g., \"Log\" or \"## Log\")"
+        },
+        "content": {
+          "type": "string",
+          "description": "[add] Content to insert under the section"
+        },
+        "create_if_missing": {
+          "type": "boolean",
+          "description": "[add] If true and the note does not exist, create it from template first"
+        },
+        "position": {
+          "type": "string",
+          "enum": [
+            "append",
+            "prepend"
+          ],
+          "description": "[add] Where to insert content (default: append)"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "plain",
+            "bullet",
+            "task",
+            "numbered",
+            "timestamp-bullet"
+          ],
+          "description": "[add] How to format the content (default: plain)"
+        },
+        "skipWikilinks": {
+          "type": "boolean",
+          "description": "[add|replace] If true, skip auto-wikilink application"
+        },
+        "suggestOutgoingLinks": {
+          "type": "boolean",
+          "description": "[add|replace] Append suggested outgoing wikilinks based on content"
+        },
+        "maxSuggestions": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "[add|replace] Maximum number of suggested wikilinks (1-10, default: 5)"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "description": "Bold label, e.g. \"**Result:**\""
+              },
+              "content": {
+                "type": "string",
+                "description": "Pre-neutralized text; sanitized and indented by this tool"
+              }
+            },
+            "required": [
+              "label",
+              "content"
+            ],
+            "additionalProperties": false
+          },
+          "description": "[add] Labeled sub-bullets appended under the parent content line"
+        },
+        "linkedEntities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "[add] Entity names already linked in the content. When skipWikilinks=true, these are tracked for feedback without re-processing."
+        },
+        "shard": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "pattern": {
+              "type": "string"
+            },
+            "maxBytes": {
+              "type": "number",
+              "minimum": 1024
+            },
+            "maxEntries": {
+              "type": "number",
+              "minimum": 1
+            },
+            "mode": {
+              "type": "string",
+              "const": "audit"
+            },
+            "lightIndex": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "description": "[add] Route append-only operational content into bounded shard notes and link them from the requested note"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "[remove] Text or pattern to match for removal"
+        },
+        "search": {
+          "type": "string",
+          "description": "[replace] Text or pattern to search for"
+        },
+        "replacement": {
+          "type": "string",
+          "description": "[replace] Text to replace with"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "first",
+            "last",
+            "all"
+          ],
+          "description": "[remove|replace] Which matches to act on (default: first)"
+        },
+        "useRegex": {
+          "type": "boolean",
+          "description": "[remove|replace] Treat pattern/search as regex"
+        },
+        "commit": {
+          "type": "boolean",
+          "description": "If true, commit this change to git (creates undo point)"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "description": "Preview changes without writing to disk"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent identifier for multi-agent scoping"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Session identifier for conversation scoping"
+        }
+      },
+      "required": [
+        "action",
+        "path",
+        "section"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "entity",
+    "category": "note-ops",
+    "tier": 2,
+    "description": "Manage vault entities and aliases. action: list — browse by category. alias — add an alternate name. suggest_aliases — find missing aliases. merge — absorb one entity into another and rewire links. suggest_merges — find duplicates. dismiss_merge — mark a merge suggestion incorrect. dismiss_prospect — reject an unresolved prospect term so it stops surfacing as an active stub candidate. Returns lists, results, or candidates. Does not create notes.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "list",
+            "alias",
+            "suggest_aliases",
+            "merge",
+            "suggest_merges",
+            "dismiss_merge",
+            "dismiss_prospect"
+          ],
+          "description": "Operation to perform"
+        },
+        "query": {
+          "type": "string",
+          "description": "[list] Filter entities by name substring"
+        },
+        "category": {
+          "type": "string",
+          "description": "[list|suggest_aliases] Filter to a specific category"
+        },
+        "limit": {
+          "type": "number",
+          "description": "[list|suggest_aliases|suggest_merges] Maximum results to return"
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "backlink_count",
+              "recency"
+            ]
+          },
+          "description": "[list] Extra per-entity aggregates to attach: backlink_count (distinct notes linking to the entity name or any of its aliases) and recency ({ lastMentionedAt, mentionCount } or null). Omitted → lean response. aliases + isSuppressed are always present regardless."
+        },
+        "entity": {
+          "type": "string",
+          "description": "[alias] Entity path to add alias to; [suggest_aliases] entity to get suggestions for"
+        },
+        "alias": {
+          "type": "string",
+          "description": "[alias] The alias to add"
+        },
+        "source_name": {
+          "type": "string",
+          "description": "[alias] Compatibility form: entity name to absorb as an alias of target_path, rewriting links. [dismiss_merge] Source entity name"
+        },
+        "target_path": {
+          "type": "string",
+          "description": "[alias] Compatibility form: target note path for source_name absorption. [dismiss_merge] Target entity path"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "description": "[alias] Compatibility form: preview alias absorption without writing"
+        },
+        "primary": {
+          "type": "string",
+          "description": "[merge] Entity path to keep"
+        },
+        "secondary": {
+          "type": "string",
+          "description": "[merge] Entity path to absorb into primary"
+        },
+        "source_path": {
+          "type": "string",
+          "description": "[dismiss_merge] Source entity path"
+        },
+        "target_name": {
+          "type": "string",
+          "description": "[dismiss_merge] Target entity name"
+        },
+        "reason": {
+          "type": "string",
+          "description": "[dismiss_merge] Reason for the original suggestion"
+        },
+        "prospect": {
+          "type": "string",
+          "description": "[dismiss_prospect] Prospect term or display name to reject"
+        },
+        "note_path": {
+          "type": "string",
+          "description": "[dismiss_prospect] Optional note path that motivated the dismissal"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "find_notes",
+    "category": "read",
+    "tier": 2,
+    "description": "Enumerate notes by metadata — folder, tags, or frontmatter values. Use when you need a structural list, not relevance-ranked search. Returns lightweight note summaries (path, title, modified, frontmatter, tags). Does not perform full-text or semantic search — for concept search, use search instead.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "folder": {
+          "type": "string",
+          "description": "Filter to notes inside this folder (and its subfolders)"
+        },
+        "where": {
+          "type": "object",
+          "additionalProperties": {},
+          "description": "Frontmatter filters as key-value pairs. Example: { \"type\": \"project\", \"status\": \"active\" }"
+        },
+        "has_tag": {
+          "type": "string",
+          "description": "Filter to notes with this tag"
+        },
+        "has_any_tag": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Filter to notes with any of these tags"
+        },
+        "has_all_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Filter to notes with all of these tags"
+        },
+        "include_children": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, tag filters also match child tags (e.g., has_tag: \"project\" also matches \"project/active\")"
+        },
+        "title_contains": {
+          "type": "string",
+          "description": "Filter to notes whose title contains this text (case-insensitive)"
+        },
+        "modified_after": {
+          "type": "string",
+          "description": "Only notes modified after this date (YYYY-MM-DD)"
+        },
+        "modified_before": {
+          "type": "string",
+          "description": "Only notes modified before this date (YYYY-MM-DD)"
+        },
+        "sort_by": {
+          "type": "string",
+          "enum": [
+            "modified",
+            "created",
+            "title"
+          ],
+          "default": "modified",
+          "description": "Field to sort by"
+        },
+        "order": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc",
+          "description": "Sort order"
+        },
+        "limit": {
+          "type": "number",
+          "default": 50,
+          "description": "Maximum number of results to return"
+        },
+        "detail_count": {
+          "type": "number",
+          "description": "Number of top results with full metadata. Remaining get lightweight summaries. Default: 5."
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "graph",
+    "category": "graph",
+    "tier": 2,
+    "title": "Graph",
+    "description": "Vault graph analysis. action: analyse — hubs/orphans/clusters. action: backlinks/forward_links — links to/from note. action: strong_connections — top links. action: path — shortest chain. action: neighbors — shared connections. action: strength — link weight. action: cooccurrence_gaps — unlinked co-occurring pairs. action: export — GraphML or JSON export for Gephi, yEd, Cytoscape, or code. Returns metrics, links, paths, gaps, or serialized graph data. Does not modify notes.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "analyse",
+            "backlinks",
+            "forward_links",
+            "strong_connections",
+            "path",
+            "neighbors",
+            "strength",
+            "cooccurrence_gaps",
+            "export"
+          ],
+          "description": "Graph operation to perform"
+        },
+        "limit": {
+          "type": "number",
+          "description": "[analyse|cooccurrence_gaps] Maximum results to return"
+        },
+        "analysis": {
+          "type": "string",
+          "enum": [
+            "orphans",
+            "dead_ends",
+            "sources",
+            "hubs",
+            "stale",
+            "immature",
+            "emerging_hubs",
+            "centrality",
+            "cycles"
+          ],
+          "description": "[analyse] Specific graph analysis mode"
+        },
+        "folder": {
+          "type": "string",
+          "description": "[analyse] Limit analysis to notes in this folder"
+        },
+        "min_links": {
+          "type": "number",
+          "description": "[analyse] Minimum total connections for hubs"
+        },
+        "min_backlinks": {
+          "type": "number",
+          "description": "[analyse] Minimum backlinks for dead_ends or stale"
+        },
+        "min_outlinks": {
+          "type": "number",
+          "description": "[analyse] Minimum outlinks for sources"
+        },
+        "days": {
+          "type": "number",
+          "description": "[analyse] Days threshold for stale or emerging_hubs"
+        },
+        "offset": {
+          "type": "number",
+          "description": "[analyse] Results to skip for pagination"
+        },
+        "path": {
+          "type": "string",
+          "description": "[backlinks|forward_links|strong_connections] Note path"
+        },
+        "from": {
+          "type": "string",
+          "description": "[path] Starting note path"
+        },
+        "to": {
+          "type": "string",
+          "description": "[path] Target note path"
+        },
+        "path_a": {
+          "type": "string",
+          "description": "[neighbors|strength] First note path"
+        },
+        "path_b": {
+          "type": "string",
+          "description": "[neighbors|strength] Second note path"
+        },
+        "entity": {
+          "type": "string",
+          "description": "[cooccurrence_gaps] Entity name to find gaps for"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "graphml",
+            "json"
+          ],
+          "description": "[export] Output format: graphml for Gephi/yEd/Cytoscape, json for programmatic use"
+        },
+        "include_cooccurrence": {
+          "type": "boolean",
+          "description": "[export] Include co-occurrence edges between entities (default true)"
+        },
+        "min_edge_weight": {
+          "type": "number",
+          "description": "[export] Minimum edge weight threshold for learned weighted edges"
+        },
+        "center_entity": {
+          "type": "string",
+          "description": "[export] Center the export on this entity; only include nodes within depth hops"
+        },
+        "depth": {
+          "type": "number",
+          "description": "[export] Hops from center_entity to include (default 1)"
+        },
+        "max_nodes": {
+          "type": "number",
+          "description": "[export] Maximum nodes when center_entity is omitted (default 500)"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "init_semantic",
+    "category": "search",
+    "tier": 2,
+    "title": "Initialize Semantic Search",
+    "description": "Run once to build vector embeddings for hybrid search. Produces an embedding index over all notes and entities. Returns embedding count and build duration. Does not run automatically — must be invoked explicitly. After building, search (action=query and action=similar) automatically uses semantic matching alongside BM25.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "force": {
+          "type": "boolean",
+          "description": "Clear and rebuild all embeddings from scratch (default: false)"
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "insights",
+    "category": "temporal",
+    "tier": 2,
+    "title": "Insights",
+    "description": "Vault intelligence and temporal analysis. action: evolution — how a concept changed over time. staleness — find outdated notes. context — what was happening around a date. note_intelligence — deep analysis of one note: quality score, missing links, stale sections, audit. growth — vault trends. Returns timelines, stale lists, or scores. Does not modify notes. e.g. { action:\"staleness\", threshold_days:60 } { action:\"note_intelligence\", path:\"projects/acme.md\" }",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "evolution",
+            "staleness",
+            "context",
+            "note_intelligence",
+            "growth"
+          ],
+          "description": "Insight operation to perform"
+        },
+        "entity": {
+          "type": "string",
+          "description": "[evolution] Entity/concept name to trace over time"
+        },
+        "threshold_days": {
+          "type": "number",
+          "description": "[staleness] Notes not modified in this many days (default 30)"
+        },
+        "date": {
+          "type": "string",
+          "description": "[context] Center date YYYY-MM-DD"
+        },
+        "window_days": {
+          "type": "number",
+          "description": "[context] Days before/after center date (default 3)"
+        },
+        "path": {
+          "type": "string",
+          "description": "[note_intelligence] Note path to analyse"
+        },
+        "period": {
+          "type": "string",
+          "enum": [
+            "week",
+            "month",
+            "year"
+          ],
+          "description": "[growth] Period for metrics (default month)"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum results to return"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "link",
+    "category": "wikilinks",
+    "tier": 2,
+    "title": "Link",
+    "description": "Wikilink management. action: suggest — suggestions for text. action: feedback — accept/reject. action: unlinked — unlinked mentions. action: validate — broken links. action: stubs — stub candidates. action: dashboard — stats. action: unsuppress/timeline/layer_timeseries/snapshot_diff — advanced analytics. Returns suggestions, reports, or stats. Does not apply wikilinks. e.g. { action:\"suggest\", text:\"Claude is an AI by Anthropic\" } { action:\"feedback\", entity:\"Claude\", accepted:true }",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "suggest",
+            "feedback",
+            "unlinked",
+            "validate",
+            "stubs",
+            "dashboard",
+            "unsuppress",
+            "timeline",
+            "layer_timeseries",
+            "snapshot_diff"
+          ],
+          "description": "Operation to perform"
+        },
+        "text": {
+          "type": "string",
+          "description": "[suggest] Text to analyze for wikilink suggestions"
+        },
+        "note_path": {
+          "type": "string",
+          "description": "[suggest|feedback|validate] Vault-relative note path"
+        },
+        "offset": {
+          "type": "number",
+          "description": "[suggest] Suggestions to skip for pagination"
+        },
+        "detail": {
+          "type": "boolean",
+          "description": "[suggest] Include per-layer score breakdown"
+        },
+        "entity": {
+          "type": "string",
+          "description": "[feedback|unsuppress|timeline] Entity name (required)"
+        },
+        "accepted": {
+          "type": "boolean",
+          "description": "[feedback] Whether the suggestion was accepted (required)"
+        },
+        "context": {
+          "type": "string",
+          "description": "[feedback] Surrounding text context"
+        },
+        "skip_status_update": {
+          "type": "boolean",
+          "description": "[feedback] Skip marking application as removed"
+        },
+        "typos_only": {
+          "type": "boolean",
+          "description": "[validate] Only report broken links with a similar existing note"
+        },
+        "group_by_target": {
+          "type": "boolean",
+          "description": "[validate] Aggregate dead links by target, ranked by frequency"
+        },
+        "fix": {
+          "type": "boolean",
+          "description": "[validate] Reserved for future auto-fix support"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Maximum items to return"
+        },
+        "min_frequency": {
+          "type": "number",
+          "description": "[stubs] Minimum reference count to include (default 5)"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "prospect",
+            "entity_created",
+            "merged",
+            "rejected",
+            "all"
+          ],
+          "description": "[stubs] Prospect lifecycle status filter (default: prospect)"
+        },
+        "days_back": {
+          "type": "number",
+          "description": "[timeline|layer_timeseries] Days to look back (default 30)"
+        },
+        "granularity": {
+          "type": "string",
+          "enum": [
+            "day",
+            "week"
+          ],
+          "description": "[layer_timeseries] Time bucket granularity (default: day)"
+        },
+        "timestamp_before": {
+          "type": "number",
+          "description": "[snapshot_diff] Earlier timestamp"
+        },
+        "timestamp_after": {
+          "type": "number",
+          "description": "[snapshot_diff] Later timestamp"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "memory",
+    "category": "memory",
+    "tier": 1,
+    "description": "Entity-linked vault facts and session summaries. action: store — save a fact (auto-links entities). get — by key. search — FTS5. list — browse. forget — delete. supersede — idempotent tombstone by thread_id or key (kept for audit). summarize_session. Returns stored content. Does not operate on vault note bodies. e.g. { action:\"store\", key:\"sarah.pref\" }",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "store",
+            "get",
+            "search",
+            "list",
+            "forget",
+            "supersede",
+            "unsupersede",
+            "summarize_session",
+            "brief"
+          ],
+          "description": "Operation to perform"
+        },
+        "key": {
+          "type": "string",
+          "description": "[store|get|forget|supersede] Memory key (e.g., \"user.pref.theme\", \"project.x.deadline\")"
+        },
+        "thread_id": {
+          "type": "string",
+          "description": "[store|supersede|unsupersede] Thread correlation id (short GUID minted by the engine threads registry). store: stamps the fact. supersede: tombstones every current fact carrying the id. unsupersede: reverses a thread-resolution tombstone (self-tombstoned rows only)."
+        },
+        "reason": {
+          "type": "string",
+          "description": "[supersede] Audit reason recorded on each superseded row (e.g. \"thread-resolved: shipped in PR #12\")"
+        },
+        "value": {
+          "type": "string",
+          "description": "[store] The fact/preference/observation to store (up to 2000 chars)"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "fact",
+            "preference",
+            "observation",
+            "summary"
+          ],
+          "description": "[store|search] Memory type"
+        },
+        "entity": {
+          "type": "string",
+          "description": "[store|search] Primary entity association"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "[store] Confidence level (0-1, default 1.0)"
+        },
+        "ttl_days": {
+          "type": "number",
+          "minimum": 1,
+          "description": "[store] Time-to-live in days (null = permanent)"
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "shared",
+            "private"
+          ],
+          "description": "[store] Memory visibility. Defaults to private when agent_id is supplied, otherwise shared"
+        },
+        "query": {
+          "type": "string",
+          "description": "[search] FTS5 search query"
+        },
+        "limit": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 200,
+          "description": "[search|list] Max results to return"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "[store|get|search|list|forget|summarize_session|brief] Agent identifier for scoped memory/session context"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "[summarize_session] Session ID"
+        },
+        "summary": {
+          "type": "string",
+          "description": "[summarize_session] Session summary text"
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "[summarize_session] Topics discussed"
+        },
+        "notes_modified": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "[summarize_session] Note paths modified"
+        },
+        "tool_count": {
+          "type": "number",
+          "description": "[summarize_session] Number of tool calls"
+        },
+        "focus": {
+          "type": "string",
+          "enum": [
+            "full",
+            "personal"
+          ],
+          "description": "[brief] Brief composition mode"
+        },
+        "max_tokens": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 8000,
+          "description": "[brief] Approximate token budget"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "note",
+    "category": "write",
+    "tier": 1,
+    "description": "Create, move, rename, or delete a vault note. action: create — new note with optional content and frontmatter. action: move — relocate note (rewires backlinks). action: rename — rename file (rewires wikilinks). action: delete — remove note (requires confirm:true). Returns mutation result with path and rewired backlinks. Does not edit note content.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "create",
+            "move",
+            "rename",
+            "delete"
+          ],
+          "description": "Operation to perform: create | move | rename | delete"
+        },
+        "path": {
+          "type": "string",
+          "description": "Vault-relative path of the note to act on (e.g., \"projects/my-note.md\")"
+        },
+        "content": {
+          "type": "string",
+          "description": "[create] Initial content for the note"
+        },
+        "frontmatter": {
+          "type": "object",
+          "additionalProperties": {},
+          "description": "[create] Frontmatter fields (JSON object). Set type, aliases, description for best results."
+        },
+        "overwrite": {
+          "type": "boolean",
+          "description": "[create] If true, overwrite existing file"
+        },
+        "expectedHash": {
+          "type": "string",
+          "description": "[create] CAS precondition for overwrite: content hash of the on-disk file as last read (from read action=raw). Write fails with code WRITE_CONFLICT if the file changed since. Only meaningful with overwrite:true."
+        },
+        "template": {
+          "type": "string",
+          "description": "[create] Vault-relative path to a template file. Variables {{date}} and {{title}} are substituted."
+        },
+        "skipWikilinks": {
+          "type": "boolean",
+          "description": "[create] If true, skip auto-wikilink application"
+        },
+        "suggestOutgoingLinks": {
+          "type": "boolean",
+          "description": "[create] Append suggested outgoing wikilinks based on content"
+        },
+        "maxSuggestions": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "[create] Maximum number of suggested wikilinks to append (1-10, default: 5)"
+        },
+        "destination": {
+          "type": "string",
+          "description": "[move] New vault-relative path to move the note to (e.g., \"archive/my-note.md\")"
+        },
+        "new_name": {
+          "type": "string",
+          "description": "[rename] New filename without extension (e.g., \"better-title\")"
+        },
+        "confirm": {
+          "type": "boolean",
+          "description": "[delete] Must be true to execute deletion (safety guard)"
+        },
+        "updateBacklinks": {
+          "type": "boolean",
+          "description": "[move|rename] If true (default), updates all backlinks pointing to this note"
+        },
+        "commit": {
+          "type": "boolean",
+          "description": "If true, commit changes to git"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "description": "Preview changes without writing to disk"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "[create] Agent identifier for multi-agent scoping"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "[create] Session identifier for conversation scoping"
+        }
+      },
+      "required": [
+        "action",
+        "path"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "policy",
+    "category": "write",
+    "tier": 1,
+    "description": "Vault workflows. action: list — show policies. validate — check YAML and note refs. preview — dry-run. execute — run with compensating rollback on failure. author — generate YAML from description. revise — modify policy. Returns results or YAML. Does not run arbitrary code. e.g. { action:\"list\" } { action:\"execute\", policy:\"weekly-review\" }",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "list",
+            "validate",
+            "preview",
+            "execute",
+            "author",
+            "revise"
+          ],
+          "description": "Operation to perform"
+        },
+        "yaml": {
+          "type": "string",
+          "description": "[validate] Policy YAML content"
+        },
+        "policy": {
+          "type": "string",
+          "description": "[preview|execute|revise] Policy name or full YAML content"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {},
+          "description": "[preview|execute] Variables to pass to the policy"
+        },
+        "commit": {
+          "type": "boolean",
+          "description": "[execute] If true, commit successful changes in one git commit after execution"
+        },
+        "name": {
+          "type": "string",
+          "description": "[author] Name for the policy"
+        },
+        "description": {
+          "type": "string",
+          "description": "[author] Description of what the policy should do"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tool": {
+                "type": "string",
+                "description": "Tool to call (e.g., edit_section)"
+              },
+              "description": {
+                "type": "string",
+                "description": "What this step does"
+              },
+              "params": {
+                "type": "object",
+                "additionalProperties": {},
+                "description": "Parameters for the tool"
+              }
+            },
+            "required": [
+              "tool",
+              "description",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "description": "[author] Steps the policy should perform"
+        },
+        "authorVariables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Variable name"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "array",
+                  "enum"
+                ],
+                "description": "Variable type"
+              },
+              "required": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether variable is required"
+              },
+              "default": {
+                "description": "Default value"
+              },
+              "enum": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Allowed values for enum type"
+              },
+              "description": {
+                "type": "string",
+                "description": "Variable description"
+              }
+            },
+            "required": [
+              "name",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          "description": "[author] Variables the policy accepts"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Condition ID"
+              },
+              "check": {
+                "type": "string",
+                "description": "Condition type (file_exists, section_exists, etc.)"
+              },
+              "path": {
+                "type": "string",
+                "description": "File path"
+              },
+              "section": {
+                "type": "string",
+                "description": "Section name"
+              },
+              "field": {
+                "type": "string",
+                "description": "Frontmatter field"
+              },
+              "value": {
+                "description": "Expected value"
+              }
+            },
+            "required": [
+              "id",
+              "check"
+            ],
+            "additionalProperties": false
+          },
+          "description": "[author] Conditions for conditional execution"
+        },
+        "save": {
+          "type": "boolean",
+          "description": "[author|revise] If true, save to .flywheel/policies/"
+        },
+        "changes": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "New description"
+            },
+            "addVariables": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "array",
+                      "enum"
+                    ]
+                  },
+                  "required": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "default": {},
+                  "enum": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Variables to add"
+            },
+            "removeVariables": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Variable names to remove"
+            },
+            "addSteps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "tool": {
+                    "type": "string"
+                  },
+                  "params": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  },
+                  "when": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "afterStep": {
+                    "type": "string",
+                    "description": "Insert after this step ID"
+                  }
+                },
+                "required": [
+                  "id",
+                  "tool",
+                  "params"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Steps to add"
+            },
+            "removeSteps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Step IDs to remove"
+            },
+            "addConditions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "check": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "section": {
+                    "type": "string"
+                  },
+                  "field": {
+                    "type": "string"
+                  },
+                  "value": {}
+                },
+                "required": [
+                  "id",
+                  "check"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Conditions to add"
+            },
+            "removeConditions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Condition IDs to remove"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Changes to make (required for \"revise\")"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "read",
+    "category": "read",
+    "tier": 1,
+    "description": "Read vault note content. action=structure (default): heading outline, frontmatter, backlinks, word count — prefer over built-in Read for vault notes. action=section: text under one heading. action=sections: vault-wide heading search by regex. action=raw: byte-exact content + hash (CAS/drift checks). Returns note content + metadata. Does not search or mutate.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "structure",
+            "section",
+            "sections",
+            "raw"
+          ],
+          "description": "Operation: structure (read note outline + metadata) | section (read one section by heading) | sections (vault-wide heading search) | raw (byte-exact file content + content hash, for CAS writers and drift reconciliation)"
+        },
+        "path": {
+          "type": "string",
+          "description": "[structure|section] Vault-relative note path"
+        },
+        "include_content": {
+          "type": "boolean",
+          "description": "[structure] Include full section text under each heading (default false)"
+        },
+        "max_content_chars": {
+          "type": "number",
+          "description": "[structure] Max total chars of section content (default 20000)"
+        },
+        "heading": {
+          "type": "string",
+          "description": "[section] Heading text to find"
+        },
+        "include_subheadings": {
+          "type": "boolean",
+          "description": "[section] Include content under subheadings (default true)"
+        },
+        "max_section_chars": {
+          "type": "number",
+          "description": "[section] Max chars of section content (default 10000)"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "[sections] Regex to match heading text"
+        },
+        "folder": {
+          "type": "string",
+          "description": "[sections] Limit to notes in this folder"
+        },
+        "limit": {
+          "type": "number",
+          "description": "[sections] Max results (default 50)"
+        },
+        "offset": {
+          "type": "number",
+          "description": "[sections] Results to skip for pagination (default 0)"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "refresh_index",
+    "category": "diagnostics",
+    "tier": 2,
+    "title": "Refresh Index",
+    "description": "Use when the vault index seems stale or after bulk external edits. Produces a full rebuild of the vault index and FTS5 search database. Returns rebuild duration and note count. Does not restart the server — only rebuilds the in-memory index.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "schema",
+    "category": "schema",
+    "tier": 2,
+    "title": "Schema",
+    "description": "Inspect and evolve vault schema. action: overview — field usage stats. conventions — naming and required fields. folders — folder tree with note counts per folder. rename_field / rename_tag — bulk rename. migrate — update field values. validate — check notes against schema. Returns stats, conventions, or errors. Does not read note body content. e.g. { action:\"overview\" } { action:\"rename_tag\", old_name:\"wip\", new_name:\"in-progress\", dry_run:true }",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "overview",
+            "field_values",
+            "conventions",
+            "folders",
+            "rename_field",
+            "rename_tag",
+            "migrate",
+            "validate"
+          ],
+          "description": "Schema operation to perform"
+        },
+        "folder": {
+          "type": "string",
+          "description": "[conventions|validate] Folder to scope to"
+        },
+        "old_name": {
+          "type": "string",
+          "description": "[rename_field|rename_tag] Current field or tag name"
+        },
+        "new_name": {
+          "type": "string",
+          "description": "[rename_field|rename_tag] New field or tag name"
+        },
+        "rename_children": {
+          "type": "boolean",
+          "description": "[rename_tag] Also rename child tags (default true)"
+        },
+        "field": {
+          "type": "string",
+          "description": "[field_values|migrate] Field name"
+        },
+        "from_value": {
+          "type": "string",
+          "description": "[migrate] Old field value to replace"
+        },
+        "to_value": {
+          "type": "string",
+          "description": "[migrate] New field value to set"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "description": "[rename_field|rename_tag|migrate] Preview only (default true)"
+        },
+        "path": {
+          "type": "string",
+          "description": "[validate] Note path to validate (omit for whole vault)"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "search",
+    "category": "search",
+    "tier": 1,
+    "description": "Read-only query of vault notes. action=query (default): keyword/concept/date search. action=similar: content-overlap neighbours of a given note path. Returns ranked results with frontmatter, links, section provenance, and confidence scores; cross-vault search may also include partial_failure and vault_errors. Does not perform mutations.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "query",
+            "similar"
+          ],
+          "description": "Operation: query (default) | similar"
+        },
+        "query": {
+          "type": "string",
+          "description": "[query] Search query text. Required for action=query unless using date filters. For folder/tags/frontmatter enumeration, use find_notes."
+        },
+        "modified_after": {
+          "type": "string",
+          "description": "[query] Only notes modified after this date (YYYY-MM-DD)"
+        },
+        "modified_before": {
+          "type": "string",
+          "description": "[query] Only notes modified before this date (YYYY-MM-DD)"
+        },
+        "sort_by": {
+          "type": "string",
+          "enum": [
+            "modified",
+            "created",
+            "title"
+          ],
+          "default": "modified",
+          "description": "[query] Field to sort by"
+        },
+        "order": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc",
+          "description": "[query] Sort order"
+        },
+        "prefix": {
+          "type": "boolean",
+          "default": false,
+          "description": "[query] Enable prefix matching for entity search (autocomplete)"
+        },
+        "limit": {
+          "type": "number",
+          "default": 10,
+          "description": "[query|similar] Maximum number of results to return"
+        },
+        "detail_count": {
+          "type": "number",
+          "description": "[query] Number of top results to return with full metadata (backlinks, outlinks, headings, frontmatter). Remaining results get lightweight summaries. Default: 5."
+        },
+        "context_note": {
+          "type": "string",
+          "description": "[query] Path of the note providing context. When set, results connected to this note via weighted edges get an RRF boost."
+        },
+        "consumer": {
+          "type": "string",
+          "enum": [
+            "llm",
+            "human"
+          ],
+          "default": "llm",
+          "description": "[query] Output format: \"llm\" applies sandwich ordering and strips scoring fields for context efficiency. \"human\" preserves score order and all scoring metadata for UI display."
+        },
+        "path": {
+          "type": "string",
+          "description": "[similar] Path to the source note (relative to vault root, e.g. \"projects/alpha.md\"). Required for action=similar."
+        },
+        "diversity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "[similar] Relevance vs diversity tradeoff (0=max diversity, 1=pure relevance, default: 0.7)"
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "tasks",
+    "category": "tasks",
+    "tier": 1,
+    "title": "Tasks",
+    "description": "Use to list, filter, or toggle tasks in the vault. Returns task items with path, status, and text. Does not create tasks — use vault_add_task for that. action: list (filter by status/folder/tag/path) | toggle (check/uncheck by path + text match)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "list",
+            "toggle"
+          ],
+          "default": "list",
+          "description": "Operation: list=query tasks (default), toggle=check/uncheck a task"
+        },
+        "path": {
+          "type": "string",
+          "description": "[list] Scope to tasks from this note path. [toggle] Note containing the task (required for toggle)"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "completed",
+            "cancelled"
+          ],
+          "default": "open",
+          "description": "[list] Filter by task status"
+        },
+        "has_due_date": {
+          "type": "boolean",
+          "description": "[list] Only return tasks with due dates"
+        },
+        "folder": {
+          "type": "string",
+          "description": "[list] Limit to notes in this folder"
+        },
+        "tag": {
+          "type": "string",
+          "description": "[list] Filter to tasks with this tag"
+        },
+        "limit": {
+          "type": "number",
+          "default": 25,
+          "description": "[list] Maximum tasks to return"
+        },
+        "offset": {
+          "type": "number",
+          "default": 0,
+          "description": "[list] Results to skip (pagination)"
+        },
+        "task": {
+          "type": "string",
+          "description": "[toggle] Task text to find (partial match)"
+        },
+        "section": {
+          "type": "string",
+          "description": "[toggle] Limit task search to this section"
+        },
+        "commit": {
+          "type": "boolean",
+          "default": false,
+          "description": "[toggle] Commit this change to git"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "default": false,
+          "description": "[toggle] Preview without writing"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "[toggle] Agent identifier for scoping"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "[toggle] Session identifier for scoping"
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "vault_add_task",
+    "category": "tasks",
+    "tier": 3,
+    "description": "Use when adding a new task checkbox to a note section. Produces a markdown task line inserted under the specified heading. Returns the written task text with line number. Does not toggle existing tasks — use vault_toggle_task to check or uncheck.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Vault-relative path to the note"
+        },
+        "section": {
+          "type": "string",
+          "description": "Section to add the task to"
+        },
+        "task": {
+          "type": "string",
+          "description": "Task text (without checkbox)"
+        },
+        "position": {
+          "type": "string",
+          "enum": [
+            "append",
+            "prepend"
+          ],
+          "default": "append",
+          "description": "Where to add the task"
+        },
+        "completed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the task should start as completed"
+        },
+        "commit": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, commit this change to git (creates undo point)"
+        },
+        "skipWikilinks": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, skip auto-wikilink application (wikilinks are applied by default)"
+        },
+        "suggestOutgoingLinks": {
+          "type": "boolean",
+          "default": false,
+          "description": "Append suggested outgoing wikilinks based on content (e.g., \"→ [[AI]], [[Philosophy]]\"). Off by default — set true for daily notes, journals, or capture-heavy contexts."
+        },
+        "maxSuggestions": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 5,
+          "description": "Maximum number of suggested wikilinks to append (1-10, default: 5)"
+        },
+        "preserveListNesting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Preserve indentation when inserting into nested lists. Default: true"
+        },
+        "validate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check input for common issues"
+        },
+        "normalize": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-fix common issues before formatting"
+        },
+        "guardrails": {
+          "type": "string",
+          "enum": [
+            "warn",
+            "strict",
+            "off"
+          ],
+          "default": "warn",
+          "description": "Output validation mode"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "default": false,
+          "description": "Preview changes without writing to disk"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent identifier for multi-agent scoping"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Session identifier for conversation scoping"
+        }
+      },
+      "required": [
+        "path",
+        "section",
+        "task"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "vault_update_frontmatter",
+    "category": "write",
+    "tier": 2,
+    "description": "Use when setting or changing metadata fields on a note. Produces a frontmatter merge that preserves existing fields and adds or overwrites specified keys. Returns updated frontmatter object. Does not overwrite unspecified fields. Set only_if_missing to true to backfill without clobbering.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Vault-relative path to the note"
+        },
+        "frontmatter": {
+          "type": "object",
+          "additionalProperties": {},
+          "description": "Frontmatter fields to update (JSON object)"
+        },
+        "only_if_missing": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, only add fields that don't already exist in the frontmatter (skip existing keys)"
+        },
+        "commit": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, commit this change to git (creates undo point)"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "default": false,
+          "description": "Preview changes without writing to disk"
+        }
+      },
+      "required": [
+        "path",
+        "frontmatter"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  }
+]

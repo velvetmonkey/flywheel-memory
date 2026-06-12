@@ -37,7 +37,7 @@ import {
 import { loadEffectivenessSnapshot } from './../core/read/toolRouting.js';
 import { getToolEffectivenessScores } from './../core/shared/toolSelectionFeedback.js';
 import { getAllEntitiesFromDb, type StateDb } from '@velvetmonkey/vault-core';
-import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } from './../core/write/memory.js';
+import { sweepExpiredMemories, decayMemoryConfidence, pruneSupersededMemories } from './../core/write/memoryMaintenance.js';
 import { startSweepTimer } from './../core/read/sweep.js';
 import { startMaintenanceTimer } from './../core/write/pipeline/maintenance.js';
 import { setupVaultWatcher } from './../core/write/pipeline/watchGlue.js';

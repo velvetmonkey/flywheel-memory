@@ -12,7 +12,7 @@ import { getExcludeTags, getExcludeEntities, type FlywheelConfig } from '../../c
 import { MAX_LIMIT } from '../../core/read/constants.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 import { findOrphanNotes, findHubNotes, normalizeTarget } from '../../core/read/graph.js';
-import { computeCentralityMetrics, detectCycles } from './graphAdvanced.js';
+import { computeCentralityMetrics, detectCycles } from '../../core/read/graphAdvanced.js';
 
 /** Check if a note path looks like a periodic note (daily, weekly, monthly, quarterly, yearly). */
 function isPeriodicNote(notePath: string): boolean {
@@ -69,7 +69,7 @@ function getExcludedPaths(index: VaultIndex, config: FlywheelConfig): Set<string
   return excluded;
 }
 
-import { findDeadEnds, findSources } from './graphAdvanced.js';
+import { findDeadEnds, findSources } from '../../core/read/graphAdvanced.js';
 import { getStaleNotes } from '../../core/read/temporal.js';
 import { inferFolderConventions } from './schema.js';
 import { getEmergingHubs } from '../../core/shared/graphSnapshots.js';

@@ -44,7 +44,7 @@ packages/mcp-server/src/
 │   │   ├── find_notes.ts       # find_notes
 │   │   ├── semantic.ts         # init_semantic
 │   │   ├── discovery.ts        # discover_tools (auto preset only)
-│   │   └── (helper libs)       # graphAnalysis.ts, graphAdvanced.ts, migrations.ts, schema.ts, frontmatter.ts, brief.ts — no registrations
+│   │   └── (helper libs)       # graphAnalysis.ts, migrations.ts, schema.ts, frontmatter.ts, brief.ts — no registrations
 │   └── write/                  # Write-side tool registrations
 │       ├── editSection.ts      # edit_section (add|remove|replace)
 │       ├── tasks.ts            # vault_add_task (standalone), tasks(action: toggle) in primitives.ts
@@ -57,7 +57,7 @@ packages/mcp-server/src/
 │       ├── enrich.ts           # (init helpers)
 │       └── policy.ts           # policy
 ├── core/
-│   ├── read/                   # Read-side core logic (graph, vault, parser, fts5, config, watch/, toolRouting)
+│   ├── read/                   # Read-side core logic (graph, graphAdvanced, vault, parser, fts5, config, watch/, toolRouting)
 │   │   ├── embeddings/         # Embedding stores, provider, runtime, semantic search
 │   │   └── similarity.ts       # Hybrid ranking (BM25 + semantic via RRF)
 │   ├── search/                 # Search pipeline: ranking, merge, postProcess, assemble, bridging

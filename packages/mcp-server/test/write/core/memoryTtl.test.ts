@@ -10,7 +10,7 @@ import {
   deleteStateDb,
   type StateDb,
 } from '../../helpers/testUtils.js';
-import { sweepExpiredMemories } from '../../../src/core/write/memory.js';
+import { sweepExpiredMemories } from '../../../src/core/write/memoryMaintenance.js';
 
 describe('sweepExpiredMemories', () => {
   let tempVault: string;

@@ -4,8 +4,8 @@
  * Answer: "How do notes connect?"
  */
 
-import type { VaultIndex, Backlink } from '../../core/read/types.js';
-import { getBacklinksForNote, resolveTarget, findHubNotes } from '../../core/read/graph.js';
+import type { VaultIndex, Backlink } from './types.js';
+import { getBacklinksForNote, resolveTarget, findHubNotes } from './graph.js';
 
 // Module-level cache: keyed on VaultIndex instance, auto-invalidates on rebuild
 const hubConnectionCache = new WeakMap<VaultIndex, Map<string, number>>();

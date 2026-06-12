@@ -54,7 +54,7 @@ import {
   getWeightedLinkPath,
   getCommonNeighbors,
   getConnectionStrength,
-} from './graphAdvanced.js';
+} from '../../core/read/graphAdvanced.js';
 
 import { getExcludeTags, type FlywheelConfig } from '../../core/read/config.js';
 import { isTaskCacheReady, queryTasksFromCache, refreshIfStale, updateTaskCacheForFile } from '../../core/read/taskCache.js';

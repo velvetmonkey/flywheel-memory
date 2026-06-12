@@ -57,6 +57,7 @@
     "packages/mcp-server/src/core/write/corrections.ts",
     "packages/mcp-server/src/core/write/edgeWeights.ts",
     "packages/mcp-server/src/core/write/memory.ts",
+    "packages/mcp-server/src/core/write/memoryMaintenance.ts",
     "packages/mcp-server/src/core/write/pipeline/steps-index.ts",
     "packages/mcp-server/src/core/write/pipeline/steps-linking.ts",
     "packages/mcp-server/src/core/write/pipeline/watchGlue.ts",

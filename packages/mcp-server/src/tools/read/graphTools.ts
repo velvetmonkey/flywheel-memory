@@ -22,7 +22,7 @@ import {
   getLinkPath,
   getCommonNeighbors,
   getConnectionStrength,
-} from './graphAdvanced.js';
+} from '../../core/read/graphAdvanced.js';
 import { runGraphAnalysis } from './graphAnalysis.js';
 import { getCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { buildGraphData, toGraphML } from './graphExport.js';

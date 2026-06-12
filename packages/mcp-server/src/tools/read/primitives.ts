@@ -19,7 +19,7 @@ import {
   getNoteStructure,
   getSectionContent,
   findSections,
-} from './structure.js';
+} from '../../core/read/noteStructure.js';
 
 import {
   getAllTasks,

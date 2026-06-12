@@ -29,8 +29,7 @@
     "packages/mcp-server/src/tool-registry.ts -> packages/mcp-server/src/tools/write/memory.ts",
     "packages/mcp-server/src/tool-registry.ts -> packages/mcp-server/src/tools/write/note.ts",
     "packages/mcp-server/src/tool-registry.ts -> packages/mcp-server/src/tools/write/policy.ts",
-    "packages/mcp-server/src/tool-registry.ts -> packages/mcp-server/src/tools/write/tasks.ts",
-    "packages/mcp-server/src/tool-registry/crossVault.ts -> packages/mcp-server/src/tools/read/query.ts"
+    "packages/mcp-server/src/tool-registry.ts -> packages/mcp-server/src/tools/write/tasks.ts"
   ],
   "sqlFiles": [
     "packages/core/src/migrations.ts",
@@ -44,6 +43,7 @@
     "packages/mcp-server/src/core/read/similarity.ts",
     "packages/mcp-server/src/core/read/taskCache.ts",
     "packages/mcp-server/src/core/read/watch/pipeline.ts",
+    "packages/mcp-server/src/core/search/bridging.ts",
     "packages/mcp-server/src/core/shared/benchmarks.ts",
     "packages/mcp-server/src/core/shared/cooccurrence.ts",
     "packages/mcp-server/src/core/shared/graphSnapshots.ts",
@@ -70,7 +70,6 @@
     "packages/mcp-server/src/tools/read/graphTools.ts",
     "packages/mcp-server/src/tools/read/health.ts",
     "packages/mcp-server/src/tools/read/insightsTools.ts",
-    "packages/mcp-server/src/tools/read/query.ts",
     "packages/mcp-server/src/tools/read/system.ts",
     "packages/mcp-server/src/tools/read/wikilinks.ts",
     "packages/mcp-server/src/tools/write/correct.ts",

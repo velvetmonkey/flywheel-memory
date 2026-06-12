@@ -1,4 +1,4 @@
-import { applySandwichOrdering } from '../tools/read/query.js';
+import { applySandwichOrdering } from '../core/search/ranking.js';
 import { VaultRegistry } from '../vault-registry.js';
 import { runInVaultScope } from '../vault-scope.js';
 import type { VaultActivationCallbacks } from './types.js';

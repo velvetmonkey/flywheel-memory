@@ -18,6 +18,7 @@ import {
   inFolder,
   sortNotes,
 } from './filters.js';
+import { filterByDateWindow } from '../../core/read/noteFilters.js';
 
 export function registerFindNotesTools(
   server: McpServer,
@@ -69,17 +70,8 @@ export function registerFindNotesTools(
         const term = title_contains.toLowerCase();
         notes = notes.filter((note) => note.title.toLowerCase().includes(term));
       }
-      // Date filters use local timezone
-      if (modified_after) {
-        const afterDate = new Date(modified_after);
-        afterDate.setHours(0, 0, 0, 0);
-        notes = notes.filter((note) => note.modified >= afterDate);
-      }
-      if (modified_before) {
-        const beforeDate = new Date(modified_before);
-        beforeDate.setHours(23, 59, 59, 999);
-        notes = notes.filter((note) => note.modified <= beforeDate);
-      }
+      // Date filters use local timezone (shared with search's date branch)
+      notes = filterByDateWindow(notes, modified_after, modified_before);
 
       notes = sortNotes(notes, sort_by ?? 'modified', order ?? 'desc');
 

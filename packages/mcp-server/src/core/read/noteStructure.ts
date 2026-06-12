@@ -6,7 +6,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type { VaultIndex } from '../../core/read/types.js';
+import type { VaultIndex } from './types.js';
 
 /** A heading extracted from a note */
 export interface Heading {

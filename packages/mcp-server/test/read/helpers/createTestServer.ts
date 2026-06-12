@@ -1,5 +1,12 @@
 /**
- * Test helper to create a configured MCP server for testing
+ * Test helper to create a configured MCP server for testing.
+ *
+ * Registers tools via registerAllTools (the production registration path,
+ * same pattern as test/helpers/createWriteTestServer.ts) rather than
+ * hand-assembling individual tool modules. This eliminates drift between the
+ * test and production tool surfaces — retired legacy tools (suggest_wikilinks,
+ * graph_analysis, vault_schema, note_intelligence, rename_field, ...) are no
+ * longer registered here because production never registers them.
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -7,18 +14,8 @@ import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
 import type { VaultIndex } from '../../../src/core/read/types.js';
 import { buildVaultIndex, setIndexState } from '../../../src/core/read/graph.js';
-import { registerWikilinkTools } from '../../../src/tools/read/wikilinks.js';
-import { registerHealthTools } from '../../../src/tools/read/health.js';
-import { registerQueryTools } from '../../../src/tools/read/query.js';
-import { registerFindNotesTools } from '../../../src/tools/read/find_notes.js';
-import { registerSystemTools } from '../../../src/tools/read/system.js';
-import { registerPrimitiveTools } from '../../../src/tools/read/primitives.js';
-import { registerMigrationTools } from '../../../src/tools/read/migrations.js';
-import { registerGraphAnalysisTools } from '../../../src/tools/read/graphAnalysis.js';
-import { registerGraphTools2 } from '../../../src/tools/read/graphTools.js';
-import { registerVaultSchemaTools } from '../../../src/tools/read/vaultSchema.js';
-import { registerSemanticAnalysisTools } from '../../../src/tools/read/semanticAnalysis.js';
-import { registerNoteIntelligenceTools } from '../../../src/tools/read/noteIntelligence.js';
+import { loadConfig, type FlywheelConfig } from '../../../src/core/read/config.js';
+import { registerAllTools } from '../../../src/tool-registry.js';
 import { openStateDb, type StateDb } from '@velvetmonkey/vault-core';
 import { setFTS5Database } from '../../../src/core/read/fts5.js';
 import { setProspectStateDb } from '../../../src/core/shared/prospects.js';
@@ -71,8 +68,9 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     version: '1.0.0-test',
   });
 
-  // Mutable reference for system tools to update
+  // Mutable references for tools to read/update
   let currentIndex = vaultIndex;
+  let flywheelConfig: FlywheelConfig = stateDb ? loadConfig(stateDb) : ({} as FlywheelConfig);
   const pipelineActivity = createEmptyPipelineActivity();
   const runtimeState = {
     bootState: 'ready',
@@ -86,94 +84,22 @@ export async function createTestServer(vaultPath: string): Promise<TestServerCon
     lastBackupAt: null,
   };
 
-  // Register all tools
-  registerWikilinkTools(
-    server,
-    () => currentIndex,
-    () => vaultPath,
-    () => stateDb
-  );
-
-  registerHealthTools(
-    server,
-    () => currentIndex,
-    () => vaultPath,
-    () => ({}),
-    () => stateDb,
-    () => null,
-    () => '1.0.0-test',
-    () => pipelineActivity,
-    () => runtimeState,
-  );
-
-  registerQueryTools(
-    server,
-    () => currentIndex,
-    () => vaultPath,
-    () => stateDb
-  );
-
-  registerFindNotesTools(
-    server,
-    () => currentIndex,
-    () => stateDb
-  );
-
-  registerSystemTools(
-    server,
-    () => currentIndex,
-    (newIndex) => {
+  // Register the production tool surface (no gating — all tools registered)
+  registerAllTools(server, {
+    getVaultPath: () => vaultPath,
+    getVaultIndex: () => currentIndex,
+    getStateDb: () => stateDb,
+    getFlywheelConfig: () => flywheelConfig,
+    getWatcherStatus: () => null,
+    getPipelineActivity: () => pipelineActivity,
+    getVaultRuntimeState: () => runtimeState,
+    updateVaultIndex: (newIndex) => {
       currentIndex = newIndex;
     },
-    () => vaultPath,
-    undefined,
-    () => stateDb
-  );
-
-  registerPrimitiveTools(
-    server,
-    () => currentIndex,
-    () => vaultPath
-  );
-
-  registerGraphAnalysisTools(
-    server,
-    () => currentIndex,
-    () => vaultPath
-  );
-
-  // T43 B3+: also register merged graph tool alongside legacy graph_analysis
-  registerGraphTools2(
-    server,
-    () => currentIndex,
-    () => vaultPath,
-    () => stateDb,
-    () => ({}),
-  );
-
-  registerSemanticAnalysisTools(
-    server,
-    () => currentIndex,
-    () => vaultPath
-  );
-
-  registerVaultSchemaTools(
-    server,
-    () => currentIndex,
-    () => vaultPath
-  );
-
-  registerNoteIntelligenceTools(
-    server,
-    () => currentIndex,
-    () => vaultPath
-  );
-
-  registerMigrationTools(
-    server,
-    () => currentIndex,
-    () => vaultPath
-  );
+    updateFlywheelConfig: (newConfig) => {
+      flywheelConfig = newConfig;
+    },
+  });
 
   return {
     server,

@@ -430,9 +430,9 @@ describe('MCP Tool Integration', () => {
     client = connectTestClient(context.server);
   });
 
-  test('schema_conventions conventions tool returns JSON', async () => {
-    const result = await client.callTool('schema_conventions', {
-      analysis: 'conventions',
+  test('schema action=conventions tool returns JSON', async () => {
+    const result = await client.callTool('schema', {
+      action: 'conventions',
       folder: 'projects',
     });
 
@@ -444,27 +444,18 @@ describe('MCP Tool Integration', () => {
     expect(data.inferred_fields).toBeDefined();
   });
 
-  test('schema_conventions incomplete tool returns JSON', async () => {
-    const result = await client.callTool('schema_conventions', {
-      analysis: 'incomplete',
-      folder: 'projects',
-      min_frequency: 0.5,
-    });
-
-    expect(result.content).toBeDefined();
-    const data = JSON.parse(result.content[0].text);
+  // schema_conventions analysis=incomplete retired with no merged-tool action;
+  // the underlying helper is still live (used by schema intelligence) — pin it directly.
+  test('findIncompleteNotes helper returns folder report', async () => {
+    const data = findIncompleteNotes(context.vaultIndex, 'projects', 0.5, 50, 0);
     expect(data.folder).toBe('projects');
     expect(data.notes).toBeDefined();
   });
 
-  test('schema_conventions suggest_values tool returns JSON', async () => {
-    const result = await client.callTool('schema_conventions', {
-      analysis: 'suggest_values',
-      field: 'status',
-    });
-
-    expect(result.content).toBeDefined();
-    const data = JSON.parse(result.content[0].text);
+  // schema_conventions analysis=suggest_values retired with no merged-tool action;
+  // the underlying helper is still live — pin it directly.
+  test('suggestFieldValues helper returns suggestions', async () => {
+    const data = suggestFieldValues(context.vaultIndex, 'status');
     expect(data.field).toBe('status');
     expect(data.suggestions).toBeDefined();
   });

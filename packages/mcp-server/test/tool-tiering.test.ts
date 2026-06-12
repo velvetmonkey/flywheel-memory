@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { ALL_CATEGORIES, generateInstructions, resolveToolConfig, TOOL_CATEGORY } from '../src/config.js';
+import { ALL_CATEGORIES, resolveToolConfig, TOOL_CATEGORY } from '../src/config.js';
+import { generateInstructions } from '../src/instructions.js';
 import { applyToolGating, registerAllTools, type ToolRegistryContext } from '../src/tool-registry.js';
 import { connectMcpTestClient } from './helpers/mcpClient.js';
 

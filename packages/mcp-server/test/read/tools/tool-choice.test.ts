@@ -8,7 +8,8 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs/promises';
 import pathMod from 'path';
-import { generateInstructions, parseEnabledCategories } from '../../../src/config.js';
+import { parseEnabledCategories } from '../../../src/config.js';
+import { generateInstructions } from '../../../src/instructions.js';
 
 // ============================================================================
 // Layer 1: generateInstructions() routing assertions

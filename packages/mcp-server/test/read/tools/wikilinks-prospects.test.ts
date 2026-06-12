@@ -105,9 +105,10 @@ describe('Wikilink Prospect Integration', () => {
   // suggest_wikilinks prospect recording
   // ===========================================================================
 
-  describe('suggest_wikilinks prospect recording', () => {
+  describe('link action=suggest prospect recording', () => {
     it('records prospects only when note_path is provided', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Discussed the Beta Platform integration with Marcus Johnson today.',
         note_path: 'daily/2026-03-30.md',
       });
@@ -127,7 +128,8 @@ describe('Wikilink Prospect Integration', () => {
       stateDb.db.exec('DELETE FROM prospect_ledger');
       stateDb.db.exec('DELETE FROM prospect_summary');
 
-      await client.callTool('suggest_wikilinks', {
+      await client.callTool('link', {
+        action: 'suggest',
         text: 'Discussed the Beta Platform integration with Marcus Johnson today.',
       });
 
@@ -142,7 +144,7 @@ describe('Wikilink Prospect Integration', () => {
   // suggest_wikilinks prospect enrichment
   // ===========================================================================
 
-  describe('suggest_wikilinks prospect enrichment', () => {
+  describe('link action=suggest prospect enrichment', () => {
     it('enriches prospects with ledger data when prospect_summary exists', async () => {
       const now = Date.now();
       // Pre-populate a prospect summary for a term that will appear as a prospect
@@ -153,7 +155,8 @@ describe('Wikilink Prospect Integration', () => {
           ('beta platform', 'Beta Platform', 7, 5, 15, 3, 'dead_link', 'high', 0, ${now - 5 * 86400000}, ${now}, 55, ${now})
       `);
 
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'The Beta Platform needs an upgrade. We should discuss Beta Platform with the team.',
         note_path: 'daily/2026-03-30.md',
       });
@@ -179,7 +182,7 @@ describe('Wikilink Prospect Integration', () => {
   // discover_stub_candidates
   // ===========================================================================
 
-  describe('discover_stub_candidates', () => {
+  describe('link action=stubs', () => {
     it('uses prospect summaries when present', async () => {
       const now = Date.now();
       // Clear and seed prospect data
@@ -191,7 +194,8 @@ describe('Wikilink Prospect Integration', () => {
           ('analytics dashboard', 'Analytics Dashboard', 8, 6, 20, 5, 'dead_link', 'high', 3, ${now - 10 * 86400000}, ${now}, 65, ${now})
       `);
 
-      const result = await client.callTool('discover_stub_candidates', {
+      const result = await client.callTool('link', {
+        action: 'stubs',
         min_frequency: 5,
         limit: 10,
       });
@@ -211,7 +215,8 @@ describe('Wikilink Prospect Integration', () => {
       stateDb.db.exec('DELETE FROM prospect_ledger');
       stateDb.db.exec('DELETE FROM prospect_summary');
 
-      const result = await client.callTool('discover_stub_candidates', {
+      const result = await client.callTool('link', {
+        action: 'stubs',
         min_frequency: 1,
         limit: 20,
       });
@@ -263,7 +268,8 @@ describe('Wikilink Prospect Integration', () => {
         updatedAt: now,
       });
 
-      const result = await client.callTool('discover_stub_candidates', {
+      const result = await client.callTool('link', {
+        action: 'stubs',
         min_frequency: 5,
         limit: 10,
       });

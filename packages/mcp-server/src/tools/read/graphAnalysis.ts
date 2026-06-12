@@ -6,8 +6,6 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { z } from 'zod';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../../core/read/types.js';
 import type { StateDb } from '@velvetmonkey/vault-core';
 import { getExcludeTags, getExcludeEntities, type FlywheelConfig } from '../../core/read/config.js';
@@ -328,38 +326,7 @@ export async function runGraphAnalysis(
   }
 }
 
-/**
- * Register the unified graph_analysis tool
- */
-export function registerGraphAnalysisTools(
-  server: McpServer,
-  getIndex: () => VaultIndex,
-  getVaultPath: () => string,
-  getStateDb?: () => StateDb | null,
-  getConfig?: () => FlywheelConfig,
-): void {
-  server.registerTool(
-    'graph_analysis',
-    {
-      title: 'Graph Analysis',
-      description:
-        'Use when analyzing vault link structure for orphans, hubs, dead ends, clusters, or bridges. Produces structural graph metrics for the selected analysis mode. Returns mode-specific arrays with note paths, scores, and counts. Does not read note content — only analyzes link topology.',
-      inputSchema: {
-        analysis: z.enum(['orphans', 'dead_ends', 'sources', 'hubs', 'stale', 'immature', 'emerging_hubs', 'centrality', 'cycles']).describe('Type of graph analysis to perform'),
-        folder: z.string().optional().describe('Limit to notes in this folder (orphans, dead_ends, sources, immature)'),
-        min_links: z.coerce.number().default(5).describe('Minimum total connections for hubs'),
-        min_backlinks: z.coerce.number().default(1).describe('Minimum backlinks (dead_ends, stale)'),
-        min_outlinks: z.coerce.number().default(1).describe('Minimum outlinks (sources)'),
-        days: z.coerce.number().optional().describe('Days threshold (stale: required; emerging_hubs: default 30)'),
-        limit: z.coerce.number().default(50).describe('Maximum number of results to return'),
-        offset: z.coerce.number().default(0).describe('Number of results to skip (for pagination)'),
-      },
-    },
-    async (params) => {
-      const result = await runGraphAnalysis(params, getIndex, getVaultPath, getStateDb, getConfig);
-      return {
-        content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
-      };
-    }
-  );
-}
+// registerGraphAnalysisTools removed (arch-review S12): the standalone
+// graph_analysis tool was retired in T43 B3+ and production never registered
+// it. This file stays as the helper library behind graph(action: analyse) —
+// graphTools.ts imports runGraphAnalysis.

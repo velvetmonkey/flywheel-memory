@@ -26,7 +26,7 @@ describe('MCP Server Integration', () => {
     test('registers all expected tools', async () => {
       const result = await client.listTools();
 
-      // Should have 15+ tools registered (read tools only in test server)
+      // Should have 15+ tools registered (full production surface via registerAllTools)
       expect(result.tools.length).toBeGreaterThanOrEqual(15);
 
       // Check for key merged tool categories
@@ -94,8 +94,9 @@ describe('MCP Server Integration', () => {
       expect(data.notes.length).toBeGreaterThan(0);
     });
 
-    test('suggest_wikilinks processes text', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+    test('link action=suggest processes text', async () => {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'This mentions Alex Johnson and Acme Corp.',
       });
 

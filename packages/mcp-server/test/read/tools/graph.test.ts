@@ -27,9 +27,9 @@ describe('Graph Tools via MCP', () => {
   // get_backlinks, get_forward_links — kept for Crank plugin dependency
   // get_weighted_links — retired (search returns edge-weight-ranked links)
 
-  describe('graph_analysis: orphans', () => {
+  describe('graph action=analyse: orphans', () => {
     test('finds notes with no backlinks', async () => {
-      const result = await client.callTool('graph_analysis', { analysis: 'orphans' });
+      const result = await client.callTool('graph', { action: 'analyse', analysis: 'orphans' });
 
       const data = JSON.parse(result.content[0].text);
       expect(data.orphans).toBeDefined();
@@ -37,7 +37,8 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('filters by folder', async () => {
-      const result = await client.callTool('graph_analysis', {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
         analysis: 'orphans',
         folder: 'edge-cases',
       });
@@ -49,7 +50,8 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('respects limit and offset', async () => {
-      const result = await client.callTool('graph_analysis', {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
         analysis: 'orphans',
         limit: 2,
         offset: 0,
@@ -60,9 +62,10 @@ describe('Graph Tools via MCP', () => {
     });
   });
 
-  describe('graph_analysis: hubs', () => {
+  describe('graph action=analyse: hubs', () => {
     test('finds highly connected notes', async () => {
-      const result = await client.callTool('graph_analysis', {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
         analysis: 'hubs',
         min_links: 1,
       });
@@ -75,7 +78,8 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('respects min_links threshold', async () => {
-      const result = await client.callTool('graph_analysis', {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
         analysis: 'hubs',
         min_links: 5,
       });
@@ -87,7 +91,8 @@ describe('Graph Tools via MCP', () => {
     });
 
     test('respects limit and offset', async () => {
-      const result = await client.callTool('graph_analysis', {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
         analysis: 'hubs',
         limit: 1,
       });
@@ -235,9 +240,10 @@ describe('Advanced Graph Tools via MCP', () => {
     });
   });
 
-  describe('graph_analysis: dead_ends', () => {
+  describe('graph action=analyse: dead_ends', () => {
     test('finds notes with backlinks but no outlinks', async () => {
-      const result = await client.callTool('graph_analysis', {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
         analysis: 'dead_ends',
         min_backlinks: 1,
       });
@@ -247,7 +253,8 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('respects min_backlinks threshold', async () => {
-      const result = await client.callTool('graph_analysis', {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
         analysis: 'dead_ends',
         min_backlinks: 2,
       });
@@ -259,7 +266,8 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('filters by folder', async () => {
-      const result = await client.callTool('graph_analysis', {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
         analysis: 'dead_ends',
         folder: 'edge-cases',
       });
@@ -271,9 +279,10 @@ describe('Advanced Graph Tools via MCP', () => {
     });
   });
 
-  describe('graph_analysis: sources', () => {
+  describe('graph action=analyse: sources', () => {
     test('finds notes with outlinks but no backlinks', async () => {
-      const result = await client.callTool('graph_analysis', {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
         analysis: 'sources',
         min_outlinks: 1,
       });
@@ -283,7 +292,8 @@ describe('Advanced Graph Tools via MCP', () => {
     });
 
     test('respects min_outlinks threshold', async () => {
-      const result = await client.callTool('graph_analysis', {
+      const result = await client.callTool('graph', {
+        action: 'analyse',
         analysis: 'sources',
         min_outlinks: 2,
       });

@@ -28,7 +28,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { generateInstructions } from './config.js';
+import { generateInstructions } from './instructions.js';
 import { applyToolGating, registerAllTools } from './tool-registry.js';
 import { serverLog } from './core/shared/serverLog.js';
 

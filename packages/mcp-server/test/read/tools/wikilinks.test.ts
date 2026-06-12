@@ -15,7 +15,7 @@ import { connectTestClient, type TestClient, createTestServer, type TestServerCo
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = path.join(__dirname, '..', 'fixtures');
 
-describe('Wikilink Suggestion Tool', () => {
+describe('Wikilink Suggestion Tool (link action: suggest)', () => {
   let context: TestServerContext;
   let client: TestClient;
 
@@ -26,7 +26,8 @@ describe('Wikilink Suggestion Tool', () => {
 
   describe('Basic Entity Matching', () => {
     test('finds exact matches for note titles', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'We met with Alex Johnson today.',
       });
 
@@ -40,7 +41,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('matches are case-insensitive', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'We met with ALEX JOHNSON today.',
       });
 
@@ -50,7 +52,8 @@ describe('Wikilink Suggestion Tool', () => {
 
     test('matches aliases as well as titles', async () => {
       // Normal Note has aliases: ["Test Note", "My Normal Note"]
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Check Test Note for details.',
       });
 
@@ -62,7 +65,8 @@ describe('Wikilink Suggestion Tool', () => {
   describe('Word Boundary Detection', () => {
     test('does not match partial words - prefix', async () => {
       // "Alex" should not match in "Alexy"
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Alexy went to the store.',
       });
 
@@ -76,7 +80,8 @@ describe('Wikilink Suggestion Tool', () => {
 
     test('does not match partial words - suffix', async () => {
       // "Alex" should not match in "Lexan"
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Lexan is here.',
       });
 
@@ -88,7 +93,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('matches at word boundaries with punctuation', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Contact Alex Johnson, immediately.',
       });
 
@@ -101,7 +107,8 @@ describe('Wikilink Suggestion Tool', () => {
 
     test('matches with hyphen as word boundary', async () => {
       // Hyphen should be a word boundary
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Contact Alex-related topics.',
       });
 
@@ -111,7 +118,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('matches at start of text', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Alex Johnson is here.',
       });
 
@@ -120,7 +128,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('matches at end of text', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Contact Alex Johnson',
       });
 
@@ -131,7 +140,8 @@ describe('Wikilink Suggestion Tool', () => {
 
   describe('Skip Regions', () => {
     test('skips existing wikilinks', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'We met with [[Alex Johnson]] today.',
       });
 
@@ -144,7 +154,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('skips inline code', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'The variable `Alex Johnson` is a string.',
       });
 
@@ -157,7 +168,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('skips code blocks', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: '```\nAlex Johnson is in code\n```',
       });
 
@@ -170,7 +182,8 @@ describe('Wikilink Suggestion Tool', () => {
 
     test('skips URLs', async () => {
       // If an entity appears in a URL, it should be skipped
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Visit https://example.com/AlexJohnson for more.',
       });
 
@@ -183,7 +196,8 @@ describe('Wikilink Suggestion Tool', () => {
   describe('Overlapping Entity Handling', () => {
     test('longer matches take precedence', async () => {
       // If we have entities "Alex" and "Alex Johnson", "Alex Johnson" should match first
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'We met with Alex Johnson today.',
       });
 
@@ -205,7 +219,8 @@ describe('Wikilink Suggestion Tool', () => {
 
     test('adjacent non-overlapping matches are both found', async () => {
       // If two separate entities appear, both should match
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Alex Johnson visited Acme Corp yesterday.',
       });
 
@@ -225,17 +240,22 @@ describe('Wikilink Suggestion Tool', () => {
 
   describe('Edge Cases', () => {
     test('handles empty text', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: '',
       });
 
+      // Live contract: link(action: suggest) requires non-empty text and
+      // returns an error payload. (The retired suggest_wikilinks tool
+      // returned an empty suggestion list for empty input.)
+      expect(result.isError).toBe(true);
       const data = JSON.parse(result.content[0].text);
-      expect(data.suggestions).toHaveLength(0);
-      expect(data.input_length).toBe(0);
+      expect(data.error).toBe('text is required for action: suggest');
     });
 
     test('handles text with no matches', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'This text has no entities at all.',
       });
 
@@ -244,7 +264,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('respects limit parameter', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Alex Johnson met Alex Johnson and Alex Johnson again.',
         limit: 1,
       });
@@ -255,12 +276,14 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('respects offset parameter', async () => {
-      const resultAll = await client.callTool('suggest_wikilinks', {
+      const resultAll = await client.callTool('link', {
+        action: 'suggest',
         text: 'Alex Johnson works at Acme Corp with Alex Johnson',
       });
       const dataAll = JSON.parse(resultAll.content[0].text);
 
-      const resultOffset = await client.callTool('suggest_wikilinks', {
+      const resultOffset = await client.callTool('link', {
+        action: 'suggest',
         text: 'Alex Johnson works at Acme Corp with Alex Johnson',
         offset: 1,
       });
@@ -276,7 +299,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('handles special characters in text', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Email: Alex Johnson <alex@example.com>',
       });
 
@@ -286,7 +310,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('handles newlines correctly', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'Line 1:\nAlex Johnson\nLine 3',
       });
 
@@ -297,7 +322,8 @@ describe('Wikilink Suggestion Tool', () => {
 
   describe('Common-word entity matching', () => {
     test('lowercase rest does NOT appear in suggestions', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'I need to rest after work.',
       });
 
@@ -309,7 +335,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('uppercase REST DOES appear in suggestions', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'The REST API endpoint handles authentication.',
       });
 
@@ -322,7 +349,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('mixed text: only uppercase instance matches', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'I need to rest. The REST API works great.',
       });
 
@@ -335,7 +363,8 @@ describe('Wikilink Suggestion Tool', () => {
     });
 
     test('alias RESTful matches case-insensitively', async () => {
-      const result = await client.callTool('suggest_wikilinks', {
+      const result = await client.callTool('link', {
+        action: 'suggest',
         text: 'We designed a RESTful architecture for the service.',
       });
 
@@ -348,7 +377,7 @@ describe('Wikilink Suggestion Tool', () => {
   });
 });
 
-describe('Link Validation Tool', () => {
+describe('Link Validation Tool (link action: validate)', () => {
   let context: TestServerContext;
   let client: TestClient;
 
@@ -358,8 +387,9 @@ describe('Link Validation Tool', () => {
   });
 
   test('validates links in a specific note', async () => {
-    const result = await client.callTool('validate_links', {
-      path: 'normal-note.md',
+    const result = await client.callTool('link', {
+      action: 'validate',
+      note_path: 'normal-note.md',
     });
 
     const data = JSON.parse(result.content[0].text);
@@ -368,7 +398,7 @@ describe('Link Validation Tool', () => {
   });
 
   test('validates all links when no path specified', async () => {
-    const result = await client.callTool('validate_links', {});
+    const result = await client.callTool('link', { action: 'validate' });
 
     const data = JSON.parse(result.content[0].text);
     expect(data.scope).toBe('all');
@@ -377,8 +407,9 @@ describe('Link Validation Tool', () => {
 
   test('detects broken links', async () => {
     // normal-note.md has a link to "Does Not Exist"
-    const result = await client.callTool('validate_links', {
-      path: 'normal-note.md',
+    const result = await client.callTool('link', {
+      action: 'validate',
+      note_path: 'normal-note.md',
     });
 
     const data = JSON.parse(result.content[0].text);
@@ -391,8 +422,9 @@ describe('Link Validation Tool', () => {
   });
 
   test('suggests fixes for broken links', async () => {
-    const result = await client.callTool('validate_links', {
-      path: 'normal-note.md',
+    const result = await client.callTool('link', {
+      action: 'validate',
+      note_path: 'normal-note.md',
     });
 
     const data = JSON.parse(result.content[0].text);
@@ -401,8 +433,9 @@ describe('Link Validation Tool', () => {
   });
 
   test('returns line numbers for broken links', async () => {
-    const result = await client.callTool('validate_links', {
-      path: 'normal-note.md',
+    const result = await client.callTool('link', {
+      action: 'validate',
+      note_path: 'normal-note.md',
     });
 
     const data = JSON.parse(result.content[0].text);
@@ -412,8 +445,9 @@ describe('Link Validation Tool', () => {
   });
 
   test('handles non-existent note path', async () => {
-    const result = await client.callTool('validate_links', {
-      path: 'does-not-exist.md',
+    const result = await client.callTool('link', {
+      action: 'validate',
+      note_path: 'does-not-exist.md',
     });
 
     const data = JSON.parse(result.content[0].text);
@@ -421,13 +455,15 @@ describe('Link Validation Tool', () => {
   });
 
   test('respects limit and offset', async () => {
-    const resultAll = await client.callTool('validate_links', {
+    const resultAll = await client.callTool('link', {
+      action: 'validate',
       limit: 100,
     });
     const dataAll = JSON.parse(resultAll.content[0].text);
 
     if (dataAll.broken_links > 1) {
-      const resultLimited = await client.callTool('validate_links', {
+      const resultLimited = await client.callTool('link', {
+      action: 'validate',
         limit: 1,
       });
       const dataLimited = JSON.parse(resultLimited.content[0].text);

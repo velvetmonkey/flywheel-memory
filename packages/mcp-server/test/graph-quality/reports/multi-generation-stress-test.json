@@ -1,7 +1,7 @@
 {
   "suite": "multi-generation-stress-test",
-  "timestamp": "2026-04-20T17:11:19.125Z",
-  "duration_ms": 119019,
+  "timestamp": "2026-06-12T20:41:19.562Z",
+  "duration_ms": 108785,
   "summary": {
     "gen0_f1": 0.576,
     "genLast_f1": 0.51,

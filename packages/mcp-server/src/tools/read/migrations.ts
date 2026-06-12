@@ -5,11 +5,9 @@
  * All operations are dry-run by default for safety.
  */
 
-import { z } from 'zod';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import matter from 'gray-matter';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex, VaultNote } from '../../core/read/types.js';
 import { requireIndex } from '../../core/read/indexGuard.js';
 
@@ -275,81 +273,8 @@ export async function migrateFieldValues(
   };
 }
 
-// =============================================================================
-// MCP TOOL REGISTRATION
-// =============================================================================
-
-/**
- * Register migration tools
- */
-export function registerMigrationTools(
-  server: McpServer,
-  getIndex: () => VaultIndex,
-  getVaultPath: () => string
-): void {
-  // rename_field
-  server.registerTool(
-    'rename_field',
-    {
-      title: 'Rename Field',
-      description:
-        'Use when bulk-renaming a frontmatter field across notes. Produces a dry-run preview by default showing affected notes and conflict detection. Returns rename results with before/after field names per note. Does not write changes unless dry_run is false.',
-      inputSchema: {
-        old_name: z.string().describe('Current field name to rename'),
-        new_name: z.string().describe('New field name'),
-        folder: z.string().optional().describe('Limit to notes in this folder'),
-        dry_run: z.boolean().optional().describe('Preview only, no changes (default: true)'),
-      },
-    },
-    async ({ old_name, new_name, folder, dry_run }) => {
-      const index = getIndex();
-      const vaultPath = getVaultPath();
-      const result = await renameField(index, vaultPath, old_name, new_name, {
-        folder,
-        dry_run: dry_run ?? true,
-      });
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
-
-  // migrate_field_values
-  server.registerTool(
-    'migrate_field_values',
-    {
-      title: 'Migrate Field Values',
-      description:
-        'Use when transforming frontmatter field values in bulk using a mapping. Produces a dry-run preview by default showing value transformations. Returns migration results with before/after values per note. Does not write changes unless dry_run is false.',
-      inputSchema: {
-        field: z.string().describe('Field to migrate values for'),
-        mapping: z.record(z.unknown()).describe('Mapping of old values to new values (e.g., {"high": 1, "medium": 2, "low": 3})'),
-        folder: z.string().optional().describe('Limit to notes in this folder'),
-        dry_run: z.boolean().optional().describe('Preview only, no changes (default: true)'),
-      },
-    },
-    async ({ field, mapping, folder, dry_run }) => {
-      const index = getIndex();
-      const vaultPath = getVaultPath();
-      const result = await migrateFieldValues(index, vaultPath, field, mapping, {
-        folder,
-        dry_run: dry_run ?? true,
-      });
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
-}
+// registerMigrationTools removed (arch-review S12): the standalone
+// rename_field / migrate_field_values tools were retired in T43 B3+ and
+// production never registered them. This file stays as the helper library
+// behind schema(action: rename_field|migrate) — schemaTools.ts imports
+// renameField and migrateFieldValues.

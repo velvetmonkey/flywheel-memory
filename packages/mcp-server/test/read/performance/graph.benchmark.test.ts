@@ -28,10 +28,10 @@ describe('Graph Query Performance Benchmarks', () => {
   }, 30000); // Allow 30s for index build
 
   describe('query latency', () => {
-    it('search_notes completes in <2 seconds', async () => {
+    it('search completes in <2 seconds', async () => {
 
       const start = performance.now();
-      const result = await client.callTool('search_notes', {
+      const result = await client.callTool('search', {
         query: 'propulsion',
         limit: 20,
       });
@@ -40,7 +40,7 @@ describe('Graph Query Performance Benchmarks', () => {
       expect(result.content[0].text).toBeDefined();
       expect(elapsed).toBeLessThan(4000);
 
-      console.log(`search_notes latency: ${elapsed.toFixed(2)}ms`);
+      console.log(`search latency: ${elapsed.toFixed(2)}ms`);
     });
 
     it('find_notes by title completes in <500ms', async () => {

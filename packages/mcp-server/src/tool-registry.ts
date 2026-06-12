@@ -483,6 +483,29 @@ export function applyToolGating(
     }
   }
 
+  // ==========================================================================
+  // Wrapper-chain ORDER invariant (applies to both tool() and registerTool()):
+  //
+  //   registration:  gating → vault-param injection → vault activation →
+  //                  integrity gate → tracking
+  //
+  // Wraps are applied inside-out, so at call time the onion runs
+  // tracking (outermost) → integrity gate → vault activation → handler.
+  // Order matters:
+  //   1. gate(name) first — a category-skipped tool must not be wrapped or
+  //      registered at all (and gate() throws on unknown tools).
+  //   2. injectVaultParam before wrapping — the optional `vault` param must be
+  //      in the schema or the SDK strips it before any wrapper can see it.
+  //   3. integrity gate OUTSIDE vault activation — the gate resolves the
+  //      target vault from params.vault, which wrapWithVaultActivation
+  //      deletes before forwarding; reversed, the gate would always check the
+  //      default vault. Inner activation also means a failed-integrity vault
+  //      is rejected before it is ever activated.
+  //   4. tracking outermost — duration/success recording and the retrieval
+  //      observer must capture every outcome, including integrity-gate
+  //      rejections and cross-vault fan-out, and post-process the final
+  //      result (progressive-disclosure activation notices).
+  // ==========================================================================
   const origTool = targetServer.tool.bind(targetServer) as (...args: unknown[]) => unknown;
   (targetServer as any).tool = (name: string, ...args: any[]) => {
     if (!gate(name)) return;

@@ -1,6 +1,6 @@
 # Flywheel Memory - Claude Code Instructions
 
-**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 21 merged action-param tools across 3 preset tiers (agent/power/full) organized into 12 categories: search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, and diagnostics — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
+**[[Flywheel]] Memory** — MCP tools that search, write, and auto-link your Obsidian vault — and learn from your edits. 20 merged action-param tools across 3 preset tiers (agent/power/full) organized into 12 categories: search, read, write, graph, schema, wikilinks, corrections, tasks, memory, note-ops, temporal, and diagnostics — all local, all markdown. Hybrid search (BM25 + semantic via Reciprocal Rank Fusion) is available when embeddings are built via `init_semantic`.
 
 ---
 
@@ -20,44 +20,51 @@ branch protection isn't available; PRs are optional, not required.)
 
 ```
 packages/mcp-server/src/
-├── index.ts                    # MCP server entry point + tool preset gating
-├── tool-registry.ts            # Tool gating, tiering, activation tracking
-├── config.ts                   # Tool categories, tiers, presets, instructions
-├── tools/
+├── index.ts                    # Composition root: import-time stdio server construction + main() boot sequencing
+├── tool-registry.ts            # applyToolGating() (gating, tiering, vault injection, tracking) + registerAllTools()
+├── tool-registry/              # Gating support: tiering, activation signals, client suppressions, cross-vault
+├── config.ts                   # Tool categories, tiers, presets (pure configuration)
+├── instructions.ts             # generateInstructions() — server instructions (runtime embeddings check)
+├── vault-registry.ts           # VaultContext + VaultRegistry + parseVaultConfig()
+├── vault-types.ts              # Shared vault state types
+├── vault-scope.ts              # Per-request vault scope (AsyncLocalStorage)
+├── caller-scope.ts             # Per-request caller attribution (X-Flywheel-Caller, AsyncLocalStorage)
+├── boot/                       # Boot phases: state, serverFactory (+HTTP pool), vaultBoot, transport, integrity, shutdown, cli
+├── resources/vault.ts          # MCP resources (vault://stats, vault://schema, vault://recent)
+├── tools/                      # THIN registration layer — zod schemas + dispatch into core/
 │   ├── toolCatalog.ts          # Tool metadata collection for embedding manifest
-│   ├── read/                   # Read-side tool registrations (20 files, helpers omitted)
+│   ├── read/                   # Read-side registrations (helpers omitted)
 │   │   ├── query.ts            # search
-│   │   ├── primitives.ts       # read (structure|section|sections), tasks (list|toggle)
-│   │   ├── graphAnalysis.ts    # graph (analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps)
-│   │   ├── system.ts           # refresh_index, entity (list|alias|suggest_aliases|merge|suggest_merges|dismiss_merge)
-│   │   ├── health.ts           # doctor (health|pipeline|config|log|stats)
-│   │   ├── schemaTools.ts      # schema (overview|field_values|conventions|folders|rename_field|rename_tag|migrate|validate|note_intelligence)
-│   │   ├── noteIntelligence.ts # insights (evolution|staleness|context|note_intelligence|growth)
-│   │   ├── wikilinks.ts        # link (suggest|validate|feedback|stubs|unlinked|dashboard|unsuppress|timeline|...)
-│   │   ├── migrations.ts       # (schema actions: rename_field, migrate absorbed into schema)
-│   │   ├── metrics.ts          # (insights action: growth)
+│   │   ├── primitives.ts       # read (structure|section|sections|raw), tasks (list|toggle)
+│   │   ├── graphTools.ts       # graph (analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps|export)
+│   │   ├── system.ts           # refresh_index
+│   │   ├── health.ts           # doctor (health|diagnosis|stats|pipeline|config|log)
+│   │   ├── schemaTools.ts      # schema (overview|field_values|conventions|folders|rename_field|rename_tag|migrate|validate)
+│   │   ├── insightsTools.ts    # insights (evolution|staleness|context|note_intelligence|growth)
+│   │   ├── find_notes.ts       # find_notes
 │   │   ├── semantic.ts         # init_semantic
-│   │   └── brief.ts            # (memory action: brief)
+│   │   ├── discovery.ts        # discover_tools (auto preset only)
+│   │   └── (helper libs)       # graphAnalysis.ts, graphAdvanced.ts, migrations.ts, schema.ts, frontmatter.ts, brief.ts — no registrations
 │   └── write/                  # Write-side tool registrations
-│       ├── mutations.ts        # edit_section (add|remove|replace)
+│       ├── editSection.ts      # edit_section (add|remove|replace)
 │       ├── tasks.ts            # vault_add_task (standalone), tasks(action: toggle) in primitives.ts
-│       ├── notes.ts            # note (create|delete) and legacy note files
-│       ├── move-notes.ts       # note (move|rename)
+│       ├── note.ts             # note (create|move|rename|delete)
 │       ├── frontmatter.ts      # vault_update_frontmatter
-│       ├── entity.ts           # entity (alias|merge) + correct (record|list|resolve|undo)
-│       ├── corrections.ts      # correct tool source logic
-│       ├── wikilinkFeedback.ts # link (feedback action)
-│       ├── tags.ts             # schema (rename_tag action)
-│       ├── memory.ts           # memory (store|get|search|list|forget|summarize_session|brief)
-│       ├── config.ts           # (doctor action: config)
-│       ├── system.ts           # (correct action: undo)
+│       ├── entity.ts           # entity (list|alias|suggest_aliases|merge|suggest_merges|dismiss_merge)
+│       ├── correct.ts          # correct (record|list|resolve|undo)
+│       ├── link.ts             # link (suggest|feedback|unlinked|validate|stubs|dashboard|unsuppress|timeline|...)
+│       ├── memory.ts           # memory (store|get|search|list|forget|supersede|unsupersede|summarize_session|brief)
+│       ├── enrich.ts           # (init helpers)
 │       └── policy.ts           # policy
 ├── core/
-│   ├── read/                   # Read-side core logic (graph, vault, parser, fts5, config, watcher)
-│   │   └── toolRouting.ts      # Semantic tool routing, manifest loading
+│   ├── read/                   # Read-side core logic (graph, vault, parser, fts5, config, watch/, toolRouting)
+│   │   ├── embeddings/         # Embedding stores, provider, runtime, semantic search
+│   │   └── similarity.ts       # Hybrid ranking (BM25 + semantic via RRF)
+│   ├── search/                 # Search pipeline: ranking, merge, postProcess, assemble, bridging
+│   ├── diagnostics/            # doctor internals: report, diagnosis, stats, healthQueries, configStore
 │   ├── write/                  # Write-side core logic (writer, wikilinks, git, validator, policy engine)
-│   ├── shared/                 # Shared utilities (recency, cooccurrence, retrievalCooccurrence, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots, toolSelectionFeedback)
-│   └── semantic/               # Semantic search (embeddings.ts — embedding generation, similarity.ts — hybrid ranking)
+│   │   └── pipeline/           # Watcher-driven index/linking/learning/maintenance pipeline
+│   └── shared/                 # Shared utilities (recency, cooccurrence, prospects, observer, hub export, stemmer, metrics, indexActivity, toolTracking, graphSnapshots, toolSelectionFeedback)
 └── generated/
     └── tool-embeddings.generated.ts  # Pre-computed tool embedding manifest
 ```
@@ -67,7 +74,8 @@ packages/mcp-server/src/
 ```
 packages/mcp-server/src/
 ├── vault-registry.ts              # VaultContext interface + VaultRegistry class + parseVaultConfig()
-├── index.ts                       # applyToolGating(), registerAllTools(), createConfiguredServer()
+├── tool-registry.ts               # applyToolGating(), registerAllTools()
+├── boot/serverFactory.ts          # createConfiguredServer() + HTTP server pool
 ```
 
 - `vault-registry.ts` — `VaultContext` holds per-vault state (name, vaultPath, stateDb, vaultIndex, flywheelConfig, watcher). `VaultRegistry` tracks all contexts with a primary vault name. `parseVaultConfig()` reads `FLYWHEEL_VAULTS` env var.
@@ -93,7 +101,7 @@ packages/mcp-server/src/
 
 ## Tool Presets
 
-Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `index.ts` via monkey-patched `server.tool()`.
+Controlled by `FLYWHEEL_TOOLS` / `FLYWHEEL_PRESET` env var. Per-tool category gating in `tool-registry.ts` via monkey-patched `server.tool()`.
 
 **Presets (3-tier progressive disclosure):**
 
@@ -127,10 +135,10 @@ Tool counts are computed from `TOOL_CATEGORY` and `TOOL_TIER` in `config.ts` —
 - `graph` — `action: analyse|backlinks|forward_links|strong_connections|path|neighbors|strength|cooccurrence_gaps|export`
 - `insights` — `action: evolution|staleness|context|note_intelligence|growth`
 - `link` — `action: suggest|feedback|unlinked|validate|stubs|dashboard|unsuppress|timeline|layer_timeseries|snapshot_diff`
-- `memory` — `action: store|get|search|list|forget|summarize_session|brief`
+- `memory` — `action: store|get|search|list|forget|supersede|unsupersede|summarize_session|brief`
 - `note` — `action: create|move|rename|delete`
 - `policy` — `action: list|validate|preview|execute|author|revise`
-- `read` — `action: structure|section|sections`
+- `read` — `action: structure|section|sections|raw`
 - `schema` — `action: overview|field_values|conventions|folders|rename_field|rename_tag|migrate|validate`
 - `search` — `action: query|similar`
 - `tasks` — `action: list|toggle`

@@ -14,9 +14,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import {
   resolveToolConfig,
-  generateInstructions,
   type ToolCategory,
 } from './../config.js';
+import { generateInstructions } from './../instructions.js';
 import {
   applyToolGating,
   registerAllTools,

@@ -1,7 +1,6 @@
 {
   "cycles": [],
   "layeringViolations": [
-    "packages/mcp-server/src/core/read/calibrationExport.ts -> packages/mcp-server/src/core/write/wikilinkFeedback.ts",
     "packages/mcp-server/src/core/read/taskCache.ts -> packages/mcp-server/src/tools/read/tasks.ts",
     "packages/mcp-server/src/core/read/watch/maintenance.ts -> packages/mcp-server/src/core/write/edgeWeights.ts",
     "packages/mcp-server/src/core/read/watch/maintenance.ts -> packages/mcp-server/src/core/write/wikilinks.ts",
@@ -38,13 +37,10 @@
     "packages/core/src/queries.ts",
     "packages/core/src/sqlite.ts",
     "packages/mcp-server/src/core/read/aliasSuggestions.ts",
-    "packages/mcp-server/src/core/read/calibrationExport.ts",
     "packages/mcp-server/src/core/read/embeddings.ts",
     "packages/mcp-server/src/core/read/enrichment.ts",
-    "packages/mcp-server/src/core/read/entityHistory.ts",
     "packages/mcp-server/src/core/read/fts5.ts",
     "packages/mcp-server/src/core/read/identity.ts",
-    "packages/mcp-server/src/core/read/learningReport.ts",
     "packages/mcp-server/src/core/read/similarity.ts",
     "packages/mcp-server/src/core/read/taskCache.ts",
     "packages/mcp-server/src/core/read/watch/pipeline.ts",
@@ -76,12 +72,10 @@
     "packages/mcp-server/src/tools/read/insightsTools.ts",
     "packages/mcp-server/src/tools/read/query.ts",
     "packages/mcp-server/src/tools/read/system.ts",
-    "packages/mcp-server/src/tools/read/temporalAnalysis.ts",
     "packages/mcp-server/src/tools/read/wikilinks.ts",
     "packages/mcp-server/src/tools/write/correct.ts",
     "packages/mcp-server/src/tools/write/enrich.ts",
     "packages/mcp-server/src/tools/write/entity.ts",
-    "packages/mcp-server/src/tools/write/link.ts",
-    "packages/mcp-server/src/tools/write/wikilinkFeedback.ts"
+    "packages/mcp-server/src/tools/write/link.ts"
   ]
 }

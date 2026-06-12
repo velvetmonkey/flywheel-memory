@@ -157,7 +157,7 @@ S13 may interleave anywhere after S5; everything wikilink-adjacent (S3–S5, S11
 
 - [x] S0 surface + initialize snapshots, bar tooling (2026-06-12 — surface-freeze (20 tools, full JSON schemas), initialize freeze single+multi (pins null-registry instructions), arch ratchet B2/B3/B4 (baseline: 17 cycles, 31 layering edges, 49 SQL files), cross-vault isolation suite. **Found + escalated D4.** Baseline suite: 3041 pass / 18 skip / 1 env-fail (hotpotqa bench needs external download, network-blocked sandbox))
 - [x] S1 cycle collapse (17 → 0) (2026-06-12 @ 42df64b — leaf type modules: vault-types.ts, shared/read/watch types, tool-registry/types, wikilinkText.ts; ratchet baseline cycles emptied, delete-only diff; suite 3053 green)
-- [ ] S2 dead-code purge + http-transport repoint
+- [x] S2 dead-code purge + http-transport repoint (2026-06-12 — 16 dead src files (−~4.2k LOC incl. recall.ts.disabled, temporalAnalysis, write/system zombie), dead imports/symbols pruned (query, health ×11 symbols, enrichNoteCompact, retired RETRIEVAL_TOOLS names, registerBriefTools no-op, core wikilinks identical-branch), broken test helper + _archive deleted, http-transport.test rewritten once against registerAllTools. Ratchet: layering 31→30, SQL 49→44, delete-only)
 - [ ] S3 edit_section reunification (char tests first)
 - [ ] S4 note reunification (char tests first)
 - [ ] S5 entity-merge reunification (char tests first)

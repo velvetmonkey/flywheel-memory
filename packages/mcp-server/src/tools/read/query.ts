@@ -30,7 +30,6 @@ import {
   semanticSearch,
   hasEmbeddingsIndex,
   reciprocalRankFusion,
-  loadNoteEmbeddingsForPaths,
   embedTextCached,
   findSemanticallySimilarEntities,
   hasEntityEmbeddingsIndex,
@@ -50,7 +49,6 @@ import { getCooccurrenceIndex } from '../../core/write/wikilinks.js';
 import { getRecencyBoost, loadRecencyFromStateDb } from '../../core/shared/recency.js';
 import { getEntityEdgeWeightMap } from '../../core/write/edgeWeights.js';
 import { extractBestSnippets, extractDates } from '../../core/read/snippets.js';
-import { selectByMmr } from '../../core/read/mmr.js';
 import { tokenize } from '../../core/shared/stemmer.js';
 import { searchMemories, type Memory } from '../../core/write/memory.js';
 import { getSectionContent } from './structure.js';

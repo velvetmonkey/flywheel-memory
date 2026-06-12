@@ -1711,23 +1711,10 @@ export function processWikilinks(
   for (let i = nonOverlapping.length - 1; i >= 0; i--) {
     const match = nonOverlapping[i];
 
-    // For quoted terms, we replace "Term" with [[Term]]
-    // For other patterns, we replace Term with [[Term]]
-    let wikilink: string;
-    let replaceStart: number;
-    let replaceEnd: number;
-
-    if (match.pattern === 'quoted-terms') {
-      // Replace "Term" with [[Term]] (remove quotes)
-      wikilink = `[[${match.text}]]`;
-      replaceStart = match.start;
-      replaceEnd = match.end;
-    } else {
-      // Replace Term with [[Term]]
-      wikilink = `[[${match.text}]]`;
-      replaceStart = match.start;
-      replaceEnd = match.end;
-    }
+    // Replace the matched span (quotes included for quoted terms) with [[Term]]
+    const wikilink = `[[${match.text}]]`;
+    const replaceStart = match.start;
+    const replaceEnd = match.end;
 
     processedContent =
       processedContent.slice(0, replaceStart) +

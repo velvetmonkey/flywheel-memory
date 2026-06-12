@@ -20,13 +20,9 @@ import { isTaskCacheReady, isTaskCacheBuilding } from '../../core/read/taskCache
 import { getServerLog, type LogEntry } from '../../core/shared/serverLog.js';
 import { getSweepResults, type SweepResults } from '../../core/read/sweep.js';
 import { getProactiveLinkingSummary, getProactiveLinkingOneLiner } from '../../core/shared/proactiveLinkingStats.js';
-import { getSuppressedCount, getEntityStats, getWeightedEntityStats, computePosteriorMean, PRIOR_ALPHA, PRIOR_BETA, SUPPRESSION_MIN_OBSERVATIONS, SUPPRESSION_POSTERIOR_THRESHOLD } from '../../core/write/wikilinkFeedback.js';
+import { getSuppressedCount, getEntityStats } from '../../core/write/wikilinkFeedback.js';
 import { getEntityEmbeddingsCount } from '../../core/read/embeddings.js';
 import type { WatcherStatus } from '../../core/read/watch/types.js';
-import { TOOL_CATEGORY, parseEnabledCategories, resolveToolConfig, ALL_CATEGORIES } from '../../config.js';
-import { getRecentInvocations } from '../../core/shared/toolTracking.js';
-import { searchFTS5 } from '../../core/read/fts5.js';
-import { recordBenchmark, getBenchmarkHistory, getBenchmarkTrends } from '../../core/shared/benchmarks.js';
 
 /** Staleness threshold in seconds (5 minutes) */
 // 30 min — a quiet period of half an hour is a more honest threshold for

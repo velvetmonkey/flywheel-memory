@@ -30,7 +30,7 @@ const LAST_PROCESSED_KEY = 'retrieval_cooc_last_id';
 const DAILY_NOTE_RE = /\d{4}-\d{2}-\d{2}\.md$/;
 
 /** Retrieval tools that return note results */
-const RETRIEVAL_TOOLS = new Set(['recall', 'search', 'search_notes']);
+const RETRIEVAL_TOOLS = new Set(['search']);
 
 // =============================================================================
 // Mining: Extract co-retrieval pairs from tool_invocations

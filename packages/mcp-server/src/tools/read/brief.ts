@@ -307,11 +307,4 @@ export async function runBrief(
   return { content: [{ type: 'text' as const, text: JSON.stringify(response, null, 2) }] };
 }
 
-// brief standalone tool retired (T43 B3+) — brief action now part of memory tool
-// registerBriefTools is no longer called; runBrief is still exported for memory.ts
-export function registerBriefTools(
-  _server: McpServer,
-  _getStateDb: () => StateDb | null,
-): void {
-  // Intentionally empty — brief folded into memory(action: brief)
-}
+

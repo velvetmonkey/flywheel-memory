@@ -109,13 +109,10 @@ describe('Tool Registration Verification', () => {
     const { toolNames } = await countToolsInSource();
     const toolSet = new Set(toolNames);
 
-    for (const tool of [
-      'vault_add_to_section',
-      'vault_remove_from_section',
-      'vault_replace_in_section',
-    ]) {
-      expect(toolSet.has(tool), `Missing core tool: ${tool}`).toBe(true);
-    }
+    // vault_add/remove/replace_in_section retired (T43 B3+); their dead
+    // registrations were deleted with mutations.ts (arch-review S3) —
+    // the live surface is the edit_section merged tool.
+    expect(toolSet.has('edit_section'), 'Missing core tool: edit_section').toBe(true);
   });
 
   it('should have all task tools registered', async () => {
@@ -146,7 +143,10 @@ describe('Tool Registration Verification', () => {
   it('should have all system tools registered', async () => {
     const { toolNames } = await countToolsInSource();
     const toolSet = new Set(toolNames);
-    expect(toolSet.has('vault_undo_last_mutation'), 'Missing system tool').toBe(true);
+    // vault_undo_last_mutation retired (T43 B3+) — folded into
+    // correct(action: undo); its dead registration was deleted with
+    // tools/write/system.ts (arch-review S2).
+    expect(toolSet.has('correct'), 'Missing system tool: correct').toBe(true);
   });
 });
 

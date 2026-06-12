@@ -89,16 +89,12 @@ async function runStep(
 }
 
 /**
- * Runs the 19-step watcher pipeline for a single batch of file changes.
+ * Runs the watcher pipeline for a single batch of file changes.
  *
- * Steps (in order):
- * 0.5. drain_proactive_queue (apply deferred links from previous batch),
- * 1. index_rebuild, 1.5. note_moves, 2. entity_scan, 3. hub_scores,
- * 3.5. recency, 3.6. cooccurrence, 3.7. edge_weights,
- * 4. note_embeddings, 5. entity_embeddings, 6. index_cache, 7. task_cache,
- * 8. forward_links, 9. wikilink_check, 10. implicit_feedback,
- * 10.5. corrections, 11. prospect_scan, 12. suggestion_scoring,
- * 12.5. proactive_enqueue, 13. tag_scan, 19. retrieval_cooccurrence
+ * The canonical step roster (names, order, and count) is PIPELINE_STEPS in
+ * ./activity.ts — the single source of truth for the progress denominator.
+ * run() below executes exactly that sequence; the roster test
+ * (pipeline-step-roster.test.ts) fails CI if the two ever drift.
  */
 export class PipelineRunner {
   tracker: StepTracker;

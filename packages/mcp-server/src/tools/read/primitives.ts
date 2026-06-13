@@ -25,7 +25,7 @@ import {
   getAllTasks,
   getTasksFromNote,
   getTasksWithDueDates,
-} from './tasks.js';
+} from '../../core/read/tasks.js';
 
 import {
   findTasks,

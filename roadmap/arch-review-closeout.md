@@ -45,7 +45,10 @@ Validates hypothesis ckpt-2a4d453cac7b876d — **largely confirmed, with named r
 
 ## 4. Residuals — open items by disposition
 
-### 4.1 F2/F4: the wikilink learning core (the one open P0-scale item)
+### 4.1 F2/F4: the wikilink learning core — **CLOSED by G5 (2026-06-13)**
+F2: wikilinks.ts 2,213 → 61-line facade over wikilinkState (440) / wikilinkPipeline (378) / wikilinkScoringConfig (319) / wikilinkSuggest (798, boost block deduped via computeLayerBoosts with per-branch FP-order preservation) / noteCreationChecks (286) / proactiveWriter (134). F4: wikilinkFeedback.ts 1,847 → 874 domain core + wikilinkFeedbackStore.ts (868 — all 53+2 SQL sites, 51 typed functions, 8 tables) + wikilinkFeedbackReports.ts (761, deps-injected). Export surfaces verified identical via TS compiler API. The two last layering inversions (taskCache→tasks, resources→frontmatter) also closed: helpers moved to core/read. B1 exemptions recorded: wikilinkFeedbackStore.ts (homogeneous SQL catalog — exactly what B4 designates), wikilinkFeedback.ts 874 (single-concern Bayesian core, same rationale as executor.ts). Layering baseline 22 → 20; SQL files 48 → 47; cycles 0. Original text follows for the record.
+
+#### (original residual text)
 `core/write/wikilinks.ts` (2,213) and `core/write/wikilinkFeedback.ts` (1,847) were P0/P1 in G1 (F2: 10-responsibility god file with a 640-line scoring fn; F4: 53 inline SQL sites interleaved with the Bayesian model). **Neither the council-amended G3 scope (S0–S5) nor the G4 re-gate list (S6–S13) ever scheduled their splits** — the slice lists named search/health/embeddings/pipeline/index.ts. What DID land: their import cycle broken (S1), four duplicated predicates and the term-building loop unified (S11), scoring layers mapped (G1). The close-out criterion "no remaining P0" is therefore **not fully met**: F1/F3 are closed; F2/F4 stand. Proposed: one further gate ("G5: wikilink core split — F2 five-way split + F4 repository extraction"), guarded by the strong existing suites (write wikilinks 38-import test file, feedback suite, 362-test graph-quality canary).
 
 ### 4.2 Open decisions D1–D4 (Ben, unchanged — none folded in)

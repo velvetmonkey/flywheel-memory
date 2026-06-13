@@ -1,8 +1,6 @@
 {
   "cycles": [],
   "layeringViolations": [
-    "packages/mcp-server/src/core/read/taskCache.ts -> packages/mcp-server/src/tools/read/tasks.ts",
-    "packages/mcp-server/src/resources/vault.ts -> packages/mcp-server/src/tools/read/frontmatter.ts",
     "packages/mcp-server/src/tool-registry.ts -> packages/mcp-server/src/tools/read/discovery.ts",
     "packages/mcp-server/src/tool-registry.ts -> packages/mcp-server/src/tools/read/find_notes.ts",
     "packages/mcp-server/src/tool-registry.ts -> packages/mcp-server/src/tools/read/graphTools.ts",
@@ -62,8 +60,7 @@
     "packages/mcp-server/src/core/write/pipeline/steps-linking.ts",
     "packages/mcp-server/src/core/write/pipeline/watchGlue.ts",
     "packages/mcp-server/src/core/write/proactiveQueue.ts",
-    "packages/mcp-server/src/core/write/wikilinkFeedback.ts",
-    "packages/mcp-server/src/core/write/wikilinks.ts",
+    "packages/mcp-server/src/core/write/wikilinkFeedbackStore.ts",
     "packages/mcp-server/src/tools/read/brief.ts",
     "packages/mcp-server/src/tools/read/graphExport.ts",
     "packages/mcp-server/src/tools/read/graphTools.ts",

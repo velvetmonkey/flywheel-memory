@@ -7,7 +7,7 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { VaultIndex } from '../core/read/types.js';
-import { getFrontmatterSchema } from '../tools/read/frontmatter.js';
+import { getFrontmatterSchema } from '../core/read/frontmatterAnalysis.js';
 import { normalizeTarget } from '../core/read/graph.js';
 
 /**

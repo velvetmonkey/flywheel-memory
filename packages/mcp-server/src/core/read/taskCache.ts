@@ -9,7 +9,7 @@
 import type Database from 'better-sqlite3';
 import * as path from 'path';
 import type { VaultIndex } from './types.js';
-import { extractTasksFromNote, type Task } from '../../tools/read/tasks.js';
+import { extractTasksFromNote, type Task } from './tasks.js';
 import { serverLog } from '../shared/serverLog.js';
 import { getActiveScopeOrNull } from '../../vault-scope.js';
 

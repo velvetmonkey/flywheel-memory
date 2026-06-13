@@ -16,7 +16,7 @@ import {
   findFrontmatterInconsistencies,
   validateFrontmatter,
   findMissingFrontmatter,
-} from './frontmatter.js';
+} from '../../core/read/frontmatterAnalysis.js';
 import {
   inferFolderConventions,
   findIncompleteNotes,

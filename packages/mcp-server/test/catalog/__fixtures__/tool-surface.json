@@ -372,7 +372,7 @@
         },
         "dry_run": {
           "type": "boolean",
-          "description": "[alias] Compatibility form: preview alias absorption without writing"
+          "description": "[alias|merge] Preview the operation without writing: alias absorption or entity merge plan"
         },
         "primary": {
           "type": "string",

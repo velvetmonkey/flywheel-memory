@@ -9,9 +9,8 @@
  *    not found' (not the retired fork's 'Source/Target');
  *  - path-validation labels still say 'Invalid source/target path' for
  *    primary/secondary — old fork wording, but part of the live contract;
- *  - merge IGNORES dry_run (the retired merge_entities supported it; the
- *    live schema documents dry_run as [alias]-only). Open decision D2 —
- *    pinned, NOT silently "fixed";
+ *  - merge HONOURS dry_run as of D2 (2026-06-13): full plan, zero writes
+ *    (originally pinned as ignored; deliberately changed with schema update);
  *  - no WriteConflictError catch in the merge branch (retired fork had one).
  */
 
@@ -157,16 +156,51 @@ describe('entity(action: merge) characterisation (live contract)', () => {
     expect(badSecondary.message).toContain('Invalid target path');
   });
 
-  it('merge IGNORES dry_run — destructive even with dry_run:true (open decision D2, pinned)', async () => {
-    await createTestNote(vaultPath, 'a/keep.md', '# keep\n\nContent.\n');
-    await createTestNote(vaultPath, 'a/gone.md', '# gone\n\nWill be deleted despite dry_run.\n');
+  it('merge HONOURS dry_run — full plan returned, zero disk writes (D2 fixed 2026-06-13)', async () => {
+    await createTestNote(
+      vaultPath, 'a/keep.md',
+      '---\naliases: []\n---\n\n# keep\n\nReal content.\n',
+    );
+    await createTestNote(
+      vaultPath, 'a/gone.md',
+      '---\naliases: ["Goner"]\n---\n\n# gone\n\nSubstantial content worth keeping around.\n',
+    );
+    await createTestNote(vaultPath, 'a/mention.md', 'See [[gone]] for details.\n');
+    const keepBefore = await readTestNote(vaultPath, 'a/keep.md');
+    const mentionBefore = await readTestNote(vaultPath, 'a/mention.md');
+
     const result = parse(await handler({
       action: 'merge', primary: 'a/keep.md', secondary: 'a/gone.md', dry_run: true,
     }));
+
+    // Plan returned: message, planned aliases, planned section, planned rewires
     expect(result.success).toBe(true);
-    // dry_run had no effect: secondary really deleted, primary really written
-    expect(existsSync(join(vaultPath, 'a/gone.md'))).toBe(false);
-    expect(await readTestNote(vaultPath, 'a/keep.md')).toContain('## Merged from gone');
+    expect(result.dryRun).toBe(true);
+    expect(result.message).toBe('[dry run] Would merge "gone" into "keep"');
+    expect(result.path).toBe('a/keep.md');
+    expect(result.preview).toContain('Would merge: "gone" → "keep"');
+    expect(result.preview).toContain('Aliases to add: gone, Goner');
+    expect(result.preview).toContain('Source content to append: yes');
+    expect(result.preview).toContain('Files to modify: a/mention.md');
+    expect(result.preview).toContain('Secondary to delete: a/gone.md');
+    expect(result.backlinks_updated).toBeGreaterThanOrEqual(1);
+
+    // ZERO disk writes: secondary intact, primary byte-identical, backlink file untouched
+    expect(existsSync(join(vaultPath, 'a/gone.md'))).toBe(true);
+    expect(await readTestNote(vaultPath, 'a/keep.md')).toBe(keepBefore);
+    expect(await readTestNote(vaultPath, 'a/mention.md')).toBe(mentionBefore);
+  });
+
+  it('merge without dry_run still executes for real after the D2 change', async () => {
+    await createTestNote(vaultPath, 'b/keep.md', '# keep\n\nContent.\n');
+    await createTestNote(vaultPath, 'b/gone.md', '# gone\n\nSubstantial enough content.\n');
+    const result = parse(await handler({
+      action: 'merge', primary: 'b/keep.md', secondary: 'b/gone.md',
+    }));
+    expect(result.success).toBe(true);
+    expect(result.dryRun).toBeUndefined();
+    expect(existsSync(join(vaultPath, 'b/gone.md'))).toBe(false);
+    expect(await readTestNote(vaultPath, 'b/keep.md')).toContain('## Merged from gone');
   });
 });
 

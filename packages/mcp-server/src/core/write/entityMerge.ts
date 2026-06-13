@@ -38,11 +38,16 @@ export type EntityMergeResult = MutationResult & { backlinks_updated?: number; d
  * non-trivial secondary content under a "## Merged from" section, rewire
  * backlinks, write primary, delete secondary, kick a background entity
  * index rebuild.
+ *
+ * dry_run (D2, 2026-06-13): computes the FULL plan — aliases to add,
+ * whether content would be appended, which backlink files would be
+ * rewired and how many links — without touching disk.
  */
 export async function mergeEntities(
   vaultPath: string,
   primary: string,
   secondary: string,
+  dry_run = false,
 ): Promise<EntityMergeResult> {
   const primaryValidation = await validatePathSecure(vaultPath, primary);
   if (!primaryValidation.valid) {
@@ -105,42 +110,57 @@ export async function mergeEntities(
   let totalBacklinksUpdated = 0;
   const modifiedFiles: string[] = [];
 
-  for (const backlink of backlinks) {
-    if (backlink.path === secondary || backlink.path === primary) continue;
-    const updateResult = await updateBacklinksInFile(vaultPath, backlink.path, allSourceTitles, targetTitle);
-    if (updateResult.updated) {
-      totalBacklinksUpdated += updateResult.linksUpdated;
+  if (dry_run) {
+    // Plan only: count the links that WOULD be rewired, touch nothing.
+    for (const backlink of backlinks) {
+      if (backlink.path === secondary || backlink.path === primary) continue;
+      totalBacklinksUpdated += backlink.links.length;
       modifiedFiles.push(backlink.path);
     }
+  } else {
+    for (const backlink of backlinks) {
+      if (backlink.path === secondary || backlink.path === primary) continue;
+      const updateResult = await updateBacklinksInFile(vaultPath, backlink.path, allSourceTitles, targetTitle);
+      if (updateResult.updated) {
+        totalBacklinksUpdated += updateResult.linksUpdated;
+        modifiedFiles.push(backlink.path);
+      }
+    }
+
+    // Write updated primary
+    await writeVaultFile(vaultPath, primary, targetContent, targetFrontmatter, 'LF', targetContentHash);
+
+    // Delete secondary
+    await fs.unlink(`${vaultPath}/${secondary}`);
+
+    // Rebuild entity index in background
+    initializeEntityIndex(vaultPath).catch(err => {
+      console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
+    });
   }
 
-  // Write updated primary
-  await writeVaultFile(vaultPath, primary, targetContent, targetFrontmatter, 'LF', targetContentHash);
-
-  // Delete secondary
-  await fs.unlink(`${vaultPath}/${secondary}`);
-
-  // Rebuild entity index in background
-  initializeEntityIndex(vaultPath).catch(err => {
-    console.error(`[Flywheel] Entity cache rebuild failed: ${err}`);
-  });
-
   const previewLines = [
-    `Merged: "${sourceTitle}" → "${targetTitle}"`,
-    `Aliases added: ${allNewAliases.join(', ')}`,
-    `Source content appended: ${trimmedSource.length > 10 ? 'yes' : 'no'}`,
-    `Backlinks updated: ${totalBacklinksUpdated}`,
+    `${dry_run ? 'Would merge' : 'Merged'}: "${sourceTitle}" → "${targetTitle}"`,
+    `Aliases ${dry_run ? 'to add' : 'added'}: ${allNewAliases.join(', ')}`,
+    `Source content ${dry_run ? 'to append' : 'appended'}: ${trimmedSource.length > 10 ? 'yes' : 'no'}`,
+    `Backlinks ${dry_run ? 'to update' : 'updated'}: ${totalBacklinksUpdated}`,
   ];
   if (modifiedFiles.length > 0) {
-    previewLines.push(`Files modified: ${modifiedFiles.join(', ')}`);
+    previewLines.push(`Files ${dry_run ? 'to modify' : 'modified'}: ${modifiedFiles.join(', ')}`);
+  }
+  if (dry_run) {
+    previewLines.push(`Secondary ${'to delete'}: ${secondary}`);
   }
 
   return {
     success: true,
-    message: `Merged "${sourceTitle}" into "${targetTitle}"`,
+    message: dry_run
+      ? `[dry run] Would merge "${sourceTitle}" into "${targetTitle}"`
+      : `Merged "${sourceTitle}" into "${targetTitle}"`,
     path: primary,
     preview: previewLines.join('\n'),
     backlinks_updated: totalBacklinksUpdated,
+    ...(dry_run ? { dryRun: true } : {}),
   };
 }
 

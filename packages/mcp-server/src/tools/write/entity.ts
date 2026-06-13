@@ -44,7 +44,7 @@ export function registerEntityTool(
       alias: z.string().optional().describe('[alias] The alias to add'),
       source_name: z.string().optional().describe('[alias] Compatibility form: entity name to absorb as an alias of target_path, rewriting links. [dismiss_merge] Source entity name'),
       target_path: z.string().optional().describe('[alias] Compatibility form: target note path for source_name absorption. [dismiss_merge] Target entity path'),
-      dry_run: z.boolean().optional().describe('[alias] Compatibility form: preview alias absorption without writing'),
+      dry_run: z.boolean().optional().describe('[alias|merge] Preview the operation without writing: alias absorption or entity merge plan'),
 
       primary: z.string().optional().describe('[merge] Entity path to keep'),
       secondary: z.string().optional().describe('[merge] Entity path to absorb into primary'),
@@ -300,7 +300,7 @@ export function registerEntityTool(
         }
 
         const vaultPath = getVaultPath();
-        const result = await mergeEntities(vaultPath, primary, secondary);
+        const result = await mergeEntities(vaultPath, primary, secondary, dry_run ?? false);
         return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
       }
 

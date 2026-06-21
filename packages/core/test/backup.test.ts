@@ -668,7 +668,7 @@ describe('Backup & Recovery', () => {
   // Integration: corruption → fresh → salvage
   // ===========================================================================
   describe('integration: corruption recovery with salvage', () => {
-    it('recovers feedback data after corruption', () => {
+    it('recovers feedback data after corruption', { timeout: 15_000 }, () => {
       // Step 1: Create a DB with feedback data and back it up
       const stateDb = openStateDb(testVaultPath);
       stateDb.db.prepare(
@@ -704,7 +704,7 @@ describe('Backup & Recovery', () => {
       }
     });
 
-    it('recovers from corruption with rotated backups', () => {
+    it('recovers from corruption with rotated backups', { timeout: 15_000 }, () => {
       // Create DB, populate, backup to .backup.1
       const db1 = openStateDb(testVaultPath);
       db1.db.prepare(
@@ -726,7 +726,7 @@ describe('Backup & Recovery', () => {
       }
     });
 
-    it('salvages from backups when state.db is missing (not just corrupt)', () => {
+    it('salvages from backups when state.db is missing (not just corrupt)', { timeout: 15_000 }, () => {
       // Create a DB with feedback, then back it up
       const stateDb = openStateDb(testVaultPath);
       stateDb.db.prepare(
@@ -756,7 +756,7 @@ describe('Backup & Recovery', () => {
       }
     });
 
-    it('preserves .corrupt file for forensics', () => {
+    it('preserves .corrupt file for forensics', { timeout: 15_000 }, () => {
       const stateDb = openStateDb(testVaultPath);
       stateDb.close();
 

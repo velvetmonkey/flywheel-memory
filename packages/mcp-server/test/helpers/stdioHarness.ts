@@ -28,6 +28,9 @@ function ensureFreshDist(): void {
     cwd: PACKAGE_DIR,
     stdio: 'pipe',
     timeout: 120000,
+    // Node >=18.20/20.12/22 refuses to execFile a .cmd/.bat without a shell
+    // (CVE-2024-27980), throwing EINVAL on Windows. The build command is static.
+    shell: process.platform === 'win32',
   });
   distBuilt = true;
 }

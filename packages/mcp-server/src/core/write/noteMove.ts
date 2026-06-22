@@ -49,7 +49,10 @@ export async function findBacklinks(
   const allFiles = await scanDir(vaultPath);
 
   for (const filePath of allFiles) {
-    const relativePath = path.relative(vaultPath, filePath);
+    // Canonical vault paths are forward-slash (wikilinks, frontmatter, tool
+    // args). path.relative yields backslashes on Windows, which both garbles
+    // user-facing output and breaks `=== primary/secondary` path comparisons.
+    const relativePath = path.relative(vaultPath, filePath).split(path.sep).join('/');
     const content = await fs.readFile(filePath, 'utf-8');
     const wikilinks = extractWikilinks(content);
 
